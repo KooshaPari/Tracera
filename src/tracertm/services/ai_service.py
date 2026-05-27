@@ -100,7 +100,9 @@ class AIService:
         """
         # Convert messages to Anthropic format
         anthropic_messages = [
-            {"role": msg["role"], "content": msg["content"]} for msg in messages if msg["role"] in {"user", "assistant"}
+            {"role": msg["role"], "content": msg["content"]}
+            for msg in messages
+            if msg["role"] in {"user", "assistant"}
         ]
 
         iteration = 0
@@ -229,7 +231,9 @@ class AIService:
         Used by Temporal run_agent_turn for checkpointed agent runs.
         """
         anthropic_messages = [
-            {"role": msg["role"], "content": msg["content"]} for msg in messages if msg["role"] in {"user", "assistant"}
+            {"role": msg["role"], "content": msg["content"]}
+            for msg in messages
+            if msg["role"] in {"user", "assistant"}
         ]
 
         iteration = 0
@@ -310,7 +314,9 @@ class AIService:
         """
         # Convert messages to Anthropic format
         anthropic_messages = [
-            {"role": msg["role"], "content": msg["content"]} for msg in messages if msg["role"] in {"user", "assistant"}
+            {"role": msg["role"], "content": msg["content"]}
+            for msg in messages
+            if msg["role"] in {"user", "assistant"}
         ]
 
         iteration = 0

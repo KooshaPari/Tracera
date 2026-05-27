@@ -215,7 +215,9 @@ class BulkSnapshotWorkflow:
                         "error": str(e),
                     })
 
-        workflow.logger.info("Bulk snapshot completed: %s successful, %s failed", successful, failed)
+        workflow.logger.info(
+            "Bulk snapshot completed: %s successful, %s failed", successful, failed
+        )
 
         return {
             "status": "success",
@@ -248,7 +250,11 @@ class SnapshotCleanupWorkflow:
         Returns:
             dict: Cleanup results with count of deleted snapshots
         """
-        workflow.logger.info("Starting snapshot cleanup workflow (retention=%sd, dry_run=%s)", retention_days, dry_run)
+        workflow.logger.info(
+            "Starting snapshot cleanup workflow (retention=%sd, dry_run=%s)",
+            retention_days,
+            dry_run,
+        )
 
         # Execute cleanup activity (Phase 4 will implement MinIO deletion)
         cleanup_result = await workflow.execute_activity(

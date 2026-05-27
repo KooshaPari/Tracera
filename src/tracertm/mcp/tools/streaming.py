@@ -422,7 +422,11 @@ def get_items_page(
         else:
             order_col = Item.created_at
 
-        query = query.order_by(order_col.asc()) if sort_order.lower() == "asc" else query.order_by(order_col.desc())
+        query = (
+            query.order_by(order_col.asc())
+            if sort_order.lower() == "asc"
+            else query.order_by(order_col.desc())
+        )
 
         total_count = query.count()
         total_pages = (total_count + page_size - 1) // page_size

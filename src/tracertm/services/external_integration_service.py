@@ -60,7 +60,9 @@ class ExternalIntegrationService:
         """Get integration by name."""
         return self.integrations.get(name)
 
-    def list_integrations(self, integration_type: IntegrationType | None = None) -> list[Integration]:
+    def list_integrations(
+        self, integration_type: IntegrationType | None = None
+    ) -> list[Integration]:
         """List all integrations, optionally filtered by type."""
         integrations = list(self.integrations.values())
 

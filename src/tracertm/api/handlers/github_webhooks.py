@@ -37,11 +37,14 @@ async def receive_github_webhook(
         import hashlib
         import hmac
 
-        expected_signature = "sha256=" + hmac.new(
-            webhook.webhook_secret.encode(),
-            body,
-            hashlib.sha256,
-        ).hexdigest()
+        expected_signature = (
+            "sha256="
+            + hmac.new(
+                webhook.webhook_secret.encode(),
+                body,
+                hashlib.sha256,
+            ).hexdigest()
+        )
 
         if not hmac.compare_digest(signature_header, expected_signature):
             raise HTTPException(status_code=401, detail="Invalid signature")
@@ -54,7 +57,9 @@ async def receive_github_webhook(
     if not isinstance(raw_credential_id, str) or not raw_credential_id:
         raise HTTPException(status_code=400, detail="Webhook missing credential_id")
     raw_mapping_id = metadata.get("mapping_id")
-    mapping_id = raw_mapping_id if isinstance(raw_mapping_id, str) and raw_mapping_id else webhook_id
+    mapping_id = (
+        raw_mapping_id if isinstance(raw_mapping_id, str) and raw_mapping_id else webhook_id
+    )
 
     queue_repo = IntegrationSyncQueueRepository(db)
     await queue_repo.enqueue(

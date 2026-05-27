@@ -46,7 +46,9 @@ class VersionBlock(Base, TimestampMixin):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     # Blockchain linking
-    block_id: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)  # SHA-256 hash of block
+    block_id: Mapped[str] = mapped_column(
+        String(64), unique=True, nullable=False, index=True
+    )  # SHA-256 hash of block
     previous_block_id: Mapped[str | None] = mapped_column(
         String(64),
         ForeignKey("version_blocks.block_id"),
@@ -66,13 +68,19 @@ class VersionBlock(Base, TimestampMixin):
         default=lambda: datetime.now(UTC),
     )
     author_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    change_type: Mapped[str] = mapped_column(String(50), nullable=False)  # 'create', 'update', 'delete', 'restore'
+    change_type: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # 'create', 'update', 'delete', 'restore'
     change_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Cryptographic fields
     content_hash: Mapped[str] = mapped_column(String(64), nullable=False)  # Hash of spec content
-    merkle_root: Mapped[str | None] = mapped_column(String(64), nullable=True)  # For baseline linking
-    digital_signature: Mapped[str | None] = mapped_column(String(512), nullable=True)  # Optional signing
+    merkle_root: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # For baseline linking
+    digital_signature: Mapped[str | None] = mapped_column(
+        String(512), nullable=True
+    )  # Optional signing
     nonce: Mapped[int | None] = mapped_column(Integer, nullable=True)  # For proof-of-work if needed
 
     # Metadata
@@ -85,7 +93,9 @@ class VersionBlock(Base, TimestampMixin):
         foreign_keys=[previous_block_id],
     )
 
-    __table_args__ = (UniqueConstraint("spec_id", "spec_type", "version_number", name="uq_spec_version"),)
+    __table_args__ = (
+        UniqueConstraint("spec_id", "spec_type", "version_number", name="uq_spec_version"),
+    )
 
 
 class VersionChainIndex(Base, TimestampMixin):
@@ -104,18 +114,26 @@ class VersionChainIndex(Base, TimestampMixin):
     project_id: Mapped[str] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
 
     # Chain state
-    chain_head_id: Mapped[str] = mapped_column(String(64), ForeignKey("version_blocks.block_id"), nullable=False)
+    chain_head_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("version_blocks.block_id"), nullable=False
+    )
     chain_length: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
-    genesis_block_id: Mapped[str] = mapped_column(String(64), ForeignKey("version_blocks.block_id"), nullable=False)
+    genesis_block_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("version_blocks.block_id"), nullable=False
+    )
 
     # Integrity
     is_valid: Mapped[bool] = mapped_column(Boolean, default=True)
-    last_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     broken_links: Mapped[list[str]] = mapped_column(JSONType, default=list)
 
     # Relationships
     chain_head: Mapped["VersionBlock"] = relationship("VersionBlock", foreign_keys=[chain_head_id])
-    genesis_block: Mapped["VersionBlock"] = relationship("VersionBlock", foreign_keys=[genesis_block_id])
+    genesis_block: Mapped["VersionBlock"] = relationship(
+        "VersionBlock", foreign_keys=[genesis_block_id]
+    )
 
     __table_args__ = (UniqueConstraint("spec_id", "spec_type", name="uq_version_chain_spec"),)
 
@@ -135,7 +153,9 @@ class Baseline(Base, TimestampMixin):
     __tablename__ = "baselines"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    baseline_id: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)  # Human-readable or generated ID
+    baseline_id: Mapped[str] = mapped_column(
+        String(64), unique=True, nullable=False
+    )  # Human-readable or generated ID
 
     # Scope
     project_id: Mapped[str] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
@@ -143,11 +163,15 @@ class Baseline(Base, TimestampMixin):
 
     # Merkle tree
     merkle_root: Mapped[str] = mapped_column(String(64), nullable=False, index=True)  # Root hash
-    merkle_tree_json: Mapped[dict[str, object] | None] = mapped_column(JSONType, nullable=True)  # Serialized tree
+    merkle_tree_json: Mapped[dict[str, object] | None] = mapped_column(
+        JSONType, nullable=True
+    )  # Serialized tree
     items_count: Mapped[int] = mapped_column(Integer, nullable=False)
 
     # Metadata
-    baseline_type: Mapped[str] = mapped_column(String(50), nullable=False)  # 'snapshot', 'release', 'freeze', 'audit'
+    baseline_type: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # 'snapshot', 'release', 'freeze', 'audit'
     name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     tags: Mapped[list[str]] = mapped_column(JSONType, default=list)
@@ -192,14 +216,18 @@ class BaselineItem(Base):
 
     # Merkle data
     content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
-    leaf_hash: Mapped[str] = mapped_column(String(64), nullable=False)  # Hash(item_id + content_hash)
+    leaf_hash: Mapped[str] = mapped_column(
+        String(64), nullable=False
+    )  # Hash(item_id + content_hash)
     leaf_index: Mapped[int] = mapped_column(Integer, nullable=False)
 
     # Snapshot data
     version_at_baseline: Mapped[int | None] = mapped_column(Integer, nullable=True)
     content_snapshot: Mapped[dict[str, object] | None] = mapped_column(JSONType, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     # Relationships
     baseline: Mapped["Baseline"] = relationship("Baseline", back_populates="items")
@@ -225,7 +253,9 @@ class MerkleProofCache(Base):
 
     # Proof data
     leaf_hash: Mapped[str] = mapped_column(String(64), nullable=False)
-    proof_path: Mapped[list[dict[str, str]]] = mapped_column(JSONType, nullable=False)  # Array of {hash, direction}
+    proof_path: Mapped[list[dict[str, str]]] = mapped_column(
+        JSONType, nullable=False
+    )  # Array of {hash, direction}
     root_hash: Mapped[str] = mapped_column(String(64), nullable=False)
 
     # Verification cache
@@ -233,7 +263,9 @@ class MerkleProofCache(Base):
     verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Cache management
-    computed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    computed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     # Relationships
     baseline: Mapped["Baseline"] = relationship("Baseline", back_populates="proofs")
@@ -263,7 +295,9 @@ class SpecEmbedding(Base, TimestampMixin):
 
     # Embedding data
     embedding: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)  # Serialized numpy array
-    embedding_dimension: Mapped[int] = mapped_column(Integer, nullable=False)  # e.g., 384 for all-MiniLM-L6-v2
+    embedding_dimension: Mapped[int] = mapped_column(
+        Integer, nullable=False
+    )  # e.g., 384 for all-MiniLM-L6-v2
     embedding_model: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
@@ -271,10 +305,14 @@ class SpecEmbedding(Base, TimestampMixin):
     model_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     # Cache validation
-    content_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)  # SHA-256 of source content
+    content_hash: Mapped[str] = mapped_column(
+        String(64), nullable=False, index=True
+    )  # SHA-256 of source content
     source_text_length: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Metadata
     extra_data: Mapped[dict[str, object]] = mapped_column(JSONType, default=dict)
 
-    __table_args__ = (UniqueConstraint("spec_id", "spec_type", "embedding_model", name="uq_spec_embedding"),)
+    __table_args__ = (
+        UniqueConstraint("spec_id", "spec_type", "embedding_model", name="uq_spec_embedding"),
+    )

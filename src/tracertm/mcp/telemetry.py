@@ -256,7 +256,10 @@ class PerformanceMonitoringMiddleware(Middleware):
                 )
             elif elapsed >= self.slow_threshold:
                 logger.info(
-                    "[PERFORMANCE] Slow: %s took %.2fs (threshold: %ss)", tool_name, elapsed, self.slow_threshold
+                    "[PERFORMANCE] Slow: %s took %.2fs (threshold: %ss)",
+                    tool_name,
+                    elapsed,
+                    self.slow_threshold,
                 )
 
         except Exception as e:

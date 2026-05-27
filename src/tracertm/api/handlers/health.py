@@ -138,7 +138,9 @@ async def check_go_backend() -> dict[str, object]:
             resp = await client.get(f"{go_backend_url}/health")
             return {
                 "go_backend": {
-                    "status": "healthy" if resp.status_code < HTTP_SERVER_ERROR_START else "unhealthy",
+                    "status": "healthy"
+                    if resp.status_code < HTTP_SERVER_ERROR_START
+                    else "unhealthy",
                     "http_status": resp.status_code,
                 },
             }
@@ -198,4 +200,8 @@ def get_failed_components(components: dict[str, object]) -> list[str]:
     Returns:
         List of component names that are unhealthy
     """
-    return [name for name, c in components.items() if isinstance(c, dict) and c.get("status") == "unhealthy"]
+    return [
+        name
+        for name, c in components.items()
+        if isinstance(c, dict) and c.get("status") == "unhealthy"
+    ]

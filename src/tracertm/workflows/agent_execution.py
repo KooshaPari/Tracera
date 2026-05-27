@@ -113,7 +113,9 @@ class AgentExecutionWorkflow:
                     conversation_state = checkpoint_data["state_snapshot"]
                     self._last_checkpoint_turn = checkpoint_data.get("turn_number", 0)
                     self._turn_count = self._last_checkpoint_turn
-                    workflow.logger.info("Resumed from checkpoint at turn %s", self._last_checkpoint_turn)
+                    workflow.logger.info(
+                        "Resumed from checkpoint at turn %s", self._last_checkpoint_turn
+                    )
             except (KeyError, TemporalError, TypeError, ValueError) as e:
                 workflow.logger.warning("Failed to load checkpoint, starting fresh: %s", e)
 
@@ -224,7 +226,9 @@ class AgentExecutionWorkflow:
             )
 
             self._last_checkpoint_turn = self._turn_count
-            workflow.logger.info("Checkpoint created at turn %s: %s", self._turn_count, result.get("checkpoint_id"))
+            workflow.logger.info(
+                "Checkpoint created at turn %s: %s", self._turn_count, result.get("checkpoint_id")
+            )
 
         except (KeyError, TemporalError, TypeError, ValueError) as e:
             workflow.logger.error("Failed to create checkpoint: %s", e)

@@ -88,9 +88,13 @@ class MetricsServer:
             logger.info("Metrics server started at http://%s:%s/metrics", self.host, self.port)
         except OSError as e:
             if e.errno == EADDRINUSE and (
-                os.getenv("PYTEST_CURRENT_TEST") or os.getenv("PYTEST_RUNNING") or os.getenv("PYTEST_WORKER")
+                os.getenv("PYTEST_CURRENT_TEST")
+                or os.getenv("PYTEST_RUNNING")
+                or os.getenv("PYTEST_WORKER")
             ):
-                logger.warning("Metrics server port already in use during tests; continuing without metrics")
+                logger.warning(
+                    "Metrics server port already in use during tests; continuing without metrics"
+                )
                 return
             logger.exception("Failed to start metrics server")
             raise

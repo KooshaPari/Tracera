@@ -84,7 +84,12 @@ class ShortestPathService:
             try:
                 cached = await self.cache.get(cache_key)
                 if cached:
-                    logger.debug("Cache hit for path %s -> %s in project %s", source_id, target_id, project_id)
+                    logger.debug(
+                        "Cache hit for path %s -> %s in project %s",
+                        source_id,
+                        target_id,
+                        project_id,
+                    )
                     # Reconstruct PathResult from cached data
                     return PathResult(
                         source_id=cached["source_id"],
@@ -112,7 +117,9 @@ class ShortestPathService:
                     "exists": result.exists,
                 }
                 link_types_key = ":".join(sorted(link_types)) if link_types else "all"
-                cache_key = f"tracertm:graph:{project_id}:path:{source_id}:{target_id}:{link_types_key}"
+                cache_key = (
+                    f"tracertm:graph:{project_id}:path:{source_id}:{target_id}:{link_types_key}"
+                )
                 await self.cache.set(cache_key, cache_data, ttl_seconds=300)
                 logger.debug("Cached path %s -> %s in project %s", source_id, target_id, project_id)
             except (ValueError, TypeError, OperationalError) as e:
@@ -267,7 +274,9 @@ class ShortestPathService:
             try:
                 cached = await self.cache.get(cache_key)
                 if cached:
-                    logger.debug("Cache hit for all paths from %s in project %s", source_id, project_id)
+                    logger.debug(
+                        "Cache hit for all paths from %s in project %s", source_id, project_id
+                    )
                     # Reconstruct PathResult objects from cached data
                     results = {}
                     for target_id, data in cached.items():  # type: ignore[attr-defined]

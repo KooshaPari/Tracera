@@ -115,7 +115,9 @@ class CriticalPathService:
 
         for node in reversed(topo_order):
             if adjacency_list[node]:
-                latest_finish[node] = min(latest_start[neighbor] for neighbor in adjacency_list[node])
+                latest_finish[node] = min(
+                    latest_start[neighbor] for neighbor in adjacency_list[node]
+                )
             latest_start[node] = latest_finish[node] - 1
 
         # Calculate slack times

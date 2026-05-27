@@ -1,4 +1,5 @@
 """Storage module for TracerTM."""
+
 import json
 from datetime import datetime
 from pathlib import Path
@@ -94,6 +95,7 @@ class SyncEngine:
 
 class SyncState:
     """Sync state enum."""
+
     IDLE = "idle"
     SYNCING = "syncing"
     ERROR = "error"
@@ -101,6 +103,7 @@ class SyncState:
 
 class SyncStatus:
     """Sync status enum."""
+
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -109,6 +112,7 @@ class SyncStatus:
 
 class ConflictStrategy:
     """Conflict resolution strategy enum."""
+
     LATEST = "latest"
     MANUAL = "manual"
     LOCAL = "local"
@@ -117,6 +121,7 @@ class ConflictStrategy:
 
 class ConflictStatus:
     """Conflict status enum."""
+
     NONE = "none"
     DETECTED = "detected"
     RESOLVED = "resolved"
@@ -124,12 +129,14 @@ class ConflictStatus:
 
 class EntityType:
     """Entity type enum."""
+
     ITEM = "item"
     LINK = "link"
 
 
 class Conflict:
     """Conflict representation."""
+
     def __init__(self, entity_type: str, entity_id: str, local_version: Any, remote_version: Any):
         self.entity_type = entity_type
         self.entity_id = entity_id
@@ -147,6 +154,7 @@ class ConflictResolver:
 
 class VectorClock:
     """Vector clock for causal consistency."""
+
     def __init__(self):
         self._clock = {}
 
@@ -162,6 +170,7 @@ class VectorClock:
 
 class EntityVersion:
     """Entity version with vector clock."""
+
     def __init__(self, version: int, clock: VectorClock):
         self.version = version
         self.clock = clock
@@ -169,6 +178,7 @@ class EntityVersion:
 
 class OperationType:
     """Operation type enum for sync."""
+
     CREATE = "create"
     UPDATE = "update"
     DELETE = "delete"
@@ -180,6 +190,7 @@ class QueuedChange:
 
 class SyncResult:
     """Result of a sync operation."""
+
     def __init__(self, success: bool, message: str):
         self.success = success
         self.message = message

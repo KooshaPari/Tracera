@@ -37,7 +37,9 @@ class IndexingWorkflow:
         Returns:
             dict: Indexing results
         """
-        workflow.logger.info("Starting indexing workflow for %s (branch: %s)", repository_url, branch)
+        workflow.logger.info(
+            "Starting indexing workflow for %s (branch: %s)", repository_url, branch
+        )
 
         # Execute indexing activity with timeout and retry policy
         result: dict[str, Any] = await workflow.execute_activity(
@@ -71,7 +73,9 @@ class AnalysisWorkflow:
         Returns:
             dict: Analysis results
         """
-        workflow.logger.info("Starting analysis workflow for project %s (type: %s)", project_id, analysis_type)
+        workflow.logger.info(
+            "Starting analysis workflow for project %s (type: %s)", project_id, analysis_type
+        )
 
         # Execute analysis activity with timeout and retry policy
         result: dict[str, Any] = await workflow.execute_activity(
@@ -219,7 +223,9 @@ class GraphDiffWorkflow:
         Returns:
             dict: Diff results
         """
-        workflow.logger.info("Generating diff for %s/%s v%s..v%s", project_id, graph_id, from_version, to_version)
+        workflow.logger.info(
+            "Generating diff for %s/%s v%s..v%s", project_id, graph_id, from_version, to_version
+        )
 
         result: dict[str, Any] = await workflow.execute_activity(
             activities.diff_graph,
@@ -326,7 +332,9 @@ class AgentRunWorkflow:
         Returns:
             dict: Final status and output summary.
         """
-        workflow.logger.info("Starting agent run for session %s (max_turns=%s)", session_id, max_turns)
+        workflow.logger.info(
+            "Starting agent run for session %s (max_turns=%s)", session_id, max_turns
+        )
         messages = initial_messages_json or "[]"
         for turn in range(max_turns):
             result: dict[str, Any] = await workflow.execute_activity(

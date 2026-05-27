@@ -67,7 +67,9 @@ class GraphService:
 
         if include_nodes:
             items_result = await self.db_session.execute(
-                select(Item).join(GraphNode, GraphNode.item_id == Item.id).where(GraphNode.graph_id == graph.id),
+                select(Item)
+                .join(GraphNode, GraphNode.item_id == Item.id)
+                .where(GraphNode.graph_id == graph.id),
             )
             item_rows: Sequence[Item] = items_result.scalars().all()
             nodes = [
@@ -88,7 +90,9 @@ class GraphService:
             ]
 
         if include_links:
-            links_result = await self.db_session.execute(select(Link).where(Link.graph_id == graph.id))
+            links_result = await self.db_session.execute(
+                select(Link).where(Link.graph_id == graph.id)
+            )
             link_rows: Sequence[Link] = links_result.scalars().all()
             links = [
                 {

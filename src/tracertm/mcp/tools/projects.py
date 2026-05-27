@@ -119,7 +119,9 @@ async def select_project(
 
         # Try prefix match if no exact match
         if not project:
-            result = await session.execute(select(Project).filter(Project.id.like(f"{project_id}%")))
+            result = await session.execute(
+                select(Project).filter(Project.id.like(f"{project_id}%"))
+            )
             project = result.scalar_one_or_none()
 
         if not project:

@@ -160,7 +160,9 @@ def is_system_admin(claims: dict[str, Any] | None, email_from_user: str | None =
     user_id = claims.get("sub")
     if user_id and user_id in _admin_user_ids:
         return True
-    email = email_from_user or (claims.get("email") if isinstance(claims.get("email"), str) else None)
+    email = email_from_user or (
+        claims.get("email") if isinstance(claims.get("email"), str) else None
+    )
     if _is_system_admin_email(email):
         if user_id:
             _admin_user_ids.add(user_id)
@@ -349,7 +351,9 @@ def ensure_project_access(project_id: str | None, claims: dict[str, Any] | None)
         raise HTTPException(status_code=403, detail="Project access denied")
 
 
-def ensure_credential_access(credential: IntegrationCredential | None, claims: dict[str, Any] | None) -> None:
+def ensure_credential_access(
+    credential: IntegrationCredential | None, claims: dict[str, Any] | None
+) -> None:
     """Check access to a credential (project or user scoped).
 
     Args:

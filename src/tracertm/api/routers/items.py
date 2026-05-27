@@ -360,7 +360,9 @@ async def update_item_endpoint(
     ensure_project_access(str(getattr(existing, "project_id", "")), claims)
 
     update_fields = {
-        key: value for key, value in payload.model_dump().items() if key != "expected_version" and value is not None
+        key: value
+        for key, value in payload.model_dump().items()
+        if key != "expected_version" and value is not None
     }
     expected_version = payload.expected_version
     if expected_version is None:
@@ -381,7 +383,9 @@ async def update_item_endpoint(
             "owner": getattr(updated, "owner", None),
             "project_id": str(getattr(updated, "project_id", "")),
             "version": getattr(updated, "version", None),
-            "updated_at": updated.updated_at.isoformat() if getattr(updated, "updated_at", None) else None,
+            "updated_at": updated.updated_at.isoformat()
+            if getattr(updated, "updated_at", None)
+            else None,
         }
     except ConcurrencyError as exc:
         await db.rollback()
@@ -453,7 +457,9 @@ async def bulk_update_items_endpoint(
             "preview": True,
         }
 
-    update_query = update(Item).where(*conditions).values(status=payload.new_status, updated_at=func.now())
+    update_query = (
+        update(Item).where(*conditions).values(status=payload.new_status, updated_at=func.now())
+    )
     await db.execute(update_query)
     await db.commit()
     await cache.invalidate_project(payload.project_id)

@@ -134,7 +134,11 @@ def _add_providers(mcp: FastMCP) -> None:
     if fs_root:
         from fastmcp.server.providers import FileSystemProvider
 
-        reload_flag = os.getenv("TRACERTM_MCP_FILESYSTEM_RELOAD", "").lower() in {"1", "true", "yes"}
+        reload_flag = os.getenv("TRACERTM_MCP_FILESYSTEM_RELOAD", "").lower() in {
+            "1",
+            "true",
+            "yes",
+        }
         mcp.add_provider(FileSystemProvider(Path(fs_root).expanduser(), reload=reload_flag))
 
     # Skills provider: always added when roots are set or default paths used (no ENABLE gate).
@@ -146,7 +150,11 @@ def _add_providers(mcp: FastMCP) -> None:
         if provider_mode == "codex":
             mcp.add_provider(CodexSkillsProvider())
         else:
-            reload_flag = os.getenv("TRACERTM_MCP_SKILLS_RELOAD", "").lower() in {"1", "true", "yes"}
+            reload_flag = os.getenv("TRACERTM_MCP_SKILLS_RELOAD", "").lower() in {
+                "1",
+                "true",
+                "yes",
+            }
             mcp.add_provider(
                 SkillsDirectoryProvider(
                     roots=[Path(p).expanduser() for p in roots],
@@ -172,7 +180,9 @@ def _add_providers(mcp: FastMCP) -> None:
             filtered_targets.append(target)
 
         if not filtered_targets:
-            logger.warning("No MCP proxy targets available after filtering; proxy provider disabled")
+            logger.warning(
+                "No MCP proxy targets available after filtering; proxy provider disabled"
+            )
             return
 
         for target in filtered_targets:
@@ -228,14 +238,21 @@ def build_mcp_server(transport: str = "http") -> FastMCP:
         )
 
     _validate_required_mcp_env()
-    is_pytest = bool(os.getenv("PYTEST_RUNNING") or os.getenv("PYTEST_CURRENT_TEST") or os.getenv("PYTEST_WORKER"))
+    is_pytest = bool(
+        os.getenv("PYTEST_RUNNING")
+        or os.getenv("PYTEST_CURRENT_TEST")
+        or os.getenv("PYTEST_WORKER")
+    )
     if not is_pytest:
         run_preflight("mcp", build_mcp_checks(), strict=True)
         if not check_cli_available():
             logger.warning("[mcp] CLI module unavailable; CLI-backed tools will be limited")
 
     # Configure structured logging if available
-    if MONITORING_AVAILABLE and os.getenv("TRACERTM_MCP_STRUCTURED_LOGGING", "true").lower() == "true":
+    if (
+        MONITORING_AVAILABLE
+        and os.getenv("TRACERTM_MCP_STRUCTURED_LOGGING", "true").lower() == "true"
+    ):
         log_level = os.getenv("TRACERTM_MCP_LOG_LEVEL", "INFO")
         json_output = os.getenv("TRACERTM_MCP_JSON_LOGS", "true").lower() == "true"
         log_file = os.getenv("TRACERTM_MCP_LOG_FILE")
@@ -270,7 +287,10 @@ All tools use action/kind-based dispatch for a unified interface.
 
     # Add middleware in order (most specific to most general)
     # First: Telemetry and metrics (outermost layer, captures everything)
-    if MONITORING_AVAILABLE and os.getenv("TRACERTM_MCP_TELEMETRY_ENABLED", "true").lower() == "true":
+    if (
+        MONITORING_AVAILABLE
+        and os.getenv("TRACERTM_MCP_TELEMETRY_ENABLED", "true").lower() == "true"
+    ):
         mcp.add_middleware(TelemetryMiddleware())
 
     if MONITORING_AVAILABLE and os.getenv("TRACERTM_MCP_METRICS_ENABLED", "true").lower() == "true":

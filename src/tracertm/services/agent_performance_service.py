@@ -49,7 +49,9 @@ class AgentPerformanceService:
 
         # Filter by time window
         cutoff_time = datetime.now(UTC) - timedelta(hours=time_window_hours)
-        recent_events = [e for e in events if hasattr(e, "created_at") and e.created_at >= cutoff_time]
+        recent_events = [
+            e for e in events if hasattr(e, "created_at") and e.created_at >= cutoff_time
+        ]
 
         # Calculate stats
         event_types: dict[str, int] = {}
@@ -63,7 +65,9 @@ class AgentPerformanceService:
             "total_events": len(recent_events),
             "event_types": event_types,
             "time_window_hours": time_window_hours,
-            "events_per_hour": (len(recent_events) / time_window_hours if time_window_hours > 0 else 0),
+            "events_per_hour": (
+                len(recent_events) / time_window_hours if time_window_hours > 0 else 0
+            ),
         }
 
     async def get_team_performance(

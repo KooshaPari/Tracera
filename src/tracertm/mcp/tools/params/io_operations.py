@@ -94,7 +94,9 @@ def _wrap_validation(
     )
 
 
-def _validate_import_or_wrap(data: object, ctx: object | None, action: str) -> dict[str, object] | None:
+def _validate_import_or_wrap(
+    data: object, ctx: object | None, action: str
+) -> dict[str, object] | None:
     """Validate import data and return wrapped errors if invalid."""
     errors, warnings = import_cmd_module._validate_import_data(data)
     if errors:
@@ -111,7 +113,9 @@ def _handle_import_full(
     if invalid is not None:
         return invalid
     if not data.get("project") or not isinstance(data.get("items"), list):  # type: ignore[attr-defined]
-        return _wrap({"errors": ["Canonical format requires project and items"], "valid": False}, ctx, action)
+        return _wrap(
+            {"errors": ["Canonical format requires project and items"], "valid": False}, ctx, action
+        )
     import_cmd_module._import_data(data, None, "full")
     return _wrap(
         {
@@ -251,7 +255,9 @@ async def import_manage(
     data = await _get_import_data(payload)
 
     handlers = {
-        "validate": lambda: _wrap_validation(*import_cmd_module._validate_import_data(data), ctx, action),  # type: ignore[call-arg]
+        "validate": lambda: _wrap_validation(
+            *import_cmd_module._validate_import_data(data), ctx, action
+        ),  # type: ignore[call-arg]
         "full": lambda: _handle_import_full(data, ctx, action),
         "json": lambda: _handle_import_standard(data, project_name, ctx, action),  # type: ignore[arg-type]
         "yaml": lambda: _handle_import_standard(data, project_name, ctx, action),  # type: ignore[arg-type]

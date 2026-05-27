@@ -47,7 +47,9 @@ class DeviceCodeResponse(BaseModel):
     device_code: str = Field(..., description="Device verification code")
     user_code: str = Field(..., description="User-friendly code for manual entry")
     verification_uri: str = Field(..., description="URL user visits to authenticate")
-    verification_uri_complete: str = Field(..., description="Complete URL with pre-filled user code")
+    verification_uri_complete: str = Field(
+        ..., description="Complete URL with pre-filled user code"
+    )
     expires_in: int = Field(default=900, description="Seconds until device code expires")
     interval: int = Field(default=5, description="Seconds to wait between polls")
 

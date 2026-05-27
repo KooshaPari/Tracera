@@ -91,9 +91,7 @@ def init_tracing(
         # Get configuration from environment with fallbacks
         environment = environment or os.getenv("TRACING_ENVIRONMENT", "development")
         otlp_endpoint = (
-            otlp_endpoint
-            or os.getenv("PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT")
-            or "127.0.0.1:4317"
+            otlp_endpoint or os.getenv("PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT") or "127.0.0.1:4317"
         )
 
         logger.info(
@@ -186,7 +184,10 @@ def trace_method(
         @wraps(func)
         def sync_wrapper(*args: object, **kwargs: object) -> object:
             tracer = get_tracer()
-            name = span_name or f"{getattr(func, '__module__', '')}.{getattr(func, '__qualname__', repr(func))}"
+            name = (
+                span_name
+                or f"{getattr(func, '__module__', '')}.{getattr(func, '__qualname__', repr(func))}"
+            )
 
             with tracer.start_as_current_span(
                 name,
@@ -216,7 +217,10 @@ def trace_method(
         @wraps(func)
         async def async_wrapper(*args: object, **kwargs: object) -> object:
             tracer = get_tracer()
-            name = span_name or f"{getattr(func, '__module__', '')}.{getattr(func, '__qualname__', repr(func))}"
+            name = (
+                span_name
+                or f"{getattr(func, '__module__', '')}.{getattr(func, '__qualname__', repr(func))}"
+            )
 
             with tracer.start_as_current_span(
                 name,

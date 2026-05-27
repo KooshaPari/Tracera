@@ -213,7 +213,11 @@ class ExportService:
         for item in items:
             links = await self.links.get_by_source(str(item.id))
             links_list.extend([
-                {"source_id": link.source_item_id, "target_id": link.target_item_id, "type": link.link_type}
+                {
+                    "source_id": link.source_item_id,
+                    "target_id": link.target_item_id,
+                    "type": link.link_type,
+                }
                 for link in links
             ])
 

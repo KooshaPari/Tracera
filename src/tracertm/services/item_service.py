@@ -170,7 +170,9 @@ class ItemService:
         """
         return await self.items.get_by_id(item_id, project_id)
 
-    async def list_items(self, project_id: str, params: ListItemsParams | None = None) -> list[Item]:
+    async def list_items(
+        self, project_id: str, params: ListItemsParams | None = None
+    ) -> list[Item]:
         """List items in a project, optionally filtered by view and status.
 
         Functional Requirements:
@@ -184,8 +186,12 @@ class ItemService:
         """
         p = params or ListItemsParams()
         if p.view:
-            return await self.items.get_by_view(project_id, p.view, p.status, limit=p.limit, offset=p.offset)
-        return await self.items.get_by_project(project_id, status=p.status, limit=p.limit, offset=p.offset)
+            return await self.items.get_by_view(
+                project_id, p.view, p.status, limit=p.limit, offset=p.offset
+            )
+        return await self.items.get_by_project(
+            project_id, status=p.status, limit=p.limit, offset=p.offset
+        )
 
     async def update_item(
         self,
@@ -292,7 +298,9 @@ class ItemService:
         if success:
             # Log event
             await self.events.log(
-                project_id=str(item.project_id) if item else "unknown",  # Fallback if item not loaded
+                project_id=str(item.project_id)
+                if item
+                else "unknown",  # Fallback if item not loaded
                 event_type="item_deleted",
                 entity_type="item",
                 entity_id=item_id,
@@ -605,7 +613,9 @@ class ItemService:
             "errors": errors,
         }
 
-    async def _collect_related_outgoing(self, project_id: str, item_id: str, link_type: str | None) -> list[Item]:
+    async def _collect_related_outgoing(
+        self, project_id: str, item_id: str, link_type: str | None
+    ) -> list[Item]:
         """Collect items linked from item_id (outgoing)."""
         out: list[Item] = []
         links = await self.links.get_by_source(item_id)
@@ -617,7 +627,9 @@ class ItemService:
                 out.append(target)
         return out
 
-    async def _collect_related_incoming(self, project_id: str, item_id: str, link_type: str | None) -> list[Item]:
+    async def _collect_related_incoming(
+        self, project_id: str, item_id: str, link_type: str | None
+    ) -> list[Item]:
         """Collect items linking to item_id (incoming)."""
         out: list[Item] = []
         links = await self.links.get_by_target(item_id)

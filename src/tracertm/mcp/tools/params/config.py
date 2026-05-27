@@ -72,7 +72,9 @@ async def _config_manage_impl(
             msg = "key is required for config get."
             raise ToolError(msg)
         key = str(key_obj)
-        config_path = config.projects_dir / project_id / "config.yaml" if project_id else config.config_path
+        config_path = (
+            config.projects_dir / project_id / "config.yaml" if project_id else config.config_path
+        )
         if config_path.exists():
             with config_path.open() as handle:
                 stored = yaml.safe_load(handle) or {}

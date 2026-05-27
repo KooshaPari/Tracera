@@ -49,9 +49,15 @@ async def init_project(ctx: Context, progress: Any = None) -> str:
         response_type=None,
     )
     data = (
-        name_result.data if isinstance(name_result, AcceptedElicitation) and isinstance(name_result.data, dict) else {}
+        name_result.data
+        if isinstance(name_result, AcceptedElicitation) and isinstance(name_result.data, dict)
+        else {}
     )
-    project_name = data.get("value", "MyProject") if isinstance(name_result, AcceptedElicitation) else "MyProject"
+    project_name = (
+        data.get("value", "MyProject")
+        if isinstance(name_result, AcceptedElicitation)
+        else "MyProject"
+    )
 
     increment = 25 - current_progress
     if increment > 0:
@@ -75,7 +81,9 @@ async def init_project(ctx: Context, progress: Any = None) -> str:
         message=f"Project type: {['greenfield', 'brownfield']}",
         response_type=None,
     )
-    field_type = field_result.data if isinstance(field_result, AcceptedElicitation) else "greenfield"
+    field_type = (
+        field_result.data if isinstance(field_result, AcceptedElicitation) else "greenfield"
+    )
 
     increment = 75 - current_progress
     if increment > 0:
@@ -181,7 +189,9 @@ async def run_workflow(
         await progress.set_message("Complete")
 
         result_content = result.get("content", "")
-        formatted_result = result_content if isinstance(result_content, str) else f"{result_content!s}"
+        formatted_result = (
+            result_content if isinstance(result_content, str) else f"{result_content!s}"
+        )
 
     except Exception:
         increment = 25 - current_progress
@@ -288,7 +298,9 @@ async def run_phase(
                 agent_results.append(result)
             return agent_results
 
-        all_results = await asyncio.gather(*list(starmap(run_agent_workflows, agent_groups.items())))
+        all_results = await asyncio.gather(
+            *list(starmap(run_agent_workflows, agent_groups.items()))
+        )
 
         for agent_results in all_results:
             results.extend(agent_results)

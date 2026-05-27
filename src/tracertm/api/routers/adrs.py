@@ -73,7 +73,9 @@ async def get_adr_activities(
             "from_value": event.data.get("from_value") if isinstance(event.data, dict) else None,
             "to_value": event.data.get("to_value") if isinstance(event.data, dict) else None,
             "description": event.data.get("description") if isinstance(event.data, dict) else None,
-            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict) else None,
+            "performed_by": event.data.get("performed_by")
+            if isinstance(event.data, dict)
+            else None,
             "metadata": event.data if isinstance(event.data, dict) else {},
             "created_at": event.created_at,
         }

@@ -152,7 +152,9 @@ class IntegrationCredential(Base, TimestampMixin):
 
     # Authentication details (encrypted)
     encrypted_token: Mapped[str] = mapped_column(String(1024), nullable=False)
-    token_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    token_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     refresh_token: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
     # OAuth scope tracking
@@ -162,17 +164,23 @@ class IntegrationCredential(Base, TimestampMixin):
     status: Mapped[str] = mapped_column(String(50), default="active", nullable=False)
 
     # Validation tracking
-    last_validated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_validated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     validation_error: Mapped[str | None] = mapped_column(String(1000), nullable=True)
 
     # Provider-specific metadata
-    provider_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, default=dict, nullable=False)
+    provider_metadata: Mapped[dict[str, object]] = mapped_column(
+        JSONType, default=dict, nullable=False
+    )
     provider_user_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Rotation tracking
     created_by_user_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     rotated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    rotation_required_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    rotation_required_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
@@ -224,7 +232,9 @@ class IntegrationMapping(Base, TimestampMixin):
     external_url: Mapped[str] = mapped_column(String(2000), nullable=False)
 
     # Mapping metadata
-    mapping_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, default=dict, nullable=False)
+    mapping_metadata: Mapped[dict[str, object]] = mapped_column(
+        JSONType, default=dict, nullable=False
+    )
 
     # Sync configuration
     direction: Mapped[str] = mapped_column(String(50), default="bidirectional", nullable=False)
@@ -238,15 +248,23 @@ class IntegrationMapping(Base, TimestampMixin):
     consecutive_failures: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     # Conflict tracking
-    last_conflict_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    conflict_resolution_strategy: Mapped[str] = mapped_column(String(50), default="manual", nullable=False)
-    field_resolution_rules: Mapped[dict[str, object]] = mapped_column(JSONType, default=dict, nullable=False)
+    last_conflict_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    conflict_resolution_strategy: Mapped[str] = mapped_column(
+        String(50), default="manual", nullable=False
+    )
+    field_resolution_rules: Mapped[dict[str, object]] = mapped_column(
+        JSONType, default=dict, nullable=False
+    )
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
 
     # Relationships
-    credential: Mapped["IntegrationCredential"] = relationship("IntegrationCredential", back_populates="mappings")
+    credential: Mapped["IntegrationCredential"] = relationship(
+        "IntegrationCredential", back_populates="mappings"
+    )
     sync_queue_items: Mapped[list["IntegrationSyncQueue"]] = relationship(
         "IntegrationSyncQueue",
         back_populates="mapping",
@@ -317,8 +335,12 @@ class IntegrationSyncQueue(Base, TimestampMixin):
     processing_time_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Relationships
-    mapping: Mapped["IntegrationMapping"] = relationship("IntegrationMapping", back_populates="sync_queue_items")
-    sync_logs: Mapped[list["IntegrationSyncLog"]] = relationship("IntegrationSyncLog", back_populates="sync_queue_item")
+    mapping: Mapped["IntegrationMapping"] = relationship(
+        "IntegrationMapping", back_populates="sync_queue_items"
+    )
+    sync_logs: Mapped[list["IntegrationSyncLog"]] = relationship(
+        "IntegrationSyncLog", back_populates="sync_queue_item"
+    )
 
     __table_args__ = (
         UniqueConstraint("mapping_id", "idempotency_key", name="uc_idempotency"),
@@ -379,7 +401,9 @@ class IntegrationSyncLog(Base):
         "IntegrationSyncQueue",
         back_populates="sync_logs",
     )
-    mapping: Mapped["IntegrationMapping"] = relationship("IntegrationMapping", back_populates="sync_logs")
+    mapping: Mapped["IntegrationMapping"] = relationship(
+        "IntegrationMapping", back_populates="sync_logs"
+    )
 
     __table_args__ = (
         Index("ix_sync_log_mapping", "mapping_id"),
@@ -421,7 +445,9 @@ class IntegrationConflict(Base):
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Relationships
-    mapping: Mapped["IntegrationMapping"] = relationship("IntegrationMapping", back_populates="conflicts")
+    mapping: Mapped["IntegrationMapping"] = relationship(
+        "IntegrationMapping", back_populates="conflicts"
+    )
 
     __table_args__ = (
         Index("ix_integration_conflicts_mapping", "mapping_id"),
@@ -459,6 +485,8 @@ class IntegrationRateLimit(Base, TimestampMixin):
     backoff_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     __table_args__ = (
-        UniqueConstraint("integration_credential_id", "api_endpoint", name="uc_credential_endpoint"),
+        UniqueConstraint(
+            "integration_credential_id", "api_endpoint", name="uc_credential_endpoint"
+        ),
         Index("ix_rate_limits_backoff", "backoff_until"),
     )

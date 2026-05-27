@@ -87,7 +87,9 @@ async def list_test_cases(
                 "category": tc.category,
                 "automation_status": tc.automation_status,
                 "assigned_to": tc.assigned_to,
-                "last_executed_at": tc.last_executed_at.isoformat() if tc.last_executed_at else None,
+                "last_executed_at": tc.last_executed_at.isoformat()
+                if tc.last_executed_at
+                else None,
                 "last_execution_result": tc.last_execution_result,
                 "total_executions": tc.total_executions,
                 "pass_count": tc.pass_count,
@@ -230,7 +232,8 @@ async def update_test_case(
 
     if "test_steps" in updates and updates["test_steps"] is not None:
         updates["test_steps"] = [
-            step.model_dump() if hasattr(step, "model_dump") else step for step in updates["test_steps"]
+            step.model_dump() if hasattr(step, "model_dump") else step
+            for step in updates["test_steps"]
         ]
 
     if "metadata" in updates:

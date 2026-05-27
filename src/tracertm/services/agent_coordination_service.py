@@ -98,7 +98,9 @@ class AgentCoordinationService:
                 if primary_agent.last_activity_at and secondary_agent.last_activity_at:
                     # If both updated within 1 minute, potential conflict
                     primary_activity_time = datetime.fromisoformat(primary_agent.last_activity_at)
-                    secondary_activity_time = datetime.fromisoformat(secondary_agent.last_activity_at)
+                    secondary_activity_time = datetime.fromisoformat(
+                        secondary_agent.last_activity_at
+                    )
 
                     if (
                         abs((primary_activity_time - secondary_activity_time).total_seconds())
@@ -133,8 +135,12 @@ class AgentCoordinationService:
         # Apply resolution strategy
         if strategy == "last_write_wins":
             # Determine which agent wrote last
-            primary_activity_time = datetime.fromisoformat(primary_agent.last_activity_at or "1970-01-01T00:00:00")
-            secondary_activity_time = datetime.fromisoformat(secondary_agent.last_activity_at or "1970-01-01T00:00:00")
+            primary_activity_time = datetime.fromisoformat(
+                primary_agent.last_activity_at or "1970-01-01T00:00:00"
+            )
+            secondary_activity_time = datetime.fromisoformat(
+                secondary_agent.last_activity_at or "1970-01-01T00:00:00"
+            )
 
             if primary_activity_time > secondary_activity_time:
                 winner_id = primary_agent.id

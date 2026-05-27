@@ -234,8 +234,7 @@ python_files = [
     "test_*.py",
     "*_test.py",
 ]
-python_classes = [
-]
+python_classes = []
 python_functions = [
     "test_*",
 ]
@@ -265,6 +264,7 @@ filterwarnings = [
     "error",
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
+    "ignore::pytest.PytestConfigWarning",
     "ignore::pytest.PytestUnraisableExceptionWarning",
     "ignore::pytest.PytestAssertRewriteWarning",
     "ignore::RuntimeWarning",

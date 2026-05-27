@@ -94,7 +94,9 @@ class CommitLinkingService:
     ) -> dict[str, Any]:
         """Parse commit and auto-link to items."""
         # Parse commit message
-        references = await self.parse_commit_message(project_id, commit_message, commit_hash, author)
+        references = await self.parse_commit_message(
+            project_id, commit_message, commit_hash, author
+        )
 
         # Create links for found items
         for ref in references["found"]:

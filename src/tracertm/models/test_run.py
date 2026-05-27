@@ -84,8 +84,12 @@ class TestRun(Base, TimestampMixin):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Status & type
-    status: Mapped[TestRunStatus] = mapped_column(SQLEnum(TestRunStatus), nullable=False, default=TestRunStatus.PENDING)
-    run_type: Mapped[TestRunType] = mapped_column(SQLEnum(TestRunType), nullable=False, default=TestRunType.MANUAL)
+    status: Mapped[TestRunStatus] = mapped_column(
+        SQLEnum(TestRunStatus), nullable=False, default=TestRunStatus.PENDING
+    )
+    run_type: Mapped[TestRunType] = mapped_column(
+        SQLEnum(TestRunType), nullable=False, default=TestRunType.MANUAL
+    )
 
     # Environment
     environment: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -153,7 +157,9 @@ class TestResult(Base, TimestampMixin):
     __tablename__ = "test_results"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
-    run_id: Mapped[str] = mapped_column(String(36), ForeignKey("test_runs.id", ondelete="CASCADE"), nullable=False)
+    run_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("test_runs.id", ondelete="CASCADE"), nullable=False
+    )
     test_case_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("test_cases.id", ondelete="CASCADE"),
@@ -219,7 +225,9 @@ class TestRunActivity(Base):
     __tablename__ = "test_run_activities"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
-    run_id: Mapped[str] = mapped_column(String(36), ForeignKey("test_runs.id", ondelete="CASCADE"), nullable=False)
+    run_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("test_runs.id", ondelete="CASCADE"), nullable=False
+    )
     activity_type: Mapped[str] = mapped_column(String(100), nullable=False)
     from_value: Mapped[str | None] = mapped_column(Text, nullable=True)
     to_value: Mapped[str | None] = mapped_column(Text, nullable=True)

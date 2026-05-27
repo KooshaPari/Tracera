@@ -253,6 +253,8 @@ def _format_installation_response(installation: GitHubAppInstallation) -> dict:
         "target_type": installation.target_type,
         "permissions": installation.permissions,
         "repository_selection": installation.repository_selection,
-        "suspended_at": installation.suspended_at.isoformat() if installation.suspended_at else None,
+        "suspended_at": installation.suspended_at.isoformat()
+        if installation.suspended_at
+        else None,
         "created_at": installation.created_at.isoformat(),
     }

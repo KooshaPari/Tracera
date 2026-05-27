@@ -68,7 +68,9 @@ async def phase_planning_prompt(phase: int) -> list[dict[str, str]]:
     workflows = get_phase_workflows(phase)
     phase_names = ["Discovery", "Planning", "Solutioning", "Implementation"]
 
-    workflow_list = "\n".join([f"- {wf['id']} ({wf['agent']}) - {wf.get('note', '')}" for wf in workflows])
+    workflow_list = "\n".join([
+        f"- {wf['id']} ({wf['agent']}) - {wf.get('note', '')}" for wf in workflows
+    ])
 
     return [
         {

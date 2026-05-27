@@ -56,7 +56,10 @@ class ADRService:
         # Generate ADR number (simplistic implementation)
         # Ideally this should be robust against concurrency or use a sequence
         result = await self.session.execute(
-            select(ADR).where(ADR.project_id == project_id).order_by(ADR.created_at.desc()).limit(1),
+            select(ADR)
+            .where(ADR.project_id == project_id)
+            .order_by(ADR.created_at.desc())
+            .limit(1),
         )
         last_adr = result.scalar_one_or_none()
 
@@ -140,7 +143,9 @@ class ADRService:
                 event_type="updated",
                 data={
                     "description": "ADR updated",
-                    "changes": {key: {"from": before.get(key), "to": updates.get(key)} for key in updates},
+                    "changes": {
+                        key: {"from": before.get(key), "to": updates.get(key)} for key in updates
+                    },
                     "from_value": before.get("status"),
                     "to_value": updates.get("status"),
                 },

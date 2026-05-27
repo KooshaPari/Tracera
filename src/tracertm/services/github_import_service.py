@@ -109,17 +109,23 @@ class GitHubImportService:
                     item_map[item_data.get("id", item_data.get("number"))] = item.id
                     items_imported += 1
                 except (ValueError, KeyError, ConcurrencyError, OperationalError) as e:
-                    logger.warning("Failed to import item %s: %s", item_data.get("id", "unknown"), e)
+                    logger.warning(
+                        "Failed to import item %s: %s", item_data.get("id", "unknown"), e
+                    )
                     errors.append(f"Failed to import item: {e!s}")
 
             # Import links (PRs linked to issues)
             links_imported = 0
             for item_data in items_list:
                 try:
-                    links = await self._import_github_links(project_id, item_data, item_map, agent_id)
+                    links = await self._import_github_links(
+                        project_id, item_data, item_map, agent_id
+                    )
                     links_imported += len(links)
                 except (ValueError, KeyError, ConcurrencyError, OperationalError) as e:
-                    logger.warning("Failed to import links for item %s: %s", item_data.get("id", "unknown"), e)
+                    logger.warning(
+                        "Failed to import links for item %s: %s", item_data.get("id", "unknown"), e
+                    )
                     errors.append(f"Failed to import links: {e!s}")
 
         except (json.JSONDecodeError, ValueError, KeyError, OperationalError) as e:

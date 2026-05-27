@@ -217,7 +217,9 @@ async def execute_ai_turn(
                 from tracertm.agent import AgentService
 
                 agent_svc = AgentService(session_store=store)
-                sandbox_path, _ = await agent_svc.get_or_create_session_sandbox(session_id, config=None, db_session=db)
+                sandbox_path, _ = await agent_svc.get_or_create_session_sandbox(
+                    session_id, config=None, db_session=db
+                )
         except (ImportError, OSError, RuntimeError, ValueError) as e:
             logger.debug("DB session resolution failed (%s), using global store", e)
             agent_svc = get_agent_service()
@@ -248,7 +250,10 @@ async def execute_ai_turn(
         done = False
         if isinstance(response, str):
             # Conversation ends if response contains completion markers
-            done = any(marker in response.lower() for marker in ["goodbye", "task complete", "finished", "done with"])
+            done = any(
+                marker in response.lower()
+                for marker in ["goodbye", "task complete", "finished", "done with"]
+            )
 
         activity.logger.info("AI turn completed (done=%s)", done)
 
@@ -295,7 +300,9 @@ async def create_sandbox_snapshot(
     Returns:
         dict: Snapshot result with S3 key and metadata
     """
-    activity.logger.info("Creating sandbox snapshot: %s (compression=%s)", snapshot_name, compression)
+    activity.logger.info(
+        "Creating sandbox snapshot: %s (compression=%s)", snapshot_name, compression
+    )
 
     # Send heartbeat for long-running operation
     activity.heartbeat("Starting snapshot creation")
@@ -420,7 +427,9 @@ async def list_active_sessions() -> dict[str, Any]:
         from tracertm.models.agent_session import AgentSession
 
         async with get_mcp_session() as db:
-            result = await db.execute(select(AgentSession.session_id).order_by(AgentSession.updated_at.desc()))
+            result = await db.execute(
+                select(AgentSession.session_id).order_by(AgentSession.updated_at.desc())
+            )
             session_ids = [row[0] for row in result.all()]
 
         activity.logger.info("Found %s active sessions", len(session_ids))
@@ -452,7 +461,9 @@ async def cleanup_old_snapshots(
         dict: Cleanup results
     """
     await asyncio.sleep(0)
-    activity.logger.info("Cleaning up snapshots older than %s days (dry_run=%s)", retention_days, dry_run)
+    activity.logger.info(
+        "Cleaning up snapshots older than %s days (dry_run=%s)", retention_days, dry_run
+    )
 
     # Send heartbeat for long-running cleanup
     activity.heartbeat("Starting cleanup scan")

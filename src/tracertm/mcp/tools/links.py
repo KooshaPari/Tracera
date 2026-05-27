@@ -185,7 +185,9 @@ async def list_links(
         if item_id:
             resolved_id = _resolve_item_id(session, project_id, item_id)
             if resolved_id:
-                query = query.filter((Link.source_item_id == resolved_id) | (Link.target_item_id == resolved_id))
+                query = query.filter(
+                    (Link.source_item_id == resolved_id) | (Link.target_item_id == resolved_id)
+                )
             else:
                 # No matches
                 return wrap_success({"links": [], "count": 0}, "list", ctx)  # type: ignore[return-value]

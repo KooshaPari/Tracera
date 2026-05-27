@@ -303,7 +303,10 @@ def project_health(
 
         # Items without any links
         items_with_links = (
-            session.query(func.count(func.distinct(Link.source_item_id))).filter(Link.project_id == project_id).scalar()
+            session
+            .query(func.count(func.distinct(Link.source_item_id)))
+            .filter(Link.project_id == project_id)
+            .scalar()
         )
         orphan_count = total_items - (items_with_links or 0)
 

@@ -119,7 +119,9 @@ class CycleDetectionService:
                 if loop.is_running():
                     graph = {}
                 else:
-                    graph = loop.run_until_complete(self._build_dependency_graph_async(project_id, types_to_check))
+                    graph = loop.run_until_complete(
+                        self._build_dependency_graph_async(project_id, types_to_check)
+                    )
             except RuntimeError:
                 graph = asyncio.get_event_loop().run_until_complete(
                     self._build_dependency_graph_async(project_id, types_to_check),
@@ -214,7 +216,9 @@ class CycleDetectionService:
 
         return graph
 
-    async def _build_dependency_graph_async(self, project_id: str, link_types: list[str]) -> dict[str, set[str]]:
+    async def _build_dependency_graph_async(
+        self, project_id: str, link_types: list[str]
+    ) -> dict[str, set[str]]:
         """Build dependency graph from links (async version using repositories)."""
         graph: dict[str, set[str]] = {}
 
@@ -292,7 +296,9 @@ class CycleDetectionService:
 
         return cycles
 
-    def detect_missing_dependencies(self, project_id: str | uuid.UUID, link_type: str = "depends_on") -> dict[str, Any]:
+    def detect_missing_dependencies(
+        self, project_id: str | uuid.UUID, link_type: str = "depends_on"
+    ) -> dict[str, Any]:
         """Detect missing dependencies (items that reference non-existent items) (Story 4.6, FR22).
 
         Args:
@@ -353,7 +359,9 @@ class CycleDetectionService:
             "missing_dependencies": missing_deps,
         }
 
-    def detect_orphans(self, project_id: str | uuid.UUID, link_type: str | None = None) -> dict[str, Any]:
+    def detect_orphans(
+        self, project_id: str | uuid.UUID, link_type: str | None = None
+    ) -> dict[str, Any]:
         """Detect orphaned items (items with no links) (Story 4.6, FR22).
 
         Args:

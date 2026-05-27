@@ -157,7 +157,13 @@ class NATSClient:
             # Publish to JetStream
             payload = json.dumps(event).encode("utf-8")
             ack = await self._js.publish(subject, payload)
-            logger.debug("Published event %s to %s (stream=%s, seq=%s)", event_type, subject, ack.stream, ack.seq)
+            logger.debug(
+                "Published event %s to %s (stream=%s, seq=%s)",
+                event_type,
+                subject,
+                ack.stream,
+                ack.seq,
+            )
         except Exception:
             logger.exception("Failed to publish event to %s", subject)
             raise

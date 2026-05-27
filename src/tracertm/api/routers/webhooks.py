@@ -104,9 +104,15 @@ def _serialize_webhook(
                 "total_requests": webhook.total_requests,
                 "successful_requests": webhook.successful_requests,
                 "failed_requests": webhook.failed_requests,
-                "last_request_at": webhook.last_request_at.isoformat() if webhook.last_request_at else None,
-                "last_success_at": webhook.last_success_at.isoformat() if webhook.last_success_at else None,
-                "last_failure_at": webhook.last_failure_at.isoformat() if webhook.last_failure_at else None,
+                "last_request_at": webhook.last_request_at.isoformat()
+                if webhook.last_request_at
+                else None,
+                "last_success_at": webhook.last_success_at.isoformat()
+                if webhook.last_success_at
+                else None,
+                "last_failure_at": webhook.last_failure_at.isoformat()
+                if webhook.last_failure_at
+                else None,
                 "last_error_message": webhook.last_error_message,
             },
         )
@@ -294,7 +300,11 @@ async def set_webhook_status(
 
     if updated_webhook is None:
         raise HTTPException(status_code=404, detail="Webhook not found after status update")
-    return {"id": updated_webhook.id, "status": updated_webhook.status.value, "version": updated_webhook.version}
+    return {
+        "id": updated_webhook.id,
+        "status": updated_webhook.status.value,
+        "version": updated_webhook.version,
+    }
 
 
 @router.post("/{webhook_id}/regenerate-secret")
@@ -316,7 +326,11 @@ async def regenerate_webhook_secret(
 
     if updated_webhook is None:
         raise HTTPException(status_code=404, detail="Webhook not found after secret regeneration")
-    return {"id": updated_webhook.id, "webhook_secret": updated_webhook.webhook_secret, "version": updated_webhook.version}
+    return {
+        "id": updated_webhook.id,
+        "webhook_secret": updated_webhook.webhook_secret,
+        "version": updated_webhook.version,
+    }
 
 
 @router.delete("/{webhook_id}")
@@ -364,7 +378,12 @@ async def get_webhook_logs(
         limit=limit,
     )
 
-    return {"logs": [_serialize_log(log) for log in logs], "total": total, "skip": skip, "limit": limit}
+    return {
+        "logs": [_serialize_log(log) for log in logs],
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+    }
 
 
 @project_router.get("/{project_id}/webhooks/stats")
@@ -449,7 +468,9 @@ async def receive_linear_webhook(
 
     signature_header = request.headers.get("Linear-Signature", "")
     if webhook.webhook_secret:
-        expected_signature = hmac.new(webhook.webhook_secret.encode(), body, hashlib.sha256).hexdigest()
+        expected_signature = hmac.new(
+            webhook.webhook_secret.encode(), body, hashlib.sha256
+        ).hexdigest()
         if not hmac.compare_digest(signature_header, expected_signature):
             raise HTTPException(status_code=401, detail="Invalid signature")
 

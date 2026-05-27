@@ -73,7 +73,9 @@ def get_phase_workflows(phase: int) -> list[dict[str, object]]:
     if not status:
         return []
 
-    phase_key = f"phase_{phase}_" + ["discovery", "planning", "solutioning", "implementation"][phase]
+    phase_key = (
+        f"phase_{phase}_" + ["discovery", "planning", "solutioning", "implementation"][phase]
+    )
     workflow_status = status.get("workflow_status", {})
     if not isinstance(workflow_status, dict):
         return []
@@ -111,7 +113,9 @@ def get_next_pending_workflow() -> dict[str, object] | None:
             if not isinstance(wf_config, dict):
                 continue
             current_status = wf_config.get("status", "")
-            if (not isinstance(current_status, str) or not current_status.startswith("docs/")) and wf_config.get(
+            if (
+                not isinstance(current_status, str) or not current_status.startswith("docs/")
+            ) and wf_config.get(
                 "included",
                 True,
             ):
@@ -174,7 +178,9 @@ def get_status_data() -> dict[str, object]:
         "total_workflows": total_workflows,
         "completed_workflows": completed_workflows,
         "pending_workflows": len(pending_workflows),
-        "progress_percentage": round((completed_workflows / total_workflows * 100) if total_workflows > 0 else 0, 1),
+        "progress_percentage": round(
+            (completed_workflows / total_workflows * 100) if total_workflows > 0 else 0, 1
+        ),
         "next_workflow": next_workflow,
         "pending_list": pending_workflows[:5],
     }

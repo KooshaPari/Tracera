@@ -68,7 +68,11 @@ class EventSourcingService:
 
         return [
             AuditTrailEntry(
-                timestamp=(e.created_at.isoformat() if hasattr(e.created_at, "isoformat") else str(e.created_at)),
+                timestamp=(
+                    e.created_at.isoformat()
+                    if hasattr(e.created_at, "isoformat")
+                    else str(e.created_at)
+                ),
                 event_type=e.event_type,
                 entity_type=e.entity_type,
                 entity_id=e.entity_id,

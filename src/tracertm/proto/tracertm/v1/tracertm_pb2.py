@@ -27,7 +27,9 @@ _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, "tracertm.v1.tracertm_pb2", _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
     _globals["DESCRIPTOR"]._loaded_options = None
-    _globals["DESCRIPTOR"]._serialized_options = b"Z<github.com/kooshapari/tracertm-backend/pkg/proto/tracertm/v1"
+    _globals[
+        "DESCRIPTOR"
+    ]._serialized_options = b"Z<github.com/kooshapari/tracertm-backend/pkg/proto/tracertm/v1"
     _globals["_ANALYZEIMPACTRESPONSE_ITEMSBYTYPEENTRY"]._loaded_options = None
     _globals["_ANALYZEIMPACTRESPONSE_ITEMSBYTYPEENTRY"]._serialized_options = b"8\001"
     _globals["_ANALYZEIMPACTRESPONSE_ITEMSBYDEPTHENTRY"]._loaded_options = None

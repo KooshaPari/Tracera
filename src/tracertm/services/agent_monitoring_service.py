@@ -60,7 +60,9 @@ class AgentMonitoringService:
             if agent.last_activity_at:
                 try:
                     last_activity = datetime.fromisoformat(agent.last_activity_at)
-                    hours_since = (datetime.now(UTC) - last_activity.replace(tzinfo=None)).total_seconds() / 3600
+                    hours_since = (
+                        datetime.now(UTC) - last_activity.replace(tzinfo=None)
+                    ).total_seconds() / 3600
 
                     if hours_since < 1:
                         health = "healthy"

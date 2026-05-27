@@ -271,7 +271,16 @@ class CacheService:
         total_deleted = 0
 
         # Invalidate project-specific caches
-        for cache_type in ["project", "items", "links", "graph", "graph_full", "ancestors", "descendants", "impact"]:
+        for cache_type in [
+            "project",
+            "items",
+            "links",
+            "graph",
+            "graph_full",
+            "ancestors",
+            "descendants",
+            "impact",
+        ]:
             key = self._generate_key(cache_type, project_id=project_id)
             if await self.delete(key):
                 total_deleted += 1

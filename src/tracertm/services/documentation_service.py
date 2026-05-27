@@ -138,7 +138,9 @@ class DocumentationService:
                 "description": "Traceability Requirements Management API",
             },
             "paths": paths,
-            "components": {"schemas": {name: schema["schema"] for name, schema in self.schemas.items()}},
+            "components": {
+                "schemas": {name: schema["schema"] for name, schema in self.schemas.items()}
+            },
         }
 
     def generate_markdown_docs(self) -> str:

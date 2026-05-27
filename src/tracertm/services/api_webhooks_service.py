@@ -48,7 +48,9 @@ class APIWebhooksService:
             "permissions": permissions,
             "created_at": datetime.now(UTC).isoformat(),
             "expires_at": (
-                (datetime.now(UTC) + timedelta(days=expires_in_days)).isoformat() if expires_in_days else None
+                (datetime.now(UTC) + timedelta(days=expires_in_days)).isoformat()
+                if expires_in_days
+                else None
             ),
             "active": True,
         }

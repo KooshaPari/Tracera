@@ -74,8 +74,12 @@ class ConflictResolutionService:
                         "entity_type": events_list[0].entity_type,
                         "conflicting_agents": list(set(agent_ids)),
                         "event_count": len(events_list),
-                        "first_event": events_list[-1].created_at.isoformat() if events_list[-1].created_at else None,
-                        "last_event": events_list[0].created_at.isoformat() if events_list[0].created_at else None,
+                        "first_event": events_list[-1].created_at.isoformat()
+                        if events_list[-1].created_at
+                        else None,
+                        "last_event": events_list[0].created_at.isoformat()
+                        if events_list[0].created_at
+                        else None,
                     })
 
         return conflicts
@@ -96,7 +100,12 @@ class ConflictResolutionService:
         Returns:
             Resolution result dictionary
         """
-        item = self.session.query(Item).filter(Item.id == item_id, Item.project_id == project_id).first()
+        item = (
+            self.session
+            .query(Item)
+            .filter(Item.id == item_id, Item.project_id == project_id)
+            .first()
+        )
 
         if not item:
             msg = f"Item not found: {item_id}"

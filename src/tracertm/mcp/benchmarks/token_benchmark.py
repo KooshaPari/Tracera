@@ -267,10 +267,13 @@ def main() -> None:
     results["errors"] = benchmark_error_messages()
 
     # Summary
-    reduction_results = [r for r in results.values() if isinstance(r, dict) and "reduction_pct" in r]
+    reduction_results = [
+        r for r in results.values() if isinstance(r, dict) and "reduction_pct" in r
+    ]
     if reduction_results:
         sum(
-            float(r["reduction_pct"]) if isinstance(r["reduction_pct"], (int, float)) else 0 for r in reduction_results
+            float(r["reduction_pct"]) if isinstance(r["reduction_pct"], (int, float)) else 0
+            for r in reduction_results
         ) / len(reduction_results)
 
 

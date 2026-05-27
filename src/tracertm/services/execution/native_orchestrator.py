@@ -77,7 +77,9 @@ class NativeOrchestrator:
         """
         return True
 
-    async def create_workspace(self, handle_id: str | None = None, env: dict[str, str] | None = None) -> str:
+    async def create_workspace(
+        self, handle_id: str | None = None, env: dict[str, str] | None = None
+    ) -> str:
         """Create an isolated workspace directory.
 
         Args:

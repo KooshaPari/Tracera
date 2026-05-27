@@ -41,7 +41,9 @@ class LinearAppInstallationRepository:
 
     async def get_by_id(self, installation_id: str) -> LinearAppInstallation | None:
         """Get installation by ID."""
-        result = await self.db.execute(select(LinearAppInstallation).where(LinearAppInstallation.id == installation_id))
+        result = await self.db.execute(
+            select(LinearAppInstallation).where(LinearAppInstallation.id == installation_id)
+        )
         return result.scalar_one_or_none()
 
     async def get_by_workspace_id(self, workspace_id: str) -> LinearAppInstallation | None:

@@ -44,7 +44,9 @@ class Graph(Base, TimestampMixin):
     )
     graph_version: Mapped[int] = mapped_column(sa.Integer, nullable=False, default=1)
     graph_rules: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
-    graph_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+    graph_metadata: Mapped[dict[str, object]] = mapped_column(
+        JSONType, nullable=False, default=dict
+    )
 
     def __repr__(self) -> str:
         """Return string representation."""

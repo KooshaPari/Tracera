@@ -368,7 +368,9 @@ class TraceFileWatcher:
 
         logger.info("Updated project config: %s", project_name)
 
-    def _queue_for_sync(self, entity_type: str, entity_id: str, operation: str, payload: dict[str, Any]) -> None:
+    def _queue_for_sync(
+        self, entity_type: str, entity_id: str, operation: str, payload: dict[str, Any]
+    ) -> None:
         """Queue a change for remote sync.
 
         Args:
@@ -400,7 +402,9 @@ class _TraceEventHandler(FileSystemEventHandler):
         if event.is_directory:
             return
 
-        src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode("utf-8")
+        src_path = (
+            event.src_path if isinstance(event.src_path, str) else event.src_path.decode("utf-8")
+        )
         path = Path(src_path)
         if self._should_process(path):
             logger.debug("File created: %s", path)
@@ -411,7 +415,9 @@ class _TraceEventHandler(FileSystemEventHandler):
         if event.is_directory:
             return
 
-        src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode("utf-8")
+        src_path = (
+            event.src_path if isinstance(event.src_path, str) else event.src_path.decode("utf-8")
+        )
         path = Path(src_path)
         if self._should_process(path):
             logger.debug("File modified: %s", path)
@@ -422,7 +428,9 @@ class _TraceEventHandler(FileSystemEventHandler):
         if event.is_directory:
             return
 
-        src_path = event.src_path if isinstance(event.src_path, str) else event.src_path.decode("utf-8")
+        src_path = (
+            event.src_path if isinstance(event.src_path, str) else event.src_path.decode("utf-8")
+        )
         path = Path(src_path)
         if self._should_process(path):
             logger.debug("File deleted: %s", path)

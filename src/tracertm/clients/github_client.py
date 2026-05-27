@@ -227,11 +227,16 @@ class GitHubClient:
 
     @retry(
         stop=stop_after_attempt(MAX_RETRIES_DEFAULT),
-        wait=wait_exponential(multiplier=RETRY_BACKOFF_MULTIPLIER, min=RETRY_BACKOFF_MIN, max=RETRY_BACKOFF_MAX),
+        wait=wait_exponential(
+            multiplier=RETRY_BACKOFF_MULTIPLIER, min=RETRY_BACKOFF_MIN, max=RETRY_BACKOFF_MAX
+        ),
         retry=retry_if_exception(
             lambda e: (
                 isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
-                or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code >= HTTP_INTERNAL_SERVER_ERROR)
+                or (
+                    isinstance(e, httpx.HTTPStatusError)
+                    and e.response.status_code >= HTTP_INTERNAL_SERVER_ERROR
+                )
             ),
         ),
         reraise=True,
@@ -582,7 +587,9 @@ class GitHubClient:
         if params.milestone is not None:
             data["milestone"] = params.milestone
 
-        result = await self._request("PATCH", f"/repos/{owner}/{repo}/issues/{issue_number}", json=data)
+        result = await self._request(
+            "PATCH", f"/repos/{owner}/{repo}/issues/{issue_number}", json=data
+        )
         if not isinstance(result, dict):
             msg = "Expected dict response"
             raise GitHubClientError(msg)
@@ -659,7 +666,9 @@ class GitHubClient:
         if params.base is not None:
             data["base"] = params.base
 
-        result = await self._request("PATCH", f"/repos/{owner}/{repo}/pulls/{pull_number}", json=data)
+        result = await self._request(
+            "PATCH", f"/repos/{owner}/{repo}/pulls/{pull_number}", json=data
+        )
         if not isinstance(result, dict):
             msg = "Expected dict response"
             raise GitHubClientError(msg)
@@ -735,7 +744,9 @@ class GitHubClient:
 
     # ==================== PROJECTS (V2 GraphQL) ====================
 
-    async def graphql_query(self, query: str, variables: dict[str, object] | None = None) -> dict[str, object]:
+    async def graphql_query(
+        self, query: str, variables: dict[str, object] | None = None
+    ) -> dict[str, object]:
         """Execute a GraphQL query against the GitHub API."""
         client = await self._get_client()
         response = await client.post(
@@ -749,7 +760,9 @@ class GitHubClient:
             raise GitHubClientError(msg)
         return result
 
-    async def list_projects_graphql(self, owner: str, is_org: bool = True) -> list[dict[str, object]]:
+    async def list_projects_graphql(
+        self, owner: str, is_org: bool = True
+    ) -> list[dict[str, object]]:
         """List Projects v2 for an owner."""
         query = """
         query($owner: String!, $first: Int!) {
@@ -784,7 +797,9 @@ class GitHubClient:
         nodes = projects_data.get("nodes", [])
         return nodes if isinstance(nodes, list) else []
 
-    async def get_project_items(self, project_id: str, first: int = GRAPHQL_FIRST_DEFAULT) -> list[dict[str, object]]:
+    async def get_project_items(
+        self, project_id: str, first: int = GRAPHQL_FIRST_DEFAULT
+    ) -> list[dict[str, object]]:
         """Get items from a GitHub Project v2."""
         query = """
         query($projectId: ID!, $first: Int!) {

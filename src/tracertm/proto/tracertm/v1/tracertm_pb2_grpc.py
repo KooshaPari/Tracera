@@ -122,7 +122,9 @@ def add_GraphServiceServicer_to_server(servicer, server):
             response_serializer=tracertm_dot_v1_dot_tracertm__pb2.StreamGraphUpdatesResponse.SerializeToString,
         ),
     }
-    generic_handler = grpc.method_handlers_generic_handler("tracertm.v1.GraphService", rpc_method_handlers)
+    generic_handler = grpc.method_handlers_generic_handler(
+        "tracertm.v1.GraphService", rpc_method_handlers
+    )
     server.add_generic_rpc_handlers((generic_handler,))
     server.add_registered_method_handlers("tracertm.v1.GraphService", rpc_method_handlers)
 
@@ -355,7 +357,9 @@ def add_AIServiceServicer_to_server(servicer, server):
             response_serializer=tracertm_dot_v1_dot_tracertm__pb2.ExtractEntitiesResponse.SerializeToString,
         ),
     }
-    generic_handler = grpc.method_handlers_generic_handler("tracertm.v1.AIService", rpc_method_handlers)
+    generic_handler = grpc.method_handlers_generic_handler(
+        "tracertm.v1.AIService", rpc_method_handlers
+    )
     server.add_generic_rpc_handlers((generic_handler,))
     server.add_registered_method_handlers("tracertm.v1.AIService", rpc_method_handlers)
 
@@ -588,7 +592,9 @@ def add_SpecAnalyticsServiceServicer_to_server(servicer, server):
             response_serializer=tracertm_dot_v1_dot_tracertm__pb2.GetEARSPatternsResponse.SerializeToString,
         ),
     }
-    generic_handler = grpc.method_handlers_generic_handler("tracertm.v1.SpecAnalyticsService", rpc_method_handlers)
+    generic_handler = grpc.method_handlers_generic_handler(
+        "tracertm.v1.SpecAnalyticsService", rpc_method_handlers
+    )
     server.add_generic_rpc_handlers((generic_handler,))
     server.add_registered_method_handlers("tracertm.v1.SpecAnalyticsService", rpc_method_handlers)
 

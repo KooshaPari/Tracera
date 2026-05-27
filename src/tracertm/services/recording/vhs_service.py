@@ -95,7 +95,9 @@ class VHSExecutionService:
             # Execute VHS - default to native subprocess, fall back to Docker if requested
             workdir = Path(tmpdir)
             if use_docker and execution.container_id:
-                result = await self._execute_in_container(execution_id, tape_path, output_filename, workdir)
+                result = await self._execute_in_container(
+                    execution_id, tape_path, output_filename, workdir
+                )
                 # Fall back to native execution if container fails
                 if not result["success"]:
                     result = await self._execute_subprocess(tape_path, output_filename, workdir)
@@ -172,7 +174,9 @@ class VHSExecutionService:
 
         return tape
 
-    async def _execute_subprocess(self, tape_path: Path, _output_filename: str, workdir: Path) -> dict[str, Any]:
+    async def _execute_subprocess(
+        self, tape_path: Path, _output_filename: str, workdir: Path
+    ) -> dict[str, Any]:
         """Execute VHS via subprocess."""
         cmd = [self._vhs_cmd, str(tape_path)]
         try:

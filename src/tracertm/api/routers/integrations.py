@@ -199,7 +199,9 @@ async def list_credentials(
                 "scopes": c.scopes,
                 "provider_user_id": c.provider_user_id,
                 "provider_metadata": c.provider_metadata,
-                "last_validated_at": c.last_validated_at.isoformat() if c.last_validated_at else None,
+                "last_validated_at": c.last_validated_at.isoformat()
+                if c.last_validated_at
+                else None,
                 "created_at": c.created_at.isoformat() if c.created_at else None,
             }
             for c in credentials
@@ -322,8 +324,12 @@ async def list_mappings(
                 "credential_id": m.integration_credential_id,
                 "provider": m.external_system,
                 "direction": m.direction,
-                "local_item_id": m.project_id if m.tracertm_item_type == "project_root" else m.tracertm_item_id,
-                "local_item_type": "project" if m.tracertm_item_type == "project_root" else m.tracertm_item_type,
+                "local_item_id": m.project_id
+                if m.tracertm_item_type == "project_root"
+                else m.tracertm_item_id,
+                "local_item_type": "project"
+                if m.tracertm_item_type == "project_root"
+                else m.tracertm_item_type,
                 "external_id": m.external_id,
                 "external_type": m.external_system,
                 "external_url": m.external_url,
@@ -547,7 +553,9 @@ async def get_sync_status(
     encryption_key = os.environ.get("ENCRYPTION_KEY", "")
     encryption_service = EncryptionService(encryption_key) if encryption_key else None
     cred_repo = IntegrationCredentialRepository(db, encryption_service)
-    credentials = await cred_repo.get_by_project(project_id, include_global_user_id=claims.get("sub"))
+    credentials = await cred_repo.get_by_project(
+        project_id, include_global_user_id=claims.get("sub")
+    )
 
     # Get queue stats
     queue_result = await db.execute(
@@ -681,14 +689,18 @@ async def get_sync_queue(
     mapping_lookup = {}
     if items:
         mapping_ids = list({item.mapping_id for item in items})
-        result = await db.execute(select(IntegrationMapping).where(IntegrationMapping.id.in_(mapping_ids)))
+        result = await db.execute(
+            select(IntegrationMapping).where(IntegrationMapping.id.in_(mapping_ids))
+        )
         mapping_lookup = {m.id: m for m in result.scalars().all()}
 
     return {
         "items": [
             {
                 "id": item.id,
-                "provider": getattr(mapping_lookup.get(item.mapping_id), "external_system", "unknown"),
+                "provider": getattr(
+                    mapping_lookup.get(item.mapping_id), "external_system", "unknown"
+                ),
                 "event_type": item.event_type,
                 "direction": item.direction,
                 "status": item.status,
@@ -811,7 +823,9 @@ async def resolve_conflict(
         "resolved": True,
         "conflict_id": conflict_id,
         "resolution": resolution,
-        "resolved_at": resolved.resolved_at.isoformat() if resolved and resolved.resolved_at else None,
+        "resolved_at": resolved.resolved_at.isoformat()
+        if resolved and resolved.resolved_at
+        else None,
     }
 
 

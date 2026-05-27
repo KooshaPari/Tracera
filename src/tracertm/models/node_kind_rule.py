@@ -24,7 +24,9 @@ class NodeKindRule(Base, TimestampMixin):
         {"extend_existing": True},
     )
 
-    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_node_kind_rule_uuid)
+    id: Mapped[str] = mapped_column(
+        String(255), primary_key=True, default=generate_node_kind_rule_uuid
+    )
     project_id: Mapped[str] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),

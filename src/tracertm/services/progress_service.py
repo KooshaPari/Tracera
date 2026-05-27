@@ -37,7 +37,12 @@ class ProgressService:
             return 0.0
 
         # Get children
-        children = self.session.query(Item).filter(Item.parent_id == item_id, Item.deleted_at.is_(None)).all()
+        children = (
+            self.session
+            .query(Item)
+            .filter(Item.parent_id == item_id, Item.deleted_at.is_(None))
+            .all()
+        )
 
         if not children:
             # Leaf item - calculate from status
@@ -90,14 +95,19 @@ class ProgressService:
         for item_id, blocker_ids in blocked_map.items():
             item = self.session.query(Item).filter(Item.id == item_id).first()
             if item is not None:
-                blockers = [self.session.query(Item).filter(Item.id == bid).first() for bid in blocker_ids]
+                blockers = [
+                    self.session.query(Item).filter(Item.id == bid).first() for bid in blocker_ids
+                ]
                 blockers_filtered = [b for b in blockers if b is not None]
 
                 blocked_items.append({
                     "item_id": item.id,
                     "title": item.title,
                     "status": item.status,
-                    "blockers": [{"id": b.id, "title": b.title, "status": b.status} for b in blockers_filtered],
+                    "blockers": [
+                        {"id": b.id, "title": b.title, "status": b.status}
+                        for b in blockers_filtered
+                    ],
                 })
 
         return blocked_items
@@ -132,7 +142,9 @@ class ProgressService:
                 "title": item.title,
                 "status": item.status,
                 "last_updated": item.updated_at.isoformat() if item.updated_at else None,
-                "days_stalled": (datetime.now(UTC) - item.updated_at).days if item.updated_at else None,
+                "days_stalled": (datetime.now(UTC) - item.updated_at).days
+                if item.updated_at
+                else None,
             }
             for item in stalled
         ]

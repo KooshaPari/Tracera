@@ -170,7 +170,9 @@ def backup_manage(
         else:
             output_path.write_text(json.dumps(backup_data, indent=2, default=str), encoding="utf-8")
 
-        return _wrap({"output": str(output_path), "tables": len(backup_data["tables"])}, ctx, action)  # type: ignore[arg-type]
+        return _wrap(
+            {"output": str(output_path), "tables": len(backup_data["tables"])}, ctx, action
+        )  # type: ignore[arg-type]
 
     if action == "restore":
         path_obj = payload.get("path")

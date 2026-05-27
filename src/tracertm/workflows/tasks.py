@@ -80,7 +80,9 @@ async def graph_snapshot_task(
 ) -> dict[str, Any]:
     """Graph snapshot task."""
     async with await _get_async_session() as session:
-        await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("running", started=True))
+        await _update_workflow_run(
+            session, workflow_run_id, WorkflowUpdateConfig("running", started=True)
+        )
         try:
             service = GraphSnapshotService(session)
             snapshot = await service.create_snapshot(
@@ -111,10 +113,14 @@ async def graph_snapshot_task(
             return result
 
 
-async def graph_validation_task(project_id: str, graph_id: str, workflow_run_id: str | None = None) -> dict[str, Any]:
+async def graph_validation_task(
+    project_id: str, graph_id: str, workflow_run_id: str | None = None
+) -> dict[str, Any]:
     """Graph validation task."""
     async with await _get_async_session() as session:
-        await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("running", started=True))
+        await _update_workflow_run(
+            session, workflow_run_id, WorkflowUpdateConfig("running", started=True)
+        )
         try:
             service = GraphValidationService(session)
             result = await service.validate_graph(project_id=project_id, graph_id=graph_id)
@@ -137,7 +143,9 @@ async def graph_validation_task(project_id: str, graph_id: str, workflow_run_id:
 async def graph_export_task(project_id: str, workflow_run_id: str | None = None) -> dict[str, Any]:
     """Graph export task."""
     async with await _get_async_session() as session:
-        await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig(status="running", started=True))
+        await _update_workflow_run(
+            session, workflow_run_id, WorkflowUpdateConfig(status="running", started=True)
+        )
         try:
             service = ExportService(session)
             export = await service.export_to_json(project_id)
@@ -167,7 +175,9 @@ async def graph_diff_task(
 ) -> dict[str, Any]:
     """Graph diff task."""
     async with await _get_async_session() as session:
-        await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig(status="running", started=True))
+        await _update_workflow_run(
+            session, workflow_run_id, WorkflowUpdateConfig(status="running", started=True)
+        )
         try:
             service = GraphSnapshotService(session)
             result = await service.diff_snapshots(
@@ -192,10 +202,14 @@ async def graph_diff_task(
             return result
 
 
-async def integration_sync_task(limit: int = 50, workflow_run_id: str | None = None) -> dict[str, Any]:
+async def integration_sync_task(
+    limit: int = 50, workflow_run_id: str | None = None
+) -> dict[str, Any]:
     """Integration sync task."""
     async with await _get_async_session() as session:
-        await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig(status="running", started=True))
+        await _update_workflow_run(
+            session, workflow_run_id, WorkflowUpdateConfig(status="running", started=True)
+        )
         try:
             processor = IntegrationSyncProcessor(session)
             result = await processor.process_pending(limit=limit)
@@ -216,10 +230,14 @@ async def integration_sync_task(limit: int = 50, workflow_run_id: str | None = N
             return result
 
 
-async def integration_retry_task(limit: int = 50, workflow_run_id: str | None = None) -> dict[str, Any]:
+async def integration_retry_task(
+    limit: int = 50, workflow_run_id: str | None = None
+) -> dict[str, Any]:
     """Integration retry task."""
     async with await _get_async_session() as session:
-        await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("running", started=True))
+        await _update_workflow_run(
+            session, workflow_run_id, WorkflowUpdateConfig("running", started=True)
+        )
         try:
             processor = IntegrationSyncProcessor(session)
             result = await processor.process_retryable(limit=limit)

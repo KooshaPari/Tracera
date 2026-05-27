@@ -127,7 +127,9 @@ if TEXTUAL_AVAILABLE:
                 self.exit(message="No database configured. Run 'rtm config init' first.")
                 return
 
-            self.db = DatabaseConnection(str(database_url)) if database_url else DatabaseConnection("")
+            self.db = (
+                DatabaseConnection(str(database_url)) if database_url else DatabaseConnection("")
+            )
             self.db.connect()
 
         def load_project(self) -> None:

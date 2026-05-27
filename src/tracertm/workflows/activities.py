@@ -30,7 +30,12 @@ async def index_repository(repository_url: str, branch: str = "main") -> dict[st
     """
     await asyncio.sleep(0)
     activity_info = activity.info()
-    logger.info("Activity %s: Indexing repository %s (branch: %s)", activity_info.activity_id, repository_url, branch)
+    logger.info(
+        "Activity %s: Indexing repository %s (branch: %s)",
+        activity_info.activity_id,
+        repository_url,
+        branch,
+    )
 
     # Placeholder implementation - replace with actual indexing logic
     return {
@@ -94,7 +99,12 @@ async def create_graph_snapshot(
     activity_info = activity.info()
     workflow_run_id = activity_info.workflow_run_id
 
-    logger.info("Activity %s: Creating graph snapshot for %s/%s", activity_info.activity_id, project_id, graph_id)
+    logger.info(
+        "Activity %s: Creating graph snapshot for %s/%s",
+        activity_info.activity_id,
+        project_id,
+        graph_id,
+    )
 
     return await tasks.graph_snapshot_task(
         project_id=project_id,
@@ -119,7 +129,9 @@ async def validate_graph(project_id: str, graph_id: str) -> dict[str, Any]:
     activity_info = activity.info()
     workflow_run_id = activity_info.workflow_run_id
 
-    logger.info("Activity %s: Validating graph %s/%s", activity_info.activity_id, project_id, graph_id)
+    logger.info(
+        "Activity %s: Validating graph %s/%s", activity_info.activity_id, project_id, graph_id
+    )
 
     return await tasks.graph_validation_task(
         project_id=project_id,
@@ -141,7 +153,9 @@ async def export_graph(project_id: str) -> dict[str, Any]:
     activity_info = activity.info()
     workflow_run_id = activity_info.workflow_run_id
 
-    logger.info("Activity %s: Exporting graph for project %s", activity_info.activity_id, project_id)
+    logger.info(
+        "Activity %s: Exporting graph for project %s", activity_info.activity_id, project_id
+    )
 
     return await tasks.graph_export_task(
         project_id=project_id,
@@ -201,7 +215,9 @@ async def sync_integrations(limit: int = 50) -> dict[str, Any]:
     activity_info = activity.info()
     workflow_run_id = activity_info.workflow_run_id
 
-    logger.info("Activity %s: Processing %s pending integration syncs", activity_info.activity_id, limit)
+    logger.info(
+        "Activity %s: Processing %s pending integration syncs", activity_info.activity_id, limit
+    )
 
     return await tasks.integration_sync_task(
         limit=limit,
@@ -222,7 +238,9 @@ async def retry_integrations(limit: int = 50) -> dict[str, Any]:
     activity_info = activity.info()
     workflow_run_id = activity_info.workflow_run_id
 
-    logger.info("Activity %s: Retrying %s failed integration syncs", activity_info.activity_id, limit)
+    logger.info(
+        "Activity %s: Retrying %s failed integration syncs", activity_info.activity_id, limit
+    )
 
     return await tasks.integration_retry_task(
         limit=limit,
@@ -334,7 +352,9 @@ async def run_agent_turn(
                     cache_service=None,
                 )
                 agent_svc = AgentService(session_store=store)
-                path, _ = await agent_svc.get_or_create_session_sandbox(session_id, config=None, db_session=db)
+                path, _ = await agent_svc.get_or_create_session_sandbox(
+                    session_id, config=None, db_session=db
+                )
                 # path set; commit happens on context exit
         except (ImportError, OSError, RuntimeError, ValueError) as e:
             logger.debug("Agent turn: DB session resolution skipped (%s), using global store", e)

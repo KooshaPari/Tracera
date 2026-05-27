@@ -108,7 +108,9 @@ class Problem(Base, TimestampMixin):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Lifecycle Status
-    status: Mapped[str] = mapped_column(String(50), nullable=False, default=ProblemStatus.OPEN.value, index=True)
+    status: Mapped[str] = mapped_column(
+        String(50), nullable=False, default=ProblemStatus.OPEN.value, index=True
+    )
     resolution_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     # Classification
@@ -117,9 +119,15 @@ class Problem(Base, TimestampMixin):
     tags: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True)
 
     # Impact Assessment
-    impact_level: Mapped[str] = mapped_column(String(20), nullable=False, default=ImpactLevel.MEDIUM.value, index=True)
-    urgency: Mapped[str] = mapped_column(String(20), nullable=False, default=ImpactLevel.MEDIUM.value)
-    priority: Mapped[str] = mapped_column(String(20), nullable=False, default=ImpactLevel.MEDIUM.value, index=True)
+    impact_level: Mapped[str] = mapped_column(
+        String(20), nullable=False, default=ImpactLevel.MEDIUM.value, index=True
+    )
+    urgency: Mapped[str] = mapped_column(
+        String(20), nullable=False, default=ImpactLevel.MEDIUM.value
+    )
+    priority: Mapped[str] = mapped_column(
+        String(20), nullable=False, default=ImpactLevel.MEDIUM.value, index=True
+    )
     affected_systems: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True)
     affected_users_estimated: Mapped[int | None] = mapped_column(Integer, nullable=True)
     business_impact_description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -134,7 +142,9 @@ class Problem(Base, TimestampMixin):
     root_cause_description: Mapped[str | None] = mapped_column(Text, nullable=True)
     root_cause_category: Mapped[str | None] = mapped_column(String(50), nullable=True)
     root_cause_confidence: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    rca_completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    rca_completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     rca_completed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Solutions & Workarounds
@@ -144,7 +154,9 @@ class Problem(Base, TimestampMixin):
 
     permanent_fix_available: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     permanent_fix_description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    permanent_fix_implemented_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    permanent_fix_implemented_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     permanent_fix_change_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Known Error Integration
@@ -162,16 +174,22 @@ class Problem(Base, TimestampMixin):
     closure_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Target dates
-    target_resolution_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    target_resolution_date: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     # Flexible metadata
-    problem_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+    problem_metadata: Mapped[dict[str, object]] = mapped_column(
+        JSONType, nullable=False, default=dict
+    )
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     __mapper_args__ = {  # noqa: RUF012
         "version_id_col": version,
@@ -233,7 +251,9 @@ class ProblemActivity(Base, TimestampMixin):
     to_value: Mapped[str | None] = mapped_column(String(255), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     performed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    activity_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+    activity_metadata: Mapped[dict[str, object]] = mapped_column(
+        JSONType, nullable=False, default=dict
+    )
 
     def __repr__(self) -> str:
         """Return string representation."""

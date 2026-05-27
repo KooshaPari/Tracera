@@ -158,7 +158,9 @@ class AutoLinkService:
         message_lower = commit_message.lower()
 
         # Check for test-related keywords
-        if any(keyword in message_lower for keyword in ["test", "testing", "spec", "specification"]):
+        if any(
+            keyword in message_lower for keyword in ["test", "testing", "spec", "specification"]
+        ):
             return "tests"
 
         # Check for implementation keywords

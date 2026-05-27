@@ -133,7 +133,9 @@ class DockerOrchestrator:
 
     async def stop(self, container_id: str, timeout: int = 30) -> None:
         """Stop a running container (SIGTERM then SIGKILL)."""
-        code, _, stderr = await self._run("stop", "-t", str(timeout), container_id, timeout=timeout + 5)
+        code, _, stderr = await self._run(
+            "stop", "-t", str(timeout), container_id, timeout=timeout + 5
+        )
         if code != 0 and "No such container" not in stderr:
             msg = f"Docker stop failed: {stderr.strip()}"
             raise DockerOrchestratorError(msg)
@@ -160,7 +162,9 @@ class DockerOrchestrator:
         """Copy a file/dir from container to host (docker cp)."""
         host_path = Path(host_path).resolve()
         host_path.parent.mkdir(parents=True, exist_ok=True)
-        code, _, stderr = await self._run("cp", f"{container_id}:{container_path}", str(host_path), timeout=timeout)
+        code, _, stderr = await self._run(
+            "cp", f"{container_id}:{container_path}", str(host_path), timeout=timeout
+        )
         if code != 0:
             msg = f"Docker cp failed: {stderr.strip()}"
             raise DockerOrchestratorError(msg)

@@ -43,7 +43,9 @@ class AdvancedTraceabilityEnhancementsService:
             "items_in_cycles": cycles,
         }
 
-    def _has_cycle(self, item_id: str, visited: set[Any], rec_stack: set[Any], items: list[object]) -> bool:
+    def _has_cycle(
+        self, item_id: str, visited: set[Any], rec_stack: set[Any], items: list[object]
+    ) -> bool:
         """Check if item has cycle using DFS."""
         visited.add(item_id)
         rec_stack.add(item_id)
@@ -177,7 +179,9 @@ class AdvancedTraceabilityEnhancementsService:
                     if isinstance(row["targets"], list):
                         row["targets"].append({
                             "target_id": target_id,
-                            "link_type": (link.link_type if hasattr(link, "link_type") else "unknown"),
+                            "link_type": (
+                                link.link_type if hasattr(link, "link_type") else "unknown"
+                            ),
                         })
 
             matrix.append(row)

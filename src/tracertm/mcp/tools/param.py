@@ -62,7 +62,9 @@ def _list_ingestable_paths(dir_path: str, *, recursive: bool) -> list[tuple[str,
         raise ToolError(msg)
     patterns = {".md", ".mdx", ".yaml", ".yml"}
     files = directory.rglob("*") if recursive else directory.iterdir()
-    return [(str(p), p.suffix.lower()) for p in files if p.is_file() and p.suffix.lower() in patterns]
+    return [
+        (str(p), p.suffix.lower()) for p in files if p.is_file() and p.suffix.lower() in patterns
+    ]
 
 
 def _backup_write(output_path_str: str, backup_data: dict[str, Any], *, compress: bool) -> None:
@@ -833,7 +835,9 @@ async def _config_manage_impl(
         if not key:
             msg = "key is required for config get."
             raise ToolError(msg)
-        config_path = config.projects_dir / project_id / "config.yaml" if project_id else config.config_path
+        config_path = (
+            config.projects_dir / project_id / "config.yaml" if project_id else config.config_path
+        )
         if config_path.exists():
             with config_path.open() as handle:
                 stored = yaml.safe_load(handle) or {}
@@ -1111,7 +1115,9 @@ async def ingest_manage(
             result = service.ingest_yaml(file_path, project_id, view, dry_run, validate)
         elif action == "directory":
             recursive = bool(payload.get("recursive", True))
-            paths_suffixes = await asyncio.to_thread(_list_ingestable_paths, file_path, recursive=recursive)
+            paths_suffixes = await asyncio.to_thread(
+                _list_ingestable_paths, file_path, recursive=recursive
+            )
             results = []
             for path_str, suffix in paths_suffixes:
                 if suffix in {".md", ".markdown"}:
@@ -1419,7 +1425,9 @@ async def agents_manage(
                             "event_type": event.event_type,
                             "entity_type": event.entity_type,
                             "entity_id": event.entity_id,
-                            "created_at": event.created_at.isoformat() if event.created_at else None,
+                            "created_at": event.created_at.isoformat()
+                            if event.created_at
+                            else None,
                             "data": event.data,
                         }
                         for event in events
@@ -1431,7 +1439,9 @@ async def agents_manage(
 
         if action == "metrics":
             agent_id = payload.get("agent_id")
-            since_date = _parse_since(payload.get("since")) or datetime.now(UTC) - timedelta(hours=24)
+            since_date = _parse_since(payload.get("since")) or datetime.now(UTC) - timedelta(
+                hours=24
+            )
             query = session.query(Event).filter(
                 Event.project_id == project_id,
                 Event.created_at >= since_date,
@@ -1439,7 +1449,9 @@ async def agents_manage(
             if agent_id:
                 agent_ids = [agent_id]
             else:
-                agent_ids = [a.id for a in session.query(Agent).filter(Agent.project_id == project_id).all()]
+                agent_ids = [
+                    a.id for a in session.query(Agent).filter(Agent.project_id == project_id).all()
+                ]
 
             metrics_list = []
             for aid in agent_ids:
@@ -1509,7 +1521,9 @@ async def agents_manage(
                 if agent.last_activity_at:
                     try:
                         last_activity = datetime.fromisoformat(agent.last_activity_at)
-                        hours_since = (datetime.now(UTC) - last_activity.replace(tzinfo=None)).total_seconds() / 3600
+                        hours_since = (
+                            datetime.now(UTC) - last_activity.replace(tzinfo=None)
+                        ).total_seconds() / 3600
                         if hours_since < 1:
                             health = "healthy"
                         elif hours_since < HOURS_IDLE_THRESHOLD:
@@ -1561,7 +1575,12 @@ async def progress_manage(
             item_id = payload.get("item_id")
             view = payload.get("view")
             if item_id:
-                item = session.query(Item).filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id).first()
+                item = (
+                    session
+                    .query(Item)
+                    .filter(Item.id.like(f"{item_id}%"), Item.project_id == project_id)
+                    .first()
+                )
                 if not item:
                     msg = f"Item not found: {item_id}"
                     raise ToolError(msg)
@@ -1588,16 +1607,25 @@ async def progress_manage(
                     .all()
                 )
                 avg_completion = (
-                    sum(service.calculate_completion(str(item.id)) for item in items) / len(items) if items else 0
+                    sum(service.calculate_completion(str(item.id)) for item in items) / len(items)
+                    if items
+                    else 0
                 )
                 return _wrap(
                     {"view": view, "items": len(items), "average_completion": avg_completion},
                     ctx,
                     action,
                 )
-            items = session.query(Item).filter(Item.project_id == project_id, Item.deleted_at.is_(None)).all()
+            items = (
+                session
+                .query(Item)
+                .filter(Item.project_id == project_id, Item.deleted_at.is_(None))
+                .all()
+            )
             avg_completion = (
-                sum(service.calculate_completion(str(item.id)) for item in items) / len(items) if items else 0
+                sum(service.calculate_completion(str(item.id)) for item in items) / len(items)
+                if items
+                else 0
             )
             return _wrap({"items": len(items), "average_completion": avg_completion}, ctx, action)
 
@@ -2078,7 +2106,9 @@ async def design_manage(
         components_config = design_module._load_components_config(trace_dir)
         components_list = components_config.get("components", [])
         target_components = (
-            components_list if all_components else [c for c in components_list if c.get("name") == component]
+            components_list
+            if all_components
+            else [c for c in components_list if c.get("name") == component]
         )
         generated = []
         cwd = Path.cwd()
@@ -2115,7 +2145,9 @@ async def design_manage(
             raise ToolError(msg)
         components_list = components_config.get("components", [])
         target_components = (
-            components_list if all_components else [c for c in components_list if c.get("name") == component]
+            components_list
+            if all_components
+            else [c for c in components_list if c.get("name") == component]
         )
         cwd = Path.cwd()
         exported = []

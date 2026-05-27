@@ -93,9 +93,13 @@ class TestCoverage(Base, TimestampMixin):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Verification tracking
-    last_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     verified_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    last_test_result: Mapped[str | None] = mapped_column(String(50), nullable=True)  # passed/failed/etc
+    last_test_result: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )  # passed/failed/etc
     last_tested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Personnel

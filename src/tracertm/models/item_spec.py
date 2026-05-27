@@ -281,21 +281,31 @@ class RequirementSpec(Base, TimestampMixin):
     )
 
     # Requirement Classification
-    requirement_type: Mapped[str] = mapped_column(String(50), nullable=False, default=RequirementType.FUNCTIONAL.value)
-    constraint_type: Mapped[str] = mapped_column(String(50), nullable=False, default=ConstraintType.HARD.value)
+    requirement_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, default=RequirementType.FUNCTIONAL.value
+    )
+    constraint_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, default=ConstraintType.HARD.value
+    )
 
     # Requirement Content
     objective: Mapped[str | None] = mapped_column(Text, nullable=True)
-    acceptance_criteria: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True, default=list)
+    acceptance_criteria: Mapped[list[str] | None] = mapped_column(
+        JSONType, nullable=True, default=list
+    )
     rationale: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Risk and Priority
-    risk_level: Mapped[str | None] = mapped_column(String(50), nullable=True, default=RiskLevel.MEDIUM.value)
+    risk_level: Mapped[str | None] = mapped_column(
+        String(50), nullable=True, default=RiskLevel.MEDIUM.value
+    )
     business_value: Mapped[float | None] = mapped_column(Float, nullable=True)
     time_criticality: Mapped[float | None] = mapped_column(Float, nullable=True)
     risk_reduction: Mapped[float | None] = mapped_column(Float, nullable=True)
     wsjf_score: Mapped[float | None] = mapped_column(Float, nullable=True)
-    complexity_estimate: Mapped[str | None] = mapped_column(String(10), nullable=True)  # XS, S, M, L, XL
+    complexity_estimate: Mapped[str | None] = mapped_column(
+        String(10), nullable=True
+    )  # XS, S, M, L, XL
 
     # Quality Metrics
     quality_scores: Mapped[dict[str, float]] = mapped_column(JSONType, nullable=False, default=dict)
@@ -318,10 +328,14 @@ class RequirementSpec(Base, TimestampMixin):
     )
     verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     verified_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    verification_evidence: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+    verification_evidence: Mapped[dict[str, object]] = mapped_column(
+        JSONType, nullable=False, default=dict
+    )
 
     # Dependencies and Relations
-    depends_on: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)  # Item IDs
+    depends_on: Mapped[list[str]] = mapped_column(
+        JSONType, nullable=False, default=list
+    )  # Item IDs
     related_requirements: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)
 
     # =========================================================================
@@ -329,19 +343,31 @@ class RequirementSpec(Base, TimestampMixin):
     # =========================================================================
 
     # Content Addressing (IPFS-style)
-    content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)  # SHA-256 hash of content
+    content_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, index=True
+    )  # SHA-256 hash of content
     content_cid: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
         index=True,
     )  # IPFS-style Content Identifier
-    merkle_root: Mapped[str | None] = mapped_column(String(64), nullable=True)  # For baseline verification
-    version_chain_head: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Latest version hash
+    merkle_root: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # For baseline verification
+    version_chain_head: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Latest version hash
 
     # Audit Trail (Blockchain-style)
-    created_by_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Creator signature
-    previous_version_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Blockchain-style linking
-    digital_signature: Mapped[str | None] = mapped_column(String(512), nullable=True)  # Optional signing
+    created_by_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Creator signature
+    previous_version_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Blockchain-style linking
+    digital_signature: Mapped[str | None] = mapped_column(
+        String(512), nullable=True
+    )  # Optional signing
 
     # =========================================================================
     # EARS (Easy Approach to Requirements Syntax) Classification
@@ -374,7 +400,9 @@ class RequirementSpec(Base, TimestampMixin):
         JSONType,
         nullable=True,
     )  # Z3-style constraints
-    invariants: Mapped[list[dict[str, object]]] = mapped_column(JSONType, nullable=False, default=list)
+    invariants: Mapped[list[dict[str, object]]] = mapped_column(
+        JSONType, nullable=False, default=list
+    )
 
     # =========================================================================
     # WSJF/RICE Prioritization
@@ -384,7 +412,9 @@ class RequirementSpec(Base, TimestampMixin):
     rice_impact: Mapped[int | None] = mapped_column(Integer, nullable=True)
     rice_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     rice_effort: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    moscow_priority: Mapped[str | None] = mapped_column(String(20), nullable=True)  # must, should, could, wont
+    moscow_priority: Mapped[str | None] = mapped_column(
+        String(20), nullable=True
+    )  # must, should, could, wont
 
     # Flexible metadata
     spec_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
@@ -393,7 +423,9 @@ class RequirementSpec(Base, TimestampMixin):
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     __mapper_args__ = {  # noqa: RUF012
         "version_id_col": version,
@@ -462,7 +494,9 @@ class TestSpec(Base, TimestampMixin):
     last_run_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Run History (keep last 50)
-    run_history: Mapped[list[dict[str, object]]] = mapped_column(JSONType, nullable=False, default=list)
+    run_history: Mapped[list[dict[str, object]]] = mapped_column(
+        JSONType, nullable=False, default=list
+    )
 
     # Flakiness Metrics
     flakiness_score: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -474,7 +508,9 @@ class TestSpec(Base, TimestampMixin):
     p50_duration_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
     p95_duration_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
     p99_duration_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
-    duration_trend: Mapped[str | None] = mapped_column(String(50), nullable=True)  # increasing, decreasing, stable
+    duration_trend: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )  # increasing, decreasing, stable
 
     # Quarantine
     is_quarantined: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
@@ -484,47 +520,77 @@ class TestSpec(Base, TimestampMixin):
     # Coverage and Dependencies
     code_coverage_percentage: Mapped[float | None] = mapped_column(Float, nullable=True)
     required_for_release: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    depends_on_tests: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)  # Test item IDs
+    depends_on_tests: Mapped[list[str]] = mapped_column(
+        JSONType, nullable=False, default=list
+    )  # Test item IDs
 
     # =========================================================================
     # BLOCKCHAIN/NFT-LIKE FIELDS - Content Addressing & Audit Trail
     # =========================================================================
 
     # Content Addressing (IPFS-style)
-    content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)  # SHA-256 hash of content
+    content_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, index=True
+    )  # SHA-256 hash of content
     content_cid: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
         index=True,
     )  # IPFS-style Content Identifier
-    merkle_root: Mapped[str | None] = mapped_column(String(64), nullable=True)  # For baseline verification
-    version_chain_head: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Latest version hash
+    merkle_root: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # For baseline verification
+    version_chain_head: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Latest version hash
 
     # Audit Trail (Blockchain-style)
-    created_by_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Creator signature
-    previous_version_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Blockchain-style linking
-    digital_signature: Mapped[str | None] = mapped_column(String(512), nullable=True)  # Optional signing
+    created_by_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Creator signature
+    previous_version_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Blockchain-style linking
+    digital_signature: Mapped[str | None] = mapped_column(
+        String(512), nullable=True
+    )  # Optional signing
 
     # =========================================================================
     # META-STYLE FLAKINESS DETECTION
     # =========================================================================
-    flakiness_probability: Mapped[float | None] = mapped_column(Float, nullable=True)  # Bayesian probability 0-1
-    flakiness_entropy: Mapped[float | None] = mapped_column(Float, nullable=True)  # Shannon entropy of results
-    flakiness_pattern: Mapped[str | None] = mapped_column(String(50), nullable=True)  # timing, async, environment, etc.
+    flakiness_probability: Mapped[float | None] = mapped_column(
+        Float, nullable=True
+    )  # Bayesian probability 0-1
+    flakiness_entropy: Mapped[float | None] = mapped_column(
+        Float, nullable=True
+    )  # Shannon entropy of results
+    flakiness_pattern: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )  # timing, async, environment, etc.
     quarantine_recommended: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    flakiness_contributing_factors: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)
+    flakiness_contributing_factors: Mapped[list[str]] = mapped_column(
+        JSONType, nullable=False, default=list
+    )
 
     # =========================================================================
     # TEST ORACLE PATTERNS
     # =========================================================================
-    oracle_type: Mapped[str | None] = mapped_column(String(50), nullable=True)  # assertion, golden, metamorphic, etc.
-    metamorphic_relations: Mapped[list[dict[str, object]] | None] = mapped_column(JSONType, nullable=True)
+    oracle_type: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )  # assertion, golden, metamorphic, etc.
+    metamorphic_relations: Mapped[list[dict[str, object]] | None] = mapped_column(
+        JSONType, nullable=True
+    )
 
     # =========================================================================
     # COVERAGE CLASSIFICATION
     # =========================================================================
-    coverage_type: Mapped[str | None] = mapped_column(String(50), nullable=True)  # statement, branch, MC/DC, etc.
-    safety_level: Mapped[str | None] = mapped_column(String(10), nullable=True)  # DO-178C: DAL-A/B/C/D/E
+    coverage_type: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )  # statement, branch, MC/DC, etc.
+    safety_level: Mapped[str | None] = mapped_column(
+        String(10), nullable=True
+    )  # DO-178C: DAL-A/B/C/D/E
     branch_coverage: Mapped[float | None] = mapped_column(Float, nullable=True)
     mcdc_coverage: Mapped[float | None] = mapped_column(Float, nullable=True)
     mutation_score: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -536,7 +602,9 @@ class TestSpec(Base, TimestampMixin):
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     __mapper_args__ = {  # noqa: RUF012
         "version_id_col": version,
@@ -584,7 +652,9 @@ class EpicSpec(Base, TimestampMixin):
     )
 
     # Epic Classification
-    epic_type: Mapped[str] = mapped_column(String(50), nullable=False, default=EpicType.FEATURE.value)
+    epic_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, default=EpicType.FEATURE.value
+    )
     status: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
@@ -609,13 +679,21 @@ class EpicSpec(Base, TimestampMixin):
     defect_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # Timeline
-    planned_start_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    planned_end_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    actual_start_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    planned_start_date: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    planned_end_date: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    actual_start_date: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     actual_end_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Dependencies
-    depends_on_epics: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)  # Epic item IDs
+    depends_on_epics: Mapped[list[str]] = mapped_column(
+        JSONType, nullable=False, default=list
+    )  # Epic item IDs
     related_features: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)
 
     # =========================================================================
@@ -623,19 +701,31 @@ class EpicSpec(Base, TimestampMixin):
     # =========================================================================
 
     # Content Addressing (IPFS-style)
-    content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)  # SHA-256 hash of content
+    content_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, index=True
+    )  # SHA-256 hash of content
     content_cid: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
         index=True,
     )  # IPFS-style Content Identifier
-    merkle_root: Mapped[str | None] = mapped_column(String(64), nullable=True)  # For baseline verification
-    version_chain_head: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Latest version hash
+    merkle_root: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # For baseline verification
+    version_chain_head: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Latest version hash
 
     # Audit Trail (Blockchain-style)
-    created_by_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Creator signature
-    previous_version_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Blockchain-style linking
-    digital_signature: Mapped[str | None] = mapped_column(String(512), nullable=True)  # Optional signing
+    created_by_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Creator signature
+    previous_version_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Blockchain-style linking
+    digital_signature: Mapped[str | None] = mapped_column(
+        String(512), nullable=True
+    )  # Optional signing
     change_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # =========================================================================
@@ -653,7 +743,9 @@ class EpicSpec(Base, TimestampMixin):
     rice_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     rice_effort: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    moscow_priority: Mapped[str | None] = mapped_column(String(20), nullable=True)  # must, should, could, wont
+    moscow_priority: Mapped[str | None] = mapped_column(
+        String(20), nullable=True
+    )  # must, should, could, wont
 
     # Flexible metadata
     spec_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
@@ -662,7 +754,9 @@ class EpicSpec(Base, TimestampMixin):
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     __mapper_args__ = {  # noqa: RUF012
         "version_id_col": version,
@@ -718,7 +812,9 @@ class UserStorySpec(Base, TimestampMixin):
     # Story Details
     business_value: Mapped[str | None] = mapped_column(Text, nullable=True)
     acceptance_criteria: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)
-    acceptance_test_scenarios: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)
+    acceptance_test_scenarios: Mapped[list[str]] = mapped_column(
+        JSONType, nullable=False, default=list
+    )
 
     # Estimation
     story_points: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -743,7 +839,9 @@ class UserStorySpec(Base, TimestampMixin):
     )
 
     # Dependencies
-    depends_on_stories: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)  # Story item IDs
+    depends_on_stories: Mapped[list[str]] = mapped_column(
+        JSONType, nullable=False, default=list
+    )  # Story item IDs
     related_stories: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)
 
     # Timeline
@@ -756,19 +854,31 @@ class UserStorySpec(Base, TimestampMixin):
     # =========================================================================
 
     # Content Addressing (IPFS-style)
-    content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)  # SHA-256 hash of content
+    content_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, index=True
+    )  # SHA-256 hash of content
     content_cid: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
         index=True,
     )  # IPFS-style Content Identifier
-    merkle_root: Mapped[str | None] = mapped_column(String(64), nullable=True)  # For baseline verification
-    version_chain_head: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Latest version hash
+    merkle_root: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # For baseline verification
+    version_chain_head: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Latest version hash
 
     # Audit Trail (Blockchain-style)
-    created_by_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Creator signature
-    previous_version_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Blockchain-style linking
-    digital_signature: Mapped[str | None] = mapped_column(String(512), nullable=True)  # Optional signing
+    created_by_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Creator signature
+    previous_version_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Blockchain-style linking
+    digital_signature: Mapped[str | None] = mapped_column(
+        String(512), nullable=True
+    )  # Optional signing
     change_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # =========================================================================
@@ -785,7 +895,9 @@ class UserStorySpec(Base, TimestampMixin):
     rice_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     rice_effort: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    moscow_priority: Mapped[str | None] = mapped_column(String(20), nullable=True)  # must, should, could, wont
+    moscow_priority: Mapped[str | None] = mapped_column(
+        String(20), nullable=True
+    )  # must, should, could, wont
 
     # Flexible metadata
     spec_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
@@ -794,7 +906,9 @@ class UserStorySpec(Base, TimestampMixin):
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     __mapper_args__ = {  # noqa: RUF012
         "version_id_col": version,
@@ -855,7 +969,9 @@ class TaskSpec(Base, TimestampMixin):
     )
 
     # Status and Progress
-    status: Mapped[str] = mapped_column(String(50), nullable=False, default="todo")  # TODO, in_progress, review, done
+    status: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="todo"
+    )  # TODO, in_progress, review, done
     progress_percentage: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
 
     # Checklist
@@ -869,8 +985,12 @@ class TaskSpec(Base, TimestampMixin):
     # Blocking
     is_blocked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     blocking_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
-    blocks_tasks: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)  # Task item IDs
-    blocked_by_tasks: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)  # Task item IDs
+    blocks_tasks: Mapped[list[str]] = mapped_column(
+        JSONType, nullable=False, default=list
+    )  # Task item IDs
+    blocked_by_tasks: Mapped[list[str]] = mapped_column(
+        JSONType, nullable=False, default=list
+    )  # Task item IDs
 
     # Estimation
     estimated_hours: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -885,19 +1005,31 @@ class TaskSpec(Base, TimestampMixin):
     # =========================================================================
 
     # Content Addressing (IPFS-style)
-    content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)  # SHA-256 hash of content
+    content_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, index=True
+    )  # SHA-256 hash of content
     content_cid: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
         index=True,
     )  # IPFS-style Content Identifier
-    merkle_root: Mapped[str | None] = mapped_column(String(64), nullable=True)  # For baseline verification
-    version_chain_head: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Latest version hash
+    merkle_root: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # For baseline verification
+    version_chain_head: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Latest version hash
 
     # Audit Trail (Blockchain-style)
-    created_by_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Creator signature
-    previous_version_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Blockchain-style linking
-    digital_signature: Mapped[str | None] = mapped_column(String(512), nullable=True)  # Optional signing
+    created_by_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Creator signature
+    previous_version_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Blockchain-style linking
+    digital_signature: Mapped[str | None] = mapped_column(
+        String(512), nullable=True
+    )  # Optional signing
     change_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # =========================================================================
@@ -915,7 +1047,9 @@ class TaskSpec(Base, TimestampMixin):
     rice_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     rice_effort: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    moscow_priority: Mapped[str | None] = mapped_column(String(20), nullable=True)  # must, should, could, wont
+    moscow_priority: Mapped[str | None] = mapped_column(
+        String(20), nullable=True
+    )  # must, should, could, wont
 
     # Flexible metadata
     spec_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
@@ -924,7 +1058,9 @@ class TaskSpec(Base, TimestampMixin):
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     __mapper_args__ = {  # noqa: RUF012
         "version_id_col": version,
@@ -974,7 +1110,9 @@ class DefectSpec(Base, TimestampMixin):
     )
 
     # Defect Details
-    severity: Mapped[str] = mapped_column(String(50), nullable=False, default=DefectSeverity.MAJOR.value)
+    severity: Mapped[str] = mapped_column(
+        String(50), nullable=False, default=DefectSeverity.MAJOR.value
+    )
     status: Mapped[str] = mapped_column(String(50), nullable=False, default=DefectStatus.NEW.value)
     component: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
@@ -1009,8 +1147,12 @@ class DefectSpec(Base, TimestampMixin):
     reopen_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # Relationships
-    related_defects: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)  # Defect item IDs
-    related_requirement_ids: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)
+    related_defects: Mapped[list[str]] = mapped_column(
+        JSONType, nullable=False, default=list
+    )  # Defect item IDs
+    related_requirement_ids: Mapped[list[str]] = mapped_column(
+        JSONType, nullable=False, default=list
+    )
     related_test_ids: Mapped[list[str]] = mapped_column(JSONType, nullable=False, default=list)
 
     # Attachments and Evidence
@@ -1027,19 +1169,31 @@ class DefectSpec(Base, TimestampMixin):
     # =========================================================================
 
     # Content Addressing (IPFS-style)
-    content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)  # SHA-256 hash of content
+    content_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True, index=True
+    )  # SHA-256 hash of content
     content_cid: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
         index=True,
     )  # IPFS-style Content Identifier
-    merkle_root: Mapped[str | None] = mapped_column(String(64), nullable=True)  # For baseline verification
-    version_chain_head: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Latest version hash
+    merkle_root: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # For baseline verification
+    version_chain_head: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Latest version hash
 
     # Audit Trail (Blockchain-style)
-    created_by_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Creator signature
-    previous_version_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # Blockchain-style linking
-    digital_signature: Mapped[str | None] = mapped_column(String(512), nullable=True)  # Optional signing
+    created_by_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Creator signature
+    previous_version_hash: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )  # Blockchain-style linking
+    digital_signature: Mapped[str | None] = mapped_column(
+        String(512), nullable=True
+    )  # Optional signing
     change_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # =========================================================================
@@ -1049,16 +1203,24 @@ class DefectSpec(Base, TimestampMixin):
         String(50),
         nullable=True,
     )  # function, interface, checking, etc.
-    odc_trigger: Mapped[str | None] = mapped_column(String(50), nullable=True)  # coverage, design_conformance, etc.
-    odc_impact: Mapped[str | None] = mapped_column(String(50), nullable=True)  # capability, usability, etc.
+    odc_trigger: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )  # coverage, design_conformance, etc.
+    odc_impact: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )  # capability, usability, etc.
     odc_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     # =========================================================================
     # CVSS SECURITY SCORING
     # =========================================================================
     cvss_base_score: Mapped[float | None] = mapped_column(Float, nullable=True)
-    cvss_vector: Mapped[str | None] = mapped_column(String(255), nullable=True)  # CVSS vector string
-    cvss_severity: Mapped[str | None] = mapped_column(String(20), nullable=True)  # none, low, medium, high, critical
+    cvss_vector: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )  # CVSS vector string
+    cvss_severity: Mapped[str | None] = mapped_column(
+        String(20), nullable=True
+    )  # none, low, medium, high, critical
     cvss_breakdown: Mapped[dict[str, object] | None] = mapped_column(JSONType, nullable=True)
 
     # =========================================================================
@@ -1081,7 +1243,9 @@ class DefectSpec(Base, TimestampMixin):
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     __mapper_args__ = {  # noqa: RUF012
         "version_id_col": version,

@@ -195,7 +195,8 @@ if textual_available:
             sync_info = self.query_one("#sync-info", Static)
             if self.pending_changes > 0:
                 sync_info.update(
-                    f"[bold]{self.pending_changes}[/] pending change" + ("s" if self.pending_changes != 1 else ""),
+                    f"[bold]{self.pending_changes}[/] pending change"
+                    + ("s" if self.pending_changes != 1 else ""),
                 )
             elif self.last_sync:
                 time_ago = self._format_time_ago(self.last_sync)
@@ -207,7 +208,8 @@ if textual_available:
             conflict_info = self.query_one("#conflict-info", Static)
             if self.conflicts_count > 0:
                 conflict_info.update(
-                    f"[bold yellow]⚠[/] {self.conflicts_count} conflict" + ("s" if self.conflicts_count != 1 else ""),
+                    f"[bold yellow]⚠[/] {self.conflicts_count} conflict"
+                    + ("s" if self.conflicts_count != 1 else ""),
                 )
                 conflict_info.add_class("conflict")
             else:

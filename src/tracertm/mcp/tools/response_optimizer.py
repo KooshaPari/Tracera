@@ -197,7 +197,10 @@ def _generate_suggestions(error_msg: str, category: str) -> list[str]:
             suggestions.append("Use select_project() to set the current project")
 
     elif category == "auth":
-        suggestions.extend(("Check your access token and permissions", "Verify project access for the current user"))
+        suggestions.extend((
+            "Check your access token and permissions",
+            "Verify project access for the current user",
+        ))
 
     return suggestions
 

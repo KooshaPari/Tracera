@@ -286,13 +286,18 @@ def matrix_resource(project_id: str) -> str:
 
                     linked_sources = set()
                     for link in links:
-                        if str(link.source_item_id) in source_ids and str(link.target_item_id) in target_ids:
+                        if (
+                            str(link.source_item_id) in source_ids
+                            and str(link.target_item_id) in target_ids
+                        ):
                             linked_sources.add(str(link.source_item_id))
 
                     coverage[source_view][target_view] = {
                         "linked": len(linked_sources),
                         "total": len(source_ids),
-                        "percentage": int(round(len(linked_sources) / len(source_ids) * 100, 0)) if source_ids else 0,
+                        "percentage": int(round(len(linked_sources) / len(source_ids) * 100, 0))
+                        if source_ids
+                        else 0,
                     }
 
             return _format_yaml({
@@ -355,7 +360,9 @@ def health_resource(project_id: str) -> str:
 
             # Find stale items (not updated in 30 days)
             stale_threshold = datetime.now(UTC) - timedelta(days=30)
-            stale_items = [str(i.id)[:8] for i in items if i.updated_at and i.updated_at < stale_threshold]
+            stale_items = [
+                str(i.id)[:8] for i in items if i.updated_at and i.updated_at < stale_threshold
+            ]
 
             # Calculate status distribution
             status_counts: dict[str, int] = {}
@@ -365,7 +372,9 @@ def health_resource(project_id: str) -> str:
             # Calculate health score (0-100)
             orphan_penalty = min(len(orphans) / len(items) * 30, 30) if items else 0
             stale_penalty = min(len(stale_items) / len(items) * 20, 20) if items else 0
-            blocked_penalty = min(status_counts.get("blocked", 0) / len(items) * 20, 20) if items else 0
+            blocked_penalty = (
+                min(status_counts.get("blocked", 0) / len(items) * 20, 20) if items else 0
+            )
             health_score = max(0, 100 - orphan_penalty - stale_penalty - blocked_penalty)
 
             return _format_yaml({
@@ -446,7 +455,9 @@ def traceability_view_resource(project_id: str) -> str:
                 if item_id in children:
                     result["children"] = [
                         build_tree(child_id, depth + 1)
-                        for child_id in children[item_id][:_MAX_TREE_CHILDREN_DISPLAY]  # Limit children
+                        for child_id in children[item_id][
+                            :_MAX_TREE_CHILDREN_DISPLAY
+                        ]  # Limit children
                     ]
                 return result
 
@@ -528,7 +539,11 @@ def impact_view_resource(project_id: str) -> str:
 
             # Sort by impact
             impact_scores.sort(
-                key=lambda x: int(x["downstream_count"]) if isinstance(x["downstream_count"], (int, str)) else 0,
+                key=lambda x: (
+                    int(x["downstream_count"])
+                    if isinstance(x["downstream_count"], (int, str))
+                    else 0
+                ),
                 reverse=True,
             )
 
@@ -595,9 +610,11 @@ def coverage_view_resource(project_id: str) -> str:
                     "total": total,
                     "covered": covered,
                     "percentage": round(covered / total * 100, 1) if total else 0,
-                    "uncovered": [str(item.id)[:8] for item in view_item_list if str(item.id) not in linked_ids][
-                        :_MAX_ITEM_LIST_DISPLAY
-                    ],
+                    "uncovered": [
+                        str(item.id)[:8]
+                        for item in view_item_list
+                        if str(item.id) not in linked_ids
+                    ][:_MAX_ITEM_LIST_DISPLAY],
                 }
 
             return _format_yaml({

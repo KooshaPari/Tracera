@@ -401,7 +401,11 @@ async def close_problem(
     )
     await db.commit()
 
-    return {"id": str(problem.id), "status": problem.status, "resolution_type": problem.resolution_type}
+    return {
+        "id": str(problem.id),
+        "status": problem.status,
+        "resolution_type": problem.resolution_type,
+    }
 
 
 @router.get("/problems/{problem_id}/activities")

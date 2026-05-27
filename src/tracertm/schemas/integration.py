@@ -192,7 +192,9 @@ class IntegrationMappingCreate(BaseModel):
 
     credential_id: str
     tracertm_item_id: str
-    external_system: str = Field(description="Type of external item: github_issue, github_pr, linear_issue, etc.")
+    external_system: str = Field(
+        description="Type of external item: github_issue, github_pr, linear_issue, etc."
+    )
     external_id: str = Field(description="External system ID like 'owner/repo#42' or 'LINEAR-123'")
     external_url: str | None = None
     mapping_metadata: dict[str, object] | None = None

@@ -74,7 +74,9 @@ def demo_versioned_tool(x: int, y: int) -> dict[str, object]:
 
 
 @mcp.tool(version="2.0", description="Versioned demo tool v2 (supports z and mode)")
-def demo_versioned_tool_extended(x: int, y: int, z: int = 0, mode: str = "sum") -> dict[str, object]:
+def demo_versioned_tool_extended(
+    x: int, y: int, z: int = 0, mode: str = "sum"
+) -> dict[str, object]:
     """Demo tool for versioning (v2).
 
     Args:

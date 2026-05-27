@@ -55,7 +55,10 @@ class ContractService:
         """Create a new Contract."""
         # Simple numbering
         result = await self.session.execute(
-            select(Contract).where(Contract.project_id == project_id).order_by(Contract.created_at.desc()).limit(1),
+            select(Contract)
+            .where(Contract.project_id == project_id)
+            .order_by(Contract.created_at.desc())
+            .limit(1),
         )
         last = result.scalar_one_or_none()
 
@@ -137,7 +140,9 @@ class ContractService:
                 event_type="updated",
                 data={
                     "description": "Contract updated",
-                    "changes": {key: {"from": before.get(key), "to": updates.get(key)} for key in updates},
+                    "changes": {
+                        key: {"from": before.get(key), "to": updates.get(key)} for key in updates
+                    },
                     "from_value": before.get("status"),
                     "to_value": updates.get("status"),
                 },

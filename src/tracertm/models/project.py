@@ -34,7 +34,9 @@ class Project(Base, TimestampMixin):
     account_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    project_metadata: Mapped[dict[str, object]] = mapped_column("metadata", JSONType, nullable=False, default=dict)
+    project_metadata: Mapped[dict[str, object]] = mapped_column(
+        "metadata", JSONType, nullable=False, default=dict
+    )
 
     # Relationships
     items: Mapped[list[Item]] = relationship(

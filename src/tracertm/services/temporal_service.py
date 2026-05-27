@@ -320,7 +320,9 @@ class TemporalService:
             })
         return {"counts": status_counts, "items": workflows}
 
-    async def get_summary(self, workflow_limit: int = 100, schedule_limit: int = 200) -> dict[str, Any]:
+    async def get_summary(
+        self, workflow_limit: int = 100, schedule_limit: int = 200
+    ) -> dict[str, Any]:
         """Get summary."""
         health = await self.health_check()
         schedules = await self.list_schedules_summary(limit=schedule_limit)
@@ -365,7 +367,11 @@ class TemporalService:
         }
 
         # If workflow is completed, get the result
-        if description.status and hasattr(description.status, "name") and description.status.name == "COMPLETED":
+        if (
+            description.status
+            and hasattr(description.status, "name")
+            and description.status.name == "COMPLETED"
+        ):
             workflow_result = await handle.result()
             result["result"] = workflow_result
 

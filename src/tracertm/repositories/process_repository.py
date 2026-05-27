@@ -100,9 +100,13 @@ class ProcessRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_number(self, process_number: str, project_id: str | None = None) -> Process | None:
+    async def get_by_number(
+        self, process_number: str, project_id: str | None = None
+    ) -> Process | None:
         """Get process by process number."""
-        query = select(Process).where(Process.process_number == process_number, Process.deleted_at.is_(None))
+        query = select(Process).where(
+            Process.process_number == process_number, Process.deleted_at.is_(None)
+        )
 
         if project_id:
             query = query.where(Process.project_id == project_id)

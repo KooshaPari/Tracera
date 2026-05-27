@@ -109,7 +109,9 @@ class TestSuite(Base, TimestampMixin):
     # Relationships
     parent = relationship("TestSuite", remote_side=[id], back_populates="children")
     children = relationship("TestSuite", back_populates="parent", cascade="all, delete-orphan")
-    test_case_associations = relationship("TestSuiteTestCase", back_populates="suite", cascade="all, delete-orphan")
+    test_case_associations = relationship(
+        "TestSuiteTestCase", back_populates="suite", cascade="all, delete-orphan"
+    )
 
     __table_args__ = (
         Index("ix_test_suites_project_id", "project_id"),
@@ -130,7 +132,9 @@ class TestSuiteTestCase(Base, TimestampMixin):
     __tablename__ = "test_suite_test_cases"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
-    suite_id: Mapped[str] = mapped_column(String(36), ForeignKey("test_suites.id", ondelete="CASCADE"), nullable=False)
+    suite_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("test_suites.id", ondelete="CASCADE"), nullable=False
+    )
     test_case_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("test_cases.id", ondelete="CASCADE"),
@@ -162,7 +166,9 @@ class TestSuiteActivity(Base):
     __tablename__ = "test_suite_activities"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
-    suite_id: Mapped[str] = mapped_column(String(36), ForeignKey("test_suites.id", ondelete="CASCADE"), nullable=False)
+    suite_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("test_suites.id", ondelete="CASCADE"), nullable=False
+    )
     activity_type: Mapped[str] = mapped_column(String(100), nullable=False)
     from_value: Mapped[str | None] = mapped_column(Text, nullable=True)
     to_value: Mapped[str | None] = mapped_column(Text, nullable=True)

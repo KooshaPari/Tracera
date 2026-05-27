@@ -80,7 +80,11 @@ class TokenBridge:
         # Read header (unverified) to avoid trying HS256 on an RS256 token
         try:
             unverified = jwt.get_unverified_header(token)
-            alg = (unverified.get("alg") or "RS256").upper() if isinstance(unverified.get("alg"), str) else "RS256"
+            alg = (
+                (unverified.get("alg") or "RS256").upper()
+                if isinstance(unverified.get("alg"), str)
+                else "RS256"
+            )
         except (jwt.InvalidTokenError, KeyError, ValueError):
             alg = "RS256"
 
@@ -141,7 +145,9 @@ class TokenBridge:
         # Optional manual issuer check when token has iss
         token_issuer = decoded.get("iss")
         if self.issuer and token_issuer:
-            iss_ok = str(token_issuer).rstrip("/") == str(self.issuer).rstrip("/") or str(token_issuer).startswith(
+            iss_ok = str(token_issuer).rstrip("/") == str(self.issuer).rstrip("/") or str(
+                token_issuer
+            ).startswith(
                 "https://api.workos.com/",
             )
             if not iss_ok:
@@ -220,7 +226,12 @@ class TokenBridge:
         }
 
         token = jwt.encode(payload, self.hs_secret, algorithm="HS256")
-        logger.info("Created bridge token for user %s (org %s), expires in %s minutes", user_id, org_id, ttl_minutes)
+        logger.info(
+            "Created bridge token for user %s (org %s), expires in %s minutes",
+            user_id,
+            org_id,
+            ttl_minutes,
+        )
         return token
 
     def refresh_jwks(self) -> None:

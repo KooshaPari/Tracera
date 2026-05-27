@@ -51,7 +51,9 @@ def ensure_project_access(project_id: str, claims: dict[str, object] | None) -> 
     _ensure_project_access(project_id, claims)
 
 
-def ensure_credential_access(credential: IntegrationCredential | None, claims: dict[str, object] | None) -> None:
+def ensure_credential_access(
+    credential: IntegrationCredential | None, claims: dict[str, object] | None
+) -> None:
     """Check access to a credential (project or user scoped)."""
     if credential is None:
         raise HTTPException(status_code=404, detail="Credential not found")
@@ -251,7 +253,9 @@ async def list_credentials(
                 "scopes": c.scopes,
                 "provider_user_id": c.provider_user_id,
                 "provider_metadata": c.provider_metadata,
-                "last_validated_at": c.last_validated_at.isoformat() if c.last_validated_at else None,
+                "last_validated_at": c.last_validated_at.isoformat()
+                if c.last_validated_at
+                else None,
                 "created_at": c.created_at.isoformat() if c.created_at else None,
             }
             for c in credentials

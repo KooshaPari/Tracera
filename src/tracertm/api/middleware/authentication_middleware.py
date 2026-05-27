@@ -35,6 +35,8 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                 if user_id:
                     current_user_id.set(user_id)
             except Exception as exc:
-                logging.getLogger(__name__).debug("Optional token verification failed: %s", exc, exc_info=True)
+                logging.getLogger(__name__).debug(
+                    "Optional token verification failed: %s", exc, exc_info=True
+                )
 
         return await call_next(request)

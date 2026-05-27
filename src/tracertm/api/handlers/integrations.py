@@ -120,7 +120,10 @@ async def _get_sync_stats(db: AsyncSession, project_id: str) -> dict[str, Any]:
             sync_counts["success"] += int(cast("int", cnt))
 
     success_rate = (
-        round(sync_counts["success"] / sync_counts["total"] * PERCENTAGE_MAX, DECIMAL_PRECISION_DEFAULT)
+        round(
+            sync_counts["success"] / sync_counts["total"] * PERCENTAGE_MAX,
+            DECIMAL_PRECISION_DEFAULT,
+        )
         if sync_counts["total"] > ZERO
         else ZERO
     )
@@ -178,7 +181,9 @@ async def get_integration_stats_handler(
     # Get credentials
     encryption_service = _get_encryption_service()
     cred_repo = IntegrationCredentialRepository(db, encryption_service)
-    credentials = await cred_repo.get_by_project(project_id, include_global_user_id=claims.get("sub"))
+    credentials = await cred_repo.get_by_project(
+        project_id, include_global_user_id=claims.get("sub")
+    )
 
     # Build all stats in parallel-friendly structure
     providers = _build_provider_stats(credentials)

@@ -53,7 +53,9 @@ async def create_agent_session(
     from tracertm.agent.types import SandboxConfig
 
     config = SandboxConfig(project_id=body.project_id)
-    path, _ = await agent_svc.get_or_create_session_sandbox(session_id, config=config, db_session=db)
+    path, _ = await agent_svc.get_or_create_session_sandbox(
+        session_id, config=config, db_session=db
+    )
     await db.commit()
     result = await db.execute(select(AgentSession).where(AgentSession.session_id == session_id))
     row = result.scalar_one_or_none()

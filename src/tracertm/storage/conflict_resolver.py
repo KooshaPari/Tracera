@@ -158,9 +158,13 @@ class Conflict:
             "remote_version": self.remote_version.to_dict(),
             "detected_at": self.detected_at.isoformat(),
             "status": self.status.value,
-            "resolution_strategy": (self.resolution_strategy.value if self.resolution_strategy else None),
+            "resolution_strategy": (
+                self.resolution_strategy.value if self.resolution_strategy else None
+            ),
             "resolved_at": self.resolved_at.isoformat() if self.resolved_at else None,
-            "resolved_version": (self.resolved_version.to_dict() if self.resolved_version else None),
+            "resolved_version": (
+                self.resolved_version.to_dict() if self.resolved_version else None
+            ),
             "backup_path": str(self.backup_path) if self.backup_path else None,
             "metadata": self.metadata,
         }
@@ -297,7 +301,9 @@ class ConflictResolver:
 
         return conflict
 
-    def resolve(self, conflict: Conflict, strategy: ConflictStrategy | None = None) -> ResolvedEntity:
+    def resolve(
+        self, conflict: Conflict, strategy: ConflictStrategy | None = None
+    ) -> ResolvedEntity:
         """Resolve a conflict using the specified strategy.
 
         Args:
@@ -363,7 +369,10 @@ class ConflictResolver:
         if remote_ts > local_ts:
             return conflict.remote_version
         # Timestamps equal, use version number
-        if conflict.local_version.vector_clock.version > conflict.remote_version.vector_clock.version:
+        if (
+            conflict.local_version.vector_clock.version
+            > conflict.remote_version.vector_clock.version
+        ):
             return conflict.local_version
         return conflict.remote_version
 
@@ -420,7 +429,9 @@ class ConflictResolver:
 
         self._update_conflict(conflict)
 
-        logger.info("Manually resolved conflict %s by %s, version=%s", conflict.id, merged_by, new_version)
+        logger.info(
+            "Manually resolved conflict %s by %s, version=%s", conflict.id, merged_by, new_version
+        )
 
         return ResolvedEntity(
             entity_id=conflict.entity_id,
@@ -510,7 +521,9 @@ class ConflictResolver:
         Returns:
             Conflict object or None if not found
         """
-        result = self.session.execute(text("SELECT * FROM conflicts WHERE id = :id"), {"id": conflict_id})
+        result = self.session.execute(
+            text("SELECT * FROM conflicts WHERE id = :id"), {"id": conflict_id}
+        )
         row = result.fetchone()
 
         if not row:
@@ -542,10 +555,14 @@ class ConflictResolver:
                 "remote_version": json.dumps(conflict.remote_version.to_dict()),
                 "detected_at": conflict.detected_at.isoformat(),
                 "status": conflict.status.value,
-                "resolution_strategy": (conflict.resolution_strategy.value if conflict.resolution_strategy else None),
+                "resolution_strategy": (
+                    conflict.resolution_strategy.value if conflict.resolution_strategy else None
+                ),
                 "resolved_at": (conflict.resolved_at.isoformat() if conflict.resolved_at else None),
                 "resolved_version": (
-                    json.dumps(conflict.resolved_version.to_dict()) if conflict.resolved_version else None
+                    json.dumps(conflict.resolved_version.to_dict())
+                    if conflict.resolved_version
+                    else None
                 ),
                 "backup_path": (str(conflict.backup_path) if conflict.backup_path else None),
                 "metadata": json.dumps(conflict.metadata),
@@ -571,10 +588,14 @@ class ConflictResolver:
             {
                 "id": conflict.id,
                 "status": conflict.status.value,
-                "resolution_strategy": (conflict.resolution_strategy.value if conflict.resolution_strategy else None),
+                "resolution_strategy": (
+                    conflict.resolution_strategy.value if conflict.resolution_strategy else None
+                ),
                 "resolved_at": (conflict.resolved_at.isoformat() if conflict.resolved_at else None),
                 "resolved_version": (
-                    json.dumps(conflict.resolved_version.to_dict()) if conflict.resolved_version else None
+                    json.dumps(conflict.resolved_version.to_dict())
+                    if conflict.resolved_version
+                    else None
                 ),
                 "backup_path": (str(conflict.backup_path) if conflict.backup_path else None),
                 "metadata": json.dumps(conflict.metadata),
@@ -592,10 +613,14 @@ class ConflictResolver:
             remote_version=EntityVersion.from_dict(json.loads(row.remote_version)),
             detected_at=datetime.fromisoformat(row.detected_at),
             status=ConflictStatus(row.status),
-            resolution_strategy=(ConflictStrategy(row.resolution_strategy) if row.resolution_strategy else None),
+            resolution_strategy=(
+                ConflictStrategy(row.resolution_strategy) if row.resolution_strategy else None
+            ),
             resolved_at=(datetime.fromisoformat(row.resolved_at) if row.resolved_at else None),
             resolved_version=(
-                EntityVersion.from_dict(json.loads(row.resolved_version)) if row.resolved_version else None
+                EntityVersion.from_dict(json.loads(row.resolved_version))
+                if row.resolved_version
+                else None
             ),
             backup_path=Path(row.backup_path) if row.backup_path else None,
             metadata=json.loads(row.metadata) if row.metadata else {},
@@ -667,7 +692,9 @@ class ConflictBackup:
         """
         backups = []
 
-        search_dirs = [self.backup_dir / entity_type] if entity_type else list(self.backup_dir.iterdir())
+        search_dirs = (
+            [self.backup_dir / entity_type] if entity_type else list(self.backup_dir.iterdir())
+        )
 
         for type_dir in search_dirs:
             if not type_dir.is_dir():

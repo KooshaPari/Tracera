@@ -328,16 +328,22 @@ def build_api_checks() -> list[PreflightCheck]:
         PreflightCheck("s3-secret", os.getenv("S3_SECRET_ACCESS_KEY"), required=True, kind="env"),
         PreflightCheck("s3-bucket", os.getenv("S3_BUCKET"), required=True, kind="env"),
         PreflightCheck("temporal-host", os.getenv("TEMPORAL_HOST"), required=True, kind="tcp"),
-        PreflightCheck("temporal-namespace", os.getenv("TEMPORAL_NAMESPACE"), required=True, kind="env"),
+        PreflightCheck(
+            "temporal-namespace", os.getenv("TEMPORAL_NAMESPACE"), required=True, kind="env"
+        ),
         PreflightCheck(
             "workos-api",
             os.getenv("WORKOS_API_BASE_URL", "https://api.workos.com"),
             required=True,
             kind="tcp",
         ),
-        PreflightCheck("workos-client-id", os.getenv("WORKOS_CLIENT_ID"), required=True, kind="env"),
+        PreflightCheck(
+            "workos-client-id", os.getenv("WORKOS_CLIENT_ID"), required=True, kind="env"
+        ),
         PreflightCheck("workos-api-key", os.getenv("WORKOS_API_KEY"), required=True, kind="env"),
-        PreflightCheck("workos-domain", os.getenv("WORKOS_AUTHKIT_DOMAIN"), required=True, kind="env"),
+        PreflightCheck(
+            "workos-domain", os.getenv("WORKOS_AUTHKIT_DOMAIN"), required=True, kind="env"
+        ),
     ]
 
 
@@ -354,16 +360,22 @@ def build_mcp_checks() -> list[PreflightCheck]:
         PreflightCheck("s3-secret", os.getenv("S3_SECRET_ACCESS_KEY"), required=True, kind="env"),
         PreflightCheck("s3-bucket", os.getenv("S3_BUCKET"), required=True, kind="env"),
         PreflightCheck("temporal-host", os.getenv("TEMPORAL_HOST"), required=True, kind="tcp"),
-        PreflightCheck("temporal-namespace", os.getenv("TEMPORAL_NAMESPACE"), required=True, kind="env"),
+        PreflightCheck(
+            "temporal-namespace", os.getenv("TEMPORAL_NAMESPACE"), required=True, kind="env"
+        ),
         PreflightCheck(
             "workos-api",
             os.getenv("WORKOS_API_BASE_URL", "https://api.workos.com"),
             required=True,
             kind="tcp",
         ),
-        PreflightCheck("workos-client-id", os.getenv("WORKOS_CLIENT_ID"), required=True, kind="env"),
+        PreflightCheck(
+            "workos-client-id", os.getenv("WORKOS_CLIENT_ID"), required=True, kind="env"
+        ),
         PreflightCheck("workos-api-key", os.getenv("WORKOS_API_KEY"), required=True, kind="env"),
-        PreflightCheck("workos-domain", os.getenv("WORKOS_AUTHKIT_DOMAIN"), required=True, kind="env"),
+        PreflightCheck(
+            "workos-domain", os.getenv("WORKOS_AUTHKIT_DOMAIN"), required=True, kind="env"
+        ),
     ]
 
 
@@ -399,14 +411,20 @@ def build_cli_checks() -> list[PreflightCheck]:
         PreflightCheck("s3-secret", os.getenv("S3_SECRET_ACCESS_KEY"), required=True, kind="env"),
         PreflightCheck("s3-bucket", os.getenv("S3_BUCKET"), required=True, kind="env"),
         PreflightCheck("temporal-host", os.getenv("TEMPORAL_HOST"), required=True, kind="tcp"),
-        PreflightCheck("temporal-namespace", os.getenv("TEMPORAL_NAMESPACE"), required=True, kind="env"),
+        PreflightCheck(
+            "temporal-namespace", os.getenv("TEMPORAL_NAMESPACE"), required=True, kind="env"
+        ),
         PreflightCheck(
             "workos-api",
             os.getenv("WORKOS_API_BASE_URL", "https://api.workos.com"),
             required=True,
             kind="tcp",
         ),
-        PreflightCheck("workos-client-id", os.getenv("WORKOS_CLIENT_ID"), required=True, kind="env"),
+        PreflightCheck(
+            "workos-client-id", os.getenv("WORKOS_CLIENT_ID"), required=True, kind="env"
+        ),
         PreflightCheck("workos-api-key", os.getenv("WORKOS_API_KEY"), required=True, kind="env"),
-        PreflightCheck("workos-domain", os.getenv("WORKOS_AUTHKIT_DOMAIN"), required=True, kind="env"),
+        PreflightCheck(
+            "workos-domain", os.getenv("WORKOS_AUTHKIT_DOMAIN"), required=True, kind="env"
+        ),
     ]

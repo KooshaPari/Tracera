@@ -17,8 +17,12 @@ router.get("/repos/{owner}/{repo}/issues")(github_repositories.list_github_issue
 router.get("/app/install-url")(github_installations.get_github_app_install_url)
 router.post("/app/webhook")(github_app_webhook)
 router.get("/app/installations")(github_installations.list_github_app_installations)
-router.post("/app/installations/{installation_id}/link")(github_installations.link_github_app_installation)
-router.delete("/app/installations/{installation_id}")(github_installations.delete_github_app_installation)
+router.post("/app/installations/{installation_id}/link")(
+    github_installations.link_github_app_installation
+)
+router.delete("/app/installations/{installation_id}")(
+    github_installations.delete_github_app_installation
+)
 
 # GitHub Projects endpoints
 router.get("/projects")(github_projects.list_github_projects)

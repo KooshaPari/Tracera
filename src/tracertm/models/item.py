@@ -61,13 +61,17 @@ class Item(Base, TimestampMixin):
         index=True,
     )
 
-    item_metadata: Mapped[dict[str, object]] = mapped_column("metadata", JSONType, nullable=False, default=dict)
+    item_metadata: Mapped[dict[str, object]] = mapped_column(
+        "metadata", JSONType, nullable=False, default=dict
+    )
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     # Relationships
     source_links: Mapped[list[Link]] = relationship(

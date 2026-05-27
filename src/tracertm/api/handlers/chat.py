@@ -1,4 +1,5 @@
 """Compatibility exports for chat handlers."""
+
 from typing import Any
 
 from fastapi import Request

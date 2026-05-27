@@ -85,7 +85,9 @@ class AgentMetricsService:
                     if isinstance(rt, (int, float)):
                         response_times.append(float(rt))
 
-            avg_response_time = sum(response_times) / len(response_times) if response_times else None
+            avg_response_time = (
+                sum(response_times) / len(response_times) if response_times else None
+            )
 
             # Get agent name
             agent = self.session.query(Agent).filter(Agent.id == aid).first()
@@ -99,7 +101,9 @@ class AgentMetricsService:
                 "success_rate": round(success_rate, _DECIMAL_PRECISION),
                 "conflict_rate": round(conflict_rate, _DECIMAL_PRECISION),
                 "conflicts": conflicts,
-                "avg_response_time_ms": round(avg_response_time, _DECIMAL_PRECISION) if avg_response_time else None,
+                "avg_response_time_ms": round(avg_response_time, _DECIMAL_PRECISION)
+                if avg_response_time
+                else None,
                 "time_range_hours": round(hours, _DECIMAL_PRECISION),
             })
 

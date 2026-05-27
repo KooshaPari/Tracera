@@ -130,7 +130,9 @@ class AgentService:
         except AGENT_SERVICE_NON_FATAL_ERRORS as e:
             logger.debug("Failed to publish chat message event: %s", e)
 
-    async def _publish_chat_error(self, session_id: str, project_id: object, exc: BaseException) -> None:
+    async def _publish_chat_error(
+        self, session_id: str, project_id: object, exc: BaseException
+    ) -> None:
         """Publish chat error event; log and swallow publish errors."""
         if not (session_id and self._event_publisher):
             return

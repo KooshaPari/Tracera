@@ -80,7 +80,9 @@ class Process(Base, TimestampMixin):
     purpose: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Lifecycle Status
-    status: Mapped[str] = mapped_column(String(50), nullable=False, default=ProcessStatus.DRAFT.value, index=True)
+    status: Mapped[str] = mapped_column(
+        String(50), nullable=False, default=ProcessStatus.DRAFT.value, index=True
+    )
 
     # Classification
     category: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
@@ -88,7 +90,9 @@ class Process(Base, TimestampMixin):
 
     # Versioning
     version_number: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
-    is_active_version: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, index=True)
+    is_active_version: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, index=True
+    )
     parent_version_id: Mapped[str | None] = mapped_column(
         String(255),
         ForeignKey("processes.id", ondelete="SET NULL"),
@@ -167,13 +171,17 @@ class Process(Base, TimestampMixin):
     """IDs of related/dependent processes."""
 
     # Flexible metadata
-    process_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+    process_metadata: Mapped[dict[str, object]] = mapped_column(
+        JSONType, nullable=False, default=dict
+    )
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     __mapper_args__ = {  # noqa: RUF012
         "version_id_col": version,
@@ -231,7 +239,9 @@ class ProcessExecution(Base, TimestampMixin):
         nullable=False,
         index=True,
     )
-    execution_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    execution_number: Mapped[str] = mapped_column(
+        String(50), unique=True, nullable=False, index=True
+    )
 
     # Status
     status: Mapped[str] = mapped_column(

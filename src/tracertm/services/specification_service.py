@@ -199,7 +199,10 @@ class ADRService:
         opts = options or ADROptions()
         # Generate sequential ADR number
         result = await self.session.execute(
-            select(ADR).where(ADR.project_id == project_id).order_by(ADR.created_at.desc()).limit(1),
+            select(ADR)
+            .where(ADR.project_id == project_id)
+            .order_by(ADR.created_at.desc())
+            .limit(1),
         )
         last_adr = await _maybe_await(result.scalar_one_or_none())
 
@@ -393,7 +396,10 @@ class ContractService:
         opts = options or ContractOptions()
         # Generate sequential contract number
         result = await self.session.execute(
-            select(Contract).where(Contract.project_id == project_id).order_by(Contract.created_at.desc()).limit(1),
+            select(Contract)
+            .where(Contract.project_id == project_id)
+            .order_by(Contract.created_at.desc())
+            .limit(1),
         )
         last_contract = await _maybe_await(result.scalar_one_or_none())
 
@@ -471,7 +477,9 @@ class ContractService:
     async def list_by_item(self, item_id: str) -> list[Contract]:
         """List contracts for an item."""
         result = await self.session.execute(
-            select(Contract).where(Contract.item_id == item_id).order_by(Contract.created_at.desc()),
+            select(Contract)
+            .where(Contract.item_id == item_id)
+            .order_by(Contract.created_at.desc()),
         )
         scalars = await _maybe_await(result.scalars())
         rows = await _maybe_await(scalars.all())  # type: ignore[attr-defined]
@@ -519,7 +527,9 @@ class ContractService:
         await self.session.flush()
         return (getattr(result, "rowcount", ZERO) or ZERO) > ZERO
 
-    async def verify(self, contract_id: str, verification_result: dict[str, Any]) -> Contract | None:
+    async def verify(
+        self, contract_id: str, verification_result: dict[str, Any]
+    ) -> Contract | None:
         """Verify contract and store verification result."""
         contract = await self.get(contract_id)
         if not contract:
@@ -533,7 +543,9 @@ class ContractService:
         await self.session.flush()
         return contract
 
-    async def execute_transition(self, contract_id: str, from_state: str, to_state: str) -> Contract | None:
+    async def execute_transition(
+        self, contract_id: str, from_state: str, to_state: str
+    ) -> Contract | None:
         """Execute state transition in contract."""
         contract = await self.get(contract_id)
         if not contract:
@@ -611,7 +623,10 @@ class FeatureService:
         opts = options or FeatureOptions()
         # Generate sequential feature number
         result = await self.session.execute(
-            select(Feature).where(Feature.project_id == project_id).order_by(Feature.created_at.desc()).limit(1),
+            select(Feature)
+            .where(Feature.project_id == project_id)
+            .order_by(Feature.created_at.desc())
+            .limit(1),
         )
         last_feature = await _maybe_await(result.scalar_one_or_none())
 
@@ -792,7 +807,10 @@ class ScenarioService:
 
         # Generate sequential scenario number within feature
         result = await self.session.execute(
-            select(Scenario).where(Scenario.feature_id == feature_id).order_by(Scenario.created_at.desc()).limit(1),
+            select(Scenario)
+            .where(Scenario.feature_id == feature_id)
+            .order_by(Scenario.created_at.desc())
+            .limit(1),
         )
         last_scenario = await _maybe_await(result.scalar_one_or_none())
 
@@ -902,7 +920,11 @@ class ScenarioService:
             return None
 
         # Calculate pass rate from step results
-        total_steps = len(scenario.given_steps or []) + len(scenario.when_steps or []) + len(scenario.then_steps or [])
+        total_steps = (
+            len(scenario.given_steps or [])
+            + len(scenario.when_steps or [])
+            + len(scenario.then_steps or [])
+        )
         if total_steps > ZERO:
             passed_steps = results.get("passed_steps", ZERO)
             pass_rate = passed_steps / total_steps

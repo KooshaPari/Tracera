@@ -25,7 +25,9 @@ class ExternalLink(Base, TimestampMixin):
         {"extend_existing": True},
     )
 
-    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_external_link_uuid)
+    id: Mapped[str] = mapped_column(
+        String(255), primary_key=True, default=generate_external_link_uuid
+    )
     project_id: Mapped[str] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),

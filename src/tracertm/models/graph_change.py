@@ -25,7 +25,9 @@ class GraphChange(Base, TimestampMixin):
         {"extend_existing": True},
     )
 
-    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_graph_change_uuid)
+    id: Mapped[str] = mapped_column(
+        String(255), primary_key=True, default=generate_graph_change_uuid
+    )
     project_id: Mapped[str] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
@@ -40,7 +42,9 @@ class GraphChange(Base, TimestampMixin):
     )
 
     change_type: Mapped[str] = mapped_column(String(100), nullable=False)
-    change_payload: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+    change_payload: Mapped[dict[str, object]] = mapped_column(
+        JSONType, nullable=False, default=dict
+    )
     author: Mapped[str | None] = mapped_column(String(255), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 

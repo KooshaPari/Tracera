@@ -267,10 +267,18 @@ async def run_benchmark(database_url: str, project_id: str) -> None:
     runner = BenchmarkRunner(database_url)
 
     # Run benchmarks
-    runner.benchmark_sync_queries(project_id, iterations=_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ)
-    await runner.benchmark_async_pooled(project_id, iterations=_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ)
-    await runner.benchmark_eager_loading(project_id, iterations=_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ)
-    await runner.benchmark_with_cache(project_id, iterations=_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ)
+    runner.benchmark_sync_queries(
+        project_id, iterations=_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ
+    )
+    await runner.benchmark_async_pooled(
+        project_id, iterations=_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ
+    )
+    await runner.benchmark_eager_loading(
+        project_id, iterations=_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ
+    )
+    await runner.benchmark_with_cache(
+        project_id, iterations=_PROGRESS_UPDATE_FREQ * _PROGRESS_UPDATE_FREQ
+    )
 
     # Print summary
     runner.print_summary()

@@ -32,7 +32,9 @@ class GitHubAppInstallation(Base, TimestampMixin):
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
-    account_id: Mapped[str] = mapped_column(String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False)
+    account_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False
+    )
 
     # GitHub installation details
     installation_id: Mapped[int] = mapped_column(nullable=False, unique=True)
@@ -42,7 +44,9 @@ class GitHubAppInstallation(Base, TimestampMixin):
 
     # Installation metadata
     permissions: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
-    repository_selection: Mapped[str] = mapped_column(String(50), nullable=False, default="all")  # all or selected
+    repository_selection: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="all"
+    )  # all or selected
 
     # Status
     suspended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

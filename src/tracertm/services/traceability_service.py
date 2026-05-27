@@ -121,7 +121,9 @@ class TraceabilityService:
 
         # Find gaps (source items without links)
         gaps = [
-            {"id": str(item.id), "title": item.title} for item in source_items if str(item.id) not in linked_source_ids
+            {"id": str(item.id), "title": item.title}
+            for item in source_items
+            if str(item.id) not in linked_source_ids
         ]
 
         return TraceabilityMatrix(

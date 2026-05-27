@@ -163,7 +163,9 @@ class ExecutionArtifactRepository:
 
     async def get_by_id(self, artifact_id: str) -> ExecutionArtifact | None:
         """Get artifact by ID."""
-        result = await self.session.execute(select(ExecutionArtifact).where(ExecutionArtifact.id == artifact_id))
+        result = await self.session.execute(
+            select(ExecutionArtifact).where(ExecutionArtifact.id == artifact_id)
+        )
         return result.scalar_one_or_none()
 
     async def list_by_execution(
@@ -195,7 +197,9 @@ class ExecutionEnvironmentConfigRepository:
     async def get_by_project(self, project_id: str) -> ExecutionEnvironmentConfig | None:
         """Get config by project ID (one per project)."""
         result = await self.session.execute(
-            select(ExecutionEnvironmentConfig).where(ExecutionEnvironmentConfig.project_id == project_id),
+            select(ExecutionEnvironmentConfig).where(
+                ExecutionEnvironmentConfig.project_id == project_id
+            ),
         )
         return result.scalar_one_or_none()
 

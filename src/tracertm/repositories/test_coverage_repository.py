@@ -303,7 +303,9 @@ class TestCoverageRepository:
             # Determine overall status based on test results
             overall_status = "not_tested"
             if test_cases:
-                results = [tc.get("last_test_result") for tc in test_cases if tc.get("last_test_result")]
+                results = [
+                    tc.get("last_test_result") for tc in test_cases if tc.get("last_test_result")
+                ]
                 if results:
                     if all(r == "passed" for r in results):
                         overall_status = "passed"
@@ -326,7 +328,9 @@ class TestCoverageRepository:
             })
 
         total_requirements = len(requirements)
-        coverage_percentage = (covered_count / total_requirements * 100) if total_requirements > 0 else 0
+        coverage_percentage = (
+            (covered_count / total_requirements * 100) if total_requirements > 0 else 0
+        )
 
         return {
             "project_id": project_id,
@@ -385,7 +389,9 @@ class TestCoverageRepository:
             "project_id": project_id,
             "total_requirements": len(requirements),
             "uncovered_count": len(gaps),
-            "coverage_percentage": round((1 - len(gaps) / len(requirements)) * 100 if requirements else 0, 2),
+            "coverage_percentage": round(
+                (1 - len(gaps) / len(requirements)) * 100 if requirements else 0, 2
+            ),
             "gaps": gaps,
         }
 
@@ -403,7 +409,9 @@ class TestCoverageRepository:
                 "direct": len([c for c in coverages if c.coverage_type == CoverageType.DIRECT]),
                 "partial": len([c for c in coverages if c.coverage_type == CoverageType.PARTIAL]),
                 "indirect": len([c for c in coverages if c.coverage_type == CoverageType.INDIRECT]),
-                "regression": len([c for c in coverages if c.coverage_type == CoverageType.REGRESSION]),
+                "regression": len([
+                    c for c in coverages if c.coverage_type == CoverageType.REGRESSION
+                ]),
             },
             "requirements": [
                 {
@@ -419,7 +427,9 @@ class TestCoverageRepository:
     async def get_stats(self, project_id: str) -> dict[str, Any]:
         """Get coverage statistics for a project."""
         # Total coverage mappings
-        total_result = await self.session.execute(select(func.count()).where(TestCoverage.project_id == project_id))
+        total_result = await self.session.execute(
+            select(func.count()).where(TestCoverage.project_id == project_id)
+        )
         total = total_result.scalar() or 0
 
         # By type
@@ -440,10 +450,14 @@ class TestCoverageRepository:
 
         # Unique test cases and requirements
         unique_tests = await self.session.execute(
-            select(func.count(func.distinct(TestCoverage.test_case_id))).where(TestCoverage.project_id == project_id),
+            select(func.count(func.distinct(TestCoverage.test_case_id))).where(
+                TestCoverage.project_id == project_id
+            ),
         )
         unique_reqs = await self.session.execute(
-            select(func.count(func.distinct(TestCoverage.requirement_id))).where(TestCoverage.project_id == project_id),
+            select(func.count(func.distinct(TestCoverage.requirement_id))).where(
+                TestCoverage.project_id == project_id
+            ),
         )
 
         return {

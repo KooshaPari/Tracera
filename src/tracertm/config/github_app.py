@@ -53,7 +53,9 @@ class GitHubAppConfig:
         # Parse private key
         try:
             private_key = load_pem_private_key(
-                self.private_key.encode() if isinstance(self.private_key, str) else self.private_key,
+                self.private_key.encode()
+                if isinstance(self.private_key, str)
+                else self.private_key,
                 password=None,
             )
         except Exception as e:

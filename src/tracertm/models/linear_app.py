@@ -33,7 +33,9 @@ class LinearAppInstallation(Base, TimestampMixin):
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
-    account_id: Mapped[str] = mapped_column(String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False)
+    account_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False
+    )
 
     # Linear installation details
     workspace_id: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)

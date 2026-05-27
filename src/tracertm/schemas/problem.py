@@ -144,7 +144,9 @@ class FiveWhysAnalysis(BaseModel):
     """Schema for 5 Whys RCA method."""
 
     problem_statement: str
-    levels: list[dict[str, str]] = Field(..., description="List of why levels: [{'question': '...', 'answer': '...'}]")
+    levels: list[dict[str, str]] = Field(
+        ..., description="List of why levels: [{'question': '...', 'answer': '...'}]"
+    )
     root_cause_conclusion: str
 
 
@@ -164,7 +166,9 @@ class WorkaroundUpdate(BaseModel):
 
     workaround_available: bool
     workaround_description: str | None = None
-    workaround_effectiveness: str | None = Field(None, pattern="^(permanent_fix|partial|temporary)$")
+    workaround_effectiveness: str | None = Field(
+        None, pattern="^(permanent_fix|partial|temporary)$"
+    )
 
 
 class PermanentFixUpdate(BaseModel):

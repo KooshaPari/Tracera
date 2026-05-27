@@ -33,10 +33,14 @@ class AccountUser(Base, TimestampMixin):
     """
 
     __tablename__ = "account_users"
-    __table_args__: tuple[UniqueConstraint, ...] = (UniqueConstraint("account_id", "user_id", name="uc_account_user"),)
+    __table_args__: tuple[UniqueConstraint, ...] = (
+        UniqueConstraint("account_id", "user_id", name="uc_account_user"),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
-    account_id: Mapped[str] = mapped_column(String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False)
+    account_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False
+    )
     user_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     role: Mapped[str] = mapped_column(String(50), nullable=False, default=AccountRole.MEMBER)
     joined_at: Mapped[datetime] = mapped_column(

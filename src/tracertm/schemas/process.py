@@ -153,7 +153,9 @@ class ProcessVersionCreate(BaseModel):
     """Schema for creating a new version of a process."""
 
     version_notes: str | None = None
-    changes: dict[str, object] | None = Field(None, description="Specific changes to apply to create new version")
+    changes: dict[str, object] | None = Field(
+        None, description="Specific changes to apply to create new version"
+    )
 
 
 class ProcessActivation(BaseModel):

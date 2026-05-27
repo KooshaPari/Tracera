@@ -105,9 +105,13 @@ class TestCaseRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_number(self, test_case_number: str, project_id: str | None = None) -> TestCase | None:
+    async def get_by_number(
+        self, test_case_number: str, project_id: str | None = None
+    ) -> TestCase | None:
         """Get test case by test case number."""
-        query = select(TestCase).where(TestCase.test_case_number == test_case_number, TestCase.deleted_at.is_(None))
+        query = select(TestCase).where(
+            TestCase.test_case_number == test_case_number, TestCase.deleted_at.is_(None)
+        )
 
         if project_id:
             query = query.where(TestCase.project_id == project_id)

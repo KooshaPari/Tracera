@@ -148,7 +148,9 @@ class WebhookService:
                 error_message="Rate limit exceeded",
                 processing_time_ms=processing_time,
             )
-            await self.webhook_repo.record_request(webhook_id, success=False, error_message="Rate limit exceeded")
+            await self.webhook_repo.record_request(
+                webhook_id, success=False, error_message="Rate limit exceeded"
+            )
             return {
                 "success": False,
                 "message": "Rate limit exceeded",
@@ -180,7 +182,9 @@ class WebhookService:
                     error_message="Missing signature",
                     processing_time_ms=processing_time,
                 )
-                await self.webhook_repo.record_request(webhook_id, success=False, error_message="Missing signature")
+                await self.webhook_repo.record_request(
+                    webhook_id, success=False, error_message="Missing signature"
+                )
                 return {
                     "success": False,
                     "message": "Missing signature",
@@ -200,7 +204,9 @@ class WebhookService:
                     error_message="Invalid signature",
                     processing_time_ms=processing_time,
                 )
-                await self.webhook_repo.record_request(webhook_id, success=False, error_message="Invalid signature")
+                await self.webhook_repo.record_request(
+                    webhook_id, success=False, error_message="Invalid signature"
+                )
                 return {
                     "success": False,
                     "message": "Invalid signature",
@@ -283,7 +289,9 @@ class WebhookService:
                 error_message=error_message,
                 processing_time_ms=processing_time,
             )
-            await self.webhook_repo.record_request(webhook_id, success=False, error_message=error_message)
+            await self.webhook_repo.record_request(
+                webhook_id, success=False, error_message=error_message
+            )
 
             return {
                 "success": False,

@@ -62,7 +62,12 @@ async def get_qa_metrics_summary(
             "automated_count": test_case_stats.get("automated_count", 0),
             "manual_count": test_case_stats.get("manual_count", 0),
             "automation_percentage": (
-                round(test_case_stats.get("automated_count", 0) / test_case_stats.get("total", 1) * 100, 1)
+                round(
+                    test_case_stats.get("automated_count", 0)
+                    / test_case_stats.get("total", 1)
+                    * 100,
+                    1,
+                )
                 if test_case_stats.get("total", 0) > 0
                 else 0
             ),
@@ -186,7 +191,9 @@ async def get_coverage_metrics(
         "by_view": coverage_by_view,
         "by_type": stats.get("by_type", {}),
         "gaps_count": gaps.get("uncovered_count", 0),
-        "high_priority_gaps": len([g for g in gaps.get("gaps", []) if g.get("priority") in {"high", "critical"}]),
+        "high_priority_gaps": len([
+            g for g in gaps.get("gaps", []) if g.get("priority") in {"high", "critical"}
+        ]),
     }
 
 
@@ -238,7 +245,9 @@ async def get_defect_density(
 
     return {
         "project_id": project_id,
-        "overall_defect_density": (round(total_failures / total_executions * 100, 2) if total_executions > 0 else 0),
+        "overall_defect_density": (
+            round(total_failures / total_executions * 100, 2) if total_executions > 0 else 0
+        ),
         "total_executions": total_executions,
         "total_failures": total_failures,
         "test_cases_with_failures": len(test_cases_with_failures),
@@ -312,7 +321,9 @@ async def get_flaky_tests(
             "test_case_id": tc_id,
             "inconsistent_days": count,
         }
-        for tc_id, count in sorted(inconsistent_days.items(), key=operator.itemgetter(1), reverse=True)
+        for tc_id, count in sorted(
+            inconsistent_days.items(), key=operator.itemgetter(1), reverse=True
+        )
     ][:20]
 
     return {

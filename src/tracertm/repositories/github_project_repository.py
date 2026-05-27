@@ -49,7 +49,9 @@ class GitHubProjectRepository:
 
     async def get_by_id(self, github_project_id: str) -> GitHubProject | None:
         """Get GitHub Project by ID."""
-        result = await self.db.execute(select(GitHubProject).where(GitHubProject.id == github_project_id))
+        result = await self.db.execute(
+            select(GitHubProject).where(GitHubProject.id == github_project_id)
+        )
         return result.scalar_one_or_none()
 
     async def get_by_project_id(self, project_id: str | uuid.UUID) -> list[GitHubProject]:
@@ -60,7 +62,9 @@ class GitHubProjectRepository:
 
     async def get_by_repo(self, github_repo_id: int) -> list[GitHubProject]:
         """Get all GitHub Projects for a GitHub repository."""
-        result = await self.db.execute(select(GitHubProject).where(GitHubProject.github_repo_id == github_repo_id))
+        result = await self.db.execute(
+            select(GitHubProject).where(GitHubProject.github_repo_id == github_repo_id)
+        )
         return list(result.scalars().all())
 
     async def update(

@@ -67,7 +67,9 @@ def add_logger_name(logger: logging.Logger, _method_name: str, event_dict: Event
     return event_dict
 
 
-def censor_sensitive_data(_logger: logging.Logger, _method_name: str, event_dict: EventDict) -> EventDict:
+def censor_sensitive_data(
+    _logger: logging.Logger, _method_name: str, event_dict: EventDict
+) -> EventDict:
     """Remove sensitive data from logs.
 
     Args:
@@ -100,7 +102,9 @@ def censor_sensitive_data(_logger: logging.Logger, _method_name: str, event_dict
             elif isinstance(value, dict):
                 censored[key] = _censor_dict(value)
             elif isinstance(value, list):
-                censored[key] = [_censor_dict(item) if isinstance(item, dict) else item for item in value]
+                censored[key] = [
+                    _censor_dict(item) if isinstance(item, dict) else item for item in value
+                ]
             else:
                 censored[key] = value
         return censored

@@ -92,13 +92,17 @@ class TestSuiteRepository:
     async def get_by_id(self, suite_id: str) -> TestSuite | None:
         """Get a test suite by ID."""
         result = await self.session.execute(
-            select(TestSuite).options(selectinload(TestSuite.test_case_associations)).where(TestSuite.id == suite_id),
+            select(TestSuite)
+            .options(selectinload(TestSuite.test_case_associations))
+            .where(TestSuite.id == suite_id),
         )
         return result.scalar_one_or_none()
 
     async def get_by_number(self, suite_number: str) -> TestSuite | None:
         """Get a test suite by suite number."""
-        result = await self.session.execute(select(TestSuite).where(TestSuite.suite_number == suite_number))
+        result = await self.session.execute(
+            select(TestSuite).where(TestSuite.suite_number == suite_number)
+        )
         return result.scalar_one_or_none()
 
     async def list_by_project(
@@ -128,7 +132,9 @@ class TestSuiteRepository:
             query = query.where(TestSuite.owner == owner)
         if search:
             search_pattern = f"%{search}%"
-            query = query.where(TestSuite.name.ilike(search_pattern) | TestSuite.description.ilike(search_pattern))
+            query = query.where(
+                TestSuite.name.ilike(search_pattern) | TestSuite.description.ilike(search_pattern)
+            )
 
         # Count total
         count_query = select(func.count()).select_from(query.subquery())
@@ -354,12 +360,16 @@ class TestSuiteRepository:
     async def get_stats(self, project_id: str) -> dict[str, Any]:
         """Get statistics for test suites in a project."""
         # Total count
-        total_result = await self.session.execute(select(func.count()).where(TestSuite.project_id == project_id))
+        total_result = await self.session.execute(
+            select(func.count()).where(TestSuite.project_id == project_id)
+        )
         total = total_result.scalar() or 0
 
         # By status
         status_result = await self.session.execute(
-            select(TestSuite.status, func.count()).where(TestSuite.project_id == project_id).group_by(TestSuite.status),
+            select(TestSuite.status, func.count())
+            .where(TestSuite.project_id == project_id)
+            .group_by(TestSuite.status),
         )
         by_status = {str(row[0].value): row[1] for row in status_result}
 

@@ -37,7 +37,9 @@ def register_exception_handlers(app: FastAPI) -> None:
     """
 
     @app.exception_handler(RedisUnavailableError)
-    async def redis_unavailable_handler(_request: Request, exc: RedisUnavailableError) -> JSONResponse:
+    async def redis_unavailable_handler(
+        _request: Request, exc: RedisUnavailableError
+    ) -> JSONResponse:
         """Required service Redis down: fail clearly with named item (CLAUDE.md)."""
         logger.error("Redis unavailable: %s", exc)
         return JSONResponse(
@@ -53,16 +55,23 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=401,
             content={
-                "detail": str(exc) or "Integration token expired or invalid. Please reconnect in Settings.",
+                "detail": str(exc)
+                or "Integration token expired or invalid. Please reconnect in Settings.",
                 "code": "integration_auth_required",
             },
         )
 
     @app.exception_handler(GitHubRateLimitError)
-    async def github_rate_limit_handler(_request: Request, exc: GitHubRateLimitError) -> JSONResponse:
+    async def github_rate_limit_handler(
+        _request: Request, exc: GitHubRateLimitError
+    ) -> JSONResponse:
         """GitHub rate limit: 429 + Retry-After for loud/graceful handling."""
         now = datetime.now(UTC)
-        reset = exc.reset_at.replace(tzinfo=UTC) if getattr(exc.reset_at, "tzinfo", None) is None else exc.reset_at
+        reset = (
+            exc.reset_at.replace(tzinfo=UTC)
+            if getattr(exc.reset_at, "tzinfo", None) is None
+            else exc.reset_at
+        )
         delta = (reset - now).total_seconds()
         retry_after = max(1, int(delta)) if delta > 0 else 60
         logger.warning("GitHub rate limit: retry after %s s", retry_after)
@@ -77,7 +86,9 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(LinearRateLimitError)
-    async def linear_rate_limit_handler(_request: Request, _exc: LinearRateLimitError) -> JSONResponse:
+    async def linear_rate_limit_handler(
+        _request: Request, _exc: LinearRateLimitError
+    ) -> JSONResponse:
         """Linear rate limit: 429 + Retry-After."""
         retry_after = 60
         logger.warning("Linear rate limit: retry after %s s", retry_after)

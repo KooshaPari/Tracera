@@ -122,7 +122,9 @@ class BenchmarkService:
             benchmark = await self.benchmark_view_query(view_name)
 
             # Get view size (view_name validated against PERFORMANCE_TARGETS allowlist)
-            size_result = await self.session.execute(text(f"SELECT pg_total_relation_size('{view_name}')"))  # nosec B608
+            size_result = await self.session.execute(
+                text(f"SELECT pg_total_relation_size('{view_name}')")
+            )  # nosec B608
             size_bytes = size_result.scalar() or 0
 
             results.append(
@@ -222,14 +224,18 @@ class BenchmarkService:
         # Calculate summary statistics
         total_views = len(view_results)
         views_meeting_target = sum(1 for v in view_results if v.meets_target)
-        avg_query_time = sum(v.query_time_ms for v in view_results) / total_views if total_views > 0 else 0
+        avg_query_time = (
+            sum(v.query_time_ms for v in view_results) / total_views if total_views > 0 else 0
+        )
 
         return {
             "timestamp": datetime.now(UTC).isoformat(),
             "summary": {
                 "total_views": total_views,
                 "views_meeting_target": views_meeting_target,
-                "target_compliance_rate": (views_meeting_target / total_views * 100 if total_views > 0 else 0),
+                "target_compliance_rate": (
+                    views_meeting_target / total_views * 100 if total_views > 0 else 0
+                ),
                 "avg_query_time_ms": avg_query_time,
             },
             "views": [
@@ -248,7 +254,9 @@ class BenchmarkService:
                     "duration_ms": incremental_result.duration_ms,
                     "target_ms": 1000,
                     "meets_target": (
-                        incremental_result.metadata.get("meets_target", False) if incremental_result.metadata else False
+                        incremental_result.metadata.get("meets_target", False)
+                        if incremental_result.metadata
+                        else False
                     ),
                     "success": incremental_result.success,
                 },
@@ -256,7 +264,9 @@ class BenchmarkService:
                     "duration_ms": full_result.duration_ms,
                     "target_ms": 5000,
                     "meets_target": (
-                        full_result.metadata.get("meets_target", False) if full_result.metadata else False
+                        full_result.metadata.get("meets_target", False)
+                        if full_result.metadata
+                        else False
                     ),
                     "success": full_result.success,
                 },

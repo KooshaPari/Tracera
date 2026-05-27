@@ -120,7 +120,9 @@ class MaterializedViewService:
             Dict with view statistics
         """
         # Get row counts for each view
-        traceability_count = await self.session.execute(text("SELECT COUNT(*) FROM traceability_matrix"))
+        traceability_count = await self.session.execute(
+            text("SELECT COUNT(*) FROM traceability_matrix")
+        )
         impact_count = await self.session.execute(text("SELECT COUNT(*) FROM impact_analysis"))
         coverage_count = await self.session.execute(text("SELECT COUNT(*) FROM coverage_analysis"))
 

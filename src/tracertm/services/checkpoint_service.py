@@ -106,7 +106,12 @@ class CheckpointService:
             if self._owns_session:
                 await db.commit()
 
-            logger.info("Created checkpoint %s for session %s at turn %s", checkpoint.id, session_id, turn_number)
+            logger.info(
+                "Created checkpoint %s for session %s at turn %s",
+                checkpoint.id,
+                session_id,
+                turn_number,
+            )
 
         except Exception:
             if self._owns_session:
@@ -140,7 +145,11 @@ class CheckpointService:
             checkpoint = result.scalar_one_or_none()
 
             if checkpoint:
-                logger.info("Loaded latest checkpoint for session %s: turn %s", session_id, checkpoint.turn_number)
+                logger.info(
+                    "Loaded latest checkpoint for session %s: turn %s",
+                    session_id,
+                    checkpoint.turn_number,
+                )
             else:
                 logger.info("No checkpoints found for session %s", session_id)
 
@@ -234,7 +243,9 @@ class CheckpointService:
         db = await self._get_session()
 
         try:
-            result = await db.execute(select(AgentCheckpoint).where(AgentCheckpoint.id == checkpoint_id))
+            result = await db.execute(
+                select(AgentCheckpoint).where(AgentCheckpoint.id == checkpoint_id)
+            )
             checkpoint = result.scalar_one_or_none()
 
             if not checkpoint:
@@ -320,7 +331,9 @@ class CheckpointService:
         db = await self._get_session()
 
         try:
-            result = await db.execute(select(AgentCheckpoint).where(AgentCheckpoint.session_id == session_id))
+            result = await db.execute(
+                select(AgentCheckpoint).where(AgentCheckpoint.session_id == session_id)
+            )
             checkpoints = list(result.scalars().all())
 
             if not checkpoints:

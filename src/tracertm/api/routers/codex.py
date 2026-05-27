@@ -45,7 +45,9 @@ async def codex_review_image(
     if not artifact_id:
         raise HTTPException(status_code=400, detail="artifact_id required")
 
-    interaction = await codex_service.review_image(artifact_id, prompt, project_id, execution_id=execution_id)
+    interaction = await codex_service.review_image(
+        artifact_id, prompt, project_id, execution_id=execution_id
+    )
     await db.commit()
 
     return CodexAgentTaskResponse(

@@ -73,11 +73,19 @@ class ApiConfig:
 
         # Handle timeout - could be string or numeric
         timeout_value = config_manager.get("api_timeout")
-        timeout = float(cast("float | str", timeout_value)) if timeout_value is not None else TIMEOUT_DEFAULT
+        timeout = (
+            float(cast("float | str", timeout_value))
+            if timeout_value is not None
+            else TIMEOUT_DEFAULT
+        )
 
         # Handle max_retries - could be string or numeric
         retries_value = config_manager.get("api_max_retries")
-        max_retries = int(cast("int | str", retries_value)) if retries_value is not None else MAX_RETRIES_DEFAULT
+        max_retries = (
+            int(cast("int | str", retries_value))
+            if retries_value is not None
+            else MAX_RETRIES_DEFAULT
+        )
 
         return cls(
             base_url=cast("str", api_url).rstrip("/"),
@@ -136,7 +144,9 @@ class Conflict:
             remote_version=cast("int", data["remote_version"]),
             local_data=cast("dict[str, Any]", data["local_data"]),
             remote_data=cast("dict[str, Any]", data["remote_data"]),
-            timestamp=datetime.fromisoformat(cast("str", data.get("timestamp", datetime.now(UTC).isoformat()))),
+            timestamp=datetime.fromisoformat(
+                cast("str", data.get("timestamp", datetime.now(UTC).isoformat()))
+            ),
         )
 
 
@@ -197,7 +207,10 @@ class ApiError(Exception):
     """Base exception for API errors."""
 
     def __init__(
-        self, message: str, status_code: int | None = None, response_data: dict[str, Any] | None = None
+        self,
+        message: str,
+        status_code: int | None = None,
+        response_data: dict[str, Any] | None = None,
     ) -> None:
         """Initialize API error.
 
@@ -400,11 +413,15 @@ class ApiClient:
             except httpx.TimeoutException as e:
                 # Wrap timeout exceptions as NetworkError
                 last_error = e
-                logger.warning("Timeout error on attempt %s/%s: %s", attempt + 1, self.config.max_retries, e)
+                logger.warning(
+                    "Timeout error on attempt %s/%s: %s", attempt + 1, self.config.max_retries, e
+                )
 
             except httpx.NetworkError as e:
                 last_error = e
-                logger.warning("Network error on attempt %s/%s: %s", attempt + 1, self.config.max_retries, e)
+                logger.warning(
+                    "Network error on attempt %s/%s: %s", attempt + 1, self.config.max_retries, e
+                )
 
             except RateLimitError as e:
                 last_error = e

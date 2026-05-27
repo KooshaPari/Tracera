@@ -53,7 +53,9 @@ def _start_device_flow(
 
     authkit_domain = authkit_domain.rstrip("/")
     device_endpoint = (
-        f"{authkit_domain}/oauth2/device_authorization" if connect_endpoint else f"{authkit_domain}/authorize/device"
+        f"{authkit_domain}/oauth2/device_authorization"
+        if connect_endpoint
+        else f"{authkit_domain}/authorize/device"
     )
 
     payload = {"client_id": client_id}
@@ -468,7 +470,9 @@ async def config_list(ctx: object) -> dict[str, object]:
             raw = config_manager.get_all()
         else:
             raw = config_manager.load().model_dump()
-        config_dict: dict[str, object] = cast("dict[str, object]", raw) if isinstance(raw, dict[str, object]) else {}  # type: ignore[misc]
+        config_dict: dict[str, object] = (
+            cast("dict[str, object]", raw) if isinstance(raw, dict[str, object]) else {}
+        )  # type: ignore[misc]
 
         # Mask sensitive values
         display_config: dict[str, object] = {}

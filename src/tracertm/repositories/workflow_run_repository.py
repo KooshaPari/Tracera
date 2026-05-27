@@ -124,5 +124,7 @@ class WorkflowRunRepository:
             update_data["completed_at"] = completed_at
 
         await self.session.execute(
-            update(WorkflowRun).where(column("external_run_id") == external_run_id).values(**update_data),
+            update(WorkflowRun)
+            .where(column("external_run_id") == external_run_id)
+            .values(**update_data),
         )

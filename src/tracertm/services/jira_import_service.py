@@ -138,10 +138,14 @@ class JiraImportService:
             links_imported = 0
             for issue in data.get("issues", []):
                 try:
-                    links = await self._import_jira_links(str(project.id), issue, issue_map, agent_id)
+                    links = await self._import_jira_links(
+                        str(project.id), issue, issue_map, agent_id
+                    )
                     links_imported += len(links)
                 except (ValueError, KeyError, ConcurrencyError, OperationalError) as e:
-                    logger.warning("Failed to import links for issue %s: %s", issue.get("key", "unknown"), e)
+                    logger.warning(
+                        "Failed to import links for issue %s: %s", issue.get("key", "unknown"), e
+                    )
                     errors.append(f"Failed to import links for {issue['key']}: {e!s}")
 
         except (json.JSONDecodeError, ValueError, KeyError, OperationalError) as e:
@@ -213,7 +217,9 @@ class JiraImportService:
 
         for link in fields.get("issuelinks", []):
             try:
-                link_type = self.LINK_TYPE_MAP.get(link.get("type", {}).get("name", "relates to"), "relates_to")
+                link_type = self.LINK_TYPE_MAP.get(
+                    link.get("type", {}).get("name", "relates to"), "relates_to"
+                )
 
                 # Determine source and target
                 if "outwardIssue" in link:

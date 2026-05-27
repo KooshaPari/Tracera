@@ -157,7 +157,9 @@ async def create_baseline(
         user_id = claims.get("sub") or claims.get("user_id")
 
         # Convert items to tuple format
-        items_tuples = [(item["item_id"], item["item_type"], item["content_hash"]) for item in request.items]
+        items_tuples = [
+            (item["item_id"], item["item_type"], item["content_hash"]) for item in request.items
+        ]
 
         baseline = await baseline_repo.create_baseline(
             db=db,
@@ -368,7 +370,9 @@ async def delete_baseline(
 
         # Verify exists
         result = await db.execute(
-            select(Baseline).where(Baseline.baseline_id == baseline_id).where(Baseline.project_id == project_id),
+            select(Baseline)
+            .where(Baseline.baseline_id == baseline_id)
+            .where(Baseline.project_id == project_id),
         )
         baseline = result.scalar_one_or_none()
 
@@ -436,7 +440,9 @@ async def generate_embeddings(
         for spec_id in request.spec_ids:
             try:
                 # Check if embedding already exists
-                existing = await embedding_repo.get_embedding(db, spec_id, request.spec_type, request.model_name)
+                existing = await embedding_repo.get_embedding(
+                    db, spec_id, request.spec_type, request.model_name
+                )
 
                 if existing and not request.force_refresh:
                     skipped += 1

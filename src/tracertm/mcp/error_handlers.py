@@ -81,7 +81,9 @@ class ProjectNotFoundError(LLMFriendlyError):
         """
         super().__init__(
             message=f"Project '{project_id}' not found.",
-            recovery_hint=("Use list_projects() to see available projects, or create_project() to create a new one."),
+            recovery_hint=(
+                "Use list_projects() to see available projects, or create_project() to create a new one."
+            ),
             context={"project_id": project_id},
         )
 
@@ -102,7 +104,9 @@ class ItemNotFoundError(LLMFriendlyError):
 
         super().__init__(
             message=f"Item '{item_id}' not found.",
-            recovery_hint=("Use query_items() to search for items, or create_item() to create a new one."),
+            recovery_hint=(
+                "Use query_items() to search for items, or create_item() to create a new one."
+            ),
             context=context,
         )
 
@@ -202,7 +206,9 @@ class AuthorizationError(LLMFriendlyError):
         """
         super().__init__(
             message="Insufficient permissions for this operation.",
-            recovery_hint=("Request access from your administrator, or use a token with appropriate scopes."),
+            recovery_hint=(
+                "Request access from your administrator, or use a token with appropriate scopes."
+            ),
             context={
                 "required": required_scopes,
                 "available": user_scopes,

@@ -58,7 +58,9 @@ class ADR(Base, TimestampMixin):
     )
 
     # Core Identification
-    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_specification_uuid)
+    id: Mapped[str] = mapped_column(
+        String(255), primary_key=True, default=generate_specification_uuid
+    )
     adr_number: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     project_id: Mapped[str] = mapped_column(
         UUID(as_uuid=True),
@@ -69,7 +71,9 @@ class ADR(Base, TimestampMixin):
 
     # Basic Information
     title: Mapped[str] = mapped_column(String(500), nullable=False)
-    status: Mapped[str] = mapped_column(String(50), nullable=False, default=ADRStatus.PROPOSED.value, index=True)
+    status: Mapped[str] = mapped_column(
+        String(50), nullable=False, default=ADRStatus.PROPOSED.value, index=True
+    )
 
     # ADR Content - 7-part format
     context: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -96,7 +100,9 @@ class ADR(Base, TimestampMixin):
     date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     approved_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    last_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     # Flexible metadata
     adr_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
@@ -105,7 +111,9 @@ class ADR(Base, TimestampMixin):
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     __mapper_args__ = {  # noqa: RUF012
         "version_id_col": version,
@@ -196,7 +204,9 @@ class Contract(Base, TimestampMixin):
     )
 
     # Core Identification
-    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_specification_uuid)
+    id: Mapped[str] = mapped_column(
+        String(255), primary_key=True, default=generate_specification_uuid
+    )
     contract_number: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     project_id: Mapped[str] = mapped_column(
         UUID(as_uuid=True),
@@ -219,7 +229,9 @@ class Contract(Base, TimestampMixin):
         default=ContractType.INTERFACE.value,
         index=True,
     )
-    status: Mapped[str] = mapped_column(String(50), nullable=False, default=ContractStatus.DRAFT.value, index=True)
+    status: Mapped[str] = mapped_column(
+        String(50), nullable=False, default=ContractStatus.DRAFT.value, index=True
+    )
 
     # Contract Specifications
     preconditions: Mapped[list[dict[str, object]] | None] = mapped_column(JSONType, nullable=True)
@@ -237,8 +249,12 @@ class Contract(Base, TimestampMixin):
     executable_spec: Mapped[str | None] = mapped_column(Text, nullable=True)
     spec_language: Mapped[str | None] = mapped_column(String(100), nullable=True)
     verification_result: Mapped[dict[str, object] | None] = mapped_column(JSONType, nullable=True)
-    verification_timestamp: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    last_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    verification_timestamp: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    last_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     # Governance
     approved_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -248,13 +264,17 @@ class Contract(Base, TimestampMixin):
     tags: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True)
 
     # Flexible metadata
-    contract_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+    contract_metadata: Mapped[dict[str, object]] = mapped_column(
+        JSONType, nullable=False, default=dict
+    )
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     __mapper_args__ = {  # noqa: RUF012
         "version_id_col": version,
@@ -333,7 +353,9 @@ class Feature(Base, TimestampMixin):
     )
 
     # Core Identification
-    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_specification_uuid)
+    id: Mapped[str] = mapped_column(
+        String(255), primary_key=True, default=generate_specification_uuid
+    )
     feature_number: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     project_id: Mapped[str] = mapped_column(
         UUID(as_uuid=True),
@@ -352,7 +374,9 @@ class Feature(Base, TimestampMixin):
     so_that: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     # Feature Definition
-    status: Mapped[str] = mapped_column(String(50), nullable=False, default=FeatureStatus.DRAFT.value, index=True)
+    status: Mapped[str] = mapped_column(
+        String(50), nullable=False, default=FeatureStatus.DRAFT.value, index=True
+    )
     file_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
     background: Mapped[str | None] = mapped_column(Text, nullable=True)
     tags: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True)
@@ -366,13 +390,17 @@ class Feature(Base, TimestampMixin):
     approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Flexible metadata
-    feature_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+    feature_metadata: Mapped[dict[str, object]] = mapped_column(
+        JSONType, nullable=False, default=dict
+    )
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     # Relationships
     scenarios = relationship(
@@ -470,7 +498,9 @@ class Scenario(Base, TimestampMixin):
     )
 
     # Core Identification
-    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_specification_uuid)
+    id: Mapped[str] = mapped_column(
+        String(255), primary_key=True, default=generate_specification_uuid
+    )
     scenario_number: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     feature_id: Mapped[str] = mapped_column(
         String(255),
@@ -499,7 +529,9 @@ class Scenario(Base, TimestampMixin):
 
     # Classification
     tags: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True)
-    status: Mapped[str] = mapped_column(String(50), nullable=False, default=ScenarioStatus.DRAFT.value, index=True)
+    status: Mapped[str] = mapped_column(
+        String(50), nullable=False, default=ScenarioStatus.DRAFT.value, index=True
+    )
 
     # Traceability
     requirement_ids: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True)
@@ -508,20 +540,26 @@ class Scenario(Base, TimestampMixin):
     # Flexible metadata
     # Execution Statistics
     pass_rate: Mapped[float | None] = mapped_column(default=0.0)
-    last_executed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_executed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     # Governance
     approved_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
     approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Flexible metadata
-    scenario_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+    scenario_metadata: Mapped[dict[str, object]] = mapped_column(
+        JSONType, nullable=False, default=dict
+    )
 
     # Optimistic locking
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     # Relationships
     feature = relationship(
@@ -634,7 +672,9 @@ class StepDefinition(Base, TimestampMixin):
     )
 
     # Core Identification
-    id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_specification_uuid)
+    id: Mapped[str] = mapped_column(
+        String(255), primary_key=True, default=generate_specification_uuid
+    )
 
     # Step Classification
     step_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
@@ -661,7 +701,9 @@ class StepDefinition(Base, TimestampMixin):
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     # Soft delete
-    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     __mapper_args__ = {  # noqa: RUF012
         "version_id_col": version,
@@ -716,4 +758,6 @@ class StepDefinition(Base, TimestampMixin):
         Returns:
             String showing StepDefinition ID, type, and pattern.
         """
-        return f"<StepDefinition(id={self.id!r}, type={self.step_type!r}, pattern={self.pattern!r})>"
+        return (
+            f"<StepDefinition(id={self.id!r}, type={self.step_type!r}, pattern={self.pattern!r})>"
+        )

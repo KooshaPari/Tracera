@@ -46,7 +46,12 @@ class ProjectBackupService:
             raise ValueError(msg)
 
         # Get all items
-        items = self.session.query(Item).filter(Item.project_id == project_id, Item.deleted_at.is_(None)).all()
+        items = (
+            self.session
+            .query(Item)
+            .filter(Item.project_id == project_id, Item.deleted_at.is_(None))
+            .all()
+        )
 
         # Get all links
         links = self.session.query(Link).filter(Link.project_id == project_id).all()
@@ -91,7 +96,13 @@ class ProjectBackupService:
         if include_history:
             from tracertm.models.event import Event
 
-            events = self.session.query(Event).filter(Event.project_id == project_id).order_by(Event.created_at).all()
+            events = (
+                self.session
+                .query(Event)
+                .filter(Event.project_id == project_id)
+                .order_by(Event.created_at)
+                .all()
+            )
             backup_data["events"] = [
                 {
                     "event_type": event.event_type,
@@ -120,7 +131,9 @@ class ProjectBackupService:
 
         return backup_data
 
-    def _get_or_create_project_from_backup(self, backup_data: dict[str, Any], project_name: str | None) -> str:
+    def _get_or_create_project_from_backup(
+        self, backup_data: dict[str, Any], project_name: str | None
+    ) -> str:
         """Create or find project from backup; return project_id."""
         target_name = project_name or backup_data["project"].get("name", "restored-project")
         project = self.session.query(Project).filter(Project.name == target_name).first()
@@ -130,7 +143,9 @@ class ProjectBackupService:
             return str(project.id)
         project = Project(
             name=target_name,
-            description=backup_data["project"].get("description", f"Restored project: {target_name}"),
+            description=backup_data["project"].get(
+                "description", f"Restored project: {target_name}"
+            ),
             project_metadata={
                 **(backup_data["project"].get("metadata", {})),
                 "restored_from_backup": backup_data.get("backup_date"),
@@ -168,7 +183,9 @@ class ProjectBackupService:
         self.session.commit()
         return item_id_map
 
-    def _apply_parent_refs_from_backup(self, backup_data: dict[str, Any], item_id_map: dict[str, str]) -> None:
+    def _apply_parent_refs_from_backup(
+        self, backup_data: dict[str, Any], item_id_map: dict[str, str]
+    ) -> None:
         """Update parent_id on restored items."""
         for item_data in backup_data.get("items", []):
             old_id = item_data["id"]
@@ -261,7 +278,9 @@ class ProjectBackupService:
             backup_data["links"] = []
 
         # Restore as new project
-        return self.restore_project(backup_data, project_name=target_project_name, preserve_ids=False)
+        return self.restore_project(
+            backup_data, project_name=target_project_name, preserve_ids=False
+        )
 
     def create_template(
         self,

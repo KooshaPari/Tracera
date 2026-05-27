@@ -128,7 +128,9 @@ if TEXTUAL_AVAILABLE:
                 self.exit(message="No database configured. Run 'rtm config init' first.")
                 return
 
-            self.db = DatabaseConnection(str(database_url)) if database_url else DatabaseConnection("")
+            self.db = (
+                DatabaseConnection(str(database_url)) if database_url else DatabaseConnection("")
+            )
             self.db.connect()
 
         def load_project(self) -> None:
@@ -164,7 +166,9 @@ if TEXTUAL_AVAILABLE:
                     self.nodes[item.id] = (x, y)  # type: ignore[index]
 
                 # Get links
-                links = session.query(Link).filter(Link.project_id == self.project_id).limit(100).all()
+                links = (
+                    session.query(Link).filter(Link.project_id == self.project_id).limit(100).all()
+                )
 
                 self.links = [
                     (link.source_item_id, link.target_item_id)  # type: ignore[misc]
@@ -193,7 +197,9 @@ if TEXTUAL_AVAILABLE:
                         link = (
                             session
                             .query(Link)
-                            .filter(Link.source_item_id == source_id, Link.target_item_id == target_id)
+                            .filter(
+                                Link.source_item_id == source_id, Link.target_item_id == target_id
+                            )
                             .first()
                         )
                         link_type = link.link_type if link else "unknown"
@@ -205,7 +211,9 @@ if TEXTUAL_AVAILABLE:
 
             # Update stats
             stats = self.query_one("#graph-stats", Static)
-            stats.update(f"Nodes: {len(self.nodes)}\nLinks: {len(self.links)}\nZoom: {self.zoom:.1f}x")
+            stats.update(
+                f"Nodes: {len(self.nodes)}\nLinks: {len(self.links)}\nZoom: {self.zoom:.1f}x"
+            )
 
             # Simple graph visualization
             graph_text = "Graph Visualization\n"

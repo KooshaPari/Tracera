@@ -74,7 +74,11 @@ async def progress_summary_resource() -> str:
         return "# Project not initialized"
 
     next_wf = status_data.get("next_workflow")
-    next_label = str(next_wf["id"]).replace("-", " ").title() if isinstance(next_wf, dict) else "All complete!"
+    next_label = (
+        str(next_wf["id"]).replace("-", " ").title()
+        if isinstance(next_wf, dict)
+        else "All complete!"
+    )
 
     return f"""# BMM Progress Summary
 

@@ -139,7 +139,9 @@ class ItemRepository:
         )
         return result.scalar() is not None
 
-    async def get_by_id(self, item_id: str | uuid.UUID, project_id: str | uuid.UUID | None = None) -> Item | None:
+    async def get_by_id(
+        self, item_id: str | uuid.UUID, project_id: str | uuid.UUID | None = None
+    ) -> Item | None:
         """Get item by ID, optionally scoped to project."""
         query = select(Item).where(Item.id == item_id, Item.deleted_at.is_(None))
 
@@ -149,7 +151,9 @@ class ItemRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def list_by_view(self, project_id: str | uuid.UUID, view: str, include_deleted: bool = False) -> list[Item]:
+    async def list_by_view(
+        self, project_id: str | uuid.UUID, view: str, include_deleted: bool = False
+    ) -> list[Item]:
         """List items by view."""
         query = select(Item).where(Item.project_id == project_id, Item.view == view)
         if not include_deleted:
@@ -158,7 +162,9 @@ class ItemRepository:
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
-    async def list_all(self, project_id: str | uuid.UUID, include_deleted: bool = False) -> list[Item]:
+    async def list_all(
+        self, project_id: str | uuid.UUID, include_deleted: bool = False
+    ) -> list[Item]:
         """List all items in project."""
         query = select(Item).where(Item.project_id == project_id)
         if not include_deleted:
@@ -220,7 +226,9 @@ class ItemRepository:
             item.deleted_at = datetime.now(UTC)
 
             # Cascade soft delete to children
-            children_query = select(Item).where(Item.parent_id == item_id, Item.deleted_at.is_(None))
+            children_query = select(Item).where(
+                Item.parent_id == item_id, Item.deleted_at.is_(None)
+            )
             children_result = await self.session.execute(children_query)
             children = children_result.scalars().all()
             for child in children:
@@ -325,7 +333,11 @@ class ItemRepository:
 
     async def get_children(self, item_id: str | uuid.UUID) -> list[Item]:
         """Get direct children of an item."""
-        query = select(Item).where(Item.parent_id == item_id, Item.deleted_at.is_(None)).order_by(Item.created_at)
+        query = (
+            select(Item)
+            .where(Item.parent_id == item_id, Item.deleted_at.is_(None))
+            .order_by(Item.created_at)
+        )
 
         result = await self.session.execute(query)
         return list(result.scalars().all())
@@ -376,7 +388,11 @@ class ItemRepository:
 
         hierarchy = hierarchy.union_all(child)
 
-        query = select(Item).join(hierarchy, Item.id == hierarchy.c.id).order_by(hierarchy.c.level, Item.created_at)
+        query = (
+            select(Item)
+            .join(hierarchy, Item.id == hierarchy.c.id)
+            .order_by(hierarchy.c.level, Item.created_at)
+        )
 
         result = await self.session.execute(query)
         return list(result.scalars().all())

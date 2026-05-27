@@ -23,7 +23,9 @@ class Agent(Base, TimestampMixin):
 
     __tablename__ = "agents"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=generate_agent_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=generate_agent_uuid
+    )
     project_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),
@@ -38,7 +40,9 @@ class Agent(Base, TimestampMixin):
     # Flexible metadata fields expected by tests
     config: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
     capabilities: Mapped[list[object]] = mapped_column(JSONType, nullable=False, default=list)
-    agent_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+    agent_metadata: Mapped[dict[str, object]] = mapped_column(
+        JSONType, nullable=False, default=dict
+    )
 
     last_activity_at: Mapped[str | None] = mapped_column(String(50), nullable=True)
 

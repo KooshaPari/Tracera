@@ -88,10 +88,14 @@ class WebhookIntegration(Base, TimestampMixin):
         nullable=False,
         default=WebhookProvider.CUSTOM,
     )
-    status: Mapped[WebhookStatus] = mapped_column(SQLEnum(WebhookStatus), nullable=False, default=WebhookStatus.ACTIVE)
+    status: Mapped[WebhookStatus] = mapped_column(
+        SQLEnum(WebhookStatus), nullable=False, default=WebhookStatus.ACTIVE
+    )
 
     # Authentication
-    webhook_secret: Mapped[str] = mapped_column(String(64), nullable=False, default=generate_webhook_secret)
+    webhook_secret: Mapped[str] = mapped_column(
+        String(64), nullable=False, default=generate_webhook_secret
+    )
     api_key: Mapped[str | None] = mapped_column(String(128), nullable=True)
 
     # Event configuration
@@ -111,7 +115,9 @@ class WebhookIntegration(Base, TimestampMixin):
 
     # Rate limiting
     rate_limit_per_minute: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
-    last_rate_limit_reset: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_rate_limit_reset: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     requests_in_window: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # Statistics

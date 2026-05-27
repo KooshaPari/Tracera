@@ -656,7 +656,9 @@ class EARSPatternAnalyzer:
             match = pattern.match(text)
             if match:
                 components = self._extract_components(pattern_type, match)
-                confidence = self._calculate_confidence(text, pattern_type, components, ambiguous, incomplete)
+                confidence = self._calculate_confidence(
+                    text, pattern_type, components, ambiguous, incomplete
+                )
 
                 # Validate
                 validation_issues = self._validate(text, components, ambiguous, incomplete)
@@ -696,7 +698,9 @@ class EARSPatternAnalyzer:
             incomplete_markers=incomplete,
         )
 
-    def _extract_components(self, pattern_type: EARSPatternType, match: re.Match[str]) -> EARSComponents:
+    def _extract_components(
+        self, pattern_type: EARSPatternType, match: re.Match[str]
+    ) -> EARSComponents:
         """Extract structured components from regex match."""
         groups = match.groups()
 
@@ -821,15 +825,21 @@ class EARSPatternAnalyzer:
             elif "incomplete" in issue_lower:
                 suggestions.append("Complete all TBD/placeholder sections")
             elif "compound" in issue_lower:
-                suggestions.append("Split into separate atomic requirements for better traceability")
+                suggestions.append(
+                    "Split into separate atomic requirements for better traceability"
+                )
             elif "quantifiable" in issue_lower or "metric" in issue_lower:
                 suggestions.append("Add measurable targets (e.g., 'within 200ms', '99.9% uptime')")
             elif "passive" in issue_lower:
-                suggestions.append("Rewrite using active voice: 'The system shall...' not 'It shall be...'")
+                suggestions.append(
+                    "Rewrite using active voice: 'The system shall...' not 'It shall be...'"
+                )
 
         return suggestions
 
-    def _to_formal_structure(self, pattern_type: EARSPatternType, components: EARSComponents) -> str:
+    def _to_formal_structure(
+        self, pattern_type: EARSPatternType, components: EARSComponents
+    ) -> str:
         """Generate normalized formal EARS structure."""
         if pattern_type == EARSPatternType.UBIQUITOUS:
             return f"The {components.system_name or '<system>'} shall {components.system_response or '<response>'}."
@@ -887,26 +897,38 @@ class RequirementQualityAnalyzer:
         scores: dict[str, float] = {}
 
         # Analyze each dimension
-        scores[QualityDimension.UNAMBIGUITY.value], unambiguity_issues = self._analyze_unambiguity(requirement_text)
+        scores[QualityDimension.UNAMBIGUITY.value], unambiguity_issues = self._analyze_unambiguity(
+            requirement_text
+        )
         issues.extend(unambiguity_issues)
 
-        scores[QualityDimension.COMPLETENESS.value], completeness_issues = self._analyze_completeness(requirement_text)
+        scores[QualityDimension.COMPLETENESS.value], completeness_issues = (
+            self._analyze_completeness(requirement_text)
+        )
         issues.extend(completeness_issues)
 
-        scores[QualityDimension.VERIFIABILITY.value], verifiability_issues = self._analyze_verifiability(
-            requirement_text,
+        scores[QualityDimension.VERIFIABILITY.value], verifiability_issues = (
+            self._analyze_verifiability(
+                requirement_text,
+            )
         )
         issues.extend(verifiability_issues)
 
-        scores[QualityDimension.SINGULARITY.value], singularity_issues = self._analyze_singularity(requirement_text)
+        scores[QualityDimension.SINGULARITY.value], singularity_issues = self._analyze_singularity(
+            requirement_text
+        )
         issues.extend(singularity_issues)
 
-        scores[QualityDimension.NECESSITY.value], necessity_issues = self._analyze_necessity(requirement_text)
+        scores[QualityDimension.NECESSITY.value], necessity_issues = self._analyze_necessity(
+            requirement_text
+        )
         issues.extend(necessity_issues)
 
-        scores[QualityDimension.TRACEABILITY.value], traceability_issues = self._analyze_traceability(
-            linked_tests,
-            linked_items,
+        scores[QualityDimension.TRACEABILITY.value], traceability_issues = (
+            self._analyze_traceability(
+                linked_tests,
+                linked_items,
+            )
         )
         issues.extend(traceability_issues)
 
@@ -921,13 +943,19 @@ class RequirementQualityAnalyzer:
         scores[QualityDimension.CORRECTNESS.value] = 0.8
 
         # Calculate weighted overall score
-        overall = sum(scores.get(dim.value, 0.8) * weight for dim, weight in self.DIMENSION_WEIGHTS.items())
+        overall = sum(
+            scores.get(dim.value, 0.8) * weight for dim, weight in self.DIMENSION_WEIGHTS.items()
+        )
 
         grade = self._score_to_grade(overall)
 
         # Determine improvement priorities
         improvement_priority = sorted(
-            [d.value for d in QualityDimension if scores.get(d.value, 1.0) < QUALITY_IMPROVEMENT_THRESHOLD],
+            [
+                d.value
+                for d in QualityDimension
+                if scores.get(d.value, 1.0) < QUALITY_IMPROVEMENT_THRESHOLD
+            ],
             key=lambda d: scores.get(d, 1.0),
         )
 
@@ -1414,7 +1442,9 @@ class VersionChain:
             previous = blocks[i - 1]
 
             if current.previous_block_id != previous.block_id:
-                issues.append(f"Block {i}: previous_block_id mismatch (expected {previous.block_id[:16]}...)")
+                issues.append(
+                    f"Block {i}: previous_block_id mismatch (expected {previous.block_id[:16]}...)"
+                )
 
             if current.timestamp < previous.timestamp:
                 issues.append(f"Block {i}: timestamp before previous block")
@@ -1549,7 +1579,9 @@ class FlakinessDetector:
     - Failure clustering
     """
 
-    def analyze(self, run_history: list[dict[str, Any]], window_size: int = 30) -> FlakinessAnalysis:
+    def analyze(
+        self, run_history: list[dict[str, Any]], window_size: int = 30
+    ) -> FlakinessAnalysis:
         """Analyze test flakiness from execution history."""
         if not run_history:
             return FlakinessAnalysis(
@@ -1613,7 +1645,10 @@ class FlakinessDetector:
         quarantine_recommended = (
             severity in {FlakinessSeverity.HIGH, FlakinessSeverity.CRITICAL}
             or max_failures >= FLAKINESS_QUARANTINE_FAILURES
-            or (flakiness_score > FLAKINESS_QUARANTINE_SCORE and failure_rate > FLAKINESS_QUARANTINE_RATE)
+            or (
+                flakiness_score > FLAKINESS_QUARANTINE_SCORE
+                and failure_rate > FLAKINESS_QUARANTINE_RATE
+            )
         )
 
         # Suggested fix
@@ -1731,7 +1766,10 @@ class FlakinessDetector:
         entropy_factor = 1 + (entropy * 0.5)
 
         # Consistency factor
-        if max_passes > FLAKINESS_STABLE_PASS_THRESHOLD and failure_rate < FLAKINESS_STABLE_FAILURE_RATE:
+        if (
+            max_passes > FLAKINESS_STABLE_PASS_THRESHOLD
+            and failure_rate < FLAKINESS_STABLE_FAILURE_RATE
+        ):
             # Mostly stable
             consistency_factor = 0.4
         elif max_failures > FLAKINESS_BROKEN_FAILURE_THRESHOLD:
@@ -1751,7 +1789,9 @@ class FlakinessDetector:
     def _calculate_failure_clustering(self, runs: list[tuple[Any, str]]) -> float | None:
         """Calculate temporal clustering of failures."""
         # Simplified - would use proper time series analysis
-        failures = [i for i, (_, status) in enumerate(runs) if status in {"failed", "error", "flaky"}]
+        failures = [
+            i for i, (_, status) in enumerate(runs) if status in {"failed", "error", "flaky"}
+        ]
 
         if len(failures) < FLAKINESS_CLUSTER_MIN_FAILURES:
             return None
@@ -2081,7 +2121,9 @@ class ImpactAnalyzer:
 
         blast_radius = len(direct_impacts) + len(transitive_impacts)
         critical_path = self._find_critical_path(direct_impacts, transitive_impacts, item_metadata)
-        risk_score = self._calculate_risk_score(blast_radius, len(critical_path), depth, item_metadata)
+        risk_score = self._calculate_risk_score(
+            blast_radius, len(critical_path), depth, item_metadata
+        )
 
         return ImpactAnalysisResult(
             source_item_id=source_item_id,
@@ -2308,7 +2350,11 @@ class CoverageGapAnalyzer:
 
     # Coverage requirements by safety level
     SAFETY_COVERAGE_REQUIREMENTS: ClassVar[dict[SafetyLevel, dict[CoverageType, int]]] = {
-        SafetyLevel.DAL_A: {CoverageType.MCDC: 100, CoverageType.BRANCH: 100, CoverageType.STATEMENT: 100},
+        SafetyLevel.DAL_A: {
+            CoverageType.MCDC: 100,
+            CoverageType.BRANCH: 100,
+            CoverageType.STATEMENT: 100,
+        },
         SafetyLevel.DAL_B: {CoverageType.BRANCH: 100, CoverageType.STATEMENT: 100},
         SafetyLevel.DAL_C: {CoverageType.STATEMENT: 100},
         SafetyLevel.ASIL_D: {CoverageType.MCDC: 100, CoverageType.BRANCH: 100},
@@ -2380,7 +2426,9 @@ class CoverageGapAnalyzer:
             )
         return gaps
 
-    def _find_orphaned_tests(self, tests: list[dict[str, Any]], linked_tests: set[str]) -> list[CoverageGap]:
+    def _find_orphaned_tests(
+        self, tests: list[dict[str, Any]], linked_tests: set[str]
+    ) -> list[CoverageGap]:
         gaps: list[CoverageGap] = []
         for test in tests:
             test_id = test["id"]
@@ -2512,9 +2560,14 @@ class SpecAnalyticsService:
             "ambiguous_terms": ears_result.ambiguous_terms,
         }
 
-    def batch_analyze_requirements(self, requirements: list[dict[str, str]]) -> list[dict[str, Any]]:
+    def batch_analyze_requirements(
+        self, requirements: list[dict[str, str]]
+    ) -> list[dict[str, Any]]:
         """Analyze multiple requirements at once."""
-        return [{"id": req.get("id", ""), **self.analyze_requirement(req.get("text", ""))} for req in requirements]
+        return [
+            {"id": req.get("id", ""), **self.analyze_requirement(req.get("text", ""))}
+            for req in requirements
+        ]
 
     # -------------------------------------------------------------------------
     # Version Chain Management
@@ -2538,7 +2591,9 @@ class SpecAnalyticsService:
         change_summary: str,
     ) -> VersionBlock:
         """Add new block to version chain."""
-        return VersionChain.add_block(previous_block, content, author_id, change_type, change_summary)
+        return VersionChain.add_block(
+            previous_block, content, author_id, change_type, change_summary
+        )
 
     def verify_version_chain(self, blocks: list[VersionBlock]) -> tuple[bool, list[str]]:
         """Verify integrity of version chain."""
@@ -2564,7 +2619,9 @@ class SpecAnalyticsService:
     # Test Analytics
     # -------------------------------------------------------------------------
 
-    def analyze_test_flakiness(self, run_history: list[dict[str, Any]], window_size: int = 30) -> FlakinessAnalysis:
+    def analyze_test_flakiness(
+        self, run_history: list[dict[str, Any]], window_size: int = 30
+    ) -> FlakinessAnalysis:
         """Analyze test flakiness from execution history."""
         return self.flakiness_detector.analyze(run_history, window_size)
 
@@ -2573,7 +2630,10 @@ class SpecAnalyticsService:
         results = []
         for test in tests:
             analysis = self.flakiness_detector.analyze(test.get("run_history", []))
-            results.append({"test_id": test.get("id", ""), "flakiness_analysis": analysis.model_dump()})
+            results.append({
+                "test_id": test.get("id", ""),
+                "flakiness_analysis": analysis.model_dump(),
+            })
         return results
 
     # -------------------------------------------------------------------------
@@ -2610,7 +2670,9 @@ class SpecAnalyticsService:
             opportunity_enablement,
         )
 
-    def calculate_rice(self, reach: int, impact: float, confidence: float, effort: int) -> RICEScore:
+    def calculate_rice(
+        self, reach: int, impact: float, confidence: float, effort: int
+    ) -> RICEScore:
         """Calculate RICE prioritization score."""
         return PrioritizationCalculator.calculate_rice(reach, impact, confidence, effort)
 
@@ -2634,7 +2696,9 @@ class SpecAnalyticsService:
         max_depth: int = 5,
     ) -> ImpactAnalysisResult:
         """Analyze impact of changing an item."""
-        return self.impact_analyzer.analyze_impact(source_item_id, adjacency, item_metadata, max_depth)
+        return self.impact_analyzer.analyze_impact(
+            source_item_id, adjacency, item_metadata, max_depth
+        )
 
     # -------------------------------------------------------------------------
     # Suspect Links
@@ -2661,14 +2725,18 @@ class SpecAnalyticsService:
         safety_level: SafetyLevel | None = None,
     ) -> list[CoverageGap]:
         """Analyze traceability coverage gaps."""
-        return self.coverage_gap_analyzer.analyze_gaps(requirements, tests, trace_links, safety_level)
+        return self.coverage_gap_analyzer.analyze_gaps(
+            requirements, tests, trace_links, safety_level
+        )
 
     # -------------------------------------------------------------------------
     # Content Addressing
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def generate_content_address(content: dict[str, Any], content_type: str = "application/json") -> ContentAddress:
+    def generate_content_address(
+        content: dict[str, Any], content_type: str = "application/json"
+    ) -> ContentAddress:
         """Generate IPFS-style content address for specification."""
         content_str = json.dumps(content, sort_keys=True, default=str)
         content_bytes = content_str.encode()

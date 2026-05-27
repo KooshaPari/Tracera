@@ -77,7 +77,11 @@ class ImpactAnalysisService:
         item = await self.items.get_by_id(current_id)
         if not item:
             return None, []
-        node = ImpactNode(item=item, depth=depth, path=path, link_type=link_type) if depth > 0 else None
+        node = (
+            ImpactNode(item=item, depth=depth, path=path, link_type=link_type)
+            if depth > 0
+            else None
+        )
         links = await self.links.get_by_source(current_id)
         next_entries = []
         for link in links:
@@ -114,7 +118,9 @@ class ImpactAnalysisService:
                 continue
             visited.add(current_id)
 
-            node, next_entries = await self._forward_bfs_step(current_id, depth, path, link_type, link_types)
+            node, next_entries = await self._forward_bfs_step(
+                current_id, depth, path, link_type, link_types
+            )
             if node is not None:
                 impact_nodes.append(node)
                 if len(impact_nodes) >= max_items:
@@ -210,10 +216,15 @@ class ImpactAnalysisService:
         item = await self.items.get_by_id(current_id)
         if not item:
             return None, []
-        node = ImpactNode(item=item, depth=depth, path=path, link_type=link_type) if depth > 0 else None
+        node = (
+            ImpactNode(item=item, depth=depth, path=path, link_type=link_type)
+            if depth > 0
+            else None
+        )
         links = await self.links.get_by_target(current_id)
         next_entries = [
-            (link.source_item_id, depth + 1, [*path, link.source_item_id], link.link_type) for link in links
+            (link.source_item_id, depth + 1, [*path, link.source_item_id], link.link_type)
+            for link in links
         ]
         return node, next_entries
 

@@ -97,9 +97,13 @@ class ProblemRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_number(self, problem_number: str, project_id: str | None = None) -> Problem | None:
+    async def get_by_number(
+        self, problem_number: str, project_id: str | None = None
+    ) -> Problem | None:
         """Get problem by problem number."""
-        query = select(Problem).where(Problem.problem_number == problem_number, Problem.deleted_at.is_(None))
+        query = select(Problem).where(
+            Problem.problem_number == problem_number, Problem.deleted_at.is_(None)
+        )
 
         if project_id:
             query = query.where(Problem.project_id == project_id)

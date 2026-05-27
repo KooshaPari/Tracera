@@ -33,13 +33,17 @@ class GraphValidationService:
 
     async def validate_graph(self, project_id: str, graph_id: str) -> dict[str, Any]:
         """Validate graph."""
-        graph = await self.session.execute(select(Graph).where(Graph.id == graph_id, Graph.project_id == project_id))
+        graph = await self.session.execute(
+            select(Graph).where(Graph.id == graph_id, Graph.project_id == project_id)
+        )
         graph_obj = graph.scalar_one_or_none()
         if not graph_obj:
             return {"errors": ["graph_not_found"], "warnings": []}
 
         nodes_result = await self.session.execute(
-            select(Item).join(GraphNode, GraphNode.item_id == Item.id).where(GraphNode.graph_id == graph_id),
+            select(Item)
+            .join(GraphNode, GraphNode.item_id == Item.id)
+            .where(GraphNode.graph_id == graph_id),
         )
         nodes = list(nodes_result.scalars().all())
         node_ids = {n.id for n in nodes}
@@ -48,12 +52,18 @@ class GraphValidationService:
         links_result = await self.session.execute(select(Link).where(Link.graph_id == graph_id))
         links = list(links_result.scalars().all())
 
-        edge_types_result = await self.session.execute(select(EdgeType).where(EdgeType.project_id == project_id))
+        edge_types_result = await self.session.execute(
+            select(EdgeType).where(EdgeType.project_id == project_id)
+        )
         edge_types = {e.name for e in edge_types_result.scalars().all()}
 
-        rules_result = await self.session.execute(select(NodeKindRule).where(NodeKindRule.project_id == project_id))
+        rules_result = await self.session.execute(
+            select(NodeKindRule).where(NodeKindRule.project_id == project_id)
+        )
         rules = list(rules_result.scalars().all())
-        rule_map: dict[Any, dict[str, Any]] = {r.node_kind_id: (r.rule_metadata or {}) for r in rules}
+        rule_map: dict[Any, dict[str, Any]] = {
+            r.node_kind_id: (r.rule_metadata or {}) for r in rules
+        }
 
         errors: list[dict[str, Any]] = []
         warnings: list[dict[str, Any]] = []

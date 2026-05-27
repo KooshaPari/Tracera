@@ -216,7 +216,9 @@ async def list_artifacts(
         raise HTTPException(status_code=403, detail="Forbidden")
 
     artifacts = await service.list_artifacts(execution_id, artifact_type=artifact_type)
-    response_artifacts = [ExecutionArtifactResponse.model_validate(artifact) for artifact in artifacts]
+    response_artifacts = [
+        ExecutionArtifactResponse.model_validate(artifact) for artifact in artifacts
+    ]
     return ExecutionArtifactListResponse(
         artifacts=response_artifacts,
         total=len(response_artifacts),
@@ -297,7 +299,9 @@ async def update_execution_config(
 
     # Build update dict from non-None fields
     update_data = {
-        field: value for field, value in config_update.model_dump(exclude_unset=True).items() if value is not None
+        field: value
+        for field, value in config_update.model_dump(exclude_unset=True).items()
+        if value is not None
     }
 
     config = await service.upsert_config(project_id, **update_data)

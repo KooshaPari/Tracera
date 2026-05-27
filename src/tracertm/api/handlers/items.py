@@ -94,7 +94,9 @@ async def resolve_view_matches(
     if project_id:
         # Query database for actual view values
         result = await db.execute(
-            select(Item.view).where(Item.project_id == project_id, Item.deleted_at.is_(None)).distinct(),
+            select(Item.view)
+            .where(Item.project_id == project_id, Item.deleted_at.is_(None))
+            .distinct(),
         )
         candidates = [row[0] for row in result.all()]
 
@@ -178,7 +180,9 @@ async def execute_item_query(
         total_count = count_result.scalar() or 0
 
         # Items query
-        items_query = select(Item).where(*conditions).order_by(Item.created_at.desc()).offset(params.skip)
+        items_query = (
+            select(Item).where(*conditions).order_by(Item.created_at.desc()).offset(params.skip)
+        )
         if params.limit is not None and params.limit > 0:
             items_query = items_query.limit(params.limit)
 
@@ -208,7 +212,9 @@ def serialize_item_for_list(item: Item, project_id: str | None) -> dict[str, Any
         "type": getattr(item, "item_type", getattr(item, "view", "")),
         "status": getattr(item, "status", ""),
         "priority": getattr(item, "priority", "medium"),
-        "created_at": (created_at.isoformat() if hasattr(item, "created_at") and created_at else None),
+        "created_at": (
+            created_at.isoformat() if hasattr(item, "created_at") and created_at else None
+        ),
     }
 
 

@@ -21,7 +21,9 @@ class Contract(Base, TimestampMixin):
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
     )
-    item_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("items.id", ondelete="CASCADE"), nullable=False)
+    item_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("items.id", ondelete="CASCADE"), nullable=False
+    )
     contract_number: Mapped[str] = mapped_column(String(50), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     contract_type: Mapped[str] = mapped_column(String(50), nullable=False)  # api, function, etc.

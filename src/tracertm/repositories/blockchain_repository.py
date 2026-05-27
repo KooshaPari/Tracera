@@ -58,7 +58,11 @@ class VersionBlockRepository:
         """
         # Normalize timestamp: convert to UTC naive datetime for consistent hashing
         # This ensures the hash is the same whether timezone is preserved or not
-        ts_utc = timestamp.astimezone(UTC).replace(tzinfo=None) if timestamp.tzinfo is not None else timestamp
+        ts_utc = (
+            timestamp.astimezone(UTC).replace(tzinfo=None)
+            if timestamp.tzinfo is not None
+            else timestamp
+        )
 
         data = json.dumps(
             {
@@ -155,7 +159,9 @@ class VersionBlockRepository:
 
         timestamp = datetime.now(UTC)
         content_hash = self.compute_content_hash(content)
-        block_id = self.compute_block_hash(chain.chain_head_id, content_hash, timestamp, author_id, change_type)
+        block_id = self.compute_block_hash(
+            chain.chain_head_id, content_hash, timestamp, author_id, change_type
+        )
 
         block = VersionBlock(
             id=uuid4(),
@@ -216,7 +222,9 @@ class VersionBlockRepository:
         current_id: str | None = chain.chain_head_id
 
         while current_id and len(blocks) < limit:
-            result = await db.execute(select(VersionBlock).where(VersionBlock.block_id == current_id))
+            result = await db.execute(
+                select(VersionBlock).where(VersionBlock.block_id == current_id)
+            )
             block = result.scalar_one_or_none()
             if not block:
                 break
@@ -375,7 +383,9 @@ class BaselineRepository:
         spec_type: str | None = None,
     ) -> Baseline:
         """Create a new baseline with Merkle tree."""
-        baseline_id = hashlib.sha256(f"{project_id}:{datetime.now(UTC).isoformat()}:{name}".encode()).hexdigest()[:16]
+        baseline_id = hashlib.sha256(
+            f"{project_id}:{datetime.now(UTC).isoformat()}:{name}".encode()
+        ).hexdigest()[:16]
 
         # Build Merkle tree
         merkle_items = [(item_id, content_hash) for item_id, _, content_hash in items]
@@ -440,7 +450,9 @@ class BaselineRepository:
         result = await db.execute(select(Baseline).where(Baseline.merkle_root == merkle_root))
         return result.scalar_one_or_none()
 
-    async def get_merkle_proof(self, db: AsyncSession, baseline_id: str, item_id: str) -> MerkleProofCache | None:
+    async def get_merkle_proof(
+        self, db: AsyncSession, baseline_id: str, item_id: str
+    ) -> MerkleProofCache | None:
         """Get cached Merkle proof for an item."""
         baseline = await self.get_baseline(db, baseline_id)
         if not baseline:

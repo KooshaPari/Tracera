@@ -113,7 +113,17 @@ def verify_access_token(token: str) -> dict[str, Any]:
         algorithm = "RS256"
 
     # Common algorithms for JWKs (RS256, ES256, etc.)
-    allowed_algorithms = ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "PS256", "PS384", "PS512"]
+    allowed_algorithms = [
+        "RS256",
+        "RS384",
+        "RS512",
+        "ES256",
+        "ES384",
+        "ES512",
+        "PS256",
+        "PS384",
+        "PS512",
+    ]
     if algorithm not in allowed_algorithms:
         # If algorithm from header is not standard, default to RS256
         algorithm = "RS256"

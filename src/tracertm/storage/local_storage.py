@@ -30,7 +30,9 @@ class LegacyFriendlySession(Session):
         """Execute."""
         if isinstance(statement, str):
             if "INSERT INTO sync_queue" in statement and "datetime('now', '-7 days')" in statement:
-                statement = statement.replace("datetime('now', '-7 days')", "datetime('now', '-7 days', '-1 second')")
+                statement = statement.replace(
+                    "datetime('now', '-7 days')", "datetime('now', '-7 days', '-1 second')"
+                )
 
             params: Any = None
             remaining_args = list(args)
@@ -338,7 +340,9 @@ class LocalStorageManager:
         project_id_raw: object = project_config.get("id") if project_config else None
         project_id: str = project_id_raw if isinstance(project_id_raw, str) else ""
         project_name_raw: object = project_config.get("name") if project_config else None
-        project_name: str = project_name_raw if isinstance(project_name_raw, str) else project_path.name
+        project_name: str = (
+            project_name_raw if isinstance(project_name_raw, str) else project_path.name
+        )
 
         if not project_id:
             # Generate ID if missing
@@ -357,7 +361,9 @@ class LocalStorageManager:
 
         return project_id
 
-    def _register_project_in_db(self, project_id: str, project_name: str, project_path: Path) -> None:
+    def _register_project_in_db(
+        self, project_id: str, project_name: str, project_path: Path
+    ) -> None:
         """Register project in the global SQLite index.
 
         Args:
@@ -623,7 +629,9 @@ class LocalStorageManager:
         finally:
             session.close()
 
-    def get_project_storage_by_id(self, project_id: str, trace_dir: Path) -> "ProjectStorage | None":
+    def get_project_storage_by_id(
+        self, project_id: str, trace_dir: Path
+    ) -> "ProjectStorage | None":
         """Get ProjectStorage for a project by ID.
 
         Args:
@@ -637,7 +645,9 @@ class LocalStorageManager:
         try:
             project = session.get(Project, project_id)
             if project:
-                return ProjectStorage(self, project.name, trace_dir=trace_dir, project_id=project_id)
+                return ProjectStorage(
+                    self, project.name, trace_dir=trace_dir, project_id=project_id
+                )
             return None
         finally:
             session.close()
@@ -801,7 +811,9 @@ class LocalStorageManager:
         finally:
             session.close()
 
-    def queue_sync(self, entity_type: str, entity_id: str, operation: str, payload: dict[str, Any]) -> None:
+    def queue_sync(
+        self, entity_type: str, entity_id: str, operation: str, payload: dict[str, Any]
+    ) -> None:
         """Queue a change for sync to remote server.
 
         Args:
@@ -917,7 +929,9 @@ class LocalStorageManager:
         """
         session = self.get_session()
         try:
-            result = session.execute(text("SELECT value FROM sync_state WHERE key = :key"), {"key": key})
+            result = session.execute(
+                text("SELECT value FROM sync_state WHERE key = :key"), {"key": key}
+            )
             row = result.fetchone()
             return row[0] if row else None
         finally:
@@ -1364,7 +1378,9 @@ class ItemStorage:
         """
         session = self.manager.get_session()
         try:
-            query = session.query(Item).filter(Item.project_id == self.project.id, Item.deleted_at.is_(None))
+            query = session.query(Item).filter(
+                Item.project_id == self.project.id, Item.deleted_at.is_(None)
+            )
 
             if item_type:
                 query = query.filter(Item.item_type == item_type)
@@ -1415,7 +1431,9 @@ class ItemStorage:
             source_item = session.get(Item, source_id)
             if source_item:
                 external_id_raw: object = source_item.item_metadata.get("external_id")
-                external_id: str | None = external_id_raw if isinstance(external_id_raw, str) else None
+                external_id: str | None = (
+                    external_id_raw if isinstance(external_id_raw, str) else None
+                )
                 markdown_content = self._generate_item_markdown(source_item, external_id)
                 self._write_item_markdown(source_item, external_id, markdown_content)
 

@@ -199,7 +199,10 @@ class VisualizationService:
             row = f"{i:3d} "
             for target_id in item_ids:
                 # Check if there's a link from source to target
-                has_link = any(link.get("source") == source_id and link.get("target") == target_id for link in links)
+                has_link = any(
+                    link.get("source") == source_id and link.get("target") == target_id
+                    for link in links
+                )
                 row += "  X " if has_link else "    "
             lines.append(row)
 

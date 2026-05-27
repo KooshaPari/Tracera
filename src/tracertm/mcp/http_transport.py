@@ -228,7 +228,9 @@ def get_transport_type() -> Literal["http", "streamable-http", "sse"]:
     transport = valid_transports.get(raw_transport)
     if transport is None:
         logger.warning(
-            "Invalid transport '%s', defaulting to 'http'. Valid options: %s", raw_transport, list(valid_transports)
+            "Invalid transport '%s', defaulting to 'http'. Valid options: %s",
+            raw_transport,
+            list(valid_transports),
         )
         transport = "http"
 

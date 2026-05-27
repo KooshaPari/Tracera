@@ -89,7 +89,9 @@ class SpecAnalyticsService(tracertm_pb2_grpc.SpecAnalyticsServiceServicer):
         if not request.content:
             await context.abort(grpc.StatusCode.INVALID_ARGUMENT, "content is required")
 
-        analysis = await asyncio.to_thread(spec_analytics_service.analyze_requirement, request.content)
+        analysis = await asyncio.to_thread(
+            spec_analytics_service.analyze_requirement, request.content
+        )
         result = _build_spec_analysis_result(request.spec_id, request.content, analysis)
         return tracertm_pb2.AnalyzeSpecResponse(  # type: ignore[attr-defined]
             result=result
@@ -116,7 +118,9 @@ class SpecAnalyticsService(tracertm_pb2_grpc.SpecAnalyticsServiceServicer):
         for req in request.requests:
             if not req.content:
                 await context.abort(grpc.StatusCode.INVALID_ARGUMENT, "content is required")
-            analysis = await asyncio.to_thread(spec_analytics_service.analyze_requirement, req.content)
+            analysis = await asyncio.to_thread(
+                spec_analytics_service.analyze_requirement, req.content
+            )
             results.append(_build_spec_analysis_result(req.spec_id, req.content, analysis))
 
         return tracertm_pb2.BatchAnalyzeSpecsResponse(  # type: ignore[attr-defined]
@@ -140,7 +144,9 @@ class SpecAnalyticsService(tracertm_pb2_grpc.SpecAnalyticsServiceServicer):
         if not request.content:
             await context.abort(grpc.StatusCode.INVALID_ARGUMENT, "content is required")
 
-        analysis = await asyncio.to_thread(spec_analytics_service.analyze_requirement, request.content)
+        analysis = await asyncio.to_thread(
+            spec_analytics_service.analyze_requirement, request.content
+        )
         quality_analysis = analysis.get("quality_analysis", {}) or {}
         quality_score = float(quality_analysis.get("overall_score", 0.0) or 0.0)
         recommendations = list(quality_analysis.get("improvement_priority", []) or [])
@@ -166,7 +172,9 @@ class SpecAnalyticsService(tracertm_pb2_grpc.SpecAnalyticsServiceServicer):
         if not request.content:
             await context.abort(grpc.StatusCode.INVALID_ARGUMENT, "content is required")
 
-        analysis = await asyncio.to_thread(spec_analytics_service.analyze_requirement, request.content)
+        analysis = await asyncio.to_thread(
+            spec_analytics_service.analyze_requirement, request.content
+        )
         ears_analysis = analysis.get("ears_analysis", {}) or {}
         patterns = _build_ears_patterns(ears_analysis)
         return tracertm_pb2.GetEARSPatternsResponse(  # type: ignore[attr-defined]

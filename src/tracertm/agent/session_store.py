@@ -113,7 +113,9 @@ class SessionSandboxStoreDB(SessionSandboxStore):
         super().__init__(sandbox_provider)
         self._cache = cache_service
 
-    async def _load_from_db(self, db_session: object, session_id: str) -> tuple[str, SandboxMetadata] | None:
+    async def _load_from_db(
+        self, db_session: object, session_id: str
+    ) -> tuple[str, SandboxMetadata] | None:
         """Load session from DB; return (sandbox_root, meta) or None."""
         from sqlalchemy import select
 

@@ -61,7 +61,10 @@ class FeatureService:
         opts = options or CreateFeatureInput()
         # Simple numbering
         result = await self.session.execute(
-            select(Feature).where(Feature.project_id == project_id).order_by(Feature.created_at.desc()).limit(1),
+            select(Feature)
+            .where(Feature.project_id == project_id)
+            .order_by(Feature.created_at.desc())
+            .limit(1),
         )
         last = result.scalar_one_or_none()
 
@@ -142,7 +145,9 @@ class FeatureService:
                 event_type="updated",
                 data={
                     "description": "Feature updated",
-                    "changes": {key: {"from": before.get(key), "to": updates.get(key)} for key in updates},
+                    "changes": {
+                        key: {"from": before.get(key), "to": updates.get(key)} for key in updates
+                    },
                     "from_value": before.get("status"),
                     "to_value": updates.get("status"),
                 },

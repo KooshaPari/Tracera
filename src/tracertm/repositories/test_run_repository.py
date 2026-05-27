@@ -367,7 +367,9 @@ class TestRunRepository:
                 run.error_count += 1
 
             # Update test case execution stats
-            tc_result = await self.session.execute(select(TestCase).where(TestCase.id == test_case_id))
+            tc_result = await self.session.execute(
+                select(TestCase).where(TestCase.id == test_case_id)
+            )
             test_case = tc_result.scalar_one_or_none()
             if test_case:
                 test_case.total_executions += 1
@@ -455,18 +457,24 @@ class TestRunRepository:
     async def get_stats(self, project_id: str) -> dict[str, Any]:
         """Get statistics for test runs in a project."""
         # Total count
-        total_result = await self.session.execute(select(func.count()).where(TestRun.project_id == project_id))
+        total_result = await self.session.execute(
+            select(func.count()).where(TestRun.project_id == project_id)
+        )
         total = total_result.scalar() or 0
 
         # By status
         status_result = await self.session.execute(
-            select(TestRun.status, func.count()).where(TestRun.project_id == project_id).group_by(TestRun.status),
+            select(TestRun.status, func.count())
+            .where(TestRun.project_id == project_id)
+            .group_by(TestRun.status),
         )
         by_status = {str(row[0].value): row[1] for row in status_result}
 
         # By type
         type_result = await self.session.execute(
-            select(TestRun.run_type, func.count()).where(TestRun.project_id == project_id).group_by(TestRun.run_type),
+            select(TestRun.run_type, func.count())
+            .where(TestRun.project_id == project_id)
+            .group_by(TestRun.run_type),
         )
         by_type = {str(row[0].value): row[1] for row in type_result}
 
@@ -507,7 +515,10 @@ class TestRunRepository:
 
         # Recent runs
         recent_result = await self.session.execute(
-            select(TestRun).where(TestRun.project_id == project_id).order_by(TestRun.created_at.desc()).limit(5),
+            select(TestRun)
+            .where(TestRun.project_id == project_id)
+            .order_by(TestRun.created_at.desc())
+            .limit(5),
         )
         recent_runs = list(recent_result.scalars().all())
 

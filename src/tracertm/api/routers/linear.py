@@ -20,7 +20,9 @@ if TYPE_CHECKING:
 router = APIRouter(prefix="/api/v1/integrations/linear", tags=["linear"])
 
 
-async def _get_linear_client(db: AsyncSession, credential_id: str, claims: dict[str, object]) -> LinearClient:
+async def _get_linear_client(
+    db: AsyncSession, credential_id: str, claims: dict[str, object]
+) -> LinearClient:
     encryption_key = os.environ.get("ENCRYPTION_KEY", "")
     if not encryption_key:
         raise HTTPException(status_code=500, detail="Encryption key not configured")
@@ -97,11 +99,15 @@ async def list_linear_issues(
                 "id": issue["id"],
                 "identifier": issue["identifier"],
                 "title": issue["title"],
-                "description": issue.get("description", "")[:500] if issue.get("description") else None,
+                "description": issue.get("description", "")[:500]
+                if issue.get("description")
+                else None,
                 "state": issue.get("state", {}).get("name"),
                 "priority": issue.get("priority"),
                 "url": issue["url"],
-                "assignee": issue.get("assignee", {}).get("name") if issue.get("assignee") else None,
+                "assignee": issue.get("assignee", {}).get("name")
+                if issue.get("assignee")
+                else None,
                 "labels": [label["name"] for label in issue.get("labels", {}).get("nodes", [])],
                 "created_at": issue.get("createdAt"),
                 "updated_at": issue.get("updatedAt"),

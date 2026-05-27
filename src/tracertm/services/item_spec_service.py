@@ -196,7 +196,9 @@ class RequirementQualityAnalyzer:
         scores = {}
 
         # 1. Analyze unambiguity (absence of vague terms)
-        ambiguous_found = [w for w in self.AMBIGUOUS_WORDS if re.search(r"\b" + w + r"\b", full_text)]
+        ambiguous_found = [
+            w for w in self.AMBIGUOUS_WORDS if re.search(r"\b" + w + r"\b", full_text)
+        ]
         ambiguity_score = max(0, 1 - len(ambiguous_found) * 0.1)
         scores["unambiguity"] = ambiguity_score
 
@@ -211,7 +213,9 @@ class RequirementQualityAnalyzer:
         ])
 
         # 2. Analyze completeness (no TBD/TODO markers)
-        incomplete_count = sum(1 for p in self.INCOMPLETE_PATTERNS if re.search(p, full_text, re.IGNORECASE))
+        incomplete_count = sum(
+            1 for p in self.INCOMPLETE_PATTERNS if re.search(p, full_text, re.IGNORECASE)
+        )
         completeness_score = max(0, 1 - incomplete_count * 0.25)
         scores["completeness"] = completeness_score
 
@@ -224,7 +228,9 @@ class RequirementQualityAnalyzer:
             })
 
         # 3. Analyze verifiability (testability)
-        untestable_count = sum(1 for w in self.UNTESTABLE_WORDS if re.search(r"\b" + w + r"\b", full_text))
+        untestable_count = sum(
+            1 for w in self.UNTESTABLE_WORDS if re.search(r"\b" + w + r"\b", full_text)
+        )
         verifiability_score = max(0, 1 - untestable_count * 0.15)
 
         # Boost score if quantifiable criteria present
@@ -352,7 +358,9 @@ class ImpactAnalyzer:
         """
         # Query direct downstream links (outgoing)
         downstream_result = await self.session.execute(
-            select(Link.target_item_id).where(Link.source_item_id == item_id, Link.project_id == project_id),
+            select(Link.target_item_id).where(
+                Link.source_item_id == item_id, Link.project_id == project_id
+            ),
         )
         direct_downstream = [row[0] for row in downstream_result.fetchall()]
 
@@ -371,7 +379,9 @@ class ImpactAnalyzer:
 
         # Query upstream links (incoming)
         upstream_result = await self.session.execute(
-            select(Link.source_item_id).where(Link.target_item_id == item_id, Link.project_id == project_id),
+            select(Link.source_item_id).where(
+                Link.target_item_id == item_id, Link.project_id == project_id
+            ),
         )
         upstream = [row[0] for row in upstream_result.fetchall()]
 
@@ -725,7 +735,9 @@ class RequirementSpecService:
 
         # Update volatility
         new_count = spec.change_count + 1
-        volatility = self.volatility_tracker.calculate_volatility(new_count, max(1, days_since), history)
+        volatility = self.volatility_tracker.calculate_volatility(
+            new_count, max(1, days_since), history
+        )
 
         return await self.quality_repo.update(
             spec.id,
@@ -760,7 +772,9 @@ class RequirementSpecService:
             msg = f"RequirementQuality for item {item_id} not found"
             raise ValueError(msg)
 
-        wsjf_score = self.wsjf_calculator.calculate_wsjf(business_value, time_sensitivity, risk_reduction, job_size)
+        wsjf_score = self.wsjf_calculator.calculate_wsjf(
+            business_value, time_sensitivity, risk_reduction, job_size
+        )
 
         return await self.quality_repo.update(
             spec.id,
@@ -842,8 +856,12 @@ class RequirementSpecService:
 
         # Analyze metrics
         quality_issues = [s for s in all_specs if s.overall_quality_score < QUALITY_ISSUE_THRESHOLD]
-        high_volatility = [s for s in all_specs if (s.volatility_index or 0) > HIGH_VOLATILITY_INDEX]
-        high_impact = [s for s in all_specs if (s.change_propagation_index or 0) > HIGH_IMPACT_INDEX]
+        high_volatility = [
+            s for s in all_specs if (s.volatility_index or 0) > HIGH_VOLATILITY_INDEX
+        ]
+        high_impact = [
+            s for s in all_specs if (s.change_propagation_index or 0) > HIGH_IMPACT_INDEX
+        ]
         unverified = [s for s in all_specs if not s.is_verified]
 
         # Calculate average scores
@@ -927,14 +945,19 @@ class TestSpecFlakinessDector:
                 if recent_failures[i].get("status") != recent_failures[i + 1].get("status")
             )
             transition_rate = transitions / len(recent_failures)
-            base_score = base_score * FLAKINESS_BASE_WEIGHT + transition_rate * FLAKINESS_TRANSITION_WEIGHT
+            base_score = (
+                base_score * FLAKINESS_BASE_WEIGHT + transition_rate * FLAKINESS_TRANSITION_WEIGHT
+            )
 
         # Environment factor: same error in different environments suggests flakiness
         error_messages = [f.get("error") for f in recent_failures if f.get("error")]
         if error_messages:
             unique_errors = len(set(error_messages))
             error_variance = unique_errors / max(1, len(error_messages))
-            base_score = base_score * FLAKINESS_ERROR_BASE_WEIGHT + error_variance * FLAKINESS_ERROR_VARIANCE_WEIGHT
+            base_score = (
+                base_score * FLAKINESS_ERROR_BASE_WEIGHT
+                + error_variance * FLAKINESS_ERROR_VARIANCE_WEIGHT
+            )
 
         return min(1.0, base_score)
 

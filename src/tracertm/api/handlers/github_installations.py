@@ -88,7 +88,9 @@ async def link_github_app_installation(
         raise HTTPException(status_code=404, detail="Installation not found")
 
     if installation.account_id and installation.account_id != account_id:
-        raise HTTPException(status_code=400, detail="Installation already linked to another account")
+        raise HTTPException(
+            status_code=400, detail="Installation already linked to another account"
+        )
 
     installation.account_id = account_id
     await db.commit()

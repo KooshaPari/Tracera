@@ -13,7 +13,9 @@ from pydantic import BaseModel, ConfigDict, Field
 class ExecutionCreate(BaseModel):
     """Schema for creating an execution."""
 
-    execution_type: str = Field(..., pattern="^(vhs|playwright|codex|custom)$", description="Type of execution")
+    execution_type: str = Field(
+        ..., pattern="^(vhs|playwright|codex|custom)$", description="Type of execution"
+    )
     trigger_source: str = Field(
         default="manual",
         pattern="^(github_pr|github_push|webhook|manual)$",
@@ -261,7 +263,9 @@ class ExecutionEnvironmentConfigUpdate(BaseModel):
     playwright_viewport_height: int | None = Field(None, ge=240, le=2160)
     playwright_video_size: dict[str, object] | None = None
 
-    codex_sandbox_mode: str | None = Field(None, pattern="^(read-only|workspace-write|danger-full-access)$")
+    codex_sandbox_mode: str | None = Field(
+        None, pattern="^(read-only|workspace-write|danger-full-access)$"
+    )
     codex_full_auto: bool | None = None
     codex_timeout: int | None = Field(None, ge=30, le=1800)
 

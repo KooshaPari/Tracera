@@ -118,7 +118,9 @@ class ADRRepository:
 
     async def find_related(self, adr_id: str) -> list[ADR]:
         """Find ADRs related to a given ADR (supersedes/superseded_by/related_adrs)."""
-        query = select(ADR).where((ADR.id == adr_id) | (ADR.supersedes == adr_id) | (ADR.superseded_by == adr_id))
+        query = select(ADR).where(
+            (ADR.id == adr_id) | (ADR.supersedes == adr_id) | (ADR.superseded_by == adr_id)
+        )
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
@@ -241,7 +243,11 @@ class ADRRepository:
 
     async def count_by_status(self, project_id: str) -> dict[str, int]:
         """Count ADRs by status for a project."""
-        query = select(ADR.status, func.count(ADR.id)).where(ADR.project_id == project_id).group_by(ADR.status)
+        query = (
+            select(ADR.status, func.count(ADR.id))
+            .where(ADR.project_id == project_id)
+            .group_by(ADR.status)
+        )
         result = await self.session.execute(query)
         rows = result.all()
         return {r[0]: r[1] for r in rows}
@@ -317,7 +323,9 @@ class ContractRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_number(self, contract_number: str, project_id: str | None = None) -> Contract | None:
+    async def get_by_number(
+        self, contract_number: str, project_id: str | None = None
+    ) -> Contract | None:
         """Get contract by contract number."""
         query = select(Contract).where(Contract.contract_number == contract_number)
 
@@ -349,7 +357,9 @@ class ContractRepository:
 
     async def list_by_item(self, item_id: str) -> list[Contract]:
         """List contracts for a specific item."""
-        query = select(Contract).where(Contract.item_id == item_id).order_by(Contract.created_at.desc())
+        query = (
+            select(Contract).where(Contract.item_id == item_id).order_by(Contract.created_at.desc())
+        )
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
@@ -530,7 +540,9 @@ class FeatureRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_number(self, feature_number: str, project_id: str | None = None) -> Feature | None:
+    async def get_by_number(
+        self, feature_number: str, project_id: str | None = None
+    ) -> Feature | None:
         """Get feature by feature number."""
         query = select(Feature).where(Feature.feature_number == feature_number)
 
@@ -774,7 +786,9 @@ class ScenarioRepository:
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
-    async def find_by_status(self, feature_id: str, status: str, limit: int = 100, offset: int = 0) -> list[Scenario]:
+    async def find_by_status(
+        self, feature_id: str, status: str, limit: int = 100, offset: int = 0
+    ) -> list[Scenario]:
         """Find scenarios by status."""
         query = (
             select(Scenario)

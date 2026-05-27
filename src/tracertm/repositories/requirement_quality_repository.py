@@ -63,12 +63,16 @@ class RequirementQualityRepository:
 
     async def get_by_id(self, spec_id: str) -> RequirementQuality | None:
         """Get requirement quality spec by ID."""
-        result = await self.session.execute(select(RequirementQuality).where(RequirementQuality.id == spec_id))
+        result = await self.session.execute(
+            select(RequirementQuality).where(RequirementQuality.id == spec_id)
+        )
         return result.scalar_one_or_none()
 
     async def get_by_item_id(self, item_id: str) -> RequirementQuality | None:
         """Get requirement quality spec by item ID."""
-        result = await self.session.execute(select(RequirementQuality).where(RequirementQuality.item_id == item_id))
+        result = await self.session.execute(
+            select(RequirementQuality).where(RequirementQuality.item_id == item_id)
+        )
         return result.scalar_one_or_none()
 
     async def list_by_project(
@@ -84,7 +88,9 @@ class RequirementQualityRepository:
 
         # Order by specified field
         order_field = getattr(RequirementQuality, order_by, RequirementQuality.created_at)
-        query = query.order_by(order_field.desc()) if descending else query.order_by(order_field.asc())
+        query = (
+            query.order_by(order_field.desc()) if descending else query.order_by(order_field.asc())
+        )
 
         query = query.limit(limit).offset(offset)
 
@@ -273,7 +279,9 @@ class RequirementQualityRepository:
     async def count_by_project(self, project_id: str) -> int:
         """Count specs in a project."""
         result = await self.session.execute(
-            select(func.count(RequirementQuality.id)).where(RequirementQuality.project_id == project_id),
+            select(func.count(RequirementQuality.id)).where(
+                RequirementQuality.project_id == project_id
+            ),
         )
         return result.scalar() or 0
 
@@ -285,7 +293,9 @@ class RequirementQualityRepository:
                 func.avg(RequirementQuality.overall_quality_score).label("avg_quality"),
                 func.avg(RequirementQuality.volatility_index).label("avg_volatility"),
                 func.avg(RequirementQuality.change_propagation_index).label("avg_cpi"),
-                func.sum(func.cast(RequirementQuality.is_verified, Integer)).label("verified_count"),
+                func.sum(func.cast(RequirementQuality.is_verified, Integer)).label(
+                    "verified_count"
+                ),
             ).where(RequirementQuality.project_id == project_id),
         )
 

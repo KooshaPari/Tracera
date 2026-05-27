@@ -119,8 +119,12 @@ class ExecutionService:
 
         try:
             if use_docker:
-                return await self._start_with_docker(execution, execution_id, config, mount_source, command)
-            return await self._start_with_native(execution, execution_id, config, mount_source, command)
+                return await self._start_with_docker(
+                    execution, execution_id, config, mount_source, command
+                )
+            return await self._start_with_native(
+                execution, execution_id, config, mount_source, command
+            )
         except (NativeOrchestratorError, DockerOrchestratorError) as e:
             await self._exec_repo.update_status(
                 execution_id,
@@ -149,7 +153,9 @@ class ExecutionService:
         # Create workspace
         workspace_id = await self._orchestrator.create_workspace(
             handle_id=execution_id,
-            env=cast("dict[str, str]", config.environment_vars) if config and config.environment_vars else {},
+            env=cast("dict[str, str]", config.environment_vars)
+            if config and config.environment_vars
+            else {},
         )
 
         # Apply resource limits if configured
@@ -185,7 +191,9 @@ class ExecutionService:
     ) -> bool:
         """Start execution using Docker container orchestrator."""
         if not self._docker:
-            msg = "Docker orchestrator not configured. Pass docker_orchestrator to ExecutionService."
+            msg = (
+                "Docker orchestrator not configured. Pass docker_orchestrator to ExecutionService."
+            )
             raise DockerOrchestratorError(
                 msg,
             )
@@ -204,7 +212,9 @@ class ExecutionService:
             project_id=execution.project_id,
             execution_id=execution_id,
             mount_source=mount_source,
-            env_vars=cast("dict[str, str] | None", config.environment_vars) if config and config.environment_vars else None,
+            env_vars=cast("dict[str, str] | None", config.environment_vars)
+            if config and config.environment_vars
+            else None,
             working_dir=config.working_directory if config else None,
             network_mode=config.network_mode if config else "bridge",
             resource_limits=config.resource_limits if config else None,
@@ -307,7 +317,9 @@ class ExecutionService:
         artifact_type: str | None = None,
     ) -> list[ExecutionArtifact]:
         """List artifacts for an execution."""
-        return await self._artifact_repo.list_by_execution(execution_id, artifact_type=artifact_type)
+        return await self._artifact_repo.list_by_execution(
+            execution_id, artifact_type=artifact_type
+        )
 
     async def get_config(self, project_id: str) -> ExecutionEnvironmentConfig | None:
         """Get execution environment config for project (create default if missing)."""

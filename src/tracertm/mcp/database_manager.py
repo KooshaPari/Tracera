@@ -43,7 +43,9 @@ class QueryMetrics:
         self.total_duration = 0.0
         self.slow_threshold_ms = 100.0
 
-    def record_query(self, query: str, duration_ms: float, params: dict[str, object] | None = None) -> None:
+    def record_query(
+        self, query: str, duration_ms: float, params: dict[str, object] | None = None
+    ) -> None:
         """Record a query execution."""
         self.query_count += 1
         self.total_duration += duration_ms
@@ -140,7 +142,9 @@ class DatabaseManager:
             pool_pre_ping=True,  # Verify connections before use
             pool_recycle=3600,  # Recycle connections after 1 hour
             echo=False,
-            connect_args={"server_settings": {"jit": "off"}} if "postgresql" in self.database_url else {},
+            connect_args={"server_settings": {"jit": "off"}}
+            if "postgresql" in self.database_url
+            else {},
         )
 
         # Create session factory
@@ -178,10 +182,17 @@ class DatabaseManager:
 
         @event.listens_for(self._engine.sync_engine, "after_cursor_execute")
         def after_cursor_execute(
-            _conn: object, _cursor: object, statement: object, parameters: object, context: object, _executemany: object
+            _conn: object,
+            _cursor: object,
+            statement: object,
+            parameters: object,
+            context: object,
+            _executemany: object,
         ) -> None:
             duration_ms = (time.perf_counter() - context._query_start_time) * 1000  # type: ignore[attr-defined]
-            self.metrics.record_query(str(statement), duration_ms, parameters if isinstance(parameters, dict) else None)
+            self.metrics.record_query(
+                str(statement), duration_ms, parameters if isinstance(parameters, dict) else None
+            )
 
     @asynccontextmanager
     async def session(self) -> AsyncGenerator[AsyncSession]:

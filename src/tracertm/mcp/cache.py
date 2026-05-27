@@ -104,7 +104,9 @@ class QueryCache:
             self._hits += 1
             return entry.value
 
-    async def set(self, prefix: str, value: object, ttl: int | None = None, *args: object, **kwargs: object) -> None:
+    async def set(
+        self, prefix: str, value: object, ttl: int | None = None, *args: object, **kwargs: object
+    ) -> None:
         """Set value in cache.
 
         Args:

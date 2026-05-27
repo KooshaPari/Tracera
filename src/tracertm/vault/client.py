@@ -122,7 +122,9 @@ class VaultClient:
         full_path = f"{self.namespace}/{path}"
 
         try:
-            response = self.client.secrets.kv.v2.read_secret_version(path=full_path, mount_point=self.mount_point)
+            response = self.client.secrets.kv.v2.read_secret_version(
+                path=full_path, mount_point=self.mount_point
+            )
 
             if not response or "data" not in response or "data" not in response["data"]:
                 msg = f"Secret not found or invalid format: {full_path}"

@@ -47,7 +47,9 @@ class GraphSnapshotService:
         description: str | None = None,
     ) -> GraphSnapshot:
         """Create snapshot."""
-        graph = await self.session.execute(select(Graph).where(Graph.id == graph_id, Graph.project_id == project_id))
+        graph = await self.session.execute(
+            select(Graph).where(Graph.id == graph_id, Graph.project_id == project_id)
+        )
         graph_obj = graph.scalar_one_or_none()
         if not graph_obj:
             msg = "Graph not found"

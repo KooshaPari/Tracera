@@ -48,6 +48,7 @@ def _load_split_steps() -> list[tuple[str, str, str, str]]:
         return SPLIT_STEPS_FALLBACK
     try:
         import yaml  # noqa: PLC0415
+
         data = yaml.safe_load(DAG_CONFIG.read_text())
         steps = data.get("steps", {})
     except Exception:  # noqa: BLE001
@@ -67,7 +68,10 @@ def _load_split_steps() -> list[tuple[str, str, str, str]]:
     def _category(name: str) -> str:
         return "test" if "-test" in name or "-build" in name else "lint"
 
-    return [(name, cfg.get("display", name), _category(name), _suite(name)) for name, cfg in steps.items()]
+    return [
+        (name, cfg.get("display", name), _category(name), _suite(name))
+        for name, cfg in steps.items()
+    ]
 
 
 SPLIT_STEPS = _load_split_steps()
@@ -103,7 +107,10 @@ def _extract_by_file(text: str, cwd: Path, suite: str) -> dict[str, list[tuple[i
             if suite == "Go":
                 m = GOFMT_FILE.match(line)
                 if m and "vet" not in line and "gofmt" not in line:
-                    by_file[_normalize_path(m.group(1), cwd)].append((None, "gofmt: needs formatting"))
+                    by_file[_normalize_path(m.group(1), cwd)].append((
+                        None,
+                        "gofmt: needs formatting",
+                    ))
     return dict(by_file)
 
 

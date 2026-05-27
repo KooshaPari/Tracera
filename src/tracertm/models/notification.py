@@ -24,7 +24,9 @@ class Notification(Base, TimestampMixin):
         index=True,
     )
 
-    type: Mapped[str] = mapped_column(String(50), nullable=False, default="info")  # info, success, warning, error
+    type: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="info"
+    )  # info, success, warning, error
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=False)
     link: Mapped[str | None] = mapped_column(String(500), nullable=True)

@@ -27,9 +27,15 @@ class AgentLock(Base, TimestampMixin):
     __tablename__ = "agent_locks"
 
     id: Mapped[str] = mapped_column(String(255), primary_key=True, default=generate_lock_uuid)
-    project_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True)
-    item_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("items.id"), nullable=False, index=True)
-    agent_id: Mapped[str] = mapped_column(String(255), ForeignKey("agents.id"), nullable=False, index=True)
+    project_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
+    )
+    item_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("items.id"), nullable=False, index=True
+    )
+    agent_id: Mapped[str] = mapped_column(
+        String(255), ForeignKey("agents.id"), nullable=False, index=True
+    )
 
     # Lock details
     lock_type: Mapped[str] = mapped_column(String(50), default="exclusive")  # exclusive, shared

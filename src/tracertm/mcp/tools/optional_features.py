@@ -181,7 +181,9 @@ async def view_show(
     await asyncio.sleep(0)
     try:
         config = ConfigManager()
-        project_id = project_id or (str(config.get("current_project_id")) if config.get("current_project_id") else None)
+        project_id = project_id or (
+            str(config.get("current_project_id")) if config.get("current_project_id") else None
+        )
 
         return _wrap(
             {
@@ -220,7 +222,9 @@ async def history_show(
     await asyncio.sleep(0)
     try:
         config = ConfigManager()
-        project_id = project_id or (str(config.get("current_project_id")) if config.get("current_project_id") else None)
+        project_id = project_id or (
+            str(config.get("current_project_id")) if config.get("current_project_id") else None
+        )
 
         return _wrap(
             {
@@ -327,7 +331,9 @@ async def agent_list(
     await asyncio.sleep(0)
     try:
         config = ConfigManager()
-        project_id = project_id or (str(config.get("current_project_id")) if config.get("current_project_id") else None)
+        project_id = project_id or (
+            str(config.get("current_project_id")) if config.get("current_project_id") else None
+        )
 
         return _wrap(
             {
@@ -549,7 +555,9 @@ async def drill_item(
     await asyncio.sleep(0)
     try:
         config = ConfigManager()
-        project_id = project_id or (str(config.get("current_project_id")) if config.get("current_project_id") else None)
+        project_id = project_id or (
+            str(config.get("current_project_id")) if config.get("current_project_id") else None
+        )
 
         return _wrap(
             {
@@ -588,7 +596,9 @@ async def dashboard_show(
     await asyncio.sleep(0)
     try:
         config = ConfigManager()
-        project_id = project_id or (str(config.get("current_project_id")) if config.get("current_project_id") else None)
+        project_id = project_id or (
+            str(config.get("current_project_id")) if config.get("current_project_id") else None
+        )
 
         return _wrap(
             {

@@ -102,7 +102,9 @@ class WorkflowScheduleRepository:
         Returns:
             WorkflowSchedule if found, None otherwise.
         """
-        result = await self.session.execute(select(WorkflowSchedule).where(WorkflowSchedule.schedule_id == schedule_id))
+        result = await self.session.execute(
+            select(WorkflowSchedule).where(WorkflowSchedule.schedule_id == schedule_id)
+        )
         return result.scalar_one_or_none()
 
     async def mark_last_run(self, schedule_id: str, last_run_at: datetime) -> None:
@@ -127,5 +129,7 @@ class WorkflowScheduleRepository:
         Returns:
             Number of rows deleted (0 or 1).
         """
-        result = await self.session.execute(delete(WorkflowSchedule).where(WorkflowSchedule.schedule_id == schedule_id))
+        result = await self.session.execute(
+            delete(WorkflowSchedule).where(WorkflowSchedule.schedule_id == schedule_id)
+        )
         return getattr(result, "rowcount", 0) or 0

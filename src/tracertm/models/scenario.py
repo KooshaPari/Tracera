@@ -13,7 +13,9 @@ class Scenario(Base, TimestampMixin):
     __table_args__ = {"extend_existing": True}  # noqa: RUF012
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
-    feature_id: Mapped[str] = mapped_column(String(36), ForeignKey("features.id", ondelete="CASCADE"), nullable=False)
+    feature_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("features.id", ondelete="CASCADE"), nullable=False
+    )
     scenario_number: Mapped[str] = mapped_column(String(50), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)

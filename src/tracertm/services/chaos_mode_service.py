@@ -103,7 +103,9 @@ class ChaosModeService:
             "dependencies": len(dependencies),
             "transitive_impact": len(transitive_impact),
             "total_impact": len(direct_impact) + len(transitive_impact),
-            "impact_items": [{"id": link.target_item_id, "type": link.link_type} for link in direct_impact],
+            "impact_items": [
+                {"id": link.target_item_id, "type": link.link_type} for link in direct_impact
+            ],
         }
 
     async def _get_transitive_impact(self, item_id: str) -> set[str]:
@@ -120,7 +122,11 @@ class ChaosModeService:
 
             # Get all items that depend on current
             links = await self.links.get_by_source(current)
-            to_visit.extend(str(link.target_item_id) for link in links if str(link.target_item_id) not in visited)
+            to_visit.extend(
+                str(link.target_item_id)
+                for link in links
+                if str(link.target_item_id) not in visited
+            )
 
         return visited
 
@@ -263,7 +269,9 @@ class ChaosModeService:
             "todo": todo_items,
             "total_links": len(links),
             "zombie_count": zombies_result["zombie_count"],
-            "completion_percentage": ((completed_items / total_items * 100) if total_items > 0 else 0),
+            "completion_percentage": (
+                (completed_items / total_items * 100) if total_items > 0 else 0
+            ),
         }
 
     async def explode_file(

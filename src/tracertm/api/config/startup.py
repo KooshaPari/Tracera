@@ -69,7 +69,11 @@ async def _poll_services(
 
     checks = build_api_checks()
     to_poll_required = [c for c in checks if c.name in required_names and c.url and c.url.strip()]
-    missing_required = [n for n in required_names if not any(c.name == n and c.url and c.url.strip() for c in checks)]
+    missing_required = [
+        n
+        for n in required_names
+        if not any(c.name == n and c.url and c.url.strip() for c in checks)
+    ]
     if missing_required:
         msg = f"Preflight failed for: {', '.join(missing_required)} (missing url)"
         raise RuntimeError(msg)
@@ -82,7 +86,8 @@ async def _poll_services(
         )
         sys.stderr.flush()
         results = await asyncio.gather(*[
-            _poll_one_service(service_name, c, True, interval_initial, interval_max) for c in to_poll_required
+            _poll_one_service(service_name, c, True, interval_initial, interval_max)
+            for c in to_poll_required
         ])
         required_failures = [name for name, ok in results if not ok]
         if required_failures:
@@ -104,7 +109,9 @@ async def run_preflight_checks() -> tuple[tuple[str, ...], tuple[str, ...]]:
     optional_poll: tuple[str, ...] = ("go-backend",)
     all_checks = build_api_checks()
     excluded = set(required_poll + optional_poll)
-    checked_now = tuple(c.name for c in all_checks if c.name not in excluded and c.url and c.url.strip())
+    checked_now = tuple(
+        c.name for c in all_checks if c.name not in excluded and c.url and c.url.strip()
+    )
 
     run_preflight(
         "python-api",
@@ -201,7 +208,15 @@ async def initialize_nats_client() -> tuple[Any, Any]:
         event_bus = EventBus(nats_client)
 
         logger.info("NATS client initialized at %s", nats_url)
-    except (ImportError, RuntimeError, OSError, ValueError, TypeError, ConnectionError, TimeoutError) as e:
+    except (
+        ImportError,
+        RuntimeError,
+        OSError,
+        ValueError,
+        TypeError,
+        ConnectionError,
+        TimeoutError,
+    ) as e:
         # Required dependency: fail clearly (CLAUDE.md).
         msg = f"NATS unavailable: {e}"
         raise RuntimeError(msg) from e
@@ -242,7 +257,12 @@ async def _handle_item_created(cache_service: object, event: dict[str, Any]) -> 
     project_id = event.get("project_id")
     entity_type = event.get("entity_type")
 
-    logger.info("Received item.created event: %s (type: %s, project: %s)", entity_id, entity_type, project_id)
+    logger.info(
+        "Received item.created event: %s (type: %s, project: %s)",
+        entity_id,
+        entity_type,
+        project_id,
+    )
 
     if project_id:
         await _invalidate_item_caches(cache_service, cast("str", project_id))
@@ -259,7 +279,12 @@ async def _handle_item_updated(cache_service: object, event: dict[str, Any]) -> 
     project_id = event.get("project_id")
     entity_type = event.get("entity_type")
 
-    logger.info("Received item.updated event: %s (type: %s, project: %s)", entity_id, entity_type, project_id)
+    logger.info(
+        "Received item.updated event: %s (type: %s, project: %s)",
+        entity_id,
+        entity_type,
+        project_id,
+    )
 
     if project_id:
         await _invalidate_item_update_caches(cache_service, cast("str", project_id))
@@ -447,8 +472,12 @@ async def subscribe_to_events(event_bus: object, handlers: dict[str, Any]) -> No
     await cast("Any", event_bus).subscribe(EventBus.EVENT_ITEM_DELETED, handlers["item_deleted"])
     await cast("Any", event_bus).subscribe(EventBus.EVENT_LINK_CREATED, handlers["link_created"])
     await cast("Any", event_bus).subscribe(EventBus.EVENT_LINK_DELETED, handlers["link_deleted"])
-    await cast("Any", event_bus).subscribe(EventBus.EVENT_PROJECT_UPDATED, handlers["project_updated"])
-    await cast("Any", event_bus).subscribe(EventBus.EVENT_PROJECT_DELETED, handlers["project_deleted"])
+    await cast("Any", event_bus).subscribe(
+        EventBus.EVENT_PROJECT_UPDATED, handlers["project_updated"]
+    )
+    await cast("Any", event_bus).subscribe(
+        EventBus.EVENT_PROJECT_DELETED, handlers["project_deleted"]
+    )
 
     logger.info("Event handlers subscribed to NATS event bus")
 
@@ -488,7 +517,9 @@ async def initialize_nats_bridge(app: FastAPI) -> None:
     handlers = create_event_handlers(cache_service)
     await subscribe_to_events(event_bus, handlers)
 
-    logger.info("NATS bridge initialized successfully at %s", os.getenv("NATS_URL", "nats://localhost:4222"))
+    logger.info(
+        "NATS bridge initialized successfully at %s", os.getenv("NATS_URL", "nats://localhost:4222")
+    )
 
 
 async def initialize_grpc_server(app: FastAPI) -> None:

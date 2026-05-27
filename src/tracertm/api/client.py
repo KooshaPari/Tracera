@@ -160,7 +160,9 @@ class TraceRTMClient:
     def __enter__(self) -> "TraceRTMClient":
         return self
 
-    def __exit__(self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: Any) -> None:
+    def __exit__(
+        self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: Any
+    ) -> None:
         try:
             self.cleanup()
         except Exception:
@@ -269,7 +271,11 @@ class TraceRTMClient:
             return self._session.execute(stmt)
         except Exception:
             # Fallback for AsyncSession in non-async context
-            if self._is_async_session() and self._session is not None and hasattr(self._session, "sync_session"):
+            if (
+                self._is_async_session()
+                and self._session is not None
+                and hasattr(self._session, "sync_session")
+            ):
                 return self._session.sync_session.execute(stmt)
             raise
 
@@ -381,7 +387,11 @@ class TraceRTMClient:
             "agent_registered",
             "agent",
             agent.id,
-            {"name": name, "type": agent_type, "projects": project_ids or ([project_id] if project_id else [])},
+            {
+                "name": name,
+                "type": agent_type,
+                "projects": project_ids or ([project_id] if project_id else []),
+            },
         )
 
         return agent.id
@@ -534,7 +544,9 @@ class TraceRTMClient:
             }
             column = attr_map.get(sort_field)
             if column is not None:
-                query = query.order_by(column.asc() if (order or "asc").lower() == "asc" else column.desc())
+                query = query.order_by(
+                    column.asc() if (order or "asc").lower() == "asc" else column.desc()
+                )
 
         if offset:
             query = query.offset(offset)
@@ -973,9 +985,15 @@ class TraceRTMClient:
             data = dict(data)
             data.setdefault("project_id", project_id)
             created.append(self.create_item(**data))
-        return created if self._patched_session else BatchResult(created, {"items_created": len(created)})
+        return (
+            created
+            if self._patched_session
+            else BatchResult(created, {"items_created": len(created)})
+        )
 
-    def batch_update_items(self, updates: list[dict[str, Any]]) -> list[ItemView | Any] | BatchResult:
+    def batch_update_items(
+        self, updates: list[dict[str, Any]]
+    ) -> list[ItemView | Any] | BatchResult:
         updated: list[ItemView | Any] = []
         for upd in updates:
             payload = dict(upd)
@@ -993,7 +1011,11 @@ class TraceRTMClient:
             except ValueError:
                 # Skip missing items in batch mode
                 continue
-        return updated if self._patched_session else BatchResult(updated, {"items_updated": len(updated)})
+        return (
+            updated
+            if self._patched_session
+            else BatchResult(updated, {"items_updated": len(updated)})
+        )
 
     def batch_delete_items(self, item_ids: list[str]) -> bool | BatchResult:
         deleted = 0
@@ -1019,22 +1041,30 @@ class TraceRTMClient:
                 "title": item.get("title") if isinstance(item, dict) else item["title"],
                 "view": item.get("view") if isinstance(item, dict) else item["view"],
                 "type": item.get("type") if isinstance(item, dict) else item["type"],
-                "description": item.get("description") if isinstance(item, dict) else item["description"],
-                "project_id": item.get("project_id") if isinstance(item, dict) else item["project_id"],
+                "description": item.get("description")
+                if isinstance(item, dict)
+                else item["description"],
+                "project_id": item.get("project_id")
+                if isinstance(item, dict)
+                else item["project_id"],
                 "metadata": item.get("metadata") if isinstance(item, dict) else item["metadata"],
             }
             for item in items
         ]
         return json.dumps(data)
 
-    def import_items(self, data: str, project_id: str | None = None) -> list[ItemView] | list[Any] | BatchResult:
+    def import_items(
+        self, data: str, project_id: str | None = None
+    ) -> list[ItemView] | list[Any] | BatchResult:
         items_data = json.loads(data)
         return self.batch_create_items(items_data, project_id=project_id)
 
     def batch_create_links(self, links_data: list[dict]) -> list[Link]:
         return [self.create_link(**payload) for payload in links_data]
 
-    def compute_transitive_closure(self, start_id: str, link_types: list[str] | None = None) -> list[str]:
+    def compute_transitive_closure(
+        self, start_id: str, link_types: list[str] | None = None
+    ) -> list[str]:
         session = self._ensure_sync_session()
         visited = set()
         stack = [start_id]
@@ -1086,7 +1116,12 @@ class TraceRTMClient:
 
         project = session.query(Project).filter(Project.id == project_id).first()
 
-        items = session.query(Item).filter(Item.project_id == project_id, Item.deleted_at.is_(None)).all()
+        items = (
+            session
+            .query(Item)
+            .filter(Item.project_id == project_id, Item.deleted_at.is_(None))
+            .all()
+        )
 
         links = session.query(Link).filter(Link.project_id == project_id).all()
 
@@ -1188,7 +1223,9 @@ class TraceRTMClient:
         }
 
     # FR45: Agent activity monitoring
-    def get_agent_activity(self, agent_id: str | None = None, limit: int = 100) -> list[dict[str, Any]]:
+    def get_agent_activity(
+        self, agent_id: str | None = None, limit: int = 100
+    ) -> list[dict[str, Any]]:
         """
         Get agent activity history (FR45).
 

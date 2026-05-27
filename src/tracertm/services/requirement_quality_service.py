@@ -56,7 +56,9 @@ class RequirementQualityService:
         for smell_type, pattern in SMELL_PATTERNS.items():
             if re.search(pattern, text):
                 detected_smells.append(smell_type)
-                suggestions.append(f"Found {smell_type} terms. Consider rephrasing to be more specific.")
+                suggestions.append(
+                    f"Found {smell_type} terms. Consider rephrasing to be more specific."
+                )
 
         # Calculate scores (simple heuristic)
         # Ambiguity increases with more smells
@@ -72,7 +74,9 @@ class RequirementQualityService:
         completeness_score = max(0.0, 1.0 - completeness_penalty)
 
         # Check if analysis exists
-        result = await self.session.execute(select(RequirementQuality).where(RequirementQuality.item_id == item_id))
+        result = await self.session.execute(
+            select(RequirementQuality).where(RequirementQuality.item_id == item_id)
+        )
         quality_record = result.scalar_one_or_none()
 
         if quality_record:
@@ -99,5 +103,7 @@ class RequirementQualityService:
 
     async def get_quality(self, item_id: str) -> RequirementQuality | None:
         """Get quality record for an item."""
-        result = await self.session.execute(select(RequirementQuality).where(RequirementQuality.item_id == item_id))
+        result = await self.session.execute(
+            select(RequirementQuality).where(RequirementQuality.item_id == item_id)
+        )
         return result.scalar_one_or_none()

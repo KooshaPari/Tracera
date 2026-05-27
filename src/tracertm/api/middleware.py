@@ -84,6 +84,8 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                     # but contextvars are request-scoped in asyncio usually.
             except Exception as e:
                 # Ignore errors in middleware, let auth_guard handle them explicitly
-                logging.getLogger(__name__).debug("Optional token verification failed: %s", e, exc_info=True)
+                logging.getLogger(__name__).debug(
+                    "Optional token verification failed: %s", e, exc_info=True
+                )
 
         return await call_next(request)

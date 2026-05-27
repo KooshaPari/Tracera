@@ -97,8 +97,12 @@ def link_row_to_dict(row: object, project_id: str | None) -> dict[str, Any]:
     """
     return {
         "id": str(getattr(row, "id", "") or ""),
-        "source_id": str(getattr(row, "source_item_id", None) or getattr(row, "source_id", "") or ""),
-        "target_id": str(getattr(row, "target_item_id", None) or getattr(row, "target_id", "") or ""),
+        "source_id": str(
+            getattr(row, "source_item_id", None) or getattr(row, "source_id", "") or ""
+        ),
+        "target_id": str(
+            getattr(row, "target_item_id", None) or getattr(row, "target_id", "") or ""
+        ),
         "type": getattr(row, "link_type", None) or getattr(row, "type", "") or "",
         "project_id": project_id or "",
     }

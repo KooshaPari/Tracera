@@ -150,7 +150,9 @@ class AuthMiddleware(Middleware):
         # Otherwise use global scopes
         return self.required_scopes
 
-    def _validate_scopes(self, auth: dict[str, object], required_scopes: list[str], tool_name: str) -> None:
+    def _validate_scopes(
+        self, auth: dict[str, object], required_scopes: list[str], tool_name: str
+    ) -> None:
         """Validate that token has required scopes.
 
         Args:

@@ -167,7 +167,9 @@ def _validate_device_code(device_code: str) -> dict[str, object]:
     return code_data
 
 
-def _extract_tokens_and_cleanup(device_code: str, code_data: dict[str, object]) -> DeviceTokenResponse:
+def _extract_tokens_and_cleanup(
+    device_code: str, code_data: dict[str, object]
+) -> DeviceTokenResponse:
     """Extract tokens from code data and cleanup store.
 
     Args:
@@ -245,7 +247,9 @@ def _find_device_code_by_user_code(user_code: str) -> str | None:
     return None
 
 
-def _authenticate_with_code(auth_code: str, workos_auth_service: WorkOSAuthService) -> dict[str, object]:
+def _authenticate_with_code(
+    auth_code: str, workos_auth_service: WorkOSAuthService
+) -> dict[str, object]:
     """Exchange authorization code for tokens using WorkOS.
 
     Args:
@@ -264,7 +268,9 @@ def _authenticate_with_code(auth_code: str, workos_auth_service: WorkOSAuthServi
         raise HTTPException(status_code=400, detail=f"Authentication failed: {e!s}") from e
 
 
-def _extract_user_info(result: dict[str, object], workos_auth_service: WorkOSAuthService) -> dict[str, object] | None:
+def _extract_user_info(
+    result: dict[str, object], workos_auth_service: WorkOSAuthService
+) -> dict[str, object] | None:
     """Extract user info from authentication result.
 
     Args:
@@ -290,7 +296,9 @@ def _extract_user_info(result: dict[str, object], workos_auth_service: WorkOSAut
     return None
 
 
-async def device_complete_handler(data: dict[str, object], workos_auth_service: WorkOSAuthService) -> dict[str, object]:
+async def device_complete_handler(
+    data: dict[str, object], workos_auth_service: WorkOSAuthService
+) -> dict[str, object]:
     """Complete device authorization from browser.
 
     This endpoint is called by the browser after the user enters the code

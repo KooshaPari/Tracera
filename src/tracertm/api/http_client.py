@@ -41,7 +41,9 @@ class TraceRTMHttpError(RuntimeError):
 
 def _default_base_url() -> str:
     """Return the default base URL for the TraceRTM API."""
-    return os.getenv("TRACERTM_API_URL") or os.getenv("PYTHON_BACKEND_URL") or "http://127.0.0.1:4000"
+    return (
+        os.getenv("TRACERTM_API_URL") or os.getenv("PYTHON_BACKEND_URL") or "http://127.0.0.1:4000"
+    )
 
 
 def _is_retryable_status(status: int) -> bool:
@@ -162,11 +164,15 @@ class TraceRTMHttpClient:
         """Send a GET request."""
         return self.request("GET", path, params=params)
 
-    def post(self, path: str, *, json: object | None = None, params: dict[str, Any] | None = None) -> Any:
+    def post(
+        self, path: str, *, json: object | None = None, params: dict[str, Any] | None = None
+    ) -> Any:
         """Send a POST request."""
         return self.request("POST", path, json=json, params=params)
 
-    def put(self, path: str, *, json: object | None = None, params: dict[str, Any] | None = None) -> Any:
+    def put(
+        self, path: str, *, json: object | None = None, params: dict[str, Any] | None = None
+    ) -> Any:
         """Send a PUT request."""
         return self.request("PUT", path, json=json, params=params)
 

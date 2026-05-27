@@ -24,18 +24,24 @@ class WorkflowExecutor:
     def _find_agent_config(self) -> Path | None:
         """Find agent configuration file."""
         # Check .bmad/bmm/agents first
-        bmm_agents = self.project_root / ".bmad" / "bmm" / "agents" / f"{self.agent_name}.agent.yaml"
+        bmm_agents = (
+            self.project_root / ".bmad" / "bmm" / "agents" / f"{self.agent_name}.agent.yaml"
+        )
         if bmm_agents.exists():
             return bmm_agents
 
         # Check .bmad/core/agents
-        core_agents = self.project_root / ".bmad" / "core" / "agents" / f"{self.agent_name}.agent.yaml"
+        core_agents = (
+            self.project_root / ".bmad" / "core" / "agents" / f"{self.agent_name}.agent.yaml"
+        )
         if core_agents.exists():
             return core_agents
 
         return None
 
-    async def execute_workflow(self, workflow_command: str, workflow_id: str, auto: bool = False) -> dict[str, object]:
+    async def execute_workflow(
+        self, workflow_command: str, workflow_id: str, auto: bool = False
+    ) -> dict[str, object]:
         """Execute a workflow by creating a sub-agent MCP server and invoking it via FastMCP Client.
 
         Architecture:
@@ -80,7 +86,9 @@ class WorkflowExecutor:
                 "output_path": None,  # Will be set by workflow server
             }
 
-    def _create_workflow_server(self, _workflow_command: str, workflow_id: str, _auto: bool) -> Path:
+    def _create_workflow_server(
+        self, _workflow_command: str, workflow_id: str, _auto: bool
+    ) -> Path:
         """Create a temporary FastMCP server script for workflow execution.
 
         This server has full FastMCP features (elicitation, sampling, middleware).
@@ -235,5 +243,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     result = asyncio.run(
-        run_workflow_with_sub_agent(args.project_root, args.agent, args.workflow_command, args.workflow_id, args.auto),
+        run_workflow_with_sub_agent(
+            args.project_root, args.agent, args.workflow_command, args.workflow_id, args.auto
+        ),
     )

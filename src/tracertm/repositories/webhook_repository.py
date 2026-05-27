@@ -75,7 +75,9 @@ class WebhookRepository:
 
     async def get_by_id(self, webhook_id: str) -> WebhookIntegration | None:
         """Get a webhook by ID."""
-        result = await self.session.execute(select(WebhookIntegration).where(WebhookIntegration.id == webhook_id))
+        result = await self.session.execute(
+            select(WebhookIntegration).where(WebhookIntegration.id == webhook_id)
+        )
         return result.scalar_one_or_none()
 
     async def list_by_project(
@@ -176,7 +178,9 @@ class WebhookRepository:
         now = datetime.now(UTC)
 
         # Reset window if needed
-        if webhook.last_rate_limit_reset is None or now - webhook.last_rate_limit_reset > timedelta(minutes=1):
+        if webhook.last_rate_limit_reset is None or now - webhook.last_rate_limit_reset > timedelta(
+            minutes=1
+        ):
             webhook.last_rate_limit_reset = now
             webhook.requests_in_window = 0
 

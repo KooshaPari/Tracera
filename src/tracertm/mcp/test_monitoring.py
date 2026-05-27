@@ -47,7 +47,9 @@ async def test_metrics() -> None:
     fail_ctx = FailContext()
 
     try:
-        await middleware.on_tool_call(cast("MiddlewareContext", fail_ctx), "test_tool", {"arg1": "value1"})
+        await middleware.on_tool_call(
+            cast("MiddlewareContext", fail_ctx), "test_tool", {"arg1": "value1"}
+        )
     except ValueError:
         pass  # Expected
 
@@ -74,7 +76,9 @@ async def test_telemetry() -> None:
     ctx = MockContext()
 
     # Test successful trace (cast: mock context satisfies MiddlewareContext protocol)
-    await middleware.on_tool_call(cast("MiddlewareContext", ctx), "create_project", {"name": "TestProject"})
+    await middleware.on_tool_call(
+        cast("MiddlewareContext", ctx), "create_project", {"name": "TestProject"}
+    )
 
     # Test failed trace
     class FailContext(MockContext):
@@ -85,7 +89,9 @@ async def test_telemetry() -> None:
     fail_ctx = FailContext()
 
     try:
-        await middleware.on_tool_call(cast("MiddlewareContext", fail_ctx), "query_items", {"query": "test"})
+        await middleware.on_tool_call(
+            cast("MiddlewareContext", fail_ctx), "query_items", {"query": "test"}
+        )
     except RuntimeError:
         pass  # Expected
 
@@ -119,7 +125,9 @@ async def test_performance_monitoring() -> None:
         async def next(self) -> None:
             await asyncio.sleep(0.2)
 
-    await middleware.on_tool_call(cast("MiddlewareContext", VerySlowContext()), "very_slow_tool", {})
+    await middleware.on_tool_call(
+        cast("MiddlewareContext", VerySlowContext()), "very_slow_tool", {}
+    )
 
     # Get statistics
     middleware.get_statistics()

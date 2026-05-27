@@ -35,10 +35,14 @@ class Account(Base, TimestampMixin):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     slug: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
-    account_type: Mapped[str] = mapped_column(String(50), nullable=False, default=AccountType.PERSONAL)
+    account_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, default=AccountType.PERSONAL
+    )
 
     # Metadata
-    account_metadata: Mapped[dict[str, object]] = mapped_column("metadata", JSONType, nullable=False, default=dict)
+    account_metadata: Mapped[dict[str, object]] = mapped_column(
+        "metadata", JSONType, nullable=False, default=dict
+    )
 
     # Relationships
     account_users: Mapped[list["AccountUser"]] = relationship(

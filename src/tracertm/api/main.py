@@ -150,7 +150,9 @@ app = FastAPI(
 def _install_signal_logging() -> None:
     """Log shutdown signals so supervisor-initiated stops are explicit."""
 
-    def _wrap_handler(_sig: int, handler: object) -> Callable[[int, FrameType | None], Any] | int | None:
+    def _wrap_handler(
+        _sig: int, handler: object
+    ) -> Callable[[int, FrameType | None], Any] | int | None:
         if callable(handler):
 
             def _wrapped(signum: int, frame: FrameType | None) -> Any:
@@ -240,16 +242,23 @@ def _register_integration_exception_handlers() -> None:
         return JSONResponse(
             status_code=401,
             content={
-                "detail": str(exc) or "Integration token expired or invalid. Please reconnect in Settings.",
+                "detail": str(exc)
+                or "Integration token expired or invalid. Please reconnect in Settings.",
                 "code": "integration_auth_required",
             },
         )
 
     @app.exception_handler(GitHubRateLimitError)
-    async def github_rate_limit_handler(_request: Request, exc: GitHubRateLimitError) -> JSONResponse:
+    async def github_rate_limit_handler(
+        _request: Request, exc: GitHubRateLimitError
+    ) -> JSONResponse:
         """GitHub rate limit: 429 + Retry-After for loud/graceful handling."""
         now = datetime.now(UTC)
-        reset = exc.reset_at.replace(tzinfo=UTC) if getattr(exc.reset_at, "tzinfo", None) is None else exc.reset_at
+        reset = (
+            exc.reset_at.replace(tzinfo=UTC)
+            if getattr(exc.reset_at, "tzinfo", None) is None
+            else exc.reset_at
+        )
         delta = (reset - now).total_seconds()
         retry_after = max(1, int(delta)) if delta > 0 else 60
         logger.warning("GitHub rate limit: retry after %s s", retry_after)
@@ -264,7 +273,9 @@ def _register_integration_exception_handlers() -> None:
         )
 
     @app.exception_handler(LinearRateLimitError)
-    async def linear_rate_limit_handler(_request: Request, _exc: LinearRateLimitError) -> JSONResponse:
+    async def linear_rate_limit_handler(
+        _request: Request, _exc: LinearRateLimitError
+    ) -> JSONResponse:
         """Linear rate limit: 429 + Retry-After."""
         retry_after = 60
         logger.warning("Linear rate limit: retry after %s s", retry_after)
@@ -500,7 +511,9 @@ async def list_credentials(
                 "scopes": c.scopes,
                 "provider_user_id": c.provider_user_id,
                 "provider_metadata": c.provider_metadata,
-                "last_validated_at": c.last_validated_at.isoformat() if c.last_validated_at else None,
+                "last_validated_at": c.last_validated_at.isoformat()
+                if c.last_validated_at
+                else None,
                 "created_at": c.created_at.isoformat() if c.created_at else None,
             }
             for c in credentials
@@ -638,8 +651,12 @@ async def list_mappings(
                 "credential_id": m.integration_credential_id,
                 "provider": m.external_system,
                 "direction": m.direction,
-                "local_item_id": m.project_id if m.tracertm_item_type == "project_root" else m.tracertm_item_id,
-                "local_item_type": "project" if m.tracertm_item_type == "project_root" else m.tracertm_item_type,
+                "local_item_id": m.project_id
+                if m.tracertm_item_type == "project_root"
+                else m.tracertm_item_id,
+                "local_item_type": "project"
+                if m.tracertm_item_type == "project_root"
+                else m.tracertm_item_type,
                 "external_id": m.external_id,
                 "external_type": m.external_system,
                 "external_url": m.external_url,
@@ -899,7 +916,9 @@ async def get_integration_sync_status(
     encryption_key = os.environ.get("ENCRYPTION_KEY", "")
     encryption_service = EncryptionService(encryption_key) if encryption_key else None
     cred_repo = IntegrationCredentialRepository(db, encryption_service)
-    credentials = await cred_repo.get_by_project(project_id, include_global_user_id=claims.get("sub"))
+    credentials = await cred_repo.get_by_project(
+        project_id, include_global_user_id=claims.get("sub")
+    )
 
     # Get queue stats
     queue_result = await db.execute(
@@ -1048,14 +1067,18 @@ async def get_sync_queue(
         from tracertm.models.integration import IntegrationMapping
 
         mapping_ids = list({item.mapping_id for item in items})
-        result = await db.execute(select(IntegrationMapping).where(IntegrationMapping.id.in_(mapping_ids)))
+        result = await db.execute(
+            select(IntegrationMapping).where(IntegrationMapping.id.in_(mapping_ids))
+        )
         mapping_lookup = {m.id: m for m in result.scalars().all()}
 
     return {
         "items": [
             {
                 "id": item.id,
-                "provider": getattr(mapping_lookup.get(item.mapping_id), "external_system", "unknown"),
+                "provider": getattr(
+                    mapping_lookup.get(item.mapping_id), "external_system", "unknown"
+                ),
                 "event_type": item.event_type,
                 "direction": item.direction,
                 "status": item.status,
@@ -1190,7 +1213,9 @@ async def resolve_conflict(
         "resolved": True,
         "conflict_id": conflict_id,
         "resolution": resolution,
-        "resolved_at": resolved.resolved_at.isoformat() if resolved and resolved.resolved_at else None,
+        "resolved_at": resolved.resolved_at.isoformat()
+        if resolved and resolved.resolved_at
+        else None,
     }
 
 
@@ -1240,7 +1265,9 @@ async def list_github_repos(
                 raise HTTPException(status_code=404, detail="Installation not found")
 
             if account_id and installation.account_id != account_id:
-                raise HTTPException(status_code=403, detail="Installation does not belong to this account")
+                raise HTTPException(
+                    status_code=403, detail="Installation does not belong to this account"
+                )
 
             config = get_github_app_config()
             if not config.is_configured():
@@ -1301,12 +1328,17 @@ async def list_github_repos(
                 )
                 repos = cast("list[dict[Any, Any]]", result.get("items", []))
             else:
-                repos = cast("list[dict[Any, Any]]", await client.list_user_repos(
-                    per_page=per_page,
-                    page=page,
-                ))
+                repos = cast(
+                    "list[dict[Any, Any]]",
+                    await client.list_user_repos(
+                        per_page=per_page,
+                        page=page,
+                    ),
+                )
         else:
-            raise HTTPException(status_code=400, detail="Either installation_id or credential_id is required")
+            raise HTTPException(
+                status_code=400, detail="Either installation_id or credential_id is required"
+            )
     finally:
         if client:
             await client.close()
@@ -1391,12 +1423,17 @@ async def create_github_repo(
     )
 
     try:
-        created_repo = cast("dict[str, Any]", await client.create_repo(
-            name=name,
-            description=description,
-            private=private,
-            org=org or installation.account_login if installation.target_type == "Organization" else None,
-        ))
+        created_repo = cast(
+            "dict[str, Any]",
+            await client.create_repo(
+                name=name,
+                description=description,
+                private=private,
+                org=org or installation.account_login
+                if installation.target_type == "Organization"
+                else None,
+            ),
+        )
     finally:
         await client.close()
 
@@ -1453,11 +1490,14 @@ async def list_github_issues(
     client = GitHubClient(token)
 
     try:
-        issues = cast("list[dict[str, Any]]", await client.list_issues(
-            owner=owner,
-            repo=repo,
-            params=IssueListParams(state=state, per_page=per_page, page=page),
-        ))
+        issues = cast(
+            "list[dict[str, Any]]",
+            await client.list_issues(
+                owner=owner,
+                repo=repo,
+                params=IssueListParams(state=state, per_page=per_page, page=page),
+            ),
+        )
     finally:
         await client.close()
 
@@ -1620,7 +1660,9 @@ async def link_github_app_installation(
         raise HTTPException(status_code=404, detail="Installation not found")
 
     if installation.account_id and installation.account_id != account_id:
-        raise HTTPException(status_code=400, detail="Installation already linked to another account")
+        raise HTTPException(
+            status_code=400, detail="Installation already linked to another account"
+        )
 
     installation.account_id = account_id
     await db.commit()
@@ -1723,7 +1765,9 @@ async def list_github_projects(
             token = cred_repo.decrypt_token(credential)
             client = GitHubClient(token)
         else:
-            raise HTTPException(status_code=400, detail="Either installation_id or credential_id is required")
+            raise HTTPException(
+                status_code=400, detail="Either installation_id or credential_id is required"
+            )
 
         projects = await client.list_projects_graphql(owner=owner, is_org=is_org)
     finally:
@@ -1838,7 +1882,9 @@ async def list_linked_github_projects(
     elif github_repo_id:
         projects = await repo.get_by_repo(github_repo_id)
     else:
-        raise HTTPException(status_code=400, detail="Either project_id or github_repo_id is required")
+        raise HTTPException(
+            status_code=400, detail="Either project_id or github_repo_id is required"
+        )
 
     return {
         "projects": [
@@ -2080,7 +2126,9 @@ async def receive_github_webhook(
     signature_header = request.headers.get("X-Hub-Signature-256", "")
 
     if webhook.webhook_secret:
-        expected_signature = "sha256=" + hmac.new(webhook.webhook_secret.encode(), body, hashlib.sha256).hexdigest()
+        expected_signature = (
+            "sha256=" + hmac.new(webhook.webhook_secret.encode(), body, hashlib.sha256).hexdigest()
+        )
 
         if not hmac.compare_digest(signature_header, expected_signature):
             raise HTTPException(status_code=401, detail="Invalid signature")
@@ -2150,7 +2198,9 @@ async def receive_linear_webhook(
     signature_header = request.headers.get("Linear-Signature", "")
 
     if webhook.webhook_secret:
-        expected_signature = hmac.new(webhook.webhook_secret.encode(), body, hashlib.sha256).hexdigest()
+        expected_signature = hmac.new(
+            webhook.webhook_secret.encode(), body, hashlib.sha256
+        ).hexdigest()
 
         if not hmac.compare_digest(signature_header, expected_signature):
             raise HTTPException(status_code=401, detail="Invalid signature")

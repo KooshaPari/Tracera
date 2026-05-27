@@ -195,7 +195,9 @@ class CodexAgentService:
                 env=env,
             )
 
-            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=task.timeout_seconds)
+            stdout, stderr = await asyncio.wait_for(
+                proc.communicate(), timeout=task.timeout_seconds
+            )
 
             output_text = stdout.decode()
             interaction.output_data = {
@@ -250,7 +252,9 @@ class CodexAgentService:
             input_files=[artifact.file_path],
             sandbox="read-only",
         )
-        return await self.run_task(task, project_id, execution_id=execution_id, artifact_id=artifact_id)
+        return await self.run_task(
+            task, project_id, execution_id=execution_id, artifact_id=artifact_id
+        )
 
     async def review_video(
         self,
@@ -276,7 +280,9 @@ class CodexAgentService:
         frame_dir = tempfile.mkdtemp(prefix="codex_frames_")
         try:
             # Extract frames
-            frames = await self._ffmpeg.extract_frames(artifact.file_path, frame_dir, interval_seconds=2.0)
+            frames = await self._ffmpeg.extract_frames(
+                artifact.file_path, frame_dir, interval_seconds=2.0
+            )
 
             # Limit frames
             frames = frames[:max_frames]
@@ -287,7 +293,9 @@ class CodexAgentService:
                 input_files=[str(f) for f in frames],
                 sandbox="read-only",
             )
-            return await self.run_task(task, project_id, execution_id=execution_id, artifact_id=artifact_id)
+            return await self.run_task(
+                task, project_id, execution_id=execution_id, artifact_id=artifact_id
+            )
         finally:
             shutil.rmtree(frame_dir, ignore_errors=True)
 

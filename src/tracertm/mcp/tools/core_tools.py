@@ -267,7 +267,11 @@ async def query_items(
 
     items = result.get("items", result if isinstance(result, list) else [])
     if item_type:
-        items = [item for item in items if item.get("type") == item_type or item.get("item_type") == item_type]
+        items = [
+            item
+            for item in items
+            if item.get("type") == item_type or item.get("item_type") == item_type
+        ]
     if owner:
         items = [item for item in items if item.get("owner") == owner]
     return {
@@ -774,7 +778,11 @@ async def list_links(
         raise ToolError(str(exc)) from exc
 
     if link_type:
-        links = [link for link in links if link.get("type") == link_type or link.get("link_type") == link_type]
+        links = [
+            link
+            for link in links
+            if link.get("type") == link_type or link.get("link_type") == link_type
+        ]
 
     return {
         "project_id": str(project_id),

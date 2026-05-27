@@ -51,7 +51,10 @@ class AccountRepository:
     async def list_by_user(self, user_id: str) -> list[Account]:
         """List all accounts for a user."""
         result = await self.db.execute(
-            select(Account).join(AccountUser).where(AccountUser.user_id == user_id).order_by(Account.created_at.desc()),
+            select(Account)
+            .join(AccountUser)
+            .where(AccountUser.user_id == user_id)
+            .order_by(Account.created_at.desc()),
         )
         return list(result.scalars().all())
 

@@ -106,7 +106,9 @@ async def create_github_repo(
     )
 
     try:
-        org_name = org or (installation.account_login if installation.target_type == "Organization" else None)
+        org_name = org or (
+            installation.account_login if installation.target_type == "Organization" else None
+        )
         repo = await client.create_repo(
             name=name,
             description=description,

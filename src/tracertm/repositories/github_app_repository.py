@@ -46,13 +46,19 @@ class GitHubAppInstallationRepository:
 
     async def get_by_id(self, installation_id: str) -> GitHubAppInstallation | None:
         """Get installation by ID."""
-        result = await self.db.execute(select(GitHubAppInstallation).where(GitHubAppInstallation.id == installation_id))
+        result = await self.db.execute(
+            select(GitHubAppInstallation).where(GitHubAppInstallation.id == installation_id)
+        )
         return result.scalar_one_or_none()
 
-    async def get_by_github_installation_id(self, github_installation_id: int) -> GitHubAppInstallation | None:
+    async def get_by_github_installation_id(
+        self, github_installation_id: int
+    ) -> GitHubAppInstallation | None:
         """Get installation by GitHub's installation ID."""
         result = await self.db.execute(
-            select(GitHubAppInstallation).where(GitHubAppInstallation.installation_id == github_installation_id),
+            select(GitHubAppInstallation).where(
+                GitHubAppInstallation.installation_id == github_installation_id
+            ),
         )
         return result.scalar_one_or_none()
 

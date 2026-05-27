@@ -182,7 +182,9 @@ class FFmpegPipeline:
                 if opts.dither_method == "none":
                     palette_use = "paletteuse=dither=none"
                 else:
-                    palette_use = f"paletteuse=dither={opts.dither_method}:bayer_scale={opts.bayer_scale}"
+                    palette_use = (
+                        f"paletteuse=dither={opts.dither_method}:bayer_scale={opts.bayer_scale}"
+                    )
 
                 await self._run([
                     "-i",

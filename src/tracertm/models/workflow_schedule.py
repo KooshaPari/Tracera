@@ -32,7 +32,9 @@ class WorkflowSchedule(Base, TimestampMixin):
 
     __tablename__ = "workflow_schedules"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=generate_workflow_schedule_uuid)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=generate_workflow_schedule_uuid
+    )
     project_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("projects.id", ondelete="CASCADE"),

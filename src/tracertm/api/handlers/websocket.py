@@ -88,7 +88,9 @@ async def receive_auth_message(websocket: WebSocket, timeout_seconds: float = 10
 async def _log_disconnect_before_auth(websocket: WebSocket, exc: WebSocketDisconnect) -> None:
     code = getattr(exc, "code", None)
     if code in {1000, 1001}:
-        logger.info("WebSocket client disconnected before auth from %s (code=%s)", websocket.client, code)
+        logger.info(
+            "WebSocket client disconnected before auth from %s (code=%s)", websocket.client, code
+        )
     else:
         logger.warning("WebSocket disconnected before auth from %s: %s", websocket.client, exc)
 
@@ -108,7 +110,9 @@ async def _receive_token_after_accept(
         await _log_disconnect_before_auth(websocket, exc)
         return None
     except (JSONDecodeError, RuntimeError, TypeError, ValueError) as exc:
-        logger.warning("WebSocket failed to receive auth message from %s: %s", websocket.client, exc)
+        logger.warning(
+            "WebSocket failed to receive auth message from %s: %s", websocket.client, exc
+        )
         await close_websocket_once(websocket, ws_closed, 1008, "Invalid auth")
         return None
 

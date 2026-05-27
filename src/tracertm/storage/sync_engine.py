@@ -152,7 +152,9 @@ class ChangeDetector:
         return current_hash != stored_hash
 
     @staticmethod
-    def detect_changes_in_directory(directory: Path, stored_hashes: dict[str, str]) -> list[tuple[Path, str]]:
+    def detect_changes_in_directory(
+        directory: Path, stored_hashes: dict[str, str]
+    ) -> list[tuple[Path, str]]:
         """Detect changed files in a directory.
 
         Args:
@@ -329,7 +331,9 @@ class SyncQueue:
             queue_id: Queue entry ID
         """
         with self.engine.connect() as conn:
-            conn.execute(text("DELETE FROM sync_queue WHERE id = :queue_id"), {"queue_id": queue_id})
+            conn.execute(
+                text("DELETE FROM sync_queue WHERE id = :queue_id"), {"queue_id": queue_id}
+            )
             conn.commit()
 
     def update_retry(self, queue_id: int, error: str) -> None:
@@ -438,7 +442,9 @@ class SyncStateManager:
             # Get pending changes count
             result = conn.execute(text("SELECT COUNT(*) FROM sync_queue"))
             pending_changes_raw = result.scalar()
-            pending_changes: int = int(pending_changes_raw) if pending_changes_raw is not None else 0
+            pending_changes: int = (
+                int(pending_changes_raw) if pending_changes_raw is not None else 0
+            )
 
             # Get status
             result = conn.execute(text("SELECT value FROM sync_state WHERE key = 'status'"))
@@ -450,7 +456,12 @@ class SyncStateManager:
             row = result.fetchone()
             last_error = row[0] if row else None
 
-            return SyncState(last_sync=last_sync, pending_changes=pending_changes, status=status, last_error=last_error)
+            return SyncState(
+                last_sync=last_sync,
+                pending_changes=pending_changes,
+                status=status,
+                last_error=last_error,
+            )
 
     def update_last_sync(self, timestamp: datetime | None = None) -> None:
         """Update last sync timestamp.
@@ -467,7 +478,11 @@ class SyncStateManager:
                 INSERT OR REPLACE INTO sync_state (key, value, updated_at)
                 VALUES (:key, :value, :updated_at)
                 """),
-                {"key": "last_sync", "value": timestamp.isoformat(), "updated_at": datetime.now(UTC).isoformat()},
+                {
+                    "key": "last_sync",
+                    "value": timestamp.isoformat(),
+                    "updated_at": datetime.now(UTC).isoformat(),
+                },
             )
             conn.commit()
 
@@ -483,7 +498,11 @@ class SyncStateManager:
                 INSERT OR REPLACE INTO sync_state (key, value, updated_at)
                 VALUES (:key, :value, :updated_at)
                 """),
-                {"key": "status", "value": status.value, "updated_at": datetime.now(UTC).isoformat()},
+                {
+                    "key": "status",
+                    "value": status.value,
+                    "updated_at": datetime.now(UTC).isoformat(),
+                },
             )
             conn.commit()
 
@@ -502,7 +521,11 @@ class SyncStateManager:
                     INSERT OR REPLACE INTO sync_state (key, value, updated_at)
                     VALUES (:error_key, :error_value, :updated_at)
                     """),
-                    {"error_key": "last_error", "error_value": error, "updated_at": datetime.now(UTC).isoformat()},
+                    {
+                        "error_key": "last_error",
+                        "error_value": error,
+                        "updated_at": datetime.now(UTC).isoformat(),
+                    },
                 )
             conn.commit()
 
@@ -712,8 +735,12 @@ class SyncEngine:
             try:
                 # Skip if too many retries
                 if change.retry_count >= self.max_retries:
-                    logger.warning("Skipping change %s (too many retries: %s)", change.id, change.retry_count)
-                    result.errors.append(f"Max retries exceeded for {change.entity_type.value} {change.entity_id}")
+                    logger.warning(
+                        "Skipping change %s (too many retries: %s)", change.id, change.retry_count
+                    )
+                    result.errors.append(
+                        f"Max retries exceeded for {change.entity_type.value} {change.entity_id}"
+                    )
                     continue
 
                 # Upload change to API
@@ -849,7 +876,9 @@ class SyncEngine:
                 logger.exception("Invalid entity or operation type in remote change")
                 return
 
-            logger.debug("Applying remote change: %s %s %s", entity_type.value, entity_id, operation.value)
+            logger.debug(
+                "Applying remote change: %s %s %s", entity_type.value, entity_id, operation.value
+            )
 
             with self.engine.begin() as conn:
                 if operation == OperationType.CREATE:
@@ -891,13 +920,17 @@ class SyncEngine:
                     stmt = f"DELETE FROM {entity_type.value} WHERE id = :id"  # nosec B608
                     conn.execute(text(stmt), {"id": entity_id})
 
-            logger.debug("Successfully applied remote change for %s %s", entity_type.value, entity_id)
+            logger.debug(
+                "Successfully applied remote change for %s %s", entity_type.value, entity_id
+            )
 
         except Exception:
             logger.exception("Error applying remote change")
             raise
 
-    def _resolve_conflict(self, local_data: dict[str, Any], remote_data: dict[str, Any]) -> dict[str, Any]:
+    def _resolve_conflict(
+        self, local_data: dict[str, Any], remote_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Resolve conflict between local and remote data.
 
         Args:
@@ -1020,7 +1053,9 @@ Strategy: MANUAL RESOLUTION REQUIRED
 # ============================================================================
 
 
-async def exponential_backoff(attempt: int, initial_delay: float = 1.0, max_delay: float = 60.0) -> None:
+async def exponential_backoff(
+    attempt: int, initial_delay: float = 1.0, max_delay: float = 60.0
+) -> None:
     """Sleep with exponential backoff.
 
     Args:
@@ -1050,5 +1085,8 @@ def create_sync_engine(
         Configured SyncEngine instance
     """
     return SyncEngine(
-        db_connection=db_connection, api_client=api_client, storage_manager=storage_manager, config=config
+        db_connection=db_connection,
+        api_client=api_client,
+        storage_manager=storage_manager,
+        config=config,
     )

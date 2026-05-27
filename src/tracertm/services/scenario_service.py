@@ -65,7 +65,9 @@ class ScenarioService:
 
         # We need to find the project ID via feature to scope properly, but for speed just counting total scenarios
         # or just random ID. Let's do a simple count on the table for now.
-        result = await self.session.execute(select(Scenario).order_by(Scenario.created_at.desc()).limit(1))
+        result = await self.session.execute(
+            select(Scenario).order_by(Scenario.created_at.desc()).limit(1)
+        )
         last = result.scalar_one_or_none()
 
         if last:
@@ -147,7 +149,10 @@ class ScenarioService:
                     event_type="updated",
                     data={
                         "description": "Scenario updated",
-                        "changes": {key: {"from": before.get(key), "to": updates.get(key)} for key in updates},
+                        "changes": {
+                            key: {"from": before.get(key), "to": updates.get(key)}
+                            for key in updates
+                        },
                         "from_value": before.get("status"),
                         "to_value": updates.get("status"),
                     },

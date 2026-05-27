@@ -334,7 +334,9 @@ class RequirementSpecRepository(BaseSpecRepository):
             quality_issues=quality_issues or [],
         )
 
-    async def update_volatility(self, spec_id: str, volatility_index: float, change_count: int) -> Any:
+    async def update_volatility(
+        self, spec_id: str, volatility_index: float, change_count: int
+    ) -> Any:
         """Update volatility metrics for a requirement spec."""
         spec = await self.get_by_id(spec_id)
         if not spec:
@@ -417,7 +419,9 @@ class RequirementSpecRepository(BaseSpecRepository):
             size_map = {"XS": 1, "S": 2, "M": 3, "L": 5, "XL": 8}
             job_size = size_map.get(spec.complexity_estimate, 3)
 
-            wsjf: float = (spec.business_value + spec.time_criticality + spec.risk_reduction) / job_size
+            wsjf: float = (
+                spec.business_value + spec.time_criticality + spec.risk_reduction
+            ) / job_size
             spec.wsjf_score = wsjf
             await self.session.flush()
             return wsjf
@@ -610,13 +614,20 @@ class TestSpecRepository(BaseSpecRepository):
 
         spec.avg_duration_ms = sum(durations) / n
         spec.p50_duration_ms = durations_sorted[n // 2]
-        spec.p95_duration_ms = durations_sorted[int(n * 0.95)] if n >= _PERFORMANCE_P95_MIN_SAMPLES else None
-        spec.p99_duration_ms = durations_sorted[int(n * 0.99)] if n >= _PERFORMANCE_P99_MIN_SAMPLES else None
+        spec.p95_duration_ms = (
+            durations_sorted[int(n * 0.95)] if n >= _PERFORMANCE_P95_MIN_SAMPLES else None
+        )
+        spec.p99_duration_ms = (
+            durations_sorted[int(n * 0.99)] if n >= _PERFORMANCE_P99_MIN_SAMPLES else None
+        )
 
         # Determine trend
         if n >= _PERFORMANCE_TREND_MIN_SAMPLES:
             recent = durations[:_PERFORMANCE_RECENT_SAMPLES]
-            older = durations[_PERFORMANCE_RECENT_SAMPLES : _PERFORMANCE_RECENT_SAMPLES + _PERFORMANCE_OLDER_SAMPLES]
+            older = durations[
+                _PERFORMANCE_RECENT_SAMPLES : _PERFORMANCE_RECENT_SAMPLES
+                + _PERFORMANCE_OLDER_SAMPLES
+            ]
             recent_avg = sum(recent) / len(recent)
             older_avg = sum(older) / len(older)
 
@@ -1382,7 +1393,11 @@ class ItemSpecBatchRepository:
             DefectSpec,
         ]
         for spec_class in spec_classes:
-            query = select(spec_class).where(spec_class.item_id == item_id).where(spec_class.deleted_at.is_(None))
+            query = (
+                select(spec_class)
+                .where(spec_class.item_id == item_id)
+                .where(spec_class.deleted_at.is_(None))
+            )
             result = await self.session.execute(query)
             specs = result.scalars().all()
 

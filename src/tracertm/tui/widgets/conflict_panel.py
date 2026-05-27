@@ -118,7 +118,9 @@ if TEXTUAL_AVAILABLE:
         }
         """
 
-        def __init__(self, conflicts: list[object] | None = None, *args: object, **kwargs: object) -> None:
+        def __init__(
+            self, conflicts: list[object] | None = None, *args: object, **kwargs: object
+        ) -> None:
             """Initialize conflict panel.
 
             Args:
@@ -175,7 +177,9 @@ if TEXTUAL_AVAILABLE:
             if event.row_index < len(self.conflicts):  # type: ignore[attr-defined]
                 idx = event.row_index  # type: ignore[attr-defined]
                 self.selected_conflict = (
-                    self.conflicts[idx] if isinstance(idx, int) and idx < len(self.conflicts) else None  # type: ignore[assignment]
+                    self.conflicts[idx]
+                    if isinstance(idx, int) and idx < len(self.conflicts)
+                    else None  # type: ignore[assignment]
                 )
                 self.show_conflict_detail(self.selected_conflict)  # type: ignore[arg-type]
 
@@ -222,17 +226,23 @@ if TEXTUAL_AVAILABLE:
         def action_resolve_local(self) -> None:
             """Resolve conflict using local version."""
             if self.selected_conflict:
-                self.post_message(self.ConflictResolved(conflict=self.selected_conflict, strategy="local"))
+                self.post_message(
+                    self.ConflictResolved(conflict=self.selected_conflict, strategy="local")
+                )
 
         def action_resolve_remote(self) -> None:
             """Resolve conflict using remote version."""
             if self.selected_conflict:
-                self.post_message(self.ConflictResolved(conflict=self.selected_conflict, strategy="remote"))
+                self.post_message(
+                    self.ConflictResolved(conflict=self.selected_conflict, strategy="remote")
+                )
 
         def action_resolve_manual(self) -> None:
             """Resolve conflict manually."""
             if self.selected_conflict:
-                self.post_message(self.ConflictResolved(conflict=self.selected_conflict, strategy="manual"))
+                self.post_message(
+                    self.ConflictResolved(conflict=self.selected_conflict, strategy="manual")
+                )
 
         def action_close(self) -> None:
             """Close the conflict panel."""
@@ -276,7 +286,9 @@ if not TEXTUAL_AVAILABLE:
         conflicts: list
         selected_conflict: object | None
 
-        def __init__(self, conflicts: list[object] | None = None, *_args: object, **_kwargs: object) -> None:
+        def __init__(
+            self, conflicts: list[object] | None = None, *_args: object, **_kwargs: object
+        ) -> None:
             """Initialize."""
             self.conflicts = conflicts or []
             self.selected_conflict = None

@@ -40,7 +40,9 @@ async def publish_with_retry(
             if attempt == max_retries - 1:
                 logger.exception("Failed to publish %s after %s attempts", event_type, max_retries)
                 raise
-            logger.warning("Failed to publish %s (attempt %s/%s): %s", event_type, attempt + 1, max_retries, e)
+            logger.warning(
+                "Failed to publish %s (attempt %s/%s): %s", event_type, attempt + 1, max_retries, e
+            )
             await asyncio.sleep(0.1 * (attempt + 1))
         else:
             return
@@ -103,6 +105,8 @@ async def safe_publish_with_retry(
         raise RuntimeError(msg)
 
     try:
-        await publish_with_retry(event_bus, event_type, project_id, entity_id, entity_type, data, max_retries)
+        await publish_with_retry(
+            event_bus, event_type, project_id, entity_id, entity_type, data, max_retries
+        )
     except Exception:
         logger.exception("Failed to publish %s event after retries (non-blocking)", event_type)

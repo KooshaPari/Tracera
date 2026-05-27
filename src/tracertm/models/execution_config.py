@@ -42,7 +42,9 @@ class ExecutionEnvironmentConfig(Base, TimestampMixin):
 
     # Docker configuration
     docker_image: Mapped[str] = mapped_column(String(255), nullable=False, default="node:20-alpine")
-    resource_limits: Mapped[dict[str, object] | None] = mapped_column(JSONType, nullable=True)  # CPU, memory limits
+    resource_limits: Mapped[dict[str, object] | None] = mapped_column(
+        JSONType, nullable=True
+    )  # CPU, memory limits
     environment_vars: Mapped[str | None] = mapped_column(Text, nullable=True)  # Encrypted env vars
     working_directory: Mapped[str | None] = mapped_column(String(500), nullable=True)
     network_mode: Mapped[str] = mapped_column(String(50), nullable=False, default="bridge")
@@ -69,7 +71,9 @@ class ExecutionEnvironmentConfig(Base, TimestampMixin):
     playwright_video_size: Mapped[dict[str, object] | None] = mapped_column(JSONType, nullable=True)
 
     # Codex settings
-    codex_sandbox_mode: Mapped[str] = mapped_column(String(50), nullable=False, default="workspace-write")
+    codex_sandbox_mode: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="workspace-write"
+    )
     codex_full_auto: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     codex_timeout: Mapped[int] = mapped_column(Integer, nullable=False, default=300)  # seconds
 

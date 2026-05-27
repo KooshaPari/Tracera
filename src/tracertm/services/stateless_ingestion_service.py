@@ -476,7 +476,9 @@ class StatelessIngestionService:
             return "API"
         return "FEATURE"
 
-    def _build_bmad_metadata(self, req: dict[str, Any], file_path: str, req_id: str) -> dict[str, Any]:
+    def _build_bmad_metadata(
+        self, req: dict[str, Any], file_path: str, req_id: str
+    ) -> dict[str, Any]:
         base_fields = {"id", "title", "description", "text", "type", "status", "parent_id"}
         extra_fields = {key: value for key, value in req.items() if key not in base_fields}
         return {
@@ -890,7 +892,10 @@ class StatelessIngestionService:
             if format_type == "openapi":
                 paths = data.get("paths", {})
                 schemas = data.get("components", {}).get("schemas", {})
-                endpoint_count = sum(len([m for m in methods if not m.startswith("x-")]) for methods in paths.values())
+                endpoint_count = sum(
+                    len([m for m in methods if not m.startswith("x-")])
+                    for methods in paths.values()
+                )
                 return {
                     "dry_run": True,
                     "format": "openapi",
@@ -899,7 +904,9 @@ class StatelessIngestionService:
                     "would_create_items": endpoint_count + len(schemas),
                 }
             if format_type == "bmad":
-                requirements = data.get("requirements", []) or data.get("spec", {}).get("requirements", [])
+                requirements = data.get("requirements", []) or data.get("spec", {}).get(
+                    "requirements", []
+                )
                 return {
                     "dry_run": True,
                     "format": "bmad",
@@ -921,7 +928,9 @@ class StatelessIngestionService:
             return self._ingest_bmad_format(data, file_path, pid)
         return self._ingest_generic_yaml(data, file_path, pid, view)
 
-    def _ingest_openapi_spec(self, data: dict[str, Any], file_path: str, project_id: str | None) -> dict[str, Any]:
+    def _ingest_openapi_spec(
+        self, data: dict[str, Any], file_path: str, project_id: str | None
+    ) -> dict[str, Any]:
         """Ingest OpenAPI/Swagger specification with enhanced component extraction."""
         project_id = self._ensure_openapi_project_id(data, file_path, project_id)
         items_created: list[str] = []
@@ -974,7 +983,9 @@ class StatelessIngestionService:
             "endpoints_created": len(items_created) - len(schema_items),
         }
 
-    def _ingest_bmad_format(self, data: dict[str, Any], file_path: str, project_id: str | None) -> dict[str, Any]:
+    def _ingest_bmad_format(
+        self, data: dict[str, Any], file_path: str, project_id: str | None
+    ) -> dict[str, Any]:
         """Ingest BMad format with enhanced requirement linking and traceability."""
         project_id = self._ensure_bmad_project_id(data, file_path, project_id)
         links_created: list[tuple[str, str]] = []

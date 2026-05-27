@@ -59,7 +59,9 @@ async def list_test_coverage(
                 "project_id": c.project_id,
                 "test_case_id": c.test_case_id,
                 "requirement_id": c.requirement_id,
-                "coverage_type": c.coverage_type.value if hasattr(c.coverage_type, "value") else c.coverage_type,
+                "coverage_type": c.coverage_type.value
+                if hasattr(c.coverage_type, "value")
+                else c.coverage_type,
                 "status": c.status.value if hasattr(c.status, "value") else c.status,
                 "coverage_percentage": c.coverage_percentage,
                 "rationale": c.rationale,
@@ -164,7 +166,9 @@ async def get_test_coverage(
         "coverage_percentage": coverage.coverage_percentage,
         "rationale": coverage.rationale,
         "notes": coverage.notes,
-        "last_verified_at": coverage.last_verified_at.isoformat() if coverage.last_verified_at else None,
+        "last_verified_at": coverage.last_verified_at.isoformat()
+        if coverage.last_verified_at
+        else None,
         "verified_by": coverage.verified_by,
         "last_test_result": coverage.last_test_result,
         "last_tested_at": coverage.last_tested_at.isoformat() if coverage.last_tested_at else None,
@@ -283,7 +287,9 @@ async def verify_test_coverage(
         raise HTTPException(status_code=404, detail="Test coverage not found after verification")
     return {
         "id": coverage.id,
-        "last_verified_at": coverage.last_verified_at.isoformat() if coverage.last_verified_at else None,
+        "last_verified_at": coverage.last_verified_at.isoformat()
+        if coverage.last_verified_at
+        else None,
         "verified_by": coverage.verified_by,
     }
 
@@ -361,7 +367,9 @@ async def get_requirement_coverage(
             {
                 "coverage_id": c.id,
                 "test_case_id": c.test_case_id,
-                "coverage_type": c.coverage_type.value if hasattr(c.coverage_type, "value") else c.coverage_type,
+                "coverage_type": c.coverage_type.value
+                if hasattr(c.coverage_type, "value")
+                else c.coverage_type,
                 "coverage_percentage": c.coverage_percentage,
                 "last_test_result": c.last_test_result,
                 "last_tested_at": c.last_tested_at.isoformat() if c.last_tested_at else None,

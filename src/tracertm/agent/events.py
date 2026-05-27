@@ -317,7 +317,11 @@ class AgentEventPublisher:
             return
 
         content = payload.content
-        content_preview = content[:MAX_CONTENT_PREVIEW_LENGTH] if len(content) > MAX_CONTENT_PREVIEW_LENGTH else content
+        content_preview = (
+            content[:MAX_CONTENT_PREVIEW_LENGTH]
+            if len(content) > MAX_CONTENT_PREVIEW_LENGTH
+            else content
+        )
 
         event = BaseEvent(
             event_type=EventType.CHAT_MESSAGE,
@@ -355,7 +359,9 @@ class AgentEventPublisher:
             return
 
         input_summary = str(payload.tool_input)[:MAX_CONTENT_PREVIEW_LENGTH]
-        output_summary = str(payload.tool_output)[:MAX_CONTENT_PREVIEW_LENGTH] if payload.tool_output else None
+        output_summary = (
+            str(payload.tool_output)[:MAX_CONTENT_PREVIEW_LENGTH] if payload.tool_output else None
+        )
 
         event = BaseEvent(
             event_type=EventType.CHAT_TOOL_USE,
@@ -531,6 +537,8 @@ class AgentEventPublisher:
 
         return {
             "enabled": True,
-            "nats_connected": self.nats.is_connected if hasattr(self.nats, "is_connected") else False,
+            "nats_connected": self.nats.is_connected
+            if hasattr(self.nats, "is_connected")
+            else False,
             "jetstream_ready": bool(self.nats._js) if hasattr(self.nats, "_js") else False,
         }

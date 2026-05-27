@@ -91,7 +91,9 @@ class ImportRequest(BaseModel):
 def _serialize_project(project: object) -> dict[str, Any]:
     created_at = getattr(project, "created_at", None)
     updated_at = getattr(project, "updated_at", None)
-    project_metadata = getattr(project, "project_metadata", None) or getattr(project, "metadata", None) or {}
+    project_metadata = (
+        getattr(project, "project_metadata", None) or getattr(project, "metadata", None) or {}
+    )
     description = getattr(project, "description", None)
     if not description and isinstance(project_metadata, dict):
         description = project_metadata.get("description")
@@ -325,7 +327,9 @@ async def import_full_project(
     try:
         json_str = json.dumps(body) if isinstance(body, dict) else body
     except TypeError:
-        raise HTTPException(status_code=400, detail="Request body must be JSON object (canonical format)")
+        raise HTTPException(
+            status_code=400, detail="Request body must be JSON object (canonical format)"
+        )
 
     result = await service.import_from_json(json_str)
     await db.commit()

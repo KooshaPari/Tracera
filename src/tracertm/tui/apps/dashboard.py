@@ -407,7 +407,8 @@ if TEXTUAL_AVAILABLE:
                     matched = [
                         item
                         for item in self.items_data
-                        if query_lower in item.get("title", "").lower() or query_lower in item.get("type", "").lower()
+                        if query_lower in item.get("title", "").lower()
+                        or query_lower in item.get("type", "").lower()
                     ]
                     self.notify(f"Found {len(matched)} items matching '{query}'", timeout=2)
                 else:
@@ -469,7 +470,9 @@ if TEXTUAL_AVAILABLE:
                         severity="warning",
                     )
             except (AttributeError, RuntimeError, TypeError, ValueError) as error:
-                logging.getLogger(__name__).debug("App not running, ignoring sync status callback: %s", error)
+                logging.getLogger(__name__).debug(
+                    "App not running, ignoring sync status callback: %s", error
+                )
 
         def _on_conflict_detected(self, conflict: object) -> None:
             """Handle conflict detection."""
@@ -481,7 +484,9 @@ if TEXTUAL_AVAILABLE:
                 )
                 self.call_from_thread(self.update_sync_status)
             except (AttributeError, RuntimeError, TypeError, ValueError) as error:
-                logging.getLogger(__name__).debug("App not running, ignoring conflict callback: %s", error)
+                logging.getLogger(__name__).debug(
+                    "App not running, ignoring conflict callback: %s", error
+                )
 
         def _on_item_change(self, _item_id: str) -> None:
             """Handle item changes."""
@@ -489,7 +494,9 @@ if TEXTUAL_AVAILABLE:
             try:
                 self.call_from_thread(self.refresh_data)
             except RuntimeError as error:
-                logging.getLogger(__name__).debug("App not running, ignoring item change callback: %s", error)
+                logging.getLogger(__name__).debug(
+                    "App not running, ignoring item change callback: %s", error
+                )
 
         def on_unmount(self) -> None:
             """Cleanup on exit."""

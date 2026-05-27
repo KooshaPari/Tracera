@@ -617,7 +617,17 @@ def _list_directory(params: dict[str, Any], base_dir: str | None) -> dict[str, A
 
     results = []
     # Directories to skip for performance
-    skip_dirs = {"node_modules", "__pycache__", "venv", ".git", ".venv", "dist", "build", ".next", ".nuxt"}
+    skip_dirs = {
+        "node_modules",
+        "__pycache__",
+        "venv",
+        ".git",
+        ".venv",
+        "dist",
+        "build",
+        ".next",
+        ".nuxt",
+    }
 
     if recursive:
         for root, dirs, files in os.walk(path):
@@ -678,7 +688,17 @@ def _search_files(params: dict[str, Any], base_dir: str | None) -> dict[str, Any
     results = []
 
     # Directories to skip for performance
-    skip_dirs = {"node_modules", "__pycache__", "venv", ".git", ".venv", "dist", "build", ".next", ".nuxt"}
+    skip_dirs = {
+        "node_modules",
+        "__pycache__",
+        "venv",
+        ".git",
+        ".venv",
+        "dist",
+        "build",
+        ".next",
+        ".nuxt",
+    }
 
     for current_root, dirs, files in os.walk(path):
         # Filter directories in-place for efficiency
@@ -888,13 +908,21 @@ async def _execute_tracertm_tool(
         if direction in {"outgoing", "both"}:
             outgoing = await link_repo.get_by_source(item_id)
             links.extend([
-                {"type": "outgoing", "target_id": str(link.target_item_id), "link_type": link.link_type}
+                {
+                    "type": "outgoing",
+                    "target_id": str(link.target_item_id),
+                    "link_type": link.link_type,
+                }
                 for link in outgoing
             ])
         if direction in {"incoming", "both"}:
             incoming = await link_repo.get_by_target(item_id)
             links.extend([
-                {"type": "incoming", "source_id": str(link.source_item_id), "link_type": link.link_type}
+                {
+                    "type": "incoming",
+                    "source_id": str(link.source_item_id),
+                    "link_type": link.link_type,
+                }
                 for link in incoming
             ])
 
@@ -950,7 +978,10 @@ async def _execute_tracertm_tool(
             "success": True,
             "result": {
                 "query": query,
-                "results": [{"id": str(r.id), "title": r.title, "type": r.view, "status": r.status} for r in rows],
+                "results": [
+                    {"id": str(r.id), "title": r.title, "type": r.view, "status": r.status}
+                    for r in rows
+                ],
             },
         }
 

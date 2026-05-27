@@ -24,8 +24,12 @@ class AgentSession(Base, TimestampMixin):
 
     __tablename__ = "agent_sessions"
 
-    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=generate_agent_session_uuid)
-    session_id: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)  # Index defined in __table_args__
+    id: Mapped[uuid.UUID] = mapped_column(
+        GUID(), primary_key=True, default=generate_agent_session_uuid
+    )
+    session_id: Mapped[str] = mapped_column(
+        String(255), nullable=False, unique=True
+    )  # Index defined in __table_args__
     sandbox_root: Mapped[str] = mapped_column(String(1024), nullable=False)
     project_id: Mapped[uuid.UUID | None] = mapped_column(
         GUID(),

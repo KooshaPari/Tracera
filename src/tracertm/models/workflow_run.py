@@ -37,7 +37,9 @@ class WorkflowRun(Base, TimestampMixin):
         primary_key=True,
         default=generate_workflow_run_uuid,
     )
-    workflow_id: Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("workflows.id"), nullable=False)
+    workflow_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("workflows.id"), nullable=False
+    )
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="pending")
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

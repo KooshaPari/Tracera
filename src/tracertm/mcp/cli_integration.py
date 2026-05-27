@@ -131,7 +131,9 @@ class CLITokenAdapter:
         if fallback_to_cli and self.cli_storage:
             try:
                 cli_tokens = self.cli_storage.load_tokens()
-                is_expired_fn = getattr(cli_tokens, "is_expired", None) if cli_tokens is not None else None
+                is_expired_fn = (
+                    getattr(cli_tokens, "is_expired", None) if cli_tokens is not None else None
+                )
                 expired = is_expired_fn() if callable(is_expired_fn) else True
                 if cli_tokens and not expired:
                     # Sync CLI token to MCP for future use

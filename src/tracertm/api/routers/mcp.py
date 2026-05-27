@@ -108,7 +108,9 @@ def _set_user_context(claims: dict[str, Any]) -> None:
         logger.debug("Set account context: %s", account_id)
 
 
-async def _handle_mcp_call(method: str, params: dict[str, Any] | None, claims: dict[str, Any]) -> object:
+async def _handle_mcp_call(
+    method: str, params: dict[str, Any] | None, claims: dict[str, Any]
+) -> object:
     """Handle an MCP method call.
 
     Args:
@@ -469,7 +471,9 @@ async def mcp_tools(
 
     tools_data = await _list_tools()
 
-    return ToolsListResponse(tools=[ToolInfo(**tool) for tool in cast("list[dict[str, Any]]", tools_data["tools"])])
+    return ToolsListResponse(
+        tools=[ToolInfo(**tool) for tool in cast("list[dict[str, Any]]", tools_data["tools"])]
+    )
 
 
 # =============================================================================

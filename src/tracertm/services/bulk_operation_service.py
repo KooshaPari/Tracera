@@ -375,7 +375,9 @@ class BulkOperationService:
                 })
 
         # Add validation errors for invalid rows
-        validation_errors.extend(f"Row {invalid['row']}: {invalid['error']}" for invalid in invalid_rows)
+        validation_errors.extend(
+            f"Row {invalid['row']}: {invalid['error']}" for invalid in invalid_rows
+        )
 
         # Generate warnings
         warnings = []
@@ -383,7 +385,9 @@ class BulkOperationService:
         if total_count > BULK_WARN_THRESHOLD:
             warnings.append(f"Large operation: {total_count} items will be created")
         if len(invalid_rows) > 0:
-            warnings.append(f"{len(invalid_rows)} row(s) have validation errors and will be skipped")
+            warnings.append(
+                f"{len(invalid_rows)} row(s) have validation errors and will be skipped"
+            )
 
         # Check for duplicate titles in same view
         title_view_pairs: dict[tuple[str, str], int] = {}

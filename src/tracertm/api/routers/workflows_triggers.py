@@ -58,7 +58,9 @@ async def trigger_workflow_endpoint(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}
 
 
@@ -91,7 +93,9 @@ async def trigger_graph_snapshot(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}
 
 
@@ -124,7 +128,9 @@ async def trigger_graph_validation(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}
 
 
@@ -154,7 +160,9 @@ async def trigger_graph_export(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}
 
 
@@ -196,7 +204,9 @@ async def trigger_graph_diff(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}
 
 
@@ -226,7 +236,9 @@ async def trigger_integrations_sync(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}
 
 
@@ -256,5 +268,7 @@ async def trigger_integrations_retry(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}

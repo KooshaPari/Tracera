@@ -166,7 +166,9 @@ class GoBackendClient:
         }
         return await self._request("POST", "/api/v1/links", json_data=dict(payload))
 
-    async def search_items(self, query: str, filters: dict[str, str] | None = None) -> dict[str, object]:
+    async def search_items(
+        self, query: str, filters: dict[str, str] | None = None
+    ) -> dict[str, object]:
         """Search items in Go backend.
 
         Args:
@@ -182,7 +184,9 @@ class GoBackendClient:
 
         return await self._request("GET", "/api/v1/search/items", params=params)
 
-    async def get_project_items(self, project_id: str, item_type: str | None = None) -> dict[str, object]:
+    async def get_project_items(
+        self, project_id: str, item_type: str | None = None
+    ) -> dict[str, object]:
         """Get all items for a project.
 
         Args:

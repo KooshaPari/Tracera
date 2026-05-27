@@ -130,7 +130,12 @@ async def create_item_optimized(
         metadata = opts.get("metadata")
 
         with get_session() as session:
-            count = session.query(func.count(Item.id)).filter(Item.project_id == project_id, Item.view == view).scalar()
+            count = (
+                session
+                .query(func.count(Item.id))
+                .filter(Item.project_id == project_id, Item.view == view)
+                .scalar()
+            )
             external_id = f"{view[:3].upper()}-{count + 1}"
 
             item = Item(

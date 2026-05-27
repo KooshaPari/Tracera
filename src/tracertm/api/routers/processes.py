@@ -253,8 +253,7 @@ async def update_process(
     for key in ["stages", "swimlanes", "inputs", "outputs", "triggers"]:
         if key in updates and updates[key] is not None:
             updates[key] = [
-                item.model_dump() if hasattr(item, "model_dump") else item
-                for item in updates[key]
+                item.model_dump() if hasattr(item, "model_dump") else item for item in updates[key]
             ]
 
     if "metadata" in updates:

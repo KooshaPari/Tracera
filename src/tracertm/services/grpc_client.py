@@ -170,10 +170,14 @@ class GoBackendClient:
                         )
                         await asyncio.sleep(wait_time)
                     else:
-                        logger.exception("%s failed after %s attempts", operation_name, self.max_retries)
+                        logger.exception(
+                            "%s failed after %s attempts", operation_name, self.max_retries
+                        )
                 else:
                     # Non-retryable error
-                    logger.exception("%s failed with non-retryable error: %s - %s", operation_name, code, details)
+                    logger.exception(
+                        "%s failed with non-retryable error: %s - %s", operation_name, code, details
+                    )
                     raise
             except Exception as e:
                 last_error = e
@@ -227,7 +231,12 @@ class GoBackendClient:
             link_types=link_types or [],
         )
 
-        logger.debug("Analyzing impact for item %s (direction=%s, max_depth=%s)", item_id, direction, max_depth)
+        logger.debug(
+            "Analyzing impact for item %s (direction=%s, max_depth=%s)",
+            item_id,
+            direction,
+            max_depth,
+        )
 
         async with self._retry_context("analyze_impact"):
             response = await self._stub.AnalyzeImpact(
@@ -363,7 +372,9 @@ class GoBackendClient:
         }
 
         logger.info(
-            "Path calculation complete: path_exists=%s, length=%s", result["path_exists"], result["path_length"]
+            "Path calculation complete: path_exists=%s, length=%s",
+            result["path_exists"],
+            result["path_length"],
         )
         return result
 

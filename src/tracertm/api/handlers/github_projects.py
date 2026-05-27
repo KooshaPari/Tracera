@@ -42,7 +42,9 @@ async def list_github_projects(
         elif params.credential_id:
             client = await _get_credential_client(params.credential_id, claims, db)
         else:
-            raise HTTPException(status_code=400, detail="Either installation_id or credential_id is required")
+            raise HTTPException(
+                status_code=400, detail="Either installation_id or credential_id is required"
+            )
 
         projects = await client.list_projects_graphql(owner=params.owner, is_org=params.is_org)
     finally:
@@ -108,7 +110,9 @@ async def list_linked_github_projects(
     elif github_repo_id:
         projects = await repo.get_by_repo(github_repo_id)
     else:
-        raise HTTPException(status_code=400, detail="Either project_id or github_repo_id is required")
+        raise HTTPException(
+            status_code=400, detail="Either project_id or github_repo_id is required"
+        )
 
     return {
         "projects": [
