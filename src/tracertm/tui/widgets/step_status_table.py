@@ -3,7 +3,10 @@
 Displays DAG steps with status (pending/running/passed/failed/skipped) and duration.
 """
 
+import logging
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 try:
     from textual.widgets import DataTable
@@ -38,8 +41,8 @@ def load_step_status() -> tuple[list[str], list[tuple[str, str, str]]]:  # noqa:
             data = json.loads(LAST_RUN_JSON.read_text())
             results = data.get("steps", {})
             step_details = data.get("step_details", {})
-        except (json.JSONDecodeError, OSError):
-            pass
+        except (json.JSONDecodeError, OSError) as exc:
+            logger.warning("Ignoring unreadable last-run.json at %s: %s", LAST_RUN_JSON, exc)
 
     def _fmt_duration(sec: float) -> str:
         if sec <= 0:

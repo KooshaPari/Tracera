@@ -102,10 +102,7 @@ async def get_trace_matrix(
             target_view=target_view.upper() if target_view else None,
         )
 
-        matrix_out = matrix
-        to_dict_fn = getattr(matrix, "to_dict", None)
-        if callable(to_dict_fn):
-            matrix_out = to_dict_fn()
+        matrix_out = matrix.to_dict() if hasattr(matrix, "to_dict") else matrix
         return wrap_success(  # type: ignore[return-value]
             {
                 "source_view": source_view,

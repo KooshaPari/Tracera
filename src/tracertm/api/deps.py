@@ -79,7 +79,7 @@ async def get_event_bus() -> EventBus:
     return _event_bus
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
+async def get_db() -> AsyncGenerator[AsyncSession]:
     """Get database session with shared connection pool.
 
     This now uses the MCP database adapter to share the connection pool

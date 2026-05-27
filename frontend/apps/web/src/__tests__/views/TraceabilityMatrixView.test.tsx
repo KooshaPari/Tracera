@@ -10,13 +10,12 @@ import { useItems } from '../../hooks/useItems';
 import { useLinks } from '../../hooks/useLinks';
 import { TraceabilityMatrixView } from '../../views/TraceabilityMatrixView';
 
-// Mock TanStack Router
 vi.mock('@tanstack/react-router', async () => {
   const actual = await vi.importActual('@tanstack/react-router');
   return {
     ...actual,
-    Link: ({ children, to }: any) => (
-      <a href={typeof to === 'string' ? to : to.toString()}>{children}</a>
+    Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+      <a href={typeof to === 'string' ? to : String(to)}>{children}</a>
     ),
     useNavigate: () => vi.fn(),
     useSearch: () => ({}),
@@ -30,6 +29,26 @@ vi.mock('../../hooks/useItems', () => ({
 vi.mock('../../hooks/useLinks', () => ({
   useLinks: vi.fn(),
 }));
+
+function mockItems(overrides: Partial<ReturnType<typeof useItems>> = {}) {
+  vi.mocked(useItems).mockReturnValue({
+    data: { items: [], total: 0 },
+    error: null,
+    isError: false,
+    isLoading: false,
+    ...overrides,
+  } as ReturnType<typeof useItems>);
+}
+
+function mockLinks(overrides: Partial<ReturnType<typeof useLinks>> = {}) {
+  vi.mocked(useLinks).mockReturnValue({
+    data: { links: [] },
+    error: null,
+    isError: false,
+    isLoading: false,
+    ...overrides,
+  } as ReturnType<typeof useLinks>);
+}
 
 describe(TraceabilityMatrixView, () => {
   let queryClient: QueryClient;
@@ -45,19 +64,8 @@ describe(TraceabilityMatrixView, () => {
   });
 
   it('renders traceability matrix interface', () => {
-    vi.mocked(useItems).mockReturnValue({
-      data: [],
-      error: null,
-      isError: false,
-      isLoading: false,
-    } as any);
-
-    vi.mocked(useLinks).mockReturnValue({
-      data: [],
-      error: null,
-      isError: false,
-      isLoading: false,
-    } as any);
+    mockItems();
+    mockLinks();
 
     render(
       <QueryClientProvider client={queryClient}>
@@ -66,23 +74,14 @@ describe(TraceabilityMatrixView, () => {
     );
 
     expect(screen.getByText('Traceability Matrix')).toBeInTheDocument();
-    expect(screen.getByText(/Requirements coverage overview/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Requirements coverage mapped to functional features/i),
+    ).toBeInTheDocument();
   });
 
   it('displays loading state', () => {
-    vi.mocked(useItems).mockReturnValue({
-      data: undefined,
-      error: null,
-      isError: false,
-      isLoading: true,
-    } as any);
-
-    vi.mocked(useLinks).mockReturnValue({
-      data: undefined,
-      error: null,
-      isError: false,
-      isLoading: false,
-    } as any);
+    mockItems({ data: undefined, isLoading: true });
+    mockLinks({ data: undefined, isLoading: false });
 
     render(
       <QueryClientProvider client={queryClient}>
@@ -90,7 +89,7 @@ describe(TraceabilityMatrixView, () => {
       </QueryClientProvider>,
     );
 
-    // Should show skeleton/loading state
+    expect(screen.getByTestId('matrix-loading')).toBeInTheDocument();
   });
 
   it('displays matrix with requirements and features', () => {
@@ -104,24 +103,17 @@ describe(TraceabilityMatrixView, () => {
       { id: 'feat-2', title: 'Feature 2', type: 'feature' },
     ];
 
-    const links = [
-      { sourceId: 'req-1', targetId: 'feat-1' },
-      { sourceId: 'req-2', targetId: 'feat-2' },
-    ];
-
-    vi.mocked(useItems).mockReturnValue({
-      data: [...requirements, ...features],
-      error: null,
-      isError: false,
-      isLoading: false,
-    } as any);
-
-    vi.mocked(useLinks).mockReturnValue({
-      data: links,
-      error: null,
-      isError: false,
-      isLoading: false,
-    } as any);
+    mockItems({
+      data: { items: [...requirements, ...features], total: 4 },
+    });
+    mockLinks({
+      data: {
+        links: [
+          { sourceId: 'req-1', targetId: 'feat-1' },
+          { sourceId: 'req-2', targetId: 'feat-2' },
+        ],
+      },
+    });
 
     render(
       <QueryClientProvider client={queryClient}>
@@ -134,19 +126,8 @@ describe(TraceabilityMatrixView, () => {
   });
 
   it('shows export button', () => {
-    vi.mocked(useItems).mockReturnValue({
-      data: [],
-      error: null,
-      isError: false,
-      isLoading: false,
-    } as any);
-
-    vi.mocked(useLinks).mockReturnValue({
-      data: [],
-      error: null,
-      isError: false,
-      isLoading: false,
-    } as any);
+    mockItems();
+    mockLinks();
 
     render(
       <QueryClientProvider client={queryClient}>
@@ -154,23 +135,12 @@ describe(TraceabilityMatrixView, () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByText('Export')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /export csv/i })).toBeInTheDocument();
   });
 
   it('handles empty state', () => {
-    vi.mocked(useItems).mockReturnValue({
-      data: [],
-      error: null,
-      isError: false,
-      isLoading: false,
-    } as any);
-
-    vi.mocked(useLinks).mockReturnValue({
-      data: [],
-      error: null,
-      isError: false,
-      isLoading: false,
-    } as any);
+    mockItems();
+    mockLinks();
 
     render(
       <QueryClientProvider client={queryClient}>
@@ -178,7 +148,25 @@ describe(TraceabilityMatrixView, () => {
       </QueryClientProvider>,
     );
 
-    // Should render empty matrix
     expect(screen.getByText('Traceability Matrix')).toBeInTheDocument();
+    expect(screen.getByTestId('matrix-empty-requirements')).toBeInTheDocument();
+  });
+
+  it('shows error state when items fail to load', () => {
+    mockItems({
+      data: undefined,
+      isError: true,
+      error: new Error('API unavailable'),
+    });
+    mockLinks();
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <TraceabilityMatrixView projectId='proj-test' />
+      </QueryClientProvider>,
+    );
+
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('API unavailable')).toBeInTheDocument();
   });
 });

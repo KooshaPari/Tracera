@@ -55,8 +55,12 @@ except ImportError:
 project_tools = core
 item_tools = core
 link_tools = core
-trace_tools = core
 graph_tools = core
+
+try:
+    from tracertm.mcp.tools import traceability as trace_tools
+except ImportError:
+    trace_tools = core  # type: ignore[assignment]
 
 
 def _actor_from_context(ctx: object | None) -> dict[str, object] | None:
