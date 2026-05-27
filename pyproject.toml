@@ -1785,4 +1785,5 @@ dev = [
     "interrogate>=1.7.0",
     "pycln>=2.6.0",
     "tach>=0.33.2",
+    "bandit[toml]>=1.7.10",
 ]

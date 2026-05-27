@@ -13,7 +13,15 @@ services:
       - nginx_cache:/var/cache/nginx
       - nginx_logs:/var/log/nginx
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -27,7 +35,7 @@ services:
     image: nginx/nginx-prometheus-exporter:1.0.0
     container_name: tracertm-nginx-exporter
     command:
-      - '-nginx.scrape-uri=http://nginx/metrics'
+      - "-nginx.scrape-uri=http://nginx/metrics"
     ports:
       - "9113:9113"
     depends_on:
@@ -184,14 +192,22 @@ services:
     image: nats:latest
     container_name: tracertm-nats
     ports:
-      - "4222:4222"  # Client connections
-      - "127.0.0.1:8222:8222"  # HTTP management/metrics — localhost only
-      - "6222:6222"  # Cluster connections
+      - "4222:4222" # Client connections
+      - "127.0.0.1:8222:8222" # HTTP management/metrics — localhost only
+      - "6222:6222" # Cluster connections
     command: ["-js", "-m", "8222"]
     volumes:
       - nats_data:/data
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8222/healthz"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8222/healthz",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -209,11 +225,11 @@ services:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
-      - '--web.enable-lifecycle'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--web.enable-lifecycle"
     networks:
       - tracertm
     restart: unless-stopped
