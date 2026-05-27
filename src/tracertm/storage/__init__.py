@@ -1,8 +1,8 @@
 """Storage module for TracerTM."""
-from typing import Any, Dict, List, Optional
-from pathlib import Path
 import json
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 class LocalStorageManager:
@@ -15,17 +15,17 @@ class LocalStorageManager:
         self.items_dir.mkdir(parents=True, exist_ok=True)
         self.links_dir.mkdir(parents=True, exist_ok=True)
 
-    def save_item(self, item_id: str, data: Dict[str, Any]) -> None:
+    def save_item(self, item_id: str, data: dict[str, Any]) -> None:
         """Save an item to disk."""
         filepath = self.items_dir / f"{item_id}.json"
-        with open(filepath, 'w') as f:
+        with Path(filepath).open("w") as f:
             json.dump(data, f, default=str)
 
-    def load_item(self, item_id: str) -> Optional[Dict[str, Any]]:
+    def load_item(self, item_id: str) -> dict[str, Any] | None:
         """Load an item from disk."""
         filepath = self.items_dir / f"{item_id}.json"
         if filepath.exists():
-            with open(filepath, 'r') as f:
+            with Path(filepath).open() as f:
                 return json.load(f)
         return None
 
@@ -37,21 +37,21 @@ class LocalStorageManager:
             return True
         return False
 
-    def list_items(self) -> List[str]:
+    def list_items(self) -> list[str]:
         """List all item IDs."""
         return [f.stem for f in self.items_dir.glob("*.json")]
 
-    def save_link(self, link_id: str, data: Dict[str, Any]) -> None:
+    def save_link(self, link_id: str, data: dict[str, Any]) -> None:
         """Save a link to disk."""
         filepath = self.links_dir / f"{link_id}.json"
-        with open(filepath, 'w') as f:
+        with Path(filepath).open("w") as f:
             json.dump(data, f, default=str)
 
-    def load_link(self, link_id: str) -> Optional[Dict[str, Any]]:
+    def load_link(self, link_id: str) -> dict[str, Any] | None:
         """Load a link from disk."""
         filepath = self.links_dir / f"{link_id}.json"
         if filepath.exists():
-            with open(filepath, 'r') as f:
+            with Path(filepath).open() as f:
                 return json.load(f)
         return None
 
@@ -63,7 +63,7 @@ class LocalStorageManager:
             return True
         return False
 
-    def list_links(self) -> List[str]:
+    def list_links(self) -> list[str]:
         """List all link IDs."""
         return [f.stem for f in self.links_dir.glob("*.json")]
 
@@ -75,24 +75,21 @@ class ChangeDetector:
         self.storage = storage
         self._last_sync = datetime.now()
 
-    def detect_changes(self) -> List[Dict[str, Any]]:
+    def detect_changes(self) -> list[dict[str, Any]]:
         """Detect items changed since last sync."""
         # Simple implementation - returns empty list
         return []
 
     def mark_synced(self, item_id: str) -> None:
         """Mark an item as synced."""
-        pass
 
 
 class SyncQueue:
     """Queue for sync operations."""
-    pass
 
 
 class SyncEngine:
     """Sync engine for storage."""
-    pass
 
 
 class SyncState:
@@ -142,12 +139,10 @@ class Conflict:
 
 class ConflictBackup:
     """Backup for conflict resolution."""
-    pass
 
 
 class ConflictResolver:
     """Resolve conflicts between local and remote."""
-    pass
 
 
 class VectorClock:
@@ -159,7 +154,7 @@ class VectorClock:
         """Increment clock for a node."""
         self._clock[node] = self._clock.get(node, 0) + 1
 
-    def merge(self, other: 'VectorClock') -> None:
+    def merge(self, other: "VectorClock") -> None:
         """Merge with another clock."""
         for node, value in other._clock.items():
             self._clock[node] = max(self._clock.get(node, 0), value)
@@ -181,7 +176,6 @@ class OperationType:
 
 class QueuedChange:
     """Queued change for sync."""
-    pass
 
 
 class SyncResult:
@@ -193,32 +187,30 @@ class SyncResult:
 
 class SyncStateManager:
     """Manage sync state."""
-    pass
 
 
 class ResolvedEntity:
     """Resolved entity after conflict resolution."""
-    pass
 
 
 __all__ = [
-    "LocalStorageManager",
     "ChangeDetector",
-    "SyncQueue",
-    "SyncEngine",
-    "SyncState",
-    "SyncStatus",
-    "SyncResult",
-    "SyncStateManager",
-    "ConflictStrategy",
-    "ConflictStatus",
-    "EntityType",
-    "OperationType",
-    "QueuedChange",
     "Conflict",
     "ConflictBackup",
     "ConflictResolver",
-    "VectorClock",
+    "ConflictStatus",
+    "ConflictStrategy",
+    "EntityType",
     "EntityVersion",
+    "LocalStorageManager",
+    "OperationType",
+    "QueuedChange",
     "ResolvedEntity",
+    "SyncEngine",
+    "SyncQueue",
+    "SyncResult",
+    "SyncState",
+    "SyncStateManager",
+    "SyncStatus",
+    "VectorClock",
 ]

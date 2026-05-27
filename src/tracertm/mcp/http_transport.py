@@ -126,8 +126,8 @@ def mount_mcp_to_fastapi(
 
 async def create_progress_stream(
     task_id: str,
-    generator_func: AsyncGenerator[dict[str, object], None],
-) -> AsyncGenerator[dict[str, object], None]:
+    generator_func: AsyncGenerator[dict[str, object]],
+) -> AsyncGenerator[dict[str, object]]:
     """Create an SSE stream for progress updates.
 
     This wraps a progress generator to format events for SSE streaming.

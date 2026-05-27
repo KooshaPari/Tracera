@@ -7,7 +7,7 @@ import uuid
 from sqlalchemy import ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from tracertm.models.base import Base, GUID, TimestampMixin
+from tracertm.models.base import GUID, Base, TimestampMixin
 
 
 def generate_agent_session_uuid() -> uuid.UUID:

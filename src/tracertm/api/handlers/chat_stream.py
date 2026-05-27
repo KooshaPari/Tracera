@@ -34,7 +34,7 @@ async def _generate_sse_stream(
     db_session: AsyncSession,
     use_agent_sandbox: bool,
     request: Request | None = None,
-) -> AsyncGenerator[str, None]:
+) -> AsyncGenerator[str]:
     from tracertm.services.ai_service import AIServiceError
 
     try:

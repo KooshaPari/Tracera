@@ -1,6 +1,6 @@
 """Traceability matrix generation service for TraceRTM."""
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,6 +18,12 @@ class TraceabilityMatrix:
     matrix: list[list[str]]  # Link types or empty
     coverage: float  # Percentage of traced items
     total_links: int
+
+    def to_dict(self) -> dict[str, object]:
+        """Serialize matrix for MCP/API responses."""
+        data = asdict(self)
+        data["coverage"] = round(self.coverage, 2)
+        return data
 
 
 class TraceabilityMatrixService:
@@ -65,15 +71,10 @@ class TraceabilityMatrixService:
 
         Complexity: O(n * m) where n = sources, m = targets
         """
-        # Get source items
-        source_items = await self.items.get_by_project(project_id)
-        if source_view:
-            source_items = [i for i in source_items if i.view == source_view]
-
-        # Get target items
-        target_items = await self.items.get_by_project(project_id)
-        if target_view:
-            target_items = [i for i in target_items if i.view == target_view]
+        # Single project fetch; filter in memory (avoids duplicate DB round-trip)
+        all_items = await self.items.get_by_project(project_id)
+        source_items = [i for i in all_items if not source_view or i.view == source_view]
+        target_items = [i for i in all_items if not target_view or i.view == target_view]
 
         # Get all links
         all_links = await self.links.get_by_project(project_id)

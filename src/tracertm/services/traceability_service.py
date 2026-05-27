@@ -89,28 +89,32 @@ class TraceabilityService:
     ) -> TraceabilityMatrix:
         """Generate traceability matrix between two views."""
         pid = str(project_id) if isinstance(project_id, uuid.UUID) else project_id
-        # Get all items in both views
         source_items = await self.items.get_by_view(pid, source_view)
-        await self.items.get_by_view(pid, target_view)
+        target_items = await self.items.get_by_view(pid, target_view)
+        source_by_id = {str(item.id): item for item in source_items}
+        target_by_id = {str(item.id): item for item in target_items}
+        source_ids = set(source_by_id)
+        target_ids = set(target_by_id)
 
-        # Get all links between these items
-        all_links = []
+        # One project link fetch instead of per-source queries and per-target lookups
+        all_links: list[dict[str, Any]] = []
         linked_source_ids: set[str] = set()
 
-        for source_item in source_items:
-            item_links = await self.links.get_by_source(str(source_item.id))
-            for link in item_links:
-                # Check if target is in target_view
-                target = await self.items.get_by_id(str(link.target_item_id))
-                if target and target.view == target_view:
-                    all_links.append({
-                        "source_id": str(source_item.id),
-                        "source_title": source_item.title,
-                        "target_id": str(target.id),
-                        "target_title": target.title,
-                        "link_type": link.link_type,
-                    })
-                    linked_source_ids.add(str(source_item.id))
+        for link in await self.links.get_by_project(pid):
+            source_id = str(link.source_item_id)
+            target_id = str(link.target_item_id)
+            if source_id not in source_ids or target_id not in target_ids:
+                continue
+            source = source_by_id[source_id]
+            target = target_by_id[target_id]
+            all_links.append({
+                "source_id": source_id,
+                "source_title": source.title,
+                "target_id": target_id,
+                "target_title": target.title,
+                "link_type": link.link_type,
+            })
+            linked_source_ids.add(source_id)
 
         # Calculate coverage
         coverage = len(linked_source_ids) / len(source_items) * 100 if source_items else 0
