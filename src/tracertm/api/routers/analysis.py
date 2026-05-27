@@ -150,7 +150,9 @@ async def get_reverse_impact(
     ensure_project_access(project_id, claims)
 
     service = impact_analysis_service.ImpactAnalysisService(db)
-    result = await _maybe_await(service.analyze_reverse_impact(item_id=item_id, max_depth=max_depth))
+    result = await _maybe_await(
+        service.analyze_reverse_impact(item_id=item_id, max_depth=max_depth)
+    )
 
     return {
         "root_item_id": item_id,
