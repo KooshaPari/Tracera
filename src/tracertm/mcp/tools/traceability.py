@@ -57,7 +57,7 @@ async def find_gaps(
             target_view=to_view,
         )
 
-        return wrap_success(  # type: ignore[return-value]
+        return wrap_success(  # type: ignore[return-value, invalid-return-type]
             {
                 "from_view": from_view,
                 "to_view": to_view,
@@ -103,7 +103,7 @@ async def get_trace_matrix(
         )
 
         matrix_out = matrix.to_dict() if hasattr(matrix, "to_dict") else matrix
-        return wrap_success(  # type: ignore[return-value]
+        return wrap_success(  # type: ignore[return-value, invalid-return-type]
             {
                 "source_view": source_view,
                 "target_view": target_view,
@@ -140,7 +140,7 @@ async def export_trace_matrix_csv(
         )
         csv_text = await service.export_matrix_csv(matrix)
 
-        return wrap_success(  # type: ignore[return-value]
+        return wrap_success(  # type: ignore[return-value, invalid-return-type]
             {
                 "source_view": source_view,
                 "target_view": target_view,
@@ -192,7 +192,7 @@ async def analyze_impact(
         impact_to_dict = getattr(impact, "to_dict", None)
         if callable(impact_to_dict):
             impact_out = impact_to_dict()
-        return wrap_success(  # type: ignore[return-value]
+        return wrap_success(  # type: ignore[return-value, invalid-return-type]
             {
                 "root_item_id": item_id,
                 "max_depth": max_depth,
@@ -238,7 +238,7 @@ async def analyze_reverse_impact(
         impact_to_dict = getattr(impact, "to_dict", None)
         if callable(impact_to_dict):
             impact_out = impact_to_dict()
-        return wrap_success(  # type: ignore[return-value]
+        return wrap_success(  # type: ignore[return-value, invalid-return-type]
             {
                 "root_item_id": item_id,
                 "max_depth": max_depth,
@@ -313,7 +313,7 @@ def project_health(
         by_view: dict[str, int] = {row[0]: row[1] for row in view_counts}
         by_status: dict[str, int] = {row[0]: row[1] for row in status_counts}
         by_link_type: dict[str, int] = {row[0]: row[1] for row in link_counts}
-        return wrap_success(  # type: ignore[return-value]
+        return wrap_success(  # type: ignore[return-value, invalid-return-type]
             {
                 "project_id": project_id,
                 "total_items": total_items,

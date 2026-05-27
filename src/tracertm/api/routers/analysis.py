@@ -38,6 +38,14 @@ async def _maybe_await(value: object) -> object:
     return value
 
 
+def _serialize_result(value: object) -> dict[str, Any]:
+    """Convert service results with optional to_dict() to a JSON-friendly dict."""
+    to_dict = getattr(value, "to_dict", None)
+    if callable(to_dict):
+        return cast(dict[str, Any], to_dict())
+    return cast(dict[str, Any], value)
+
+
 @router.get("/gaps")
 async def get_traceability_gaps(
     request: Request,
@@ -99,7 +107,7 @@ async def get_traceability_matrix(
         "project_id": project_id,
         "source_view": source_view,
         "target_view": target_view,
-        "matrix": matrix.to_dict() if hasattr(matrix, "to_dict") else matrix,
+        "matrix": _serialize_result(matrix),
     }
 
 
@@ -157,7 +165,7 @@ async def get_reverse_impact(
     return {
         "root_item_id": item_id,
         "max_depth": max_depth,
-        "dependencies": result.to_dict() if hasattr(result, "to_dict") else result,
+        "dependencies": _serialize_result(result),
     }
 
 
