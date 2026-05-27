@@ -69,6 +69,7 @@ repos:
     hooks:
       - id: pycln
         args: [--all]
+        exclude: ^tests/conftest\.py$
         pass_filenames: true
 
   # YAML/JSON/Markdown formatting (fast)

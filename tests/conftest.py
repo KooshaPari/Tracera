@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import sessionmaker
 
 # pytest_asyncio and pytest_benchmark are loaded by root conftest / auto-discovery
-pytest_plugins = ("plugin_cli_skip",)
+pytest_plugins = ("tests.plugin_cli_skip",)
 
 # Avoid MCP metrics bind conflicts during test collection.
 os.environ["TRACERTM_MCP_METRICS_PORT"] = "0"
