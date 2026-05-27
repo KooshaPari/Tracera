@@ -36,7 +36,7 @@ def get_config_manager() -> ConfigManager:
 
 
 # Re-export get_mcp_session for convenience
-async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_async_session() -> AsyncGenerator[AsyncSession]:
     """Get an async database session with RLS context.
 
     This is an alias for get_mcp_session() for backward compatibility.

@@ -1,7 +1,7 @@
 """Database connection module for TracerTM."""
-from typing import Optional
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
 
 
 class DatabaseConnection:
@@ -31,7 +31,7 @@ class DatabaseConnection:
         cls._session_factory = None
 
 
-def get_session() -> Optional[Session]:
+def get_session() -> Session | None:
     """Get a database session."""
     return DatabaseConnection.get_session()
 

@@ -68,7 +68,7 @@ def _get_working_directory(request_body: ChatRequest) -> str | None:
 
 async def _stream_with_agent_sandbox(
     ctx: SandboxStreamContext,
-) -> AsyncGenerator[str, None]:
+) -> AsyncGenerator[str]:
     async for chunk in ctx.agent_service.stream_chat_with_sandbox(
         messages=ctx.messages,
         session_id=ctx.session_id,
@@ -84,7 +84,7 @@ async def _stream_with_ai_service(
     request_body: ChatRequest,
     db_session: AsyncSession,
     working_directory: str | None,
-) -> AsyncGenerator[str, None]:
+) -> AsyncGenerator[str]:
     from tracertm.services.ai_service import get_ai_service
     from tracertm.services.ai_tools import set_allowed_paths
 
