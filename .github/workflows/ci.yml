@@ -747,6 +747,7 @@ jobs:
   frontend-checks:
     name: Frontend Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     needs: [quality-guards, detect-changes]
     if: needs.detect-changes.outputs.frontend == 'true'
     steps:
@@ -773,20 +774,19 @@ jobs:
       - name: Oxlint (strict config enforcement)
         working-directory: frontend
         run: |
-          # Use stylish format for grouped output (grouped by file for easy processing)
-          bun x oxlint --type-check --type-aware -f stylish . > /tmp/oxlint-results-grouped.txt || true
-          # Also output JSON for CI parsing
-          bun x oxlint --type-check --type-aware --format=json . > /tmp/oxlint-results.json || true
+          # Match package.json lint scope (web + packages); avoid scanning the whole monorepo root.
+          OXLINT_TARGETS="apps/web/src packages"
+          bun x oxlint --type-check --type-aware -f stylish $OXLINT_TARGETS > /tmp/oxlint-results-grouped.txt || true
+          bun x oxlint --type-check --type-aware --format=json $OXLINT_TARGETS > /tmp/oxlint-results.json || true
           VIOLATION_COUNT=$(jq '[.[] // []] | length' /tmp/oxlint-results.json || echo "0")
           echo "OXLINT_VIOLATIONS=$VIOLATION_COUNT" >> "$GITHUB_ENV"
           {
-            echo "## Frontend Linting Results (Oxlint)"
+            echo "## Frontend Linting Results (Oxlint + TS7 native preview)"
             echo "Total violations: $VIOLATION_COUNT"
             echo "Config: frontend/.oxlintrc.json"
-            echo "Format: stylish (grouped by file)"
+            echo "Scope: $OXLINT_TARGETS"
           } >> "$GITHUB_STEP_SUMMARY"
-          # Show grouped output for developer reference
-          cat /tmp/oxlint-results-grouped.txt || bun x oxlint --type-check --type-aware .
+          cat /tmp/oxlint-results-grouped.txt || bun x oxlint --type-check --type-aware $OXLINT_TARGETS
 
       - name: TypeScript typecheck
         working-directory: frontend
