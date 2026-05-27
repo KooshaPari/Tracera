@@ -85,7 +85,7 @@ async def test_traceability_generate_matrix_uses_project_links() -> None:
     assert len(matrix.links) == 1
     assert matrix.links[0]["source_title"] == "Feature A"
     assert matrix.links[0]["target_title"] == "Test A"
-    assert matrix.coverage_percentage == 100.0
+    assert matrix.coverage_percentage == pytest.approx(100.0)
 
 
 @pytest.mark.asyncio
@@ -106,7 +106,7 @@ async def test_analyze_query_performance_uses_cache() -> None:
     service.items.query.assert_awaited_once()
     assert first["items_returned"] == second["items_returned"] == 2
     assert first["execution_time_seconds"] >= 0
-    assert second["execution_time_seconds"] == 0.0
+    assert second["execution_time_seconds"] == pytest.approx(0.0)
 
 
 def test_query_cache_key_is_stable() -> None:
