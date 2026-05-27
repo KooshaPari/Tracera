@@ -9,7 +9,7 @@ export interface TraceMatrixExportOptions {
 }
 
 function buildAuthHeaders(): Record<string, string> {
-  const headers: Record<string, string> = { ...getCSRFHeaders() };
+  const headers: Record<string, string> = { ...getCSRFHeaders('GET') };
   const token = globalThis.localStorage?.getItem('auth_token');
   if (token?.trim()) {
     headers['Authorization'] = `Bearer ${token.trim()}`;

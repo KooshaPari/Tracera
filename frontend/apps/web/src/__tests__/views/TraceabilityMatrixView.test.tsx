@@ -4,8 +4,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { toast } from 'sonner';
 
@@ -154,8 +153,7 @@ describe(TraceabilityMatrixView, () => {
     expect(screen.getByRole('button', { name: /export csv/i })).toBeInTheDocument();
   });
 
-  it('blocks export when matrix has no rows or columns', async () => {
-    const user = userEvent.setup();
+  it('blocks export when matrix has no rows or columns', () => {
     mockItems();
     mockLinks();
 
@@ -165,7 +163,7 @@ describe(TraceabilityMatrixView, () => {
       </QueryClientProvider>,
     );
 
-    await user.click(screen.getByRole('button', { name: /export csv/i }));
+    fireEvent.click(screen.getByRole('button', { name: /export csv/i }));
     expect(toast.error).toHaveBeenCalledWith(
       'Nothing to export — add requirements and features first',
     );
