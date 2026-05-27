@@ -1,6 +1,6 @@
 """Traceability matrix generation service for TraceRTM."""
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,6 +18,12 @@ class TraceabilityMatrix:
     matrix: list[list[str]]  # Link types or empty
     coverage: float  # Percentage of traced items
     total_links: int
+
+    def to_dict(self) -> dict[str, object]:
+        """Serialize matrix for MCP/API responses."""
+        data = asdict(self)
+        data["coverage"] = round(self.coverage, 2)
+        return data
 
 
 class TraceabilityMatrixService:
