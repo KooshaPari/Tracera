@@ -15,6 +15,12 @@ vi.mock('sonner', () => ({
   },
 }));
 
+vi.mock('@/api/traceMatrixExport', () => ({
+  downloadTraceMatrixFromApi: vi.fn(),
+}));
+
+import { downloadTraceMatrixFromApi } from '@/api/traceMatrixExport';
+
 import { useItems } from '../../hooks/useItems';
 import { useLinks } from '../../hooks/useLinks';
 import { TraceabilityMatrixView } from '../../views/TraceabilityMatrixView';

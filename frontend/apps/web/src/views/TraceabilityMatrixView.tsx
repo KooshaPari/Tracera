@@ -12,6 +12,7 @@ import {
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { downloadTraceMatrixFromApi } from '@/api/traceMatrixExport';
 import {
   buildTraceabilityMatrixCsv,
   downloadTraceabilityMatrixCsv,
@@ -88,6 +89,7 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
       : null;
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
 
   const items = itemsData?.items ?? [];
   const links = linksData?.links ?? [];
@@ -122,18 +124,34 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
     return Math.round((covered / matrix.requirements.length) * 100);
   }, [matrix]);
 
-  const handleExportCsv = useCallback(() => {
+  const handleExportCsv = useCallback(async () => {
     if (matrix.requirements.length === 0 && matrix.features.length === 0) {
       toast.error('Nothing to export — add requirements and features first');
       return;
     }
-    const csv = buildTraceabilityMatrixCsv(
-      matrix.requirements.map((r) => ({ id: r.id, title: r.title })),
-      matrix.features.map((f) => ({ id: f.id, title: f.title })),
-      matrix.coverage,
-    );
-    downloadTraceabilityMatrixCsv(csv, projectId);
-    toast.success('Matrix exported to CSV');
+
+    const firstReq = matrix.requirements[0] as { view?: string; type?: string };
+    const firstFeat = matrix.features[0] as { view?: string; type?: string };
+    const exportOptions = {
+      sourceView: firstReq.view ?? firstReq.type,
+      targetView: firstFeat.view ?? firstFeat.type,
+    };
+
+    setIsExporting(true);
+    try {
+      await downloadTraceMatrixFromApi(projectId, exportOptions);
+      toast.success('Matrix exported to CSV');
+    } catch {
+      const csv = buildTraceabilityMatrixCsv(
+        matrix.requirements.map((r) => ({ id: r.id, title: r.title })),
+        matrix.features.map((f) => ({ id: f.id, title: f.title })),
+        matrix.coverage,
+      );
+      downloadTraceabilityMatrixCsv(csv, projectId);
+      toast.success('Matrix exported to CSV (from current view)');
+    } finally {
+      setIsExporting(false);
+    }
   }, [matrix, projectId]);
 
   const coverageSummary = useMemo(() => {
@@ -194,9 +212,13 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
           variant='outline'
           size='sm'
           className='gap-2 rounded-lg font-mono text-xs uppercase tracking-wider'
-          onClick={handleExportCsv}
+          disabled={isExporting}
+          onClick={() => {
+            void handleExportCsv();
+          }}
         >
-          <Download className='h-3.5 w-3.5' /> Export CSV
+          <Download className='h-3.5 w-3.5' />
+          {isExporting ? 'Exporting…' : 'Export CSV'}
         </Button>
       </div>
 
