@@ -69,12 +69,28 @@ function CoverageBadge({ status, coveredCount, totalFeatures }: CoverageBadgePro
 }
 
 export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProps) {
-  const { data: itemsData, isLoading } = useItems({
+  const {
+    data: itemsData,
+    isLoading: itemsLoading,
+    isError: itemsError,
+    error: itemsErrorDetail,
+  } = useItems({
     projectId,
   });
-  const { data: linksData } = useLinks({
+  const {
+    data: linksData,
+    isLoading: linksLoading,
+    isError: linksError,
+    error: linksErrorDetail,
+  } = useLinks({
     projectId,
   });
+
+  const isLoading = itemsLoading || linksLoading;
+  const loadError =
+    itemsError || linksError
+      ? (itemsErrorDetail ?? linksErrorDetail ?? new Error('Failed to load traceability data'))
+      : null;
 
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -124,9 +140,24 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
     return { covered, partial, uncovered };
   }, [matrix]);
 
+  if (loadError) {
+    return (
+      <div
+        className='mx-auto flex max-w-lg flex-col items-center justify-center gap-3 px-6 py-24 text-center'
+        role='alert'
+      >
+        <Layers className='text-destructive h-10 w-10 opacity-60' />
+        <h2 className='font-mono text-sm font-bold tracking-tight'>Could not load matrix</h2>
+        <p className='text-muted-foreground text-sm'>
+          {loadError instanceof Error ? loadError.message : 'Try refreshing the page.'}
+        </p>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
-      <div className='animate-pulse space-y-8 p-6'>
+      <div className='animate-pulse space-y-8 p-6' data-testid='matrix-loading'>
         <Skeleton className='h-10 w-48' />
         <div className='flex gap-4'>
           {[1, 2, 3].map((i) => (
@@ -361,10 +392,27 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
             </tbody>
           </table>
 
+          {matrix.features.length === 0 && matrix.requirements.length > 0 && (
+            <div
+              className='text-muted-foreground/50 flex flex-col items-center justify-center py-24'
+              data-testid='matrix-empty-features'
+            >
+              <Box className='mb-4 h-12 w-12 opacity-20' />
+              <p className='mono-label'>No features to map</p>
+              <p className='text-muted-foreground mt-1 max-w-sm text-xs'>
+                Add features to this project to build the traceability grid.
+              </p>
+            </div>
+          )}
           {matrix.requirements.length === 0 && (
-            <div className='text-muted-foreground/30 flex flex-col items-center justify-center py-24'>
+            <div
+              className='text-muted-foreground/30 flex flex-col items-center justify-center py-24'
+              data-testid='matrix-empty-requirements'
+            >
               <Layers className='mb-4 h-12 w-12 opacity-10' />
-              <p className='mono-label'>No requirements found</p>
+              <p className='mono-label'>
+                {searchQuery ? 'No requirements match your filter' : 'No requirements found'}
+              </p>
             </div>
           )}
         </div>
