@@ -13,4 +13,4 @@ NC='\033[0m' # No Color
 
 echo "🔍 Checking for naming explosion patterns..."
 
-python3 ../scripts/quality/check_naming_explosion.py --lang frontend --root ..
+python3 scripts/quality/check_naming_explosion.py --lang frontend --root .
