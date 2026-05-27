@@ -1784,4 +1784,5 @@ dev = [
     "radon>=6.0.1",
     "interrogate>=1.7.0",
     "pycln>=2.6.0",
+    "tach>=0.33.2",
 ]

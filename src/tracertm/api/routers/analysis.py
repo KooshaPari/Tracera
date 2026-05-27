@@ -42,8 +42,8 @@ def _serialize_result(value: object) -> dict[str, Any]:
     """Convert service results with optional to_dict() to a JSON-friendly dict."""
     to_dict = getattr(value, "to_dict", None)
     if callable(to_dict):
-        return cast(dict[str, Any], to_dict())
-    return cast(dict[str, Any], value)
+        return cast("dict[str, Any]", to_dict())
+    return cast("dict[str, Any]", value)
 
 
 @router.get("/gaps")
