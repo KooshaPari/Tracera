@@ -1,200 +1,95 @@
 # TracerTM - CLAUDE.md
 
-## Project Overview
+## Overview
 
-**TracerTM** is an agent-native, multi-view requirements traceability and project management system. It enables tracking of requirements across the software development lifecycle with tight integration into Kilo Gastown for multi-agent orchestration.
+TracerTM is an agent-native, multi-view requirements traceability and project management system.
 
-- **Rig ID**: `9614f3ef-45c8-4bdc-bdf2-906899b5f052`
-- **Town**: `78a8d430-a206-4a25-96c0-5cd9f5caf984`
-- **Branch**: `convoy/methodology-trace/a8883763/head`
-
-## Stack
-
-| Layer | Technology |
-|-------|------------|
-| Backend API | Go |
-| Python Services | FastAPI, SQLAlchemy, Pydantic |
-| Frontend | React 19, TypeScript, TanStack Router, Zustand |
-| Relational DB | PostgreSQL 17+ |
-| Graph DB | Neo4j 5.0+ |
-| Cache | Redis 7+ |
-| Messaging | NATS 2.9+ |
-| Workflow Engine | Temporal |
-| Observability | Prometheus, Loki, Jaeger |
+This checkout is primarily a Python `src/` package with supporting frontend and container tooling. The root package entry points are defined in `pyproject.toml`, including `rtm`, `tracertm`, `tracertm-mcp`, and `rtm-mcp`.
 
 ## Architecture
 
-```
-frontend/          # React/TypeScript SPA
-backend/           # Go API server (separate repo)
-src/tracertm/      # Python services & CLI
-├── api/           # FastAPI routes
-├── services/      # Business logic
-├── repositories/  # Data access
-├── storage/       # File/markdown handling
-├── mcp/           # MCP server tools
-├── agent/         # Agent coordination
-└── tui/           # Textual TUI
-```
+- `src/tracertm/`: main Python package
+- `src/tracertm/api/`: FastAPI routes, middleware, and HTTP client glue
+- `src/tracertm/services/`: business logic and orchestration
+- `src/tracertm/repositories/`: data access layer
+- `src/tracertm/storage/`: file and markdown handling
+- `src/tracertm/mcp/`: MCP server implementation and tools
+- `src/tracertm/agent/`: agent coordination, sessions, and sandbox helpers
+- `src/tracertm/tui/`: Textual-based terminal UI
+- `frontend/`: Bun-based React/TypeScript workspace
+- `Taskfile.yml`: repo-wide build, test, lint, and cleanup orchestration
+- `.devcontainer/Dockerfile`: development image with Go 1.23, Python 3.11, Node.js 20, Bun, uv, and helper tooling
 
-## Code Conventions
+Notes:
 
-### Python (Primary)
+- The repo currently does not have a root `go.mod`; Go tasks in `Taskfile.yml` only act on detected nested modules.
+- The package metadata in `pyproject.toml` requires Python `>=3.13`, even though the devcontainer installs Python 3.11.
 
-- **Linting**: `ruff check .`
-- **Formatting**: `ruff format .`
-- **Type checking**: `ty check src/`
-- **Testing**: `pytest` (unit: `pytest -m unit`, integration: `pytest -m integration`)
-- **Quality gates**: `task quality`
+## Build Commands
 
-### Frontend
-
-- Use `bun` instead of `npm` for all package management
-- Commands: `bun run dev`, `bun run build`, `bun run lint`, `bun test`
-
-### Key Files
-
-| Path | Purpose |
-|------|---------|
-| `pyproject.toml` | Python package config, pytest/ruff settings |
-| `Taskfile.yml` | Task automation |
-| `Makefile` | Naming convention checks |
-| `frontend/package.json` | Frontend dependencies |
-| `src/tracertm/` | Main Python source |
-| `tests/` | Test suite |
-
-### Code Quality Non-Negotiables
-
-- Zero new lint suppressions without inline justification
-- All new code must pass: `ruff check`, `ty check`, tests
-- Max function: 40 lines. Max cognitive complexity: 15
-- No placeholder TODOs in committed code
-- Hook-backed enforcement for complexity and imports
-
-### Library Preferences
-
-| Need | Use | NOT |
-|------|-----|-----|
-| Retry/resilience | tenacity | Custom retry loops |
-| HTTP client | httpx | Custom wrappers |
-| Logging | loguru + structlog | print() or logging.getLogger |
-| Config | pydantic-settings | Manual env parsing |
-| CLI | typer | argparse |
-| Validation | pydantic | Manual if/else |
-| Database ORM | SQLAlchemy (async) | Raw SQL strings |
-| API framework | FastAPI + uvicorn | Flask / custom ASGI |
-| MCP tools | fastmcp | Custom MCP protocol handling |
-| Workflow orchestration | temporalio | Custom job queues |
-
-## Agent Behavior Rules
-
-### Work Delegation
-
-Use `gt_sling` and `gt_sling_batch` for delegating work to other agents:
+Use the task runner first when possible.
 
 ```bash
-gt_sling <bead_id> <agent_id>  # Delegate single bead
-gt_sling_batch <bead_ids> <agent_id>  # Delegate multiple beads
+task build
 ```
 
-### Context Management
-
-**Manager Pattern**: Operate as a strategic manager, not a worker. Delegate to subagents.
-
-**Keep in Main Context**:
-- User intent and requirements
-- Strategic decisions and trade-offs
-- Summaries of completed work
-- Critical architectural knowledge
-
-**Delegate to Subagents**:
-- File exploration (>3 files)
-- Pattern searches across codebase
-- Multi-file implementations
-- Long command sequences
-- Test execution
-
-### Development Commands
+Scoped builds:
 
 ```bash
-# Install dependencies
-task install        # or: uv sync
+task build:python   # uv build when pyproject.toml is present
+task build:go       # build any detected Go modules
+task build:bun      # bun build for the frontend workspace when available
+```
 
-# Run tests
-pytest              # or: task test
+Direct frontend build:
 
-# Lint & format
-ruff check . && ruff format .
+```bash
+cd frontend
+bun run build
+```
 
-# Type checking
-ty check src/
+## Test Commands
 
-# Quality gates (full)
+Repo-wide:
+
+```bash
+task test
+```
+
+Scoped test commands:
+
+```bash
+pytest
+pytest -m unit
+pytest -m integration
+task test:python
+task test:go
+task test:bun
+```
+
+Common validation gates:
+
+```bash
 task quality
-
-# Database migrations
-task db:migrate
-task db-rollback
-
-# All Services (TUI Dashboard)
-task dev:tui        # Start all services with interactive TUI
-task dev            # Standard dev mode
+ruff check .
+ruff format --check .
+ty check src/
 ```
 
-### Dev Environment Rules
-
-- **The user runs `make dev-tui`** in their own terminal as the primary observation dashboard
-- **Never** run `make dev`, `make dev-tui`, or `make dev-down` — those are user-only commands
-- **Hot reload** handles code changes — do not restart services just because you edited code
-- **Config/env changes** require restart of affected service only
-
-### CLI Commands for Introspection
-
-| Action | Command |
-|--------|---------|
-| Check all service health | `make dev-status` |
-| Restart one service | `make dev-restart SERVICE=go-backend` |
-| Tail logs (all) | `make dev-logs` |
-| Tail logs (one service) | `make dev-logs SERVICE=python-backend` |
-
-### Quality Gates (Pre-Commit)
-
-1. `pytest` - All tests pass
-2. `ruff check .` - No lint errors
-3. `ruff format --check .` - Code properly formatted
-4. `ty check src/` - Type annotations valid
-
-### Worktree Discipline
-
-- Feature work goes in `.worktrees/<topic>/`
-- Legacy `PROJECT-wtrees/` and `repo-wtrees/` roots are for migration only
-- Canonical repository remains on `main` for final integration
-
-### Governance
-
-- Worktree discipline, reuse protocol, git delivery, stability, CI, child-agent delegation
-- Source: `KooshaPari/thegent` -> `templates/claude/governance-blocks/`
-- Reference the source instead of duplicating blocks
-
-### Child Agent Usage
-
-- Use child agents liberally for discovery-heavy, migration-heavy, and high-context work
-- Delegate broad scans, decomposition, and implementation waves to subagents
-- Keep the parent lane focused on deterministic integration and finalization
-- Preserve explicit handoffs and cross-agent context in session notes and audits
-
-## Environment Setup
+Frontend validation:
 
 ```bash
-# Prerequisites
-go 1.21+, python 3.13+, node/bun
-postgresql 17+, redis 7+, neo4j 5.0+, nats 2.9+
-task (taskfile.dev), process-compose
-
-# First run
-task install
-task db:migrate
-task dev:tui
+cd frontend
+bun run lint
+bun run typecheck
+bun test
 ```
 
-Access services at `http://localhost:4000` (Gateway), `http://localhost:3000` (Grafana), `http://localhost:16686` (Jaeger).
+## Branch Discipline
+
+- Use a dedicated branch for every change.
+- Prefer `feature/<topic>` for new work and `fix/<topic>` for bug fixes.
+- Keep the branch focused on one concern; avoid mixing unrelated edits.
+- Do not commit directly to `main`.
+- Open a pull request after the change is committed, and expect maintainer review plus CI quality gates.
+- Keep commit messages concise and descriptive.
