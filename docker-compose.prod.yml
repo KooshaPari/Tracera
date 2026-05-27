@@ -49,7 +49,7 @@ services:
     cpus: '0.5'
 
   nats:
-    image: nats:2.10-alpine
+    image: nats:latest
     container_name: tracertm-nats
     command: nats-server -c /etc/nats/nats.conf -js
     ports:
@@ -250,55 +250,6 @@ services:
   #############################################################################
   # Application Services
   #############################################################################
-
-  go-backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: tracertm-go-backend
-    depends_on:
-      postgres:
-        condition: service_healthy
-      dragonfly:
-        condition: service_healthy
-      nats:
-        condition: service_healthy
-      temporal:
-        condition: service_healthy
-      tempo:
-        condition: service_healthy
-    environment:
-      PORT: 8080
-      GRPC_PORT: 9090
-      ENV: production
-      GIN_MODE: release
-      DATABASE_URL: postgres://tracertm:${DB_PASSWORD}@postgres:5432/tracertm?sslmode=disable
-      REDIS_URL: redis://dragonfly:6379
-      NATS_URL: nats://nats:4222
-      TEMPORAL_HOST: temporal:7233
-      PYTHON_BACKEND_URL: http://python-backend:8000
-      JWT_SECRET: ${JWT_SECRET}
-      CSRF_SECRET: ${CSRF_SECRET}
-      WORKOS_CLIENT_ID: ${WORKOS_CLIENT_ID:-}
-      WORKOS_API_KEY: ${WORKOS_API_KEY:-}
-      WORKOS_AUTHKIT_DOMAIN: ${WORKOS_AUTHKIT_DOMAIN:-}
-      CORS_ALLOWED_ORIGINS: http://localhost,http://localhost:3000,http://localhost:5173
-      TRACING_ENABLED: "true"
-      TRACING_ENVIRONMENT: production
-      PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT: tempo:4317
-    ports:
-      - "8080:8080"
-      - "9090:9090"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - tracertm
-    restart: unless-stopped
-    mem_limit: 512m
-    cpus: '2'
 
   python-backend:
     build:
