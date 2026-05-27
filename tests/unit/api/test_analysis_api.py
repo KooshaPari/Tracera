@@ -34,7 +34,9 @@ class TestImpactAnalysis:
             affected_items=["item2", "item3", "item4"],
         )
 
-        with patch("tracertm.api.main.impact_analysis_service.ImpactAnalysisService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.impact_analysis_service.ImpactAnalysisService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.analyze_impact.return_value = mock_result
             mock_service_class.return_value = mock_service
@@ -63,7 +65,9 @@ class TestImpactAnalysis:
             affected_items=affected,
         )
 
-        with patch("tracertm.api.main.impact_analysis_service.ImpactAnalysisService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.impact_analysis_service.ImpactAnalysisService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.analyze_impact.return_value = mock_result
             mock_service_class.return_value = mock_service
@@ -89,7 +93,9 @@ class TestImpactAnalysis:
             affected_items=[],
         )
 
-        with patch("tracertm.api.main.impact_analysis_service.ImpactAnalysisService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.impact_analysis_service.ImpactAnalysisService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.analyze_impact.return_value = mock_result
             mock_service_class.return_value = mock_service
@@ -130,7 +136,9 @@ class TestImpactAnalysis:
         mock_session = AsyncMock()
         mock_db.return_value = mock_session
 
-        with patch("tracertm.api.main.impact_analysis_service.ImpactAnalysisService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.impact_analysis_service.ImpactAnalysisService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.analyze_impact.side_effect = Exception("Item not found")
             mock_service_class.return_value = mock_service
@@ -155,7 +163,9 @@ class TestImpactAnalysis:
             affected_items=["item2", "item3"],
         )
 
-        with patch("tracertm.api.main.impact_analysis_service.ImpactAnalysisService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.impact_analysis_service.ImpactAnalysisService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.analyze_impact.return_value = mock_result
             mock_service_class.return_value = mock_service
@@ -184,7 +194,9 @@ class TestCycleDetection:
             affected_items={"item1", "item2", "item3", "item4"},
         )
 
-        with patch("tracertm.api.main.cycle_detection_service.CycleDetectionService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.cycle_detection_service.CycleDetectionService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.detect_cycles.return_value = mock_result
             mock_service_class.return_value = mock_service
@@ -212,7 +224,9 @@ class TestCycleDetection:
             affected_items=set(),
         )
 
-        with patch("tracertm.api.main.cycle_detection_service.CycleDetectionService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.cycle_detection_service.CycleDetectionService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.detect_cycles.return_value = mock_result
             mock_service_class.return_value = mock_service
@@ -239,7 +253,9 @@ class TestCycleDetection:
             affected_items={f"item{i}" for i in range(1, 11)},
         )
 
-        with patch("tracertm.api.main.cycle_detection_service.CycleDetectionService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.cycle_detection_service.CycleDetectionService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.detect_cycles.return_value = mock_result
             mock_service_class.return_value = mock_service
@@ -269,7 +285,9 @@ class TestCycleDetection:
                 affected_items={"item1", "item2"},
             )
 
-            with patch("tracertm.api.main.cycle_detection_service.CycleDetectionService") as mock_service_class:
+            with patch(
+                "tracertm.api.main.cycle_detection_service.CycleDetectionService"
+            ) as mock_service_class:
                 mock_service = MagicMock()
                 mock_service.detect_cycles.return_value = mock_result
                 mock_service_class.return_value = mock_service
@@ -309,12 +327,16 @@ class TestShortestPath:
             link_types=["depends_on", "depends_on"],
         )
 
-        with patch("tracertm.api.main.shortest_path_service.ShortestPathService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.shortest_path_service.ShortestPathService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item3")
+            response = client.get(
+                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item3"
+            )
             assert response.status_code == HTTP_OK
             data = response.json()
             assert data["exists"] is True
@@ -340,12 +362,16 @@ class TestShortestPath:
             link_types=link_types,
         )
 
-        with patch("tracertm.api.main.shortest_path_service.ShortestPathService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.shortest_path_service.ShortestPathService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item10")
+            response = client.get(
+                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item10"
+            )
             assert response.status_code == HTTP_OK
             data = response.json()
             assert data["distance"] == 9
@@ -365,12 +391,16 @@ class TestShortestPath:
             link_types=[],
         )
 
-        with patch("tracertm.api.main.shortest_path_service.ShortestPathService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.shortest_path_service.ShortestPathService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item999")
+            response = client.get(
+                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item999"
+            )
             assert response.status_code == HTTP_OK
             data = response.json()
             assert data["exists"] is False
@@ -392,12 +422,16 @@ class TestShortestPath:
             link_types=["depends_on"],
         )
 
-        with patch("tracertm.api.main.shortest_path_service.ShortestPathService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.shortest_path_service.ShortestPathService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item2")
+            response = client.get(
+                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item2"
+            )
             assert response.status_code == HTTP_OK
             data = response.json()
             assert data["exists"] is True
@@ -452,12 +486,16 @@ class TestShortestPath:
             link_types=["depends_on", "related_to", "blocks"],
         )
 
-        with patch("tracertm.api.main.shortest_path_service.ShortestPathService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.shortest_path_service.ShortestPathService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item4")
+            response = client.get(
+                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item4"
+            )
             assert response.status_code == HTTP_OK
             data = response.json()
             assert data["link_types"] == ["depends_on", "related_to", "blocks"]
@@ -477,12 +515,16 @@ class TestShortestPath:
             link_types=[],
         )
 
-        with patch("tracertm.api.main.shortest_path_service.ShortestPathService") as mock_service_class:
+        with patch(
+            "tracertm.api.main.shortest_path_service.ShortestPathService"
+        ) as mock_service_class:
             mock_service = MagicMock()
             mock_service.find_shortest_path.return_value = mock_result
             mock_service_class.return_value = mock_service
 
-            response = client.get("/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item1")
+            response = client.get(
+                "/api/v1/analysis/shortest-path?project_id=proj1&source_id=item1&target_id=item1"
+            )
             assert response.status_code == HTTP_OK
             data = response.json()
             assert data["distance"] == 0
