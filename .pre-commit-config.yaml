@@ -29,7 +29,7 @@ repos:
   # Uses pyproject.toml config with complexity rules (C90, PLR)
   # Note: Output format defaults to text (grouped by file for easy processing)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.0
+    rev: v0.15.12
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix, --output-format=grouped]
