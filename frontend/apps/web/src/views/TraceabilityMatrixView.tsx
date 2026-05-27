@@ -9,9 +9,14 @@ import {
   MinusCircle,
   Search,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import {
+  buildTraceabilityMatrixCsv,
+  downloadTraceabilityMatrixCsv,
+  getCoverageStatus,
+} from '@/lib/traceabilityMatrixExport';
 import { cn } from '@/lib/utils';
 import { Badge, Input } from '@tracertm/ui';
 import { Button } from '@tracertm/ui/components/Button';
@@ -26,16 +31,6 @@ interface TraceabilityMatrixViewProps {
 }
 
 type CoverageStatus = 'covered' | 'partial' | 'uncovered';
-
-function getCoverageStatus(coveredCount: number, totalFeatures: number): CoverageStatus {
-  if (totalFeatures === 0 || coveredCount === 0) {
-    return 'uncovered';
-  }
-  if (coveredCount >= totalFeatures) {
-    return 'covered';
-  }
-  return 'partial';
-}
 
 interface CoverageBadgeProps {
   status: CoverageStatus;
@@ -127,6 +122,20 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
     return Math.round((covered / matrix.requirements.length) * 100);
   }, [matrix]);
 
+  const handleExportCsv = useCallback(() => {
+    if (matrix.requirements.length === 0 && matrix.features.length === 0) {
+      toast.error('Nothing to export — add requirements and features first');
+      return;
+    }
+    const csv = buildTraceabilityMatrixCsv(
+      matrix.requirements.map((r) => ({ id: r.id, title: r.title })),
+      matrix.features.map((f) => ({ id: f.id, title: f.title })),
+      matrix.coverage,
+    );
+    downloadTraceabilityMatrixCsv(csv, projectId);
+    toast.success('Matrix exported to CSV');
+  }, [matrix, projectId]);
+
   const coverageSummary = useMemo(() => {
     const totalReqs = matrix.requirements.length;
     const covered = matrix.requirements.filter(
@@ -185,7 +194,7 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
           variant='outline'
           size='sm'
           className='gap-2 rounded-lg font-mono text-xs uppercase tracking-wider'
-          onClick={() => toast.success('Matrix exported to CSV')}
+          onClick={handleExportCsv}
         >
           <Download className='h-3.5 w-3.5' /> Export CSV
         </Button>
