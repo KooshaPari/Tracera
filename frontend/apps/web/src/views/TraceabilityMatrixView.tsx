@@ -133,8 +133,8 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
     const firstReq = matrix.requirements[0] as { view?: string; type?: string };
     const firstFeat = matrix.features[0] as { view?: string; type?: string };
     const exportOptions = {
-      sourceView: firstReq.view ?? firstReq.type,
-      targetView: firstFeat.view ?? firstFeat.type,
+      sourceView: firstReq.type ?? firstReq.view,
+      targetView: firstFeat.type ?? firstFeat.view,
     };
 
     setIsExporting(true);

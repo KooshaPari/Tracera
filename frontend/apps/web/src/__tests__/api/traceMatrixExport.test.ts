@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { fetchTraceMatrixCsv } from '@/api/traceMatrixExport';
 
@@ -28,14 +28,14 @@ describe('traceMatrixExport', () => {
       expect.stringContaining('/api/v1/analysis/trace-matrix/export?'),
       expect.objectContaining({ headers: expect.any(Object) }),
     );
-    const url = vi.mocked(fetch).mock.calls[0]?.[0] as string;
+    const url = (fetch as Mock).mock.calls[0]?.[0] as string;
     expect(url).toContain('project_id=proj-abc');
     expect(url).toContain('source_view=requirements');
     expect(url).toContain('target_view=feature');
   });
 
   it('throws when export fails', async () => {
-    vi.mocked(fetch).mockResolvedValue({ ok: false, status: 503 } as Response);
+    (fetch as Mock).mockResolvedValue({ ok: false, status: 503 } as Response);
 
     await expect(fetchTraceMatrixCsv('proj-1')).rejects.toThrow(/503/);
   });

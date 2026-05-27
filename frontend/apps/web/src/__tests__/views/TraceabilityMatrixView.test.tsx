@@ -5,7 +5,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { toast } from 'sonner';
 
 vi.mock('sonner', () => ({
@@ -46,7 +46,7 @@ vi.mock('../../hooks/useLinks', () => ({
 }));
 
 function mockItems(overrides: Partial<ReturnType<typeof useItems>> = {}) {
-  vi.mocked(useItems).mockReturnValue({
+  (useItems as Mock).mockReturnValue({
     data: { items: [], total: 0 },
     error: null,
     isError: false,
@@ -56,7 +56,7 @@ function mockItems(overrides: Partial<ReturnType<typeof useItems>> = {}) {
 }
 
 function mockLinks(overrides: Partial<ReturnType<typeof useLinks>> = {}) {
-  vi.mocked(useLinks).mockReturnValue({
+  (useLinks as Mock).mockReturnValue({
     data: { links: [] },
     error: null,
     isError: false,
