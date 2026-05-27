@@ -249,6 +249,8 @@ addopts = [
     "--tb=short",
     "-p",
     "asyncio",
+    "-p",
+    "tests.plugin_cli_skip",
 ]
 markers = [
     "unit: Unit tests (fast, no external dependencies)",

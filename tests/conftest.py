@@ -8,32 +8,11 @@ import os
 import tempfile
 from pathlib import Path
 
-import importlib.util
-
 import pytest
 import pytest_asyncio
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import sessionmaker
-
-_CLI_DEPENDENT_TEST_DIRS = frozenset({"e2e", "integration", "phase_five"})
-_TESTS_ROOT = Path(__file__).resolve().parent
-
-
-def _tracertm_cli_available() -> bool:
-    return importlib.util.find_spec("tracertm.cli") is not None
-
-
-def pytest_ignore_collect(collection_path: Path, config: pytest.Config) -> bool | None:  # noqa: ARG001
-    """Skip CLI-dependent suites when tracertm.cli is not installed (sparse/dev trees)."""
-    if _tracertm_cli_available():
-        return None
-    try:
-        rel = collection_path.resolve().relative_to(_TESTS_ROOT)
-    except ValueError:
-        return None
-    return bool(rel.parts) and rel.parts[0] in _CLI_DEPENDENT_TEST_DIRS
-
 
 # pytest_asyncio and pytest_benchmark are loaded by root conftest / auto-discovery
 pytest_plugins = ()
@@ -189,7 +168,9 @@ def project_factory(db_session: Any) -> None:
     providing more realistic test coverage.
     """
 
-    def create_project(name: Any = "Test Project", description: Any = "Test project", metadata: Any = None) -> None:
+    def create_project(
+        name: Any = "Test Project", description: Any = "Test project", metadata: Any = None
+    ) -> None:
         from tracertm.models.project import Project
 
         project = Project(name=name, description=description, metadata=metadata or {})
@@ -218,7 +199,14 @@ def item_factory(db_session: Any) -> None:
     ) -> None:
         from tracertm.models.item import Item
 
-        item = Item(project_id=project_id, title=title, view=view, item_type=item_type, status=status, **kwargs)
+        item = Item(
+            project_id=project_id,
+            title=title,
+            view=view,
+            item_type=item_type,
+            status=status,
+            **kwargs,
+        )
         db_session.add(item)
         db_session.flush()
         return item
