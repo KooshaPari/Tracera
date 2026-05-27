@@ -1,5 +1,17 @@
 # Traceability Matrix Service
 
+## Implementation status (complete-polish lane)
+
+| Area | Status | Notes |
+|------|--------|-------|
+| `TraceabilityMatrixService.generate_matrix` | Done | Async batch matrix with view filters |
+| `TraceabilityMatrix.to_dict` | Done | MCP `get_trace_matrix` / `trace_analyze` serialization |
+| `export_matrix_csv` / `export_matrix_html` | Done | Unit-tested export helpers |
+| `get_uncovered_items` | Done | Source/target gap detection from matrix |
+| MCP `trace_analyze` dispatch | Done | `params/common.py` routes to `mcp.tools.traceability` |
+| MCP module load (`_load.py`) | Deferred | Avoid duplicate registration with `core_tools` HTTP tools |
+| TUI storage traceability summary | Deferred | Use MCP/CLI matrix; no `frontend/` changes |
+
 ## Overview
 
 The Traceability Matrix Service provides high-performance traceability matrix generation and analysis for requirements, tests, and implementation items. It uses optimized PostgreSQL batch queries and Redis caching to deliver sub-500ms response times for projects with 1000+ items.

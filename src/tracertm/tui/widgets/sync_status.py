@@ -332,3 +332,7 @@ if textual_available:
         def set_conflicts(self, count: int) -> None:
             """Set conflicts count."""
             self.conflicts_count = count
+
+else:
+    SyncStatusWidget = None  # type: ignore[misc, assignment]
+    CompactSyncStatus = None  # type: ignore[misc, assignment]
