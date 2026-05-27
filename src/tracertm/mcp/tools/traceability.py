@@ -263,8 +263,7 @@ def project_health(
     with get_session() as session:
         # Count items by view
         view_counts = (
-            session
-            .query(Item.view, func.count(Item.id))
+            session.query(Item.view, func.count(Item.id))
             .filter(
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),
@@ -275,8 +274,7 @@ def project_health(
 
         # Count items by status
         status_counts = (
-            session
-            .query(Item.status, func.count(Item.id))
+            session.query(Item.status, func.count(Item.id))
             .filter(
                 Item.project_id == project_id,
                 Item.deleted_at.is_(None),
@@ -287,8 +285,7 @@ def project_health(
 
         # Count links by type
         link_counts = (
-            session
-            .query(Link.link_type, func.count(Link.id))
+            session.query(Link.link_type, func.count(Link.id))
             .filter(Link.project_id == project_id)
             .group_by(Link.link_type)
             .all()
