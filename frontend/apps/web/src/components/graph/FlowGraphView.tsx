@@ -547,7 +547,7 @@ function FlowGraphViewInner({
         {perspective !== 'all' && (
           <Badge
             variant='outline'
-            className='px-3 py-1'
+            className='graph-glass-chip px-3 py-1'
             style={{
               backgroundColor: `${PERSPECTIVE_CONFIGS.find((c) => c.id === perspective)?.color}20`,
               borderColor: PERSPECTIVE_CONFIGS.find((c) => c.id === perspective)?.color,
@@ -566,7 +566,7 @@ function FlowGraphViewInner({
       />
 
       {/* Controls */}
-      <Card className='p-3'>
+      <Card className='tracera-glass graph-glass-panel graph-glass-toolbar graph-soft-glow graph-morphic-border graph-glass-motion-sm p-3'>
         <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
           <div className='flex flex-wrap items-center gap-2'>
             {/* Layout selector */}
@@ -591,17 +591,21 @@ function FlowGraphViewInner({
             <Separator orientation='vertical' className='h-6' aria-hidden='true' />
 
             {/* UI Tree toggle */}
-            <Button
-              variant={showUITree ? 'default' : 'outline'}
-              size='sm'
-              onClick={() => {
-                setShowUITree(!showUITree);
-              }}
-              className='h-9'
-            >
-              <LayoutGrid className='mr-2 h-4 w-4' />
-              UI Library
-            </Button>
+            <div className='graph-glass-overlay flex items-center gap-1 rounded-md p-1'>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={() => {
+                  setShowUITree(!showUITree);
+                }}
+                className='graph-glass-button graph-glass-button-ghost h-9 px-3'
+                aria-pressed={showUITree}
+                aria-label={showUITree ? 'Hide UI component tree' : 'Show UI component tree'}
+              >
+                <LayoutGrid className='mr-2 h-4 w-4' aria-hidden='true' />
+                UI Library
+              </Button>
+            </div>
 
             {/* Detail panel toggle */}
             <Button
@@ -610,23 +614,26 @@ function FlowGraphViewInner({
               onClick={() => {
                 setShowDetailPanel(!showDetailPanel);
               }}
-              className='h-9'
+              className='graph-glass-button graph-glass-button-ghost h-9 w-9'
+              aria-label={showDetailPanel ? 'Hide detail panel' : 'Show detail panel'}
+              aria-pressed={showDetailPanel}
             >
               {showDetailPanel ? (
-                <PanelRightClose className='h-4 w-4' />
+                <PanelRightClose className='h-4 w-4' aria-hidden='true' />
               ) : (
-                <PanelRight className='h-4 w-4' />
+                <PanelRight className='h-4 w-4' aria-hidden='true' />
               )}
             </Button>
+
           </div>
 
           <div className='flex items-center gap-2'>
-            <div className='flex items-center gap-1 rounded-md border p-1'>
+            <div className='graph-glass-overlay flex items-center gap-1 rounded-md p-1'>
               <Button
                 variant='ghost'
                 size='sm'
                 onClick={async () => zoomIn()}
-                className='h-7 w-7 p-0'
+                className='graph-glass-button graph-glass-button-ghost h-7 w-7 p-0'
                 aria-label='Zoom in'
                 title='Zoom in (Ctrl/Cmd + Plus)'
               >
@@ -636,7 +643,7 @@ function FlowGraphViewInner({
                 variant='ghost'
                 size='sm'
                 onClick={async () => zoomOut()}
-                className='h-7 w-7 p-0'
+                className='graph-glass-button graph-glass-button-ghost h-7 w-7 p-0'
                 aria-label='Zoom out'
                 title='Zoom out (Ctrl/Cmd + Minus)'
               >
@@ -646,7 +653,7 @@ function FlowGraphViewInner({
                 variant='ghost'
                 size='sm'
                 onClick={handleFit}
-                className='h-7 w-7 p-0'
+                className='graph-glass-button graph-glass-button-ghost h-7 w-7 p-0'
                 aria-label='Fit view to content'
                 title='Fit all nodes in view'
               >
@@ -656,7 +663,7 @@ function FlowGraphViewInner({
                 variant='ghost'
                 size='sm'
                 onClick={handleReset}
-                className='h-7 w-7 p-0'
+                className='graph-glass-button graph-glass-button-ghost h-7 w-7 p-0'
                 aria-label='Reset graph view'
                 title='Reset to default view'
               >
@@ -706,7 +713,7 @@ function FlowGraphViewInner({
               className='!bg-card !border-border'
             />
             <Panel position='bottom-left' className='!m-2'>
-              <div className='bg-card/90 flex flex-wrap gap-2 rounded-lg border p-2 text-[10px] backdrop-blur-sm'>
+              <div className='graph-glass-legend graph-glass-panel graph-morphic-border graph-glass-motion-sm flex flex-wrap gap-2 rounded-lg p-2 text-[10px]'>
                 {Object.entries(ENHANCED_TYPE_COLORS)
                   .filter(([type]) => filteredNodes.some((n) => n.type === type))
                   .slice(0, 8)

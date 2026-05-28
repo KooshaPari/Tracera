@@ -208,10 +208,7 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
       {/* Performance indicators */}
       <div className='absolute top-4 right-4 z-10 flex flex-col items-end gap-2'>
         {/* Mode indicator */}
-        <Badge
-          variant={useWebGL ? 'default' : 'secondary'}
-          className='text-xs font-medium shadow-md'
-        >
+        <Badge variant={useWebGL ? 'default' : 'secondary'} className='graph-glass-chip text-xs'>
           {useWebGL ? (
             <>
               <Zap className='mr-1 h-3 w-3' />
@@ -226,7 +223,7 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
         </Badge>
 
         {/* Node/Edge count */}
-        <Badge variant='outline' className='text-xs shadow-md'>
+        <Badge variant='outline' className='graph-glass-chip text-xs'>
           <Activity className='mr-1 h-3 w-3' />
           {nodeCount.toLocaleString()}N / {edgeCount.toLocaleString()}E
         </Badge>
@@ -235,7 +232,7 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
         {useWebGL && (
           <Badge
             variant='outline'
-            className={`text-xs shadow-md ${
+            className={`graph-glass-chip text-xs ${
               sigmaPerformanceMode === 'performance' ? 'border-orange-500 text-orange-500' : ''
             }`}
           >
@@ -251,7 +248,7 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
             <Badge
               key={i}
               variant={warning.severity === 'error' ? 'destructive' : 'default'}
-              className='text-xs shadow-md'
+              className='graph-glass-chip text-xs'
             >
               <AlertTriangle className='mr-1 h-3 w-3' />
               {warning.message}
@@ -269,7 +266,7 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
             exit={{ opacity: 0, y: -20 }}
             className='absolute top-20 left-1/2 z-20 -translate-x-1/2 transform'
           >
-            <Badge variant='default' className='px-4 py-2 text-sm font-medium shadow-lg'>
+            <Badge variant='default' className='graph-glass-chip px-4 py-2 text-sm font-medium'>
               {useWebGL ? (
                 <>
                   <Zap className='mr-2 h-4 w-4' />

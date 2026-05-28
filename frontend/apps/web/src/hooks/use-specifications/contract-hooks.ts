@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import * as specificationsApi from '@/hooks/useSpecifications.api';
-import * as queryUtils from './query-utils';
+
 import type { MutationResult } from './query-utils';
+
+import * as queryUtils from './query-utils';
 
 type FetchContractsResult = Awaited<ReturnType<typeof specificationsApi.fetchContracts>>;
 
@@ -69,7 +71,13 @@ const useUpdateContract = (): MutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: specificationsApi.UpdateContractData }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: specificationsApi.UpdateContractData;
+    }) => {
       const response = await specificationsApi.updateContract(id, data);
       return response;
     },
@@ -105,7 +113,11 @@ const useVerifyContract = (): queryUtils.MutationResult<VerifyContractResult, st
       return response;
     },
     onSuccess: async (_, id) => {
-      await queryUtils.invalidateQueries(queryClient, [['contracts', id], ['contracts'], ['contractStats']]);
+      await queryUtils.invalidateQueries(queryClient, [
+        ['contracts', id],
+        ['contracts'],
+        ['contractStats'],
+      ]);
       await queryClient.invalidateQueries({ queryKey: ['specificationSummary'] });
     },
   });
@@ -123,9 +135,7 @@ const useContractActivities = (
     queryKey: ['contractActivities', contractId],
   });
 
-const useContractStats = (
-  projectId: string,
-): queryUtils.QueryResult<FetchContractStatsResult> =>
+const useContractStats = (projectId: string): queryUtils.QueryResult<FetchContractStatsResult> =>
   useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => {

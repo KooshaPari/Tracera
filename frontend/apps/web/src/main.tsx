@@ -95,5 +95,5 @@ async function bootstrap(): Promise<void> {
 
 // eslint-disable-next-line jest/require-hook
 bootstrap().catch(() => {
-    // Preflight or render failed; preflight UI or error boundary handles it
+  // Preflight or render failed; preflight UI or error boundary handles it
 });

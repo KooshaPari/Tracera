@@ -1,7 +1,7 @@
-import type { Scenario, ScenarioStatus } from '@tracertm/types';
-
 import { ArrowRight, BarChart3, CheckCircle2, Clock, FileText, Play, XCircle } from 'lucide-react';
 import React, { useCallback } from 'react';
+
+import type { Scenario, ScenarioStatus } from '@tracertm/types';
 
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, cn } from '@tracertm/ui';
 

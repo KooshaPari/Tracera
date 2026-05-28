@@ -6,6 +6,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -554,13 +556,22 @@ func withErrorTestCache(t *testing.T, fn func(ctx context.Context, cache *RedisC
 // Helper function to setup test cache with error handling
 func setupTestCacheForErrorTesting(t *testing.T) *RedisCache {
 	_ = t
-	url := os.Getenv("TEST_REDIS_URL")
-	if url == "" {
-		url = "redis://localhost:6379/0"
+	urlStr := os.Getenv("TEST_REDIS_URL")
+	if urlStr == "" {
+		urlStr = "redis://localhost:6379/0"
+	}
+	parsed, err := url.Parse(urlStr)
+	if err != nil || parsed.Host == "" {
+		return nil
+	}
+	if conn, err := net.DialTimeout("tcp", parsed.Host, 150*time.Millisecond); err != nil {
+		return nil
+	} else {
+		_ = conn.Close()
 	}
 
 	cache, err := NewRedisCache(RedisCacheConfig{
-		RedisURL:      url,
+		RedisURL:      urlStr,
 		DefaultTTL:    redisErrorTestTTL,
 		EnableMetrics: true,
 	})

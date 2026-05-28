@@ -1,14 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import * as specificationsApi from '@/hooks/useSpecifications.api';
-import * as queryUtils from './query-utils';
+
 import type { MutationResult } from './query-utils';
+
+import * as queryUtils from './query-utils';
 
 type FetchScenarioActivitiesResult = Awaited<
   ReturnType<typeof specificationsApi.fetchScenarioActivities>
 >;
 
-type FetchProjectScenariosResult = Awaited<ReturnType<typeof specificationsApi.fetchProjectScenarios>>;
+type FetchProjectScenariosResult = Awaited<
+  ReturnType<typeof specificationsApi.fetchProjectScenarios>
+>;
 
 type FetchProjectScenarioActivitiesResult = Awaited<
   ReturnType<typeof specificationsApi.fetchProjectScenarioActivities>
@@ -118,12 +122,22 @@ const useUpdateScenario = (): MutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: specificationsApi.UpdateScenarioData }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: specificationsApi.UpdateScenarioData;
+    }) => {
       const response = await specificationsApi.updateScenario(id, data);
       return response;
     },
     onSuccess: async (_, { id }) => {
-      await queryUtils.invalidateQueries(queryClient, [['scenarios', id], ['scenarios'], ['featureStats']]);
+      await queryUtils.invalidateQueries(queryClient, [
+        ['scenarios', id],
+        ['scenarios'],
+        ['featureStats'],
+      ]);
     },
   });
 };
@@ -155,7 +169,11 @@ const useRunScenario = (): queryUtils.MutationResult<RunScenarioResult, string> 
       return response;
     },
     onSuccess: async (_, id) => {
-      await queryUtils.invalidateQueries(queryClient, [['scenarios', id], ['scenarios'], ['featureStats']]);
+      await queryUtils.invalidateQueries(queryClient, [
+        ['scenarios', id],
+        ['scenarios'],
+        ['featureStats'],
+      ]);
       await queryClient.invalidateQueries({ queryKey: ['specificationSummary'] });
     },
   });

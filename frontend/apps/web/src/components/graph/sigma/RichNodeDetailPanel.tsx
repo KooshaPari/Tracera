@@ -36,7 +36,7 @@ interface RichNodeDetailPanelInnerProps {
 }
 
 const NodeImageSection = ({ image, label }: { image: string; label: string }): ReactElement => (
-  <div className='overflow-hidden rounded-lg border'>
+  <div className='graph-glass-overlay overflow-hidden rounded-lg border'>
     <img src={image} alt={label} className='h-auto w-full' />
   </div>
 );
@@ -137,7 +137,12 @@ const buildActionSection = (
 
   if (onExpand) {
     actions.push(
-      <Button key='expand' size='sm' className='flex-1' onClick={handleExpand}>
+      <Button
+        key='expand'
+        size='sm'
+        className='graph-glass-button graph-glass-button-ghost flex-1'
+        onClick={handleExpand}
+      >
         Expand
       </Button>,
     );
@@ -149,7 +154,7 @@ const buildActionSection = (
         key='navigate'
         size='sm'
         variant='outline'
-        className='flex-1'
+        className='graph-glass-button graph-glass-button-ghost flex-1'
         onClick={handleNavigate}
       >
         Navigate
@@ -161,7 +166,7 @@ const buildActionSection = (
     return undefined;
   }
 
-  return <div className='flex gap-2 border-t pt-4'>{actions}</div>;
+  return <div className='graph-glass-overlay flex gap-2 border-t pt-4'>{actions}</div>;
 };
 
 const RichNodeDetailPanelInner = ({
@@ -176,23 +181,28 @@ const RichNodeDetailPanelInner = ({
   const actions = buildActionSection(onExpand, onNavigate, handleExpand, handleNavigate);
 
   return (
-    <div className='bg-card fixed top-0 right-0 z-50 flex h-full w-96 flex-col border-l shadow-lg'>
+    <div className='tracera-glass tracera-glass-detail graph-glass-panel graph-glass-detail graph-soft-glow graph-morphic-border graph-glass-motion-sm fixed top-0 right-0 z-50 flex h-full w-96 flex-col border-l'>
       {/* Header */}
-      <div className='flex items-center justify-between border-b p-4'>
+      <div className='graph-glass-overlay flex items-center justify-between border-b p-4'>
         <div className='flex-1'>
           <h3 className='truncate text-lg font-semibold'>{node.label}</h3>
           <Badge variant='secondary' className='mt-1'>
             {node.type}
           </Badge>
         </div>
-        <Button size='sm' variant='ghost' onClick={onClose} className='h-8 w-8 p-0'>
+        <Button
+          size='sm'
+          variant='ghost'
+          onClick={onClose}
+          className='graph-glass-button graph-glass-button-ghost h-8 w-8 p-0'
+        >
           <X className='h-4 w-4' />
         </Button>
       </div>
 
       {/* Content */}
       <div className='flex-1 overflow-y-auto'>
-        <div className='space-y-4 p-4'>
+        <div className='graph-glass-motion space-y-4 p-4'>
           {/* Embedded image (full rich content) */}
           {sections}
 

@@ -71,11 +71,11 @@ function NodeDetailPanelComponent({
 
   return (
     <Card
-      className='flex h-full w-full max-w-[22rem] min-w-0 shrink-0 flex-col overflow-hidden border-l-4 sm:max-w-[24rem]'
+      className='tracera-glass tracera-glass-detail graph-glass-panel graph-glass-detail graph-soft-glow graph-morphic-border graph-glass-motion flex h-full w-full max-w-[22rem] min-w-0 shrink-0 flex-col overflow-hidden border-l-4 sm:max-w-[24rem]'
       style={{ borderLeftColor: bgColor }}
     >
       {/* Header */}
-      <div className='bg-muted/30 min-w-0 border-b p-2 sm:p-4'>
+      <div className='graph-glass-overlay min-w-0 border-b p-2 sm:p-4'>
         <div className='flex min-w-0 items-start justify-between gap-2'>
           <div className='min-w-0 flex-1'>
             <div className='mb-1.5 flex flex-wrap items-center gap-1.5 sm:mb-2 sm:gap-2'>
@@ -101,7 +101,7 @@ function NodeDetailPanelComponent({
           <Button
             variant='ghost'
             size='sm'
-            className='h-7 w-7 shrink-0 p-0 sm:h-8 sm:w-8'
+            className='graph-glass-button graph-glass-button-ghost h-7 w-7 shrink-0 p-0 sm:h-8 sm:w-8'
             onClick={onClose}
           >
             <X className='h-3.5 w-3.5 sm:h-4 sm:w-4' />
@@ -123,17 +123,17 @@ function NodeDetailPanelComponent({
 
       {/* Tabs */}
       <Tabs defaultValue='details' className='flex flex-1 flex-col overflow-hidden'>
-        <TabsList className='w-full justify-start rounded-none border-b bg-transparent p-0'>
+        <TabsList className='graph-glass-tab-list w-full justify-start rounded-none border-b p-0'>
           <TabsTrigger
             value='details'
-            className='data-[state=active]:border-primary rounded-none border-b-2 border-transparent text-xs data-[state=active]:bg-transparent sm:text-sm'
+            className='graph-glass-tab data-[state=active]:border-primary rounded-none border-b-2 border-transparent text-xs data-[state=active]:bg-transparent sm:text-sm'
           >
             <FileText className='mr-1 h-3 w-3 shrink-0 sm:h-4 sm:w-4' />
             <span className='truncate'>Details</span>
           </TabsTrigger>
           <TabsTrigger
             value='links'
-            className='data-[state=active]:border-primary rounded-none border-b-2 border-transparent text-xs data-[state=active]:bg-transparent sm:text-sm'
+            className='graph-glass-tab data-[state=active]:border-primary rounded-none border-b-2 border-transparent text-xs data-[state=active]:bg-transparent sm:text-sm'
           >
             <Link2 className='mr-1 h-3 w-3 shrink-0 sm:h-4 sm:w-4' />
             <span className='truncate'>Links</span>
@@ -141,7 +141,7 @@ function NodeDetailPanelComponent({
           {node.uiPreview && (
             <TabsTrigger
               value='preview'
-              className='data-[state=active]:border-primary rounded-none border-b-2 border-transparent text-xs data-[state=active]:bg-transparent sm:text-sm'
+              className='graph-glass-tab data-[state=active]:border-primary rounded-none border-b-2 border-transparent text-xs data-[state=active]:bg-transparent sm:text-sm'
             >
               <Image className='mr-1 h-3 w-3 shrink-0 sm:h-4 sm:w-4' />
               <span className='truncate'>Preview</span>
@@ -149,7 +149,7 @@ function NodeDetailPanelComponent({
           )}
           <TabsTrigger
             value='code'
-            className='data-[state=active]:border-primary rounded-none border-b-2 border-transparent text-xs data-[state=active]:bg-transparent sm:text-sm'
+            className='graph-glass-tab data-[state=active]:border-primary rounded-none border-b-2 border-transparent text-xs data-[state=active]:bg-transparent sm:text-sm'
           >
             <Code className='mr-1 h-3 w-3 shrink-0 sm:h-4 sm:w-4' />
             <span className='truncate'>Code</span>
@@ -257,7 +257,7 @@ function NodeDetailPanelComponent({
                               key={link.id}
                               variant='ghost'
                               size='sm'
-                              className='h-7 w-full justify-start px-2 text-xs'
+                              className='graph-glass-button graph-glass-button-ghost h-7 w-full justify-start px-2 text-xs'
                               onClick={() => {
                                 onFocusNode(link.sourceId);
                               }}
@@ -318,7 +318,7 @@ function NodeDetailPanelComponent({
                               key={link.id}
                               variant='ghost'
                               size='sm'
-                              className='h-7 w-full justify-start px-2 text-xs'
+                              className='graph-glass-button graph-glass-button-ghost h-7 w-full justify-start px-2 text-xs'
                               onClick={() => {
                                 onFocusNode(link.targetId);
                               }}
@@ -357,14 +357,14 @@ function NodeDetailPanelComponent({
                   <img
                     src={node.uiPreview.screenshotUrl}
                     alt={`Preview of ${node.label}`}
-                    className='w-full rounded-lg border shadow-sm'
+                    className='graph-glass-overlay w-full rounded-lg border'
                   />
                   {node.uiPreview.interactiveWidgetUrl && (
                     <a
                       href={node.uiPreview.interactiveWidgetUrl}
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='border-input bg-background hover:bg-accent hover:text-accent-foreground flex h-9 w-full items-center justify-center gap-2 rounded-md border px-3 text-sm font-medium'
+                      className='graph-glass-button graph-glass-button-ghost flex h-9 w-full items-center justify-center gap-2 rounded-md border px-3 text-sm font-medium'
                     >
                       <ExternalLink className='h-4 w-4' />
                       Open Interactive Preview
@@ -385,7 +385,7 @@ function NodeDetailPanelComponent({
             {node.uiPreview?.componentCode ? (
               <div className='space-y-2'>
                 <h4 className='text-muted-foreground text-sm font-medium'>Component Code</h4>
-                <pre className='bg-muted overflow-x-auto rounded-lg p-3 text-xs'>
+                <pre className='graph-glass-overlay overflow-x-auto rounded-lg p-3 text-xs'>
                   <code>{node.uiPreview.componentCode}</code>
                 </pre>
               </div>
@@ -401,11 +401,11 @@ function NodeDetailPanelComponent({
       </Tabs>
 
       {/* Actions Footer */}
-      <div className='bg-muted/30 flex gap-2 border-t p-3'>
+      <div className='graph-glass-overlay flex gap-2 border-t p-3'>
         <Button
           variant='outline'
           size='sm'
-          className='flex-1'
+          className='graph-glass-button graph-glass-button-ghost flex-1'
           onClick={() => {
             onNavigateToItem(node.id);
           }}

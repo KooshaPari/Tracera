@@ -311,8 +311,7 @@ export const cacheKeys = {
 export const createGraphCache = (
   maxEntries = 100,
   maxMemory = 10 * 1024 * 1024,
-): BaseLRUCache<GraphCacheValue> =>
-  cacheFactory(maxEntries, maxMemory);
+): BaseLRUCache<GraphCacheValue> => cacheFactory(maxEntries, maxMemory);
 
 export function clearAllCaches(): void {
   graphCache.clear();

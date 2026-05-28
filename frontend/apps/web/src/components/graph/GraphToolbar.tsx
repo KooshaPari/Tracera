@@ -105,6 +105,14 @@ export function GraphToolbar({
     }
   }, [fitView, getViewport]);
 
+  const minimalPanelClass =
+    'tracera-glass graph-glass-panel graph-glass-toolbar graph-soft-glow graph-morphic-border graph-glass-motion-sm';
+  const compactPanelClass =
+    'tracera-glass graph-glass-panel graph-glass-toolbar graph-soft-glow graph-morphic-border graph-glass-motion';
+  const fullPanelClass =
+    'tracera-glass graph-glass-panel graph-glass-toolbar graph-soft-glow graph-morphic-border graph-glass-motion';
+  const glassButtonClass = 'graph-glass-button graph-glass-button-ghost';
+
   // Export handler
   const handleExportClick = useCallback(
     (format: 'png' | 'svg' | 'json' | 'csv') => {
@@ -117,13 +125,17 @@ export function GraphToolbar({
   // Compact variant - minimal controls
   if (variant === 'minimal') {
     return (
-      <div className='flex items-center gap-1 p-1' role='toolbar' aria-label='Graph view controls'>
-        <div className='flex items-center gap-0.5 rounded-md border p-0.5'>
+      <div
+        className={`${minimalPanelClass} ${className ?? ''} flex items-center gap-1 rounded-md p-1`}
+        role='toolbar'
+        aria-label='Graph view controls'
+      >
+        <div className='graph-glass-overlay flex items-center gap-0.5 rounded-md p-0.5'>
           <Button
             variant='ghost'
             size='sm'
             onClick={handleZoomIn}
-            className='h-7 w-7 p-0'
+            className={`${glassButtonClass} h-7 w-7 p-0`}
             aria-label='Zoom in'
             title='Zoom in'
           >
@@ -133,7 +145,7 @@ export function GraphToolbar({
             variant='ghost'
             size='sm'
             onClick={handleZoomOut}
-            className='h-7 w-7 p-0'
+            className={`${glassButtonClass} h-7 w-7 p-0`}
             aria-label='Zoom out'
             title='Zoom out'
           >
@@ -143,7 +155,7 @@ export function GraphToolbar({
             variant='ghost'
             size='sm'
             onClick={handleFitView}
-            className='h-7 w-7 p-0'
+            className={`${glassButtonClass} h-7 w-7 p-0`}
             aria-label='Fit view to content'
             title='Fit view'
           >
@@ -158,7 +170,7 @@ export function GraphToolbar({
   if (variant === 'compact') {
     return (
       <div
-        className='flex items-center gap-2 p-1.5'
+        className={`${compactPanelClass} ${className ?? ''} flex items-center gap-2 rounded-md p-1.5`}
         role='toolbar'
         aria-label='Graph view controls'
       >
@@ -167,7 +179,7 @@ export function GraphToolbar({
         <Separator orientation='vertical' className='h-6' aria-hidden='true' />
 
         <div
-          className='flex items-center gap-0.5 rounded-md border p-0.5'
+          className='graph-glass-overlay flex items-center gap-0.5 rounded-md p-0.5'
           role='group'
           aria-label='Zoom controls'
         >
@@ -175,7 +187,7 @@ export function GraphToolbar({
             variant='ghost'
             size='sm'
             onClick={handleZoomIn}
-            className='h-7 w-7 p-0'
+            className={`${glassButtonClass} h-7 w-7 p-0`}
             aria-label='Zoom in (Cmd +)'
             title='Zoom in (Cmd +)'
           >
@@ -185,7 +197,7 @@ export function GraphToolbar({
             variant='ghost'
             size='sm'
             onClick={handleZoomOut}
-            className='h-7 w-7 p-0'
+            className={`${glassButtonClass} h-7 w-7 p-0`}
             aria-label='Zoom out (Cmd -)'
             title='Zoom out (Cmd -)'
           >
@@ -195,7 +207,7 @@ export function GraphToolbar({
             variant='ghost'
             size='sm'
             onClick={handleFitView}
-            className='h-7 w-7 p-0'
+            className={`${glassButtonClass} h-7 w-7 p-0`}
             aria-label='Fit view to content (Cmd 0)'
             title='Fit view (Cmd 0)'
           >
@@ -207,7 +219,7 @@ export function GraphToolbar({
           variant='ghost'
           size='sm'
           onClick={onToggleDetailPanel}
-          className='h-7 w-7 p-0'
+          className={`${glassButtonClass} h-7 w-7 p-0`}
           aria-label={showDetailPanel ? 'Hide detail panel' : 'Show detail panel'}
           aria-pressed={showDetailPanel}
           title='Toggle detail panel'
@@ -226,7 +238,7 @@ export function GraphToolbar({
   return (
     <TooltipProvider>
       <div
-        className={`bg-card flex flex-wrap items-center justify-between gap-2 rounded-lg border p-2 sm:gap-3 sm:p-3 ${className ?? ''}`}
+        className={`${fullPanelClass} ${className ?? ''} flex flex-wrap items-center justify-between gap-2 rounded-lg p-2 sm:gap-3 sm:p-3`}
         role='toolbar'
         aria-label='Graph view controls'
       >
@@ -255,7 +267,7 @@ export function GraphToolbar({
                 onClick={() => {
                   setShowFilters(!showFilters);
                 }}
-                className='h-8 w-8 p-0'
+                className='graph-glass-button graph-glass-button-ghost h-8 w-8 p-0'
                 aria-label='Filter nodes and edges'
                 aria-pressed={showFilters}
                 aria-expanded={showFilters}
@@ -278,7 +290,7 @@ export function GraphToolbar({
                 onClick={() => {
                   setShowExport(!showExport);
                 }}
-                className='h-8 w-8 p-0'
+                className='graph-glass-button graph-glass-button-ghost h-8 w-8 p-0'
                 aria-label='Export graph (Cmd E)'
                 aria-pressed={showExport}
                 aria-expanded={showExport}
@@ -294,7 +306,7 @@ export function GraphToolbar({
 
           {/* Stats badge (optional) */}
           {totalNodes > 0 && (
-            <div className='bg-muted/50 hidden items-center gap-1.5 rounded-md px-2 py-1 text-xs md:flex'>
+            <div className='graph-glass-chip hidden items-center gap-1.5 px-2 py-1 text-xs md:flex'>
               <span className='text-muted-foreground'>Nodes:</span>
               <span className='font-medium'>
                 {visibleNodes}/{totalNodes}
@@ -316,7 +328,7 @@ export function GraphToolbar({
         <div className='flex items-center gap-2' role='group' aria-label='View and zoom controls'>
           {/* Zoom controls */}
           <div
-            className='flex items-center gap-0.5 rounded-md border p-0.5'
+            className='graph-glass-overlay flex items-center gap-0.5 rounded-md p-0.5'
             role='group'
             aria-label='Zoom controls'
           >
@@ -326,7 +338,7 @@ export function GraphToolbar({
                   variant='ghost'
                   size='sm'
                   onClick={handleZoomIn}
-                  className='h-8 w-8 p-0'
+                  className='graph-glass-button graph-glass-button-ghost h-8 w-8 p-0'
                   aria-label='Zoom in (Cmd +)'
                 >
                   <ZoomIn className='h-4 w-4' aria-hidden='true' />
@@ -343,7 +355,7 @@ export function GraphToolbar({
                   variant='ghost'
                   size='sm'
                   onClick={handleZoomOut}
-                  className='h-8 w-8 p-0'
+                  className='graph-glass-button graph-glass-button-ghost h-8 w-8 p-0'
                   aria-label='Zoom out (Cmd -)'
                 >
                   <ZoomOut className='h-4 w-4' aria-hidden='true' />
@@ -360,7 +372,7 @@ export function GraphToolbar({
                   variant='ghost'
                   size='sm'
                   onClick={handleFitView}
-                  className='h-8 w-8 p-0'
+                  className='graph-glass-button graph-glass-button-ghost h-8 w-8 p-0'
                   aria-label='Fit view to content (Cmd 0)'
                 >
                   <Maximize2 className='h-4 w-4' aria-hidden='true' />
@@ -377,7 +389,7 @@ export function GraphToolbar({
                   variant='ghost'
                   size='sm'
                   onClick={handleActualSize}
-                  className='h-8 w-8 p-0'
+                  className='graph-glass-button graph-glass-button-ghost h-8 w-8 p-0'
                   aria-label='Set actual size to 1:1'
                 >
                   <Settings2 className='h-4 w-4' aria-hidden='true' />
@@ -398,7 +410,7 @@ export function GraphToolbar({
                 variant='ghost'
                 size='sm'
                 onClick={onToggleFullscreen}
-                className='h-8 w-8 p-0'
+                className='graph-glass-button graph-glass-button-ghost h-8 w-8 p-0'
                 aria-label={isFullscreen ? 'Exit fullscreen (Esc)' : 'Enter fullscreen (F)'}
                 aria-pressed={isFullscreen}
               >
@@ -421,7 +433,7 @@ export function GraphToolbar({
                 variant='ghost'
                 size='sm'
                 onClick={onToggleDetailPanel}
-                className='h-8 w-8 p-0'
+                className='graph-glass-button graph-glass-button-ghost h-8 w-8 p-0'
                 aria-label={showDetailPanel ? 'Hide detail panel (P)' : 'Show detail panel (P)'}
                 aria-pressed={showDetailPanel}
                 aria-expanded={showDetailPanel}
@@ -444,7 +456,7 @@ export function GraphToolbar({
         {showFilters && (
           <div
             id='filter-panel'
-            className='mt-2 w-full border-t pt-2'
+            className='graph-glass-panel graph-morphic-border mt-2 w-full border-t border-transparent p-2 pt-0'
             role='region'
             aria-label='Graph filter options'
           >
@@ -465,7 +477,7 @@ export function GraphToolbar({
         {showExport && (
           <div
             id='export-panel'
-            className='mt-2 w-full border-t pt-2'
+            className='graph-glass-panel graph-morphic-border mt-2 w-full border-t border-transparent p-2 pt-0'
             role='region'
             aria-label='Graph export options'
           >

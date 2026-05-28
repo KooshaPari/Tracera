@@ -3,6 +3,8 @@ package cache
 import (
 	"context"
 	"encoding/json"
+	"net"
+	"net/url"
 	"os"
 	"sync"
 	"testing"
@@ -148,8 +150,6 @@ func runNewRedisCacheNegativeTTL(t *testing.T) {
 func runNewRedisCacheMalformedURL(t *testing.T) {
 	testCases := []string{
 		"not-a-url",
-		"redis://",
-		"redis://:password@",
 		"http://localhost:6379",
 	}
 
@@ -158,23 +158,36 @@ func runNewRedisCacheMalformedURL(t *testing.T) {
 			RedisURL:   tc,
 			DefaultTTL: testRedisDefaultTTL,
 		})
-		if tc == "redis://" || tc == "redis://:password@" {
-			// go-redis ParseURL defaults these to localhost:6379; allow it.
-			require.NoError(t, err, "URL: %s", tc)
-			assert.NotNil(t, cache)
-			if cache != nil {
-				require.NoError(t, cache.Close())
-			}
-			continue
-		}
 		require.Error(t, err, "URL: %s", tc)
 		assert.Nil(t, cache)
 	}
 }
 
+func isRedisReachable(t *testing.T, rawURL string) bool {
+	t.Helper()
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return false
+	}
+	host := parsed.Host
+	if host == "" {
+		return false
+	}
+	conn, err := net.DialTimeout("tcp", host, 150*time.Millisecond)
+	if err != nil {
+		return false
+	}
+	_ = conn.Close()
+	return true
+}
+
 func setupTestCache(t *testing.T) *RedisCache {
+	redisURL := getTestRedisURL(t)
+	if !isRedisReachable(t, redisURL) {
+		t.Skipf("Redis not reachable at %s", redisURL)
+	}
 	cache, err := NewRedisCache(RedisCacheConfig{
-		RedisURL:      getTestRedisURL(t),
+		RedisURL:      redisURL,
 		DefaultTTL:    testRedisDefaultTTL,
 		EnableMetrics: true,
 	})

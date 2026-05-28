@@ -4,9 +4,9 @@
   "private": true,
   "main": "dist/main/main.js",
   "scripts": {
-    "dev": "electron-vite dev",
-    "build": "electron-vite build",
-    "preview": "electron-vite preview",
+    "dev": "bunx electron-vite dev",
+    "build": "bunx electron-vite build",
+    "preview": "bunx electron-vite preview",
     "package": "electron-builder",
     "package:mac": "electron-builder --mac",
     "package:win": "electron-builder --win",

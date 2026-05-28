@@ -10,6 +10,10 @@ backups/archive
 # Dependencies
 node_modules/
 bun.lockb
+default/
+ARCHIVE/CONFIG/default/
+ARCHIVE/bifrost-extensions/
+ARCHIVE/dispatch-mcp/
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
@@ -158,6 +162,7 @@ __pycache__/
 .claude/
 .codex/
 .cursor/
+.serena/
 .gemini/
 .kittify/
 .kilocode/
@@ -166,3 +171,11 @@ __pycache__/
 .claudeignore
 .llmignore
 .hypothesis/
+
+# ===== Standard auto-generated hygiene ignores (do not edit manually) =====
+.env.*
+target/
+.mypy_cache/
+.ruff_cache/
+venv/
+# ===== End standard hygiene ignores =====

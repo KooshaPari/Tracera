@@ -10,7 +10,7 @@ interface GraphLegendProps {
 
 export function GraphLegend({ filteredNodes }: GraphLegendProps): JSX.Element {
   return (
-    <Card className='p-3'>
+    <Card className='tracera-glass tracera-glass-legend graph-glass-panel graph-morphic-border p-3'>
       <div className='flex flex-wrap items-center gap-4 text-xs'>
         <span className='text-muted-foreground font-medium'>Types:</span>
         {Object.entries(ENHANCED_TYPE_COLORS)
