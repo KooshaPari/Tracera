@@ -306,7 +306,14 @@ jobs:
         else
           test_targets=(tests/unit)
         fi
-        uv run pytest "${test_targets[@]}" \
+        if ((${#test_targets[@]} == 0)); then
+          test_targets=(
+            tests/unit/api/test_trace_matrix_export.py
+            tests/unit/services/test_perf_optimizations.py
+          )
+        fi
+        set +e
+        uv run pytest "${test_targets[@]}" --ignore=src/tracertm/mcp \
           -m "slow" \
           --cov=src/tracertm \
           --cov-append \
@@ -318,6 +325,13 @@ jobs:
           -v \
           --tb=short \
           --maxfail=5
+        slow_code=$?
+        set -e
+        if [ "$slow_code" -eq 5 ]; then
+          echo "No slow tests in PR scope; skipping slow pass." >> "$GITHUB_STEP_SUMMARY"
+        elif [ "$slow_code" -ne 0 ]; then
+          exit "$slow_code"
+        fi
 
     # Generate test summary
     - name: Generate Python test summary
