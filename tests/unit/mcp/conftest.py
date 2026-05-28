@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from sqlalchemy import text
 
 from tracertm.config.manager import ConfigManager
 from tracertm.mcp.database_adapter import get_async_engine, reset_engine
