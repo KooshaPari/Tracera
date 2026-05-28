@@ -112,9 +112,17 @@ jobs:
           uv run pytest "${unit_targets[@]}" -m "unit and not slow" -v --cov=src/tracertm --cov-report=xml \
             --cov-report=html --cov-report=term-missing --cov-fail-under=0 \
             --junitxml=junit-${{ matrix.test-type }}.xml
+          set +e
           uv run pytest "${unit_targets[@]}" -m "unit and slow" -v --cov=src/tracertm --cov-append \
             --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=0 \
             --junitxml=junit-${{ matrix.test-type }}-slow.xml
+          slow_code=$?
+          set -e
+          if [ "$slow_code" -eq 5 ]; then
+            echo "No slow unit tests in PR scope; skipping slow pass." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$slow_code" -ne 0 ]; then
+            exit "$slow_code"
+          fi
         elif [ "${{ matrix.test-type }}" = "integration" ]; then
           uv run pytest tests/integration -m "integration and not slow" -v --junitxml=junit-${{ matrix.test-type }}.xml
           uv run pytest tests/integration -m "integration and slow" -v --junitxml=junit-${{ matrix.test-type }}-slow.xml
