@@ -3,12 +3,8 @@ import type { Edge } from '@xyflow/react';
 import { calculateEdgeMidpoint, getEdgeLODTier } from '@/lib/edgeLOD';
 import type { Link } from '@tracertm/types';
 
-import {
-  EDGE_LABEL_BG_STYLE,
-  getCachedEdgeStyle,
-  MAX_ANIMATED_EDGE_COUNT,
-  SCALE_NODE_THRESHOLD,
-} from './flowGraphEdgeStyles';
+import { MAX_ANIMATED_EDGE_COUNT, SCALE_NODE_THRESHOLD } from './flowGraphConstants';
+import { EDGE_LABEL_BG_STYLE, getCachedEdgeStyle } from './flowGraphEdgeStyles';
 
 interface NodePosition {
   x: number;
