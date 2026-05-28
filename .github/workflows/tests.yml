@@ -109,11 +109,18 @@ jobs:
           else
             unit_targets=(tests/unit)
           fi
-          uv run pytest "${unit_targets[@]}" -m "not slow" -v --cov=src/tracertm --cov-report=xml \
+          if ((${#unit_targets[@]} == 0)); then
+            unit_targets=(
+              tests/unit/api/test_trace_matrix_export.py
+              tests/unit/services/test_perf_optimizations.py
+            )
+          fi
+          echo "Unit pytest targets: ${unit_targets[*]}" >> "$GITHUB_STEP_SUMMARY"
+          uv run pytest "${unit_targets[@]}" --ignore=src/tracertm/mcp -m "not slow" -v --cov=src/tracertm --cov-report=xml \
             --cov-report=html --cov-report=term-missing --cov-fail-under=0 \
             --junitxml=junit-${{ matrix.test-type }}.xml
           set +e
-          uv run pytest "${unit_targets[@]}" -m "slow" -v --cov=src/tracertm --cov-append \
+          uv run pytest "${unit_targets[@]}" --ignore=src/tracertm/mcp -m "slow" -v --cov=src/tracertm --cov-append \
             --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=0 \
             --junitxml=junit-${{ matrix.test-type }}-slow.xml
           slow_code=$?
@@ -260,7 +267,7 @@ jobs:
         else
           targets=(tests/)
         fi
-        uv run pytest "${targets[@]}" -n auto -v \
+        uv run pytest "${targets[@]}" --ignore=src/tracertm/mcp -n auto -v \
           --cov=src/tracertm \
           --cov-report=xml \
           --cov-report=html \

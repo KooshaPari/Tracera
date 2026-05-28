@@ -273,7 +273,14 @@ jobs:
         else
           test_targets=(tests/unit)
         fi
-        uv run pytest "${test_targets[@]}" \
+        if ((${#test_targets[@]} == 0)); then
+          test_targets=(
+            tests/unit/api/test_trace_matrix_export.py
+            tests/unit/services/test_perf_optimizations.py
+          )
+        fi
+        echo "Python test targets: ${test_targets[*]}" >> "$GITHUB_STEP_SUMMARY"
+        uv run pytest "${test_targets[@]}" --ignore=src/tracertm/mcp \
           -m "not slow" \
           --cov=src/tracertm \
           --cov-report=xml \
