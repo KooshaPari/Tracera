@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import sessionmaker
 
 # pytest_asyncio and pytest_benchmark are loaded by root conftest / auto-discovery
-pytest_plugins = ()
+pytest_plugins = ("tests.plugin_cli_skip",)
 
 # Avoid MCP metrics bind conflicts during test collection.
 os.environ["TRACERTM_MCP_METRICS_PORT"] = "0"
@@ -40,11 +40,9 @@ os.environ.setdefault("TRACERTM_MCP_METRICS_HOST", "127.0.0.1")
 os.environ.setdefault("TRACERTM_MCP_PERF_MONITORING", "true")
 os.environ.setdefault("TRACERTM_MCP_ENHANCED_ERRORS", "true")
 os.environ.setdefault("TRACERTM_MCP_RATE_LIMIT_ENABLED", "true")
-
 try:
     from router import TOOL_REGISTRY, ArchRouter, ToolRegistry
 except ImportError:
-    # Router module not available in test environment
     ArchRouter = None
     ToolRegistry = None
     TOOL_REGISTRY = None
@@ -168,7 +166,9 @@ def project_factory(db_session: Any) -> None:
     providing more realistic test coverage.
     """
 
-    def create_project(name: Any = "Test Project", description: Any = "Test project", metadata: Any = None) -> None:
+    def create_project(
+        name: Any = "Test Project", description: Any = "Test project", metadata: Any = None
+    ) -> None:
         from tracertm.models.project import Project
 
         project = Project(name=name, description=description, metadata=metadata or {})
@@ -197,7 +197,14 @@ def item_factory(db_session: Any) -> None:
     ) -> None:
         from tracertm.models.item import Item
 
-        item = Item(project_id=project_id, title=title, view=view, item_type=item_type, status=status, **kwargs)
+        item = Item(
+            project_id=project_id,
+            title=title,
+            view=view,
+            item_type=item_type,
+            status=status,
+            **kwargs,
+        )
         db_session.add(item)
         db_session.flush()
         return item

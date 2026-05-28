@@ -83,7 +83,10 @@ const BreadcrumbSeparator = ({
 );
 BreadcrumbSeparator.displayName = 'BreadcrumbSeparator';
 
-const BreadcrumbEllipsis = ({ className, ...props }: React.ComponentProps<'span'>): React.ReactElement => (
+const BreadcrumbEllipsis = ({
+  className,
+  ...props
+}: React.ComponentProps<'span'>): React.ReactElement => (
   <span
     role='presentation'
     aria-hidden='true'

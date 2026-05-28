@@ -97,7 +97,9 @@ const toPerformanceCacheStats = (
   const normalizedHitRatio = Number.isFinite(statsBlock.hitRatio)
     ? Math.min(Math.max(statsBlock.hitRatio, 0), 1)
     : 0;
-  const totalEntries = Number.isFinite(statsBlock.totalEntries) ? Math.max(statsBlock.totalEntries, 0) : 0;
+  const totalEntries = Number.isFinite(statsBlock.totalEntries)
+    ? Math.max(statsBlock.totalEntries, 0)
+    : 0;
   const totalHits = Math.round(totalEntries * normalizedHitRatio);
 
   return {

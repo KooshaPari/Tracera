@@ -1,9 +1,9 @@
+import type { MDXComponents } from 'mdx/types.js';
 import type { Metadata } from 'next';
 
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page';
 import { notFound } from 'next/navigation';
 
-import type { MDXComponents } from 'mdx/types.js';
 import { mdxComponents } from '@/components/mdx-components';
 import { source } from '@/source';
 

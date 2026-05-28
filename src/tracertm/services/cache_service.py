@@ -155,11 +155,11 @@ class CacheService:
 
     def _get_ttl(self, cache_type: str) -> int:
         """Get TTL for cache type."""
-        config = CACHE_CONFIG.get(cache_type, {"ttl": TTL_LONG})
-        ttl = config.get("ttl", TTL_LONG)
+        config = CACHE_CONFIG.get(cache_type, {"ttl": TTL_MEDIUM})
+        ttl = config.get("ttl", TTL_MEDIUM)
         if isinstance(ttl, (int, float, str)):
             return int(ttl)
-        return TTL_LONG
+        return TTL_MEDIUM
 
     async def get(self, key: str) -> object | None:
         """Get value from cache. Raises RedisUnavailableError on connection failure (required service)."""
@@ -271,7 +271,16 @@ class CacheService:
         total_deleted = 0
 
         # Invalidate project-specific caches
-        for cache_type in ["project", "items", "links", "graph", "graph_full", "ancestors", "descendants", "impact"]:
+        for cache_type in [
+            "project",
+            "items",
+            "links",
+            "graph",
+            "graph_full",
+            "ancestors",
+            "descendants",
+            "impact",
+        ]:
             key = self._generate_key(cache_type, project_id=project_id)
             if await self.delete(key):
                 total_deleted += 1
@@ -311,7 +320,7 @@ class CacheService:
     async def health_check(self) -> bool:
         """Check if Redis is healthy. Raises RedisUnavailableError when Redis is down (required service)."""
         try:
-            await self.redis_client.ping()
+            await self.redis_client.ping()  # ty: ignore[invalid-await]
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:

@@ -6,6 +6,7 @@ import inspect
 from typing import TYPE_CHECKING, Annotated, Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import Response
 
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.api.deps import auth_guard, get_db
@@ -35,6 +36,14 @@ async def _maybe_await(value: object) -> object:
     if inspect.isawaitable(value):
         return await value
     return value
+
+
+def _serialize_result(value: object) -> dict[str, Any]:
+    """Convert service results with optional to_dict() to a JSON-friendly dict."""
+    to_dict = getattr(value, "to_dict", None)
+    if callable(to_dict):
+        return cast("dict[str, Any]", to_dict())
+    return cast("dict[str, Any]", value)
 
 
 @router.get("/gaps")
@@ -98,8 +107,41 @@ async def get_traceability_matrix(
         "project_id": project_id,
         "source_view": source_view,
         "target_view": target_view,
-        "matrix": matrix.to_dict() if hasattr(matrix, "to_dict") else matrix,
+        "matrix": _serialize_result(matrix),
     }
+
+
+@router.get("/trace-matrix/export")
+async def export_traceability_matrix(
+    request: Request,
+    project_id: str,
+    source_view: str | None = None,
+    target_view: str | None = None,
+    claims: dict[str, Any] = Depends(auth_guard),
+    db: AsyncSession = Depends(get_db),
+):
+    """Export traceability matrix as a CSV file download."""
+    enforce_rate_limit(request, claims)
+    ensure_project_access(project_id, claims)
+
+    service = traceability_matrix_service.TraceabilityMatrixService(db)
+    matrix = await _maybe_await(
+        service.generate_matrix(
+            project_id=project_id,
+            source_view=source_view,
+            target_view=target_view,
+        ),
+    )
+    matrix_obj = cast("traceability_matrix_service.TraceabilityMatrix", matrix)
+    csv_text = await service.export_matrix_csv(matrix_obj)
+    slug = project_id.replace("-", "")[:8] or "project"
+    filename = f"tracera-matrix-{slug}.csv"
+
+    return Response(
+        content=csv_text,
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.get("/reverse-impact/{item_id}")
@@ -116,12 +158,14 @@ async def get_reverse_impact(
     ensure_project_access(project_id, claims)
 
     service = impact_analysis_service.ImpactAnalysisService(db)
-    result = await _maybe_await(service.analyze_reverse_impact(item_id=item_id, max_depth=max_depth))
+    result = await _maybe_await(
+        service.analyze_reverse_impact(item_id=item_id, max_depth=max_depth)
+    )
 
     return {
         "root_item_id": item_id,
         "max_depth": max_depth,
-        "dependencies": result.to_dict() if hasattr(result, "to_dict") else result,
+        "dependencies": _serialize_result(result),
     }
 
 

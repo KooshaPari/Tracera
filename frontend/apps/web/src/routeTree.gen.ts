@@ -14,13 +14,11 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as LandingRouteImport } from './routes/landing'
 import { Route as ItemsRouteImport } from './routes/items'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as GraphRouteImport } from './routes/graph'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as AdminRouteImport } from './routes/admin'
-import { Route as RootRouteImport } from './routes/root'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as ItemsTreeRouteImport } from './routes/items.tree'
 import { Route as ItemsTableRouteImport } from './routes/items.table'
@@ -97,11 +95,6 @@ const ItemsRoute = ItemsRouteImport.update({
   path: '/items',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/index',
-  path: '/index',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -125,11 +118,6 @@ const AgentsRoute = AgentsRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RootRoute = RootRouteImport.update({
-  id: '/',
-  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
@@ -423,13 +411,11 @@ const ProjectsProjectIdFeaturesFeatureIdScenariosScenarioIdRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof RootRoute
   '/admin': typeof AdminRoute
   '/agents': typeof AgentsRoute
   '/dashboard': typeof DashboardRoute
   '/graph': typeof GraphRoute
   '/home': typeof HomeRoute
-  '/index': typeof IndexRoute
   '/items': typeof ItemsRouteWithChildren
   '/landing': typeof LandingRoute
   '/projects': typeof ProjectsRouteWithChildren
@@ -487,13 +473,11 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/features/$featureId/scenarios/$scenarioId': typeof ProjectsProjectIdFeaturesFeatureIdScenariosScenarioIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof RootRoute
   '/admin': typeof AdminRoute
   '/agents': typeof AgentsRoute
   '/dashboard': typeof DashboardRoute
   '/graph': typeof GraphRoute
   '/home': typeof HomeRoute
-  '/index': typeof IndexRoute
   '/items': typeof ItemsRouteWithChildren
   '/landing': typeof LandingRoute
   '/projects': typeof ProjectsRouteWithChildren
@@ -552,13 +536,11 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof RootRoute
   '/admin': typeof AdminRoute
   '/agents': typeof AgentsRoute
   '/dashboard': typeof DashboardRoute
   '/graph': typeof GraphRoute
   '/home': typeof HomeRoute
-  '/index': typeof IndexRoute
   '/items': typeof ItemsRouteWithChildren
   '/landing': typeof LandingRoute
   '/projects': typeof ProjectsRouteWithChildren
@@ -618,13 +600,11 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/admin'
     | '/agents'
     | '/dashboard'
     | '/graph'
     | '/home'
-    | '/index'
     | '/items'
     | '/landing'
     | '/projects'
@@ -682,13 +662,11 @@ export interface FileRouteTypes {
     | '/projects/$projectId/features/$featureId/scenarios/$scenarioId'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/admin'
     | '/agents'
     | '/dashboard'
     | '/graph'
     | '/home'
-    | '/index'
     | '/items'
     | '/landing'
     | '/projects'
@@ -746,13 +724,11 @@ export interface FileRouteTypes {
     | '/projects/$projectId/features/$featureId/scenarios/$scenarioId'
   id:
     | '__root__'
-    | '/'
     | '/admin'
     | '/agents'
     | '/dashboard'
     | '/graph'
     | '/home'
-    | '/index'
     | '/items'
     | '/landing'
     | '/projects'
@@ -811,13 +787,11 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  RootRoute: typeof RootRoute
   AdminRoute: typeof AdminRoute
   AgentsRoute: typeof AgentsRoute
   DashboardRoute: typeof DashboardRoute
   GraphRoute: typeof GraphRoute
   HomeRoute: typeof HomeRoute
-  IndexRoute: typeof IndexRoute
   ItemsRoute: typeof ItemsRouteWithChildren
   LandingRoute: typeof LandingRoute
   ProjectsRoute: typeof ProjectsRouteWithChildren
@@ -866,13 +840,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ItemsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/index': {
-      id: '/index'
-      path: '/index'
-      fullPath: '/index'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/home': {
       id: '/home'
       path: '/home'
@@ -906,13 +873,6 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof RootRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects/$projectId': {
@@ -1459,13 +1419,11 @@ const ProjectsRouteWithChildren = ProjectsRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  RootRoute: RootRoute,
   AdminRoute: AdminRoute,
   AgentsRoute: AgentsRoute,
   DashboardRoute: DashboardRoute,
   GraphRoute: GraphRoute,
   HomeRoute: HomeRoute,
-  IndexRoute: IndexRoute,
   ItemsRoute: ItemsRouteWithChildren,
   LandingRoute: LandingRoute,
   ProjectsRoute: ProjectsRouteWithChildren,

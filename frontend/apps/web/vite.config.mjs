@@ -328,10 +328,7 @@ export default defineConfig({
       // prop-types-real: used by the shim to import the actual package without circular alias resolution
       {
         find: 'prop-types-real',
-        replacement: path.resolve(
-          __dirname,
-          '../../node_modules/prop-types/index.js',
-        ),
+        replacement: path.resolve(__dirname, '../../node_modules/prop-types/index.js'),
       },
       // Internal: shim imports the real package via this alias to avoid circular dependency
       {
@@ -421,7 +418,7 @@ export default defineConfig({
     warmup: {
       clientFiles: [
         './src/routes/__root.tsx',
-        './src/routes/index.tsx',
+        './src/routes/landing.tsx',
         './src/routes/projects.tsx',
         './src/components/layout/Layout.tsx',
         './src/lib/lazy-loading.tsx',
