@@ -23,8 +23,7 @@ def temp_config_dir() -> None:
 @pytest.fixture(scope="session")
 def test_database_url(temp_config_dir: Any) -> str:
     """Provide a test database URL."""
-    db_path = temp_config_dir / "test.db"
-    return f"sqlite:///{db_path}"
+    return "postgresql://tracertm:tracertm_password@localhost:5432/tracertm"
 
 
 @pytest.fixture(autouse=True)

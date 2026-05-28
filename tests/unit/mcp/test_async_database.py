@@ -10,6 +10,8 @@ Validates:
 from typing import Any, Never
 from uuid import uuid4
 
+from uuid import uuid4
+
 import pytest
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncEngine
