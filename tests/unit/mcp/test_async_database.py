@@ -84,10 +84,11 @@ async def test_get_mcp_session_sets_rls_context(mocker: Any) -> None:
 @pytest.mark.asyncio
 async def test_get_mcp_session_commits_on_success() -> None:
     """Test that session commits changes on successful execution."""
+    project_id = str(uuid4())
     async with get_mcp_session() as session:
         # Create a test project
         project = Project(
-            id=str(uuid4()),
+            id=project_id,
             name="Test Project",
             description="Test",
         )
@@ -96,7 +97,7 @@ async def test_get_mcp_session_commits_on_success() -> None:
 
     # Verify project was committed
     async with get_mcp_session() as session:
-        result = await session.execute(select(Project).filter(Project.id == "test-project-1"))
+        result = await session.execute(select(Project).filter(Project.id == project_id))
         saved_project = result.scalar_one_or_none()
         assert saved_project is not None
         assert saved_project.name == "Test Project"
