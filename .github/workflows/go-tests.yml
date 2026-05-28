@@ -31,7 +31,7 @@ env:
 jobs:
   unit-tests:
     name: Unit Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
     - name: Checkout code
@@ -90,7 +90,7 @@ jobs:
         retention-days: 7
   integration-tests:
     name: Integration Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     services:
       postgres:
@@ -191,7 +191,7 @@ jobs:
         retention-days: 7
   api-tests:
     name: API Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     services:
       postgres:
@@ -277,7 +277,7 @@ jobs:
         retention-days: 7
   e2e-tests:
     name: E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
     - name: Checkout code
@@ -378,7 +378,7 @@ jobs:
         retention-days: 7
   security-tests:
     name: Security Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
     - name: Checkout code
@@ -434,7 +434,7 @@ jobs:
         retention-days: 7
   coverage-report:
     name: Coverage Report
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
     - unit-tests
     - integration-tests

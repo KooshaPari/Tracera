@@ -17,7 +17,7 @@ permissions:
 jobs:
   changes:
     name: Detect Changed Areas
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       cli: ${{ steps.filter.outputs.cli }}
@@ -50,7 +50,7 @@ jobs:
     needs:
     - changes
     if: needs.changes.outputs.backend == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - name: Set up Go
@@ -85,7 +85,7 @@ jobs:
     timeout-minutes: 30
   cli-tests:
     name: CLI Tests (Python)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
     - changes
     if: needs.changes.outputs.cli == 'true'
@@ -135,7 +135,7 @@ jobs:
     needs:
     - changes
     if: needs.changes.outputs.frontend == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - name: Set up Bun
@@ -157,7 +157,7 @@ jobs:
     timeout-minutes: 30
   integration-tests:
     name: Integration Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
     - changes
     - backend-tests

@@ -32,7 +32,7 @@ permissions:
 jobs:
   validate-rollback:
     name: Validate Rollback Request
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       target_version: ${{ steps.validate.outputs.target_version }}
       current_version: ${{ steps.validate.outputs.current_version }}
@@ -72,7 +72,7 @@ jobs:
     timeout-minutes: 30
   health-check-pre-rollback:
     name: Health Check (Pre-Rollback)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: validate-rollback
     steps:
     - name: Check current deployment health
@@ -90,7 +90,7 @@ jobs:
     timeout-minutes: 30
   rollback-backend:
     name: Rollback Backend
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     needs:
     - validate-rollback
@@ -189,7 +189,7 @@ jobs:
 
   verify-rollback:
     name: Verify Rollback Success
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
     - validate-rollback
     - rollback-backend
@@ -230,7 +230,7 @@ jobs:
     timeout-minutes: 30
   notify-rollback:
     name: Notify Team
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
     - validate-rollback
     - verify-rollback
@@ -247,7 +247,7 @@ jobs:
     timeout-minutes: 30
   rollback-failure:
     name: Handle Rollback Failure
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
     - validate-rollback
     - rollback-backend

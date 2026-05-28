@@ -14,7 +14,7 @@ permissions:
 jobs:
   verify-tests:
     name: Verify Tests Pass
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.actor == 'dependabot[bot]'
     outputs:
       should-merge: ${{ steps.check.outputs.should-merge }}
@@ -72,7 +72,7 @@ jobs:
     timeout-minutes: 10
   auto-merge:
     name: Auto-Merge PR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: verify-tests
     if: needs.verify-tests.outputs.should-merge == 'true'
     steps:
@@ -97,7 +97,7 @@ jobs:
     timeout-minutes: 10
   comment-major-update:
     name: Comment on Major Update
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: verify-tests
     if: needs.verify-tests.outputs.update-type == 'version-update:semver-major'
     steps:

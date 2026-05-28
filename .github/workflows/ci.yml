@@ -56,7 +56,7 @@ env:
 jobs:
   detect-changes:
     name: Detect Changed Areas
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       python: ${{ steps.filter.outputs.python }}
       go: ${{ steps.filter.outputs.go }}
@@ -103,7 +103,7 @@ jobs:
   # Quality Guards (Naming Explosion + LOC limits)
   quality-guards:
     name: Quality Guards
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: Checkout code
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -115,7 +115,7 @@ jobs:
     name: Python Tests
     needs: [detect-changes]
     if: needs.detect-changes.outputs.python == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         python-version: ['3.13']
@@ -352,7 +352,7 @@ jobs:
   # Python Exploratory Tests (property-based + chaos)
   python-exploratory-tests:
     name: Python Exploratory Tests (${{ matrix.lane }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [detect-changes, python-tests]
     if: needs.detect-changes.outputs.python == 'true' && needs.python-tests.result == 'success'
     strategy:
@@ -423,7 +423,7 @@ jobs:
     name: Go Tests
     needs: [detect-changes]
     if: needs.detect-changes.outputs.go == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         go-version: ['1.25.7']
@@ -747,7 +747,7 @@ jobs:
   # Frontend (JS/TS) - Lint, format, typecheck
   frontend-checks:
     name: Frontend Checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [quality-guards, detect-changes]
     if: needs.detect-changes.outputs.frontend == 'true'
     steps:
@@ -870,7 +870,7 @@ jobs:
   # Frontend E2E Tests (Playwright)
   frontend-e2e:
     name: Frontend E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [python-tests, go-tests, frontend-checks]
     timeout-minutes: 30
 
@@ -1009,7 +1009,7 @@ jobs:
   # Storybook (build + test-runner)
   storybook-checks:
     name: Storybook Checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [frontend-checks]
     steps:
       - name: Checkout code
@@ -1043,7 +1043,7 @@ jobs:
   # Frontend Packages Tests (ui, api-client, state, env-manager)
   frontend-packages-test:
     name: Frontend Packages Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [frontend-checks]
     strategy:
       matrix:
@@ -1084,7 +1084,7 @@ jobs:
   # Frontend Desktop Tests
   frontend-desktop-test:
     name: Frontend Desktop Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [frontend-checks]
     steps:
       - name: Checkout code
@@ -1122,7 +1122,7 @@ jobs:
   # Frontend Docs Tests
   frontend-docs-test:
     name: Frontend Docs Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [frontend-checks]
     steps:
       - name: Checkout code
@@ -1160,7 +1160,7 @@ jobs:
   # Frontend Storybook Coverage Test
   frontend-storybook-test:
     name: Frontend Storybook Coverage
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [frontend-checks]
     steps:
       - name: Checkout code
@@ -1202,7 +1202,7 @@ jobs:
   # Security Scanning
   security-scan:
     name: Security Scanning
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout code
@@ -1242,7 +1242,7 @@ jobs:
   # Coverage Regression Detection
   coverage-regression-check:
     name: Coverage Regression Detection
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [python-tests, go-tests, frontend-checks]
     if: always()
     steps:
@@ -1429,7 +1429,7 @@ jobs:
   # Docker Build
   docker-build:
     name: Build Docker Images
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [python-tests, go-tests]
     if: github.event_name != 'pull_request'
 
@@ -1508,7 +1508,7 @@ jobs:
   # Infrastructure as Code (Pulumi) - Dev Stack
   iac-dev:
     name: IaC Deploy (Pulumi dev)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [docker-build]
 
     permissions:
@@ -1539,7 +1539,7 @@ jobs:
   # Deploy to Staging
   deploy-staging:
     name: Deploy to Staging
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [docker-build]
     if: github.ref == 'refs/heads/develop'
     environment:
@@ -1578,7 +1578,7 @@ jobs:
   # Deploy to Production
   deploy-production:
     name: Deploy to Production
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [docker-build]
     if: github.event_name == 'release'
     environment:

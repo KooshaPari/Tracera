@@ -40,7 +40,7 @@ env:
 jobs:
   chaos-tests:
     name: Chaos Engineering - Resilience Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
 
     services:
@@ -220,7 +220,7 @@ jobs:
   # Run chaos tests in staging environment (requires staging deployment)
   chaos-staging:
     name: Chaos Tests - Staging Environment
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.event.inputs.environment == 'staging' || github.event_name == 'schedule'
     needs: []
     timeout-minutes: 60

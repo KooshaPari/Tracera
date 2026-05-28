@@ -20,7 +20,7 @@ permissions:
   security-events: write
 jobs:
   scan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - name: Run npm audit
@@ -62,7 +62,7 @@ jobs:
         \ found\"\n  fi\nfi\n"
     timeout-minutes: 45
   daily-vuln-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.event_name == 'schedule'
     permissions:
       issues: write
@@ -78,7 +78,7 @@ jobs:
         \ skipped\"\n"
     timeout-minutes: 45
   codeql:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       security-events: write
@@ -95,7 +95,7 @@ jobs:
         category: /language:javascript,python,go
     timeout-minutes: 45
   dependency-review:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.event_name == 'pull_request'
     steps:
     - name: Dependency Review

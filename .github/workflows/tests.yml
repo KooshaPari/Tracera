@@ -17,7 +17,7 @@ permissions:
 jobs:
   test-matrix:
     name: Tests (${{ matrix.test-type }}, Python ${{ matrix.python-version }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -149,7 +149,7 @@ jobs:
     timeout-minutes: 30
   test-parallel:
     name: All Tests (Parallel)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:15-alpine

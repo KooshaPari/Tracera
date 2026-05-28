@@ -47,7 +47,7 @@ jobs:
   # Pre-deployment validation
   validate:
     name: Validate Deployment
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
@@ -81,7 +81,7 @@ jobs:
   # Deploy canary version
   deploy-canary:
     name: Deploy Canary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: validate
     timeout-minutes: 10
 
@@ -140,7 +140,7 @@ jobs:
   # Stage 1: 10% traffic
   canary-stage1:
     name: Stage 1 - 10% Traffic
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: deploy-canary
     timeout-minutes: 15
     if: ${{ !contains(inputs.skip_stages, 'stage1') }}
@@ -211,7 +211,7 @@ jobs:
   # Stage 2: 50% traffic
   canary-stage2:
     name: Stage 2 - 50% Traffic
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: canary-stage1
     timeout-minutes: 15
     if: ${{ !contains(inputs.skip_stages, 'stage2') }}
@@ -268,7 +268,7 @@ jobs:
   # Promote canary to stable
   promote:
     name: Promote Canary to Stable
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [canary-stage1, canary-stage2]
     timeout-minutes: 15
     if: ${{ inputs.auto_promote && (needs.canary-stage1.outputs.stage1_passed == 'true' || contains(inputs.skip_stages, 'stage1')) && (needs.canary-stage2.outputs.stage2_passed == 'true' || contains(inputs.skip_stages, 'stage2')) }}
@@ -342,7 +342,7 @@ jobs:
   # Rollback on failure
   rollback:
     name: Rollback Canary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [deploy-canary, canary-stage1, canary-stage2]
     if: ${{ failure() }}
     timeout-minutes: 5

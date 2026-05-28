@@ -34,7 +34,7 @@ env:
 jobs:
   consumer-tests:
     name: Consumer Contract Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: Checkout code
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -71,7 +71,7 @@ jobs:
     timeout-minutes: 20
   provider-tests:
     name: Provider Contract Verification
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: consumer-tests
     if: github.event_name != 'pull_request'
     services:
@@ -129,7 +129,7 @@ jobs:
     timeout-minutes: 20
   publish-contracts:
     name: Publish Contracts to Broker
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
     - consumer-tests
     - provider-tests
@@ -178,7 +178,7 @@ jobs:
     timeout-minutes: 20
   coverage-report:
     name: Contract Coverage Report
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
     - consumer-tests
     - provider-tests

@@ -27,7 +27,7 @@ concurrency:
 jobs:
   chromatic:
     name: Visual Regression Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
     - name: Checkout repository
@@ -97,7 +97,7 @@ jobs:
 
   visual-test-status:
     name: Visual Test Status Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: always()
     needs: chromatic
     steps:

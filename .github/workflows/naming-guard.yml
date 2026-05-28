@@ -40,7 +40,7 @@ permissions:
   actions: read
 jobs:
   check-naming:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: Checkout code
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683

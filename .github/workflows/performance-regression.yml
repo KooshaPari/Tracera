@@ -47,7 +47,7 @@ permissions:
 jobs:
   setup:
     name: Setup Test Environment
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       baseline_exists: ${{ steps.check_baseline.outputs.exists }}
       test_type: ${{ steps.determine_test.outputs.type }}
@@ -68,7 +68,7 @@ jobs:
     timeout-minutes: 60
   smoke-test:
     name: Smoke Test - Quick Performance Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: setup
     if: 'needs.setup.outputs.test_type == ''smoke'' ||
 
@@ -235,7 +235,7 @@ jobs:
     timeout-minutes: 60
   load-test:
     name: Load Test - Standard Performance Validation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: setup
     if: 'needs.setup.outputs.test_type == ''load'' ||
 
@@ -395,7 +395,7 @@ jobs:
     timeout-minutes: 60
   report:
     name: Generate Performance Report
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
     - smoke-test
     - load-test

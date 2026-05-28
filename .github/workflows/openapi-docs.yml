@@ -27,7 +27,7 @@ permissions:
 jobs:
   generate-and-validate:
     name: Generate and Validate OpenAPI Spec
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: Checkout code
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -130,7 +130,7 @@ jobs:
     timeout-minutes: 30
   deploy-to-docs-site:
     name: Deploy to Docs Site
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: generate-and-validate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
@@ -167,7 +167,7 @@ jobs:
     timeout-minutes: 30
   generate-clients:
     name: Generate Client SDKs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: generate-and-validate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     strategy:

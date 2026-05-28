@@ -38,7 +38,7 @@ env:
 jobs:
   generate-openapi:
     name: Generate OpenAPI Specification
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       spec-generated: ${{ steps.check-spec.outputs.generated || steps.scope.outputs.generated
         }}
@@ -110,7 +110,7 @@ jobs:
     timeout-minutes: 30
   build-docs:
     name: Build Documentation Site
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: generate-openapi
     if: needs.generate-openapi.outputs.spec-generated == 'true'
     steps:
@@ -152,7 +152,7 @@ jobs:
     timeout-minutes: 30
   deploy-preview:
     name: Deploy Preview
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
     - generate-openapi
     - build-docs
@@ -213,7 +213,7 @@ jobs:
     timeout-minutes: 30
   deploy-production:
     name: Deploy to Production
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
     - generate-openapi
     - build-docs
@@ -284,7 +284,7 @@ jobs:
     timeout-minutes: 30
   validate-deployment:
     name: Validate Deployment
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: deploy-production
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
