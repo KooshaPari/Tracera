@@ -1,10 +1,9 @@
 """Pytest configuration for MCP unit tests."""
 
-from typing import Any
-
 import asyncio
 import tempfile
 from pathlib import Path
+from typing import Any
 
 import pytest
 from sqlalchemy import text

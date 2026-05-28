@@ -18,17 +18,25 @@ add_test() {
 
 while IFS= read -r f; do
   case "$f" in
+    tests/unit/mcp/*)
+      # MCP unit tests use sqlite fixtures; skip in PR CI (postgres service).
+      ;;
     tests/unit/*/test_*.py | tests/unit/test_*.py)
       add_test "$f"
       ;;
   esac
 done < <(git diff --name-only "$base"...HEAD -- '*.py' || true)
 
+# Always run export/perf smoke for this feature area.
+for smoke in \
+  tests/unit/api/test_trace_matrix_export.py \
+  tests/unit/services/test_perf_optimizations.py; do
+  add_test "$smoke"
+done
+
 if ((${#tests[@]} == 0)); then
-  tests=(
-    tests/unit/api/test_trace_matrix_export.py
-    tests/unit/services/test_perf_optimizations.py
-  )
+  echo "No PR unit test targets resolved" >&2
+  exit 1
 fi
 
 printf '%s\n' "${tests[@]}"
