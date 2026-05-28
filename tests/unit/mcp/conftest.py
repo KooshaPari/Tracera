@@ -1,9 +1,8 @@
-from typing import Any
-
 """Pytest configuration for MCP unit tests."""
 
+from typing import Any
+
 import asyncio
-import os
 import tempfile
 from pathlib import Path
 

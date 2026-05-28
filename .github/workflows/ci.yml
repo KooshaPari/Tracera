@@ -249,7 +249,7 @@ jobs:
       run: |
         set -euo pipefail
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          mapfile -t test_targets < <(.github/scripts/pr_unit_test_targets.sh "${{ github.event.pull_request.base.sha }}")
+          mapfile -t test_targets < <(bash .github/scripts/pr_unit_test_targets.sh "${{ github.event.pull_request.base.sha }}")
         else
           test_targets=(tests/unit)
         fi
@@ -274,7 +274,7 @@ jobs:
       run: |
         set -euo pipefail
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          mapfile -t test_targets < <(.github/scripts/pr_unit_test_targets.sh "${{ github.event.pull_request.base.sha }}")
+          mapfile -t test_targets < <(bash .github/scripts/pr_unit_test_targets.sh "${{ github.event.pull_request.base.sha }}")
         else
           test_targets=(tests/unit)
         fi
