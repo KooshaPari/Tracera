@@ -110,7 +110,7 @@ jobs:
         \ matrix.test-type }}-slow.xml\nelif [ \"${{ matrix.test-type }}\" = \"e2e\"\
         \ ]; then\n  uv run pytest tests/e2e -m \"e2e\" -v --junitxml=junit-${{ matrix.test-type\
         \ }}.xml\nelif [ \"${{ matrix.test-type }}\" = \"property\" ]; then\n  uv\
-        \ run pytest tests/test_property_based.py -v --junitxml=junit-${{ matrix.test-type\
+        \ run pytest tests/property tests/unit -m property -v --junitxml=junit-${{ matrix.test-type\
         \ }}.xml\nfi\n"
     - name: Generate test summary
       if: always()
@@ -218,7 +218,7 @@ jobs:
         REDIS_URL: redis://localhost:6379
         PYTHONPATH: ${{ github.workspace }}/src
       run: "if ! uv run python -c \"import tracertm.cli\" 2>/dev/null; then\n  TARGETS=\"tests/unit\
-        \ tests/test_property_based.py\"\nelse\n  TARGETS=\"tests/\"\nfi\nuv run pytest\
+        \ tests/property tests/unit\"\nelse\n  TARGETS=\"tests/\"\nfi\nuv run pytest\
         \ \"$TARGETS\" -n auto -v \\\n  --cov=src/tracertm \\\n  --cov-report=xml\
         \ \\\n  --cov-report=html \\\n  --cov-report=term-missing \\\n  --cov-fail-under=90\
         \ \\\n  --junitxml=junit-parallel.xml \\\n  --maxfail=10\n"
