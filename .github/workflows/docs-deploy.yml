@@ -119,7 +119,7 @@ jobs:
       with:
         bun-version: latest
     - name: Download OpenAPI spec
-      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      uses: actions/download-artifact@v4
       with:
         name: openapi-spec
         path: frontend/apps/docs/public/api
@@ -167,7 +167,7 @@ jobs:
       with:
         bun-version: latest
     - name: Download OpenAPI spec
-      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      uses: actions/download-artifact@v4
       with:
         name: openapi-spec
         path: frontend/apps/docs/public/api
@@ -225,7 +225,7 @@ jobs:
       with:
         bun-version: latest
     - name: Download OpenAPI spec
-      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      uses: actions/download-artifact@v4
       with:
         name: openapi-spec
         path: frontend/apps/docs/public/api
