@@ -257,17 +257,22 @@ jobs:
         if ! uv run python -c "import tracertm.cli" 2>/dev/null; then
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             mapfile -t targets < <(bash .github/scripts/pr_unit_test_targets.sh "${{ github.event.pull_request.base.sha }}")
-            mapfile -t prop_targets < <(git diff --name-only "${{ github.event.pull_request.base.sha }}"...HEAD -- 'tests/property/**/test_*.py' || true)
-            if ((${#prop_targets[@]} > 0)); then
-              targets+=("${prop_targets[@]}")
+            if ((${#targets[@]} == 0)); then
+              targets=(
+                tests/unit/api/test_trace_matrix_export.py
+                tests/unit/services/test_perf_optimizations.py
+              )
             fi
+            parallel_args=()
           else
             targets=(tests/unit tests/property)
+            parallel_args=(-n auto)
           fi
         else
           targets=(tests/)
+          parallel_args=(-n auto)
         fi
-        uv run pytest "${targets[@]}" --ignore=src/tracertm/mcp -n auto -v \
+        uv run pytest "${targets[@]}" --ignore=src/tracertm "${parallel_args[@]}" -v \
           --cov=src/tracertm \
           --cov-report=xml \
           --cov-report=html \
