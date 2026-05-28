@@ -4,7 +4,7 @@ Verifies that the endpoint correctly fetches user data from WorkOS API.
 """
 
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -201,3 +201,40 @@ class TestAuthMeEndpoint:
 
             # Account should be None
             assert data["account"] is None
+
+    def test_me_endpoint_returns_account_from_db(self, mock_workos_user: Any, mock_jwt_claims: Any) -> None:
+        """Test that /me returns account data from the database when a DB record exists (B4)."""
+        from tracertm.api.main import app
+
+        client = TestClient(app)
+        headers = {"Authorization": "Bearer valid_token"}
+
+        # Fake DB account returned by AccountRepository.list_by_user
+        fake_account = MagicMock()
+        fake_account.id = "acc_db_001"
+        fake_account.name = "DB Organization"
+
+        with (
+            patch("tracertm.api.routers.auth.auth_guard") as mock_auth,
+            patch("tracertm.api.routers.auth.get_user") as mock_get_user,
+            patch("tracertm.api.routers.auth.AccountRepository") as mock_repo_cls,
+            patch("tracertm.api.routers.auth.get_db"),
+        ):
+            mock_auth.return_value = mock_jwt_claims
+            mock_get_user.return_value = mock_workos_user
+
+            mock_repo = MagicMock()
+            mock_repo.list_by_user = AsyncMock(return_value=[fake_account])
+            mock_repo_cls.return_value = mock_repo
+
+            response = client.get("/api/v1/auth/me", headers=headers)
+
+            assert response.status_code == HTTP_OK
+            data = response.json()
+
+            # Account should come from the DB record, not from JWT claims
+            assert data["account"]["id"] == "acc_db_001"
+            assert data["account"]["name"] == "DB Organization"
+
+            # Confirm repository was queried with the correct user_id
+            mock_repo.list_by_user.assert_called_once_with("user_01HXYZ123")
