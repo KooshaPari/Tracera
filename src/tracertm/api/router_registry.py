@@ -8,6 +8,7 @@ from tracertm.api.routers import (
     agent,
     analysis,
     auth,
+    code_trace,
     auth_public,
     auth_refresh,
     auth_session,
@@ -63,6 +64,7 @@ def register_api_routers(app: FastAPI) -> None:
     app.include_router(items_summary.router)
     app.include_router(projects.router)
     app.include_router(analysis.router)
+    app.include_router(code_trace.router)
     app.include_router(links.router)
     app.include_router(graphs.router, prefix="/api/v1")
     app.include_router(test_cases.router)
