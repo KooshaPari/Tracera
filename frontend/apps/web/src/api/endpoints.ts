@@ -527,6 +527,73 @@ export const exportImportApi = {
   },
 };
 
+// ============================================================================
+// CODE TRACE ENDPOINTS
+// ============================================================================
+
+/**
+ * A single level in the UI → Code → Requirement traceability chain.
+ * Mirrors the TraceLevel interface in UICodeTracePanel.tsx.
+ */
+export interface CodeTraceLevel {
+  id: string;
+  type: 'ui' | 'code' | 'requirement' | 'concept';
+  title: string;
+  description?: string;
+  confidence: number;
+  strategy?: string;
+  isConfirmed?: boolean;
+  // UI level
+  componentName?: string;
+  componentPath?: string;
+  screenshot?: string;
+  // Code level
+  codeRef?: {
+    symbolName: string;
+    symbolType: string;
+    filePath?: string;
+    startLine?: number;
+    endLine?: number;
+    signature?: string;
+  };
+  // Requirement level
+  requirementId?: string;
+  businessValue?: string;
+}
+
+/**
+ * Full trace chain returned by GET /api/v1/analysis/code-trace/{component_id}.
+ * Mirrors the UICodeTraceChain interface.
+ */
+export interface CodeTraceChain {
+  id: string;
+  name: string;
+  description?: string;
+  levels: CodeTraceLevel[];
+  overallConfidence: number;
+  lastUpdated: string;
+}
+
+export const codeTraceApi = {
+  /**
+   * Fetch the full UI → Code → Requirement traceability chain for a component.
+   * @param componentId - UUID of the item (component/code symbol/requirement)
+   * @param projectId   - optional project scope
+   */
+  getChain: async (componentId: string, projectId?: string): Promise<CodeTraceChain> => {
+    return handleApiResponse(
+      safeApiCall(
+        apiClient.GET('/api/v1/analysis/code-trace/{component_id}' as never, {
+          params: {
+            path: { component_id: componentId },
+            query: projectId ? { project_id: projectId } : {},
+          },
+        }),
+      ),
+    );
+  },
+};
+
 // Export all APIs as a single object for convenience
 export const api = {
   projects: projectsApi,
@@ -535,5 +602,6 @@ export const api = {
   graph: graphApi,
   search: searchApi,
   exportImport: exportImportApi,
+  codeTrace: codeTraceApi,
   healthCheck,
 };
