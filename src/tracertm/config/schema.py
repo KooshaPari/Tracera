@@ -19,7 +19,9 @@ class Config(BaseModel):
     """
 
     # Database
-    database_url: str | None = Field(None, description="Database URL (postgresql://... or sqlite://... for testing)")
+    database_url: str | None = Field(
+        None, description="Database URL (postgresql://... or sqlite://... for testing)"
+    )
 
     # Current project
     current_project_id: str | None = Field(None, description="Currently active project ID")
@@ -29,33 +31,47 @@ class Config(BaseModel):
     # Display preferences
     default_view: ViewType = Field("FEATURE", description="Default view when displaying items")
 
-    output_format: OutputFormat = Field("table", description="Default output format for CLI commands")
+    output_format: OutputFormat = Field(
+        "table", description="Default output format for CLI commands"
+    )
 
     # Performance
     max_agents: int = Field(1000, ge=1, le=10000, description="Maximum number of concurrent agents")
 
     # Logging
-    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = Field("INFO", description="Logging level")
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = Field(
+        "INFO", description="Logging level"
+    )
 
     # CLI aliases (user-configured)
-    aliases: dict[str, str] = Field(default_factory=dict, description="User-configured command aliases")
+    aliases: dict[str, str] = Field(
+        default_factory=dict, description="User-configured command aliases"
+    )
 
     # Sync API configuration
-    api_url: str = Field("https://api.tracertm.io", description="Backend API URL for sync operations")
+    api_url: str = Field(
+        "https://api.tracertm.io", description="Backend API URL for sync operations"
+    )
 
     api_token: str | None = Field(None, description="JWT token for API authentication")
 
     api_timeout: float = Field(30.0, ge=1.0, le=300.0, description="API request timeout in seconds")
 
-    api_max_retries: int = Field(3, ge=1, le=10, description="Maximum number of retry attempts for API requests")
+    api_max_retries: int = Field(
+        3, ge=1, le=10, description="Maximum number of retry attempts for API requests"
+    )
 
     sync_enabled: bool = Field(True, description="Enable/disable sync with backend")
 
-    sync_interval_seconds: int = Field(300, ge=10, description="Auto-sync interval in seconds (default: 5 minutes)")
+    sync_interval_seconds: int = Field(
+        300, ge=10, description="Auto-sync interval in seconds (default: 5 minutes)"
+    )
 
-    sync_conflict_strategy: Literal["last_write_wins", "local_wins", "remote_wins", "manual"] = Field(
-        "last_write_wins",
-        description="Default conflict resolution strategy",
+    sync_conflict_strategy: Literal["last_write_wins", "local_wins", "remote_wins", "manual"] = (
+        Field(
+            "last_write_wins",
+            description="Default conflict resolution strategy",
+        )
     )
 
     @field_validator("database_url")
