@@ -120,7 +120,15 @@ jobs:
         elif [ "${{ matrix.test-type }}" = "e2e" ]; then
           uv run pytest tests/e2e -m "e2e" -v --junitxml=junit-${{ matrix.test-type }}.xml
         elif [ "${{ matrix.test-type }}" = "property" ]; then
+          set +e
           uv run pytest tests/property tests/unit -m property -v --junitxml=junit-${{ matrix.test-type }}.xml
+          code=$?
+          set -e
+          if [ "$code" -eq 5 ]; then
+            echo "No property tests collected for this change set; skipping." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          exit "$code"
         fi
     - name: Generate test summary
       if: always()
