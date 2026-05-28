@@ -477,8 +477,17 @@ jobs:
         DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
         REDIS_URL: redis://localhost:6379
         PYTHONPATH: ${{ github.workspace }}/src
+      shell: bash
       run: |
+        set +e
         pytest tests/ -m "${{ matrix.lane }}" -v --tb=short --maxfail=10
+        code=$?
+        set -e
+        if [ "$code" -eq 5 ]; then
+          echo "No ${{ matrix.lane }} tests collected; skipping lane." >> "$GITHUB_STEP_SUMMARY"
+        elif [ "$code" -ne 0 ]; then
+          exit "$code"
+        fi
 
     - name: Generate exploratory test summary
       if: always()
