@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -84,7 +85,7 @@ async def test_traceability_generate_matrix_uses_project_links() -> None:
     assert len(matrix.links) == 1
     assert matrix.links[0]["source_title"] == "Feature A"
     assert matrix.links[0]["target_title"] == "Test A"
-    assert matrix.coverage_percentage == 100.0
+    assert matrix.coverage_percentage == pytest.approx(100.0)
 
 
 @pytest.mark.asyncio
@@ -105,7 +106,7 @@ async def test_analyze_query_performance_uses_cache() -> None:
     service.items.query.assert_awaited_once()
     assert first["items_returned"] == second["items_returned"] == 2
     assert first["execution_time_seconds"] >= 0
-    assert second["execution_time_seconds"] == 0.0
+    assert second["execution_time_seconds"] == pytest.approx(0.0)
 
 
 def test_query_cache_key_is_stable() -> None:
@@ -115,3 +116,62 @@ def test_query_cache_key_is_stable() -> None:
     key_a = QueryOptimizationService._query_cache_key("p1", {"status": "todo", "view": "feature"})
     key_b = QueryOptimizationService._query_cache_key("p1", {"view": "feature", "status": "todo"})
     assert key_a == key_b
+
+
+@pytest.mark.asyncio
+async def test_matrix_generate_1k_requirements_under_two_seconds() -> None:
+    """PLAN target: RTM generation for ~1k requirements stays under 2s (in-process, mocked DB)."""
+    from tracertm.services.traceability_matrix_service import TraceabilityMatrixService
+
+    project_id = "proj-rtm-1k"
+    mock_session = MagicMock()
+    service = TraceabilityMatrixService(mock_session)
+
+    requirements = [
+        create_item(
+            config=ItemFactoryConfig(
+                title=f"Requirement {i}",
+                view="requirements",
+                item_type="requirements",
+                project_id=project_id,
+            ),
+        )
+        for i in range(1000)
+    ]
+    features = [
+        create_item(
+            config=ItemFactoryConfig(
+                title=f"Feature {j}",
+                view="feature",
+                item_type="feature",
+                project_id=project_id,
+            ),
+        )
+        for j in range(10)
+    ]
+    links = [
+        create_link(
+            source_item_id=str(requirements[i].id),
+            target_item_id=str(features[i % len(features)].id),
+            link_type="traces_to",
+            project_id=project_id,
+        )
+        for i in range(1000)
+    ]
+
+    service.items.get_by_project = AsyncMock(return_value=[*requirements, *features])
+    service.links.get_by_project = AsyncMock(return_value=links)
+
+    started = time.perf_counter()
+    matrix = await service.generate_matrix(
+        project_id,
+        source_view="requirements",
+        target_view="feature",
+    )
+    elapsed = time.perf_counter() - started
+
+    service.items.get_by_project.assert_awaited_once()
+    service.links.get_by_project.assert_awaited_once()
+    assert len(matrix.rows) == 1000
+    assert len(matrix.columns) == 10
+    assert elapsed < 2.0

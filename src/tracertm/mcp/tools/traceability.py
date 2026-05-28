@@ -57,7 +57,7 @@ async def find_gaps(
             target_view=to_view,
         )
 
-        return wrap_success(  # type: ignore[return-value]
+        return wrap_success(  # ty: ignore[invalid-return-type]
             {
                 "from_view": from_view,
                 "to_view": to_view,
@@ -103,13 +103,54 @@ async def get_trace_matrix(
         )
 
         matrix_out = matrix.to_dict() if hasattr(matrix, "to_dict") else matrix
-        return wrap_success(  # type: ignore[return-value]
+        return wrap_success(  # ty: ignore[invalid-return-type]
             {
                 "source_view": source_view,
                 "target_view": target_view,
                 "matrix": matrix_out,
             },
             "trace_matrix",
+            ctx,
+        )
+
+
+@mcp.tool(description="Export traceability matrix as CSV")
+async def export_trace_matrix_csv(
+    source_view: str | None = None,
+    target_view: str | None = None,
+    ctx: object | None = None,
+) -> dict[str, object]:
+    """Generate and export a traceability matrix as CSV text.
+
+    Args:
+        source_view: Optional filter for source items' view
+        target_view: Optional filter for target items' view
+
+    Returns:
+        CSV payload plus row/column counts for agents and tooling
+    """
+    project_id = require_project()
+
+    async with get_async_session() as session:
+        service = TraceabilityMatrixService(session)
+        matrix = await service.generate_matrix(
+            project_id=project_id,
+            source_view=source_view.upper() if source_view else None,
+            target_view=target_view.upper() if target_view else None,
+        )
+        csv_text = await service.export_matrix_csv(matrix)
+
+        return wrap_success(  # ty: ignore[invalid-return-type]
+            {
+                "source_view": source_view,
+                "target_view": target_view,
+                "csv": csv_text,
+                "row_count": len(matrix.rows),
+                "column_count": len(matrix.columns),
+                "coverage_percent": round(matrix.coverage, 2),
+                "total_links": matrix.total_links,
+            },
+            "export_trace_matrix_csv",
             ctx,
         )
 
@@ -151,7 +192,7 @@ async def analyze_impact(
         impact_to_dict = getattr(impact, "to_dict", None)
         if callable(impact_to_dict):
             impact_out = impact_to_dict()
-        return wrap_success(  # type: ignore[return-value]
+        return wrap_success(  # ty: ignore[invalid-return-type]
             {
                 "root_item_id": item_id,
                 "max_depth": max_depth,
@@ -197,7 +238,7 @@ async def analyze_reverse_impact(
         impact_to_dict = getattr(impact, "to_dict", None)
         if callable(impact_to_dict):
             impact_out = impact_to_dict()
-        return wrap_success(  # type: ignore[return-value]
+        return wrap_success(  # ty: ignore[invalid-return-type]
             {
                 "root_item_id": item_id,
                 "max_depth": max_depth,
@@ -262,14 +303,17 @@ def project_health(
 
         # Items without any links
         items_with_links = (
-            session.query(func.count(func.distinct(Link.source_item_id))).filter(Link.project_id == project_id).scalar()
+            session
+            .query(func.count(func.distinct(Link.source_item_id)))
+            .filter(Link.project_id == project_id)
+            .scalar()
         )
         orphan_count = total_items - (items_with_links or 0)
 
         by_view: dict[str, int] = {row[0]: row[1] for row in view_counts}
         by_status: dict[str, int] = {row[0]: row[1] for row in status_counts}
         by_link_type: dict[str, int] = {row[0]: row[1] for row in link_counts}
-        return wrap_success(  # type: ignore[return-value]
+        return wrap_success(  # ty: ignore[invalid-return-type]
             {
                 "project_id": project_id,
                 "total_items": total_items,
@@ -288,6 +332,7 @@ def project_health(
 __all__ = [
     "analyze_impact",
     "analyze_reverse_impact",
+    "export_trace_matrix_csv",
     "find_gaps",
     "get_trace_matrix",
     "project_health",

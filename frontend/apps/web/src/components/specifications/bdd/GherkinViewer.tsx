@@ -39,7 +39,8 @@ const STEP_KEYWORDS: readonly StepType[] = ['Given', 'When', 'Then', 'And', 'But
 const isStepKeyword = (value: string): value is StepType =>
   STEP_KEYWORDS.includes(value as StepType);
 
-const isStepLine = (line: string): boolean => STEP_KEYWORDS.some((keyword) => line.startsWith(keyword));
+const isStepLine = (line: string): boolean =>
+  STEP_KEYWORDS.some((keyword) => line.startsWith(keyword));
 
 const isScenarioLine = (line: string): boolean =>
   line.startsWith('Scenario:') || line.startsWith('Scenario Outline:');
@@ -91,10 +92,7 @@ function createScenario(line: string): ParsedGherkin['scenarios'][number] {
   };
 }
 
-const finalizeBackground = (
-  result: ParsedGherkin,
-  background: string[],
-): void => {
+const finalizeBackground = (result: ParsedGherkin, background: string[]): void => {
   result.background = background;
 };
 
@@ -109,10 +107,7 @@ const handleFeatureLine = (result: ParsedGherkin, trimmed: string): boolean => {
 
 const handleBackgroundLine = (trimmed: string): boolean => trimmed.startsWith('Background:');
 
-const handleBackgroundStep = (
-  trimmed: string,
-  background: string[],
-): boolean => {
+const handleBackgroundStep = (trimmed: string, background: string[]): boolean => {
   if (!isStepLine(trimmed)) {
     return false;
   }
@@ -392,7 +387,9 @@ export function GherkinViewer({
         </Card>
       )}
 
-      {parsed.background && parsed.background.length > 0 && <BackgroundSection steps={parsed.background} />}
+      {parsed.background && parsed.background.length > 0 && (
+        <BackgroundSection steps={parsed.background} />
+      )}
 
       {parsed.scenarios.length > 0 && (
         <div className='space-y-2'>

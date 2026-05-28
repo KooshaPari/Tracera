@@ -1,7 +1,5 @@
-import type {
-  UseMutationResult,
-  UseQueryResult,
-} from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
@@ -72,40 +70,30 @@ const coverageKeys = {
   all: ['coverage'] as const,
   byProject: (projectId: string) => ['coverage', 'project', projectId] as const,
   detail: (id: string) => ['coverage', 'detail', id] as const,
-  gaps: (projectId: string, view?: string) =>
-    ['coverage', 'gaps', projectId, view] as const,
-  matrix: (projectId: string, view?: string) =>
-    ['coverage', 'matrix', projectId, view] as const,
+  gaps: (projectId: string, view?: string) => ['coverage', 'gaps', projectId, view] as const,
+  matrix: (projectId: string, view?: string) => ['coverage', 'matrix', projectId, view] as const,
   stats: (projectId: string) => ['coverage', 'stats', projectId] as const,
 };
 
 /** Fetch a single coverage mapping by ID */
-export function useCoverage(
-  coverageId: string | undefined,
-): UseQueryResult<TestCoverage> {
+export function useCoverage(coverageId: string | undefined): UseQueryResult<TestCoverage> {
   return useQuery({
     enabled: Boolean(coverageId),
     queryFn: async () => {
       if (coverageId === undefined) throw new Error('coverageId is required');
-      return fetchJson<TestCoverage>(
-        `${API_URL}/api/v1/coverage/${coverageId}`,
-      );
+      return fetchJson<TestCoverage>(`${API_URL}/api/v1/coverage/${coverageId}`);
     },
     queryKey: coverageKeys.detail(coverageId ?? ''),
   });
 }
 
 /** Fetch all coverage mappings for a project */
-export function useCoverages(
-  projectId: string | undefined,
-): UseQueryResult<TestCoverage[]> {
+export function useCoverages(projectId: string | undefined): UseQueryResult<TestCoverage[]> {
   return useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) throw new Error('projectId is required');
-      return fetchJson<TestCoverage[]>(
-        `${API_URL}/api/v1/projects/${projectId}/coverage`,
-      );
+      return fetchJson<TestCoverage[]>(`${API_URL}/api/v1/projects/${projectId}/coverage`);
     },
     queryKey: coverageKeys.byProject(projectId ?? ''),
   });
@@ -119,25 +107,19 @@ export function useCoverageActivities(
     enabled: Boolean(coverageId),
     queryFn: async () => {
       if (coverageId === undefined) throw new Error('coverageId is required');
-      return fetchJson<CoverageActivity[]>(
-        `${API_URL}/api/v1/coverage/${coverageId}/activities`,
-      );
+      return fetchJson<CoverageActivity[]>(`${API_URL}/api/v1/coverage/${coverageId}/activities`);
     },
     queryKey: coverageKeys.activities(coverageId ?? ''),
   });
 }
 
 /** Fetch aggregate coverage stats for a project */
-export function useCoverageStats(
-  projectId: string | undefined,
-): UseQueryResult<CoverageStats> {
+export function useCoverageStats(projectId: string | undefined): UseQueryResult<CoverageStats> {
   return useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) throw new Error('projectId is required');
-      return fetchJson<CoverageStats>(
-        `${API_URL}/api/v1/projects/${projectId}/coverage/stats`,
-      );
+      return fetchJson<CoverageStats>(`${API_URL}/api/v1/projects/${projectId}/coverage/stats`);
     },
     queryKey: coverageKeys.stats(projectId ?? ''),
   });
@@ -192,11 +174,7 @@ interface CreateCoverageInput {
 }
 
 /** Create a new coverage mapping */
-export function useCreateCoverage(): UseMutationResult<
-  TestCoverage,
-  Error,
-  CreateCoverageInput
-> {
+export function useCreateCoverage(): UseMutationResult<TestCoverage, Error, CreateCoverageInput> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: CreateCoverageInput) =>
@@ -216,18 +194,11 @@ interface UpdateCoverageInput {
 }
 
 /** Update an existing coverage mapping */
-export function useUpdateCoverage(): UseMutationResult<
-  TestCoverage,
-  Error,
-  UpdateCoverageInput
-> {
+export function useUpdateCoverage(): UseMutationResult<TestCoverage, Error, UpdateCoverageInput> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ coverageId, updates }: UpdateCoverageInput) =>
-      putJson<TestCoverage>(
-        `${API_URL}/api/v1/coverage/${coverageId}`,
-        updates,
-      ),
+      putJson<TestCoverage>(`${API_URL}/api/v1/coverage/${coverageId}`, updates),
     onSuccess: (data) => {
       queryClient.setQueryData(coverageKeys.detail(data.id), data);
       void queryClient.invalidateQueries({
@@ -243,11 +214,7 @@ interface DeleteCoverageInput {
 }
 
 /** Delete a coverage mapping */
-export function useDeleteCoverage(): UseMutationResult<
-  void,
-  Error,
-  DeleteCoverageInput
-> {
+export function useDeleteCoverage(): UseMutationResult<void, Error, DeleteCoverageInput> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ coverageId }: DeleteCoverageInput) =>
@@ -268,11 +235,7 @@ interface VerifyCoverageInput {
 }
 
 /** Mark a coverage mapping as verified */
-export function useVerifyCoverage(): UseMutationResult<
-  TestCoverage,
-  Error,
-  VerifyCoverageInput
-> {
+export function useVerifyCoverage(): UseMutationResult<TestCoverage, Error, VerifyCoverageInput> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ coverageId, notes }: VerifyCoverageInput) =>

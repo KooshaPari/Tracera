@@ -19,7 +19,7 @@ const ScrollArea = React.forwardRef<
     </ScrollAreaPrimitive.Viewport>
     <ScrollAreaPrimitive.ScrollAreaScrollbar
       orientation='vertical'
-      className='flex h-full w-2.5 touch-none select-none border-l border-l-transparent p-[1px] transition-colors'
+      className='flex h-full w-2.5 touch-none border-l border-l-transparent p-[1px] transition-colors select-none'
     >
       <ScrollAreaPrimitive.ScrollAreaThumb className='bg-border relative flex-1 rounded-full' />
     </ScrollAreaPrimitive.ScrollAreaScrollbar>

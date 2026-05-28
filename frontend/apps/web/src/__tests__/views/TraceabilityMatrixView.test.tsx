@@ -1,10 +1,25 @@
 /**
  * Comprehensive Tests for TraceabilityMatrixView
+ * @vitest-environment jsdom
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { toast } from 'sonner';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
+vi.mock('sonner', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
+}));
+
+vi.mock('@/api/traceMatrixExport', () => ({
+  downloadTraceMatrixFromApi: vi.fn(),
+}));
+
+import { downloadTraceMatrixFromApi } from '@/api/traceMatrixExport';
 
 import { useItems } from '../../hooks/useItems';
 import { useLinks } from '../../hooks/useLinks';
@@ -31,7 +46,7 @@ vi.mock('../../hooks/useLinks', () => ({
 }));
 
 function mockItems(overrides: Partial<ReturnType<typeof useItems>> = {}) {
-  vi.mocked(useItems).mockReturnValue({
+  (useItems as Mock).mockReturnValue({
     data: { items: [], total: 0 },
     error: null,
     isError: false,
@@ -41,7 +56,7 @@ function mockItems(overrides: Partial<ReturnType<typeof useItems>> = {}) {
 }
 
 function mockLinks(overrides: Partial<ReturnType<typeof useLinks>> = {}) {
-  vi.mocked(useLinks).mockReturnValue({
+  (useLinks as Mock).mockReturnValue({
     data: { links: [] },
     error: null,
     isError: false,
@@ -136,6 +151,22 @@ describe(TraceabilityMatrixView, () => {
     );
 
     expect(screen.getByRole('button', { name: /export csv/i })).toBeInTheDocument();
+  });
+
+  it('blocks export when matrix has no rows or columns', () => {
+    mockItems();
+    mockLinks();
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <TraceabilityMatrixView projectId='proj-test' />
+      </QueryClientProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /export csv/i }));
+    expect(toast.error).toHaveBeenCalledWith(
+      'Nothing to export — add requirements and features first',
+    );
   });
 
   it('handles empty state', () => {

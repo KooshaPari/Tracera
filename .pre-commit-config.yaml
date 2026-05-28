@@ -29,7 +29,7 @@ repos:
   # Uses pyproject.toml config with complexity rules (C90, PLR)
   # Note: Output format defaults to text (grouped by file for easy processing)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.0
+    rev: v0.15.12
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix, --output-format=grouped]
@@ -53,22 +53,23 @@ repos:
       - id: check-yaml
         pass_filenames: true
       - id: check-added-large-files
-        args: ['--maxkb=1000']
+        args: ["--maxkb=1000"]
         pass_filenames: true
       - id: check-merge-conflict
         pass_filenames: true
       - id: debug-statements
         pass_filenames: true
       - id: mixed-line-ending
-        args: ['--fix=lf']
+        args: ["--fix=lf"]
         pass_filenames: true
 
   # Unused imports and variables (fast cleanup)
   - repo: https://github.com/hadialqattan/pycln
-    rev: v2.2.2
+    rev: v2.6.0
     hooks:
       - id: pycln
         args: [--all]
+        exclude: ^tests/conftest\.py$
         pass_filenames: true
 
   # YAML/JSON/Markdown formatting (fast)
@@ -295,8 +296,7 @@ exclude: |
 
 # Performance optimizations
 default_stages: [pre-commit]
-fail_fast: true  # Stop on first error for faster feedback
+fail_fast: true # Stop on first error for faster feedback
 minimum_pre_commit_version: 2.15.0
-
 # Parallel execution (enabled by default in pre-commit v3.0+)
 # This will run independent hooks in parallel automatically

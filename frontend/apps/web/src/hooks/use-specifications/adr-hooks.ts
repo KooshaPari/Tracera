@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import * as specificationsApi from '@/hooks/useSpecifications.api';
+
 import * as queryUtils from './query-utils';
 
 type FetchADRsResult = Awaited<ReturnType<typeof specificationsApi.fetchADRs>>;
@@ -17,9 +18,7 @@ type FetchADRActivitiesResult = Awaited<ReturnType<typeof specificationsApi.fetc
 
 type FetchADRStatsResult = Awaited<ReturnType<typeof specificationsApi.fetchADRStats>>;
 
-const useADRs = (
-  filters: specificationsApi.ADRFilters,
-): queryUtils.QueryResult<FetchADRsResult> =>
+const useADRs = (filters: specificationsApi.ADRFilters): queryUtils.QueryResult<FetchADRsResult> =>
   useQuery({
     enabled: Boolean(filters.projectId),
     queryFn: async () => {
@@ -39,7 +38,10 @@ const useADR = (id: string): queryUtils.QueryResult<FetchADRResult> =>
     queryKey: ['adrs', id],
   });
 
-const useCreateADR = (): queryUtils.MutationResult<CreateADRResult, specificationsApi.CreateADRData> => {
+const useCreateADR = (): queryUtils.MutationResult<
+  CreateADRResult,
+  specificationsApi.CreateADRData
+> => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -81,12 +83,19 @@ const useDeleteADR = (): queryUtils.MutationResult<void, string> => {
       await specificationsApi.deleteADR(id);
     },
     onSuccess: async () => {
-      await queryUtils.invalidateQueries(queryClient, [['adrs'], ['adrStats'], ['specificationSummary']]);
+      await queryUtils.invalidateQueries(queryClient, [
+        ['adrs'],
+        ['adrStats'],
+        ['specificationSummary'],
+      ]);
     },
   });
 };
 
-const useVerifyADR = (): queryUtils.MutationResult<VerifyADRResult, { id: string; notes: string }> => {
+const useVerifyADR = (): queryUtils.MutationResult<
+  VerifyADRResult,
+  { id: string; notes: string }
+> => {
   const queryClient = useQueryClient();
 
   return useMutation({
