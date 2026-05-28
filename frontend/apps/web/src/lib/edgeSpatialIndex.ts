@@ -64,6 +64,7 @@ export interface EdgeVisibilityResult {
 export class EdgeSpatialIndex {
   private spatialIndex: RBushSpatialIndex;
   private edgeMidpoints: Map<string, NodePosition>;
+  private midpointSpatialIndex: RBushSpatialIndex; // Spatial index for edge midpoints
   private visibilityCache: Map<string, number>;
   private lastViewport: ViewportBounds | null;
   private nodePositions: Map<string, NodePosition>;
@@ -71,6 +72,7 @@ export class EdgeSpatialIndex {
   constructor() {
     this.spatialIndex = new RBushSpatialIndex();
     this.edgeMidpoints = new Map();
+    this.midpointSpatialIndex = new RBushSpatialIndex();
     this.visibilityCache = new Map();
     this.lastViewport = null;
     this.nodePositions = new Map();
@@ -80,6 +82,7 @@ export class EdgeSpatialIndex {
    * Bulk load edges into the index
    *
    * Precomputes edge midpoints for distance calculations.
+   * Builds a spatial index for midpoints to enable O(log n) distance queries.
    *
    * @param edges - All edges to index
    * @param nodePositions - Map of node IDs to positions
@@ -94,20 +97,38 @@ export class EdgeSpatialIndex {
 
     // Precompute midpoints
     this.edgeMidpoints.clear();
+    const midpointEdges: Edge[] = [];
+    const midpointPositions = new Map<string, NodePosition>();
+
     for (const edge of edges) {
       const sourcePos = posMap.get(edge.source);
       const targetPos = posMap.get(edge.target);
 
       if (sourcePos && targetPos) {
-        this.edgeMidpoints.set(edge.id, {
+        const midpoint = {
           x: (sourcePos.x + targetPos.x) / 2,
           y: (sourcePos.y + targetPos.y) / 2,
-        });
+        };
+        this.edgeMidpoints.set(edge.id, midpoint);
+        midpointEdges.push(edge);
+        midpointPositions.set(edge.id, midpoint);
+        midpointPositions.set(`${edge.id}_end`, midpoint);
       }
     }
 
-    // Bulk load into R-tree
+    // Bulk load into R-tree for edges
     this.spatialIndex.bulkLoad(edges, nodePositions);
+
+    // Build spatial index for midpoints: each midpoint becomes a zero-size edge (point-to-itself)
+    const syntheticEdges = midpointEdges.map((e) => ({
+      id: `_mp_${e.id}`,
+      source: e.id,
+      target: `${e.id}_end`,
+    }));
+
+    if (syntheticEdges.length > 0) {
+      this.midpointSpatialIndex.bulkLoad(syntheticEdges, midpointPositions);
+    }
 
     // Clear visibility cache on rebuild
     this.visibilityCache.clear();
@@ -219,21 +240,93 @@ export class EdgeSpatialIndex {
    * Query edges with distance filtering
    *
    * Returns edges within a maximum distance from viewport center.
-   * Uses edge midpoints for accurate distance calculation.
+   * Uses spatial index for O(log n + k) distance-based queries where k = result count.
+   *
+   * Implementation: Uses AABB (square) search then filters by actual Euclidean distance.
+   * This provides O(log n) index lookup + O(k) filtering, much better than naive O(n).
    *
    * @param viewport - Current viewport bounds
    * @param maxDistance - Maximum distance from center
-   * @returns Edges within distance
+   * @returns Edges within distance, sorted by distance
    */
   queryByDistance(viewport: ViewportBounds, maxDistance: number): EdgeVisibilityResult[] {
     const centerX = (viewport.minX + viewport.maxX) / 2;
     const centerY = (viewport.minY + viewport.maxY) / 2;
 
-    // Query all potentially visible edges
-    const allEdges = this.queryWithVisibility(viewport);
+    // Step 1: Use AABB search on midpoint spatial index for O(log n) candidate retrieval
+    // Create a square search bounds around center at maxDistance radius
+    const searchRadius = maxDistance;
+    const distanceBounds: ViewportBounds = {
+      minX: centerX - searchRadius,
+      maxX: centerX + searchRadius,
+      minY: centerY - searchRadius,
+      maxY: centerY + searchRadius,
+    };
 
-    // Filter by distance
-    return allEdges.filter((result) => result.distanceFromCenter <= maxDistance);
+    const candidateMidpoints = this.midpointSpatialIndex.searchViewport(distanceBounds, 0);
+
+    // Step 2: Filter candidates by actual Euclidean distance
+    // Extract edge IDs (synthetic edge ID is "_mp_{edgeId}", so remove prefix)
+    const results: EdgeVisibilityResult[] = [];
+
+    for (const syntheticEdge of candidateMidpoints) {
+      const edgeId = syntheticEdge.id.replace(/^_mp_/, '');
+      const midpoint = this.edgeMidpoints.get(edgeId);
+
+      if (!midpoint) continue;
+
+      // Calculate actual Euclidean distance
+      const dx = midpoint.x - centerX;
+      const dy = midpoint.y - centerY;
+      const distanceFromCenter = Math.sqrt(dx * dx + dy * dy);
+
+      // Only include if within exact distance threshold
+      if (distanceFromCenter > maxDistance) continue;
+
+      // Get original edge from spatialIndex for visibility calculation
+      const allEdges = this.spatialIndex.getAllEdges();
+      const edge = allEdges.find((e) => e.id === edgeId);
+
+      if (!edge) continue;
+
+      // Calculate visibility for this edge
+      const sourcePos = this.nodePositions.get(edge.source);
+      const targetPos = this.nodePositions.get(edge.target);
+
+      if (sourcePos && targetPos) {
+        const line: LineSegment = {
+          x1: sourcePos.x,
+          y1: sourcePos.y,
+          x2: targetPos.x,
+          y2: targetPos.y,
+        };
+
+        // Use current viewport bounds or last known viewport
+        const viewportRect: Rectangle = this.lastViewport || {
+          minX: viewport.minX,
+          maxX: viewport.maxX,
+          minY: viewport.minY,
+          maxY: viewport.maxY,
+        };
+
+        const clipResult = clipLineCohenSutherland(line, viewportRect);
+        const visibility = clipResult.visibilityRatio;
+
+        if (visibility > 0) {
+          results.push({
+            edge,
+            visibility,
+            fullyInside: visibility >= 0.99,
+            partiallyVisible: visibility < 0.99 && visibility > 0,
+            distanceFromCenter,
+          });
+        }
+      }
+    }
+
+    // Step 3: Sort by distance for consistent ordering
+    results.sort((a, b) => a.distanceFromCenter - b.distanceFromCenter);
+    return results;
   }
 
   /**
@@ -332,6 +425,7 @@ export class EdgeSpatialIndex {
    * Update a single edge position
    *
    * More efficient than full rebuild for incremental updates.
+   * Maintains both edge and midpoint spatial indexes.
    *
    * @param edge - Edge with updated position
    * @param nodePositions - Updated node positions
@@ -345,16 +439,30 @@ export class EdgeSpatialIndex {
     }
 
     // Update midpoint
-    this.edgeMidpoints.set(edge.id, {
+    const midpoint = {
       x: (sourcePos.x + targetPos.x) / 2,
       y: (sourcePos.y + targetPos.y) / 2,
-    });
+    };
+    this.edgeMidpoints.set(edge.id, midpoint);
 
     // Update spatial index
     const updated = this.spatialIndex.updateEdge(edge, nodePositions);
 
-    // Invalidate cache for this edge
+    // Update midpoint spatial index
     if (updated) {
+      const midpointNodePositions = new Map<string, NodePosition>();
+      midpointNodePositions.set(edge.id, midpoint);
+      midpointNodePositions.set(`${edge.id}_end`, midpoint);
+
+      const syntheticEdge = {
+        id: `_mp_${edge.id}`,
+        source: edge.id,
+        target: `${edge.id}_end`,
+      };
+
+      this.midpointSpatialIndex.updateEdge(syntheticEdge, midpointNodePositions);
+
+      // Invalidate cache for this edge
       this.visibilityCache.delete(edge.id);
     }
 
@@ -364,16 +472,27 @@ export class EdgeSpatialIndex {
   /**
    * Remove an edge from the index
    *
+   * Removes from both edge and midpoint spatial indexes.
+   *
    * @param edgeId - ID of edge to remove
    */
   removeEdge(edgeId: string): boolean {
     this.edgeMidpoints.delete(edgeId);
     this.visibilityCache.delete(edgeId);
-    return this.spatialIndex.removeEdge(edgeId);
+    const removed = this.spatialIndex.removeEdge(edgeId);
+
+    // Also remove from midpoint spatial index
+    if (removed) {
+      this.midpointSpatialIndex.removeEdge(`_mp_${edgeId}`);
+    }
+
+    return removed;
   }
 
   /**
    * Insert a new edge into the index
+   *
+   * Inserts into both edge and midpoint spatial indexes.
    *
    * @param edge - Edge to insert
    * @param nodePositions - Node positions
@@ -387,13 +506,31 @@ export class EdgeSpatialIndex {
     }
 
     // Compute midpoint
-    this.edgeMidpoints.set(edge.id, {
+    const midpoint = {
       x: (sourcePos.x + targetPos.x) / 2,
       y: (sourcePos.y + targetPos.y) / 2,
-    });
+    };
+    this.edgeMidpoints.set(edge.id, midpoint);
 
-    // Insert into spatial index
-    return this.spatialIndex.insertEdge(edge, nodePositions);
+    // Insert into edge spatial index
+    const inserted = this.spatialIndex.insertEdge(edge, nodePositions);
+
+    if (inserted) {
+      // Also insert into midpoint spatial index
+      const midpointNodePositions = new Map<string, NodePosition>();
+      midpointNodePositions.set(edge.id, midpoint);
+      midpointNodePositions.set(`${edge.id}_end`, midpoint);
+
+      const syntheticEdge = {
+        id: `_mp_${edge.id}`,
+        source: edge.id,
+        target: `${edge.id}_end`,
+      };
+
+      this.midpointSpatialIndex.insertEdge(syntheticEdge, midpointNodePositions);
+    }
+
+    return inserted;
   }
 }
 
