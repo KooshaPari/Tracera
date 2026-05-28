@@ -155,11 +155,11 @@ class CacheService:
 
     def _get_ttl(self, cache_type: str) -> int:
         """Get TTL for cache type."""
-        config = CACHE_CONFIG.get(cache_type, {"ttl": TTL_LONG})
-        ttl = config.get("ttl", TTL_LONG)
+        config = CACHE_CONFIG.get(cache_type, {"ttl": TTL_MEDIUM})
+        ttl = config.get("ttl", TTL_MEDIUM)
         if isinstance(ttl, (int, float, str)):
             return int(ttl)
-        return TTL_LONG
+        return TTL_MEDIUM
 
     async def get(self, key: str) -> object | None:
         """Get value from cache. Raises RedisUnavailableError on connection failure (required service)."""
