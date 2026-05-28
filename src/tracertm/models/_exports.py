@@ -22,6 +22,18 @@ from tracertm.models.item import Item
 from tracertm.models.item_view import ItemView
 from tracertm.models.link import Link
 from tracertm.models.link_type import LinkType
+from tracertm.models.trace_link import (
+    NEO4J_NODE_LABELS,
+    NEO4J_RELATIONSHIP_TYPES,
+    Artifact,
+    ArtifactKind,
+    Neo4jSchema,
+    Requirement,
+    RequirementStatus,
+    TraceLink,
+    TraceLinkType,
+    VerificationMethod,
+)
 from tracertm.models.node_kind import NodeKind
 from tracertm.models.node_kind_rule import NodeKindRule
 from tracertm.models.problem import Problem, ProblemActivity
@@ -234,6 +246,8 @@ __all__ = [
     "AgentEvent",
     "AgentLock",
     "AgentSession",
+    "Artifact",
+    "ArtifactKind",
     "Base",
     "Baseline",
     "BaselineItem",
@@ -271,6 +285,9 @@ __all__ = [
     "Link",
     "LinkType",
     "MerkleProofCache",
+    "NEO4J_NODE_LABELS",
+    "NEO4J_RELATIONSHIP_TYPES",
+    "Neo4jSchema",
     "NodeKind",
     "NodeKindRule",
     "Problem",
@@ -278,8 +295,10 @@ __all__ = [
     "Process",
     "ProcessExecution",
     "Project",
+    "Requirement",
     "RequirementQuality",
     "RequirementSpec",
+    "RequirementStatus",
     "RequirementType",
     "RiskLevel",
     "Scenario",
@@ -299,8 +318,11 @@ __all__ = [
     "TestSuiteActivity",
     "TestSuiteTestCase",
     "TestType",
+    "TraceLink",
+    "TraceLinkType",
     "User",
     "UserStorySpec",
+    "VerificationMethod",
     "VerificationStatus",
     "VersionBlock",
     "VersionChainIndex",
