@@ -169,6 +169,18 @@ async def python_backend_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenera
 
 
 @pytest.fixture
+async def _postgres_proxy(postgres_proxy: str) -> str:
+    """Alias for postgres_proxy with underscore prefix (pytest convention for unused fixtures)."""
+    return postgres_proxy
+
+
+@pytest.fixture
+async def _redis_proxy(redis_proxy: str) -> str:
+    """Alias for redis_proxy with underscore prefix (pytest convention for unused fixtures)."""
+    return redis_proxy
+
+
+@pytest.fixture
 async def db_session(postgres_proxy: str) -> AsyncGenerator[AsyncSession, None]:
     """Provides a database session through the Toxiproxy proxy."""
     engine = create_async_engine(postgres_proxy, echo=False)
