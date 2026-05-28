@@ -7,10 +7,7 @@ export type MatrixCoverageMap = Record<string, Set<string>>;
 
 export type CoverageStatus = 'covered' | 'partial' | 'uncovered';
 
-export function getCoverageStatus(
-  coveredCount: number,
-  totalFeatures: number,
-): CoverageStatus {
+export function getCoverageStatus(coveredCount: number, totalFeatures: number): CoverageStatus {
   if (totalFeatures === 0 || coveredCount === 0) {
     return 'uncovered';
   }
@@ -30,12 +27,7 @@ export function buildTraceabilityMatrixCsv(
   features: MatrixExportItem[],
   coverage: MatrixCoverageMap,
 ): string {
-  const header = [
-    'Requirement ID',
-    'Requirement',
-    'Coverage',
-    ...features.map((f) => f.title),
-  ];
+  const header = ['Requirement ID', 'Requirement', 'Coverage', ...features.map((f) => f.title)];
   const lines = [header.map(escapeCsvCell).join(',')];
 
   for (const req of requirements) {
@@ -74,10 +66,7 @@ export function downloadTextFile(content: string, filename: string, mimeType: st
   anchor.remove();
 }
 
-export function downloadTraceabilityMatrixCsv(
-  csv: string,
-  projectId: string,
-): void {
+export function downloadTraceabilityMatrixCsv(csv: string, projectId: string): void {
   const [day] = new Date().toISOString().split('T');
   const slug = projectId.slice(0, 8) || 'project';
   downloadTextFile(csv, `tracera-matrix-${slug}-${day}.csv`, 'text/csv;charset=utf-8');

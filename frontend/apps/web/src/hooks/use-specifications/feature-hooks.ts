@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import * as specificationsApi from '@/hooks/useSpecifications.api';
-import * as queryUtils from './query-utils';
+
 import type { MutationResult } from './query-utils';
+
+import * as queryUtils from './query-utils';
 
 type FetchFeaturesResult = Awaited<ReturnType<typeof specificationsApi.fetchFeatures>>;
 
@@ -106,9 +108,7 @@ const useFeatureActivities = (
     queryKey: ['featureActivities', featureId],
   });
 
-const useFeatureStats = (
-  projectId: string,
-): queryUtils.QueryResult<FetchFeatureStatsResult> =>
+const useFeatureStats = (projectId: string): queryUtils.QueryResult<FetchFeatureStatsResult> =>
   useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => {

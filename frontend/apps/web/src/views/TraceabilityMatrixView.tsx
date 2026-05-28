@@ -157,7 +157,8 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
   const coverageSummary = useMemo(() => {
     const totalReqs = matrix.requirements.length;
     const covered = matrix.requirements.filter(
-      (r) => (matrix.coverage[r.id]?.size ?? 0) >= matrix.features.length && matrix.features.length > 0,
+      (r) =>
+        (matrix.coverage[r.id]?.size ?? 0) >= matrix.features.length && matrix.features.length > 0,
     ).length;
     const partial = matrix.requirements.filter((r) => {
       const c = matrix.coverage[r.id]?.size ?? 0;
@@ -201,9 +202,7 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
       {/* Header */}
       <div className='flex flex-col justify-between gap-4 md:flex-row md:items-start'>
         <div>
-          <h1 className='font-mono text-xl font-bold tracking-tight'>
-            Traceability Matrix
-          </h1>
+          <h1 className='font-mono text-xl font-bold tracking-tight'>Traceability Matrix</h1>
           <p className='text-muted-foreground mt-1 text-sm'>
             Requirements coverage mapped to functional features.
           </p>
@@ -211,7 +210,7 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
         <Button
           variant='outline'
           size='sm'
-          className='gap-2 rounded-lg font-mono text-xs uppercase tracking-wider'
+          className='gap-2 rounded-lg font-mono text-xs tracking-wider uppercase'
           disabled={isExporting}
           onClick={() => {
             void handleExportCsv();
@@ -242,7 +241,12 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
             label: 'Coverage',
             progress: true,
             value: `${coveragePercent}%`,
-            accent: coveragePercent >= 80 ? 'text-green-500' : coveragePercent >= 40 ? 'text-yellow-500' : 'text-red-500',
+            accent:
+              coveragePercent >= 80
+                ? 'text-green-500'
+                : coveragePercent >= 40
+                  ? 'text-yellow-500'
+                  : 'text-red-500',
           },
           {
             icon: CheckCircle2,
@@ -316,7 +320,7 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
         <div className='bg-border mx-1 h-5 w-px' />
         <Badge
           variant='outline'
-          className='h-7 rounded-md px-2.5 font-mono text-[10px] font-bold uppercase tracking-wider'
+          className='h-7 rounded-md px-2.5 font-mono text-[10px] font-bold tracking-wider uppercase'
         >
           {matrix.requirements.length}r × {matrix.features.length}f
         </Badge>
@@ -343,7 +347,7 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
                     className='bg-muted/20 min-w-[100px] border-r border-b p-3 align-bottom'
                   >
                     <div className='mx-auto rotate-180 [writing-mode:vertical-lr]'>
-                      <span className='text-muted-foreground max-h-[130px] truncate font-mono text-[9px] font-bold uppercase tracking-tight'>
+                      <span className='text-muted-foreground max-h-[130px] truncate font-mono text-[9px] font-bold tracking-tight uppercase'>
                         {feature.title}
                       </span>
                     </div>
@@ -373,10 +377,10 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
                       )}
                     >
                       <div className='flex flex-col gap-1'>
-                        <span className='group-hover:text-foreground text-sm font-semibold leading-tight transition-colors'>
+                        <span className='group-hover:text-foreground text-sm leading-tight font-semibold transition-colors'>
                           {req.title}
                         </span>
-                        <span className='text-muted-foreground font-mono text-[9px] uppercase tracking-widest'>
+                        <span className='text-muted-foreground font-mono text-[9px] tracking-widest uppercase'>
                           {req.id.slice(0, 8)}
                         </span>
                       </div>

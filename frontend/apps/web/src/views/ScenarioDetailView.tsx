@@ -79,7 +79,9 @@ function ScenarioActivityCard({
                 </div>
               </div>
               <div className='text-muted-foreground text-xs'>
-                {activity.createdAt ? format(new Date(activity.createdAt), 'MMM d, yyyy HH:mm') : '—'}
+                {activity.createdAt
+                  ? format(new Date(activity.createdAt), 'MMM d, yyyy HH:mm')
+                  : '—'}
               </div>
             </div>
           ))
@@ -169,10 +171,7 @@ export function ScenarioDetailView(): React.JSX.Element {
     limit: pageSize,
     offset: (page - 1) * pageSize,
   });
-  const activities = useMemo(
-    () => activityData?.activities ?? [],
-    [activityData?.activities],
-  );
+  const activities = useMemo(() => activityData?.activities ?? [], [activityData?.activities]);
   const totalActivities = activityData?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalActivities / pageSize));
   const progressStyle = useMemo<React.CSSProperties>(

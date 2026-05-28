@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  buildTraceabilityMatrixCsv,
-  getCoverageStatus,
-} from '../../lib/traceabilityMatrixExport';
+import { buildTraceabilityMatrixCsv, getCoverageStatus } from '../../lib/traceabilityMatrixExport';
 
 describe('traceabilityMatrixExport', () => {
   it('classifies coverage status', () => {

@@ -5,8 +5,8 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { toast } from 'sonner';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 vi.mock('sonner', () => ({
   toast: {
