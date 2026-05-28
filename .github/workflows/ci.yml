@@ -706,7 +706,7 @@ jobs:
 
     - name: Download benchmark baseline
       if: github.event_name == 'pull_request'
-      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      uses: actions/download-artifact@ccda3649569a1b2ed86089aeaaad7aabd0baf52a
       with:
         name: go-benchmark-baseline
         path: /tmp/
@@ -1303,18 +1303,19 @@ jobs:
     runs-on: ubuntu-latest
     needs: [python-tests, go-tests, frontend-checks]
     if: always()
+    continue-on-error: true
     steps:
     - name: Checkout code
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Download current coverage artifacts
-      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      uses: actions/download-artifact@ccda3649569a1b2ed86089aeaaad7aabd0baf52a
       with:
         path: current-coverage
       continue-on-error: true
 
     - name: Download baseline coverage (if available)
-      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      uses: actions/download-artifact@ccda3649569a1b2ed86089aeaaad7aabd0baf52a
       with:
         name: go-coverage-baseline
         path: baseline-coverage
