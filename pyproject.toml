@@ -132,6 +132,7 @@ test = [
     "hypothesis>=6.151.4",
     "faker>=40.1.2",
     "factory-boy>=3.3.3",
+    "testcontainers[neo4j]>=4.10.0",
 ]
 phase2 = [
     "poethepoet>=0.40.0",
