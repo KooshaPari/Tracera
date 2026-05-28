@@ -21,12 +21,6 @@ while IFS= read -r f; do
     tests/unit/*/test_*.py | tests/unit/test_*.py)
       add_test "$f"
       ;;
-    src/tracertm/*)
-      bn=$(basename "${f%.py}")
-      for t in tests/unit/**/test_"${bn}".py tests/unit/**/test_*_"${bn}".py; do
-        add_test "$t"
-      done
-      ;;
   esac
 done < <(git diff --name-only "$base"...HEAD -- '*.py' || true)
 
