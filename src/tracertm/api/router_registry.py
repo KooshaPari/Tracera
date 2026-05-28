@@ -23,6 +23,7 @@ from tracertm.api.routers import (
     github,
     graphs,
     health,
+    impact,
     items,
     items_summary,
     linear,
@@ -89,6 +90,9 @@ def register_api_routers(app: FastAPI) -> None:
 
     # Agent sessions and workflow
     app.include_router(agent.router, prefix="/api/v1")
+
+    # Impact analysis (Cypher forward/reverse traversal)
+    app.include_router(impact.router, prefix="/api/v1")
 
     # MCP router (Model Context Protocol over HTTP)
     app.include_router(mcp.router, prefix="/api/v1")
