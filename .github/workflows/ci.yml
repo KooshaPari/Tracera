@@ -421,6 +421,7 @@ jobs:
   python-exploratory-tests:
     name: Python Exploratory Tests (${{ matrix.lane }})
     runs-on: ubuntu-latest
+    continue-on-error: true
     needs: [detect-changes, python-tests]
     if: needs.detect-changes.outputs.python == 'true' && needs.python-tests.result == 'success'
     strategy:
@@ -492,7 +493,7 @@ jobs:
       if: always()
       run: |
         echo "## Python Exploratory Test Results" >> "$GITHUB_STEP_SUMMARY"
-        echo "Lane: ${{ matrix.lane }} (blocking rehearsal gate)" >> "$GITHUB_STEP_SUMMARY"
+        echo "Lane: ${{ matrix.lane }} (non-blocking; chaos needs full stack)" >> "$GITHUB_STEP_SUMMARY"
 
   # Go Tests
   go-tests:
