@@ -92,7 +92,8 @@ class Config(BaseModel):
         if not v.startswith(allowed_prefixes):
             msg = (
                 "Database URL must start with 'postgresql://', "
-                "'postgresql+asyncpg://', or 'sqlite:///'"
+                "'postgresql+asyncpg://', 'postgresql+psycopg://', "
+                "'postgresql+psycopg2://', or 'sqlite:///'"
             )
             raise ValueError(msg)
 
