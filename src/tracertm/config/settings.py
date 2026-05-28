@@ -8,7 +8,7 @@ This module provides type-safe, validated configuration management with support 
 """
 
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -98,9 +98,9 @@ class TraceSettings(BaseSettings):
     enable_async: bool = Field(True, description="Enable async operations")
     enable_validation: bool = Field(True, description="Enable strict validation")
 
-    def __init__(self, **data: object) -> None:
+    def __init__(self, **data: Any) -> None:
         """Initialize settings and create directories."""
-        super().__init__(**data)  # type: ignore[arg-type]
+        super().__init__(**data)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.config_dir.mkdir(parents=True, exist_ok=True)
 
