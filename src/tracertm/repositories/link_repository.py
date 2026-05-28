@@ -30,8 +30,29 @@ class LinkRepository:
         graph_id: str | None = None,
         link_metadata: dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
+        confidence: float = 1.0,
+        rationale: str | None = None,
     ) -> Link:
-        """Create new link."""
+        """Create new link.
+
+        Args:
+            project_id: Owning project.
+            source_item_id: Source item identifier.
+            target_item_id: Target item identifier.
+            link_type: Semantic link type (e.g. ``implements``, ``tests``).
+            graph_id: Optional graph identifier; resolved from project + item
+                when omitted.
+            link_metadata: Structured metadata blob attached to the link.
+            metadata: Backward-compatible alias for ``link_metadata``.
+            confidence: Miner posterior in ``[0.0, 1.0]`` (default ``1.0`` for
+                human-curated links). Values outside the range are rejected by
+                the ``links_confidence_range`` CHECK constraint.
+            rationale: Optional natural-language justification surfaced by the
+                explainability / RAG layer.
+        """
+        if not 0.0 <= confidence <= 1.0:
+            msg = f"confidence must be in [0.0, 1.0], got {confidence!r}"
+            raise ValueError(msg)
         if graph_id is None:
             from sqlalchemy import select
 
@@ -76,6 +97,8 @@ class LinkRepository:
             target_item_id=str(target_item_id) if isinstance(target_item_id, uuid.UUID) else target_item_id,
             link_type=link_type,
             link_metadata=final_metadata,
+            confidence=confidence,
+            rationale=rationale,
         )
         self.session.add(link)
         await self.session.flush()
@@ -140,4 +163,33 @@ class LinkRepository:
     async def get_by_type(self, link_type: str) -> list[Link]:
         """Get all links of a specific type."""
         result = await self.session.execute(select(Link).where(Link.link_type == link_type))
+        return list(result.scalars().all())
+
+    async def list_with_confidence(
+        self,
+        min_confidence: float,
+        project_id: str | uuid.UUID | None = None,
+    ) -> list[Link]:
+        """List links whose ``confidence`` is ``>= min_confidence``.
+
+        Results are ordered by descending confidence so callers can stream the
+        highest-signal trace links first (e.g. for explainability surfaces or
+        RAG context windows).
+
+        Args:
+            min_confidence: Inclusive lower bound in ``[0.0, 1.0]``.
+            project_id: Optional project scope.
+
+        Returns:
+            Links satisfying the confidence threshold, sorted desc by
+            ``confidence``.
+        """
+        if not 0.0 <= min_confidence <= 1.0:
+            msg = f"min_confidence must be in [0.0, 1.0], got {min_confidence!r}"
+            raise ValueError(msg)
+        query = select(Link).where(Link.confidence >= min_confidence)
+        if project_id is not None:
+            query = query.where(Link.project_id == project_id)
+        query = query.order_by(Link.confidence.desc())
+        result = await self.session.execute(query)
         return list(result.scalars().all())
