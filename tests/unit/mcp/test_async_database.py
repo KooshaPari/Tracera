@@ -8,6 +8,7 @@ Validates:
 """
 
 from typing import Any, Never
+from uuid import uuid4
 
 import pytest
 from sqlalchemy import select, text
@@ -63,8 +64,9 @@ async def test_get_mcp_session_provides_valid_session() -> None:
 @pytest.mark.asyncio
 async def test_get_mcp_session_sets_rls_context(mocker: Any) -> None:
     """Test that get_mcp_session sets RLS context for PostgreSQL."""
-    # Mock current_user_id context
-    mocker.patch("tracertm.mcp.database_adapter.current_user_id.get", return_value="user-123")
+    # Replace the ContextVar object with a mock so we can verify the lookup.
+    mock_current_user_id = mocker.patch("tracertm.mcp.database_adapter.current_user_id")
+    mock_current_user_id.get.return_value = "user-123"
 
     # Mock config to return PostgreSQL URL
     mock_config = mocker.patch("tracertm.mcp.database_adapter.ConfigManager")
@@ -85,7 +87,7 @@ async def test_get_mcp_session_commits_on_success() -> None:
     async with get_mcp_session() as session:
         # Create a test project
         project = Project(
-            id="test-project-1",
+            id=str(uuid4()),
             name="Test Project",
             description="Test",
         )
@@ -103,11 +105,12 @@ async def test_get_mcp_session_commits_on_success() -> None:
 @pytest.mark.asyncio
 async def test_get_mcp_session_rollsback_on_error() -> None:
     """Test that session rolls back changes on error."""
+    project_id = str(uuid4())
 
     async def _rollback_scenario() -> Never:
         async with get_mcp_session() as session:
             project = Project(
-                id="test-project-2",
+                id=project_id,
                 name="Test Project",
                 description="Test",
             )
@@ -120,7 +123,7 @@ async def test_get_mcp_session_rollsback_on_error() -> None:
 
     # Verify project was not committed
     async with get_mcp_session() as session:
-        result = await session.execute(select(Project).filter(Project.id == "test-project-2"))
+        result = await session.execute(select(Project).filter(Project.id == project_id))
         saved_project = result.scalar_one_or_none()
         assert saved_project is None
 
@@ -143,6 +146,7 @@ async def test_get_pool_status_returns_metrics() -> None:
 @pytest.mark.asyncio
 async def test_get_pool_status_before_init() -> None:
     """Test that get_pool_status handles uninitialized engine."""
+    await reset_engine()
     status = await get_pool_status()
 
     assert status == {"status": "not_initialized"}
@@ -195,7 +199,7 @@ async def test_concurrent_sessions_use_pool() -> None:
 
 
 @pytest.mark.asyncio
-async def test_fastapi_integration_shares_engine(_mocker: Any) -> None:
+async def test_fastapi_integration_shares_engine() -> None:
     """Test that FastAPI's get_db uses the same engine."""
     # Get MCP engine
     mcp_engine = await get_async_engine()
