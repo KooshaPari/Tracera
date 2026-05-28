@@ -94,24 +94,34 @@ jobs:
         DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
         REDIS_URL: redis://localhost:6379
         PYTHONPATH: ${{ github.workspace }}/src
-      run: "if ! uv run python -c \"import tracertm.cli\" 2>/dev/null; then\n  if\
-        \ [ \"${{ matrix.test-type }}\" != \"unit\" ] && [ \"${{ matrix.test-type }}\"\
-        \ != \"property\" ]; then\n    echo \"tracertm.cli not installed; skipping\
-        \ ${{ matrix.test-type }} tests.\" >> \"$GITHUB_STEP_SUMMARY\"\n    exit\
-        \ 0\n  fi\nfi\nif [ \"${{ matrix.test-type }}\" = \"unit\" ]; then\n  uv\
-        \ run pytest tests/unit -m \"unit and not slow\" -v --cov=src/tracertm --cov-report=xml\
-        \ --cov-report=html --cov-report=term-missing --junitxml=junit-${{ matrix.test-type\
-        \ }}.xml\n  uv run pytest tests/unit -m \"unit and slow\" -v --cov=src/tracertm\
-        \ --cov-append --cov-report=xml --cov-report=html --cov-report=term-missing\
-        \ --junitxml=junit-${{ matrix.test-type }}-slow.xml\nelif [ \"${{ matrix.test-type\
-        \ }}\" = \"integration\" ]; then\n  uv run pytest tests/integration -m \"integration\
-        \ and not slow\" -v --junitxml=junit-${{ matrix.test-type }}.xml\n  uv run\
-        \ pytest tests/integration -m \"integration and slow\" -v --junitxml=junit-${{\
-        \ matrix.test-type }}-slow.xml\nelif [ \"${{ matrix.test-type }}\" = \"e2e\"\
-        \ ]; then\n  uv run pytest tests/e2e -m \"e2e\" -v --junitxml=junit-${{ matrix.test-type\
-        \ }}.xml\nelif [ \"${{ matrix.test-type }}\" = \"property\" ]; then\n  uv\
-        \ run pytest tests/property tests/unit -m property -v --junitxml=junit-${{ matrix.test-type\
-        \ }}.xml\nfi\n"
+      shell: bash
+      run: |
+        set -euo pipefail
+        if ! uv run python -c "import tracertm.cli" 2>/dev/null; then
+          if [ "${{ matrix.test-type }}" != "unit" ] && [ "${{ matrix.test-type }}" != "property" ]; then
+            echo "tracertm.cli not installed; skipping ${{ matrix.test-type }} tests." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+        fi
+        if [ "${{ matrix.test-type }}" = "unit" ]; then
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            mapfile -t unit_targets < <(.github/scripts/pr_unit_test_targets.sh "${{ github.event.pull_request.base.sha }}")
+          else
+            unit_targets=(tests/unit)
+          fi
+          uv run pytest "${unit_targets[@]}" -m "unit and not slow" -v --cov=src/tracertm --cov-report=xml \
+            --cov-report=html --cov-report=term-missing --junitxml=junit-${{ matrix.test-type }}.xml
+          uv run pytest "${unit_targets[@]}" -m "unit and slow" -v --cov=src/tracertm --cov-append \
+            --cov-report=xml --cov-report=html --cov-report=term-missing \
+            --junitxml=junit-${{ matrix.test-type }}-slow.xml
+        elif [ "${{ matrix.test-type }}" = "integration" ]; then
+          uv run pytest tests/integration -m "integration and not slow" -v --junitxml=junit-${{ matrix.test-type }}.xml
+          uv run pytest tests/integration -m "integration and slow" -v --junitxml=junit-${{ matrix.test-type }}-slow.xml
+        elif [ "${{ matrix.test-type }}" = "e2e" ]; then
+          uv run pytest tests/e2e -m "e2e" -v --junitxml=junit-${{ matrix.test-type }}.xml
+        elif [ "${{ matrix.test-type }}" = "property" ]; then
+          uv run pytest tests/property tests/unit -m property -v --junitxml=junit-${{ matrix.test-type }}.xml
+        fi
     - name: Generate test summary
       if: always()
       run: "echo \"## Test Summary: ${{ matrix.test-type }} (Python ${{ matrix.python-version\
@@ -217,11 +227,30 @@ jobs:
         DATABASE_URL: postgresql+asyncpg://tracertm:test_password@localhost:5432/tracertm_test
         REDIS_URL: redis://localhost:6379
         PYTHONPATH: ${{ github.workspace }}/src
-      run: "if ! uv run python -c \"import tracertm.cli\" 2>/dev/null; then\n  TARGETS=\"tests/unit\
-        \ tests/property tests/unit\"\nelse\n  TARGETS=\"tests/\"\nfi\nuv run pytest\
-        \ \"$TARGETS\" -n auto -v \\\n  --cov=src/tracertm \\\n  --cov-report=xml\
-        \ \\\n  --cov-report=html \\\n  --cov-report=term-missing \\\n  --cov-fail-under=90\
-        \ \\\n  --junitxml=junit-parallel.xml \\\n  --maxfail=10\n"
+      shell: bash
+      run: |
+        set -euo pipefail
+        if ! uv run python -c "import tracertm.cli" 2>/dev/null; then
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            mapfile -t targets < <(.github/scripts/pr_unit_test_targets.sh "${{ github.event.pull_request.base.sha }}")
+            mapfile -t prop_targets < <(git diff --name-only "${{ github.event.pull_request.base.sha }}"...HEAD -- 'tests/property/**/test_*.py' || true)
+            if ((${#prop_targets[@]} > 0)); then
+              targets+=("${prop_targets[@]}")
+            fi
+            targets+=(tests/property)
+          else
+            targets=(tests/unit tests/property)
+          fi
+        else
+          targets=(tests/)
+        fi
+        uv run pytest "${targets[@]}" -n auto -v \
+          --cov=src/tracertm \
+          --cov-report=xml \
+          --cov-report=html \
+          --cov-report=term-missing \
+          --junitxml=junit-parallel.xml \
+          --maxfail=10
     - name: Generate comprehensive test summary
       if: always()
       run: "echo \"## Comprehensive Test Summary (Parallel Execution)\" >> $GITHUB_STEP_SUMMARY\n\

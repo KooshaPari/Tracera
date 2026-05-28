@@ -266,6 +266,7 @@ markers = [
 ]
 filterwarnings = [
     "error",
+    "ignore::pytest_benchmark.logger.PytestBenchmarkWarning",
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
     "ignore::pytest.PytestUnraisableExceptionWarning",

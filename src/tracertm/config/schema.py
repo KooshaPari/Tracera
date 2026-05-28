@@ -66,8 +66,18 @@ class Config(BaseModel):
             return v
 
         # Allow PostgreSQL (production) and SQLite (testing/development)
-        if not v.startswith(("postgresql://", "sqlite:///")):
-            msg = "Database URL must start with 'postgresql://' or 'sqlite:///'"
+        allowed_prefixes = (
+            "postgresql://",
+            "postgresql+asyncpg://",
+            "postgresql+psycopg://",
+            "postgresql+psycopg2://",
+            "sqlite:///",
+        )
+        if not v.startswith(allowed_prefixes):
+            msg = (
+                "Database URL must start with 'postgresql://', "
+                "'postgresql+asyncpg://', or 'sqlite:///'"
+            )
             raise ValueError(msg)
 
         return v
