@@ -30,7 +30,9 @@ def test_database_url(temp_config_dir: Any) -> str:
 
 
 @pytest.fixture(autouse=True)
-async def setup_test_database(test_database_url: Any, temp_config_dir: Any, monkeypatch: Any) -> None:
+async def setup_test_database(
+    test_database_url: Any, temp_config_dir: Any, monkeypatch: Any
+) -> None:
     """Set up test database for each test."""
     # CRITICAL: Set environment variables BEFORE any imports or engine creation
     # This ensures ConfigManager picks up the test database URL
