@@ -320,7 +320,7 @@ class CacheService:
     async def health_check(self) -> bool:
         """Check if Redis is healthy. Raises RedisUnavailableError when Redis is down (required service)."""
         try:
-            await self.redis_client.ping()
+            await self.redis_client.ping()  # ty: ignore[invalid-await]
         except (RedisUnavailableError, RuntimeError):
             raise
         except Exception as e:
