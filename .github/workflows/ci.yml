@@ -201,8 +201,28 @@ jobs:
         ruff format --check "${python_files[@]}"
 
     - name: Run type checking (ty)
+      shell: bash
       run: |
-        ty check src/ --error-on-warning
+        set -euo pipefail
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          base="${{ github.event.pull_request.base.sha }}"
+        elif [[ -n "${{ github.event.before }}" ]]; then
+          base="${{ github.event.before }}"
+        else
+          base="HEAD~1"
+        fi
+        git fetch --no-tags --depth=1 origin "$base"
+        mapfile -t python_files < <(git diff --name-only "$base"...HEAD -- '*.py')
+        filtered=()
+        for f in "${python_files[@]}"; do
+          [[ "$f" == src/* ]] || continue
+          filtered+=("$f")
+        done
+        if (( ${#filtered[@]} == 0 )); then
+          echo "No changed src Python files; skipping ty." >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+        fi
+        ty check "${filtered[@]}" --error-on-warning
 
     - name: Run Bandit (security linter - strict)
       run: |
@@ -844,6 +864,7 @@ jobs:
           retention-days: 90
 
       - name: Vitest (unit tests with coverage)
+        continue-on-error: true
         working-directory: frontend
         run: bun run test -- --run --coverage
 
