@@ -84,9 +84,8 @@ async def test_get_mcp_session_sets_rls_context(mocker: Any) -> None:
 @pytest.mark.asyncio
 async def test_get_mcp_session_commits_on_success() -> None:
     """Test that session commits changes on successful execution."""
-    project_id = str(uuid4())
+    project_id = uuid4()
     async with get_mcp_session() as session:
-        # Create a test project
         project = Project(
             id=project_id,
             name="Test Project",
@@ -106,7 +105,7 @@ async def test_get_mcp_session_commits_on_success() -> None:
 @pytest.mark.asyncio
 async def test_get_mcp_session_rollsback_on_error() -> None:
     """Test that session rolls back changes on error."""
-    project_id = str(uuid4())
+    project_id = uuid4()
 
     async def _rollback_scenario() -> Never:
         async with get_mcp_session() as session:
@@ -132,10 +131,10 @@ async def test_get_mcp_session_rollsback_on_error() -> None:
 @pytest.mark.asyncio
 async def test_get_pool_status_returns_metrics() -> None:
     """Test that get_pool_status returns pool metrics."""
-    # Initialize engine
     await get_async_engine()
-
     status = await get_pool_status()
+    if status.get("status") == "not_initialized":
+        pytest.fail("Expected initialized pool status")
 
     assert "size" in status
     assert "checked_out" in status
@@ -156,8 +155,9 @@ async def test_get_pool_status_before_init() -> None:
 @pytest.mark.asyncio
 async def test_engine_sharing_reduces_connections() -> None:
     """Test that multiple sessions share the same connection pool."""
-    # Get pool status via adapter (avoids typing issues with pool.size())
+    await get_async_engine()
     initial_status = await get_pool_status()
+    assert "size" in initial_status
     initial_pool_size = initial_status["size"]
 
     # Create multiple sessions
