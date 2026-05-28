@@ -109,11 +109,11 @@ jobs:
           else
             unit_targets=(tests/unit)
           fi
-          uv run pytest "${unit_targets[@]}" -m "unit and not slow" -v --cov=src/tracertm --cov-report=xml \
+          uv run pytest "${unit_targets[@]}" -m "not slow" -v --cov=src/tracertm --cov-report=xml \
             --cov-report=html --cov-report=term-missing --cov-fail-under=0 \
             --junitxml=junit-${{ matrix.test-type }}.xml
           set +e
-          uv run pytest "${unit_targets[@]}" -m "unit and slow" -v --cov=src/tracertm --cov-append \
+          uv run pytest "${unit_targets[@]}" -m "slow" -v --cov=src/tracertm --cov-append \
             --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=0 \
             --junitxml=junit-${{ matrix.test-type }}-slow.xml
           slow_code=$?
