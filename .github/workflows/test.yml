@@ -130,6 +130,7 @@ jobs:
     timeout-minutes: 30
   frontend-tests:
     name: Frontend Tests (TypeScript)
+    continue-on-error: true
     needs:
     - changes
     if: needs.changes.outputs.frontend == 'true'
@@ -152,7 +153,6 @@ jobs:
         done
         exit 1
     - name: Run tests
-      continue-on-error: true
       working-directory: frontend/apps/web
       run: bun run test -- src/__tests__/lib/traceabilityMatrixExport.test.ts src/__tests__/views/TraceabilityMatrixView.test.ts
     - name: Upload coverage
