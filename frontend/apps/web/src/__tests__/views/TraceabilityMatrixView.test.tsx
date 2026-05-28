@@ -153,7 +153,7 @@ describe(TraceabilityMatrixView, () => {
     expect(screen.getByRole('button', { name: /export csv/i })).toBeInTheDocument();
   });
 
-  it('blocks export when matrix has no rows or columns', () => {
+  it('disables export when matrix has no rows or columns', () => {
     mockItems();
     mockLinks();
 
@@ -163,10 +163,44 @@ describe(TraceabilityMatrixView, () => {
       </QueryClientProvider>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /export csv/i }));
-    expect(toast.error).toHaveBeenCalledWith(
-      'Nothing to export — add requirements and features first',
+    expect(screen.getByRole('button', { name: /export csv/i })).toBeDisabled();
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('disables export when only requirements exist', () => {
+    mockItems({
+      data: {
+        items: [{ id: 'req-1', title: 'Requirement 1', type: 'requirement' }],
+        total: 1,
+      },
+    });
+    mockLinks();
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <TraceabilityMatrixView projectId='proj-test' />
+      </QueryClientProvider>,
     );
+
+    expect(screen.getByRole('button', { name: /export csv/i })).toBeDisabled();
+  });
+
+  it('disables export when only features exist', () => {
+    mockItems({
+      data: {
+        items: [{ id: 'feat-1', title: 'Feature 1', type: 'feature' }],
+        total: 1,
+      },
+    });
+    mockLinks();
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <TraceabilityMatrixView projectId='proj-test' />
+      </QueryClientProvider>,
+    );
+
+    expect(screen.getByRole('button', { name: /export csv/i })).toBeDisabled();
   });
 
   it('handles empty state', () => {
