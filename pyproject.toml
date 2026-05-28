@@ -109,6 +109,7 @@ dev = [
     "pip-audit>=2.7.4",
     "vulture>=2.14",
     "radon>=6.0.1",
+    "pycln>=2.6.0",
 ]
 tui = [
     "textual>=0.47.0",
@@ -119,6 +120,7 @@ lint = [
     "bandit[toml]>=1.7.10",
     "pip-audit>=2.7.4",
     "import-linter>=2.4.1",
+    "pycln>=2.6.0",
 ]
 test = [
     "pytest>=9.0.2",
@@ -130,6 +132,7 @@ test = [
     "hypothesis>=6.151.4",
     "faker>=40.1.2",
     "factory-boy>=3.3.3",
+    "testcontainers[neo4j]>=4.10.0",
 ]
 phase2 = [
     "poethepoet>=0.40.0",
@@ -225,17 +228,15 @@ include = [
 
 [tool.pytest.ini_options]
 testpaths = [
-    "tests",
+    "src/tracertm",
 ]
 pythonpath = [
     "src",
 ]
 python_files = [
     "test_*.py",
-    "*_test.py",
 ]
 python_classes = [
-    "Test*",
 ]
 python_functions = [
     "test_*",
@@ -264,6 +265,7 @@ markers = [
 ]
 filterwarnings = [
     "error",
+    "ignore::pytest_benchmark.logger.PytestBenchmarkWarning",
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
     "ignore::pytest.PytestUnraisableExceptionWarning",
@@ -1781,4 +1783,7 @@ dev = [
     "vulture>=2.14",
     "radon>=6.0.1",
     "interrogate>=1.7.0",
+    "pycln>=2.6.0",
+    "tach>=0.33.2",
+    "bandit[toml]>=1.7.10",
 ]

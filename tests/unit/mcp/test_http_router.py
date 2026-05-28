@@ -91,7 +91,11 @@ class TestJSONRPCFormat:
 
     def test_jsonrpc_error_response_format(self) -> None:
         """Test JSON-RPC error response format."""
-        error_response = {"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": None}
+        error_response = {
+            "jsonrpc": "2.0",
+            "error": {"code": -32600, "message": "Invalid Request"},
+            "id": None,
+        }
 
         assert error_response["jsonrpc"] == "2.0"
         assert "error" in error_response
@@ -100,7 +104,11 @@ class TestJSONRPCFormat:
 
     def test_jsonrpc_notification_format(self) -> None:
         """Test JSON-RPC notification (no id field)."""
-        notification = {"jsonrpc": "2.0", "method": "notifications/progress", "params": {"progress": 50, "total": 100}}
+        notification = {
+            "jsonrpc": "2.0",
+            "method": "notifications/progress",
+            "params": {"progress": 50, "total": 100},
+        }
 
         assert "id" not in notification
         assert notification["jsonrpc"] == "2.0"
@@ -196,7 +204,11 @@ class TestHTTPErrorHandling:
 
     def test_server_error_returns_500(self) -> None:
         """Test that server errors return 500."""
-        error_response = {"jsonrpc": "2.0", "error": {"code": -32603, "message": "Internal error"}, "id": 1}
+        error_response = {
+            "jsonrpc": "2.0",
+            "error": {"code": -32603, "message": "Internal error"},
+            "id": 1,
+        }
 
         assert error_response["error"]["code"] == -32603
 
@@ -359,7 +371,11 @@ class TestHTTPRequestFlow:
         request = {"jsonrpc": "2.0", "method": "invalid_method", "id": 1}
 
         # 2. Server returns error
-        response = {"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": request["id"]}
+        response = {
+            "jsonrpc": "2.0",
+            "error": {"code": -32601, "message": "Method not found"},
+            "id": request["id"],
+        }
 
         assert "error" in response
         assert response["error"]["code"] == -32601

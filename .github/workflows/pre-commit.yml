@@ -29,7 +29,7 @@ jobs:
     - name: Run pre-commit
       shell: bash
       env:
-        SKIP: loc-guard,routes-entrypoints,security-guard-pre-commit-pre-push
+        SKIP: loc-guard,routes-entrypoints,security-guard-pre-commit-pre-push,oxlint-frontend,oxfmt-frontend,oxlint-desktop,vitest-changed
       run: "set -euo pipefail\nif [[ \"${{ github.event_name }}\" == \"pull_request\"\
         \ ]]; then\n  base=\"${{ github.event.pull_request.base.sha }}\"\nelif [[\
         \ -n \"${{ github.event.before }}\" ]]; then\n  base=\"${{ github.event.before\

@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Index, String
+from sqlalchemy import CheckConstraint, Float, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from tracertm.models.base import GUID, Base, TimestampMixin
@@ -31,6 +31,9 @@ class Link(Base, TimestampMixin):
         Index("idx_links_source_target", "source_item_id", "target_item_id"),
         Index("idx_links_project_type", "project_id", "link_type"),
         Index("idx_links_project_graph", "project_id", "graph_id"),
+        Index("idx_links_confidence", "confidence"),
+        Index("idx_links_project_type_confidence", "project_id", "link_type", "confidence"),
+        CheckConstraint("confidence >= 0.0 AND confidence <= 1.0", name="links_confidence_range"),
         {"extend_existing": True},
     )
 
@@ -65,6 +68,12 @@ class Link(Base, TimestampMixin):
 
     link_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     link_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+
+    # SOTA-research P0 trace-link fields. ``confidence`` is the miner's
+    # posterior in [0, 1] (1.0 = human-curated); ``rationale`` is a short
+    # natural-language justification used by the explainability / RAG layer.
+    confidence: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)
+    rationale: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Relationships
     source_item: Mapped[Item] = relationship(

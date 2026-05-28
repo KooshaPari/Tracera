@@ -1,14 +1,11 @@
-from typing import Any
-
 """Pytest configuration for MCP unit tests."""
 
 import asyncio
-import os
 import tempfile
 from pathlib import Path
+from typing import Any
 
 import pytest
-from sqlalchemy import text
 
 from tracertm.config.manager import ConfigManager
 from tracertm.mcp.database_adapter import get_async_engine, reset_engine
@@ -25,12 +22,13 @@ def temp_config_dir() -> None:
 @pytest.fixture(scope="session")
 def test_database_url(temp_config_dir: Any) -> str:
     """Provide a test database URL."""
-    db_path = temp_config_dir / "test.db"
-    return f"sqlite:///{db_path}"
+    return "postgresql://tracertm:tracertm_password@localhost:5432/tracertm"
 
 
 @pytest.fixture(autouse=True)
-async def setup_test_database(test_database_url: Any, temp_config_dir: Any, monkeypatch: Any) -> None:
+async def setup_test_database(
+    test_database_url: Any, temp_config_dir: Any, monkeypatch: Any
+) -> None:
     """Set up test database for each test."""
     # CRITICAL: Set environment variables BEFORE any imports or engine creation
     # This ensures ConfigManager picks up the test database URL

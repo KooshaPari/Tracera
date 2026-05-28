@@ -9,9 +9,15 @@ import {
   MinusCircle,
   Search,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { downloadTraceMatrixFromApi } from '@/api/traceMatrixExport';
+import {
+  buildTraceabilityMatrixCsv,
+  downloadTraceabilityMatrixCsv,
+  getCoverageStatus,
+} from '@/lib/traceabilityMatrixExport';
 import { cn } from '@/lib/utils';
 import { Badge, Input } from '@tracertm/ui';
 import { Button } from '@tracertm/ui/components/Button';
@@ -26,16 +32,6 @@ interface TraceabilityMatrixViewProps {
 }
 
 type CoverageStatus = 'covered' | 'partial' | 'uncovered';
-
-function getCoverageStatus(coveredCount: number, totalFeatures: number): CoverageStatus {
-  if (totalFeatures === 0 || coveredCount === 0) {
-    return 'uncovered';
-  }
-  if (coveredCount >= totalFeatures) {
-    return 'covered';
-  }
-  return 'partial';
-}
 
 interface CoverageBadgeProps {
   status: CoverageStatus;
@@ -93,6 +89,7 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
       : null;
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
 
   const items = itemsData?.items ?? [];
   const links = linksData?.links ?? [];
@@ -127,10 +124,65 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
     return Math.round((covered / matrix.requirements.length) * 100);
   }, [matrix]);
 
+  const canExport =
+    matrix.requirements.length > 0 && matrix.features.length > 0;
+
+  const handleExportCsv = useCallback(async () => {
+    if (matrix.requirements.length === 0 && matrix.features.length === 0) {
+      toast.error('Nothing to export — add requirements and features first');
+      return;
+    }
+    if (matrix.requirements.length === 0) {
+      toast.error('Nothing to export — add requirements first');
+      return;
+    }
+    if (matrix.features.length === 0) {
+      toast.error('Nothing to export — add features first');
+      return;
+    }
+
+    const firstReq = matrix.requirements[0] as
+      | { view?: string; type?: string }
+      | undefined;
+    const firstFeat = matrix.features[0] as
+      | { view?: string; type?: string }
+      | undefined;
+    const sourceView = firstReq?.type ?? firstReq?.view;
+    const targetView = firstFeat?.type ?? firstFeat?.view;
+    if (!sourceView || !targetView) {
+      toast.error('Nothing to export — matrix views are not configured');
+      return;
+    }
+
+    const exportOptions = { sourceView, targetView };
+
+    setIsExporting(true);
+    try {
+      await downloadTraceMatrixFromApi(projectId, exportOptions);
+      toast.success('Matrix exported to CSV');
+    } catch {
+      try {
+        const csv = buildTraceabilityMatrixCsv(
+          matrix.requirements.map((r) => ({ id: r.id, title: r.title })),
+          matrix.features.map((f) => ({ id: f.id, title: f.title })),
+          matrix.coverage,
+        );
+        downloadTraceabilityMatrixCsv(csv, projectId);
+        toast.success('Matrix exported to CSV (from current view)');
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Export failed';
+        toast.error(`Could not export matrix: ${message}`);
+      }
+    } finally {
+      setIsExporting(false);
+    }
+  }, [matrix, projectId]);
+
   const coverageSummary = useMemo(() => {
     const totalReqs = matrix.requirements.length;
     const covered = matrix.requirements.filter(
-      (r) => (matrix.coverage[r.id]?.size ?? 0) >= matrix.features.length && matrix.features.length > 0,
+      (r) =>
+        (matrix.coverage[r.id]?.size ?? 0) >= matrix.features.length && matrix.features.length > 0,
     ).length;
     const partial = matrix.requirements.filter((r) => {
       const c = matrix.coverage[r.id]?.size ?? 0;
@@ -174,9 +226,7 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
       {/* Header */}
       <div className='flex flex-col justify-between gap-4 md:flex-row md:items-start'>
         <div>
-          <h1 className='font-mono text-xl font-bold tracking-tight'>
-            Traceability Matrix
-          </h1>
+          <h1 className='font-mono text-xl font-bold tracking-tight'>Traceability Matrix</h1>
           <p className='text-muted-foreground mt-1 text-sm'>
             Requirements coverage mapped to functional features.
           </p>
@@ -184,10 +234,14 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
         <Button
           variant='outline'
           size='sm'
-          className='gap-2 rounded-lg font-mono text-xs uppercase tracking-wider'
-          onClick={() => toast.success('Matrix exported to CSV')}
+          className='gap-2 rounded-lg font-mono text-xs tracking-wider uppercase'
+          disabled={isExporting || !canExport}
+          onClick={() => {
+            void handleExportCsv();
+          }}
         >
-          <Download className='h-3.5 w-3.5' /> Export CSV
+          <Download className='h-3.5 w-3.5' />
+          {isExporting ? 'Exporting…' : 'Export CSV'}
         </Button>
       </div>
 
@@ -211,7 +265,12 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
             label: 'Coverage',
             progress: true,
             value: `${coveragePercent}%`,
-            accent: coveragePercent >= 80 ? 'text-green-500' : coveragePercent >= 40 ? 'text-yellow-500' : 'text-red-500',
+            accent:
+              coveragePercent >= 80
+                ? 'text-green-500'
+                : coveragePercent >= 40
+                  ? 'text-yellow-500'
+                  : 'text-red-500',
           },
           {
             icon: CheckCircle2,
@@ -285,7 +344,7 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
         <div className='bg-border mx-1 h-5 w-px' />
         <Badge
           variant='outline'
-          className='h-7 rounded-md px-2.5 font-mono text-[10px] font-bold uppercase tracking-wider'
+          className='h-7 rounded-md px-2.5 font-mono text-[10px] font-bold tracking-wider uppercase'
         >
           {matrix.requirements.length}r × {matrix.features.length}f
         </Badge>
@@ -312,7 +371,7 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
                     className='bg-muted/20 min-w-[100px] border-r border-b p-3 align-bottom'
                   >
                     <div className='mx-auto rotate-180 [writing-mode:vertical-lr]'>
-                      <span className='text-muted-foreground max-h-[130px] truncate font-mono text-[9px] font-bold uppercase tracking-tight'>
+                      <span className='text-muted-foreground max-h-[130px] truncate font-mono text-[9px] font-bold tracking-tight uppercase'>
                         {feature.title}
                       </span>
                     </div>
@@ -342,10 +401,10 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
                       )}
                     >
                       <div className='flex flex-col gap-1'>
-                        <span className='group-hover:text-foreground text-sm font-semibold leading-tight transition-colors'>
+                        <span className='group-hover:text-foreground text-sm leading-tight font-semibold transition-colors'>
                           {req.title}
                         </span>
-                        <span className='text-muted-foreground font-mono text-[9px] uppercase tracking-widest'>
+                        <span className='text-muted-foreground font-mono text-[9px] tracking-widest uppercase'>
                           {req.id.slice(0, 8)}
                         </span>
                       </div>

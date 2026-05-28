@@ -23,7 +23,8 @@ const isRecord = (value: unknown): value is ApiRecord =>
 const isEnumValue = <Value extends string>(
   value: unknown,
   allowedValues: readonly Value[],
-): value is Value => typeof value === 'string' && (allowedValues as readonly string[]).includes(value);
+): value is Value =>
+  typeof value === 'string' && (allowedValues as readonly string[]).includes(value);
 
 const toNumber = (value: unknown): number => Number(value ?? 0);
 
