@@ -612,7 +612,10 @@ const buildChecks = (): PreflightCheck[] => {
     return checks;
   }
 
-  checks.push({ name: 'python-backend', url: `http://${devHost}:8000` });
+  // Use the Vite /api proxy (same-origin in dev) to avoid CORS preflight on absolute URLs.
+  // The vite.config.mjs proxy rewrites /api → http://localhost:8000, so health checks
+  // go through the dev server rather than crossing origins to 127.0.0.1:8000 directly.
+  checks.push({ name: 'python-backend', url: `${window.location.origin}/api` });
   checks.push({ name: 'go-backend', url: `http://${devHost}:8080` });
   return checks;
 };
