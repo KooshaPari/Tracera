@@ -16,6 +16,7 @@ from tracertm.api.routers import (
     cache,
     chat,
     codex,
+    comments,
     contracts,
     coverage,
     execution,
@@ -62,6 +63,7 @@ def register_api_routers(app: FastAPI) -> None:
     app.include_router(chat.router)
     app.include_router(items.router)
     app.include_router(items_summary.router)
+    app.include_router(comments.router)
     app.include_router(projects.router)
     app.include_router(analysis.router)
     app.include_router(code_trace.router)

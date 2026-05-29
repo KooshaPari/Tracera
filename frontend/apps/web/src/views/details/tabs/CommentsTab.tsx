@@ -8,12 +8,13 @@
  * - Comment metadata
  */
 
-import { MessageSquare, Send, User } from 'lucide-react';
-import { useState } from 'react';
+import { MessageSquare, Send, Trash2, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { TypedItem } from '@tracertm/types';
 
+import { commentsApi, type CommentResponse } from '@/api/endpoints';
 import { cn } from '@/lib/utils';
 import { Badge, Button, Card, Textarea } from '@tracertm/ui';
 
@@ -25,19 +26,6 @@ export interface CommentsTabProps {
   className?: string;
 }
 
-interface Comment {
-  id: string;
-  author: string;
-  content: string;
-  timestamp: string;
-  edited?: boolean;
-}
-
-/**
- * CommentsTab displays comments and discussions for an item.
- * Note: This is a placeholder implementation. Real comment data
- * would come from the backend.
- */
 function getInitials(name: string) {
   return name
     .split(' ')
@@ -78,9 +66,39 @@ function formatTimestamp(timestamp: string) {
 export function CommentsTab({ item, className }: CommentsTabProps) {
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [comments, setComments] = useState<CommentResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // Placeholder comments - in real implementation, these would come from the API
-  const comments: Comment[] = [];
+  // Fetch comments on mount and when item changes
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchComments = async () => {
+      setIsLoading(true);
+      setFetchError(null);
+      try {
+        const data = await commentsApi.list(item.id);
+        if (!cancelled) {
+          setComments(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          const msg = err instanceof Error ? err.message : 'Failed to load comments';
+          setFetchError(msg);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void fetchComments();
+    return () => {
+      cancelled = true;
+    };
+  }, [item.id]);
 
   const handleSubmit = async () => {
     if (!newComment.trim()) {
@@ -90,14 +108,26 @@ export function CommentsTab({ item, className }: CommentsTabProps) {
 
     setIsSubmitting(true);
     try {
-      // tracked: https://github.com/KooshaPari/trace/issues/227
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const created = await commentsApi.create(item.id, newComment.trim());
+      setComments((prev) => [...prev, created]);
       toast.success('Comment added successfully');
       setNewComment('');
-    } catch {
-      toast.error('Failed to add comment');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to add comment';
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (commentId: string) => {
+    try {
+      await commentsApi.delete(item.id, commentId);
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      toast.success('Comment deleted');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to delete comment';
+      toast.error(msg);
     }
   };
 
@@ -158,11 +188,24 @@ export function CommentsTab({ item, className }: CommentsTabProps) {
         <div className='flex items-center gap-2'>
           <h2 className='text-lg font-black tracking-tight'>Discussion</h2>
           <Badge variant='secondary' className='text-xs'>
-            {comments.length}
+            {isLoading ? '…' : comments.length}
           </Badge>
         </div>
 
-        {comments.length > 0 ? (
+        {isLoading ? (
+          <Card className='bg-muted/40 border-0 p-8'>
+            <div className='text-muted-foreground flex flex-col items-center justify-center'>
+              <div className='mb-3 h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent' />
+              <p className='text-sm font-medium'>Loading comments…</p>
+            </div>
+          </Card>
+        ) : fetchError ? (
+          <Card className='bg-destructive/10 border-0 p-6'>
+            <p className='text-destructive text-sm font-medium'>
+              Failed to load comments: {fetchError}
+            </p>
+          </Card>
+        ) : comments.length > 0 ? (
           <div className='space-y-4' role='list' aria-label='Comments'>
             {comments.map((comment) => (
               <Card key={comment.id} className='bg-muted/40 border-0 p-4' role='listitem'>
@@ -177,13 +220,21 @@ export function CommentsTab({ item, className }: CommentsTabProps) {
                     <div className='flex flex-wrap items-center gap-2'>
                       <span className='text-sm font-bold'>{comment.author}</span>
                       <span className='text-muted-foreground text-xs'>
-                        {formatTimestamp(comment.timestamp)}
+                        {formatTimestamp(comment.created_at)}
                       </span>
                       {comment.edited && (
                         <Badge variant='outline' className='text-xs'>
                           Edited
                         </Badge>
                       )}
+                      <button
+                        type='button'
+                        aria-label='Delete comment'
+                        onClick={() => void handleDelete(comment.id)}
+                        className='text-muted-foreground hover:text-destructive ml-auto transition-colors'
+                      >
+                        <Trash2 className='h-3 w-3' />
+                      </button>
                     </div>
 
                     <p className='text-sm leading-relaxed whitespace-pre-wrap'>{comment.content}</p>
