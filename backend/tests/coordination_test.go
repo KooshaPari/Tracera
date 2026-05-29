@@ -470,7 +470,7 @@ func TestScalabilitySimulation(t *testing.T) {
 	lm := agents.NewLockManager(db, 5*time.Minute)
 	defer lm.Shutdown()
 
-	cd := agents.NewConflictDetector(db, lm)
+	_ = agents.NewConflictDetector(db, lm)
 	ctx := context.Background()
 
 	numAgents := 100
