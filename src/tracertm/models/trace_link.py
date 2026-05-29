@@ -33,23 +33,23 @@ projection of the traceability graph).
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import datetime  # noqa: TC003 — Pydantic needs datetime at runtime
 from enum import StrEnum
 from typing import Any, Final
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 __all__ = [
-    "ArtifactKind",
-    "TraceLinkType",
-    "RequirementStatus",
-    "VerificationMethod",
-    "Artifact",
-    "Requirement",
-    "TraceLink",
-    "Neo4jSchema",
-    "NEO4J_RELATIONSHIP_TYPES",
     "NEO4J_NODE_LABELS",
+    "NEO4J_RELATIONSHIP_TYPES",
+    "Artifact",
+    "ArtifactKind",
+    "Neo4jSchema",
+    "Requirement",
+    "RequirementStatus",
+    "TraceLink",
+    "TraceLinkType",
+    "VerificationMethod",
 ]
 
 
@@ -258,31 +258,24 @@ class Neo4jSchema:
     """
 
     #: Uniqueness / existence constraints.
+    # Note: NODE KEY and relationship property constraints require Neo4j
+    # Enterprise. Community edition supports node uniqueness only — we use
+    # UNIQUE constraints to approximate the composite NODE KEY, and omit
+    # the relationship property existence constraint (enforced at the
+    # application layer by the TraceLink model validator instead).
     CONSTRAINTS: Final[tuple[str, ...]] = (
-        # Every Artifact must have an id and project_id, unique per project.
-        "CREATE CONSTRAINT artifact_node_key IF NOT EXISTS "
-        "FOR (a:Artifact) REQUIRE (a.project_id, a.id) IS NODE KEY",
-        "CREATE CONSTRAINT requirement_id_unique IF NOT EXISTS "
-        "FOR (r:Requirement) REQUIRE r.id IS UNIQUE",
-        "CREATE CONSTRAINT project_id_unique IF NOT EXISTS "
-        "FOR (p:Project) REQUIRE p.id IS UNIQUE",
-        # Every trace edge must carry a confidence in [0,1].
-        "CREATE CONSTRAINT trace_link_confidence_exists IF NOT EXISTS "
-        "FOR ()-[l:SATISFIES|VERIFIES|IMPLEMENTS|DERIVES_FROM|"
-        "REFINES|CONFLICTS_WITH|DUPLICATES]-() "
-        "REQUIRE l.confidence IS NOT NULL",
+        # Artifact id unique globally (project scoping enforced by app layer).
+        "CREATE CONSTRAINT artifact_id_unique IF NOT EXISTS FOR (a:Artifact) REQUIRE a.id IS UNIQUE",
+        "CREATE CONSTRAINT requirement_id_unique IF NOT EXISTS FOR (r:Requirement) REQUIRE r.id IS UNIQUE",
+        "CREATE CONSTRAINT project_id_unique IF NOT EXISTS FOR (p:Project) REQUIRE p.id IS UNIQUE",
     )
 
     #: Lookup / range indexes for the common RAG-side queries.
     INDEXES: Final[tuple[str, ...]] = (
-        "CREATE INDEX artifact_project_kind IF NOT EXISTS "
-        "FOR (a:Artifact) ON (a.project_id, a.kind)",
-        "CREATE INDEX artifact_external_id IF NOT EXISTS "
-        "FOR (a:Artifact) ON (a.external_id)",
-        "CREATE INDEX requirement_status IF NOT EXISTS "
-        "FOR (r:Requirement) ON (r.status)",
-        "CREATE FULLTEXT INDEX artifact_text IF NOT EXISTS "
-        "FOR (a:Artifact) ON EACH [a.title, a.description]",
+        "CREATE INDEX artifact_project_kind IF NOT EXISTS FOR (a:Artifact) ON (a.project_id, a.kind)",
+        "CREATE INDEX artifact_external_id IF NOT EXISTS FOR (a:Artifact) ON (a.external_id)",
+        "CREATE INDEX requirement_status IF NOT EXISTS FOR (r:Requirement) ON (r.status)",
+        "CREATE FULLTEXT INDEX artifact_text IF NOT EXISTS FOR (a:Artifact) ON EACH [a.title, a.description]",
     )
 
     @classmethod
