@@ -82,19 +82,15 @@ def _artifact_properties(artifact: Artifact) -> dict[str, Any]:
 def _requirement_properties(req: Requirement) -> dict[str, Any]:
     """Extend the base artifact property map with Requirement-only fields."""
     props = _artifact_properties(req)
-    props.update(
-        {
-            "status": req.status.value,
-            "priority": req.priority,
-            "rationale": req.rationale,
-            "acceptance_criteria": list(req.acceptance_criteria),
-            "verification_method": (
-                req.verification_method.value
-                if req.verification_method is not None
-                else None
-            ),
-        }
-    )
+    props.update({
+        "status": req.status.value,
+        "priority": req.priority,
+        "rationale": req.rationale,
+        "acceptance_criteria": list(req.acceptance_criteria),
+        "verification_method": (
+            req.verification_method.value if req.verification_method is not None else None
+        ),
+    })
     return props
 
 

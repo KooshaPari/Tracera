@@ -269,18 +269,15 @@ class Neo4jSchema:
         "FOR (a:Artifact) REQUIRE a.id IS UNIQUE",
         "CREATE CONSTRAINT requirement_id_unique IF NOT EXISTS "
         "FOR (r:Requirement) REQUIRE r.id IS UNIQUE",
-        "CREATE CONSTRAINT project_id_unique IF NOT EXISTS "
-        "FOR (p:Project) REQUIRE p.id IS UNIQUE",
+        "CREATE CONSTRAINT project_id_unique IF NOT EXISTS FOR (p:Project) REQUIRE p.id IS UNIQUE",
     )
 
     #: Lookup / range indexes for the common RAG-side queries.
     INDEXES: Final[tuple[str, ...]] = (
         "CREATE INDEX artifact_project_kind IF NOT EXISTS "
         "FOR (a:Artifact) ON (a.project_id, a.kind)",
-        "CREATE INDEX artifact_external_id IF NOT EXISTS "
-        "FOR (a:Artifact) ON (a.external_id)",
-        "CREATE INDEX requirement_status IF NOT EXISTS "
-        "FOR (r:Requirement) ON (r.status)",
+        "CREATE INDEX artifact_external_id IF NOT EXISTS FOR (a:Artifact) ON (a.external_id)",
+        "CREATE INDEX requirement_status IF NOT EXISTS FOR (r:Requirement) ON (r.status)",
         "CREATE FULLTEXT INDEX artifact_text IF NOT EXISTS "
         "FOR (a:Artifact) ON EACH [a.title, a.description]",
     )

@@ -303,9 +303,7 @@ def test_seed_forward_reverse_roundtrip_live() -> None:
 
         assert len(fwd) >= 1, f"Forward query returned no results: {fwd}"
         artifact_ids_fwd = {row["aid"] for row in fwd}
-        assert "PR#999" in artifact_ids_fwd, (
-            f"PR#999 not in forward results: {artifact_ids_fwd}"
-        )
+        assert "PR#999" in artifact_ids_fwd, f"PR#999 not in forward results: {artifact_ids_fwd}"
         assert any(row["ltype"] == "SATISFIES" for row in fwd)
 
         # Reverse impact: what requirement does PR#999 satisfy?
@@ -318,9 +316,7 @@ def test_seed_forward_reverse_roundtrip_live() -> None:
 
         assert len(rev) >= 1, f"Reverse query returned no results: {rev}"
         req_ids_rev = {row["rid"] for row in rev}
-        assert "FR-SPINE-001" in req_ids_rev, (
-            f"FR-SPINE-001 not in reverse results: {req_ids_rev}"
-        )
+        assert "FR-SPINE-001" in req_ids_rev, f"FR-SPINE-001 not in reverse results: {req_ids_rev}"
         assert rev[0]["status"] == "verified"
 
     finally:
