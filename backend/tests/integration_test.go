@@ -26,10 +26,10 @@ func TestFullItemLifecycle(t *testing.T) {
 
 	// 1. Create an item
 	createReqBody := map[string]interface{}{
-		"title":      "Integration Test Item",
-		"type":       "requirement",
-		"content":    "Full lifecycle test",
-		"project_id": testProject.ID,
+		"title":       "Integration Test Item",
+		"type":        "requirement",
+		"description": "Full lifecycle test",
+		"project_id":  testProject.ID,
 	}
 
 	body, _ := json.Marshal(createReqBody)
@@ -44,7 +44,8 @@ func TestFullItemLifecycle(t *testing.T) {
 
 	var createdItem map[string]interface{}
 	_ = json.Unmarshal(rec.Body.Bytes(), &createdItem)
-	itemID := createdItem["id"].(string)
+	itemID, ok := createdItem["id"].(string)
+	require.True(t, ok, "created item should include id")
 
 	// 2. Retrieve the item
 	req = httptest.NewRequest(http.MethodGet, "/api/items/"+itemID, nil)
@@ -63,8 +64,8 @@ func TestFullItemLifecycle(t *testing.T) {
 
 	// 3. Update the item
 	updateReqBody := map[string]interface{}{
-		"title":   "Updated Integration Test Item",
-		"content": "Updated content",
+		"title":       "Updated Integration Test Item",
+		"description": "Updated content",
 	}
 
 	body, _ = json.Marshal(updateReqBody)
@@ -106,7 +107,7 @@ func TestFullItemLifecycle(t *testing.T) {
 
 	err = itemHandler.DeleteItem(c)
 	require.NoError(t, err)
-	assert.Equal(t, http.StatusNoContent, rec.Code)
+	assert.Equal(t, http.StatusOK, rec.Code)
 
 	// 6. Verify deletion
 	req = httptest.NewRequest(http.MethodGet, "/api/items/"+itemID, nil)
@@ -116,7 +117,8 @@ func TestFullItemLifecycle(t *testing.T) {
 	c.SetParamValues(itemID)
 
 	err = itemHandler.GetItem(c)
-	assert.Error(t, err)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 
 // TestSearchIntegration tests the search functionality end-to-end
@@ -188,7 +190,7 @@ func TestConcurrentOperations(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		go func(idx int) {
 			updateReqBody := map[string]interface{}{
-				"content": fmt.Sprintf("Concurrent update %d", idx),
+				"description": fmt.Sprintf("Concurrent update %d", idx),
 			}
 
 			body, _ := json.Marshal(updateReqBody)

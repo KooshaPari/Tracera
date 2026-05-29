@@ -135,12 +135,12 @@ func TestPhase7_IntegrationSmokeTests(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		err = container.WithTx(ctx, func(txCtx context.Context) error {
+		err = container.WithTx(ctx, func(_ *services.TransactionContext) error {
 			return nil
 		})
 		require.NoError(t, err)
 
-		err = container.WithTx(ctx, func(txCtx context.Context) error {
+		err = container.WithTx(ctx, func(_ *services.TransactionContext) error {
 			return assert.AnError
 		})
 		require.Error(t, err, "should rollback on error")

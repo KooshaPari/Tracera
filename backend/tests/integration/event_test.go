@@ -19,7 +19,7 @@ func TestServiceIntegration_Events_ItemCreated(t *testing.T) {
 	f := setupServiceTests(t)
 	defer f.cleanup()
 
-	mockNATS := f.natsConn.(*mockNATS)
+	mockNATS := f.mockNATS
 	mockNATS.ClearEvents()
 
 	project := &models.Project{
@@ -58,7 +58,7 @@ func TestServiceIntegration_Events_ItemUpdated(t *testing.T) {
 	f := setupServiceTests(t)
 	defer f.cleanup()
 
-	mockNATS := f.natsConn.(*mockNATS)
+	mockNATS := f.mockNATS
 
 	project := &models.Project{
 		ID:        uuid.New().String(),
@@ -101,7 +101,7 @@ func TestServiceIntegration_Events_ItemDeleted(t *testing.T) {
 	f := setupServiceTests(t)
 	defer f.cleanup()
 
-	mockNATS := f.natsConn.(*mockNATS)
+	mockNATS := f.mockNATS
 
 	project := &models.Project{
 		ID:        uuid.New().String(),
@@ -143,7 +143,7 @@ func TestServiceIntegration_Events_BatchOperation(t *testing.T) {
 	f := setupServiceTests(t)
 	defer f.cleanup()
 
-	mockNATS := f.natsConn.(*mockNATS)
+	mockNATS := f.mockNATS
 	mockNATS.ClearEvents()
 
 	project := &models.Project{
@@ -196,7 +196,7 @@ func TestServiceIntegration_Events_Metadata(t *testing.T) {
 	f := setupServiceTests(t)
 	defer f.cleanup()
 
-	mockNATS := f.natsConn.(*mockNATS)
+	mockNATS := f.mockNATS
 	mockNATS.ClearEvents()
 
 	project := &models.Project{
