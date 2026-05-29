@@ -8,7 +8,6 @@ Markers
 * ``integration`` — requires a live Neo4j instance (set NEO4J_URI env var)
 * ``slow``        — full end-to-end graph traversal; excluded from fast CI
 
-Functional Requirements: FR-TRACE-003
 """
 
 from __future__ import annotations
@@ -216,7 +215,7 @@ def test_seed_forward_reverse_roundtrip_live() -> None:
     Requires NEO4J_URI (default bolt://localhost:7687) to be reachable.
     Skips automatically when the driver cannot connect.
 
-    Functional Requirements: FR-TRC-003, FR-TRC-004.
+    Verifies the requirements-traceability spine end-to-end.
     """
     import os
 
