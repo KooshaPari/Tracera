@@ -262,6 +262,7 @@ markers = [
     "benchmark: Benchmark tests for performance measurement",
     "smoke: Minimal critical-path checks",
     "chaos: Chaos/resilience tests (connection failures, resource exhaustion)",
+    "live_neo4j: Tests that require a live Neo4j instance (NEO4J_URI env var)",
 ]
 filterwarnings = [
     "error",
