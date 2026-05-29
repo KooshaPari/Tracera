@@ -310,25 +310,6 @@ async def unhandled_exception_handler(_request: Request, exc: Exception) -> JSON
 # NATS Event Bus integration
 # Helper functions (_backoff_delay, _poll_one_service, _poll_services) now in tracertm.api.config.startup
 
-# Add CORS middleware (gateway + frontend only; no wildcards)
-# External clients must use the gateway; allow gateway (4000) + frontend origins
-CORS_ORIGINS = os.getenv(
-    "CORS_ORIGINS",
-    (
-        "http://localhost:4000,http://127.0.0.1:4000,"
-        "http://localhost:5173,http://127.0.0.1:5173,"
-        "http://localhost:3000,http://127.0.0.1:3000"
-    ),
-).split(",")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[origin.strip() for origin in CORS_ORIGINS],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Include specification routers
 from tracertm.api.middleware import AuthenticationMiddleware, CacheHeadersMiddleware
 
@@ -343,7 +324,21 @@ except ImportError:
     brotli_available = False
     logger.info("brotli-asgi not installed - response compression disabled")
 
-# Add performance middlewares (order matters - outermost first)
+# Middleware stack — Starlette add_middleware() prepends each layer, so the
+# LAST call added becomes the OUTERMOST layer (first to handle each request).
+# Desired request order: CORS → Brotli → CacheHeaders → Auth → route
+# Therefore add in REVERSE: Auth first, then CacheHeaders, Brotli, CORS last.
+
+# 3. Authentication middleware (innermost — runs first on request, last on response)
+app.add_middleware(AuthenticationMiddleware)
+
+# Authentication endpoints (device flow, token management, etc.)
+# Register API routers from dedicated registry module
+register_api_routers(app)
+
+# 2. Cache headers for browser caching optimization
+app.add_middleware(CacheHeadersMiddleware)
+
 # 1. Brotli compression for smaller JSON responses (20-30% savings)
 if brotli_available and BrotliMiddleware_ is not None:
     app.add_middleware(
@@ -352,15 +347,10 @@ if brotli_available and BrotliMiddleware_ is not None:
         minimum_size=500,  # Only compress responses > 500 bytes
     )
 
-# 2. Cache headers for browser caching optimization
-app.add_middleware(CacheHeadersMiddleware)
-
-# Authentication endpoints (device flow, token management, etc.)
-# Register API routers from dedicated registry module
-register_api_routers(app)
-
-# 3. Authentication middleware (must be innermost to run first on request)
-app.add_middleware(AuthenticationMiddleware)
+# CORS must be outermost so preflight OPTIONS requests are handled before auth.
+# Add last so it wraps everything else.
+from tracertm.api.middleware.cors import setup_cors  # noqa: E402
+setup_cors(app)
 
 
 # ==================== EXTERNAL INTEGRATIONS ====================

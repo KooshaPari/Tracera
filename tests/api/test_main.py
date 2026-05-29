@@ -211,3 +211,19 @@ async def test_get_db_raises_when_missing_database_url(monkeypatch: Any) -> None
         await anext(main.get_db())
     exc = cast("HTTPException", exc_info.value)
     assert exc.status_code == HTTP_INTERNAL_SERVER_ERROR
+
+
+@pytest.mark.asyncio
+async def test_cors_header_present_for_allowed_origin(client: AsyncClient) -> None:
+    """CORS: Access-Control-Allow-Origin must be echoed back for an allowed dev origin (NFR-DX-001)."""
+    response = await client.get("/health", headers={"Origin": "http://localhost:5180"})
+    assert response.status_code == HTTP_OK
+    assert response.headers.get("access-control-allow-origin") == "http://localhost:5180"
+
+
+@pytest.mark.asyncio
+async def test_cors_header_present_for_5173_origin(client: AsyncClient) -> None:
+    """CORS: Access-Control-Allow-Origin must be echoed back for the legacy Vite dev origin."""
+    response = await client.get("/health", headers={"Origin": "http://localhost:5173"})
+    assert response.status_code == HTTP_OK
+    assert response.headers.get("access-control-allow-origin") == "http://localhost:5173"
