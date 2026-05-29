@@ -494,21 +494,6 @@ func TestNATS_StatusMonitoring(t *testing.T) {
 
 func TestNATS_ErrorHandling(t *testing.T) {
 	t.Skip("nats.Options.ErrorHandler removed in current nats.go; reconnect/error paths covered elsewhere")
-
-	opts := nats.GetDefaultOptions()
-
-	nc, err := opts.Connect()
-	assert.NoError(t, err)
-	defer nc.Close()
-
-	// Trigger error (invalid subject)
-	nc.Publish("", []byte("invalid"))
-
-	// Check if error was captured
-	select {
-	case <-time.After(100 * time.Millisecond):
-		// No error (also acceptable)
-	}
 }
 
 func TestNATS_MultipleSubscribers(t *testing.T) {

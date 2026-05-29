@@ -17,12 +17,13 @@ import (
 
 func TestCreateLink(t *testing.T) {
 	db := setupTestDB(t)
+	seedLinkTestItems(t, db)
 	handler := newTestLinkHandler(t, db)
 
 	e := echo.New()
 	linkJSON := `{
-		"source_id": "item-1",
-		"target_id": "item-2",
+		"source_id": "testLinkItem1ID",
+		"target_id": "testLinkItem2ID",
 		"type": "depends_on"
 	}`
 
@@ -39,8 +40,8 @@ func TestCreateLink(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &link)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, link.ID)
-	assert.Equal(t, "item-1", link.SourceID)
-	assert.Equal(t, "item-2", link.TargetID)
+	assert.Equal(t, "testLinkItem1ID", link.SourceID)
+	assert.Equal(t, "testLinkItem2ID", link.TargetID)
 	assert.Equal(t, "depends_on", link.Type)
 }
 
@@ -65,9 +66,9 @@ func TestListLinks(t *testing.T) {
 
 	// Create test links
 	links := []models.Link{
-		{SourceID: "item-1", TargetID: "item-2", Type: "depends_on"},
-		{SourceID: "item-2", TargetID: "item-3", Type: "implements"},
-		{SourceID: "item-1", TargetID: "item-3", Type: "tests"},
+		{SourceID: "testLinkItem1ID", TargetID: "testLinkItem2ID", Type: "depends_on"},
+		{SourceID: "testLinkItem2ID", TargetID: "testLinkItem3ID", Type: "implements"},
+		{SourceID: "testLinkItem1ID", TargetID: "testLinkItem3ID", Type: "tests"},
 	}
 	for _, link := range links {
 		db.Create(&link)
@@ -94,16 +95,16 @@ func TestListLinksFilteredBySource(t *testing.T) {
 
 	// Create test links
 	links := []models.Link{
-		{SourceID: "item-1", TargetID: "item-2", Type: "depends_on"},
-		{SourceID: "item-2", TargetID: "item-3", Type: "implements"},
-		{SourceID: "item-1", TargetID: "item-3", Type: "tests"},
+		{SourceID: "testLinkItem1ID", TargetID: "testLinkItem2ID", Type: "depends_on"},
+		{SourceID: "testLinkItem2ID", TargetID: "testLinkItem3ID", Type: "implements"},
+		{SourceID: "testLinkItem1ID", TargetID: "testLinkItem3ID", Type: "tests"},
 	}
 	for _, link := range links {
 		db.Create(&link)
 	}
 
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/links?source_id=item-1", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/links?source_id=testLinkItem1ID", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
@@ -116,7 +117,7 @@ func TestListLinksFilteredBySource(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
 	for _, link := range result {
-		assert.Equal(t, "item-1", link.SourceID)
+		assert.Equal(t, "testLinkItem1ID", link.SourceID)
 	}
 }
 
@@ -126,16 +127,16 @@ func TestListLinksFilteredByTarget(t *testing.T) {
 
 	// Create test links
 	links := []models.Link{
-		{SourceID: "item-1", TargetID: "item-2", Type: "depends_on"},
-		{SourceID: "item-2", TargetID: "item-3", Type: "implements"},
-		{SourceID: "item-1", TargetID: "item-3", Type: "tests"},
+		{SourceID: "testLinkItem1ID", TargetID: "testLinkItem2ID", Type: "depends_on"},
+		{SourceID: "testLinkItem2ID", TargetID: "testLinkItem3ID", Type: "implements"},
+		{SourceID: "testLinkItem1ID", TargetID: "testLinkItem3ID", Type: "tests"},
 	}
 	for _, link := range links {
 		db.Create(&link)
 	}
 
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/links?target_id=item-3", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/links?target_id=testLinkItem3ID", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
@@ -148,7 +149,7 @@ func TestListLinksFilteredByTarget(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, result, 2)
 	for _, link := range result {
-		assert.Equal(t, "item-3", link.TargetID)
+		assert.Equal(t, "testLinkItem3ID", link.TargetID)
 	}
 }
 
@@ -158,9 +159,9 @@ func TestListLinksFilteredByType(t *testing.T) {
 
 	// Create test links
 	links := []models.Link{
-		{SourceID: "item-1", TargetID: "item-2", Type: "depends_on"},
-		{SourceID: "item-2", TargetID: "item-3", Type: "implements"},
-		{SourceID: "item-1", TargetID: "item-3", Type: "depends_on"},
+		{SourceID: "testLinkItem1ID", TargetID: "testLinkItem2ID", Type: "depends_on"},
+		{SourceID: "testLinkItem2ID", TargetID: "testLinkItem3ID", Type: "implements"},
+		{SourceID: "testLinkItem1ID", TargetID: "testLinkItem3ID", Type: "depends_on"},
 	}
 	for _, link := range links {
 		db.Create(&link)
@@ -191,8 +192,8 @@ func TestGetLink(t *testing.T) {
 	// Create test link
 	link := models.Link{
 		ID:       "link-123",
-		SourceID: "item-1",
-		TargetID: "item-2",
+		SourceID: "testLinkItem1ID",
+		TargetID: "testLinkItem2ID",
 		Type:     "implements",
 	}
 	db.Create(&link)
@@ -238,8 +239,8 @@ func TestUpdateLink(t *testing.T) {
 	// Create test link
 	link := models.Link{
 		ID:       "link-123",
-		SourceID: "item-1",
-		TargetID: "item-2",
+		SourceID: "testLinkItem1ID",
+		TargetID: "testLinkItem2ID",
 		Type:     "depends_on",
 	}
 	db.Create(&link)
@@ -270,8 +271,8 @@ func TestUpdateLinkWithMetadata(t *testing.T) {
 	// Create test link
 	link := models.Link{
 		ID:       "link-456",
-		SourceID: "item-1",
-		TargetID: "item-2",
+		SourceID: "testLinkItem1ID",
+		TargetID: "testLinkItem2ID",
 		Type:     "depends_on",
 	}
 	db.Create(&link)
@@ -321,8 +322,8 @@ func TestUpdateLinkMissingType(t *testing.T) {
 	// Create test link
 	link := models.Link{
 		ID:       "link-789",
-		SourceID: "item-1",
-		TargetID: "item-2",
+		SourceID: "testLinkItem1ID",
+		TargetID: "testLinkItem2ID",
 		Type:     "depends_on",
 	}
 	db.Create(&link)
@@ -366,8 +367,8 @@ func TestUpdateLinkInvalidJSON(t *testing.T) {
 	// Create test link
 	link := models.Link{
 		ID:       "link-999",
-		SourceID: "item-1",
-		TargetID: "item-2",
+		SourceID: "testLinkItem1ID",
+		TargetID: "testLinkItem2ID",
 		Type:     "depends_on",
 	}
 	db.Create(&link)
@@ -392,8 +393,8 @@ func TestDeleteLink(t *testing.T) {
 	// Create test link
 	link := models.Link{
 		ID:       "link-123",
-		SourceID: "item-1",
-		TargetID: "item-2",
+		SourceID: "testLinkItem1ID",
+		TargetID: "testLinkItem2ID",
 		Type:     "depends_on",
 	}
 	db.Create(&link)
