@@ -25,6 +25,7 @@ on:
     - package.json
     - bun.lock
     - uv.lock
+    - .github/workflows/test-validation.yml
 permissions:
   contents: read
 jobs:
