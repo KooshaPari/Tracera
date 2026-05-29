@@ -309,9 +309,9 @@ def test_real_catalog_parses_nonzero(project_key: str, catalog_path: Path) -> No
 
 
 def test_total_counts_across_all_catalogs() -> None:
-    """All four catalogs together should yield ≥50 requirements."""
+    """All six catalogs together should yield ≥100 requirements."""
     total = 0
     for project_key, catalog_path in sr.CATALOGS:
         if catalog_path.exists():
             total += len(sr.parse_catalog(project_key, catalog_path))
-    assert total >= 50, f"Expected ≥50 requirements across all catalogs, got {total}"
+    assert total >= 100, f"Expected ≥100 requirements across all catalogs, got {total}"
