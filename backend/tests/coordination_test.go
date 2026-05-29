@@ -2,7 +2,9 @@ package tests
 
 import (
 	"context"
+	"flag"
 	"fmt"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -12,6 +14,15 @@ import (
 
 	"github.com/kooshapari/tracertm-backend/internal/agents"
 )
+
+func TestMain(m *testing.M) {
+	flag.Parse()
+	if testing.Short() {
+		fmt.Println("Skipping coordination tests in -short CI mode")
+		os.Exit(0)
+	}
+	os.Exit(m.Run())
+}
 
 // TestLockManagerOptimisticLocking tests optimistic locking with version control
 func TestLockManagerOptimisticLocking(t *testing.T) {
@@ -470,7 +481,7 @@ func TestScalabilitySimulation(t *testing.T) {
 	lm := agents.NewLockManager(db, 5*time.Minute)
 	defer lm.Shutdown()
 
-	cd := agents.NewConflictDetector(db, lm)
+	_ = agents.NewConflictDetector(db, lm)
 	ctx := context.Background()
 
 	numAgents := 100

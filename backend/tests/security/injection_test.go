@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/labstack/echo/v4"
@@ -108,7 +109,11 @@ func TestSearchInjectionPrevention(t *testing.T) {
 		t.Run("Search injection: "+displayStr, func(t *testing.T) {
 			e := echo.New()
 
-			req := httptest.NewRequest(http.MethodGet, "/api/items?search="+injection, nil)
+			req := httptest.NewRequest(
+				http.MethodGet,
+				"/api/items?search="+url.QueryEscape(injection),
+				nil,
+			)
 			rec := httptest.NewRecorder()
 			_ = e.NewContext(req, rec)
 

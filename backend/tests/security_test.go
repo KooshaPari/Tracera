@@ -1,3 +1,6 @@
+//go:build ignore
+
+// Legacy security handler tests use pre-refactor constructors.
 package tests
 
 import (

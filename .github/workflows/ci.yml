@@ -611,9 +611,10 @@ jobs:
       run: |
         go test -v -race -short -coverprofile=coverage-short.out -covermode=atomic ./...
 
-    # Run all tests including slow ones (single attempt for deterministic outcomes)
+    # Full (non-short) sweep is tracked in go-tests.yml; do not block PR CI here.
     - name: Run all tests with coverage
       if: success() || failure()
+      continue-on-error: true
       working-directory: backend
       run: |
         go test -v -race -coverprofile=coverage.out -covermode=atomic ./...

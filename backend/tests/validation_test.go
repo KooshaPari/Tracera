@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
@@ -37,6 +38,9 @@ import (
 
 // TestPhase7_ServiceContainerInitialization validates ServiceContainer setup
 func TestPhase7_ServiceContainerInitialization(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Phase7 integration tests require full stack; skipped in -short CI mode")
+	}
 	ctx := context.Background()
 
 	// Start dependencies
@@ -155,6 +159,9 @@ func TestPhase7_ServiceContainerInitialization(t *testing.T) {
 
 // TestPhase7_HandlersFunctionality validates all handlers still work
 func TestPhase7_HandlersFunctionality(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Phase7 integration tests require full stack; skipped in -short CI mode")
+	}
 	ctx := context.Background()
 
 	// Start dependencies
@@ -303,6 +310,9 @@ func TestPhase7_NoInfrastructureLeakage(t *testing.T) {
 
 // TestPhase7_ServiceLayerBehavior validates optional service layer usage
 func TestPhase7_ServiceLayerBehavior(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Phase7 integration tests require full stack; skipped in -short CI mode")
+	}
 	ctx := context.Background()
 
 	pgContainer, connString, err := testutil.PostgresContainer(ctx)
@@ -398,6 +408,9 @@ func TestPhase7_ConfigurationLoading(t *testing.T) {
 
 // TestPhase7_ErrorHandling validates error handling still works
 func TestPhase7_ErrorHandling(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Phase7 integration tests require full stack; skipped in -short CI mode")
+	}
 	ctx := context.Background()
 
 	pgContainer, connString, err := testutil.PostgresContainer(ctx)
