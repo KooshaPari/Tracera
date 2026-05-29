@@ -18,6 +18,7 @@ on:
     - frontend/apps/web/src/components/**
     - frontend/apps/web/.storybook/**
     - frontend/apps/web/package.json
+    - .github/workflows/chromatic.yml
 permissions:
   contents: read
 concurrency:
