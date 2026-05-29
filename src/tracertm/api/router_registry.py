@@ -19,6 +19,7 @@ from tracertm.api.routers import (
     comments,
     contracts,
     coverage,
+    dup_conflict,
     execution,
     executions,
     features,
@@ -97,6 +98,9 @@ def register_api_routers(app: FastAPI) -> None:
 
     # Impact analysis (Cypher forward/reverse traversal)
     app.include_router(impact.router, prefix="/api/v1")
+
+    # Duplicate / conflict detection (FR-TRC-012)
+    app.include_router(dup_conflict.router, prefix="/api/v1")
 
     # MCP router (Model Context Protocol over HTTP)
     app.include_router(mcp.router, prefix="/api/v1")
