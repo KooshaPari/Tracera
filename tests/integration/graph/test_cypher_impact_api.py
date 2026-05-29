@@ -15,10 +15,9 @@ from __future__ import annotations
 
 import uuid
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-import pytest_asyncio
 from fastapi.testclient import TestClient
 
 pytestmark = [pytest.mark.integration, pytest.mark.slow]
