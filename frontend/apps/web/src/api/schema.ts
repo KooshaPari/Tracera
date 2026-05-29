@@ -3,8 +3,9 @@
  * Do not make direct changes to the file.
  */
 
+
 export interface paths {
-  '/api/v1/ai/analyze': {
+  "/api/v1/ai/analyze": {
     /**
      * Analyze text with AI
      * @description Performs AI analysis on provided text
@@ -13,20 +14,20 @@ export interface paths {
       /** @description Analyze request */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.AnalyzeRequest'];
+          "application/json": components["schemas"]["handlers.AnalyzeRequest"];
         };
       };
       responses: {
         /** @description Analysis result */
         200: {
           content: {
-            'application/json': components['schemas']['clients.AnalysisResult'];
+            "application/json": components["schemas"]["clients.AnalysisResult"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -34,7 +35,7 @@ export interface paths {
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -42,7 +43,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/ai/stream-chat': {
+  "/api/v1/ai/stream-chat": {
     /**
      * Stream AI chat responses
      * @description Streams AI chat responses using Server-Sent Events (SSE)
@@ -51,20 +52,20 @@ export interface paths {
       /** @description Stream chat request */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.StreamChatRequest'];
+          "application/json": components["schemas"]["handlers.StreamChatRequest"];
         };
       };
       responses: {
         /** @description SSE stream of AI responses */
         200: {
           content: {
-            'text/event-stream': string;
+            "text/event-stream": string;
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'text/event-stream': {
+            "text/event-stream": {
               [key: string]: string;
             };
           };
@@ -72,7 +73,7 @@ export interface paths {
         /** @description Internal server error */
         500: {
           content: {
-            'text/event-stream': {
+            "text/event-stream": {
               [key: string]: string;
             };
           };
@@ -80,7 +81,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/auth/login': {
+  "/api/v1/auth/login": {
     /**
      * User login
      * @description Authenticate user with email and password
@@ -89,38 +90,38 @@ export interface paths {
       /** @description Login credentials */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.LoginRequest'];
+          "application/json": components["schemas"]["handlers.LoginRequest"];
         };
       };
       responses: {
         /** @description Login successful */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.AuthResponse'];
+            "application/json": components["schemas"]["handlers.AuthResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Invalid credentials */
         401: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/api/v1/auth/logout': {
+  "/api/v1/auth/logout": {
     /**
      * User logout
      * @description Logout and revoke session
@@ -130,7 +131,7 @@ export interface paths {
         /** @description Logout successful */
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: boolean;
             };
           };
@@ -138,19 +139,19 @@ export interface paths {
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/api/v1/auth/me': {
+  "/api/v1/auth/me": {
     /**
      * Get current user
      * @description Get the current authenticated user information
@@ -160,19 +161,19 @@ export interface paths {
         /** @description Current user */
         200: {
           content: {
-            'application/json': components['schemas']['auth.User'];
+            "application/json": components["schemas"]["auth.User"];
           };
         };
         /** @description Unauthenticated */
         401: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/api/v1/auth/refresh': {
+  "/api/v1/auth/refresh": {
     /**
      * Refresh authentication token
      * @description Refresh expired or expiring authentication token
@@ -182,31 +183,31 @@ export interface paths {
         /** @description Token refreshed successfully */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.AuthResponse'];
+            "application/json": components["schemas"]["handlers.AuthResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Unauthorized */
         401: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/api/v1/auth/verify': {
+  "/api/v1/auth/verify": {
     /**
      * Verify authentication token
      * @description Verify if an authentication token is valid
@@ -222,19 +223,19 @@ export interface paths {
         /** @description Token is valid */
         200: {
           content: {
-            'application/json': components['schemas']['auth.User'];
+            "application/json": components["schemas"]["auth.User"];
           };
         };
         /** @description Invalid token */
         401: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/api/v1/csrf-token': {
+  "/api/v1/csrf-token": {
     /**
      * Get CSRF token
      * @description Returns a CSRF token for use in state-changing requests
@@ -244,19 +245,19 @@ export interface paths {
         /** @description CSRF token retrieved successfully */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.CSRFTokenResponse'];
+            "application/json": components["schemas"]["handlers.CSRFTokenResponse"];
           };
         };
         /** @description Failed to generate CSRF token */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/api/v1/docs': {
+  "/api/v1/docs": {
     /**
      * List documentation
      * @description Lists all documentation for a project with pagination
@@ -276,7 +277,7 @@ export interface paths {
         /** @description List of documentation */
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: unknown;
             };
           };
@@ -284,13 +285,13 @@ export interface paths {
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Failed to list documentation */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
@@ -303,14 +304,14 @@ export interface paths {
       /** @description Documentation to index */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.IndexDocumentationRequest'];
+          "application/json": components["schemas"]["handlers.IndexDocumentationRequest"];
         };
       };
       responses: {
         /** @description Documentation indexed successfully */
         201: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: unknown;
             };
           };
@@ -318,19 +319,19 @@ export interface paths {
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Failed to index documentation */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/api/v1/docs/search': {
+  "/api/v1/docs/search": {
     /**
      * Search documentation
      * @description Performs full-text search on documentation
@@ -352,7 +353,7 @@ export interface paths {
         /** @description Search results */
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: unknown;
             };
           };
@@ -360,19 +361,19 @@ export interface paths {
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Failed to search documentation */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/api/v1/docs/{id}': {
+  "/api/v1/docs/{id}": {
     /**
      * Get documentation by ID
      * @description Retrieves a specific documentation by ID
@@ -388,7 +389,7 @@ export interface paths {
         /** @description Documentation retrieved */
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: unknown;
             };
           };
@@ -396,19 +397,19 @@ export interface paths {
         /** @description Invalid ID */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Documentation not found */
         404: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Failed to get documentation */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
@@ -427,14 +428,14 @@ export interface paths {
       /** @description Updated documentation */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.IndexDocumentationRequest'];
+          "application/json": components["schemas"]["handlers.IndexDocumentationRequest"];
         };
       };
       responses: {
         /** @description Documentation updated */
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: unknown;
             };
           };
@@ -442,19 +443,19 @@ export interface paths {
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Documentation not found */
         404: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Failed to update documentation */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
@@ -474,7 +475,7 @@ export interface paths {
         /** @description Documentation deleted */
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -482,25 +483,25 @@ export interface paths {
         /** @description Invalid ID */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Documentation not found */
         404: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Failed to delete documentation */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/api/v1/graph/analysis/cache/invalidate': {
+  "/api/v1/graph/analysis/cache/invalidate": {
     /**
      * Invalidate graph cache
      * @description Clears all cached graph analysis results for a project
@@ -516,7 +517,7 @@ export interface paths {
         /** @description OK */
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -524,7 +525,7 @@ export interface paths {
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -532,7 +533,7 @@ export interface paths {
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -540,7 +541,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/graph/analysis/centrality': {
+  "/api/v1/graph/analysis/centrality": {
     /**
      * Calculate centrality metrics
      * @description Computes betweenness, closeness, and PageRank centrality for project items
@@ -556,13 +557,13 @@ export interface paths {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['graph.CentralityMetrics'];
+            "application/json": components["schemas"]["graph.CentralityMetrics"];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -570,7 +571,7 @@ export interface paths {
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -578,7 +579,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/graph/analysis/coverage': {
+  "/api/v1/graph/analysis/coverage": {
     /**
      * Analyze graph coverage
      * @description Computes coverage statistics (connected vs isolated items)
@@ -594,13 +595,13 @@ export interface paths {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['graph.CoverageReport'];
+            "application/json": components["schemas"]["graph.CoverageReport"];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -608,7 +609,7 @@ export interface paths {
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -616,7 +617,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/graph/analysis/cycles': {
+  "/api/v1/graph/analysis/cycles": {
     /**
      * Detect cycles in project graph
      * @description Finds all cycles in the project's dependency graph using Neo4j
@@ -632,13 +633,13 @@ export interface paths {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['graph.Cycle'][];
+            "application/json": components["schemas"]["graph.Cycle"][];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -646,7 +647,7 @@ export interface paths {
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -654,7 +655,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/graph/analysis/dependencies': {
+  "/api/v1/graph/analysis/dependencies": {
     /**
      * Get item dependencies (forward)
      * @description Retrieves all items that this item depends on
@@ -672,13 +673,13 @@ export interface paths {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['graph.DependencyTree'];
+            "application/json": components["schemas"]["graph.DependencyTree"];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -686,7 +687,7 @@ export interface paths {
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -694,7 +695,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/graph/analysis/dependents': {
+  "/api/v1/graph/analysis/dependents": {
     /**
      * Get item dependents (backward)
      * @description Retrieves all items that depend on this item
@@ -712,13 +713,13 @@ export interface paths {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['graph.DependencyTree'];
+            "application/json": components["schemas"]["graph.DependencyTree"];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -726,7 +727,7 @@ export interface paths {
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -734,7 +735,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/graph/analysis/impact': {
+  "/api/v1/graph/analysis/impact": {
     /**
      * Analyze impact of changes
      * @description Computes which items would be affected by changes to the specified items
@@ -743,20 +744,20 @@ export interface paths {
       /** @description Items to analyze */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.ImpactAnalysisRequest'];
+          "application/json": components["schemas"]["handlers.ImpactAnalysisRequest"];
         };
       };
       responses: {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['graph.ImpactReport'];
+            "application/json": components["schemas"]["graph.ImpactReport"];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -764,7 +765,7 @@ export interface paths {
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -772,7 +773,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/graph/analysis/metrics': {
+  "/api/v1/graph/analysis/metrics": {
     /**
      * Get graph metrics
      * @description Computes overall graph statistics for a project
@@ -788,13 +789,13 @@ export interface paths {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['graph.GraphMetrics'];
+            "application/json": components["schemas"]["graph.GraphMetrics"];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -802,7 +803,7 @@ export interface paths {
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -810,7 +811,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/graph/analysis/shortest-path': {
+  "/api/v1/graph/analysis/shortest-path": {
     /**
      * Find shortest path between two items
      * @description Computes the shortest path between source and target items using Neo4j
@@ -828,13 +829,13 @@ export interface paths {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['graph.Path'];
+            "application/json": components["schemas"]["graph.Path"];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -842,7 +843,7 @@ export interface paths {
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -850,7 +851,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/projects/{projectId}/versions/compare': {
+  "/api/v1/projects/{projectId}/versions/compare": {
     /**
      * Compare two versions
      * @description Returns the differences between two project versions
@@ -872,31 +873,31 @@ export interface paths {
         /** @description Diff result */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.CompareVersionsResponse'];
+            "application/json": components["schemas"]["handlers.CompareVersionsResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Version not found */
         404: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/api/v1/projects/{projectId}/versions/compare/bulk': {
+  "/api/v1/projects/{projectId}/versions/compare/bulk": {
     /**
      * Compare multiple version pairs
      * @description Returns differences for multiple version pairs in a single request
@@ -911,14 +912,14 @@ export interface paths {
       /** @description Comparison pairs */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.BulkCompareVersionsRequest'];
+          "application/json": components["schemas"]["handlers.BulkCompareVersionsRequest"];
         };
       };
       responses: {
         /** @description Bulk diff results */
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: unknown;
             };
           };
@@ -926,19 +927,19 @@ export interface paths {
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/api/v1/projects/{projectId}/versions/compare/summary': {
+  "/api/v1/projects/{projectId}/versions/compare/summary": {
     /**
      * Get summary of version differences
      * @description Returns a high-level summary of changes between two versions
@@ -960,7 +961,7 @@ export interface paths {
         /** @description Diff summary */
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: unknown;
             };
           };
@@ -968,19 +969,19 @@ export interface paths {
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Version not found */
         404: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/api/v1/spec-analytics/analyze': {
+  "/api/v1/spec-analytics/analyze": {
     /**
      * Analyze a specification
      * @description Analyzes a specification for ISO 29148 compliance, EARS patterns, and formal verification
@@ -989,20 +990,20 @@ export interface paths {
       /** @description Analyze spec request */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.AnalyzeSpecRequest'];
+          "application/json": components["schemas"]["handlers.AnalyzeSpecRequest"];
         };
       };
       responses: {
         /** @description Analysis result */
         200: {
           content: {
-            'application/json': components['schemas']['clients.SpecAnalysisResult'];
+            "application/json": components["schemas"]["clients.SpecAnalysisResult"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -1010,7 +1011,7 @@ export interface paths {
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -1018,7 +1019,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/spec-analytics/batch-analyze': {
+  "/api/v1/spec-analytics/batch-analyze": {
     /**
      * Batch analyze specifications
      * @description Analyzes multiple specifications in parallel
@@ -1027,14 +1028,14 @@ export interface paths {
       /** @description Batch analyze request */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.BatchAnalyzeRequest'];
+          "application/json": components["schemas"]["handlers.BatchAnalyzeRequest"];
         };
       };
       responses: {
         /** @description Batch analysis results */
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: unknown;
             };
           };
@@ -1042,7 +1043,7 @@ export interface paths {
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -1050,7 +1051,7 @@ export interface paths {
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -1058,7 +1059,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/spec-analytics/ears-patterns': {
+  "/api/v1/spec-analytics/ears-patterns": {
     /**
      * Extract EARS patterns
      * @description Extracts EARS patterns from a specification
@@ -1067,14 +1068,14 @@ export interface paths {
       /** @description EARS patterns request */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.AnalyzeSpecRequest'];
+          "application/json": components["schemas"]["handlers.AnalyzeSpecRequest"];
         };
       };
       responses: {
         /** @description EARS patterns result */
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: unknown;
             };
           };
@@ -1082,7 +1083,7 @@ export interface paths {
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -1090,7 +1091,7 @@ export interface paths {
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -1098,7 +1099,7 @@ export interface paths {
       };
     };
   };
-  '/api/v1/spec-analytics/validate-iso29148': {
+  "/api/v1/spec-analytics/validate-iso29148": {
     /**
      * Validate ISO 29148 compliance
      * @description Checks if a specification complies with ISO 29148 standard
@@ -1107,14 +1108,14 @@ export interface paths {
       /** @description Validate request */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.AnalyzeSpecRequest'];
+          "application/json": components["schemas"]["handlers.AnalyzeSpecRequest"];
         };
       };
       responses: {
         /** @description Validation result */
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: unknown;
             };
           };
@@ -1122,7 +1123,7 @@ export interface paths {
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -1130,7 +1131,7 @@ export interface paths {
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: string;
             };
           };
@@ -1138,7 +1139,7 @@ export interface paths {
       };
     };
   };
-  '/auth/me': {
+  "/auth/me": {
     /**
      * Get current user information
      * @description Returns information about the currently authenticated user
@@ -1148,19 +1149,19 @@ export interface paths {
         /** @description Current user information */
         200: {
           content: {
-            'application/json': components['schemas']['auth.User'];
+            "application/json": components["schemas"]["auth.User"];
           };
         };
         /** @description Unauthenticated */
         401: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/distributed-operations': {
+  "/distributed-operations": {
     /**
      * List distributed operations
      * @description Returns a list of distributed operations for a project with optional filtering
@@ -1178,19 +1179,19 @@ export interface paths {
         /** @description List of operations */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.ListDistributedOperationsResponse'];
+            "application/json": components["schemas"]["handlers.ListDistributedOperationsResponse"];
           };
         };
         /** @description Invalid project ID */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
       };
@@ -1203,32 +1204,32 @@ export interface paths {
       /** @description Operation details */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.CreateDistributedOperationRequest'];
+          "application/json": components["schemas"]["handlers.CreateDistributedOperationRequest"];
         };
       };
       responses: {
         /** @description Operation created successfully */
         201: {
           content: {
-            'application/json': components['schemas']['handlers.CreateDistributedOperationResponse'];
+            "application/json": components["schemas"]["handlers.CreateDistributedOperationResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
       };
     };
   };
-  '/distributed-operations/assign': {
+  "/distributed-operations/assign": {
     /**
      * Assign operation to agents
      * @description Assigns parts of a distributed operation to multiple participating agents
@@ -1237,32 +1238,32 @@ export interface paths {
       /** @description Agent assignment configuration */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.AssignOperationToAgentsRequest'];
+          "application/json": components["schemas"]["handlers.AssignOperationToAgentsRequest"];
         };
       };
       responses: {
         /** @description Assignment successful */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.AssignOperationResponse'];
+            "application/json": components["schemas"]["handlers.AssignOperationResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
       };
     };
   };
-  '/distributed-operations/participants/result': {
+  "/distributed-operations/participants/result": {
     /**
      * Submit participant result
      * @description Submits work results from a participant agent in a distributed operation
@@ -1271,32 +1272,32 @@ export interface paths {
       /** @description Result submission */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.SubmitParticipantResultRequest'];
+          "application/json": components["schemas"]["handlers.SubmitParticipantResultRequest"];
         };
       };
       responses: {
         /** @description Result submitted successfully */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.ParticipantResultResponse'];
+            "application/json": components["schemas"]["handlers.ParticipantResultResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
       };
     };
   };
-  '/distributed-operations/{id}/complete': {
+  "/distributed-operations/{id}/complete": {
     /**
      * Complete a distributed operation
      * @description Marks a distributed operation as complete and aggregates results
@@ -1312,25 +1313,25 @@ export interface paths {
         /** @description Operation completed successfully */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.OperationStatusResponse'];
+            "application/json": components["schemas"]["handlers.OperationStatusResponse"];
           };
         };
         /** @description Invalid operation ID */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/distributed-operations/{id}/results': {
+  "/distributed-operations/{id}/results": {
     /**
      * Get operation results
      * @description Returns aggregated results from all participants in a distributed operation
@@ -1346,31 +1347,31 @@ export interface paths {
         /** @description Aggregated operation results */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.OperationResults'];
+            "application/json": components["schemas"]["handlers.OperationResults"];
           };
         };
         /** @description Invalid operation ID */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
         /** @description Operation not found */
         404: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
       };
     };
   };
-  '/distributed-operations/{id}/status': {
+  "/distributed-operations/{id}/status": {
     /**
      * Get distributed operation status
      * @description Returns the current status and details of a distributed operation
@@ -1386,7 +1387,7 @@ export interface paths {
         /** @description Operation details */
         200: {
           content: {
-            'application/json': {
+            "application/json": {
               [key: string]: unknown;
             };
           };
@@ -1394,19 +1395,19 @@ export interface paths {
         /** @description Invalid operation ID */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
         /** @description Operation not found */
         404: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
       };
@@ -1425,32 +1426,32 @@ export interface paths {
       /** @description New status */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.UpdateOperationStatusRequest'];
+          "application/json": components["schemas"]["handlers.UpdateOperationStatusRequest"];
         };
       };
       responses: {
         /** @description Status updated successfully */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.OperationStatusResponse'];
+            "application/json": components["schemas"]["handlers.OperationStatusResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
       };
     };
   };
-  '/distributed-operations/{operation_id}/participants/{agent_id}': {
+  "/distributed-operations/{operation_id}/participants/{agent_id}": {
     /**
      * Get participant status in operation
      * @description Returns the current status of a specific agent participant in a distributed operation
@@ -1468,31 +1469,31 @@ export interface paths {
         /** @description Participant status details */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.ParticipantStatus'];
+            "application/json": components["schemas"]["handlers.ParticipantStatus"];
           };
         };
         /** @description Invalid operation or agent ID */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
         /** @description Participant not found */
         404: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.DistributedErrorResponse'];
+            "application/json": components["schemas"]["handlers.DistributedErrorResponse"];
           };
         };
       };
     };
   };
-  '/equivalences': {
+  "/equivalences": {
     /**
      * List equivalence links for a project
      * @description Returns a paginated list of equivalence links with optional filtering
@@ -1522,25 +1523,25 @@ export interface paths {
         /** @description List of equivalence links */
         200: {
           content: {
-            'application/json': components['schemas']['equivalence.ListEquivalencesResponse'];
+            "application/json": components["schemas"]["equivalence.ListEquivalencesResponse"];
           };
         };
         /** @description Invalid request parameters */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/equivalences/bulk-confirm': {
+  "/equivalences/bulk-confirm": {
     /**
      * Confirm multiple equivalences
      * @description Confirms multiple equivalence links in a single operation
@@ -1549,32 +1550,32 @@ export interface paths {
       /** @description Equivalence IDs to confirm */
       requestBody: {
         content: {
-          'application/json': components['schemas']['equivalence.BulkConfirmRequest'];
+          "application/json": components["schemas"]["equivalence.BulkConfirmRequest"];
         };
       };
       responses: {
         /** @description Confirmation results */
         200: {
           content: {
-            'application/json': components['schemas']['equivalence.BulkConfirmResponse'];
+            "application/json": components["schemas"]["equivalence.BulkConfirmResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/equivalences/bulk-reject': {
+  "/equivalences/bulk-reject": {
     /**
      * Reject multiple equivalences
      * @description Rejects multiple equivalence links in a single operation
@@ -1583,32 +1584,32 @@ export interface paths {
       /** @description Equivalence IDs to reject */
       requestBody: {
         content: {
-          'application/json': components['schemas']['equivalence.BulkRejectRequest'];
+          "application/json": components["schemas"]["equivalence.BulkRejectRequest"];
         };
       };
       responses: {
         /** @description Rejection results */
         200: {
           content: {
-            'application/json': components['schemas']['equivalence.BulkRejectResponse'];
+            "application/json": components["schemas"]["equivalence.BulkRejectResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/equivalences/concepts': {
+  "/equivalences/concepts": {
     /**
      * Create a new canonical concept
      * @description Creates a new abstract canonical concept for the project
@@ -1617,38 +1618,38 @@ export interface paths {
       /** @description Canonical concept details */
       requestBody: {
         content: {
-          'application/json': components['schemas']['equivalence.CreateCanonicalConceptRequest'];
+          "application/json": components["schemas"]["equivalence.CreateCanonicalConceptRequest"];
         };
       };
       responses: {
         /** @description Concept created successfully */
         201: {
           content: {
-            'application/json': components['schemas']['equivalence.CreateCanonicalConceptResponse'];
+            "application/json": components["schemas"]["equivalence.CreateCanonicalConceptResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Duplicate concept */
         409: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/equivalences/concepts/{conceptId}/projections/{projectionId}': {
+  "/equivalences/concepts/{conceptId}/projections/{projectionId}": {
     /**
      * Delete a projection of a canonical concept
      * @description Removes a link between an item and a canonical concept
@@ -1670,25 +1671,25 @@ export interface paths {
         /** @description Invalid ID format */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Projection or concept not found */
         404: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/equivalences/concepts/{id}': {
+  "/equivalences/concepts/{id}": {
     /**
      * Get a canonical concept
      * @description Returns details of a specific canonical concept
@@ -1704,25 +1705,25 @@ export interface paths {
         /** @description Concept details */
         200: {
           content: {
-            'application/json': components['schemas']['equivalence.CanonicalConcept'];
+            "application/json": components["schemas"]["equivalence.CanonicalConcept"];
           };
         };
         /** @description Invalid ID format */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Concept not found */
         404: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
@@ -1741,32 +1742,32 @@ export interface paths {
       /** @description Updated concept details */
       requestBody: {
         content: {
-          'application/json': components['schemas']['equivalence.CreateCanonicalConceptRequest'];
+          "application/json": components["schemas"]["equivalence.CreateCanonicalConceptRequest"];
         };
       };
       responses: {
         /** @description Updated concept */
         200: {
           content: {
-            'application/json': components['schemas']['equivalence.CanonicalConcept'];
+            "application/json": components["schemas"]["equivalence.CanonicalConcept"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Concept not found */
         404: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
@@ -1790,25 +1791,25 @@ export interface paths {
         /** @description Invalid ID format */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Concept not found */
         404: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/equivalences/concepts/{id}/projections': {
+  "/equivalences/concepts/{id}/projections": {
     /**
      * Get projections of a canonical concept
      * @description Returns all view manifestations (projections) of a canonical concept
@@ -1834,25 +1835,25 @@ export interface paths {
         /** @description Projections list */
         200: {
           content: {
-            'application/json': components['schemas']['equivalence.GetProjectionsResponse'];
+            "application/json": components["schemas"]["equivalence.GetProjectionsResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Concept not found */
         404: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
@@ -1871,38 +1872,38 @@ export interface paths {
       /** @description Projection details */
       requestBody: {
         content: {
-          'application/json': components['schemas']['equivalence.CreateCanonicalProjectionRequest'];
+          "application/json": components["schemas"]["equivalence.CreateCanonicalProjectionRequest"];
         };
       };
       responses: {
         /** @description Projection created successfully */
         201: {
           content: {
-            'application/json': components['schemas']['equivalence.CreateCanonicalProjectionResponse'];
+            "application/json": components["schemas"]["equivalence.CreateCanonicalProjectionResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Concept not found */
         404: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/equivalences/{id}': {
+  "/equivalences/{id}": {
     /**
      * Get a specific equivalence link
      * @description Returns details of a specific equivalence link
@@ -1918,31 +1919,31 @@ export interface paths {
         /** @description Equivalence link details */
         200: {
           content: {
-            'application/json': components['schemas']['equivalence.EquivalenceLink'];
+            "application/json": components["schemas"]["equivalence.EquivalenceLink"];
           };
         };
         /** @description Invalid ID format */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Equivalence not found */
         404: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/equivalences/{id}/confirm': {
+  "/equivalences/{id}/confirm": {
     /**
      * Confirm an equivalence link
      * @description Confirms an equivalence link and makes it permanent
@@ -1957,38 +1958,38 @@ export interface paths {
       /** @description Confirmation details */
       requestBody?: {
         content: {
-          'application/json': components['schemas']['equivalence.ConfirmEquivalenceRequest'];
+          "application/json": components["schemas"]["equivalence.ConfirmEquivalenceRequest"];
         };
       };
       responses: {
         /** @description Confirmation successful */
         200: {
           content: {
-            'application/json': components['schemas']['equivalence.ConfirmEquivalenceResponse'];
+            "application/json": components["schemas"]["equivalence.ConfirmEquivalenceResponse"];
           };
         };
         /** @description Invalid ID format */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Equivalence not found */
         404: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/equivalences/{id}/reject': {
+  "/equivalences/{id}/reject": {
     /**
      * Reject an equivalence link
      * @description Rejects and removes an equivalence link
@@ -2003,7 +2004,7 @@ export interface paths {
       /** @description Rejection details */
       requestBody?: {
         content: {
-          'application/json': components['schemas']['equivalence.RejectEquivalenceRequest'];
+          "application/json": components["schemas"]["equivalence.RejectEquivalenceRequest"];
         };
       };
       responses: {
@@ -2014,25 +2015,25 @@ export interface paths {
         /** @description Invalid ID format */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Equivalence not found */
         404: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/health': {
+  "/health": {
     /**
      * Health check endpoint
      * @description Returns the health status of the service
@@ -2042,13 +2043,13 @@ export interface paths {
         /** @description Service is healthy */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.HealthResponse'];
+            "application/json": components["schemas"]["handlers.HealthResponse"];
           };
         };
       };
     };
   };
-  '/items/{id}/pivot': {
+  "/items/{id}/pivot": {
     /**
      * Get equivalent items for pivot navigation
      * @description Returns items equivalent to a source item, grouped by perspective
@@ -2063,38 +2064,38 @@ export interface paths {
       /** @description Pivot navigation options */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.PivotNavigationRequest'];
+          "application/json": components["schemas"]["handlers.PivotNavigationRequest"];
         };
       };
       responses: {
         /** @description Equivalent items grouped by perspective */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.PivotNavigationResponse'];
+            "application/json": components["schemas"]["handlers.PivotNavigationResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Item not found */
         404: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/items/{id}/pivot-targets': {
+  "/items/{id}/pivot-targets": {
     /**
      * Get pivot target information for an item
      * @description Returns item information needed for pivot navigation including type and available perspectives
@@ -2110,31 +2111,31 @@ export interface paths {
         /** @description Pivot target information */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.PivotTargetsResponse'];
+            "application/json": components["schemas"]["handlers.PivotTargetsResponse"];
           };
         };
         /** @description Invalid item ID */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Item not found */
         404: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.ErrorResponse'];
+            "application/json": components["schemas"]["handlers.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/journeys': {
+  "/journeys": {
     /**
      * List all journeys
      * @description Returns a paginated list of journeys
@@ -2158,25 +2159,25 @@ export interface paths {
         /** @description List of journeys */
         200: {
           content: {
-            'application/json': components['schemas']['journey.ListJourneysResponse'];
+            "application/json": components["schemas"]["journey.ListJourneysResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/journeys/call-chains': {
+  "/journeys/call-chains": {
     /**
      * Get detected call chains
      * @description Returns function call chains for a project
@@ -2192,19 +2193,19 @@ export interface paths {
         /** @description Call chains */
         200: {
           content: {
-            'application/json': components['schemas']['journey.DerivedJourney'][];
+            "application/json": components["schemas"]["journey.DerivedJourney"][];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/journeys/data-paths': {
+  "/journeys/data-paths": {
     /**
      * Get detected data paths
      * @description Returns data flow paths for a project
@@ -2220,19 +2221,19 @@ export interface paths {
         /** @description Data paths */
         200: {
           content: {
-            'application/json': components['schemas']['journey.DerivedJourney'][];
+            "application/json": components["schemas"]["journey.DerivedJourney"][];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/journeys/detect': {
+  "/journeys/detect": {
     /**
      * Detect journeys in a project
      * @description Analyzes the project graph to detect user flows, data paths, and call chains
@@ -2241,32 +2242,32 @@ export interface paths {
       /** @description Detection parameters */
       requestBody: {
         content: {
-          'application/json': components['schemas']['journey.DetectJourneysRequest'];
+          "application/json": components["schemas"]["journey.DetectJourneysRequest"];
         };
       };
       responses: {
         /** @description Detection results */
         200: {
           content: {
-            'application/json': components['schemas']['journey.DetectJourneysResponse'];
+            "application/json": components["schemas"]["journey.DetectJourneysResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/journeys/stats': {
+  "/journeys/stats": {
     /**
      * Get journey statistics
      * @description Returns aggregate statistics about detected journeys
@@ -2282,19 +2283,19 @@ export interface paths {
         /** @description Journey statistics */
         200: {
           content: {
-            'application/json': components['schemas']['journey.JourneyStats'];
+            "application/json": components["schemas"]["journey.JourneyStats"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/journeys/user-flows': {
+  "/journeys/user-flows": {
     /**
      * Get detected user flows
      * @description Returns user flows (UI navigation paths) for a project
@@ -2310,19 +2311,19 @@ export interface paths {
         /** @description User flows */
         200: {
           content: {
-            'application/json': components['schemas']['journey.DerivedJourney'][];
+            "application/json": components["schemas"]["journey.DerivedJourney"][];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/journeys/{id}': {
+  "/journeys/{id}": {
     /**
      * Get a specific journey
      * @description Returns details of a specific journey
@@ -2338,19 +2339,19 @@ export interface paths {
         /** @description Journey details */
         200: {
           content: {
-            'application/json': components['schemas']['journey.DerivedJourney'];
+            "application/json": components["schemas"]["journey.DerivedJourney"];
           };
         };
         /** @description Invalid ID format */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
         /** @description Journey not found */
         404: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
@@ -2369,26 +2370,26 @@ export interface paths {
       /** @description Update parameters */
       requestBody: {
         content: {
-          'application/json': components['schemas']['journey.UpdateJourneyRequest'];
+          "application/json": components["schemas"]["journey.UpdateJourneyRequest"];
         };
       };
       responses: {
         /** @description Updated journey */
         200: {
           content: {
-            'application/json': components['schemas']['journey.DerivedJourney'];
+            "application/json": components["schemas"]["journey.DerivedJourney"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
         /** @description Journey not found */
         404: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
@@ -2412,19 +2413,19 @@ export interface paths {
         /** @description Invalid ID format */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
         /** @description Journey not found */
         404: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/journeys/{id}/steps': {
+  "/journeys/{id}/steps": {
     /**
      * Get journey steps
      * @description Returns the ordered steps of a journey
@@ -2440,19 +2441,19 @@ export interface paths {
         /** @description Journey steps */
         200: {
           content: {
-            'application/json': components['schemas']['journey.JourneyStep'][];
+            "application/json": components["schemas"]["journey.JourneyStep"][];
           };
         };
         /** @description Invalid ID format */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
         /** @description Journey not found */
         404: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
@@ -2471,32 +2472,32 @@ export interface paths {
       /** @description Step details */
       requestBody: {
         content: {
-          'application/json': components['schemas']['journey.AddStepRequest'];
+          "application/json": components["schemas"]["journey.AddStepRequest"];
         };
       };
       responses: {
         /** @description Updated journey */
         200: {
           content: {
-            'application/json': components['schemas']['journey.DerivedJourney'];
+            "application/json": components["schemas"]["journey.DerivedJourney"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
         /** @description Journey not found */
         404: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/journeys/{id}/steps/{itemId}': {
+  "/journeys/{id}/steps/{itemId}": {
     /**
      * Remove a step from a journey
      * @description Removes an item from the journey
@@ -2518,19 +2519,19 @@ export interface paths {
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
         /** @description Journey or step not found */
         404: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/journeys/{id}/visualization': {
+  "/journeys/{id}/visualization": {
     /**
      * Get journey visualization data
      * @description Returns formatted data for rendering a journey visualization
@@ -2546,25 +2547,25 @@ export interface paths {
         /** @description Visualization data */
         200: {
           content: {
-            'application/json': components['schemas']['journey.VisualizationData'];
+            "application/json": components["schemas"]["journey.VisualizationData"];
           };
         };
         /** @description Invalid ID format */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
         /** @description Journey not found */
         404: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/projects/{projectId}/concepts': {
+  "/projects/{projectId}/concepts": {
     /**
      * List canonical concepts for a project
      * @description Returns all canonical concepts for the given project
@@ -2580,19 +2581,19 @@ export interface paths {
         /** @description List of concepts */
         200: {
           content: {
-            'application/json': components['schemas']['equivalence.CanonicalConcept'][];
+            "application/json": components["schemas"]["equivalence.CanonicalConcept"][];
           };
         };
         /** @description Invalid project ID */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
@@ -2611,32 +2612,32 @@ export interface paths {
       /** @description Concept details */
       requestBody: {
         content: {
-          'application/json': components['schemas']['equivalence.CreateCanonicalConceptRequest'];
+          "application/json": components["schemas"]["equivalence.CreateCanonicalConceptRequest"];
         };
       };
       responses: {
         /** @description Concept created successfully */
         201: {
           content: {
-            'application/json': components['schemas']['equivalence.CreateCanonicalConceptResponse'];
+            "application/json": components["schemas"]["equivalence.CreateCanonicalConceptResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/projects/{projectId}/equivalences': {
+  "/projects/{projectId}/equivalences": {
     /**
      * List equivalence links for a specific project
      * @description Returns a paginated list of equivalence links for the given project
@@ -2668,25 +2669,25 @@ export interface paths {
         /** @description List of equivalence links */
         200: {
           content: {
-            'application/json': components['schemas']['equivalence.ListEquivalencesResponse'];
+            "application/json": components["schemas"]["equivalence.ListEquivalencesResponse"];
           };
         };
         /** @description Invalid project ID */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/projects/{projectId}/equivalences/detect': {
+  "/projects/{projectId}/equivalences/detect": {
     /**
      * Detect equivalences within a project
      * @description Runs equivalence detection for items in the specified project
@@ -2701,32 +2702,32 @@ export interface paths {
       /** @description Detection configuration */
       requestBody: {
         content: {
-          'application/json': components['schemas']['equivalence.DetectionRequest'];
+          "application/json": components["schemas"]["equivalence.DetectionRequest"];
         };
       };
       responses: {
         /** @description Detection results with suggestions */
         200: {
           content: {
-            'application/json': components['schemas']['equivalence.DetectionResponse'];
+            "application/json": components["schemas"]["equivalence.DetectionResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
         /** @description Detection failed */
         500: {
           content: {
-            'application/json': components['schemas']['equivalence.ErrorResponse'];
+            "application/json": components["schemas"]["equivalence.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/projects/{projectId}/journeys': {
+  "/projects/{projectId}/journeys": {
     /**
      * List journeys for a project
      * @description Returns journeys for a specific project
@@ -2750,13 +2751,13 @@ export interface paths {
         /** @description List of journeys */
         200: {
           content: {
-            'application/json': components['schemas']['journey.ListJourneysResponse'];
+            "application/json": components["schemas"]["journey.ListJourneysResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
@@ -2775,32 +2776,32 @@ export interface paths {
       /** @description Journey details */
       requestBody: {
         content: {
-          'application/json': components['schemas']['journey.CreateJourneyRequest'];
+          "application/json": components["schemas"]["journey.CreateJourneyRequest"];
         };
       };
       responses: {
         /** @description Created journey */
         201: {
           content: {
-            'application/json': components['schemas']['journey.DerivedJourney'];
+            "application/json": components["schemas"]["journey.DerivedJourney"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
         /** @description Internal server error */
         500: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/projects/{projectId}/journeys/detect': {
+  "/projects/{projectId}/journeys/detect": {
     /**
      * Detect journeys in a project
      * @description Analyzes the project graph to detect journeys
@@ -2815,26 +2816,26 @@ export interface paths {
       /** @description Detection parameters */
       requestBody?: {
         content: {
-          'application/json': components['schemas']['journey.DetectJourneysRequest'];
+          "application/json": components["schemas"]["journey.DetectJourneysRequest"];
         };
       };
       responses: {
         /** @description Detection results */
         200: {
           content: {
-            'application/json': components['schemas']['journey.DetectJourneysResponse'];
+            "application/json": components["schemas"]["journey.DetectJourneysResponse"];
           };
         };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['journey.ErrorResponse'];
+            "application/json": components["schemas"]["journey.ErrorResponse"];
           };
         };
       };
     };
   };
-  '/storage/:key': {
+  "/storage/:key": {
     /**
      * Delete a file from S3 storage
      * @description Delete a file from S3-compatible storage
@@ -2850,25 +2851,25 @@ export interface paths {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.DeleteResponse'];
+            "application/json": components["schemas"]["handlers.DeleteResponse"];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.DeleteResponse'];
+            "application/json": components["schemas"]["handlers.DeleteResponse"];
           };
         };
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.DeleteResponse'];
+            "application/json": components["schemas"]["handlers.DeleteResponse"];
           };
         };
       };
     };
   };
-  '/storage/download': {
+  "/storage/download": {
     /**
      * Download a file from S3 storage
      * @description Download a file from S3-compatible storage
@@ -2888,25 +2889,25 @@ export interface paths {
         /** @description Bad Request */
         400: {
           content: {
-            'application/octet-stream': components['schemas']['handlers.DownloadResponse'];
+            "application/octet-stream": components["schemas"]["handlers.DownloadResponse"];
           };
         };
         /** @description Not Found */
         404: {
           content: {
-            'application/octet-stream': components['schemas']['handlers.DownloadResponse'];
+            "application/octet-stream": components["schemas"]["handlers.DownloadResponse"];
           };
         };
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/octet-stream': components['schemas']['handlers.DownloadResponse'];
+            "application/octet-stream": components["schemas"]["handlers.DownloadResponse"];
           };
         };
       };
     };
   };
-  '/storage/info': {
+  "/storage/info": {
     /**
      * Get file information
      * @description Get metadata about a file in storage
@@ -2922,25 +2923,25 @@ export interface paths {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.FileInfoResponse'];
+            "application/json": components["schemas"]["handlers.FileInfoResponse"];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.FileInfoResponse'];
+            "application/json": components["schemas"]["handlers.FileInfoResponse"];
           };
         };
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.FileInfoResponse'];
+            "application/json": components["schemas"]["handlers.FileInfoResponse"];
           };
         };
       };
     };
   };
-  '/storage/presigned-upload': {
+  "/storage/presigned-upload": {
     /**
      * Generate presigned upload URL
      * @description Generate a presigned URL for uploading a file without authentication
@@ -2949,32 +2950,32 @@ export interface paths {
       /** @description Request body */
       requestBody: {
         content: {
-          'application/json': components['schemas']['handlers.PresignedURLRequest'];
+          "application/json": components["schemas"]["handlers.PresignedURLRequest"];
         };
       };
       responses: {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.PresignedURLResponse'];
+            "application/json": components["schemas"]["handlers.PresignedURLResponse"];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.PresignedURLResponse'];
+            "application/json": components["schemas"]["handlers.PresignedURLResponse"];
           };
         };
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.PresignedURLResponse'];
+            "application/json": components["schemas"]["handlers.PresignedURLResponse"];
           };
         };
       };
     };
   };
-  '/storage/presigned/:key': {
+  "/storage/presigned/:key": {
     /**
      * Generate presigned download URL
      * @description Generate a presigned URL for downloading a file without authentication
@@ -2994,25 +2995,25 @@ export interface paths {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.PresignedURLResponse'];
+            "application/json": components["schemas"]["handlers.PresignedURLResponse"];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.PresignedURLResponse'];
+            "application/json": components["schemas"]["handlers.PresignedURLResponse"];
           };
         };
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.PresignedURLResponse'];
+            "application/json": components["schemas"]["handlers.PresignedURLResponse"];
           };
         };
       };
     };
   };
-  '/storage/upload': {
+  "/storage/upload": {
     /**
      * Upload a file to S3 storage
      * @description Upload a file to S3-compatible storage (Cloudflare R2, AWS S3, etc.)
@@ -3020,7 +3021,7 @@ export interface paths {
     post: {
       requestBody: {
         content: {
-          'multipart/form-data': {
+          "multipart/form-data": {
             /**
              * Format: binary
              * @description File to upload
@@ -3037,25 +3038,25 @@ export interface paths {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.UploadResponse'];
+            "application/json": components["schemas"]["handlers.UploadResponse"];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.UploadResponse'];
+            "application/json": components["schemas"]["handlers.UploadResponse"];
           };
         };
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.UploadResponse'];
+            "application/json": components["schemas"]["handlers.UploadResponse"];
           };
         };
       };
     };
   };
-  '/storage/upload-with-thumbnail': {
+  "/storage/upload-with-thumbnail": {
     /**
      * Upload an image with thumbnail generation
      * @description Upload an image and automatically generate a thumbnail
@@ -3063,7 +3064,7 @@ export interface paths {
     post: {
       requestBody: {
         content: {
-          'multipart/form-data': {
+          "multipart/form-data": {
             /**
              * Format: binary
              * @description Image file to upload
@@ -3080,19 +3081,19 @@ export interface paths {
         /** @description OK */
         200: {
           content: {
-            'application/json': components['schemas']['handlers.UploadResponse'];
+            "application/json": components["schemas"]["handlers.UploadResponse"];
           };
         };
         /** @description Bad Request */
         400: {
           content: {
-            'application/json': components['schemas']['handlers.UploadResponse'];
+            "application/json": components["schemas"]["handlers.UploadResponse"];
           };
         };
         /** @description Internal Server Error */
         500: {
           content: {
-            'application/json': components['schemas']['handlers.UploadResponse'];
+            "application/json": components["schemas"]["handlers.UploadResponse"];
           };
         };
       };
@@ -3104,7 +3105,7 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
-    'auth.User': {
+    "auth.User": {
       email?: string;
       id?: string;
       metadata?: {
@@ -3114,7 +3115,7 @@ export interface components {
       projectID?: string;
       role?: string;
     };
-    'clients.AnalysisResult': {
+    "clients.AnalysisResult": {
       analysis?: string;
       confidence?: number;
       metadata?: {
@@ -3122,33 +3123,33 @@ export interface components {
       };
       suggestions?: string[];
     };
-    'clients.EARSPattern': {
+    "clients.EARSPattern": {
       confidence?: number;
       matched?: boolean;
       /** @description UBIQUITOUS, EVENT_DRIVEN, UNWANTED_BEHAVIOR, STATE_DRIVEN, OPTIONAL_FEATURE */
       type?: string;
     };
-    'clients.FormalVerificationResult': {
+    "clients.FormalVerificationResult": {
       ambiguities?: string[];
       contradictions?: string[];
       is_verifiable?: boolean;
       logical_formula?: string;
     };
-    'clients.SpecAnalysisResult': {
+    "clients.SpecAnalysisResult": {
       compliant_with_iso?: boolean;
-      ears_patterns?: components['schemas']['clients.EARSPattern'][];
-      formal_verification?: components['schemas']['clients.FormalVerificationResult'];
+      ears_patterns?: components["schemas"]["clients.EARSPattern"][];
+      formal_verification?: components["schemas"]["clients.FormalVerificationResult"];
       odc_classification?: string;
       recommendations?: string[];
       spec_id?: string;
     };
-    'equivalence.BulkConfirmRequest': {
+    "equivalence.BulkConfirmRequest": {
       /** @description EquivalenceIDs are the IDs to confirm */
       equivalence_ids: string[];
       /** @description Reason is optional context for all confirmations */
       reason?: string;
     };
-    'equivalence.BulkConfirmResponse': {
+    "equivalence.BulkConfirmResponse": {
       /** @description Confirmed is the number of successfully confirmed links */
       confirmed?: number;
       /** @description Errors maps failed IDs to error messages */
@@ -3158,15 +3159,15 @@ export interface components {
       /** @description Failed is the number that failed to confirm */
       failed?: number;
       /** @description Links are the confirmed equivalence links */
-      links?: components['schemas']['equivalence.EquivalenceLink'][];
+      links?: components["schemas"]["equivalence.EquivalenceLink"][];
     };
-    'equivalence.BulkRejectRequest': {
+    "equivalence.BulkRejectRequest": {
       /** @description EquivalenceIDs are the IDs to reject */
       equivalence_ids: string[];
       /** @description Reason explains why equivalences were rejected */
       reason?: string;
     };
-    'equivalence.BulkRejectResponse': {
+    "equivalence.BulkRejectResponse": {
       /** @description Errors maps failed IDs to error messages */
       errors?: {
         [key: string]: string;
@@ -3176,7 +3177,7 @@ export interface components {
       /** @description Rejected is the number of successfully rejected equivalences */
       rejected?: number;
     };
-    'equivalence.CanonicalConcept': {
+    "equivalence.CanonicalConcept": {
       category?: string;
       child_concept_ids?: string[];
       confidence?: number;
@@ -3194,12 +3195,12 @@ export interface components {
       projection_count?: number;
       related_concept_ids?: string[];
       slug?: string;
-      source?: components['schemas']['equivalence.StrategyType'];
+      source?: components["schemas"]["equivalence.StrategyType"];
       tags?: string[];
       updated_at?: string;
       version?: number;
     };
-    'equivalence.CanonicalProjection': {
+    "equivalence.CanonicalProjection": {
       canonical_id?: string;
       confidence?: number;
       confirmed_at?: string;
@@ -3212,13 +3213,13 @@ export interface components {
       };
       perspective?: string;
       project_id?: string;
-      provenance?: components['schemas']['equivalence.StrategyType'];
+      provenance?: components["schemas"]["equivalence.StrategyType"];
       /** @description primary, related, derived */
       role?: string;
-      status?: components['schemas']['equivalence.EquivalenceStatus'];
+      status?: components["schemas"]["equivalence.EquivalenceStatus"];
       updated_at?: string;
     };
-    'equivalence.CodeReference': {
+    "equivalence.CodeReference": {
       /** @description FilePath is the source file path */
       file_path?: string;
       /** @description LineEnd is the ending line number */
@@ -3232,7 +3233,7 @@ export interface components {
       /** @description SymbolType is the symbol type (function, class, method, etc.) */
       symbol_type?: string;
     };
-    'equivalence.ConfirmEquivalenceRequest': {
+    "equivalence.ConfirmEquivalenceRequest": {
       /** @description Metadata is optional additional information */
       metadata?: {
         [key: string]: unknown;
@@ -3240,15 +3241,15 @@ export interface components {
       /** @description Reason is optional context for the confirmation */
       reason?: string;
     };
-    'equivalence.ConfirmEquivalenceResponse': {
+    "equivalence.ConfirmEquivalenceResponse": {
       /** @description ConfirmedAt is when confirmation occurred */
       confirmed_at?: string;
       /** @description Link is the confirmed equivalence link */
-      link?: components['schemas']['equivalence.EquivalenceLink'];
+      link?: components["schemas"]["equivalence.EquivalenceLink"];
       /** @description Message describes the confirmation */
       message?: string;
     };
-    'equivalence.CreateCanonicalConceptRequest': {
+    "equivalence.CreateCanonicalConceptRequest": {
       /** @description Category is optional categorization */
       category?: string;
       /** @description Description explains the concept */
@@ -3268,15 +3269,15 @@ export interface components {
       /** @description Tags are optional tags for organization */
       tags?: string[];
     };
-    'equivalence.CreateCanonicalConceptResponse': {
+    "equivalence.CreateCanonicalConceptResponse": {
       /** @description Concept is the created canonical concept */
-      concept?: components['schemas']['equivalence.CanonicalConcept'];
+      concept?: components["schemas"]["equivalence.CanonicalConcept"];
       /** @description CreatedAt is when the concept was created */
       created_at?: string;
       /** @description Message describes the creation */
       message?: string;
     };
-    'equivalence.CreateCanonicalProjectionRequest': {
+    "equivalence.CreateCanonicalProjectionRequest": {
       /** @description Confidence is the confidence of this projection (0.0-1.0) */
       confidence?: number;
       /** @description ItemID is the item being projected onto the canonical concept */
@@ -3290,19 +3291,19 @@ export interface components {
       /** @description Role is the role of this projection (primary, related, derived) */
       role?: string;
       /** @description Source indicates how the projection was detected/confirmed */
-      source?: components['schemas']['equivalence.StrategyType'];
+      source?: components["schemas"]["equivalence.StrategyType"];
     };
-    'equivalence.CreateCanonicalProjectionResponse': {
+    "equivalence.CreateCanonicalProjectionResponse": {
       /** @description CreatedAt is when the projection was created */
       created_at?: string;
       /** @description Message describes the creation */
       message?: string;
       /** @description Projection is the created projection */
-      projection?: components['schemas']['equivalence.CanonicalProjection'];
+      projection?: components["schemas"]["equivalence.CanonicalProjection"];
     };
-    'equivalence.DetectionRequest': {
+    "equivalence.DetectionRequest": {
       /** @description CandidatePool specifies which items to check (if nil, checks all items in project) */
-      candidate_pool?: components['schemas']['equivalence.ItemInfo'][];
+      candidate_pool?: components["schemas"]["equivalence.ItemInfo"][];
       /** @description MaxResults limits the number of suggestions returned */
       max_results?: number;
       /** @description MinConfidence filters suggestions below this threshold (0.0-1.0) */
@@ -3315,17 +3316,17 @@ export interface components {
        * @description Strategies specifies which detection strategies to use
        * If empty, all strategies are used
        */
-      strategies?: components['schemas']['equivalence.StrategyType'][];
+      strategies?: components["schemas"]["equivalence.StrategyType"][];
     };
-    'equivalence.DetectionResponse': {
+    "equivalence.DetectionResponse": {
       /** @description Timestamp when detection was performed */
       detected_at?: string;
       /** @description Stats contains detection statistics */
-      stats?: components['schemas']['equivalence.DetectionStats'];
+      stats?: components["schemas"]["equivalence.DetectionStats"];
       /** @description Suggestions are the detected equivalence suggestions */
-      suggestions?: components['schemas']['equivalence.EquivalenceSuggestion'][];
+      suggestions?: components["schemas"]["equivalence.EquivalenceSuggestion"][];
     };
-    'equivalence.DetectionStats': {
+    "equivalence.DetectionStats": {
       /** @description AverageConfidence is the mean confidence across all findings */
       average_confidence?: number;
       /** @description DurationMs is detection time in milliseconds */
@@ -3339,42 +3340,42 @@ export interface components {
       /** @description TotalItemsScanned is the number of items checked */
       total_items_scanned?: number;
     };
-    'equivalence.EquivalenceLink': {
+    "equivalence.EquivalenceLink": {
       canonical_id?: string;
       confidence?: number;
       confirmed_at?: string;
       confirmed_by?: string;
       created_at?: string;
-      evidence?: components['schemas']['equivalence.Evidence'][];
+      evidence?: components["schemas"]["equivalence.Evidence"][];
       id?: string;
       /** @description same_as, represents, manifests_as, etc. */
       link_type?: string;
       project_id?: string;
-      provenance?: components['schemas']['equivalence.StrategyType'];
+      provenance?: components["schemas"]["equivalence.StrategyType"];
       source_item_id?: string;
-      status?: components['schemas']['equivalence.EquivalenceStatus'];
+      status?: components["schemas"]["equivalence.EquivalenceStatus"];
       target_item_id?: string;
       updated_at?: string;
     };
     /** @enum {string} */
-    'equivalence.EquivalenceStatus': 'suggested' | 'confirmed' | 'rejected' | 'auto';
-    'equivalence.EquivalenceSuggestion': {
+    "equivalence.EquivalenceStatus": "suggested" | "confirmed" | "rejected" | "auto";
+    "equivalence.EquivalenceSuggestion": {
       confidence?: number;
       created_at?: string;
-      evidence?: components['schemas']['equivalence.Evidence'][];
+      evidence?: components["schemas"]["equivalence.Evidence"][];
       id?: string;
       project_id?: string;
       source_item_id?: string;
       source_item_title?: string;
       source_item_type?: string;
-      strategies?: components['schemas']['equivalence.StrategyType'][];
+      strategies?: components["schemas"]["equivalence.StrategyType"][];
       /** @description same_as, represents, etc. */
       suggested_type?: string;
       target_item_id?: string;
       target_item_title?: string;
       target_item_type?: string;
     };
-    'equivalence.ErrorResponse': {
+    "equivalence.ErrorResponse": {
       /** @description Code is the error code */
       code?: string;
       /** @description Details contains additional error context */
@@ -3386,32 +3387,32 @@ export interface components {
       /** @description Timestamp when error occurred */
       timestamp?: string;
     };
-    'equivalence.Evidence': {
+    "equivalence.Evidence": {
       confidence?: number;
       description?: string;
       details?: {
         [key: string]: unknown;
       };
       detected_at?: string;
-      strategy?: components['schemas']['equivalence.StrategyType'];
+      strategy?: components["schemas"]["equivalence.StrategyType"];
     };
-    'equivalence.GetProjectionsResponse': {
+    "equivalence.GetProjectionsResponse": {
       /** @description Concept is the canonical concept details */
-      concept?: components['schemas']['equivalence.CanonicalConcept'];
+      concept?: components["schemas"]["equivalence.CanonicalConcept"];
       /** @description ConceptID is the canonical concept */
       concept_id?: string;
       /** @description PerspectiveBreakdown groups projections by perspective */
       perspective_breakdown?: {
-        [key: string]: components['schemas']['equivalence.CanonicalProjection'][];
+        [key: string]: components["schemas"]["equivalence.CanonicalProjection"][];
       };
       /** @description Projections are the view manifestations */
-      projections?: components['schemas']['equivalence.CanonicalProjection'][];
+      projections?: components["schemas"]["equivalence.CanonicalProjection"][];
       /** @description Total number of projections */
       total?: number;
     };
-    'equivalence.ItemInfo': {
+    "equivalence.ItemInfo": {
       /** @description CodeRef links to source code */
-      code_ref?: components['schemas']['equivalence.CodeReference'];
+      code_ref?: components["schemas"]["equivalence.CodeReference"];
       /** @description CreatedAt is creation timestamp */
       created_at?: string;
       /** @description Description is the item description */
@@ -3437,9 +3438,9 @@ export interface components {
       /** @description UpdatedAt is last modification timestamp */
       updated_at?: string;
     };
-    'equivalence.ListEquivalencesResponse': {
+    "equivalence.ListEquivalencesResponse": {
       /** @description Data is the list of equivalence links */
-      data?: components['schemas']['equivalence.EquivalenceLink'][];
+      data?: components["schemas"]["equivalence.EquivalenceLink"][];
       /** @description HasMore indicates if there are more results */
       has_more?: boolean;
       /** @description Limit is the limit used in the request */
@@ -3449,7 +3450,7 @@ export interface components {
       /** @description Total is the total number of records matching the filter */
       total?: number;
     };
-    'equivalence.RejectEquivalenceRequest': {
+    "equivalence.RejectEquivalenceRequest": {
       /** @description Metadata is optional additional information */
       metadata?: {
         [key: string]: unknown;
@@ -3458,59 +3459,52 @@ export interface components {
       reason?: string;
     };
     /** @enum {string} */
-    'equivalence.StrategyType':
-      | 'explicit_annotation'
-      | 'manual_link'
-      | 'api_contract'
-      | 'shared_canonical'
-      | 'naming_pattern'
-      | 'semantic_similarity'
-      | 'structural';
-    'graph.CentralNode': {
+    "equivalence.StrategyType": "explicit_annotation" | "manual_link" | "api_contract" | "shared_canonical" | "naming_pattern" | "semantic_similarity" | "structural";
+    "graph.CentralNode": {
       betweenness_score?: number;
       closeness_score?: number;
       item_id?: string;
       pagerank_score?: number;
     };
-    'graph.CentralityMetrics': {
+    "graph.CentralityMetrics": {
       betweenness?: {
         [key: string]: number;
       };
       closeness?: {
         [key: string]: number;
       };
-      most_central?: components['schemas']['graph.CentralNode'][];
+      most_central?: components["schemas"]["graph.CentralNode"][];
       pagerank?: {
         [key: string]: number;
       };
       project_id?: string;
     };
-    'graph.CoverageReport': {
+    "graph.CoverageReport": {
       connected_items?: number;
       coverage_percent?: number;
       isolated_items?: string[];
       project_id?: string;
       total_items?: number;
     };
-    'graph.Cycle': {
+    "graph.Cycle": {
       length?: number;
       nodes?: string[];
       /** @description "warning", "error" */
       severity?: string;
     };
-    'graph.Dependency': {
+    "graph.Dependency": {
       depth?: number;
       item_id?: string;
       link_type?: string;
     };
-    'graph.DependencyTree': {
+    "graph.DependencyTree": {
       children?: {
-        [key: string]: components['schemas']['graph.Dependency'][];
+        [key: string]: components["schemas"]["graph.Dependency"][];
       };
       depth?: number;
       root?: string;
     };
-    'graph.GraphMetrics': {
+    "graph.GraphMetrics": {
       avg_degree?: number;
       connected_components?: number;
       density?: number;
@@ -3519,7 +3513,7 @@ export interface components {
       total_edges?: number;
       total_nodes?: number;
     };
-    'graph.ImpactReport': {
+    "graph.ImpactReport": {
       direct_impact?: string[];
       impact_levels?: {
         [key: string]: number;
@@ -3528,23 +3522,23 @@ export interface components {
       source_items?: string[];
       total_affected?: number;
     };
-    'graph.Path': {
+    "graph.Path": {
       length?: number;
       link_types?: string[];
       nodes?: string[];
       source?: string;
       target?: string;
     };
-    'handlers.AnalyzeRequest': {
+    "handlers.AnalyzeRequest": {
       project_id: string;
       text: string;
     };
-    'handlers.AnalyzeSpecRequest': {
+    "handlers.AnalyzeSpecRequest": {
       content: string;
       project_id: string;
       spec_id: string;
     };
-    'handlers.AssignOperationResponse': {
+    "handlers.AssignOperationResponse": {
       agents_assigned?: number;
       assignment_count?: {
         [key: string]: unknown;
@@ -3554,31 +3548,31 @@ export interface components {
       status?: string;
       timestamp?: string;
     };
-    'handlers.AssignOperationToAgentsRequest': {
+    "handlers.AssignOperationToAgentsRequest": {
       agent_assignments?: {
         [key: string]: unknown;
       };
       /** @example op-123 */
       operation_id?: string;
     };
-    'handlers.AuthResponse': {
+    "handlers.AuthResponse": {
       token?: string;
-      user?: components['schemas']['auth.User'];
+      user?: components["schemas"]["auth.User"];
     };
-    'handlers.BatchAnalyzeRequest': {
-      requests: components['schemas']['handlers.AnalyzeSpecRequest'][];
+    "handlers.BatchAnalyzeRequest": {
+      requests: components["schemas"]["handlers.AnalyzeSpecRequest"][];
     };
-    'handlers.BulkCompareVersionsRequest': {
-      comparisons: components['schemas']['handlers.VersionComparisonPair'][];
+    "handlers.BulkCompareVersionsRequest": {
+      comparisons: components["schemas"]["handlers.VersionComparisonPair"][];
     };
     /** @description CSRF token response */
-    'handlers.CSRFTokenResponse': {
+    "handlers.CSRFTokenResponse": {
       /** @example base64-encoded-token */
       token?: string;
       /** @example true */
       valid?: boolean;
     };
-    'handlers.CanonicalConceptInfo': {
+    "handlers.CanonicalConceptInfo": {
       category?: string;
       description?: string;
       domain?: string;
@@ -3586,12 +3580,12 @@ export interface components {
       name?: string;
       tags?: string[];
     };
-    'handlers.CompareVersionsResponse': {
-      diff?: components['schemas']['temporal.VersionDiff'];
+    "handlers.CompareVersionsResponse": {
+      diff?: components["schemas"]["temporal.VersionDiff"];
       message?: string;
       status?: string;
     };
-    'handlers.CreateDistributedOperationRequest': {
+    "handlers.CreateDistributedOperationRequest": {
       /** @example coordinator-1 */
       coordinator_id?: string;
       operation_data?: {
@@ -3616,23 +3610,23 @@ export interface components {
       /** @example bulk_analysis */
       type?: string;
     };
-    'handlers.CreateDistributedOperationResponse': {
+    "handlers.CreateDistributedOperationResponse": {
       message?: string;
       operation_id?: string;
       status?: string;
       time?: string;
     };
-    'handlers.DeleteResponse': {
+    "handlers.DeleteResponse": {
       error?: string;
       key?: string;
       success?: boolean;
     };
-    'handlers.DistributedErrorResponse': {
+    "handlers.DistributedErrorResponse": {
       code?: string;
       error?: string;
       timestamp?: string;
     };
-    'handlers.DownloadResponse': {
+    "handlers.DownloadResponse": {
       data?: unknown;
       error?: string;
       size?: number;
@@ -3640,10 +3634,10 @@ export interface components {
       url?: string;
     };
     /** @description Error response with error message */
-    'handlers.ErrorResponse': {
+    "handlers.ErrorResponse": {
       error?: string;
     };
-    'handlers.FileInfoResponse': {
+    "handlers.FileInfoResponse": {
       error?: string;
       exists?: boolean;
       key?: string;
@@ -3651,16 +3645,16 @@ export interface components {
       success?: boolean;
     };
     /** @description Health check response with service status */
-    'handlers.HealthResponse': {
+    "handlers.HealthResponse": {
       /** @example tracertm-backend */
       service?: string;
       /** @example ok */
       status?: string;
     };
-    'handlers.ImpactAnalysisRequest': {
+    "handlers.ImpactAnalysisRequest": {
       item_ids: string[];
     };
-    'handlers.IndexDocumentationRequest': {
+    "handlers.IndexDocumentationRequest": {
       content?: string;
       file_path?: string;
       /** @description markdown, rst, html, plaintext */
@@ -3672,17 +3666,17 @@ export interface components {
       source_url?: string;
       title?: string;
     };
-    'handlers.ListDistributedOperationsResponse': {
+    "handlers.ListDistributedOperationsResponse": {
       operations?: unknown[];
       project_id?: string;
       status?: string;
       total?: number;
     };
-    'handlers.LoginRequest': {
+    "handlers.LoginRequest": {
       email: string;
       password: string;
     };
-    'handlers.OperationResults': {
+    "handlers.OperationResults": {
       aggregated_result?: {
         [key: string]: unknown;
       };
@@ -3695,29 +3689,29 @@ export interface components {
       };
       status?: string;
     };
-    'handlers.OperationStatusResponse': {
+    "handlers.OperationStatusResponse": {
       message?: string;
       operation_id?: string;
       status?: string;
       time?: string;
     };
-    'handlers.ParticipantResultResponse': {
+    "handlers.ParticipantResultResponse": {
       agent_id?: string;
       message?: string;
       operation_id?: string;
       status?: string;
       time?: string;
     };
-    'handlers.ParticipantStatus': {
+    "handlers.ParticipantStatus": {
       agent_id?: string;
       operation_id?: string;
       progress?: number;
       status?: string;
       updated_at?: string;
     };
-    'handlers.PivotItem': {
+    "handlers.PivotItem": {
       confidence?: number;
-      item?: components['schemas']['handlers.PivotItemInfo'];
+      item?: components["schemas"]["handlers.PivotItemInfo"];
       item_id?: string;
       item_type?: string;
       link_type?: string;
@@ -3727,7 +3721,7 @@ export interface components {
       status?: string;
       title?: string;
     };
-    'handlers.PivotItemInfo': {
+    "handlers.PivotItemInfo": {
       created_at?: string;
       description?: string;
       id?: string;
@@ -3741,53 +3735,53 @@ export interface components {
       title?: string;
       updated_at?: string;
     };
-    'handlers.PivotNavigationRequest': {
+    "handlers.PivotNavigationRequest": {
       group_by_perspective?: boolean;
       include_metadata?: boolean;
       max_depth?: number;
       perspectives?: string[];
     };
-    'handlers.PivotNavigationResponse': {
-      all_equivalents?: components['schemas']['handlers.PivotItem'][];
-      canonical_concept?: components['schemas']['handlers.CanonicalConceptInfo'];
+    "handlers.PivotNavigationResponse": {
+      all_equivalents?: components["schemas"]["handlers.PivotItem"][];
+      canonical_concept?: components["schemas"]["handlers.CanonicalConceptInfo"];
       equivalents_by_perspective?: {
-        [key: string]: components['schemas']['handlers.PivotItem'][];
+        [key: string]: components["schemas"]["handlers.PivotItem"][];
       };
       link_count?: number;
       perspective_count?: number;
-      source_item?: components['schemas']['handlers.PivotItemInfo'];
+      source_item?: components["schemas"]["handlers.PivotItemInfo"];
       source_item_id?: string;
     };
-    'handlers.PivotTarget': {
+    "handlers.PivotTarget": {
       confidence?: number;
       item_id?: string;
       item_type?: string;
       perspective?: string;
       title?: string;
     };
-    'handlers.PivotTargetsResponse': {
+    "handlers.PivotTargetsResponse": {
       item_id?: string;
       item_type?: string;
       perspectives?: string[];
       status?: string;
-      targets?: components['schemas']['handlers.PivotTarget'][];
+      targets?: components["schemas"]["handlers.PivotTarget"][];
       title?: string;
     };
-    'handlers.PresignedURLRequest': {
+    "handlers.PresignedURLRequest": {
       contentType?: string;
       expiryHours?: number;
       key?: string;
       /** @description "GET" or "PUT" */
       method?: string;
     };
-    'handlers.PresignedURLResponse': {
+    "handlers.PresignedURLResponse": {
       error?: string;
       expiresAt?: string;
       method?: string;
       success?: boolean;
       url?: string;
     };
-    'handlers.StreamChatRequest': {
+    "handlers.StreamChatRequest": {
       context?: {
         [key: string]: unknown;
       };
@@ -3795,7 +3789,7 @@ export interface components {
       project_id: string;
       user_id: string;
     };
-    'handlers.SubmitParticipantResultRequest': {
+    "handlers.SubmitParticipantResultRequest": {
       /** @example agent-1 */
       agent_id?: string;
       /** @example op-123 */
@@ -3804,11 +3798,11 @@ export interface components {
         [key: string]: unknown;
       };
     };
-    'handlers.UpdateOperationStatusRequest': {
+    "handlers.UpdateOperationStatusRequest": {
       /** @example in_progress */
       status?: string;
     };
-    'handlers.UploadResponse': {
+    "handlers.UploadResponse": {
       contentType?: string;
       error?: string;
       key?: string;
@@ -3818,15 +3812,15 @@ export interface components {
       uploadedAt?: string;
       url?: string;
     };
-    'handlers.VersionComparisonPair': {
+    "handlers.VersionComparisonPair": {
       fromVersionId: string;
       toVersionId: string;
     };
-    'journey.AddStepRequest': {
+    "journey.AddStepRequest": {
       itemId: string;
       order?: number;
     };
-    'journey.CreateJourneyRequest': {
+    "journey.CreateJourneyRequest": {
       description?: string;
       itemIds?: string[];
       metadata?: {
@@ -3835,33 +3829,33 @@ export interface components {
       name: string;
       type: string;
     };
-    'journey.DerivedJourney': {
+    "journey.DerivedJourney": {
       color?: string;
       created_at?: string;
       id?: string;
-      links?: components['schemas']['journey.JourneyLink'][];
-      metadata?: components['schemas']['journey.Metadata'];
+      links?: components["schemas"]["journey.JourneyLink"][];
+      metadata?: components["schemas"]["journey.Metadata"];
       name?: string;
       node_ids?: string[];
       project_id?: string;
       score?: number;
-      type?: components['schemas']['journey.JourneyType'];
+      type?: components["schemas"]["journey.JourneyType"];
       updated_at?: string;
     };
-    'journey.DetectJourneysRequest': {
+    "journey.DetectJourneysRequest": {
       end_node_id?: string;
       max_results?: number;
       min_score?: number;
       project_id: string;
       start_node_id?: string;
-      types?: components['schemas']['journey.JourneyType'][];
+      types?: components["schemas"]["journey.JourneyType"][];
     };
-    'journey.DetectJourneysResponse': {
+    "journey.DetectJourneysResponse": {
       detected_at?: string;
-      journeys?: components['schemas']['journey.DerivedJourney'][];
-      stats?: components['schemas']['journey.DetectionStats'];
+      journeys?: components["schemas"]["journey.DerivedJourney"][];
+      stats?: components["schemas"]["journey.DetectionStats"];
     };
-    'journey.DetectionStats': {
+    "journey.DetectionStats": {
       average_path_length?: number;
       average_score?: number;
       by_type?: {
@@ -3872,16 +3866,16 @@ export interface components {
       total_paths?: number;
       valid_paths?: number;
     };
-    'journey.ErrorResponse': {
+    "journey.ErrorResponse": {
       error?: string;
     };
-    'journey.JourneyLink': {
+    "journey.JourneyLink": {
       source_id?: string;
       target_id?: string;
       type?: string;
       weight?: number;
     };
-    'journey.JourneyStats': {
+    "journey.JourneyStats": {
       /** Format: float64 */
       averagePathLength?: number;
       /** Format: float64 */
@@ -3898,22 +3892,22 @@ export interface components {
       };
       totalJourneys?: number;
     };
-    'journey.JourneyStep': {
+    "journey.JourneyStep": {
       description?: string;
       duration?: number;
       itemId?: string;
       order?: number;
     };
     /** @enum {string} */
-    'journey.JourneyType': 'user_flow' | 'data_path' | 'call_chain' | 'test_trace';
-    'journey.ListJourneysResponse': {
-      data?: components['schemas']['journey.DerivedJourney'][];
+    "journey.JourneyType": "user_flow" | "data_path" | "call_chain" | "test_trace";
+    "journey.ListJourneysResponse": {
+      data?: components["schemas"]["journey.DerivedJourney"][];
       has_more?: boolean;
       limit?: number;
       offset?: number;
       total?: number;
     };
-    'journey.Metadata': {
+    "journey.Metadata": {
       /** @description in milliseconds */
       average_time?: number;
       completeness?: number;
@@ -3928,7 +3922,7 @@ export interface components {
       user_count?: number;
       variations?: number;
     };
-    'journey.UpdateJourneyRequest': {
+    "journey.UpdateJourneyRequest": {
       description?: string;
       itemIds?: string[];
       metadata?: {
@@ -3937,20 +3931,20 @@ export interface components {
       name?: string;
       type?: string;
     };
-    'journey.VisualizationData': {
-      edges?: components['schemas']['journey.VisualizationEdge'][];
-      journey?: components['schemas']['journey.DerivedJourney'];
+    "journey.VisualizationData": {
+      edges?: components["schemas"]["journey.VisualizationEdge"][];
+      journey?: components["schemas"]["journey.DerivedJourney"];
       nodes?: {
-        [key: string]: components['schemas']['journey.VisualizationNode'];
+        [key: string]: components["schemas"]["journey.VisualizationNode"];
       };
     };
-    'journey.VisualizationEdge': {
+    "journey.VisualizationEdge": {
       source?: string;
       target?: string;
       type?: string;
       weight?: number;
     };
-    'journey.VisualizationNode': {
+    "journey.VisualizationNode": {
       color?: string;
       id?: string;
       label?: string;
@@ -3958,37 +3952,37 @@ export interface components {
       type?: string;
     };
     /** @enum {string} */
-    'temporal.DiffChangeType': 'added' | 'removed' | 'modified';
-    'temporal.DiffItem': {
-      changeType?: components['schemas']['temporal.DiffChangeType'];
-      fieldChanges?: components['schemas']['temporal.FieldChange'][];
+    "temporal.DiffChangeType": "added" | "removed" | "modified";
+    "temporal.DiffItem": {
+      changeType?: components["schemas"]["temporal.DiffChangeType"];
+      fieldChanges?: components["schemas"]["temporal.FieldChange"][];
       itemId?: string;
-      significance?: components['schemas']['temporal.DiffSignificance'];
+      significance?: components["schemas"]["temporal.DiffSignificance"];
       title?: string;
       type?: string;
     };
     /** @enum {string} */
-    'temporal.DiffSignificance': 'minor' | 'moderate' | 'major' | 'breaking';
-    'temporal.DiffStatistics': {
+    "temporal.DiffSignificance": "minor" | "moderate" | "major" | "breaking";
+    "temporal.DiffStatistics": {
       addedCount?: number;
       modifiedCount?: number;
       removedCount?: number;
       totalChanges?: number;
       unchangedCount?: number;
     };
-    'temporal.FieldChange': {
+    "temporal.FieldChange": {
       /** @description added, removed, modified */
       changeType?: string;
       field?: string;
       newValue?: unknown;
       oldValue?: unknown;
     };
-    'temporal.VersionDiff': {
-      added?: components['schemas']['temporal.DiffItem'][];
+    "temporal.VersionDiff": {
+      added?: components["schemas"]["temporal.DiffItem"][];
       computedAt?: string;
-      modified?: components['schemas']['temporal.DiffItem'][];
-      removed?: components['schemas']['temporal.DiffItem'][];
-      stats?: components['schemas']['temporal.DiffStatistics'];
+      modified?: components["schemas"]["temporal.DiffItem"][];
+      removed?: components["schemas"]["temporal.DiffItem"][];
+      stats?: components["schemas"]["temporal.DiffStatistics"];
       unchanged?: number;
       versionA?: string;
       versionANumber?: number;
