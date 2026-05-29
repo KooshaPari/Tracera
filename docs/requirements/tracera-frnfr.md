@@ -345,7 +345,7 @@
 | FR-TRC-011 | RAG-layer traceability query / requirement miner | SHIPPED | Heuristic miner (modal verbs, FR/NFR tags, spec markers) + confidence scoring; `requirement_miner.py`; endpoint POST /api/v1/mine/requirements; PR: feat/requirement-miner |
 | FR-TRC-012 | Automated duplicate / conflict detection via TraceLink miner | SHIPPED | Token-Jaccard duplicate detector + structural conflict detector; `dup_conflict_detector.py`; endpoints POST /api/v1/quality/duplicates + /conflicts; PR: feat/dup-conflict-detector |
 | FR-TRC-013 | Bulk TraceLink ingestion from external sources (Jira, GitHub Issues) | PLANNED | `github_import_service.py`, `jira_import_service.py` exist but TraceLink confidence mapping TBD |
-| FR-TRC-014 | Traceability coverage matrix export (CSV/JSON/PDF) | PLANNED | `traceability_matrix_service.py` and `frontend/apps/web/e2e/traceability-matrix.spec.ts` exist; FR/NFR ingestion path not wired |
+| FR-TRC-014 | Traceability coverage matrix export (CSV/JSON/PDF) | SHIPPED | Pure-function `coverage_matrix_service.py`; rows=requirements, cols=impl/test + ArtifactKind buckets; endpoint GET /api/v1/coverage/matrix?format=csv\|json; CSV RFC 4180 + pipe-separated multi-artifact cells; PDF deferred (heavy dep); 25 unit tests; PR: feat/coverage-matrix-export |
 | FR-TRC-015 | Graph-level impact blast-radius scoring (risk-weighted path analysis) | PLANNED | `impact_analysis_service.py`, `critical_path_service.py` exist; no confidence-weighted scoring yet |
 | FR-TRC-016 | AgilePlus integration — push Requirements / TraceLinks to AgilePlus project | PLANNED | Dog-food use case; AgilePlus at `C:/Users/koosh/Dev/AgilePlus`; API contract TBD |
 | FR-TRC-017 | Traceability coverage / health scoring over Requirement-Artifact-TraceLink graph | SHIPPED | Pure-function `traceability_score_service.py`; metrics: impl_coverage, test_coverage, orphan_req_pct, orphan_art_pct, avg_confidence, composite 0-100; endpoint GET /api/v1/quality/score; 19 unit tests; PR: feat/quality-scoring |
@@ -370,5 +370,6 @@
 | FR-TRC-010 | #470 | `test_project_lifecycle.py` |
 | FR-TRC-011 | feat/requirement-miner | `test_requirement_miner.py` (26 tests) |
 | FR-TRC-012 | feat/dup-conflict-detector | `test_dup_conflict_detector.py` (22 tests) |
+| FR-TRC-014 | feat/coverage-matrix-export | `test_coverage_matrix_service.py` (25 tests) |
 | FR-TRC-017 | feat/quality-scoring | `test_traceability_score_service.py` (19 tests) |
 | NFR-TRC-001..007 | #458–#470 | (see individual evidences above) |
