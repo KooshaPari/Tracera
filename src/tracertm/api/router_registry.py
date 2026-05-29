@@ -34,6 +34,7 @@ from tracertm.api.routers import (
     mcp,
     mine,
     notifications,
+    traceability_score,
     oauth,
     problems,
     processes,
@@ -105,6 +106,9 @@ def register_api_routers(app: FastAPI) -> None:
 
     # Requirement miner (FR-TRC-011)
     app.include_router(mine.router, prefix="/api/v1")
+
+    # Traceability quality scoring (FR-TRC-017)
+    app.include_router(traceability_score.router, prefix="/api/v1")
 
     # MCP router (Model Context Protocol over HTTP)
     app.include_router(mcp.router, prefix="/api/v1")
