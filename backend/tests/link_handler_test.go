@@ -1,3 +1,5 @@
+//go:build api
+
 package tests
 
 import (
@@ -10,13 +12,12 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/kooshapari/tracertm-backend/internal/handlers"
 	"github.com/kooshapari/tracertm-backend/internal/models"
 )
 
 func TestCreateLink(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	e := echo.New()
 	linkJSON := `{
@@ -45,7 +46,7 @@ func TestCreateLink(t *testing.T) {
 
 func TestCreateLinkInvalidJSON(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/links", strings.NewReader("{invalid}"))
@@ -60,7 +61,7 @@ func TestCreateLinkInvalidJSON(t *testing.T) {
 
 func TestListLinks(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	// Create test links
 	links := []models.Link{
@@ -89,7 +90,7 @@ func TestListLinks(t *testing.T) {
 
 func TestListLinksFilteredBySource(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	// Create test links
 	links := []models.Link{
@@ -121,7 +122,7 @@ func TestListLinksFilteredBySource(t *testing.T) {
 
 func TestListLinksFilteredByTarget(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	// Create test links
 	links := []models.Link{
@@ -153,7 +154,7 @@ func TestListLinksFilteredByTarget(t *testing.T) {
 
 func TestListLinksFilteredByType(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	// Create test links
 	links := []models.Link{
@@ -185,7 +186,7 @@ func TestListLinksFilteredByType(t *testing.T) {
 
 func TestGetLink(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	// Create test link
 	link := models.Link{
@@ -216,7 +217,7 @@ func TestGetLink(t *testing.T) {
 
 func TestGetLinkNotFound(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/links/nonexistent", nil)
@@ -232,7 +233,7 @@ func TestGetLinkNotFound(t *testing.T) {
 
 func TestUpdateLink(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	// Create test link
 	link := models.Link{
@@ -264,7 +265,7 @@ func TestUpdateLink(t *testing.T) {
 
 func TestUpdateLinkWithMetadata(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	// Create test link
 	link := models.Link{
@@ -297,7 +298,7 @@ func TestUpdateLinkWithMetadata(t *testing.T) {
 
 func TestUpdateLinkInvalidID(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	e := echo.New()
 	updateJSON := `{"type": "implements"}`
@@ -315,7 +316,7 @@ func TestUpdateLinkInvalidID(t *testing.T) {
 
 func TestUpdateLinkMissingType(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	// Create test link
 	link := models.Link{
@@ -342,7 +343,7 @@ func TestUpdateLinkMissingType(t *testing.T) {
 
 func TestUpdateLinkNotFound(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	e := echo.New()
 	updateJSON := `{"type": "implements"}`
@@ -360,7 +361,7 @@ func TestUpdateLinkNotFound(t *testing.T) {
 
 func TestUpdateLinkInvalidJSON(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	// Create test link
 	link := models.Link{
@@ -386,7 +387,7 @@ func TestUpdateLinkInvalidJSON(t *testing.T) {
 
 func TestDeleteLink(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewLinkHandler(db)
+	handler := newTestLinkHandler(t, db)
 
 	// Create test link
 	link := models.Link{

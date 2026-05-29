@@ -128,7 +128,7 @@ func TestScenario_TeamCollaboration(t *testing.T) {
 	}
 
 	// Agents create items
-	for i, agentID := range agents {
+	for i := range agents {
 		item := &models.Item{
 			ID:        uuid.New().String(),
 			ProjectID: project.ID,

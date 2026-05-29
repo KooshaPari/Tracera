@@ -11,7 +11,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/postgres"
@@ -29,6 +28,7 @@ type serviceTestFixture struct {
 	ctx          context.Context
 	db           *gorm.DB
 	cache        cache.Cache
+	mockNATS     *mockNATS
 	natsConn     *nats.Conn
 	itemRepo     repository.ItemRepository
 	linkRepo     repository.LinkRepository
@@ -93,11 +93,11 @@ func setupServiceTests(t *testing.T) *serviceTestFixture {
 	eventStore := newMockEventStore()
 	eventBus := newMockEventBus()
 
-	// Create services
-	itemService := services.NewItemServiceImpl(itemRepo, linkRepo, mockCache, mockNATS)
-	linkService := services.NewLinkServiceImpl(linkRepo, itemRepo, mockCache, mockNATS)
-	projectSvc := services.NewProjectServiceImpl(projectRepo, itemRepo, mockCache, mockNATS)
-	agentService := services.NewAgentServiceImpl(agentRepo, mockCache, mockNATS)
+	// Create services (nil NATS/cache service where optional; link/project use cache.Cache mock)
+	itemService := services.NewItemServiceImpl(itemRepo, linkRepo, nil, nil)
+	linkService := services.NewLinkServiceImpl(linkRepo, itemService, mockCache, nil)
+	projectSvc := services.NewProjectServiceImpl(projectRepo, itemRepo, mockCache, nil, gormDB)
+	agentService := services.NewAgentServiceImpl(agentRepo, mockCache, nil)
 
 	cleanup := func() {
 		// Clean up test data
@@ -111,7 +111,8 @@ func setupServiceTests(t *testing.T) *serviceTestFixture {
 		ctx:          ctx,
 		db:           gormDB,
 		cache:        mockCache,
-		natsConn:     mockNATS,
+		mockNATS:     mockNATS,
+		natsConn:     nil,
 		itemRepo:     itemRepo,
 		linkRepo:     linkRepo,
 		projectRepo:  projectRepo,

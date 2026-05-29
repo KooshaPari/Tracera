@@ -1,3 +1,5 @@
+//go:build integration
+
 package tests
 
 import (
@@ -11,13 +13,13 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/kooshapari/tracertm-backend/internal/handlers"
+	"github.com/kooshapari/tracertm-backend/internal/models"
 )
 
 // TestSQLInjectionPrevention tests that SQL injection attempts are prevented
 func TestSQLInjectionPrevention(t *testing.T) {
 	e := setupTestServer()
-	handler := &handlers.ItemHandler{Repo: testRepo}
+	handler := testItemHandler
 
 	maliciousInputs := []string{
 		"'; DROP TABLE items; --",
@@ -32,7 +34,7 @@ func TestSQLInjectionPrevention(t *testing.T) {
 		reqBody := map[string]interface{}{
 			"title":      input,
 			"type":       "requirement",
-			"content":    input,
+			"description": input,
 			"project_id": testProject.ID,
 		}
 
@@ -47,7 +49,7 @@ func TestSQLInjectionPrevention(t *testing.T) {
 
 		// Verify database integrity
 		var count int64
-		testDB.Model(&Item{}).Count(&count)
+		testDB.Model(&models.Item{}).Count(&count)
 		assert.True(t, count > 0, "Database should still be intact")
 	}
 }
@@ -55,7 +57,7 @@ func TestSQLInjectionPrevention(t *testing.T) {
 // TestXSSPrevention tests that XSS attempts are prevented
 func TestXSSPrevention(t *testing.T) {
 	e := setupTestServer()
-	handler := &handlers.ItemHandler{Repo: testRepo}
+	handler := testItemHandler
 
 	xssInputs := []string{
 		"<script>alert('XSS')</script>",
@@ -70,7 +72,7 @@ func TestXSSPrevention(t *testing.T) {
 		reqBody := map[string]interface{}{
 			"title":      input,
 			"type":       "requirement",
-			"content":    input,
+			"description": input,
 			"project_id": testProject.ID,
 		}
 
@@ -91,7 +93,7 @@ func TestXSSPrevention(t *testing.T) {
 // TestCSRFProtection tests CSRF token validation
 func TestCSRFProtection(t *testing.T) {
 	e := setupTestServer()
-	handler := &handlers.ItemHandler{Repo: testRepo}
+	handler := testItemHandler
 
 	// Request without CSRF token
 	reqBody := map[string]interface{}{
@@ -114,7 +116,7 @@ func TestCSRFProtection(t *testing.T) {
 // TestRateLimiting tests rate limiting functionality
 func TestRateLimiting(t *testing.T) {
 	e := setupTestServer()
-	handler := &handlers.ItemHandler{Repo: testRepo}
+	handler := testItemHandler
 
 	// Make many requests in quick succession
 	for i := 0; i < 100; i++ {
@@ -144,7 +146,7 @@ func TestRateLimiting(t *testing.T) {
 // TestAuthenticationRequired tests that protected endpoints require authentication
 func TestAuthenticationRequired(t *testing.T) {
 	e := setupTestServer()
-	handler := &handlers.ItemHandler{Repo: testRepo}
+	handler := testItemHandler
 
 	// Request without authentication
 	req := httptest.NewRequest(http.MethodGet, "/api/items", nil)
@@ -159,7 +161,7 @@ func TestAuthenticationRequired(t *testing.T) {
 // TestInputValidation tests input validation and sanitization
 func TestInputValidation(t *testing.T) {
 	e := setupTestServer()
-	handler := &handlers.ItemHandler{Repo: testRepo}
+	handler := testItemHandler
 
 	tests := []struct {
 		name    string
@@ -224,7 +226,7 @@ func TestInputValidation(t *testing.T) {
 // TestSecurityHeaders tests that security headers are set
 func TestSecurityHeaders(t *testing.T) {
 	e := setupTestServer()
-	handler := &handlers.ItemHandler{Repo: testRepo}
+	handler := testItemHandler
 
 	req := httptest.NewRequest(http.MethodGet, "/api/items", nil)
 	rec := httptest.NewRecorder()
