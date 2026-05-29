@@ -222,11 +222,11 @@ def test_seed_forward_reverse_roundtrip_live() -> None:
     import os
 
     try:
-        import neo4j  # noqa: PLC0415
+        import neo4j
     except ImportError:
         pytest.skip("neo4j driver not installed")
 
-    from tracertm.models.trace_link import (  # noqa: PLC0415
+    from tracertm.models.trace_link import (
         Artifact,
         ArtifactKind,
         Requirement,
@@ -234,7 +234,7 @@ def test_seed_forward_reverse_roundtrip_live() -> None:
         TraceLink,
         TraceLinkType,
     )
-    from tracertm.storage.neo4j_trace_link_writer import (  # noqa: PLC0415
+    from tracertm.storage.neo4j_trace_link_writer import (
         apply_schema,
         write_artifact,
         write_link,
@@ -248,17 +248,17 @@ def test_seed_forward_reverse_roundtrip_live() -> None:
     try:
         driver = neo4j.GraphDatabase.driver(uri, auth=(user, password))
         driver.verify_connectivity()
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         pytest.skip(f"Neo4j not reachable at {uri}: {exc}")
 
     # Use deterministic UUIDs isolated to this test.
-    import uuid  # noqa: PLC0415
+    import uuid
 
-    _NS = uuid.UUID("12345678-1234-5678-1234-567812345678")
-    proj_id = uuid.uuid5(_NS, "test-spine-project")
-    req_id = uuid.uuid5(_NS, "req-FR-SPINE-001")
-    pr_id = uuid.uuid5(_NS, "artifact-PR#999")
-    lnk_id = uuid.uuid5(_NS, f"{pr_id}:{req_id}:SATISFIES")
+    ns = uuid.UUID("12345678-1234-5678-1234-567812345678")
+    proj_id = uuid.uuid5(ns, "test-spine-project")
+    req_id = uuid.uuid5(ns, "req-FR-SPINE-001")
+    pr_id = uuid.uuid5(ns, "artifact-PR#999")
+    lnk_id = uuid.uuid5(ns, f"{pr_id}:{req_id}:SATISFIES")
 
     try:
         apply_schema(driver)
