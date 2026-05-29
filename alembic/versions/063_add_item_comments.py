@@ -24,8 +24,8 @@ def upgrade() -> None:
             author_name VARCHAR(255) NOT NULL DEFAULT '',
             content     TEXT         NOT NULL,
             edited      BOOLEAN      NOT NULL DEFAULT FALSE,
-            created_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            updated_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
         )
     """)
     op.execute(
