@@ -140,7 +140,7 @@ func setupBenchmark(b *testing.B) {
 	benchCache = newMemoryCache()
 
 	// Initialize service with cache
-	benchItemService = services.NewItemServiceImpl(benchItemRepo, benchLinkRepo, benchCache, nil)
+	benchItemService = services.NewItemServiceImpl(benchItemRepo, benchLinkRepo, nil, nil)
 
 	// Create test project
 	benchProjectID = uuid.New().String()

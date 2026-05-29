@@ -79,7 +79,7 @@ func SetupIntegrationPostgresContainer(ctx context.Context, t testing.TB) *Integ
 	gormDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		container.Terminate(ctx)
-		_ = dbPool.Close()
+		dbPool.Close()
 		t.Fatalf("Failed to create GORM connection: %v", err)
 	}
 

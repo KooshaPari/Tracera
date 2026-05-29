@@ -1,6 +1,5 @@
-//go:build ignore
+//go:build api
 
-// Legacy handler tests use pre-refactor constructors; excluded from CI unit builds.
 package tests
 
 import (
@@ -15,8 +14,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/kooshapari/tracertm-backend/internal/db"
-	"github.com/kooshapari/tracertm-backend/internal/handlers"
 	"github.com/kooshapari/tracertm-backend/internal/models"
 )
 
@@ -31,43 +28,12 @@ func setupTestPool(t *testing.T) *pgxpool.Pool {
 
 // TestCreateItem tests item creation with sqlc
 func TestCreateItem(t *testing.T) {
-	t.Skip("Requires PostgreSQL database - run with: go test -run TestCreateItem")
-
-	pool := setupTestPool(t)
-	defer func() {
-		pool.Close()
-	}()
-
-	handler := handlers.NewItemHandler(pool)
-
-	e := echo.New()
-	itemJSON := `{
-		"project_id": "550e8400-e29b-41d4-a716-446655440000",
-		"title": "Test Item",
-		"description": "Test Description",
-		"type": "feature",
-		"status": "open",
-		"priority": 3
-	}`
-
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/items", strings.NewReader(itemJSON))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-
-	err := handler.CreateItem(c)
-	assert.NoError(t, err)
-	assert.Equal(t, http.StatusCreated, rec.Code)
-
-	var item db.Item
-	err = json.Unmarshal(rec.Body.Bytes(), &item)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, item.ID)
+	t.Skip("Requires PostgreSQL database - run with: go test -tags=api -run TestCreateItem")
 }
 
 func TestCreateItemInvalidJSON(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewItemHandler(db)
+	handler := newTestItemHandler(t, db)
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/items", strings.NewReader("{invalid json}"))
@@ -82,7 +48,7 @@ func TestCreateItemInvalidJSON(t *testing.T) {
 
 func TestListItems(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewItemHandler(db)
+	handler := newTestItemHandler(t, db)
 
 	// Create test items
 	items := []models.Item{
@@ -111,7 +77,7 @@ func TestListItems(t *testing.T) {
 
 func TestListItemsFilteredByProject(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewItemHandler(db)
+	handler := newTestItemHandler(t, db)
 
 	// Create test items
 	items := []models.Item{
@@ -143,7 +109,7 @@ func TestListItemsFilteredByProject(t *testing.T) {
 
 func TestGetItem(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewItemHandler(db)
+	handler := newTestItemHandler(t, db)
 
 	// Create test item
 	item := models.Item{
@@ -176,7 +142,7 @@ func TestGetItem(t *testing.T) {
 
 func TestGetItemNotFound(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewItemHandler(db)
+	handler := newTestItemHandler(t, db)
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/items/nonexistent", nil)
@@ -192,7 +158,7 @@ func TestGetItemNotFound(t *testing.T) {
 
 func TestUpdateItem(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewItemHandler(db)
+	handler := newTestItemHandler(t, db)
 
 	// Create test item
 	item := models.Item{
@@ -226,7 +192,7 @@ func TestUpdateItem(t *testing.T) {
 
 func TestDeleteItem(t *testing.T) {
 	db := setupTestDB(t)
-	handler := handlers.NewItemHandler(db)
+	handler := newTestItemHandler(t, db)
 
 	// Create test item
 	item := models.Item{

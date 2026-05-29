@@ -23,7 +23,7 @@ func TestPostgresIntegration_BasicConnection(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), integrationTestTimeout)
 	defer cancel()
 
-	pc := SetupPostgresContainer(ctx, t)
+	pc := SetupIntegrationPostgresContainer(ctx, t)
 	defer func() { _ = pc.Close(ctx) }()
 
 	// Test basic connectivity
@@ -43,7 +43,7 @@ func TestPostgresIntegration_DatabaseCreation(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), integrationTestTimeout)
 	defer cancel()
 
-	pc := SetupPostgresContainer(ctx, t)
+	pc := SetupIntegrationPostgresContainer(ctx, t)
 	defer func() { _ = pc.Close(ctx) }()
 
 	// Check database name
@@ -62,7 +62,7 @@ func TestPostgresIntegration_ConnectionString(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), integrationTestTimeout)
 	defer cancel()
 
-	pc := SetupPostgresContainer(ctx, t)
+	pc := SetupIntegrationPostgresContainer(ctx, t)
 	defer func() { _ = pc.Close(ctx) }()
 
 	// Verify DSN is not empty
@@ -80,7 +80,7 @@ func TestPostgresIntegration_MultipleQueries(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), integrationTestTimeout)
 	defer cancel()
 
-	pc := SetupPostgresContainer(ctx, t)
+	pc := SetupIntegrationPostgresContainer(ctx, t)
 	defer func() { _ = pc.Close(ctx) }()
 
 	// Run multiple queries
@@ -101,7 +101,7 @@ func TestPostgresIntegration_TransactionSupport(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), integrationTestTimeout)
 	defer cancel()
 
-	pc := SetupPostgresContainer(ctx, t)
+	pc := SetupIntegrationPostgresContainer(ctx, t)
 	defer func() { _ = pc.Close(ctx) }()
 
 	// Create a temporary table
@@ -138,7 +138,7 @@ func TestPostgresIntegration_DataTypes(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), integrationTestTimeout)
 	defer cancel()
 
-	pc := SetupPostgresContainer(ctx, t)
+	pc := SetupIntegrationPostgresContainer(ctx, t)
 	defer func() { _ = pc.Close(ctx) }()
 
 	testCases := []struct {
@@ -170,7 +170,7 @@ func TestPostgresIntegration_UUID(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), integrationTestTimeout)
 	defer cancel()
 
-	pc := SetupPostgresContainer(ctx, t)
+	pc := SetupIntegrationPostgresContainer(ctx, t)
 	defer func() { _ = pc.Close(ctx) }()
 
 	// Test UUID generation and retrieval
@@ -189,7 +189,7 @@ func TestPostgresIntegration_JSONSupport(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), integrationTestTimeout)
 	defer cancel()
 
-	pc := SetupPostgresContainer(ctx, t)
+	pc := SetupIntegrationPostgresContainer(ctx, t)
 	defer func() { _ = pc.Close(ctx) }()
 
 	// Test JSON operations
@@ -208,7 +208,7 @@ func TestPostgresIntegration_ConcurrentConnections(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), integrationTestTimeout)
 	defer cancel()
 
-	pc := SetupPostgresContainer(ctx, t)
+	pc := SetupIntegrationPostgresContainer(ctx, t)
 	defer func() { _ = pc.Close(ctx) }()
 
 	// Run concurrent queries
@@ -237,7 +237,7 @@ func TestPostgresIntegration_PoolConfiguration(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), integrationTestTimeout)
 	defer cancel()
 
-	pc := SetupPostgresContainer(ctx, t)
+	pc := SetupIntegrationPostgresContainer(ctx, t)
 	defer func() { _ = pc.Close(ctx) }()
 
 	// Verify pool is configured
