@@ -38,6 +38,9 @@ import (
 
 // TestPhase7_ServiceContainerInitialization validates ServiceContainer setup
 func TestPhase7_ServiceContainerInitialization(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Phase7 integration tests require full stack; skipped in -short CI mode")
+	}
 	ctx := context.Background()
 
 	// Start dependencies
