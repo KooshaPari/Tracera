@@ -1,6 +1,6 @@
 """Seed FR/NFR catalogs into the Tracera traceability graph.
 
-Reads four cross-repo Markdown catalogs and builds:
+Reads six cross-repo Markdown catalogs and builds:
 
 * A :class:`~tracertm.models.trace_link.Requirement` per FR/NFR entry.
 * An :class:`~tracertm.models.trace_link.Artifact` per cited PR/test.
@@ -62,6 +62,16 @@ CATALOGS: list[tuple[str, Path]] = [
     (
         "AUTHV",
         Path("C:/Users/koosh/Dev/Authvault/docs/requirements/authvault-frnfr.md"),
+    ),
+    (
+        "PMCP",
+        Path("C:/Users/koosh/Dev/PhenoMCP/docs/requirements/phenomcp-frnfr.md"),
+    ),
+    (
+        "OBS",
+        Path(
+            "C:/Users/koosh/Dev/PhenoObservability/docs/requirements/phenoobservability-frnfr.md"
+        ),
     ),
 ]
 
