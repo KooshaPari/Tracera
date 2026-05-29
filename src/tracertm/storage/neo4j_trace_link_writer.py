@@ -45,8 +45,8 @@ if TYPE_CHECKING:
 __all__ = [
     "apply_schema",
     "write_artifact",
-    "write_requirement",
     "write_link",
+    "write_requirement",
 ]
 
 
@@ -63,7 +63,7 @@ def _artifact_properties(artifact: Artifact) -> dict[str, Any]:
     Datetimes are passed through; the driver converts them to
     ``DateTime`` values.
     """
-    props: dict[str, Any] = {
+    return {
         "id": str(artifact.id),
         "project_id": str(artifact.project_id),
         "kind": artifact.kind.value,
@@ -76,7 +76,6 @@ def _artifact_properties(artifact: Artifact) -> dict[str, Any]:
         "created_at": artifact.created_at,
         "updated_at": artifact.updated_at,
     }
-    return props
 
 
 def _requirement_properties(req: Requirement) -> dict[str, Any]:
@@ -246,15 +245,10 @@ def write_link(driver: Driver, link: TraceLink) -> None:
         "confidence": float(link.confidence),
         "rationale": link.rationale,
         "metadata_json": _safe_json(link.metadata),
+        # Always pass created_at/updated_at so coalesce() can fire.
+        "created_at": link.created_at,
+        "updated_at": link.updated_at,
     }
-    if link.created_at is not None:
-        params["created_at"] = link.created_at
-    else:
-        params["created_at"] = None
-    if link.updated_at is not None:
-        params["updated_at"] = link.updated_at
-    else:
-        params["updated_at"] = None
 
     with driver.session() as session:
         session.run(cypher, **params)

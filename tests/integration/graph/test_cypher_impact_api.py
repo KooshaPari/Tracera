@@ -159,7 +159,7 @@ def app_client() -> TestClient:
     test_app.dependency_overrides[auth_guard] = lambda: {"sub": "test-user"}
 
     # Stub Neo4j driver — returns empty lists by default
-    async def _stub_driver():
+    async def _stub_driver() -> None:  # type: ignore[return]
         mock_result = AsyncMock()
         mock_result.data = AsyncMock(return_value=[])
         mock_session = AsyncMock()
