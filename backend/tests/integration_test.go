@@ -123,12 +123,12 @@ func TestFullItemLifecycle(t *testing.T) {
 
 // TestSearchIntegration tests the search functionality end-to-end
 func TestSearchIntegration(t *testing.T) {
-	t.Skip("requires SearchService and search index infrastructure")
+	t.Skip("search integration requires SearchService wiring")
 }
 
 // TestGraphTraversalIntegration tests graph traversal with complex relationships
 func TestGraphTraversalIntegration(t *testing.T) {
-	t.Skip("requires PostgreSQL graph service (GraphHandler uses pgxpool)")
+	t.Skip("graph integration requires GraphService wiring")
 }
 
 // TestEventSystemIntegration tests the event publishing and subscription
@@ -222,15 +222,16 @@ func TestConcurrentOperations(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// Helper functions
 func createItemWithTitle(title string) *models.Item {
+	ctx := context.Background()
 	item := &models.Item{
-		Title:     title,
-		Type:      "requirement",
-		ProjectID: testProject.ID,
-		Status:    "open",
+		Title:       title,
+		Type:        "requirement",
+		Description: title,
+		ProjectID:   testProject.ID,
+		Status:      "open",
 	}
-	if err := testItemService.CreateItem(context.Background(), item); err != nil {
+	if err := testItemService.CreateItem(ctx, item); err != nil {
 		panic(err)
 	}
 	return item
