@@ -32,10 +32,10 @@ func TestSQLInjectionPrevention(t *testing.T) {
 
 	for _, input := range maliciousInputs {
 		reqBody := map[string]interface{}{
-			"title":      input,
-			"type":       "requirement",
+			"title":       input,
+			"type":        "requirement",
 			"description": input,
-			"project_id": testProject.ID,
+			"project_id":  testProject.ID,
 		}
 
 		body, _ := json.Marshal(reqBody)
@@ -70,10 +70,10 @@ func TestXSSPrevention(t *testing.T) {
 
 	for _, input := range xssInputs {
 		reqBody := map[string]interface{}{
-			"title":      input,
-			"type":       "requirement",
+			"title":       input,
+			"type":        "requirement",
 			"description": input,
-			"project_id": testProject.ID,
+			"project_id":  testProject.ID,
 		}
 
 		body, _ := json.Marshal(reqBody)
