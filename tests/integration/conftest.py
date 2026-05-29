@@ -268,7 +268,7 @@ async def db_session(async_test_db_engine: Any) -> None:
 
 
 @pytest.fixture(autouse=True)
-def isolated_cli_environment(tmp_path: Any, _monkeypatch: Any) -> None:
+def isolated_cli_environment(tmp_path: Any) -> None:
     """Isolate CLI tests from the repository's .trace/ directory.
 
     Changes the working directory to a temporary directory so that

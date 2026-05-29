@@ -5,144 +5,59 @@ import {
   Background,
   BackgroundVariant,
   Controls,
-  MarkerType,
   MiniMap,
   Panel,
   ReactFlow,
-  type Edge,
   type Node,
   useEdgesState,
   useNodesState,
   useReactFlow,
 } from '@xyflow/react';
-import {
-  Maximize,
-  Maximize2,
-  Minimize,
-  PanelRight,
-  PanelRightClose,
-  RotateCcw,
-  ZoomIn,
-  ZoomOut,
-} from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import type { CacheStatistics } from '@/lib/cache';
-import type { Item, Link, LinkType } from '@tracertm/types';
+import type { Item, Link } from '@tracertm/types';
 
 import { useGraphPerformanceMonitor } from '@/hooks/useGraphPerformanceMonitor';
-import { calculateEdgeMidpoint, getEdgeLODTier } from '@/lib/edgeLOD';
 import { useGraphCache } from '@/lib/graphCache';
 import { buildGraphIndices, getRelatedItems } from '@/lib/graphIndexing';
 import { GraphSpatialIndex, type SpatialEdge, type SpatialNode } from '@/lib/spatialIndex';
-import { Button } from '@tracertm/ui/components/Button';
 import { Card } from '@tracertm/ui/components/Card';
-import { Separator } from '@tracertm/ui/components/Separator';
 
 import type { RichNodeData } from './RichNodePill';
-
-import { LayoutSelector } from './layouts/LayoutSelector';
+import { buildFlowGraphInitialEdges } from './flow-graph-view/buildFlowGraphEdges';
+import { FlowGraphControls } from './flow-graph-view/FlowGraphControls';
+import {
+  FlowGraphDevPerformancePanel,
+} from './flow-graph-view/FlowGraphDevPerformancePanel';
+import { FlowGraphLegendPanel } from './flow-graph-view/FlowGraphLegendPanel';
+import {
+  AUTO_FIT_DELAY_MS,
+  CANVAS_LAYER_Z_INDEX,
+  CANVAS_LOD_NODE_THRESHOLD,
+  DEFAULT_VIEWPORT,
+  DEV_MODE,
+  FPS_GOOD_THRESHOLD,
+  FPS_WARN_THRESHOLD,
+  flowGraphNoop,
+  INITIAL_VIEWPORT_SYNC_DELAY_MS,
+  VIEWPORT_WINDOW_PADDING,
+  VIEWPORT_WINDOW_THRESHOLD,
+} from './flow-graph-view/flowGraphConstants';
+import { toPerformanceCacheStats } from './flow-graph-view/flowGraphEdgeStyles';
+import { useFlowGraphCanvasLayer } from './hooks/useFlowGraphCanvasLayer';
+import { useFlowGraphEnhancedNodes } from './hooks/useFlowGraphEnhancedNodes';
 import { useDagLayout, type LayoutType } from './layouts/useDagLayout';
 import { NodeDetailPanel } from './NodeDetailPanel';
 import { getNodeType, nodeTypes } from './nodeRegistry';
 import {
   ENHANCED_TYPE_COLORS,
-  LINK_STYLES,
-  PERSPECTIVE_CONFIGS,
-  TYPE_TO_PERSPECTIVE,
   type EnhancedNodeData,
   type GraphPerspective,
 } from './types';
 import { LODLevel, determineLODLevel } from './utils/lod';
 import { itemToNodeData } from './utils/nodeDataTransformers';
 
-/** Stable noop for optional callbacks (A1 perf). */
-const noop = (): void => {};
-const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
-const LEGEND_TYPE_LIMIT = 8;
-const SCALE_NODE_THRESHOLD = 500;
-const MAX_ANIMATED_EDGE_COUNT = 20;
-const INITIAL_VIEWPORT_SYNC_DELAY_MS = 300;
-const AUTO_FIT_DELAY_MS = 100;
-const FPS_GOOD_THRESHOLD = 55;
-const FPS_WARN_THRESHOLD = 30;
-const CANVAS_LAYER_Z_INDEX = 5;
-const GRAPH_EMPTY_LABEL = 'Untitled';
-const MAX_ITEM_DEPTH = 10;
-const EMPTY_CONNECTIONS: Partial<Record<LinkType, number>> = {};
-const DEV_MODE = process.env['NODE_ENV'] === 'development';
-
-// OPTIMIZATION (Fix 1.6): Edge style caching to eliminate repeated object allocations
-// Provides 10-15% FPS improvement and 80% reduction in object allocations
-const EDGE_LABEL_BG_STYLE = { fill: 'rgba(26, 26, 46, 0.9)' };
-
-interface EdgeStyleCacheEntry {
-  style: object;
-  labelStyle: object;
-  label: string;
-  markerEnd?: object | undefined;
-}
-
-const edgeStyleCache = new Map<LinkType, EdgeStyleCacheEntry>();
-
-interface StoreCacheStatsBlock {
-  totalEntries: number;
-  hitRatio: number;
-}
-
-const toPerformanceCacheStats = (
-  statsBlock: StoreCacheStatsBlock,
-  backendType: string,
-): CacheStatistics => {
-  const normalizedHitRatio = Number.isFinite(statsBlock.hitRatio)
-    ? Math.min(Math.max(statsBlock.hitRatio, 0), 1)
-    : 0;
-  const totalEntries = Number.isFinite(statsBlock.totalEntries)
-    ? Math.max(statsBlock.totalEntries, 0)
-    : 0;
-  const totalHits = Math.round(totalEntries * normalizedHitRatio);
-
-  return {
-    backendType,
-    hitRatio: normalizedHitRatio,
-    maxEntries: totalEntries,
-    maxMemory: 0,
-    memoryUsagePercent: 0,
-    totalEntries,
-    totalHits,
-    totalMemory: 0,
-    totalMisses: Math.max(totalEntries - totalHits, 0),
-  };
-};
-
-function getCachedEdgeStyle(linkType: LinkType): EdgeStyleCacheEntry {
-  if (!edgeStyleCache.has(linkType)) {
-    const linkStyle = LINK_STYLES[linkType] ?? {
-      arrow: false,
-      color: '#64748b',
-      dashed: true,
-    };
-    edgeStyleCache.set(linkType, {
-      style: {
-        stroke: linkStyle.color,
-        strokeWidth: 2,
-        ...(linkStyle.dashed && { strokeDasharray: '5,5' }),
-      },
-      labelStyle: { fill: linkStyle.color, fontSize: 10 },
-      label: linkType.replaceAll('_', ' '),
-      ...(linkStyle.arrow && {
-        markerEnd: { color: linkStyle.color, type: MarkerType.ArrowClosed },
-      }),
-    });
-  }
-  const cachedStyle = edgeStyleCache.get(linkType);
-  if (cachedStyle === undefined) {
-    throw new Error(`Missing cached edge style for link type: ${linkType}`);
-  }
-  return cachedStyle;
-}
-
-// Note: nodeTypes imported from nodeRegistry
+const noop = flowGraphNoop;
 
 interface FlowGraphViewInnerProps {
   items: Item[];
@@ -209,14 +124,6 @@ function FlowGraphViewInnerComponent({
     });
   }, []);
 
-  // OPTIMIZATION: Progressive node rendering in batches, capped to avoid lag
-  const [renderedNodeBatch, setRenderedNodeBatch] = useState(0);
-  const nodesPerBatch = 100;
-  const MAX_RENDERED_NODES = 400;
-
-  // D1: Viewport-based node set — only pass nodes/edges in viewport + padding when node count is high
-  const VIEWPORT_WINDOW_THRESHOLD = 100;
-  const VIEWPORT_WINDOW_PADDING = 200; // Flow coordinates
   const [viewportBounds, setViewportBounds] = useState<{
     minX: number;
     maxX: number;
@@ -229,203 +136,13 @@ function FlowGraphViewInnerComponent({
 
   const { fitView, zoomIn, zoomOut, getViewport } = useReactFlow();
 
-  // OPTIMIZATION: Build parent index map for O(1) parent/child lookups
-  // Prevents O(n²) complexity from items.some() calls in node enrichment
-  const parentMap = useMemo(() => {
-    const map = new Map<string, Set<string>>();
-    items.forEach((item) => {
-      const parentId = item.parentId;
-      if (typeof parentId === 'string' && parentId.length > 0) {
-        if (!map.has(parentId)) {
-          map.set(parentId, new Set());
-        }
-        const childSet = map.get(parentId);
-        if (childSet !== undefined) {
-          childSet.add(item.id);
-        }
-      }
-    });
-    return map;
-  }, [items]);
-
-  // OPTIMIZATION: Memoized node data transformation function
-  // Creates stable reference to avoid re-enriching nodes unnecessarily
-  const createNodeData = useCallback(
-    (
-      item: Item,
-      itemMap: Map<string, Item>,
-      incomingCount: Map<string, number>,
-      outgoingCount: Map<string, number>,
-      connectionsByType: Map<string, Record<LinkType, number>>,
-    ): EnhancedNodeData => {
-      const itemType = (item.type || item.view || 'item').toLowerCase();
-      const perspectives = TYPE_TO_PERSPECTIVE[itemType] ?? ['all'];
-      const incoming = incomingCount.get(item.id) ?? 0;
-      const outgoing = outgoingCount.get(item.id) ?? 0;
-
-      // OPTIMIZATION: O(1) hasChildren check using parent map
-      const hasChildren = parentMap.has(item.id);
-
-      // OPTIMIZATION: Depth calculation using parent map
-      let depth = 0;
-      let currentId = item.parentId;
-      while (typeof currentId === 'string' && currentId.length > 0 && depth < MAX_ITEM_DEPTH) {
-        depth += 1;
-        const parent = itemMap.get(currentId);
-        currentId = parent?.parentId;
-      }
-
-      const screenshotUrlRaw = item.metadata?.['screenshotUrl'];
-      const screenshotUrl =
-        typeof screenshotUrlRaw === 'string' && screenshotUrlRaw.length > 0
-          ? screenshotUrlRaw
-          : undefined;
-      const codeRaw = item.metadata?.['code'];
-      const interactiveUrlRaw = item.metadata?.['interactiveUrl'];
-      const thumbnailUrlRaw = item.metadata?.['thumbnailUrl'];
-
-      return {
-        connections: {
-          byType: connectionsByType.get(item.id) ?? EMPTY_CONNECTIONS,
-          incoming,
-          outgoing,
-          total: incoming + outgoing,
-        },
-        depth,
-        hasChildren,
-        id: item.id,
-        item,
-        label: item.title ?? GRAPH_EMPTY_LABEL,
-        parentId: item.parentId,
-        perspective: perspectives,
-        status: item.status,
-        type: itemType,
-        uiPreview:
-          screenshotUrl !== undefined
-            ? {
-                componentCode: typeof codeRaw === 'string' ? codeRaw : undefined,
-                interactiveWidgetUrl:
-                  typeof interactiveUrlRaw === 'string' ? interactiveUrlRaw : undefined,
-                screenshotUrl,
-                thumbnailUrl: typeof thumbnailUrlRaw === 'string' ? thumbnailUrlRaw : undefined,
-              }
-            : undefined,
-      } as EnhancedNodeData;
-    },
-    [parentMap],
-  );
-
-  // OPTIMIZATION: Memoized enhanced nodes with stable node data transformation
-  // Build enhanced node data
-  const enhancedNodes = useMemo((): EnhancedNodeData[] => {
-    const itemMap = new Map(items.map((item) => [item.id, item]));
-
-    const incomingCount = new Map<string, number>();
-    const outgoingCount = new Map<string, number>();
-    const connectionsByType = new Map<string, Record<LinkType, number>>();
-    const ensureConnectionBucket = (itemId: string): Record<LinkType, number> => {
-      const existing = connectionsByType.get(itemId);
-      if (existing !== undefined) {
-        return existing;
-      }
-      const created = {} as Record<LinkType, number>;
-      connectionsByType.set(itemId, created);
-      return created;
-    };
-
-    for (const link of links) {
-      incomingCount.set(link.targetId, (incomingCount.get(link.targetId) ?? 0) + 1);
-      outgoingCount.set(link.sourceId, (outgoingCount.get(link.sourceId) ?? 0) + 1);
-
-      const targetTypes = ensureConnectionBucket(link.targetId);
-      targetTypes[link.type] = (targetTypes[link.type] || 0) + 1;
-
-      const sourceTypes = ensureConnectionBucket(link.sourceId);
-      sourceTypes[link.type] = (sourceTypes[link.type] || 0) + 1;
-    }
-
-    return items.map((item) =>
-      createNodeData(item, itemMap, incomingCount, outgoingCount, connectionsByType),
-    );
-  }, [items, links, createNodeData]);
-
-  // OPTIMIZATION (Fix 1.4): O(1) node lookup map for selected node computation
-  // Eliminates linear search, provides 8-12% FPS improvement when node is selected
-  const nodeMap = useMemo(() => new Map(enhancedNodes.map((n) => [n.id, n])), [enhancedNodes]);
-
-  // Filter nodes by perspective (only if using internal perspective)
-  const filteredNodes = useMemo(() => {
-    if (perspective === 'all') {
-      return enhancedNodes;
-    }
-
-    const config = PERSPECTIVE_CONFIGS.find((c) => c.id === perspective);
-    if (!config || config.includeTypes.length === 0) {
-      return enhancedNodes;
-    }
-
-    return enhancedNodes.filter((node) => {
-      const nodeType = node.type.toLowerCase();
-      return (
-        config.includeTypes.some((t) => nodeType.includes(t) || t.includes(nodeType)) ||
-        node.perspective.includes(perspective)
-      );
-    });
-  }, [enhancedNodes, perspective]);
-
-  // Filter links
-  const filteredLinks = useMemo(() => {
-    const nodeIds = new Set(filteredNodes.map((n) => n.id));
-    return links.filter((link) => nodeIds.has(link.sourceId) && nodeIds.has(link.targetId));
-  }, [links, filteredNodes]);
-
-  // OPTIMIZATION: Build Set of visible node types for O(1) legend filtering (Fix 1.2)
-  // Eliminates O(n²) filteredNodes.some() check in legend (8000+ checks → 20 checks)
-  const visibleTypes = useMemo(() => {
-    const types = new Set<string>();
-    for (const node of filteredNodes) {
-      types.add(node.type);
-      // Early exit after finding 8 types (legend limit)
-      if (types.size >= LEGEND_TYPE_LIMIT) {
-        break;
-      }
-    }
-    return types;
-  }, [filteredNodes]);
-
-  // OPTIMIZATION: Progressive rendering of nodes in batches, capped at MAX_RENDERED_NODES
-  useEffect(() => {
-    if (filteredNodes.length === 0) {
-      setRenderedNodeBatch(0);
-      return undefined;
-    }
-
-    const maxBatches = Math.ceil(MAX_RENDERED_NODES / nodesPerBatch);
-    const totalBatches = Math.min(Math.ceil(filteredNodes.length / nodesPerBatch), maxBatches);
-    if (renderedNodeBatch < totalBatches) {
-      const timerId = requestAnimationFrame((): void => {
-        setRenderedNodeBatch((prev) => prev + 1);
-      });
-      return (): void => {
-        cancelAnimationFrame(timerId);
-      };
-    }
-    return undefined;
-  }, [filteredNodes.length, renderedNodeBatch]);
-
-  // Only use visible nodes for rendering (progressive rendering, hard cap)
-  const visibleNodes = useMemo(() => {
-    const maxVisible = Math.min((renderedNodeBatch + 1) * nodesPerBatch, MAX_RENDERED_NODES);
-    return filteredNodes.slice(0, maxVisible);
-  }, [filteredNodes, renderedNodeBatch]);
-
-  // Only render links between visible nodes
-  const visibleLinks = useMemo(() => {
-    const visibleNodeIds = new Set(visibleNodes.map((n) => n.id));
-    return filteredLinks.filter(
-      (link) => visibleNodeIds.has(link.sourceId) && visibleNodeIds.has(link.targetId),
-    );
-  }, [filteredLinks, visibleNodes]);
+  const {
+    enhancedNodes,
+    nodeMap,
+    visibleLinks,
+    visibleNodes,
+    visibleTypes,
+  } = useFlowGraphEnhancedNodes(items, links, perspective);
 
   // Extended Item type with position
   interface ExtendedItem extends Item {
@@ -566,8 +283,6 @@ function FlowGraphViewInnerComponent({
     };
   }, [dagreLaidoutNodes, viewportBounds, visibleLinks, getViewport]);
 
-  // D3: Canvas hybrid — when zoomed out (far LOD) and many nodes, draw far nodes on canvas instead of DOM
-  const CANVAS_LOD_NODE_THRESHOLD = 50;
   const { canvasNodes, domNodes } = useMemo(() => {
     if (nodesToRender.length <= CANVAS_LOD_NODE_THRESHOLD || !viewportBounds) {
       return {
@@ -604,73 +319,15 @@ function FlowGraphViewInnerComponent({
     return visibleLinks;
   }, [visibleEdgesFromRTree, visibleLinks]);
 
-  // OPTIMIZATION (Task 3.2): Edge rendering with LOD and R-tree culling
-  // Applies distance-based detail levels for smooth performance
-  const initialEdges = useMemo((): Edge[] => {
-    const viewport = getViewport?.() ?? { x: 0, y: 0, zoom: 1 };
-    const viewportCenter = {
-      x: -viewport.x + window.innerWidth / 2 / viewport.zoom,
-      y: -viewport.y + window.innerHeight / 2 / viewport.zoom,
-    };
-
-    // Build node positions map for O(1) lookups
-    const nodePositions = new Map(dagreLaidoutNodes.map((n) => [n.id, n.position]));
-
-    // C1: At scale (500+ nodes or 1000+ edges), disable animation and labels
-    const atScale =
-      dagreLaidoutNodes.length >= SCALE_NODE_THRESHOLD || edgesForRendering.length >= 1000;
-    // OPTIMIZATION: Limit animated edges to avoid GPU overload; C1: at scale disable all
-    const maxAnimatedEdges = atScale ? 0 : MAX_ANIMATED_EDGE_COUNT;
-    const animatedEdgeIds = new Set(
-      edgesForRendering
-        .filter((link) => link.type === 'depends_on' || link.type === 'blocks')
-        .slice(0, maxAnimatedEdges)
-        .map((link) => link.id),
-    );
-
-    // OPTIMIZATION (Fix 1.6 + Task 3.3): Use cached edge styles with LOD tiers
-    return edgesForRendering
-      .map((link) => {
-        const cached = getCachedEdgeStyle(link.type);
-
-        const sourcePos = nodePositions.get(link.sourceId);
-        const targetPos = nodePositions.get(link.targetId);
-        if (!sourcePos || !targetPos) {
-          return null;
-        }
-
-        // Calculate edge midpoint for LOD calculation
-        const edgeMidpoint = calculateEdgeMidpoint(sourcePos, targetPos);
-
-        // Get LOD tier based on distance from viewport center
-        const lodTier = getEdgeLODTier(edgeMidpoint, viewportCenter, viewport.zoom);
-        if (lodTier.level === 'hidden') {
-          return null;
-        }
-
-        // C1: at scale hide labels to reduce paint cost
-        const showLabel = !atScale && lodTier.showLabel;
-        return {
-          id: link.id,
-          source: link.sourceId,
-          target: link.targetId,
-          type: lodTier.pathType === 'bezier' ? 'smoothstep' : 'default',
-          animated: lodTier.level === 'detailed' && animatedEdgeIds.has(link.id),
-          style: {
-            ...cached.style,
-            strokeWidth: lodTier.strokeWidth,
-            opacity: lodTier.opacity,
-          },
-          ...(showLabel && {
-            label: cached.label,
-            labelBgStyle: EDGE_LABEL_BG_STYLE,
-            labelStyle: cached.labelStyle,
-          }),
-          ...(lodTier.showArrow && cached.markerEnd && { markerEnd: cached.markerEnd }),
-        };
-      })
-      .filter(Boolean) as Edge[];
-  }, [edgesForRendering, dagreLaidoutNodes, getViewport]);
+  const initialEdges = useMemo(
+    () =>
+      buildFlowGraphInitialEdges({
+        dagreLaidoutNodes,
+        edgesForRendering,
+        getViewport,
+      }),
+    [edgesForRendering, dagreLaidoutNodes, getViewport],
+  );
 
   // D1: When viewport window is on, only edges between nodes in viewport; D3: when canvas active only edges between dom nodes
   const edgesToRender = useMemo(() => {
@@ -762,42 +419,7 @@ function FlowGraphViewInnerComponent({
     };
   }, [dagreLaidoutNodes.length, handleViewportChange]);
 
-  // D3: Draw far-LOD nodes on canvas when canvas hybrid is active (flow-to-screen: node.x * zoom + x)
-  useEffect((): void => {
-    if (canvasNodes.length === 0 || !viewportBounds) {
-      return;
-    }
-    const canvas = canvasLayerRef.current;
-    if (!canvas) {
-      return;
-    }
-    const container = canvas.parentElement;
-    if (!container) {
-      return;
-    }
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
-    if (containerWidth <= 0 || containerHeight <= 0) {
-      return;
-    }
-    canvas.width = containerWidth;
-    canvas.height = containerHeight;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-    const { zoom, x, y } = viewportBounds;
-    ctx.clearRect(0, 0, containerWidth, containerHeight);
-    const radius = 3;
-    canvasNodes.forEach((node) => {
-      const screenX = node.position.x * zoom + x;
-      const screenY = node.position.y * zoom + y;
-      ctx.beginPath();
-      ctx.arc(screenX, screenY, radius, 0, Math.PI * 2);
-      ctx.fillStyle = '#64748b';
-      ctx.fill();
-    });
-  }, [canvasNodes, viewportBounds]);
+  useFlowGraphCanvasLayer(canvasLayerRef, canvasNodes, viewportBounds);
 
   // Auto-fit on initial load
   useEffect((): (() => void) | void => {
@@ -907,11 +529,13 @@ function FlowGraphViewInnerComponent({
       ]),
     );
   }, []);
-  const visibleLegendEntries = useMemo(() => {
-    return Object.entries(ENHANCED_TYPE_COLORS)
-      .filter(([type]) => visibleTypes.has(type))
-      .slice(0, LEGEND_TYPE_LIMIT);
-  }, [visibleTypes]);
+  const visibleLegendEntries = useMemo(
+    () =>
+      Object.entries(ENHANCED_TYPE_COLORS)
+        .filter(([type]) => visibleTypes.has(type))
+        .slice(0, 8),
+    [visibleTypes],
+  );
   const handleDetailPanelToggle = useCallback((): void => {
     setShowDetailPanel((previous) => !previous);
   }, []);
@@ -979,71 +603,18 @@ function FlowGraphViewInnerComponent({
     <div className='flex h-full flex-col'>
       {/* Controls */}
       {showControls && (
-        <Card className='mb-2 p-1.5 sm:mb-3 sm:p-2'>
-          <div className='flex min-w-0 flex-wrap items-center justify-between gap-2 sm:gap-3'>
-            <div className='flex min-w-0 items-center gap-1.5 sm:gap-2'>
-              {/* Layout selector */}
-              <LayoutSelector
-                value={layout}
-                onChange={setLayout}
-                variant='select'
-                className='h-7 w-full max-w-[160px] min-w-0 text-xs sm:h-8 sm:max-w-[180px] sm:text-sm md:max-w-[200px]'
-              />
-
-              <Separator orientation='vertical' className='hidden h-5 sm:block sm:h-6' />
-
-              {/* Detail panel toggle */}
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={handleDetailPanelToggle}
-                className='h-7 w-7 shrink-0 p-0 sm:h-8 sm:w-8'
-              >
-                {showDetailPanel ? (
-                  <PanelRightClose className='h-4 w-4' />
-                ) : (
-                  <PanelRight className='h-4 w-4' />
-                )}
-              </Button>
-            </div>
-
-            <div className='flex items-center gap-1 rounded-md border p-0.5'>
-              <Button variant='ghost' size='sm' onClick={handleZoomIn} className='h-7 w-7 p-0'>
-                <ZoomIn className='h-4 w-4' />
-              </Button>
-              <Button variant='ghost' size='sm' onClick={handleZoomOut} className='h-7 w-7 p-0'>
-                <ZoomOut className='h-4 w-4' />
-              </Button>
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={handleFit}
-                className='h-7 w-7 p-0'
-                title='Fit view'
-              >
-                <Maximize2 className='h-4 w-4' />
-              </Button>
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={handleFullscreenToggle}
-                className='h-7 w-7 p-0'
-                title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-              >
-                {isFullscreen ? <Minimize className='h-4 w-4' /> : <Maximize className='h-4 w-4' />}
-              </Button>
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={handleReset}
-                className='h-7 w-7 p-0'
-                title='Reset view'
-              >
-                <RotateCcw className='h-4 w-4' />
-              </Button>
-            </div>
-          </div>
-        </Card>
+        <FlowGraphControls
+          layout={layout}
+          onLayoutChange={setLayout}
+          showDetailPanel={showDetailPanel}
+          onDetailPanelToggle={handleDetailPanelToggle}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onFit={handleFit}
+          onFullscreenToggle={handleFullscreenToggle}
+          onReset={handleReset}
+          isFullscreen={isFullscreen}
+        />
       )}
 
       {/* Graph area */}
@@ -1084,66 +655,18 @@ function FlowGraphViewInnerComponent({
                   className='!bg-card !border-border'
                 />
                 <Panel position='bottom-left' className='!m-1 sm:!m-2'>
-                  <div className='bg-card/90 flex max-w-[90vw] flex-wrap gap-1 rounded-md border p-1.5 text-[9px] backdrop-blur-sm sm:gap-2 sm:rounded-lg sm:p-2 sm:text-[10px]'>
-                    {visibleLegendEntries.map(([type]) => (
-                      <div key={type} className='flex min-w-0 items-center gap-0.5 sm:gap-1'>
-                        <div
-                          className='h-2 w-4 shrink-0 rounded sm:h-2.5 sm:w-5'
-                          style={legendColorStyles.get(type)}
-                        />
-                        <span className='truncate capitalize'>{type.replaceAll('_', ' ')}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <FlowGraphLegendPanel
+                    visibleLegendEntries={visibleLegendEntries}
+                    legendColorStyles={legendColorStyles}
+                  />
                 </Panel>
 
-                {/* Performance Monitor Panel (dev mode only) */}
                 {DEV_MODE && performanceMonitor.currentMetrics && (
                   <Panel position='top-right' className='!m-1 sm:!m-2'>
-                    <div className='bg-card/90 space-y-0.5 rounded-md border p-1.5 font-mono text-[9px] backdrop-blur-sm sm:rounded-lg sm:p-2 sm:text-[10px]'>
-                      <div className='flex items-center gap-1'>
-                        <span className='text-muted-foreground'>FPS:</span>
-                        <span
-                          className={getFpsClassName(performanceMonitor.currentMetrics.fps.current)}
-                        >
-                          {performanceMonitor.currentMetrics.fps.current}
-                        </span>
-                        <span className='text-muted-foreground text-[8px]'>
-                          (avg: {performanceMonitor.currentMetrics.fps.average})
-                        </span>
-                      </div>
-                      <div className='flex items-center gap-1'>
-                        <span className='text-muted-foreground'>Nodes:</span>
-                        <span className='text-primary'>
-                          {performanceMonitor.currentMetrics.nodes.rendered}/
-                          {performanceMonitor.currentMetrics.nodes.total}
-                        </span>
-                        <span className='text-muted-foreground text-[8px]'>
-                          ({performanceMonitor.currentMetrics.nodes.cullingRatio.toFixed(0)}%
-                          culled)
-                        </span>
-                      </div>
-                      <div className='flex items-center gap-1'>
-                        <span className='text-muted-foreground'>Edges:</span>
-                        <span className='text-primary'>
-                          {performanceMonitor.currentMetrics.edges.rendered}/
-                          {performanceMonitor.currentMetrics.edges.total}
-                        </span>
-                        <span className='text-muted-foreground text-[8px]'>
-                          ({performanceMonitor.currentMetrics.edges.cullingRatio.toFixed(0)}%
-                          culled)
-                        </span>
-                      </div>
-                      <div className='flex items-center gap-1'>
-                        <span className='text-muted-foreground'>Cache:</span>
-                        <span className='text-primary'>
-                          {(
-                            performanceMonitor.currentMetrics.cache.combined.hitRatio * 100
-                          ).toFixed(0)}
-                          %
-                        </span>
-                      </div>
-                    </div>
+                    <FlowGraphDevPerformancePanel
+                      performanceMonitor={performanceMonitor}
+                      getFpsClassName={getFpsClassName}
+                    />
                   </Panel>
                 )}
               </ReactFlow>

@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field
 
 from tracertm.api.deps import auth_guard, get_db
+from tracertm.repositories.account_repository import AccountRepository
 from tracertm.services.workos_auth_service import WorkOSAuthService, get_user
 
 if TYPE_CHECKING:
@@ -330,7 +331,7 @@ async def complete_device_authorization(
 @router.get("/me", response_model=MeResponse)
 async def get_current_user(
     claims: Annotated[dict[str, Any], Depends(auth_guard)],
-    _db: Annotated[AsyncSession, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> MeResponse:
     """Get current authenticated user from WorkOS.
 
@@ -358,6 +359,18 @@ async def get_current_user(
         # Fetch user from WorkOS API
         user_data = get_user(user_id)
 
+        # Look up account from database (B4: real DB lookup)
+        account_repo = AccountRepository(db)
+        db_accounts = await account_repo.list_by_user(user_id)
+        if db_accounts:
+            primary = db_accounts[0]
+            account_data: dict | None = {"id": primary.id, "name": primary.name}
+        elif claims.get("org_id"):
+            # Fallback to JWT claims if no DB record exists yet
+            account_data = {"id": claims.get("org_id"), "name": claims.get("org_name")}
+        else:
+            account_data = None
+
         # Extract user fields from WorkOS response
         # WorkOS user object typically has: id, email, first_name, last_name,
         # email_verified, created_at, updated_at, profile_picture_url
@@ -373,14 +386,7 @@ async def get_current_user(
                 "profilePictureUrl": user_data.get("profile_picture_url"),
             },
             claims=claims,
-            # tracked: https://github.com/KooshaPari/trace/issues/222
-            # For now, extract organization from JWT claims if available
-            account={
-                "id": claims.get("org_id"),
-                "name": claims.get("org_name"),
-            }
-            if claims.get("org_id")
-            else None,
+            account=account_data,
         )
     except HTTPException:
         # Re-raise HTTP exceptions

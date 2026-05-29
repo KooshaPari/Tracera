@@ -10,10 +10,12 @@ import {
   randomIntBetween,
 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
-// Realistic data pools for generation
+// Align with Go API validation (backend/internal/services/item_service_impl.go)
 const ITEM_TYPES = ['requirement', 'feature', 'task', 'bug', 'epic', 'story'];
-const ITEM_STATUSES = ['open', 'in_progress', 'review', 'done', 'blocked'];
-const PRIORITIES = ['low', 'medium', 'high', 'critical'];
+const ITEM_STATUSES = ['todo', 'in_progress', 'done', 'blocked', 'cancelled'];
+// models.Priority: 1=low, 2=medium, 3=high, 4=critical
+const PRIORITIES = [1, 2, 3, 4];
+const LINK_TYPES = ['depends_on', 'blocks', 'relates_to', 'implements', 'tests'];
 const TAGS = ['frontend', 'backend', 'api', 'database', 'ui', 'performance', 'security', 'testing'];
 
 const REQUIREMENT_PREFIXES = [
@@ -119,7 +121,7 @@ export function generateLink(options = {}) {
   return {
     source_id: options.sourceId || randomIntBetween(1, 10000),
     target_id: options.targetId || randomIntBetween(1, 10000),
-    link_type: options.linkType || randomChoice(['depends_on', 'blocks', 'relates_to', 'implements', 'tests']),
+    type: options.linkType || randomChoice(LINK_TYPES),
     metadata: {
       created_at: new Date().toISOString(),
       strength: randomIntBetween(1, 10),
@@ -159,7 +161,7 @@ export function generateTestCase(options = {}) {
 export function generateGraphNode(options = {}) {
   return {
     id: options.id || `node_${randomString(10)}`,
-    type: options.type || randomChoice(['requirement', 'feature', 'component', 'service', 'database']),
+    type: options.type || randomChoice(ITEM_TYPES),
     label: options.label || randomString(30),
     metadata: {
       weight: randomIntBetween(1, 100),
@@ -203,7 +205,7 @@ export function generateGraph(nodeCount = 100, edgeCount = 150) {
       id: `edge_${i}`,
       source: `node_${sourceIdx}`,
       target: `node_${targetIdx}`,
-      type: randomChoice(['depends_on', 'contains', 'implements', 'tests']),
+      type: randomChoice(LINK_TYPES),
       weight: randomIntBetween(1, 10),
     });
   }
@@ -314,5 +316,6 @@ export default {
   ITEM_TYPES,
   ITEM_STATUSES,
   PRIORITIES,
+  LINK_TYPES,
   TAGS,
 };

@@ -289,31 +289,31 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
     - name: Start infrastructure with docker-compose
-      run: 'docker-compose -f docker-compose.yml up -d postgres redis nats
+      run: 'docker compose -f docker-compose.yml up -d postgres redis nats
 
 
         # Wait for services to be healthy
 
         echo "Waiting for services to be healthy..."
 
-        timeout 60 bash -c ''until docker-compose ps | grep -q "healthy"; do sleep
+        timeout 60 bash -c ''until docker compose ps | grep -q "healthy"; do sleep
         2; done''
 
 
         # Show service status
 
-        docker-compose ps
+        docker compose ps
 
         '
     - name: Verify services are running
       run: '# Check PostgreSQL
 
-        docker-compose exec -T postgres pg_isready -U tracertm || exit 1
+        docker compose exec -T postgres pg_isready -U tracertm || exit 1
 
 
         # Check Redis
 
-        docker-compose exec -T redis redis-cli ping || exit 1
+        docker compose exec -T redis redis-cli ping || exit 1
 
 
         # Check NATS
@@ -322,7 +322,7 @@ jobs:
 
         '
     - name: Set up database schema
-      run: "if [ -f backend/schema.sql ]; then\n  docker-compose exec -T postgres\
+      run: "if [ -f backend/schema.sql ]; then\n  docker compose exec -T postgres\
         \ psql -U tracertm -d tracertm -f /docker-entrypoint-initdb.d/schema.sql ||\
         \ true\nfi\n"
     - name: Run E2E tests
@@ -345,18 +345,18 @@ jobs:
         cat e2e-coverage.txt
 
         '
-    - name: Show docker-compose logs on failure
+    - name: Show docker compose logs on failure
       if: failure()
-      run: 'docker-compose logs postgres
+      run: 'docker compose logs postgres
 
-        docker-compose logs redis
+        docker compose logs redis
 
-        docker-compose logs nats
+        docker compose logs nats
 
         '
     - name: Stop docker-compose
       if: always()
-      run: docker-compose down -v
+      run: docker compose down -v
     - name: Upload E2E coverage to Codecov
       uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238
       with:
@@ -449,7 +449,7 @@ jobs:
       with:
         go-version: ${{ env.GO_VERSION }}
     - name: Download all coverage artifacts
-      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      uses: actions/download-artifact@v4
       with:
         path: coverage-artifacts
     - name: Merge coverage reports

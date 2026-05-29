@@ -2,22 +2,14 @@ import {
   Activity,
   Box,
   CheckCircle2,
-  Circle,
   Download,
   FileText,
   Layers,
-  MinusCircle,
   Search,
 } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
-import { toast } from 'sonner';
+import { useMemo, useState } from 'react';
 
-import { downloadTraceMatrixFromApi } from '@/api/traceMatrixExport';
-import {
-  buildTraceabilityMatrixCsv,
-  downloadTraceabilityMatrixCsv,
-  getCoverageStatus,
-} from '@/lib/traceabilityMatrixExport';
+import { getCoverageStatus } from '@/lib/traceabilityMatrixExport';
 import { cn } from '@/lib/utils';
 import { Badge, Input } from '@tracertm/ui';
 import { Button } from '@tracertm/ui/components/Button';
@@ -26,42 +18,12 @@ import { Skeleton } from '@tracertm/ui/components/Skeleton';
 
 import { useItems } from '../hooks/useItems';
 import { useLinks } from '../hooks/useLinks';
+import { TraceabilityMatrixCoverageBadge } from './traceability-matrix/TraceabilityMatrixCoverageBadge';
+import { TraceabilityMatrixLegend } from './traceability-matrix/TraceabilityMatrixLegend';
+import { useTraceabilityMatrixExport } from './traceability-matrix/useTraceabilityMatrixExport';
 
 interface TraceabilityMatrixViewProps {
   projectId: string;
-}
-
-type CoverageStatus = 'covered' | 'partial' | 'uncovered';
-
-interface CoverageBadgeProps {
-  status: CoverageStatus;
-  coveredCount: number;
-  totalFeatures: number;
-}
-
-function CoverageBadge({ status, coveredCount, totalFeatures }: CoverageBadgeProps) {
-  if (status === 'covered') {
-    return (
-      <span className='badge-covered'>
-        <CheckCircle2 className='h-2.5 w-2.5' />
-        COVERED {coveredCount}/{totalFeatures}
-      </span>
-    );
-  }
-  if (status === 'partial') {
-    return (
-      <span className='badge-partial'>
-        <MinusCircle className='h-2.5 w-2.5' />
-        PARTIAL {coveredCount}/{totalFeatures}
-      </span>
-    );
-  }
-  return (
-    <span className='badge-uncovered'>
-      <Circle className='h-2.5 w-2.5' />
-      UNCOVERED
-    </span>
-  );
 }
 
 export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProps) {
@@ -89,7 +51,6 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
       : null;
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [isExporting, setIsExporting] = useState(false);
 
   const items = itemsData?.items ?? [];
   const links = linksData?.links ?? [];
@@ -124,59 +85,10 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
     return Math.round((covered / matrix.requirements.length) * 100);
   }, [matrix]);
 
-  const canExport =
-    matrix.requirements.length > 0 && matrix.features.length > 0;
-
-  const handleExportCsv = useCallback(async () => {
-    if (matrix.requirements.length === 0 && matrix.features.length === 0) {
-      toast.error('Nothing to export — add requirements and features first');
-      return;
-    }
-    if (matrix.requirements.length === 0) {
-      toast.error('Nothing to export — add requirements first');
-      return;
-    }
-    if (matrix.features.length === 0) {
-      toast.error('Nothing to export — add features first');
-      return;
-    }
-
-    const firstReq = matrix.requirements[0] as
-      | { view?: string; type?: string }
-      | undefined;
-    const firstFeat = matrix.features[0] as
-      | { view?: string; type?: string }
-      | undefined;
-    const sourceView = firstReq?.type ?? firstReq?.view;
-    const targetView = firstFeat?.type ?? firstFeat?.view;
-    if (!sourceView || !targetView) {
-      toast.error('Nothing to export — matrix views are not configured');
-      return;
-    }
-
-    const exportOptions = { sourceView, targetView };
-
-    setIsExporting(true);
-    try {
-      await downloadTraceMatrixFromApi(projectId, exportOptions);
-      toast.success('Matrix exported to CSV');
-    } catch {
-      try {
-        const csv = buildTraceabilityMatrixCsv(
-          matrix.requirements.map((r) => ({ id: r.id, title: r.title })),
-          matrix.features.map((f) => ({ id: f.id, title: f.title })),
-          matrix.coverage,
-        );
-        downloadTraceabilityMatrixCsv(csv, projectId);
-        toast.success('Matrix exported to CSV (from current view)');
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Export failed';
-        toast.error(`Could not export matrix: ${message}`);
-      }
-    } finally {
-      setIsExporting(false);
-    }
-  }, [matrix, projectId]);
+  const { canExport, handleExportCsv, isExporting } = useTraceabilityMatrixExport(
+    projectId,
+    matrix,
+  );
 
   const coverageSummary = useMemo(() => {
     const totalReqs = matrix.requirements.length;
@@ -415,7 +327,7 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
                         'group-hover:bg-muted/20',
                       )}
                     >
-                      <CoverageBadge
+                      <TraceabilityMatrixCoverageBadge
                         status={status}
                         coveredCount={coveredCount}
                         totalFeatures={matrix.features.length}
@@ -477,40 +389,7 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
         </div>
       </Card>
 
-      {/* Legend */}
-      <div className='flex flex-wrap justify-center gap-6 py-2'>
-        <div className='flex items-center gap-2'>
-          <div className='flex h-4 w-4 items-center justify-center rounded-full bg-green-500/15 text-green-500 ring-1 ring-green-500/20'>
-            <CheckCircle2 className='h-2.5 w-2.5' />
-          </div>
-          <span className='mono-label'>Linked</span>
-        </div>
-        <div className='flex items-center gap-2'>
-          <div className='bg-muted-foreground/20 h-1.5 w-1.5 rounded-full' />
-          <span className='mono-label'>Not linked</span>
-        </div>
-        <div className='flex items-center gap-2'>
-          <span className='badge-covered'>
-            <CheckCircle2 className='h-2.5 w-2.5' />
-            COVERED
-          </span>
-          <span className='mono-label'>All features linked</span>
-        </div>
-        <div className='flex items-center gap-2'>
-          <span className='badge-partial'>
-            <MinusCircle className='h-2.5 w-2.5' />
-            PARTIAL
-          </span>
-          <span className='mono-label'>Some features linked</span>
-        </div>
-        <div className='flex items-center gap-2'>
-          <span className='badge-uncovered'>
-            <Circle className='h-2.5 w-2.5' />
-            UNCOVERED
-          </span>
-          <span className='mono-label'>No features linked</span>
-        </div>
-      </div>
+      <TraceabilityMatrixLegend />
     </div>
   );
 }

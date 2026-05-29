@@ -8,6 +8,7 @@ from tracertm.api.routers import (
     agent,
     analysis,
     auth,
+    code_trace,
     auth_public,
     auth_refresh,
     auth_session,
@@ -23,6 +24,7 @@ from tracertm.api.routers import (
     github,
     graphs,
     health,
+    impact,
     items,
     items_summary,
     linear,
@@ -62,6 +64,7 @@ def register_api_routers(app: FastAPI) -> None:
     app.include_router(items_summary.router)
     app.include_router(projects.router)
     app.include_router(analysis.router)
+    app.include_router(code_trace.router)
     app.include_router(links.router)
     app.include_router(graphs.router, prefix="/api/v1")
     app.include_router(test_cases.router)
@@ -89,6 +92,9 @@ def register_api_routers(app: FastAPI) -> None:
 
     # Agent sessions and workflow
     app.include_router(agent.router, prefix="/api/v1")
+
+    # Impact analysis (Cypher forward/reverse traversal)
+    app.include_router(impact.router, prefix="/api/v1")
 
     # MCP router (Model Context Protocol over HTTP)
     app.include_router(mcp.router, prefix="/api/v1")

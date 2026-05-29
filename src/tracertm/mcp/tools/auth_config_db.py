@@ -468,7 +468,7 @@ async def config_list(ctx: object) -> dict[str, object]:
             raw = config_manager.get_all()
         else:
             raw = config_manager.load().model_dump()
-        config_dict: dict[str, object] = cast("dict[str, object]", raw) if isinstance(raw, dict[str, object]) else {}  # type: ignore[misc]
+        config_dict: dict[str, object] = cast("dict[str, object]", raw) if isinstance(raw, dict) else {}  # type: ignore[misc]
 
         # Mask sensitive values
         display_config: dict[str, object] = {}
