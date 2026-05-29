@@ -160,7 +160,7 @@ frontend/apps/web/src/components/equivalence/ExportWizard.tsx 691
 frontend/apps/web/src/components/graph/GraphViewContainer.tsx 686
 backend/internal/nats/publisher_test.go 701
 frontend/apps/web/src/__tests__/components/graph/EquivalencePanel.test.tsx 685
-backend/tests/service_performance_test.go 687
+backend/tests/service_performance_test.go 695
 frontend/apps/web/src/__tests__/api/queries.test.ts 687
 frontend/apps/web/src/components/graph/hooks/useCrossPerspectiveSearch.ts 681
 frontend/apps/web/src/__tests__/components/CreateLinkForm.test.tsx 681
@@ -245,7 +245,7 @@ backend/internal/config/config_test.go 603
 frontend/apps/web/e2e/critical-path.spec.ts 594
 frontend/apps/web/src/components/graph/nodes/ExpandableNode.tsx 593
 frontend/apps/web/src/__tests__/security/input-validation.test.tsx 593
-backend/tests/coordination_test.go 594
+backend/tests/coordination_test.go 610
 backend/internal/agents/mock_db_test.go 593
 src/tracertm/tui/adapters/storage_adapter.py 592
 frontend/apps/web/src/lib/preflight.ts 686

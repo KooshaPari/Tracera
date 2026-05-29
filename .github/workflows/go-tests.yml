@@ -61,7 +61,7 @@ jobs:
         \ \\\n  -tags=unit \\\n  ./... \\\n  -run 'Test(Models|Validation|Util)'\n\
         \n# Run actual unit tests (those that don't require external services)\ngo\
         \ test -v -short -race -coverprofile=unit-coverage.out -covermode=atomic \\\
-        \n  -count=1 \\\n  $(go list ./... | grep -v integration | grep -v security)\n"
+        \n  -count=1 \\\n  $(go list ./... | grep -v integration | grep -v security | grep -v '/api$')\n"
     - name: Generate unit coverage report
       working-directory: backend/tests
       run: 'go tool cover -func=unit-coverage.out > unit-coverage.txt

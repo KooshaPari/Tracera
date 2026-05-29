@@ -1,3 +1,6 @@
+//go:build ignore
+
+// Metrics tests target removed progress helpers; excluded from CI unit builds.
 package tests
 
 import (
