@@ -32,6 +32,7 @@ from tracertm.api.routers import (
     linear,
     links,
     mcp,
+    mine,
     notifications,
     oauth,
     problems,
@@ -101,6 +102,9 @@ def register_api_routers(app: FastAPI) -> None:
 
     # Duplicate / conflict detection (FR-TRC-012)
     app.include_router(dup_conflict.router, prefix="/api/v1")
+
+    # Requirement miner (FR-TRC-011)
+    app.include_router(mine.router, prefix="/api/v1")
 
     # MCP router (Model Context Protocol over HTTP)
     app.include_router(mcp.router, prefix="/api/v1")
