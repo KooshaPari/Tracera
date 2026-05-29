@@ -375,7 +375,7 @@ func (h *StorageHandler) Download(c echo.Context) error {
 // @Success 200 {object} DeleteResponse
 // @Failure 400 {object} DeleteResponse
 // @Failure 500 {object} DeleteResponse
-// @Router /storage/:key [delete]
+// @Router /storage/{key} [delete]
 func (h *StorageHandler) Delete(echoCtx echo.Context) error {
 	ctx := echoCtx.Request().Context()
 	key := echoCtx.Param("key")
@@ -415,7 +415,7 @@ func (h *StorageHandler) Delete(echoCtx echo.Context) error {
 // @Success 200 {object} PresignedURLResponse
 // @Failure 400 {object} PresignedURLResponse
 // @Failure 500 {object} PresignedURLResponse
-// @Router /storage/presigned/:key [get]
+// @Router /storage/presigned/{key} [get]
 func (h *StorageHandler) GetPresignedURL(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("key")
