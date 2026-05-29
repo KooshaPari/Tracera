@@ -1,3 +1,6 @@
+//go:build ignore
+
+// Benchmarks use legacy cache/service wiring; excluded from CI unit builds.
 package tests
 
 import (

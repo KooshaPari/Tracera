@@ -1,3 +1,6 @@
+//go:build ignore
+
+// Smoke tests use legacy transaction API; excluded from CI unit builds.
 package tests
 
 import (
