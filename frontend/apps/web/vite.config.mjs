@@ -378,14 +378,14 @@ export default defineConfig({
     extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
   },
   server: {
-    port: 5173,
-    strictPort: true,
-    // Bind to loopback only; Caddy (4000) is the single dev entrypoint. Do not open 5173 in the browser.
+    port: 5180,
+    strictPort: false,
+    // Bind to loopback; changed from 5173 (occupied by Civis) to 5180.
     host: '127.0.0.1',
     // Open: true or use vite --open to warm up entry and improve first load (Vite Performance Guide)
-    // Optimize HMR for faster updates; client connects via gateway so HMR works when using http://localhost:4000
+    // Optimize HMR for faster updates; client connects directly on the dev port.
     hmr: {
-      clientPort: 4000,
+      clientPort: 5180,
       overlay: true,
     },
     // Optimize watch settings
