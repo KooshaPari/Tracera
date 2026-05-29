@@ -35,7 +35,6 @@ jobs:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65
       with:
-        cache: npm
         node-version: '20'
     - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
       with:
@@ -56,12 +55,18 @@ jobs:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65
       with:
-        cache: npm
         node-version: '20'
     - name: Install bun
       uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
       with:
         bun-version: latest
+    - name: Cache Bun dependencies
+      uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c
+      with:
+        path: ~/.bun/install/cache
+        key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-bun-
     - name: Install dependencies
       run: 'cd frontend/apps/web
 
@@ -96,12 +101,18 @@ jobs:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65
       with:
-        cache: npm
         node-version: '20'
     - name: Install bun
       uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
       with:
         bun-version: latest
+    - name: Cache Bun dependencies
+      uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c
+      with:
+        path: ~/.bun/install/cache
+        key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-bun-
     - name: Install dependencies
       run: 'cd frontend/apps/web
 

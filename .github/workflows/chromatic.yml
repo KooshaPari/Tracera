@@ -42,7 +42,6 @@ jobs:
       uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65
       with:
         node-version: '22'
-        cache: npm
     - name: Install Bun
       uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
       with:
@@ -51,7 +50,7 @@ jobs:
       uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c
       with:
         path: ~/.bun/install/cache
-        key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+        key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
         restore-keys: '${{ runner.os }}-bun-
 
           '
