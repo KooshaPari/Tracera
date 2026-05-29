@@ -203,6 +203,27 @@
 
 ---
 
+### FR-TRC-012 — Automated Duplicate / Conflict Detection via TraceLink Miner
+
+**Title:** Detect near-duplicate requirements and mutually-exclusive TraceLinks
+
+**Description:** The system shall provide a `dup_conflict_detector` service that, given an in-memory collection of `Artifact`/`Requirement` objects and `TraceLink` objects, identifies (a) near-duplicate requirements using token-Jaccard similarity (stdlib `difflib`-compatible, no external NLP dependency) above a configurable threshold (default 0.75), and (b) conflicting TraceLinks where the same ordered (source, target) artifact pair carries mutually-exclusive link types (e.g. `CONFLICTS_WITH` co-existing with `SATISFIES`, `VERIFIES`, `IMPLEMENTS`, `DERIVES_FROM`, or `REFINES`). Both detectors are pure functions over in-memory collections (no live DB access required). The API shall expose two read-only POST endpoints: `POST /api/v1/quality/duplicates` and `POST /api/v1/quality/conflicts`.
+
+**Acceptance Criteria:**
+- `detect_duplicate_requirements(artifacts, threshold)` returns `DuplicateFinding` list sorted descending by similarity.
+- `detect_conflicting_links(links)` returns `ConflictFinding` list for all (source, target) pairs with cooperative + `CONFLICTS_WITH` link types.
+- Threshold outside `(0.0, 1.0]` raises `ValueError`.
+- `POST /api/v1/quality/duplicates` and `POST /api/v1/quality/conflicts` accept JSON bodies and return findings with confidence.
+- 22 unit tests pass with no live DB or graph required.
+
+**Traceability:**
+- Branch: `feat/dup-conflict-detector`
+- Source: `src/tracertm/services/dup_conflict_detector.py`, `src/tracertm/api/routers/dup_conflict.py`
+- Tests: `src/tracertm/services/test_dup_conflict_detector.py` (22 tests)
+- Closes: FR-TRC-012
+
+---
+
 ## Non-Functional Requirements
 
 ### NFR-TRC-001 — Spatial Index Query Performance
@@ -296,7 +317,7 @@
 | ID | Title | Status | Notes |
 |----|-------|--------|-------|
 | FR-TRC-011 | RAG-layer traceability query (LLM-assisted link suggestion) | PLANNED | Referenced in `trace_link.py` docstring as "later PRs"; miner posterior = `confidence` field |
-| FR-TRC-012 | Automated duplicate / conflict detection via TraceLink miner | PLANNED | `DUPLICATES` and `CONFLICTS_WITH` link types defined but no miner service wired |
+| FR-TRC-012 | Automated duplicate / conflict detection via TraceLink miner | SHIPPED | Token-Jaccard duplicate detector + structural conflict detector; `dup_conflict_detector.py`; endpoints POST /api/v1/quality/duplicates + /conflicts; PR: feat/dup-conflict-detector |
 | FR-TRC-013 | Bulk TraceLink ingestion from external sources (Jira, GitHub Issues) | PLANNED | `github_import_service.py`, `jira_import_service.py` exist but TraceLink confidence mapping TBD |
 | FR-TRC-014 | Traceability coverage matrix export (CSV/JSON/PDF) | PLANNED | `traceability_matrix_service.py` and `frontend/apps/web/e2e/traceability-matrix.spec.ts` exist; FR/NFR ingestion path not wired |
 | FR-TRC-015 | Graph-level impact blast-radius scoring (risk-weighted path analysis) | PLANNED | `impact_analysis_service.py`, `critical_path_service.py` exist; no confidence-weighted scoring yet |
@@ -321,4 +342,5 @@
 | FR-TRC-008 | #466 | `test_auth_config_db.py` |
 | FR-TRC-009 | #469 | alembic `063` |
 | FR-TRC-010 | #470 | `test_project_lifecycle.py` |
+| FR-TRC-012 | feat/dup-conflict-detector | `test_dup_conflict_detector.py` (22 tests) |
 | NFR-TRC-001..007 | #458–#470 | (see individual evidences above) |
