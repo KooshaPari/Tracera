@@ -594,6 +594,58 @@ export const codeTraceApi = {
   },
 };
 
+// ============================================================================
+// COMMENTS ENDPOINTS
+// ============================================================================
+
+export interface CommentResponse {
+  id: string;
+  item_id: string;
+  author_id: string;
+  author: string;
+  content: string;
+  edited: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export const commentsApi = {
+  list: async (itemId: string): Promise<CommentResponse[]> => {
+    const response = await fetch(`/api/v1/items/${itemId}/comments/`, {
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch comments: ${response.statusText}`);
+    }
+    return response.json() as Promise<CommentResponse[]>;
+  },
+
+  create: async (itemId: string, content: string): Promise<CommentResponse> => {
+    const response = await fetch(`/api/v1/items/${itemId}/comments/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ content }),
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || `Failed to create comment: ${response.statusText}`);
+    }
+    return response.json() as Promise<CommentResponse>;
+  },
+
+  delete: async (itemId: string, commentId: string): Promise<void> => {
+    const response = await fetch(`/api/v1/items/${itemId}/comments/${commentId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    if (!response.ok && response.status !== 204) {
+      throw new Error(`Failed to delete comment: ${response.statusText}`);
+    }
+  },
+};
+
 // Export all APIs as a single object for convenience
 export const api = {
   projects: projectsApi,
@@ -603,5 +655,6 @@ export const api = {
   search: searchApi,
   exportImport: exportImportApi,
   codeTrace: codeTraceApi,
+  comments: commentsApi,
   healthCheck,
 };
