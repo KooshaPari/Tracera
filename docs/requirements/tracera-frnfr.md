@@ -203,6 +203,32 @@
 
 ---
 
+### FR-TRC-011 — Requirement Miner: Extract Candidate Requirements from Source Artifacts
+
+**Title:** Heuristic requirement miner with confidence scoring and embedding hook
+
+**Description:** The system shall provide a `requirement_miner` service that, given source text and/or file paths, extracts candidate Requirement statements by detecting (a) requirement-language modal verbs (`shall`/`must` → 0.90, `should`/`will` → 0.70, `may`/`can` → 0.50), (b) explicit FR/NFR/REQ/SYS/SRS identifier tags (→ 0.95), and (c) TODO/SPEC/FIXME/`@requirement` code-comment markers (→ 0.60). Candidates are emitted as `CandidateRequirement` records carrying `id`, `text`, `confidence`, `source_ref`, and `tags`. The service is a pure function (no DB access); an embedding hook (`_embedding_hook`) is stubbed for future RAG integration. The API shall expose a read-only POST endpoint: `POST /api/v1/mine/requirements`.
+
+**Acceptance Criteria:**
+- `mine_text(text)` returns `CandidateRequirement` list sorted descending by confidence.
+- `mine_files(paths)` reads real files and merges results; missing files are silently skipped.
+- Requirement-language sentence extracted as candidate; non-requirement prose not flagged.
+- FR/NFR-pattern detected at confidence 0.95; tags populated in `CandidateRequirement.tags`.
+- Confidence ordering: explicit tag (0.95) > `shall`/`must` (0.90) > `should`/`will` (0.70) > `may`/`can` (0.50) > marker (0.60).
+- Empty input returns empty list.
+- `MinerConfig.deduplicate` de-duplicates by normalised text when True.
+- `MinerConfig.min_confidence` filters candidates below threshold.
+- `POST /api/v1/mine/requirements` accepts `{text, paths, min_confidence, include_markers, deduplicate}` and returns `{total, candidates[]}`.
+- 26 unit tests pass with no live DB or graph required.
+
+**Traceability:**
+- Branch: `feat/requirement-miner`
+- Source: `src/tracertm/services/requirement_miner.py`, `src/tracertm/api/routers/mine.py`
+- Tests: `tests/unit/services/test_requirement_miner.py` (26 tests)
+- Closes: FR-TRC-011
+
+---
+
 ### FR-TRC-012 — Automated Duplicate / Conflict Detection via TraceLink Miner
 
 **Title:** Detect near-duplicate requirements and mutually-exclusive TraceLinks
@@ -316,7 +342,7 @@
 
 | ID | Title | Status | Notes |
 |----|-------|--------|-------|
-| FR-TRC-011 | RAG-layer traceability query (LLM-assisted link suggestion) | PLANNED | Referenced in `trace_link.py` docstring as "later PRs"; miner posterior = `confidence` field |
+| FR-TRC-011 | RAG-layer traceability query / requirement miner | SHIPPED | Heuristic miner (modal verbs, FR/NFR tags, spec markers) + confidence scoring; `requirement_miner.py`; endpoint POST /api/v1/mine/requirements; PR: feat/requirement-miner |
 | FR-TRC-012 | Automated duplicate / conflict detection via TraceLink miner | SHIPPED | Token-Jaccard duplicate detector + structural conflict detector; `dup_conflict_detector.py`; endpoints POST /api/v1/quality/duplicates + /conflicts; PR: feat/dup-conflict-detector |
 | FR-TRC-013 | Bulk TraceLink ingestion from external sources (Jira, GitHub Issues) | PLANNED | `github_import_service.py`, `jira_import_service.py` exist but TraceLink confidence mapping TBD |
 | FR-TRC-014 | Traceability coverage matrix export (CSV/JSON/PDF) | PLANNED | `traceability_matrix_service.py` and `frontend/apps/web/e2e/traceability-matrix.spec.ts` exist; FR/NFR ingestion path not wired |
@@ -342,5 +368,6 @@
 | FR-TRC-008 | #466 | `test_auth_config_db.py` |
 | FR-TRC-009 | #469 | alembic `063` |
 | FR-TRC-010 | #470 | `test_project_lifecycle.py` |
+| FR-TRC-011 | feat/requirement-miner | `test_requirement_miner.py` (26 tests) |
 | FR-TRC-012 | feat/dup-conflict-detector | `test_dup_conflict_detector.py` (22 tests) |
 | NFR-TRC-001..007 | #458–#470 | (see individual evidences above) |
