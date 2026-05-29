@@ -67,11 +67,11 @@ class TraceabilityScoreReport:
     total_links: int
 
     # Coverage ratios in [0.0, 1.0]
-    impl_coverage: float        # % requirements with ≥1 SATISFIES
-    test_coverage: float        # % requirements with ≥1 VERIFIES
-    orphan_req_pct: float       # % requirements with zero links
-    orphan_art_pct: float       # % non-requirement artifacts with zero links
-    avg_confidence: float       # mean link confidence (1.0 when no links)
+    impl_coverage: float  # % requirements with ≥1 SATISFIES
+    test_coverage: float  # % requirements with ≥1 VERIFIES
+    orphan_req_pct: float  # % requirements with zero links
+    orphan_art_pct: float  # % non-requirement artifacts with zero links
+    avg_confidence: float  # mean link confidence (1.0 when no links)
 
     # Composite 0-100 health score
     composite: int
@@ -167,9 +167,7 @@ def score_traceability(
             unverified_reqs.append(score)
 
     # Orphan non-requirement artifacts
-    orphan_art_count = sum(
-        1 for a in non_req if not links_by_participant.get(a.id)
-    )
+    orphan_art_count = sum(1 for a in non_req if not links_by_participant.get(a.id))
 
     n_req = len(requirements)
     n_art_non_req = len(non_req)
