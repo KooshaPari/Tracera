@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"sync"
@@ -15,6 +16,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	flag.Parse()
 	if testing.Short() {
 		fmt.Println("Skipping coordination tests in -short CI mode")
 		os.Exit(0)
