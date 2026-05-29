@@ -72,11 +72,10 @@ def _artifact_properties(artifact: Artifact) -> dict[str, Any]:
         "external_id": artifact.external_id,
         # Neo4j map properties must be primitive — JSON-encode nested dicts.
         "metadata_json": _safe_json(artifact.metadata),
+        # Always pass created_at/updated_at so the Cypher coalesce() can fire.
+        "created_at": artifact.created_at,
+        "updated_at": artifact.updated_at,
     }
-    if artifact.created_at is not None:
-        props["created_at"] = artifact.created_at
-    if artifact.updated_at is not None:
-        props["updated_at"] = artifact.updated_at
     return props
 
 
@@ -147,16 +146,18 @@ def write_artifact(driver: Driver, artifact: Artifact) -> None:
     kind_label = Neo4jSchema.node_label_for(artifact.kind)
     # Property names are static; ``kind_label`` is derived from a
     # validated enum value so it cannot inject arbitrary Cypher.
+    # Neo4j 5.x requires ON CREATE SET / ON MATCH SET before any bare SET.
     cypher = (
         "MERGE (a:Artifact {project_id: $project_id, id: $id}) "
+        "ON CREATE SET a.created_at = coalesce($created_at, datetime()) "
+        f"ON MATCH SET a.updated_at = coalesce($updated_at, datetime()) "
         f"SET a:{kind_label}, "
         "    a.title = $title, "
         "    a.description = $description, "
         "    a.external_id = $external_id, "
         "    a.kind = $kind, "
         "    a.metadata_json = $metadata_json, "
-        "    a.updated_at = coalesce($updated_at, datetime()) "
-        "ON CREATE SET a.created_at = coalesce($created_at, datetime())"
+        "    a.updated_at = coalesce($updated_at, datetime())"
     )
     with driver.session() as session:
         session.run(cypher, **_artifact_properties(artifact))
@@ -174,8 +175,11 @@ def write_requirement(driver: Driver, requirement: Requirement) -> None:
         driver: An open ``neo4j.Driver``.
         requirement: The requirement value object to project.
     """
+    # Neo4j 5.x: ON CREATE SET / ON MATCH SET must precede any bare SET.
     cypher = (
         "MERGE (r:Artifact {project_id: $project_id, id: $id}) "
+        "ON CREATE SET r.created_at = coalesce($created_at, datetime()) "
+        "ON MATCH SET r.updated_at = coalesce($updated_at, datetime()) "
         "SET r:Requirement, "
         "    r.title = $title, "
         "    r.description = $description, "
@@ -187,8 +191,7 @@ def write_requirement(driver: Driver, requirement: Requirement) -> None:
         "    r.rationale = $rationale, "
         "    r.acceptance_criteria = $acceptance_criteria, "
         "    r.verification_method = $verification_method, "
-        "    r.updated_at = coalesce($updated_at, datetime()) "
-        "ON CREATE SET r.created_at = coalesce($created_at, datetime())"
+        "    r.updated_at = coalesce($updated_at, datetime())"
     )
     with driver.session() as session:
         session.run(cypher, **_requirement_properties(requirement))
@@ -226,16 +229,18 @@ def write_link(driver: Driver, link: TraceLink) -> None:
     rel_label = Neo4jSchema.relationship_label_for(link.link_type)
     # ``rel_label`` comes from a validated enum value, so f-string
     # interpolation cannot inject arbitrary Cypher.
+    # Neo4j 5.x: ON CREATE SET / ON MATCH SET must precede any bare SET.
     cypher = (
         "MERGE (src:Artifact {project_id: $project_id, id: $source_id}) "
         "MERGE (tgt:Artifact {project_id: $project_id, id: $target_id}) "
         f"MERGE (src)-[l:{rel_label} {{id: $link_id}}]->(tgt) "
+        "ON CREATE SET l.created_at = coalesce($created_at, datetime()) "
+        "ON MATCH SET l.updated_at = coalesce($updated_at, datetime()) "
         "SET l.project_id = $project_id, "
         "    l.confidence = $confidence, "
         "    l.rationale = $rationale, "
         "    l.metadata_json = $metadata_json, "
-        "    l.updated_at = coalesce($updated_at, datetime()) "
-        "ON CREATE SET l.created_at = coalesce($created_at, datetime())"
+        "    l.updated_at = coalesce($updated_at, datetime())"
     )
     params: dict[str, Any] = {
         "project_id": str(link.project_id),

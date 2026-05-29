@@ -258,19 +258,19 @@ class Neo4jSchema:
     """
 
     #: Uniqueness / existence constraints.
+    # Note: NODE KEY and relationship property constraints require Neo4j
+    # Enterprise. Community edition supports node uniqueness only — we use
+    # two UNIQUE constraints to approximate the composite NODE KEY, and omit
+    # the relationship property existence constraint (enforced at the
+    # application layer by the TraceLink model validator instead).
     CONSTRAINTS: Final[tuple[str, ...]] = (
-        # Every Artifact must have an id and project_id, unique per project.
-        "CREATE CONSTRAINT artifact_node_key IF NOT EXISTS "
-        "FOR (a:Artifact) REQUIRE (a.project_id, a.id) IS NODE KEY",
+        # Artifact id unique globally (project scoping enforced by app layer).
+        "CREATE CONSTRAINT artifact_id_unique IF NOT EXISTS "
+        "FOR (a:Artifact) REQUIRE a.id IS UNIQUE",
         "CREATE CONSTRAINT requirement_id_unique IF NOT EXISTS "
         "FOR (r:Requirement) REQUIRE r.id IS UNIQUE",
         "CREATE CONSTRAINT project_id_unique IF NOT EXISTS "
         "FOR (p:Project) REQUIRE p.id IS UNIQUE",
-        # Every trace edge must carry a confidence in [0,1].
-        "CREATE CONSTRAINT trace_link_confidence_exists IF NOT EXISTS "
-        "FOR ()-[l:SATISFIES|VERIFIES|IMPLEMENTS|DERIVES_FROM|"
-        "REFINES|CONFLICTS_WITH|DUPLICATES]-() "
-        "REQUIRE l.confidence IS NOT NULL",
     )
 
     #: Lookup / range indexes for the common RAG-side queries.
