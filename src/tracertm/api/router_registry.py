@@ -19,6 +19,7 @@ from tracertm.api.routers import (
     comments,
     contracts,
     coverage,
+    coverage_matrix,
     dup_conflict,
     execution,
     executions,
@@ -109,6 +110,9 @@ def register_api_routers(app: FastAPI) -> None:
 
     # Traceability quality scoring (FR-TRC-017)
     app.include_router(traceability_score.router, prefix="/api/v1")
+
+    # Coverage matrix export (FR-TRC-014)
+    app.include_router(coverage_matrix.router, prefix="/api/v1")
 
     # MCP router (Model Context Protocol over HTTP)
     app.include_router(mcp.router, prefix="/api/v1")
