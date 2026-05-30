@@ -20,9 +20,11 @@ from datetime import UTC, datetime
 from typing import Annotated, Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import ValidationError
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tracertm.adapters.agileplus_adapter import AgilePlusAdapter
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.clients.github_client import GitHubClient
@@ -33,6 +35,7 @@ from tracertm.models.integration import (
     IntegrationSyncQueue,
 )
 from tracertm.models.item import Item
+from tracertm.models.trace_link import Requirement, TraceLink
 from tracertm.repositories.integration_repository import (
     IntegrationConflictRepository,
     IntegrationCredentialRepository,
@@ -237,7 +240,7 @@ async def validate_credential(
     user_info: dict[str, Any] = {}
     error = None
 
-    try:
+    try:  # noqa: PLW0717
         if credential.provider == "github":
             gh_client = GitHubClient(token)
             try:
@@ -813,6 +816,46 @@ async def resolve_conflict(
         "resolution": resolution,
         "resolved_at": resolved.resolved_at.isoformat() if resolved and resolved.resolved_at else None,
     }
+
+
+@router.post("/agileplus/push")
+async def push_to_agileplus(
+    request: Request,
+    data: dict[str, Any],
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+) -> dict[str, Any]:
+    """Push requirements and trace links to AgilePlus."""
+    enforce_rate_limit(request, claims)
+
+    base_url = os.environ.get("AGILEPLUS_URL", "").strip()
+    api_key = os.environ.get("AGILEPLUS_API_KEY", "").strip()
+    if not base_url:
+        raise HTTPException(status_code=500, detail="AGILEPLUS_URL not configured")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="AGILEPLUS_API_KEY not configured")
+
+    project_id = data.get("project_id")
+    if not isinstance(project_id, str) or not project_id.strip():
+        raise HTTPException(status_code=400, detail="project_id required")
+
+    raw_requirements = data.get("requirements", [])
+    raw_trace_links = data.get("trace_links", [])
+    if not isinstance(raw_requirements, list) or not isinstance(raw_trace_links, list):
+        raise HTTPException(status_code=400, detail="requirements and trace_links must be lists")
+
+    try:
+        requirements = [Requirement.model_validate(item) for item in raw_requirements]
+        trace_links = [TraceLink.model_validate(item) for item in raw_trace_links]
+    except ValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    adapter = AgilePlusAdapter(base_url=base_url, api_key=api_key)
+    try:
+        result = await adapter.push_project_requirements(project_id, requirements, trace_links)
+    finally:
+        await adapter.close()
+
+    return result.model_dump()
 
 
 # This file continues in part 2 due to size...
