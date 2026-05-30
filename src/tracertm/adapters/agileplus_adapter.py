@@ -122,23 +122,33 @@ class AgilePlusAdapter:
         return str(error)
 
     def _requirement_payload(self, requirement: Requirement) -> dict[str, Any]:
-        return {
-            "id": str(requirement.id),
+        metadata: dict[str, Any] = {
+            "external_id": str(requirement.id),
             "project_id": str(requirement.project_id),
             "kind": requirement.kind.value,
-            "title": requirement.title,
-            "description": requirement.description,
-            "external_id": requirement.external_id,
-            "metadata": requirement.metadata,
             "status": requirement.status.value,
-            "priority": requirement.priority,
-            "rationale": requirement.rationale,
-            "acceptance_criteria": requirement.acceptance_criteria,
-            "verification_method": requirement.verification_method.value if requirement.verification_method else None,
+        }
+        if requirement.priority is not None:
+            metadata["priority"] = requirement.priority
+        if requirement.rationale is not None:
+            metadata["rationale"] = requirement.rationale
+        if requirement.acceptance_criteria:
+            metadata["acceptance_criteria"] = requirement.acceptance_criteria
+        if requirement.verification_method is not None:
+            metadata["verification_method"] = requirement.verification_method.value
+        if requirement.external_id is not None:
+            metadata["source_external_id"] = requirement.external_id
+        if requirement.metadata:
+            metadata["source_metadata"] = requirement.metadata
+
+        return {
+            "title": requirement.title,
+            "body": requirement.description,
+            "metadata": metadata,
         }
 
     def _trace_link_payload(self, link: TraceLink) -> dict[str, Any]:
-        return {
+        trace_link = {
             "id": str(link.id),
             "project_id": str(link.project_id),
             "source_artifact_id": str(link.source_artifact_id),
@@ -148,12 +158,20 @@ class AgilePlusAdapter:
             "rationale": link.rationale,
             "metadata": link.metadata,
         }
+        return {
+            "tags": [
+                f"trace-link:{link.link_type.value.lower()}",
+                f"trace-link:{link.id}",
+            ],
+            "metadata": {
+                "trace_link": trace_link,
+            },
+        }
 
     async def _post_json(self, path: str, payload: dict[str, Any]) -> AgilePlusPushResult:
         client = await self._get_client()
-        url = f"{self.base_url}{path}"
         try:
-            response = await client.post(url, json=payload, headers=self._headers())
+            response = await client.post(path, json=payload, headers=self._headers())
         except httpx.HTTPError as exc:
             return AgilePlusPushResult(success=False, error=self._stringify_failure(None, exc))
 
@@ -172,25 +190,28 @@ class AgilePlusAdapter:
 
     async def push_requirement(self, req: Requirement) -> AgilePlusPushResult:
         """Push one requirement to AgilePlus."""
-        return await self._post_json("/api/v1/requirements", self._requirement_payload(req))
+        return await self._post_json("/api/stories", self._requirement_payload(req))
 
     async def push_trace_link(self, link: TraceLink) -> AgilePlusPushResult:
         """Push one trace link to AgilePlus."""
-        return await self._post_json("/api/v1/trace-links", self._trace_link_payload(link))
+        return await self._post_json(
+            f"/api/stories/{link.target_artifact_id}/tags",
+            self._trace_link_payload(link),
+        )
 
     async def push_project_requirements(
         self,
         project_id: str,
-        reqs: list[Requirement],
+        requirements: list[Requirement],
         links: list[TraceLink],
     ) -> BulkPushResult:
         """Push a project's requirements and trace links to AgilePlus."""
-        total = len(reqs) + len(links)
+        total = len(requirements) + len(links)
         succeeded = 0
         failed = 0
         errors: list[str] = []
 
-        for requirement in reqs:
+        for requirement in requirements:
             if str(requirement.project_id) != str(project_id):
                 failed += 1
                 errors.append(
