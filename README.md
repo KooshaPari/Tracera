@@ -217,3 +217,23 @@ Licensed under the MIT License. See [LICENSE](LICENSE) for details.
 ---
 
 **Built with 🛠 for agent-driven development**
+
+---
+
+## Rich Media Stubs
+
+<!-- RICH-MEDIA-STUB type="annotated-screenshot" subject="Tracera quickstart — first requirement registered + TraceLink created" journey="" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *Annotated screenshot of the Tracera dashboard after creating the first FR and linking it to a commit.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="recording-gif" subject="TraceLink flow — requirement to code to test to PR chain" journey="" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *GIF of creating a TraceLink from a requirement through to a PR.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="recording-mp4" subject="Traceability report — full audit trail view" journey="" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *Video of the traceability report panel showing full FR/NFR chain.*
+<!-- END-RICH-MEDIA-STUB -->
+
+<!-- RICH-MEDIA-STUB type="annotated-screenshot" subject="Requirements dashboard — FR/NFR status board" journey="" status="TODO" -->
+> **[RICH MEDIA PLACEHOLDER]** *Annotated screenshot of the requirements status board.*
+<!-- END-RICH-MEDIA-STUB -->
