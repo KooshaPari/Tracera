@@ -28,6 +28,7 @@ from tracertm.api.routers import (
     graphs,
     health,
     impact,
+    impact_scoring,
     ingest,
     items,
     items_summary,
@@ -102,6 +103,9 @@ def register_api_routers(app: FastAPI) -> None:
 
     # Impact analysis (Cypher forward/reverse traversal)
     app.include_router(impact.router, prefix="/api/v1")
+
+    # Blast-radius risk-weighted scoring (FR-TRC-015)
+    app.include_router(impact_scoring.router, prefix="/api/v1")
 
     # Duplicate / conflict detection (FR-TRC-012)
     app.include_router(dup_conflict.router, prefix="/api/v1")
