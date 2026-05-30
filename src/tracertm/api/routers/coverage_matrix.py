@@ -84,8 +84,8 @@ class MatrixRequest(BaseModel):
 @router.get("/matrix")
 async def get_coverage_matrix(
     body: MatrixRequest,
-    format: Literal["csv", "json"] = "json",  # noqa: A002  # query param name matches FR spec
     _claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    format: Literal["csv", "json"] = "json",  # noqa: A002  # query param name matches FR spec
 ) -> Response:
     """Export a requirement coverage matrix in CSV or JSON format.
 
