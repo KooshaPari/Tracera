@@ -101,12 +101,12 @@ async def test_push_requirement_sends_expected_payload() -> None:
     def callback(request: httpx.Request) -> httpx.Response:
         body = json.loads(request.content)
         assert request.method == "POST"
-        assert request.url.path == "/api/v1/requirements"
-        assert body["id"] == str(requirement.id)
-        assert body["project_id"] == str(requirement.project_id)
+        assert request.url.path == "/api/stories"
         assert body["title"] == "Payload check"
-        assert body["status"] == RequirementStatus.APPROVED.value
-        assert body["acceptance_criteria"] == ["works"]
+        assert body["body"] == "A traced requirement"
+        assert body["metadata"]["external_id"] == str(requirement.id)
+        assert body["metadata"]["project_id"] == str(requirement.project_id)
+        assert body["metadata"]["status"] == RequirementStatus.APPROVED.value
         return httpx.Response(200, json={"agileplus_id": "req-456"})
 
     adapter, _handler = _adapter_with(callback)
@@ -132,7 +132,7 @@ async def test_push_requirement_handles_non_success_status() -> None:
 @pytest.mark.asyncio
 async def test_push_requirement_handles_network_error() -> None:
     def callback(_request: httpx.Request) -> httpx.Response:
-        raise httpx.ConnectError("boom", request=httpx.Request("POST", "https://agileplus.example/api/v1/requirements"))
+        raise httpx.ConnectError("boom", request=httpx.Request("POST", "https://agileplus.example/api/stories"))
 
     adapter, _handler = _adapter_with(callback)
     result = await adapter.push_requirement(_requirement())
@@ -160,7 +160,7 @@ async def test_push_requirement_uses_other_project_id() -> None:
 
     def callback(request: httpx.Request) -> httpx.Response:
         body = json.loads(request.content)
-        assert body["project_id"] == str(OTHER_PROJECT_ID)
+        assert body["metadata"]["project_id"] == str(OTHER_PROJECT_ID)
         return httpx.Response(200, json={"id": "req-999"})
 
     adapter, _handler = _adapter_with(callback)
@@ -189,14 +189,19 @@ async def test_push_trace_link_sends_expected_payload() -> None:
     def callback(request: httpx.Request) -> httpx.Response:
         body = json.loads(request.content)
         assert request.method == "POST"
-        assert request.url.path == "/api/v1/trace-links"
-        assert body["id"] == str(link.id)
-        assert body["project_id"] == str(link.project_id)
-        assert body["source_artifact_id"] == str(link.source_artifact_id)
-        assert body["target_artifact_id"] == str(link.target_artifact_id)
-        assert body["link_type"] == TraceLinkType.SATISFIES.value
-        assert body["confidence"] == pytest.approx(0.85)
-        assert body["rationale"] == "Trace evidence"
+        assert request.url.path == f"/api/stories/{link.target_artifact_id}/tags"
+        assert body["tags"] == [
+            f"trace-link:{link.link_type.value.lower()}",
+            f"trace-link:{link.id}",
+        ]
+        trace_link = body["metadata"]["trace_link"]
+        assert trace_link["id"] == str(link.id)
+        assert trace_link["project_id"] == str(link.project_id)
+        assert trace_link["source_artifact_id"] == str(link.source_artifact_id)
+        assert trace_link["target_artifact_id"] == str(link.target_artifact_id)
+        assert trace_link["link_type"] == TraceLinkType.SATISFIES.value
+        assert trace_link["confidence"] == pytest.approx(0.85)
+        assert trace_link["rationale"] == "Trace evidence"
         return httpx.Response(201, json={"agileplus_id": "link-456"})
 
     adapter, _handler = _adapter_with(callback)
@@ -228,10 +233,10 @@ async def test_push_project_requirements_success_counts_all_items() -> None:
 
     def callback(request: httpx.Request) -> httpx.Response:
         payload = json.loads(request.content)
-        if request.url.path == "/api/v1/requirements":
+        if request.url.path == "/api/stories":
             return httpx.Response(200, json={"id": f"req-{payload['title'].lower().replace(' ', '-')}"})
-        if request.url.path == "/api/v1/trace-links":
-            return httpx.Response(200, json={"id": f"link-{payload['target_artifact_id'][-4:]}"})
+        if request.url.path.endswith("/tags"):
+            return httpx.Response(200, json={"id": f"link-{payload['metadata']['trace_link']['target_artifact_id'][-4:]}"})
         pytest.fail(f"unexpected path: {request.url.path}")
 
     adapter, _handler = _adapter_with(callback)
@@ -293,7 +298,7 @@ async def test_push_project_requirements_preserves_order() -> None:
     adapter, _handler = _adapter_with(callback)
     await adapter.push_project_requirements(PROJECT_ID, [req], [link])
 
-    assert paths == ["/api/v1/requirements", "/api/v1/trace-links"]
+    assert paths == ["/api/stories", f"/api/stories/{req.id}/tags"]
 
 
 @pytest.mark.asyncio

@@ -8,13 +8,13 @@ from tracertm.api.routers import (
     agent,
     analysis,
     auth,
-    code_trace,
     auth_public,
     auth_refresh,
     auth_session,
     blockchain,
     cache,
     chat,
+    code_trace,
     codex,
     comments,
     contracts,
@@ -30,6 +30,7 @@ from tracertm.api.routers import (
     impact,
     impact_scoring,
     ingest,
+    integrations,
     items,
     items_summary,
     linear,
@@ -37,7 +38,6 @@ from tracertm.api.routers import (
     mcp,
     mine,
     notifications,
-    traceability_score,
     oauth,
     problems,
     processes,
@@ -50,6 +50,7 @@ from tracertm.api.routers import (
     test_run_results,
     test_runs,
     test_suites,
+    traceability_score,
     webhooks,
     websocket,
     workflows,
@@ -130,6 +131,7 @@ def register_api_routers(app: FastAPI) -> None:
     app.include_router(github.router)
     app.include_router(github.webhook_router)
     app.include_router(linear.router)
+    app.include_router(integrations.router)
     app.include_router(webhooks.router)
     app.include_router(webhooks.project_router)
     app.include_router(websocket.router)
