@@ -250,6 +250,94 @@
 
 ---
 
+### FR-TRC-018 — Canonical Typed-Graph Schema Contract
+
+**Title:** Single canonical node/edge-kind schema contract; GraphPort is the sole graph writer
+
+**Description:** The platform shall define one canonical typed-graph schema (node kinds: Requirement, Spec, ADR, Code, Test, PR, Commit, Release, Repo, Team, Portfolio, OKR, Roadmap, Evidence, Journey, Keyframe; edges: TRACES_TO, VERIFIES, IMPACTS, DEPENDS_ON, DUPLICATES, IMPLEMENTS, COVERS, EVIDENCES, BELONGS_TO, RELEASES) and route all Neo4j writes through a single `GraphPort`. No service may write Neo4j directly. Epic: EPIC-TRC-A-SPINE.
+
+**Acceptance Criteria:**
+- Node/edge kinds are enumerated in one shared contract (HexaKit canonical ports + Python mirror).
+- All existing trace/impact services write via `GraphPort`.
+- Schema drift is impossible: writes outside the contract are rejected.
+
+**Traceability:**
+- Epic: EPIC-TRC-PLATFORM / EPIC-TRC-A-SPINE
+- Blueprint: `docs/TRACERA_PLATFORM_RND.md` §3.3
+- Status: PLANNED (Phase 0)
+
+---
+
+### FR-TRC-019 — Pluggable Agreement Scorer Port
+
+**Title:** ScorerPort with Jaccard / SentenceTransformer / SigLIP / VLM strategies
+
+**Description:** The platform shall expose a `ScorerPort` strategy interface for requirement↔artifact agreement scoring, with interchangeable implementations: lexical (Jaccard), text-embedding (SentenceTransformer), visual-embedding (SigLIP), and blind-vs-intent VLM. Pillars A and C consume the same port.
+
+**Acceptance Criteria:**
+- Scoring strategy is selectable at call site without changing callers.
+- Each scorer returns a normalized confidence in [0.0, 1.0] + rationale.
+
+**Traceability:**
+- Epic: EPIC-TRC-A-SPINE
+- Blueprint: `docs/TRACERA_PLATFORM_RND.md` §3.2
+- Status: PLANNED (Phase 1)
+
+---
+
+### FR-TRC-020 — Blind-vs-Intent Visual Verification
+
+**Title:** VLM proof that running code matches the requirement, with keyframe evidence
+
+**Description:** The Evidence & Verification engine shall capture journey keyframes/recordings (via phenotype-journeys behind `EvidenceRunnerPort`), store them in MinIO as `Evidence`/`Keyframe` graph nodes, and produce a blind-vs-intent VLM verdict asserting whether the running code satisfies the requirement. Verdicts attach to the graph via `VERIFIES` edges.
+
+**Acceptance Criteria:**
+- Evidence artifacts are content-addressed in MinIO and linked from graph nodes.
+- A verdict (pass/fail + rationale + confidence) is recorded per requirement under test.
+- phenotype-journeys is wrapped, not re-implemented.
+
+**Traceability:**
+- Epic: EPIC-TRC-C-VERIFY
+- Blueprint: `docs/TRACERA_PLATFORM_RND.md` §4 (Phase 2)
+- Status: PLANNED (Phase 2)
+
+---
+
+### FR-TRC-021 — Program Management via AgilePlus PmEnginePort
+
+**Title:** Portfolios / OKRs / roadmaps / releases as first-class graph nodes via AgilePlus
+
+**Description:** Pillar B shall promote `agileplus_adapter` into a `PmEnginePort` backed by AgilePlus (Rust), projecting portfolios, OKRs, roadmaps, and releases as canonical graph nodes with a PG-backed compliance/audit trail. AgilePlus is wrapped as the PM engine, not duplicated.
+
+**Acceptance Criteria:**
+- Portfolio/OKR/Roadmap/Release exist as graph node kinds with TraceLinks to requirements.
+- AgilePlus is consumed via a contract port (gRPC/HTTP), not re-implemented in Python.
+
+**Traceability:**
+- Epic: EPIC-TRC-B-PM
+- Blueprint: `docs/TRACERA_PLATFORM_RND.md` §4 (Phase 3)
+- Status: PLANNED (Phase 3)
+
+---
+
+### FR-TRC-022 — Multi-Repo Org Intelligence via RegistryPort
+
+**Title:** Org-wide repo/ecosystem graph + dependency/dup rationalization view
+
+**Description:** Pillar D shall wrap phenotype-registry (ECOSYSTEM_MAP / RATIONALIZATION_PLAN) behind a `RegistryPort`, ingesting the org repo graph and surfacing cross-repo dependency and duplication rationalization as a Tracera SPA view.
+
+**Acceptance Criteria:**
+- Repo / Team nodes and DEPENDS_ON / DUPLICATES edges populate the org graph.
+- Rationalization findings render in the SPA org-map workspace.
+- phenotype-registry is wrapped, not re-implemented.
+
+**Traceability:**
+- Epic: EPIC-TRC-D-ORG
+- Blueprint: `docs/TRACERA_PLATFORM_RND.md` §4 (Phase 4)
+- Status: PLANNED (Phase 4)
+
+---
+
 ## Non-Functional Requirements
 
 ### NFR-TRC-001 — Spatial Index Query Performance
@@ -351,6 +439,9 @@
 | FR-TRC-017 | Traceability coverage / health scoring over Requirement-Artifact-TraceLink graph | SHIPPED | Pure-function `traceability_score_service.py`; metrics: impl_coverage, test_coverage, orphan_req_pct, orphan_art_pct, avg_confidence, composite 0-100; endpoint GET /api/v1/quality/score; 19 unit tests; PR: feat/quality-scoring |
 | NFR-TRC-008 | Link confidence index selectivity target ≥ 90% for miner-generated links | PLANNED | Baseline TBD once miner ships |
 | NFR-TRC-009 | Neo4j projection sync latency < 500 ms p99 for single-link writes | PLANNED | No SLA defined yet |
+| NFR-TRC-010 | All graph writes go through exactly one contract; no service writes Neo4j directly | PLANNED | Blueprint §3.2; EPIC-TRC-A-SPINE |
+| NFR-TRC-011 | Wrap-over-handroll: Authvault/AgilePlus/phenotype-journeys/phenotype-registry/HexaKit consumed via ports, never re-implemented | PLANNED | Blueprint §2 |
+| NFR-TRC-012 | Self-hosting: every shipped capability traces Requirement→Code→Test→PR in Tracera's own graph | PLANNED | Blueprint §7 |
 
 ---
 
