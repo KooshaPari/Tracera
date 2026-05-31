@@ -13,6 +13,11 @@ This tutorial will guide you through using TraceRTM CLI to manage your projects.
 
 ---
 
+<!-- RICH-MEDIA-STUB: type=recording-mp4 subject="TraceRTM CLI tutorial: create project, add items, link traces" journey="cli-tutorial" status=TODO -->
+> 📽️ **[RICH-MEDIA STUB — needs journey capture]** type: recording-mp4 · subject: TraceRTM CLI tutorial: create project, add items, link traces · journey: `cli-tutorial` · status: TODO
+>
+> *Intended content:* a terminal recording following this tutorial step-by-step — `tracertm` project create, add requirement/work items, link traces, and print the resulting matrix. *Blocked on:* the `@phenotype/doc-embeds` Remotion pipeline (phenotype-journeys repo absent) and a built `tracertm` CLI binary. Fill once the `cli-tutorial` manifest can be recorded.
+
 ## Tutorial 1: Your First Project
 
 ### Step 1: Initialize Configuration

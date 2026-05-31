@@ -6,6 +6,11 @@
 
 ---
 
+<!-- RICH-MEDIA-STUB: type=annotated-screenshot subject="TraceRTM atomic trace architecture overview diagram" journey="architecture-overview" status=TODO -->
+> 📽️ **[RICH-MEDIA STUB — needs diagram render]** type: annotated-screenshot · subject: TraceRTM atomic trace architecture overview diagram · journey: `architecture-overview` · status: TODO
+>
+> *Intended content:* an annotated diagram of the atomic-trace model — requirement/work-item nodes, the atomic TraceLink edges, and the coverage/matrix projection over the Go + Python services. This is a rendered diagram (not a UI capture); a Mermaid `flowchart` source in this doc set is the natural source, exported via the `@phenotype/doc-embeds` pipeline (not present in this workspace).
+
 ## Table of Contents
 
 1. [Executive Summary](#executive-summary)
