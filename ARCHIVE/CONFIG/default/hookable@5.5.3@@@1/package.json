@@ -33,7 +33,7 @@
     "typescript": "^5.0.2",
     "unbuild": "^1.1.2",
     "vite": "^8.0.3",
-    "vitest": "^0.29.8"
+    "vitest": "^4.1.8"
   },
   "packageManager": "pnpm@8.0.0",
   "scripts": {
