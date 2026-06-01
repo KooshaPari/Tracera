@@ -9,14 +9,20 @@ kwality used Neo4j to map requirements ↔ tests ↔ code and identify coverage 
 
 ## Borrow: FR traceability graph model
 
-kwality semantic tracing model (conceptual):
+kwality `database/neo4j/schemas/test-execution-schema.cypher` defines production-grade constraints and indexes:
+
+- Node labels: `TestExecution`, `TestCase`, `ValidationSuite`, `ValidationTarget`, `TestPattern`, `Agent`, `Component`
+- Relationship types: `DEPENDS_ON`, `VALIDATED_BY`, `CONTAINS`, `TARGETS`, `FOLLOWS`, `TRIGGERS`, `IMPLEMENTS`
+- Performance indexes on `status`, `executed_at`, `complexity_score`, `success_rate`
+
+Conceptual FR overlay (map ValidationTarget → Requirement):
 
 ```text
 (:Requirement {id, title, priority})
-  -[:IMPLEMENTED_BY]-> (:CodeFile {path, symbol})
-  -[:VERIFIED_BY]-> (:TestCase {name, suite})
+  -[:IMPLEMENTED_BY]-> (:Component {component_id, path})
+  -[:VALIDATED_BY]-> (:TestCase {test_id, suite})
   -[:COVERS]-> (:Requirement)
-(:TestCase) -[:USES_MCP_TOOL]-> (:MCPTool {name: "playwright"})
+(:TestCase) -[:USES_MCP_TOOL]-> (:Agent {agent_id, tool: "playwright"})
 ```
 
 **Adopt in Tracera:** align span/resource attributes with FR IDs so graph exports can reconstruct the same edges. Requirement nodes should use stable FR identifiers from PhenoSpecs/AgilePlus registries.
@@ -56,12 +62,12 @@ kwality `playwright_mcp.py` pattern (from README structure):
 
 ## Borrow: successor migration table (graph lane)
 
-| kwality capability | Tracera responsibility |
-|--------------------|------------------------|
-| Neo4j requirement graph | Tracera graph backend + export |
-| FR gap analysis queries | Tracera analytics / reports |
-| Playwright MCP trace ingestion | Tracera MCP span normalization |
-| DeepEval semantic scores | **Benchora** (see mined-kwality-deepeval-patterns.md) |
+| kwality capability             | Tracera responsibility                                |
+| ------------------------------ | ----------------------------------------------------- |
+| Neo4j requirement graph        | Tracera graph backend + export                        |
+| FR gap analysis queries        | Tracera analytics / reports                           |
+| Playwright MCP trace ingestion | Tracera MCP span normalization                        |
+| DeepEval semantic scores       | **Benchora** (see mined-kwality-deepeval-patterns.md) |
 
 ## Do not borrow
 
@@ -71,10 +77,10 @@ kwality `playwright_mcp.py` pattern (from README structure):
 
 ## Related fork-lane repos
 
-| Repo | Role |
-|------|------|
+| Repo     | Role                                                                                                                                               |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Benchora | DeepEval / FR validation patterns — [mined doc](https://github.com/KooshaPari/Benchora/blob/main/docs/research/mined-kwality-deepeval-patterns.md) |
-| PhenoMCP | Standalone Playwright MCP tool successor |
+| PhenoMCP | Standalone Playwright MCP tool successor                                                                                                           |
 
 ## Provenance
 
