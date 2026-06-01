@@ -6,39 +6,9 @@ concurrency:
 
 on:
   push:
-    branches: [ main, develop ]
-    paths:
-      - 'backend/**'
-      - 'frontend/**'
-      - 'src/**'
-      - 'tests/**'
-      - 'infra/**'
-      - 'scripts/**'
-      - 'docker/**'
-      - 'docker-compose*.yml'
-      - 'pyproject.toml'
-      - 'uv.lock'
-      - 'go.mod'
-      - 'go.sum'
-      - 'package.json'
-      - 'bun.lock'
+    branches: [ main, master ]
   pull_request:
-    branches: [ main, develop ]
-    paths:
-      - 'backend/**'
-      - 'frontend/**'
-      - 'src/**'
-      - 'tests/**'
-      - 'infra/**'
-      - 'scripts/**'
-      - 'docker/**'
-      - 'docker-compose*.yml'
-      - 'pyproject.toml'
-      - 'uv.lock'
-      - 'go.mod'
-      - 'go.sum'
-      - 'package.json'
-      - 'bun.lock'
+    branches: [ main, master ]
   release:
     types: [ published ]
 
