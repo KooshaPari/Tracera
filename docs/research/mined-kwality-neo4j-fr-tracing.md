@@ -78,12 +78,12 @@ for graph reconstruction.
 
 ## Borrow: successor migration table (graph lane)
 
-| kwality capability | Tracera responsibility |
-| --- | --- |
-| Neo4j requirement graph | Tracera graph backend + export |
-| FR gap analysis queries | Tracera analytics / reports |
-| Playwright MCP trace ingestion | Tracera MCP span normalization |
-| DeepEval semantic scores | **Benchora** (see deepeval mined doc) |
+| kwality capability             | Tracera responsibility                |
+| ------------------------------ | ------------------------------------- |
+| Neo4j requirement graph        | Tracera graph backend + export        |
+| FR gap analysis queries        | Tracera analytics / reports           |
+| Playwright MCP trace ingestion | Tracera MCP span normalization        |
+| DeepEval semantic scores       | **Benchora** (see deepeval mined doc) |
 
 Benchora deepeval doc:
 `docs/research/mined-kwality-deepeval-patterns.md`
@@ -98,10 +98,10 @@ Benchora deepeval doc:
 
 ## Related fork-lane repos
 
-| Repo | Role |
-| --- | --- |
+| Repo     | Role                                                  |
+| -------- | ----------------------------------------------------- |
 | Benchora | DeepEval / FR validation patterns (mined doc in repo) |
-| PhenoMCP | Standalone Playwright MCP tool successor |
+| PhenoMCP | Standalone Playwright MCP tool successor              |
 
 ## Provenance
 
