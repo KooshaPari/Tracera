@@ -42,7 +42,7 @@
     "prettier": "^3.5.2",
     "typescript": "^5.7.3",
     "unbuild": "^3.5.0",
-    "vitest": "^3.0.7"
+    "vitest": "^4.1.8"
   },
   "scripts": {
     "bench": "vitest bench",

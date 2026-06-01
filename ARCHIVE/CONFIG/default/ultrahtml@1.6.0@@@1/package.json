@@ -68,7 +68,7 @@
     "parsel-js": "^1.1.2",
     "pretty-bytes": "^6.1.1",
     "stylis": "^4.3.4",
-    "vitest": "^2.1.1"
+    "vitest": "^4.1.8"
   },
   "scripts": {
     "build": "node scripts/build.js",
