@@ -94,7 +94,7 @@ func setupServiceTests(t *testing.T) *serviceTestFixture {
 	eventBus := newMockEventBus()
 
 	// Create services (nil NATS/cache service where optional; link/project use cache.Cache mock)
-	itemService := services.NewItemServiceImpl(itemRepo, linkRepo, nil, nil)
+	itemService := services.NewItemServiceImpl(itemRepo, linkRepo, nil, mockNATS)
 	linkService := services.NewLinkServiceImpl(linkRepo, itemService, mockCache, nil)
 	projectSvc := services.NewProjectServiceImpl(projectRepo, itemRepo, mockCache, nil, gormDB)
 	agentService := services.NewAgentServiceImpl(agentRepo, mockCache, nil)

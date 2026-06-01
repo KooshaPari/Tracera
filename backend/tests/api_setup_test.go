@@ -13,6 +13,29 @@ import (
 	"github.com/kooshapari/tracertm-backend/internal/services"
 )
 
+// Deterministic UUIDs for link handler API tests (CreateLink validates UUID format).
+const (
+	testLinkProjectID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+	testLinkItem1ID   = "11111111-1111-1111-1111-111111111111"
+	testLinkItem2ID   = "22222222-2222-2222-2222-222222222222"
+	testLinkItem3ID   = "33333333-3333-3333-3333-333333333333"
+)
+
+func seedLinkTestItems(t *testing.T, db *gorm.DB) {
+	t.Helper()
+	migrateAPITestDB(t, db)
+	items := []models.Item{
+		{ID: testLinkItem1ID, ProjectID: testLinkProjectID, Title: "Item 1", Type: "requirement", Status: "open"},
+		{ID: testLinkItem2ID, ProjectID: testLinkProjectID, Title: "Item 2", Type: "requirement", Status: "open"},
+		{ID: testLinkItem3ID, ProjectID: testLinkProjectID, Title: "Item 3", Type: "requirement", Status: "open"},
+	}
+	for i := range items {
+		if err := db.Create(&items[i]).Error; err != nil {
+			t.Fatalf("seed link test items: %v", err)
+		}
+	}
+}
+
 func migrateAPITestDB(t *testing.T, db *gorm.DB) {
 	t.Helper()
 	if err := db.AutoMigrate(&models.Item{}, &models.Link{}, &models.Project{}); err != nil {

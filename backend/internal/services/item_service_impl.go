@@ -8,11 +8,14 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/nats-io/nats.go"
-
 	"github.com/kooshapari/tracertm-backend/internal/models"
 	"github.com/kooshapari/tracertm-backend/internal/repository"
 )
+
+// NATSPublisher publishes domain events (implemented by *nats.Conn and test mocks).
+type NATSPublisher interface {
+	Publish(subject string, data []byte) error
+}
 
 // Ensure ItemServiceImpl implements ItemService interface
 var _ ItemService = (*ItemServiceImpl)(nil)
@@ -22,7 +25,7 @@ type ItemServiceImpl struct {
 	itemRepo     repository.ItemRepository
 	linkRepo     repository.LinkRepository
 	cacheService CacheService
-	natsConn     *nats.Conn
+	natsPub      NATSPublisher
 	cacheTTL     time.Duration
 }
 
@@ -31,7 +34,7 @@ func NewItemServiceImpl(
 	itemRepo repository.ItemRepository,
 	linkRepo repository.LinkRepository,
 	cacheService CacheService,
-	natsConn *nats.Conn,
+	natsPub NATSPublisher,
 ) ItemService {
 	if itemRepo == nil {
 		panic("itemRepo cannot be nil")
@@ -44,7 +47,7 @@ func NewItemServiceImpl(
 		itemRepo:     itemRepo,
 		linkRepo:     linkRepo,
 		cacheService: cacheService,
-		natsConn:     natsConn,
+		natsPub:      natsPub,
 		cacheTTL:     defaultCacheTTL,
 	}
 }
@@ -626,7 +629,7 @@ func (s *ItemServiceImpl) invalidateProjectCaches(ctx context.Context, projectID
 }
 
 func (s *ItemServiceImpl) publishEvent(_ context.Context, eventType string, data interface{}) {
-	if s.natsConn == nil {
+	if s.natsPub == nil {
 		return
 	}
 
@@ -640,7 +643,7 @@ func (s *ItemServiceImpl) publishEvent(_ context.Context, eventType string, data
 		return
 	}
 
-	if err := s.natsConn.Publish(eventType, payload); err != nil {
+	if err := s.natsPub.Publish(eventType, payload); err != nil {
 		slog.Error("Warning: Failed to publish event", "error", eventType, "error", err)
 	} else {
 		slog.Info("[EVENT PUBLISHED]", "detail", eventType)
