@@ -35,6 +35,8 @@ from tracertm.ports.scorer import (
     JaccardScorer,
     ScorerPort,
     ScoreResult,
+    SentenceTransformerScorer,
+    SigLIPScorer,
 )
 
 __all__ = [
@@ -53,4 +55,6 @@ __all__ = [
     "ScorerPort",
     "ScoreResult",
     "JaccardScorer",
+    "SentenceTransformerScorer",
+    "SigLIPScorer",
 ]
