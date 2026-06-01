@@ -72,7 +72,7 @@
     "terser": "^5.31.2",
     "tsup": "^8.1.0",
     "typescript": "^5.5.3",
-    "vitest": "^2.0.1"
+    "vitest": "^4.1.8"
   },
   "scripts": {
     "compile": "tsup && cp dist/legacy/legacy.cjs legacy.js && cp dist/legacy/legacy.d.cts legacy.d.ts",
