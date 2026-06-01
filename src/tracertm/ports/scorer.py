@@ -88,8 +88,6 @@ class JaccardScorer:
         if not req and not art:
             return ScoreResult(0.0, "both inputs empty", self.name)
         union = req | art
-        if not union:
-            return ScoreResult(0.0, "no tokens", self.name)
         inter = req & art
         value = len(inter) / len(union)
         rationale = (
