@@ -2,6 +2,11 @@
 
 Welcome to the Trace RTM documentation! This section provides everything you need to get started with the project.
 
+<!-- RICH-MEDIA-STUB: type=recording-gif subject="TraceRTM getting-started: install, init config, first trace" journey="getting-started" status=TODO -->
+> 📽️ **[RICH-MEDIA STUB — needs journey capture]** type: recording-gif · subject: TraceRTM getting-started: install, init config, first trace · journey: `getting-started` · status: TODO
+>
+> *Intended content:* a short looping GIF of the first-run experience — install, `tracertm init` to scaffold config, and producing the first trace. *Blocked on:* the `@phenotype/doc-embeds` Remotion pipeline (phenotype-journeys repo absent) and a runnable TraceRTM install. Fill once the `getting-started` manifest can be driven.
+
 ## Quick Navigation
 
 - **[Quick Start Guide](quick-start.md)** - Get up and running in 10 minutes

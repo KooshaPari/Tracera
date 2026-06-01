@@ -17,6 +17,11 @@
 
 ---
 
+<!-- RICH-MEDIA-STUB: type=recording-mp4 subject="TraceRTM CLI user guide: installation, commands, dashboard navigation" journey="cli-user-guide" status=TODO -->
+> 📽️ **[RICH-MEDIA STUB — needs journey capture]** type: recording-mp4 · subject: TraceRTM CLI user guide: installation, commands, dashboard navigation · journey: `cli-user-guide` · status: TODO
+>
+> *Intended content:* a recording walking the CLI surface — install, the core command groups documented below, then crossing over into dashboard navigation. *Blocked on:* the `@phenotype/doc-embeds` Remotion pipeline (phenotype-journeys repo absent), a built `tracertm` CLI, and a running frontend (`make dev` stack not booted here). Fill once the `cli-user-guide` manifest can be recorded.
+
 ## 1. Introduction
 
 TraceRTM is an agent-native, multi-view requirements traceability system designed for managing complex software projects. The CLI (Command-Line Interface) is the primary way to interact with TraceRTM, providing powerful commands for managing projects, items, links, and views.
