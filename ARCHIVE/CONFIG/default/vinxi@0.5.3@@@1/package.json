@@ -218,7 +218,7 @@
     "@types/serve-static": "^1.15.2",
     "cookie-es": "^1.0.0",
     "prettier": "^2.8.8",
-    "vitest": "^0.28.5"
+    "vitest": "^4.1.8"
   },
   "scripts": {
     "types": "npm run tsc",
