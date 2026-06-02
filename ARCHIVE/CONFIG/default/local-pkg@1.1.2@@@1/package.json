@@ -53,7 +53,7 @@
     "typescript": "^5.9.2",
     "unbuild": "^3.6.1",
     "unplugin-quansync": "^0.4.4",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.8"
   },
   "scripts": {
     "build": "unbuild",
