@@ -96,6 +96,7 @@ if TEXTUAL_AVAILABLE:
             self.current_view: str = "FEATURE"
             self.db: DatabaseConnection | None = None
             self.selected_item_id: str | None = None
+            self.filter_text: str = ""
 
         def compose(self) -> ComposeResult:
             """Create child widgets for the app."""
@@ -147,17 +148,18 @@ if TEXTUAL_AVAILABLE:
 
             with Session(self.db.engine) as session:
                 # Get root items (no parent)
+                query = session.query(Item).filter(
+                    Item.project_id == self.project_id,
+                    Item.view == self.current_view,
+                    Item.parent_id.is_(None),
+                    Item.deleted_at.is_(None),
+                )
+
+                if self.filter_text:
+                    query = query.filter(Item.title.ilike(f"%{self.filter_text}%"))
+
                 root_items = (
-                    session
-                    .query(Item)
-                    .filter(
-                        Item.project_id == self.project_id,
-                        Item.view == self.current_view,
-                        Item.parent_id.is_(None),
-                        Item.deleted_at.is_(None),
-                    )
-                    .order_by(Item.title)
-                    .all()
+                    query.order_by(Item.title).all()
                 )
 
                 for item in root_items:
@@ -222,7 +224,9 @@ if TEXTUAL_AVAILABLE:
 
         def on_input_changed(self, _event: Input.Changed) -> None:
             """Handle filter input change."""
-            # tracked: https://github.com/KooshaPari/trace/issues/220
+            filter_input = self.query_one("#filter-input", Input)
+            self.filter_text = filter_input.value.strip()
+            self.refresh_tree()
 
         def action_refresh(self) -> None:
             """Refresh tree."""

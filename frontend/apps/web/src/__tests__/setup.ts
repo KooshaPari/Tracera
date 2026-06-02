@@ -308,6 +308,7 @@ globalThis.fetch = vi.fn(async (url: string | URL | Request, options?: RequestIn
 import type { RenderOptions } from '@testing-library/react';
 
 import { render as rtlRender } from '@testing-library/react';
+import './mocks/graphql-shim';
 // Add React testing utilities wrapper for provider-based tests
 
 // Create test wrapper with all necessary providers
@@ -326,37 +327,33 @@ export * from '@testing-library/react';
 // ============================================================================
 
 import { waitFor } from '@testing-library/react';
-// MSW TEMPORARILY DISABLED DUE TO GRAPHQL ESM/COMMONJS IMPORT ISSUE
-// See: CRITICAL_BLOCKER_MSW_GRAPHQL.md
-// tracked: https://github.com/KooshaPari/trace/issues/224
 // Start MSW server before all tests
-// BeforeAll(() => {
-//   Try {
-//     Const server = getServer();
-//     Server.listen();
-//   } catch (error) {
-//     Console.warn('MSW server initialization failed:', error);
-//     // Continue anyway - tests that don't need HTTP mocking will still work
-//   }
-// });
+beforeAll(() => {
+  try {
+    const server = getServer();
+    server.listen();
+  } catch (error) {
+    console.warn('MSW server initialization failed:', error);
+  }
+});
 // Stop MSW server after all tests
-// AfterAll(() => {
-//   Try {
-//     Const server = getServer();
-//     Server.close();
-//   } catch (error) {
-//     // Ignore cleanup errors
-//   }
-// });
+afterAll(() => {
+  try {
+    const server = getServer();
+    server.close();
+  } catch (error) {
+    console.warn('MSW server cleanup failed:', error);
+  }
+});
 // Reset handlers after each test
-// AfterEach(() => {
-//   Try {
-//     Const server = getServer();
-//     Server.resetHandlers();
-//   } catch (error) {
-//     // Ignore reset errors
-//   }
-// });
+afterEach(() => {
+  try {
+    const server = getServer();
+    server.resetHandlers();
+  } catch (error) {
+    console.warn('MSW server reset failed:', error);
+  }
+});
 // ============================================================================
 // Async Test Helpers
 // ============================================================================

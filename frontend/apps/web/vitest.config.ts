@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      graphql: path.resolve(__dirname, './src/__tests__/mocks/graphql-shim.ts'),
     },
   },
   test: {

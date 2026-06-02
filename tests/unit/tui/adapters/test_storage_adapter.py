@@ -145,6 +145,40 @@ class TestItemOperations:
         assert result == mock_items
         item_storage.list_items.assert_called_once_with(item_type="epic", status="in_progress", parent_id="parent-1")
 
+    @patch("tracertm.tui.adapters.storage_adapter.parse_item_markdown")
+    @patch("tracertm.tui.adapters.storage_adapter.list_markdown_items")
+    def test_list_items_merges_markdown_items(
+        self, mock_list_markdown_items: Any, mock_parse_item_markdown: Any, storage_adapter: Any, mock_storage: Any
+    ) -> None:
+        """Test listing items merges markdown-authored items into the TUI view."""
+        project = Project(name="Test", id="proj-1")
+        sqlite_item = Item(id="item-1", title="SQLite Item")
+        item_storage = MagicMock()
+        item_storage.list_items.return_value = [sqlite_item]
+
+        project_storage = MagicMock()
+        project_storage.get_item_storage.return_value = item_storage
+        mock_storage.get_project_storage.return_value = project_storage
+
+        markdown_path = Path("/tmp/Test/stories/story-2.md")
+        mock_list_markdown_items.return_value = [markdown_path]
+        mock_parse_item_markdown.return_value = MagicMock(
+            id="item-2",
+            external_id="STORY-002",
+            item_type="story",
+            status="todo",
+            title="Markdown Item",
+            description="From markdown",
+            parent=None,
+            custom_fields={"source": "markdown"},
+        )
+
+        result = storage_adapter.list_items(project)
+
+        assert [item.id for item in result] == ["item-1", "item-2"]
+        assert result[1].item_metadata["markdown_path"] == str(markdown_path)
+        mock_parse_item_markdown.assert_called_once_with(markdown_path)
+
     def test_get_item(self, storage_adapter: Any, mock_storage: Any) -> None:
         """Test getting single item by ID."""
         project = Project(name="Test", id="proj-1")

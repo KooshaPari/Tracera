@@ -13,6 +13,8 @@ from typing import Any
 from tracertm.models import Item, Link, Project
 from tracertm.storage.conflict_resolver import Conflict
 from tracertm.storage.local_storage import LocalStorageManager
+from tracertm.storage.markdown_parser import list_items as list_markdown_items
+from tracertm.storage.markdown_parser import parse_item_markdown
 from tracertm.storage.sync_engine import SyncEngine, SyncState, SyncStatus
 
 logger = logging.getLogger(__name__)
@@ -134,15 +136,24 @@ class StorageAdapter:
         project_storage = self.storage.get_project_storage(project.name)
         item_storage = project_storage.get_item_storage(project)
 
-        # Get items from SQLite
-        # tracked: https://github.com/KooshaPari/trace/issues/219
-        # This would scan the markdown directories and parse frontmatter
-        # For now, return SQLite items only
-        return item_storage.list_items(
+        sqlite_items = item_storage.list_items(
             item_type=item_type,
             status=status,
             parent_id=parent_id,
         )
+
+        markdown_items = self._list_markdown_items(
+            project,
+            item_type=item_type,
+            status=status,
+            parent_id=parent_id,
+        )
+
+        items_by_id: dict[str, Item] = {str(item.id): item for item in sqlite_items}
+        for item in markdown_items:
+            items_by_id.setdefault(str(item.id), item)
+
+        return sorted(items_by_id.values(), key=lambda item: item.title.lower())
 
     def get_item(self, project: Project, item_id: str) -> Item | None:
         """Get item by ID.
@@ -570,3 +581,41 @@ class StorageAdapter:
         for callback in self._item_change_callbacks:
             with contextlib.suppress(RuntimeError):
                 callback(item_id)
+
+    def _list_markdown_items(
+        self,
+        project: Project,
+        item_type: str | None = None,
+        status: str | None = None,
+        parent_id: str | None = None,
+    ) -> list[Item]:
+        """List items parsed from Markdown files in the project workspace."""
+        markdown_paths = list_markdown_items(self.storage.base_dir, project.name, item_type=item_type)
+        items: list[Item] = []
+
+        for path in markdown_paths:
+            try:
+                data = parse_item_markdown(path)
+            except (FileNotFoundError, ValueError):
+                logger.debug("Skipping unreadable markdown item: %s", path)
+                continue
+
+            if status and data.status != status:
+                continue
+            if parent_id and data.parent != parent_id:
+                continue
+
+            items.append(
+                Item(
+                    id=data.id,
+                    project_id=project.id,
+                    title=data.title or data.external_id,
+                    description=data.description or None,
+                    external_id=data.external_id,
+                    type=data.item_type,
+                    status=data.status,
+                    metadata={**data.custom_fields, "markdown_path": str(path)},
+                )
+            )
+
+        return items

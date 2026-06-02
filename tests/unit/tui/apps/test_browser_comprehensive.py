@@ -407,6 +407,24 @@ class TestBrowserAppActions:
         mock_input.focus.assert_called_once()
 
     @patch("tracertm.tui.apps.browser.ConfigManager")
+    def test_on_input_changed_updates_filter_and_refreshes(self, mock_config_manager: Any) -> None:
+        """Test filter input changes update the active query and refresh the tree."""
+        mock_config = MagicMock()
+        mock_config_manager.return_value = mock_config
+
+        mock_input = MagicMock()
+        mock_input.value = "  urgent  "
+
+        app = BrowserApp()
+        app.query_one = MagicMock(return_value=mock_input)
+        app.refresh_tree = MagicMock()
+
+        app.on_input_changed(MagicMock())
+
+        assert app.filter_text == "urgent"
+        app.refresh_tree.assert_called_once()
+
+    @patch("tracertm.tui.apps.browser.ConfigManager")
     def test_action_help(self, mock_config_manager: Any) -> None:
         """Test help action shows notification."""
         mock_config = MagicMock()
