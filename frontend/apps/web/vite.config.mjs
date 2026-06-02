@@ -325,6 +325,10 @@ export default defineConfig({
         find: /^prop-types$/,
         replacement: path.resolve(__dirname, './src/lib/prop-types-shim.ts'),
       },
+      {
+        find: /^graphql$/,
+        replacement: path.resolve(__dirname, './src/__tests__/mocks/graphql-shim.ts'),
+      },
       // prop-types-real: used by the shim to import the actual package without circular alias resolution
       {
         find: 'prop-types-real',

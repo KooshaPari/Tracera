@@ -10,6 +10,16 @@ export interface DocumentNode {
   definitions: any[];
 }
 
+export interface Source {
+  body: string;
+}
+
+export class GraphQLSchema {}
+
+export const Kind = {
+  DOCUMENT: 'Document',
+} as const;
+
 // Minimal parse function (MSW likely doesn't call this for HTTP-only handlers)
 export function parse(source: string): DocumentNode {
   throw new Error('GraphQL parse not implemented - HTTP handlers only');
@@ -34,6 +44,9 @@ export function subscribe(...args: any[]): any {
 
 // Re-export everything to satisfy "export * from 'graphql'" patterns
 export default {
+  GraphQLSchema,
+  Kind,
+  Source: class {},
   parse,
   print,
   buildSchema,
