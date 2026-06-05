@@ -111,6 +111,9 @@ class ParsedArtifact:
 
 _FR_HEADING = re.compile(r"###\s+(FR-[A-Z]+-\d+)\s+[—–-]\s+(.+)")
 _NFR_HEADING = re.compile(r"###\s+(NFR-[A-Z]+-\d+)\s+[—–-]\s+(.+)")
+_TABLE_ROW = re.compile(
+    r"^\|\s*((?:FR|NFR)-[A-Z]+-\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*(.*?)\s*\|?\s*$"
+)
 _PR_REF = re.compile(r"#(\d+)")
 _TEST_REF = re.compile(r"(tests?/[^\s,;|`\"']+\.(?:py|tsx|rs|go))")
 _STATUS_SHIPPED = re.compile(r"\bSHIPPED\b", re.IGNORECASE)
@@ -251,6 +254,38 @@ def parse_catalog(project_key: str, path: Path) -> list[ParsedRequirement]:
                 tests=tests,
             )
         )
+
+    # --- Phase 2: parse table-format rows (| FR-xxx | title | STATUS | notes |)
+    # These appear in "Gap Analysis" sections and are not split by ### headings.
+    seen_ids = {r.req_id for r in requirements}
+    for line in text.splitlines():
+        m = _TABLE_ROW.match(line.strip())
+        if not m:
+            continue
+        req_id, title, status_cell, notes = m.group(1), m.group(2).strip(), m.group(3).strip(), m.group(4).strip()
+        if req_id in seen_ids:
+            continue  # already parsed via ### heading
+        # Skip separator rows
+        if re.match(r"^[-|: ]+$", title):
+            continue
+        kind = "functional" if req_id.startswith("FR-") else "non-functional"
+        status = _infer_status(status_cell)
+        row_text = f"{status_cell} {notes}"
+        prs = _extract_prs(row_text)
+        tests = _extract_tests(row_text)
+        requirements.append(
+            ParsedRequirement(
+                req_id=req_id,
+                title=title,
+                description=notes or title,
+                kind=kind,
+                status=status,
+                acceptance_criteria=[],
+                prs=prs,
+                tests=tests,
+            )
+        )
+        seen_ids.add(req_id)
 
     return requirements
 

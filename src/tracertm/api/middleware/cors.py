@@ -36,10 +36,12 @@ def setup_cors(app: FastAPI) -> None:
         ),
     ).split(",")
 
+    parsed_origins = [origin.strip() for origin in cors_origins]
+
     # Add CORS middleware with strict origin whitelist
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[origin.strip() for origin in cors_origins],
+        allow_origins=parsed_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
