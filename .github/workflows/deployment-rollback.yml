@@ -20,8 +20,6 @@ on:
   repository_dispatch:
     types:
     - auto-rollback
-permissions:
-  contents: read
   deployments: write
   issues: write
 jobs:
@@ -33,7 +31,7 @@ jobs:
       current_version: ${{ steps.validate.outputs.current_version }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
       with:
         fetch-depth: 0
     - name: Validate rollback parameters
@@ -48,7 +46,7 @@ jobs:
         \ >> $GITHUB_OUTPUT\necho \"✅ Rollback from $CURRENT_VERSION to $TARGET_VERSION\
         \ validated\"\n"
     - name: Create rollback issue
-      uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v-latest
       with:
         script: "const environment = '${{ github.event.inputs.environment }}' || '${{\
           \ github.event.client_payload.environment }}';\nconst reason = '${{ github.event.inputs.reason\
@@ -94,7 +92,7 @@ jobs:
         }}
     steps:
     - name: Checkout target version
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
       with:
         ref: ${{ needs.validate-rollback.outputs.target_version }}
     - name: Configure deployment
@@ -173,7 +171,7 @@ jobs:
         }}
     steps:
     - name: Checkout target version
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
       with:
         ref: ${{ needs.validate-rollback.outputs.target_version }}
     - name: Rollback frontend deployment
@@ -218,7 +216,7 @@ jobs:
 
         '
     - name: Update rollback status
-      uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v-latest
       with:
         script: "const targetVersion = '${{ needs.validate-rollback.outputs.target_version\
           \ }}';\nconst environment = '${{ github.event.inputs.environment }}' ||\
@@ -257,7 +255,7 @@ jobs:
     if: failure()
     steps:
     - name: Create incident
-      uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v-latest
       with:
         script: "await github.rest.issues.create({\n  owner: context.repo.owner,\n\
           \  repo: context.repo.repo,\n  title: `\U0001F6A8 CRITICAL: Rollback Failed`,\n\
@@ -280,3 +278,10 @@ jobs:
 
         '
     timeout-minutes: 30
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+

@@ -42,7 +42,7 @@ jobs:
         }}
     steps:
     - name: Checkout repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
       with:
         fetch-depth: 0
     - name: Check docs app scope
@@ -58,7 +58,7 @@ jobs:
         fi\n"
     - name: Set up Go
       if: steps.scope.outputs.run == 'true'
-      uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
+      uses: actions/setup-go@78961f6f84d799cd858575bb931c3e51d3b13290 # v-latest
       with:
         go-version: '1.23'
         cache: true
@@ -113,9 +113,9 @@ jobs:
     if: needs.generate-openapi.outputs.spec-generated == 'true'
     steps:
     - name: Checkout repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
     - name: Setup Bun
-      uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
+      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v-latest
       with:
         bun-version: latest
     - name: Download OpenAPI spec
@@ -161,9 +161,9 @@ jobs:
       url: ${{ steps.deploy.outputs.preview-url }}
     steps:
     - name: Checkout repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
     - name: Setup Bun
-      uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
+      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v-latest
       with:
         bun-version: latest
     - name: Download OpenAPI spec
@@ -196,7 +196,7 @@ jobs:
         '
     - name: Comment PR with Preview URL
       if: github.event_name == 'pull_request'
-      uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v-latest
       with:
         script: "const previewUrl = '${{ steps.deploy.outputs.preview-url }}';\nconst\
           \ comment = `## \U0001F4DA Documentation Preview Deployed!\n\nPreview URL:\
@@ -219,9 +219,9 @@ jobs:
       url: https://docs.tracertm.com
     steps:
     - name: Checkout repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
     - name: Setup Bun
-      uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
+      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v-latest
       with:
         bun-version: latest
     - name: Download OpenAPI spec

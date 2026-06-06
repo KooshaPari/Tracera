@@ -31,7 +31,7 @@ jobs:
     timeout-minutes: 30
     steps:
     - name: Checkout repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
       with:
         fetch-depth: 1
         sparse-checkout: 'frontend/apps/web
@@ -44,7 +44,7 @@ jobs:
       with:
         bun-version: "1.1.38"
     - name: Cache Bun dependencies
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v-latest
       with:
         path: ~/.bun/install/cache
         key: ${{ runner.os }}-bun-1.1.38-${{ hashFiles('frontend/bun.lock') }}
@@ -70,7 +70,7 @@ jobs:
         retention-days: 30
     - name: Comment PR with results
       if: github.event_name == 'pull_request' && always()
-      uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v-latest
       with:
         script: "const fs = require('fs');\nconst reportPath = 'frontend/apps/web/junit-report.xml';\n\
           \nif (fs.existsSync(reportPath)) {\n  const report = fs.readFileSync(reportPath,\
