@@ -20,7 +20,7 @@ jobs:
       pull-requests: write
     steps:
     - name: Checkout code
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
       with:
         fetch-depth: 0
     - name: Setup k6
@@ -116,7 +116,7 @@ jobs:
         retention-days: 30
     - name: Comment on PR with results
       if: github.event_name == 'pull_request' && always()
-      uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v-latest
       with:
         script: "const fs = require('fs');\nconst path = require('path');\n\ntry {\n\
           \  const outputLog = fs.readFileSync('performance-results/output.log', 'utf8');\n\

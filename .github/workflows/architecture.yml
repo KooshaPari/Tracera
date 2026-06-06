@@ -19,13 +19,13 @@ jobs:
   architecture:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
     - name: Install UV
       uses: astral-sh/setup-uv@6dfebec6ddbcd197e02256fbdf54deb334fb7f06
       with:
         version: latest
     - name: Set up Python
-      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+      uses: actions/setup-python@c8813ba1bc76ebf779b911ad8ffccbf2e449cb48 # v-latest
       with:
         python-version: '3.13'
     - name: Install dependencies
@@ -42,7 +42,7 @@ jobs:
     - name: Comment architecture on PR
       if: github.event_name == 'pull_request'
       continue-on-error: true
-      uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v-latest
       with:
         script: "const fs = require('fs');\nconst diagram = fs.readFileSync('architecture.md',\
           \ 'utf8');\ngithub.rest.issues.createComment({\n  issue_number: context.issue.number,\n\
