@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Main Rollback Orchestrator
 # Coordinates automated rollback of frontend, backend, and database components
 # Target: <2 minute rollback time from detection to completion

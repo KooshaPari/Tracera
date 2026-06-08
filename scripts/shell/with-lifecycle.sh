@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Injects [LIFECYCLE] START/STOP lines into the process stream so dev logs show restarts clearly.
 # Usage: with-lifecycle.sh <SERVICE_NAME> <command> [args...]
 # Stdout/stderr go to process-compose log; START at begin, STOP with exit code on exit.

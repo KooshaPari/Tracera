@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Run Caddy by full path so Overmind doesn't depend on PATH.
 # Export PATH first so child and fallback lookup see Homebrew.
 export PATH="/opt/homebrew/bin:/usr/local/bin:${PATH:-/usr/bin:/bin}"

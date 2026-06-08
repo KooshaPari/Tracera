@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Start frontend only if port 5173 is not in use.
 # This allows multiple agents to share a single running instance.
 

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Database Setup Script for TraceRTM
 # Sets up PostgreSQL database and user with correct permissions
 

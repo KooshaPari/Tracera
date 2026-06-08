@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Parse .quality/logs/*.log and print action plan by file.
 # Called by run-quality-parallel.sh after quality suites run.
 

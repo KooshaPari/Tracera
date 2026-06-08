@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Start redis_exporter for the Redis-compatible endpoint only if port 9121 is not in use.
 
 set -e

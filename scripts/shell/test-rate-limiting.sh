@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Test Rate Limiting Implementation
 # ==================================
 # Verifies rate limiting is working correctly with the Redis-compatible runtime

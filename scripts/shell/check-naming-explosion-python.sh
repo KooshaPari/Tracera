@@ -1,5 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
+set -euo pipefail
 # Python Naming Explosion Detection Script
 # Prevents AI from creating versioned/prefixed module names.
 # Catches all casing styles (snake, camel, Pascal, kebab, UPPER) and positions (prefix, suffix, middle).

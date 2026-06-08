@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Run Grafana with correct --homepath so it finds config defaults.
 # Use 'grafana server' (grafana-server is deprecated).
 # Call from process-compose or run-with-config-watch.sh.

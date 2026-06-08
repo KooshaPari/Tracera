@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Validation Gates Script - Run at T+45 (after Phase 2 completes)
 # Tests all 4 gates: GATE A (TS), GATE B (Dashboard), GATE C (Tests), GATE D (Quality)
 

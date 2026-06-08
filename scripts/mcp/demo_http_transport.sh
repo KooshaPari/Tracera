@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Demo script for MCP HTTP transport
 # This script demonstrates the dual transport capabilities
 

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Infrastructure Verification Script for TraceRTM
 # Checks that all required services are running and accessible
 

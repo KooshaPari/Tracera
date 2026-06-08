@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Generate param modules from param.py
 
 PARAM_FILE="src/tracertm/mcp/tools/param.py"

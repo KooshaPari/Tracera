@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Quick access to runbook commands
 # Usage: ./scripts/runbook-quick-access.sh [scenario]
 
