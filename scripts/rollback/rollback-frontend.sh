@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Frontend Rollback Script
 # Rolls back frontend to last stable version
 

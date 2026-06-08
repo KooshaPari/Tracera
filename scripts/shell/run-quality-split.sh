@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Run quality as multiple parallel steps (lint, type, proto, build, test per suite).
 # Each step writes to .quality/logs/<step>.log and .quality/logs/<step>.exit.
 # Linters use grouped output format (grouped by file) for easy processing by agents.

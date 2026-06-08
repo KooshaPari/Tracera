@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Test runbook procedures in staging environment
 # Usage: ./scripts/runbook-test.sh [runbook-name]
 

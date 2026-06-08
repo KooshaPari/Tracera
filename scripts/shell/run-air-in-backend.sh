@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Run the Go hot-reload air (github.com/air-verse/air), not the R "air" language server.
 # Use $HOME/go/bin/air so we don't pick up the wrong binary from PATH.
 set -e

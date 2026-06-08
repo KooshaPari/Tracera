@@ -1,5 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
+set -euo pipefail
 # Go Naming Explosion Detection Script
 # Prevents AI from creating versioned/prefixed package/file names.
 # Catches all casing styles (Pascal, camel, snake, kebab) and positions (prefix, suffix, middle).

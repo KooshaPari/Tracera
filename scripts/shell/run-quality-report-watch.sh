@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # File-watched quality report: re-run report when .quality/logs or source files change.
 # Use after running quality or quality-pc so the action plan refreshes on change.
 # Uses watchexec when available; otherwise polls every QUALITY_REPORT_INTERVAL s (default 5).

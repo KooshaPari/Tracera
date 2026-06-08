@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 set -e
 
 PROJECT_ID="cd6d847c-0f2e-4ccc-bf1a-c96b08c97d4e"

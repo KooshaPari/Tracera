@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Backend Rollback Script
 # Rolls back both Go and Python backends to last stable versions
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Run a command and restart it when watched config files change.
 # Uses watchexec (https://github.com/watchexec/watchexec-cli) when available.
 #

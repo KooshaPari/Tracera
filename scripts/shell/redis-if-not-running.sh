@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Start the Redis-compatible cache service only if it is not already running.
 # Dragonfly is the default runtime; set REDIS_COMPAT_PROVIDER=redis only for
 # explicit Redis compatibility testing.

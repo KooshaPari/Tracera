@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Test Rollback Procedures in Staging Environment
 # Validates rollback functionality and timing
 

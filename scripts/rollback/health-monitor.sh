@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Health Monitor Daemon
 # Continuously monitors system health and triggers automatic rollback when needed
 

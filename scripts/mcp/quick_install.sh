@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # BMM MCP - Quick Install (uses current Python environment)
 
 set -e

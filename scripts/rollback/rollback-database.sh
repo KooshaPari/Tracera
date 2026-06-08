@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Database Rollback Script
 # Rolls back database schema and data to last stable state
 

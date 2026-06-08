@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Run Alembic migrations for the Python backend (test_cases, links, graphs, etc.).
 # Requires: DATABASE_URL or TRACERTM_DATABASE_URL set (or in .env).
 # Usage: ./scripts/run_python_migrations.sh   # from repo root

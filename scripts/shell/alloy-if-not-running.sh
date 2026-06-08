@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Start Grafana Alloy as the local log and trace collector.
 
 set -e

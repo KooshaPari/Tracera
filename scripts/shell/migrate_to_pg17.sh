@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Migrate from PostgreSQL 15 to PostgreSQL 17
 # This script will backup, upgrade, and restore your database
 

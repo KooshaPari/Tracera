@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Start MinIO server only if not already running (avoids "address already in use"
 # when MinIO was started by brew or a previous process-compose run).
 
