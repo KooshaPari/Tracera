@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Start postgres only if not already running (avoids "postmaster.pid already exists"
 # when postgres was started by brew or a previous process-compose run).
 

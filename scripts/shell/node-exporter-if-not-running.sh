@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Start node_exporter only if port 9100 is not in use (avoids "address already in use"
 # when exporter was started by a previous process-compose run or another process).
 

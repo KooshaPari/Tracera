@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # organize_docs.sh - Organize markdown files into proper docs/ subdirectories
 # Follows the documentation structure defined in CLAUDE.md
 

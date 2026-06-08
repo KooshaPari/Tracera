@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Check if Loki and Grafana Alloy are installed and provide installation instructions
 
 set -e

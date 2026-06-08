@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Generate gRPC code from Protocol Buffer definitions
 # Usage: ./scripts/generate-grpc.sh [--watch] [--typescript]
 #

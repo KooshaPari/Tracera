@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Canary Deployment Script
 # Manages progressive traffic shifting from 10% -> 50% -> 100%
 

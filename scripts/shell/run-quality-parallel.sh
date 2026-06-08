@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Run quality-go, quality-python, quality-frontend in parallel; then print action plan by file.
 # Logs go to .quality/logs; script exits with 1 if any suite failed.
 

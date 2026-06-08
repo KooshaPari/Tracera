@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Start temporal server only if not already running (avoids "addr already in use"
 # when temporal was started by brew or a previous process-compose run).
 

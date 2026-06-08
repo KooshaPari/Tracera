@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Start go-backend only if port 8080 is not in use or unhealthy.
 # This allows multiple agents to share a single running instance.
 
