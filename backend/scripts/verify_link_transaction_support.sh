@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Verification script for LinkService transaction support
 # This script demonstrates that the LinkRepository is transaction-aware

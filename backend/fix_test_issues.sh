@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Fix agent_handler_test.go - line 326 (err := should be err =)
 sed -i '' 's/^\s*err := handler.AssignTask(c)$/\terr = handler.AssignTask(c)/g' internal/handlers/agent_handler_test.go

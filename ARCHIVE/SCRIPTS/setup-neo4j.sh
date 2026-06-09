@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # TraceRTM Neo4j Setup Script
 # This script sets up Neo4j and other infrastructure for local development

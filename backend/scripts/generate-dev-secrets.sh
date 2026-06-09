@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Generate Development Secrets for TraceRTM
 # Use ONLY for local development - never use in production

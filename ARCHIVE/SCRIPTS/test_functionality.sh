@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Test script to demonstrate all TraceRTM functionality
 
 set -e

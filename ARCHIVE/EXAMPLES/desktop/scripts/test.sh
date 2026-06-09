@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Test script for TraceRTM Desktop
 # Runs both Rust and TypeScript tests

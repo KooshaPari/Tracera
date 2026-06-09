@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 rm 10*.txt
 for n in 10 100 1000; do

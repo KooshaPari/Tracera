@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Guard a TCP port before starting a service.
 # - If port is free: return success.
 # - If port is in use by matching process: hold process for process-compose.

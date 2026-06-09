@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Local MinIO setup (Homebrew, no Docker).
 # Installs MinIO, starts it as a service (brew services), creates bucket via Go (no UI, no mc).
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Measure pre-commit hook performance
 # Target: <5s execution time
 # Usage: ./scripts/measure-precommit-performance.sh

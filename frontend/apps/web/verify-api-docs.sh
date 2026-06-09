@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # API Documentation Verification Script
 # Tests that all API documentation components are properly set up

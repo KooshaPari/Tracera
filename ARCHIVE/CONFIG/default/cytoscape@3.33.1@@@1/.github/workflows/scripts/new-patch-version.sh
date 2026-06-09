@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Get the current version from package.json
 PREV_VERSION=$(jq -r '.version' package.json)

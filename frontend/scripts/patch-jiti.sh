@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Patch jiti for Node.js compatibility (NodeError from node:errors not available in older Node or when loaded by Vite)
 # See: https://github.com/unjs/jiti/issues - NodeError is not defined
 # Patches both root jiti and nested @tailwindcss/node/node_modules/jiti.

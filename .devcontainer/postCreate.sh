@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # TracerTM DevContainer Post-Creation Script
 # Runs after the devcontainer is created to set up the development environment
 

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # HTTP Caching and Compression Testing Script
 # This script tests the caching and compression implementation

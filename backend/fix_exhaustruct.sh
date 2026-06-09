@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Script to fix exhaustruct violations by adding missing fields
 
 set -e

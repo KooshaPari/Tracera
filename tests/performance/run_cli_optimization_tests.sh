@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Run CLI Optimization Test Suite
 #
 # This script runs all CLI optimization tests and generates reports.

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Quick script to deploy to production
 # Usage: ./prod-deploy.sh
 

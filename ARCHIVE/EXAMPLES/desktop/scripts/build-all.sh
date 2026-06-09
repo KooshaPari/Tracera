@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Build script for all platforms
 # Usage: ./scripts/build-all.sh [mac|windows|linux|all]

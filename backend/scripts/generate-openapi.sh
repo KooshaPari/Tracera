@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # generate-openapi.sh - Generate OpenAPI specification from Go code annotations
 # Usage: ./scripts/generate-openapi.sh [options]
