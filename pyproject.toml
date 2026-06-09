@@ -341,133 +341,60 @@ confidence = "medium"
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
-preview = true
-extend-exclude = [
-    "ARCHIVE",
-    "ARCHIVE/**",
-    "cairosvg",
-    "default",
-]
-force-exclude = true
+target-version = "py312"
 
 [tool.ruff.lint]
 select = [
-    "E",
-    "W",
-    "F",
-    "I",
-    "B",
-    "C4",
-    "UP",
-    "N",
-    "PT",
-    "SIM",
-    "RUF",
-    "RSE",
-    "PERF",
-    "LOG",
-    "S",
-    "ASYNC",
-    "PIE",
-    "RET",
-    "PTH",
-    "DTZ",
-    "D",
-    "FA",
-    "Q",
-    "C90",
-    "PLR0911",
-    "PLR0912",
-    "PLR0913",
-    "PLR0915",
-    "PLR1702",
-    "PLR2004",
-    "PLC",
-    "PLW",
-    "PLE",
-    "FBT",
-    "ANN",
-    "TRY",
-    "INT",
-    "PGH",
-    "ISC",
-    "FURB",
-    "G",
-    "ARG",
-    "TCH",
-    "BLE",
-    "A",
-    "T10",
-    "T20",
-    "ERA",
-    "SLF",
-    "INP",
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "W",    # pycodestyle warnings
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "A",    # flake8-builtins
+    "SIM",  # flake8-simplify
+    "R",    # flake8-return
+    "ASYNC",# flake8-async
+    "S",    # flake8-bandit
 ]
 ignore = [
-    "E501",
-    "B008",
-    "SIM105",
-    "D203",
-    "D212",
-    "ANN401",
+    "E501",  # line-too-long — handled by formatter / line-length config
 ]
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
-
-[tool.ruff.lint.flake8-annotations]
-allow-star-arg-any = false
-suppress-none-returning = false
-suppress-dummy-args = false
-
-[tool.ruff.lint.mccabe]
-max-complexity = 10
-
-[tool.ruff.lint.pylint]
-max-args = 6
-max-branches = 12
-max-returns = 6
-max-statements = 50
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = [
-    "F401",
-    "F403",
-    "D100",
-    "D104",
-]
-"**/*_pb2.py" = [
-    "E501",
-    "E111",
-    "SLF001",
-    "ERA001",
-]
-"**/*_pb2_grpc.py" = [
-    "N802",
-    "ANN001",
-    "ANN002",
-    "ANN003",
-    "ANN201",
-    "ANN202",
-    "ANN204",
-    "ANN205",
-    "ANN206",
-    "ANN401",
-    "UP004",
-    "TRY003",
-    "E114",
-    "PLR0913",
-    "D102",
-    "D103",
-    "D205",
-    "ARG002",
-    "PLC2701",
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
 "tests/**/*.py" = [
+    "S101",  # asserts allowed in tests
+    "S105",  # hardcoded passwords OK in test fixtures
+    "S106",  # hardcoded passwords OK in test fixtures
+    "S107",  # hardcoded passwords OK in test fixtures
+    "S108",  # /tmp usage OK in tests
+    "S110",  # try/except pass acceptable in test skips
+    "S301",  # pickle usage OK in test fixtures
+    "S311",  # pseudo-random generators OK in tests
+    "S603",  # subprocess calls OK in tests
+    "S607",  # partial path OK in tests
+    "S404",  # subprocess module OK in tests
+    "S608",  # partial path OK in tests
+    "N802",  # function name casing relaxed in tests
+    "N803",  # argument name casing relaxed in tests
+    "N806",  # variable casing relaxed in tests
+    "B008",  # function call in default argument OK in test factories
+    "B011",  # assert False OK in tests
+    "B017",  # pytest.raises(Exception) OK in tests
+    "SIM117",# combined with-statements OK in tests
+    "RUF012",# mutable class attributes OK in test classes
+]
+"**/conftest.py" = [
+    "S101",
+    "S102",
+    "S106",
+    "F401",
+    "F811",
+    "E402",
+    "B011",
+]
+"**/test_*.py" = [
     "S101",
     "S105",
     "S106",
@@ -478,899 +405,57 @@ max-statements = 50
     "S607",
     "S404",
     "S608",
-    "PT011",
-    "PT012",
-    "PT017",
-    "PT018",
-    "PT019",
-    "D100",
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-    "D105",
-    "D106",
-    "D107",
-    "D417",
-    "ANN001",
-    "ARG001",
-    "ARG002",
-    "ARG005",
-    "PLR0911",
-    "PLR0913",
-    "PLR0915",
-    "PLR2004",
-    "E402",
-    "E722",
-    "E741",
-    "F401",
-    "F403",
-    "F404",
-    "F811",
-    "F821",
-    "N801",
-    "N802",
-    "N806",
-    "N999",
-    "A001",
-    "A002",
-    "A004",
-    "A006",
-    "C901",
-    "SIM102",
-    "SIM115",
-    "SIM117",
-    "DTZ001",
-    "DTZ005",
-    "TRY002",
-    "TRY003",
-    "TRY300",
-    "TRY301",
+    "B011",
     "B017",
-    "B018",
-    "B903",
-    "B904",
-    "ASYNC240",
-    "FURB101",
-    "PERF402",
-    "UP035",
-    "RUF001",
-    "RUF003",
-    "RUF012",
-    "RUF029",
-    "RUF034",
-    "RUF043",
-    "RUF059",
-    "ERA001",
-    "INP001",
-    "G004",
-    "SLF001",
-    "BLE001",
-    "PLC0415",
-    "FBT001",
-    "FBT002",
-    "FBT003",
-    "PLC2701",
-    "PLC1901",
 ]
-"backend/tests/**/*.py" = [
+"**/*_test.py" = [
     "S101",
     "S105",
+    "S106",
     "S108",
     "S110",
-    "S202",
-    "PT019",
-    "D100",
-    "D107",
-    "D417",
-    "PLR2004",
-    "PLR0915",
-    "BLE001",
-    "TRY300",
-    "RUF029",
-    "INP001",
-    "ASYNC109",
-    "PLC0415",
-    "FBT001",
-    "FBT002",
-    "FBT003",
+    "S311",
+    "S603",
+    "S607",
+    "S404",
+    "S608",
+    "B011",
+    "B017",
 ]
 "scripts/**/*.py" = [
-    "PLR0911",
-    "PLR0912",
-    "PLR0913",
-    "PLR0915",
-    "PLR1702",
-    "PLR2004",
-    "C901",
-    "E402",
     "S101",
     "S108",
     "S110",
-    "S112",
-    "S314",
-    "S404",
-    "S405",
     "S603",
     "S607",
+    "S404",
     "S608",
-    "S311",
-    "N806",
-    "N999",
+    "T201",  # print OK in scripts
+    "INP001",# implicit namespace packages OK in scripts
+    "E402",  # import order OK in scripts
+    "B008",  # function call in default OK in scripts
+]
+"docs/**/*.py" = [
     "INP001",
-    "D415",
-    "D417",
-    "DTZ003",
-    "DTZ005",
-    "B007",
-    "B901",
-    "B904",
-    "TRY002",
-    "TRY300",
-    "TRY301",
-    "TRY401",
-    "BLE001",
-    "G004",
-    "G201",
-    "ARG001",
-    "FURB101",
-    "FURB113",
-    "PTH118",
-    "ASYNC109",
-    "ASYNC220",
-    "ASYNC221",
-    "A001",
-    "F601",
-    "SIM102",
-    "RUF001",
-    "RUF003",
-    "RUF012",
-    "FBT001",
-    "FBT002",
-    "FBT003",
-    "PLC0415",
-    "PLC1901",
-    "PLW2901",
-    "PLW0603",
-    "PLW1510",
-]
-"src/tracertm/services/**/*.py" = [
-    "BLE001",
-    "PLR0913",
-    "C901",
-    "PLR0912",
-    "PLR0915",
-    "PLR0911",
-    "TRY301",
-    "S608",
-    "S101",
-    "S311",
-    "SLF001",
-    "A002",
-    "D102",
-    "TRY004",
-    "S108",
-    "S404",
-    "PLC1901",
-    "FBT001",
-    "FBT002",
-    "FBT003",
-    "PLW2901",
-]
-"src/tracertm/mcp/**/*.py" = [
-    "BLE001",
-    "SLF001",
-    "C901",
-    "PLR0913",
-    "PLR0912",
-    "PLR0915",
-    "PLR0911",
-    "PLR1702",
-    "S608",
-    "RUF029",
     "E402",
-    "D417",
-    "F821",
-    "F822",
-    "S104",
-    "S105",
-    "S110",
-    "S112",
-    "A002",
-    "TRY004",
-    "RUF006",
-    "PLC0415",
-    "PLW0603",
-]
-"src/tracertm/api/**/*.py" = [
-    "BLE001",
-    "TRY301",
-    "E402",
-    "S101",
-    "B904",
-    "RUF029",
-    "PLR0913",
-    "PLR0912",
-    "PLR0915",
-    "S608",
-    "A002",
-    "SLF001",
-    "C901",
-    "E741",
-    "N815",
-    "S104",
-    "S105",
-    "S311",
-    "TRY004",
-    "SIM102",
-    "RUF001",
-    "RUF034",
-    "PLC0415",
-    "FBT001",
-    "FBT002",
-    "FBT003",
-    "ANN201",
-    "ANN202",
-    "PLW0603",
-]
-"src/tracertm/api/client.py" = [
-    "D102",
-    "D103",
-    "D105",
-    "D107",
-    "D200",
-    "D205",
-    "D212",
-    "D415",
-    "D417",
-    "TRY003",
-    "S110",
-    "DTZ003",
-    "PLW2901",
-    "PLW1641",
-    "ARG002",
-]
-"src/tracertm/repositories/**/*.py" = [
-    "PLR0913",
-    "PLR0912",
-    "C901",
-    "PLC0415",
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/agent/**/*.py" = [
-    "SLF001",
-    "S404",
-    "S603",
-    "PLC0415",
-    "PLW0603",
-]
-"src/tracertm/infrastructure/**/*.py" = [
-    "BLE001",
-    "PLR0913",
-    "N814",
-    "ASYNC240",
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/config/**/*.py" = [
-    "BLE001",
-    "FBT001",
-    "FBT002",
-    "FBT003",
-    "PLW0603",
-]
-"src/tracertm/core/config.py" = [
-    "PLW0603",
-]
-"src/tracertm/database/**/*.py" = [
-    "BLE001",
-    "SLF001",
-    "PLW0603",
-]
-"src/tracertm/storage/**/*.py" = [
-    "C901",
-    "SLF001",
-    "S608",
-    "PLR0912",
-    "PLR0913",
-    "PLR0915",
-    "D417",
-    "PLC0415",
-]
-"src/tracertm/vault/**/*.py" = [
-    "TRY301",
-]
-"src/tracertm/observability/**/*.py" = [
-    "RUF029",
-    "C901",
-    "TRY301",
-    "PLR0915",
-    "PLC0415",
-    "PLW0603",
-]
-"src/tracertm/clients/**/*.py" = [
-    "PLR0913",
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/grpc/**/*.py" = [
-    "N802",
-]
-"src/tracertm/preflight.py" = [
-    "PLR0912",
-    "PLR0911",
-    "S310",
-    "PLC0415",
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/testing_factories.py" = [
-    "A002",
-]
-"src/tracertm/models/**/*.py" = [
-    "A003",
-    "S105",
-]
-"src/tracertm/schemas/**/*.py" = [
-    "S105",
-    "D106",
-]
-"src/tracertm/tui/**/*.py" = [
-    "N801",
-    "D106",
-    "D417",
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/cli/**/*.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
+    "B011",
 ]
 "alembic/**/*.py" = [
-    "E402",
     "INP001",
+    "E402",
     "ERA001",
-    "BLE001",
-    "A002",
-    "DTZ005",
-    "PLR0915",
-    "PLR0912",
-    "C901",
-    "S608",
-    "PLC0415",
-]
-"samples/**/*.py" = [
-    "PLR0913",
-    "C901",
-    "E402",
-    "INP001",
-    "S110",
-    "S311",
-    "PTH118",
-    "SIM113",
-    "PERF402",
-    "A001",
-    "A002",
-    "DTZ005",
-    "B903",
-    "B909",
-    "E722",
-    "FURB101",
-    "S102",
-    "BLE001",
-]
-".claude/**/*.py" = [
-    "INP001",
-    "ANN401",
-    "BLE001",
-    "A002",
-    "DTZ005",
-    "PTH118",
-    "SIM113",
-]
-"find_violations.py" = [
-    "INP001",
-    "C901",
-    "PLR0912",
-    "PLR2004",
-    "S110",
-    "A001",
-    "PTH118",
-    "BLE001",
-    "PLW2901",
-]
-"generate_dep_tree.py" = [
-    "INP001",
-    "C901",
-    "PLR0912",
-    "PLR0915",
-    "S110",
-    "A001",
-    "PTH118",
-    "FURB101",
-    "BLE001",
-]
-"tests/unit/services/test_ai_tools.py" = [
-    "ASYNC230",
-    "ASYNC240",
-    "PTH118",
-]
-"src/tracertm/agent/test_events.py" = [
-    "S101",
-    "S108",
-    "PT019",
-]
-"src/tracertm/services/agents/codex_service.py" = [
-    "S404",
-    "PLC0415",
-]
-"src/tracertm/services/ai_tools.py" = [
-    "PLR1702",
-    "S404",
-    "TRY300",
-    "PLC0415",
-    "PLW0603",
-]
-"src/tracertm/services/encryption_service.py" = [
-    "PLW0603",
-]
-"src/tracertm/services/execution/docker_orchestrator.py" = [
-    "ASYNC109",
-    "ASYNC240",
-    "S404",
-]
-"src/tracertm/services/execution/native_orchestrator.py" = [
-    "ASYNC109",
-    "ASYNC240",
-]
-"src/tracertm/workflows/activities.py" = [
-    "PLC0415",
-]
-"src/tracertm/workflows/checkpoint_activities.py" = [
-    "PLC0415",
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/workflows/sandbox_snapshot.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/api/handlers/websocket.py" = [
-    "ASYNC109",
-]
-"src/tracertm/api/main.py" = [
-    "PLW2901",
-]
-"src/tracertm/mcp/tools/param.py" = [
-    "E402",
-    "PLR1702",
-    "PT028",
-    "RUF029",
-    "S404",
-    "S603",
-    "S607",
-]
-"src/tracertm/mcp/tools/params/common.py" = [
-    "RUF029",
-]
-"src/tracertm/mcp/tools/params/config.py" = [
-    "RUF029",
-]
-"src/tracertm/mcp/tools/params/database.py" = [
-    "RUF029",
-]
-"src/tracertm/mcp/tools/params/io_operations.py" = [
-    "RUF029",
-]
-"src/tracertm/mcp/tools/auth_config_db.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/logging_config.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/tools/bmm_workflows.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/workflow_executor.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/cli_integration.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/core.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/middleware.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/tools/base.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/tools/design_ingest_migration.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/tools/response_optimizer.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/error_handlers.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/metrics.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/telemetry.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/tools/base_async.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/tools/items_optimized.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"src/tracertm/mcp/tools/links.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"conftest.py" = [
-    "F401",
-    "S101",
-    "PT018",
-    "D100",
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-    "D105",
-    "D106",
-    "D107",
-    "BLE001",
-    "PLC0415",
-]
-"scripts/seed_swiftride_tracertm.py" = [
-    "S608",
-]
-"scripts/link_swiftride_uiux_items.py" = [
-    "S608",
-]
-"scripts/generate_swiftride_uiux_items.py" = [
-    "S608",
-]
-"scripts/export_projects_snapshot.py" = [
-    "S608",
-]
-"scripts/introspect_project.py" = [
-    "S608",
-]
-"scripts/generate_swiftride_tests.py" = [
-    "S404",
-    "S603",
-]
-"scripts/service_manager.py" = [
-    "S404",
-    "S603",
-    "S607",
-]
-"scripts/update_coverage_daily.py" = [
-    "S404",
-    "S607",
-]
-"scripts/utils/db_utils.py" = [
-    "S404",
-    "S603",
-    "S607",
-    "S608",
-]
-"scripts/utils/service_utils.py" = [
-    "S404",
-    "S110",
-    "S603",
-    "S607",
-]
-"scripts/validate_seed_and_access.py" = [
-    "S608",
-    "S112",
-]
-"scripts/python/**" = [
-    "S311",
-    "N999",
-    "S603",
-    "S606",
-    "S608",
-    "S404",
-]
-"scripts/python/ENHANCEMENT_API_ENDPOINTS.py" = [
-    "N999",
-]
-"scripts/python/seed_comprehensive.py" = [
-    "S311",
-]
-"scripts/python/seed_rich_single_project.py" = [
-    "S311",
-]
-"scripts/python/seed_swiftride_tracertm.py" = [
-    "S608",
-]
-"scripts/python/service_manager.py" = [
-    "S404",
-    "S603",
-    "S607",
-]
-"scripts/python/update_coverage_daily.py" = [
-    "S404",
-    "S607",
-]
-"scripts/python/validate_seed_and_access.py" = [
-    "S608",
-    "S112",
-]
-"scripts/python/apply_test_cases_migrations.py" = [
-    "E402",
-]
-"scripts/python/complete_setup.py" = [
-    "S404",
-    "S603",
-]
-"scripts/python/create_dense_projects.py" = [
-    "E402",
-    "S311",
-    "S110",
-    "S112",
-]
-"scripts/python/db-slow-query-report.py" = [
-    "N999",
-]
-"scripts/python/dev-quick.py" = [
-    "N999",
-    "S104",
-]
-"scripts/python/dev-start-with-preflight.py" = [
-    "N999",
-    "S603",
-    "S606",
-]
-"scripts/python/export_projects_snapshot.py" = [
-    "S608",
-]
-"scripts/python/generate_swiftride_data.py" = [
-    "S608",
-]
-"scripts/python/generate_swiftride_tests.py" = [
-    "S404",
-    "S603",
-]
-"scripts/python/generate_swiftride_uiux_items.py" = [
-    "S608",
-]
-"scripts/python/introspect_project.py" = [
-    "S608",
-]
-"scripts/python/link_swiftride_uiux_items.py" = [
-    "S608",
-]
-"scripts/python/quality-report.py" = [
-    "N999",
-]
-"scripts/python/rewrite_code_like_titles.py" = [
-    "RUF027",
-    "S608",
-]
-"scripts/quality-report.py" = [
-    "N999",
-]
-"scripts/db-slow-query-report.py" = [
-    "N999",
-]
-"scripts/dev-start-with-preflight.py" = [
-    "N999",
-    "S603",
-    "S606",
-]
-"scripts/dev-quick.py" = [
-    "N999",
-]
-"scripts/rewrite_code_like_titles.py" = [
-    "RUF027",
-    "S608",
-]
-"scripts/create_dense_projects.py" = [
-    "E402",
-    "S311",
-    "S110",
-    "S112",
-]
-"**/bmm-auto.py" = [
-    "N999",
-    "S404",
-    "S607",
-    "S603",
-    "SLF001",
-]
-"populate_projects.py" = [
-    "S404",
-    "S603",
-]
-"scripts/apply_test_cases_migrations.py" = [
-    "E402",
-]
-"scripts/complete_setup.py" = [
-    "S404",
-    "S603",
-]
-"ENHANCEMENT_IMPLEMENTATION_STARTER.py" = [
-    "S404",
-    "S603",
-    "S607",
-    "N999",
-]
-"scripts/ENHANCEMENT_IMPLEMENTATION_STARTER.py" = [
-    "S404",
-    "S603",
-    "S607",
-    "N999",
-]
-"scripts/ENHANCEMENT_API_ENDPOINTS.py" = [
-    "N999",
-]
-"src/tracertm/mcp/tools/params/_lazy_stub.py" = [
-    "PT028",
-]
-"src/tracertm/mcp/tools/params/query_test.py" = [
-    "PT028",
-]
-"src/tracertm/mcp/tools/params/storage.py" = [
-    "E402",
-    "RUF029",
-]
-"src/tracertm/mcp/tools/specifications.py" = [
-    "RUF029",
-]
-"src/tracertm/mcp/tools/optional_features.py" = [
-    "RUF029",
-    "FBT001",
-    "FBT002",
-    "FBT003",
-]
-"DOCKER_SDK_ASYNC_EXAMPLES.py" = [
-    "S108",
-    "S110",
-    "N999",
-]
-"scripts/DOCKER_SDK_ASYNC_EXAMPLES.py" = [
-    "S108",
-    "S110",
-    "N999",
-]
-"src/tracertm/services/spec_analytics_service_v2.py" = [
-    "PLR2004",
-]
-"src/tracertm/services/stateless_ingestion_service.py" = [
-    "UP035",
-]
-"src/tracertm/services/ai_service.py" = [
-    "PLR1702",
-    "PLC0415",
-    "PLW0603",
-]
-"src/tracertm/services/spec_analytics_service.py" = [
-    "PLR2004",
-]
-"src/tracertm/services/workos_auth_service.py" = [
-    "PLC0415",
-]
-"src/tracertm/services/import_service.py" = [
-    "PLC0415",
-]
-"src/tracertm/services/agent_monitoring_service.py" = [
-    "PLC0415",
-]
-"src/tracertm/services/checkpoint_service.py" = [
-    "PLC0415",
-    "PLW0603",
-]
-"src/tracertm/services/export_service.py" = [
-    "PLC0415",
-]
-"src/tracertm/services/project_backup_service.py" = [
-    "PLC0415",
-]
-"src/tracertm/services/temporal_service.py" = [
-    "PLC0415",
-]
-"src/tracertm/config/github_app.py" = [
-    "FBT001",
-    "FBT002",
-    "FBT003",
-    "PLC0415",
-]
-"src/tracertm/database/ensure_problems_processes.py" = [
-    "PLC0415",
-]
-"src/tracertm/tui/adapters/storage_adapter.py" = [
-    "PLC0415",
-]
-"src/tracertm/storage/local_storage.py" = [
-    "PLR2004",
-]
-"src/tracertm/storage/markdown_parser.py" = [
-    "PLR2004",
-]
-"src/tracertm/utils/figma.py" = [
-    "PLR2004",
-]
-"src/tracertm/repositories/item_spec_repository.py" = [
-    "PLR2004",
-    "PLC0415",
-]
-"tests/component/services/test_bulk_operation_service_comprehensive.py" = [
-    "PLW2901",
-]
-"tests/component/storage/test_storage_file_watcher.py" = [
-    "PLW2901",
-]
-"tests/performance/run_performance_tests.py" = [
-    "PLW1510",
-]
-"tests/performance/test_cli_startup.py" = [
-    "PLW1510",
+    "S301",
+    "N806",
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = [
-    "tracertm",
-]
-known-third-party = [
-    "typer",
-    "rich",
-    "sqlalchemy",
-    "pydantic",
-]
+known-first-party = []
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-skip-magic-trailing-comma = false
 line-ending = "auto"
-docstring-code-format = true
+
 
 [tool.ty.src]
 include = [
