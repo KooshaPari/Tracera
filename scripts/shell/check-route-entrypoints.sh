@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Enforce route entrypoint rules (no index/root route files).
 # We rely on explicit route files (e.g., landing.tsx) + redirects where needed.

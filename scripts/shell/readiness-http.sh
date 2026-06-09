@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # HTTP readiness probe with detailed failure message.
 # Usage: readiness-http.sh SERVICE_NAME HOST PORT PATH [EXPECTED_STATUS]
 # On failure prints to stderr: service name, URL, received status, expected status.

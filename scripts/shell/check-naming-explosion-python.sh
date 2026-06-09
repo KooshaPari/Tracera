@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Python Naming Explosion Detection Script
 # Prevents AI from creating versioned/prefixed module names.

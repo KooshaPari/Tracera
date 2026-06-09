@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Start python-backend only if port 8000 is not in use or unhealthy.
 # This allows multiple agents to share a single running instance.
 

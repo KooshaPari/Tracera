@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 #
 # Run Provider Contract Tests
 # Verifies backend satisfies consumer contracts

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # MCP Optimization Test Runner
 # Runs complete test suite for MCP optimizations
 

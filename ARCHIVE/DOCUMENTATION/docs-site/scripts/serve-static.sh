@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Serve static documentation locally using Python's built-in HTTP server
 # Usage: ./scripts/serve-static.sh [port]

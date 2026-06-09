@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Local testing script for canary deployment (dry-run mode)
 # Tests the deployment logic without actually deploying to a cluster
 

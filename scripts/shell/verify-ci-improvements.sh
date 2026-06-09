@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 #
 # verify-ci-improvements.sh - Verify CI/CD improvements are working correctly
 #

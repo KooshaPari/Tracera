@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Go Naming Explosion Detection Script
 # Prevents AI from creating versioned/prefixed package/file names.

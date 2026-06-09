@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Quick fix for graph rendering issue
 # Creates graph tables and populates them from existing items/links
 

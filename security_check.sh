@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Phase 4.T3: Security Pre-flight Checks
 
 echo "=== PHASE 4.T3: SECURITY PRE-FLIGHT CHECKS ==="

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Validate Dependabot Configuration
 # This script checks the Dependabot configuration for common issues

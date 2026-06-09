@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Feature Flag Management CLI
 # Usage: ./feature_flags.sh [get|set|enable|disable|list] <flag_name> [value]

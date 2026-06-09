@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 set -uo pipefail  # Removed -e to allow continuing on failures
 
 echo "🧪 TraceRTM Native Development Verification"

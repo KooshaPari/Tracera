@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # BMM MCP Server & CLI - Installation Script
 
 set -e  # Exit on error

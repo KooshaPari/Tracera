@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 ################################################################################
 # Benchmark Regression Comparison Script

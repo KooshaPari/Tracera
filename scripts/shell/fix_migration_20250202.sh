@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Fix migration 20250202000000 if it failed mid-execution
 
 set -e

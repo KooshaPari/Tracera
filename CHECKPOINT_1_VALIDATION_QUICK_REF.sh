@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Checkpoint 1 Validation Quick Reference
 # Run after receiving Phase 1 completion reports from all 3 Wave 2 agents
 # Expected: All checks pass with 0 errors

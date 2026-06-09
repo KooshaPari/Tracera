@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Real-time quality: re-run quality (per-step split + report) when source/config files change.
 # Uses watchexec when available; otherwise polls every QUALITY_WATCH_INTERVAL seconds (default 30).
 #

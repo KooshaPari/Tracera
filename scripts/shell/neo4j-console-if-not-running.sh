@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Start neo4j console only if not already running (avoids "already running" error
 # when neo4j was started by brew or a previous process-compose run).
 # Used by process-compose so we don't fail when service_manager already has neo4j up.

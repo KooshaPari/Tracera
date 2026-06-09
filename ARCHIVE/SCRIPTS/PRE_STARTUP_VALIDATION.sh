@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # PRE_STARTUP_VALIDATION.sh
 # Run this after: pip install -e ".[dev,test]"
 # Expected: All checks PASS

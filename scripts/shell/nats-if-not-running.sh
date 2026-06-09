@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Start nats-server only if port 4222 is not in use (avoids "address already in use"
 # when nats was started by brew or a previous process-compose run).
 

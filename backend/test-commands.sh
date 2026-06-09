@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # TraceRTM Backend Test Commands
 # Provides convenient commands for running different test suites
 

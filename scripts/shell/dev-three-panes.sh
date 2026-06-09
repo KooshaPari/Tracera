@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Start TraceRTM with a single tmux session showing 3 panes: go | python | frontend.
 # Infra (temporal, caddy, temporal_worker) must already be running via overmind -D.
 # Usage: scripts/dev-three-panes.sh [project_root]

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Production-scale load test monitoring script
 # Monitors system resources during 10k concurrent user load test
 

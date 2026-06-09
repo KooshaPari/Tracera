@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Schema Alignment Validation Script
 # Validates alignment between migrations, GORM models, and sqlc models

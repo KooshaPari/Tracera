@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Canary Metrics Analysis Script
 # Provides detailed metrics comparison between canary and stable versions
 

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Bundle Analysis Script
 # Analyzes the production bundle to identify optimization opportunities

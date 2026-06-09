@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Open the static documentation in your default browser
 # Usage: ./scripts/view-static.sh

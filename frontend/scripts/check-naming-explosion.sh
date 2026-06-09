@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Frontend Naming Explosion Detection Script
 # Prevents AI from creating versioned/prefixed component names.

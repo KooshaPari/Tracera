@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 echo "================================"
 echo "E2E Test Suite Verification"
 echo "================================"

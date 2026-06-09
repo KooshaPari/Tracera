@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Pre-deployment validation script
 # Validates environment and prerequisites before canary deployment
 

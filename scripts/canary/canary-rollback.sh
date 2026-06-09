@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Emergency Canary Rollback Script
 # Immediately reverts canary deployment
 

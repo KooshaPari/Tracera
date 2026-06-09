@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Start Loki only if it's not already running on port 3100
 
 set -e
