@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Build and serve documentation with a single command
 # Usage: ./scripts/build-and-serve.sh

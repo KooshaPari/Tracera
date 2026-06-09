@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # TraceRTM Backend Coverage Verification Script
 # Runs all tests, generates coverage report, and verifies against targets
 

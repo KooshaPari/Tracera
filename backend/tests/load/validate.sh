@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Validation script for load testing suite
 # Tests that k6 is installed and load tests can run
 

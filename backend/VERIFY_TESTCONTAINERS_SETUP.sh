@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Verification script for testcontainers Neo4j setup
 # This script verifies that all components are correctly set up

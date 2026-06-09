@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # TanStack Router Verification Script
 # This script verifies that all routes are properly configured and accessible
 

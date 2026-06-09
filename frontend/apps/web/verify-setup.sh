@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # TraceRTM Phase 3 - Setup Verification Script
 

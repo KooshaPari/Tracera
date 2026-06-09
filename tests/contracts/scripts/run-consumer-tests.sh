@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 #
 # Run Consumer Contract Tests
 # Generates pact files from frontend consumer tests

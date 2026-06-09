@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 sz_program=${SZA_PATH:-7za}
 sz_type=${SZA_ARCHIVE_TYPE:-xz}

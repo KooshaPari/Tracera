@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Rate Limiting Test Script
 # Tests the rate limiter by sending rapid requests to different endpoints
 

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 #
 # Test script to verify USE_SERVICE_LAYER feature flag works correctly
 # This script demonstrates both legacy mode (flag=false) and new mode (flag=true)

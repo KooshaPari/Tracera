@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # validate-openapi.sh - Validate OpenAPI specification
 # Usage: ./scripts/validate-openapi.sh [spec-file]

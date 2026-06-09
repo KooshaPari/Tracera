@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 cd module
 mv core.js core.mjs && mv duplex.js duplex.mjs && mv helpers.js helpers.mjs
 # Unlike Ubuntu, OS X requires the extension to be explicitly specified

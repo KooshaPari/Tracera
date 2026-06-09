@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Guarded hot-reload runner.
 # - Watches files for changes.
 # - Runs a guard command on change; if it fails, keeps current process running.

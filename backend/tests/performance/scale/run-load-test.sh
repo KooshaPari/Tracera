@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 # Orchestrates the full 10k concurrent users load test
 # Includes monitoring, test execution, and analysis
 

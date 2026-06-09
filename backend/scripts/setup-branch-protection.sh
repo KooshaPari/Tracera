@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 ################################################################################
 # GitHub Branch Protection Setup Script

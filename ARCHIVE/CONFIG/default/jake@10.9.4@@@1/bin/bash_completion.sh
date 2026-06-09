@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # http://stackoverflow.com/a/246128
 SOURCE="${BASH_SOURCE[0]}"
