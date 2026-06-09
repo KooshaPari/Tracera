@@ -122,6 +122,22 @@ tasks:
           uv run ruff format --check .
         fi
 
+  vet:
+    desc: Run go vet -all ./... across every detected Go module.
+    summary: |
+      Strict go vet pass that enables all default and non-default analyzers
+      (-all). Walks the same module list as build:go / test:go / lint:go so
+      each detected go.mod gets the same coverage. Used as a CI gate to
+      surface shadowed variables, printf format mismatches, build-tag
+      mistakes, etc. that the default vet invocation misses.
+    cmds:
+      - |
+        set -eu
+        find . {{.GO_MODULE_FIND_ARGS}} -print | while IFS= read -r module; do
+          module_dir="$(dirname "$module")"
+          (cd "$module_dir" && go vet -all ./...)
+        done
+
   lint:go:
     desc: Run Go formatting and vet checks for detected Go modules
     cmds:
