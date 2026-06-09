@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
+set -euo pipefail
 # sync-openapi.sh - Generate backend OpenAPI spec and sync to frontend
 # This ensures type safety across the entire stack
 

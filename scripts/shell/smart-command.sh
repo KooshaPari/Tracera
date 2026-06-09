@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
+set -euo pipefail
 # smart-command.sh: A wrapper to debounce high-impact commands and ensure service health.
 # Usage: ./smart-command.sh <command_key> <real_command> [required_services...]
 

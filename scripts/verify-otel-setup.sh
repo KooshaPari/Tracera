@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
+set -euo pipefail
 # OpenTelemetry Setup Verification Script
 # This script verifies that OpenTelemetry instrumentation is properly configured
 # in the TraceRTM Go backend.

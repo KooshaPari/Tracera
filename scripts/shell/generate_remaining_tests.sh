@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
+set -euo pipefail
 echo "Generating remaining SwiftRide test types..."
 
 # E2E Tests

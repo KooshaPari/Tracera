@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
+set -euo pipefail
 # Bidirectional HTTP Clients - Test Script
 # This script verifies the implementation of bidirectional HTTP clients
 

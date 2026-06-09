@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 # Main Rollback Orchestrator
 # Coordinates automated rollback of frontend, backend, and database components
 # Target: <2 minute rollback time from detection to completion

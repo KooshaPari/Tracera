@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **ElectroBun desktop client (TraceRTM v0.1.0)**: per-OS packaging scripts (`package:mac|win|linux|all`), 3-OS CI release workflow, end-user README, INSTALL.md, RUNBOOK.md, .github/release-template-desktop.md, frontend/apps/desktop-electrobun/CODESIGNING.md, scripts/shell/archive-stale-dotfiles.sh.
+- **Governance**: `.github/CODEOWNERS` extended with desktop / release-engineering / process-orchestration paths. `SECURITY.md` extended with a Desktop Code Signing section documenting the trust model, GitHub-secret inventory, rotation cadence, and compromise response for macOS/Windows/Linux signing infrastructure.
+
 ## [2.0.0] - 2026-02-23
 
 ### Added

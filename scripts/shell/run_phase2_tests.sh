@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
+set -euo pipefail
 # Phase 2 Comprehensive Test Runner
 # Runs all Phase 2 feature tests and generates coverage reports
 

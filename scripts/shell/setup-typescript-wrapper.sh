@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
+set -euo pipefail
 # Setup TypeScript 7 native preview wrapper for backward compatibility
 # This script creates a tsc.js wrapper that calls tsgo (the native TypeScript compiler)
 
