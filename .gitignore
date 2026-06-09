@@ -165,3 +165,5 @@ __pycache__/
 .claudeignore
 .llmignore
 .hypothesis/
+/worktrees/
+/*-wtrees/
