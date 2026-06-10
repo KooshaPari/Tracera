@@ -9,6 +9,7 @@ from typing import Any
 
 import httpx
 import pytest
+import pytest_asyncio
 import redis.asyncio as redis
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -45,7 +46,7 @@ def toxiproxy_url() -> str:
     return f"http://{TOXIPROXY_HOST}:{TOXIPROXY_PORT}"
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def toxiproxy_client(toxiproxy_url: str) -> AsyncGenerator[ToxiproxyClient, None]:
     """Provides a Toxiproxy client for managing proxies and toxics.
 
@@ -66,7 +67,7 @@ async def toxiproxy_client(toxiproxy_url: str) -> AsyncGenerator[ToxiproxyClient
     await client.cleanup_all()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def postgres_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, None]:
     """Creates a Toxiproxy proxy for PostgreSQL.
 
@@ -88,7 +89,7 @@ async def postgres_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[st
     await toxiproxy_client.delete_proxy(proxy_name)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def redis_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, None]:
     """Creates a Toxiproxy proxy for Redis.
 
@@ -108,7 +109,7 @@ async def redis_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, 
     await toxiproxy_client.delete_proxy(proxy_name)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def nats_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, None]:
     """Creates a Toxiproxy proxy for NATS.
 
@@ -128,7 +129,7 @@ async def nats_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, N
     await toxiproxy_client.delete_proxy(proxy_name)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def go_backend_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, None]:
     """Creates a Toxiproxy proxy for Go backend.
 
@@ -148,7 +149,7 @@ async def go_backend_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[
     await toxiproxy_client.delete_proxy(proxy_name)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def python_backend_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenerator[str, None]:
     """Creates a Toxiproxy proxy for Python backend.
 
@@ -168,19 +169,19 @@ async def python_backend_proxy(toxiproxy_client: ToxiproxyClient) -> AsyncGenera
     await toxiproxy_client.delete_proxy(proxy_name)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def _postgres_proxy(postgres_proxy: str) -> str:
     """Alias for postgres_proxy with underscore prefix (pytest convention for unused fixtures)."""
     return postgres_proxy
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def _redis_proxy(redis_proxy: str) -> str:
     """Alias for redis_proxy with underscore prefix (pytest convention for unused fixtures)."""
     return redis_proxy
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def db_session(postgres_proxy: str) -> AsyncGenerator[AsyncSession, None]:
     """Provides a database session through the Toxiproxy proxy."""
     engine = create_async_engine(postgres_proxy, echo=False)
@@ -192,7 +193,7 @@ async def db_session(postgres_proxy: str) -> AsyncGenerator[AsyncSession, None]:
     await engine.dispose()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def redis_client(redis_proxy: str) -> AsyncGenerator[redis.Redis, None]:
     """Provides a Redis client through the Toxiproxy proxy."""
     client = redis.from_url(redis_proxy, decode_responses=True)
