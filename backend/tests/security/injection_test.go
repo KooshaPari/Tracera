@@ -13,6 +13,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func truncateTestName(value string, limit int) string {
+	if len(value) <= limit {
+		return value
+	}
+
+	return value[:limit]
+}
+
 // TestSQLInjectionPrevention tests that SQLC prevents SQL injection
 func TestSQLInjectionPrevention(t *testing.T) {
 	sqlInjectionPayloads := []struct {
@@ -104,7 +112,7 @@ func TestSearchInjectionPrevention(t *testing.T) {
 	for _, injection := range searchInjections {
 		displayStr := injection
 		if len(injection) > 15 {
-			displayStr = injection[:15]
+			displayStr = truncateTestName(injection, 15)
 		}
 		t.Run("Search injection: "+displayStr, func(t *testing.T) {
 			e := echo.New()
@@ -184,7 +192,7 @@ func TestCommandInjectionPrevention(t *testing.T) {
 	}
 
 	for _, injection := range commandInjections {
-		t.Run("Command injection: "+injection[:10], func(t *testing.T) {
+		t.Run("Command injection: "+truncateTestName(injection, 10), func(t *testing.T) {
 			e := echo.New()
 
 			// Test file upload or any feature that might execute commands
@@ -215,7 +223,7 @@ func TestLDAPInjectionPrevention(t *testing.T) {
 	}
 
 	for _, injection := range ldapInjections {
-		t.Run("LDAP injection: "+injection[:10], func(t *testing.T) {
+		t.Run("LDAP injection: "+truncateTestName(injection, 10), func(t *testing.T) {
 			e := echo.New()
 
 			reqBody := map[string]interface{}{
@@ -267,7 +275,7 @@ func TestPathTraversalPrevention(t *testing.T) {
 	}
 
 	for _, path := range pathTraversals {
-		t.Run("Path traversal: "+path[:15], func(t *testing.T) {
+		t.Run("Path traversal: "+truncateTestName(path, 15), func(t *testing.T) {
 			e := echo.New()
 
 			req := httptest.NewRequest(http.MethodGet, "/api/files/"+path, nil)
@@ -295,7 +303,7 @@ func TestServerSideRequestForgery(t *testing.T) {
 	}
 
 	for _, url := range ssrfURLs {
-		t.Run("SSRF: "+url[:25], func(t *testing.T) {
+		t.Run("SSRF: "+truncateTestName(url, 25), func(t *testing.T) {
 			e := echo.New()
 
 			reqBody := map[string]interface{}{
@@ -328,7 +336,7 @@ func TestTemplateInjection(t *testing.T) {
 	}
 
 	for _, injection := range templateInjections {
-		t.Run("Template injection: "+injection[:10], func(t *testing.T) {
+		t.Run("Template injection: "+truncateTestName(injection, 10), func(t *testing.T) {
 			e := echo.New()
 
 			reqBody := map[string]interface{}{
