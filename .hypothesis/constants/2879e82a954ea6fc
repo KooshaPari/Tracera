@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/storage/file_watcher.py
-# hypothesis_version: 6.148.7
-
-[1000.0, 500, '.', '.md', '.meta', '.trace', '.yaml', '.yml', 'Observer | None', 'changes_by_type', 'created', 'custom_fields', 'deleted', 'description', 'events_pending', 'events_processed', 'external_id', 'is_running', 'last_event_time', 'links.yaml', 'medium', 'modified', 'name', 'project.yaml', 'project_path', 'sync.yaml', 'tags', 'utf-8']

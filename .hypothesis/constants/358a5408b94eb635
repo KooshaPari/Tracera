@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/storage/sync_engine.py
-# hypothesis_version: 6.148.7
-
-[0.0, 1.0, 60.0, 100, '*.md', 'Sync queue cleared', 'Sync state reset', 'agent', 'conflict', 'create', 'created_at', 'delete', 'entity_id', 'entity_id2', 'entity_type', 'entity_type2', 'error', 'error_key', 'error_value', 'idle', 'item', 'key', 'last_error', 'last_sync', 'limit', 'link', 'operation', 'operation2', 'payload', 'project', 'queue_id', 'status', 'success', 'syncing', 'update', 'updated_at', 'utf-8', 'value']

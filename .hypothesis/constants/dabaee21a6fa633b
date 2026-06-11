@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/export.py
-# hypothesis_version: 6.148.7
-
-['--format', '--output', '-f', '-o', 'Created At', 'Description', 'Export commands', 'ID', 'Output file path', 'Owner', 'Parent ID', 'Priority', 'Status', 'Title', 'Type', 'Updated At', 'Version', 'View', 'created_at', 'csv', 'current_project_id', 'description', 'exported_at', 'id', 'items', 'json', 'link_metadata', 'links', 'markdown', 'metadata', 'name', 'owner', 'parent_id', 'priority', 'project', 'source_id', 'status', 'storage_dir', 'target_id', 'title', 'type', 'updated_at', 'utf-8', 'version', 'view', 'yaml', '{}']

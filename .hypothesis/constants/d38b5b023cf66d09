@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/bulk_operation_service.py
-# hypothesis_version: 6.148.7
-
-[100, 'Description', 'Metadata', 'Owner', 'Parent Id', 'Priority', 'Status', 'Title', 'Type', 'View', 'current', 'data', 'description', 'error', 'id', 'invalid_rows_count', 'item', 'item_bulk_created', 'item_bulk_deleted', 'item_bulk_updated', 'item_id', 'item_title', 'item_type', 'items_created', 'items_deleted', 'items_updated', 'medium', 'metadata', 'new', 'owner', 'parent_id', 'priority', 'row', 'sample_items', 'status', 'title', 'todo', 'total_count', 'type', 'updates', 'validation_errors', 'view', 'warnings']
