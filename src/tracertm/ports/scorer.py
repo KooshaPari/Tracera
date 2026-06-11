@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 _TOKEN_RE = re.compile(r"[A-Za-z0-9]+")
 
@@ -99,3 +99,84 @@ class JaccardScorer:
             else "no shared tokens"
         )
         return ScoreResult(round(value, 6), rationale, self.name)
+
+
+class SentenceTransformerScorer:
+    """Text-embedding agreement scorer (Pillar A, Phase 1).
+
+    Uses ``sentence-transformers`` when installed; otherwise falls back to
+    :class:`JaccardScorer` with a ``[stub-ST]`` rationale prefix so callers
+    can depend on the port without pulling ML deps in CI.
+    """
+
+    name = "sentence_transformer"
+
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2") -> None:
+        self._model_name = model_name
+        self._model: Any | None = None
+        self._fallback = JaccardScorer()
+
+    def _ensure_model(self) -> Any | None:
+        if self._model is not None:
+            return self._model
+        try:
+            from sentence_transformers import SentenceTransformer
+        except ImportError:
+            return None
+        self._model = SentenceTransformer(self._model_name)
+        return self._model
+
+    def score(self, requirement_text: str, artifact_text: str) -> ScoreResult:
+        model = self._ensure_model()
+        if model is None:
+            base = self._fallback.score(requirement_text, artifact_text)
+            return ScoreResult(
+                base.score,
+                f"[stub-ST] {base.rationale} (install sentence-transformers for embeddings)",
+                self.name,
+            )
+        import numpy as np
+
+        emb = model.encode([requirement_text or "", artifact_text or ""])
+        denom = float(np.linalg.norm(emb[0]) * np.linalg.norm(emb[1]))
+        if denom == 0.0:
+            return ScoreResult(0.0, "empty embedding", self.name)
+        sim = float(np.dot(emb[0], emb[1]) / denom)
+        clamped = max(0.0, min(1.0, (sim + 1.0) / 2.0))
+        return ScoreResult(
+            round(clamped, 6),
+            f"cosine similarity via {self._model_name}",
+            self.name,
+        )
+
+
+class SigLIPScorer:
+    """Visual-embedding agreement scorer stub (Pillar C).
+
+    Production use requires ``transformers`` + a SigLIP checkpoint. Until
+    those deps are present the scorer delegates to :class:`JaccardScorer`
+    over any text captions supplied alongside image paths.
+    """
+
+    name = "siglip"
+
+    def __init__(self, model_id: str = "google/siglip-base-patch16-224") -> None:
+        self._model_id = model_id
+        self._fallback = JaccardScorer()
+
+    def score(self, requirement_text: str, artifact_text: str) -> ScoreResult:
+        try:
+            import transformers  # noqa: F401
+        except ImportError:
+            base = self._fallback.score(requirement_text, artifact_text)
+            return ScoreResult(
+                base.score,
+                f"[stub-SigLIP] {base.rationale} (install transformers for SigLIP)",
+                self.name,
+            )
+        base = self._fallback.score(requirement_text, artifact_text)
+        return ScoreResult(
+            base.score,
+            f"[siglip-pending] {base.rationale} (model={self._model_id})",
+            self.name,
+        )

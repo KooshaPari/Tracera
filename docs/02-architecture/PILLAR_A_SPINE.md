@@ -60,8 +60,8 @@ callers never change.
 
 ## 4. Follow-on (not in this step)
 
-1. **Neo4j adapter** implementing `GraphPort` by wrapping
-   `storage/neo4j_trace_link_writer.py`.
+1. ~~**Neo4j adapter** implementing `GraphPort` by wrapping
+   `storage/neo4j_trace_link_writer.py`.~~ → landed in `rnd/pillar-a-graphport-wire`.
 2. **Migrate the ~12 trace/impact services** to write *only* via `GraphPort`
    (`traceability_service`, `impact_analysis_service`, `blast_radius_service`, …).
 3. **Refactor `traceability_score_service`** to consume `ScorerPort`; add the
