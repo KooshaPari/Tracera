@@ -25,6 +25,16 @@ build/
 .turbo/
 .turbo/daemon
 coverage/
+backend/internal/handlers/*.bak
+backend/internal/server/*.bak
+backend/internal/config/*.bak
+frontend/temp/
+frontend/artifacts/
+frontend/before-size.txt
+frontend/deduplication-report.json
+frontend/COVERAGE_EXECUTION_LOG.json
+frontend/1
+coverage.out
 
 # Test results
 test-results/
