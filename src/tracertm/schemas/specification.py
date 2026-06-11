@@ -27,6 +27,8 @@ class ADRStatus(StrEnum):
 class ADROption(BaseModel):
     """A considered option in ADR decision."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: str = Field(..., min_length=1)
     title: str = Field(..., min_length=1, max_length=255)
     description: str | None = None
@@ -62,7 +64,11 @@ class ADRCreate(BaseModel):
     date: date_type | None = None
     metadata: dict[str, object] = Field(default_factory=dict)
 
-    model_config = ConfigDict(protected_namespaces=())
+    model_config = ConfigDict(
+        protected_namespaces=(),
+        strict=True,
+        extra="forbid",
+    )
 
 
 class ADRUpdate(BaseModel):
@@ -91,7 +97,7 @@ class ADRUpdate(BaseModel):
     date: date_type | None = None
     metadata: dict[str, object] | None = None
 
-    model_config = ConfigDict(protected_namespaces=())
+    model_config = ConfigDict(protected_namespaces=(), strict=True, extra="forbid")
 
 
 class ADRResponse(BaseModel):
@@ -134,11 +140,15 @@ class ADRResponse(BaseModel):
     updated_at: datetime
     deleted_at: datetime | None = None
 
-    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
+    model_config = ConfigDict(
+        from_attributes=True, protected_namespaces=(), strict=True, extra="forbid"
+    )
 
 
 class ADRListResponse(BaseModel):
     """Schema for ADR list response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     adrs: list[ADRResponse]
@@ -146,6 +156,8 @@ class ADRListResponse(BaseModel):
 
 class ADRActivityResponse(BaseModel):
     """Schema for ADR activity log entry."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: str
     adr_id: str
@@ -160,6 +172,8 @@ class ADRActivityResponse(BaseModel):
 
 class ADRActivityListResponse(BaseModel):
     """Schema for ADR activity list response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     activities: list[ADRActivityResponse]
 
@@ -195,6 +209,8 @@ class ContractType(StrEnum):
 class ContractCondition(BaseModel):
     """A pre/post condition or invariant."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: str = Field(..., min_length=1)
     description: str = Field(..., min_length=1)
     condition_code: str | None = None
@@ -204,6 +220,8 @@ class ContractCondition(BaseModel):
 
 class StateTransition(BaseModel):
     """A state machine transition."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: str = Field(..., min_length=1)
     from_state: str = Field(..., min_length=1)
@@ -239,7 +257,7 @@ class ContractCreate(BaseModel):
     tags: list[str] = Field(default_factory=list)
     metadata: dict[str, object] = Field(default_factory=dict)
 
-    model_config = ConfigDict(protected_namespaces=())
+    model_config = ConfigDict(protected_namespaces=(), strict=True, extra="forbid")
 
 
 class ContractUpdate(BaseModel):
@@ -266,7 +284,7 @@ class ContractUpdate(BaseModel):
     tags: list[str] | None = None
     metadata: dict[str, object] | None = None
 
-    model_config = ConfigDict(protected_namespaces=())
+    model_config = ConfigDict(protected_namespaces=(), strict=True, extra="forbid")
 
 
 class ContractResponse(BaseModel):
@@ -307,11 +325,15 @@ class ContractResponse(BaseModel):
     updated_at: datetime
     deleted_at: datetime | None = None
 
-    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
+    model_config = ConfigDict(
+        from_attributes=True, protected_namespaces=(), strict=True, extra="forbid"
+    )
 
 
 class ContractListResponse(BaseModel):
     """Schema for contract list response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     contracts: list[ContractResponse]
@@ -319,6 +341,8 @@ class ContractListResponse(BaseModel):
 
 class ContractActivityResponse(BaseModel):
     """Schema for contract activity log entry."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: str
     contract_id: str
@@ -333,6 +357,8 @@ class ContractActivityResponse(BaseModel):
 
 class ContractActivityListResponse(BaseModel):
     """Schema for contract activity list response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     activities: list[ContractActivityResponse]
 
@@ -371,6 +397,8 @@ class ScenarioStatus(StrEnum):
 class BDDStep(BaseModel):
     """A single BDD step (Given, When, Then)."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: str = Field(..., min_length=1)
     step_number: int = Field(..., ge=1)
     keyword: str = Field(..., pattern="^(Given|When|Then|And|But)$")
@@ -381,6 +409,8 @@ class BDDStep(BaseModel):
 
 class ScenarioExample(BaseModel):
     """Examples for a scenario outline."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     name: str = Field(..., min_length=1)
     description: str | None = None
@@ -411,7 +441,7 @@ class FeatureCreate(BaseModel):
     tags: list[str] = Field(default_factory=list)
     metadata: dict[str, object] = Field(default_factory=dict)
 
-    model_config = ConfigDict(protected_namespaces=())
+    model_config = ConfigDict(protected_namespaces=(), strict=True, extra="forbid")
 
 
 class FeatureUpdate(BaseModel):
@@ -437,7 +467,7 @@ class FeatureUpdate(BaseModel):
     tags: list[str] | None = None
     metadata: dict[str, object] | None = None
 
-    model_config = ConfigDict(protected_namespaces=())
+    model_config = ConfigDict(protected_namespaces=(), strict=True, extra="forbid")
 
 
 class FeatureResponse(BaseModel):
@@ -472,11 +502,15 @@ class FeatureResponse(BaseModel):
     updated_at: datetime
     deleted_at: datetime | None = None
 
-    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
+    model_config = ConfigDict(
+        from_attributes=True, protected_namespaces=(), strict=True, extra="forbid"
+    )
 
 
 class FeatureListResponse(BaseModel):
     """Schema for feature list response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     features: list[FeatureResponse]
@@ -484,6 +518,8 @@ class FeatureListResponse(BaseModel):
 
 class FeatureActivityResponse(BaseModel):
     """Schema for feature activity log entry."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: str
     feature_id: str
@@ -498,6 +534,8 @@ class FeatureActivityResponse(BaseModel):
 
 class FeatureActivityListResponse(BaseModel):
     """Schema for feature activity list response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     activities: list[FeatureActivityResponse]
 
@@ -533,7 +571,7 @@ class ScenarioCreate(BaseModel):
     tags: list[str] = Field(default_factory=list)
     metadata: dict[str, object] = Field(default_factory=dict)
 
-    model_config = ConfigDict(protected_namespaces=())
+    model_config = ConfigDict(protected_namespaces=(), strict=True, extra="forbid")
 
 
 class ScenarioUpdate(BaseModel):
@@ -562,7 +600,7 @@ class ScenarioUpdate(BaseModel):
     tags: list[str] | None = None
     metadata: dict[str, object] | None = None
 
-    model_config = ConfigDict(protected_namespaces=())
+    model_config = ConfigDict(protected_namespaces=(), strict=True, extra="forbid")
 
 
 class ScenarioResponse(BaseModel):
@@ -603,11 +641,15 @@ class ScenarioResponse(BaseModel):
     updated_at: datetime
     deleted_at: datetime | None = None
 
-    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
+    model_config = ConfigDict(
+        from_attributes=True, protected_namespaces=(), strict=True, extra="forbid"
+    )
 
 
 class ScenarioListResponse(BaseModel):
     """Schema for scenario list response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     scenarios: list[ScenarioResponse]
@@ -615,6 +657,8 @@ class ScenarioListResponse(BaseModel):
 
 class ScenarioActivityResponse(BaseModel):
     """Schema for scenario activity log entry."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: str
     scenario_id: str
@@ -629,6 +673,8 @@ class ScenarioActivityResponse(BaseModel):
 
 class ScenarioActivityListResponse(BaseModel):
     """Schema for scenario activity list response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     activities: list[ScenarioActivityResponse]
@@ -665,6 +711,8 @@ class StepDefinitionLanguage(StrEnum):
 class StepDefinitionImplementation(BaseModel):
     """Implementation details for a step definition."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     language: StepDefinitionLanguage
     code: str = Field(..., min_length=1)
     imports: list[str] = Field(default_factory=list)
@@ -699,7 +747,7 @@ class StepDefinitionCreate(BaseModel):
     examples: list[str] = Field(default_factory=list)
     metadata: dict[str, object] = Field(default_factory=dict)
 
-    model_config = ConfigDict(protected_namespaces=())
+    model_config = ConfigDict(protected_namespaces=(), strict=True, extra="forbid")
 
 
 class StepDefinitionUpdate(BaseModel):
@@ -729,7 +777,7 @@ class StepDefinitionUpdate(BaseModel):
     examples: list[str] | None = None
     metadata: dict[str, object] | None = None
 
-    model_config = ConfigDict(protected_namespaces=())
+    model_config = ConfigDict(protected_namespaces=(), strict=True, extra="forbid")
 
 
 class StepDefinitionResponse(BaseModel):
@@ -772,11 +820,15 @@ class StepDefinitionResponse(BaseModel):
     updated_at: datetime
     deleted_at: datetime | None = None
 
-    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
+    model_config = ConfigDict(
+        from_attributes=True, protected_namespaces=(), strict=True, extra="forbid"
+    )
 
 
 class StepDefinitionListResponse(BaseModel):
     """Schema for step definition list response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     step_definitions: list[StepDefinitionResponse]
@@ -801,7 +853,9 @@ class RequirementQualityRead(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
+    model_config = ConfigDict(
+        from_attributes=True, protected_namespaces=(), strict=True, extra="forbid"
+    )
 
 
 # Aliases for router compatibility (Response -> Read naming)

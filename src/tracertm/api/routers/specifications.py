@@ -9,7 +9,7 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -55,6 +55,8 @@ MIN_CONTRACT_TITLE_LEN = 10
 class VerificationResult(BaseModel):
     """Result of compliance verification."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     is_valid: bool
     score: float
     issues: list[str] = []
@@ -64,6 +66,8 @@ class VerificationResult(BaseModel):
 
 class ScenarioRunResult(BaseModel):
     """Result of running a scenario."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     scenario_id: str
     passed: bool
@@ -76,6 +80,8 @@ class ScenarioRunResult(BaseModel):
 
 class SpecificationsSummary(BaseModel):
     """Summary of all specifications in a project."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     adr_count: int
@@ -846,7 +852,9 @@ async def list_features_for_project(
 
     try:
         features = await service.list_features(project_id, status)
-        return FeatureListResponse(total=len(features), features=[FeatureResponse.model_validate(f) for f in features])
+        return FeatureListResponse(
+            total=len(features), features=[FeatureResponse.model_validate(f) for f in features]
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to list features: {e!s}") from e
 
@@ -981,14 +989,20 @@ async def list_scenarios_for_project(
     Returns:
         ScenarioListResponse: List of scenarios with total count
     """
-    result = await db.execute(select(Scenario).join(Feature).where(Feature.project_id == project_id))
+    result = await db.execute(
+        select(Scenario).join(Feature).where(Feature.project_id == project_id)
+    )
     scenarios = list(result.scalars().all())
     if status:
         scenarios = [s for s in scenarios if getattr(s, "status", None) == status]
-    return ScenarioListResponse(total=len(scenarios), scenarios=[ScenarioResponse.model_validate(s) for s in scenarios])
+    return ScenarioListResponse(
+        total=len(scenarios), scenarios=[ScenarioResponse.model_validate(s) for s in scenarios]
+    )
 
 
-@router.get("/projects/{project_id}/scenarios/activities", response_model=ScenarioActivityListResponse)
+@router.get(
+    "/projects/{project_id}/scenarios/activities", response_model=ScenarioActivityListResponse
+)
 async def list_scenario_activities_for_project(
     project_id: Annotated[str, Path(description="Project ID")],
     limit: Annotated[int, Query(description="Max activities to return")] = 200,
@@ -1010,7 +1024,9 @@ async def list_scenario_activities_for_project(
             "from_value": event.data.get("from_value") if isinstance(event.data, dict) else None,
             "to_value": event.data.get("to_value") if isinstance(event.data, dict) else None,
             "description": event.data.get("description") if isinstance(event.data, dict) else None,
-            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict) else None,
+            "performed_by": event.data.get("performed_by")
+            if isinstance(event.data, dict)
+            else None,
             "metadata": event.data if isinstance(event.data, dict) else {},
             "created_at": event.created_at,
         }
@@ -1076,7 +1092,9 @@ async def get_scenario_activities(
             "from_value": event.data.get("from_value") if isinstance(event.data, dict) else None,
             "to_value": event.data.get("to_value") if isinstance(event.data, dict) else None,
             "description": event.data.get("description") if isinstance(event.data, dict) else None,
-            "performed_by": event.data.get("performed_by") if isinstance(event.data, dict) else None,
+            "performed_by": event.data.get("performed_by")
+            if isinstance(event.data, dict)
+            else None,
             "metadata": event.data if isinstance(event.data, dict) else {},
             "created_at": event.created_at,
         }
@@ -1127,7 +1145,9 @@ async def update_scenario_spec(
 
         # Get feature to obtain project_id
         if updated_scenario.feature_id:
-            feature_result = await db.execute(select(Feature).where(Feature.id == updated_scenario.feature_id))
+            feature_result = await db.execute(
+                select(Feature).where(Feature.id == updated_scenario.feature_id)
+            )
             feature = feature_result.scalar_one_or_none()
             if feature and event_bus:
                 await safe_publish(
@@ -1242,7 +1262,9 @@ async def run_scenario(
         )
         project_id = ""
         if scenario.feature_id:
-            feature_result = await db.execute(select(Feature).where(Feature.id == scenario.feature_id))
+            feature_result = await db.execute(
+                select(Feature).where(Feature.id == scenario.feature_id)
+            )
             feature = feature_result.scalar_one_or_none()
             if feature:
                 project_id = feature.project_id
@@ -1308,9 +1330,13 @@ async def get_specifications_summary(
             scenario_count += len(scenarios)
 
         # Calculate overall compliance score (simplified scoring based on completeness)
-        compliance_scores = [80.0 for adr in adrs if adr.context and adr.decision and adr.consequences]
+        compliance_scores = [
+            80.0 for adr in adrs if adr.context and adr.decision and adr.consequences
+        ]
 
-        avg_compliance = sum(compliance_scores) / len(compliance_scores) if compliance_scores else 0.0
+        avg_compliance = (
+            sum(compliance_scores) / len(compliance_scores) if compliance_scores else 0.0
+        )
 
         return SpecificationsSummary(
             project_id=project_id,

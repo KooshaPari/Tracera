@@ -1,10 +1,12 @@
 """Pydantic schemas for Account API."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AccountCreate(BaseModel):
     """Schema for creating an account."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     name: str = Field(..., min_length=1, max_length=255)
     slug: str | None = Field(None, min_length=1, max_length=255)
@@ -13,6 +15,8 @@ class AccountCreate(BaseModel):
 
 class AccountUpdate(BaseModel):
     """Schema for updating an account."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     name: str | None = Field(None, min_length=1, max_length=255)
     slug: str | None = Field(None, min_length=1, max_length=255)
@@ -30,7 +34,7 @@ class AccountResponse(BaseModel):
     created_at: str
     updated_at: str
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class AccountUserResponse(BaseModel):
@@ -42,11 +46,13 @@ class AccountUserResponse(BaseModel):
     role: str
     joined_at: str
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class AccountListResponse(BaseModel):
     """Schema for account list response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     accounts: list[AccountResponse]
     total: int

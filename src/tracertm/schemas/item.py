@@ -8,6 +8,8 @@ from pydantic import BaseModel, ConfigDict, Field
 class ItemCreate(BaseModel):
     """Schema for creating an item."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     title: str = Field(..., min_length=1, max_length=500)
     description: str | None = None
     view: str = Field(..., min_length=1, max_length=50)
@@ -19,6 +21,8 @@ class ItemCreate(BaseModel):
 
 class ItemUpdate(BaseModel):
     """Schema for updating an item."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     title: str | None = Field(None, min_length=1, max_length=500)
     description: str | None = None
@@ -44,4 +48,4 @@ class ItemResponse(BaseModel):
     updated_at: datetime
     deleted_at: str | None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")

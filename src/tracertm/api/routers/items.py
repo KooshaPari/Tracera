@@ -12,7 +12,7 @@ import logging
 from typing import TYPE_CHECKING, Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import func, select, update
 
 from tracertm.api.config.rate_limiting import enforce_rate_limit
@@ -81,6 +81,8 @@ async def _maybe_await(result: object) -> object:
 class ItemCreate(BaseModel):
     """Schema for creating a new item."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     project_id: str
     title: str
     type: str
@@ -95,6 +97,8 @@ class ItemCreate(BaseModel):
 class ItemUpdate(BaseModel):
     """Schema for updating an existing item."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     title: str | None = None
     description: str | None = None
     status: str | None = None
@@ -106,6 +110,8 @@ class ItemUpdate(BaseModel):
 
 class ItemBulkUpdate(BaseModel):
     """Schema for bulk updating items."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     view: str | None = None
@@ -360,7 +366,9 @@ async def update_item_endpoint(
     ensure_project_access(str(getattr(existing, "project_id", "")), claims)
 
     update_fields = {
-        key: value for key, value in payload.model_dump().items() if key != "expected_version" and value is not None
+        key: value
+        for key, value in payload.model_dump().items()
+        if key != "expected_version" and value is not None
     }
     expected_version = payload.expected_version
     if expected_version is None:
@@ -381,7 +389,9 @@ async def update_item_endpoint(
             "owner": getattr(updated, "owner", None),
             "project_id": str(getattr(updated, "project_id", "")),
             "version": getattr(updated, "version", None),
-            "updated_at": updated.updated_at.isoformat() if getattr(updated, "updated_at", None) else None,
+            "updated_at": updated.updated_at.isoformat()
+            if getattr(updated, "updated_at", None)
+            else None,
         }
     except ConcurrencyError as exc:
         await db.rollback()
@@ -453,7 +463,9 @@ async def bulk_update_items_endpoint(
             "preview": True,
         }
 
-    update_query = update(Item).where(*conditions).values(status=payload.new_status, updated_at=func.now())
+    update_query = (
+        update(Item).where(*conditions).values(status=payload.new_status, updated_at=func.now())
+    )
     await db.execute(update_query)
     await db.commit()
     await cache.invalidate_project(payload.project_id)

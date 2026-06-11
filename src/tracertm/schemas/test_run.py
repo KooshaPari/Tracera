@@ -2,11 +2,13 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TestResultCreate(BaseModel):
     """Schema for creating/submitting a test result."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     test_case_id: str
     status: str = Field(..., pattern="^(passed|failed|skipped|blocked|error)$")
@@ -58,11 +60,13 @@ class TestResultResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class TestRunCreate(BaseModel):
     """Schema for creating a test run."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     name: str = Field(..., min_length=1, max_length=500)
     description: str | None = Field(None, max_length=5000)
@@ -85,6 +89,8 @@ class TestRunCreate(BaseModel):
 
 class TestRunUpdate(BaseModel):
     """Schema for updating a test run."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     name: str | None = Field(None, min_length=1, max_length=500)
     description: str | None = Field(None, max_length=5000)
@@ -137,11 +143,13 @@ class TestRunResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class TestRunListResponse(BaseModel):
     """Response schema for listing test runs."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     test_runs: list[TestRunResponse]
     total: int
@@ -150,11 +158,15 @@ class TestRunListResponse(BaseModel):
 class TestRunStart(BaseModel):
     """Schema for starting a test run."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     executed_by: str | None = Field(None, max_length=255)
 
 
 class TestRunComplete(BaseModel):
     """Schema for completing a test run."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     status: str | None = Field(None, pattern="^(passed|failed|blocked|cancelled)$")
     notes: str | None = None
@@ -163,6 +175,8 @@ class TestRunComplete(BaseModel):
 
 class BulkTestResultsSubmit(BaseModel):
     """Schema for submitting multiple test results at once."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     results: list[TestResultCreate]
 
@@ -180,11 +194,13 @@ class TestRunActivityResponse(BaseModel):
     metadata: dict[str, object] | None
     created_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class TestRunActivitiesResponse(BaseModel):
     """Response schema for run activities list."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     run_id: str
     activities: list[TestRunActivityResponse]
@@ -192,6 +208,8 @@ class TestRunActivitiesResponse(BaseModel):
 
 class TestRunStats(BaseModel):
     """Statistics for test runs in a project."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     total_runs: int

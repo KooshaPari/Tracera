@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from tracertm.api.deps import auth_guard
 from tracertm.services.requirement_miner import (
@@ -42,6 +42,8 @@ class MineRequirementsRequest(BaseModel):
     Supply ``text`` for inline source text, ``paths`` for server-side file
     paths, or both.  At least one of the two must be non-empty.
     """
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     text: str | None = Field(
         default=None,
@@ -70,6 +72,8 @@ class MineRequirementsRequest(BaseModel):
 class CandidateRequirementOut(BaseModel):
     """Serialisable candidate requirement."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: str
     text: str
     confidence: float
@@ -79,6 +83,8 @@ class CandidateRequirementOut(BaseModel):
 
 class MineRequirementsResponse(BaseModel):
     """Response for the requirement miner endpoint."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     candidates: list[CandidateRequirementOut]

@@ -2,11 +2,13 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class WebhookCreate(BaseModel):
     """Schema for creating a webhook integration."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     name: str = Field(..., min_length=1, max_length=255, description="Webhook name")
     description: str | None = Field(default=None, description="Description")
@@ -62,6 +64,8 @@ class WebhookCreate(BaseModel):
 class WebhookUpdate(BaseModel):
     """Schema for updating a webhook integration."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     name: str | None = Field(default=None, min_length=1, max_length=255)
     description: str | None = None
     enabled_events: list[str] | None = None
@@ -109,11 +113,13 @@ class WebhookResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class WebhookListResponse(BaseModel):
     """Schema for paginated webhook list."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     webhooks: list[WebhookResponse]
     total: int
@@ -123,6 +129,8 @@ class WebhookListResponse(BaseModel):
 
 class WebhookStatusUpdate(BaseModel):
     """Schema for updating webhook status."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     status: str = Field(
         ...,
@@ -151,11 +159,13 @@ class WebhookLogResponse(BaseModel):
     results_submitted: int
     created_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class WebhookLogsResponse(BaseModel):
     """Schema for paginated webhook logs."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     logs: list[WebhookLogResponse]
     total: int
@@ -165,6 +175,8 @@ class WebhookLogsResponse(BaseModel):
 
 class WebhookStats(BaseModel):
     """Schema for webhook statistics."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     total: int
@@ -178,6 +190,8 @@ class WebhookStats(BaseModel):
 # Inbound webhook payload schemas
 class InboundWebhookPayload(BaseModel):
     """Schema for inbound webhook payload."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     action: str = Field(
         ...,
@@ -196,6 +210,8 @@ class InboundWebhookPayload(BaseModel):
 class CreateRunPayload(BaseModel):
     """Payload for create_run action."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     name: str | None = None
     description: str | None = None
     suite_id: str | None = None
@@ -211,12 +227,16 @@ class CreateRunPayload(BaseModel):
 class StartRunPayload(BaseModel):
     """Payload for start_run action."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     run_id: str
     executed_by: str | None = None
 
 
 class SubmitResultPayload(BaseModel):
     """Payload for submit_result action."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     run_id: str | None = None
     test_case_id: str
@@ -240,6 +260,8 @@ class SubmitResultPayload(BaseModel):
 class BulkResultItem(BaseModel):
     """Single result item in bulk submission."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     test_case_id: str
     status: str = Field(default="passed")
     executed_by: str | None = None
@@ -252,6 +274,8 @@ class BulkResultItem(BaseModel):
 
 class BulkResultsPayload(BaseModel):
     """Payload for bulk_results action."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     run_id: str | None = None
     results: list[BulkResultItem]
@@ -268,6 +292,8 @@ class BulkResultsPayload(BaseModel):
 class CompleteRunPayload(BaseModel):
     """Payload for complete_run action."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     run_id: str
     failure_summary: str | None = None
     notes: str | None = None
@@ -275,6 +301,8 @@ class CompleteRunPayload(BaseModel):
 
 class InboundWebhookResponse(BaseModel):
     """Schema for inbound webhook response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     success: bool
     message: str

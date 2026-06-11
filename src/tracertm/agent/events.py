@@ -22,7 +22,7 @@ from enum import StrEnum
 from typing import Any
 from uuid import uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +112,8 @@ class SessionStatus(StrEnum):
 class EventMetadata(BaseModel):
     """Standard metadata for all events."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     source: EventSource
     version: str = "1.0"
     environment: str | None = None
@@ -119,6 +121,8 @@ class EventMetadata(BaseModel):
 
 class BaseEvent(BaseModel):
     """Base event payload structure."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     event_id: str = Field(default_factory=lambda: str(uuid4()))
     event_type: EventType
@@ -317,7 +321,11 @@ class AgentEventPublisher:
             return
 
         content = payload.content
-        content_preview = content[:MAX_CONTENT_PREVIEW_LENGTH] if len(content) > MAX_CONTENT_PREVIEW_LENGTH else content
+        content_preview = (
+            content[:MAX_CONTENT_PREVIEW_LENGTH]
+            if len(content) > MAX_CONTENT_PREVIEW_LENGTH
+            else content
+        )
 
         event = BaseEvent(
             event_type=EventType.CHAT_MESSAGE,
@@ -355,7 +363,9 @@ class AgentEventPublisher:
             return
 
         input_summary = str(payload.tool_input)[:MAX_CONTENT_PREVIEW_LENGTH]
-        output_summary = str(payload.tool_output)[:MAX_CONTENT_PREVIEW_LENGTH] if payload.tool_output else None
+        output_summary = (
+            str(payload.tool_output)[:MAX_CONTENT_PREVIEW_LENGTH] if payload.tool_output else None
+        )
 
         event = BaseEvent(
             event_type=EventType.CHAT_TOOL_USE,
@@ -531,6 +541,8 @@ class AgentEventPublisher:
 
         return {
             "enabled": True,
-            "nats_connected": self.nats.is_connected if hasattr(self.nats, "is_connected") else False,
+            "nats_connected": self.nats.is_connected
+            if hasattr(self.nats, "is_connected")
+            else False,
             "jetstream_ready": bool(self.nats._js) if hasattr(self.nats, "_js") else False,
         }

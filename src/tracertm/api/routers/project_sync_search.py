@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from tracertm.api.deps import auth_guard, get_db
 
@@ -31,6 +31,8 @@ def ensure_write_permission(claims: dict[str, Any] | None, action: str) -> None:
 
 class AdvancedSearchRequest(BaseModel):
     """Request model for advanced search endpoint."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     query: str | None = None
     filters: dict[str, Any] | None = None

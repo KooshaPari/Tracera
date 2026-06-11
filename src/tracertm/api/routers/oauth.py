@@ -17,7 +17,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Annotated, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.api.deps import auth_guard, get_db
@@ -51,7 +51,9 @@ def ensure_project_access(project_id: str, claims: dict[str, object] | None) -> 
     _ensure_project_access(project_id, claims)
 
 
-def ensure_credential_access(credential: IntegrationCredential | None, claims: dict[str, object] | None) -> None:
+def ensure_credential_access(
+    credential: IntegrationCredential | None, claims: dict[str, object] | None
+) -> None:
     """Check access to a credential (project or user scoped)."""
     if credential is None:
         raise HTTPException(status_code=404, detail="Credential not found")
@@ -69,6 +71,8 @@ def ensure_credential_access(credential: IntegrationCredential | None, claims: d
 class OAuthStartRequest(BaseModel):
     """Request to start OAuth flow."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     project_id: str | None = Field(None, description="Project ID for project-scoped credentials")
     provider: str = Field(..., description="OAuth provider (github, linear)")
     redirect_uri: str = Field(..., description="OAuth redirect URI")
@@ -78,6 +82,8 @@ class OAuthStartRequest(BaseModel):
 
 class OAuthCallbackRequest(BaseModel):
     """Request for OAuth callback."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     code: str = Field(..., description="OAuth authorization code")
     state: str = Field(..., description="OAuth state parameter")
@@ -251,7 +257,9 @@ async def list_credentials(
                 "scopes": c.scopes,
                 "provider_user_id": c.provider_user_id,
                 "provider_metadata": c.provider_metadata,
-                "last_validated_at": c.last_validated_at.isoformat() if c.last_validated_at else None,
+                "last_validated_at": c.last_validated_at.isoformat()
+                if c.last_validated_at
+                else None,
                 "created_at": c.created_at.isoformat() if c.created_at else None,
             }
             for c in credentials

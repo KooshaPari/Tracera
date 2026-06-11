@@ -7,7 +7,7 @@ import json
 from typing import TYPE_CHECKING, Any
 
 import httpx
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 if TYPE_CHECKING:
     from tracertm.models.trace_link import Requirement, TraceLink
@@ -19,6 +19,8 @@ _STATUS_BAD_REQUEST = 400
 class AgilePlusPushResult(BaseModel):
     """Result from pushing a single requirement or trace link."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     success: bool
     agileplus_id: str | None = None
     error: str | None = None
@@ -26,6 +28,8 @@ class AgilePlusPushResult(BaseModel):
 
 class BulkPushResult(BaseModel):
     """Result from a bulk project push."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     succeeded: int

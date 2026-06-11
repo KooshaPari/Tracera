@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from tracertm.api.handlers.health import (
     check_database,
@@ -24,6 +24,8 @@ SERVICE_START_TIME = time.time()
 class DeploymentInfo(BaseModel):
     """Deployment-specific information."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     type: str  # "stable" or "canary"
     image_tag: str
     start_time: datetime
@@ -32,6 +34,8 @@ class DeploymentInfo(BaseModel):
 
 class CanaryMetrics(BaseModel):
     """Canary-specific performance metrics."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     request_count: int
     error_count: int
@@ -45,6 +49,8 @@ class CanaryMetrics(BaseModel):
 
 class CanaryHealthResponse(BaseModel):
     """Enhanced health response with canary metrics."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     status: str
     version: str

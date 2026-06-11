@@ -8,6 +8,8 @@ from pydantic import BaseModel, ConfigDict, Field
 class EventCreate(BaseModel):
     """Schema for creating an event."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     event_type: str = Field(..., min_length=1, max_length=50)
     event_data: dict[str, object]
     agent_id: str
@@ -25,4 +27,4 @@ class EventResponse(BaseModel):
     agent_id: str
     timestamp: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")

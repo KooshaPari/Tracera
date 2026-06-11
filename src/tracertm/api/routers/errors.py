@@ -10,7 +10,7 @@ Extracted as part of Phase 6 error aggregation implementation.
 import logging
 
 from fastapi import APIRouter, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 router: APIRouter = APIRouter(prefix="/api", tags=["errors"])
 
@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 class FrontendErrorPayload(BaseModel):
     """Frontend error report payload."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     type: str = Field(
         default="react_error",
@@ -41,6 +43,8 @@ class FrontendErrorPayload(BaseModel):
 
 class ErrorResponse(BaseModel):
     """Response for error reporting endpoint."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     status: str = Field(default="received", description="Status of error report")
     message: str = Field(default="Error report received", description="Response message")

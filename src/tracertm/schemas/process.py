@@ -31,6 +31,8 @@ class ProcessCategory(StrEnum):
 class ProcessStage(BaseModel):
     """Schema for a process stage."""
 
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
+
     id: str
     name: str
     description: str | None = None
@@ -43,6 +45,8 @@ class ProcessStage(BaseModel):
 class ProcessSwimlane(BaseModel):
     """Schema for a process swimlane (actor/role)."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: str
     name: str
     role: str | None = None
@@ -51,6 +55,8 @@ class ProcessSwimlane(BaseModel):
 
 class ProcessInput(BaseModel):
     """Schema for a process input."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     name: str
     type: str  # document, data, approval, etc.
@@ -61,6 +67,8 @@ class ProcessInput(BaseModel):
 class ProcessOutput(BaseModel):
     """Schema for a process output."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     name: str
     type: str
     description: str | None = None
@@ -68,6 +76,8 @@ class ProcessOutput(BaseModel):
 
 class ProcessTrigger(BaseModel):
     """Schema for what initiates a process."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     type: str  # event, schedule, manual, condition
     name: str
@@ -77,6 +87,8 @@ class ProcessTrigger(BaseModel):
 
 class ProcessCreate(BaseModel):
     """Schema for creating a process."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     name: str = Field(..., min_length=1, max_length=500)
     description: str | None = None
@@ -115,6 +127,8 @@ class ProcessCreate(BaseModel):
 class ProcessUpdate(BaseModel):
     """Schema for updating a process."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     name: str | None = Field(None, min_length=1, max_length=500)
     description: str | None = None
     purpose: str | None = None
@@ -152,12 +166,18 @@ class ProcessUpdate(BaseModel):
 class ProcessVersionCreate(BaseModel):
     """Schema for creating a new version of a process."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     version_notes: str | None = None
-    changes: dict[str, object] | None = Field(None, description="Specific changes to apply to create new version")
+    changes: dict[str, object] | None = Field(
+        None, description="Specific changes to apply to create new version"
+    )
 
 
 class ProcessActivation(BaseModel):
     """Schema for activating a process version."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     activated_by: str | None = None
     notes: str | None = None
@@ -165,6 +185,8 @@ class ProcessActivation(BaseModel):
 
 class ProcessDeprecation(BaseModel):
     """Schema for deprecating a process."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     deprecated_by: str | None = None
     deprecation_reason: str | None = None
@@ -231,7 +253,7 @@ class ProcessResponse(BaseModel):
     updated_at: datetime
     deleted_at: datetime | None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class ProcessListResponse(BaseModel):
@@ -249,7 +271,7 @@ class ProcessListResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 # Process Execution schemas
@@ -268,6 +290,8 @@ class ExecutionStatus(StrEnum):
 class ProcessExecutionCreate(BaseModel):
     """Schema for starting a process execution."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     process_id: str
     initiated_by: str | None = None
     trigger_item_id: str | None = None
@@ -277,12 +301,16 @@ class ProcessExecutionCreate(BaseModel):
 class ProcessExecutionUpdate(BaseModel):
     """Schema for updating a process execution."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     current_stage_id: str | None = None
     context_data: dict[str, object] | None = None
 
 
 class ProcessExecutionComplete(BaseModel):
     """Schema for completing a process execution."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     completed_by: str | None = None
     result_summary: str | None = None
@@ -291,6 +319,8 @@ class ProcessExecutionComplete(BaseModel):
 
 class ProcessExecutionResponse(BaseModel):
     """Schema for process execution response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: str
     process_id: str
@@ -308,6 +338,3 @@ class ProcessExecutionResponse(BaseModel):
     output_item_ids: list[str] | None
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True

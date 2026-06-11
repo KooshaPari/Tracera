@@ -4,12 +4,13 @@ POST /api/v1/impact/blast-radius
     Compute risk-weighted blast radius for an artifact over an in-memory
     TraceLink graph supplied in the request body (pure function, no DB).
 """
+
 from __future__ import annotations
 
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from tracertm.api.deps import auth_guard
 from tracertm.models.trace_link import Artifact, TraceLink
@@ -20,6 +21,8 @@ router = APIRouter(prefix="/impact", tags=["impact"])
 
 class BlastRadiusRequest(BaseModel):
     """Request body for blast-radius scoring."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     artifact_id: str = Field(min_length=1)
     artifacts: list[Artifact] = Field(default_factory=list)
