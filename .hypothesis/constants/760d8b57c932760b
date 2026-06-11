@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/tui.py
-# hypothesis_version: 6.148.7
-
-[500, '--legacy', '--path', '--watch', '-p', '-w', 'App', 'Command', 'Description', 'browser', 'cyan', 'dashboard', 'graph', 'green', 'list', 'rtm tui browser', 'rtm tui dashboard', 'rtm tui graph', 'textual', 'yellow']

@@ -2,6 +2,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 )
@@ -121,8 +122,8 @@ func LoadConfig() *Config {
 		Port:                  getEnv("PORT", "8080"),
 		GRPCPort:              getEnv("GRPC_PORT", "9091"),
 		Env:                   getEnv("ENV", "development"),
-		DatabaseURL:           getEnv("DATABASE_URL", "postgres://user:password@localhost:5432/tracertm"),
-		JWTSecret:             getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
+		DatabaseURL:           getRequiredEnv("DATABASE_URL", "Database connection string for PostgreSQL"),
+		JWTSecret:             getRequiredEnv("JWT_SECRET", "JWT signing secret for service tokens"),
 		CSRFSecret:            getEnv("CSRF_SECRET", ""),
 		NATSUrl:               getEnv("NATS_URL", "nats://localhost:4222"),
 		NATSCreds:             getEnv("NATS_CREDS", ""),
@@ -133,7 +134,7 @@ func LoadConfig() *Config {
 		UpstashRedisRestToken: getEnv("UPSTASH_REDIS_REST_TOKEN", ""),
 		Neo4jURI:              getEnv("NEO4J_URI", "neo4j://localhost:7687"),
 		Neo4jUser:             getEnv("NEO4J_USER", "neo4j"),
-		Neo4jPassword:         getEnv("NEO4J_PASSWORD", "password"),
+		Neo4jPassword:         getRequiredEnv("NEO4J_PASSWORD", "Neo4j password for DB authentication"),
 		WorkOSClientID:        getEnv("WORKOS_CLIENT_ID", ""),
 		WorkOSAPIKey:          getEnv("WORKOS_API_KEY", ""),
 		S3Endpoint:            getEnv("S3_ENDPOINT", ""),
@@ -149,11 +150,11 @@ func LoadConfig() *Config {
 		TracingEnabled:     getEnvBool("TRACING_ENABLED", true),
 		TracingEnvironment: getEnv("TRACING_ENVIRONMENT", "development"),
 
-		SentryDSN:              getEnv("SENTRY_DSN", ""),
-		SentryEnvironment:      getEnv("SENTRY_ENVIRONMENT", getEnv("ENV", "development")),
-		SentryRelease:          getEnv("SENTRY_RELEASE", "unknown"),
-		SentryTracesSampleRate: getEnvFloat("SENTRY_TRACES_SAMPLE_RATE", defaultSentryTracesSampleRate),
-		SentryDebug:            getEnvBool("SENTRY_DEBUG", false),
+	SentryDSN:              getEnv("SENTRY_DSN", ""),
+	SentryEnvironment:      getEnv("SENTRY_ENVIRONMENT", getEnv("ENV", "development")),
+	SentryRelease:          getEnv("SENTRY_RELEASE", "unknown"),
+	SentryTracesSampleRate: getEnvFloat("SENTRY_TRACES_SAMPLE_RATE", defaultSentryTracesSampleRate),
+	SentryDebug:            getEnvBool("SENTRY_DEBUG", false),
 	}
 	cfg.Embeddings = loadEmbeddingsConfig()
 	return cfg
@@ -189,6 +190,14 @@ func loadEmbeddingsConfig() EmbeddingsConfig {
 		IndexerBatchSize:    getEnvInt("INDEXER_BATCH_SIZE", defaultIndexerBatchSize),
 		IndexerPollInterval: getEnvInt("INDEXER_POLL_INTERVAL", defaultIndexerPollInterval),
 	}
+}
+
+func getRequiredEnv(key, description string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		panic(fmt.Sprintf("required environment variable %s is not set: %s", key, description))
+	}
+	return value
 }
 
 func getEnv(key, defaultValue string) string {

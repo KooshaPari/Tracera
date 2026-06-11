@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/drill.py
-# hypothesis_version: 6.148.7
-
-['--depth', '--view', '-d', '-v', 'current_project_id']

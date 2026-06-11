@@ -1,1 +1,0 @@
-# Characterization baseline for trace

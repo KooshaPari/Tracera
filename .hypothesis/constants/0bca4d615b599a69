@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/visualization_service.py
-# hypothesis_version: 6.148.7
-
-['\nDependencies:', '\nLegend:', '  . = no dependency', ' . ', ' X ', '=', 'children', 'relates_to', 'source', 'target', 'title', 'type', '│   ', '└── ', '├── ']

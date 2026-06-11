@@ -1,6 +1,0 @@
-# Pulumi stack configuration for the prod environment
-# Set your production Kubernetes context name here before running `pulumi up`.
-
-config:
-  kubernetes:context: prod-tracertm-cluster  # TODO: replace with your prod kube context name
-
