@@ -29,26 +29,26 @@ def test_pin_controls_default_load_without_blocking_explicit_versions(tmp_path: 
     """Pinned versions control default loads while explicit versions still work."""
     registry = ModelRegistry(tmp_path)
 
-    registry.save("classifier", "2026-06-01", {"version": "old"})
-    registry.save("classifier", "2026-06-10", {"version": "new"}, pin=True)
-    registry.pin("classifier", "2026-06-01")
+    registry.save("classifier", "1.0.0", {"version": "old"})
+    registry.save("classifier", "1.1.0", {"version": "new"}, pin=True)
+    registry.pin("classifier", "1.0.0")
 
-    assert registry.pinned_version("classifier") == "2026-06-01"
+    assert registry.pinned_version("classifier") == "1.0.0"
     assert registry.load("classifier") == {"version": "old"}
-    assert registry.load("classifier", "2026-06-10") == {"version": "new"}
+    assert registry.load("classifier", "1.1.0") == {"version": "new"}
 
 
 @pytest.mark.unit
 def test_save_requires_overwrite_for_existing_version(tmp_path: Path) -> None:
     """Existing model versions require explicit overwrite."""
     registry = ModelRegistry(tmp_path)
-    registry.save("embedder", "v1", "first")
+    registry.save("embedder", "1.0.0", "first")
 
     with pytest.raises(ModelRegistryError):
-        registry.save("embedder", "v1", "second")
+        registry.save("embedder", "1.0.0", "second")
 
-    registry.save("embedder", "v1", "second", overwrite=True)
-    assert registry.load("embedder", "v1") == "second"
+    registry.save("embedder", "1.0.0", "second", overwrite=True)
+    assert registry.load("embedder", "1.0.0") == "second"
 
 
 @pytest.mark.unit
