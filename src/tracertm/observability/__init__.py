@@ -9,9 +9,12 @@ Provides comprehensive APM (Application Performance Monitoring) capabilities inc
 """
 
 from .instrumentation import instrument_all, instrument_app, instrument_database
+from .mlflow_run_logger import MLflowRun, MLflowRunLogger
 from .tracing import get_tracer, init_tracing, trace_method
 
 __all__ = [
+    "MLflowRun",
+    "MLflowRunLogger",
     "get_tracer",
     "init_tracing",
     "instrument_all",
