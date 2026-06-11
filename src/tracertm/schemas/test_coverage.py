@@ -2,11 +2,13 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TestCoverageCreate(BaseModel):
     """Schema for creating a test coverage mapping."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     test_case_id: str = Field(..., description="ID of the test case")
     requirement_id: str = Field(..., description="ID of the requirement/item being covered")
@@ -27,6 +29,8 @@ class TestCoverageCreate(BaseModel):
 
 class TestCoverageUpdate(BaseModel):
     """Schema for updating a test coverage mapping."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     coverage_type: str | None = None
     status: str | None = None
@@ -58,11 +62,13 @@ class TestCoverageResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class TestCoverageListResponse(BaseModel):
     """Schema for paginated test coverage list."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     coverages: list[TestCoverageResponse]
     total: int
@@ -72,6 +78,8 @@ class TestCoverageListResponse(BaseModel):
 
 class TestCoverageVerify(BaseModel):
     """Schema for verifying a coverage mapping."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     notes: str | None = None
 
@@ -89,11 +97,13 @@ class CoverageActivityResponse(BaseModel):
     activity_metadata: dict[str, object] | None = None
     created_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class TraceabilityMatrixItem(BaseModel):
     """Schema for a single item in the traceability matrix."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     requirement_id: str
     requirement_title: str
@@ -108,6 +118,8 @@ class TraceabilityMatrixItem(BaseModel):
 class TraceabilityMatrixResponse(BaseModel):
     """Schema for traceability matrix response."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     project_id: str
     total_requirements: int
     covered_requirements: int
@@ -119,6 +131,8 @@ class TraceabilityMatrixResponse(BaseModel):
 class CoverageGapItem(BaseModel):
     """Schema for a single coverage gap item."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     requirement_id: str
     requirement_title: str
     requirement_view: str
@@ -128,6 +142,8 @@ class CoverageGapItem(BaseModel):
 
 class CoverageGapsResponse(BaseModel):
     """Schema for coverage gaps response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     total_requirements: int
@@ -139,6 +155,8 @@ class CoverageGapsResponse(BaseModel):
 class TestCaseCoverageSummary(BaseModel):
     """Schema for test case coverage summary."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     test_case_id: str
     total_requirements_covered: int
     coverage_types: dict[str, int]
@@ -147,6 +165,8 @@ class TestCaseCoverageSummary(BaseModel):
 
 class CoverageStats(BaseModel):
     """Schema for coverage statistics."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     total_mappings: int

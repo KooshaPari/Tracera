@@ -13,7 +13,11 @@ from pydantic import BaseModel, ConfigDict, Field
 class ExecutionCreate(BaseModel):
     """Schema for creating an execution."""
 
-    execution_type: str = Field(..., pattern="^(vhs|playwright|codex|custom)$", description="Type of execution")
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    execution_type: str = Field(
+        ..., pattern="^(vhs|playwright|codex|custom)$", description="Type of execution"
+    )
     trigger_source: str = Field(
         default="manual",
         pattern="^(github_pr|github_push|webhook|manual)$",
@@ -28,6 +32,8 @@ class ExecutionCreate(BaseModel):
 
 class ExecutionUpdate(BaseModel):
     """Schema for updating an execution."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     status: str | None = Field(None, pattern="^(pending|running|passed|failed|cancelled)$")
     error_message: str | None = None
@@ -60,11 +66,18 @@ class ExecutionResponse(BaseModel):
     # Computed fields
     artifact_count: int = 0
 
-    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
+    model_config = ConfigDict(
+        from_attributes=True,
+        protected_namespaces=(),
+        strict=True,
+        extra="forbid",
+    )
 
 
 class ExecutionListResponse(BaseModel):
     """Response schema for listing executions."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     executions: list[ExecutionResponse]
     total: int
@@ -73,11 +86,15 @@ class ExecutionListResponse(BaseModel):
 class ExecutionStart(BaseModel):
     """Schema for starting an execution."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     container_id: str | None = Field(None, max_length=64)
 
 
 class ExecutionComplete(BaseModel):
     """Schema for completing an execution."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     status: str = Field(..., pattern="^(passed|failed|cancelled)$")
     exit_code: int | None = None
@@ -91,6 +108,8 @@ class ExecutionComplete(BaseModel):
 
 class ExecutionArtifactCreate(BaseModel):
     """Schema for creating an execution artifact."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     artifact_type: str = Field(
         ...,
@@ -125,11 +144,15 @@ class ExecutionArtifactResponse(BaseModel):
     url: str | None = None
     thumbnail_url: str | None = None
 
-    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
+    model_config = ConfigDict(
+        from_attributes=True, protected_namespaces=(), strict=True, extra="forbid"
+    )
 
 
 class ExecutionArtifactListResponse(BaseModel):
     """Response schema for listing artifacts."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     artifacts: list[ExecutionArtifactResponse]
     total: int
@@ -140,6 +163,8 @@ class ExecutionArtifactListResponse(BaseModel):
 
 class CodexAgentTaskCreate(BaseModel):
     """Schema for creating a Codex agent task."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     task_type: str = Field(
         ...,
@@ -174,11 +199,15 @@ class CodexAgentTaskResponse(BaseModel):
     retry_count: int
     created_at: datetime
 
-    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
+    model_config = ConfigDict(
+        from_attributes=True, protected_namespaces=(), strict=True, extra="forbid"
+    )
 
 
 class CodexAgentTaskListResponse(BaseModel):
     """Response schema for listing Codex tasks."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     tasks: list[CodexAgentTaskResponse]
     total: int
@@ -189,6 +218,8 @@ class CodexAgentTaskListResponse(BaseModel):
 
 class ExecutionEnvironmentConfigCreate(BaseModel):
     """Schema for creating/updating environment config."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     # Docker settings
     docker_image: str = Field(default="node:20-alpine", max_length=255)
@@ -238,6 +269,8 @@ class ExecutionEnvironmentConfigCreate(BaseModel):
 class ExecutionEnvironmentConfigUpdate(BaseModel):
     """Schema for partially updating environment config."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     docker_image: str | None = Field(None, max_length=255)
     resource_limits: dict[str, object] | None = None
     working_directory: str | None = Field(None, max_length=500)
@@ -261,7 +294,9 @@ class ExecutionEnvironmentConfigUpdate(BaseModel):
     playwright_viewport_height: int | None = Field(None, ge=240, le=2160)
     playwright_video_size: dict[str, object] | None = None
 
-    codex_sandbox_mode: str | None = Field(None, pattern="^(read-only|workspace-write|danger-full-access)$")
+    codex_sandbox_mode: str | None = Field(
+        None, pattern="^(read-only|workspace-write|danger-full-access)$"
+    )
     codex_full_auto: bool | None = None
     codex_timeout: int | None = Field(None, ge=30, le=1800)
 
@@ -316,7 +351,7 @@ class ExecutionEnvironmentConfigResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 # === VHS Tape Schemas ===
@@ -324,6 +359,8 @@ class ExecutionEnvironmentConfigResponse(BaseModel):
 
 class VHSTapeGenerateRequest(BaseModel):
     """Request schema for generating a VHS tape file."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     commands: list[str] = Field(..., min_length=1, description="Shell commands to record")
     output_format: str = Field(default="gif", pattern="^(gif|mp4|webm)$")
@@ -339,6 +376,8 @@ class VHSTapeGenerateRequest(BaseModel):
 class VHSTapeResponse(BaseModel):
     """Response schema for generated VHS tape."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     tape_content: str = Field(..., description="Generated .tape file content")
     execution_id: str | None = None
 
@@ -348,6 +387,8 @@ class VHSTapeResponse(BaseModel):
 
 class ExecutionStats(BaseModel):
     """Statistics for executions in a project."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     total_executions: int

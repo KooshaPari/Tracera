@@ -52,6 +52,8 @@ class AutomationStatus(StrEnum):
 class TestStep(BaseModel):
     """A single test step."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     step_number: int = Field(..., ge=1)
     action: str = Field(..., min_length=1)
     expected_result: str | None = None
@@ -60,6 +62,8 @@ class TestStep(BaseModel):
 
 class TestCaseCreate(BaseModel):
     """Schema for creating a test case."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     title: str = Field(..., min_length=1, max_length=500)
     description: str | None = None
@@ -96,6 +100,8 @@ class TestCaseCreate(BaseModel):
 
 class TestCaseUpdate(BaseModel):
     """Schema for updating a test case."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     title: str | None = Field(None, min_length=1, max_length=500)
     description: str | None = None
@@ -187,11 +193,13 @@ class TestCaseResponse(BaseModel):
     updated_at: datetime
     deleted_at: datetime | None = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class TestCaseListResponse(BaseModel):
     """Schema for list of test cases response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     test_cases: list[TestCaseResponse]
@@ -199,6 +207,8 @@ class TestCaseListResponse(BaseModel):
 
 class TestCaseStatusTransition(BaseModel):
     """Schema for transitioning test case status."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     new_status: TestCaseStatus
     reason: str | None = None
@@ -208,6 +218,8 @@ class TestCaseStatusTransition(BaseModel):
 class TestCaseReview(BaseModel):
     """Schema for submitting a test case for review or recording review result."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     reviewer: str = Field(..., min_length=1, max_length=255)
     notes: str | None = None
     approved: bool = False
@@ -215,6 +227,8 @@ class TestCaseReview(BaseModel):
 
 class TestCaseDeprecation(BaseModel):
     """Schema for deprecating a test case."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     reason: str = Field(..., min_length=1)
     deprecated_by: str | None = None
@@ -234,11 +248,13 @@ class TestCaseActivityResponse(BaseModel):
     metadata: dict[str, object]
     created_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class TestCaseStats(BaseModel):
     """Schema for test case statistics."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     total: int

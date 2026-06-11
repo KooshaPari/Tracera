@@ -2,7 +2,7 @@
 
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ChatRole(StrEnum):
@@ -24,12 +24,16 @@ class AIProvider(StrEnum):
 class ChatMessage(BaseModel):
     """A single chat message."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     role: ChatRole
     content: str
 
 
 class ChatContext(BaseModel):
     """Optional context for the chat session."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str | None = None
     project_name: str | None = None
@@ -39,6 +43,8 @@ class ChatContext(BaseModel):
 
 class ChatRequest(BaseModel):
     """Request body for chat streaming endpoint."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     messages: list[ChatMessage] = Field(..., min_length=1)
     model: str = Field(default="claude-sonnet-4-20250514")
@@ -55,6 +61,8 @@ class ChatRequest(BaseModel):
 class ChatStreamChunk(BaseModel):
     """A single chunk in the SSE stream."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     content: str | None = None
     done: bool = False
     error: str | None = None
@@ -62,6 +70,8 @@ class ChatStreamChunk(BaseModel):
 
 class ChatResponse(BaseModel):
     """Non-streaming chat response (for testing)."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     content: str
     model: str

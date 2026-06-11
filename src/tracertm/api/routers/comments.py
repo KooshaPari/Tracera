@@ -40,10 +40,10 @@ class CommentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
     @classmethod
-    def from_orm_row(cls, row: ItemComment) -> "CommentResponse":
+    def from_orm_row(cls, row: ItemComment) -> CommentResponse:
         """Map ORM row to response schema."""
         return cls(
             id=row.id,
@@ -60,6 +60,8 @@ class CommentResponse(BaseModel):
 class CreateCommentBody(BaseModel):
     """Request body for comment creation."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     content: str = Field(..., min_length=1, max_length=10_000)
 
 
@@ -73,8 +75,7 @@ async def _table_exists(db: AsyncSession) -> bool:
     try:
         result = await db.execute(
             text(
-                "SELECT 1 FROM information_schema.tables "
-                "WHERE table_name = 'item_comments' LIMIT 1"
+                "SELECT 1 FROM information_schema.tables WHERE table_name = 'item_comments' LIMIT 1"
             )
         )
         return result.scalar() is not None

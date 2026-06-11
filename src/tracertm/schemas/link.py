@@ -8,6 +8,8 @@ from pydantic import BaseModel, ConfigDict, Field
 class LinkCreate(BaseModel):
     """Schema for creating a link."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     source_item_id: str
     target_item_id: str
     link_type: str = Field(..., min_length=1, max_length=50)
@@ -25,4 +27,4 @@ class LinkResponse(BaseModel):
     metadata: dict[str, object]
     created_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")

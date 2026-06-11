@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import Integer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,6 +36,8 @@ embedding_repo = SpecEmbeddingRepository()
 
 class CreateBaselineRequest(BaseModel):
     """Request to create a new baseline."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     name: str = Field(..., min_length=1, max_length=255)
     description: str | None = None
@@ -65,11 +67,13 @@ class BaselineResponse(BaseModel):
     created_at: datetime
     expires_at: datetime | None
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class BaselineListResponse(BaseModel):
     """Response for baseline list."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     baselines: list[BaselineResponse]
     total: int
@@ -77,6 +81,8 @@ class BaselineListResponse(BaseModel):
 
 class BaselineItemResponse(BaseModel):
     """Response for a baseline item."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     item_id: str
     item_type: str
@@ -89,12 +95,16 @@ class BaselineItemResponse(BaseModel):
 class BaselineDetailResponse(BaseModel):
     """Detailed baseline response with items."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     baseline: BaselineResponse
     items: list[BaselineItemResponse]
 
 
 class GenerateEmbeddingsRequest(BaseModel):
     """Request to generate embeddings for specs."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     spec_ids: list[str] = Field(..., min_length=1, max_length=100)
     spec_type: str = Field(..., pattern="^(requirements|tests|epics|stories|tasks|defects)$")
@@ -104,6 +114,8 @@ class GenerateEmbeddingsRequest(BaseModel):
 
 class EmbeddingStatusResponse(BaseModel):
     """Response for embedding generation status."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total_requested: int
     generated: int
@@ -115,6 +127,8 @@ class EmbeddingStatusResponse(BaseModel):
 
 class VersionChainStatsResponse(BaseModel):
     """Statistics for version chains in a project."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total_chains: int
     total_blocks: int
@@ -157,7 +171,9 @@ async def create_baseline(
         user_id = claims.get("sub") or claims.get("user_id")
 
         # Convert items to tuple format
-        items_tuples = [(item["item_id"], item["item_type"], item["content_hash"]) for item in request.items]
+        items_tuples = [
+            (item["item_id"], item["item_type"], item["content_hash"]) for item in request.items
+        ]
 
         baseline = await baseline_repo.create_baseline(
             db=db,
@@ -368,7 +384,9 @@ async def delete_baseline(
 
         # Verify exists
         result = await db.execute(
-            select(Baseline).where(Baseline.baseline_id == baseline_id).where(Baseline.project_id == project_id),
+            select(Baseline)
+            .where(Baseline.baseline_id == baseline_id)
+            .where(Baseline.project_id == project_id),
         )
         baseline = result.scalar_one_or_none()
 
@@ -436,7 +454,9 @@ async def generate_embeddings(
         for spec_id in request.spec_ids:
             try:
                 # Check if embedding already exists
-                existing = await embedding_repo.get_embedding(db, spec_id, request.spec_type, request.model_name)
+                existing = await embedding_repo.get_embedding(
+                    db, spec_id, request.spec_type, request.model_name
+                )
 
                 if existing and not request.force_refresh:
                     skipped += 1

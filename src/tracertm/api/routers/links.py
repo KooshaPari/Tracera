@@ -6,7 +6,7 @@ import logging
 from typing import TYPE_CHECKING, Annotated, Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 
 from tracertm.api.config.rate_limiting import enforce_rate_limit
@@ -57,6 +57,8 @@ async def _maybe_await(result: object) -> object:
 class LinkCreate(BaseModel):
     """Request payload for creating a link."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     project_id: str
     source_id: str
     target_id: str
@@ -66,6 +68,8 @@ class LinkCreate(BaseModel):
 
 class LinkUpdate(BaseModel):
     """Request payload for updating a link."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     link_type: str | None = None
     metadata: dict[str, Any] | None = None

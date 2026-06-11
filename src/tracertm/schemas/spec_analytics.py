@@ -126,6 +126,8 @@ class MoSCoWPriority(StrEnum):
 class EARSComponent(BaseModel):
     """Individual component of an EARS analysis."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     name: str
     value: str | None = None
     confidence: float = Field(ge=0, le=1)
@@ -154,7 +156,7 @@ class EARSAnalysisResponse(BaseModel):
 
     analyzed_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 # =============================================================================
@@ -165,6 +167,8 @@ class EARSAnalysisResponse(BaseModel):
 class QualityIssue(BaseModel):
     """A detected quality issue with a requirement."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     dimension: QualityDimension
     severity: str = Field(pattern="^(error|warning|info)$")
     message: str
@@ -174,6 +178,8 @@ class QualityIssue(BaseModel):
 
 class QualityDimensionScore(BaseModel):
     """Score for a single quality dimension."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     dimension: QualityDimension
     score: float = Field(ge=0, le=1)
@@ -204,7 +210,7 @@ class QualityScoreResponse(BaseModel):
 
     analyzed_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 # =============================================================================
@@ -232,7 +238,7 @@ class MerkleProofResponse(BaseModel):
     algorithm: str = "sha256"
     generated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class ContentAddressResponse(BaseModel):
@@ -257,11 +263,13 @@ class ContentAddressResponse(BaseModel):
     created_at: datetime
     last_modified_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class VersionChainEntry(BaseModel):
     """An entry in the version chain."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     version_hash: str
     version_number: int
@@ -288,7 +296,7 @@ class VersionChainResponse(BaseModel):
 
     generated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 # =============================================================================
@@ -298,6 +306,8 @@ class VersionChainResponse(BaseModel):
 
 class FlakinessContributingFactor(BaseModel):
     """A factor contributing to test flakiness."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     factor: str
     weight: float = Field(ge=0, le=1)
@@ -332,7 +342,7 @@ class FlakinessAnalysisResponse(BaseModel):
 
     analyzed_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 # =============================================================================
@@ -365,7 +375,7 @@ class ODCClassificationResponse(BaseModel):
 
     analyzed_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 # =============================================================================
@@ -375,6 +385,8 @@ class ODCClassificationResponse(BaseModel):
 
 class CVSSBreakdown(BaseModel):
     """Breakdown of CVSS score components."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     attack_vector: str
     attack_complexity: str
@@ -410,7 +422,7 @@ class CVSSScoreResponse(BaseModel):
 
     analyzed_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 # =============================================================================
@@ -420,6 +432,8 @@ class CVSSScoreResponse(BaseModel):
 
 class ImpactedItem(BaseModel):
     """An item impacted by a change."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     item_id: str
     item_type: str
@@ -460,7 +474,7 @@ class ImpactAnalysisResponse(BaseModel):
 
     analyzed_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 # =============================================================================
@@ -471,6 +485,8 @@ class ImpactAnalysisResponse(BaseModel):
 class WSJFScore(BaseModel):
     """WSJF (Weighted Shortest Job First) scoring."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     business_value: int = Field(ge=1, le=10)
     time_criticality: int = Field(ge=1, le=10)
     risk_reduction: int = Field(ge=1, le=10)
@@ -480,6 +496,8 @@ class WSJFScore(BaseModel):
 
 class RICEScore(BaseModel):
     """RICE (Reach, Impact, Confidence, Effort) scoring."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     reach: int = Field(ge=0)
     impact: int = Field(ge=1, le=4)  # 1=minimal, 2=low, 3=medium, 4=high
@@ -509,7 +527,7 @@ class PrioritizationResponse(BaseModel):
 
     calculated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 # =============================================================================
@@ -519,6 +537,8 @@ class PrioritizationResponse(BaseModel):
 
 class CoverageGap(BaseModel):
     """A detected coverage gap."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     requirement_id: str
     requirement_title: str
@@ -548,11 +568,13 @@ class CoverageGapAnalysisResponse(BaseModel):
 
     analyzed_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class SuspectLink(BaseModel):
     """A suspected invalid or stale traceability link."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     source_id: str
     target_id: str
@@ -580,11 +602,13 @@ class SuspectLinkAnalysisResponse(BaseModel):
 
     analyzed_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class SimilarItem(BaseModel):
     """A semantically similar item."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     item_id: str
     item_title: str
@@ -613,7 +637,7 @@ class SimilarityAnalysisResponse(BaseModel):
 
     analyzed_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 # =============================================================================
@@ -624,12 +648,16 @@ class SimilarityAnalysisResponse(BaseModel):
 class AnalyzeEARSRequest(BaseModel):
     """Request for EARS analysis."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     requirement_text: str | None = None  # If not provided, uses spec content
     include_suggestions: bool = True
 
 
 class AnalyzeQualityRequest(BaseModel):
     """Request for quality analysis."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     dimensions: list[QualityDimension] | None = None  # If None, analyze all
     include_suggestions: bool = True
@@ -638,12 +666,16 @@ class AnalyzeQualityRequest(BaseModel):
 class AnalyzeFlakinessRequest(BaseModel):
     """Request for flakiness analysis."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     recent_runs_count: int = Field(default=20, ge=5, le=100)
     include_historical: bool = True
 
 
 class AnalyzeODCRequest(BaseModel):
     """Request for ODC classification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     defect_description: str | None = None  # If not provided, uses spec content
     include_prevention_suggestions: bool = True
@@ -652,12 +684,16 @@ class AnalyzeODCRequest(BaseModel):
 class AnalyzeCVSSRequest(BaseModel):
     """Request for CVSS scoring."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     vulnerability_description: str | None = None
     include_remediation: bool = True
 
 
 class AnalyzeImpactRequest(BaseModel):
     """Request for impact analysis."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     max_depth: int = Field(default=3, ge=1, le=10)
     include_transitive: bool = True
@@ -666,6 +702,8 @@ class AnalyzeImpactRequest(BaseModel):
 
 class CalculatePrioritizationRequest(BaseModel):
     """Request for prioritization calculation."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     calculate_wsjf: bool = True
     calculate_rice: bool = True
@@ -692,6 +730,8 @@ class CalculatePrioritizationRequest(BaseModel):
 class AnalyzeCoverageGapsRequest(BaseModel):
     """Request for coverage gap analysis."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     include_stale: bool = True
     stale_threshold_days: int = Field(default=30, ge=1)
 
@@ -699,12 +739,16 @@ class AnalyzeCoverageGapsRequest(BaseModel):
 class AnalyzeSuspectLinksRequest(BaseModel):
     """Request for suspect link analysis."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     link_types: list[str] | None = None  # Filter by type
     confidence_threshold: float = Field(default=0.7, ge=0, le=1)
 
 
 class AnalyzeSimilarityRequest(BaseModel):
     """Request for similarity analysis."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     similarity_threshold: float = Field(default=0.8, ge=0, le=1)
     max_results: int = Field(default=10, ge=1, le=50)

@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from typing import cast
 
 import httpx
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from tenacity import (
     retry,
     retry_if_exception,
@@ -29,7 +29,9 @@ class LinearClientError(Exception):
 class LinearRateLimitError(LinearClientError):
     """Rate limit exceeded."""
 
-    def __init__(self, reset_at: datetime | None = None, message: str = "Rate limit exceeded") -> None:
+    def __init__(
+        self, reset_at: datetime | None = None, message: str = "Rate limit exceeded"
+    ) -> None:
         """Initialize Linear rate limit error.
 
         Args:
@@ -53,6 +55,8 @@ class LinearNotFoundError(LinearClientError):
 
 class IssueCreateRequest(BaseModel):
     """Request model for creating an issue."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     team_id: str = Field(..., description="Team ID to create issue in")
     title: str = Field(..., description="Issue title")
@@ -92,6 +96,8 @@ class IssueCreateRequest(BaseModel):
 
 class IssueUpdateRequest(BaseModel):
     """Request model for updating an issue."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     issue_id: str = Field(..., description="Issue ID to update")
     title: str | None = Field(None, description="New issue title")
@@ -173,7 +179,10 @@ class LinearClient:
         retry=retry_if_exception(
             lambda e: (
                 isinstance(e, (httpx.NetworkError, httpx.TimeoutException))
-                or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code >= _STATUS_SERVER_ERROR)
+                or (
+                    isinstance(e, httpx.HTTPStatusError)
+                    and e.response.status_code >= _STATUS_SERVER_ERROR
+                )
             ),
         ),
         reraise=True,
@@ -222,7 +231,10 @@ class LinearClient:
         # Check for GraphQL errors
         if "errors" in result:
             errors = result["errors"]
-            if any(cast("dict[str, object]", e.get("extensions", {})).get("code") == "UNAUTHENTICATED" for e in errors):
+            if any(
+                cast("dict[str, object]", e.get("extensions", {})).get("code") == "UNAUTHENTICATED"
+                for e in errors
+            ):
                 msg = "Invalid API key"
                 raise LinearAuthError(msg)
             if any(e.get("message", "").lower().find("not found") >= 0 for e in errors):

@@ -109,7 +109,4 @@ class Config(BaseModel):
 
         return v.rstrip("/")
 
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="forbid",
-    )
+    model_config = ConfigDict(validate_assignment=True, extra="forbid", strict=True)

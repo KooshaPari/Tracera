@@ -9,14 +9,20 @@ from pydantic import BaseModel, ConfigDict, Field
 class AgentSessionCreate(BaseModel):
     """Request to create an agent session."""
 
-    project_id: str | None = Field(default=None, description="Optional project to scope the session")
-    session_id: str | None = Field(default=None, description="Optional explicit session ID; otherwise generated")
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    project_id: str | None = Field(
+        default=None, description="Optional project to scope the session"
+    )
+    session_id: str | None = Field(
+        default=None, description="Optional explicit session ID; otherwise generated"
+    )
 
 
 class AgentSessionResponse(BaseModel):
     """Agent session metadata returned by API."""
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
     session_id: str
     sandbox_root: str
@@ -28,6 +34,8 @@ class AgentSessionResponse(BaseModel):
 class AgentSessionListResponse(BaseModel):
     """Paginated list of agent sessions."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     sessions: list[AgentSessionResponse]
     total: int
     limit: int
@@ -37,13 +45,19 @@ class AgentSessionListResponse(BaseModel):
 class AgentRunRequest(BaseModel):
     """Request to start an agent run workflow (Temporal)."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     session_id: str = Field(..., description="Agent session ID")
-    initial_messages_json: str | None = Field(default=None, description="JSON array of message dicts to start from")
+    initial_messages_json: str | None = Field(
+        default=None, description="JSON array of message dicts to start from"
+    )
     max_turns: int = Field(default=10, ge=1, le=100, description="Maximum agent turns")
 
 
 class AgentRunResponse(BaseModel):
     """Response after starting an agent run workflow."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     workflow_id: str
     run_id: str

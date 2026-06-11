@@ -16,7 +16,7 @@ import uuid
 from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.repositories.account_repository import AccountRepository
@@ -38,6 +38,8 @@ TOKEN_TYPE_BEARER = "bearer"  # OAuth 2.0 token type (not a secret)
 class DeviceCodeRequest(BaseModel):
     """Request for device authorization code."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     client_id: str = Field(..., description="OAuth client ID")
     scope: str | None = Field(None, description="Space-separated scopes")
 
@@ -45,16 +47,22 @@ class DeviceCodeRequest(BaseModel):
 class DeviceCodeResponse(BaseModel):
     """Response with device code."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     device_code: str = Field(..., description="Device verification code")
     user_code: str = Field(..., description="User-friendly code for manual entry")
     verification_uri: str = Field(..., description="URL user visits to authenticate")
-    verification_uri_complete: str = Field(..., description="Complete URL with pre-filled user code")
+    verification_uri_complete: str = Field(
+        ..., description="Complete URL with pre-filled user code"
+    )
     expires_in: int = Field(default=900, description="Seconds until device code expires")
     interval: int = Field(default=5, description="Seconds to wait between polls")
 
 
 class TokenRequest(BaseModel):
     """Request for token exchange."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     device_code: str = Field(..., description="Device code from device flow")
     client_id: str = Field(..., description="OAuth client ID")
@@ -67,6 +75,8 @@ class TokenRequest(BaseModel):
 class TokenResponse(BaseModel):
     """Successful token response."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     access_token: str = Field(..., description="JWT access token")
     token_type: str = Field(default="bearer", description="Token type")
     expires_in: int = Field(default=3600, description="Seconds until expiration")
@@ -77,6 +87,8 @@ class TokenResponse(BaseModel):
 class MeResponse(BaseModel):
     """Current user information."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     user: dict[str, Any] = Field(..., description="User object")
     claims: dict[str, Any] = Field(..., description="JWT claims")
     account: dict | None = Field(None, description="Account information")
@@ -85,11 +97,15 @@ class MeResponse(BaseModel):
 class RefreshTokenRequest(BaseModel):
     """Request to refresh an access token."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     refresh_token: str = Field(..., description="Refresh token")
 
 
 class RevokeTokenRequest(BaseModel):
     """Request to revoke a token."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     token: str = Field(..., description="Token to revoke")
     token_type: str = Field(default="access_token", description="Type of token to revoke")
@@ -98,6 +114,8 @@ class RevokeTokenRequest(BaseModel):
 class LogoutResponse(BaseModel):
     """Logout success response."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     success: bool = Field(default=True, description="Logout successful")
     message: str | None = Field(None, description="Optional message")
 
@@ -105,12 +123,16 @@ class LogoutResponse(BaseModel):
 class DeviceCompleteRequest(BaseModel):
     """Request to complete device authorization from browser."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     user_code: str = Field(..., description="User code from device flow")
     code: str = Field(..., description="Authorization code from OAuth flow")
 
 
 class DeviceCompleteResponse(BaseModel):
     """Response after completing device authorization."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     status: str = Field(..., description="Authorization status")
     user: dict | None = Field(None, description="User information if available")

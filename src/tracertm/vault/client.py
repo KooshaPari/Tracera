@@ -7,7 +7,7 @@ import os
 from typing import Any
 
 import hvac  # hvac has no type stubs (third-party limitation)
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class VaultError(Exception):
@@ -16,6 +16,8 @@ class VaultError(Exception):
 
 class DatabaseCredentials(BaseModel):
     """Database connection credentials."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     url: str
     host: str = ""
@@ -28,6 +30,8 @@ class DatabaseCredentials(BaseModel):
 class RedisCredentials(BaseModel):
     """Redis connection credentials."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     url: str
     host: str = ""
     port: str = ""
@@ -35,6 +39,8 @@ class RedisCredentials(BaseModel):
 
 class Neo4jCredentials(BaseModel):
     """Neo4j graph database credentials."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     uri: str
     user: str
@@ -45,6 +51,8 @@ class Neo4jCredentials(BaseModel):
 class S3Credentials(BaseModel):
     """S3/MinIO storage credentials."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     endpoint: str = ""
     access_key_id: str = ""
     secret_access_key: str = ""
@@ -54,6 +62,8 @@ class S3Credentials(BaseModel):
 
 class WorkOSCredentials(BaseModel):
     """WorkOS authentication credentials."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     api_key: str = ""
     client_id: str = ""
@@ -122,7 +132,9 @@ class VaultClient:
         full_path = f"{self.namespace}/{path}"
 
         try:
-            response = self.client.secrets.kv.v2.read_secret_version(path=full_path, mount_point=self.mount_point)
+            response = self.client.secrets.kv.v2.read_secret_version(
+                path=full_path, mount_point=self.mount_point
+            )
 
             if not response or "data" not in response or "data" not in response["data"]:
                 msg = f"Secret not found or invalid format: {full_path}"

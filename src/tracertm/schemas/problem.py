@@ -60,6 +60,8 @@ class RootCauseCategory(StrEnum):
 class ProblemCreate(BaseModel):
     """Schema for creating a problem."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     title: str = Field(..., min_length=1, max_length=500)
     description: str | None = None
 
@@ -90,6 +92,8 @@ class ProblemCreate(BaseModel):
 
 class ProblemUpdate(BaseModel):
     """Schema for updating a problem."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     title: str | None = Field(None, min_length=1, max_length=500)
     description: str | None = None
@@ -122,6 +126,8 @@ class ProblemUpdate(BaseModel):
 class ProblemStatusTransition(BaseModel):
     """Schema for transitioning problem status."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     to_status: ProblemStatus
     reason: str | None = None
     performed_by: str | None = None
@@ -129,6 +135,8 @@ class ProblemStatusTransition(BaseModel):
 
 class RCARequest(BaseModel):
     """Schema for recording Root Cause Analysis."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     rca_method: RCAMethod
     rca_notes: str | None = None
@@ -143,13 +151,19 @@ class RCARequest(BaseModel):
 class FiveWhysAnalysis(BaseModel):
     """Schema for 5 Whys RCA method."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     problem_statement: str
-    levels: list[dict[str, str]] = Field(..., description="List of why levels: [{'question': '...', 'answer': '...'}]")
+    levels: list[dict[str, str]] = Field(
+        ..., description="List of why levels: [{'question': '...', 'answer': '...'}]"
+    )
     root_cause_conclusion: str
 
 
 class FishboneAnalysis(BaseModel):
     """Schema for Fishbone (Ishikawa) RCA method."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     problem_statement: str
     categories: list[dict[str, object]] = Field(
@@ -162,13 +176,19 @@ class FishboneAnalysis(BaseModel):
 class WorkaroundUpdate(BaseModel):
     """Schema for updating workaround information."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     workaround_available: bool
     workaround_description: str | None = None
-    workaround_effectiveness: str | None = Field(None, pattern="^(permanent_fix|partial|temporary)$")
+    workaround_effectiveness: str | None = Field(
+        None, pattern="^(permanent_fix|partial|temporary)$"
+    )
 
 
 class PermanentFixUpdate(BaseModel):
     """Schema for updating permanent fix information."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     permanent_fix_available: bool
     permanent_fix_description: str | None = None
@@ -177,6 +197,8 @@ class PermanentFixUpdate(BaseModel):
 
 class ProblemClosure(BaseModel):
     """Schema for closing a problem."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     resolution_type: ResolutionType
     closure_notes: str | None = None
@@ -254,7 +276,7 @@ class ProblemResponse(BaseModel):
     updated_at: datetime
     deleted_at: datetime | None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class ProblemListResponse(BaseModel):
@@ -275,7 +297,7 @@ class ProblemListResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class ProblemActivityResponse(BaseModel):
@@ -291,4 +313,4 @@ class ProblemActivityResponse(BaseModel):
     metadata: dict[str, object]
     created_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")

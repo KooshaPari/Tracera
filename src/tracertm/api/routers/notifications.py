@@ -28,7 +28,7 @@ class NotificationResponse(BaseModel):
     read_at: datetime | None
     created_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 @router.get("/", response_model=list[NotificationResponse])
@@ -47,7 +47,9 @@ async def list_notifications(
             return []
 
         # Check if we need to seed initial notifications for this user
-        result = await db.execute(select(Notification).where(Notification.user_id == user_id).limit(1))
+        result = await db.execute(
+            select(Notification).where(Notification.user_id == user_id).limit(1)
+        )
         if not result.scalar():
             await seed_initial_notifications(db, cast("str", user_id))
 

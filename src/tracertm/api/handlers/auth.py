@@ -9,7 +9,7 @@ import time
 from typing import cast
 
 from fastapi import Depends, HTTPException
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.deps import get_db
@@ -55,6 +55,8 @@ TOKEN_EXTRACTION_ERRORS = (
 class AuthCallbackPayload(BaseModel):
     """Schema for auth callback payload."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     code: str
 
 
@@ -86,7 +88,9 @@ async def _get_user_info(user_id: str | None) -> dict[str, object] | None:
         return None
 
 
-def _enrich_admin_user(user: dict[str, object] | None, user_id: str | None) -> dict[str, object] | None:
+def _enrich_admin_user(
+    user: dict[str, object] | None, user_id: str | None
+) -> dict[str, object] | None:
     """Add admin role to user if they are a system admin."""
     if not user or not isinstance(user, dict):
         return user
@@ -226,7 +230,10 @@ async def signup_handler(
         account_slug = re.sub(r"[^a-z0-9-]", "", signup_data.account_name.lower().replace(" ", "-"))
         if not account_slug:
             account_slug = (
-                "account-" + hashlib.md5(signup_data.account_name.encode(), usedforsecurity=False).hexdigest()[:8]
+                "account-"
+                + hashlib.md5(signup_data.account_name.encode(), usedforsecurity=False).hexdigest()[
+                    :8
+                ]
             )
 
     # Check if slug exists

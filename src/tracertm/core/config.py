@@ -3,11 +3,13 @@
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class DatabaseConfig(BaseModel):
     """Database configuration."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     host: str = Field(default="localhost")
     port: int = Field(default=5432)
@@ -23,11 +25,15 @@ class DatabaseConfig(BaseModel):
     @property
     def url(self) -> str:
         """Get database URL."""
-        return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+        return (
+            f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+        )
 
 
 class UIConfig(BaseModel):
     """UI configuration."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     theme: str = Field(default="developer-focus")  # or "high-contrast"
     force_bold: bool = Field(default=False)
@@ -36,6 +42,8 @@ class UIConfig(BaseModel):
 
 class Config(BaseModel):
     """TraceRTM configuration."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     database: DatabaseConfig = Field(default_factory=DatabaseConfig)
     ui: UIConfig = Field(default_factory=UIConfig)

@@ -27,7 +27,7 @@ from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from tracertm.api.deps import auth_guard
 from tracertm.models.trace_link import Artifact, ArtifactKind, TraceLink, TraceLinkType
@@ -49,6 +49,8 @@ router: APIRouter = APIRouter(prefix="/coverage", tags=["Coverage"])
 class ArtifactIn(BaseModel):
     """Minimal artifact payload for the matrix endpoint."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: uuid.UUID
     project_id: uuid.UUID
     kind: ArtifactKind
@@ -59,6 +61,8 @@ class ArtifactIn(BaseModel):
 
 class TraceLinkIn(BaseModel):
     """Minimal trace link payload for the matrix endpoint."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
     project_id: uuid.UUID
@@ -71,6 +75,8 @@ class TraceLinkIn(BaseModel):
 
 class MatrixRequest(BaseModel):
     """Request body: graph snapshot to export as a coverage matrix."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     artifacts: list[ArtifactIn] = Field(default_factory=list)
     links: list[TraceLinkIn] = Field(default_factory=list)
@@ -85,7 +91,7 @@ class MatrixRequest(BaseModel):
 async def get_coverage_matrix(
     body: MatrixRequest,
     _claims: Annotated[dict[str, Any], Depends(auth_guard)],
-    format: Literal["csv", "json"] = "json",  # noqa: A002  # query param name matches FR spec
+    format: Literal["csv", "json"] = "json",  # query param name matches FR spec
 ) -> Response:
     """Export a requirement coverage matrix in CSV or JSON format.
 
@@ -96,7 +102,7 @@ async def get_coverage_matrix(
     ----------------
     format : ``"csv"`` | ``"json"`` (default ``"json"``)
 
-    Returns
+    Returns:
     -------
     * ``format=json`` — ``application/json`` body with ``meta`` summary and
       ``rows`` array.
@@ -137,9 +143,7 @@ async def get_coverage_matrix(
         return PlainTextResponse(
             content=csv_text,
             media_type="text/csv",
-            headers={
-                "Content-Disposition": 'attachment; filename="coverage_matrix.csv"'
-            },
+            headers={"Content-Disposition": 'attachment; filename="coverage_matrix.csv"'},
         )
 
     # default: json
