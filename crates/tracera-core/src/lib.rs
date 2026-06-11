@@ -13,11 +13,13 @@ use chrono::{DateTime, Utc};
 use indexmap::IndexMap;
 
 pub mod ids;
-pub mod matrix;
+
+pub mod matrix; // Phase 2 stubs — see matrix.rs; excluded from default build until Phase 2 lands.
 pub mod impact;
 pub mod coverage;
 
 pub use ids::*;
+
 pub use matrix::*;
 pub use impact::*;
 pub use coverage::*;

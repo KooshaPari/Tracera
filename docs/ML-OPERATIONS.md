@@ -1,133 +1,199 @@
 # ML Operations
 
-This guide defines the operating model for Tracera's machine-learning-adjacent
-traceability features: requirement mining, agreement scoring, semantic matching,
-quality analytics, and future embedding/VLM scorers. The current implementation
-is intentionally hybrid: deterministic heuristics are production paths, while
-embedding and VLM strategies are pluggable scorer ports.
-
-## Operating Principles
-
-- Keep trace decisions explainable. Every automated link or verdict must carry a
-  normalized `confidence` in `[0.0, 1.0]` and a human-readable `rationale`.
-- Prefer deterministic baselines before ML. Heuristic miners and lexical scorers
-  are the control group for every learned model.
-- Treat models as replaceable strategy implementations behind `ScorerPort`; API,
-  graph, and persistence callers should not depend on model-specific packages.
-- Promote only measured improvements. No scorer becomes default without offline
-  evaluation, regression checks, and rollback instructions.
+This runbook defines how Tracera operates machine-learning-adjacent traceability
+features: requirement mining, semantic matching, agreement scoring, visual
+evidence scoring, quality analytics, and future learned scorers. Deterministic
+heuristics remain the production baseline; learned models must prove measurable
+value before promotion.
 
 ## Data Pipeline
 
-Primary inputs:
+Sources:
 
-- Requirements and specs from `docs/requirements/`, imported documents, and API
-  payloads.
-- Trace artifacts: code references, tests, evidence captures, risks, rationales,
-  and graph nodes.
-- Existing curated links from the `links` table, including `confidence` and
-  `rationale`, used as labels and review evidence.
-- Generated candidates from `src/tracertm/services/requirement_miner.py`.
+- Requirements, specs, and product notes from `docs/requirements/`, imported
+  documents, and API payloads.
+- Trace artifacts including code references, tests, risks, evidence captures,
+  rationales, and graph nodes.
+- Reviewed links from persistence tables, including `confidence`, `rationale`,
+  artifact kind, project ID, and review metadata.
+- Generated candidates from requirement mining and scoring services.
 
-Pipeline stages:
+Validation:
 
-1. Ingest raw text or file paths through the requirement miner or API ingestion
-   routes.
-2. Normalize text, source references, artifact kinds, project IDs, and explicit
-   FR/NFR/REQ tags.
-3. Generate candidate requirements or links with source provenance.
-4. Score each candidate with the active strategy: heuristic modal/tag matching,
-   lexical similarity, embedding similarity, visual evidence matching, or VLM
-   verdict.
-5. Persist only candidates that meet the configured threshold; retain rejected
-   examples for evaluation sampling when possible.
-6. Project accepted links into the trace graph for impact, coverage, and quality
-   analytics.
+- Preserve source provenance, project boundary, artifact kind, and extraction
+  timestamp for every record.
+- Reject records with missing identifiers, empty text, invalid confidence values,
+  or cross-project joins.
+- Keep human-reviewed labels separate from model-generated candidates.
+- Sample rejected candidates for false-negative analysis instead of discarding all
+  failed examples.
 
-Operational controls:
+Versioning:
 
-- Never train or evaluate on unlabeled production data without preserving source
-  provenance and project boundaries.
-- Keep human-curated links separate from model-generated links in metadata.
-- Snapshot evaluation datasets before scorer changes so old and new strategies
-  can be compared on identical inputs.
+- Snapshot datasets before scorer, threshold, prompt, or embedding changes.
+- Record dataset ID, schema version, source commit, extraction date, and label
+  provenance with every evaluation.
+- Treat redacted production snapshots as immutable evaluation inputs.
 
-## Training and Calibration
+```mermaid
+flowchart LR
+    A[Sources: specs, APIs, artifacts, reviewed links] --> B[Ingestion]
+    B --> C[Validation and normalization]
+    C --> D[Versioned dataset snapshot]
+    D --> E[Training or calibration]
+    E --> F[Offline evaluation]
+    F --> G[Registry candidate]
+    G --> H[Shadow or canary deployment]
+    H --> I[Production scoring]
+    I --> J[Monitoring and feedback]
+    J --> D
+```
 
-Tracera does not currently require online model training. Scorer work should be
-handled as offline calibration:
+## Training
 
-- Build labeled datasets from reviewed requirement-artifact pairs and rejected
-  false positives.
-- Include negative pairs from unrelated projects, stale links, and conflict or
-  duplicate detections.
-- Calibrate confidence thresholds per scorer. Heuristic miner defaults are:
-  explicit tags `0.95`, `shall/must` `0.90`, `should/will` `0.70`,
-  TODO/SPEC markers `0.60`, and `may/can` `0.50`.
-- Record scorer version, model name, embedding dimensions, threshold, dataset
-  snapshot, and evaluation output for every candidate promotion.
+Model registry:
 
-For optional learned scorers, prefer dependencies already declared under
-`pyproject.toml` extras such as `ml` (`sentence-transformers`, `numpy`, `torch`)
-and keep imports lazy so non-ML installs still run.
+- Register every promoted scorer artifact with model name, scorer strategy,
+  version, dataset ID, code commit, owner, training command, and rollback target.
+- Store thresholds, embedding dimensions, prompts, tokenizer versions, and
+  dependency versions with the artifact.
+- Mark one production default per scoring task; keep older approved artifacts
+  available for rollback.
+
+Hyperparameter sweep:
+
+- Sweep thresholds, retrieval depth, embedding model, batch size, prompt variant,
+  and calibration method against the same frozen dataset.
+- Optimize for precision and calibrated confidence before recall when false
+  positives can corrupt trace integrity.
+- Keep sweep output queryable: parameters, metrics, runtime, memory, and failure
+  notes.
+
+Reproducibility:
+
+- Run training from pinned lockfiles and a recorded source commit.
+- Seed stochastic libraries and log non-deterministic settings.
+- Save raw config, processed config, dataset manifest, evaluation report, and
+  artifact checksum.
+- Keep optional ML imports lazy so non-ML Tracera installs still run.
 
 ## Evaluation
 
-Evaluate every scorer against a fixed validation snapshot before deployment.
+Offline metrics:
 
-Required metrics:
+- Precision, recall, F1, false-positive rate, and false-negative rate.
+- Confidence calibration by bucket, especially near promotion thresholds.
+- Coverage lift for requirements with valid code, test, evidence, or risk links.
+- Latency, memory, batch throughput, and model load time.
+- Rationale quality samples for true positives, false positives, and false
+  negatives.
 
-- Precision, recall, and F1 for accepted trace links.
-- False-positive rate for links above the production threshold.
-- Confidence calibration by bucket, especially around review thresholds.
-- Coverage lift: additional requirements with valid test/code/evidence links.
-- Latency and memory per scored pair or batch.
+Online A/B:
 
-Acceptance gates:
+- Compare the candidate scorer against the deterministic baseline on equivalent
+  traffic or review queues.
+- Segment results by project, artifact kind, requirement class, and input source.
+- Require enough volume to detect regression in high-confidence false positives
+  before making the candidate default.
 
-- New default scorer must beat the deterministic baseline on precision or F1
-  without increasing high-confidence false positives.
-- Link confidence must remain within database and application constraints.
-- Evaluation artifacts must include rationale samples for true positives, false
-  positives, and false negatives.
-- API and graph consumers must receive the same response schema after the change.
+Guardrails:
 
-Recommended checks:
-
-```bash
-uv run pytest tests/unit/services/test_requirement_miner.py
-uv run pytest tests/unit -q
-cargo test
-npm test
-```
-
-Use narrower commands when only documentation or isolated scoring behavior
-changes, but record skipped suites and why.
+- Do not auto-accept links below the configured confidence threshold.
+- Block promotion if response schemas change for API, graph, or report consumers.
+- Block promotion if latency, memory, or error rate exceeds service budgets.
+- Preserve a human-readable `rationale` for every automated verdict.
 
 ## Deployment
 
-Deploy scorer changes as configuration or strategy swaps, not caller rewrites.
+Artifact promotion:
 
-1. Ship the scorer behind `ScorerPort` with lazy optional dependencies.
-2. Run offline evaluation and targeted unit tests.
-3. Enable in staging with shadow scoring: persist current production decisions
-   while logging new scorer outputs separately.
-4. Review drift, false positives, and latency for at least one representative
-   import or mining run.
-5. Promote by changing the configured default scorer and threshold.
-6. Keep rollback simple: restore the previous scorer name and threshold.
+1. Register the candidate artifact and evaluation report.
+2. Confirm owner approval, rollback target, and compatible schema.
+3. Promote configuration, not callers: scorer selection should stay behind the
+   scoring port or service boundary.
 
-Production monitoring:
+Canary:
 
-- Candidate volume by project and artifact kind.
-- Accepted/rejected ratio by scorer and threshold.
-- High-confidence false-positive reports from review workflows.
-- Scoring latency, batch size, memory, and optional model load failures.
-- Coverage and impact-score changes after accepted links are projected.
+- Enable the scorer for a narrow project, tenant, artifact kind, or review queue.
+- Monitor accepted/rejected ratio, confidence distribution, latency, and reviewer
+  overrides.
+- Expand only when metrics match offline expectations.
 
-## Ownership
+Shadow:
 
-ML operations changes affect trace integrity. Treat scorer defaults, thresholds,
-and model dependencies as product behavior changes: document the dataset,
-evaluation result, rollout plan, and rollback path in the relevant session docs
-or PR before promotion.
+- Run candidate scoring beside the production scorer without changing user-facing
+  decisions.
+- Log candidate outputs, disagreements, latency, and error details separately.
+- Use shadow results to refresh offline datasets before canary.
+
+Full rollout:
+
+- Promote the scorer to production default after canary guardrails pass.
+- Keep the previous scorer and threshold immediately restorable.
+- Record rollout time, config diff, artifact checksum, and monitoring dashboard.
+
+## Monitoring
+
+Drift detection:
+
+- Track input text length, artifact kind mix, project mix, language, label mix,
+  embedding distribution, confidence histogram, and disagreement rate.
+- Alert on sustained drift from the evaluation dataset or previous production
+  window.
+
+Latency:
+
+- Measure p50, p95, and p99 scoring latency by scorer, task, and batch size.
+- Track model load time separately from per-request scoring time.
+- Alert when latency threatens API, import, or report-generation budgets.
+
+Error rate:
+
+- Track scoring exceptions, dependency import failures, model load failures,
+  malformed outputs, schema validation failures, and timeout rates.
+- Include candidate volume, accepted/rejected ratio, reviewer overrides, and
+  rollback events in operational dashboards.
+
+## Retraining
+
+Triggers:
+
+- Drift alerts, degraded precision or recall, rising reviewer override rate,
+  new artifact types, new requirement formats, dependency upgrades, or model
+  deprecation.
+- Incident postmortems that identify missing labels, stale data, or poor
+  calibration.
+
+Schedule:
+
+- Refresh evaluation snapshots at least monthly for active ML-backed scorers.
+- Recalibrate thresholds after significant data-source changes.
+- Run ad hoc retraining before major product launches or large tenant imports.
+
+Data freshness:
+
+- Include recently reviewed positives, reviewer-rejected false positives, and
+  sampled false negatives.
+- Exclude unresolved or unreviewed generated candidates from supervised labels.
+- Verify freshness by source timestamp, extraction timestamp, and label review
+  timestamp.
+
+## Incident Response
+
+Rollback:
+
+- Restore the previous scorer name, artifact ID, threshold, and prompt/config.
+- Disable auto-acceptance for affected tasks until confidence is restored.
+- Preserve incident inputs and outputs for postmortem labeling.
+
+Runbook:
+
+1. Triage scope: affected scorer, projects, artifact kinds, release, and time
+   window.
+2. Stop expansion: pause canary or full rollout and pin the last known-good
+   configuration.
+3. Re-score a representative sample with the previous scorer and candidate.
+4. Notify owners with impact, rollback status, and expected follow-up.
+5. Add incident examples to the next evaluation snapshot after review.
+6. Update registry notes, monitoring thresholds, and promotion criteria before
+   retrying deployment.

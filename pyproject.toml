@@ -258,6 +258,8 @@ markers = [
     "agent: Agent coordination tests (concurrent operations)",
     "asyncio: Async tests (mark for async tests)",
     "performance: Performance and load tests",
+    "determinism: Tests that verify repeatable model inference outputs",
+    "parity: Tests that compare model inference outputs with reference implementations",
     "property: Property-based tests using Hypothesis",
     "benchmark: Benchmark tests for performance measurement",
     "smoke: Minimal critical-path checks",
