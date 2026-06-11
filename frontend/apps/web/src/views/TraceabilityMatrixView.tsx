@@ -2,9 +2,11 @@ import {
   Activity,
   Box,
   CheckCircle2,
+  Circle,
   Download,
   FileText,
   Layers,
+  MinusCircle,
   Search,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
