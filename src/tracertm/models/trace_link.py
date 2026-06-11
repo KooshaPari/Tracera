@@ -145,7 +145,7 @@ class Artifact(BaseModel):
     trace-link layer needs. ``id`` is the same UUID as ``items.id``.
     """
 
-    model_config = ConfigDict(from_attributes=True, frozen=True)
+    model_config = ConfigDict(from_attributes=True, frozen=True, strict=True, extra="forbid")
 
     id: uuid.UUID
     project_id: uuid.UUID
@@ -199,7 +199,7 @@ class TraceLink(BaseModel):
     grounding context for the RAG layer.
     """
 
-    model_config = ConfigDict(from_attributes=True, frozen=True)
+    model_config = ConfigDict(from_attributes=True, frozen=True, strict=True, extra="forbid")
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
     project_id: uuid.UUID

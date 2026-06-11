@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from typing import Annotated, cast
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, status
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.deps import auth_guard, get_db
@@ -41,11 +41,13 @@ class RequirementSpecResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class RequirementSpecListResponse(BaseModel):
     """Response model for requirement spec list."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     specs: list[RequirementSpecResponse]
     total: int
@@ -68,11 +70,13 @@ class TestSpecResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class TestSpecListResponse(BaseModel):
     """Response model for test spec list."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     specs: list[TestSpecResponse]
     total: int
@@ -94,11 +98,13 @@ class EpicSpecResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class EpicSpecListResponse(BaseModel):
     """Response model for epic spec list."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     specs: list[EpicSpecResponse]
     total: int
@@ -121,11 +127,13 @@ class UserStorySpecResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class UserStorySpecListResponse(BaseModel):
     """Response model for user story spec list."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     specs: list[UserStorySpecResponse]
     total: int
@@ -148,11 +156,13 @@ class TaskSpecResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class TaskSpecListResponse(BaseModel):
     """Response model for task spec list."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     specs: list[TaskSpecResponse]
     total: int
@@ -175,11 +185,13 @@ class DefectSpecResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class DefectSpecListResponse(BaseModel):
     """Response model for defect spec list."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     specs: list[DefectSpecResponse]
     total: int
@@ -187,6 +199,8 @@ class DefectSpecListResponse(BaseModel):
 
 class RequirementQualityStats(BaseModel):
     """Statistics for requirement quality across a project."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total_requirements: int
     verified_count: int
@@ -203,6 +217,8 @@ class RequirementQualityStats(BaseModel):
 class TestHealthStats(BaseModel):
     """Health statistics for tests in a project."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     total_tests: int
     passing_tests: int
     failing_tests: int
@@ -217,6 +233,8 @@ class TestHealthStats(BaseModel):
 class DefectMetrics(BaseModel):
     """Metrics for defects in a project."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     total_defects: int
     open_defects: int
     closed_defects: int
@@ -229,6 +247,8 @@ class DefectMetrics(BaseModel):
 
 class ItemSpecStats(BaseModel):
     """Aggregate statistics across all item spec types."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     total_items: int
@@ -246,6 +266,8 @@ class ItemSpecStats(BaseModel):
 class RequirementSpecCreate(BaseModel):
     """Schema for creating requirement specification."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     item_id: str
     requirement_type: str  # functional, non_functional, constraint
     risk_level: str  # low, medium, high, critical
@@ -256,6 +278,8 @@ class RequirementSpecCreate(BaseModel):
 class RequirementSpecUpdate(BaseModel):
     """Schema for updating requirement specification."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     requirement_type: str | None = None
     risk_level: str | None = None
     acceptance_criteria: str | None = None
@@ -264,6 +288,8 @@ class RequirementSpecUpdate(BaseModel):
 
 class TestSpecCreate(BaseModel):
     """Schema for creating test specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     item_id: str
     test_type: str  # unit, integration, e2e, performance, security
@@ -274,6 +300,8 @@ class TestSpecCreate(BaseModel):
 class TestSpecUpdate(BaseModel):
     """Schema for updating test specification."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     test_type: str | None = None
     coverage_percentage: float | None = None
     metadata: dict[str, object] | None = None
@@ -281,6 +309,8 @@ class TestSpecUpdate(BaseModel):
 
 class EpicSpecCreate(BaseModel):
     """Schema for creating epic specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     item_id: str
     epic_type: str
@@ -293,6 +323,8 @@ class EpicSpecCreate(BaseModel):
 class EpicSpecUpdate(BaseModel):
     """Schema for updating epic specification."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     epic_type: str | None = None
     story_points: int | None = None
     business_value: str | None = None
@@ -302,6 +334,8 @@ class EpicSpecUpdate(BaseModel):
 
 class UserStorySpecCreate(BaseModel):
     """Schema for creating user story specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     item_id: str
     user_persona: str
@@ -316,6 +350,8 @@ class UserStorySpecCreate(BaseModel):
 class UserStorySpecUpdate(BaseModel):
     """Schema for updating user story specification."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     user_persona: str | None = None
     business_value: str | None = None
     acceptance_criteria: list[str] | None = None
@@ -328,6 +364,8 @@ class UserStorySpecUpdate(BaseModel):
 class TaskSpecCreate(BaseModel):
     """Schema for creating task specification."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     item_id: str
     task_type: str
     effort_estimate_hours: float
@@ -338,6 +376,8 @@ class TaskSpecCreate(BaseModel):
 
 class TaskSpecUpdate(BaseModel):
     """Schema for updating task specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     task_type: str | None = None
     effort_estimate_hours: float | None = None
@@ -350,6 +390,8 @@ class TaskSpecUpdate(BaseModel):
 class DefectSpecCreate(BaseModel):
     """Schema for creating defect specification."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     item_id: str
     defect_type: str  # bug, regression, issue
     severity: str  # trivial, minor, major, critical, blocker
@@ -361,6 +403,8 @@ class DefectSpecCreate(BaseModel):
 
 class DefectSpecUpdate(BaseModel):
     """Schema for updating defect specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     defect_type: str | None = None
     severity: str | None = None
@@ -492,9 +536,13 @@ async def get_requirement_spec_by_item(
 )
 async def list_requirement_specs(
     _project_id: Annotated[str, Path(description="Project ID")],
-    _requirement_type: Annotated[str | None, Query(description="Filter by requirement type")] = None,
+    _requirement_type: Annotated[
+        str | None, Query(description="Filter by requirement type")
+    ] = None,
     _risk_level: Annotated[str | None, Query(description="Filter by risk level")] = None,
-    _verification_status: Annotated[str | None, Query(description="Filter by verification status")] = None,
+    _verification_status: Annotated[
+        str | None, Query(description="Filter by verification status")
+    ] = None,
     _limit: Annotated[int, Query(ge=1, le=500, description="Result limit")] = 100,
     _offset: Annotated[int, Query(ge=0, description="Result offset")] = 0,
     _claims: dict[str, object] = Depends(auth_guard),
@@ -879,7 +927,9 @@ async def get_test_spec_by_item(
 async def list_test_specs(
     _project_id: Annotated[str, Path(description="Project ID")],
     _test_type: Annotated[str | None, Query(description="Filter by test type")] = None,
-    _is_quarantined: Annotated[bool | None, Query(description="Filter by quarantine status")] = None,
+    _is_quarantined: Annotated[
+        bool | None, Query(description="Filter by quarantine status")
+    ] = None,
     _limit: Annotated[int, Query(ge=1, le=500, description="Result limit")] = 100,
     _offset: Annotated[int, Query(ge=0, description="Result offset")] = 0,
     _claims: dict[str, object] = Depends(auth_guard),
@@ -1761,7 +1811,9 @@ async def get_defect_spec(
 async def list_defect_specs(
     _project_id: Annotated[str, Path(description="Project ID")],
     _severity: Annotated[str | None, Query(description="Filter by severity")] = None,
-    _resolution_status: Annotated[str | None, Query(description="Filter by resolution status")] = None,
+    _resolution_status: Annotated[
+        str | None, Query(description="Filter by resolution status")
+    ] = None,
     _limit: Annotated[int, Query(ge=1, le=500, description="Result limit")] = 100,
     _offset: Annotated[int, Query(ge=0, description="Result offset")] = 0,
     _claims: dict[str, object] = Depends(auth_guard),
@@ -2115,7 +2167,9 @@ async def analyze_ears_pattern(
             requirement_text = request.content
 
         if not requirement_text:
-            raise HTTPException(status_code=400, detail="Requirement content is required for EARS analysis")
+            raise HTTPException(
+                status_code=400, detail="Requirement content is required for EARS analysis"
+            )
 
         # Call the analytics service (cast for checker: we've raised if falsy)
         result = spec_analytics_service.analyze_requirement(requirement_text)
@@ -2128,7 +2182,9 @@ async def analyze_ears_pattern(
             pattern_type = EARSPatternType.COMPLEX
 
         raw_components = ears_analysis.get("components", {})
-        components = {k: EARSComponent(**v) if isinstance(v, dict) else v for k, v in raw_components.items()}
+        components = {
+            k: EARSComponent(**v) if isinstance(v, dict) else v for k, v in raw_components.items()
+        }
 
         suggestions: list[str] = []
         for key in ("validation_issues", "improvement_suggestions", "ambiguous_terms"):
@@ -2200,7 +2256,9 @@ async def analyze_quality_dimensions(
             requirement_text = request.content
 
         if not requirement_text:
-            raise HTTPException(status_code=400, detail="Requirement content is required for quality analysis")
+            raise HTTPException(
+                status_code=400, detail="Requirement content is required for quality analysis"
+            )
 
         # Call the analytics service (cast for checker: we've raised if falsy)
         result = spec_analytics_service.analyze_requirement(requirement_text)
@@ -2240,7 +2298,8 @@ async def analyze_quality_dimensions(
 async def get_version_chain(
     _project_id: Annotated[str, Path(description="Project ID")],
     spec_type: Annotated[
-        str, Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type")
+        str,
+        Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type"),
     ],
     spec_id: Annotated[str, Path(description="Spec ID")],
     limit: Annotated[int, Query(ge=1, le=200, description="Max chain entries")] = 50,
@@ -2306,7 +2365,8 @@ async def get_version_chain(
 async def verify_baseline(
     _project_id: Annotated[str, Path(description="Project ID")],
     _spec_type: Annotated[
-        str, Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type")
+        str,
+        Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type"),
     ],
     spec_id: Annotated[str, Path(description="Spec ID")],
     baseline_root: Annotated[str, Query(description="Merkle root to verify against")],
@@ -2392,11 +2452,13 @@ async def verify_baseline(
 async def get_merkle_proof(
     _project_id: Annotated[str, Path(description="Project ID")],
     _spec_type: Annotated[
-        str, Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type")
+        str,
+        Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type"),
     ],
     spec_id: Annotated[str, Path(description="Spec ID")],
     baseline_id: Annotated[
-        str | None, Query(description="Baseline ID to get proof from (optional, uses latest if not specified)")
+        str | None,
+        Query(description="Baseline ID to get proof from (optional, uses latest if not specified)"),
     ] = None,
     _claims: dict[str, object] = Depends(auth_guard),
     db: AsyncSession = Depends(get_db),
@@ -2478,7 +2540,8 @@ async def get_merkle_proof(
 async def get_content_address(
     project_id: Annotated[str, Path(description="Project ID")],
     spec_type: Annotated[
-        str, Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type")
+        str,
+        Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type"),
     ],
     spec_id: Annotated[str, Path(description="Spec ID")],
     _claims: Annotated[dict[str, object], Depends(auth_guard)],
@@ -2631,12 +2694,18 @@ async def analyze_odc_classification(
             if hasattr(request, "description"):
                 description = str(request.description or "")
             if hasattr(request, "trigger_context"):
-                trigger_context = None if request.trigger_context is None else str(request.trigger_context)
+                trigger_context = (
+                    None if request.trigger_context is None else str(request.trigger_context)
+                )
             if hasattr(request, "impact_description"):
-                impact_description = None if request.impact_description is None else str(request.impact_description)
+                impact_description = (
+                    None if request.impact_description is None else str(request.impact_description)
+                )
 
         if not description:
-            raise HTTPException(status_code=400, detail="Defect description is required for ODC classification")
+            raise HTTPException(
+                status_code=400, detail="Defect description is required for ODC classification"
+            )
 
         # Call the analytics service (explicit types for checker)
         classification = spec_analytics_service.classify_defect(
@@ -2733,7 +2802,8 @@ async def analyze_cvss_score(
 async def analyze_impact(
     _project_id: Annotated[str, Path(description="Project ID")],
     _spec_type: Annotated[
-        str, Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type")
+        str,
+        Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type"),
     ],
     spec_id: Annotated[str, Path(description="Spec ID")],
     request: AnalyzeImpactRequest | None = None,
@@ -2767,7 +2837,9 @@ async def analyze_impact(
                 adjacency = cast("dict[str, list[str]]", request.adjacency or {})
             if hasattr(request, "item_metadata"):
                 raw = request.item_metadata
-                item_metadata = cast("dict[str, dict[str, object]] | None", raw if isinstance(raw, dict) else None)
+                item_metadata = cast(
+                    "dict[str, dict[str, object]] | None", raw if isinstance(raw, dict) else None
+                )
             if hasattr(request, "max_depth"):
                 max_depth = request.max_depth or 5
 
@@ -2802,7 +2874,9 @@ async def analyze_impact(
         return ImpactAnalysisResponse(
             spec_id=result.source_item_id,
             direct_impacts=[to_impacted(x, "direct", 1) for x in result.direct_impacts],
-            transitive_impacts=[to_impacted(x, "transitive", result.impact_depth) for x in result.transitive_impacts],
+            transitive_impacts=[
+                to_impacted(x, "transitive", result.impact_depth) for x in result.transitive_impacts
+            ],
             direct_impact_count=len(result.direct_impacts),
             transitive_impact_count=len(result.transitive_impacts),
             total_affected=result.blast_radius,
@@ -2825,7 +2899,9 @@ async def analyze_impact(
 )
 async def calculate_prioritization(
     _project_id: Annotated[str, Path(description="Project ID")],
-    _spec_type: Annotated[str, Path(pattern="^(requirements|epics|stories|tasks)$", description="Spec type")],
+    _spec_type: Annotated[
+        str, Path(pattern="^(requirements|epics|stories|tasks)$", description="Spec type")
+    ],
     spec_id: Annotated[str, Path(description="Spec ID")],
     request: CalculatePrioritizationRequest | None = None,
     _claims: dict[str, object] = Depends(auth_guard),
@@ -2876,7 +2952,10 @@ async def calculate_prioritization(
 
         # Calculate RICE from flat request fields
         rice_result: RICEScore | None = None
-        if all(getattr(request, a, None) is not None for a in ("reach", "impact", "confidence", "effort")):
+        if all(
+            getattr(request, a, None) is not None
+            for a in ("reach", "impact", "confidence", "effort")
+        ):
             rice_score = spec_analytics_service.calculate_rice(
                 reach=request.reach or 0,
                 impact=request.impact or 1,
@@ -3044,7 +3123,9 @@ async def analyze_suspect_links(
                 source_id=link.source_id,
                 target_id=link.target_id,
                 link_type="implements",
-                suspicion_reason=link.reason.value if hasattr(link.reason, "value") else str(link.reason),
+                suspicion_reason=link.reason.value
+                if hasattr(link.reason, "value")
+                else str(link.reason),
                 confidence=0.5,
             )
             for link in suspect_links
@@ -3070,7 +3151,8 @@ async def analyze_suspect_links(
 async def analyze_similarity(
     project_id: Annotated[str, Path(description="Project ID")],
     spec_type: Annotated[
-        str, Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type")
+        str,
+        Path(pattern="^(requirements|tests|epics|stories|tasks|defects)$", description="Spec type"),
     ],
     spec_id: Annotated[str, Path(description="Spec ID")],
     request: AnalyzeSimilarityRequest | None = None,
@@ -3105,7 +3187,9 @@ async def analyze_similarity(
         search_spec_type = None if include_all_types else spec_type
 
         # Try to get embedding for the source spec
-        source_embedding = await embedding_repo.get_embedding(db, spec_id, spec_type, embedding_model_name)
+        source_embedding = await embedding_repo.get_embedding(
+            db, spec_id, spec_type, embedding_model_name
+        )
 
         if not source_embedding:
             # No embedding exists yet - return empty response

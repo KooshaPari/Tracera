@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from tracertm.api.deps import auth_guard
 from tracertm.services.github_import_service import BulkIngestionResult, GitHubImportService
@@ -15,11 +15,13 @@ router = APIRouter(prefix="/ingest", tags=["ingest"])
 
 
 class GitHubIssueIngestRequest(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
     repo: str = Field(min_length=1)
     issues: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class JiraIssueIngestRequest(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
     issues: list[dict[str, Any]] = Field(default_factory=list)
 
 
@@ -29,7 +31,6 @@ async def ingest_github_issues(
     _claims: Annotated[dict[str, Any], Depends(auth_guard)],
 ) -> BulkIngestionResult:
     """Bulk-ingest GitHub issues into Requirements + TraceLinks."""
-
     service = GitHubImportService()
     return service.import_issues(body.repo, body.issues)
 
@@ -40,7 +41,5 @@ async def ingest_jira_issues(
     _claims: Annotated[dict[str, Any], Depends(auth_guard)],
 ) -> BulkIngestionResult:
     """Bulk-ingest Jira issues into Requirements + TraceLinks."""
-
     service = JiraImportService()
     return service.import_issues(body.issues)
-

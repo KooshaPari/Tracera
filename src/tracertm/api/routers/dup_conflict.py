@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from tracertm.api.deps import auth_guard
 from tracertm.models.trace_link import Artifact, ArtifactKind, TraceLink, TraceLinkType
@@ -40,6 +40,8 @@ router = APIRouter(prefix="/quality", tags=["quality"])
 class ArtifactPayload(BaseModel):
     """Wire format for an artifact submitted to the duplicates endpoint."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: str
     project_id: str
     kind: ArtifactKind = ArtifactKind.REQUIREMENT
@@ -50,6 +52,8 @@ class ArtifactPayload(BaseModel):
 
 class TraceLinkPayload(BaseModel):
     """Wire format for a TraceLink submitted to the conflicts endpoint."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: str
     project_id: str
@@ -63,6 +67,8 @@ class TraceLinkPayload(BaseModel):
 class DuplicatesRequest(BaseModel):
     """Request body for the duplicates endpoint."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     artifacts: list[ArtifactPayload]
     threshold: float = Field(default=0.75, gt=0.0, le=1.0)
 
@@ -70,11 +76,15 @@ class DuplicatesRequest(BaseModel):
 class ConflictsRequest(BaseModel):
     """Request body for the conflicts endpoint."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     links: list[TraceLinkPayload]
 
 
 class DuplicateFindingOut(BaseModel):
     """Serialisable duplicate finding."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     artifact_a_id: str
     artifact_a_title: str
@@ -85,6 +95,8 @@ class DuplicateFindingOut(BaseModel):
 
 class ConflictFindingOut(BaseModel):
     """Serialisable conflict finding."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     link_a_id: str
     link_b_id: str
@@ -98,6 +110,8 @@ class ConflictFindingOut(BaseModel):
 class DuplicatesResponse(BaseModel):
     """Response for the duplicates endpoint."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     threshold: float
     total: int
     findings: list[DuplicateFindingOut]
@@ -105,6 +119,8 @@ class DuplicatesResponse(BaseModel):
 
 class ConflictsResponse(BaseModel):
     """Response for the conflicts endpoint."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     findings: list[ConflictFindingOut]

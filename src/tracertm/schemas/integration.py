@@ -3,7 +3,7 @@
 from datetime import datetime
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # ==================== ENUMS ====================
 
@@ -100,6 +100,8 @@ class ConflictResolutionStatus(StrEnum):
 class OAuthStartRequest(BaseModel):
     """Request to start OAuth flow."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     provider: IntegrationProvider
     scopes: list[str] | None = None
 
@@ -107,12 +109,16 @@ class OAuthStartRequest(BaseModel):
 class OAuthStartResponse(BaseModel):
     """Response with OAuth redirect URL."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     oauth_url: str
     state: str
 
 
 class OAuthCallbackRequest(BaseModel):
     """Receive OAuth callback."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     code: str
     state: str
@@ -125,6 +131,8 @@ class OAuthCallbackRequest(BaseModel):
 
 class IntegrationCredentialCreate(BaseModel):
     """Create credential via OAuth or PAT."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     provider: IntegrationProvider
     credential_type: CredentialType = CredentialType.OAUTH_TOKEN
@@ -143,6 +151,8 @@ class IntegrationCredentialCreate(BaseModel):
 
 class IntegrationCredentialUpdate(BaseModel):
     """Update credential."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     scopes: list[str] | None = None
     provider_metadata: dict[str, object] | None = None
@@ -165,11 +175,13 @@ class IntegrationCredentialResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class IntegrationCredentialList(BaseModel):
     """List of credentials."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     credentials: list[IntegrationCredentialResponse]
     total: int
@@ -177,6 +189,8 @@ class IntegrationCredentialList(BaseModel):
 
 class CredentialValidationResult(BaseModel):
     """Result of credential validation."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     valid: bool
     message: str | None = None
@@ -190,9 +204,13 @@ class CredentialValidationResult(BaseModel):
 class IntegrationMappingCreate(BaseModel):
     """Create a new mapping."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     credential_id: str
     tracertm_item_id: str
-    external_system: str = Field(description="Type of external item: github_issue, github_pr, linear_issue, etc.")
+    external_system: str = Field(
+        description="Type of external item: github_issue, github_pr, linear_issue, etc."
+    )
     external_id: str = Field(description="External system ID like 'owner/repo#42' or 'LINEAR-123'")
     external_url: str | None = None
     mapping_metadata: dict[str, object] | None = None
@@ -204,6 +222,8 @@ class IntegrationMappingCreate(BaseModel):
 
 class IntegrationMappingUpdate(BaseModel):
     """Update mapping."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     direction: MappingDirection | None = None
     auto_sync: bool | None = None
@@ -237,11 +257,13 @@ class IntegrationMappingResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class IntegrationMappingList(BaseModel):
     """List of mappings."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     mappings: list[IntegrationMappingResponse]
     total: int
@@ -269,11 +291,13 @@ class SyncQueueItemResponse(BaseModel):
     processing_time_ms: int | None = None
     created_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class SyncQueueList(BaseModel):
     """List of sync queue items."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     items: list[SyncQueueItemResponse]
     total: int
@@ -282,12 +306,16 @@ class SyncQueueList(BaseModel):
 class TriggerSyncRequest(BaseModel):
     """Request to trigger manual sync."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     direction: SyncDirection | None = None
     force: bool = False
 
 
 class TriggerSyncResponse(BaseModel):
     """Response from manual sync trigger."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     queue_id: str
     mapping_id: str
@@ -300,6 +328,8 @@ class TriggerSyncResponse(BaseModel):
 
 class SyncStatusSummary(BaseModel):
     """Overall sync status summary."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total_mappings: int
     active_mappings: int
@@ -314,6 +344,8 @@ class SyncStatusSummary(BaseModel):
 
 class SyncStatusResponse(BaseModel):
     """Detailed sync status response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     summary: SyncStatusSummary
     queue: list[SyncQueueItemResponse]
@@ -341,11 +373,13 @@ class SyncLogResponse(BaseModel):
     sync_metadata: dict[str, object]
     created_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class SyncLogList(BaseModel):
     """List of sync logs."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     logs: list[SyncLogResponse]
     total: int
@@ -368,11 +402,13 @@ class SyncConflictResponse(BaseModel):
     detected_at: datetime
     resolved_at: datetime | None = None
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class SyncConflictList(BaseModel):
     """List of conflicts."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     conflicts: list[SyncConflictResponse]
     total: int
@@ -381,12 +417,16 @@ class SyncConflictList(BaseModel):
 class ConflictResolutionRequest(BaseModel):
     """Resolve conflict."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     resolution: str = Field(description="Value to use: 'tracertm' or 'external' or actual value")
     notes: str | None = None
 
 
 class ConflictResolutionResponse(BaseModel):
     """Conflict resolution response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     conflict_id: str
     resolved: bool
@@ -400,6 +440,8 @@ class ConflictResolutionResponse(BaseModel):
 class ExternalItemSearchRequest(BaseModel):
     """Search for external items."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     credential_id: str
     query: str
     system: str | None = None  # github_issues, github_prs, linear_issues
@@ -408,6 +450,8 @@ class ExternalItemSearchRequest(BaseModel):
 
 class GitHubRepo(BaseModel):
     """GitHub repository info."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: int
     name: str
@@ -420,6 +464,8 @@ class GitHubRepo(BaseModel):
 
 class GitHubIssue(BaseModel):
     """GitHub issue info."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: int
     number: int
@@ -435,6 +481,8 @@ class GitHubIssue(BaseModel):
 
 class GitHubPullRequest(BaseModel):
     """GitHub pull request info."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: int
     number: int
@@ -453,6 +501,8 @@ class GitHubPullRequest(BaseModel):
 class LinearIssue(BaseModel):
     """Linear issue info."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: str
     identifier: str  # e.g., "LINEAR-123"
     title: str
@@ -469,6 +519,8 @@ class LinearIssue(BaseModel):
 class LinearTeam(BaseModel):
     """Linear team info."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: str
     name: str
     key: str
@@ -477,6 +529,8 @@ class LinearTeam(BaseModel):
 
 class ExternalItemSearchResponse(BaseModel):
     """External item search results."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     items: list[dict[str, object]]
     total: int
@@ -489,12 +543,16 @@ class ExternalItemSearchResponse(BaseModel):
 class GitHubRepoList(BaseModel):
     """List of GitHub repositories."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     repos: list[GitHubRepo]
     total: int
 
 
 class LinearTeamList(BaseModel):
     """List of Linear teams."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     teams: list[LinearTeam]
     total: int
@@ -505,6 +563,8 @@ class LinearTeamList(BaseModel):
 
 class IntegrationStats(BaseModel):
     """Integration statistics for a project."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total_credentials: int
     active_credentials: int

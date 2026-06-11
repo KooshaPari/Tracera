@@ -17,7 +17,7 @@ import uuid
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from tracertm.api.deps import auth_guard
 from tracertm.models.trace_link import Artifact, ArtifactKind, TraceLink, TraceLinkType
@@ -38,6 +38,8 @@ router: APIRouter = APIRouter(prefix="/quality", tags=["Quality"])
 class ArtifactIn(BaseModel):
     """Minimal artifact payload for the scoring endpoint."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: uuid.UUID
     project_id: uuid.UUID
     kind: ArtifactKind
@@ -48,6 +50,8 @@ class ArtifactIn(BaseModel):
 
 class TraceLinkIn(BaseModel):
     """Minimal trace link payload for the scoring endpoint."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
     project_id: uuid.UUID
@@ -61,12 +65,16 @@ class TraceLinkIn(BaseModel):
 class ScoreRequest(BaseModel):
     """Request body: graph snapshot to score."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     artifacts: list[ArtifactIn] = Field(default_factory=list)
     links: list[TraceLinkIn] = Field(default_factory=list)
 
 
 class PerRequirementScoreOut(BaseModel):
     """Per-requirement metrics in the response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     requirement_id: uuid.UUID
     title: str
@@ -78,6 +86,8 @@ class PerRequirementScoreOut(BaseModel):
 
 class ScoreResponse(BaseModel):
     """Traceability health score response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total_requirements: int
     total_artifacts: int

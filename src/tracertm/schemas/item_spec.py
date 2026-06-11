@@ -98,6 +98,8 @@ class RiskLevel(StrEnum):
 class QualityIssue(BaseModel):
     """A detected quality issue/smell."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     dimension: QualityDimension
     severity: str = Field(..., pattern="^(error|warning|info)$")
     message: str
@@ -107,6 +109,8 @@ class QualityIssue(BaseModel):
 
 class ChangeHistoryEntry(BaseModel):
     """A change history entry."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     timestamp: datetime
     changed_by: str
@@ -119,6 +123,8 @@ class ChangeHistoryEntry(BaseModel):
 class VerificationEvidence(BaseModel):
     """Evidence for requirement verification."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     type: str  # test, review, demo, document
     reference_id: str | None = None
     reference_url: str | None = None
@@ -130,6 +136,8 @@ class VerificationEvidence(BaseModel):
 class Invariant(BaseModel):
     """A formal invariant condition."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: str
     description: str
     expression: str | None = None  # Formal expression
@@ -139,6 +147,8 @@ class Invariant(BaseModel):
 
 class TestRunSummary(BaseModel):
     """Summary of a test run."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     run_id: str
     timestamp: datetime
@@ -151,6 +161,8 @@ class TestRunSummary(BaseModel):
 class AcceptanceCriterion(BaseModel):
     """An acceptance criterion with verification status."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: str
     description: str
     verification_status: VerificationStatus = VerificationStatus.UNVERIFIED
@@ -161,6 +173,8 @@ class AcceptanceCriterion(BaseModel):
 
 class SubtaskEntry(BaseModel):
     """A subtask within a user story."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: str
     title: str
@@ -173,6 +187,8 @@ class SubtaskEntry(BaseModel):
 class TimeEntry(BaseModel):
     """A time tracking entry."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: str
     user: str
     hours: float = Field(gt=0)
@@ -182,6 +198,8 @@ class TimeEntry(BaseModel):
 
 class BlockerEntry(BaseModel):
     """A blocker entry."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     id: str
     description: str
@@ -193,6 +211,8 @@ class BlockerEntry(BaseModel):
 class ChecklistItem(BaseModel):
     """A checklist item for definition of done."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     id: str
     text: str
     checked: bool = False
@@ -200,6 +220,8 @@ class ChecklistItem(BaseModel):
 
 class ImpactAssessment(BaseModel):
     """Impact assessment for a requirement change."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     affected_components: list[str] = Field(default_factory=list)
     affected_tests: list[str] = Field(default_factory=list)
@@ -210,6 +232,8 @@ class ImpactAssessment(BaseModel):
 
 class SemanticSimilarity(BaseModel):
     """Semantic similarity information."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     similar_item_id: str
     similarity_score: float = Field(..., ge=0, le=1)
@@ -222,6 +246,8 @@ class SemanticSimilarity(BaseModel):
 
 class RequirementSpecCreate(BaseModel):
     """Create a requirement specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     item_id: str
 
@@ -260,6 +286,8 @@ class RequirementSpecCreate(BaseModel):
 
 class RequirementSpecUpdate(BaseModel):
     """Update a requirement specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     requirement_type: RequirementType | None = None
     ears_trigger: str | None = None
@@ -362,11 +390,13 @@ class RequirementSpecResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class RequirementSpecListResponse(BaseModel):
     """Response for list of requirement specifications."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     requirement_specs: list[RequirementSpecResponse]
@@ -377,6 +407,8 @@ class RequirementSpecListResponse(BaseModel):
 
 class TestSpecCreate(BaseModel):
     """Create a test specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     item_id: str
 
@@ -410,6 +442,8 @@ class TestSpecCreate(BaseModel):
 
 class TestSpecUpdate(BaseModel):
     """Update a test specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     test_type: TestType | None = None
     test_framework: str | None = Field(None, max_length=100)
@@ -515,11 +549,13 @@ class TestSpecResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class TestSpecListResponse(BaseModel):
     """Response for list of test specifications."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     test_specs: list[TestSpecResponse]
@@ -530,6 +566,8 @@ class TestSpecListResponse(BaseModel):
 
 class EpicSpecCreate(BaseModel):
     """Create an epic specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     item_id: str
 
@@ -560,6 +598,8 @@ class EpicSpecCreate(BaseModel):
 
 class EpicSpecUpdate(BaseModel):
     """Update an epic specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     business_objective: str | None = None
     success_criteria: list[str] | None = None
@@ -636,11 +676,13 @@ class EpicSpecResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class EpicSpecListResponse(BaseModel):
     """Response for list of epic specifications."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     epic_specs: list[EpicSpecResponse]
@@ -651,6 +693,8 @@ class EpicSpecListResponse(BaseModel):
 
 class UserStorySpecCreate(BaseModel):
     """Create a user story specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     item_id: str
 
@@ -680,6 +724,8 @@ class UserStorySpecCreate(BaseModel):
 
 class UserStorySpecUpdate(BaseModel):
     """Update a user story specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     user_persona: str | None = None
     goal: str | None = None
@@ -756,11 +802,13 @@ class UserStorySpecResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class UserStorySpecListResponse(BaseModel):
     """Response for list of user story specifications."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     user_story_specs: list[UserStorySpecResponse]
@@ -771,6 +819,8 @@ class UserStorySpecListResponse(BaseModel):
 
 class TaskSpecCreate(BaseModel):
     """Create a task specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     item_id: str
 
@@ -796,6 +846,8 @@ class TaskSpecCreate(BaseModel):
 
 class TaskSpecUpdate(BaseModel):
     """Update a task specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     description: str | None = None
     acceptance_criteria: list[AcceptanceCriterion] | None = None
@@ -856,11 +908,13 @@ class TaskSpecResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class TaskSpecListResponse(BaseModel):
     """Response for list of task specifications."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     task_specs: list[TaskSpecResponse]
@@ -871,6 +925,8 @@ class TaskSpecListResponse(BaseModel):
 
 class DefectSpecCreate(BaseModel):
     """Create a defect specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     item_id: str
 
@@ -905,6 +961,8 @@ class DefectSpecCreate(BaseModel):
 
 class DefectSpecUpdate(BaseModel):
     """Update a defect specification."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     defect_title: str | None = None
     defect_description: str | None = None
@@ -987,11 +1045,13 @@ class DefectSpecResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, strict=True, extra="forbid")
 
 
 class DefectSpecListResponse(BaseModel):
     """Response for list of defect specifications."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total: int
     defect_specs: list[DefectSpecResponse]
@@ -1002,6 +1062,8 @@ class DefectSpecListResponse(BaseModel):
 
 class RequirementQualityStats(BaseModel):
     """Statistics for requirement specifications."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     total_requirements: int
@@ -1027,6 +1089,8 @@ class RequirementQualityStats(BaseModel):
 
 class TestHealthStats(BaseModel):
     """Statistics for test specifications."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     total_tests: int
@@ -1056,6 +1120,8 @@ class TestHealthStats(BaseModel):
 class EpicProgressStats(BaseModel):
     """Statistics for epic specifications."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     project_id: str
     total_epics: int
 
@@ -1080,6 +1146,8 @@ class EpicProgressStats(BaseModel):
 
 class UserStoryHealthStats(BaseModel):
     """Statistics for user story specifications."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     total_user_stories: int
@@ -1107,6 +1175,8 @@ class UserStoryHealthStats(BaseModel):
 class TaskProgressStats(BaseModel):
     """Statistics for task specifications."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     project_id: str
     total_tasks: int
 
@@ -1130,6 +1200,8 @@ class TaskProgressStats(BaseModel):
 
 class DefectHealthStats(BaseModel):
     """Statistics for defect specifications."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     total_defects: int
@@ -1158,6 +1230,8 @@ class DefectHealthStats(BaseModel):
 class ItemSpecStats(BaseModel):
     """Aggregate statistics for all item specifications."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     project_id: str
     generated_at: datetime
 
@@ -1182,6 +1256,8 @@ class ItemSpecStats(BaseModel):
 class ItemSpecBulkCreateRequest(BaseModel):
     """Request for bulk creating item specifications."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     item_specs: list[
         RequirementSpecCreate
         | TestSpecCreate
@@ -1195,11 +1271,15 @@ class ItemSpecBulkCreateRequest(BaseModel):
 class ItemSpecBulkUpdateRequest(BaseModel):
     """Request for bulk updating item specifications."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     item_specs: list[dict[str, object]]  # id + update fields
 
 
 class ItemSpecBulkOperationResponse(BaseModel):
     """Response for bulk operations."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     total_processed: int
     successful: int

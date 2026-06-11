@@ -2,11 +2,13 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TestSuiteTestCaseCreate(BaseModel):
     """Schema for adding a test case to a suite."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     test_case_id: str
     order_index: int = 0
@@ -28,11 +30,13 @@ class TestSuiteTestCaseResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class TestSuiteCreate(BaseModel):
     """Schema for creating a test suite."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     name: str = Field(..., min_length=1, max_length=500)
     description: str | None = Field(None, max_length=5000)
@@ -54,6 +58,8 @@ class TestSuiteCreate(BaseModel):
 
 class TestSuiteUpdate(BaseModel):
     """Schema for updating a test suite."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     name: str | None = Field(None, min_length=1, max_length=500)
     description: str | None = Field(None, max_length=5000)
@@ -105,11 +111,13 @@ class TestSuiteResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class TestSuiteListResponse(BaseModel):
     """Response schema for listing test suites."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     test_suites: list[TestSuiteResponse]
     total: int
@@ -117,6 +125,8 @@ class TestSuiteListResponse(BaseModel):
 
 class TestSuiteStatusTransition(BaseModel):
     """Schema for transitioning suite status."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     new_status: str = Field(..., pattern="^(draft|active|deprecated|archived)$")
     reason: str | None = None
@@ -135,11 +145,13 @@ class TestSuiteActivityResponse(BaseModel):
     metadata: dict[str, object] | None
     created_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(strict=True, extra="forbid", from_attributes=True)
 
 
 class TestSuiteActivitiesResponse(BaseModel):
     """Response schema for suite activities list."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     suite_id: str
     activities: list[TestSuiteActivityResponse]
@@ -147,6 +159,8 @@ class TestSuiteActivitiesResponse(BaseModel):
 
 class TestSuiteStats(BaseModel):
     """Statistics for test suites in a project."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     project_id: str
     total: int

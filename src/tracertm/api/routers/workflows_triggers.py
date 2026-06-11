@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Annotated, Any, cast
 
 from fastapi import Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.api.routers.workflows import ensure_write_permission, router
@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
 class WorkflowTriggerPayload(BaseModel):
     """Request payload for triggering a workflow by name."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     workflow_name: str
     input: dict[str, Any]
@@ -58,7 +60,9 @@ async def trigger_workflow_endpoint(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}
 
 
@@ -91,7 +95,9 @@ async def trigger_graph_snapshot(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}
 
 
@@ -124,7 +130,9 @@ async def trigger_graph_validation(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}
 
 
@@ -154,7 +162,9 @@ async def trigger_graph_export(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}
 
 
@@ -196,7 +206,9 @@ async def trigger_graph_diff(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}
 
 
@@ -226,7 +238,9 @@ async def trigger_integrations_sync(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}
 
 
@@ -256,5 +270,7 @@ async def trigger_integrations_retry(
         )
         await db.commit()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to record workflow run: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"Failed to record workflow run: {exc}"
+        ) from exc
     return {"status": "queued", "result": result}

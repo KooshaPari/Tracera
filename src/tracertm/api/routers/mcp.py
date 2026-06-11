@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from mcp.server.fastmcp import FastMCP
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sse_starlette.sse import EventSourceResponse
 
 from tracertm.api.deps import auth_guard
@@ -55,6 +55,8 @@ router = APIRouter(prefix="/mcp", tags=["MCP"])
 class JSONRPCRequest(BaseModel):
     """JSON-RPC 2.0 request."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     jsonrpc: str = Field("2.0", description="JSON-RPC version")
     method: str = Field(..., description="Method name")
     params: dict[str, Any] | None = Field(None, description="Method parameters")
@@ -63,6 +65,8 @@ class JSONRPCRequest(BaseModel):
 
 class JSONRPCResponse(BaseModel):
     """JSON-RPC 2.0 response."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     jsonrpc: str = Field("2.0", description="JSON-RPC version")
     result: object | None = None
@@ -73,6 +77,8 @@ class JSONRPCResponse(BaseModel):
 class ToolInfo(BaseModel):
     """Information about an available MCP tool."""
 
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     name: str
     description: str | None = None
     input_schema: dict[str, Any] | None = Field(None, alias="inputSchema")
@@ -80,6 +86,8 @@ class ToolInfo(BaseModel):
 
 class ToolsListResponse(BaseModel):
     """Response for tools list endpoint."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
 
     tools: list[ToolInfo]
 
@@ -108,7 +116,9 @@ def _set_user_context(claims: dict[str, Any]) -> None:
         logger.debug("Set account context: %s", account_id)
 
 
-async def _handle_mcp_call(method: str, params: dict[str, Any] | None, claims: dict[str, Any]) -> object:
+async def _handle_mcp_call(
+    method: str, params: dict[str, Any] | None, claims: dict[str, Any]
+) -> object:
     """Handle an MCP method call.
 
     Args:
@@ -469,7 +479,9 @@ async def mcp_tools(
 
     tools_data = await _list_tools()
 
-    return ToolsListResponse(tools=[ToolInfo(**tool) for tool in cast("list[dict[str, Any]]", tools_data["tools"])])
+    return ToolsListResponse(
+        tools=[ToolInfo(**tool) for tool in cast("list[dict[str, Any]]", tools_data["tools"])]
+    )
 
 
 # =============================================================================
