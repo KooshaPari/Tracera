@@ -99,7 +99,13 @@ pub fn compute_impact(
         }
     }
 
-    // BFS from each seed
+    // BFS from each seed.
+    //
+    // The `via` path is stored ONLY in the BlastNode (set on first discovery);
+    // it is NOT propagated through the queue. Earlier versions cloned a growing
+    // `via_types: Vec<TraceLinkType>` into the queue on every pop, which made
+    // the 10k-node regression gate O(N^2). Keeping the queue element to
+    // (node, depth, decay) makes the traversal O(N + E).
     let mut visited: HashMap<String, BlastNode> = HashMap::new();
     for seed in seeds {
         let seed_key = artifact_key(seed);
@@ -112,15 +118,19 @@ pub fn compute_impact(
         });
     }
 
-    let mut queue: VecDeque<(String, u32, f32, Vec<TraceLinkType>)> = VecDeque::new();
+    let mut queue: VecDeque<(String, u32, f32)> = VecDeque::new();
     for seed in seeds {
-        queue.push_back((artifact_key(seed), 0, 1.0, vec![]));
+        queue.push_back((artifact_key(seed), 0, 1.0));
     }
 
-    let mut conflicts = Vec::new();
+    let mut conflicts: Vec<TraceLink> = Vec::new();
+    // Bidirectional adjacency pushes the same conflict link from both endpoints,
+    // so we dedup by (from, to, link_type) before recording it. Otherwise a
+    // single ConflictsWith link in a 2-node graph ends up recorded 3x.
+    let mut conflict_keys: HashSet<(String, String, TraceLinkType)> = HashSet::new();
     let mut max_depth_seen = 0;
 
-    while let Some((node_key, depth, decay, via_types)) = queue.pop_front() {
+    while let Some((node_key, depth, decay)) = queue.pop_front() {
         max_depth_seen = max_depth_seen.max(depth);
         if cfg.max_depth > 0 && depth >= cfg.max_depth {
             report.truncated = true;
@@ -140,26 +150,29 @@ pub fn compute_impact(
                 let weight = kind_weight(nbr_key, cfg);
                 let score = weight * edge_score.abs() * edge_score.signum();
                 if matches!(link.link_type, TraceLinkType::ConflictsWith) {
-                    conflicts.push((*link).clone());
+                    let key = (
+                        artifact_key(&link.from),
+                        artifact_key(&link.to),
+                        link.link_type,
+                    );
+                    if conflict_keys.insert(key) {
+                        conflicts.push((*link).clone());
+                    }
                 }
-                let mut new_via = via_types.clone();
-                new_via.push(link.link_type);
 
                 let should_enqueue = match visited.entry(nbr_key.clone()) {
                     Entry::Vacant(entry) => {
                         entry.insert(BlastNode {
                             artifact: nbr_artifact,
                             depth: depth + 1,
-                            via: new_via.clone(),
+                            via: vec![link.link_type],
                             score,
                         });
                         true
                     }
                     Entry::Occupied(mut entry) => {
                         let node = entry.get_mut();
-                        if node.depth > depth + 1 || node.score.abs() < score.abs() {
-                            node.depth = depth + 1;
-                            node.via = new_via.clone();
+                        if node.score.abs() < score.abs() {
                             node.score = score;
                             true
                         } else {
@@ -168,7 +181,7 @@ pub fn compute_impact(
                     }
                 };
                 if should_enqueue && (depth + 1 <= cfg.max_depth || cfg.max_depth == 0) {
-                    queue.push_back((nbr_key.clone(), depth + 1, decay * 0.85, new_via));
+                    queue.push_back((nbr_key.to_string(), depth + 1, decay * 0.85));
                 }
             }
         }
