@@ -95,3 +95,34 @@ def test_ended_run_rejects_late_logging(tmp_path) -> None:
 
     with pytest.raises(RuntimeError, match="already ended"):
         run.log_metric("loss", 0.1, step=1)
+
+
+def test_emit_creates_trace_span_with_event_attributes(tmp_path, monkeypatch) -> None:
+    spans = []
+
+    class SpanContext:
+        def __init__(self, name, attributes) -> None:
+            self.name = name
+            self.attributes = attributes
+
+        def __enter__(self):
+            spans.append((self.name, self.attributes))
+            return self
+
+        def __exit__(self, *args) -> None:
+            return None
+
+    class FakeTracer:
+        def start_as_current_span(self, name, attributes):
+            return SpanContext(name, attributes)
+
+    monkeypatch.setattr("tracertm.mlflow_compat._TRACER", FakeTracer())
+
+    run = Run(run_id="run-1", tracking_uri=tmp_path.as_uri())
+    run.log_metric("loss", 0.1, step=1)
+
+    assert spans[0][0] == "tracertm.bus.emit"
+    assert spans[0][1]["event.type"] == "runs/create"
+    assert spans[0][1]["event.id"]
+    assert spans[0][1]["source"] == "tracertm.mlflow_compat"
+    assert spans[0][1]["correlation_id"] == "run-1"

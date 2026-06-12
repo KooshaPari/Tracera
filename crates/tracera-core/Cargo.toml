@@ -1,0 +1,24 @@
+[package]
+name = "tracera-core"
+version = "0.1.0"
+edition.workspace = true
+rust-version = "1.82"
+license.workspace = true
+repository.workspace = true
+description = "Core traceability entity model, coverage matrix, and impact analysis for Tracera."
+
+[features]
+default = []
+
+[dependencies]
+chrono.workspace = true
+indexmap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+tempfile.workspace = true

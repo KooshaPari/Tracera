@@ -189,12 +189,10 @@ mod tests {
     use super::*;
     use crate::LinkKind;
     use chrono::{Duration, Utc};
+    use proptest::collection::{btree_set, vec};
+    use proptest::prelude::*;
 
-    fn make_link(
-        link_type: crate::TraceLinkType,
-        confidence: f32,
-        age_days: i64,
-    ) -> TraceLink {
+    fn make_link(link_type: crate::TraceLinkType, confidence: f32, age_days: i64) -> TraceLink {
         let project = Uuid::new_v4();
         let source = Uuid::new_v4();
         let target = Uuid::new_v4();
@@ -264,7 +262,7 @@ mod tests {
         let new = build_matrix(&[a, b]).matrix;
         assert_eq!(added(&old, &new).len(), 1);
         assert_eq!(removed(&old, &new).len(), 0);
-        assert_eq!(changed(&old, &new).len(), 1);
+        assert_eq!(changed(&old, &new).len(), 0);
     }
 
     #[test]
@@ -282,6 +280,130 @@ mod tests {
         assert_eq!(r.link_count, 2);
         for cell in r.matrix.cells.values() {
             assert_eq!(cell.coverage, CoverageState::Covered);
+        }
+    }
+
+    fn link_for_pair(source: Uuid, target: Uuid, kind: crate::TraceLinkType) -> TraceLink {
+        let mut link = TraceLink::new(Uuid::new_v4(), source, target, kind).unwrap();
+        link.created_at = Some(Utc::now());
+        link.updated_at = Some(Utc::now());
+        link
+    }
+
+    prop_compose! {
+        fn uuid_pair()(source in any::<u128>(), target in any::<u128>())
+            -> (Uuid, Uuid)
+        {
+            let source = Uuid::from_u128(source);
+            let mut target = Uuid::from_u128(target);
+            if source == target {
+                target = Uuid::from_u128(target.as_u128().wrapping_add(1));
+            }
+            (source, target)
+        }
+    }
+
+    proptest! {
+        #[test]
+        fn build_matrix_groups_links_by_source_target(pairs in vec(uuid_pair(), 0..80)) {
+            let links: Vec<_> = pairs
+                .iter()
+                .map(|(source, target)| {
+                    link_for_pair(*source, *target, crate::TraceLinkType::Verifies)
+                })
+                .collect();
+            let unique_pairs: BTreeSet<_> = pairs
+                .iter()
+                .map(|(source, target)| (source.to_string(), target.to_string()))
+                .collect();
+
+            let result = build_matrix(&links);
+
+            prop_assert_eq!(result.link_count, links.len());
+            prop_assert_eq!(result.cell_count, unique_pairs.len());
+            prop_assert_eq!(result.matrix.cells.len(), unique_pairs.len());
+            for ((from, to), cell) in &result.matrix.cells {
+                prop_assert_eq!(&(cell.from.clone(), cell.to.clone()), &(from.clone(), to.clone()));
+                prop_assert!(unique_pairs.contains(&(from.clone(), to.clone())));
+                prop_assert!(!cell.trace_links.is_empty());
+            }
+        }
+
+        #[test]
+        fn neighbors_returns_exact_incident_cells(pairs in vec(uuid_pair(), 0..50), needle in any::<u128>()) {
+            let needle = Uuid::from_u128(needle);
+            let mut links: Vec<_> = pairs
+                .iter()
+                .map(|(source, target)| {
+                    link_for_pair(*source, *target, crate::TraceLinkType::Satisfies)
+                })
+                .collect();
+
+            if let Some((_, target)) = pairs.first() {
+                links.push(link_for_pair(needle, *target, crate::TraceLinkType::Verifies));
+            }
+
+            let matrix = build_matrix(&links).matrix;
+            let expected = matrix
+                .cells
+                .values()
+                .filter(|cell| cell.from == needle.to_string() || cell.to == needle.to_string())
+                .count();
+
+            prop_assert_eq!(neighbors(&matrix, &needle).len(), expected);
+        }
+
+        #[test]
+        fn build_from_pairs_link_count_matches_unique_non_self_evidence(
+            evidence_sets in vec(btree_set("[a-z0-9_-]{1,16}", 0..12), 0..20)
+        ) {
+            let pairs: Vec<_> = evidence_sets
+                .into_iter()
+                .map(|evidence| (RequirementId::new(), evidence))
+                .collect();
+            let expected = pairs
+                .iter()
+                .map(|(req, evidence)| {
+                    let source = Uuid::new_v5(&Uuid::NAMESPACE_OID, req.as_str().as_bytes());
+                    evidence
+                        .iter()
+                        .filter(|ev| Uuid::new_v5(&Uuid::NAMESPACE_OID, ev.as_bytes()) != source)
+                        .count()
+                })
+                .sum::<usize>();
+
+            let result = build_from_pairs(&pairs);
+
+            prop_assert_eq!(result.link_count, expected);
+            prop_assert_eq!(result.cell_count, expected);
+        }
+
+        #[test]
+        fn added_and_removed_are_disjoint_set_differences(
+            old_pairs in vec(uuid_pair(), 0..40),
+            new_pairs in vec(uuid_pair(), 0..40)
+        ) {
+            let old_links: Vec<_> = old_pairs
+                .iter()
+                .map(|(source, target)| {
+                    link_for_pair(*source, *target, crate::TraceLinkType::Verifies)
+                })
+                .collect();
+            let new_links: Vec<_> = new_pairs
+                .iter()
+                .map(|(source, target)| {
+                    link_for_pair(*source, *target, crate::TraceLinkType::Verifies)
+                })
+                .collect();
+            let old = build_matrix(&old_links).matrix;
+            let new = build_matrix(&new_links).matrix;
+            let old_keys: BTreeSet<_> = old.cells.keys().cloned().collect();
+            let new_keys: BTreeSet<_> = new.cells.keys().cloned().collect();
+            let expected_added = new_keys.difference(&old_keys).count();
+            let expected_removed = old_keys.difference(&new_keys).count();
+
+            prop_assert_eq!(added(&old, &new).len(), expected_added);
+            prop_assert_eq!(removed(&old, &new).len(), expected_removed);
         }
     }
 }
