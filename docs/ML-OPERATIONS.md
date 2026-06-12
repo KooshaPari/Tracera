@@ -134,6 +134,20 @@ Full rollout:
 
 ## Monitoring
 
+## Observability
+
+Rust bus processing uses `tracera_core::observability` for baseline tracing.
+Call `init_tracing()` during service startup to install a `tracing-subscriber`
+registry with `EnvFilter` support from `RUST_LOG`; repeated calls are safe when
+another subscriber is already installed.
+
+Per-envelope work should run inside `make_span(envelope_id)`, which creates the
+`tracera.bus` span with the `envelope_id` field. Collector wiring is discovered
+with `otlp_endpoint()`, checking `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`,
+`OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_COLLECTOR_ENDPOINT`,
+`OTEL_COLLECTOR_HTTP_ENDPOINT`, then `TRACERA_OTLP_ENDPOINT`. Exporter-owning
+binaries should use that value when attaching an OTLP layer.
+
 Drift detection:
 
 - Track input text length, artifact kind mix, project mix, language, label mix,
