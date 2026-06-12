@@ -20,7 +20,6 @@ pub mod impact;
 pub mod matrix; // Phase 2 stubs — see matrix.rs; excluded from default build until Phase 2 lands.
 pub mod registry;
 pub mod ui_links;
-pub mod config;
 
 pub use ids::*;
 pub use workspace::*;
@@ -30,7 +29,6 @@ pub use impact::*;
 pub use matrix::*;
 pub use registry::*;
 pub use ui_links::*;
-pub use config::*;
 
 // ---------------------------------------------------------------------------
 // Enums (canonical vocabulary shared by SQL, Neo4j, and API layers)
