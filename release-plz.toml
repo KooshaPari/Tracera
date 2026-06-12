@@ -8,5 +8,5 @@ changelog_config = "cliff.toml"
 changelog_update = true
 
 [[package]]
-name = "tracertm"
+name = "tracera-core"
 changelog_path = "CHANGELOG.md"

@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - feature/tracera-core-phase-0-1-2-3
+      - main
   workflow_dispatch:
 
 permissions:
@@ -29,5 +29,4 @@ jobs:
       - name: Run release-plz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: release-plz release-pr --config release-plz.toml
