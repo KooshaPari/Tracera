@@ -1,3 +1,4 @@
+# Source: https://github.com/KooshaPari/phenotype-tooling/blob/main/templates/cliff.toml
 # Configuration for git-cliff: https://git-cliff.org/
 
 [changelog]
