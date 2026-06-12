@@ -6,23 +6,29 @@
 //!
 //! Status: in-progress (2026-06-10). See README.md for the full decouple plan.
 
+use chrono::{DateTime, Utc};
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use uuid::Uuid;
-use chrono::{DateTime, Utc};
-use indexmap::IndexMap;
 
 pub mod ids;
+pub mod workspace;
 
-pub mod matrix; // Phase 2 stubs — see matrix.rs; excluded from default build until Phase 2 lands.
-pub mod impact;
 pub mod coverage;
+pub mod impact;
+pub mod matrix; // Phase 2 stubs — see matrix.rs; excluded from default build until Phase 2 lands.
+pub mod registry;
+pub mod ui_links;
 
 pub use ids::*;
+pub use workspace::*;
 
-pub use matrix::*;
-pub use impact::*;
 pub use coverage::*;
+pub use impact::*;
+pub use matrix::*;
+pub use registry::*;
+pub use ui_links::*;
 
 // ---------------------------------------------------------------------------
 // Enums (canonical vocabulary shared by SQL, Neo4j, and API layers)
@@ -173,6 +179,8 @@ pub struct TraceLink {
     pub project_id: Uuid,
     pub source_artifact_id: Uuid,
     pub target_artifact_id: Uuid,
+    pub from: ArtifactRef,
+    pub to: ArtifactRef,
     pub link_type: TraceLinkType,
     /// 0.0..=1.0; 1.0 for human-curated links.
     pub confidence: f32,
@@ -198,6 +206,14 @@ impl TraceLink {
             project_id,
             source_artifact_id: source,
             target_artifact_id: target,
+            from: ArtifactRef::CodeEntity {
+                id: source.to_string(),
+                lang: "uuid".to_string(),
+            },
+            to: ArtifactRef::CodeEntity {
+                id: target.to_string(),
+                lang: "uuid".to_string(),
+            },
             link_type,
             confidence: 1.0,
             rationale: None,
@@ -212,6 +228,37 @@ impl TraceLink {
         CORE_TRACE_LINK_TYPES.contains(&self.link_type)
     }
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum ArtifactRef {
+    Requirement { id: RequirementId },
+    NonFunctionalRequirement { id: NfrId },
+    Test { id: String },
+    CodeEntity { id: String, lang: String },
+    Journey { id: String },
+    AgentRun { id: String },
+    Evidence { id: String, sha256: String },
+    Document { id: String, range: Option<String> },
+}
+
+impl ArtifactRef {
+    pub fn kind_str(&self) -> String {
+        match self {
+            Self::Requirement { .. } => "requirement",
+            Self::NonFunctionalRequirement { .. } => "nfr",
+            Self::Test { .. } => "test",
+            Self::CodeEntity { .. } => "code",
+            Self::Journey { .. } => "journey",
+            Self::AgentRun { .. } => "agent",
+            Self::Evidence { .. } => "evidence",
+            Self::Document { .. } => "document",
+        }
+        .to_string()
+    }
+}
+
+pub type LinkKind = TraceLinkType;
 
 #[derive(Debug, thiserror::Error)]
 pub enum TraceLinkError {
@@ -265,14 +312,26 @@ pub enum CoverageState {
 
 /// Neo4j relationship labels (one per [`TraceLinkType`]).
 pub const NEO4J_RELATIONSHIP_TYPES: &[&str] = &[
-    "SATISFIES", "VERIFIES", "IMPLEMENTS", "DERIVES_FROM",
-    "REFINES", "CONFLICTS_WITH", "DUPLICATES",
+    "SATISFIES",
+    "VERIFIES",
+    "IMPLEMENTS",
+    "DERIVES_FROM",
+    "REFINES",
+    "CONFLICTS_WITH",
+    "DUPLICATES",
 ];
 
 /// Neo4j node labels.
 pub const NEO4J_NODE_LABELS: &[&str] = &[
-    "Artifact", "Requirement", "Design", "Code", "Test",
-    "Evidence", "Risk", "Rationale", "Project",
+    "Artifact",
+    "Requirement",
+    "Design",
+    "Code",
+    "Test",
+    "Evidence",
+    "Risk",
+    "Rationale",
+    "Project",
 ];
 
 /// Declarative Cypher schema for the trace-link graph projection.
@@ -353,7 +412,10 @@ mod tests {
             updated_at: None,
         };
         let result = Requirement::new(artifact);
-        assert!(matches!(result, Err(TraceLinkError::WrongArtifactKind { .. })));
+        assert!(matches!(
+            result,
+            Err(TraceLinkError::WrongArtifactKind { .. })
+        ));
     }
 
     #[test]
@@ -361,6 +423,35 @@ mod tests {
         assert_eq!(TraceLinkType::Satisfies.as_db_str(), "SATISFIES");
         assert_eq!(TraceLinkType::ConflictsWith.as_db_str(), "CONFLICTS_WITH");
         assert_eq!(TraceLinkType::DerivesFrom.as_db_str(), "DERIVES_FROM");
+    }
+
+    #[test]
+    fn trace_link_ui_link_navigates_from_requirement_to_test() {
+        let mut link = TraceLink::new(
+            Uuid::new_v4(),
+            Uuid::new_v4(),
+            Uuid::new_v4(),
+            TraceLinkType::Verifies,
+        )
+        .unwrap();
+        link.from = ArtifactRef::Requirement {
+            id: RequirementId::from_string("FR-77"),
+        };
+        link.to = ArtifactRef::Test {
+            id: "checkout flow/test verifies receipt".to_string(),
+        };
+
+        let ui_link = link.ui_link();
+
+        assert_eq!(ui_link.href, format!("/trace-links/{}", link.id));
+        assert_eq!(ui_link.source_href, "/requirements/FR-77");
+        assert_eq!(
+            ui_link.target_href,
+            "/tests/checkout%20flow%2Ftest%20verifies%20receipt"
+        );
+        assert_eq!(ui_link.source_label, "FR-77");
+        assert_eq!(ui_link.target_label, "checkout flow/test verifies receipt");
+        assert_eq!(ui_link.link_type, TraceLinkType::Verifies);
     }
 
     #[test]
@@ -374,7 +465,13 @@ mod tests {
 
     #[test]
     fn neo4j_labels() {
-        assert_eq!(Neo4jSchema::node_label_for(ArtifactKind::Requirement), "Requirement");
-        assert_eq!(Neo4jSchema::relationship_label_for(TraceLinkType::Verifies), "VERIFIES");
+        assert_eq!(
+            Neo4jSchema::node_label_for(ArtifactKind::Requirement),
+            "Requirement"
+        );
+        assert_eq!(
+            Neo4jSchema::relationship_label_for(TraceLinkType::Verifies),
+            "VERIFIES"
+        );
     }
 }
