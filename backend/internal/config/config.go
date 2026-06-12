@@ -73,9 +73,11 @@ type Config struct {
 	Embeddings EmbeddingsConfig
 
 	// Tracing
-	CollectorEndpoint  string
-	TracingEnabled     bool
-	TracingEnvironment string
+	CollectorEndpoint     string
+	CollectorHTTPEndpoint string
+	TracingEnabled        bool
+	TracingEnvironment    string
+	TracingServiceName    string
 
 	// Sentry Error Tracking
 	SentryDSN              string
@@ -146,15 +148,23 @@ func LoadConfig() *Config {
 		PythonBackendGRPCAddr: getEnv("PYTHON_BACKEND_GRPC_ADDR", "127.0.0.1:9092"),
 		ServiceToken:          getEnv("SERVICE_TOKEN", ""),
 
-		CollectorEndpoint:  getEnv("PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT", getEnv("OTLP_ENDPOINT", "127.0.0.1:4317")),
+		CollectorEndpoint: getEnv(
+			"PHENO_OBSERVABILITY_OTLP_GRPC_ENDPOINT",
+			getEnv("OTLP_ENDPOINT", "127.0.0.1:4317"),
+		),
+		CollectorHTTPEndpoint: getEnv(
+			"PHENO_OBSERVABILITY_OTLP_HTTP_ENDPOINT",
+			getEnv("OTLP_HTTP_ENDPOINT", "http://127.0.0.1:4318"),
+		),
 		TracingEnabled:     getEnvBool("TRACING_ENABLED", true),
-		TracingEnvironment: getEnv("TRACING_ENVIRONMENT", "development"),
+		TracingEnvironment: getEnv("TRACING_ENVIRONMENT", getEnv("ENV", "development")),
+		TracingServiceName: getEnv("OTEL_SERVICE_NAME", "tracera-live-backend"),
 
-	SentryDSN:              getEnv("SENTRY_DSN", ""),
-	SentryEnvironment:      getEnv("SENTRY_ENVIRONMENT", getEnv("ENV", "development")),
-	SentryRelease:          getEnv("SENTRY_RELEASE", "unknown"),
-	SentryTracesSampleRate: getEnvFloat("SENTRY_TRACES_SAMPLE_RATE", defaultSentryTracesSampleRate),
-	SentryDebug:            getEnvBool("SENTRY_DEBUG", false),
+		SentryDSN:              getEnv("SENTRY_DSN", ""),
+		SentryEnvironment:      getEnv("SENTRY_ENVIRONMENT", getEnv("ENV", "development")),
+		SentryRelease:          getEnv("SENTRY_RELEASE", "unknown"),
+		SentryTracesSampleRate: getEnvFloat("SENTRY_TRACES_SAMPLE_RATE", defaultSentryTracesSampleRate),
+		SentryDebug:            getEnvBool("SENTRY_DEBUG", false),
 	}
 	cfg.Embeddings = loadEmbeddingsConfig()
 	return cfg
