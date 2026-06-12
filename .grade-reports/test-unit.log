@@ -1,0 +1,85 @@
+Traceback (most recent call last):
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/_pytest/config/__init__.py"[0m, line [35m2189[0m, in [35mapply_warning_filters[0m
+    warnings.filterwarnings(*[31mparse_warning_filter[0m[1;31m(arg, escape=False)[0m)
+                             [31m~~~~~~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/_pytest/config/__init__.py"[0m, line [35m2127[0m, in [35mparse_warning_filter[0m
+    category: type[Warning] = [31m_resolve_warning_category[0m[1;31m(category_)[0m
+                              [31m~~~~~~~~~~~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/_pytest/config/__init__.py"[0m, line [35m2174[0m, in [35m_resolve_warning_category[0m
+    m = __import__(module, None, None, [klass])
+[1;35mModuleNotFoundError[0m: [35mNo module named 'pytest_benchmark'[0m
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File [35m"/opt/homebrew/bin/pytest"[0m, line [35m6[0m, in [35m<module>[0m
+    sys.exit([31mconsole_main[0m[1;31m()[0m)
+             [31m~~~~~~~~~~~~[0m[1;31m^^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/_pytest/config/__init__.py"[0m, line [35m223[0m, in [35mconsole_main[0m
+    code = main()
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/_pytest/config/__init__.py"[0m, line [35m193[0m, in [35mmain[0m
+    config = _prepareconfig(new_args, plugins)
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/_pytest/config/__init__.py"[0m, line [35m361[0m, in [35m_prepareconfig[0m
+    config: Config = [31mpluginmanager.hook.pytest_cmdline_parse[0m[1;31m([0m
+                     [31m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[1;31m^[0m
+        [1;31mpluginmanager=pluginmanager, args=args[0m
+        [1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1;31m)[0m
+    [1;31m^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/pluggy/_hooks.py"[0m, line [35m512[0m, in [35m__call__[0m
+    return [31mself._hookexec[0m[1;31m(self.name, self._hookimpls.copy(), kwargs, firstresult)[0m
+           [31m~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/pluggy/_manager.py"[0m, line [35m120[0m, in [35m_hookexec[0m
+    return [31mself._inner_hookexec[0m[1;31m(hook_name, methods, kwargs, firstresult)[0m
+           [31m~~~~~~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/pluggy/_callers.py"[0m, line [35m167[0m, in [35m_multicall[0m
+    raise exception
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/pluggy/_callers.py"[0m, line [35m139[0m, in [35m_multicall[0m
+    [31mteardown.throw[0m[1;31m(exception)[0m
+    [31m~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/_pytest/helpconfig.py"[0m, line [35m124[0m, in [35mpytest_cmdline_parse[0m
+    config = [1;31myield[0m
+             [1;31m^^^^^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/pluggy/_callers.py"[0m, line [35m121[0m, in [35m_multicall[0m
+    res = hook_impl.function(*args)
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/_pytest/config/__init__.py"[0m, line [35m1192[0m, in [35mpytest_cmdline_parse[0m
+    [31mself.parse[0m[1;31m(args)[0m
+    [31m~~~~~~~~~~[0m[1;31m^^^^^^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/_pytest/config/__init__.py"[0m, line [35m1562[0m, in [35mparse[0m
+    [31mself.hook.pytest_load_initial_conftests[0m[1;31m([0m
+    [31m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[1;31m^[0m
+        [1;31mearly_config=self, args=args, parser=self._parser[0m
+        [1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1;31m)[0m
+    [1;31m^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/pluggy/_hooks.py"[0m, line [35m512[0m, in [35m__call__[0m
+    return [31mself._hookexec[0m[1;31m(self.name, self._hookimpls.copy(), kwargs, firstresult)[0m
+           [31m~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/pluggy/_manager.py"[0m, line [35m120[0m, in [35m_hookexec[0m
+    return [31mself._inner_hookexec[0m[1;31m(hook_name, methods, kwargs, firstresult)[0m
+           [31m~~~~~~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/pluggy/_callers.py"[0m, line [35m167[0m, in [35m_multicall[0m
+    raise exception
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/pluggy/_callers.py"[0m, line [35m116[0m, in [35m_multicall[0m
+    [31mnext[0m[1;31m(function_gen)[0m  # first yield
+    [31m~~~~[0m[1;31m^^^^^^^^^^^^^^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/_pytest/warnings.py"[0m, line [35m125[0m, in [35mpytest_load_initial_conftests[0m
+    with [31mcatch_warnings_for_item[0m[1;31m([0m
+         [31m~~~~~~~~~~~~~~~~~~~~~~~[0m[1;31m^[0m
+        [1;31mconfig=early_config, ihook=early_config.hook, when="config", item=None[0m
+        [1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1;31m)[0m:
+    [1;31m^[0m
+  File [35m"/opt/homebrew/Cellar/python@3.14/3.14.5/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py"[0m, line [35m141[0m, in [35m__enter__[0m
+    return next(self.gen)
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/_pytest/warnings.py"[0m, line [35m46[0m, in [35mcatch_warnings_for_item[0m
+    [31mapply_warning_filters[0m[1;31m(config_filters, cmdline_filters)[0m
+    [31m~~~~~~~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/opt/homebrew/lib/python3.14/site-packages/_pytest/config/__init__.py"[0m, line [35m2191[0m, in [35mapply_warning_filters[0m
+    [31mwarnings.warn[0m[1;31m([0m
+    [31m~~~~~~~~~~~~~[0m[1;31m^[0m
+        [1;31mf"Failed to import filter module '{e.name}': {arg}", PytestConfigWarning[0m
+        [1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1;31m)[0m
+    [1;31m^[0m
+[1;35mpytest.PytestConfigWarning[0m: [35mFailed to import filter module 'pytest_benchmark': ignore::pytest_benchmark.logger.PytestBenchmarkWarning[0m
