@@ -12,6 +12,10 @@ from typing import Any
 from urllib.parse import ParseResult, urlparse
 
 import httpx
+from opentelemetry import trace
+
+_TRACER = trace.get_tracer(__name__)
+_EVENT_SOURCE = "tracertm.mlflow_compat"
 
 
 def _now_ms() -> int:
@@ -94,17 +98,29 @@ class Run:
             raise RuntimeError(msg)
 
     def _emit(self, endpoint: str, payload: dict[str, Any]) -> None:
-        parsed = urlparse(self.tracking_uri)
-        if parsed.scheme in ("", "file"):
-            self._write_file_event(endpoint, payload)
-            return
-        if parsed.scheme in ("http", "https"):
-            url = self.tracking_uri.rstrip("/") + f"/api/2.0/mlflow/{endpoint}"
-            with httpx.Client(timeout=self.timeout_seconds) as client:
-                client.post(url, json=payload).raise_for_status()
-            return
-        msg = f"Unsupported MLflow tracking URI scheme: {parsed.scheme}"
-        raise ValueError(msg)
+        event_id = str(payload.get("event_id") or uuid.uuid4().hex)
+        correlation_id = str(payload.get("correlation_id") or payload.get("run_id") or event_id)
+        span_attributes = {
+            "event.id": event_id,
+            "event.type": endpoint,
+            "source": _EVENT_SOURCE,
+            "correlation_id": correlation_id,
+        }
+        with _TRACER.start_as_current_span(
+            "tracertm.bus.emit",
+            attributes=span_attributes,
+        ):
+            parsed = urlparse(self.tracking_uri)
+            if parsed.scheme in ("", "file"):
+                self._write_file_event(endpoint, payload)
+                return
+            if parsed.scheme in ("http", "https"):
+                url = self.tracking_uri.rstrip("/") + f"/api/2.0/mlflow/{endpoint}"
+                with httpx.Client(timeout=self.timeout_seconds) as client:
+                    client.post(url, json=payload).raise_for_status()
+                return
+            msg = f"Unsupported MLflow tracking URI scheme: {parsed.scheme}"
+            raise ValueError(msg)
 
     def _write_file_event(self, endpoint: str, payload: dict[str, Any]) -> None:
         run_dir = self._run_dir()

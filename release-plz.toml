@@ -1,0 +1,12 @@
+[workspace]
+git_release_enable = true
+git_tag_enable = true
+publish = false
+pr_name = "chore(release): prepare release"
+pr_labels = ["release"]
+changelog_config = "cliff.toml"
+changelog_update = true
+
+[[package]]
+name = "tracertm"
+changelog_path = "CHANGELOG.md"
