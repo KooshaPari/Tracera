@@ -59,6 +59,7 @@ dependencies = [
     "grpcio>=1.70.0",
     "fastapi>=0.136.0",
     "uvicorn[standard]>=0.32.0",
+    "phenotype-request-id>=0.2.0",
     "sse-starlette>=3.0.0",
     "redis>=5.2.0",
     "anyio>=4.12.1",
