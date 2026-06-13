@@ -22,5 +22,7 @@
 # Tracera
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/KooshaPari/Tracera/badge)](https://securityscorecards.dev/viewer/?uri=github.com/KooshaPari/Tracera)
+[![MSRV](https://img.shields.io/badge/MSRV-1.82-blue?style=flat-square&logo=rust)](https://github.com/KooshaPari/Tracera)
+[![Built with cargo-binstall](https://img.shields.io/badge/cargo--binstall-supported-blueviolet?style=flat-square&logo=rust)](https://github.com/cargo-bins/cargo-binstall)
 
 Agent-native, multi-view requirements traceability and project management system.
