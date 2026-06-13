@@ -1,0 +1,57 @@
+version: "3"
+
+vars:
+  CARGO: cargo
+  TRACERA_CRATE: tracera-core
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - just --list
+    silent: true
+
+  fmt:
+    desc: Format all Rust crates
+    cmds:
+      - "{{CARGO}} fmt --all"
+
+  lint:
+    desc: Run clippy with warnings as errors
+    cmds:
+      - "{{CARGO}} clippy --all-targets --all-features -- -D warnings"
+
+  test:
+    desc: Run tracera-core library tests
+    cmds:
+      - "{{CARGO}} test -p {{TRACERA_CRATE}} --lib"
+
+  test-workspace:
+    desc: Run the full workspace test suite
+    cmds:
+      - "{{CARGO}} test --workspace"
+
+  build:
+    desc: Build release artifacts
+    cmds:
+      - "{{CARGO}} build --workspace --release"
+
+  deny:
+    desc: Run cargo-deny against the manifest
+    cmds:
+      - "{{CARGO}} deny --manifest-path Cargo.toml --locked check"
+
+  clean:
+    desc: Remove build artifacts
+    cmds:
+      - "{{CARGO}} clean"
+
+  changelog:
+    desc: Preview the changelog (git-cliff)
+    cmds:
+      - git-cliff --config cliff.toml --tag {{default}} --output -
+
+  release:
+    desc: Run release-plz release-pr
+    cmds:
+      - release-plz release-pr --config release-plz.toml
