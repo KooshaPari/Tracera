@@ -23,7 +23,9 @@ pub mod ui_links;
 
 pub mod cache;
 pub mod health;
+pub mod notification;
 pub mod observability;
+pub mod pagination;
 pub mod rate_limit;
 
 pub use ids::*;
@@ -34,7 +36,9 @@ pub use coverage::*;
 pub use health::*;
 pub use impact::*;
 pub use matrix::*;
+pub use notification::*;
 pub use observability::*;
+pub use pagination::*;
 pub use rate_limit::*;
 pub use registry::*;
 pub use ui_links::*;
