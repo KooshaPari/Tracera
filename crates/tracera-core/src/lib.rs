@@ -21,12 +21,21 @@ pub mod matrix; // Phase 2 stubs — see matrix.rs; excluded from default build 
 pub mod registry;
 pub mod ui_links;
 
+pub mod cache;
+pub mod health;
+pub mod observability;
+pub mod rate_limit;
+
 pub use ids::*;
 pub use workspace::*;
 
+pub use cache::*;
 pub use coverage::*;
+pub use health::*;
 pub use impact::*;
 pub use matrix::*;
+pub use observability::*;
+pub use rate_limit::*;
 pub use registry::*;
 pub use ui_links::*;
 

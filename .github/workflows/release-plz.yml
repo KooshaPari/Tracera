@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - feature/tracera-core-phase-0-1-2-3
+      - main
   workflow_dispatch:
 
 permissions:
