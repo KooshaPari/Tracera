@@ -64,6 +64,22 @@ test:
       fi
     fi
 
+# Coverage report (SSOT for how to measure coverage).
+coverage:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    if [ "${HAS_MAKE}" = "1" ]; then
+      make coverage 2>/dev/null || echo "no coverage target in Makefile"
+    else
+      if [ "${HAS_ROOT_PACKAGE}" = "1" ]; then
+        ${JS_RUNNER} test --coverage 2>/dev/null || echo "no JS coverage"
+      fi
+      if [ "${HAS_PYPROJECT}" = "1" ] && [ "${HAS_UV}" = "1" ]; then
+        uv run pytest --cov=src
+      fi
+    fi
+
 # ---- Lint: ruff for Python, eslint/biome for the frontend ----
 
 lint:
