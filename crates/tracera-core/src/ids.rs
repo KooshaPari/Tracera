@@ -38,3 +38,14 @@ macro_rules! id_type {
 
 id_type!(RequirementId, "FR");
 id_type!(NfrId, "NFR");
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_rejects_empty_string() {
+        let result = RequirementId::parse("");
+        assert_eq!(result, Err("id cannot be empty".to_string()));
+    }
+}
