@@ -1,0 +1,94 @@
+# Rust
+/target
+Cargo.lock
+**/*.rs.bk
+*.pdb
+*.so
+*.dylib
+*.dll
+
+# Python
+__pycache__/
+*.py[cod]
+*.class
+*.egg-info/
+.eggs/
+*.egg
+dist/
+build/
+wheels/
+*.whl
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.uv/
+pip-wheel-metadata/
+*.manifest
+*.spec
+
+# Go
+*.exe
+*.test
+*.out
+vendor/
+
+# Node/TypeScript
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+.npm
+.eslintcache
+.stylelintcache
+.parcel-cache
+.next/
+.nuxt/
+.vuepress/dist
+.docusaurus/
+.cache/
+
+# Coverage
+coverage/
+*.lcov
+.nyc_output/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# IDEs / Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# Logs
+*.log
+logs/
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Misc
+*.bak
+*.tmp
+*.temp
+.env
+.env.local
+.env.*.local
+!.env.example
