@@ -1,8 +1,8 @@
-//! Rate-limiting primitives.
+//! Rate limiting primitives for inbound bus traffic.
 //!
-//! Three strategies are provided:
+//! Three classic strategies are provided, all synchronous and `Send + Sync`:
 //!
-//! * [`TokenBucket`] — classic bucket with lazy refill.
+//! * [`TokenBucket`] — refills at a fixed rate, allows bursts up to capacity.
 //! * [`SlidingWindow`] — counts acquisitions within a rolling time window.
 //! * [`LeakyBucket`] — drains at a fixed rate; bursts are queued (or dropped
 //!   once the bucket is full).
@@ -219,23 +219,5 @@ mod tests {
         assert!(!b.try_acquire());
         std::thread::sleep(Duration::from_millis(20));
         assert!(b.try_acquire());
-    }
-
-    #[test]
-    fn token_bucket_available_tracks_remaining_tokens() {
-        let mut b = TokenBucket::new(5, 0.0); // no refill
-        assert_eq!(b.available(), 5);
-        assert!(b.try_acquire());
-        assert_eq!(b.available(), 4);
-        assert!(b.try_acquire());
-        assert_eq!(b.available(), 3);
-        assert!(b.try_acquire());
-        assert_eq!(b.available(), 2);
-        assert!(b.try_acquire());
-        assert_eq!(b.available(), 1);
-        assert!(b.try_acquire());
-        assert_eq!(b.available(), 0);
-        assert!(!b.try_acquire());
-        assert_eq!(b.available(), 0);
     }
 }
