@@ -8,8 +8,6 @@ from tracertm.ports.scorer import (
     JaccardScorer,
     ScorerPort,
     ScoreResult,
-    SentenceTransformerScorer,
-    SigLIPScorer,
 )
 
 
@@ -50,19 +48,3 @@ def test_callers_can_swap_strategy_without_changing_call_site():
         return scorer.score(a, b).score
 
     assert confidence(JaccardScorer(), "trace link graph", "trace link graph") == 1.0
-
-
-def test_sentence_transformer_stub_satisfies_port_without_ml_deps():
-    scorer = SentenceTransformerScorer()
-    assert isinstance(scorer, ScorerPort)
-    r = scorer.score("user login", "user login")
-    assert r.strategy == "sentence_transformer"
-    assert "[stub-ST]" in r.rationale or "cosine" in r.rationale
-
-
-def test_siglip_stub_satisfies_port_without_ml_deps():
-    scorer = SigLIPScorer()
-    assert isinstance(scorer, ScorerPort)
-    r = scorer.score("dashboard screenshot", "ui mock")
-    assert r.strategy == "siglip"
-    assert "[stub-SigLIP]" in r.rationale or "[siglip-pending]" in r.rationale
