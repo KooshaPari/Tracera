@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import pickle  # noqa: S403
 import re
 import tempfile
@@ -134,7 +133,7 @@ class ModelRegistry:
     def __init__(self, root: str | Path) -> None:
         self.root = Path(root)
         self.models_root = self.root / "models"
-        os.makedirs(self.models_root, exist_ok=True)
+        Path(self.models_root).mkdir(exist_ok=True, parents=True)
         self.index_path = self.root / _INDEX_FILE
         self.adapters: dict[str, ModelAdapter] = {
             "pickle": PickleAdapter(),
@@ -171,7 +170,7 @@ class ModelRegistry:
 
         version_dir = self.models_root / name / version
         blob_dir = version_dir / "blobs"
-        os.makedirs(blob_dir, exist_ok=True)
+        Path(blob_dir).mkdir(exist_ok=True, parents=True)
         artifact_path = blob_dir / f"{sha256}{adapter.extension}"
         if not artifact_path.exists():
             artifact_path.write_bytes(payload)

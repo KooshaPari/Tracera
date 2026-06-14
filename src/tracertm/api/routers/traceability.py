@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict, deque
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Literal
 
 from fastapi import APIRouter
@@ -172,9 +172,9 @@ async def analyze_impact(request: ImpactRequest) -> ImpactResponse:
 def _build_coverage_matrix(request: CoverageMatrixRequest) -> CoverageMatrixResponse:
     grouped: dict[tuple[str, str], list[TraceLinkInput]] = defaultdict(list)
     stale_links = 0
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     for link in request.links:
-        grouped[(link.source_id, link.target_id)].append(link)
+        grouped[link.source_id, link.target_id].append(link)
         if link.updated_at and (now - link.updated_at).days > request.stale_after_days:
             stale_links += 1
 

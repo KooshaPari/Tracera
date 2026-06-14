@@ -1,6 +1,5 @@
 """Tests for content-addressed model registry behavior."""
 
-# ruff: noqa: S101
 
 from pathlib import Path
 
