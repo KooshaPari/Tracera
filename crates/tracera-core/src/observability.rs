@@ -38,21 +38,33 @@ pub fn make_span(envelope_id: &str) -> Span {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tracing::subscriber::with_default;
+    use tracing_subscriber::fmt;
+
+    /// A no-op subscriber is sufficient: we only need `Span::metadata()` to be
+    /// populated, which it isn't when no subscriber is installed.
+    fn test_subscriber() -> impl tracing::Subscriber + Send + Sync {
+        tracing_subscriber::registry().with(fmt::layer().with_writer(std::io::sink))
+    }
 
     #[test]
     fn make_span_has_bus_metadata() {
-        let span = make_span("env-123");
+        let _guard = with_default(test_subscriber(), || {
+            let span = make_span("env-123");
 
-        let metadata = span.metadata().expect("span metadata");
-        assert_eq!(metadata.name(), "tracera.bus");
-        assert_eq!(metadata.target(), "tracera_core::observability");
+            let metadata = span.metadata().expect("span metadata");
+            assert_eq!(metadata.name(), "tracera.bus");
+            assert_eq!(metadata.target(), "tracera_core::observability");
+        });
     }
 
     #[test]
     fn make_span_accepts_empty_envelope_id() {
-        let span = make_span("");
+        let _guard = with_default(test_subscriber(), || {
+            let span = make_span("");
 
-        let metadata = span.metadata().expect("span metadata");
-        assert_eq!(metadata.name(), "tracera.bus");
+            let metadata = span.metadata().expect("span metadata");
+            assert_eq!(metadata.name(), "tracera.bus");
+        });
     }
 }
