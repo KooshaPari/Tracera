@@ -22,6 +22,7 @@ human-readable rationale (the acceptance criterion of ``FR-TRC-019``).
 
 from __future__ import annotations
 
+import math
 import re
 from dataclasses import dataclass
 from typing import Any, Protocol, runtime_checkable
@@ -139,7 +140,7 @@ class SentenceTransformerScorer:
 
         emb = model.encode([requirement_text or "", artifact_text or ""])
         denom = float(np.linalg.norm(emb[0]) * np.linalg.norm(emb[1]))
-        if denom == 0.0:
+        if math.isclose(denom, 0.0, abs_tol=1e-15):
             return ScoreResult(0.0, "empty embedding", self.name)
         sim = float(np.dot(emb[0], emb[1]) / denom)
         clamped = max(0.0, min(1.0, (sim + 1.0) / 2.0))
