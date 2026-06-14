@@ -229,6 +229,20 @@ mod tests {
     }
 
     #[test]
+    fn lfu_eviction_drops_least_frequently_used() {
+        let mut c: Cache<u32, u32> = Cache::new(2, None, EvictionPolicy::Lfu);
+        c.put(1, 10);
+        c.put(2, 20);
+        // Repeatedly hit 1 so it stays hot; 2 remains cold
+        assert_eq!(c.get(&1), Some(10));
+        assert_eq!(c.get(&1), Some(10));
+        c.put(3, 30); // should evict 2
+        assert_eq!(c.get(&2), None);
+        assert_eq!(c.get(&1), Some(10));
+        assert_eq!(c.get(&3), Some(30));
+    }
+
+    #[test]
     fn ttl_expires_entries() {
         let mut c: Cache<&'static str, i32> =
             Cache::new(8, Some(Duration::from_millis(30)), EvictionPolicy::Lfu);

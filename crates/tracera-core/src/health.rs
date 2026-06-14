@@ -289,6 +289,12 @@ mod tests {
     }
 
     #[test]
+    fn default_status_is_healthy() {
+        assert_eq!(HealthStatus::default(), HealthStatus::Healthy);
+        assert!(HealthStatus::default().is_serving());
+    }
+
+    #[test]
     fn mixed_probes_produce_correct_overall() {
         let registry = HealthRegistry::new();
         registry.register(FnCheck::new("always_ok", ProbeType::Readiness, || async {
