@@ -31,11 +31,6 @@ tasks:
     cmds:
       - "{{CARGO}} test --workspace"
 
-  coverage:
-    desc: Coverage report (SSOT for how to measure coverage)
-    cmds:
-      - "{{CARGO}} tarpaulin --workspace --out Html"
-
   build:
     desc: Build release artifacts
     cmds:
