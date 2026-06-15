@@ -371,10 +371,13 @@ func main() {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/trace-links", listTraceLinks)
 		r.Post("/trace-links", createTraceLink)
+		r.Delete("/trace-links/{id}", deleteTraceLink)
 		r.Get("/requirements", listRequirements)
 		r.Post("/requirements", createRequirement)
+		r.Delete("/requirements/{id}", deleteRequirement)
 		r.Get("/artifacts", listArtifacts)
 		r.Post("/artifacts", createArtifact)
+		r.Delete("/artifacts/{id}", deleteArtifact)
 	})
 
 	addr := ":" + port
@@ -382,6 +385,52 @@ func main() {
 	if err := http.ListenAndServe(addr, r); err != nil {
 		log.Fatalf("server exited: %v", err)
 	}
+}
+
+// ---------------------------------------------------------------------------
+// Handlers — DELETE
+// ---------------------------------------------------------------------------
+
+func deleteTraceLink(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	result, err := db.Exec("DELETE FROM trace_links WHERE id = ?", id)
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	if n, _ := result.RowsAffected(); n == 0 {
+		jsonResponse(w, http.StatusNotFound, map[string]string{"error": "not found"})
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func deleteRequirement(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	result, err := db.Exec("DELETE FROM requirements WHERE id = ?", id)
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	if n, _ := result.RowsAffected(); n == 0 {
+		jsonResponse(w, http.StatusNotFound, map[string]string{"error": "not found"})
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func deleteArtifact(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	result, err := db.Exec("DELETE FROM artifacts WHERE id = ?", id)
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	if n, _ := result.RowsAffected(); n == 0 {
+		jsonResponse(w, http.StatusNotFound, map[string]string{"error": "not found"})
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // healthHandler returns a lightweight liveness probe response.
