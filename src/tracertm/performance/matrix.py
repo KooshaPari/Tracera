@@ -8,6 +8,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+import csv
+import json
+from pathlib import Path
+
 
 @dataclass(frozen=True, slots=True)
 class MatrixCell:
@@ -25,6 +29,38 @@ class TraceabilityMatrix:
     source_ids: tuple[str, ...]
     target_ids: tuple[str, ...]
     cells: tuple[MatrixCell, ...]
+
+    def to_records(self) -> list[dict[str, str]]:
+        """Return the matrix cells as a list of dict records."""
+        return [
+            {"source_id": cell.source_id, "target_id": cell.target_id, "relationship": cell.relationship}
+            for cell in self.cells
+        ]
+
+    def export_json(self, path: Path | str) -> None:
+        """Export the matrix records as a JSON file."""
+        export_path = Path(path)
+        export_path.write_text(json.dumps(self.to_records(), ensure_ascii=False), encoding="utf-8")
+
+    def export_csv(self, path: Path | str) -> None:
+        """Export the matrix records as a CSV file."""
+        export_path = Path(path)
+        fieldnames = ["source_id", "target_id", "relationship"]
+        with export_path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(self.to_records())
+
+    def export_parquet(self, path: Path | str) -> None:
+        """Export the matrix records as a Parquet file."""
+        try:
+            import pyarrow as pa
+            import pyarrow.parquet as pq
+        except ModuleNotFoundError as exc:
+            raise RuntimeError("export_parquet requires pyarrow") from exc
+        export_path = Path(path)
+        table = pa.Table.from_pylist(self.to_records())
+        pq.write_table(table, str(export_path))
 
 
 def build_traceability_matrix(links: Iterable[tuple[str, str, str]]) -> TraceabilityMatrix:
