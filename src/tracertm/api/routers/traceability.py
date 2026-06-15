@@ -223,3 +223,26 @@ def _impact_multiplier(relationship: TraceRelationship) -> float:
     if relationship == "verifies":
         return 0.75
     return 0.25
+
+
+# ---------------------------------------------------------------------------
+# Confidence scoring endpoint (FR-TRC-019)
+# ---------------------------------------------------------------------------
+
+class ConfidenceRequest(BaseModel):
+    requirement_text: str = Field(..., description="Text of the requirement")
+    artifact_text: str = Field(..., description="Text or summary of the artifact")
+
+
+class ConfidenceResponse(BaseModel):
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    rationale: str
+
+
+@router.post("/confidence", response_model=ConfidenceResponse)
+def compute_confidence(req: ConfidenceRequest) -> ConfidenceResponse:
+    """Score agreement between a requirement and an artifact using JaccardScorer (FR-TRC-019)."""
+    from tracertm.ports.scorer import JaccardScorer
+
+    result = JaccardScorer().score(req.requirement_text, req.artifact_text)
+    return ConfidenceResponse(confidence=result.score, rationale=result.rationale)
