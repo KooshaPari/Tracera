@@ -2,15 +2,17 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
-	"sync"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // ---------------------------------------------------------------------------
@@ -24,6 +26,7 @@ type TraceLink struct {
 	TargetID   string  `json:"target_id"`
 	LinkType   string  `json:"link_type"`
 	Confidence float64 `json:"confidence"`
+	CreatedAt  string  `json:"created_at"`
 }
 
 // Requirement is a stub type for SDLC requirements.
@@ -51,22 +54,59 @@ type TraceLinkInput struct {
 }
 
 // ---------------------------------------------------------------------------
-// In-memory backing store
+// SQLite backing store
+// ---------------------------------------------------------------------------
+
+var db *sql.DB
+
+func initDB() error {
+	dbPath := os.Getenv("TRACERA_DB")
+	if dbPath == "" {
+		dbPath = "./tracera.db"
+	}
+	var err error
+	db, err = sql.Open("sqlite3", dbPath)
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS trace_links (
+		id         TEXT PRIMARY KEY,
+		source_id  TEXT NOT NULL,
+		target_id  TEXT NOT NULL,
+		link_type  TEXT NOT NULL,
+		confidence REAL NOT NULL DEFAULT 1.0,
+		created_at TEXT NOT NULL
+	)`)
+	if err != nil {
+		return err
+	}
+	// Seed stub rows only when the table is empty.
+	var count int
+	if err = db.QueryRow("SELECT COUNT(*) FROM trace_links").Scan(&count); err != nil {
+		return err
+	}
+	if count == 0 {
+		seeds := []TraceLink{
+			{ID: "tl-1", SourceID: "req-1", TargetID: "impl-1", LinkType: "satisfies", Confidence: 0.95, CreatedAt: time.Now().UTC().Format(time.RFC3339)},
+			{ID: "tl-2", SourceID: "impl-1", TargetID: "test-1", LinkType: "verifies", Confidence: 0.88, CreatedAt: time.Now().UTC().Format(time.RFC3339)},
+		}
+		for _, s := range seeds {
+			db.Exec("INSERT INTO trace_links VALUES (?,?,?,?,?,?)", s.ID, s.SourceID, s.TargetID, s.LinkType, s.Confidence, s.CreatedAt) //nolint:errcheck
+		}
+	}
+	return nil
+}
+
+// ---------------------------------------------------------------------------
+// In-memory stub stores for requirements and artifacts (read-only seed data)
 // ---------------------------------------------------------------------------
 
 var (
-	mu         sync.Mutex
-	traceLinks []TraceLink
-	reqs       []Requirement
-	artifacts  []Artifact
+	reqs      []Requirement
+	artifacts []Artifact
 )
 
 func init() {
-	// Seed some stub data so GET endpoints have something to return.
-	traceLinks = []TraceLink{
-		{ID: "tl-1", SourceID: "req-1", TargetID: "impl-1", LinkType: "satisfies", Confidence: 0.95},
-		{ID: "tl-2", SourceID: "impl-1", TargetID: "test-1", LinkType: "verifies", Confidence: 0.88},
-	}
 	reqs = []Requirement{
 		{ID: "req-1", Title: "System shall be observable", Description: "Health and metrics endpoints", Status: "approved"},
 		{ID: "req-2", Title: "System shall be traceable", Description: "Trace-link CRUD API", Status: "draft"},
@@ -84,7 +124,7 @@ func init() {
 func jsonResponse(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(v)
+	json.NewEncoder(w).Encode(v) //nolint:errcheck
 }
 
 const idCharset = "abcdefghijklmnopqrstuvwxyz0123456789"
@@ -102,12 +142,26 @@ func nextID(prefix string) string {
 // ---------------------------------------------------------------------------
 
 func listTraceLinks(w http.ResponseWriter, _ *http.Request) {
-	mu.Lock()
-	defer mu.Unlock()
-	// Return a copy to avoid data races on the slice header.
-	out := make([]TraceLink, len(traceLinks))
-	copy(out, traceLinks)
-	jsonResponse(w, http.StatusOK, out)
+	rows, err := db.Query("SELECT id, source_id, target_id, link_type, confidence, created_at FROM trace_links ORDER BY created_at")
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var links []TraceLink
+	for rows.Next() {
+		var l TraceLink
+		if err := rows.Scan(&l.ID, &l.SourceID, &l.TargetID, &l.LinkType, &l.Confidence, &l.CreatedAt); err != nil {
+			jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return
+		}
+		links = append(links, l)
+	}
+	if links == nil {
+		links = []TraceLink{}
+	}
+	jsonResponse(w, http.StatusOK, links)
 }
 
 func createTraceLink(w http.ResponseWriter, r *http.Request) {
@@ -123,11 +177,17 @@ func createTraceLink(w http.ResponseWriter, r *http.Request) {
 		TargetID:   input.TargetID,
 		LinkType:   input.LinkType,
 		Confidence: input.Confidence,
+		CreatedAt:  time.Now().UTC().Format(time.RFC3339),
 	}
 
-	mu.Lock()
-	traceLinks = append(traceLinks, link)
-	mu.Unlock()
+	_, err := db.Exec(
+		"INSERT INTO trace_links VALUES (?,?,?,?,?,?)",
+		link.ID, link.SourceID, link.TargetID, link.LinkType, link.Confidence, link.CreatedAt,
+	)
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
 
 	jsonResponse(w, http.StatusCreated, link)
 }
@@ -137,11 +197,7 @@ func createTraceLink(w http.ResponseWriter, r *http.Request) {
 // ---------------------------------------------------------------------------
 
 func listRequirements(w http.ResponseWriter, _ *http.Request) {
-	mu.Lock()
-	defer mu.Unlock()
-	out := make([]Requirement, len(reqs))
-	copy(out, reqs)
-	jsonResponse(w, http.StatusOK, out)
+	jsonResponse(w, http.StatusOK, reqs)
 }
 
 // ---------------------------------------------------------------------------
@@ -149,11 +205,7 @@ func listRequirements(w http.ResponseWriter, _ *http.Request) {
 // ---------------------------------------------------------------------------
 
 func listArtifacts(w http.ResponseWriter, _ *http.Request) {
-	mu.Lock()
-	defer mu.Unlock()
-	out := make([]Artifact, len(artifacts))
-	copy(out, artifacts)
-	jsonResponse(w, http.StatusOK, out)
+	jsonResponse(w, http.StatusOK, artifacts)
 }
 
 // ---------------------------------------------------------------------------
@@ -161,6 +213,11 @@ func listArtifacts(w http.ResponseWriter, _ *http.Request) {
 // ---------------------------------------------------------------------------
 
 func main() {
+	if err := initDB(); err != nil {
+		log.Fatalf("initDB: %v", err)
+	}
+	defer db.Close()
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -195,7 +252,7 @@ func main() {
 // healthHandler returns a lightweight liveness probe response.
 func healthHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	json.NewEncoder(w).Encode(map[string]string{ //nolint:errcheck
 		"status":  "ok",
 		"service": "tracera-go",
 	})
