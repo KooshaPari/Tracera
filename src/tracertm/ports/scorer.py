@@ -18,12 +18,36 @@ human-readable rationale (the acceptance criterion of ``FR-TRC-019``).
 
 from __future__ import annotations
 
-import math
 import re
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
 _TOKEN_RE = re.compile(r"[A-Za-z0-9]+")
+
+
+def _tokenize(text: str) -> set[str]:
+    return {t.lower() for t in _TOKEN_RE.findall(text or "")}
+
+
+def _weighted_score(tokens_a: set[str], tokens_b: set[str]) -> float:
+    """Weighted Jaccard scored as intersection-weight / max(a-weight, b-weight).
+
+    Longer tokens receive proportionally more weight (``w = len / max_len``).
+    Normalizing by ``max(|A|, |B|)`` instead of ``|A ∪ B|`` prevents
+    artificially low scores when one document is much longer than the other.
+    """
+    if not tokens_a and not tokens_b:
+        return 0.0
+    all_tokens = tokens_a | tokens_b
+    max_len = max((len(t) for t in all_tokens), default=1)
+    inter = tokens_a & tokens_b
+    w_inter = sum(len(t) / max_len for t in inter)
+    w_a = sum(len(t) / max_len for t in tokens_a)
+    w_b = sum(len(t) / max_len for t in tokens_b)
+    denom = max(w_a, w_b)
+    if denom == 0:
+        return 0.0
+    return w_inter / denom
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,11 +86,6 @@ class ScorerPort(Protocol):
         """Return a normalized agreement score in ``[0.0, 1.0]``."""
         ...
 
-
-def _tokenize(text: str) -> set[str]:
-    return {t.lower() for t in _TOKEN_RE.findall(text or "")}
-
-
 class JaccardScorer:
     """Lexical (Jaccard) agreement scorer -- the dependency-free reference impl.
 
@@ -84,15 +103,11 @@ class JaccardScorer:
         art = _tokenize(artifact_text)
         if not req and not art:
             return ScoreResult(0.0, "both inputs empty", self.name)
-        union = req | art
-        if not union:
-            return ScoreResult(0.0, "no tokens", self.name)
         inter = req & art
-        value = len(inter) / len(union)
+        value = _weighted_score(req, art)
         rationale = (
-            f"{len(inter)} shared / {len(union)} total tokens"
-            f" (shared: {', '.join(sorted(inter)[:8])})"
+            f"{len(inter)} shared tokens (weighted), {len(req)} req / {len(art)} art"
             if inter
-            else "no shared tokens"
+            else f"no shared tokens ({len(req)} req, {len(art)} art)"
         )
         return ScoreResult(round(value, 6), rationale, self.name)
