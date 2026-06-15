@@ -7,6 +7,8 @@ edition = "2021"
 rust-version = "1.82"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/kooshapari/Tracera"
+description = "Tracera - Traceability and impact analysis for Phenotype"
+authors = ["kooshapari"]
 
 [workspace.dependencies]
 base64 = "0.22"
@@ -21,3 +23,8 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1", features = ["serde", "v4", "v5"] }
 proptest = "1"
+# Shared ecosystem crates (extracted to phenoShared 2026-06-14)
+phenotype-error-core = { path = "../phenoShared/crates/phenotype-error-core" }
+phenotype-string = { path = "../phenoShared/crates/phenotype-string" }
+phenotype-test-infra = { path = "../phenoShared/crates/phenotype-test-infra" }
+phenotype-event-bus = { path = "../phenoShared/crates/phenotype-event-bus" }
