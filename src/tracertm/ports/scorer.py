@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import math
 import re
+from collections import Counter
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
@@ -63,36 +64,124 @@ class ScorerPort(Protocol):
         ...
 
 
-def _tokenize(text: str) -> set[str]:
-    return {t.lower() for t in _TOKEN_RE.findall(text or "")}
+def _token_counts(text: str) -> Counter[str]:
+    """Tokenize ``text`` into a lowercase term-frequency :class:`Counter`.
+
+    Uses :class:`collections.Counter` so downstream scoring can leverage
+    term frequencies (TF) instead of pure set membership. Returns an empty
+    counter for ``None`` or empty input.
+    """
+    if not text:
+        return Counter()
+    return Counter(t.lower() for t in _TOKEN_RE.findall(text))
+
+
+def _cosine(a: Counter[str], b: Counter[str]) -> float:
+    """TF cosine similarity in ``[0.0, 1.0]``.
+
+    Defined as ``dot(a, b) / (||a|| * ||b||)`` where the dot product and norms
+    use term frequencies. Returns ``0.0`` when either side is empty.
+    """
+    if not a or not b:
+        return 0.0
+    if len(a) > len(b):
+        a, b = b, a
+    dot = sum(freq * b.get(term, 0) for term, freq in a.items())
+    if dot == 0:
+        return 0.0
+    norm_a = math.sqrt(sum(f * f for f in a.values()))
+    norm_b = math.sqrt(sum(f * f for f in b.values()))
+    denom = norm_a * norm_b
+    if denom == 0.0:
+        return 0.0
+    value = dot / denom
+    if value < 0.0:
+        return 0.0
+    if value > 1.0:
+        return 1.0
+    return value
+
+
+def _weighted_jaccard(a: Counter[str], b: Counter[str]) -> float:
+    """TF-weighted (a.k.a. "generalized") Jaccard in ``[0.0, 1.0]``.
+
+    Defined as ``sum(min(a_t, b_t)) / sum(max(a_t, b_t))`` over all terms
+    ``t``. Reduces to set-Jaccard when every count is 0 or 1, but rewards
+    shared high-frequency terms rather than treating every distinct token
+    equally. Returns ``0.0`` when both sides are empty.
+    """
+    if not a or not b:
+        return 0.0
+    if len(a) > len(b):
+        a, b = b, a
+    inter = 0
+    for term, fa in a.items():
+        fb = b.get(term, 0)
+        inter += fa if fa < fb else fb
+    union = sum(a.values()) + sum(b.values()) - inter
+    if union == 0:
+        return 0.0
+    return inter / union
 
 
 class JaccardScorer:
-    """Lexical (Jaccard) agreement scorer -- the dependency-free reference impl.
+    """Weighted/normalized token-overlap agreement scorer.
 
-    ``score = |tokens(req) ∩ tokens(art)| / |tokens(req) ∪ tokens(art)|``.
+    Public interface and method signature are unchanged from the original
+    raw set-Jaccard implementation; the underlying math is upgraded to a
+    term-frequency-aware score so that *important* (repeated) terms move the
+    needle and the score is normalized against document length.
 
-    This is the baseline strategy: it ships with zero extra dependencies so the
-    spine is testable and usable immediately, while richer embedding/VLM
-    strategies are added behind the same :class:`ScorerPort`.
+    The reported value is a hybrid of two normalized statistics:
+
+    * **TF cosine** -- directional similarity, robust to length skew
+      (``dot(a,b) / (||a|| * ||b||)``).
+    * **Weighted (generalized) Jaccard** -- symmetric overlap that respects
+      term frequencies (``sum(min) / sum(max)``).
+
+    The final score is the arithmetic mean of the two, clamped to
+    ``[0.0, 1.0]``, which correlates better with human agreement judgements
+    than raw set-Jaccard (which collapses to a single bit per token and is
+    dominated by stop-word-like filler).
+
+    Still dependency-free -- uses only :mod:`collections.Counter` and
+    :mod:`math` from the standard library -- so the spine remains testable
+    without third-party packages.
     """
 
     name = "jaccard"
 
     def score(self, requirement_text: str, artifact_text: str) -> ScoreResult:
-        req = _tokenize(requirement_text)
-        art = _tokenize(artifact_text)
+        req = _token_counts(requirement_text)
+        art = _token_counts(artifact_text)
         if not req and not art:
             return ScoreResult(0.0, "both inputs empty", self.name)
-        union = req | art
-        if not union:
-            return ScoreResult(0.0, "no tokens", self.name)
-        inter = req & art
-        value = len(inter) / len(union)
+        if not req or not art:
+            return ScoreResult(
+                0.0,
+                f"one side empty (req_tokens={sum(req.values())}, "
+                f"art_tokens={sum(art.values())})",
+                self.name,
+            )
+
+        cosine = _cosine(req, art)
+        wj = _weighted_jaccard(req, art)
+        value = (cosine + wj) / 2.0
+        if value < 0.0:
+            value = 0.0
+        elif value > 1.0:
+            value = 1.0
+
+        shared_terms = sorted(t for t in req if t in art)
+        shared_distinct = len(shared_terms)
+        shared_mass = sum(min(req[t], art[t]) for t in shared_terms)
+        total_mass = sum(req.values()) + sum(art.values())
+        shared_pct = (2 * shared_mass / total_mass * 100.0) if total_mass else 0.0
+
+        sample = ", ".join(shared_terms[:8]) or "<none>"
         rationale = (
-            f"{len(inter)} shared / {len(union)} total tokens"
-            f" (shared: {', '.join(sorted(inter)[:8])})"
-            if inter
-            else "no shared tokens"
+            f"weighted Jaccard={wj:.4f}, TF cosine={cosine:.4f}; "
+            f"{shared_distinct} shared terms ({shared_mass}/{total_mass} "
+            f"token-mass, {shared_pct:.1f}%) sample: {sample}"
         )
         return ScoreResult(round(value, 6), rationale, self.name)
