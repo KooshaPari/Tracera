@@ -80,41 +80,87 @@ func initDB() error {
 	if err != nil {
 		return err
 	}
-	// Seed stub rows only when the table is empty.
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS requirements (
+		id          TEXT PRIMARY KEY,
+		title       TEXT NOT NULL,
+		description TEXT NOT NULL DEFAULT '',
+		status      TEXT NOT NULL DEFAULT 'draft',
+		created_at  TEXT NOT NULL
+	)`)
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS artifacts (
+		id         TEXT PRIMARY KEY,
+		name       TEXT NOT NULL,
+		kind       TEXT NOT NULL DEFAULT 'implementation',
+		version    TEXT NOT NULL DEFAULT '0.1.0',
+		created_at TEXT NOT NULL
+	)`)
+	if err != nil {
+		return err
+	}
+
+	now := time.Now().UTC().Format(time.RFC3339)
+
+	// Seed trace_links when empty.
 	var count int
 	if err = db.QueryRow("SELECT COUNT(*) FROM trace_links").Scan(&count); err != nil {
 		return err
 	}
 	if count == 0 {
 		seeds := []TraceLink{
-			{ID: "tl-1", SourceID: "req-1", TargetID: "impl-1", LinkType: "satisfies", Confidence: 0.95, CreatedAt: time.Now().UTC().Format(time.RFC3339)},
-			{ID: "tl-2", SourceID: "impl-1", TargetID: "test-1", LinkType: "verifies", Confidence: 0.88, CreatedAt: time.Now().UTC().Format(time.RFC3339)},
+			{ID: "tl-1", SourceID: "req-1", TargetID: "impl-1", LinkType: "satisfies", Confidence: 0.95, CreatedAt: now},
+			{ID: "tl-2", SourceID: "impl-1", TargetID: "test-1", LinkType: "verifies", Confidence: 0.88, CreatedAt: now},
 		}
 		for _, s := range seeds {
 			db.Exec("INSERT INTO trace_links VALUES (?,?,?,?,?,?)", s.ID, s.SourceID, s.TargetID, s.LinkType, s.Confidence, s.CreatedAt) //nolint:errcheck
 		}
 	}
+
+	// Seed requirements when empty.
+	if err = db.QueryRow("SELECT COUNT(*) FROM requirements").Scan(&count); err != nil {
+		return err
+	}
+	if count == 0 {
+		reqSeeds := []Requirement{
+			{ID: "req-1", Title: "System shall be observable", Description: "Health and metrics endpoints", Status: "approved"},
+			{ID: "req-2", Title: "System shall be traceable", Description: "Trace-link CRUD API", Status: "draft"},
+		}
+		for _, r := range reqSeeds {
+			db.Exec("INSERT INTO requirements VALUES (?,?,?,?,?)", r.ID, r.Title, r.Description, r.Status, now) //nolint:errcheck
+		}
+	}
+
+	// Seed artifacts when empty.
+	if err = db.QueryRow("SELECT COUNT(*) FROM artifacts").Scan(&count); err != nil {
+		return err
+	}
+	if count == 0 {
+		artSeeds := []Artifact{
+			{ID: "impl-1", Name: "HTTP server", Kind: "implementation", Version: "0.1.0"},
+			{ID: "test-1", Name: "Integration test suite", Kind: "test", Version: "0.1.0"},
+		}
+		for _, a := range artSeeds {
+			db.Exec("INSERT INTO artifacts VALUES (?,?,?,?,?)", a.ID, a.Name, a.Kind, a.Version, now) //nolint:errcheck
+		}
+	}
+
 	return nil
 }
 
-// ---------------------------------------------------------------------------
-// In-memory stub stores for requirements and artifacts (read-only seed data)
-// ---------------------------------------------------------------------------
+// RequirementInput is the JSON body accepted by POST /api/v1/requirements.
+type RequirementInput struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Status      string `json:"status"`
+}
 
-var (
-	reqs      []Requirement
-	artifacts []Artifact
-)
-
-func init() {
-	reqs = []Requirement{
-		{ID: "req-1", Title: "System shall be observable", Description: "Health and metrics endpoints", Status: "approved"},
-		{ID: "req-2", Title: "System shall be traceable", Description: "Trace-link CRUD API", Status: "draft"},
-	}
-	artifacts = []Artifact{
-		{ID: "impl-1", Name: "HTTP server", Kind: "implementation", Version: "0.1.0"},
-		{ID: "test-1", Name: "Integration test suite", Kind: "test", Version: "0.1.0"},
-	}
+// ArtifactInput is the JSON body accepted by POST /api/v1/artifacts.
+type ArtifactInput struct {
+	Name    string `json:"name"`
+	Kind    string `json:"kind"`
+	Version string `json:"version"`
 }
 
 // ---------------------------------------------------------------------------
@@ -197,7 +243,49 @@ func createTraceLink(w http.ResponseWriter, r *http.Request) {
 // ---------------------------------------------------------------------------
 
 func listRequirements(w http.ResponseWriter, _ *http.Request) {
-	jsonResponse(w, http.StatusOK, reqs)
+	rows, err := db.Query("SELECT id, title, description, status FROM requirements ORDER BY created_at")
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+	var out []Requirement
+	for rows.Next() {
+		var r Requirement
+		if err := rows.Scan(&r.ID, &r.Title, &r.Description, &r.Status); err != nil {
+			jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return
+		}
+		out = append(out, r)
+	}
+	if out == nil {
+		out = []Requirement{}
+	}
+	jsonResponse(w, http.StatusOK, out)
+}
+
+func createRequirement(w http.ResponseWriter, r *http.Request) {
+	var input RequirementInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		jsonResponse(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON body"})
+		return
+	}
+	if input.Status == "" {
+		input.Status = "draft"
+	}
+	req := Requirement{
+		ID:          nextID("req"),
+		Title:       input.Title,
+		Description: input.Description,
+		Status:      input.Status,
+	}
+	_, err := db.Exec("INSERT INTO requirements VALUES (?,?,?,?,?)",
+		req.ID, req.Title, req.Description, req.Status, time.Now().UTC().Format(time.RFC3339))
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	jsonResponse(w, http.StatusCreated, req)
 }
 
 // ---------------------------------------------------------------------------
@@ -205,7 +293,52 @@ func listRequirements(w http.ResponseWriter, _ *http.Request) {
 // ---------------------------------------------------------------------------
 
 func listArtifacts(w http.ResponseWriter, _ *http.Request) {
-	jsonResponse(w, http.StatusOK, artifacts)
+	rows, err := db.Query("SELECT id, name, kind, version FROM artifacts ORDER BY created_at")
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+	var out []Artifact
+	for rows.Next() {
+		var a Artifact
+		if err := rows.Scan(&a.ID, &a.Name, &a.Kind, &a.Version); err != nil {
+			jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return
+		}
+		out = append(out, a)
+	}
+	if out == nil {
+		out = []Artifact{}
+	}
+	jsonResponse(w, http.StatusOK, out)
+}
+
+func createArtifact(w http.ResponseWriter, r *http.Request) {
+	var input ArtifactInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		jsonResponse(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON body"})
+		return
+	}
+	if input.Kind == "" {
+		input.Kind = "implementation"
+	}
+	if input.Version == "" {
+		input.Version = "0.1.0"
+	}
+	art := Artifact{
+		ID:      nextID("art"),
+		Name:    input.Name,
+		Kind:    input.Kind,
+		Version: input.Version,
+	}
+	_, err := db.Exec("INSERT INTO artifacts VALUES (?,?,?,?,?)",
+		art.ID, art.Name, art.Kind, art.Version, time.Now().UTC().Format(time.RFC3339))
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	jsonResponse(w, http.StatusCreated, art)
 }
 
 // ---------------------------------------------------------------------------
@@ -239,7 +372,9 @@ func main() {
 		r.Get("/trace-links", listTraceLinks)
 		r.Post("/trace-links", createTraceLink)
 		r.Get("/requirements", listRequirements)
+		r.Post("/requirements", createRequirement)
 		r.Get("/artifacts", listArtifacts)
+		r.Post("/artifacts", createArtifact)
 	})
 
 	addr := ":" + port
