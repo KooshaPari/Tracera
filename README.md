@@ -19,6 +19,8 @@
 > human operator. Bug reports and contributions are still welcome, but please
 > expect AI-generated code, comments, and documentation throughout.
 <!-- AI-DD-META:END -->
+<!-- work-state: integration/consolidate | 2026-06-15 | gaps=8/8 CLOSED | build=PASS -->
+[██████████] 10/10 — All w35 audit gaps closed; PR-ready for main
 # Tracera
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/KooshaPari/Tracera/badge)](https://securityscorecards.dev/viewer/?uri=github.com/KooshaPari/Tracera)
