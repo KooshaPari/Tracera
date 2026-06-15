@@ -34,4 +34,4 @@ jobs:
           tool: cargo-hack
 
       - name: Test each crate feature set
-        run: cargo hack test --workspace --each-feature --no-dev-deps
+        run: cargo hack test --workspace --each-feature
