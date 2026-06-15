@@ -17,7 +17,7 @@ pub mod workspace;
 
 pub mod coverage;
 pub mod impact;
-pub mod matrix; // Phase 2 stubs — see matrix.rs; excluded from default build until Phase 2 lands.
+pub mod matrix;
 pub mod registry;
 pub mod ui_links;
 
