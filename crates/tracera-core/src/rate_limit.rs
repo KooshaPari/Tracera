@@ -213,6 +213,12 @@ mod tests {
     }
 
     #[test]
+    fn token_bucket_zero_capacity_rejects_all() {
+        let mut b = TokenBucket::new(0, 1_000.0);
+        assert!(!b.try_acquire());
+    }
+
+    #[test]
     fn token_bucket_refills_over_time() {
         let mut b = TokenBucket::new(1, 200.0); // 1 token / 5ms
         assert!(b.try_acquire());

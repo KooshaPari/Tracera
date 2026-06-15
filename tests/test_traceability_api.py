@@ -1,10 +1,9 @@
 """Tests for coverage matrix and impact REST endpoints."""
 
-# ruff: noqa: S101
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 
 from fastapi.testclient import TestClient
 
@@ -13,7 +12,7 @@ from tracertm.api.main import create_app
 
 def test_coverage_matrix_groups_links_and_classifies_cells() -> None:
     client = TestClient(create_app())
-    old = (datetime.now(timezone.utc) - timedelta(days=120)).isoformat()
+    old = (datetime.now(UTC) - timedelta(days=120)).isoformat()
 
     response = client.post(
         "/api/v1/coverage-matrix",

@@ -268,6 +268,33 @@ mod tests {
     }
 
     #[test]
+    fn startup_probe_distinct_from_readiness() {
+        let registry = HealthRegistry::new();
+        registry.register(FnCheck::new("boot", ProbeType::Startup, || async {
+            Ok(HealthStatus::Healthy)
+        }));
+        let startup = block_on(registry.run(ProbeType::Startup));
+        assert_eq!(startup.overall, HealthStatus::Healthy);
+        assert_eq!(startup.probes.len(), 1);
+        // Readiness should not include startup probes.
+        let readiness = block_on(registry.run(ProbeType::Readiness));
+        assert!(readiness.probes.is_empty());
+    }
+
+    #[test]
+    fn degraded_still_serves_traffic() {
+        assert!(HealthStatus::Degraded.is_serving());
+        assert!(HealthStatus::Healthy.is_serving());
+        assert!(!HealthStatus::Unhealthy.is_serving());
+    }
+
+    #[test]
+    fn default_status_is_healthy() {
+        assert_eq!(HealthStatus::default(), HealthStatus::Healthy);
+        assert!(HealthStatus::default().is_serving());
+    }
+
+    #[test]
     fn mixed_probes_produce_correct_overall() {
         let registry = HealthRegistry::new();
         registry.register(FnCheck::new("always_ok", ProbeType::Readiness, || async {

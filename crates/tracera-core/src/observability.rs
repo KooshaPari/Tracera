@@ -38,9 +38,11 @@ pub fn make_span(envelope_id: &str) -> Span {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tracing_subscriber::fmt;
 
     #[test]
     fn make_span_has_bus_metadata() {
+        let _subscriber = tracing_subscriber::fmt().with_test_writer().try_init();
         let span = make_span("env-123");
 
         let metadata = span.metadata().expect("span metadata");
@@ -50,6 +52,7 @@ mod tests {
 
     #[test]
     fn make_span_accepts_empty_envelope_id() {
+        let _subscriber = tracing_subscriber::fmt().with_test_writer().try_init();
         let span = make_span("");
 
         let metadata = span.metadata().expect("span metadata");
