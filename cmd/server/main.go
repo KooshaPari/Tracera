@@ -238,6 +238,24 @@ func createTraceLink(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, http.StatusCreated, link)
 }
 
+func getTraceLink(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var link TraceLink
+	err := db.QueryRow(
+		"SELECT id, source_id, target_id, link_type, confidence, created_at FROM trace_links WHERE id = ?",
+		id,
+	).Scan(&link.ID, &link.SourceID, &link.TargetID, &link.LinkType, &link.Confidence, &link.CreatedAt)
+	if err == sql.ErrNoRows {
+		jsonResponse(w, http.StatusNotFound, map[string]string{"error": "not found"})
+		return
+	}
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	jsonResponse(w, http.StatusOK, link)
+}
+
 // ---------------------------------------------------------------------------
 // Handlers — Requirements
 // ---------------------------------------------------------------------------
@@ -286,6 +304,24 @@ func createRequirement(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	jsonResponse(w, http.StatusCreated, req)
+}
+
+func getRequirement(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var req Requirement
+	err := db.QueryRow(
+		"SELECT id, title, description, status FROM requirements WHERE id = ?",
+		id,
+	).Scan(&req.ID, &req.Title, &req.Description, &req.Status)
+	if err == sql.ErrNoRows {
+		jsonResponse(w, http.StatusNotFound, map[string]string{"error": "not found"})
+		return
+	}
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	jsonResponse(w, http.StatusOK, req)
 }
 
 // ---------------------------------------------------------------------------
@@ -341,6 +377,24 @@ func createArtifact(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, http.StatusCreated, art)
 }
 
+func getArtifact(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var art Artifact
+	err := db.QueryRow(
+		"SELECT id, name, kind, version FROM artifacts WHERE id = ?",
+		id,
+	).Scan(&art.ID, &art.Name, &art.Kind, &art.Version)
+	if err == sql.ErrNoRows {
+		jsonResponse(w, http.StatusNotFound, map[string]string{"error": "not found"})
+		return
+	}
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	jsonResponse(w, http.StatusOK, art)
+}
+
 // ---------------------------------------------------------------------------
 // Entrypoint
 // ---------------------------------------------------------------------------
@@ -371,12 +425,15 @@ func main() {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/trace-links", listTraceLinks)
 		r.Post("/trace-links", createTraceLink)
+		r.Get("/trace-links/{id}", getTraceLink)
 		r.Delete("/trace-links/{id}", deleteTraceLink)
 		r.Get("/requirements", listRequirements)
 		r.Post("/requirements", createRequirement)
+		r.Get("/requirements/{id}", getRequirement)
 		r.Delete("/requirements/{id}", deleteRequirement)
 		r.Get("/artifacts", listArtifacts)
 		r.Post("/artifacts", createArtifact)
+		r.Get("/artifacts/{id}", getArtifact)
 		r.Delete("/artifacts/{id}", deleteArtifact)
 	})
 

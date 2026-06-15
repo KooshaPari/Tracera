@@ -31,12 +31,15 @@ func testRouter() http.Handler {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/trace-links", listTraceLinks)
 		r.Post("/trace-links", createTraceLink)
+		r.Get("/trace-links/{id}", getTraceLink)
 		r.Delete("/trace-links/{id}", deleteTraceLink)
 		r.Get("/requirements", listRequirements)
 		r.Post("/requirements", createRequirement)
+		r.Get("/requirements/{id}", getRequirement)
 		r.Delete("/requirements/{id}", deleteRequirement)
 		r.Get("/artifacts", listArtifacts)
 		r.Post("/artifacts", createArtifact)
+		r.Get("/artifacts/{id}", getArtifact)
 		r.Delete("/artifacts/{id}", deleteArtifact)
 	})
 	return r
@@ -177,5 +180,80 @@ func TestHealthEndpoint(t *testing.T) {
 	http.HandlerFunc(healthHandler).ServeHTTP(rr, req)
 	if rr.Code != http.StatusOK {
 		t.Fatalf("want 200, got %d", rr.Code)
+	}
+}
+
+func TestGetTraceLink(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"source_id":"r1","target_id":"a1","link_type":"satisfies","confidence":0.9}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/trace-links", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+	var created TraceLink
+	json.NewDecoder(rr.Body).Decode(&created) //nolint:errcheck
+
+	rr2 := httptest.NewRecorder()
+	req2 := httptest.NewRequest(http.MethodGet, "/api/v1/trace-links/"+created.ID, nil)
+	testRouter().ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusOK {
+		t.Fatalf("get: want 200, got %d", rr2.Code)
+	}
+	var got TraceLink
+	json.NewDecoder(rr2.Body).Decode(&got) //nolint:errcheck
+	if got.ID != created.ID {
+		t.Errorf("want id=%s, got %s", created.ID, got.ID)
+	}
+}
+
+func TestGetRequirement(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"title":"Auth requirement","description":"shall auth","status":"draft"}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/requirements", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+	var created Requirement
+	json.NewDecoder(rr.Body).Decode(&created) //nolint:errcheck
+
+	rr2 := httptest.NewRecorder()
+	req2 := httptest.NewRequest(http.MethodGet, "/api/v1/requirements/"+created.ID, nil)
+	testRouter().ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusOK {
+		t.Fatalf("get: want 200, got %d", rr2.Code)
+	}
+	var got Requirement
+	json.NewDecoder(rr2.Body).Decode(&got) //nolint:errcheck
+	if got.Title != "Auth requirement" {
+		t.Errorf("want title='Auth requirement', got %q", got.Title)
+	}
+}
+
+func TestGetArtifact(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"name":"auth-svc","kind":"implementation","version":"1.0.0"}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/artifacts", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+	var created Artifact
+	json.NewDecoder(rr.Body).Decode(&created) //nolint:errcheck
+
+	rr2 := httptest.NewRecorder()
+	req2 := httptest.NewRequest(http.MethodGet, "/api/v1/artifacts/"+created.ID, nil)
+	testRouter().ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusOK {
+		t.Fatalf("get: want 200, got %d", rr2.Code)
+	}
+	var got Artifact
+	json.NewDecoder(rr2.Body).Decode(&got) //nolint:errcheck
+	if got.Name != "auth-svc" {
+		t.Errorf("want name='auth-svc', got %q", got.Name)
 	}
 }
