@@ -14,6 +14,10 @@ Only the dependency-free Jaccard strategy is implemented here; richer embedding 
 VLM strategies may plug in behind the same :class:`ScorerPort` so callers never
 change. Every scorer returns a normalized confidence in ``[0.0, 1.0]`` plus a
 human-readable rationale (the acceptance criterion of ``FR-TRC-019``).
+
+SentenceTransformerScorer (Gap #3) uses ``sentence-transformers`` for real
+semantic scoring.  When the library is unavailable, a weighted-Jaccard fallback
+ensures the port remains usable in dependency-free environments.
 """
 
 from __future__ import annotations
@@ -110,4 +114,72 @@ class JaccardScorer:
             if inter
             else f"no shared tokens ({len(req)} req, {len(art)} art)"
         )
+        return ScoreResult(round(value, 6), rationale, self.name)
+
+
+def _weighted_jaccard(text_a: str, text_b: str) -> float:
+    """Module-level helper used as the fallback when sentence-transformers is
+    unavailable."""
+    return _weighted_score(_tokenize(text_a), _tokenize(text_b))
+
+
+import threading
+import logging
+import numpy as np
+from typing import Optional
+
+logger = logging.getLogger(__name__)
+
+
+class SentenceTransformerScorer:
+    """Semantic agreement scorer backed by ``sentence-transformers``.
+
+    Uses cosine similarity between sentence embeddings as the agreement signal,
+    yielding a ``[0.0, 1.0]`` normalized score (negative similarities clamped to
+    0).  When ``sentence-transformers`` is not installed the class gracefully
+    falls back to weighted Jaccard so the platform never breaks.
+
+    Attributes:
+        model_name: HuggingFace model identifier.
+    """
+
+    name = "sentence_transformer"
+
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2") -> None:
+        self._model_name = model_name
+        self._model = None
+        self._lock = threading.Lock()
+        self._fallback: Optional[JaccardScorer] = None
+
+    def _get_model(self):
+        if self._model is not None:
+            return self._model
+        with self._lock:
+            if self._model is not None:
+                return self._model
+            try:
+                from sentence_transformers import SentenceTransformer
+                self._model = SentenceTransformer(self._model_name)
+                logger.info(f"Loaded SentenceTransformer model: {self._model_name}")
+            except ImportError:
+                logger.warning("sentence_transformers not installed; falling back to JaccardScorer")
+                self._fallback = JaccardScorer()
+                self._model = None
+        return self._model
+
+    def score(self, requirement_text: str, artifact_text: str) -> ScoreResult:
+        model = self._get_model()
+        if model is None:
+            value = self._fallback.score(requirement_text, artifact_text).score
+            rationale = "sentence-transformers not installed; JaccardScorer fallback"
+            return ScoreResult(round(value, 6), rationale, self.name)
+        embeddings = model.encode([requirement_text, artifact_text])
+        e0, e1 = embeddings[0], embeddings[1]
+        norm0 = np.linalg.norm(e0)
+        norm1 = np.linalg.norm(e1)
+        if norm0 == 0 or norm1 == 0:
+            value = 0.0
+        else:
+            value = float(np.clip(np.dot(e0, e1) / (norm0 * norm1), 0.0, 1.0))
+        rationale = f"cosine similarity = {value:.6f} (model={self._model_name})"
         return ScoreResult(round(value, 6), rationale, self.name)
