@@ -42,7 +42,10 @@ if TYPE_CHECKING:
 __all__ = ["Neo4jGraphPort", "GraphPortAdapterError"]
 
 # Canonical NodeKind → legacy ArtifactKind (trace-link projection subset).
+# Covers the full canonical vocabulary across all four pillars
+# (traceability, SDLC/PM, evidence, multi-repo org intelligence).
 _NODE_KIND_TO_ARTIFACT: dict[NodeKind, ArtifactKind] = {
+    # Pillar A -- traceability core
     NodeKind.REQUIREMENT: ArtifactKind.REQUIREMENT,
     NodeKind.SPEC: ArtifactKind.DESIGN,
     NodeKind.ADR: ArtifactKind.RATIONALE,
@@ -50,10 +53,22 @@ _NODE_KIND_TO_ARTIFACT: dict[NodeKind, ArtifactKind] = {
     NodeKind.TEST: ArtifactKind.TEST,
     NodeKind.PR: ArtifactKind.CODE,
     NodeKind.COMMIT: ArtifactKind.CODE,
+    # Pillar B -- SDLC / program management
+    NodeKind.RELEASE: ArtifactKind.DESIGN,
+    NodeKind.PORTFOLIO: ArtifactKind.DESIGN,
+    NodeKind.OKR: ArtifactKind.REQUIREMENT,
+    NodeKind.ROADMAP: ArtifactKind.DESIGN,
+    # Pillar C -- evidence & verification
     NodeKind.EVIDENCE: ArtifactKind.EVIDENCE,
+    NodeKind.JOURNEY: ArtifactKind.EVIDENCE,
+    NodeKind.KEYFRAME: ArtifactKind.EVIDENCE,
+    # Pillar D -- multi-repo org intelligence
+    NodeKind.REPO: ArtifactKind.CODE,
+    NodeKind.TEAM: ArtifactKind.DESIGN,
 }
 
 # Canonical EdgeType → legacy TraceLinkType.
+# Covers every relationship in the closed edge vocabulary.
 _EDGE_TO_TRACE: dict[EdgeType, TraceLinkType] = {
     EdgeType.IMPLEMENTS: TraceLinkType.IMPLEMENTS,
     EdgeType.VERIFIES: TraceLinkType.VERIFIES,
