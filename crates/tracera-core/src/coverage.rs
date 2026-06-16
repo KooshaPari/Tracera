@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{CoverageMatrix, CoverageState};
+use traceability_core::{CoverageMatrix, CoverageState};
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CoverageSummary {

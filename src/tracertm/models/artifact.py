@@ -1,16 +1,21 @@
-"""Simplified artifact domain model for traceability core."""
+"""Re-export canonical artifact model from trace_link (shared-core vocabulary)."""
 
-from dataclasses import dataclass, field
-from typing import Optional, List
-from datetime import datetime
+from tracertm.models.trace_link import (
+    Artifact,
+    ArtifactKind,
+    Requirement,
+    RequirementStatus,
+    TraceLink,
+    TraceLinkType,
+    VerificationMethod,
+)
 
-
-@dataclass
-class Artifact:
-    id: str
-    kind: str
-    title: str
-    body: str = ""
-    tags: List[str] = field(default_factory=list)
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+__all__ = [
+    "Artifact",
+    "ArtifactKind",
+    "Requirement",
+    "RequirementStatus",
+    "TraceLink",
+    "TraceLinkType",
+    "VerificationMethod",
+]

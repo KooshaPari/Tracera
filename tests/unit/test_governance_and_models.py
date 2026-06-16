@@ -161,10 +161,10 @@ def test_trace_link_types_have_correct_values() -> None:
 # ---------------------------------------------------------------------------
 
 def test_artifact_kind_values() -> None:
-    assert ArtifactKind.REQUIREMENT.value == "Requirement"
-    assert ArtifactKind.TEST.value == "Test"
+    assert ArtifactKind.REQUIREMENT.value == "requirement"
+    assert ArtifactKind.TEST.value == "test"
 
 
 def test_requirement_status_values() -> None:
-    assert RequirementStatus.DRAFT.value == "Draft"
-    assert RequirementStatus.APPROVED.value == "Approved"
+    assert RequirementStatus.DRAFT.value == "draft"
+    assert RequirementStatus.APPROVED.value == "approved"

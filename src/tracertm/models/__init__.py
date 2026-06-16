@@ -1,12 +1,13 @@
-"""Tracera models package."""
+"""Tracera models package — mirrors traceability-core vocabulary."""
 
-from tracertm.models.artifact import Artifact
 from tracertm.models.trace_link import (
+    Artifact,
     ArtifactKind,
     Requirement,
     RequirementStatus,
     TraceLink,
     TraceLinkType,
+    VerificationMethod,
 )
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "RequirementStatus",
     "TraceLink",
     "TraceLinkType",
+    "VerificationMethod",
 ]
