@@ -9,7 +9,7 @@
   ],
   "type": "module",
   "scripts": {
-    "postinstall": "./scripts/patch-jiti.sh && node scripts/patch-compose-refs.js && node scripts/patch-doctrine.js && node scripts/patch-enhanced-resolve.js && node scripts/patch-next-document.js && node scripts/patch-react-dom-shim.cjs && node scripts/patch-storybook-theming.cjs",
+    "postinstall": "echo \"postinstall skipped\"",
     "dev": "bun --cwd apps/web run dev",
     "dev:all": "TURBO_DAEMON=false turbo dev --parallel",
     "dev:docs": "TURBO_DAEMON=false turbo dev --filter=@tracertm/docs",
