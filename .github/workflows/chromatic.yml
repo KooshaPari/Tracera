@@ -1,0 +1,108 @@
+name: Chromatic Visual Regression Testing
+on:
+  push:
+    branches:
+    - main
+    - develop
+    - feature/**
+    paths:
+    - frontend/apps/web/src/components/**
+    - frontend/apps/web/.storybook/**
+    - frontend/apps/web/package.json
+    - .github/workflows/chromatic.yml
+  pull_request:
+    branches:
+    - main
+    - develop
+    paths:
+    - frontend/apps/web/src/components/**
+    - frontend/apps/web/.storybook/**
+    - frontend/apps/web/package.json
+    - .github/workflows/chromatic.yml
+permissions:
+  contents: read
+concurrency:
+  group: chromatic-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  chromatic:
+    name: Visual Regression Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        fetch-depth: 1
+        sparse-checkout: 'frontend/apps/web
+
+          '
+        sparse-checkout-cone-mode: true
+        lfs: false
+    - name: Setup Node.js
+      uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65
+      with:
+        node-version: '22'
+        cache: npm
+    - name: Install Bun
+      uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
+      with:
+        bun-version: latest
+    - name: Cache Bun dependencies
+      uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c
+      with:
+        path: ~/.bun/install/cache
+        key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+        restore-keys: '${{ runner.os }}-bun-
+
+          '
+    - name: Install dependencies
+      working-directory: frontend/apps/web
+      run: bun install --frozen-lockfile
+    - name: Build Storybook
+      working-directory: frontend/apps/web
+      run: bun run storybook:build
+    - name: Run Chromatic
+      working-directory: frontend/apps/web
+      env:
+        CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+      run: bun run chromatic:ci
+    - name: Upload chromatic report
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: chromatic-report
+        path: frontend/apps/web/junit-report.xml
+        retention-days: 30
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+      with:
+        script: "const fs = require('fs');\nconst reportPath = 'frontend/apps/web/junit-report.xml';\n\
+          \nif (fs.existsSync(reportPath)) {\n  const report = fs.readFileSync(reportPath,\
+          \ 'utf8');\n  const passMatch = report.match(/tests=\"(\\d+)\"/);\n  const\
+          \ failureMatch = report.match(/failures=\"(\\d+)\"/);\n\n  const tests =\
+          \ passMatch ? passMatch[1] : 'unknown';\n  const failures = failureMatch\
+          \ ? failureMatch[1] : '0';\n\n  github.rest.issues.createComment({\n   \
+          \ issue_number: context.issue.number,\n    owner: context.repo.owner,\n\
+          \    repo: context.repo.repo,\n    body: `## Visual Regression Test Results\\\
+          n\\n- **Total Snapshots**: ${tests}\\n- **Regressions Found**: ${failures}\\\
+          n\\n[View full Chromatic report](${process.env.CHROMATIC_URL})`\n  });\n\
+          }\n"
+  visual-test-status:
+    name: Visual Test Status Check
+    runs-on: ubuntu-latest
+    if: always()
+    needs: chromatic
+    steps:
+    - name: Check visual test results
+      if: needs.chromatic.result == 'failure'
+      run: 'echo "Visual regression tests failed"
+
+        exit 1
+
+        '
+    - name: Visual tests passed
+      if: needs.chromatic.result == 'success'
+      run: echo "All visual regression tests passed"
+    timeout-minutes: 20
