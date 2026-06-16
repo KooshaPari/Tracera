@@ -6,6 +6,10 @@ rust-version = "1.82"
 license.workspace = true
 repository.workspace = true
 description = "Thin Tracera service crate on shared traceability-core (Neo4j glue, UI links, ops)."
+documentation = "https://docs.rs/tracera-core"
+keywords = ["phenotype", "tracera", "core"]
+categories = ["data-structures", "development-tools::profiling"]
+authors = ["kooshapari"]
 
 [features]
 default = []
@@ -22,10 +26,14 @@ thiserror.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 uuid.workspace = true
+# Shared ecosystem crates (extracted to phenoShared 2026-06-14)
+phenotype-error-core.workspace = true
+phenotype-string.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true
 tempfile.workspace = true
+phenotype-test-infra.workspace = true
 
 [package.metadata.binstall]
 bin-dir = "tracera-core"
