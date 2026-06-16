@@ -10,9 +10,9 @@ Strategies include:
 Each scorer returns a normalized confidence in ``[0.0, 1.0]`` plus a human-readable rationale.
 """
 
-from src.tracertm.scoring.jaccard_scorer import JaccardScorer
-from src.tracertm.scoring.registry import ScorerRegistry
-from src.tracertm.scoring.tfidf_scorer import TFIDFScorer
+from tracertm.scoring.jaccard_scorer import JaccardScorer
+from tracertm.scoring.registry import ScorerRegistry
+from tracertm.scoring.tfidf_scorer import TFIDFScorer
 
 __all__ = [
     "JaccardScorer",

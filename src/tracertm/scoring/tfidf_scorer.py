@@ -7,8 +7,8 @@ not installed.
 
 from __future__ import annotations
 
-from src.tracertm.ports.scorer import ScoreResult, ScorerPort
-from src.tracertm.scoring.jaccard_scorer import JaccardScorer
+from tracertm.ports.scorer import ScoreResult, ScorerPort
+from tracertm.scoring.jaccard_scorer import JaccardScorer
 
 _SKLEARN_AVAILABLE = False
 try:

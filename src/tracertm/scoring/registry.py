@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.tracertm.ports.scorer import ScorerPort
+    from tracertm.ports.scorer import ScorerPort
 
 
 class ScorerRegistry:
@@ -37,7 +37,7 @@ class ScorerRegistry:
     def _initialize_defaults(self) -> None:
         """Register default scorers (Jaccard)."""
         # Import here to avoid circular imports
-        from src.tracertm.scoring.jaccard_scorer import JaccardScorer
+        from tracertm.scoring.jaccard_scorer import JaccardScorer
 
         self.register("jaccard", JaccardScorer())
 

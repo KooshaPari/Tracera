@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import re
 
-from src.tracertm.ports.scorer import ScoreResult, ScorerPort
+from tracertm.ports.scorer import ScoreResult, ScorerPort
 
 _TOKEN_RE = re.compile(r"[A-Za-z0-9]+")
 
