@@ -150,7 +150,7 @@ async def delete_comment(
     if not await _table_exists(db):
         raise HTTPException(status_code=503, detail="Comments table not yet migrated")
 
-    user_id = str(claims.get("sub", ""))
+    user_id = str(claims.get("sub", "anonymous"))
     result = await db.execute(
         select(ItemComment).where(
             ItemComment.id == comment_id,
