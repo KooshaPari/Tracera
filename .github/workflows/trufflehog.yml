@@ -1,0 +1,14 @@
+name: Trufflehog Secrets Scan
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  trufflehog:
+    runs-on: ubuntu-latest
+    steps:
+        with:
+      - uses: trufflehog/actions/setup@main
+      - run: trufflehog github --only-verified --no-update
+        env:
