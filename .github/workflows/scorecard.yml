@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name: Scorecard
 
 on:
@@ -15,6 +16,34 @@ jobs:
   scorecard:
     name: OSSF Scorecard
     runs-on: ubuntu-24.04
+=======
+name: OpenSSF Scorecard
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+on:
+  branch_protection_rule: null
+  schedule:
+  - cron: 17 3 * * 6
+  push:
+    branches:
+    - main
+    paths-ignore:
+    - ARCHIVE/**
+    - '**/ARCHIVE/**'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-24.04
+    permissions:
+      security-events: write
+      id-token: write
+      contents: read
+      actions: read
+>>>>>>> 2e07b5382338a08242c7b9d327f6db379023aad3
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5

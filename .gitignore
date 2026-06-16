@@ -5,9 +5,17 @@ Cargo.lock
 
 # Node
 node_modules/
+<<<<<<< HEAD
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+=======
+bun.lockb
+default/
+ARCHIVE/CONFIG/default/
+ARCHIVE/bifrost-extensions/
+ARCHIVE/dispatch-mcp/
+>>>>>>> 2e07b5382338a08242c7b9d327f6db379023aad3
 package-lock.json
 .pnpm-debug.log*
 
@@ -67,5 +75,91 @@ docs/.vitepress/dist/
 # Package manager caches
 default/
 
+<<<<<<< HEAD
 # Orphan lock files
 docs/package-lock.json
+=======
+# Backend sources are tracked.
+# Local caches, binaries, and dev artifacts remain ignored.
+backend/.env
+backend/.env.local
+backend/.gocache/
+backend/.golangci-cache/
+backend/.minio-data/
+backend/.minio.pid
+backend/tmp/
+backend/logs/
+backend/build
+backend/package
+backend/coverage.out
+backend/tracertm-backend
+backend/.trace/
+
+# Repo governance: keep markdown documentation under top-level docs/.
+backend/**/*.md
+backend/artifacts/
+backend/docs/
+# Track CLI package files under cli/
+!cli/
+
+# Local MinIO (Homebrew)
+backend/.minio-data/
+backend/.minio.pid
+
+# Temporal data
+.temporal/
+
+# Air build artifacts
+backend/tmp/
+backend/build-errors.log
+
+# Overmind socket
+.overmind.sock
+
+# Process Compose
+.process-compose/
+!.process-compose/.gitkeep
+
+# Quality (parallel run logs + report)
+.quality/
+
+# Native service data
+.prometheus/
+.grafana/
+.loki/
+.alloy/
+.dragonfly/
+
+# Brewfile lock
+Brewfile.lock.json
+.aider*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+
+# AI tool artifacts
+.claude/
+.codex/
+.cursor/
+.serena/
+.gemini/
+.kittify/
+.kilocode/
+.github/prompts/
+.github/copilot-instructions.md
+.claudeignore
+.llmignore
+.hypothesis/
+
+# ===== Standard auto-generated hygiene ignores (do not edit manually) =====
+.env.*
+target/
+.mypy_cache/
+.ruff_cache/
+venv/
+# ===== End standard hygiene ignores =====
+>>>>>>> 2e07b5382338a08242c7b9d327f6db379023aad3
