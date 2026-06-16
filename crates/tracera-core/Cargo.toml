@@ -1,5 +1,3 @@
-06:19:20.388980 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
-06:19:20.405485 git.c:476               trace: built-in: git show :3:crates/tracera-core/Cargo.toml
 [package]
 name = "tracera-core"
 version = "0.1.0"

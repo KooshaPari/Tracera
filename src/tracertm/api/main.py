@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
-from phenotype_request_id.fastapi import RequestIdMiddleware
+from tracertm.api.middleware.request_id import RequestIdMiddleware
 
 from tracertm.api.routers.auth import router as auth_router
 from tracertm.api.routers.traceability import router as traceability_router
