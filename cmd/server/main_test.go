@@ -438,3 +438,264 @@ func TestListArtifacts(t *testing.T) {
 		t.Errorf("want >= 2 seed artifacts, got %d", len(artifacts))
 	}
 }
+
+// TestGetTraceLinkByIDResponseStructure verifies response body contains expected fields.
+func TestGetTraceLinkByIDResponseStructure(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"source_id":"req-seed","target_id":"impl-seed","link_type":"integrates","confidence":0.75}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/trace-links", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+	var created TraceLink
+	json.NewDecoder(rr.Body).Decode(&created) //nolint:errcheck
+
+	rr2 := httptest.NewRecorder()
+	req2 := httptest.NewRequest(http.MethodGet, "/api/v1/trace-links/"+created.ID, nil)
+	testRouter().ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusOK {
+		t.Fatalf("get: want 200, got %d", rr2.Code)
+	}
+
+	var got TraceLink
+	json.NewDecoder(rr2.Body).Decode(&got) //nolint:errcheck
+	if got.ID == "" {
+		t.Error("want non-empty ID")
+	}
+	if got.SourceID != "req-seed" {
+		t.Errorf("want source_id=req-seed, got %s", got.SourceID)
+	}
+	if got.TargetID != "impl-seed" {
+		t.Errorf("want target_id=impl-seed, got %s", got.TargetID)
+	}
+	if got.LinkType != "integrates" {
+		t.Errorf("want link_type=integrates, got %s", got.LinkType)
+	}
+	if got.Confidence != 0.75 {
+		t.Errorf("want confidence=0.75, got %f", got.Confidence)
+	}
+	if got.CreatedAt == "" {
+		t.Error("want non-empty created_at")
+	}
+}
+
+// TestGetRequirementByIDResponseStructure verifies response body contains expected fields.
+func TestGetRequirementByIDResponseStructure(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"title":"Logging requirement","description":"System shall log all operations","status":"approved"}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/requirements", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+	var created Requirement
+	json.NewDecoder(rr.Body).Decode(&created) //nolint:errcheck
+
+	rr2 := httptest.NewRecorder()
+	req2 := httptest.NewRequest(http.MethodGet, "/api/v1/requirements/"+created.ID, nil)
+	testRouter().ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusOK {
+		t.Fatalf("get: want 200, got %d", rr2.Code)
+	}
+
+	var got Requirement
+	json.NewDecoder(rr2.Body).Decode(&got) //nolint:errcheck
+	if got.ID == "" {
+		t.Error("want non-empty ID")
+	}
+	if got.Title != "Logging requirement" {
+		t.Errorf("want title='Logging requirement', got %q", got.Title)
+	}
+	if got.Description != "System shall log all operations" {
+		t.Errorf("want description='System shall log all operations', got %q", got.Description)
+	}
+	if got.Status != "approved" {
+		t.Errorf("want status=approved, got %s", got.Status)
+	}
+}
+
+// TestGetArtifactByIDResponseStructure verifies response body contains expected fields.
+func TestGetArtifactByIDResponseStructure(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"name":"database-module","kind":"test","version":"2.5.1"}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/artifacts", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+	var created Artifact
+	json.NewDecoder(rr.Body).Decode(&created) //nolint:errcheck
+
+	rr2 := httptest.NewRecorder()
+	req2 := httptest.NewRequest(http.MethodGet, "/api/v1/artifacts/"+created.ID, nil)
+	testRouter().ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusOK {
+		t.Fatalf("get: want 200, got %d", rr2.Code)
+	}
+
+	var got Artifact
+	json.NewDecoder(rr2.Body).Decode(&got) //nolint:errcheck
+	if got.ID == "" {
+		t.Error("want non-empty ID")
+	}
+	if got.Name != "database-module" {
+		t.Errorf("want name='database-module', got %q", got.Name)
+	}
+	if got.Kind != "test" {
+		t.Errorf("want kind=test, got %s", got.Kind)
+	}
+	if got.Version != "2.5.1" {
+		t.Errorf("want version=2.5.1, got %s", got.Version)
+	}
+}
+
+// TestDeleteTraceLinkWithStatusCode verifies delete response status only (no body).
+func TestDeleteTraceLinkWithStatusCode(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"source_id":"src1","target_id":"tgt1","link_type":"depends","confidence":0.5}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/trace-links", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+	var created TraceLink
+	json.NewDecoder(rr.Body).Decode(&created) //nolint:errcheck
+
+	rr2 := httptest.NewRecorder()
+	req2 := httptest.NewRequest(http.MethodDelete, "/api/v1/trace-links/"+created.ID, nil)
+	testRouter().ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusNoContent {
+		t.Errorf("want 204 NoContent, got %d", rr2.Code)
+	}
+	if rr2.Body.Len() > 0 {
+		t.Errorf("want empty body, got %s", rr2.Body.String())
+	}
+}
+
+// TestDeleteRequirementWithStatusCode verifies delete response status only (no body).
+func TestDeleteRequirementWithStatusCode(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"title":"Performance req","description":"Response time <100ms","status":"approved"}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/requirements", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+	var created Requirement
+	json.NewDecoder(rr.Body).Decode(&created) //nolint:errcheck
+
+	rr2 := httptest.NewRecorder()
+	req2 := httptest.NewRequest(http.MethodDelete, "/api/v1/requirements/"+created.ID, nil)
+	testRouter().ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusNoContent {
+		t.Errorf("want 204 NoContent, got %d", rr2.Code)
+	}
+	if rr2.Body.Len() > 0 {
+		t.Errorf("want empty body, got %s", rr2.Body.String())
+	}
+}
+
+// TestDeleteArtifactWithStatusCode verifies delete response status only (no body).
+func TestDeleteArtifactWithStatusCode(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"name":"config-artifact","kind":"specification","version":"3.0.0"}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/artifacts", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+	var created Artifact
+	json.NewDecoder(rr.Body).Decode(&created) //nolint:errcheck
+
+	rr2 := httptest.NewRecorder()
+	req2 := httptest.NewRequest(http.MethodDelete, "/api/v1/artifacts/"+created.ID, nil)
+	testRouter().ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusNoContent {
+		t.Errorf("want 204 NoContent, got %d", rr2.Code)
+	}
+	if rr2.Body.Len() > 0 {
+		t.Errorf("want empty body, got %s", rr2.Body.String())
+	}
+}
+
+// TestCreateTraceLinkResponseStatus verifies create returns 201 Created.
+func TestCreateTraceLinkResponseStatus(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"source_id":"id1","target_id":"id2","link_type":"verifies","confidence":0.99}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/trace-links", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusCreated {
+		t.Errorf("want 201 Created, got %d", rr.Code)
+	}
+
+	var created TraceLink
+	err := json.NewDecoder(rr.Body).Decode(&created)
+	if err != nil {
+		t.Fatalf("decode error: %v", err)
+	}
+	if created.ID == "" || created.SourceID == "" || created.TargetID == "" {
+		t.Error("created object missing required fields")
+	}
+}
+
+// TestCreateRequirementResponseStatus verifies create returns 201 Created.
+func TestCreateRequirementResponseStatus(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"title":"Security req","description":"HTTPS enforcement","status":"draft"}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/requirements", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusCreated {
+		t.Errorf("want 201 Created, got %d", rr.Code)
+	}
+
+	var created Requirement
+	err := json.NewDecoder(rr.Body).Decode(&created)
+	if err != nil {
+		t.Fatalf("decode error: %v", err)
+	}
+	if created.ID == "" || created.Title == "" {
+		t.Error("created object missing required fields")
+	}
+}
+
+// TestCreateArtifactResponseStatus verifies create returns 201 Created.
+func TestCreateArtifactResponseStatus(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"name":"release-artifact","kind":"deployment","version":"1.2.3"}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/artifacts", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusCreated {
+		t.Errorf("want 201 Created, got %d", rr.Code)
+	}
+
+	var created Artifact
+	err := json.NewDecoder(rr.Body).Decode(&created)
+	if err != nil {
+		t.Fatalf("decode error: %v", err)
+	}
+	if created.ID == "" || created.Name == "" {
+		t.Error("created object missing required fields")
+	}
+}
