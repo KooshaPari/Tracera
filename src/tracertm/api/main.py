@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from phenotype_request_id.fastapi import RequestIdMiddleware
 
+from tracertm.api.routers.auth import router as auth_router
 from tracertm.api.routers.traceability import router as traceability_router
 from tracertm.api.routers.sdlc_pm import router as sdlc_pm_router
 from tracertm.api.routers.evidence import router as evidence_router
@@ -18,6 +19,7 @@ def create_app() -> FastAPI:
     # generate a uuid4, store in the module-level ContextVar, and echo
     # the value on the response. See phenotype_request_id.fastapi.
     app.add_middleware(RequestIdMiddleware)
+    app.include_router(auth_router, prefix="/api/v1")
     app.include_router(traceability_router, prefix="/api/v1")
     app.include_router(sdlc_pm_router, prefix="/api/v1")
     app.include_router(evidence_router, prefix="/api/v1")
