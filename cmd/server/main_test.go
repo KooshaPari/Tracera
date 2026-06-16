@@ -257,3 +257,184 @@ func TestGetArtifact(t *testing.T) {
 		t.Errorf("want name='auth-svc', got %q", got.Name)
 	}
 }
+
+// TestDeleteRequirement tests successful deletion of a requirement.
+func TestDeleteRequirement(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"title":"Auth requirement","description":"shall auth","status":"draft"}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/requirements", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+	var created Requirement
+	json.NewDecoder(rr.Body).Decode(&created) //nolint:errcheck
+
+	rr2 := httptest.NewRecorder()
+	req2 := httptest.NewRequest(http.MethodDelete, "/api/v1/requirements/"+created.ID, nil)
+	testRouter().ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusNoContent {
+		t.Fatalf("delete: want 204, got %d", rr2.Code)
+	}
+}
+
+// TestDeleteRequirementNotFound tests deletion of non-existent requirement.
+func TestDeleteRequirementNotFound(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodDelete, "/api/v1/requirements/does-not-exist", nil)
+	testRouter().ServeHTTP(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("want 404, got %d", rr.Code)
+	}
+}
+
+// TestDeleteArtifact tests successful deletion of an artifact.
+func TestDeleteArtifact(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	body := `{"name":"auth-svc","kind":"implementation","version":"1.0.0"}`
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/artifacts", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+	var created Artifact
+	json.NewDecoder(rr.Body).Decode(&created) //nolint:errcheck
+
+	rr2 := httptest.NewRecorder()
+	req2 := httptest.NewRequest(http.MethodDelete, "/api/v1/artifacts/"+created.ID, nil)
+	testRouter().ServeHTTP(rr2, req2)
+	if rr2.Code != http.StatusNoContent {
+		t.Fatalf("delete: want 204, got %d", rr2.Code)
+	}
+}
+
+// TestDeleteArtifactNotFound tests deletion of non-existent artifact.
+func TestDeleteArtifactNotFound(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodDelete, "/api/v1/artifacts/does-not-exist", nil)
+	testRouter().ServeHTTP(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("want 404, got %d", rr.Code)
+	}
+}
+
+// TestCreateTraceLinkBadJSON tests error handling for malformed JSON.
+func TestCreateTraceLinkBadJSON(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/trace-links", bytes.NewBufferString("invalid json"))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("want 400, got %d", rr.Code)
+	}
+	var errResp map[string]string
+	json.NewDecoder(rr.Body).Decode(&errResp) //nolint:errcheck
+	if errResp["error"] != "invalid JSON body" {
+		t.Errorf("want error='invalid JSON body', got %q", errResp["error"])
+	}
+}
+
+// TestCreateRequirementBadJSON tests error handling for malformed JSON.
+func TestCreateRequirementBadJSON(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/requirements", bytes.NewBufferString("invalid json"))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("want 400, got %d", rr.Code)
+	}
+}
+
+// TestCreateArtifactBadJSON tests error handling for malformed JSON.
+func TestCreateArtifactBadJSON(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/artifacts", bytes.NewBufferString("invalid json"))
+	req.Header.Set("Content-Type", "application/json")
+	testRouter().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("want 400, got %d", rr.Code)
+	}
+}
+
+// TestGetTraceLinkNotFound tests retrieval of non-existent trace link.
+func TestGetTraceLinkNotFound(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/trace-links/does-not-exist", nil)
+	testRouter().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("want 404, got %d", rr.Code)
+	}
+}
+
+// TestGetRequirementNotFound tests retrieval of non-existent requirement.
+func TestGetRequirementNotFound(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/requirements/does-not-exist", nil)
+	testRouter().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("want 404, got %d", rr.Code)
+	}
+}
+
+// TestGetArtifactNotFound tests retrieval of non-existent artifact.
+func TestGetArtifactNotFound(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/artifacts/does-not-exist", nil)
+	testRouter().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("want 404, got %d", rr.Code)
+	}
+}
+
+// TestListArtifacts tests listing all artifacts.
+func TestListArtifacts(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/artifacts", nil)
+	testRouter().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("want 200, got %d", rr.Code)
+	}
+	var artifacts []Artifact
+	if err := json.NewDecoder(rr.Body).Decode(&artifacts); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(artifacts) < 2 {
+		t.Errorf("want >= 2 seed artifacts, got %d", len(artifacts))
+	}
+}
