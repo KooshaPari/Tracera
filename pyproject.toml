@@ -234,11 +234,7 @@ include = [
 
 [tool.pytest.ini_options]
 testpaths = [
-<<<<<<< HEAD
-    "src/tracertm",
-=======
-    "src",
->>>>>>> c5656f5a9e2b6956447a252295042e6f2cdd1ffe
+    "tests",
 ]
 pythonpath = [
     "src",
@@ -246,12 +242,8 @@ pythonpath = [
 python_files = [
     "test_*.py",
 ]
-<<<<<<< HEAD
 python_classes = [
 ]
-=======
-python_classes = []
->>>>>>> c5656f5a9e2b6956447a252295042e6f2cdd1ffe
 python_functions = [
     "test_*",
 ]
