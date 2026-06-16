@@ -23,8 +23,5 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1", features = ["serde", "v4", "v5"] }
 proptest = "1"
-# Shared ecosystem crates (extracted to phenoShared 2026-06-14)
+# Shared ecosystem crates (phenoShared git source)
 phenotype-error-core = { git = "https://github.com/KooshaPari/phenoShared", branch = "main" }
-phenotype-string = { git = "https://github.com/KooshaPari/phenoShared", branch = "main" }
-phenotype-test-infra = { git = "https://github.com/KooshaPari/phenoShared", branch = "main" }
-phenotype-event-bus = { git = "https://github.com/KooshaPari/phenoShared", branch = "main" }
