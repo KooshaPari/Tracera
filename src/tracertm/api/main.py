@@ -24,6 +24,15 @@ def create_app() -> FastAPI:
     app.include_router(sdlc_pm_router, prefix="/api/v1")
     app.include_router(evidence_router, prefix="/api/v1")
     app.include_router(org_intel_router, prefix="/api/v1")
+
+    @app.get("/healthz")
+    async def healthz() -> dict[str, str]:
+        return {"status": "ok"}
+
+    @app.get("/readyz")
+    async def readyz() -> dict[str, str]:
+        return {"status": "ready"}
+
     return app
 
 
