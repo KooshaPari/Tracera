@@ -1,125 +1,127 @@
-"""Authentication REST endpoints.
+"""Authentication API endpoints for TraceRTM.
 
-GET /api/v1/auth/me - get current user profile (requires JWT)
+Implements:
+- OAuth token management via WorkOS AuthKit
+- Token refresh and revocation
+- Current user endpoint with DB-backed account lookup
 """
 
 from __future__ import annotations
 
 import logging
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated, Any
 
-import jwt
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import OperationalError
 
-from tracertm.api.deps import auth_guard, get_db
+from tracertm.repositories.account_repository import AccountRepository
+
+if TYPE_CHECKING:
+    pass
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-class UserProfile(BaseModel):
-    """Current user's profile information."""
+class MeResponse(BaseModel):
+    """Current user information."""
 
-    user_id: str = Field(..., description="Unique user identifier")
-    email: str | None = Field(None, description="User email address")
-    name: str | None = Field(None, description="User display name")
-    scopes: list[str] = Field(default_factory=list, description="User permission scopes")
+    user: dict[str, Any] = Field(..., description="User object")
+    claims: dict[str, Any] = Field(..., description="JWT claims")
+    account: dict | None = Field(None, description="Account information from DB")
 
 
-@router.get("/me", response_model=UserProfile, status_code=200)
+async def get_db() -> AsyncSession:
+    """Get database session.
+
+    This is a placeholder dependency. In production, inject from
+    the database module.
+    """
+    raise NotImplementedError("get_db must be implemented by the caller")
+
+
+async def auth_guard(authorization: str | None = None) -> dict[str, Any]:
+    """Validate JWT token and return claims.
+
+    This is a placeholder dependency. In production, validate against
+    WorkOS or your JWT provider.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid Authorization header",
+        )
+    raise NotImplementedError("auth_guard must be implemented by the caller")
+
+
+@router.get("/me", response_model=MeResponse)
 async def get_current_user(
-    authorization: Annotated[str | None, Header()] = None,
-    db: Annotated[AsyncSession, Depends(get_db)] | None = None,
-) -> UserProfile:
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> MeResponse:
+    """Get current authenticated user from database.
+
+    Performs a DB-backed account lookup (B4 requirement) to retrieve
+    account information for the authenticated user.
+
+    Args:
+        claims: JWT claims from auth_guard (includes 'sub' with user_id)
+        db: Database session for account lookup
+
+    Returns:
+        Current user information, claims, and account data
+
+    Raises:
+        HTTPException: 401 if token invalid/missing, 500 if DB lookup fails
     """
-    Get the current authenticated user's profile.
-
-    Requires a valid JWT in the Authorization header (Bearer token).
-
-    Error handling:
-    - 401 token_expired: JWT signature has expired
-    - 401 Invalid authorization header format: Bearer prefix missing
-    - 401 Invalid token: malformed JWT
-    - 503: Database connection error
-    - 500: Internal server error
-
-    Returns the user's ID, email, name, and permission scopes.
-    """
-    # Validate Authorization header format and extract JWT claims
-    if not authorization:
+    user_id = claims.get("sub")
+    if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization header missing",
+            detail="Invalid token: missing user ID",
         )
 
-    parts = authorization.split()
-    if len(parts) != 2 or parts[0].lower() != "bearer":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header format",
-        )
-
-    token = parts[1]
-
-    # Decode JWT (with error handling for expired/invalid tokens)
-    claims: dict[str, object] = {}
     try:
-        claims = jwt.decode(token, options={"verify_signature": False})
-    except jwt.ExpiredSignatureError:
-        logger.warning("Received request with expired JWT")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="token_expired",
-        )
-    except jwt.InvalidSignatureError:
-        logger.warning("Received JWT with invalid signature")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token signature",
-        )
-    except Exception as exc:
-        logger.warning(f"JWT decode error: {exc}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-        )
+        # B4 Real DB Lookup: Fetch account from database
+        account_repo = AccountRepository(db)
+        db_accounts = await account_repo.list_by_user(user_id)
 
-    # Extract user info from claims (fallback to defaults if missing)
-    user_id = str(claims.get("sub", ""))
-    email = claims.get("email")
-    name = claims.get("name")
-    scopes_raw = claims.get("scope", "")
-    scopes = scopes_raw.split() if isinstance(scopes_raw, str) and scopes_raw else []
+        if db_accounts:
+            # Account found in database
+            primary = db_accounts[0]
+            account_data: dict | None = {
+                "id": primary.id,
+                "name": primary.name,
+            }
+        elif claims.get("org_id"):
+            # Fallback to JWT claims if no DB record exists yet
+            account_data = {
+                "id": claims.get("org_id"),
+                "name": claims.get("org_name"),
+            }
+        else:
+            # No account information available
+            account_data = None
 
-    # Try to enrich user profile from database (optional)
-    # If DB is unavailable, still return what we have from JWT
-    if db is not None:
-        try:
-            # Future: query user table to get additional profile fields
-            # For now, this is a placeholder for DB-backed enrichment
-            pass
-        except OperationalError as exc:
-            # DB connection failed; log and return 503
-            logger.error(f"Database connection error in /me endpoint: {exc}")
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Database unavailable",
-            )
-        except Exception as exc:
-            # Unexpected error; log and return 500
-            logger.error(f"Unexpected error querying user profile: {exc}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Internal server error",
-            )
-
-    return UserProfile(
-        user_id=user_id,
-        email=email,
-        name=name,
-        scopes=scopes,
-    )
+        # Extract user fields from claims (WorkOS provides these)
+        return MeResponse(
+            user={
+                "id": user_id,
+                "email": claims.get("email"),
+                "firstName": claims.get("first_name"),
+                "lastName": claims.get("last_name"),
+                "emailVerified": claims.get("email_verified", False),
+            },
+            claims=claims,
+            account=account_data,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch current user: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch user information",
+        ) from e

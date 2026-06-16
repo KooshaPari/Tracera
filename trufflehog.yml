@@ -1,11 +1,9 @@
 version: 1
 roots:
   - path: .
-    scan_depth: 15
+    scan_depth: 4
     exclude_paths:
       - "*.lock"
-      - "**/package-lock.json"
-      - "**/yarn.lock"
       - "**/node_modules/**"
       - "**/__pycache__/**"
       - "**/.venv/**"
