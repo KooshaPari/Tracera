@@ -4,11 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from tracertm.ports.scorer import (
-    JaccardScorer,
-    ScorerPort,
-    ScoreResult,
-)
+from tracertm.ports.scorer import JaccardScorer, ScorerPort, ScoreResult
 
 
 def test_jaccard_satisfies_scorer_port_protocol():

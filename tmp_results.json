@@ -1,0 +1,983 @@
+{
+  "FR-1.1": {
+    "count": 50,
+    "locations": [
+      "tests\\backend\\api\\FR-1.1-CreateItem.test.go:1",
+      "tests\\backend\\api\\FR-1.1-CreateItem.test.go:2",
+      "tests\\backend\\api\\FR-1.1-CreateItem.test.go:421",
+      "tests\\docs\\AUTOGRADER-SUMMARY.md:91",
+      "tests\\docs\\AUTOGRADER-SUMMARY.md:100",
+      "tests\\docs\\AUTOGRADER-SUMMARY.md:150",
+      "tests\\docs\\AUTOGRADER-SUMMARY.md:152",
+      "tests\\docs\\AUTOGRADER-SUMMARY.md:155",
+      "tests\\docs\\AUTOGRADER-SUMMARY.md:161",
+      "tests\\docs\\AUTOGRADER-SUMMARY.md:170"
+    ]
+  },
+  "FR-1.2": {
+    "count": 2,
+    "locations": [
+      "tests\\docs\\AUTOGRADER-SUMMARY.md:92",
+      "tests\\docs\\TEST-MAPPING.md:184"
+    ]
+  },
+  "FR-1.3": {
+    "count": 1,
+    "locations": [
+      "tests\\docs\\TEST-MAPPING.md:185"
+    ]
+  },
+  "FR-1.4": {
+    "count": 1,
+    "locations": [
+      "tests\\docs\\TEST-MAPPING.md:186"
+    ]
+  },
+  "FR-1.5": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-10.1": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-10.2": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-10.3": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-2.1": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-2.2": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-2.3": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-2.4": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-3.1": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-3.2": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-3.3": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-4.1": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-4.2": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-4.3": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-5.1": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-5.2": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-5.3": {
+    "count": 1,
+    "locations": [
+      "tests\\docs\\E2E_TEST_ARCHITECTURE.md:70"
+    ]
+  },
+  "FR-6.1": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-6.2": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-7.1": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-7.2": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-8.1": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-8.2": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-9.1": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-9.2": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-AI-001": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\ai_service.py:7"
+    ]
+  },
+  "FR-AI-002": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\agent_coordination_service.py:3"
+    ]
+  },
+  "FR-AI-003": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\agent_monitoring_service.py:6"
+    ]
+  },
+  "FR-AI-004": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\services\\ai_service.py:7",
+      "src\\tracertm\\services\\plugin_service.py:3"
+    ]
+  },
+  "FR-AI-005": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\ai_service.py:7"
+    ]
+  },
+  "FR-AI-006": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\checkpoint_service.py:6"
+    ]
+  },
+  "FR-AI-007": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\services\\agent_coordination_service.py:3",
+      "src\\tracertm\\services\\temporal_service.py:3"
+    ]
+  },
+  "FR-AI-008": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-AI-009": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\agent_performance_service.py:3"
+    ]
+  },
+  "FR-AI-010": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\documentation_service.py:3"
+    ]
+  },
+  "FR-APP-001": {
+    "count": 13,
+    "locations": [
+      "src\\tracertm\\api\\handlers\\items.py:3",
+      "src\\tracertm\\api\\routers\\items.py:283",
+      "src\\tracertm\\mcp\\tools\\items.py:7",
+      "src\\tracertm\\services\\item_service.py:74",
+      "src\\tracertm\\services\\item_service.py:106",
+      "src\\tracertm\\services\\tui_service.py:3",
+      "tests\\integration\\links\\test_bidirectional_navigation.py:6",
+      "tests\\integration\\links\\test_bidirectional_navigation.py:56",
+      "tests\\integration\\services\\test_link_service.py:23",
+      "tests\\unit\\api\\test_items_api.py:4"
+    ]
+  },
+  "FR-APP-002": {
+    "count": 11,
+    "locations": [
+      "src\\tracertm\\api\\handlers\\links.py:3",
+      "src\\tracertm\\api\\routers\\items.py:244",
+      "src\\tracertm\\api\\routers\\quality.py:38",
+      "src\\tracertm\\mcp\\tools\\links.py:7",
+      "src\\tracertm\\services\\item_service.py:75",
+      "src\\tracertm\\services\\item_service.py:163",
+      "tests\\api\\test_specifications_router.py:8",
+      "tests\\integration\\test_specification_repositories.py:16",
+      "tests\\unit\\api\\test_items_api.py:5",
+      "tests\\unit\\repositories\\test_specification_repository.py:7"
+    ]
+  },
+  "FR-APP-003": {
+    "count": 9,
+    "locations": [
+      "src\\tracertm\\api\\routers\\items.py:344",
+      "src\\tracertm\\services\\item_service.py:76",
+      "src\\tracertm\\services\\item_service.py:199",
+      "src\\tracertm\\services\\status_workflow_service.py:6",
+      "tests\\integration\\links\\test_dependency_detection.py:4",
+      "tests\\integration\\services\\test_link_service.py:24",
+      "tests\\integration\\services\\test_services_simple_full_coverage.py:19",
+      "tests\\unit\\api\\test_items_api.py:6",
+      "tests\\unit\\services\\test_item_service.py:6"
+    ]
+  },
+  "FR-APP-004": {
+    "count": 7,
+    "locations": [
+      "src\\tracertm\\api\\routers\\items.py:405",
+      "src\\tracertm\\services\\item_service.py:77",
+      "src\\tracertm\\services\\item_service.py:269",
+      "src\\tracertm\\services\\query_service.py:3",
+      "src\\tracertm\\services\\search_service.py:3",
+      "tests\\unit\\api\\test_items_api.py:7",
+      "tests\\unit\\services\\test_item_service.py:7"
+    ]
+  },
+  "FR-APP-005": {
+    "count": 6,
+    "locations": [
+      "src\\tracertm\\api\\routers\\items.py:208",
+      "src\\tracertm\\services\\bulk_operation_service.py:6",
+      "src\\tracertm\\services\\item_service.py:78",
+      "src\\tracertm\\services\\item_service.py:177",
+      "tests\\unit\\api\\test_items_api.py:8",
+      "tests\\unit\\services\\test_item_service.py:8"
+    ]
+  },
+  "FR-APP-006": {
+    "count": 3,
+    "locations": [
+      "src\\tracertm\\mcp\\tools\\projects.py:6",
+      "src\\tracertm\\services\\link_service.py:12",
+      "tests\\unit\\api\\test_links_api.py:6"
+    ]
+  },
+  "FR-APP-007": {
+    "count": 3,
+    "locations": [
+      "src\\tracertm\\services\\link_service.py:13",
+      "tests\\unit\\api\\test_links_api.py:7",
+      "tests\\unit\\api\\test_link_endpoints_comprehensive.py:4"
+    ]
+  },
+  "FR-APP-008": {
+    "count": 3,
+    "locations": [
+      "src\\tracertm\\services\\link_service.py:14",
+      "tests\\unit\\api\\test_links_api.py:8",
+      "tests\\unit\\api\\test_link_endpoints_comprehensive.py:5"
+    ]
+  },
+  "FR-APP-009": {
+    "count": 3,
+    "locations": [
+      "src\\tracertm\\services\\history_service.py:3",
+      "src\\tracertm\\services\\link_service.py:15",
+      "tests\\unit\\api\\test_links_api.py:9"
+    ]
+  },
+  "FR-APP-010": {
+    "count": 5,
+    "locations": [
+      "src\\tracertm\\services\\link_service.py:16",
+      "src\\tracertm\\services\\link_service.py:37",
+      "src\\tracertm\\services\\progress_tracking_service.py:3",
+      "tests\\unit\\api\\test_links_api.py:10",
+      "tests\\unit\\api\\test_link_endpoints_comprehensive.py:6"
+    ]
+  },
+  "FR-COLLAB-001": {
+    "count": 4,
+    "locations": [
+      "src\\tracertm\\services\\conflict_resolution_service.py:6",
+      "src\\tracertm\\services\\sync_service.py:3",
+      "tests\\unit\\repositories\\test_github_project_repository.py:7",
+      "tests\\unit\\repositories\\test_webhook_repository.py:8"
+    ]
+  },
+  "FR-COLLAB-002": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-COLLAB-003": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\services\\export_service.py:23",
+      "src\\tracertm\\services\\notification_service.py:3"
+    ]
+  },
+  "FR-COLLAB-004": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\api\\handlers\\webhooks.py:3",
+      "src\\tracertm\\services\\api_webhooks_service.py:3"
+    ]
+  },
+  "FR-COLLAB-005": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-COLLAB-006": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\api\\handlers\\integrations.py:3",
+      "src\\tracertm\\services\\external_integration_service.py:3"
+    ]
+  },
+  "FR-COLLAB-007": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\api\\handlers\\integrations.py:3",
+      "src\\tracertm\\services\\external_integration_service.py:3"
+    ]
+  },
+  "FR-COLLAB-008": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\api\\handlers\\integrations.py:3",
+      "src\\tracertm\\services\\external_integration_service.py:3"
+    ]
+  },
+  "FR-COLLAB-009": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-COLLAB-010": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-COMP-001": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-COMP-002": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-COMP-003": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-DISC-001": {
+    "count": 8,
+    "locations": [
+      "src\\tracertm\\api\\main.py:1583",
+      "tests\\integration\\test_webhook_handler.py:5",
+      "tests\\integration\\services\\test_services_simple_full_coverage.py:16",
+      "tests\\unit\\test_gap_coverage_import_services.py:6",
+      "tests\\unit\\test_gap_coverage_import_services.py:30",
+      "tests\\unit\\test_gap_coverage_import_services.py:39",
+      "tests\\unit\\api\\test_export_import_endpoints.py:8",
+      "tests\\unit\\repositories\\test_github_project_repository.py:6"
+    ]
+  },
+  "FR-DISC-002": {
+    "count": 8,
+    "locations": [
+      "tests\\api\\test_specifications_router.py:7",
+      "tests\\integration\\test_item_spec_service.py:6",
+      "tests\\integration\\test_specification_repositories.py:15",
+      "tests\\integration\\services\\test_services_simple_full_coverage.py:17",
+      "tests\\unit\\repositories\\test_specification_repository.py:6",
+      "tests\\unit\\services\\test_item_spec_service.py:5",
+      "tests\\unit\\services\\test_specification_service.py:4",
+      "tests\\unit\\services\\test_specification_service.py:49"
+    ]
+  },
+  "FR-DISC-003": {
+    "count": 9,
+    "locations": [
+      "src\\tracertm\\mcp\\tools\\specifications.py:3",
+      "src\\tracertm\\services\\auto_link_service.py:19",
+      "src\\tracertm\\services\\import_service.py:3",
+      "tests\\integration\\links\\test_auto_linking.py:6",
+      "tests\\integration\\links\\test_auto_linking.py:57",
+      "tests\\integration\\services\\test_link_service.py:22",
+      "tests\\unit\\api\\test_links_api.py:11",
+      "tests\\unit\\repositories\\test_link_repository.py:4",
+      "tests\\unit\\repositories\\test_link_repository.py:31"
+    ]
+  },
+  "FR-DISC-004": {
+    "count": 5,
+    "locations": [
+      "src\\tracertm\\services\\commit_linking_service.py:25",
+      "tests\\integration\\links\\test_auto_linking.py:7",
+      "tests\\integration\\links\\test_auto_linking.py:57",
+      "tests\\integration\\services\\test_services_simple_full_coverage.py:18",
+      "tests\\integration\\services\\test_services_simple_full_coverage.py:994"
+    ]
+  },
+  "FR-DISC-005": {
+    "count": 6,
+    "locations": [
+      "src\\tracertm\\services\\ingestion_service.py:3",
+      "src\\tracertm\\services\\webhook_service.py:34",
+      "tests\\integration\\test_webhook_handler.py:4",
+      "tests\\integration\\test_webhook_handler.py:88",
+      "tests\\unit\\test_gap_coverage_import_services.py:7",
+      "tests\\unit\\repositories\\test_webhook_repository.py:7"
+    ]
+  },
+  "FR-DISC-006": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\ingestion_service.py:3"
+    ]
+  },
+  "FR-DISC-007": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\import_service.py:3"
+    ]
+  },
+  "FR-DISC-008": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\file_watcher_service.py:3"
+    ]
+  },
+  "FR-DISC-009": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-DISC-010": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-GRAPH-001": {
+    "count": 6,
+    "locations": [
+      "backend\\internal\\graph\\topo_queries_test.go:11",
+      "backend\\internal\\graph\\topo_queries_test.go:34",
+      "backend\\internal\\graph\\topo_queries_test.go:61",
+      "backend\\internal\\graph\\topo_queries_test.go:80",
+      "backend\\internal\\graph\\topo_queries_test.go:93",
+      "backend\\internal\\graph\\topo_queries_test.go:105"
+    ]
+  },
+  "FR-GRAPH-002": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-GRAPH-003": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-INFRA-001": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\workos_auth_service.py:3"
+    ]
+  },
+  "FR-INFRA-002": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\workos_auth_service.py:3"
+    ]
+  },
+  "FR-INFRA-003": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-INFRA-004": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\cache_service.py:3"
+    ]
+  },
+  "FR-INFRA-005": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\storage_service.py:3"
+    ]
+  },
+  "FR-INFRA-006": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\event_service.py:3"
+    ]
+  },
+  "FR-INFRA-007": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\performance_service.py:3"
+    ]
+  },
+  "FR-INFRA-008": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-INFRA-009": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-INFRA-010": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\encryption_service.py:3"
+    ]
+  },
+  "FR-INTEG-001": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-INTEG-002": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-INTEG-003": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-INTEG-004": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-LINK-001": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-LINK-002": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-LINK-003": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-LINK-004": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-MCP-001": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\mcp\\tools\\core_tools.py:15"
+    ]
+  },
+  "FR-MCP-002": {
+    "count": 7,
+    "locations": [
+      "src\\tracertm\\mcp\\tools\\core_tools.py:15",
+      "src\\tracertm\\mcp\\tools\\graph.py:7",
+      "src\\tracertm\\mcp\\tools\\items.py:7",
+      "src\\tracertm\\mcp\\tools\\links.py:7",
+      "src\\tracertm\\mcp\\tools\\projects.py:6",
+      "src\\tracertm\\mcp\\tools\\specifications.py:3",
+      "src\\tracertm\\mcp\\tools\\traceability.py:7"
+    ]
+  },
+  "FR-MCP-003": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-MCP-004": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-MCP-005": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-MCP-006": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-MCP-007": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-MCP-008": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-MCP-009": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\mcp\\tools\\core_tools.py:15"
+    ]
+  },
+  "FR-MCP-010": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-OBS-001": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-OBS-002": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-OBS-003": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-PM-001": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-PM-002": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-PM-003": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-PM-004": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-QUAL-001": {
+    "count": 11,
+    "locations": [
+      "src\\tracertm\\services\\requirement_quality_service.py:3",
+      "src\\tracertm\\services\\specification_service.py:156",
+      "src\\tracertm\\services\\specification_service.py:188",
+      "src\\tracertm\\services\\specification_service.py:382",
+      "src\\tracertm\\services\\specification_service.py:600",
+      "src\\tracertm\\services\\specification_service.py:774",
+      "src\\tracertm\\services\\specification_service.py:972",
+      "tests\\api\\test_specifications_router.py:9",
+      "tests\\integration\\test_item_spec_service.py:4",
+      "tests\\integration\\test_specification_repositories.py:17"
+    ]
+  },
+  "FR-QUAL-002": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\services\\specification_service.py:157",
+      "tests\\integration\\services\\test_link_service.py:25"
+    ]
+  },
+  "FR-QUAL-003": {
+    "count": 8,
+    "locations": [
+      "src\\tracertm\\services\\specification_service.py:158",
+      "src\\tracertm\\services\\specification_service.py:277",
+      "src\\tracertm\\services\\specification_service.py:484",
+      "src\\tracertm\\services\\specification_service.py:687",
+      "src\\tracertm\\services\\specification_service.py:860",
+      "src\\tracertm\\services\\specification_service.py:1030",
+      "tests\\integration\\test_item_spec_service.py:5",
+      "tests\\integration\\links\\test_dependency_detection.py:5"
+    ]
+  },
+  "FR-QUAL-004": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\specification_service.py:159"
+    ]
+  },
+  "FR-QUAL-005": {
+    "count": 7,
+    "locations": [
+      "src\\tracertm\\api\\routers\\features.py:37",
+      "src\\tracertm\\services\\specification_service.py:189",
+      "src\\tracertm\\services\\specification_service.py:383",
+      "src\\tracertm\\services\\specification_service.py:568",
+      "src\\tracertm\\services\\specification_service.py:601",
+      "src\\tracertm\\services\\specification_service.py:775",
+      "src\\tracertm\\services\\specification_service.py:973"
+    ]
+  },
+  "FR-QUAL-006": {
+    "count": 3,
+    "locations": [
+      "src\\tracertm\\api\\routers\\features.py:71",
+      "src\\tracertm\\services\\dependency_analysis_service.py:3",
+      "src\\tracertm\\services\\specification_service.py:569"
+    ]
+  },
+  "FR-QUAL-007": {
+    "count": 9,
+    "locations": [
+      "src\\tracertm\\mcp\\tools\\graph.py:7",
+      "src\\tracertm\\mcp\\tools\\traceability.py:7",
+      "src\\tracertm\\services\\graph_snapshot_service.py:3",
+      "src\\tracertm\\services\\specification_service.py:278",
+      "src\\tracertm\\services\\specification_service.py:485",
+      "src\\tracertm\\services\\specification_service.py:570",
+      "src\\tracertm\\services\\specification_service.py:688",
+      "src\\tracertm\\services\\specification_service.py:861",
+      "src\\tracertm\\services\\specification_service.py:1031"
+    ]
+  },
+  "FR-QUAL-008": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\api\\routers\\features.py:150",
+      "src\\tracertm\\services\\specification_service.py:571"
+    ]
+  },
+  "FR-QUAL-009": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\graph_validation_service.py:3"
+    ]
+  },
+  "FR-QUAL-010": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\spec_analytics_service.py:35"
+    ]
+  },
+  "FR-RPT-001": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\services\\graph_analysis_service.py:12",
+      "src\\tracertm\\services\\stats_service.py:3"
+    ]
+  },
+  "FR-RPT-002": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\services\\critical_path_service.py:27",
+      "src\\tracertm\\services\\export_import_service.py:3"
+    ]
+  },
+  "FR-RPT-003": {
+    "count": 3,
+    "locations": [
+      "src\\tracertm\\services\\export_import_service.py:3",
+      "src\\tracertm\\services\\impact_analysis_service.py:49",
+      "tests\\unit\\api\\test_export_import_endpoints.py:9"
+    ]
+  },
+  "FR-RPT-004": {
+    "count": 3,
+    "locations": [
+      "src\\tracertm\\services\\cycle_detection_service.py:29",
+      "src\\tracertm\\services\\cycle_detection_service.py:104",
+      "src\\tracertm\\services\\graph_report_service.py:3"
+    ]
+  },
+  "FR-RPT-005": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\graph_service.py:23"
+    ]
+  },
+  "FR-RPT-006": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\services\\graph_service.py:24",
+      "src\\tracertm\\services\\metrics_service.py:3"
+    ]
+  },
+  "FR-RPT-007": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\services\\export_import_service.py:3",
+      "src\\tracertm\\services\\traceability_matrix_service.py:33"
+    ]
+  },
+  "FR-RPT-008": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\services\\traceability_matrix_service.py:34",
+      "src\\tracertm\\services\\visualization_service.py:6"
+    ]
+  },
+  "FR-RPT-009": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\export_service.py:24"
+    ]
+  },
+  "FR-RPT-010": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-RTM-001": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-RTM-002": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-RTM-003": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-RTM-004": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-SPEC-001": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-SPEC-002": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-SPEC-003": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-TENANT-001": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-TENANT-002": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-TENANT-003": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-TEST-001": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-TEST-002": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-TEST-003": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-TEST-004": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-VERIF-001": {
+    "count": 2,
+    "locations": [
+      "src\\tracertm\\services\\verification_service.py:3",
+      "tests\\integration\\services\\test_services_simple_full_coverage.py:20"
+    ]
+  },
+  "FR-VERIF-002": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\verification_service.py:3"
+    ]
+  },
+  "FR-VERIF-003": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-VERIF-004": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-VERIF-005": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\scenario_service.py:3"
+    ]
+  },
+  "FR-VERIF-006": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-VERIF-007": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-VERIF-008": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\verification_service.py:3"
+    ]
+  },
+  "FR-VERIF-009": {
+    "count": 0,
+    "locations": []
+  },
+  "FR-VERIF-010": {
+    "count": 1,
+    "locations": [
+      "src\\tracertm\\services\\contract_service.py:3"
+    ]
+  },
+  "NFR-001": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-002": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-003": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-004": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-005": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-006": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-007": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-008": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-009": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-010": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-011": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-012": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-013": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-014": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-015": {
+    "count": 0,
+    "locations": []
+  },
+  "NFR-016": {
+    "count": 0,
+    "locations": []
+  }
+}
