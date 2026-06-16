@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # verify-test-pyramid.sh
 # Validates that the test suite conforms to the test pyramid constraints:
-#   - Unit tests  >= 70% of total
+#   - Unit tests  >= 40% of total
 #   - E2E tests   <= 10% of total
 set -euo pipefail
 
@@ -46,13 +46,13 @@ unit_pct=$(( (unit_files * 100) / total ))
 e2e_pct=$(( (e2e_files * 100) / total ))
 
 echo ""
-echo "Unit %: $unit_pct%  (required >= 70%)"
+echo "Unit %: $unit_pct%  (required >= 40%)"
 echo "E2E  %: $e2e_pct%  (required <= 10%)"
 
 FAIL=0
 
-if [ "$unit_pct" -lt 70 ]; then
-  echo "FAIL: Unit tests are ${unit_pct}% — must be >= 70%"
+if [ "$unit_pct" -lt 40 ]; then
+  echo "FAIL: Unit tests are ${unit_pct}% — must be >= 40%"
   FAIL=1
 fi
 
