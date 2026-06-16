@@ -52,9 +52,11 @@ export function buildTraceabilityMatrixCsv(
 
   lines.push('');
   lines.push(
-    escapeCsvCell('Summary'),
-    escapeCsvCell(`${requirements.length} requirements`),
-    escapeCsvCell(`${features.length} features`),
+    [
+      escapeCsvCell('Summary'),
+      escapeCsvCell(`${requirements.length} requirements`),
+      escapeCsvCell(`${features.length} features`),
+    ].join(','),
   );
 
   return lines.join('\n');
