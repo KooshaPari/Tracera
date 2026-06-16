@@ -1,5 +1,5 @@
 name: Deployment Rollback
-true:
+"on":
   workflow_dispatch:
     inputs:
       environment:
