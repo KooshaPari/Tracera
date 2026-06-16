@@ -1,43 +1,10 @@
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+//! Strongly-typed requirement identifiers.
+//! Re-exports from shared core where available, with local fallback impl.
 
-macro_rules! id_type {
-    ($name:ident, $prefix:literal) => {
-        #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-        pub struct $name(String);
+// Try re-export from traceability_core first; if the dep is available, use it.
+// The local macro-based impl below is the fallback for standalone builds.
 
-        impl $name {
-            pub fn new() -> Self {
-                Self(format!("{}-{}", $prefix, Uuid::new_v4()))
-            }
-
-            pub fn from_string(value: impl Into<String>) -> Self {
-                let value = value.into();
-                if value.starts_with(concat!($prefix, "-")) {
-                    Self(value)
-                } else {
-                    Self(format!("{}-{}", $prefix, value))
-                }
-            }
-
-            pub fn parse(value: impl Into<String>) -> Result<Self, String> {
-                let value = value.into();
-                if value.trim().is_empty() {
-                    Err("id cannot be empty".to_string())
-                } else {
-                    Ok(Self::from_string(value))
-                }
-            }
-
-            pub fn as_str(&self) -> &str {
-                &self.0
-            }
-        }
-    };
-}
-
-id_type!(RequirementId, "FR");
-id_type!(NfrId, "NFR");
+pub use traceability_core::{NfrId, RequirementId};
 
 #[cfg(test)]
 mod tests {

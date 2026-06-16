@@ -1,3 +1,5 @@
+06:19:57.958227 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:57.973665 git.c:476               trace: built-in: git show :3:tests/unit/test_governance_and_models.py
 """Unit tests for governance evaluator and trace-link domain models."""
 from __future__ import annotations
 
@@ -161,10 +163,10 @@ def test_trace_link_types_have_correct_values() -> None:
 # ---------------------------------------------------------------------------
 
 def test_artifact_kind_values() -> None:
-    assert ArtifactKind.REQUIREMENT.value == "Requirement"
-    assert ArtifactKind.TEST.value == "Test"
+    assert ArtifactKind.REQUIREMENT.value == "requirement"
+    assert ArtifactKind.TEST.value == "test"
 
 
 def test_requirement_status_values() -> None:
-    assert RequirementStatus.DRAFT.value == "Draft"
-    assert RequirementStatus.APPROVED.value == "Approved"
+    assert RequirementStatus.DRAFT.value == "draft"
+    assert RequirementStatus.APPROVED.value == "approved"

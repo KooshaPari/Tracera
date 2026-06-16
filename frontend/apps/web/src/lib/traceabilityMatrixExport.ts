@@ -1,3 +1,5 @@
+06:19:28.758814 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:28.777749 git.c:476               trace: built-in: git show :3:frontend/apps/web/src/lib/traceabilityMatrixExport.ts
 export interface MatrixExportItem {
   id: string;
   title: string;
@@ -52,11 +54,9 @@ export function buildTraceabilityMatrixCsv(
 
   lines.push('');
   lines.push(
-    [
-      escapeCsvCell('Summary'),
-      escapeCsvCell(`${requirements.length} requirements`),
-      escapeCsvCell(`${features.length} features`),
-    ].join(','),
+    escapeCsvCell('Summary'),
+    escapeCsvCell(`${requirements.length} requirements`),
+    escapeCsvCell(`${features.length} features`),
   );
 
   return lines.join('\n');

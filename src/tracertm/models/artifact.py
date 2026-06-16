@@ -1,16 +1,23 @@
-"""Simplified artifact domain model for traceability core."""
+06:19:41.716014 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:41.738895 git.c:476               trace: built-in: git show :3:src/tracertm/models/artifact.py
+"""Re-export canonical artifact model from trace_link (shared-core vocabulary)."""
 
-from dataclasses import dataclass, field
-from typing import Optional, List
-from datetime import datetime
+from tracertm.models.trace_link import (
+    Artifact,
+    ArtifactKind,
+    Requirement,
+    RequirementStatus,
+    TraceLink,
+    TraceLinkType,
+    VerificationMethod,
+)
 
-
-@dataclass
-class Artifact:
-    id: str
-    kind: str
-    title: str
-    body: str = ""
-    tags: List[str] = field(default_factory=list)
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+__all__ = [
+    "Artifact",
+    "ArtifactKind",
+    "Requirement",
+    "RequirementStatus",
+    "TraceLink",
+    "TraceLinkType",
+    "VerificationMethod",
+]

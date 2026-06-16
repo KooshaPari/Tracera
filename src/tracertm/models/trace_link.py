@@ -1,4 +1,6 @@
-"""Trace-link domain model (Artifact, Requirement, TraceLink)."""
+06:19:45.143055 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:45.162961 git.c:476               trace: built-in: git show :3:src/tracertm/models/trace_link.py
+"""Trace-link domain model aligned with traceability-core vocabulary."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -9,22 +11,42 @@ from uuid import UUID
 
 
 class ArtifactKind(str, Enum):
-    REQUIREMENT = "Requirement"
-    DESIGN = "Design"
-    RATIONALE = "Rationale"
-    CODE = "Code"
-    TEST = "Test"
-    EVIDENCE = "Evidence"
+    """Graph-side artifact kinds (serde lowercase in traceability-core)."""
+
+    REQUIREMENT = "requirement"
+    DESIGN = "design"
+    CODE = "code"
+    TEST = "test"
+    EVIDENCE = "evidence"
+    RISK = "risk"
+    RATIONALE = "rationale"
 
 
 class RequirementStatus(str, Enum):
-    DRAFT = "Draft"
-    APPROVED = "Approved"
-    REJECTED = "Rejected"
-    DEPRECATED = "Deprecated"
+    """ISO 29148 lifecycle states (serde lowercase in traceability-core)."""
+
+    DRAFT = "draft"
+    PROPOSED = "proposed"
+    APPROVED = "approved"
+    IMPLEMENTED = "implemented"
+    VERIFIED = "verified"
+    DEPRECATED = "deprecated"
+    REJECTED = "rejected"
+
+
+class VerificationMethod(str, Enum):
+    """DO-178C / IEEE 1012 verification methods."""
+
+    TEST = "test"
+    ANALYSIS = "analysis"
+    INSPECTION = "inspection"
+    DEMONSTRATION = "demonstration"
+    REVIEW = "review"
 
 
 class TraceLinkType(str, Enum):
+    """Canonical trace-link relationship vocabulary (SCREAMING_SNAKE_CASE)."""
+
     IMPLEMENTS = "IMPLEMENTS"
     VERIFIES = "VERIFIES"
     DUPLICATES = "DUPLICATES"
@@ -50,10 +72,10 @@ class Artifact:
 @dataclass
 class Requirement(Artifact):
     status: RequirementStatus = RequirementStatus.DRAFT
-    priority: str | None = None
+    priority: int | None = None
     rationale: str | None = None
     acceptance_criteria: list[str] = field(default_factory=list)
-    verification_method: str | None = None
+    verification_method: VerificationMethod | None = None
 
 
 @dataclass

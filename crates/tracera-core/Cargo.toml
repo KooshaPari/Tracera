@@ -1,11 +1,13 @@
+06:19:20.388980 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:20.405485 git.c:476               trace: built-in: git show :3:crates/tracera-core/Cargo.toml
 [package]
 name = "tracera-core"
 version = "0.1.0"
 edition.workspace = true
 rust-version = "1.82"
-description = "Core traceability entity model, coverage matrix, and impact analysis for Tracera."
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/KooshaPari/Tracera"
+license.workspace = true
+repository.workspace = true
+description = "Thin Tracera service crate on shared traceability-core (Neo4j glue, UI links, ops)."
 documentation = "https://docs.rs/tracera-core"
 keywords = ["phenotype", "tracera", "core"]
 categories = ["data-structures", "development-tools::profiling"]
@@ -15,6 +17,7 @@ authors = ["kooshapari"]
 default = []
 
 [dependencies]
+traceability-core = { git = "https://github.com/KooshaPari/phenotype-pm-core", branch = "master" }
 base64.workspace = true
 chrono.workspace = true
 indexmap.workspace = true
@@ -25,8 +28,6 @@ thiserror.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 uuid.workspace = true
-# Shared ecosystem crates (phenoShared git source)
-phenotype-error-core.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true

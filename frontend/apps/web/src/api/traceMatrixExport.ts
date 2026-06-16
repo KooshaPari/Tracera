@@ -1,3 +1,5 @@
+06:19:25.698063 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:25.712652 git.c:476               trace: built-in: git show :3:frontend/apps/web/src/api/traceMatrixExport.ts
 import { getCSRFHeaders } from '@/lib/csrf';
 import { downloadTraceabilityMatrixCsv } from '@/lib/traceabilityMatrixExport';
 
@@ -9,7 +11,7 @@ export interface TraceMatrixExportOptions {
 }
 
 function buildAuthHeaders(): Record<string, string> {
-  const headers: Record<string, string> = { ...getCSRFHeaders('GET') };
+  const headers: Record<string, string> = { ...getCSRFHeaders() };
   const token = globalThis.localStorage?.getItem('auth_token');
   if (token?.trim()) {
     headers['Authorization'] = `Bearer ${token.trim()}`;
