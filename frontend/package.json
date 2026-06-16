@@ -1,0 +1,11 @@
+{
+  "name": "tracera-frontend",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --prefix packages/types && npm run build --prefix packages/api-client",
+    "typecheck": "npm run typecheck --prefix packages/types && npm run typecheck --prefix packages/api-client"
+  }
+}
