@@ -1,6 +1,7 @@
 # Rust
 /target
 <<<<<<< HEAD
+<<<<<<< HEAD
 **/*.rs.bk
 Cargo.lock
 
@@ -27,10 +28,16 @@ Cargo.lock
 *.dylib
 *.dll
 >>>>>>> 28c23c95bb2ed4fabc70c3d743fb83625a377c56
+=======
+**/*.rs.bk
+*.pdb
+Cargo.lock
+>>>>>>> b09109a94cb4c75557f5416e56c799cabe3e164c
 
 # Python
 __pycache__/
 *.py[cod]
+<<<<<<< HEAD
 <<<<<<< HEAD
 *.pyc
 *$py.class
@@ -39,6 +46,11 @@ __pycache__/
 env/
 venv/
 ENV/
+=======
+*.class
+*.so
+.Python
+>>>>>>> b09109a94cb4c75557f5416e56c799cabe3e164c
 build/
 develop-eggs/
 dist/
@@ -56,11 +68,49 @@ wheels/
 *.egg
 .pytest_cache/
 .mypy_cache/
+<<<<<<< HEAD
 .dmypy.json
 *.pyo
 .hypothesis/
 
 # OS
+=======
+.ruff_cache/
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Node / JavaScript / TypeScript
+node_modules/
+dist/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+bin/
+
+# General
+.env
+.env.local
+.env.*.local
+*.log
+*.tmp
+tmp/
+temp/
+>>>>>>> b09109a94cb4c75557f5416e56c799cabe3e164c
 .DS_Store
 Thumbs.db
 *.swp
@@ -69,6 +119,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.iml
+<<<<<<< HEAD
 
 # Build artifacts
 frontend/.turbo/
@@ -257,3 +308,5 @@ Desktop.ini
 .env.*.local
 !.env.example
 >>>>>>> 28c23c95bb2ed4fabc70c3d743fb83625a377c56
+=======
+>>>>>>> b09109a94cb4c75557f5416e56c799cabe3e164c
