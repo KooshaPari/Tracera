@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+# https://editorconfig.org
+>>>>>>> 05af59380370d3e34dc7fa331c9e8033b3bff8b7
 root = true
 
 [*]
@@ -8,11 +12,26 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 
+<<<<<<< HEAD
 [*.{yml,yaml,json,js,ts,jsx,tsx,css,scss,html,xml}]
 indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+=======
+[*.{rs,toml,py}]
+indent_size = 4
+
+[*.{js,ts,jsx,tsx,json,yml,yaml}]
+indent_size = 2
+
+[*.go]
+indent_style = tab
+
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = 120
+>>>>>>> 05af59380370d3e34dc7fa331c9e8033b3bff8b7
 
 [Makefile]
 indent_style = tab
