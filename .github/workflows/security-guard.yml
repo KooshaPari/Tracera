@@ -2,7 +2,7 @@ name: Security Guard
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-true:
+"on":
   pull_request:
     types:
     - opened

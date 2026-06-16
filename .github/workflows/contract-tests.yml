@@ -2,11 +2,12 @@ name: Contract Tests
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-true:
+"on":
   pull_request:
     branches:
     - main
     - develop
+    - integration/consolidate
     paths:
     - backend/**
     - frontend/apps/web/**
@@ -16,6 +17,7 @@ true:
     branches:
     - main
     - develop
+    - integration/consolidate
     paths:
     - backend/**
     - frontend/apps/web/**

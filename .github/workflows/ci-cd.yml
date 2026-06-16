@@ -2,15 +2,17 @@ name: CI/CD Pipeline
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-true:
+"on":
   push:
     branches:
     - main
     - develop
+    - integration/consolidate
   pull_request:
     branches:
     - main
     - develop
+    - integration/consolidate
 permissions:
   contents: read
 jobs:
