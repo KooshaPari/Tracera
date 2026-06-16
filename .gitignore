@@ -1,5 +1,6 @@
 # Rust
 /target
+<<<<<<< HEAD
 **/*.rs.bk
 Cargo.lock
 
@@ -18,10 +19,19 @@ ARCHIVE/dispatch-mcp/
 >>>>>>> 2e07b5382338a08242c7b9d327f6db379023aad3
 package-lock.json
 .pnpm-debug.log*
+=======
+Cargo.lock
+**/*.rs.bk
+*.pdb
+*.so
+*.dylib
+*.dll
+>>>>>>> 28c23c95bb2ed4fabc70c3d743fb83625a377c56
 
 # Python
 __pycache__/
 *.py[cod]
+<<<<<<< HEAD
 *.pyc
 *$py.class
 *.so
@@ -163,3 +173,87 @@ target/
 venv/
 # ===== End standard hygiene ignores =====
 >>>>>>> 2e07b5382338a08242c7b9d327f6db379023aad3
+=======
+*.class
+*.egg-info/
+.eggs/
+*.egg
+dist/
+build/
+wheels/
+*.whl
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.uv/
+pip-wheel-metadata/
+*.manifest
+*.spec
+
+# Go
+*.exe
+*.test
+*.out
+vendor/
+
+# Node/TypeScript
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+.npm
+.eslintcache
+.stylelintcache
+.parcel-cache
+.next/
+.nuxt/
+.vuepress/dist
+.docusaurus/
+.cache/
+
+# Coverage
+coverage/
+*.lcov
+.nyc_output/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# IDEs / Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# Logs
+*.log
+logs/
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Misc
+*.bak
+*.tmp
+*.temp
+.env
+.env.local
+.env.*.local
+!.env.example
+>>>>>>> 28c23c95bb2ed4fabc70c3d743fb83625a377c56
