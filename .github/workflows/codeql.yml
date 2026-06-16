@@ -1,7 +1,4 @@
 name: CodeQL
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 "on":
   push:
     branches:
@@ -11,6 +8,9 @@ concurrency:
     - main
   schedule:
   - cron: 17 4 * * 1
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:

@@ -1,7 +1,4 @@
 name: Security Guard (Hooks)
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 "on":
   pull_request:
     types:
@@ -11,6 +8,9 @@ concurrency:
   push:
     branches:
     - '**'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
