@@ -5,12 +5,13 @@ edition.workspace = true
 rust-version = "1.82"
 license.workspace = true
 repository.workspace = true
-description = "Core traceability entity model, coverage matrix, and impact analysis for Tracera."
+description = "Thin Tracera service crate on shared traceability-core (Neo4j glue, UI links, ops)."
 
 [features]
 default = []
 
 [dependencies]
+traceability-core = { path = "../../../phenotype-pm-core/crates/traceability-core" }
 base64.workspace = true
 chrono.workspace = true
 indexmap.workspace = true
