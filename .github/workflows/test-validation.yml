@@ -2,7 +2,7 @@ name: Comprehensive Test Validation
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-on:
+true:
   push:
     branches:
     - main
@@ -25,7 +25,6 @@ on:
     - package.json
     - bun.lock
     - uv.lock
-    - .github/workflows/test-validation.yml
 permissions:
   contents: read
 jobs:
@@ -205,7 +204,7 @@ jobs:
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - name: Download all artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
       with:
         path: validation-artifacts/
     - name: Generate consolidated report
