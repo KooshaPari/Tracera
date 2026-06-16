@@ -1,7 +1,5 @@
-<<<<<<< HEAD
-=======
+# EditorConfig — Phenotype org canonical
 # https://editorconfig.org
->>>>>>> 05af59380370d3e34dc7fa331c9e8033b3bff8b7
 root = true
 
 [*]
@@ -10,28 +8,48 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 indent_style = space
-indent_size = 4
-
-<<<<<<< HEAD
-[*.{yml,yaml,json,js,ts,jsx,tsx,css,scss,html,xml}]
 indent_size = 2
 
-[*.md]
-trim_trailing_whitespace = false
-=======
-[*.{rs,toml,py}]
-indent_size = 4
+# Rust — 2-space style
+[*.rs]
+indent_size = 2
+max_line_length = 100
 
-[*.{js,ts,jsx,tsx,json,yml,yaml}]
+# TOML
+[*.toml]
 indent_size = 2
 
+# Python — keep 4-space convention
+[*.{py,pyi}]
+indent_size = 4
+max_line_length = 100
+
+# Go — must use tabs
 [*.go]
 indent_style = tab
+indent_size = 4
 
+# TypeScript / JavaScript
+[*.{ts,tsx,js,jsx,mjs,cjs}]
+indent_size = 2
+
+# YAML / JSON
+[*.{yml,yaml,json,jsonc}]
+indent_size = 2
+
+# Shell scripts
+[*.{sh,bash,zsh}]
+indent_size = 2
+
+# Markdown — trailing spaces = hard line break
 [*.md]
 trim_trailing_whitespace = false
 max_line_length = 120
->>>>>>> 05af59380370d3e34dc7fa331c9e8033b3bff8b7
 
+# Makefile — must use tabs
 [Makefile]
 indent_style = tab
+
+# Diff / patch — keep context whitespace intact
+[*.{diff,patch}]
+trim_trailing_whitespace = false
