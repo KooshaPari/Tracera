@@ -1,9 +1,8 @@
 //! API navigation payloads for clickable traceability links.
 
 use serde::{Deserialize, Serialize};
+use traceability_core::{ArtifactRef, TraceLink, TraceLinkType};
 use uuid::Uuid;
-
-use crate::{ArtifactRef, TraceLink, TraceLinkType};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TraceLinkUiLink {
@@ -16,9 +15,14 @@ pub struct TraceLinkUiLink {
     pub link_type: TraceLinkType,
 }
 
-impl TraceLink {
+/// UI navigation helpers for [`TraceLink`] values from the shared core.
+pub trait TraceLinkUiExt {
     /// Build the API payload used by UIs to render this link as clickable navigation.
-    pub fn ui_link(&self) -> TraceLinkUiLink {
+    fn ui_link(&self) -> TraceLinkUiLink;
+}
+
+impl TraceLinkUiExt for TraceLink {
+    fn ui_link(&self) -> TraceLinkUiLink {
         TraceLinkUiLink {
             id: self.id,
             href: format!("/trace-links/{}", self.id),
@@ -31,8 +35,14 @@ impl TraceLink {
     }
 }
 
-impl ArtifactRef {
-    pub fn label(&self) -> String {
+/// UI navigation helpers for [`ArtifactRef`] values from the shared core.
+pub trait ArtifactRefUiExt {
+    fn label(&self) -> String;
+    fn href(&self) -> String;
+}
+
+impl ArtifactRefUiExt for ArtifactRef {
+    fn label(&self) -> String {
         match self {
             Self::Requirement { id } => id.as_str().to_string(),
             Self::NonFunctionalRequirement { id } => id.as_str().to_string(),
@@ -46,7 +56,7 @@ impl ArtifactRef {
         }
     }
 
-    pub fn href(&self) -> String {
+    fn href(&self) -> String {
         match self {
             Self::Requirement { id } => format!("/requirements/{}", id.as_str()),
             Self::NonFunctionalRequirement { id } => format!("/requirements/{}", id.as_str()),

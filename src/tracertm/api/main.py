@@ -6,6 +6,9 @@ from fastapi import FastAPI
 from phenotype_request_id.fastapi import RequestIdMiddleware
 
 from tracertm.api.routers.traceability import router as traceability_router
+from tracertm.api.routers.sdlc_pm import router as sdlc_pm_router
+from tracertm.api.routers.evidence import router as evidence_router
+from tracertm.api.routers.org_intel import router as org_intel_router
 
 
 def create_app() -> FastAPI:
@@ -16,6 +19,9 @@ def create_app() -> FastAPI:
     # the value on the response. See phenotype_request_id.fastapi.
     app.add_middleware(RequestIdMiddleware)
     app.include_router(traceability_router, prefix="/api/v1")
+    app.include_router(sdlc_pm_router, prefix="/api/v1")
+    app.include_router(evidence_router, prefix="/api/v1")
+    app.include_router(org_intel_router, prefix="/api/v1")
     return app
 
 
