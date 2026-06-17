@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "build": "npm run build --prefix packages/types && npm run build --prefix packages/api-client",
+    "test": "vitest run",
     "typecheck": "npm run typecheck --prefix packages/types && npm run typecheck --prefix packages/api-client"
   }
 }
