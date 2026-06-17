@@ -56,3 +56,10 @@ func assertEnv(t *testing.T, env map[string]string, key string, want string) {
 		t.Fatalf("%s = %q, want %q", key, got, want)
 	}
 }
+
+func TestFromConfigNilReturnsEmpty(t *testing.T) {
+	otel := FromConfig(nil)
+	if otel.Enabled || otel.ServiceName != "" || otel.Environment != "" || otel.GRPCEndpoint != "" || otel.HTTPEndpoint != "" {
+		t.Fatalf("expected empty OTELCollectorConfig for nil input, got %#v", otel)
+	}
+}

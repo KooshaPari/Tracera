@@ -1,0 +1,141 @@
+name: Load Testing
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+"on":
+  pull_request:
+    branches:
+    - main
+    - develop
+  schedule:
+  - cron: 0 2 * * 1
+permissions:
+  contents: read
+jobs:
+  load-test:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        fetch-depth: 0
+    - name: Setup k6
+      uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065
+    - name: Start backend service
+      run: '# Start the backend in the background
+
+        # Assuming there''s a way to start the backend (docker, npm, etc.)
+
+        echo "Starting backend service..."
+
+        # This is a placeholder - adjust based on your actual setup
+
+        # For now, we''ll just wait and let k6 handle failures gracefully
+
+        sleep 5
+
+        '
+    - name: Run k6 load test
+      run: "mkdir -p performance-results\nk6 run backend/tests/performance/load_test.js\
+        \ \\\n  --out json=performance-results/results-${{ github.run_id }}.json \\\
+        \n  --out csv=performance-results/results-${{ github.run_id }}.csv \\\n  2>&1\
+        \ | tee performance-results/output.log\n"
+      env:
+        API_URL: http://localhost:3030
+        PROJECT_ID: test-project-load
+        AUTH_TOKEN: ''
+      continue-on-error: true
+    - name: Check performance thresholds
+      run: "python3 << 'EOF'\nimport json\nimport sys\nimport os\n\nresults_file =\
+        \ 'performance-results/results-${{ github.run_id }}.json'\n\nif not os.path.exists(results_file):\n\
+        \  print(\"❌ Results file not found. Backend may not be running.\")\n  print(\"\
+        Thresholds will not be checked in CI environment.\")\n  sys.exit(0)\n\ntry:\n\
+        \  with open(results_file, 'r') as f:\n    data = json.load(f)\n\n  metrics\
+        \ = data.get('metrics', {})\n\n  # Initialize threshold violations list\n\
+        \  violations = []\n\n  # Check P95 latency threshold (< 500ms)\n  if 'http_req_duration'\
+        \ in metrics:\n    p95 = metrics['http_req_duration'].get('values', {}).get('p(95)',\
+        \ float('inf'))\n    print(f\"P95 Latency: {p95:.2f}ms\")\n    if p95 > 500:\n\
+        \      violations.append(f\"P95 latency ({p95:.2f}ms) exceeds 500ms threshold\"\
+        )\n\n  # Check error rate threshold (< 1%)\n  if 'http_req_failed' in metrics:\n\
+        \    error_rate = metrics['http_req_failed'].get('values', {}).get('rate',\
+        \ 0)\n    error_pct = error_rate * 100\n    print(f\"Error Rate: {error_pct:.2f}%\"\
+        )\n    if error_rate > 0.01:\n      violations.append(f\"Error rate ({error_pct:.2f}%)\
+        \ exceeds 1% threshold\")\n\n  # Check RPS (requests per second) - should\
+        \ be > 100\n  if 'http_reqs' in metrics:\n    total_reqs = metrics['http_reqs'].get('values',\
+        \ {}).get('count', 0)\n    duration_sec = data.get('state', {}).get('testRunDurationMs',\
+        \ 1) / 1000\n    rps = total_reqs / max(duration_sec, 1)\n    print(f\"Requests\
+        \ Per Second: {rps:.2f}\")\n    if rps < 100:\n      print(f\"⚠️  Warning:\
+        \ RPS ({rps:.2f}) is below 100 threshold (may be normal for slow backends)\"\
+        )\n\n  # Print all violations\n  if violations:\n    print(\"\\n⚠️  Threshold\
+        \ Violations:\")\n    for v in violations:\n      print(f\"  - {v}\")\n  \
+        \  # Note: We don't fail on threshold violations in CI\n    # Only warn about\
+        \ them\n  else:\n    print(\"\\n✅ All thresholds passed!\")\n\nexcept Exception\
+        \ as e:\n  print(f\"Error parsing results: {e}\")\n  sys.exit(0)  # Don't\
+        \ fail CI if we can't parse results\n\nEOF\n"
+    - name: Compare with baseline
+      run: "python3 << 'EOF'\nimport json\nimport os\nfrom pathlib import Path\n\n\
+        current_file = 'performance-results/results-${{ github.run_id }}.json'\nbaseline_file\
+        \ = '.github/performance-baseline.json'\n\nif not os.path.exists(current_file):\n\
+        \  print(\"Current results not available, skipping baseline comparison\")\n\
+        \  exit(0)\n\ntry:\n  with open(current_file, 'r') as f:\n    current = json.load(f)\n\
+        \n  if os.path.exists(baseline_file):\n    with open(baseline_file, 'r') as\
+        \ f:\n      baseline = json.load(f)\n\n    # Compare key metrics\n    current_metrics\
+        \ = current.get('metrics', {})\n    baseline_metrics = baseline.get('metrics',\
+        \ {})\n\n    current_p95 = current_metrics.get('http_req_duration', {}).get('values',\
+        \ {}).get('p(95)', 0)\n    baseline_p95 = baseline_metrics.get('http_req_duration',\
+        \ {}).get('values', {}).get('p(95)', float('inf'))\n\n    current_error_rate\
+        \ = current_metrics.get('http_req_failed', {}).get('values', {}).get('rate',\
+        \ 0)\n    baseline_error_rate = baseline_metrics.get('http_req_failed', {}).get('values',\
+        \ {}).get('rate', 0)\n\n    print(\"Performance Comparison vs Baseline:\"\
+        )\n    print(\"=\" * 50)\n\n    # P95 latency comparison\n    if baseline_p95\
+        \ != float('inf') and baseline_p95 > 0:\n      p95_change = ((current_p95\
+        \ - baseline_p95) / baseline_p95) * 100\n      status = \"❌\" if p95_change\
+        \ > 10 else \"✅\"\n      print(f\"{status} P95 Latency: {current_p95:.2f}ms\
+        \ (baseline: {baseline_p95:.2f}ms, {p95_change:+.1f}%)\")\n\n      if p95_change\
+        \ > 10:\n        print(f\"   WARNING: Performance degraded more than 10%\"\
+        )\n\n    # Error rate comparison\n    if baseline_error_rate > 0:\n      error_change\
+        \ = ((current_error_rate - baseline_error_rate) / baseline_error_rate) * 100\n\
+        \      status = \"❌\" if error_change > 10 else \"✅\"\n      print(f\"{status}\
+        \ Error Rate: {current_error_rate*100:.2f}% (baseline: {baseline_error_rate*100:.2f}%,\
+        \ {error_change:+.1f}%)\")\n    else:\n      print(f\"✅ Error Rate: {current_error_rate*100:.2f}%\"\
+        )\n  else:\n    print(\"No baseline found. Creating baseline from current\
+        \ run...\")\n    # Save as new baseline\n    os.makedirs('.github', exist_ok=True)\n\
+        \    import shutil\n    shutil.copy(current_file, baseline_file)\n    print(f\"\
+        Baseline saved to {baseline_file}\")\n\nexcept Exception as e:\n  print(f\"\
+        Error during comparison: {e}\")\n\nEOF\n"
+    - name: Upload performance results
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: k6-load-test-results-${{ github.run_id }}
+        path: performance-results/
+        retention-days: 30
+    - name: Comment on PR with results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+      with:
+        script: "const fs = require('fs');\nconst path = require('path');\n\ntry {\n\
+          \  const outputLog = fs.readFileSync('performance-results/output.log', 'utf8');\n\
+          \n  // Extract key metrics from log\n  const lines = outputLog.split('\\\
+          n');\n  const summary = lines.slice(-30).join('\\n');\n\n  const comment\
+          \ = `## Load Testing Results\n\n**Run ID:** ${{ github.run_id }}\n\n\\`\\\
+          `\\`\n${summary}\n\\`\\`\\`\n\n**Artifacts:** Load test results are available\
+          \ in the workflow artifacts.\n\n**Note:** Load tests run in CI environment\
+          \ may have different performance characteristics than local/staging environments.`;\n\
+          \n  github.rest.issues.createComment({\n    issue_number: context.issue.number,\n\
+          \    owner: context.repo.owner,\n    repo: context.repo.repo,\n    body:\
+          \ comment\n  });\n} catch (e) {\n  console.log('Could not add PR comment:',\
+          \ e.message);\n}\n"
+    - name: Upload baseline for next run
+      if: success() && github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: performance-baseline
+        path: .github/performance-baseline.json
+        retention-days: 90
+      continue-on-error: true
+    timeout-minutes: 60

@@ -1,3 +1,5 @@
+06:19:23.630907 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:23.644917 git.c:476               trace: built-in: git show :3:frontend/apps/web/src/__tests__/api/traceMatrixExport.test.ts
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchTraceMatrixCsv } from '@/api/traceMatrixExport';

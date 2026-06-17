@@ -1,3 +1,5 @@
+06:19:48.843222 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:48.861263 git.c:476               trace: built-in: git show :3:src/tracertm/ports/scorer.py
 """Pluggable agreement ``ScorerPort`` (Pillar-A spine).
 
 Implements ``FR-TRC-019`` (Pluggable Agreement Scorer Port). See

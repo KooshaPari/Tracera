@@ -418,12 +418,12 @@ The `tracera-core` crate is being built in phases to replace the Python backend 
 
 | Phase | Status | Deliverable |
 |-------|--------|-------------|
-| Phase 1 | ✅ Complete | Core entity model (`lib.rs`, `ids.rs`, `workspace.rs`, `coverage.rs`). |
-| Phase 2 | 🔄 In Progress | Matrix operations (`matrix.rs`). |
-| Phase 3 | 🔄 In Progress | Impact scoring (`impact.rs`). |
-| Phase 4 | ✅ Complete | Model registry (`registry.rs`). |
-| Phase 5 | ✅ Complete | Configuration loader (`config.rs`). |
-| Phase 6 | 🔄 Planned | Cache, health, notifications, pagination, rate limit, observability, UI links. |
+| Phase 1 | Complete | Core entity model (`lib.rs`, `ids.rs`, `workspace.rs`, `coverage.rs`). |
+| Phase 2 | In Progress | Matrix operations (`matrix.rs`). |
+| Phase 3 | In Progress | Impact scoring (`impact.rs`). |
+| Phase 4 | Complete | Model registry (`registry.rs`). |
+| Phase 5 | Complete | Configuration loader (`config.rs`). |
+| Phase 6 | Planned | Cache, health, notifications, pagination, rate limit, observability, UI links. |
 
 Once Phase 6 is complete, the Python layer will become a thin binding around the Rust core, and the Go backend will be deprecated in favor of a Rust-native service.
 

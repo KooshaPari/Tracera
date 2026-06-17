@@ -111,4 +111,39 @@ mod tests {
             "VERIFIES"
         );
     }
+
+    #[test]
+    fn trace_link_rejects_self_loop() {
+        let id = uuid::Uuid::new_v4();
+        let result = TraceLink::new(uuid::Uuid::new_v4(), id, id, TraceLinkType::Satisfies);
+        assert!(matches!(result, Err(TraceLinkError::SelfLoop)));
+    }
+
+    #[test]
+    fn requirement_rejects_wrong_kind() {
+        use std::collections::BTreeMap;
+        let artifact = Artifact {
+            id: uuid::Uuid::new_v4(),
+            project_id: uuid::Uuid::new_v4(),
+            kind: ArtifactKind::Code,
+            title: "not a requirement".to_string(),
+            description: None,
+            external_id: None,
+            metadata: BTreeMap::new(),
+            created_at: None,
+            updated_at: None,
+        };
+        let result = Requirement::new(artifact);
+        assert!(matches!(
+            result,
+            Err(TraceLinkError::WrongArtifactKind { .. })
+        ));
+    }
+
+    #[test]
+    fn link_type_db_strings() {
+        assert_eq!(TraceLinkType::Satisfies.as_db_str(), "SATISFIES");
+        assert_eq!(TraceLinkType::ConflictsWith.as_db_str(), "CONFLICTS_WITH");
+        assert_eq!(TraceLinkType::DerivesFrom.as_db_str(), "DERIVES_FROM");
+    }
 }
