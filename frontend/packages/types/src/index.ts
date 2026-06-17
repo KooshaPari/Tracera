@@ -65,3 +65,98 @@ export interface CoverageMatrixResponse {
   stale_links: number;
   cells: MatrixCellResponse[];
 }
+
+export interface ImpactRequest extends CoverageMatrixRequest {
+  changed_artifact_ids: string[];
+  max_depth?: number;
+}
+
+export interface ImpactNodeResponse {
+  artifact_id: string;
+  depth: number;
+  via: TraceRelationship[];
+  score: number;
+}
+
+export interface ImpactResponse {
+  seeds: string[];
+  affected: ImpactNodeResponse[];
+  total_score: number;
+  truncated: boolean;
+  max_depth_seen: number;
+  conflicts: TraceLinkInput[];
+}
+
+export type GovernanceTraceKind =
+  | 'implementation'
+  | 'test'
+  | 'evidence'
+  | 'decision';
+
+export type GovernanceGateStatus = 'pass' | 'fail';
+
+export type GovernanceSpecStatus = 'draft' | 'approved' | 'implemented';
+
+export interface GovernanceTrace {
+  spec_id: string;
+  target_id: string;
+  kind: GovernanceTraceKind;
+}
+
+export interface GovernanceSpec {
+  spec_id: string;
+  title: string;
+  owner: string;
+  acceptance_criteria?: string[];
+  evidence_links?: string[];
+  status?: GovernanceSpecStatus;
+}
+
+export interface GovernanceViolation {
+  spec_id: string;
+  code: string;
+  message: string;
+}
+
+export interface GovernanceReport {
+  status: GovernanceGateStatus;
+  spec_count: number;
+  trace_count: number;
+  violations: GovernanceViolation[];
+}
+
+export interface GovernanceCheckRequest {
+  specs?: GovernanceSpec[];
+  traces?: GovernanceTrace[];
+}
+
+export interface ConfidenceRequest {
+  requirement_text: string;
+  artifact_text: string;
+}
+
+export interface ConfidenceResponse {
+  confidence: number;
+  rationale: string;
+}
+
+export interface EvidenceCreate {
+  artifact_id: string;
+  kind: string;
+  url: string;
+  captured_at: string;
+  description?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface EvidenceResponse {
+  id: string;
+  artifact_id: string;
+  kind: string;
+  url: string;
+  captured_at: string;
+  description: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
