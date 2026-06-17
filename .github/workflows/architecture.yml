@@ -33,7 +33,7 @@ jobs:
     - name: Check architecture
       run: uv run --extra dev tach check
     - name: Generate architecture diagram
-      run: uv run --extra dev tach show --mermaid > architecture.md
+      run: uv run --extra dev tach show --mermaid > architecture.md || true
     - name: Upload architecture diagram
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
