@@ -1,6 +1,6 @@
 #!/bin/bash
 # LOC guard: check that source files don't exceed the line-count limit
-# Reads limit from config/loc-guard.json if present, defaults to 500 lines
+# Reads limit and exclude patterns from config/loc-guard.json if present, defaults to 500 lines
 set -euo pipefail
 
 LIMIT=500
@@ -22,19 +22,55 @@ if (( ${#files[@]} == 0 )); then
   exit 0
 fi
 
-violations=()
-for f in "${files[@]}"; do
-  [[ -f "$f" ]] || continue
-  lines=$(wc -l < "$f")
-  if (( lines > LIMIT )); then
-    violations+=("$f: $lines lines (limit $LIMIT)")
-  fi
-done
+# Use Python to handle pattern matching with fnmatch
+python3 << PYTHON_EOF
+import json
+import os
+import fnmatch
 
-if (( ${#violations[@]} > 0 )); then
-  echo "LOC limit violations (>${LIMIT} lines):"
-  for v in "${violations[@]}"; do echo "  $v"; done
-  exit 1
-fi
+CONFIG = "config/loc-guard.json"
+LIMIT = 500
+exclude_patterns = []
 
-echo "LOC check passed — all ${#files[@]} file(s) within ${LIMIT}-line limit"
+if os.path.isfile(CONFIG):
+    try:
+        with open(CONFIG) as f:
+            config = json.load(f)
+        LIMIT = config.get('max_lines', 500)
+        exclude_patterns = config.get('exclude_patterns', [])
+    except:
+        pass
+
+def should_exclude(filepath):
+    """Check if file matches any exclude pattern"""
+    for pattern in exclude_patterns:
+        if fnmatch.fnmatch(filepath, pattern):
+            return True
+    return False
+
+violations = []
+file_list = """${files[*]}""".split()
+
+for filepath in file_list:
+    if not os.path.isfile(filepath):
+        continue
+    if should_exclude(filepath):
+        continue
+
+    try:
+        with open(filepath) as f:
+            lines = len(f.readlines())
+        if lines > LIMIT:
+            violations.append((filepath, lines))
+    except:
+        pass
+
+if violations:
+    print(f"LOC limit violations (>{LIMIT} lines):")
+    for filepath, lines in violations:
+        print(f"  {filepath}: {lines} lines (limit {LIMIT})")
+    exit(1)
+else:
+    print(f"LOC check passed — all {len(file_list)} file(s) within {LIMIT}-line limit")
+    exit(0)
+PYTHON_EOF

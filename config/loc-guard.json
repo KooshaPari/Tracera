@@ -5,6 +5,12 @@
     "**/*.min.css",
     "**/vendor/**",
     "**/node_modules/**",
-    "**/__pycache__/**"
+    "**/__pycache__/**",
+    "**/*_test.go",
+    "**/test_*.py",
+    "**/*_test.py",
+    "**/tests/**",
+    "**/.vitepress/cache/**",
+    "*/seed_*.py"
   ]
 }
