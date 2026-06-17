@@ -46,6 +46,7 @@ export class TraceraApiClient {
     return this.buildCoverageMatrix({ links: [link] });
   }
 
+  /** POST /api/v1/coverage-matrix — full request body. */
   async buildCoverageMatrix(
     request: CoverageMatrixRequest = {},
   ): Promise<CoverageMatrixResponse> {
