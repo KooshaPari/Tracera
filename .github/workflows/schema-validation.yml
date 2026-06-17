@@ -1,0 +1,258 @@
+name: Schema Validation
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+"on":
+  push:
+    branches:
+    - main
+    - develop
+    paths:
+    - backend/internal/db/migrations/**
+    - backend/internal/models/**
+    - backend/internal/db/models.go
+    - backend/sqlc.yaml
+    - backend/queries.sql
+    - backend/schema.sql
+  pull_request:
+    branches:
+    - main
+    - develop
+    paths:
+    - backend/internal/db/migrations/**
+    - backend/internal/models/**
+    - backend/internal/db/models.go
+    - backend/sqlc.yaml
+    - backend/queries.sql
+    - backend/schema.sql
+  workflow_dispatch: null
+permissions:
+  contents: read
+env:
+  GO_VERSION: '1.23'
+jobs:
+  schema-alignment:
+    name: Validate Schema Alignment
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s
+          --health-retries 5
+        ports:
+        - 5432:5432
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - name: Set up Go
+      uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
+      with:
+        go-version: ${{ env.GO_VERSION }}
+        cache: true
+        cache-dependency-path: backend/go.sum
+    - name: Install PostgreSQL client
+      run: 'sudo apt-get update
+
+        sudo apt-get install -y postgresql-client
+
+        '
+    - name: Install sqlc
+      run: 'go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
+
+        echo "$HOME/go/bin" >> $GITHUB_PATH
+
+        '
+    - name: Wait for PostgreSQL
+      run: "until pg_isready -h localhost -p 5432 -U postgres; do\n  echo \"Waiting\
+        \ for postgres...\"\n  sleep 2\ndone\n"
+    - name: Enable PostgreSQL extensions
+      env:
+        PGPASSWORD: postgres
+      run: 'psql -h localhost -U postgres -d postgres -c "CREATE EXTENSION IF NOT
+        EXISTS vector;"
+
+        psql -h localhost -U postgres -d postgres -c "CREATE EXTENSION IF NOT EXISTS
+        pg_trgm;"
+
+        '
+    - name: Run schema validation
+      working-directory: backend
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_SCHEMA: public
+        KEEP_TEST_DB: false
+      run: 'chmod +x scripts/shell/validate_schema_alignment.sh
+
+        ./scripts/shell/validate_schema_alignment.sh
+
+        '
+    - name: Upload validation report
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: schema-validation-report
+        path: 'backend/schema-validation-*.log
+
+          '
+        retention-days: 30
+    timeout-minutes: 30
+  sqlc-generation:
+    name: Verify sqlc Generation
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - name: Set up Go
+      uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
+      with:
+        go-version: ${{ env.GO_VERSION }}
+        cache: true
+        cache-dependency-path: backend/go.sum
+    - name: Install sqlc
+      run: 'go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+        echo "$HOME/go/bin" >> $GITHUB_PATH
+
+        '
+    - name: Verify sqlc config
+      working-directory: backend
+      run: "if [ ! -f sqlc.yaml ]; then\n  echo \"❌ sqlc.yaml not found\"\n  exit\
+        \ 1\nfi\necho \"✅ sqlc.yaml found\"\n"
+    - name: Run sqlc generate
+      working-directory: backend
+      run: 'sqlc generate
+
+        '
+    - name: Check for uncommitted changes
+      working-directory: backend
+      run: "if [ -n \"$(git status --porcelain internal/db/)\" ]; then\n  echo \"\
+        ❌ sqlc generated files are out of sync\"\n  echo \"Please run 'sqlc generate'\
+        \ and commit the changes\"\n  git diff internal/db/\n  exit 1\nfi\necho \"\
+        ✅ sqlc generated files are up to date\"\n"
+    timeout-minutes: 30
+  migration-verification:
+    name: Verify Migration Files
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s
+          --health-retries 5
+        ports:
+        - 5432:5432
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - name: Install PostgreSQL client
+      run: 'sudo apt-get update
+
+        sudo apt-get install -y postgresql-client
+
+        '
+    - name: Wait for PostgreSQL
+      run: "until pg_isready -h localhost -p 5432 -U postgres; do\n  echo \"Waiting\
+        \ for postgres...\"\n  sleep 2\ndone\n"
+    - name: Enable PostgreSQL extensions
+      env:
+        PGPASSWORD: postgres
+      run: 'psql -h localhost -U postgres -d postgres -c "CREATE EXTENSION IF NOT
+        EXISTS vector;"
+
+        psql -h localhost -U postgres -d postgres -c "CREATE EXTENSION IF NOT EXISTS
+        pg_trgm;"
+
+        '
+    - name: Verify migrations apply cleanly
+      env:
+        PGPASSWORD: postgres
+      working-directory: backend
+      run: "# Create test database\npsql -h localhost -U postgres -d postgres -c \"\
+        CREATE DATABASE migration_test;\"\n\n# Apply migrations in order\nfor migration\
+        \ in $(ls -1 internal/db/migrations/*.sql 2>/dev/null | grep -v \"atlas.sum\"\
+        \ | sort); do\n  echo \"Applying: $(basename $migration)\"\n  psql -h localhost\
+        \ -U postgres -d migration_test -f \"$migration\" || {\n    echo \"❌ Failed\
+        \ to apply migration: $migration\"\n    exit 1\n  }\ndone\n\necho \"✅ All\
+        \ migrations applied successfully\"\n"
+    - name: Check for migration conflicts
+      env:
+        PGPASSWORD: postgres
+      working-directory: backend
+      run: "# Query for duplicate table definitions\nresult=$(psql -h localhost -U\
+        \ postgres -d migration_test -t -c \"\n  SELECT table_name, COUNT(*) as count\n\
+        \  FROM information_schema.tables\n  WHERE table_schema = 'public'\n  AND\
+        \ table_type = 'BASE TABLE'\n  GROUP BY table_name\n  HAVING COUNT(*) > 1;\n\
+        \")\n\nif [ -n \"$result\" ]; then\n  echo \"❌ Duplicate table definitions\
+        \ found:\"\n  echo \"$result\"\n  exit 1\nfi\n\necho \"✅ No migration conflicts\
+        \ detected\"\n"
+    timeout-minutes: 30
+  schema-documentation:
+    name: Generate Schema Documentation
+    runs-on: ubuntu-latest
+    needs:
+    - schema-alignment
+    - sqlc-generation
+    - migration-verification
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s
+          --health-retries 5
+        ports:
+        - 5432:5432
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - name: Install PostgreSQL client
+      run: 'sudo apt-get update
+
+        sudo apt-get install -y postgresql-client
+
+        '
+    - name: Wait for PostgreSQL
+      run: "until pg_isready -h localhost -p 5432 -U postgres; do\n  echo \"Waiting\
+        \ for postgres...\"\n  sleep 2\ndone\n"
+    - name: Apply migrations
+      env:
+        PGPASSWORD: postgres
+      working-directory: backend
+      run: "psql -h localhost -U postgres -d postgres -c \"CREATE EXTENSION IF NOT\
+        \ EXISTS vector;\"\npsql -h localhost -U postgres -d postgres -c \"CREATE\
+        \ EXTENSION IF NOT EXISTS pg_trgm;\"\n\nfor migration in $(ls -1 internal/db/migrations/*.sql\
+        \ 2>/dev/null | grep -v \"atlas.sum\" | sort); do\n  psql -h localhost -U\
+        \ postgres -d postgres -f \"$migration\"\ndone\n"
+    - name: Generate schema documentation
+      env:
+        PGPASSWORD: postgres
+      run: "cat > schema-doc.md <<'EOF'\n# Database Schema Documentation\n\nGenerated:\
+        \ $(date -u +\"%Y-%m-%d %H:%M:%S UTC\")\n\n## Tables\n\nEOF\n\n# Get all tables\n\
+        psql -h localhost -U postgres -d postgres -t -c \"\n  SELECT table_name\n\
+        \  FROM information_schema.tables\n  WHERE table_schema = 'public'\n  AND\
+        \ table_type = 'BASE TABLE'\n  ORDER BY table_name;\n\" | while read -r table;\
+        \ do\n  table=$(echo $table | xargs)\n  if [ -n \"$table\" ]; then\n    echo\
+        \ \"### $table\" >> schema-doc.md\n    echo \"\" >> schema-doc.md\n    echo\
+        \ '```' >> schema-doc.md\n    psql -h localhost -U postgres -d postgres -c\
+        \ \"\\d $table\" >> schema-doc.md\n    echo '```' >> schema-doc.md\n    echo\
+        \ \"\" >> schema-doc.md\n  fi\ndone\n\necho \"✅ Schema documentation generated\"\
+        \n"
+    - name: Upload schema documentation
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: schema-documentation
+        path: schema-doc.md
+        retention-days: 90
+    timeout-minutes: 30

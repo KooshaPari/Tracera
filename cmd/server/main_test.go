@@ -1,3 +1,5 @@
+06:19:18.229968 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:18.244695 git.c:476               trace: built-in: git show :3:cmd/server/main_test.go
 package main
 
 import (

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tracera-cli"
+version = "0.1.0"
+description = "CLI for TraceRTM — Agent-native requirements traceability"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "typer>=0.21.1",
+    "rich>=14.3.1",
+]
+
+[project.scripts]
+tracera = "tracera_cli.main:app"
+
+[tool.hatch.build.targets.wheel.packages]
+find = false
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/" = ""

@@ -1,3 +1,5 @@
+06:19:57.958227 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:57.973665 git.c:476               trace: built-in: git show :3:tests/unit/test_governance_and_models.py
 """Unit tests for governance evaluator and trace-link domain models."""
 from __future__ import annotations
 

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/tracera-core-phase-0-1-2-3
+      - integration/consolidate
   pull_request:
     paths:
       - "Cargo.toml"

@@ -11,10 +11,10 @@ description = "Agent-native, multi-view requirements traceability and project ma
 readme = "README.md"
 requires-python = ">=3.13"
 authors = [
-    { name = "BMad", email = "bmad@example.com" },
+    { name = "Koosha Pari", email = "koosha@kooshapari.com" },
 ]
-license = "MIT OR Apache-2.0"
-license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
+license = "MIT"
+license-files = ["LICENSE"]
 keywords = [
     "requirements",
     "traceability",
@@ -26,7 +26,7 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Quality Assurance",
     "Environment :: Console",
     "Intended Audience :: System Administrators",
@@ -59,7 +59,6 @@ dependencies = [
     "grpcio>=1.70.0",
     "fastapi>=0.136.0",
     "uvicorn[standard]>=0.32.0",
-    "phenotype-request-id>=0.2.0",
     "sse-starlette>=3.0.0",
     "redis>=5.2.0",
     "anyio>=4.12.1",
@@ -85,6 +84,11 @@ dependencies = [
     "minio>=7.2.20",
     "respx>=0.22.0",
 ]
+
+[project.urls]
+Repository = "https://github.com/KooshaPari/Tracera"
+Documentation = "https://github.com/KooshaPari/Tracera/blob/main/README.md"
+Changelog = "https://github.com/KooshaPari/Tracera/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
@@ -229,7 +233,7 @@ include = [
 
 [tool.pytest.ini_options]
 testpaths = [
-    "src/tracertm",
+    "tests",
 ]
 pythonpath = [
     "src",
@@ -272,6 +276,7 @@ filterwarnings = [
     "ignore::pytest_benchmark.logger.PytestBenchmarkWarning",
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
+    "ignore::pytest.PytestConfigWarning",
     "ignore::pytest.PytestUnraisableExceptionWarning",
     "ignore::pytest.PytestAssertRewriteWarning",
     "ignore::RuntimeWarning",

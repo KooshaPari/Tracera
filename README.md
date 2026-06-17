@@ -1,3 +1,5 @@
+06:19:16.274878 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:16.287981 git.c:476               trace: built-in: git show :3:README.md
 <!-- work-state: integration/consolidate | 2026-06-15 | gaps=ALL CLOSED | go-routes✅ py-matrix✅ router-crud✅ scorer✅ e2e-backend✅ -->
 [██████████] 10/10 — All implementation gaps closed; Go API routes, Python matrix, router CRUD, scorer; PR #587 ready for main
 

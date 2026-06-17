@@ -1,3 +1,5 @@
+06:19:52.280548 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:52.299558 git.c:476               trace: built-in: git show :3:src/tracertm/storage/__init__.py
 """Tracera storage package."""
 
 from tracertm.storage.artifact_writer import ArtifactWriter, InMemoryArtifactWriter

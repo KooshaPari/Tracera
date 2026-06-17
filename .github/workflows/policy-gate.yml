@@ -1,0 +1,47 @@
+name: Policy Gate
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+"on":
+  pull_request:
+    types:
+    - opened
+    - synchronize
+    - reopened
+    - edited
+    - labeled
+    - unlabeled
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  policy-gate:
+    name: policy-gate
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        fetch-depth: 0
+    - name: Enforce layered fix PR policy
+      shell: bash
+      env:
+        HEAD_REF: ${{ github.head_ref }}
+        BASE_REF: ${{ github.base_ref }}
+        PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
+      run: "set -euo pipefail\n\necho \"HEAD_REF=$HEAD_REF\"\necho \"BASE_REF=$BASE_REF\"\
+        \necho \"PR_LABELS=$PR_LABELS\"\n\n# 1) Fix branches must be layered; direct\
+        \ fix/* -> main/master is blocked unless explicitly overridden.\nif [[ \"\
+        $HEAD_REF\" == fix/* ]]; then\n  if [[ \"$BASE_REF\" == \"main\" || \"$BASE_REF\"\
+        \ == \"master\" ]]; then\n    if [[ \"$PR_LABELS\" != *\"layered-pr-exception\"\
+        * ]]; then\n      echo \"ERROR: fix/* PRs must target a layered branch, not\
+        \ main/master.\"\n      echo \"Use stack/*, layer/*, release/*, or add label\
+        \ layered-pr-exception.\"\n      exit 1\n    fi\n  fi\nfi\n\n# 2) Prevent\
+        \ merge commits in PR branch diff range.\ngit fetch origin \"$BASE_REF\" --depth=1\
+        \ || true\ngit fetch origin \"$HEAD_REF\" --depth=1 || true\nMERGES=$(git\
+        \ rev-list --merges \"origin/$BASE_REF..origin/$HEAD_REF\" || true)\nif [[\
+        \ -n \"$MERGES\" ]]; then\n  echo \"ERROR: merge commits detected in PR diff\
+        \ range:\"\n  echo \"$MERGES\"\n  exit 1\nfi\n\n# 3) Local --no-verify cannot\
+        \ be detected directly; this server-side gate exists to prevent bypass outcomes.\n\
+        echo \"Policy gate passed.\"\n"
+    timeout-minutes: 20

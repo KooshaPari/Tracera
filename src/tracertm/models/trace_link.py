@@ -1,3 +1,5 @@
+06:19:45.143055 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:45.162961 git.c:476               trace: built-in: git show :3:src/tracertm/models/trace_link.py
 """Trace-link domain model aligned with traceability-core vocabulary."""
 from __future__ import annotations
 

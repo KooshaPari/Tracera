@@ -1,3 +1,5 @@
+06:19:31.008102 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:31.023415 git.c:476               trace: built-in: git show :3:frontend/package.json
 {
   "name": "tracera-frontend",
   "private": true,
@@ -6,6 +8,7 @@
   ],
   "scripts": {
     "build": "npm run build --prefix packages/types && npm run build --prefix packages/api-client",
+    "test": "vitest run",
     "typecheck": "npm run typecheck --prefix packages/types && npm run typecheck --prefix packages/api-client"
   }
 }

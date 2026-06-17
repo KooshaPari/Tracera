@@ -1,3 +1,5 @@
+06:19:55.574023 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
+06:19:55.591248 git.c:476               trace: built-in: git show :3:tests/unit/ports/test_graph_contract.py
 """Unit tests for the canonical typed-graph schema contract.
 
 Covers ``FR-TRC-018`` / ``NFR-TRC-010`` (single contract; drift impossible).
