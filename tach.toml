@@ -1,2 +1,2 @@
-source_root = "src"
+source_roots = ["src"]
 exact = false
