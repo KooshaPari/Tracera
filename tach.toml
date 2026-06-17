@@ -1,3 +1,2 @@
-[tool.tach]
 source_root = "src"
 exact = false
