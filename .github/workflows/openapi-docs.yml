@@ -145,7 +145,7 @@ jobs:
         persist-credentials: true
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Download OpenAPI spec
-      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
       with:
         name: openapi-spec
         path: .
@@ -180,7 +180,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - name: Download OpenAPI spec
-      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
       with:
         name: openapi-spec
         path: .

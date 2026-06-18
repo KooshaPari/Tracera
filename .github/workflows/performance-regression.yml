@@ -409,13 +409,13 @@ jobs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - name: Download smoke test results
       if: needs['smoke-test'].result == 'success'
-      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
       with:
         name: smoke-test-results
         path: results/smoke
     - name: Download load test results
       if: needs['load-test'].result == 'success'
-      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
       with:
         name: load-test-results
         path: results/load

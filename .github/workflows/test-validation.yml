@@ -35,7 +35,6 @@ jobs:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65
       with:
-        cache: npm
         node-version: '20'
     - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
       with:
@@ -56,7 +55,6 @@ jobs:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65
       with:
-        cache: npm
         node-version: '20'
     - name: Install bun
       uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
@@ -96,7 +94,6 @@ jobs:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65
       with:
-        cache: npm
         node-version: '20'
     - name: Install bun
       uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7
@@ -204,7 +201,7 @@ jobs:
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - name: Download all artifacts
-      uses: actions/download-artifact@d7aade707a79a3bc4130f2605987cbbf2ecfac6c
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
       with:
         path: validation-artifacts/
     - name: Generate consolidated report
