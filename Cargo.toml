@@ -23,5 +23,3 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1", features = ["serde", "v4", "v5"] }
 proptest = "1"
-# Shared ecosystem crates (phenoShared git source)
-phenotype-error-core = { git = "https://github.com/KooshaPari/phenoShared", branch = "main" }
