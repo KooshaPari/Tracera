@@ -24,6 +24,25 @@ def create_app() -> FastAPI:
     app.include_router(sdlc_pm_router, prefix="/api/v1")
     app.include_router(evidence_router, prefix="/api/v1")
     app.include_router(org_intel_router, prefix="/api/v1")
+
+    @app.get("/healthz", include_in_schema=False)
+    async def healthz() -> dict[str, str]:
+        """Liveness probe — process is up and serving HTTP.
+
+        Excluded from OpenAPI schema (operational endpoint for orchestrators).
+        """
+        return {"status": "ok"}
+
+    @app.get("/readyz", include_in_schema=False)
+    async def readyz() -> dict[str, str]:
+        """Readiness probe — minimal check; orchestrator-driven verification.
+
+        Excluded from OpenAPI schema (operational endpoint for orchestrators).
+        Returns version + liveness; deeper downstream checks are deferred to
+        orchestrator-side probes per ADR-OPS-HEALTH-001.
+        """
+        return {"status": "ready", "version": app.version}
+
     return app
 
 
