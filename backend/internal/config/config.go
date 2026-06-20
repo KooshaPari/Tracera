@@ -17,6 +17,25 @@ const (
 	defaultIndexerWorkers         = 3
 	defaultIndexerBatchSize       = 50
 	defaultIndexerPollInterval    = 30
+
+	// Preflight check defaults
+	defaultPreflightCheckTimeout  = 2
+	defaultPreflightPythonTimeout = 5
+
+	// Default ports for common protocols
+	defaultPostgresPort = "5432"
+	defaultRedisPort    = "6379"
+	defaultNatsPort     = "4222"
+	defaultNeo4jPort    = "7687"
+	defaultHTTPPort     = "80"
+	defaultHTTPSPort    = "443"
+
+	// Default external service URLs
+	defaultWorkOSAPIBaseURL = "https://api.workos.com"
+
+	// Default Temporal configuration
+	defaultTemporalHost      = "localhost:7233"
+	defaultTemporalNamespace = "default"
 )
 
 // Config holds application configuration values.
@@ -85,6 +104,25 @@ type Config struct {
 	SentryRelease          string
 	SentryTracesSampleRate float64
 	SentryDebug            bool
+
+	// Preflight Checks
+	PreflightCheckTimeout  int // seconds, default 2
+	PreflightPythonTimeout int // seconds, default 5
+
+	// Default port overrides for preflight URL resolution
+	DefaultPostgresPort string
+	DefaultRedisPort    string
+	DefaultNatsPort     string
+	DefaultNeo4jPort    string
+	DefaultHTTPPort     string
+	DefaultHTTPSPort    string
+
+	// WorkOS
+	WorkOSAPIBaseURL string // default: "https://api.workos.com"
+
+	// Temporal
+	TemporalHost      string
+	TemporalNamespace string
 }
 
 // EmbeddingsConfig holds configuration for embedding providers
@@ -167,6 +205,26 @@ func LoadConfig() *Config {
 		SentryDebug:            getEnvBool("SENTRY_DEBUG", false),
 	}
 	cfg.Embeddings = loadEmbeddingsConfig()
+
+	// Preflight timeouts
+	cfg.PreflightCheckTimeout = getEnvInt("PREFLIGHT_CHECK_TIMEOUT_SECONDS", defaultPreflightCheckTimeout)
+	cfg.PreflightPythonTimeout = getEnvInt("PREFLIGHT_PYTHON_TIMEOUT_SECONDS", defaultPreflightPythonTimeout)
+
+	// Default port overrides
+	cfg.DefaultPostgresPort = getEnv("DEFAULT_POSTGRES_PORT", defaultPostgresPort)
+	cfg.DefaultRedisPort = getEnv("DEFAULT_REDIS_PORT", defaultRedisPort)
+	cfg.DefaultNatsPort = getEnv("DEFAULT_NATS_PORT", defaultNatsPort)
+	cfg.DefaultNeo4jPort = getEnv("DEFAULT_NEO4J_PORT", defaultNeo4jPort)
+	cfg.DefaultHTTPPort = getEnv("DEFAULT_HTTP_PORT", defaultHTTPPort)
+	cfg.DefaultHTTPSPort = getEnv("DEFAULT_HTTPS_PORT", defaultHTTPSPort)
+
+	// WorkOS
+	cfg.WorkOSAPIBaseURL = getEnv("WORKOS_API_BASE_URL", defaultWorkOSAPIBaseURL)
+
+	// Temporal
+	cfg.TemporalHost = getEnv("TEMPORAL_HOST", defaultTemporalHost)
+	cfg.TemporalNamespace = getEnv("TEMPORAL_NAMESPACE", defaultTemporalNamespace)
+
 	return cfg
 }
 

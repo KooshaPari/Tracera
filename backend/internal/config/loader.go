@@ -57,8 +57,25 @@ func LoadWithEnvManager() (*Config, error) {
 		Neo4jPassword: envMgr.GetOrDefault("NEO4J_PASSWORD", ""),
 
 		// WorkOS
-		WorkOSClientID: envMgr.GetOrDefault("WORKOS_CLIENT_ID", ""),
-		WorkOSAPIKey:   envMgr.GetOrDefault("WORKOS_API_KEY", ""),
+		WorkOSClientID:  envMgr.GetOrDefault("WORKOS_CLIENT_ID", ""),
+		WorkOSAPIKey:    envMgr.GetOrDefault("WORKOS_API_KEY", ""),
+		WorkOSAPIBaseURL: envMgr.GetOrDefault("WORKOS_API_BASE_URL", defaultWorkOSAPIBaseURL),
+
+		// Preflight timeouts
+		PreflightCheckTimeout:  envMgr.GetIntOrDefault("PREFLIGHT_CHECK_TIMEOUT_SECONDS", defaultPreflightCheckTimeout),
+		PreflightPythonTimeout: envMgr.GetIntOrDefault("PREFLIGHT_PYTHON_TIMEOUT_SECONDS", defaultPreflightPythonTimeout),
+
+		// Default port overrides
+		DefaultPostgresPort: envMgr.GetOrDefault("DEFAULT_POSTGRES_PORT", defaultPostgresPort),
+		DefaultRedisPort:    envMgr.GetOrDefault("DEFAULT_REDIS_PORT", defaultRedisPort),
+		DefaultNatsPort:     envMgr.GetOrDefault("DEFAULT_NATS_PORT", defaultNatsPort),
+		DefaultNeo4jPort:    envMgr.GetOrDefault("DEFAULT_NEO4J_PORT", defaultNeo4jPort),
+		DefaultHTTPPort:     envMgr.GetOrDefault("DEFAULT_HTTP_PORT", defaultHTTPPort),
+		DefaultHTTPSPort:    envMgr.GetOrDefault("DEFAULT_HTTPS_PORT", defaultHTTPSPort),
+
+		// Temporal
+		TemporalHost:      envMgr.GetOrDefault("TEMPORAL_HOST", defaultTemporalHost),
+		TemporalNamespace: envMgr.GetOrDefault("TEMPORAL_NAMESPACE", defaultTemporalNamespace),
 
 		// Embeddings
 		Embeddings: EmbeddingsConfig{

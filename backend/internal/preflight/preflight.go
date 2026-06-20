@@ -48,27 +48,31 @@ const (
 	defaultHTTPSPort    = "443"
 )
 
-// BuildBackendChecks creates a list of preflight checks for backend services
+// BuildBackendChecks creates a list of preflight checks for backend services.
+// Uses config-driven timeouts and URLs.
 func BuildBackendChecks(cfg *config.Config) []Check {
+	checkTimeout := time.Duration(cfg.PreflightCheckTimeout) * time.Second
+	pythonTimeout := time.Duration(cfg.PreflightPythonTimeout) * time.Second
+
 	return []Check{
-		{Name: "database", URL: cfg.DatabaseURL, Required: true, Kind: "tcp", Timeout: defaultCheckTimeout},
-		{Name: "redis", URL: cfg.RedisURL, Required: true, Kind: "tcp", Timeout: defaultCheckTimeout},
-		{Name: "nats", URL: cfg.NATSUrl, Required: true, Kind: "tcp", Timeout: defaultCheckTimeout},
-		{Name: "neo4j", URL: cfg.Neo4jURI, Required: true, Kind: "tcp", Timeout: defaultCheckTimeout},
-		{Name: "python-backend", URL: cfg.PythonBackendURL, Required: false, Kind: "http", Path: "/health", Timeout: pythonCheckTimeout},
-		{Name: "s3-endpoint", URL: cfg.S3Endpoint, Required: true, Kind: "tcp", Timeout: defaultCheckTimeout},
-		{Name: "s3-access-key", URL: cfg.S3AccessKeyID, Required: true, Kind: "env", Timeout: defaultCheckTimeout},
-		{Name: "s3-secret", URL: cfg.S3SecretAccessKey, Required: true, Kind: "env", Timeout: defaultCheckTimeout},
-		{Name: "s3-bucket", URL: cfg.S3Bucket, Required: true, Kind: "env", Timeout: defaultCheckTimeout},
-		{Name: "temporal-host", URL: getEnv("TEMPORAL_HOST", ""), Required: true, Kind: "tcp", Timeout: defaultCheckTimeout},
-		{Name: "temporal-namespace", URL: getEnv("TEMPORAL_NAMESPACE", ""), Required: true, Kind: "env", Timeout: defaultCheckTimeout},
+		{Name: "database", URL: cfg.DatabaseURL, Required: true, Kind: "tcp", Timeout: checkTimeout},
+		{Name: "redis", URL: cfg.RedisURL, Required: true, Kind: "tcp", Timeout: checkTimeout},
+		{Name: "nats", URL: cfg.NATSUrl, Required: true, Kind: "tcp", Timeout: checkTimeout},
+		{Name: "neo4j", URL: cfg.Neo4jURI, Required: true, Kind: "tcp", Timeout: checkTimeout},
+		{Name: "python-backend", URL: cfg.PythonBackendURL, Required: false, Kind: "http", Path: "/health", Timeout: pythonTimeout},
+		{Name: "s3-endpoint", URL: cfg.S3Endpoint, Required: true, Kind: "tcp", Timeout: checkTimeout},
+		{Name: "s3-access-key", URL: cfg.S3AccessKeyID, Required: true, Kind: "env", Timeout: checkTimeout},
+		{Name: "s3-secret", URL: cfg.S3SecretAccessKey, Required: true, Kind: "env", Timeout: checkTimeout},
+		{Name: "s3-bucket", URL: cfg.S3Bucket, Required: true, Kind: "env", Timeout: checkTimeout},
+		{Name: "temporal-host", URL: cfg.TemporalHost, Required: true, Kind: "tcp", Timeout: checkTimeout},
+		{Name: "temporal-namespace", URL: cfg.TemporalNamespace, Required: true, Kind: "env", Timeout: checkTimeout},
 		{
-			Name: "workos-api", URL: getEnv("WORKOS_API_BASE_URL", "https://api.workos.com"),
-			Required: true, Kind: "tcp", Timeout: defaultCheckTimeout,
+			Name: "workos-api", URL: cfg.WorkOSAPIBaseURL,
+			Required: true, Kind: "tcp", Timeout: checkTimeout,
 		},
-		{Name: "workos-client-id", URL: cfg.WorkOSClientID, Required: true, Kind: "env", Timeout: defaultCheckTimeout},
-		{Name: "workos-api-key", URL: cfg.WorkOSAPIKey, Required: true, Kind: "env", Timeout: defaultCheckTimeout},
-		{Name: "workos-domain", URL: getEnv("WORKOS_AUTHKIT_DOMAIN", ""), Required: true, Kind: "env", Timeout: defaultCheckTimeout},
+		{Name: "workos-client-id", URL: cfg.WorkOSClientID, Required: true, Kind: "env", Timeout: checkTimeout},
+		{Name: "workos-api-key", URL: cfg.WorkOSAPIKey, Required: true, Kind: "env", Timeout: checkTimeout},
+		{Name: "workos-domain", URL: cfg.WorkOSAPIBaseURL, Required: true, Kind: "env", Timeout: checkTimeout},
 	}
 }
 
