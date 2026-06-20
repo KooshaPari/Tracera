@@ -1,0 +1,257 @@
+{
+  "dashboard": {
+    "title": "TraceRTM Service Metrics",
+    "tags": ["tracertm", "backend", "prometheus"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 0,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Rate (req/s)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(tracertm_requests_total[5m])) by (service)",
+            "legendFormat": "{{service}}"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Request Duration (p95)",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(tracertm_request_duration_seconds_bucket[5m])) by (service, le))",
+            "legendFormat": "{{service}}"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Error Rate by Service",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(tracertm_requests_total{status=~\"4..|5..\"}[5m])) by (service)",
+            "legendFormat": "{{service}}"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Cache Hit Ratio",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(tracertm_cache_hits_total[5m])) by (cache_type) / (sum(rate(tracertm_cache_hits_total[5m])) by (cache_type) + sum(rate(tracertm_cache_misses_total[5m])) by (cache_type))",
+            "legendFormat": "{{cache_type}}"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Active Requests",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(tracertm_active_requests) by (service)",
+            "legendFormat": "{{service}}"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Database Connections",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "tracertm_db_connections",
+            "legendFormat": "Active Connections"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Database Query Duration (p95)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(tracertm_db_query_duration_seconds_bucket[5m])) by (operation, le))",
+            "legendFormat": "{{operation}}"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Database Transaction Rate",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 24, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(tracertm_db_transactions_total[5m])) by (status)",
+            "legendFormat": "{{status}}"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Business Metrics - Items",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 32, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(tracertm_items_created_total[5m])",
+            "legendFormat": "Items Created"
+          },
+          {
+            "expr": "rate(tracertm_items_updated_total[5m])",
+            "legendFormat": "Items Updated"
+          },
+          {
+            "expr": "rate(tracertm_items_deleted_total[5m])",
+            "legendFormat": "Items Deleted"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Business Metrics - Links",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 32, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(tracertm_links_created_total[5m])",
+            "legendFormat": "Links Created"
+          },
+          {
+            "expr": "rate(tracertm_links_deleted_total[5m])",
+            "legendFormat": "Links Deleted"
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Active Agents",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 40, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "tracertm_active_agents",
+            "legendFormat": "Active Agents"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Agent Tasks - Assignment Rate",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 40, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(tracertm_tasks_assigned_total[5m])) by (agent_type)",
+            "legendFormat": "{{agent_type}}"
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "title": "Agent Tasks - Completion Rate",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 48, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(tracertm_tasks_completed_total{status=\"success\"}[5m])) by (agent_type)",
+            "legendFormat": "{{agent_type}} - Success"
+          },
+          {
+            "expr": "sum(rate(tracertm_tasks_completed_total{status=\"failure\"}[5m])) by (agent_type)",
+            "legendFormat": "{{agent_type}} - Failure"
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "title": "WebSocket Clients",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 48, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "tracertm_websocket_clients",
+            "legendFormat": "Connected Clients"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "NATS Message Rate",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 56, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(tracertm_messages_published_total[5m])) by (subject)",
+            "legendFormat": "Published - {{subject}}"
+          },
+          {
+            "expr": "sum(rate(tracertm_messages_consumed_total[5m])) by (subject)",
+            "legendFormat": "Consumed - {{subject}}"
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "title": "Storage Operations",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 56, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(tracertm_storage_uploads_total[5m])) by (status)",
+            "legendFormat": "Uploads - {{status}}"
+          },
+          {
+            "expr": "sum(rate(tracertm_storage_downloads_total[5m])) by (status)",
+            "legendFormat": "Downloads - {{status}}"
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "title": "Storage Throughput (bytes/s)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 64, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(tracertm_storage_bytes_uploaded_total[5m])",
+            "legendFormat": "Uploaded"
+          },
+          {
+            "expr": "rate(tracertm_storage_bytes_downloaded_total[5m])",
+            "legendFormat": "Downloaded"
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "title": "Top Services by Request Count",
+        "type": "table",
+        "gridPos": {"x": 12, "y": 64, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "topk(10, sum(rate(tracertm_requests_total[5m])) by (service))",
+            "format": "table",
+            "instant": true
+          }
+        ]
+      }
+    ]
+  }
+}

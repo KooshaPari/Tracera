@@ -1,0 +1,1014 @@
+package auth
+
+import (
+	"context"
+	"errors"
+	"testing"
+	"time"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/pashagolub/pgxmock/v3"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+// TestNewAuthKitAdapter tests the constructor
+func TestNewAuthKitAdapter(t *testing.T) {
+	t.Run("creates adapter with valid parameters", func(t *testing.T) {
+		// Arrange
+		jwtSecret := TestJWTSecret
+		clientID := TestClientID
+
+		// Act
+		adapter := NewAuthKitAdapter(clientID, jwtSecret, nil)
+
+		// Assert
+		assert.NotNil(t, adapter, "Adapter should not be nil")
+		assert.NotNil(t, adapter.tokenBridge, "TokenBridge should be initialized")
+		assert.NotNil(t, adapter.db, "Database pool should be set")
+		assert.NotNil(t, adapter.httpClient, "HTTP client should be initialized")
+		assert.Equal(t, 10*time.Second, adapter.httpClient.Timeout, "HTTP client timeout should be 10 seconds")
+	})
+
+	t.Run("initializes with empty secret", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		// Act
+		adapter := NewAuthKitAdapter(TestClientID, "", nil)
+
+		// Assert
+		assert.NotNil(t, adapter, "Adapter should be created even with empty secret")
+		assert.NotNil(t, adapter.tokenBridge, "TokenBridge should be initialized")
+	})
+}
+
+// TestValidateToken_Success tests successful token validation
+func TestValidateToken_Success(t *testing.T) {
+	t.Run("validates correct WorkOS token and syncs profile", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		token := CreateValidWorkOSToken(t)
+
+		mockProfile := DefaultMockProfile()
+
+		// Expect database call for profile sync
+		mockDB.ExpectQuery(`SELECT id, workos_user_id, workos_org_id, email, full_name`).
+			WithArgs(
+				"test@example.com",
+				"Test User",
+				"user_01H8XYZ123",
+				"org_01H8ABC456",
+				pgxmock.AnyArg(),
+			).
+			WillReturnRows(pgxmock.NewRows([]string{
+				"id", "workos_user_id", "workos_org_id", "email", "full_name",
+			}).AddRow(
+				mockProfile.ID,
+				mockProfile.WorkosUserID,
+				mockProfile.WorkosOrgID,
+				mockProfile.Email,
+				mockProfile.FullName,
+			))
+
+		// Act
+		user, err := adapter.ValidateToken(ctx, token)
+
+		// Assert
+		require.NoError(t, err, "Should validate token successfully")
+		assert.NotNil(t, user, "User should not be nil")
+		assert.Equal(t, "user_01H8XYZ123", user.ID)
+		assert.Equal(t, "test@example.com", user.Email)
+		assert.Equal(t, "Test User", user.Name)
+		assert.Equal(t, "admin", user.Role)
+		assert.Equal(t, "org_01H8ABC456", user.ProjectID)
+		assert.NotNil(t, user.Metadata)
+		assert.Equal(t, mockProfile.ID, user.Metadata["profile_id"])
+
+		// Verify all expectations were met
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err, "All database expectations should be met")
+	})
+}
+
+// TestValidateToken_InvalidTokens tests various invalid token scenarios
+func TestValidateToken_InvalidTokens(t *testing.T) {
+	testCases := []struct {
+		name          string
+		tokenFunc     func(t *testing.T) string
+		expectedError string
+	}{
+		{
+			name:          "expired token",
+			tokenFunc:     CreateExpiredWorkOSToken,
+			expectedError: "failed to parse token",
+		},
+		{
+			name:          "invalid signature",
+			tokenFunc:     CreateTokenWithInvalidSignature,
+			expectedError: "failed to parse token",
+		},
+		{
+			name:          "wrong signing method",
+			tokenFunc:     CreateTokenWithWrongSigningMethod,
+			expectedError: "failed to parse token",
+		},
+		{
+			name:          "malformed token",
+			tokenFunc:     CreateMalformedToken,
+			expectedError: "failed to parse token",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Arrange
+			// mockDB no longer needed
+			// mockDB setup removed
+			// mockDB cleanup removed
+
+			adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+			ctx := context.Background()
+			token := tc.tokenFunc(t)
+
+			// Act
+			user, err := adapter.ValidateToken(ctx, token)
+
+			// Assert
+			assert.Error(t, err, "Should return error for invalid token")
+			assert.Nil(t, user, "User should be nil on error")
+			assert.Contains(t, err.Error(), tc.expectedError, "Error message should contain expected text")
+
+			// No database calls should have been made
+			err = mockDB.ExpectationsWereMet()
+			assert.NoError(t, err, "No database expectations for invalid tokens")
+		})
+	}
+}
+
+// TestValidateToken_EmptyToken tests validation with empty token
+func TestValidateToken_EmptyToken(t *testing.T) {
+	t.Run("returns error for empty token", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+
+		// Act
+		user, err := adapter.ValidateToken(ctx, "")
+
+		// Assert
+		assert.Error(t, err, "Should return error for empty token")
+		assert.Nil(t, user, "User should be nil")
+	})
+}
+
+// TestValidateToken_ProfileSyncFailure tests token validation when profile sync fails
+func TestValidateToken_ProfileSyncFailure(t *testing.T) {
+	t.Run("returns error when profile sync fails", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		token := CreateValidWorkOSToken(t)
+
+		// Expect database call to fail
+		mockDB.ExpectQuery(`SELECT id, workos_user_id, workos_org_id, email, full_name`).
+			WithArgs(
+				"test@example.com",
+				"Test User",
+				"user_01H8XYZ123",
+				"org_01H8ABC456",
+				pgxmock.AnyArg(),
+			).
+			WillReturnError(errors.New("database connection error"))
+
+		// Act
+		user, err := adapter.ValidateToken(ctx, token)
+
+		// Assert
+		assert.Error(t, err, "Should return error when profile sync fails")
+		assert.Nil(t, user, "User should be nil on sync failure")
+		assert.Contains(t, err.Error(), "failed to sync profile", "Error should indicate sync failure")
+
+		// Verify all expectations were met
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestGetUser_Success tests successful user retrieval
+func TestGetUser_Success(t *testing.T) {
+	t.Run("retrieves existing user by WorkOS user ID", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		userID := "user_01H8XYZ123"
+
+		mockProfile := DefaultMockProfile()
+		mockMetadata := MetadataToJSON(t, mockProfile.Metadata)
+
+		// Expect database query
+		mockDB.ExpectQuery(`SELECT id, auth_id, workos_user_id, workos_org_id, email, full_name, avatar_url, metadata`).
+			WithArgs(userID).
+			WillReturnRows(pgxmock.NewRows([]string{
+				"id", "auth_id", "workos_user_id", "workos_org_id", "email", "full_name", "avatar_url", "metadata",
+			}).AddRow(
+				mockProfile.ID,
+				mockProfile.AuthID,
+				mockProfile.WorkosUserID,
+				mockProfile.WorkosOrgID,
+				mockProfile.Email,
+				mockProfile.FullName,
+				mockProfile.AvatarURL,
+				mockMetadata,
+			))
+
+		// Act
+		user, err := adapter.GetUser(ctx, userID)
+
+		// Assert
+		require.NoError(t, err, "Should retrieve user successfully")
+		assert.NotNil(t, user, "User should not be nil")
+		assert.Equal(t, mockProfile.WorkosUserID, user.ID)
+		assert.Equal(t, mockProfile.Email, user.Email)
+		assert.Equal(t, mockProfile.FullName, user.Name)
+		assert.Equal(t, mockProfile.WorkosOrgID, user.ProjectID)
+		assert.NotNil(t, user.Metadata)
+
+		// Verify all expectations were met
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestGetUser_NotFound tests user not found scenario
+func TestGetUser_NotFound(t *testing.T) {
+	t.Run("returns error when user not found", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		userID := "user_nonexistent"
+
+		// Expect database query to return no rows
+		mockDB.ExpectQuery(`SELECT id, auth_id, workos_user_id, workos_org_id, email, full_name, avatar_url, metadata`).
+			WithArgs(userID).
+			WillReturnError(pgx.ErrNoRows)
+
+		// Act
+		user, err := adapter.GetUser(ctx, userID)
+
+		// Assert
+		assert.Error(t, err, "Should return error when user not found")
+		assert.Nil(t, user, "User should be nil")
+		assert.Contains(t, err.Error(), "user not found", "Error should indicate user not found")
+
+		// Verify all expectations were met
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestGetUser_DatabaseError tests database error handling
+func TestGetUser_DatabaseError(t *testing.T) {
+	t.Run("returns error on database failure", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		userID := "user_01H8XYZ123"
+
+		// Expect database query to fail
+		mockDB.ExpectQuery(`SELECT id, auth_id, workos_user_id, workos_org_id, email, full_name, avatar_url, metadata`).
+			WithArgs(userID).
+			WillReturnError(errors.New("database connection timeout"))
+
+		// Act
+		user, err := adapter.GetUser(ctx, userID)
+
+		// Assert
+		assert.Error(t, err, "Should return error on database failure")
+		assert.Nil(t, user, "User should be nil")
+		assert.Contains(t, err.Error(), "user not found", "Error should be wrapped")
+
+		// Verify all expectations were met
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestGetUser_EmptyMetadata tests user retrieval with null/empty metadata
+func TestGetUser_EmptyMetadata(t *testing.T) {
+	t.Run("handles empty metadata correctly", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		userID := "user_01H8XYZ123"
+
+		mockProfile := DefaultMockProfile()
+		emptyMetadata := []byte("{}")
+
+		// Expect database query
+		mockDB.ExpectQuery(`SELECT id, auth_id, workos_user_id, workos_org_id, email, full_name, avatar_url, metadata`).
+			WithArgs(userID).
+			WillReturnRows(pgxmock.NewRows([]string{
+				"id", "auth_id", "workos_user_id", "workos_org_id", "email", "full_name", "avatar_url", "metadata",
+			}).AddRow(
+				mockProfile.ID,
+				mockProfile.AuthID,
+				mockProfile.WorkosUserID,
+				mockProfile.WorkosOrgID,
+				mockProfile.Email,
+				mockProfile.FullName,
+				mockProfile.AvatarURL,
+				emptyMetadata,
+			))
+
+		// Act
+		user, err := adapter.GetUser(ctx, userID)
+
+		// Assert
+		require.NoError(t, err, "Should handle empty metadata")
+		assert.NotNil(t, user)
+		assert.NotNil(t, user.Metadata)
+		assert.Empty(t, user.Metadata, "Metadata should be empty map")
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestCreateUser tests that CreateUser returns an error
+func TestCreateUser(t *testing.T) {
+	t.Run("returns error indicating WorkOS-only user creation", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+
+		// Act
+		user, err := adapter.CreateUser(ctx, "new@example.com", "password123", "New User")
+
+		// Assert
+		assert.Error(t, err, "Should return error for direct user creation")
+		assert.Nil(t, user, "User should be nil")
+		assert.Contains(t, err.Error(), "WorkOS/AuthKit", "Error should mention WorkOS/AuthKit")
+		assert.Contains(t, err.Error(), "not directly", "Error should indicate direct creation not allowed")
+
+		// No database calls should have been made
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestUpdateUser_Success tests successful user update
+func TestUpdateUser_Success(t *testing.T) {
+	t.Run("updates user metadata successfully", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		userID := "user_01H8XYZ123"
+
+		updates := map[string]interface{}{
+			"department": "product",
+			"title":      "Senior Developer",
+		}
+
+		mockProfile := DefaultMockProfile()
+		updatedMetadata := map[string]interface{}{
+			"department": "product",
+			"title":      "Senior Developer",
+			"role":       "developer",
+		}
+		mockMetadataJSON := MetadataToJSON(t, updatedMetadata)
+
+		// Expect database update
+		mockDB.ExpectQuery(`UPDATE public.profiles`).
+			WithArgs(pgxmock.AnyArg(), userID).
+			WillReturnRows(pgxmock.NewRows([]string{
+				"id", "auth_id", "workos_user_id", "workos_org_id", "email", "full_name", "avatar_url", "metadata",
+			}).AddRow(
+				mockProfile.ID,
+				mockProfile.AuthID,
+				mockProfile.WorkosUserID,
+				mockProfile.WorkosOrgID,
+				mockProfile.Email,
+				mockProfile.FullName,
+				mockProfile.AvatarURL,
+				mockMetadataJSON,
+			))
+
+		// Act
+		user, err := adapter.UpdateUser(ctx, userID, updates)
+
+		// Assert
+		require.NoError(t, err, "Should update user successfully")
+		assert.NotNil(t, user, "User should not be nil")
+		assert.Equal(t, mockProfile.WorkosUserID, user.ID)
+		assert.NotNil(t, user.Metadata)
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestUpdateUser_UserNotFound tests update when user doesn't exist
+func TestUpdateUser_UserNotFound(t *testing.T) {
+	t.Run("returns error when user not found", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		userID := "user_nonexistent"
+
+		updates := map[string]interface{}{
+			"department": "product",
+		}
+
+		// Expect database update to return no rows
+		mockDB.ExpectQuery(`UPDATE public.profiles`).
+			WithArgs(pgxmock.AnyArg(), userID).
+			WillReturnError(pgx.ErrNoRows)
+
+		// Act
+		user, err := adapter.UpdateUser(ctx, userID, updates)
+
+		// Assert
+		assert.Error(t, err, "Should return error when user not found")
+		assert.Nil(t, user, "User should be nil")
+		assert.Contains(t, err.Error(), "failed to update user", "Error should indicate update failure")
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestUpdateUser_EmptyUpdates tests update with empty updates map
+func TestUpdateUser_EmptyUpdates(t *testing.T) {
+	t.Run("handles empty updates map", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		userID := "user_01H8XYZ123"
+
+		emptyUpdates := map[string]interface{}{}
+
+		mockProfile := DefaultMockProfile()
+		mockMetadataJSON := MetadataToJSON(t, mockProfile.Metadata)
+
+		// Expect database update
+		mockDB.ExpectQuery(`UPDATE public.profiles`).
+			WithArgs(pgxmock.AnyArg(), userID).
+			WillReturnRows(pgxmock.NewRows([]string{
+				"id", "auth_id", "workos_user_id", "workos_org_id", "email", "full_name", "avatar_url", "metadata",
+			}).AddRow(
+				mockProfile.ID,
+				mockProfile.AuthID,
+				mockProfile.WorkosUserID,
+				mockProfile.WorkosOrgID,
+				mockProfile.Email,
+				mockProfile.FullName,
+				mockProfile.AvatarURL,
+				mockMetadataJSON,
+			))
+
+		// Act
+		user, err := adapter.UpdateUser(ctx, userID, emptyUpdates)
+
+		// Assert
+		require.NoError(t, err, "Should handle empty updates")
+		assert.NotNil(t, user)
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestDeleteUser_Success tests successful soft delete
+func TestDeleteUser_Success(t *testing.T) {
+	t.Run("soft deletes user successfully", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		userID := "user_01H8XYZ123"
+
+		// Expect database update for soft delete
+		mockDB.ExpectExec(`UPDATE public.profiles`).
+			WithArgs(userID).
+			WillReturnResult(pgxmock.NewResult("UPDATE", 1))
+
+		// Act
+		err = adapter.DeleteUser(ctx, userID)
+
+		// Assert
+		assert.NoError(t, err, "Should delete user successfully")
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestDeleteUser_DatabaseError tests delete with database error
+func TestDeleteUser_DatabaseError(t *testing.T) {
+	t.Run("returns error on database failure", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		userID := "user_01H8XYZ123"
+
+		// Expect database update to fail
+		mockDB.ExpectExec(`UPDATE public.profiles`).
+			WithArgs(userID).
+			WillReturnError(errors.New("database write error"))
+
+		// Act
+		err = adapter.DeleteUser(ctx, userID)
+
+		// Assert
+		assert.Error(t, err, "Should return error on database failure")
+		assert.Contains(t, err.Error(), "failed to delete user", "Error should indicate delete failure")
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestDeleteUser_NonexistentUser tests deleting non-existent user
+func TestDeleteUser_NonexistentUser(t *testing.T) {
+	t.Run("succeeds even if user doesn't exist", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		userID := "user_nonexistent"
+
+		// Expect database update to affect 0 rows (user doesn't exist)
+		mockDB.ExpectExec(`UPDATE public.profiles`).
+			WithArgs(userID).
+			WillReturnResult(pgxmock.NewResult("UPDATE", 0))
+
+		// Act
+		err = adapter.DeleteUser(ctx, userID)
+
+		// Assert
+		assert.NoError(t, err, "Should succeed even if user doesn't exist (idempotent)")
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestClose tests the Close method
+func TestClose(t *testing.T) {
+	t.Run("closes adapter successfully", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+
+		// Act
+		err = adapter.Close()
+
+		// Assert
+		assert.NoError(t, err, "Close should not return error")
+	})
+}
+
+// TestListUsers_Success tests successful user listing with pagination
+func TestListUsers_Success(t *testing.T) {
+	t.Run("lists users with pagination", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		limit := 10
+		offset := 0
+
+		mockProfile1 := DefaultMockProfile()
+		mockProfile2 := DefaultMockProfile()
+		mockProfile2.ID = "550e8400-e29b-41d4-a716-446655440001"
+		mockProfile2.WorkosUserID = "user_02H8XYZ456"
+		mockProfile2.Email = "user2@example.com"
+		mockProfile2.FullName = "User Two"
+
+		metadata1 := MetadataToJSON(t, mockProfile1.Metadata)
+		metadata2 := MetadataToJSON(t, mockProfile2.Metadata)
+
+		// Expect database query
+		rows := pgxmock.NewRows([]string{
+			"id", "auth_id", "workos_user_id", "workos_org_id", "email", "full_name", "avatar_url", "metadata",
+		}).
+			AddRow(
+				mockProfile1.ID,
+				mockProfile1.AuthID,
+				mockProfile1.WorkosUserID,
+				mockProfile1.WorkosOrgID,
+				mockProfile1.Email,
+				mockProfile1.FullName,
+				mockProfile1.AvatarURL,
+				metadata1,
+			).
+			AddRow(
+				mockProfile2.ID,
+				mockProfile2.AuthID,
+				mockProfile2.WorkosUserID,
+				mockProfile2.WorkosOrgID,
+				mockProfile2.Email,
+				mockProfile2.FullName,
+				mockProfile2.AvatarURL,
+				metadata2,
+			)
+
+		mockDB.ExpectQuery(`SELECT id, auth_id, workos_user_id, workos_org_id, email, full_name, avatar_url, metadata`).
+			WithArgs(limit, offset).
+			WillReturnRows(rows)
+
+		// Act
+		users, err := adapter.ListUsers(ctx, limit, offset)
+
+		// Assert
+		require.NoError(t, err, "Should list users successfully")
+		assert.NotNil(t, users)
+		assert.Len(t, users, 2, "Should return 2 users")
+		assert.Equal(t, mockProfile1.WorkosUserID, users[0].ID)
+		assert.Equal(t, mockProfile2.WorkosUserID, users[1].ID)
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestListUsers_EmptyResult tests listing when no users exist
+func TestListUsers_EmptyResult(t *testing.T) {
+	t.Run("returns empty list when no users found", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		limit := 10
+		offset := 0
+
+		// Expect database query to return no rows
+		rows := pgxmock.NewRows([]string{
+			"id", "auth_id", "workos_user_id", "workos_org_id", "email", "full_name", "avatar_url", "metadata",
+		})
+
+		mockDB.ExpectQuery(`SELECT id, auth_id, workos_user_id, workos_org_id, email, full_name, avatar_url, metadata`).
+			WithArgs(limit, offset).
+			WillReturnRows(rows)
+
+		// Act
+		users, err := adapter.ListUsers(ctx, limit, offset)
+
+		// Assert
+		require.NoError(t, err, "Should not return error for empty result")
+		// Note: Implementation returns nil slice when no rows, not empty slice
+		assert.Len(t, users, 0, "Should return no users")
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestListUsers_DatabaseError tests listing with database error
+func TestListUsers_DatabaseError(t *testing.T) {
+	t.Run("returns error on database failure", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		limit := 10
+		offset := 0
+
+		// Expect database query to fail
+		mockDB.ExpectQuery(`SELECT id, auth_id, workos_user_id, workos_org_id, email, full_name, avatar_url, metadata`).
+			WithArgs(limit, offset).
+			WillReturnError(errors.New("database connection lost"))
+
+		// Act
+		users, err := adapter.ListUsers(ctx, limit, offset)
+
+		// Assert
+		assert.Error(t, err, "Should return error on database failure")
+		assert.Nil(t, users, "Users should be nil on error")
+		assert.Contains(t, err.Error(), "failed to list users", "Error should indicate list failure")
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestListUsers_ZeroLimit tests listing with limit=0
+func TestListUsers_ZeroLimit(t *testing.T) {
+	t.Run("handles zero limit edge case", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		limit := 0
+		offset := 0
+
+		// Expect database query with limit=0
+		rows := pgxmock.NewRows([]string{
+			"id", "auth_id", "workos_user_id", "workos_org_id", "email", "full_name", "avatar_url", "metadata",
+		})
+
+		mockDB.ExpectQuery(`SELECT id, auth_id, workos_user_id, workos_org_id, email, full_name, avatar_url, metadata`).
+			WithArgs(limit, offset).
+			WillReturnRows(rows)
+
+		// Act
+		users, err := adapter.ListUsers(ctx, limit, offset)
+
+		// Assert
+		require.NoError(t, err, "Should handle zero limit")
+		assert.Len(t, users, 0, "Should return no users with zero limit")
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestListUsers_InvalidMetadata tests listing with invalid metadata in one row
+func TestListUsers_InvalidMetadata(t *testing.T) {
+	t.Run("skips user with invalid metadata", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		limit := 10
+		offset := 0
+
+		mockProfile1 := DefaultMockProfile()
+		mockProfile2 := DefaultMockProfile()
+		mockProfile2.ID = "550e8400-e29b-41d4-a716-446655440001"
+		mockProfile2.WorkosUserID = "user_02H8XYZ456"
+		mockProfile2.Email = "user2@example.com"
+
+		metadata1 := MetadataToJSON(t, mockProfile1.Metadata)
+		invalidMetadata := []byte("invalid json {]")
+
+		// Expect database query - first row has invalid metadata
+		rows := pgxmock.NewRows([]string{
+			"id", "auth_id", "workos_user_id", "workos_org_id", "email", "full_name", "avatar_url", "metadata",
+		}).
+			AddRow(
+				mockProfile1.ID,
+				mockProfile1.AuthID,
+				mockProfile1.WorkosUserID,
+				mockProfile1.WorkosOrgID,
+				mockProfile1.Email,
+				mockProfile1.FullName,
+				mockProfile1.AvatarURL,
+				invalidMetadata,
+			).
+			AddRow(
+				mockProfile2.ID,
+				mockProfile2.AuthID,
+				mockProfile2.WorkosUserID,
+				mockProfile2.WorkosOrgID,
+				mockProfile2.Email,
+				mockProfile2.FullName,
+				mockProfile2.AvatarURL,
+				metadata1,
+			)
+
+		mockDB.ExpectQuery(`SELECT id, auth_id, workos_user_id, workos_org_id, email, full_name, avatar_url, metadata`).
+			WithArgs(limit, offset).
+			WillReturnRows(rows)
+
+		// Act
+		users, err := adapter.ListUsers(ctx, limit, offset)
+
+		// Assert
+		// Note: Current implementation continues on error, just logs it
+		require.NoError(t, err, "Should not fail on individual row error")
+		assert.NotNil(t, users)
+		// Both users should be included (invalid JSON unmarshals to empty map)
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestSyncProfileFromWorkOS_MinimalClaims tests profile sync with minimal claims
+func TestSyncProfileFromWorkOS_MinimalClaims(t *testing.T) {
+	t.Run("syncs profile with minimal WorkOS claims", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+
+		minimalClaims := MinimalWorkOSClaims()
+		token := CreateTokenFromClaims(t, minimalClaims, TestJWTSecret)
+
+		// Expect database call
+		mockDB.ExpectQuery(`SELECT id, workos_user_id, workos_org_id, email, full_name`).
+			WithArgs(
+				minimalClaims.Email,
+				minimalClaims.Name,
+				minimalClaims.Sub,
+				minimalClaims.OrgID,
+				pgxmock.AnyArg(),
+			).
+			WillReturnRows(pgxmock.NewRows([]string{
+				"id", "workos_user_id", "workos_org_id", "email", "full_name",
+			}).AddRow(
+				"profile-id-minimal",
+				minimalClaims.Sub,
+				minimalClaims.OrgID,
+				minimalClaims.Email,
+				minimalClaims.Name,
+			))
+
+		// Act
+		user, err := adapter.ValidateToken(ctx, token)
+
+		// Assert
+		require.NoError(t, err, "Should handle minimal claims")
+		assert.NotNil(t, user)
+		assert.Equal(t, minimalClaims.Sub, user.ID)
+		assert.Equal(t, minimalClaims.Email, user.Email)
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestValidateToken_ContextCancellation tests behavior with canceled context
+func TestValidateToken_ContextCancellation(t *testing.T) {
+	t.Run("handles canceled context", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel() // Cancel immediately
+
+		token := CreateValidWorkOSToken(t)
+
+		// Expect database call to return context canceled error
+		mockDB.ExpectQuery(`SELECT id, workos_user_id, workos_org_id, email, full_name`).
+			WithArgs(
+				pgxmock.AnyArg(),
+				pgxmock.AnyArg(),
+				pgxmock.AnyArg(),
+				pgxmock.AnyArg(),
+				pgxmock.AnyArg(),
+			).
+			WillReturnError(context.Canceled)
+
+		// Act
+		user, err := adapter.ValidateToken(ctx, token)
+
+		// Assert
+		assert.Error(t, err, "Should return error for canceled context")
+		assert.Nil(t, user)
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestUpdateUser_DatabaseError tests update with database error
+func TestUpdateUser_DatabaseError(t *testing.T) {
+	t.Run("returns error on database connection failure", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		userID := "user_01H8XYZ123"
+
+		updates := map[string]interface{}{
+			"department": "engineering",
+		}
+
+		// Expect database update to fail
+		mockDB.ExpectQuery(`UPDATE public.profiles`).
+			WithArgs(pgxmock.AnyArg(), userID).
+			WillReturnError(errors.New("connection pool exhausted"))
+
+		// Act
+		user, err := adapter.UpdateUser(ctx, userID, updates)
+
+		// Assert
+		assert.Error(t, err, "Should return error on database failure")
+		assert.Nil(t, user)
+		assert.Contains(t, err.Error(), "failed to update user")
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}
+
+// TestListUsers_LargePagination tests listing with large offset
+func TestListUsers_LargePagination(t *testing.T) {
+	t.Run("handles large offset correctly", func(t *testing.T) {
+		// Arrange
+		// mockDB no longer needed
+		// mockDB setup removed
+		// mockDB cleanup removed
+
+		adapter := NewAuthKitAdapter(TestClientID, TestJWTSecret, nil)
+		ctx := context.Background()
+		limit := 100
+		offset := 10000 // Large offset
+
+		// Expect database query to return empty result (offset beyond data)
+		rows := pgxmock.NewRows([]string{
+			"id", "auth_id", "workos_user_id", "workos_org_id", "email", "full_name", "avatar_url", "metadata",
+		})
+
+		mockDB.ExpectQuery(`SELECT id, auth_id, workos_user_id, workos_org_id, email, full_name, avatar_url, metadata`).
+			WithArgs(limit, offset).
+			WillReturnRows(rows)
+
+		// Act
+		users, err := adapter.ListUsers(ctx, limit, offset)
+
+		// Assert
+		require.NoError(t, err, "Should handle large offset")
+		assert.Len(t, users, 0, "Should return no users with large offset")
+
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+}

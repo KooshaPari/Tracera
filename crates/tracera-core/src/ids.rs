@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+// Copyright 2026 Koosha Pari
+
 //! Strongly-typed requirement identifiers.
 //! Re-exports from shared core where available, with local fallback impl.
 

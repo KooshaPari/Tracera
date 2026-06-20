@@ -1,0 +1,48 @@
+---
+title: "Go SDK Installation"
+description: "Install and set up the TraceRTM Go SDK"
+keywords: [go, golang, sdk, installation, package]
+---
+
+# Go SDK Installation
+
+The TraceRTM Go SDK provides a Go interface to the TraceRTM API.
+
+## Installation
+
+```bash
+go get github.com/tracertm/tracertm-go
+```
+
+## Requirements
+
+- Go 1.21 or higher
+
+## Quick Start
+
+```go
+package main
+
+import (
+    "fmt"
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient(tracertm.WithAPIKey("rtm_live_abc123..."))
+    
+    projects, err := client.Projects.List()
+    if err != nil {
+        panic(err)
+    }
+    
+    for _, project := range projects {
+        fmt.Printf("%s: %s\n", project.ID, project.Name)
+    }
+}
+```
+
+## Next Steps
+
+- [Quickstart](./02-quickstart) - Get started quickly
+- [Authentication](./03-authentication) - Set up authentication

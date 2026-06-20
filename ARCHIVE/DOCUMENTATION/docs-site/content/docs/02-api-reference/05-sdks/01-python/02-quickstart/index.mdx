@@ -1,0 +1,134 @@
+---
+title: "Python SDK Quickstart"
+description: "Get started with the TraceRTM Python SDK in minutes"
+keywords: [python, sdk, quickstart, tutorial, getting started]
+---
+
+# Python SDK Quickstart
+
+Get started with the TraceRTM Python SDK in 5 minutes.
+
+## Installation
+
+```bash
+pip install tracertm
+```
+
+## Initialize Client
+
+```python
+from tracertm import TraceRTM
+
+# Using API key
+client = TraceRTM(api_key="rtm_live_abc123...")
+
+# Or from environment variable
+import os
+client = TraceRTM(api_key=os.getenv("TRACERTM_API_KEY"))
+```
+
+## Basic Operations
+
+### List Projects
+
+```python
+projects = client.projects.list()
+for project in projects:
+    print(f"{project.id}: {project.name}")
+```
+
+### Create a Project
+
+```python
+project = client.projects.create(
+    name="My Project",
+    description="Project description"
+)
+print(f"Created project: {project.id}")
+```
+
+### Create an Item
+
+```python
+item = client.items.create(
+    title="New Requirement",
+    view="requirements",
+    status="draft",
+    project_id="proj_123"
+)
+print(f"Created item: {item.id}")
+```
+
+### Query Items
+
+```python
+# Query items
+items = client.query_items(
+    view="requirements",
+    status="active",
+    limit=50
+)
+
+for item in items:
+    print(f"{item['title']}: {item['status']}")
+```
+
+### Create a Link
+
+```python
+link = client.create_link(
+    source_id="item_req_001",
+    target_id="item_test_001",
+    link_type="verified_by"
+)
+print(f"Created link: {link.id}")
+```
+
+## Complete Example
+
+```python
+from tracertm import TraceRTM
+import os
+
+# Initialize client
+client = TraceRTM(api_key=os.getenv("TRACERTM_API_KEY"))
+
+# Create project
+project = client.projects.create(
+    name="Example Project",
+    description="Example project for quickstart"
+)
+
+# Create requirement
+requirement = client.items.create(
+    title="User Authentication",
+    view="requirements",
+    status="draft",
+    project_id=project.id,
+    metadata={"priority": "high"}
+)
+
+# Create test case
+test_case = client.items.create(
+    title="Login Test",
+    view="test-cases",
+    status="draft",
+    project_id=project.id
+)
+
+# Create traceability link
+link = client.create_link(
+    source_id=requirement.id,
+    target_id=test_case.id,
+    link_type="verified_by",
+    metadata={"confidence": 0.95}
+)
+
+print(f"Created traceability: {requirement.title} --[verified_by]--> {test_case.title}")
+```
+
+## Next Steps
+
+- [Authentication](./03-authentication) - Authentication options
+- [Artifacts](./04-artifacts) - Working with items
+- [Examples](./06-examples) - More examples

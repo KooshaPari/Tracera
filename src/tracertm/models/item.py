@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship, synonym
 
-from tracertm.models.base import Base, GUID, TimestampMixin
+from tracertm.models.base import GUID, Base, TimestampMixin
 from tracertm.models.types import JSONType
 
 if TYPE_CHECKING:

@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "profile": "critical-default",
+  "generated_by": "bootstrap-governance-artifacts.sh",
+  "toolchains": {
+    "onchain": {
+      "slither": "0.10.4",
+      "foundry": "stable",
+      "echidna": "2.2.4"
+    },
+    "formal": {
+      "tla2tools": "1.8.0",
+      "dafny": "4.6.0",
+      "alloy": "6.1.0"
+    }
+  },
+  "notes": "Pin versions for deterministic N4/N5 governance execution. Adjust intentionally with review."
+}

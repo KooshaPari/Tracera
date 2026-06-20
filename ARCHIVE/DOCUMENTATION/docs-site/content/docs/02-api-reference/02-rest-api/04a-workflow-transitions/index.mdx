@@ -1,0 +1,1079 @@
+---
+title: Workflow Transitions
+description: Complete guide to workflow transitions, transition rules, guards, actions, and automation in the TraceRTM API
+---
+
+# Workflow Transitions
+
+Workflow transitions define how items move between states. This reference documents the transition API including rules, guards, actions, and automation capabilities.
+
+## Endpoints Overview
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/workflows/{id}/transitions` | List all transitions |
+| `GET` | `/workflows/{id}/transitions/{transition_id}` | Get transition details |
+| `POST` | `/workflows/{id}/transitions` | Create transition |
+| `PATCH` | `/workflows/{id}/transitions/{transition_id}` | Update transition |
+| `DELETE` | `/workflows/{id}/transitions/{transition_id}` | Delete transition |
+| `POST` | `/items/{id}/transition` | Execute transition on item |
+| `GET` | `/items/{id}/available-transitions` | Get available transitions |
+
+---
+
+## Transition Object
+
+```json
+{
+  "id": "trans_approve_001",
+  "name": "approve",
+  "display_name": "Approve",
+  "description": "Approve the item after review",
+  "from_status": "in_review",
+  "to_status": "approved",
+  "icon": "check-circle",
+  "color": "green",
+  "guards": [
+    {
+      "type": "permission",
+      "permission": "items:approve"
+    },
+    {
+      "type": "field_required",
+      "field": "description",
+      "message": "Description is required before approval"
+    },
+    {
+      "type": "link_count",
+      "link_type": "verified_by",
+      "operator": "gte",
+      "value": 1,
+      "message": "At least one test case must be linked"
+    }
+  ],
+  "actions": [
+    {
+      "type": "set_field",
+      "field": "approved_at",
+      "value": "$now"
+    },
+    {
+      "type": "set_field",
+      "field": "approved_by",
+      "value": "$current_user"
+    },
+    {
+      "type": "notify",
+      "recipients": ["$assignee", "$watchers"],
+      "template": "item_approved"
+    }
+  ],
+  "confirmation": {
+    "required": true,
+    "message": "Are you sure you want to approve this item?",
+    "require_comment": false
+  },
+  "audit": {
+    "log_transition": true,
+    "require_reason": false
+  },
+  "created_at": "2024-01-15T10:00:00Z",
+  "updated_at": "2024-01-20T14:30:00Z"
+}
+```
+
+### Transition Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique transition identifier |
+| `name` | string | Machine-readable transition name |
+| `display_name` | string | Human-readable display name |
+| `description` | string | Transition description |
+| `from_status` | string | Source status (or `*` for any) |
+| `to_status` | string | Target status |
+| `icon` | string | Icon identifier |
+| `color` | string | Color for UI display |
+| `guards` | array | Conditions that must be met |
+| `actions` | array | Actions executed on transition |
+| `confirmation` | object | Confirmation dialog settings |
+| `audit` | object | Audit logging settings |
+
+---
+
+## List Transitions
+
+### `GET /workflows/{id}/transitions`
+
+Retrieve all transitions for a workflow.
+
+```bash
+curl "https://api.tracertm.dev/v1/workflows/wf_standard/transitions" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "trans_submit_001",
+      "name": "submit",
+      "display_name": "Submit for Review",
+      "from_status": "draft",
+      "to_status": "in_review",
+      "guards": [
+        {
+          "type": "field_required",
+          "field": "title"
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "trans_approve_001",
+      "name": "approve",
+      "display_name": "Approve",
+      "from_status": "in_review",
+      "to_status": "approved",
+      "guards": [
+        {
+          "type": "permission",
+          "permission": "items:approve"
+        }
+      ],
+      "actions": [
+        {
+          "type": "set_field",
+          "field": "approved_at",
+          "value": "$now"
+        }
+      ]
+    },
+    {
+      "id": "trans_reject_001",
+      "name": "reject",
+      "display_name": "Reject",
+      "from_status": "in_review",
+      "to_status": "draft",
+      "guards": [
+        {
+          "type": "permission",
+          "permission": "items:review"
+        }
+      ],
+      "actions": [
+        {
+          "type": "notify",
+          "recipients": ["$author"],
+          "template": "item_rejected"
+        }
+      ]
+    }
+  ],
+  "workflow": {
+    "id": "wf_standard",
+    "name": "Standard Workflow"
+  }
+}
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `from_status` | string | Filter by source status |
+| `to_status` | string | Filter by target status |
+| `include` | string | Include related data: `guards`, `actions` |
+
+---
+
+## Get Transition
+
+### `GET /workflows/{id}/transitions/{transition_id}`
+
+Get detailed information about a specific transition.
+
+```bash
+curl "https://api.tracertm.dev/v1/workflows/wf_standard/transitions/trans_approve_001" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "id": "trans_approve_001",
+  "name": "approve",
+  "display_name": "Approve",
+  "description": "Approve the item after successful review",
+  "from_status": "in_review",
+  "to_status": "approved",
+  "icon": "check-circle",
+  "color": "green",
+  "guards": [
+    {
+      "type": "permission",
+      "permission": "items:approve",
+      "description": "User must have approval permission"
+    },
+    {
+      "type": "field_required",
+      "field": "description",
+      "message": "Description is required"
+    },
+    {
+      "type": "custom",
+      "function": "validate_approval_criteria",
+      "description": "Custom approval validation"
+    }
+  ],
+  "actions": [
+    {
+      "type": "set_field",
+      "field": "approved_at",
+      "value": "$now"
+    },
+    {
+      "type": "set_field",
+      "field": "approved_by",
+      "value": "$current_user"
+    },
+    {
+      "type": "notify",
+      "recipients": ["$assignee", "$watchers", "team_qa"],
+      "template": "item_approved"
+    },
+    {
+      "type": "webhook",
+      "url": "https://your-app.com/webhooks/approved",
+      "method": "POST"
+    }
+  ],
+  "confirmation": {
+    "required": true,
+    "message": "Approve this item? This action will notify stakeholders.",
+    "require_comment": false
+  },
+  "statistics": {
+    "total_executions": 1523,
+    "avg_time_in_source_status": "2.5 days",
+    "success_rate": 0.98
+  },
+  "created_at": "2024-01-15T10:00:00Z",
+  "updated_at": "2024-01-20T14:30:00Z"
+}
+```
+
+---
+
+## Create Transition
+
+### `POST /workflows/{id}/transitions`
+
+Create a new transition in a workflow.
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/workflows/wf_standard/transitions" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "expedite",
+    "display_name": "Expedite Approval",
+    "description": "Fast-track approval for urgent items",
+    "from_status": "draft",
+    "to_status": "approved",
+    "icon": "fast-forward",
+    "color": "orange",
+    "guards": [
+      {
+        "type": "permission",
+        "permission": "items:expedite"
+      },
+      {
+        "type": "field_value",
+        "field": "priority",
+        "operator": "in",
+        "values": ["critical", "high"]
+      }
+    ],
+    "actions": [
+      {
+        "type": "set_field",
+        "field": "expedited",
+        "value": true
+      },
+      {
+        "type": "set_field",
+        "field": "approved_at",
+        "value": "$now"
+      },
+      {
+        "type": "notify",
+        "recipients": ["team_leads"],
+        "template": "item_expedited"
+      }
+    ],
+    "confirmation": {
+      "required": true,
+      "message": "This will bypass normal review. Continue?",
+      "require_comment": true
+    }
+  }'
+```
+
+### Response
+
+```json
+{
+  "id": "trans_expedite_001",
+  "name": "expedite",
+  "display_name": "Expedite Approval",
+  "from_status": "draft",
+  "to_status": "approved",
+  "guards": [...],
+  "actions": [...],
+  "created_at": "2024-01-20T15:00:00Z"
+}
+```
+
+---
+
+## Execute Transition
+
+### `POST /items/{id}/transition`
+
+Execute a transition on an item.
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/items/item_req_001/transition" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transition": "approve",
+    "comment": "Reviewed and approved by security team",
+    "fields": {
+      "review_notes": "All security criteria met"
+    }
+  }'
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `transition` | string | Yes | Transition name or ID |
+| `comment` | string | Conditional | Comment (required if configured) |
+| `fields` | object | No | Additional field values to set |
+| `skip_notifications` | boolean | No | Skip notification actions |
+
+### Response
+
+```json
+{
+  "item": {
+    "id": "item_req_001",
+    "title": "User Authentication",
+    "status": "approved",
+    "previous_status": "in_review"
+  },
+  "transition": {
+    "id": "trans_approve_001",
+    "name": "approve",
+    "display_name": "Approve"
+  },
+  "executed_at": "2024-01-20T15:30:00Z",
+  "executed_by": {
+    "id": "user_abc123",
+    "email": "reviewer@example.com"
+  },
+  "comment": "Reviewed and approved by security team",
+  "actions_executed": [
+    {
+      "type": "set_field",
+      "field": "approved_at",
+      "status": "success"
+    },
+    {
+      "type": "notify",
+      "recipients_count": 3,
+      "status": "success"
+    }
+  ],
+  "audit_log_id": "audit_abc123xyz"
+}
+```
+
+---
+
+## Get Available Transitions
+
+### `GET /items/{id}/available-transitions`
+
+Get transitions available for an item based on its current state and the user's permissions.
+
+```bash
+curl "https://api.tracertm.dev/v1/items/item_req_001/available-transitions" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "item": {
+    "id": "item_req_001",
+    "title": "User Authentication",
+    "status": "in_review",
+    "type": "requirement"
+  },
+  "available_transitions": [
+    {
+      "id": "trans_approve_001",
+      "name": "approve",
+      "display_name": "Approve",
+      "to_status": "approved",
+      "icon": "check-circle",
+      "color": "green",
+      "available": true,
+      "confirmation_required": true
+    },
+    {
+      "id": "trans_reject_001",
+      "name": "reject",
+      "display_name": "Reject",
+      "to_status": "draft",
+      "icon": "x-circle",
+      "color": "red",
+      "available": true,
+      "confirmation_required": true
+    },
+    {
+      "id": "trans_escalate_001",
+      "name": "escalate",
+      "display_name": "Escalate to Manager",
+      "to_status": "pending_escalation",
+      "icon": "arrow-up",
+      "color": "orange",
+      "available": false,
+      "blocked_by": [
+        {
+          "guard": "permission",
+          "reason": "Missing permission: items:escalate"
+        }
+      ]
+    }
+  ],
+  "unavailable_transitions": [
+    {
+      "id": "trans_submit_001",
+      "name": "submit",
+      "display_name": "Submit for Review",
+      "reason": "Item is not in 'draft' status"
+    }
+  ]
+}
+```
+
+---
+
+## Transition Guards
+
+Guards are conditions that must be satisfied before a transition can execute.
+
+### Permission Guard
+
+Requires the user to have a specific permission.
+
+```json
+{
+  "type": "permission",
+  "permission": "items:approve",
+  "description": "User must have approval permission"
+}
+```
+
+### Role Guard
+
+Requires the user to have a specific role.
+
+```json
+{
+  "type": "role",
+  "roles": ["admin", "lead", "reviewer"],
+  "match": "any"
+}
+```
+
+### Field Required Guard
+
+Requires a field to have a non-empty value.
+
+```json
+{
+  "type": "field_required",
+  "field": "description",
+  "message": "Description must be filled in"
+}
+```
+
+### Field Value Guard
+
+Requires a field to match specific criteria.
+
+```json
+{
+  "type": "field_value",
+  "field": "priority",
+  "operator": "in",
+  "values": ["critical", "high"],
+  "message": "Only critical or high priority items can be expedited"
+}
+```
+
+### Operators
+
+| Operator | Description |
+|----------|-------------|
+| `eq` | Equals |
+| `ne` | Not equals |
+| `in` | Value in list |
+| `nin` | Value not in list |
+| `gt` | Greater than |
+| `gte` | Greater or equal |
+| `lt` | Less than |
+| `lte` | Less or equal |
+| `contains` | String contains |
+| `regex` | Regex match |
+
+### Link Count Guard
+
+Requires a minimum number of links of a specific type.
+
+```json
+{
+  "type": "link_count",
+  "link_type": "verified_by",
+  "operator": "gte",
+  "value": 1,
+  "message": "At least one test case must be linked"
+}
+```
+
+### Time-Based Guard
+
+Requires minimum time in current status.
+
+```json
+{
+  "type": "time_in_status",
+  "min_duration": "24h",
+  "message": "Item must be in review for at least 24 hours"
+}
+```
+
+### Approval Guard
+
+Requires approvals from specific users or groups.
+
+```json
+{
+  "type": "approvals",
+  "required_approvers": ["team_security", "team_qa"],
+  "min_approvals": 2,
+  "message": "Requires approval from security and QA teams"
+}
+```
+
+### Custom Guard
+
+Execute custom validation logic.
+
+```json
+{
+  "type": "custom",
+  "function": "validate_compliance_checklist",
+  "params": {
+    "checklist_id": "compliance_2024"
+  },
+  "message": "Compliance checklist must be complete"
+}
+```
+
+---
+
+## Transition Actions
+
+Actions are executed when a transition completes successfully.
+
+### Set Field Action
+
+Set a field value on the item.
+
+```json
+{
+  "type": "set_field",
+  "field": "approved_at",
+  "value": "$now"
+}
+```
+
+### Special Values
+
+| Value | Description |
+|-------|-------------|
+| `$now` | Current timestamp |
+| `$current_user` | User executing transition |
+| `$current_user.email` | Current user's email |
+| `$null` | Set to null |
+| `$previous.{field}` | Previous value of field |
+
+### Notify Action
+
+Send notifications to users or teams.
+
+```json
+{
+  "type": "notify",
+  "recipients": ["$assignee", "$watchers", "team_qa"],
+  "template": "item_approved",
+  "channels": ["email", "in_app"],
+  "data": {
+    "custom_message": "Your item has been approved"
+  }
+}
+```
+
+### Webhook Action
+
+Call an external webhook.
+
+```json
+{
+  "type": "webhook",
+  "url": "https://your-app.com/webhooks/transition",
+  "method": "POST",
+  "headers": {
+    "X-Custom-Header": "value"
+  },
+  "payload": {
+    "item_id": "$item.id",
+    "transition": "$transition.name",
+    "actor": "$current_user.email"
+  }
+}
+```
+
+### Create Item Action
+
+Create a related item.
+
+```json
+{
+  "type": "create_item",
+  "item_type": "task",
+  "fields": {
+    "title": "Implement: $item.title",
+    "description": "Implementation task for approved requirement",
+    "parent_id": "$item.id",
+    "assignee": "$item.assignee"
+  },
+  "link": {
+    "type": "implements"
+  }
+}
+```
+
+### Update Linked Items Action
+
+Update items linked to the current item.
+
+```json
+{
+  "type": "update_linked",
+  "link_type": "parent_of",
+  "updates": {
+    "status": "in_progress"
+  },
+  "filter": {
+    "status": "blocked"
+  }
+}
+```
+
+### Schedule Action
+
+Schedule a future transition.
+
+```json
+{
+  "type": "schedule_transition",
+  "transition": "auto_close",
+  "delay": "7d",
+  "condition": {
+    "status": "approved"
+  }
+}
+```
+
+---
+
+## SDK Examples
+
+### Python
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.workflows import Guard, Action, TransitionConfig
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# List transitions
+transitions = client.workflows.list_transitions(
+    workflow_id="wf_standard"
+)
+
+for trans in transitions.data:
+    print(f"{trans.name}: {trans.from_status} → {trans.to_status}")
+
+# Get available transitions for an item
+available = client.items.get_available_transitions(
+    item_id="item_req_001"
+)
+
+print(f"Available transitions for '{available.item.title}':")
+for trans in available.available_transitions:
+    status = "✓" if trans.available else "✗"
+    print(f"  {status} {trans.display_name}")
+    if not trans.available:
+        for block in trans.blocked_by:
+            print(f"      - {block.reason}")
+
+# Execute a transition
+result = client.items.transition(
+    item_id="item_req_001",
+    transition="approve",
+    comment="Reviewed and approved",
+    fields={
+        "review_notes": "All criteria met"
+    }
+)
+
+print(f"Transitioned to: {result.item.status}")
+print(f"Actions executed: {len(result.actions_executed)}")
+
+# Create a custom transition
+new_transition = client.workflows.create_transition(
+    workflow_id="wf_standard",
+    config=TransitionConfig(
+        name="expedite",
+        display_name="Expedite Approval",
+        from_status="draft",
+        to_status="approved",
+        guards=[
+            Guard.permission("items:expedite"),
+            Guard.field_value("priority", "in", ["critical", "high"])
+        ],
+        actions=[
+            Action.set_field("expedited", True),
+            Action.set_field("approved_at", "$now"),
+            Action.notify(
+                recipients=["team_leads"],
+                template="item_expedited"
+            )
+        ],
+        confirmation={
+            "required": True,
+            "message": "This will bypass normal review. Continue?",
+            "require_comment": True
+        }
+    )
+)
+
+# Bulk transition multiple items
+results = client.items.bulk_transition(
+    item_ids=["item_001", "item_002", "item_003"],
+    transition="approve",
+    comment="Bulk approval after sprint review"
+)
+
+print(f"Succeeded: {results.succeeded}")
+print(f"Failed: {results.failed}")
+for failure in results.failures:
+    print(f"  {failure.item_id}: {failure.reason}")
+```
+
+### TypeScript
+
+```typescript
+import { TraceRTMClient, Guard, Action, TransitionConfig } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// List transitions
+const transitions = await client.workflows.listTransitions({
+  workflowId: 'wf_standard'
+});
+
+transitions.data.forEach(trans => {
+  console.log(`${trans.name}: ${trans.fromStatus} → ${trans.toStatus}`);
+});
+
+// Get available transitions
+const available = await client.items.getAvailableTransitions({
+  itemId: 'item_req_001'
+});
+
+console.log(`Available transitions for '${available.item.title}':`);
+for (const trans of available.availableTransitions) {
+  const status = trans.available ? '✓' : '✗';
+  console.log(`  ${status} ${trans.displayName}`);
+  if (!trans.available && trans.blockedBy) {
+    trans.blockedBy.forEach(block => {
+      console.log(`      - ${block.reason}`);
+    });
+  }
+}
+
+// Execute transition
+const result = await client.items.transition({
+  itemId: 'item_req_001',
+  transition: 'approve',
+  comment: 'Reviewed and approved',
+  fields: {
+    reviewNotes: 'All criteria met'
+  }
+});
+
+console.log(`Transitioned to: ${result.item.status}`);
+
+// Create custom transition
+const newTransition = await client.workflows.createTransition({
+  workflowId: 'wf_standard',
+  config: {
+    name: 'expedite',
+    displayName: 'Expedite Approval',
+    fromStatus: 'draft',
+    toStatus: 'approved',
+    guards: [
+      Guard.permission('items:expedite'),
+      Guard.fieldValue('priority', 'in', ['critical', 'high'])
+    ],
+    actions: [
+      Action.setField('expedited', true),
+      Action.setField('approvedAt', '$now'),
+      Action.notify({
+        recipients: ['team_leads'],
+        template: 'item_expedited'
+      })
+    ],
+    confirmation: {
+      required: true,
+      message: 'This will bypass normal review. Continue?',
+      requireComment: true
+    }
+  }
+});
+
+// Bulk transition
+const bulkResults = await client.items.bulkTransition({
+  itemIds: ['item_001', 'item_002', 'item_003'],
+  transition: 'approve',
+  comment: 'Bulk approval after sprint review'
+});
+
+console.log(`Succeeded: ${bulkResults.succeeded}`);
+console.log(`Failed: ${bulkResults.failed}`);
+```
+
+### Go
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient("rtm_live_sk_...")
+    ctx := context.Background()
+
+    // List transitions
+    transitions, err := client.Workflows.ListTransitions(ctx, &tracertm.ListTransitionsRequest{
+        WorkflowID: "wf_standard",
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    for _, trans := range transitions.Data {
+        fmt.Printf("%s: %s → %s\n", trans.Name, trans.FromStatus, trans.ToStatus)
+    }
+
+    // Get available transitions
+    available, err := client.Items.GetAvailableTransitions(ctx, "item_req_001")
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Printf("Available transitions for '%s':\n", available.Item.Title)
+    for _, trans := range available.AvailableTransitions {
+        status := "✓"
+        if !trans.Available {
+            status = "✗"
+        }
+        fmt.Printf("  %s %s\n", status, trans.DisplayName)
+    }
+
+    // Execute transition
+    result, err := client.Items.Transition(ctx, &tracertm.TransitionRequest{
+        ItemID:     "item_req_001",
+        Transition: "approve",
+        Comment:    "Reviewed and approved",
+        Fields: map[string]interface{}{
+            "review_notes": "All criteria met",
+        },
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Printf("Transitioned to: %s\n", result.Item.Status)
+
+    // Create custom transition
+    newTransition, err := client.Workflows.CreateTransition(ctx, &tracertm.CreateTransitionRequest{
+        WorkflowID: "wf_standard",
+        Config: tracertm.TransitionConfig{
+            Name:        "expedite",
+            DisplayName: "Expedite Approval",
+            FromStatus:  "draft",
+            ToStatus:    "approved",
+            Guards: []tracertm.Guard{
+                tracertm.PermissionGuard("items:expedite"),
+                tracertm.FieldValueGuard("priority", "in", []string{"critical", "high"}),
+            },
+            Actions: []tracertm.Action{
+                tracertm.SetFieldAction("expedited", true),
+                tracertm.SetFieldAction("approved_at", "$now"),
+                tracertm.NotifyAction([]string{"team_leads"}, "item_expedited"),
+            },
+            Confirmation: &tracertm.Confirmation{
+                Required:       true,
+                Message:        "This will bypass normal review. Continue?",
+                RequireComment: true,
+            },
+        },
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Printf("Created transition: %s\n", newTransition.ID)
+}
+```
+
+---
+
+## Error Responses
+
+### Transition Not Available
+
+```json
+{
+  "error": {
+    "code": "TRANSITION_NOT_AVAILABLE",
+    "message": "Transition 'approve' is not available for this item",
+    "details": {
+      "item_id": "item_req_001",
+      "current_status": "draft",
+      "transition": "approve",
+      "required_status": "in_review",
+      "available_transitions": ["submit"]
+    }
+  }
+}
+```
+
+### Guard Failed
+
+```json
+{
+  "error": {
+    "code": "TRANSITION_GUARD_FAILED",
+    "message": "Transition guard conditions not met",
+    "details": {
+      "transition": "approve",
+      "failed_guards": [
+        {
+          "type": "field_required",
+          "field": "description",
+          "message": "Description is required before approval"
+        },
+        {
+          "type": "link_count",
+          "link_type": "verified_by",
+          "required": 1,
+          "actual": 0,
+          "message": "At least one test case must be linked"
+        }
+      ]
+    }
+  }
+}
+```
+
+### Permission Denied
+
+```json
+{
+  "error": {
+    "code": "TRANSITION_PERMISSION_DENIED",
+    "message": "You do not have permission to execute this transition",
+    "details": {
+      "transition": "approve",
+      "required_permission": "items:approve",
+      "your_permissions": ["items:read", "items:write"]
+    }
+  }
+}
+```
+
+---
+
+## Best Practices
+
+### 1. Design Clear Workflows
+
+- Keep the number of statuses manageable (5-10)
+- Ensure every status has at least one outgoing transition
+- Avoid dead-end states unless intentional
+
+### 2. Use Guards Appropriately
+
+- Require fields that are essential for the next stage
+- Don't over-guard - too many restrictions slow teams down
+- Provide clear messages explaining why guards failed
+
+### 3. Leverage Actions for Automation
+
+- Automatically set timestamps and user fields
+- Notify relevant stakeholders
+- Create follow-up tasks automatically
+
+### 4. Test Transitions Thoroughly
+
+- Test all guard combinations
+- Verify actions execute correctly
+- Check notifications are sent to correct recipients
+
+---
+
+## Related Documentation
+
+- [Workflows API](/docs/api-reference/rest-api/workflows) - Workflow management
+- [Items API](/docs/api-reference/rest-api/items) - Item operations
+- [Webhooks](/docs/api-reference/rest-api/webhooks) - Webhook integration

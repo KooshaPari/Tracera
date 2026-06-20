@@ -1,47 +1,106 @@
 {
-  "$schema": "https://raw.githubusercontent.com/microsoft/pyright/main/packages/vscode-pyright/schemas/pyrightconfig.schema.json",
-  "include": [
-    "src",
+  "include": ["src/tracertm"],
+  "typeCheckingMode": "strict",
+  "reportMissingParameterType": "error",
+  "exclude": [
+    "**/__pycache__",
+    "**/.mypy_cache",
+    "**/.pytest_cache",
+    "**/.ruff_cache",
+    ".venv",
+    "venv",
+    "node_modules",
+    "frontend",
+    "backend",
+    "apps",
+    "docs",
+    "alembic",
+    "artifacts",
+    "data",
+    "deploy",
+    "load-tests",
+    "openapi",
+    "samples",
+    "scripts",
+    "sql",
+    "temp",
+    "test-results",
     "tests"
   ],
-  "exclude": [
-    "**/node_modules",
-    "**/__pycache__",
-    "**/.venv",
-    "**/venv",
-    "**/site-packages",
-    "**/dist",
-    "**/build",
-    "**/.pytest_cache",
-    "**/.mypy_cache",
-    "**/.ruff_cache",
-    "**/htmlcov",
-    "**/.tox",
-    "**/.git",
-    "**/.idea",
-    "**/.vscode",
-    "**/.worktrees",
-    "**/.next",
-    "**/out"
-  ],
-  "typeCheckingMode": "strict",
-  "reportMissingTypeStubs": false,
-  "reportMissingImports": "error",
-  "reportMissingModuleSource": false,
-  "reportUnusedImport": true,
-  "reportUnusedClass": true,
-  "reportUnusedFunction": true,
-  "reportUnusedVariable": true,
-  "reportDuplicateImport": true,
-  "reportWildcardImportFromLibrary": false,
-  "reportOptionalMemberAccess": false,
-  "reportOptionalSubscript": false,
-  "reportPrivateUsage": false,
-  "reportDeprecated": true,
-  "reportUnnecessaryTypeIgnoreComment": true,
-  "pythonVersion": "3.13",
-  "pythonPlatform": "All",
-  "extraPaths": [
-    "src"
+  "executionEnvironments": [
+    {
+      "root": "src/tracertm/api",
+      "reportMissingParameterType": "warning",
+      "reportUnknownParameterType": "warning",
+      "reportUnknownVariableType": "warning",
+      "reportUnknownMemberType": "warning",
+      "reportUnknownArgumentType": "warning",
+      "reportAttributeAccessIssue": "warning",
+      "reportGeneralTypeIssues": "warning"
+    },
+    {
+      "root": "src/tracertm/services",
+      "reportMissingParameterType": "warning",
+      "reportUnknownParameterType": "warning",
+      "reportUnknownVariableType": "warning",
+      "reportUnknownMemberType": "warning",
+      "reportUnknownArgumentType": "warning",
+      "reportAttributeAccessIssue": "warning",
+      "reportGeneralTypeIssues": "warning"
+    },
+    {
+      "root": "src/tracertm/mcp",
+      "reportMissingParameterType": "warning",
+      "reportUnknownParameterType": "warning",
+      "reportUnknownVariableType": "warning",
+      "reportUnknownMemberType": "warning",
+      "reportUnknownArgumentType": "warning",
+      "reportAttributeAccessIssue": "warning",
+      "reportGeneralTypeIssues": "warning"
+    },
+    {
+      "root": "src/tracertm/proto",
+      "reportMissingParameterType": "warning",
+      "reportUnknownParameterType": "warning",
+      "reportUnknownVariableType": "warning",
+      "reportUnknownMemberType": "warning"
+    },
+    {
+      "root": "src/tracertm/tui",
+      "reportUnknownParameterType": "warning",
+      "reportUnknownVariableType": "warning",
+      "reportUnknownMemberType": "warning",
+      "reportUnknownArgumentType": "warning"
+    },
+    {
+      "root": "src/tracertm/cli",
+      "reportUnknownParameterType": "warning",
+      "reportUnknownVariableType": "warning",
+      "reportUnknownMemberType": "warning"
+    },
+    {
+      "root": "src/tracertm/storage",
+      "reportUnknownParameterType": "warning",
+      "reportUnknownVariableType": "warning",
+      "reportUnknownMemberType": "warning"
+    },
+    {
+      "root": "src/tracertm/repositories",
+      "reportUnknownParameterType": "warning",
+      "reportUnknownVariableType": "warning",
+      "reportUnknownMemberType": "warning"
+    },
+    {
+      "root": "src/tracertm/grpc",
+      "reportUnknownParameterType": "warning",
+      "reportUnknownVariableType": "warning",
+      "reportUnknownMemberType": "warning"
+    },
+    {
+      "root": "src/tracertm/agent",
+      "reportUnknownParameterType": "warning",
+      "reportUnknownVariableType": "warning",
+      "reportUnknownMemberType": "warning"
+    }
   ]
 }

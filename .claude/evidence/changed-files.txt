@@ -1,0 +1,15 @@
+.claude/verification/qa-attestation.json
+.claude/verification/qa-attestation.sig
+VERIFICATION_POLICY.md
+.claude/verification/qa-attestation.json
+.claude/verification/qa-attestation.sig
+.claude/verification/qa-attestation.bundle.json
+docs/guides/SUPPLY_CHAIN_SETUP.md
+docs/reference/QUALITY_GATE_QUICK_REF.md
+.claude/verification/qa-attestation.json
+docs/guides/CRITICAL_TIER_TEST_REQUIREMENTS.md
+docs/reference/QUALITY_GATE_QUICK_REF.md
+docs/guides/quick-start/CRITICAL_TIER_BYPASS.md
+.claude/quality.json
+.claude/BYPASS_INSTRUCTIONS.md
+.claude/verification/qa-attestation.json

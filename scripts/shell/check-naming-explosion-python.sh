@@ -1,13 +1,16 @@
 #!/bin/bash
-# Naming explosion guard for Python: detect proliferating similar names
-set -euo pipefail
 
-mapfile -t py_files < <(git ls-files -- '*.py' 2>/dev/null || true)
+# Python Naming Explosion Detection Script
+# Prevents AI from creating versioned/prefixed module names.
+# Catches all casing styles (snake, camel, Pascal, kebab, UPPER) and positions (prefix, suffix, middle).
 
-if (( ${#py_files[@]} == 0 )); then
-  echo "No Python files to check"
-  exit 0
-fi
+set -e
 
-echo "Python naming explosion check: passed (${#py_files[@]} files checked)"
-exit 0
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+echo "🔍 Checking Python files for naming explosion patterns..."
+
+python3 scripts/quality/check_naming_explosion.py --lang python --root .

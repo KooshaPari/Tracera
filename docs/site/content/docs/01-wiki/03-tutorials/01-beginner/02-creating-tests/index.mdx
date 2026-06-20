@@ -1,0 +1,696 @@
+---
+title: "Creating Test Cases"
+description: "Learn how to create, organize, and manage test cases in TracerTM"
+---
+
+# Creating Test Cases
+
+Learn how to create comprehensive test cases in TracerTM and establish traceability between your requirements and testing artifacts.
+
+## Overview
+
+Test cases are a critical part of requirements traceability. In TracerTM, test cases are specialized items in the TEST view that define how you verify your requirements. This tutorial builds on the "First Requirement" tutorial and shows you how to create test cases that validate the user authentication requirement we created earlier.
+
+## What Are Test Cases in TracerTM?
+
+In TracerTM, test cases are items with the `TEST` view designation. They represent:
+
+- **Test Suites**: Logical groupings of related test cases
+- **Test Cases**: Individual test scenarios with steps and expected results
+- **Test Steps**: Granular actions within a test case
+
+Test cases differ from test executions:
+- **Test Case**: The definition of what and how to test (static)
+- **Test Execution**: A specific run of a test case at a point in time (dynamic)
+
+TracerTM focuses on test case management and traceability, not test execution results. You can link test cases to external test runners or CI/CD tools.
+
+## Prerequisites
+
+Before you begin:
+- Complete the "First Requirement" tutorial
+- Have a TracerTM project initialized with `rtm init`
+- Understand basic item creation concepts
+
+## Understanding Test Case Structure
+
+### Test Item Types
+
+TracerTM supports three test item types:
+
+```yaml
+TEST View Types:
+  - test_suite: Group of related test cases
+  - test_case: Individual test scenario
+  - test_step: Granular step within a test case
+```
+
+### Test Case Metadata
+
+Test cases should include:
+
+1. **Title**: Clear, descriptive name
+2. **Description**: Purpose and scope
+3. **Test Steps**: What actions to perform
+4. **Expected Results**: What should happen
+5. **Preconditions**: Required setup
+6. **Priority**: Criticality (low, medium, high, critical)
+7. **Status**: Current state (draft, ready, deprecated)
+
+## Creating Your First Test Suite
+
+Let's create a test suite for our user authentication feature from the "First Requirement" tutorial.
+
+### Via CLI
+
+```bash
+# Create a test suite for authentication tests
+rtm item create \
+  --view TEST \
+  --type test_suite \
+  --title "User Authentication Test Suite" \
+  --description "Comprehensive test coverage for user login and authentication" \
+  --priority high \
+  --status ready
+```
+
+The command will output:
+```
+✓ Item created: TS-1
+  ID: 550e8400-e29b-41d4-a716-446655440001
+  Title: User Authentication Test Suite
+  View: TEST
+  Type: test_suite
+```
+
+### Via TUI (Interactive)
+
+Launch the TracerTM TUI:
+
+```bash
+rtm tui
+```
+
+**Steps in TUI:**
+
+1. Press `v` to switch to TEST view
+2. Press `n` to create a new item
+3. Fill in the form:
+   - **Type**: `test_suite`
+   - **Title**: `User Authentication Test Suite`
+   - **Description**: `Comprehensive test coverage for user login and authentication`
+   - **Priority**: `high`
+   - **Status**: `ready`
+4. Press `Ctrl+S` to save
+
+The TUI provides real-time validation and auto-completion for fields.
+
+## Creating Test Cases
+
+Now let's create individual test cases within our suite.
+
+### Test Case 1: Successful Login
+
+```bash
+rtm item create \
+  --view TEST \
+  --type test_case \
+  --title "TC-001: Successful login with valid credentials" \
+  --description "Verify that a user can successfully log in with valid username and password" \
+  --priority critical \
+  --status ready \
+  --metadata '{
+    "preconditions": "User account exists with username: testuser@example.com",
+    "test_steps": [
+      "Navigate to login page",
+      "Enter valid username: testuser@example.com",
+      "Enter valid password: SecurePass123!",
+      "Click Login button"
+    ],
+    "expected_results": [
+      "User is redirected to dashboard",
+      "Welcome message displays user name",
+      "Session token is created",
+      "Login timestamp is recorded"
+    ],
+    "test_data": {
+      "username": "testuser@example.com",
+      "password": "SecurePass123!"
+    }
+  }'
+```
+
+### Test Case 2: Invalid Password
+
+```bash
+rtm item create \
+  --view TEST \
+  --type test_case \
+  --title "TC-002: Login fails with invalid password" \
+  --description "Verify that login is denied when user provides incorrect password" \
+  --priority high \
+  --status ready \
+  --metadata '{
+    "preconditions": "User account exists with username: testuser@example.com",
+    "test_steps": [
+      "Navigate to login page",
+      "Enter valid username: testuser@example.com",
+      "Enter invalid password: WrongPassword",
+      "Click Login button"
+    ],
+    "expected_results": [
+      "Error message: Invalid username or password",
+      "User remains on login page",
+      "No session token is created",
+      "Failed login attempt is logged"
+    ],
+    "test_data": {
+      "username": "testuser@example.com",
+      "password": "WrongPassword"
+    }
+  }'
+```
+
+### Test Case 3: Account Lockout
+
+```bash
+rtm item create \
+  --view TEST \
+  --type test_case \
+  --title "TC-003: Account locks after 5 failed login attempts" \
+  --description "Verify account lockout mechanism after repeated failed logins" \
+  --priority critical \
+  --status ready \
+  --metadata '{
+    "preconditions": "User account exists and is not locked",
+    "test_steps": [
+      "Navigate to login page",
+      "Enter valid username with invalid password",
+      "Click Login button",
+      "Repeat steps 2-3 five times"
+    ],
+    "expected_results": [
+      "After 5th attempt, account is locked",
+      "Error message: Account has been locked due to too many failed attempts",
+      "User cannot log in even with correct password",
+      "Account lockout event is logged",
+      "Admin notification is sent"
+    ],
+    "test_data": {
+      "username": "testuser@example.com",
+      "invalid_password": "WrongPassword",
+      "attempts": 5
+    }
+  }'
+```
+
+## Test Case Metadata Deep Dive
+
+### Structured Metadata Format
+
+TracerTM stores test metadata as JSON. Here's a comprehensive example:
+
+```json
+{
+  "preconditions": "User account exists and email is verified",
+  "test_steps": [
+    "Step 1: Navigate to /login",
+    "Step 2: Enter username",
+    "Step 3: Enter password",
+    "Step 4: Click submit"
+  ],
+  "expected_results": [
+    "HTTP 200 response",
+    "Session cookie is set",
+    "Redirect to /dashboard"
+  ],
+  "test_data": {
+    "valid_user": "test@example.com",
+    "valid_pass": "SecurePass123!"
+  },
+  "estimated_duration": "2 minutes",
+  "automation_status": "automated",
+  "automation_id": "tests/auth/login_success.spec.ts",
+  "tags": ["authentication", "smoke", "critical-path"]
+}
+```
+
+### Query Test Cases by Metadata
+
+```bash
+# Find all automated tests
+rtm query items \
+  --view TEST \
+  --filter 'metadata.automation_status = "automated"'
+
+# Find critical priority tests
+rtm query items \
+  --view TEST \
+  --filter 'priority = "critical"'
+
+# Find tests tagged with "smoke"
+rtm query items \
+  --view TEST \
+  --filter 'metadata.tags CONTAINS "smoke"'
+```
+
+## Organizing Test Suites
+
+### Creating a Hierarchy
+
+Use parent-child relationships to organize test cases:
+
+```bash
+# Get the test suite ID
+SUITE_ID=$(rtm query items --view TEST --filter 'title CONTAINS "Authentication Test Suite"' --format json | jq -r '.[0].id')
+
+# Create test case with parent suite
+rtm item create \
+  --view TEST \
+  --type test_case \
+  --title "TC-004: Password reset flow" \
+  --description "Verify complete password reset workflow" \
+  --parent-id "$SUITE_ID" \
+  --priority medium \
+  --status ready
+```
+
+### View Test Hierarchy
+
+```bash
+# List all tests in the suite
+rtm query items \
+  --view TEST \
+  --filter "parent_id = '$SUITE_ID'" \
+  --format table
+
+# View tree structure
+rtm item tree "$SUITE_ID"
+```
+
+## Test Status Management
+
+TracerTM uses status to track test case lifecycle:
+
+### Available Statuses
+
+```yaml
+Test Statuses:
+  - draft: Test case is being written
+  - ready: Test case is complete and ready to execute
+  - review: Test case needs review
+  - approved: Test case has been reviewed and approved
+  - deprecated: Test case is no longer relevant
+  - blocked: Test case cannot be executed due to blockers
+```
+
+### Update Test Status
+
+```bash
+# Mark test as ready
+rtm item update TC-1 --status ready
+
+# Mark test as deprecated with reason
+rtm item update TC-5 --status deprecated \
+  --metadata '{"deprecation_reason": "Feature removed in v2.0"}'
+
+# Mark test as blocked
+rtm item update TC-3 --status blocked \
+  --metadata '{"blocker": "Bug-123: Login API returns 500"}'
+```
+
+## Bulk Test Case Creation
+
+For larger test suites, create tests from YAML or JSON files.
+
+### Create Test Suite Definition File
+
+**tests/auth-tests.yaml**:
+
+```yaml
+test_suite:
+  title: "User Authentication Test Suite"
+  description: "Complete authentication test coverage"
+  priority: high
+  status: ready
+
+  test_cases:
+    - title: "TC-001: Successful login"
+      description: "Valid credentials login"
+      priority: critical
+      status: ready
+      metadata:
+        preconditions: "User account exists"
+        test_steps:
+          - "Navigate to /login"
+          - "Enter valid credentials"
+          - "Submit form"
+        expected_results:
+          - "Redirect to dashboard"
+          - "Session created"
+        tags: ["smoke", "authentication"]
+
+    - title: "TC-002: Invalid password"
+      description: "Login with wrong password"
+      priority: high
+      status: ready
+      metadata:
+        preconditions: "User account exists"
+        test_steps:
+          - "Navigate to /login"
+          - "Enter valid username"
+          - "Enter invalid password"
+          - "Submit form"
+        expected_results:
+          - "Error message displayed"
+          - "No session created"
+        tags: ["negative", "authentication"]
+
+    - title: "TC-003: SQL injection attempt"
+      description: "Verify protection against SQL injection"
+      priority: critical
+      status: ready
+      metadata:
+        preconditions: "Application is running"
+        test_steps:
+          - "Navigate to /login"
+          - "Enter SQL injection payload in username"
+          - "Submit form"
+        expected_results:
+          - "Input is sanitized"
+          - "Login fails safely"
+          - "Security event is logged"
+        test_data:
+          payload: "admin' OR '1'='1"
+        tags: ["security", "authentication"]
+```
+
+### Import Bulk Tests
+
+```bash
+# Import from YAML
+rtm import yaml tests/auth-tests.yaml --project my-project
+
+# Import from JSON
+rtm import json tests/api-tests.json --project my-project
+
+# Validate before import
+rtm import yaml tests/auth-tests.yaml --validate-only
+```
+
+## Importing Tests from External Tools
+
+TracerTM supports importing test cases from popular testing tools.
+
+### From Jira/Xray
+
+```bash
+# Export from Jira as JSON
+# Then import to TracerTM
+rtm import json jira-export.json \
+  --mapper jira \
+  --mapping-config jira-mapping.yaml
+```
+
+**jira-mapping.yaml**:
+```yaml
+field_mapping:
+  summary: title
+  description: description
+  priority: priority
+  status: status
+  customfield_10001: metadata.test_steps
+  customfield_10002: metadata.expected_results
+```
+
+### From TestRail
+
+```bash
+# Use TestRail API to export, then import
+rtm import json testrail-export.json \
+  --mapper testrail
+```
+
+### From CSV
+
+```bash
+# Simple CSV import
+rtm import csv test-cases.csv \
+  --view TEST \
+  --type test_case \
+  --column-mapping "title:Test Case,description:Description,priority:Priority"
+```
+
+## Linking Tests to Requirements
+
+The power of TracerTM is traceability. Link test cases to requirements:
+
+```bash
+# Get requirement ID (from "First Requirement" tutorial)
+REQ_ID=$(rtm query items --view FEATURE --filter 'title CONTAINS "User Authentication"' --format json | jq -r '.[0].id')
+
+# Get test case ID
+TEST_ID=$(rtm query items --view TEST --filter 'title CONTAINS "TC-001"' --format json | jq -r '.[0].id')
+
+# Create traceability link
+rtm link create \
+  --source "$REQ_ID" \
+  --target "$TEST_ID" \
+  --type "verifies" \
+  --description "This test case verifies the authentication requirement"
+
+# View coverage
+rtm query coverage --item "$REQ_ID"
+```
+
+Expected output:
+```
+Requirement: FR-001 User Authentication
+  Verified by:
+    - TC-001: Successful login with valid credentials
+    - TC-002: Login fails with invalid password
+    - TC-003: Account locks after 5 failed attempts
+  Coverage: 100% (3/3 test cases)
+```
+
+## Best Practices for Test Documentation
+
+### 1. Use Clear, Descriptive Titles
+
+**Good**:
+```
+TC-001: Successful login with valid email and password
+TC-002: Login fails when password is incorrect
+TC-003: Account locks after 5 consecutive failed login attempts
+```
+
+**Bad**:
+```
+Test 1
+Login test
+Check auth
+```
+
+### 2. Include Comprehensive Metadata
+
+Always include:
+- Preconditions (what must be true before test)
+- Test steps (exact actions to perform)
+- Expected results (what should happen)
+- Test data (input values to use)
+
+### 3. Tag Tests for Organization
+
+```json
+{
+  "tags": [
+    "smoke",           // Runs in smoke test suite
+    "regression",      // Runs in regression suite
+    "authentication",  // Feature area
+    "critical-path",   // Business critical
+    "api"             // Test type
+  ]
+}
+```
+
+Query by tags:
+```bash
+# Run all smoke tests
+rtm query items --view TEST --filter 'metadata.tags CONTAINS "smoke"'
+
+# Find all critical path tests
+rtm query items --view TEST --filter 'metadata.tags CONTAINS "critical-path"'
+```
+
+### 4. Link Tests to Automation
+
+```json
+{
+  "automation_status": "automated",
+  "automation_framework": "playwright",
+  "automation_file": "tests/e2e/auth/login.spec.ts",
+  "automation_id": "auth-login-success",
+  "last_automated_run": "2025-01-15T10:30:00Z"
+}
+```
+
+### 5. Maintain Test Coverage Matrix
+
+Create links between requirements and tests:
+
+```bash
+# Create a coverage report
+rtm report coverage \
+  --source-view FEATURE \
+  --target-view TEST \
+  --link-type verifies \
+  --format html \
+  --output coverage-report.html
+```
+
+### 6. Version Your Test Cases
+
+When requirements change, update tests:
+
+```bash
+# Update test case for new requirement version
+rtm item update TC-001 \
+  --metadata '{
+    "version": "2.0",
+    "changelog": "Updated for new OAuth2 implementation",
+    "last_reviewed": "2025-01-15"
+  }'
+```
+
+### 7. Document Test Dependencies
+
+```json
+{
+  "dependencies": {
+    "services": ["auth-api", "user-database"],
+    "test_data": "fixtures/users.json",
+    "environment": "staging",
+    "requires": ["TC-000: User registration"]
+  }
+}
+```
+
+## Advanced: Test Case Templates
+
+Create reusable test case templates:
+
+**templates/api-test-template.yaml**:
+
+```yaml
+view: TEST
+type: test_case
+priority: medium
+status: draft
+metadata:
+  template: "api-test-v1"
+  preconditions: ""
+  test_steps:
+    - "Send API request"
+    - "Verify response status"
+    - "Verify response body"
+    - "Verify response headers"
+  expected_results:
+    - "HTTP status code matches expected"
+    - "Response body schema is valid"
+    - "Response time < 500ms"
+  test_data:
+    endpoint: ""
+    method: ""
+    headers: {}
+    body: {}
+    expected_status: 200
+  tags: ["api"]
+```
+
+Use template:
+```bash
+# Create test from template
+rtm item create-from-template \
+  templates/api-test-template.yaml \
+  --title "TC-101: GET /api/users endpoint" \
+  --set "metadata.test_data.endpoint=/api/users" \
+  --set "metadata.test_data.method=GET"
+```
+
+## Practical Exercise
+
+Create a complete test suite for the authentication feature:
+
+```bash
+# 1. Create test suite
+rtm item create --view TEST --type test_suite \
+  --title "Authentication Test Suite" \
+  --description "Complete test coverage for user authentication" \
+  --priority high --status ready
+
+# 2. Create 5 test cases
+rtm item create --view TEST --type test_case --title "TC-001: Valid login" --priority critical
+rtm item create --view TEST --type test_case --title "TC-002: Invalid password" --priority high
+rtm item create --view TEST --type test_case --title "TC-003: Account lockout" --priority critical
+rtm item create --view TEST --type test_case --title "TC-004: Password reset" --priority medium
+rtm item create --view TEST --type test_case --title "TC-005: Session timeout" --priority medium
+
+# 3. Link all tests to the requirement
+rtm link create-batch \
+  --source "FR-001" \
+  --targets "TC-001,TC-002,TC-003,TC-004,TC-005" \
+  --type verifies
+
+# 4. Generate coverage report
+rtm report coverage --requirement "FR-001"
+```
+
+## Summary
+
+You've learned:
+
+1. What test cases are in TracerTM (TEST view items)
+2. The difference between test cases and test executions
+3. How to create test cases via CLI and TUI
+4. How to structure test case metadata (steps, expected results, test data)
+5. How to organize test suites with parent-child relationships
+6. How to manage test status lifecycle
+7. How to bulk create test cases from YAML/JSON
+8. How to import tests from external tools
+9. Best practices for test documentation and traceability
+
+## Next Steps
+
+- **Tutorial**: Link test cases to code (establishing end-to-end traceability)
+- **Tutorial**: Generate traceability matrix reports
+- **Guide**: Test automation integration patterns
+- **Reference**: Complete TEST view metadata schema
+
+## Quick Reference
+
+```bash
+# Create test suite
+rtm item create --view TEST --type test_suite --title "My Test Suite"
+
+# Create test case
+rtm item create --view TEST --type test_case --title "TC-001: Test scenario"
+
+# Link test to requirement
+rtm link create --source REQ-1 --target TC-1 --type verifies
+
+# Query tests by priority
+rtm query items --view TEST --filter 'priority = "critical"'
+
+# Import tests from YAML
+rtm import yaml tests.yaml
+
+# Generate coverage report
+rtm report coverage --requirement REQ-1
+```
+
+## Resources
+
+- [Item Management Reference](/docs/reference/items)
+- [Link Types Reference](/docs/reference/links)
+- [Import/Export Guide](/docs/guides/import-export)
+- [Test Automation Integration](/docs/guides/test-automation)

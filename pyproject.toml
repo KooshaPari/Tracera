@@ -11,10 +11,10 @@ description = "Agent-native, multi-view requirements traceability and project ma
 readme = "README.md"
 requires-python = ">=3.13"
 authors = [
-    { name = "Koosha Pari", email = "koosha@kooshapari.com" },
+    { name = "BMad", email = "bmad@example.com" },
 ]
-license = "MIT"
-license-files = ["LICENSE"]
+license = "MIT OR Apache-2.0"
+license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
 keywords = [
     "requirements",
     "traceability",
@@ -26,7 +26,7 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Quality Assurance",
     "Environment :: Console",
     "Intended Audience :: System Administrators",
@@ -57,7 +57,7 @@ dependencies = [
     "aiohttp>=3.13.3",
     "tenacity>=9.1.2",
     "grpcio>=1.70.0",
-    "fastapi>=0.136.0",
+    "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",
     "sse-starlette>=3.0.0",
     "redis>=5.2.0",
@@ -85,11 +85,6 @@ dependencies = [
     "respx>=0.22.0",
 ]
 
-[project.urls]
-Repository = "https://github.com/KooshaPari/Tracera"
-Documentation = "https://github.com/KooshaPari/Tracera/blob/main/README.md"
-Changelog = "https://github.com/KooshaPari/Tracera/blob/main/CHANGELOG.md"
-
 [project.optional-dependencies]
 dev = [
     "pytest>=9.0.2",
@@ -114,7 +109,6 @@ dev = [
     "pip-audit>=2.7.4",
     "vulture>=2.14",
     "radon>=6.0.1",
-    "pycln>=2.6.0",
 ]
 tui = [
     "textual>=0.47.0",
@@ -125,7 +119,6 @@ lint = [
     "bandit[toml]>=1.7.10",
     "pip-audit>=2.7.4",
     "import-linter>=2.4.1",
-    "pycln>=2.6.0",
 ]
 test = [
     "pytest>=9.0.2",
@@ -137,7 +130,6 @@ test = [
     "hypothesis>=6.151.4",
     "faker>=40.1.2",
     "factory-boy>=3.3.3",
-    "testcontainers[neo4j]>=4.10.0",
 ]
 phase2 = [
     "poethepoet>=0.40.0",
@@ -240,8 +232,10 @@ pythonpath = [
 ]
 python_files = [
     "test_*.py",
+    "*_test.py",
 ]
 python_classes = [
+    "Test*",
 ]
 python_functions = [
     "test_*",
@@ -263,20 +257,15 @@ markers = [
     "agent: Agent coordination tests (concurrent operations)",
     "asyncio: Async tests (mark for async tests)",
     "performance: Performance and load tests",
-    "determinism: Tests that verify repeatable model inference outputs",
-    "parity: Tests that compare model inference outputs with reference implementations",
     "property: Property-based tests using Hypothesis",
     "benchmark: Benchmark tests for performance measurement",
     "smoke: Minimal critical-path checks",
     "chaos: Chaos/resilience tests (connection failures, resource exhaustion)",
-    "live_neo4j: Tests that require a live Neo4j instance (NEO4J_URI env var)",
 ]
 filterwarnings = [
     "error",
-    "ignore::pytest_benchmark.logger.PytestBenchmarkWarning",
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
-    "ignore::pytest.PytestConfigWarning",
     "ignore::pytest.PytestUnraisableExceptionWarning",
     "ignore::pytest.PytestAssertRewriteWarning",
     "ignore::RuntimeWarning",
@@ -1792,7 +1781,4 @@ dev = [
     "vulture>=2.14",
     "radon>=6.0.1",
     "interrogate>=1.7.0",
-    "pycln>=2.6.0",
-    "tach>=0.33.2",
-    "bandit[toml]>=1.7.10",
 ]

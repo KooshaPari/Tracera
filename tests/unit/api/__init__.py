@@ -1,1 +1,1 @@
-"""API unit tests."""
+"""API module tests."""

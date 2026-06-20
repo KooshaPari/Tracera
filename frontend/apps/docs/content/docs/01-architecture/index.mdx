@@ -1,0 +1,78 @@
+---
+title: Architecture
+description: System architecture and design decisions
+---
+
+# TraceRTM Architecture
+
+TraceRTM is built with a modern, scalable architecture designed for enterprise requirements management.
+
+## System Overview
+
+TraceRTM consists of several key components:
+
+- **Backend API**: FastAPI-based REST and GraphQL APIs
+- **Frontend Web**: React application with TanStack Router and Query
+- **Database**: PostgreSQL with SQLAlchemy ORM
+- **Real-time**: NATS and WebSocket for live updates
+- **CLI**: Command-line interface with Typer
+- **MCP**: Model Context Protocol for AI integration
+
+## Architecture Principles
+
+### 1. Clean Architecture
+
+We follow clean architecture principles with clear separation of concerns:
+
+- **Domain Layer**: Core business logic and entities
+- **Application Layer**: Use cases and services
+- **Infrastructure Layer**: Database, external services, APIs
+- **Presentation Layer**: Web UI, CLI, MCP tools
+
+### 2. API-First Design
+
+All functionality is exposed through well-defined APIs:
+
+- **REST API**: For standard CRUD operations
+- **GraphQL API**: For flexible querying and subscriptions
+- **WebSocket**: For real-time updates
+- **MCP**: For AI agent integration
+
+### 3. Event-Driven Architecture
+
+Real-time updates are powered by an event-driven system:
+
+- **NATS**: Message broker for pub/sub
+- **WebSocket**: Client connections
+- **Event Sourcing**: Audit trail and history
+
+## Technology Stack
+
+### Backend
+
+- **FastAPI**: Modern, fast web framework
+- **SQLAlchemy**: Powerful ORM
+- **Pydantic**: Data validation
+- **Alembic**: Database migrations
+- **NATS**: Message broker
+
+### Frontend
+
+- **React 19**: Latest React with concurrent features
+- **TanStack Router**: Type-safe routing
+- **TanStack Query**: Server state management
+- **Tailwind CSS**: Utility-first styling
+- **shadcn/ui**: Component library
+
+### Database
+
+- **PostgreSQL**: Primary database
+- **Redis**: Caching layer
+- **NATS JetStream**: Event store
+
+## Next Steps
+
+- [Backend Architecture](/docs/01-architecture/backend): Deep dive into backend design
+- [Frontend Architecture](/docs/01-architecture/frontend): Frontend patterns and structure
+- [Database Schema](/docs/01-architecture/database): Database design and migrations
+- [Real-time Architecture](/docs/01-architecture/real-time): Event-driven design

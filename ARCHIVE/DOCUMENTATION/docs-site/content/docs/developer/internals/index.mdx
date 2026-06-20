@@ -1,0 +1,286 @@
+---
+title: "Internals"
+description: "TraceRTM internal architecture and implementation details"
+keywords: [internals, architecture, implementation, design]
+---
+
+# Internals
+
+TraceRTM internal architecture and implementation details for developers.
+
+## Architecture Overview
+
+### System Components
+
+```
+┌─────────────┐
+│   Client    │ (CLI, TUI, Web UI)
+└──────┬──────┘
+       │
+┌──────▼──────┐
+│  API Layer  │ (FastAPI)
+└──────┬──────┘
+       │
+┌──────▼──────┐
+│  Service    │ (Business Logic)
+│   Layer     │
+└──────┬──────┘
+       │
+┌──────▼──────┐
+│ Repository  │ (Data Access)
+│   Layer     │
+└──────┬──────┘
+       │
+┌──────▼──────┐
+│  Database   │ (PostgreSQL)
+└─────────────┘
+```
+
+## Core Components
+
+### API Layer
+
+FastAPI-based REST API:
+
+- **Location**: `src/tracertm/api/`
+- **Main file**: `main.py`
+- **Endpoints**: Organized by resource
+
+### Service Layer
+
+Business logic and orchestration:
+
+- **Location**: `src/tracertm/services/`
+- **Responsibilities**: Validation, business rules, coordination
+
+### Repository Layer
+
+Data access abstraction:
+
+- **Location**: `src/tracertm/repositories/`
+- **Pattern**: Repository pattern
+- **ORM**: SQLAlchemy
+
+### Models
+
+Database models and schemas:
+
+- **Location**: `src/tracertm/models/`
+- **ORM Models**: SQLAlchemy models
+- **Schemas**: Pydantic models
+
+## Data Flow
+
+### Request Flow
+
+1. **Client** → HTTP Request
+2. **API Layer** → Route handler
+3. **Service Layer** → Business logic
+4. **Repository Layer** → Database query
+5. **Database** → Return data
+6. **Response** → JSON response
+
+### Example: Create Item
+
+```python
+# 1. API Endpoint
+@app.post("/api/v1/items")
+async def create_item(request: CreateItemRequest):
+    # 2. Service call
+    item = await item_service.create(request)
+    return item
+
+# 3. Service
+async def create(request):
+    # Validation
+    validate_item(request)
+    # 4. Repository call
+    item = await item_repo.create(request)
+    # Events
+    await event_service.publish("item.created", item)
+    return item
+
+# 5. Repository
+async def create(data):
+    item = Item(**data)
+    session.add(item)
+    session.commit()
+    return item
+```
+
+## Key Patterns
+
+### Repository Pattern
+
+Abstracts data access:
+
+```python
+class ItemRepository:
+    async def get_by_id(self, item_id: str) -> Item:
+        pass
+    
+    async def create(self, data: dict) -> Item:
+        pass
+```
+
+### Service Pattern
+
+Encapsulates business logic:
+
+```python
+class ItemService:
+    def __init__(self, repo: ItemRepository):
+        self.repo = repo
+    
+    async def create(self, data: dict) -> Item:
+        # Business logic
+        validate(data)
+        # Data access
+        return await self.repo.create(data)
+```
+
+### Dependency Injection
+
+```python
+from fastapi import Depends
+
+def get_item_service(
+    repo: ItemRepository = Depends(get_item_repo)
+) -> ItemService:
+    return ItemService(repo)
+```
+
+## Database
+
+### Models
+
+SQLAlchemy ORM models:
+
+```python
+class Item(Base):
+    __tablename__ = "items"
+    
+    id = Column(String, primary_key=True)
+    title = Column(String, nullable=False)
+    view = Column(String, nullable=False)
+```
+
+### Migrations
+
+Alembic for schema changes:
+
+```bash
+# Create migration
+alembic revision --autogenerate -m "Add status field"
+
+# Apply
+alembic upgrade head
+```
+
+## Caching
+
+### Redis Integration
+
+```python
+from redis import Redis
+
+redis = Redis()
+
+async def get_item_cached(item_id: str):
+    # Check cache
+    cached = await redis.get(f"item:{item_id}")
+    if cached:
+        return json.loads(cached)
+    
+    # Fetch from DB
+    item = await item_repo.get_by_id(item_id)
+    
+    # Cache
+    await redis.setex(
+        f"item:{item_id}",
+        3600,  # TTL
+        json.dumps(item)
+    )
+    return item
+```
+
+## Event System
+
+### Event Publishing
+
+```python
+from tracertm.events import EventBus
+
+event_bus = EventBus()
+
+async def create_item(data):
+    item = await item_repo.create(data)
+    # Publish event
+    await event_bus.publish("item.created", {
+        "item_id": item.id,
+        "project_id": item.project_id
+    })
+    return item
+```
+
+### Event Handlers
+
+```python
+@event_bus.subscribe("item.created")
+async def handle_item_created(event):
+    # Send notification
+    await notification_service.send(event["item_id"])
+```
+
+## Security
+
+### Authentication
+
+JWT-based authentication:
+
+```python
+from jose import jwt
+
+def create_access_token(data: dict):
+    return jwt.encode(data, SECRET_KEY, algorithm="HS256")
+```
+
+### Authorization
+
+Role-based access control:
+
+```python
+def require_permission(permission: str):
+    def decorator(func):
+        async def wrapper(*args, **kwargs):
+            if not has_permission(current_user, permission):
+                raise ForbiddenError()
+            return await func(*args, **kwargs)
+        return wrapper
+    return decorator
+```
+
+## Performance
+
+### Query Optimization
+
+- Use indexes on frequently queried fields
+- Eager loading for relationships
+- Pagination for large datasets
+
+### Async Operations
+
+All I/O operations are async:
+
+```python
+async def get_items(project_id: str):
+    return await db.execute(
+        select(Item).where(Item.project_id == project_id)
+    )
+```
+
+## Related Documentation
+
+- [Backend Handlers](../03-development/04-internals/01-backend-handlers) - Request handlers
+- [Database Queries](../03-development/04-internals/03-database-queries) - Query patterns
+- [Event System](../03-development/04-internals/05-event-system) - Event architecture

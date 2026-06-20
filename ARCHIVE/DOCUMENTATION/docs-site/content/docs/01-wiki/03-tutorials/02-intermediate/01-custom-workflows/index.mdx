@@ -1,0 +1,1557 @@
+---
+title: "Custom Workflows"
+description: "Master TracerTM's workflow system with custom status transitions, approval flows, and automated status management"
+---
+
+# Custom Workflows
+
+Learn how to design and implement custom workflows in TracerTM to match your team's development process. This tutorial covers everything from basic status transitions to advanced approval workflows and automation.
+
+## Overview
+
+TracerTM's workflow engine provides a flexible state machine for managing item lifecycles. You can customize status states, define transition rules, implement approval gates, and automate status updates based on events.
+
+### What You'll Learn
+
+- Understanding workflow states and transitions
+- Creating custom status workflows
+- Implementing approval workflows
+- Automating status updates with hooks
+- Designing team-specific workflows
+- Workflow reporting and analytics
+- Best practices for workflow design
+
+### Prerequisites
+
+- Completed the [First Project](/docs/getting-started/first-project) tutorial
+- Basic understanding of TracerTM items and links
+- Familiarity with YAML or JSON configuration
+- Access to project admin permissions
+
+## Understanding TracerTM Workflows
+
+### Workflow Fundamentals
+
+A workflow in TracerTM defines:
+
+1. **States**: Valid status values an item can have
+2. **Transitions**: Allowed movements between states
+3. **Rules**: Conditions that must be met for transitions
+4. **Hooks**: Actions triggered on state changes
+5. **Progress Mapping**: Automatic progress updates based on status
+
+### The State Machine Model
+
+TracerTM uses a finite state machine where:
+
+- Each item has exactly one status at any time
+- Status changes must follow defined transitions
+- Invalid transitions are rejected
+- All changes are logged as events
+
+```
+┌─────────┐
+│  todo   │──────────────┐
+└─────────┘              │
+     │                   ▼
+     │              ┌──────────┐
+     └─────────────▶│in_progress│
+                    └──────────┘
+                         │
+                    ┌────┴────┐
+                    │         │
+                    ▼         ▼
+              ┌─────────┐  ┌─────┐
+              │ blocked │  │done │
+              └─────────┘  └─────┘
+                    │         │
+                    └────┬────┘
+                         ▼
+                   ┌──────────┐
+                   │ archived │
+                   └──────────┘
+```
+
+## Default Workflow States
+
+### Built-in Status Values
+
+TracerTM comes with five default statuses:
+
+```python
+VALID_STATUSES = [
+    "todo",        # Not started
+    "in_progress", # Actively being worked on
+    "blocked",     # Waiting on external dependency
+    "done",        # Completed
+    "archived"     # Historical record
+]
+```
+
+### Default Transitions
+
+The default transition rules:
+
+```python
+STATUS_TRANSITIONS = {
+    "todo": ["in_progress", "blocked"],
+    "in_progress": ["done", "blocked", "todo"],
+    "blocked": ["todo", "in_progress"],
+    "done": ["todo"],  # Allow reopening
+    "archived": []     # Terminal state - no transitions
+}
+```
+
+### Default Progress Mapping
+
+Automatic progress percentages:
+
+```python
+STATUS_PROGRESS = {
+    "todo": 0,
+    "in_progress": 50,
+    "blocked": 0,
+    "done": 100,
+    "archived": 100
+}
+```
+
+### Using Default Workflows
+
+Update an item's status:
+
+```python
+from tracertm.services.status_workflow_service import StatusWorkflowService
+from tracertm.core.database import get_session
+
+# Initialize service
+session = get_session()
+workflow_service = StatusWorkflowService(session)
+
+# Update item status
+result = workflow_service.update_item_status(
+    item_id="item-123",
+    new_status="in_progress",
+    agent_id="user-456"
+)
+
+# Result includes validation and progress
+print(f"Status changed: {result['old_status']} → {result['new_status']}")
+print(f"Progress: {result['progress']}%")
+```
+
+## Creating Custom Status Workflows
+
+### Defining Custom States
+
+For an Agile development workflow:
+
+```python
+# custom_workflow.py
+AGILE_STATUSES = [
+    "backlog",      # Future work
+    "ready",        # Ready to start
+    "in_dev",       # Development in progress
+    "code_review",  # Awaiting review
+    "qa_testing",   # Quality assurance
+    "uat",          # User acceptance testing
+    "staging",      # Deployed to staging
+    "production",   # Deployed to production
+    "closed"        # Completed and closed
+]
+```
+
+### Custom Transition Rules
+
+Define allowed transitions:
+
+```python
+AGILE_TRANSITIONS = {
+    "backlog": ["ready"],
+    "ready": ["in_dev", "backlog"],
+    "in_dev": ["code_review", "backlog"],
+    "code_review": ["qa_testing", "in_dev"],
+    "qa_testing": ["uat", "in_dev"],
+    "uat": ["staging", "in_dev"],
+    "staging": ["production", "in_dev"],
+    "production": ["closed"],
+    "closed": ["backlog"]  # Allow reopening to backlog
+}
+```
+
+### Custom Progress Mapping
+
+Map statuses to progress percentages:
+
+```python
+AGILE_PROGRESS = {
+    "backlog": 0,
+    "ready": 10,
+    "in_dev": 30,
+    "code_review": 50,
+    "qa_testing": 65,
+    "uat": 80,
+    "staging": 90,
+    "production": 100,
+    "closed": 100
+}
+```
+
+### Implementing Custom Workflows
+
+Create a custom workflow service:
+
+```python
+# services/agile_workflow_service.py
+from typing import Dict, List
+from sqlalchemy.orm import Session
+from tracertm.models.item import Item
+from tracertm.models.event import Event
+
+class AgileWorkflowService:
+    """Custom Agile workflow service."""
+
+    VALID_STATUSES = AGILE_STATUSES
+    TRANSITIONS = AGILE_TRANSITIONS
+    PROGRESS_MAP = AGILE_PROGRESS
+
+    def __init__(self, session: Session):
+        self.session = session
+
+    def validate_transition(
+        self,
+        current: str,
+        new: str
+    ) -> bool:
+        """Validate if transition is allowed."""
+        if new not in self.VALID_STATUSES:
+            return False
+
+        allowed = self.TRANSITIONS.get(current, [])
+        return new in allowed
+
+    def get_next_statuses(self, current: str) -> List[str]:
+        """Get list of valid next statuses."""
+        return self.TRANSITIONS.get(current, [])
+
+    def update_status(
+        self,
+        item_id: str,
+        new_status: str,
+        agent_id: str = None,
+        comment: str = None
+    ) -> Dict:
+        """Update item status with validation."""
+        item = self.session.query(Item).filter(
+            Item.id == item_id
+        ).first()
+
+        if not item:
+            raise ValueError(f"Item not found: {item_id}")
+
+        current = item.status or "backlog"
+
+        # Validate transition
+        if not self.validate_transition(current, new_status):
+            raise ValueError(
+                f"Invalid transition: {current} → {new_status}. "
+                f"Allowed: {self.get_next_statuses(current)}"
+            )
+
+        # Update status
+        old_status = item.status
+        item.status = new_status
+
+        # Log event
+        event = Event(
+            project_id=item.project_id,
+            event_type="status_changed",
+            entity_type="item",
+            entity_id=item.id,
+            agent_id=agent_id,
+            data={
+                "old_status": old_status,
+                "new_status": new_status,
+                "comment": comment,
+                "progress": self.PROGRESS_MAP.get(new_status, 0)
+            }
+        )
+        self.session.add(event)
+        self.session.commit()
+
+        return {
+            "item_id": item.id,
+            "old_status": old_status,
+            "new_status": new_status,
+            "progress": self.PROGRESS_MAP.get(new_status, 0),
+            "next_statuses": self.get_next_statuses(new_status)
+        }
+```
+
+## Defining Transitions and Rules
+
+### Conditional Transitions
+
+Add conditions to transitions:
+
+```python
+class ConditionalWorkflowService(AgileWorkflowService):
+    """Workflow with conditional transitions."""
+
+    def can_transition(
+        self,
+        item: Item,
+        new_status: str,
+        agent_id: str = None
+    ) -> tuple[bool, str]:
+        """Check if transition is allowed with conditions."""
+
+        # Basic validation
+        if not self.validate_transition(item.status, new_status):
+            return False, "Invalid transition"
+
+        # Code review requires tests
+        if new_status == "code_review":
+            if not self._has_tests(item):
+                return False, "Tests required for code review"
+
+        # QA testing requires approval
+        if new_status == "qa_testing":
+            if not self._has_code_review_approval(item):
+                return False, "Code review approval required"
+
+        # Production requires multiple approvals
+        if new_status == "production":
+            if not self._has_deployment_approvals(item):
+                return False, "Deployment approvals required"
+
+        return True, "Transition allowed"
+
+    def _has_tests(self, item: Item) -> bool:
+        """Check if item has linked test cases."""
+        from tracertm.repositories.link_repository import LinkRepository
+
+        link_repo = LinkRepository(self.session)
+        links = link_repo.get_by_source(item.id)
+
+        # Check for test links
+        return any(
+            link.link_type == "tests"
+            for link in links
+        )
+
+    def _has_code_review_approval(self, item: Item) -> bool:
+        """Check for code review approval."""
+        # Check metadata for approval
+        metadata = item.item_metadata or {}
+        approvals = metadata.get("approvals", {})
+        return approvals.get("code_review") is True
+
+    def _has_deployment_approvals(self, item: Item) -> bool:
+        """Check for deployment approvals."""
+        metadata = item.item_metadata or {}
+        approvals = metadata.get("approvals", {})
+
+        # Require multiple approvals
+        required = ["qa_lead", "tech_lead", "product_owner"]
+        return all(
+            approvals.get(role) is True
+            for role in required
+        )
+```
+
+### Role-Based Transitions
+
+Restrict transitions by user role:
+
+```python
+class RoleBasedWorkflowService(AgileWorkflowService):
+    """Workflow with role-based restrictions."""
+
+    ROLE_PERMISSIONS = {
+        "developer": ["in_dev", "code_review"],
+        "qa_engineer": ["qa_testing", "uat"],
+        "tech_lead": ["code_review", "staging"],
+        "devops": ["staging", "production"],
+        "product_owner": ["uat", "closed"]
+    }
+
+    def can_user_transition(
+        self,
+        user_role: str,
+        new_status: str
+    ) -> bool:
+        """Check if user role can set status."""
+        allowed_statuses = self.ROLE_PERMISSIONS.get(user_role, [])
+        return new_status in allowed_statuses
+
+    def update_status(
+        self,
+        item_id: str,
+        new_status: str,
+        agent_id: str,
+        user_role: str
+    ) -> Dict:
+        """Update with role validation."""
+
+        # Check role permissions
+        if not self.can_user_transition(user_role, new_status):
+            raise PermissionError(
+                f"Role '{user_role}' cannot set status to '{new_status}'"
+            )
+
+        # Continue with normal update
+        return super().update_status(item_id, new_status, agent_id)
+```
+
+## Approval Workflows
+
+### Single Approval
+
+Implement a simple approval workflow:
+
+```python
+class ApprovalWorkflowService:
+    """Service for approval workflows."""
+
+    def __init__(self, session: Session):
+        self.session = session
+
+    def request_approval(
+        self,
+        item_id: str,
+        approver_id: str,
+        approval_type: str = "general"
+    ) -> Dict:
+        """Request approval for an item."""
+        item = self.session.query(Item).filter(
+            Item.id == item_id
+        ).first()
+
+        if not item:
+            raise ValueError(f"Item not found: {item_id}")
+
+        # Update metadata
+        metadata = item.item_metadata or {}
+        approvals = metadata.get("approval_requests", {})
+
+        approvals[approval_type] = {
+            "status": "pending",
+            "approver_id": approver_id,
+            "requested_at": datetime.utcnow().isoformat()
+        }
+
+        metadata["approval_requests"] = approvals
+        item.item_metadata = metadata
+
+        # Log event
+        event = Event(
+            project_id=item.project_id,
+            event_type="approval_requested",
+            entity_type="item",
+            entity_id=item.id,
+            data={
+                "approval_type": approval_type,
+                "approver_id": approver_id
+            }
+        )
+        self.session.add(event)
+        self.session.commit()
+
+        return {
+            "item_id": item_id,
+            "approval_type": approval_type,
+            "status": "pending"
+        }
+
+    def approve(
+        self,
+        item_id: str,
+        approval_type: str,
+        approver_id: str,
+        comment: str = None
+    ) -> Dict:
+        """Approve an item."""
+        item = self.session.query(Item).filter(
+            Item.id == item_id
+        ).first()
+
+        metadata = item.item_metadata or {}
+        approvals = metadata.get("approval_requests", {})
+
+        if approval_type not in approvals:
+            raise ValueError(f"No approval request for: {approval_type}")
+
+        # Update approval
+        approvals[approval_type].update({
+            "status": "approved",
+            "approved_at": datetime.utcnow().isoformat(),
+            "approved_by": approver_id,
+            "comment": comment
+        })
+
+        metadata["approval_requests"] = approvals
+        item.item_metadata = metadata
+
+        # Log event
+        event = Event(
+            project_id=item.project_id,
+            event_type="approval_granted",
+            entity_type="item",
+            entity_id=item.id,
+            agent_id=approver_id,
+            data={
+                "approval_type": approval_type,
+                "comment": comment
+            }
+        )
+        self.session.add(event)
+        self.session.commit()
+
+        return {
+            "item_id": item_id,
+            "approval_type": approval_type,
+            "status": "approved"
+        }
+```
+
+### Multi-Level Approval
+
+Implement hierarchical approvals:
+
+```python
+class MultiLevelApprovalService(ApprovalWorkflowService):
+    """Multi-level approval workflow."""
+
+    APPROVAL_CHAINS = {
+        "production_deployment": [
+            {"role": "qa_lead", "label": "QA Sign-off"},
+            {"role": "tech_lead", "label": "Technical Review"},
+            {"role": "product_owner", "label": "Business Approval"},
+            {"role": "security_team", "label": "Security Review"}
+        ],
+        "architecture_change": [
+            {"role": "tech_lead", "label": "Technical Review"},
+            {"role": "architect", "label": "Architecture Review"},
+            {"role": "cto", "label": "Executive Approval"}
+        ]
+    }
+
+    def initiate_approval_chain(
+        self,
+        item_id: str,
+        chain_type: str
+    ) -> Dict:
+        """Start a multi-level approval chain."""
+        if chain_type not in self.APPROVAL_CHAINS:
+            raise ValueError(f"Unknown approval chain: {chain_type}")
+
+        item = self.session.query(Item).filter(
+            Item.id == item_id
+        ).first()
+
+        metadata = item.item_metadata or {}
+
+        # Create approval chain
+        chain = {
+            "type": chain_type,
+            "status": "pending",
+            "started_at": datetime.utcnow().isoformat(),
+            "levels": []
+        }
+
+        for level in self.APPROVAL_CHAINS[chain_type]:
+            chain["levels"].append({
+                "role": level["role"],
+                "label": level["label"],
+                "status": "pending",
+                "approver_id": None,
+                "approved_at": None
+            })
+
+        metadata["approval_chain"] = chain
+        item.item_metadata = metadata
+
+        self.session.commit()
+
+        return {
+            "item_id": item_id,
+            "chain_type": chain_type,
+            "total_levels": len(chain["levels"]),
+            "status": "pending"
+        }
+
+    def approve_level(
+        self,
+        item_id: str,
+        level_index: int,
+        approver_id: str,
+        approver_role: str
+    ) -> Dict:
+        """Approve a specific level in the chain."""
+        item = self.session.query(Item).filter(
+            Item.id == item_id
+        ).first()
+
+        metadata = item.item_metadata or {}
+        chain = metadata.get("approval_chain", {})
+
+        if not chain:
+            raise ValueError("No approval chain found")
+
+        # Validate level
+        levels = chain.get("levels", [])
+        if level_index >= len(levels):
+            raise ValueError("Invalid level index")
+
+        level = levels[level_index]
+
+        # Validate role
+        if level["role"] != approver_role:
+            raise PermissionError(
+                f"Approver role '{approver_role}' does not match "
+                f"required role '{level['role']}'"
+            )
+
+        # Check previous levels are approved
+        if level_index > 0:
+            prev_level = levels[level_index - 1]
+            if prev_level["status"] != "approved":
+                raise ValueError("Previous approval level not completed")
+
+        # Update level
+        level["status"] = "approved"
+        level["approver_id"] = approver_id
+        level["approved_at"] = datetime.utcnow().isoformat()
+
+        # Check if chain is complete
+        all_approved = all(
+            lvl["status"] == "approved"
+            for lvl in levels
+        )
+
+        if all_approved:
+            chain["status"] = "approved"
+            chain["completed_at"] = datetime.utcnow().isoformat()
+
+        metadata["approval_chain"] = chain
+        item.item_metadata = metadata
+
+        self.session.commit()
+
+        return {
+            "item_id": item_id,
+            "level": level_index,
+            "level_status": "approved",
+            "chain_status": chain["status"],
+            "all_approved": all_approved
+        }
+```
+
+## Automated Status Updates
+
+### Event-Based Automation
+
+Automatically update status based on events:
+
+```python
+class AutomatedWorkflowService:
+    """Automated workflow based on events."""
+
+    def __init__(self, session: Session):
+        self.session = session
+        self.workflow = AgileWorkflowService(session)
+
+    def on_test_pass(self, item_id: str) -> Dict:
+        """Auto-update when tests pass."""
+        item = self.session.query(Item).filter(
+            Item.id == item_id
+        ).first()
+
+        # If in code_review and all tests pass, move to qa_testing
+        if item.status == "code_review":
+            if self._all_tests_passing(item):
+                return self.workflow.update_status(
+                    item_id=item_id,
+                    new_status="qa_testing",
+                    agent_id="system",
+                    comment="Auto-promoted: All tests passing"
+                )
+
+        return {"status": "no_action"}
+
+    def on_deployment_success(
+        self,
+        item_id: str,
+        environment: str
+    ) -> Dict:
+        """Auto-update on successful deployment."""
+        item = self.session.query(Item).filter(
+            Item.id == item_id
+        ).first()
+
+        status_map = {
+            "staging": "staging",
+            "production": "production"
+        }
+
+        target_status = status_map.get(environment)
+        if target_status and item.status != target_status:
+            return self.workflow.update_status(
+                item_id=item_id,
+                new_status=target_status,
+                agent_id="system",
+                comment=f"Auto-deployed to {environment}"
+            )
+
+        return {"status": "no_action"}
+
+    def on_link_created(
+        self,
+        item_id: str,
+        link_type: str,
+        target_id: str
+    ) -> Dict:
+        """Auto-update when links are created."""
+        item = self.session.query(Item).filter(
+            Item.id == item_id
+        ).first()
+
+        # If in backlog and linked to sprint, move to ready
+        if item.status == "backlog" and link_type == "assigned_to_sprint":
+            return self.workflow.update_status(
+                item_id=item_id,
+                new_status="ready",
+                agent_id="system",
+                comment="Auto-promoted: Added to sprint"
+            )
+
+        return {"status": "no_action"}
+
+    def _all_tests_passing(self, item: Item) -> bool:
+        """Check if all linked tests are passing."""
+        from tracertm.repositories.link_repository import LinkRepository
+
+        link_repo = LinkRepository(self.session)
+        test_links = link_repo.get_by_source(
+            item.id,
+            link_type="tests"
+        )
+
+        for link in test_links:
+            test_item = self.session.query(Item).filter(
+                Item.id == link.target_item_id
+            ).first()
+
+            if test_item.status != "passed":
+                return False
+
+        return len(test_links) > 0
+```
+
+## Workflow Hooks and Triggers
+
+### Pre-Transition Hooks
+
+Execute logic before status changes:
+
+```python
+class WorkflowWithHooks(AgileWorkflowService):
+    """Workflow service with hooks."""
+
+    def __init__(self, session: Session):
+        super().__init__(session)
+        self.pre_hooks = {}
+        self.post_hooks = {}
+
+    def register_pre_hook(
+        self,
+        status: str,
+        hook_fn: callable
+    ):
+        """Register pre-transition hook."""
+        if status not in self.pre_hooks:
+            self.pre_hooks[status] = []
+        self.pre_hooks[status].append(hook_fn)
+
+    def register_post_hook(
+        self,
+        status: str,
+        hook_fn: callable
+    ):
+        """Register post-transition hook."""
+        if status not in self.post_hooks:
+            self.post_hooks[status] = []
+        self.post_hooks[status].append(hook_fn)
+
+    def update_status(
+        self,
+        item_id: str,
+        new_status: str,
+        agent_id: str = None,
+        comment: str = None
+    ) -> Dict:
+        """Update with hooks."""
+        item = self.session.query(Item).filter(
+            Item.id == item_id
+        ).first()
+
+        # Execute pre-hooks
+        if new_status in self.pre_hooks:
+            for hook in self.pre_hooks[new_status]:
+                hook(item, new_status)
+
+        # Perform update
+        result = super().update_status(
+            item_id, new_status, agent_id, comment
+        )
+
+        # Execute post-hooks
+        if new_status in self.post_hooks:
+            for hook in self.post_hooks[new_status]:
+                hook(item, new_status)
+
+        return result
+
+
+# Example hook functions
+def notify_team(item: Item, new_status: str):
+    """Send notification on status change."""
+    print(f"Notification: {item.title} moved to {new_status}")
+    # Send email, Slack message, etc.
+
+def update_dashboard(item: Item, new_status: str):
+    """Update project dashboard."""
+    # Refresh metrics, update charts, etc.
+    pass
+
+def trigger_ci_pipeline(item: Item, new_status: str):
+    """Trigger CI/CD pipeline."""
+    if new_status == "code_review":
+        # Trigger automated tests
+        pass
+
+
+# Register hooks
+workflow = WorkflowWithHooks(session)
+workflow.register_pre_hook("code_review", trigger_ci_pipeline)
+workflow.register_post_hook("done", notify_team)
+workflow.register_post_hook("done", update_dashboard)
+```
+
+## Team-Specific Workflows
+
+### Per-Team Configuration
+
+Define workflows for different teams:
+
+```python
+class TeamWorkflowManager:
+    """Manage workflows for different teams."""
+
+    TEAM_WORKFLOWS = {
+        "backend": {
+            "statuses": [
+                "backlog", "ready", "in_dev", "code_review",
+                "qa_testing", "staging", "production", "closed"
+            ],
+            "transitions": {
+                "backlog": ["ready"],
+                "ready": ["in_dev"],
+                "in_dev": ["code_review"],
+                "code_review": ["qa_testing", "in_dev"],
+                "qa_testing": ["staging", "in_dev"],
+                "staging": ["production"],
+                "production": ["closed"],
+                "closed": []
+            }
+        },
+        "frontend": {
+            "statuses": [
+                "backlog", "design", "ready", "in_dev",
+                "design_review", "qa_testing", "uat",
+                "production", "closed"
+            ],
+            "transitions": {
+                "backlog": ["design"],
+                "design": ["ready", "backlog"],
+                "ready": ["in_dev"],
+                "in_dev": ["design_review"],
+                "design_review": ["qa_testing", "in_dev"],
+                "qa_testing": ["uat", "in_dev"],
+                "uat": ["production"],
+                "production": ["closed"],
+                "closed": []
+            }
+        },
+        "qa": {
+            "statuses": [
+                "backlog", "ready", "test_design", "test_dev",
+                "review", "execution", "passed", "failed", "closed"
+            ],
+            "transitions": {
+                "backlog": ["ready"],
+                "ready": ["test_design"],
+                "test_design": ["test_dev"],
+                "test_dev": ["review"],
+                "review": ["execution", "test_dev"],
+                "execution": ["passed", "failed"],
+                "passed": ["closed"],
+                "failed": ["test_dev"],
+                "closed": []
+            }
+        }
+    }
+
+    def __init__(self, session: Session):
+        self.session = session
+
+    def get_workflow(self, team: str) -> Dict:
+        """Get workflow configuration for team."""
+        if team not in self.TEAM_WORKFLOWS:
+            raise ValueError(f"Unknown team: {team}")
+
+        return self.TEAM_WORKFLOWS[team]
+
+    def update_status(
+        self,
+        item_id: str,
+        new_status: str,
+        team: str,
+        agent_id: str = None
+    ) -> Dict:
+        """Update status using team workflow."""
+        workflow_config = self.get_workflow(team)
+
+        item = self.session.query(Item).filter(
+            Item.id == item_id
+        ).first()
+
+        current = item.status or workflow_config["statuses"][0]
+
+        # Validate transition
+        allowed = workflow_config["transitions"].get(current, [])
+        if new_status not in allowed:
+            raise ValueError(
+                f"Invalid transition for {team} team: "
+                f"{current} → {new_status}. "
+                f"Allowed: {allowed}"
+            )
+
+        # Update
+        item.status = new_status
+        self.session.commit()
+
+        return {
+            "item_id": item_id,
+            "team": team,
+            "old_status": current,
+            "new_status": new_status
+        }
+```
+
+## Workflow Reporting
+
+### Status Distribution
+
+Analyze current workflow states:
+
+```python
+class WorkflowReportingService:
+    """Generate workflow reports and analytics."""
+
+    def __init__(self, session: Session):
+        self.session = session
+
+    def status_distribution(
+        self,
+        project_id: str
+    ) -> Dict:
+        """Get distribution of items by status."""
+        from sqlalchemy import func
+
+        results = (
+            self.session.query(
+                Item.status,
+                func.count(Item.id).label("count")
+            )
+            .filter(
+                Item.project_id == project_id,
+                Item.deleted_at.is_(None)
+            )
+            .group_by(Item.status)
+            .all()
+        )
+
+        total = sum(r.count for r in results)
+
+        return {
+            "project_id": project_id,
+            "total_items": total,
+            "distribution": [
+                {
+                    "status": r.status,
+                    "count": r.count,
+                    "percentage": round((r.count / total) * 100, 2)
+                }
+                for r in results
+            ]
+        }
+
+    def transition_metrics(
+        self,
+        project_id: str,
+        days: int = 30
+    ) -> Dict:
+        """Get transition metrics."""
+        from datetime import timedelta
+
+        cutoff = datetime.utcnow() - timedelta(days=days)
+
+        events = (
+            self.session.query(Event)
+            .filter(
+                Event.project_id == project_id,
+                Event.event_type == "status_changed",
+                Event.created_at >= cutoff
+            )
+            .all()
+        )
+
+        # Count transitions
+        transitions = {}
+        for event in events:
+            data = event.data or {}
+            old = data.get("old_status")
+            new = data.get("new_status")
+
+            if old and new:
+                key = f"{old} → {new}"
+                transitions[key] = transitions.get(key, 0) + 1
+
+        return {
+            "project_id": project_id,
+            "period_days": days,
+            "total_transitions": len(events),
+            "unique_transitions": len(transitions),
+            "top_transitions": sorted(
+                [
+                    {"transition": k, "count": v}
+                    for k, v in transitions.items()
+                ],
+                key=lambda x: x["count"],
+                reverse=True
+            )[:10]
+        }
+
+    def cycle_time(
+        self,
+        project_id: str,
+        start_status: str = "in_progress",
+        end_status: str = "done"
+    ) -> Dict:
+        """Calculate average cycle time."""
+        from sqlalchemy import and_
+
+        # Get all items that transitioned to done
+        done_events = (
+            self.session.query(Event)
+            .filter(
+                Event.project_id == project_id,
+                Event.event_type == "status_changed"
+            )
+            .all()
+        )
+
+        cycle_times = []
+
+        # Group events by item
+        item_events = {}
+        for event in done_events:
+            entity_id = event.entity_id
+            if entity_id not in item_events:
+                item_events[entity_id] = []
+            item_events[entity_id].append(event)
+
+        # Calculate cycle time for each item
+        for item_id, events in item_events.items():
+            events.sort(key=lambda e: e.created_at)
+
+            start_time = None
+            end_time = None
+
+            for event in events:
+                data = event.data or {}
+                new_status = data.get("new_status")
+
+                if new_status == start_status and not start_time:
+                    start_time = event.created_at
+                elif new_status == end_status and start_time:
+                    end_time = event.created_at
+                    break
+
+            if start_time and end_time:
+                delta = end_time - start_time
+                cycle_times.append(delta.total_seconds() / 3600)  # Hours
+
+        if not cycle_times:
+            return {
+                "project_id": project_id,
+                "average_hours": 0,
+                "median_hours": 0,
+                "sample_size": 0
+            }
+
+        cycle_times.sort()
+        median_idx = len(cycle_times) // 2
+
+        return {
+            "project_id": project_id,
+            "start_status": start_status,
+            "end_status": end_status,
+            "average_hours": round(sum(cycle_times) / len(cycle_times), 2),
+            "median_hours": round(cycle_times[median_idx], 2),
+            "min_hours": round(min(cycle_times), 2),
+            "max_hours": round(max(cycle_times), 2),
+            "sample_size": len(cycle_times)
+        }
+```
+
+## Best Practices for Workflow Design
+
+### 1. Keep It Simple
+
+Start with minimal statuses and add complexity as needed:
+
+```python
+# Good: Simple and clear
+STATUSES = ["todo", "doing", "done"]
+
+# Bad: Over-engineered for a small team
+STATUSES = [
+    "backlog_pending_review",
+    "backlog_approved",
+    "sprint_candidate",
+    "sprint_committed",
+    "development_not_started",
+    "development_in_progress",
+    # ... 20 more statuses
+]
+```
+
+### 2. Make Transitions Reversible
+
+Allow items to move backward when needed:
+
+```python
+# Good: Allows reopening
+TRANSITIONS = {
+    "done": ["in_progress", "todo"],  # Can reopen
+    "archived": ["todo"]  # Can unarchive
+}
+
+# Bad: One-way only
+TRANSITIONS = {
+    "done": [],  # Can't reopen
+    "archived": []  # Stuck forever
+}
+```
+
+### 3. Align with Team Process
+
+Match your actual workflow, not an ideal:
+
+```python
+# Reflects real process
+STATUSES = [
+    "backlog",      # We maintain a backlog
+    "in_progress",  # Work happens
+    "blocked",      # We track blockers
+    "done"          # Complete
+]
+
+# Don't force a process you don't follow
+STATUSES = [
+    "backlog",
+    "design_phase",      # We don't do separate design
+    "architecture",      # Or architecture reviews
+    "implementation",
+    "code_review",
+    "qa_phase_1",
+    "qa_phase_2",       # Or multi-phase QA
+    "staging",
+    "production"
+]
+```
+
+### 4. Use Metadata for Details
+
+Keep statuses high-level, details in metadata:
+
+```python
+# Good: Simple status, rich metadata
+item.status = "in_progress"
+item.item_metadata = {
+    "sub_status": "awaiting_api_response",
+    "blocked_by": ["API-123", "INFRA-456"],
+    "assigned_to": "dev-team-3",
+    "sprint": "2024-Q1-Sprint-3"
+}
+
+# Bad: Status explosion
+item.status = "in_progress_awaiting_api_response_blocked_by_api_123"
+```
+
+### 5. Monitor Workflow Metrics
+
+Track key metrics to improve:
+
+```python
+# Track these regularly
+metrics = {
+    "cycle_time": "Time from start to done",
+    "blocked_time": "Time spent blocked",
+    "transition_frequency": "Most common paths",
+    "bottlenecks": "Where items get stuck",
+    "throughput": "Items completed per week"
+}
+```
+
+### 6. Document Your Workflow
+
+Create clear documentation:
+
+```yaml
+# workflow-documentation.yml
+workflow:
+  name: "Agile Development Workflow"
+  version: "2.0"
+
+  statuses:
+    - name: backlog
+      description: "Future work, not yet prioritized"
+      entry_criteria: "Item created, basic info provided"
+      exit_criteria: "Sprint planning accepts item"
+
+    - name: in_dev
+      description: "Actively being developed"
+      entry_criteria: "Developer assigned, design approved"
+      exit_criteria: "Code complete, tests written"
+
+    - name: code_review
+      description: "Peer review in progress"
+      entry_criteria: "PR created, CI passing"
+      exit_criteria: "2+ approvals, no blocking comments"
+
+  transitions:
+    backlog_to_in_dev:
+      conditions:
+        - "Item assigned to current sprint"
+        - "Developer available"
+        - "No blocking dependencies"
+```
+
+### 7. Plan for Exceptions
+
+Handle edge cases gracefully:
+
+```python
+class RobustWorkflowService(AgileWorkflowService):
+    """Workflow with exception handling."""
+
+    def emergency_override(
+        self,
+        item_id: str,
+        new_status: str,
+        override_by: str,
+        reason: str
+    ) -> Dict:
+        """Override workflow rules in emergencies."""
+        if not self._is_admin(override_by):
+            raise PermissionError("Only admins can override")
+
+        item = self.session.query(Item).filter(
+            Item.id == item_id
+        ).first()
+
+        old_status = item.status
+        item.status = new_status
+
+        # Log override
+        event = Event(
+            project_id=item.project_id,
+            event_type="workflow_override",
+            entity_type="item",
+            entity_id=item.id,
+            agent_id=override_by,
+            data={
+                "old_status": old_status,
+                "new_status": new_status,
+                "reason": reason,
+                "override_type": "emergency"
+            }
+        )
+        self.session.add(event)
+        self.session.commit()
+
+        return {
+            "item_id": item_id,
+            "status": new_status,
+            "override": True,
+            "reason": reason
+        }
+```
+
+## Complete Example: Production Workflow
+
+Here's a complete, production-ready workflow implementation:
+
+```python
+# production_workflow.py
+"""
+Production-ready workflow for software development teams.
+Includes validation, approvals, automation, and reporting.
+"""
+
+from datetime import datetime
+from typing import Dict, List, Optional
+from sqlalchemy.orm import Session
+from tracertm.models.item import Item
+from tracertm.models.event import Event
+
+
+class ProductionWorkflowService:
+    """Complete workflow service for production use."""
+
+    # Status definitions
+    STATUSES = {
+        "backlog": {"progress": 0, "description": "Future work"},
+        "ready": {"progress": 10, "description": "Ready to start"},
+        "in_progress": {"progress": 40, "description": "Active development"},
+        "code_review": {"progress": 60, "description": "Peer review"},
+        "qa_testing": {"progress": 75, "description": "QA validation"},
+        "done": {"progress": 100, "description": "Completed"},
+        "blocked": {"progress": 0, "description": "Blocked by dependency"}
+    }
+
+    # Transition rules
+    TRANSITIONS = {
+        "backlog": ["ready", "blocked"],
+        "ready": ["in_progress", "backlog"],
+        "in_progress": ["code_review", "blocked", "backlog"],
+        "code_review": ["qa_testing", "in_progress"],
+        "qa_testing": ["done", "in_progress"],
+        "done": ["in_progress"],  # Reopen if needed
+        "blocked": ["backlog", "ready", "in_progress"]
+    }
+
+    def __init__(self, session: Session):
+        self.session = session
+        self.hooks = {"pre": {}, "post": {}}
+
+    def update_status(
+        self,
+        item_id: str,
+        new_status: str,
+        agent_id: str,
+        comment: Optional[str] = None,
+        skip_validation: bool = False
+    ) -> Dict:
+        """
+        Update item status with full validation and logging.
+
+        Args:
+            item_id: Item to update
+            new_status: Target status
+            agent_id: User making the change
+            comment: Optional comment
+            skip_validation: Skip validation (admin only)
+
+        Returns:
+            Update result with status and progress
+        """
+        # Get item
+        item = self.session.query(Item).filter(
+            Item.id == item_id
+        ).first()
+
+        if not item:
+            raise ValueError(f"Item not found: {item_id}")
+
+        current_status = item.status or "backlog"
+
+        # Validate
+        if not skip_validation:
+            self._validate_transition(current_status, new_status)
+            self._check_transition_conditions(item, new_status)
+
+        # Execute pre-hooks
+        self._execute_hooks("pre", new_status, item)
+
+        # Update status
+        old_status = item.status
+        item.status = new_status
+
+        # Log event
+        event = Event(
+            project_id=item.project_id,
+            event_type="status_changed",
+            entity_type="item",
+            entity_id=item.id,
+            agent_id=agent_id,
+            data={
+                "old_status": old_status,
+                "new_status": new_status,
+                "comment": comment,
+                "progress": self.STATUSES[new_status]["progress"],
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        )
+        self.session.add(event)
+        self.session.commit()
+
+        # Execute post-hooks
+        self._execute_hooks("post", new_status, item)
+
+        return {
+            "item_id": item_id,
+            "old_status": old_status,
+            "new_status": new_status,
+            "progress": self.STATUSES[new_status]["progress"],
+            "next_statuses": self.TRANSITIONS.get(new_status, [])
+        }
+
+    def _validate_transition(
+        self,
+        current: str,
+        new: str
+    ):
+        """Validate transition is allowed."""
+        if new not in self.STATUSES:
+            raise ValueError(f"Invalid status: {new}")
+
+        allowed = self.TRANSITIONS.get(current, [])
+        if new not in allowed:
+            raise ValueError(
+                f"Invalid transition: {current} → {new}. "
+                f"Allowed: {allowed}"
+            )
+
+    def _check_transition_conditions(
+        self,
+        item: Item,
+        new_status: str
+    ):
+        """Check conditions for specific transitions."""
+        # Code review requires tests
+        if new_status == "code_review":
+            if not self._has_linked_tests(item):
+                raise ValueError(
+                    "Cannot move to code review without linked tests"
+                )
+
+        # QA requires code review approval
+        if new_status == "qa_testing":
+            if not self._has_approval(item, "code_review"):
+                raise ValueError(
+                    "Cannot move to QA without code review approval"
+                )
+
+    def _has_linked_tests(self, item: Item) -> bool:
+        """Check if item has linked test cases."""
+        # Implementation depends on your link structure
+        return True  # Placeholder
+
+    def _has_approval(
+        self,
+        item: Item,
+        approval_type: str
+    ) -> bool:
+        """Check if item has required approval."""
+        metadata = item.item_metadata or {}
+        approvals = metadata.get("approvals", {})
+        return approvals.get(approval_type) is True
+
+    def _execute_hooks(
+        self,
+        hook_type: str,
+        status: str,
+        item: Item
+    ):
+        """Execute registered hooks."""
+        hooks = self.hooks.get(hook_type, {}).get(status, [])
+        for hook in hooks:
+            hook(item, status)
+
+    def register_hook(
+        self,
+        hook_type: str,
+        status: str,
+        hook_fn: callable
+    ):
+        """Register a workflow hook."""
+        if hook_type not in self.hooks:
+            self.hooks[hook_type] = {}
+        if status not in self.hooks[hook_type]:
+            self.hooks[hook_type][status] = []
+
+        self.hooks[hook_type][status].append(hook_fn)
+
+    def get_status_history(
+        self,
+        item_id: str,
+        limit: int = 10
+    ) -> List[Dict]:
+        """Get status change history for an item."""
+        events = (
+            self.session.query(Event)
+            .filter(
+                Event.entity_type == "item",
+                Event.entity_id == item_id,
+                Event.event_type == "status_changed"
+            )
+            .order_by(Event.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+        return [
+            {
+                "timestamp": e.created_at.isoformat(),
+                "old_status": e.data.get("old_status"),
+                "new_status": e.data.get("new_status"),
+                "comment": e.data.get("comment"),
+                "agent_id": e.agent_id
+            }
+            for e in events
+        ]
+```
+
+## Summary
+
+You've learned how to:
+
+- Understand TracerTM's workflow state machine
+- Work with default workflow states and transitions
+- Create custom status workflows for your team
+- Implement conditional transitions and rules
+- Build single and multi-level approval workflows
+- Automate status updates based on events
+- Use hooks and triggers for workflow automation
+- Configure team-specific workflows
+- Generate workflow reports and analytics
+- Follow best practices for workflow design
+
+## Next Steps
+
+- **Integration**: Connect workflows to external systems (Jira, GitHub)
+- **Metrics**: Build workflow dashboards and analytics
+- **Automation**: Create more sophisticated automation rules
+- **API**: Build workflow APIs for external tools
+
+## Related Resources
+
+- [Impact Analysis](/docs/wiki/tutorials/intermediate/impact-analysis)
+- [Event System](/docs/wiki/concepts/events)
+- [API Reference](/docs/api-reference)
+- [Advanced Automation](/docs/wiki/tutorials/advanced/automation)

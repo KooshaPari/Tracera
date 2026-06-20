@@ -1,0 +1,1105 @@
+---
+title: "Deployment"
+description: "Complete guide to deploying TraceRTM in production environments"
+---
+
+# Deployment Guide
+
+This guide covers deploying TraceRTM to production environments, including Docker, Kubernetes, and cloud platforms.
+
+## Deployment Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        Production Architecture                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                         ┌─────────────────┐                                 │
+│                         │  Load Balancer  │                                 │
+│                         │   (nginx/ALB)   │                                 │
+│                         └────────┬────────┘                                 │
+│                                  │                                          │
+│              ┌───────────────────┼───────────────────┐                     │
+│              │                   │                   │                     │
+│              ▼                   ▼                   ▼                     │
+│     ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐           │
+│     │   API Server    │ │   API Server    │ │   API Server    │           │
+│     │   (Instance 1)  │ │   (Instance 2)  │ │   (Instance N)  │           │
+│     └────────┬────────┘ └────────┬────────┘ └────────┬────────┘           │
+│              │                   │                   │                     │
+│              └───────────────────┼───────────────────┘                     │
+│                                  │                                          │
+│              ┌───────────────────┼───────────────────┐                     │
+│              │                   │                   │                     │
+│              ▼                   ▼                   ▼                     │
+│     ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐           │
+│     │   PostgreSQL    │ │     Redis       │ │     Neo4j       │           │
+│     │   (Primary +    │ │    (Cluster)    │ │    (Cluster)    │           │
+│     │    Replica)     │ │                 │ │                 │           │
+│     └─────────────────┘ └─────────────────┘ └─────────────────┘           │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Docker Deployment
+
+### Production Dockerfile
+
+```dockerfile
+# Multi-stage build for optimized image
+FROM python:3.12-slim as builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install UV for fast package installation
+RUN pip install uv
+
+# Create virtual environment
+WORKDIR /app
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install dependencies
+COPY pyproject.toml uv.lock ./
+RUN uv pip install --no-cache -r pyproject.toml
+
+# Production image
+FROM python:3.12-slim as production
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Create non-root user
+RUN useradd -m -u 1000 tracertm
+USER tracertm
+
+# Copy application code
+WORKDIR /app
+COPY --chown=tracertm:tracertm src/ ./src/
+COPY --chown=tracertm:tracertm alembic/ ./alembic/
+COPY --chown=tracertm:tracertm alembic.ini ./
+
+# Set environment
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Run application
+EXPOSE 8000
+CMD ["uvicorn", "tracertm.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### Docker Compose Production
+
+```yaml
+# docker-compose.prod.yml
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: tracertm/api:${VERSION:-latest}
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://tracertm:${DB_PASSWORD}@postgres:5432/tracertm
+      - REDIS_URL=redis://redis:6379/0
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - ENVIRONMENT=production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - tracertm-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.tracertm.example.com`)"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+
+  postgres:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=tracertm
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=tracertm
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracertm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tracertm-net
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tracertm-net
+
+  neo4j:
+    image: neo4j:5-community
+    volumes:
+      - neo4j_data:/data
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+      - NEO4J_PLUGINS=["apoc"]
+    networks:
+      - tracertm-net
+
+  traefik:
+    image: traefik:v3.0
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@tracertm.example.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    networks:
+      - tracertm-net
+
+volumes:
+  postgres_data:
+  redis_data:
+  neo4j_data:
+  letsencrypt:
+
+networks:
+  tracertm-net:
+    driver: overlay
+```
+
+### Building and Pushing Images
+
+```bash
+# Build production image
+docker build -t tracertm/api:latest --target production .
+
+# Tag for registry
+docker tag tracertm/api:latest ghcr.io/tracertm/api:v1.0.0
+
+# Push to registry
+docker push ghcr.io/tracertm/api:v1.0.0
+
+# Deploy with compose
+docker compose -f docker-compose.prod.yml up -d
+```
+
+## Kubernetes Deployment
+
+### Namespace and ConfigMap
+
+```yaml
+# k8s/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tracertm
+  labels:
+    app: tracertm
+---
+# k8s/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tracertm-config
+  namespace: tracertm
+data:
+  ENVIRONMENT: production
+  LOG_LEVEL: info
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  WORKERS: "4"
+```
+
+### Secrets
+
+```yaml
+# k8s/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tracertm-secrets
+  namespace: tracertm
+type: Opaque
+stringData:
+  DATABASE_URL: postgresql+asyncpg://tracertm:password@postgres:5432/tracertm
+  REDIS_URL: redis://:password@redis:6379/0
+  NEO4J_URI: bolt://neo4j:7687
+  NEO4J_USER: neo4j
+  NEO4J_PASSWORD: password
+  SECRET_KEY: your-secret-key-here
+```
+
+### API Deployment
+
+```yaml
+# k8s/api-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracertm-api
+  namespace: tracertm
+  labels:
+    app: tracertm
+    component: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tracertm
+      component: api
+  template:
+    metadata:
+      labels:
+        app: tracertm
+        component: api
+    spec:
+      serviceAccountName: tracertm-api
+      containers:
+        - name: api
+          image: ghcr.io/tracertm/api:v1.0.0
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: tracertm-config
+            - secretRef:
+                name: tracertm-secrets
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: true
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: tracertm
+                    component: api
+                topologyKey: kubernetes.io/hostname
+```
+
+### Service and Ingress
+
+```yaml
+# k8s/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracertm-api
+  namespace: tracertm
+spec:
+  selector:
+    app: tracertm
+    component: api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+  type: ClusterIP
+---
+# k8s/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tracertm-api
+  namespace: tracertm
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+spec:
+  tls:
+    - hosts:
+        - api.tracertm.example.com
+      secretName: tracertm-tls
+  rules:
+    - host: api.tracertm.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tracertm-api
+                port:
+                  number: 80
+```
+
+### Horizontal Pod Autoscaler
+
+```yaml
+# k8s/hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tracertm-api
+  namespace: tracertm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tracertm-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+```
+
+### Database StatefulSet
+
+```yaml
+# k8s/postgres-statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: tracertm
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: tracertm
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tracertm-secrets
+                  key: DB_PASSWORD
+            - name: POSTGRES_DB
+              value: tracertm
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: fast-ssd
+        resources:
+          requests:
+            storage: 100Gi
+```
+
+## Cloud Deployments
+
+### AWS (ECS + RDS)
+
+```terraform
+# terraform/aws/main.tf
+
+# VPC
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "5.0"
+
+  name = "tracertm-vpc"
+  cidr = "10.0.0.0/16"
+
+  azs             = ["us-west-2a", "us-west-2b", "us-west-2c"]
+  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+
+  enable_nat_gateway = true
+  single_nat_gateway = false
+
+  tags = {
+    Environment = "production"
+    Application = "tracertm"
+  }
+}
+
+# RDS PostgreSQL
+module "rds" {
+  source  = "terraform-aws-modules/rds/aws"
+  version = "6.0"
+
+  identifier = "tracertm-db"
+
+  engine               = "postgres"
+  engine_version       = "16"
+  family               = "postgres16"
+  major_engine_version = "16"
+  instance_class       = "db.r6g.large"
+
+  allocated_storage     = 100
+  max_allocated_storage = 500
+
+  db_name  = "tracertm"
+  username = "tracertm"
+  port     = 5432
+
+  multi_az               = true
+  db_subnet_group_name   = module.vpc.database_subnet_group
+  vpc_security_group_ids = [aws_security_group.rds.id]
+
+  backup_retention_period = 7
+  skip_final_snapshot     = false
+
+  performance_insights_enabled = true
+}
+
+# ElastiCache Redis
+resource "aws_elasticache_replication_group" "redis" {
+  replication_group_id       = "tracertm-redis"
+  description                = "TraceRTM Redis cluster"
+  node_type                  = "cache.r6g.large"
+  num_cache_clusters         = 3
+  automatic_failover_enabled = true
+  multi_az_enabled           = true
+  engine                     = "redis"
+  engine_version             = "7.0"
+  port                       = 6379
+  subnet_group_name          = aws_elasticache_subnet_group.redis.name
+  security_group_ids         = [aws_security_group.redis.id]
+
+  at_rest_encryption_enabled = true
+  transit_encryption_enabled = true
+}
+
+# ECS Cluster
+resource "aws_ecs_cluster" "main" {
+  name = "tracertm-cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+
+  configuration {
+    execute_command_configuration {
+      logging = "OVERRIDE"
+      log_configuration {
+        cloud_watch_log_group_name = aws_cloudwatch_log_group.ecs.name
+      }
+    }
+  }
+}
+
+# ECS Service
+resource "aws_ecs_service" "api" {
+  name            = "tracertm-api"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.api.arn
+  desired_count   = 3
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets         = module.vpc.private_subnets
+    security_groups = [aws_security_group.api.id]
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.api.arn
+    container_name   = "api"
+    container_port   = 8000
+  }
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+}
+
+# Application Load Balancer
+resource "aws_lb" "main" {
+  name               = "tracertm-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb.id]
+  subnets            = module.vpc.public_subnets
+
+  enable_deletion_protection = true
+}
+```
+
+### Google Cloud (Cloud Run + Cloud SQL)
+
+```yaml
+# cloudbuild.yaml
+steps:
+  # Build Docker image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/tracertm-api:$COMMIT_SHA"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/tracertm-api:latest"
+      - "."
+
+  # Push to Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/tracertm-api:$COMMIT_SHA"]
+
+  # Deploy to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "tracertm-api"
+      - "--image=gcr.io/$PROJECT_ID/tracertm-api:$COMMIT_SHA"
+      - "--region=us-central1"
+      - "--platform=managed"
+      - "--allow-unauthenticated"
+      - "--set-env-vars=ENVIRONMENT=production"
+      - "--set-secrets=DATABASE_URL=tracertm-db-url:latest"
+      - "--min-instances=1"
+      - "--max-instances=10"
+      - "--cpu=2"
+      - "--memory=2Gi"
+      - "--concurrency=80"
+
+images:
+  - "gcr.io/$PROJECT_ID/tracertm-api:$COMMIT_SHA"
+  - "gcr.io/$PROJECT_ID/tracertm-api:latest"
+```
+
+### Azure (Container Apps)
+
+```bicep
+// main.bicep
+param location string = resourceGroup().location
+param environmentName string = 'tracertm-prod'
+
+// Container Apps Environment
+resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
+  name: '${environmentName}-env'
+  location: location
+  properties: {
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: logAnalytics.properties.customerId
+        sharedKey: logAnalytics.listKeys().primarySharedKey
+      }
+    }
+  }
+}
+
+// API Container App
+resource apiApp 'Microsoft.App/containerApps@2023-05-01' = {
+  name: 'tracertm-api'
+  location: location
+  properties: {
+    managedEnvironmentId: containerAppEnv.id
+    configuration: {
+      ingress: {
+        external: true
+        targetPort: 8000
+        transport: 'http'
+        traffic: [
+          {
+            weight: 100
+            latestRevision: true
+          }
+        ]
+      }
+      secrets: [
+        {
+          name: 'database-url'
+          value: databaseUrl
+        }
+      ]
+    }
+    template: {
+      containers: [
+        {
+          name: 'api'
+          image: 'ghcr.io/tracertm/api:latest'
+          resources: {
+            cpu: json('1.0')
+            memory: '2Gi'
+          }
+          env: [
+            {
+              name: 'DATABASE_URL'
+              secretRef: 'database-url'
+            }
+            {
+              name: 'ENVIRONMENT'
+              value: 'production'
+            }
+          ]
+        }
+      ]
+      scale: {
+        minReplicas: 2
+        maxReplicas: 10
+        rules: [
+          {
+            name: 'http-scaling'
+            http: {
+              metadata: {
+                concurrentRequests: '50'
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+## Monitoring
+
+### Prometheus Configuration
+
+```yaml
+# prometheus/prometheus.yml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+scrape_configs:
+  - job_name: "tracertm-api"
+    static_configs:
+      - targets: ["api:8000"]
+    metrics_path: /metrics
+
+  - job_name: "postgres"
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+
+  - job_name: "node"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+```
+
+### Alert Rules
+
+```yaml
+# prometheus/rules/tracertm.yml
+groups:
+  - name: tracertm
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: High error rate detected
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.instance }}"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High latency detected
+          description: "P95 latency is {{ $value }}s"
+
+      - alert: DatabaseConnectionPoolExhausted
+        expr: pg_stat_activity_count / pg_settings_max_connections > 0.9
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Database connection pool nearly exhausted
+
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes / container_spec_memory_limit_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Container memory usage is high
+```
+
+### Grafana Dashboard
+
+```json
+{
+  "dashboard": {
+    "title": "TraceRTM Overview",
+    "panels": [
+      {
+        "title": "Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m])) by (method, path)",
+            "legendFormat": "{{method}} {{path}}"
+          }
+        ]
+      },
+      {
+        "title": "Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m])) * 100",
+            "legendFormat": "Error %"
+          }
+        ]
+      },
+      {
+        "title": "Latency P95",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "P95"
+          }
+        ]
+      },
+      {
+        "title": "Active Database Connections",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "pg_stat_activity_count",
+            "legendFormat": "Connections"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Logging
+
+### Structured Logging Configuration
+
+```python
+# src/tracertm/core/logging.py
+import structlog
+from pythonjsonlogger import jsonlogger
+
+def configure_logging(environment: str = "production"):
+    """Configure structured logging for production."""
+
+    processors = [
+        structlog.contextvars.merge_contextvars,
+        structlog.processors.add_log_level,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+    ]
+
+    if environment == "production":
+        processors.append(structlog.processors.JSONRenderer())
+    else:
+        processors.append(structlog.dev.ConsoleRenderer())
+
+    structlog.configure(
+        processors=processors,
+        wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+        context_class=dict,
+        logger_factory=structlog.PrintLoggerFactory(),
+        cache_logger_on_first_use=True,
+    )
+
+# Usage in API
+@app.middleware("http")
+async def logging_middleware(request: Request, call_next):
+    request_id = str(uuid.uuid4())
+
+    structlog.contextvars.clear_contextvars()
+    structlog.contextvars.bind_contextvars(
+        request_id=request_id,
+        method=request.method,
+        path=request.url.path,
+        client_ip=request.client.host,
+    )
+
+    logger = structlog.get_logger()
+    logger.info("request_started")
+
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    duration = time.perf_counter() - start_time
+
+    logger.info(
+        "request_completed",
+        status_code=response.status_code,
+        duration_ms=round(duration * 1000, 2),
+    )
+
+    response.headers["X-Request-ID"] = request_id
+    return response
+```
+
+### Log Aggregation (Loki)
+
+```yaml
+# loki/loki-config.yml
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+  chunk_idle_period: 5m
+  chunk_retain_period: 30s
+
+schema_config:
+  configs:
+    - from: 2020-05-15
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 24h
+
+storage_config:
+  boltdb_shipper:
+    active_index_directory: /loki/index
+    cache_location: /loki/cache
+    shared_store: filesystem
+  filesystem:
+    directory: /loki/chunks
+
+limits_config:
+  enforce_metric_name: false
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+```
+
+## Health Checks
+
+### Comprehensive Health Endpoint
+
+```python
+@router.get("/health")
+async def health_check(
+    session: Annotated[AsyncSession, Depends(get_session)],
+    redis: Annotated[Redis, Depends(get_redis)],
+) -> HealthResponse:
+    """Comprehensive health check endpoint."""
+    checks = {}
+    overall_healthy = True
+
+    # Database check
+    try:
+        await session.execute(text("SELECT 1"))
+        checks["database"] = {"status": "healthy", "latency_ms": 0}
+    except Exception as e:
+        checks["database"] = {"status": "unhealthy", "error": str(e)}
+        overall_healthy = False
+
+    # Redis check
+    try:
+        start = time.perf_counter()
+        await redis.ping()
+        latency = (time.perf_counter() - start) * 1000
+        checks["redis"] = {"status": "healthy", "latency_ms": round(latency, 2)}
+    except Exception as e:
+        checks["redis"] = {"status": "unhealthy", "error": str(e)}
+        overall_healthy = False
+
+    return HealthResponse(
+        status="healthy" if overall_healthy else "unhealthy",
+        version=__version__,
+        checks=checks,
+        timestamp=datetime.utcnow().isoformat(),
+    )
+```
+
+## Backup and Recovery
+
+### Database Backup Script
+
+```bash
+#!/bin/bash
+# scripts/backup.sh
+
+set -euo pipefail
+
+BACKUP_DIR="/backups"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_FILE="${BACKUP_DIR}/tracertm_${TIMESTAMP}.sql.gz"
+
+# PostgreSQL backup
+pg_dump -h "${DB_HOST}" -U "${DB_USER}" -d "${DB_NAME}" | gzip > "${BACKUP_FILE}"
+
+# Upload to S3
+aws s3 cp "${BACKUP_FILE}" "s3://${BACKUP_BUCKET}/postgres/${BACKUP_FILE##*/}"
+
+# Cleanup old local backups (keep last 7 days)
+find "${BACKUP_DIR}" -name "*.sql.gz" -mtime +7 -delete
+
+# Neo4j backup
+neo4j-admin database dump neo4j --to-path="${BACKUP_DIR}/neo4j_${TIMESTAMP}"
+tar -czf "${BACKUP_DIR}/neo4j_${TIMESTAMP}.tar.gz" -C "${BACKUP_DIR}" "neo4j_${TIMESTAMP}"
+aws s3 cp "${BACKUP_DIR}/neo4j_${TIMESTAMP}.tar.gz" "s3://${BACKUP_BUCKET}/neo4j/"
+
+echo "Backup completed: ${BACKUP_FILE}"
+```
+
+### Recovery Runbook
+
+```bash
+#!/bin/bash
+# scripts/restore.sh
+
+set -euo pipefail
+
+BACKUP_FILE=$1
+
+# Download from S3
+aws s3 cp "s3://${BACKUP_BUCKET}/postgres/${BACKUP_FILE}" /tmp/
+
+# Restore PostgreSQL
+gunzip -c "/tmp/${BACKUP_FILE}" | psql -h "${DB_HOST}" -U "${DB_USER}" -d "${DB_NAME}"
+
+echo "Restore completed from: ${BACKUP_FILE}"
+```
+
+## Related Documentation
+
+- [Architecture Overview](/docs/development/architecture) - System architecture
+- [Setup Guide](/docs/development/setup) - Development environment
+- [Docker Setup](/docs/development/deployment/docker) - Docker details
+- [Kubernetes Guide](/docs/development/deployment/kubernetes) - K8s deployment
+- [Cloud Platforms](/docs/development/deployment/cloud) - Cloud-specific guides
+- [Monitoring Guide](/docs/development/deployment/monitoring) - Observability setup
+

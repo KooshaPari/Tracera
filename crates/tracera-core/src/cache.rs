@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+// Copyright 2026 Koosha Pari
+
 //! In-memory TTL cache with pluggable eviction policy and hit/miss/eviction stats.
 //!
 //! Used as a hot-path cache for derived coverage / impact computations. The

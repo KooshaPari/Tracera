@@ -1,0 +1,575 @@
+---
+title: "Multi-Factor Authentication"
+description: "Implement multi-factor authentication (MFA) for enhanced TraceRTM account security"
+---
+
+# Multi-Factor Authentication (MFA)
+
+Multi-factor authentication adds an extra layer of security to TraceRTM accounts by requiring additional verification beyond a password. TraceRTM supports multiple MFA methods to accommodate different security requirements.
+
+## Supported MFA Methods
+
+| Method | Description | Security Level | Best For |
+|--------|-------------|----------------|----------|
+| **TOTP** | Time-based One-Time Password | High | Most users |
+| **WebAuthn/FIDO2** | Hardware security keys, biometrics | Very High | High-security environments |
+| **SMS** | Text message codes | Medium | Backup option |
+| **Email** | Email verification codes | Medium | Backup option |
+| **Backup Codes** | One-time recovery codes | Medium | Account recovery |
+
+## Enabling MFA
+
+### Via Web Dashboard
+
+1. Go to **Settings** → **Security** → **Two-Factor Authentication**
+2. Click **Enable 2FA**
+3. Choose your preferred method
+4. Follow the setup instructions
+5. Save your backup codes securely
+
+### Via CLI
+
+```bash
+# Enable TOTP
+rtm auth mfa enable --method totp
+
+# Enable WebAuthn (hardware key)
+rtm auth mfa enable --method webauthn
+
+# View MFA status
+rtm auth mfa status
+
+# Generate new backup codes
+rtm auth mfa backup-codes regenerate
+```
+
+### Via API
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(access_token="...")
+
+# Start TOTP enrollment
+enrollment = await client.auth.mfa.enroll_totp()
+
+print(f"Secret: {enrollment.secret}")
+print(f"QR Code URL: {enrollment.qr_code_url}")
+print(f"Recovery codes: {enrollment.recovery_codes}")
+
+# Complete enrollment with verification code
+await client.auth.mfa.verify_totp(
+    enrollment_id=enrollment.id,
+    code="123456"  # From authenticator app
+)
+```
+
+## TOTP (Authenticator Apps)
+
+Time-based One-Time Passwords work with standard authenticator apps.
+
+### Supported Apps
+
+- Google Authenticator
+- Microsoft Authenticator
+- Authy
+- 1Password
+- Bitwarden
+
+### Setup Flow
+
+```python
+from tracertm import TraceRTMClient
+import qrcode
+
+client = TraceRTMClient(access_token="...")
+
+# 1. Start TOTP enrollment
+enrollment = await client.auth.mfa.enroll_totp(
+    issuer="TraceRTM",
+    account_name=user.email
+)
+
+# 2. Display QR code for user to scan
+qr = qrcode.QRCode()
+qr.add_data(enrollment.otpauth_url)
+qr.print_ascii()
+
+# Alternative: Provide manual entry secret
+print(f"Manual entry key: {enrollment.secret}")
+
+# 3. Verify with code from authenticator app
+result = await client.auth.mfa.verify_totp(
+    enrollment_id=enrollment.id,
+    code=user_provided_code
+)
+
+if result.verified:
+    print("TOTP enabled successfully!")
+    print(f"Backup codes: {result.backup_codes}")
+```
+
+### TOTP Verification During Login
+
+```python
+from tracertm.auth import AuthClient
+
+auth = AuthClient()
+
+# Standard login
+login_result = await auth.login(
+    email="user@example.com",
+    password="password123"
+)
+
+if login_result.mfa_required:
+    # User has MFA enabled
+    print(f"MFA required. Methods: {login_result.mfa_methods}")
+
+    # Complete with TOTP
+    tokens = await auth.verify_mfa(
+        mfa_token=login_result.mfa_token,
+        method="totp",
+        code="123456"
+    )
+
+    print(f"Login successful! Token: {tokens.access_token}")
+```
+
+### TypeScript Implementation
+
+```typescript
+import { AuthClient } from '@tracertm/sdk'
+
+const auth = new AuthClient()
+
+async function loginWithMFA(email: string, password: string) {
+  // Initial login
+  const result = await auth.login({ email, password })
+
+  if (result.mfaRequired) {
+    // Prompt user for TOTP code
+    const code = await promptForTOTPCode()
+
+    // Complete MFA
+    const tokens = await auth.verifyMFA({
+      mfaToken: result.mfaToken,
+      method: 'totp',
+      code
+    })
+
+    return tokens
+  }
+
+  return result.tokens
+}
+```
+
+## WebAuthn (Hardware Keys & Biometrics)
+
+WebAuthn provides the strongest authentication using hardware security keys or device biometrics.
+
+### Supported Devices
+
+- YubiKey (USB-A, USB-C, NFC)
+- Google Titan Security Key
+- Windows Hello
+- Touch ID (macOS)
+- Face ID (iOS)
+- Android Fingerprint
+
+### Registration Flow
+
+```typescript
+// Browser-side WebAuthn registration
+import { AuthClient } from '@tracertm/sdk'
+
+const auth = new AuthClient()
+
+async function registerWebAuthn() {
+  // 1. Get challenge from server
+  const options = await auth.mfa.getWebAuthnRegistrationOptions()
+
+  // 2. Create credential with browser API
+  const credential = await navigator.credentials.create({
+    publicKey: {
+      challenge: base64ToBuffer(options.challenge),
+      rp: {
+        name: 'TraceRTM',
+        id: 'tracertm.dev'
+      },
+      user: {
+        id: base64ToBuffer(options.userId),
+        name: options.userEmail,
+        displayName: options.userName
+      },
+      pubKeyCredParams: [
+        { alg: -7, type: 'public-key' },   // ES256
+        { alg: -257, type: 'public-key' }  // RS256
+      ],
+      authenticatorSelection: {
+        authenticatorAttachment: 'cross-platform',  // or 'platform' for biometrics
+        requireResidentKey: false,
+        userVerification: 'preferred'
+      },
+      timeout: 60000,
+      attestation: 'direct'
+    }
+  })
+
+  // 3. Send credential to server
+  await auth.mfa.registerWebAuthn({
+    credentialId: bufferToBase64(credential.rawId),
+    publicKey: bufferToBase64(credential.response.getPublicKey()),
+    attestationObject: bufferToBase64(credential.response.attestationObject),
+    clientDataJSON: bufferToBase64(credential.response.clientDataJSON)
+  })
+
+  console.log('WebAuthn registered successfully!')
+}
+```
+
+### Authentication Flow
+
+```typescript
+async function authenticateWithWebAuthn(mfaToken: string) {
+  // 1. Get challenge from server
+  const options = await auth.mfa.getWebAuthnAuthenticationOptions(mfaToken)
+
+  // 2. Get assertion from authenticator
+  const assertion = await navigator.credentials.get({
+    publicKey: {
+      challenge: base64ToBuffer(options.challenge),
+      allowCredentials: options.allowCredentials.map(cred => ({
+        id: base64ToBuffer(cred.id),
+        type: 'public-key',
+        transports: cred.transports
+      })),
+      timeout: 60000,
+      userVerification: 'preferred'
+    }
+  })
+
+  // 3. Verify with server
+  const tokens = await auth.verifyMFA({
+    mfaToken,
+    method: 'webauthn',
+    assertion: {
+      credentialId: bufferToBase64(assertion.rawId),
+      authenticatorData: bufferToBase64(assertion.response.authenticatorData),
+      clientDataJSON: bufferToBase64(assertion.response.clientDataJSON),
+      signature: bufferToBase64(assertion.response.signature)
+    }
+  })
+
+  return tokens
+}
+```
+
+## SMS Verification
+
+SMS provides a familiar backup MFA option.
+
+```python
+# Enable SMS MFA
+await client.auth.mfa.enroll_sms(
+    phone_number="+1234567890"
+)
+
+# Verify phone number
+await client.auth.mfa.verify_sms(
+    enrollment_id=enrollment.id,
+    code="123456"  # Code sent via SMS
+)
+
+# During login
+if login_result.mfa_required:
+    # Request SMS code
+    await auth.send_mfa_code(
+        mfa_token=login_result.mfa_token,
+        method="sms"
+    )
+
+    # Verify
+    tokens = await auth.verify_mfa(
+        mfa_token=login_result.mfa_token,
+        method="sms",
+        code=user_provided_code
+    )
+```
+
+> **Note**: SMS MFA is less secure than TOTP or WebAuthn due to SIM swapping risks. Use as a backup option only.
+
+## Email Verification
+
+Email codes provide another backup option.
+
+```python
+# Enable email MFA
+await client.auth.mfa.enroll_email()
+
+# During login
+if login_result.mfa_required:
+    # Request email code
+    await auth.send_mfa_code(
+        mfa_token=login_result.mfa_token,
+        method="email"
+    )
+
+    # User receives email with code
+    tokens = await auth.verify_mfa(
+        mfa_token=login_result.mfa_token,
+        method="email",
+        code=user_provided_code
+    )
+```
+
+## Backup Codes
+
+Backup codes provide account recovery when other MFA methods are unavailable.
+
+### Generating Backup Codes
+
+```python
+# Generate backup codes during MFA enrollment
+enrollment = await client.auth.mfa.enroll_totp()
+backup_codes = enrollment.backup_codes
+
+# Display to user (only shown once!)
+print("Save these backup codes securely:")
+for code in backup_codes:
+    print(f"  {code}")
+
+# Regenerate backup codes (invalidates old ones)
+new_codes = await client.auth.mfa.regenerate_backup_codes()
+```
+
+### Using Backup Codes
+
+```python
+# Each code can only be used once
+if login_result.mfa_required:
+    tokens = await auth.verify_mfa(
+        mfa_token=login_result.mfa_token,
+        method="backup_code",
+        code="ABCD-1234-EFGH-5678"
+    )
+```
+
+### Backup Code Format
+
+```
+XXXX-XXXX-XXXX-XXXX
+```
+
+- 16 alphanumeric characters
+- 10 codes generated by default
+- Each code is single-use
+- Case-insensitive
+
+## MFA for API Access
+
+### Requiring MFA for Sensitive Operations
+
+```python
+from tracertm.auth import require_mfa
+
+@require_mfa
+async def delete_project(project_id: str, mfa_code: str):
+    """Delete a project (requires MFA verification)."""
+    # Verify MFA before proceeding
+    await client.auth.verify_mfa_for_action(
+        action="delete_project",
+        code=mfa_code
+    )
+
+    await client.projects.delete(project_id)
+```
+
+### Step-Up Authentication
+
+```python
+# Some operations require re-authentication
+async def change_security_settings(settings: SecuritySettings):
+    try:
+        await client.settings.update_security(settings)
+    except StepUpRequired as e:
+        # User must re-authenticate with MFA
+        print(f"Please verify MFA to continue")
+
+        mfa_token = await client.auth.initiate_step_up()
+
+        tokens = await client.auth.verify_mfa(
+            mfa_token=mfa_token,
+            method="totp",
+            code=user_provided_code
+        )
+
+        # Retry with elevated session
+        await client.settings.update_security(settings)
+```
+
+## Organization MFA Policies
+
+### Enforcing MFA
+
+```python
+from tracertm.admin import OrganizationAdmin
+
+admin = OrganizationAdmin(client)
+
+# Require MFA for all users
+await admin.set_mfa_policy({
+    "required": True,
+    "allowed_methods": ["totp", "webauthn"],
+    "grace_period_days": 7,  # Time for users to enable MFA
+    "remember_device_days": 30,  # How long to trust a device
+    "require_for_api_keys": False,  # MFA for API key creation
+    "require_for_sensitive_actions": True
+})
+```
+
+### Role-Based MFA Requirements
+
+```python
+# Different requirements by role
+await admin.set_mfa_policy({
+    "default": {
+        "required": False,
+        "allowed_methods": ["totp", "sms", "email", "webauthn"]
+    },
+    "roles": {
+        "admin": {
+            "required": True,
+            "allowed_methods": ["totp", "webauthn"],
+            "require_webauthn": True  # Hardware key required
+        },
+        "editor": {
+            "required": True,
+            "allowed_methods": ["totp", "webauthn"]
+        }
+    }
+})
+```
+
+### Compliance Reporting
+
+```python
+# Get MFA adoption report
+report = await admin.get_mfa_report()
+
+print(f"MFA enabled: {report.enabled_count}/{report.total_users}")
+print(f"Adoption rate: {report.adoption_rate}%")
+print(f"\nBy method:")
+for method, count in report.by_method.items():
+    print(f"  {method}: {count}")
+
+print(f"\nUsers without MFA:")
+for user in report.users_without_mfa:
+    print(f"  {user.email} - Last login: {user.last_login}")
+```
+
+## Disabling MFA
+
+### User Self-Service
+
+```python
+# User can disable their own MFA (requires verification)
+await client.auth.mfa.disable(
+    method="totp",
+    verification_code="123456"  # Current TOTP code
+)
+```
+
+### Admin Override
+
+```python
+# Admin can disable user's MFA (for account recovery)
+await admin.users.disable_mfa(
+    user_id="user_abc123",
+    reason="User lost access to authenticator"
+)
+
+# Audit log entry is created
+```
+
+## Recovery Flows
+
+### Lost Authenticator App
+
+```python
+# 1. Use backup code to login
+tokens = await auth.verify_mfa(
+    mfa_token=login_result.mfa_token,
+    method="backup_code",
+    code="ABCD-1234-EFGH-5678"
+)
+
+# 2. Disable old TOTP
+await client.auth.mfa.disable(method="totp", skip_verification=True)
+
+# 3. Re-enroll with new authenticator
+enrollment = await client.auth.mfa.enroll_totp()
+```
+
+### Lost All MFA Methods
+
+```python
+# Contact admin for account recovery
+# Admin initiates recovery with identity verification
+
+await admin.users.initiate_mfa_recovery(
+    user_id="user_abc123",
+    verification_method="identity_document",  # Manual verification
+    notes="User verified via video call"
+)
+
+# User receives email with temporary access
+# Must set up new MFA immediately after login
+```
+
+## Security Events
+
+```python
+# MFA events are logged
+events = await client.events.list(
+    entity_type="mfa",
+    limit=100
+)
+
+for event in events:
+    print(f"{event.timestamp}: {event.event_type}")
+    print(f"  User: {event.user_id}")
+    print(f"  Method: {event.metadata.get('method')}")
+    print(f"  IP: {event.metadata.get('ip_address')}")
+    print(f"  Success: {event.metadata.get('success')}")
+```
+
+## Troubleshooting
+
+### TOTP Code Not Working
+
+- Ensure device time is synchronized
+- Try the previous and next codes (30-second window)
+- Check that you're using the correct authenticator account
+
+### WebAuthn Not Working
+
+- Ensure browser supports WebAuthn
+- Try a different browser
+- Check that the security key is properly inserted
+- Verify the security key is registered for this account
+
+### Account Locked Out
+
+1. Try backup codes
+2. Contact your organization admin
+3. Use account recovery flow
+4. Contact TraceRTM support as last resort
+
+## Related Documentation
+
+- [Authentication Overview](/docs/api-reference/authentication) - Auth methods
+- [Security Best Practices](/docs/wiki/guides/security) - Security guidelines
+- [OAuth 2.0](/docs/api-reference/authentication/oauth) - OAuth flows
+

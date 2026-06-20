@@ -30,18 +30,15 @@ def setup_cors(app: FastAPI) -> None:
         "CORS_ORIGINS",
         (
             "http://localhost:4000,http://127.0.0.1:4000,"
-            "http://localhost:5180,http://127.0.0.1:5180,"
             "http://localhost:5173,http://127.0.0.1:5173,"
             "http://localhost:3000,http://127.0.0.1:3000"
         ),
     ).split(",")
 
-    parsed_origins = [origin.strip() for origin in cors_origins]
-
     # Add CORS middleware with strict origin whitelist
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=parsed_origins,
+        allow_origins=[origin.strip() for origin in cors_origins],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

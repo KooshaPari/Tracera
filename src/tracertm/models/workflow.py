@@ -3,16 +3,11 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
-from typing import TYPE_CHECKING
 
 from sqlalchemy import JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from tracertm.models.base import Base, GUID, TimestampMixin
-
-if TYPE_CHECKING:
-    pass
+from tracertm.models.base import GUID, Base, TimestampMixin
 
 
 def generate_workflow_uuid() -> uuid.UUID:

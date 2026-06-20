@@ -1,0 +1,143 @@
+---
+title: "Code Comments"
+description: "Guidelines for writing code comments"
+keywords: [comments, documentation, code, docstrings]
+---
+
+# Code Comments
+
+Guidelines for writing effective code comments in TraceRTM.
+
+## Comment Types
+
+### Docstrings
+
+```python
+def create_item(title: str, view: str) -> dict:
+    """Create a new item.
+
+    Creates an item in the current project with the specified
+    title and view. The item will be created with status "draft"
+    by default.
+
+    Args:
+        title: Item title (1-255 characters, required)
+        view: Item view (requirements, test-cases, etc.)
+
+    Returns:
+        Dictionary containing created item with id, title, view, status
+
+    Raises:
+        ValidationError: If title is empty or view is invalid
+        DatabaseError: If database operation fails
+
+    Example:
+        >>> item = create_item("Test Requirement", "requirements")
+        >>> item["status"]
+        'draft'
+    """
+    pass
+```
+
+### Inline Comments
+
+```python
+# Calculate impact depth using BFS traversal
+# This ensures we find all transitive dependencies
+depth = calculate_impact_depth(item_id, max_depth=10)
+```
+
+### TODO Comments
+
+```python
+# TODO: Add caching for frequently accessed items
+# FIXME: Handle edge case when project_id is None
+# NOTE: This function may be slow for large datasets
+```
+
+## Comment Guidelines
+
+### Explain Why, Not What
+
+```python
+# Bad - explains what
+# Increment counter
+counter += 1
+
+# Good - explains why
+# Track number of processed items for progress reporting
+counter += 1
+```
+
+### Keep Comments Up to Date
+
+```python
+# Bad - comment doesn't match code
+# Get all items
+items = get_active_items()  # Actually gets only active items
+
+# Good - comment matches code
+# Get only active items
+items = get_active_items()
+```
+
+### Remove Obvious Comments
+
+```python
+# Bad - comment is obvious
+# Create item
+item = create_item(title, view)
+
+# Good - no comment needed for obvious code
+item = create_item(title, view)
+```
+
+## Complex Logic
+
+### Explain Complex Algorithms
+
+```python
+def calculate_shortest_path(source_id: str, target_id: str) -> list[str]:
+    """Calculate shortest path between items using Dijkstra's algorithm.
+    
+    Uses a priority queue to efficiently find the shortest path
+    in the item relationship graph. Returns empty list if no path exists.
+    """
+    # Initialize distance map with infinity for all nodes
+    distances = {node: float('inf') for node in graph.nodes}
+    distances[source_id] = 0
+    
+    # Priority queue: (distance, node_id)
+    queue = [(0, source_id)]
+    visited = set()
+    
+    # Dijkstra's algorithm
+    while queue:
+        current_dist, current = heapq.heappop(queue)
+        # ... rest of algorithm
+```
+
+## API Documentation
+
+### Public APIs
+
+```python
+class ItemService:
+    """Service for managing items.
+    
+    Provides methods for creating, reading, updating, and deleting
+    items. All operations are logged and events are published.
+    """
+    
+    async def create(self, data: dict) -> Item:
+        """Create a new item.
+        
+        Creates an item and publishes 'item.created' event.
+        """
+        pass
+```
+
+## Related Documentation
+
+- [Documentation](./05-documentation) - Documentation overview
+- [Code Style](./01-code-style) - Coding standards

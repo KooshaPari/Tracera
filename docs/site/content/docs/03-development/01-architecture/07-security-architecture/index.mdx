@@ -1,0 +1,14 @@
+---
+title: "Security Architecture"
+description: "Security posture."
+---
+
+## Role in the architecture
+- Zero-trust between services with mTLS.
+- RBAC and scopes enforced at API edge.
+- Least-privilege DB roles and secret management.
+
+## Considerations
+- Throughput vs. latency trade-offs.
+- Failure domains and retry/backoff strategies.
+- Data model ownership and boundaries.

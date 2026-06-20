@@ -1,0 +1,231 @@
+---
+title: "Database Queries"
+description: "SQLAlchemy query patterns and optimization in TraceRTM"
+keywords: [database, queries, sqlalchemy, orm, optimization]
+---
+
+# Database Queries
+
+SQLAlchemy query patterns and best practices for database operations in TraceRTM.
+
+## Basic Queries
+
+### Select Query
+
+```python
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from tracertm.models.item import Item
+
+async def get_items(session: AsyncSession, project_id: str):
+    """Get items for project."""
+    stmt = select(Item).where(Item.project_id == project_id)
+    result = await session.execute(stmt)
+    return result.scalars().all()
+```
+
+### Filter Queries
+
+```python
+async def get_items_by_status(
+    session: AsyncSession,
+    project_id: str,
+    status: str
+):
+    """Get items by status."""
+    stmt = select(Item).where(
+        Item.project_id == project_id,
+        Item.status == status
+    )
+    result = await session.execute(stmt)
+    return result.scalars().all()
+```
+
+## Query Patterns
+
+### Pagination
+
+```python
+async def list_items(
+    session: AsyncSession,
+    project_id: str,
+    skip: int = 0,
+    limit: int = 100
+):
+    """List items with pagination."""
+    stmt = (
+        select(Item)
+        .where(Item.project_id == project_id)
+        .offset(skip)
+        .limit(limit)
+    )
+    result = await session.execute(stmt)
+    return result.scalars().all()
+```
+
+### Ordering
+
+```python
+from sqlalchemy import desc
+
+async def get_recent_items(session: AsyncSession, project_id: str):
+    """Get items ordered by creation date."""
+    stmt = (
+        select(Item)
+        .where(Item.project_id == project_id)
+        .order_by(desc(Item.created_at))
+    )
+    result = await session.execute(stmt)
+    return result.scalars().all()
+```
+
+### Joins
+
+```python
+from sqlalchemy.orm import selectinload
+
+async def get_item_with_links(session: AsyncSession, item_id: str):
+    """Get item with related links."""
+    stmt = (
+        select(Item)
+        .where(Item.id == item_id)
+        .options(selectinload(Item.links))
+    )
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
+```
+
+## Query Optimization
+
+### Eager Loading
+
+```python
+from sqlalchemy.orm import joinedload
+
+async def get_items_with_project(session: AsyncSession):
+    """Get items with project (eager load)."""
+    stmt = (
+        select(Item)
+        .options(joinedload(Item.project))
+    )
+    result = await session.execute(stmt)
+    return result.unique().scalars().all()
+```
+
+### Select Only Needed Columns
+
+```python
+async def get_item_titles(session: AsyncSession, project_id: str):
+    """Get only item titles (not full objects)."""
+    stmt = select(Item.title).where(Item.project_id == project_id)
+    result = await session.execute(stmt)
+    return result.scalars().all()
+```
+
+### Use Indexes
+
+```python
+# Ensure indexes exist for frequently queried fields
+# In migration:
+from alembic import op
+
+def upgrade():
+    op.create_index('idx_items_project_status', 'items', ['project_id', 'status'])
+```
+
+## Transactions
+
+### Manual Transactions
+
+```python
+async def create_item_with_link(
+    session: AsyncSession,
+    item_data: dict,
+    link_data: dict
+):
+    """Create item and link in transaction."""
+    try:
+        # Create item
+        item = Item(**item_data)
+        session.add(item)
+        await session.flush()  # Get ID
+        
+        # Create link
+        link = Link(source_id=item.id, **link_data)
+        session.add(link)
+        
+        # Commit transaction
+        await session.commit()
+        return item
+    except Exception:
+        await session.rollback()
+        raise
+```
+
+## Query Building
+
+### Dynamic Queries
+
+```python
+from sqlalchemy import and_, or_
+
+async def search_items(
+    session: AsyncSession,
+    project_id: str,
+    title: str | None = None,
+    status: str | None = None
+):
+    """Build dynamic query based on filters."""
+    conditions = [Item.project_id == project_id]
+    
+    if title:
+        conditions.append(Item.title.ilike(f"%{title}%"))
+    
+    if status:
+        conditions.append(Item.status == status)
+    
+    stmt = select(Item).where(and_(*conditions))
+    result = await session.execute(stmt)
+    return result.scalars().all()
+```
+
+## Best Practices
+
+### 1. Use Async Session
+
+```python
+# Good - async
+async def get_item(session: AsyncSession, item_id: str):
+    stmt = select(Item).where(Item.id == item_id)
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
+
+# Bad - sync (blocks event loop)
+def get_item(session, item_id: str):
+    return session.query(Item).filter(Item.id == item_id).first()
+```
+
+### 2. Avoid N+1 Queries
+
+```python
+# Bad - N+1 queries
+items = await get_items(session, project_id)
+for item in items:
+    links = await get_links(session, item.id)  # N queries!
+
+# Good - eager load
+items = await get_items_with_links(session, project_id)  # 1 query
+```
+
+### 3. Use Indexes
+
+```python
+# Create indexes for frequently queried fields
+CREATE INDEX idx_items_project_status ON items(project_id, status);
+CREATE INDEX idx_items_created_at ON items(created_at);
+```
+
+## Related Documentation
+
+- [Query Optimization](./03a-query-optimization) - Advanced optimization
+- [Database Setup](../../02-setup/04-database-setup) - Database configuration

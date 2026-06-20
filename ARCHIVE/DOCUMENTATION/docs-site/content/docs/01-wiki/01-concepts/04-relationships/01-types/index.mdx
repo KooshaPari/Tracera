@@ -1,0 +1,492 @@
+---
+title: "Relationship Types"
+description: "Understanding link types and their semantics in TraceRTM"
+---
+
+# Relationship Types
+
+Link types define the semantic meaning of connections between artifacts. TraceRTM provides a comprehensive set of built-in link types and supports custom definitions.
+
+## Built-in Link Types
+
+### Hierarchical Links
+
+Links that establish parent-child relationships:
+
+| Link Type | Inverse | Description | Example |
+|-----------|---------|-------------|---------|
+| `parent_of` | `child_of` | Direct containment | Epic → Feature |
+| `child_of` | `parent_of` | Belongs to parent | Feature → Epic |
+| `contains` | `contained_by` | Grouping | Component → Modules |
+| `part_of` | `has_part` | Composition | Function → Class |
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Create hierarchy
+client.create_link("EPIC-001", "FEAT-001", "parent_of")
+client.create_link("EPIC-001", "FEAT-002", "parent_of")
+client.create_link("FEAT-001", "STORY-001", "parent_of")
+client.create_link("FEAT-001", "STORY-002", "parent_of")
+
+# Query children
+children = client.get_links("EPIC-001", link_type="parent_of")
+# Returns: [FEAT-001, FEAT-002]
+
+# Query parent
+parent = client.get_links("FEAT-001", link_type="child_of")
+# Returns: [EPIC-001]
+```
+
+### Implementation Links
+
+Links between specifications and their implementations:
+
+| Link Type | Inverse | Description | Example |
+|-----------|---------|-------------|---------|
+| `implements` | `implemented_by` | Code realizes design | Code → Design |
+| `realizes` | `realized_by` | Implementation of requirement | Code → Feature |
+| `satisfies` | `satisfied_by` | Fulfills a constraint | Code → Non-functional Req |
+| `refines` | `refined_by` | Adds detail to | Design → Architecture |
+
+```python
+# Link code to what it implements
+client.create_link("CODE-001", "DES-001", "implements")
+client.create_link("CODE-001", "FEAT-001", "realizes")
+client.create_link("CODE-001", "NFR-001", "satisfies")
+
+# Query: What implements this design?
+implementations = client.trace_backward(
+    "DES-001",
+    link_type="implements"
+)
+
+# Query: What does this code implement?
+targets = client.trace_forward(
+    "CODE-001",
+    link_type="implements"
+)
+```
+
+### Verification Links
+
+Links between artifacts and their verification:
+
+| Link Type | Inverse | Description | Example |
+|-----------|---------|-------------|---------|
+| `tests` | `tested_by` | Test exercises code | Test → Code |
+| `verifies` | `verified_by` | Test validates requirement | Test → Feature |
+| `validates` | `validated_by` | Confirms acceptance | Test → Acceptance Criteria |
+| `covers` | `covered_by` | Addresses coverage | Test → Requirement |
+
+```python
+# Link tests to what they verify
+client.create_link("TEST-001", "FEAT-001", "verifies")
+client.create_link("TEST-001", "CODE-001", "tests")
+
+# Query test coverage
+coverage = client.get_coverage(
+    source_type="feature",
+    target_type="test",
+    link_type="verified_by"
+)
+
+print(f"Test coverage: {coverage.percentage}%")
+for gap in coverage.gaps:
+    print(f"  Missing tests: {gap.id}")
+```
+
+### Dependency Links
+
+Links that establish dependencies between artifacts:
+
+| Link Type | Inverse | Description | Example |
+|-----------|---------|-------------|---------|
+| `depends_on` | `dependency_of` | Requires to function | Feature → Feature |
+| `blocks` | `blocked_by` | Prevents progress | Bug → Feature |
+| `enables` | `enabled_by` | Makes possible | API → Feature |
+| `requires` | `required_by` | Prerequisite | Feature → Infrastructure |
+
+```python
+# Create dependencies
+client.create_link("FEAT-002", "FEAT-001", "depends_on")
+client.create_link("BUG-001", "FEAT-003", "blocks")
+
+# Find blocked items
+blocked = client.trace_forward("BUG-001", "blocks")
+
+# Find dependencies
+deps = client.trace_forward("FEAT-002", "depends_on")
+
+# Detect cycles
+cycles = client.detect_cycles(link_types=["depends_on", "blocks"])
+if cycles:
+    print(f"Circular dependencies found: {cycles}")
+```
+
+### Documentation Links
+
+Links between artifacts and their documentation:
+
+| Link Type | Inverse | Description | Example |
+|-----------|---------|-------------|---------|
+| `documents` | `documented_by` | Describes or explains | Doc → Feature |
+| `specifies` | `specified_by` | Defines in detail | API Spec → Endpoint |
+| `references` | `referenced_by` | Points to for info | Doc → Doc |
+
+```python
+# Link documentation
+client.create_link("DOC-001", "FEAT-001", "documents")
+client.create_link("API-001", "CODE-001", "specifies")
+
+# Find documentation for feature
+docs = client.trace_backward("FEAT-001", "documents")
+```
+
+### Derivation Links
+
+Links showing how requirements derive from each other:
+
+| Link Type | Inverse | Description | Example |
+|-----------|---------|-------------|---------|
+| `derives_from` | `derived_to` | Source of requirement | Story → Feature |
+| `traces_to` | `traced_from` | Upstream tracing | Req → Business Goal |
+| `allocated_to` | `allocates` | Assignment | Req → Component |
+
+```python
+# Trace requirement derivation
+client.create_link("STORY-001", "FEAT-001", "derives_from")
+client.create_link("FEAT-001", "GOAL-001", "traces_to")
+
+# Full trace from story to goal
+chain = client.trace_chain(
+    "STORY-001",
+    link_types=["derives_from", "traces_to"],
+    max_depth=5
+)
+```
+
+### Operational Links
+
+Links for runtime and deployment:
+
+| Link Type | Inverse | Description | Example |
+|-----------|---------|-------------|---------|
+| `deploys_to` | `deployed_from` | Deployment target | Service → Environment |
+| `monitors` | `monitored_by` | Observability | Monitor → Service |
+| `alerts_on` | `alerts_for` | Alerting relationship | Alert → Monitor |
+| `configures` | `configured_by` | Configuration | Config → Service |
+
+```python
+# Link operational artifacts
+client.create_link("SVC-001", "ENV-PROD", "deploys_to")
+client.create_link("MON-001", "SVC-001", "monitors")
+client.create_link("ALERT-001", "MON-001", "alerts_on")
+```
+
+## CLI Usage
+
+```bash
+# Create links
+tracertm link FEAT-001 EPIC-001 --type child_of
+tracertm link CODE-001 DES-001 --type implements
+tracertm link TEST-001 FEAT-001 --type verifies
+
+# List link types
+tracertm link-types
+
+# Output:
+# Built-in Link Types
+# ═══════════════════
+# Hierarchical: parent_of, child_of, contains, part_of
+# Implementation: implements, realizes, satisfies, refines
+# Verification: tests, verifies, validates, covers
+# Dependency: depends_on, blocks, enables, requires
+# Documentation: documents, specifies, references
+# Derivation: derives_from, traces_to, allocated_to
+# Operational: deploys_to, monitors, alerts_on, configures
+
+# Get links for an item
+tracertm links FEAT-001
+tracertm links FEAT-001 --type implements --direction outgoing
+
+# Delete link
+tracertm unlink CODE-001 DES-001 --type implements
+```
+
+## Custom Link Types
+
+### Defining Custom Types
+
+```yaml
+# .tracertm/config.yaml
+link_types:
+  custom:
+    # Risk relationship
+    - name: mitigates
+      inverse: mitigated_by
+      description: "Control that reduces risk"
+      source_types: [control, test]
+      target_types: [risk]
+      category: risk_management
+
+    # Compliance relationship
+    - name: complies_with
+      inverse: compliance_for
+      description: "Satisfies regulatory requirement"
+      source_types: [feature, code, process]
+      target_types: [regulation]
+      category: compliance
+
+    # Review relationship
+    - name: reviewed_by
+      inverse: reviews
+      description: "Formal review approval"
+      source_types: [design, code]
+      target_types: [review]
+      category: governance
+```
+
+### Using Custom Types
+
+```python
+# Create custom link
+client.create_link("CTRL-001", "RISK-001", "mitigates")
+client.create_link("FEAT-001", "REG-001", "complies_with")
+
+# Query custom links
+mitigating_controls = client.trace_backward(
+    "RISK-001",
+    link_type="mitigates"
+)
+```
+
+## Link Properties
+
+### Adding Metadata to Links
+
+```python
+# Link with metadata
+client.create_link(
+    source_id="TEST-001",
+    target_id="FEAT-001",
+    link_type="verifies",
+    metadata={
+        "coverage_type": "full",
+        "created_by": "auto-scanner",
+        "confidence": 0.95,
+        "verification_method": "automated"
+    }
+)
+
+# Query with metadata
+links = client.get_links(
+    "FEAT-001",
+    link_type="verified_by",
+    metadata={"coverage_type": "full"}
+)
+```
+
+### Link Validation
+
+```yaml
+# .tracertm/config.yaml
+link_validation:
+  # Require specific link types between artifact types
+  rules:
+    - source_type: code
+      target_type: design
+      required_link_types: [implements]
+
+    - source_type: test
+      target_type: feature
+      required_link_types: [verifies]
+
+    - source_type: feature
+      link_type: realized_by
+      min_count: 1
+      message: "Every feature must have implementing code"
+```
+
+## Link Directionality
+
+### Forward vs Backward
+
+Links are directional. The direction matters for tracing:
+
+```
+Source ──link_type──> Target
+
+CODE-001 ──implements──> DES-001
+
+Forward:  From CODE-001, following "implements" → DES-001
+Backward: From DES-001, following "implemented_by" → CODE-001
+```
+
+```python
+# Forward trace (source → target)
+targets = client.trace_forward(
+    "CODE-001",
+    link_type="implements"
+)
+# Returns: DES-001
+
+# Backward trace (target ← source)
+sources = client.trace_backward(
+    "DES-001",
+    link_type="implements"  # Uses inverse automatically
+)
+# Returns: CODE-001
+```
+
+### Bidirectional Links
+
+Some links are inherently bidirectional:
+
+```yaml
+link_types:
+  custom:
+    - name: related_to
+      bidirectional: true  # No inverse, same in both directions
+      description: "General relationship"
+```
+
+## Link Constraints
+
+### Type Constraints
+
+Restrict which artifact types can be linked:
+
+```yaml
+link_types:
+  builtin:
+    implements:
+      source_types: [code, component]
+      target_types: [design, architecture, feature]
+
+    verifies:
+      source_types: [test, testsuite]
+      target_types: [feature, story, requirement]
+```
+
+### Cardinality Constraints
+
+```yaml
+link_constraints:
+  # Each code module must implement exactly one design
+  - link_type: implements
+    source_type: code
+    cardinality: "1"  # Exactly one
+
+  # Each feature must have at least one test
+  - link_type: verified_by
+    source_type: feature
+    cardinality: "1..*"  # One or more
+
+  # A test can verify at most 5 requirements
+  - link_type: verifies
+    source_type: test
+    cardinality: "0..5"  # Zero to five
+```
+
+## Querying by Link Type
+
+### Filter by Type
+
+```python
+# Get specific link types
+implements_links = client.get_links("CODE-001", link_type="implements")
+all_links = client.get_links("CODE-001")  # All types
+
+# Trace with multiple types
+impact = client.analyze_impact(
+    "FEAT-001",
+    link_types=["realized_by", "verified_by", "depends_on"]
+)
+```
+
+### Link Type Statistics
+
+```bash
+# Get link statistics
+tracertm stats links
+
+# Output:
+# Link Type Statistics
+# ════════════════════
+# implements: 245 links
+# verifies: 312 links
+# parent_of: 89 links
+# depends_on: 56 links
+# documents: 78 links
+#
+# Total: 780 links
+# Average per artifact: 3.2
+```
+
+## Best Practices
+
+### 1. Use Specific Link Types
+
+```
+✓ Use: implements, realizes, verifies
+✗ Avoid: relates_to, linked_to (too generic)
+```
+
+### 2. Maintain Consistency
+
+```python
+# Be consistent with direction
+# Always: code → design (implements)
+# Not: sometimes design → code
+
+# Correct
+client.create_link("CODE-001", "DES-001", "implements")
+
+# Incorrect (reversed direction)
+client.create_link("DES-001", "CODE-001", "implemented_by")
+```
+
+### 3. Validate Link Integrity
+
+```bash
+# Check for orphan links
+tracertm validate links
+
+# Output:
+# Link Validation Report
+# ═════════════════════════
+# ✓ All links valid
+#
+# Warnings:
+#   3 items with no incoming links
+#   2 items with no outgoing links
+```
+
+### 4. Document Custom Types
+
+```yaml
+link_types:
+  custom:
+    - name: risk_accepts
+      inverse: accepted_risk_of
+      description: |
+        Indicates formal acceptance of a risk.
+        Used when a risk cannot be mitigated and is
+        accepted by authorized personnel.
+      source_types: [risk_acceptance]
+      target_types: [risk]
+      category: risk_management
+      examples:
+        - "ACCEPT-001 risk_accepts RISK-042"
+```
+
+## Related Topics
+
+- [Relationship Mapping](/docs/wiki/concepts/relationships/mapping) - Creating links
+- [Visualization](/docs/wiki/concepts/relationships/visualization) - Graph views
+- [Impact Analysis](/docs/wiki/concepts/relationships/impact-analysis) - Change impact
+- [Traceability](/docs/wiki/concepts/traceability) - Building trace chains
+

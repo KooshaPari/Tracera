@@ -1,0 +1,155 @@
+---
+title: "Elasticsearch Integration"
+description: "Elasticsearch search engine integration (Optional)"
+keywords: [elasticsearch, search, indexing, optional]
+---
+
+# Elasticsearch Integration
+
+Optional Elasticsearch integration for advanced search capabilities.
+
+## Overview
+
+Elasticsearch provides:
+- Advanced full-text search
+- Faceted search
+- Aggregations
+- Better performance for large datasets
+
+## Setup
+
+### Install Elasticsearch
+
+```bash
+# Using Docker
+docker run -d -p 9200:9200 -p 9300:9300 \
+  -e "discovery.type=single-node" \
+  elasticsearch:8.0.0
+```
+
+### Python Client
+
+```python
+from elasticsearch import AsyncElasticsearch
+
+es_client = AsyncElasticsearch(["http://localhost:9200"])
+```
+
+## Indexing
+
+### Create Index
+
+```python
+async def create_items_index():
+    """Create Elasticsearch index for items."""
+    await es_client.indices.create(
+        index="items",
+        body={
+            "mappings": {
+                "properties": {
+                    "id": {"type": "keyword"},
+                    "title": {"type": "text", "analyzer": "english"},
+                    "description": {"type": "text", "analyzer": "english"},
+                    "view": {"type": "keyword"},
+                    "status": {"type": "keyword"},
+                    "project_id": {"type": "keyword"}
+                }
+            }
+        }
+    )
+```
+
+### Index Document
+
+```python
+async def index_item(item: Item):
+    """Index item in Elasticsearch."""
+    await es_client.index(
+        index="items",
+        id=item.id,
+        document={
+            "id": item.id,
+            "title": item.title,
+            "description": item.description,
+            "view": item.view,
+            "status": item.status,
+            "project_id": item.project_id
+        }
+    )
+```
+
+## Searching
+
+### Basic Search
+
+```python
+async def search_items(query: str, project_id: str | None = None):
+    """Search items in Elasticsearch."""
+    search_body = {
+        "query": {
+            "multi_match": {
+                "query": query,
+                "fields": ["title^2", "description"],
+                "type": "best_fields"
+            }
+        }
+    }
+    
+    if project_id:
+        search_body["query"] = {
+            "bool": {
+                "must": [
+                    {"match": {"project_id": project_id}},
+                    {"multi_match": {
+                        "query": query,
+                        "fields": ["title^2", "description"]
+                    }}
+                ]
+            }
+        }
+    
+    response = await es_client.search(index="items", body=search_body)
+    return [hit["_source"] for hit in response["hits"]["hits"]]
+```
+
+### Faceted Search
+
+```python
+async def search_with_facets(query: str):
+    """Search with facet aggregations."""
+    search_body = {
+        "query": {"match": {"title": query}},
+        "aggs": {
+            "by_view": {"terms": {"field": "view"}},
+            "by_status": {"terms": {"field": "status"}}
+        }
+    }
+    
+    response = await es_client.search(index="items", body=search_body)
+    return {
+        "results": [hit["_source"] for hit in response["hits"]["hits"]],
+        "facets": {
+            "views": response["aggregations"]["by_view"]["buckets"],
+            "statuses": response["aggregations"]["by_status"]["buckets"]
+        }
+    }
+```
+
+## Configuration
+
+### Environment Variables
+
+```bash
+ELASTICSEARCH_URL=http://localhost:9200
+ELASTICSEARCH_INDEX_PREFIX=tracertm
+ELASTICSEARCH_ENABLED=true
+```
+
+### Optional Feature
+
+Elasticsearch is optional. TraceRTM works with PostgreSQL full-text search by default.
+
+## Related Documentation
+
+- [Search Engine](./04-search-engine) - PostgreSQL search
+- [Search API](/docs/api-reference/rest-api/search) - Search API

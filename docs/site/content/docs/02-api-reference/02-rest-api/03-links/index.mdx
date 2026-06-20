@@ -1,0 +1,724 @@
+---
+title: "Links API"
+description: "REST API endpoints for managing traceability links between items"
+---
+
+# Links API
+
+Links establish traceability relationships between items in TraceRTM. They form the foundation of requirements traceability, connecting requirements to tests, bugs to fixes, and more.
+
+## Endpoints Overview
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/projects/{project_id}/links` | List links in project |
+| `POST` | `/v1/projects/{project_id}/links` | Create a link |
+| `GET` | `/v1/links/{id}` | Get link details |
+| `PATCH` | `/v1/links/{id}` | Update a link |
+| `DELETE` | `/v1/links/{id}` | Delete a link |
+| `GET` | `/v1/items/{id}/links` | Get item's links |
+| `POST` | `/v1/links/bulk` | Bulk create links |
+| `GET` | `/v1/projects/{project_id}/links/analysis` | Analyze link coverage |
+
+## Link Object
+
+```json
+{
+  "id": "link_abc123xyz",
+  "project_id": "proj_456",
+  "type": "verified_by",
+  "source_id": "item_req001",
+  "target_id": "item_test001",
+  "source": {
+    "id": "item_req001",
+    "type": "requirement",
+    "title": "User Authentication",
+    "custom_id": "REQ-001",
+    "status": "approved"
+  },
+  "target": {
+    "id": "item_test001",
+    "type": "test_case",
+    "title": "Test OAuth Login",
+    "custom_id": "TC-001",
+    "status": "passed"
+  },
+  "metadata": {
+    "confidence": 0.95,
+    "suggested_by": "ai",
+    "verified_by": "user_xyz789"
+  },
+  "created_at": "2025-01-10T09:00:00Z",
+  "created_by": "user_abc123",
+  "updated_at": "2025-01-10T09:00:00Z"
+}
+```
+
+## Link Types
+
+| Type | Description | Typical Usage |
+|------|-------------|---------------|
+| `satisfies` | Target satisfies source | Requirement -> Design |
+| `verified_by` | Source is verified by target | Requirement -> Test Case |
+| `traces_to` | Source traces to target | User Story -> Requirement |
+| `implements` | Target implements source | Requirement -> Code |
+| `relates_to` | General relationship | Any -> Any |
+| `depends_on` | Source depends on target | Task -> Task |
+| `blocks` | Source blocks target | Bug -> Feature |
+| `duplicates` | Source duplicates target | Bug -> Bug |
+| `parent_of` | Hierarchical parent | Epic -> User Story |
+| `child_of` | Hierarchical child | User Story -> Epic |
+
+### Link Type Direction
+
+```
+Source Item --[link_type]--> Target Item
+
+REQ-001 --[verified_by]--> TC-001
+(Requirement is verified by Test Case)
+
+REQ-002 --[satisfies]--> DESIGN-001
+(Requirement satisfies Design Specification)
+```
+
+## List Links
+
+Retrieve links from a project with filtering.
+
+```http
+GET /v1/projects/{project_id}/links
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | string | Filter by link type |
+| `source_id` | string | Filter by source item |
+| `target_id` | string | Filter by target item |
+| `source_type` | string | Filter by source item type |
+| `target_type` | string | Filter by target item type |
+| `created_after` | datetime | Filter by creation date |
+| `created_by` | string | Filter by creator |
+| `page` | integer | Page number |
+| `per_page` | integer | Items per page (max 100) |
+
+### Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/links?type=verified_by&source_type=requirement" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "link_abc123",
+      "type": "verified_by",
+      "source_id": "item_req001",
+      "target_id": "item_test001",
+      "source": {
+        "id": "item_req001",
+        "type": "requirement",
+        "title": "User Authentication",
+        "custom_id": "REQ-001"
+      },
+      "target": {
+        "id": "item_test001",
+        "type": "test_case",
+        "title": "Test OAuth Login",
+        "custom_id": "TC-001"
+      },
+      "created_at": "2025-01-10T09:00:00Z"
+    }
+  ],
+  "meta": {
+    "total": 245,
+    "page": 1,
+    "per_page": 20
+  }
+}
+```
+
+### Python Example
+
+```python
+from tracertm import TraceRTMClient
+from tracertm.models import LinkType, ItemType
+
+client = TraceRTMClient(api_key="rtm_live_...")
+
+# List all verification links
+links = await client.links.list(
+    project_id="proj_456",
+    type=LinkType.VERIFIED_BY
+)
+
+# Links from requirements to tests
+req_to_test_links = await client.links.list(
+    project_id="proj_456",
+    source_type=ItemType.REQUIREMENT,
+    target_type=ItemType.TEST_CASE
+)
+
+# Links for specific item
+item_links = await client.items.get_links("item_req001")
+
+# Iterate through all links
+async for link in client.links.list_all(project_id="proj_456"):
+    print(f"{link.source.custom_id} --[{link.type}]--> {link.target.custom_id}")
+```
+
+## Create Link
+
+Create a traceability link between two items.
+
+```http
+POST /v1/projects/{project_id}/links
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | string | Yes | Link type |
+| `source_id` | string | Yes | Source item ID |
+| `target_id` | string | Yes | Target item ID |
+| `metadata` | object | No | Additional metadata |
+| `bidirectional` | boolean | No | Create reverse link too (default: false) |
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_456/links" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "verified_by",
+    "source_id": "item_req001",
+    "target_id": "item_test001",
+    "metadata": {
+      "coverage_type": "full",
+      "notes": "Covers all acceptance criteria"
+    }
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "link_new789",
+    "project_id": "proj_456",
+    "type": "verified_by",
+    "source_id": "item_req001",
+    "target_id": "item_test001",
+    "source": {
+      "id": "item_req001",
+      "type": "requirement",
+      "title": "User Authentication",
+      "custom_id": "REQ-001"
+    },
+    "target": {
+      "id": "item_test001",
+      "type": "test_case",
+      "title": "Test OAuth Login",
+      "custom_id": "TC-001"
+    },
+    "metadata": {
+      "coverage_type": "full",
+      "notes": "Covers all acceptance criteria"
+    },
+    "created_at": "2025-01-15T16:00:00Z",
+    "created_by": "user_abc123"
+  }
+}
+```
+
+### Python Example
+
+```python
+# Create a verification link
+link = await client.links.create(
+    project_id="proj_456",
+    type=LinkType.VERIFIED_BY,
+    source_id="item_req001",
+    target_id="item_test001",
+    metadata={
+        "coverage_type": "full",
+        "notes": "Covers all acceptance criteria"
+    }
+)
+print(f"Created link: {link.id}")
+
+# Create bidirectional link
+link = await client.links.create(
+    project_id="proj_456",
+    type=LinkType.RELATES_TO,
+    source_id="item_bug001",
+    target_id="item_bug002",
+    bidirectional=True  # Creates both directions
+)
+
+# Create link from item context
+await client.items.link(
+    source_id="item_req001",
+    target_id="item_test001",
+    type=LinkType.VERIFIED_BY
+)
+
+# Quick link helper
+await client.items.verify_by("item_req001", "item_test001")
+await client.items.satisfies("item_design001", "item_req001")
+await client.items.depends_on("item_task001", "item_task002")
+```
+
+### TypeScript Example
+
+```typescript
+import { TraceRTMClient, LinkType } from '@tracertm/sdk'
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_...' })
+
+// Create verification link
+const link = await client.links.create({
+  projectId: 'proj_456',
+  type: LinkType.VerifiedBy,
+  sourceId: 'item_req001',
+  targetId: 'item_test001',
+  metadata: {
+    coverageType: 'full'
+  }
+})
+
+// Create from item
+await client.items.link('item_req001', 'item_test001', LinkType.VerifiedBy)
+
+// Convenience methods
+await client.items.verifyBy('item_req001', 'item_test001')
+await client.items.tracesTo('item_story001', 'item_req001')
+```
+
+## Get Item Links
+
+Get all links for a specific item.
+
+```http
+GET /v1/items/{id}/links
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `direction` | string | `inbound`, `outbound`, or `both` (default) |
+| `type` | string | Filter by link type |
+| `include_nested` | boolean | Include nested/transitive links |
+| `depth` | integer | Depth for nested links (max 5) |
+
+### Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/items/item_req001/links?direction=outbound" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "item_id": "item_req001",
+    "inbound": [
+      {
+        "id": "link_in1",
+        "type": "traces_to",
+        "source": {
+          "id": "item_story001",
+          "type": "user_story",
+          "custom_id": "US-001",
+          "title": "User Login Story"
+        }
+      }
+    ],
+    "outbound": [
+      {
+        "id": "link_out1",
+        "type": "verified_by",
+        "target": {
+          "id": "item_test001",
+          "type": "test_case",
+          "custom_id": "TC-001",
+          "title": "Test OAuth Login"
+        }
+      },
+      {
+        "id": "link_out2",
+        "type": "verified_by",
+        "target": {
+          "id": "item_test002",
+          "type": "test_case",
+          "custom_id": "TC-002",
+          "title": "Test Password Reset"
+        }
+      }
+    ],
+    "summary": {
+      "total": 3,
+      "inbound": 1,
+      "outbound": 2,
+      "by_type": {
+        "traces_to": 1,
+        "verified_by": 2
+      }
+    }
+  }
+}
+```
+
+### Nested Links (Transitive Traceability)
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/items/item_story001/links?include_nested=true&depth=3" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+```json
+{
+  "data": {
+    "item_id": "item_story001",
+    "outbound": [
+      {
+        "id": "link_1",
+        "type": "traces_to",
+        "target": {
+          "id": "item_req001",
+          "custom_id": "REQ-001"
+        },
+        "nested": [
+          {
+            "id": "link_2",
+            "type": "verified_by",
+            "target": {
+              "id": "item_test001",
+              "custom_id": "TC-001"
+            },
+            "depth": 2
+          }
+        ]
+      }
+    ],
+    "trace_chain": [
+      "US-001 -> REQ-001 -> TC-001"
+    ]
+  }
+}
+```
+
+## Delete Link
+
+Delete a traceability link.
+
+```http
+DELETE /v1/links/{id}
+```
+
+### Request
+
+```bash
+curl -X DELETE "https://api.tracertm.dev/v1/links/link_abc123" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Response
+
+```http
+HTTP/1.1 204 No Content
+```
+
+## Bulk Create Links
+
+Create multiple links in a single request.
+
+```http
+POST /v1/links/bulk
+```
+
+### Request Body
+
+```json
+{
+  "project_id": "proj_456",
+  "links": [
+    {
+      "type": "verified_by",
+      "source_id": "item_req001",
+      "target_id": "item_test001"
+    },
+    {
+      "type": "verified_by",
+      "source_id": "item_req001",
+      "target_id": "item_test002"
+    },
+    {
+      "type": "verified_by",
+      "source_id": "item_req002",
+      "target_id": "item_test003"
+    }
+  ]
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "created": 3,
+    "links": [
+      {"id": "link_new1", "source_id": "item_req001", "target_id": "item_test001"},
+      {"id": "link_new2", "source_id": "item_req001", "target_id": "item_test002"},
+      {"id": "link_new3", "source_id": "item_req002", "target_id": "item_test003"}
+    ]
+  }
+}
+```
+
+### Python Example
+
+```python
+# Bulk create links
+results = await client.links.bulk_create(
+    project_id="proj_456",
+    links=[
+        {"type": "verified_by", "source_id": "item_req001", "target_id": "item_test001"},
+        {"type": "verified_by", "source_id": "item_req001", "target_id": "item_test002"},
+        {"type": "verified_by", "source_id": "item_req002", "target_id": "item_test003"}
+    ]
+)
+print(f"Created {results.created} links")
+
+# Link requirement to multiple tests
+await client.items.link_many(
+    source_id="item_req001",
+    target_ids=["item_test001", "item_test002", "item_test003"],
+    type=LinkType.VERIFIED_BY
+)
+```
+
+## Link Coverage Analysis
+
+Analyze traceability coverage for a project.
+
+```http
+GET /v1/projects/{project_id}/links/analysis
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `source_type` | string | Source item type to analyze |
+| `target_type` | string | Target item type to check |
+| `link_type` | string | Link type to analyze |
+
+### Request
+
+```bash
+curl -X GET "https://api.tracertm.dev/v1/projects/proj_456/links/analysis?source_type=requirement&target_type=test_case&link_type=verified_by" \
+  -H "Authorization: Bearer $TRACERTM_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "project_id": "proj_456",
+    "analysis_type": "coverage",
+    "source_type": "requirement",
+    "target_type": "test_case",
+    "link_type": "verified_by",
+    "coverage": {
+      "total_sources": 80,
+      "covered_sources": 65,
+      "uncovered_sources": 15,
+      "coverage_percentage": 81.25
+    },
+    "uncovered_items": [
+      {"id": "item_req010", "custom_id": "REQ-010", "title": "Audit Logging"},
+      {"id": "item_req015", "custom_id": "REQ-015", "title": "Data Export"}
+    ],
+    "by_priority": {
+      "critical": {"total": 10, "covered": 10, "percentage": 100.0},
+      "high": {"total": 25, "covered": 22, "percentage": 88.0},
+      "medium": {"total": 30, "covered": 23, "percentage": 76.7},
+      "low": {"total": 15, "covered": 10, "percentage": 66.7}
+    },
+    "link_statistics": {
+      "total_links": 120,
+      "avg_links_per_source": 1.85,
+      "max_links_per_source": 5,
+      "sources_with_multiple_targets": 35
+    },
+    "computed_at": "2025-01-15T16:00:00Z"
+  }
+}
+```
+
+### Python Example
+
+```python
+# Get coverage analysis
+analysis = await client.links.analyze_coverage(
+    project_id="proj_456",
+    source_type=ItemType.REQUIREMENT,
+    target_type=ItemType.TEST_CASE,
+    link_type=LinkType.VERIFIED_BY
+)
+
+print(f"Coverage: {analysis.coverage.percentage}%")
+print(f"Uncovered requirements: {len(analysis.uncovered_items)}")
+
+for item in analysis.uncovered_items:
+    print(f"  - {item.custom_id}: {item.title}")
+
+# Get uncovered items directly
+uncovered = await client.items.get_uncovered(
+    project_id="proj_456",
+    item_type=ItemType.REQUIREMENT,
+    link_type=LinkType.VERIFIED_BY
+)
+```
+
+## Error Responses
+
+### Duplicate Link (409)
+
+```json
+{
+  "error": {
+    "code": "conflict",
+    "message": "Link already exists",
+    "details": {
+      "existing_link_id": "link_existing123",
+      "source_id": "item_req001",
+      "target_id": "item_test001",
+      "type": "verified_by"
+    }
+  }
+}
+```
+
+### Invalid Link Type (400)
+
+```json
+{
+  "error": {
+    "code": "invalid_link_type",
+    "message": "Invalid link type for these item types",
+    "details": {
+      "source_type": "test_case",
+      "target_type": "requirement",
+      "requested_link_type": "verified_by",
+      "suggestion": "Use 'verifies' instead (reverse direction)"
+    }
+  }
+}
+```
+
+### Circular Reference (400)
+
+```json
+{
+  "error": {
+    "code": "circular_reference",
+    "message": "Link would create circular reference",
+    "details": {
+      "cycle": ["item_1", "item_2", "item_3", "item_1"]
+    }
+  }
+}
+```
+
+### Cross-Project Link (400)
+
+```json
+{
+  "error": {
+    "code": "cross_project_link",
+    "message": "Cannot create link between items in different projects",
+    "details": {
+      "source_project": "proj_456",
+      "target_project": "proj_789"
+    }
+  }
+}
+```
+
+## Best Practices
+
+### Use Semantic Link Types
+
+```python
+# Good - clear relationship
+await client.links.create(
+    type=LinkType.VERIFIED_BY,
+    source_id=requirement.id,
+    target_id=test_case.id
+)
+
+# Avoid - unclear relationship
+await client.links.create(
+    type=LinkType.RELATES_TO,
+    source_id=requirement.id,
+    target_id=test_case.id
+)
+```
+
+### Leverage Coverage Analysis
+
+```python
+# Regular coverage check
+async def check_release_readiness(project_id: str):
+    analysis = await client.links.analyze_coverage(
+        project_id=project_id,
+        source_type=ItemType.REQUIREMENT,
+        target_type=ItemType.TEST_CASE,
+        link_type=LinkType.VERIFIED_BY
+    )
+
+    if analysis.coverage.percentage < 90:
+        print(f"Warning: Only {analysis.coverage.percentage}% coverage")
+        for item in analysis.uncovered_items:
+            print(f"  Missing tests: {item.custom_id}")
+```
+
+### Use Bulk Operations
+
+```python
+# Efficient: single request
+await client.links.bulk_create(
+    project_id="proj_456",
+    links=[
+        {"type": "verified_by", "source_id": req.id, "target_id": test.id}
+        for req, test in requirement_test_pairs
+    ]
+)
+
+# Inefficient: multiple requests
+for req, test in requirement_test_pairs:
+    await client.links.create(...)  # N requests
+```
+
+## Related Documentation
+
+- [Link Management](/docs/api-reference/rest-api/links-management) - Advanced link operations
+- [Items API](/docs/api-reference/rest-api/items) - Item management
+- [Traceability Matrix](/docs/wiki/concepts/traceability-matrix) - Understanding traceability
+- [Coverage Reports](/docs/wiki/concepts/reports/coverage) - Coverage reporting
+

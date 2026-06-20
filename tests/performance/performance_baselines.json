@@ -1,0 +1,185 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "created_date": "2024-01-26",
+    "description": "Performance baselines for trace management system",
+    "notes": "These baselines are established with SQLite. Actual performance will vary based on database and infrastructure."
+  },
+  "baselines": {
+    "item_operations": {
+      "single_item_create": {
+        "operation": "Create single item",
+        "threshold_ms": 50,
+        "tolerance_percent": 10,
+        "notes": "Basic item creation without relationships"
+      },
+      "single_item_read": {
+        "operation": "Read single item by ID",
+        "threshold_ms": 20,
+        "tolerance_percent": 15,
+        "notes": "Indexed primary key lookup"
+      },
+      "single_item_update": {
+        "operation": "Update single item",
+        "threshold_ms": 40,
+        "tolerance_percent": 10,
+        "notes": "Basic field updates"
+      },
+      "single_item_delete": {
+        "operation": "Delete single item",
+        "threshold_ms": 30,
+        "tolerance_percent": 15,
+        "notes": "Soft or hard delete"
+      }
+    },
+    "link_operations": {
+      "single_link_create": {
+        "operation": "Create single link",
+        "threshold_ms": 60,
+        "tolerance_percent": 10,
+        "notes": "Link between two items"
+      },
+      "single_link_read": {
+        "operation": "Read single link by ID",
+        "threshold_ms": 30,
+        "tolerance_percent": 15,
+        "notes": "Indexed link lookup"
+      },
+      "single_link_delete": {
+        "operation": "Delete single link",
+        "threshold_ms": 40,
+        "tolerance_percent": 15,
+        "notes": "Link deletion"
+      }
+    },
+    "bulk_operations": {
+      "bulk_create_100_items": {
+        "operation": "Create 100 items",
+        "threshold_sec": 0.5,
+        "tolerance_percent": 15,
+        "throughput_items_per_sec": 200,
+        "notes": "Batch insert of 100 items"
+      },
+      "bulk_create_500_items": {
+        "operation": "Create 500 items",
+        "threshold_sec": 2.5,
+        "tolerance_percent": 15,
+        "throughput_items_per_sec": 200,
+        "notes": "Batch insert of 500 items"
+      },
+      "bulk_create_1000_items": {
+        "operation": "Create 1000 items",
+        "threshold_sec": 5.0,
+        "tolerance_percent": 15,
+        "throughput_items_per_sec": 200,
+        "notes": "Batch insert of 1000 items"
+      },
+      "bulk_update_100_items": {
+        "operation": "Update 100 items",
+        "threshold_sec": 0.4,
+        "tolerance_percent": 15,
+        "throughput_items_per_sec": 250,
+        "notes": "Bulk update operations"
+      },
+      "bulk_update_500_items": {
+        "operation": "Update 500 items",
+        "threshold_sec": 2.0,
+        "tolerance_percent": 15,
+        "throughput_items_per_sec": 250,
+        "notes": "Bulk update operations"
+      },
+      "bulk_delete_100_items": {
+        "operation": "Delete 100 items",
+        "threshold_sec": 0.3,
+        "tolerance_percent": 15,
+        "throughput_items_per_sec": 333,
+        "notes": "Bulk delete operations"
+      },
+      "bulk_delete_500_items": {
+        "operation": "Delete 500 items",
+        "threshold_sec": 1.5,
+        "tolerance_percent": 15,
+        "throughput_items_per_sec": 333,
+        "notes": "Bulk delete operations"
+      }
+    },
+    "query_operations": {
+      "query_all_items_1000": {
+        "operation": "Query 1000 items",
+        "threshold_ms": 100,
+        "tolerance_percent": 20,
+        "notes": "Fetch all items from database"
+      },
+      "query_filtered_items_333": {
+        "operation": "Query 333 filtered items",
+        "threshold_ms": 80,
+        "tolerance_percent": 20,
+        "notes": "Query with single filter condition"
+      },
+      "query_paginated_20": {
+        "operation": "Query paginated (20 items)",
+        "threshold_ms": 30,
+        "tolerance_percent": 20,
+        "notes": "Paginated query with LIMIT/OFFSET"
+      },
+      "aggregation_count": {
+        "operation": "Count aggregation",
+        "threshold_ms": 50,
+        "tolerance_percent": 20,
+        "notes": "COUNT(*) query"
+      },
+      "aggregation_group_by": {
+        "operation": "Group by aggregation",
+        "threshold_ms": 80,
+        "tolerance_percent": 20,
+        "notes": "GROUP BY query"
+      }
+    },
+    "concurrent_operations": {
+      "concurrent_create_10_threads": {
+        "operation": "10 items across 10 threads",
+        "threshold_sec": 0.5,
+        "tolerance_percent": 20,
+        "notes": "Low concurrency test"
+      },
+      "concurrent_create_100_threads": {
+        "operation": "100 items across 10 threads",
+        "threshold_sec": 1.5,
+        "tolerance_percent": 20,
+        "notes": "Medium concurrency test"
+      },
+      "concurrent_create_500_threads": {
+        "operation": "500 items across 50 threads",
+        "threshold_sec": 5.0,
+        "tolerance_percent": 20,
+        "notes": "High concurrency test"
+      },
+      "concurrent_query_10_threads": {
+        "operation": "Concurrent queries from 10 threads",
+        "threshold_sec": 1.0,
+        "tolerance_percent": 25,
+        "notes": "Read-heavy concurrent workload"
+      },
+      "high_contention": {
+        "operation": "50 threads updating same item",
+        "threshold_sec": 2.0,
+        "tolerance_percent": 30,
+        "notes": "High lock contention scenario"
+      }
+    }
+  },
+  "performance_tips": [
+    "Use batch operations for bulk inserts (bulk_save_objects) instead of individual adds",
+    "Leverage database indexes for frequently queried columns",
+    "Use pagination (LIMIT/OFFSET) for large result sets",
+    "Consider caching for read-heavy workloads",
+    "Profile queries to identify bottlenecks before performance degradation",
+    "Monitor connection pool usage under concurrent load",
+    "Use query.update() for bulk updates instead of fetching and updating objects",
+    "Batch link operations separately from item operations"
+  ],
+  "regression_thresholds": {
+    "critical": 30,
+    "warning": 15
+  }
+}

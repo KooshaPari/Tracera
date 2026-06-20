@@ -1,0 +1,130 @@
+---
+title: "Scalability"
+description: "Scaling strategies for TraceRTM"
+keywords: [scalability, scaling, horizontal, vertical, performance]
+---
+
+# Scalability
+
+Scaling strategies for handling growth in TraceRTM.
+
+## Scaling Dimensions
+
+### 1. Horizontal Scaling
+
+Add more servers:
+
+```yaml
+# Kubernetes deployment
+replicas: 3  # Scale to 3 instances
+```
+
+**Benefits:**
+- No downtime
+- Better fault tolerance
+- Cost-effective
+
+**Considerations:**
+- Stateless services required
+- Load balancing needed
+- Shared state management
+
+### 2. Vertical Scaling
+
+Increase server resources:
+
+```yaml
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "2000m"
+  limits:
+    memory: "4Gi"  # Increase
+    cpu: "4000m"   # Increase
+```
+
+**Benefits:**
+- Simple to implement
+- No code changes
+
+**Limitations:**
+- Hardware limits
+- Single point of failure
+
+## Scaling Strategies
+
+### Database Scaling
+
+#### Read Replicas
+
+```python
+# Route reads to replicas
+read_db = create_engine(READ_REPLICA_URL)
+write_db = create_engine(WRITE_DB_URL)
+```
+
+#### Sharding
+
+```python
+# Partition data by project_id
+shard = get_shard(project_id)
+db = get_db_for_shard(shard)
+```
+
+### Caching
+
+```python
+# Cache frequently accessed data
+redis_client = redis.from_url(REDIS_URL)
+
+async def get_item_cached(item_id: str):
+    cached = await redis_client.get(f"item:{item_id}")
+    if cached:
+        return json.loads(cached)
+    # ... fetch from database
+```
+
+### Load Balancing
+
+```yaml
+# Kubernetes service with load balancer
+apiVersion: v1
+kind: Service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8000
+```
+
+## Auto-Scaling
+
+### Horizontal Pod Autoscaler
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+spec:
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        averageUtilization: 70
+```
+
+## Scaling Checklist
+
+- [ ] Stateless services
+- [ ] Database connection pooling
+- [ ] Caching layer
+- [ ] Load balancing
+- [ ] Monitoring and alerts
+- [ ] Auto-scaling configured
+
+## Related Documentation
+
+- [Performance](./06-performance) - Performance optimization
+- [Horizontal Scaling](../../05-deployment/06a-horizontal-scaling) - Horizontal scaling guide

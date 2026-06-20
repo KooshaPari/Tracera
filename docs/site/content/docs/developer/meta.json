@@ -1,0 +1,24 @@
+{
+  "title": "Developer Documentation",
+  "description": "Documentation for engineers and contributors",
+  "icon": "Code",
+  "pages": [
+    "index",
+    "---Setup---",
+    "setup",
+    "---Architecture---",
+    "architecture",
+    "---Backend---",
+    "backend",
+    "---Frontend---",
+    "frontend",
+    "---CLI---",
+    "cli",
+    "---Internals---",
+    "internals",
+    "---Deployment---",
+    "deployment",
+    "---Contributing---",
+    "contributing"
+  ]
+}

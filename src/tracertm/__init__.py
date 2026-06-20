@@ -1,5 +1,8 @@
-"""Tracera Python package."""
+"""TraceRTM - Agent-native, multi-view requirements traceability system.
 
-from src.tracertm.matrix import TraceabilityMatrix
+Version: 0.1.0
+"""
 
-__all__ = ["TraceabilityMatrix"]
+from tracertm._version import __author__, __version__
+
+__all__ = ["__author__", "__version__"]

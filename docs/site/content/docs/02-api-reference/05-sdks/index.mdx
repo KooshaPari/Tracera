@@ -1,0 +1,379 @@
+---
+title: "Official SDKs"
+description: "TraceRTM provides official SDKs for Python, JavaScript/TypeScript, and Go with full API coverage"
+---
+
+# Official SDKs
+
+TraceRTM provides official, production-ready SDKs for the most popular programming languages. Each SDK offers complete API coverage, type safety, and idiomatic patterns for its respective language.
+
+## Available SDKs
+
+| SDK | Package | Version | Status |
+|-----|---------|---------|--------|
+| [Python](/sdk/python) | `tracertm` | 2.4.0 | Stable |
+| [JavaScript/TypeScript](/sdk/javascript) | `@tracertm/sdk` | 2.4.0 | Stable |
+| [Go](/sdk/go) | `github.com/tracertm/tracertm-go` | 2.4.0 | Stable |
+
+---
+
+## Quick Installation
+
+### Python
+
+```bash
+pip install tracertm
+```
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+projects = client.projects.list()
+```
+
+### JavaScript/TypeScript
+
+```bash
+npm install @tracertm/sdk
+```
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+const projects = await client.projects.list();
+```
+
+### Go
+
+```bash
+go get github.com/tracertm/tracertm-go
+```
+
+```go
+import "github.com/tracertm/tracertm-go"
+
+client := tracertm.NewClient("rtm_live_sk_...")
+projects, _ := client.Projects.List(ctx, nil)
+```
+
+---
+
+## SDK Features
+
+All official SDKs provide:
+
+### Complete API Coverage
+
+- **Projects**: Create, read, update, delete, archive
+- **Items**: Full CRUD, transitions, attachments, comments
+- **Links**: Create traceability relationships, bulk operations
+- **Workflows**: Manage states, transitions, guards, actions
+- **Reports**: Generate coverage, impact, audit reports
+- **Webhooks**: Subscribe to events, manage endpoints
+- **Search**: Full-text search with filters and facets
+
+### Type Safety
+
+All SDKs include comprehensive type definitions:
+
+```typescript
+// TypeScript - Full type inference
+const item: Item = await client.items.create({
+  projectId: 'proj_abc123',
+  type: 'requirement',     // Type-checked enum
+  title: 'User Authentication',
+  priority: 'high',        // Type-checked enum
+});
+```
+
+```python
+# Python - Pydantic models with validation
+from tracertm.models import CreateItemInput
+
+item = client.items.create(CreateItemInput(
+    project_id="proj_abc123",
+    type="requirement",
+    title="User Authentication",
+    priority="high"
+))
+```
+
+### Automatic Pagination
+
+SDKs handle pagination transparently:
+
+```python
+# Python - Iterate through all items automatically
+for item in client.items.iterate(project_id="proj_abc123"):
+    print(item.title)
+```
+
+```typescript
+// TypeScript - Async iteration
+for await (const item of client.items.iterate({ projectId: 'proj_abc123' })) {
+  console.log(item.title);
+}
+```
+
+```go
+// Go - Iterator pattern
+iter := client.Items.Iterate(ctx, "proj_abc123", nil)
+for iter.Next() {
+    item := iter.Item()
+    fmt.Println(item.Title)
+}
+```
+
+### Retry Logic
+
+Built-in retry with exponential backoff for transient failures:
+
+```python
+client = TraceRTMClient(
+    api_key="rtm_live_sk_...",
+    max_retries=3,
+    retry_delay=1.0  # seconds
+)
+```
+
+### Rate Limit Handling
+
+Automatic rate limit handling with configurable behavior:
+
+```typescript
+const client = new TraceRTMClient({
+  apiKey: 'rtm_live_sk_...',
+  rateLimitStrategy: 'retry',  // 'retry' | 'throw' | 'queue'
+  maxRetries: 3
+});
+```
+
+---
+
+## Authentication
+
+All SDKs support multiple authentication methods:
+
+### API Keys
+
+```python
+# Production key
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# Test key (sandbox environment)
+client = TraceRTMClient(api_key="rtm_test_sk_...")
+```
+
+### OAuth Tokens
+
+```typescript
+const client = new TraceRTMClient({
+  accessToken: 'eyJhbGciOi...'
+});
+```
+
+### Environment Variables
+
+```bash
+export TRACERTM_API_KEY="rtm_live_sk_..."
+```
+
+```python
+# Automatically reads from environment
+client = TraceRTMClient()
+```
+
+---
+
+## Error Handling
+
+SDKs provide typed exceptions for precise error handling:
+
+```python
+from tracertm.exceptions import (
+    NotFoundError,
+    ValidationError,
+    RateLimitError,
+    AuthenticationError
+)
+
+try:
+    item = client.items.get("item_nonexistent")
+except NotFoundError as e:
+    print(f"Item not found: {e.resource_id}")
+except ValidationError as e:
+    print(f"Validation failed: {e.errors}")
+except RateLimitError as e:
+    print(f"Rate limited, retry after {e.retry_after}s")
+```
+
+---
+
+## Async Support
+
+### Python
+
+```python
+from tracertm import AsyncTraceRTMClient
+
+async def main():
+    client = AsyncTraceRTMClient(api_key="rtm_live_sk_...")
+    items = await client.items.list(project_id="proj_abc123")
+
+    # Concurrent requests
+    import asyncio
+    results = await asyncio.gather(
+        client.items.get("item_1"),
+        client.items.get("item_2"),
+        client.items.get("item_3")
+    )
+```
+
+### JavaScript/TypeScript
+
+```typescript
+// All methods are async by default
+const [item1, item2, item3] = await Promise.all([
+  client.items.get('item_1'),
+  client.items.get('item_2'),
+  client.items.get('item_3')
+]);
+```
+
+### Go
+
+```go
+// Use goroutines for concurrency
+var wg sync.WaitGroup
+items := make([]*tracertm.Item, 3)
+
+for i, id := range []string{"item_1", "item_2", "item_3"} {
+    wg.Add(1)
+    go func(idx int, itemID string) {
+        defer wg.Done()
+        items[idx], _ = client.Items.Get(ctx, itemID)
+    }(i, id)
+}
+wg.Wait()
+```
+
+---
+
+## SDK Comparison
+
+| Feature | Python | JavaScript | Go |
+|---------|--------|------------|-----|
+| Sync Client | Yes | - | Yes |
+| Async Client | Yes | Yes (default) | Yes (context) |
+| Type Hints | Yes (Pydantic) | Yes (TypeScript) | Yes (structs) |
+| Auto-pagination | Yes | Yes | Yes |
+| Retry Logic | Yes | Yes | Yes |
+| Rate Limit Handling | Yes | Yes | Yes |
+| Streaming | Yes | Yes | Yes |
+| Webhooks | Yes | Yes | Yes |
+| Browser Support | - | Yes | - |
+
+---
+
+## Configuration Options
+
+All SDKs support these configuration options:
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `api_key` | API key for authentication | `TRACERTM_API_KEY` env |
+| `base_url` | API base URL | `https://api.tracertm.dev/v1` |
+| `timeout` | Request timeout (seconds) | 30 |
+| `max_retries` | Maximum retry attempts | 3 |
+| `retry_delay` | Initial retry delay (seconds) | 1.0 |
+| `debug` | Enable debug logging | false |
+
+---
+
+## Best Practices
+
+### 1. Reuse Client Instances
+
+```python
+# Good - Reuse client
+client = TraceRTMClient(api_key="...")
+
+for project_id in project_ids:
+    items = client.items.list(project_id=project_id)
+
+# Bad - Creating new clients
+for project_id in project_ids:
+    client = TraceRTMClient(api_key="...")  # Don't do this
+    items = client.items.list(project_id=project_id)
+```
+
+### 2. Use Pagination for Large Datasets
+
+```python
+# Good - Use iteration
+for item in client.items.iterate(project_id="proj_123"):
+    process(item)
+
+# Bad - Fetch all at once
+items = client.items.list(project_id="proj_123", limit=10000)
+```
+
+### 3. Handle Errors Appropriately
+
+```python
+# Good - Specific error handling
+try:
+    item = client.items.get(item_id)
+except NotFoundError:
+    item = create_default_item()
+except RateLimitError as e:
+    time.sleep(e.retry_after)
+    item = client.items.get(item_id)
+
+# Bad - Catch-all
+try:
+    item = client.items.get(item_id)
+except:
+    pass
+```
+
+### 4. Use Environment Variables for Keys
+
+```bash
+# Good - Environment variable
+export TRACERTM_API_KEY="rtm_live_sk_..."
+```
+
+```python
+# Good - Reads from environment
+client = TraceRTMClient()
+
+# Avoid - Hardcoded keys
+client = TraceRTMClient(api_key="rtm_live_sk_abc123...")
+```
+
+---
+
+## Community SDKs
+
+Community-maintained SDKs for other languages:
+
+| Language | Package | Maintainer |
+|----------|---------|------------|
+| Ruby | `tracertm-ruby` | Community |
+| Java | `tracertm-java` | Community |
+| C# | `TraceRTM.NET` | Community |
+| Rust | `tracertm-rs` | Community |
+
+*Note: Community SDKs are not officially supported.*
+
+---
+
+## Related Documentation
+
+- [REST API Overview](/docs/api-reference/rest-api/overview) - Direct API access
+- [Authentication](/docs/api-reference/authentication) - Authentication methods
+- [Rate Limiting](/docs/api-reference/rest-api/rate-limiting) - Rate limit details
+- [Error Handling](/docs/api-reference/rest-api/errors) - Error codes

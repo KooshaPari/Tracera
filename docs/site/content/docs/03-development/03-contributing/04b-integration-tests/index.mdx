@@ -1,0 +1,149 @@
+---
+title: "Integration Tests"
+description: "Writing integration tests for TraceRTM"
+keywords: [integration tests, testing, api, database]
+---
+
+# Integration Tests
+
+Writing integration tests that test component interactions.
+
+## Test Setup
+
+### API Test Client
+
+```python
+from fastapi.testclient import TestClient
+from tracertm.api.main import app
+
+client = TestClient(app)
+
+def test_create_item_endpoint():
+    """Test create item API endpoint."""
+    response = client.post(
+        "/api/v1/items",
+        json={
+            "title": "Test Item",
+            "view": "requirements"
+        }
+    )
+    assert response.status_code == 201
+    assert response.json()["title"] == "Test Item"
+```
+
+## Database Integration
+
+### Test with Real Database
+
+```python
+import pytest
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+
+@pytest.fixture
+async def test_db():
+    """Create test database."""
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+    # Run migrations
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield engine
+    await engine.dispose()
+
+@pytest.mark.asyncio
+async def test_item_creation_flow(test_db):
+    """Test complete item creation flow."""
+    async with AsyncSession(test_db) as session:
+        # Create item
+        item = await item_repo.create(session, {
+            "title": "Test",
+            "view": "requirements"
+        })
+        
+        # Verify in database
+        retrieved = await item_repo.get_by_id(session, item.id)
+        assert retrieved.title == "Test"
+```
+
+## API Integration Tests
+
+### End-to-End API Flow
+
+```python
+def test_item_lifecycle():
+    """Test complete item lifecycle."""
+    # Create
+    create_response = client.post(
+        "/api/v1/items",
+        json={"title": "Test", "view": "requirements"}
+    )
+    item_id = create_response.json()["id"]
+    
+    # Read
+    get_response = client.get(f"/api/v1/items/{item_id}")
+    assert get_response.status_code == 200
+    
+    # Update
+    update_response = client.put(
+        f"/api/v1/items/{item_id}",
+        json={"title": "Updated"}
+    )
+    assert update_response.json()["title"] == "Updated"
+    
+    # Delete
+    delete_response = client.delete(f"/api/v1/items/{item_id}")
+    assert delete_response.status_code == 204
+```
+
+## Service Integration
+
+### Service Integration Test
+
+```python
+@pytest.mark.asyncio
+async def test_item_service_integration(db_session):
+    """Test item service with real database."""
+    repo = ItemRepository(db_session)
+    event_bus = EventBus()
+    service = ItemService(repo=repo, event_bus=event_bus)
+    
+    # Create item
+    item = await service.create({
+        "title": "Test",
+        "view": "requirements",
+        "project_id": "proj_123"
+    })
+    
+    # Verify in database
+    stored = await repo.get_by_id(item["id"])
+    assert stored.title == "Test"
+    
+    # Verify event published
+    assert len(event_bus._handlers["item.created"]) > 0
+```
+
+## Authentication Tests
+
+### Test with Auth
+
+```python
+def test_authenticated_endpoint():
+    """Test endpoint requiring authentication."""
+    # Get token
+    token_response = client.post(
+        "/api/auth/token",
+        data={"username": "test", "password": "test"}
+    )
+    token = token_response.json()["access_token"]
+    
+    # Use token
+    response = client.get(
+        "/api/v1/items",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+```
+
+## Related Documentation
+
+- [Unit Tests](./04a-unit-tests) - Unit testing
+- [E2E Tests](./04c-e2e-tests) - End-to-end testing

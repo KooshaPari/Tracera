@@ -1,0 +1,168 @@
+---
+title: "Contributing"
+description: "Guide for contributing to TraceRTM development"
+keywords: [contributing, development, open source, pull requests]
+---
+
+# Contributing to TraceRTM
+
+Thank you for your interest in contributing to TraceRTM! This guide will help you get started.
+
+## Getting Started
+
+### 1. Fork and Clone
+
+```bash
+# Fork the repository on GitHub
+# Then clone your fork
+git clone https://github.com/your-username/tracertm.git
+cd tracertm
+```
+
+### 2. Set Up Development Environment
+
+```bash
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -e ".[dev]"
+
+# Set up pre-commit hooks
+pre-commit install
+```
+
+### 3. Create a Branch
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+## Development Workflow
+
+### Code Style
+
+- Follow PEP 8 for Python code
+- Use Black for formatting
+- Run linters before committing
+
+```bash
+# Format code
+black .
+
+# Run linters
+flake8 .
+mypy .
+```
+
+### Testing
+
+Write tests for new features:
+
+```bash
+# Run tests
+pytest
+
+# Run with coverage
+pytest --cov=tracertm
+```
+
+### Documentation
+
+- Update docstrings for new functions
+- Add examples to documentation
+- Update CHANGELOG.md
+
+## Submitting Changes
+
+### 1. Commit Your Changes
+
+```bash
+git add .
+git commit -m "feat: add new feature"
+```
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation
+- `test:` Tests
+- `refactor:` Code refactoring
+
+### 2. Push to Your Fork
+
+```bash
+git push origin feature/your-feature-name
+```
+
+### 3. Create Pull Request
+
+1. Go to the original repository on GitHub
+2. Click "New Pull Request"
+3. Select your branch
+4. Fill out the PR template
+5. Submit for review
+
+## Pull Request Guidelines
+
+### PR Title
+
+Use conventional commit format:
+```
+feat: Add export to Excel functionality
+fix: Resolve authentication token refresh issue
+```
+
+### PR Description
+
+Include:
+- **What**: What changes were made
+- **Why**: Why these changes are needed
+- **How**: How the changes work
+- **Testing**: How to test the changes
+
+### Code Review
+
+- Address all review comments
+- Keep PRs focused and small
+- Update documentation as needed
+
+## Areas to Contribute
+
+### Code
+
+- Bug fixes
+- New features
+- Performance improvements
+- Refactoring
+
+### Documentation
+
+- API documentation
+- Tutorials
+- Examples
+- Translation
+
+### Testing
+
+- Unit tests
+- Integration tests
+- E2E tests
+- Test coverage
+
+## Code of Conduct
+
+Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Questions?
+
+- Open an issue for questions
+- Join our Discord/Slack
+- Check existing issues and PRs
+
+## Related Documentation
+
+- [Code Style](../03-development/03-contributing/01-code-style) - Coding standards
+- [Testing](../03-development/03-contributing/04-testing) - Testing guidelines
+- [PR Process](../03-development/03-contributing/03a-pr-process) - Pull request process

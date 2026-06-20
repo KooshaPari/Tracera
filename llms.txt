@@ -1,0 +1,33 @@
+# TracerTM 🚀
+
+> Agent-native, multi-view requirements traceability and project management system.
+
+## Overview
+TracerTM is a high-assurance RTM system that links requirements to code, tests, and deployments. It is designed for human-agent collaboration and operates at a **critical** quality tier.
+
+## Key Components
+- **Backend (Go)**: `/backend/` - Core API server (Go 1.21+).
+- **Backend (Python)**: `/` (Root) - Python services (3.11+).
+- **Frontend**: `/frontend/` - React/TypeScript SPA.
+- **Task Runner**: `Taskfile.yml` and `Taskfile.gateway.yml`.
+- **Infrastructure**: `/deploy/` - k8s and observability.
+- **Persistence**: PostgreSQL, Neo4j, Redis, NATS.
+
+## Developer & Agent Commands
+- `task install`: Setup all dependencies.
+- `task db:migrate`: Run database migrations.
+- `task dev:tui`: Start all services with interactive dashboard.
+- `task quality`: Run full quality gate pipeline.
+
+## Performance & Observability
+- **Gateway**: `http://localhost:4000` (Unified URL).
+- **Grafana**: `http://localhost:3000`.
+- **Tracing**: shared Phenotype OTLP collector contract via the Alloy-backed local stack.
+
+## Agent Guidelines
+- All PRs require signed SLSA attestations.
+- Check `VERIFICATION_POLICY.md` for quality gate rules.
+- Architectural boundaries are enforced by `tach.toml`.
+- Use the unified gateway (port 4000) for all API and frontend interactions.
+
+For full details, see [llms-full.txt](llms-full.txt).

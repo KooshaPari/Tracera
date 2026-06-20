@@ -1,0 +1,334 @@
+---
+title: "CLI Commands"
+description: "Complete reference for TraceRTM CLI commands"
+keywords: [cli, commands, terminal, command line, reference]
+---
+
+# CLI Commands
+
+Complete reference for all TraceRTM CLI commands.
+
+## Command Structure
+
+```
+trace <command> <subcommand> [options] [arguments]
+```
+
+## Global Options
+
+All commands support these options:
+
+| Option | Description |
+|--------|-------------|
+| `--api-url` | Override API URL |
+| `--api-key` | Override API key |
+| `--project-id` | Override project ID |
+| `--output` | Output format (json/table/yaml) |
+| `--verbose` | Verbose output |
+| `--help` | Show help |
+
+## Project Commands
+
+### List Projects
+
+```bash
+trace project list
+```
+
+### Get Project
+
+```bash
+trace project get <project-id>
+```
+
+### Create Project
+
+```bash
+trace project create "Project Name" \
+  --description "Project description" \
+  --metadata '{"team": "backend"}'
+```
+
+### Update Project
+
+```bash
+trace project update <project-id> \
+  --name "New Name" \
+  --description "New description"
+```
+
+### Delete Project
+
+```bash
+trace project delete <project-id>
+```
+
+### Switch Project
+
+```bash
+trace project switch "Project Name"
+# or
+trace project switch <project-id>
+```
+
+## Item Commands
+
+### List Items
+
+```bash
+# All items
+trace item list
+
+# Filter by status
+trace item list --status active
+
+# Filter by view
+trace item list --view requirements
+
+# Pagination
+trace item list --skip 0 --limit 50
+```
+
+### Get Item
+
+```bash
+trace item get <item-id>
+```
+
+### Create Item
+
+```bash
+trace item create \
+  --title "New Requirement" \
+  --view requirements \
+  --status draft \
+  --description "Item description" \
+  --metadata '{"priority": "high"}'
+```
+
+### Update Item
+
+```bash
+trace item update <item-id> \
+  --title "Updated Title" \
+  --status active
+```
+
+### Delete Item
+
+```bash
+trace item delete <item-id>
+```
+
+## Link Commands
+
+### List Links
+
+```bash
+trace link list
+
+# Filter by type
+trace link list --type verified_by
+```
+
+### Get Link
+
+```bash
+trace link get <link-id>
+```
+
+### Create Link
+
+```bash
+trace link create \
+  --source item_req_001 \
+  --target item_test_001 \
+  --type verified_by \
+  --metadata '{"confidence": 0.95}'
+```
+
+### Update Link
+
+```bash
+trace link update <link-id> \
+  --type implements \
+  --metadata '{"verified": true}'
+```
+
+### Delete Link
+
+```bash
+trace link delete <link-id>
+```
+
+## Search Commands
+
+### Search Items
+
+```bash
+# Simple search
+trace search "authentication"
+
+# Advanced search
+trace search "authentication" \
+  --view requirements \
+  --status active \
+  --format json
+```
+
+## Export/Import Commands
+
+### Export Project
+
+```bash
+# Export as JSON
+trace export <project-id> --format json > project.json
+
+# Export as CSV
+trace export <project-id> --format csv > project.csv
+
+# Export as Markdown
+trace export <project-id> --format markdown > project.md
+```
+
+### Import Project
+
+```bash
+trace import <project-id> \
+  --format json \
+  --file project.json
+```
+
+## Analysis Commands
+
+### Impact Analysis
+
+```bash
+trace analysis impact <item-id>
+```
+
+### Cycle Detection
+
+```bash
+trace analysis cycles <project-id>
+```
+
+### Shortest Path
+
+```bash
+trace analysis path \
+  --source item_req_001 \
+  --target item_test_001
+```
+
+## Configuration Commands
+
+### Show Config
+
+```bash
+trace config show
+```
+
+### Get Setting
+
+```bash
+trace config get <key>
+```
+
+### Set Setting
+
+```bash
+trace config set <key> <value>
+```
+
+### Health Check
+
+```bash
+trace health
+```
+
+## Examples
+
+### Create and Link Items
+
+```bash
+# Create requirement
+REQ_ID=$(trace item create \
+  --title "User Authentication" \
+  --view requirements \
+  --output json | jq -r '.id')
+
+# Create test case
+TEST_ID=$(trace item create \
+  --title "Login Test" \
+  --view test-cases \
+  --output json | jq -r '.id')
+
+# Create link
+trace link create \
+  --source $REQ_ID \
+  --target $TEST_ID \
+  --type verified_by
+```
+
+### Batch Operations
+
+```bash
+# Export project
+trace export proj_123 --format json > backup.json
+
+# Import to new project
+trace project create "Restored Project"
+NEW_PROJ=$(trace project list --output json | jq -r '.[0].id')
+trace import $NEW_PROJ --format json --file backup.json
+```
+
+## Output Formats
+
+### Table (Default)
+
+```bash
+trace item list
+```
+
+```
+ID          TITLE                    STATUS   VIEW
+item_001    User Authentication     active   requirements
+item_002    Login Test              draft    test-cases
+```
+
+### JSON
+
+```bash
+trace item list --output json
+```
+
+```json
+[
+  {
+    "id": "item_001",
+    "title": "User Authentication",
+    "status": "active",
+    "view": "requirements"
+  }
+]
+```
+
+### YAML
+
+```bash
+trace item list --output yaml
+```
+
+```yaml
+- id: item_001
+  title: User Authentication
+  status: active
+  view: requirements
+```
+
+## Related Documentation
+
+- [Installation](./01-installation) - Install CLI
+- [Configuration](./02-configuration) - Configure CLI
+- [Scripting](./04-scripting) - Automate with scripts

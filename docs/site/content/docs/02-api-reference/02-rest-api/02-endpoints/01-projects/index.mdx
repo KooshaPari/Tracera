@@ -1,0 +1,807 @@
+---
+title: Projects API
+description: Complete API reference for creating, managing, and configuring TraceRTM projects
+---
+
+# Projects API
+
+Projects are the top-level organizational unit in TraceRTM. They contain all items (requirements, tests, etc.), links, workflows, and team configurations.
+
+## Endpoints Overview
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/projects` | List all projects |
+| `POST` | `/v1/projects` | Create a project |
+| `GET` | `/v1/projects/{project_id}` | Get a project |
+| `PATCH` | `/v1/projects/{project_id}` | Update a project |
+| `DELETE` | `/v1/projects/{project_id}` | Delete a project |
+| `POST` | `/v1/projects/{project_id}/archive` | Archive a project |
+| `POST` | `/v1/projects/{project_id}/restore` | Restore archived project |
+| `GET` | `/v1/projects/{project_id}/stats` | Get project statistics |
+
+---
+
+## The Project Object
+
+```json
+{
+  "id": "proj_abc123def456",
+  "name": "Vehicle Control System",
+  "key": "VCS",
+  "description": "Requirements and test management for automotive control systems",
+  "status": "active",
+  "visibility": "private",
+  "owner_id": "user_owner123",
+  "team_id": "team_engineering",
+  "settings": {
+    "default_workflow": "wf_standard",
+    "require_links": true,
+    "auto_number_items": true,
+    "item_prefix": "VCS",
+    "enable_approvals": true
+  },
+  "metadata": {
+    "industry": "automotive",
+    "compliance": ["ISO-26262", "ASPICE"]
+  },
+  "stats": {
+    "total_items": 1250,
+    "total_links": 3400,
+    "coverage_percent": 87.5
+  },
+  "created_at": "2024-01-15T10:30:00Z",
+  "updated_at": "2024-12-01T14:22:00Z",
+  "archived_at": null
+}
+```
+
+### Project Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique project identifier (prefix: `proj_`) |
+| `name` | string | Display name (1-200 characters) |
+| `key` | string | Short project key for item numbering (2-10 uppercase) |
+| `description` | string | Project description (max 2000 characters) |
+| `status` | string | `active`, `archived`, `deleted` |
+| `visibility` | string | `private`, `team`, `organization` |
+| `owner_id` | string | User ID of project owner |
+| `team_id` | string | Team assigned to project |
+| `settings` | object | Project configuration |
+| `metadata` | object | Custom key-value data |
+| `stats` | object | Computed statistics (read-only) |
+| `created_at` | string | ISO 8601 creation timestamp |
+| `updated_at` | string | ISO 8601 last update timestamp |
+| `archived_at` | string | ISO 8601 archive timestamp (null if active) |
+
+---
+
+## List Projects
+
+Retrieve all projects accessible to the authenticated user.
+
+```http
+GET /v1/projects
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `status` | string | `active` | Filter by status: `active`, `archived`, `all` |
+| `visibility` | string | — | Filter by visibility |
+| `owner_id` | string | — | Filter by owner |
+| `team_id` | string | — | Filter by team |
+| `search` | string | — | Search in name and description |
+| `sort` | string | `updated_at` | Sort field |
+| `order` | string | `desc` | Sort order: `asc`, `desc` |
+| `limit` | integer | 20 | Results per page (1-100) |
+| `cursor` | string | — | Pagination cursor |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/projects?status=active&limit=10" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "proj_abc123def456",
+      "name": "Vehicle Control System",
+      "key": "VCS",
+      "description": "Automotive control systems",
+      "status": "active",
+      "visibility": "team",
+      "owner_id": "user_owner123",
+      "team_id": "team_engineering",
+      "stats": {
+        "total_items": 1250,
+        "total_links": 3400,
+        "coverage_percent": 87.5
+      },
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-12-01T14:22:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 25,
+    "limit": 10,
+    "has_next": true,
+    "has_prev": false,
+    "next_cursor": "eyJpZCI6InByb2pfYWJjMTIzIn0"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# List active projects
+projects = client.projects.list(status="active", limit=10)
+
+for project in projects.data:
+    print(f"{project.key}: {project.name} ({project.stats.total_items} items)")
+
+# Iterate through all projects
+for project in client.projects.iterate(status="active"):
+    print(f"{project.name}: {project.stats.coverage_percent}% coverage")
+
+# Search projects
+results = client.projects.list(search="automotive")
+```
+
+#### TypeScript
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// List active projects
+const projects = await client.projects.list({ status: 'active', limit: 10 });
+
+projects.data.forEach(project => {
+  console.log(`${project.key}: ${project.name} (${project.stats.totalItems} items)`);
+});
+
+// Async iteration
+for await (const project of client.projects.iterate({ status: 'active' })) {
+  console.log(`${project.name}: ${project.stats.coveragePercent}% coverage`);
+}
+```
+
+#### Go
+
+```go
+projects, err := client.Projects.List(ctx, &tracertm.ListProjectsRequest{
+    Status: tracertm.ProjectStatusActive,
+    Limit:  10,
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+for _, project := range projects.Data {
+    fmt.Printf("%s: %s (%d items)\n", project.Key, project.Name, project.Stats.TotalItems)
+}
+```
+
+---
+
+## Create Project
+
+Create a new project.
+
+```http
+POST /v1/projects
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Project name (1-200 chars) |
+| `key` | string | Yes | Project key (2-10 uppercase, unique) |
+| `description` | string | No | Project description |
+| `visibility` | string | No | `private` (default), `team`, `organization` |
+| `team_id` | string | No | Assign to team |
+| `settings` | object | No | Project settings |
+| `metadata` | object | No | Custom metadata |
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Medical Device Firmware",
+    "key": "MDF",
+    "description": "FDA-compliant medical device requirements",
+    "visibility": "team",
+    "team_id": "team_medical",
+    "settings": {
+      "default_workflow": "wf_fda_compliant",
+      "require_links": true,
+      "auto_number_items": true,
+      "item_prefix": "MDF",
+      "enable_approvals": true
+    },
+    "metadata": {
+      "industry": "medical",
+      "compliance": ["FDA-21-CFR-820", "IEC-62304"]
+    }
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "proj_mdf789xyz",
+    "name": "Medical Device Firmware",
+    "key": "MDF",
+    "description": "FDA-compliant medical device requirements",
+    "status": "active",
+    "visibility": "team",
+    "owner_id": "user_creator123",
+    "team_id": "team_medical",
+    "settings": {
+      "default_workflow": "wf_fda_compliant",
+      "require_links": true,
+      "auto_number_items": true,
+      "item_prefix": "MDF",
+      "enable_approvals": true
+    },
+    "metadata": {
+      "industry": "medical",
+      "compliance": ["FDA-21-CFR-820", "IEC-62304"]
+    },
+    "stats": {
+      "total_items": 0,
+      "total_links": 0,
+      "coverage_percent": 0
+    },
+    "created_at": "2024-12-08T10:00:00Z",
+    "updated_at": "2024-12-08T10:00:00Z",
+    "archived_at": null
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+project = client.projects.create(
+    name="Medical Device Firmware",
+    key="MDF",
+    description="FDA-compliant medical device requirements",
+    visibility="team",
+    team_id="team_medical",
+    settings={
+        "default_workflow": "wf_fda_compliant",
+        "require_links": True,
+        "auto_number_items": True,
+        "item_prefix": "MDF",
+        "enable_approvals": True
+    },
+    metadata={
+        "industry": "medical",
+        "compliance": ["FDA-21-CFR-820", "IEC-62304"]
+    }
+)
+
+print(f"Created project: {project.id}")
+```
+
+#### TypeScript
+
+```typescript
+const project = await client.projects.create({
+  name: 'Medical Device Firmware',
+  key: 'MDF',
+  description: 'FDA-compliant medical device requirements',
+  visibility: 'team',
+  teamId: 'team_medical',
+  settings: {
+    defaultWorkflow: 'wf_fda_compliant',
+    requireLinks: true,
+    autoNumberItems: true,
+    itemPrefix: 'MDF',
+    enableApprovals: true
+  },
+  metadata: {
+    industry: 'medical',
+    compliance: ['FDA-21-CFR-820', 'IEC-62304']
+  }
+});
+
+console.log(`Created project: ${project.id}`);
+```
+
+---
+
+## Get Project
+
+Retrieve a single project by ID.
+
+```http
+GET /v1/projects/{project_id}
+```
+
+### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | string | Project ID (e.g., `proj_abc123`) |
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `include` | string | — | Include related data: `stats`, `workflows`, `team` |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_abc123?include=stats,team" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "proj_abc123def456",
+    "name": "Vehicle Control System",
+    "key": "VCS",
+    "description": "Automotive control systems",
+    "status": "active",
+    "visibility": "team",
+    "owner_id": "user_owner123",
+    "team_id": "team_engineering",
+    "settings": {
+      "default_workflow": "wf_standard",
+      "require_links": true,
+      "auto_number_items": true,
+      "item_prefix": "VCS",
+      "enable_approvals": true
+    },
+    "metadata": {
+      "industry": "automotive",
+      "compliance": ["ISO-26262", "ASPICE"]
+    },
+    "stats": {
+      "total_items": 1250,
+      "items_by_type": {
+        "requirement": 450,
+        "test_case": 380,
+        "design": 220,
+        "issue": 200
+      },
+      "items_by_status": {
+        "draft": 50,
+        "in_review": 100,
+        "approved": 1000,
+        "obsolete": 100
+      },
+      "total_links": 3400,
+      "coverage_percent": 87.5,
+      "orphan_items": 25
+    },
+    "team": {
+      "id": "team_engineering",
+      "name": "Engineering Team",
+      "member_count": 15
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-12-01T14:22:00Z"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+# Get project with stats
+project = client.projects.get("proj_abc123", include=["stats", "team"])
+
+print(f"Project: {project.name}")
+print(f"Items: {project.stats.total_items}")
+print(f"Coverage: {project.stats.coverage_percent}%")
+print(f"Team: {project.team.name}")
+```
+
+#### TypeScript
+
+```typescript
+const project = await client.projects.get('proj_abc123', {
+  include: ['stats', 'team']
+});
+
+console.log(`Project: ${project.name}`);
+console.log(`Items: ${project.stats.totalItems}`);
+console.log(`Coverage: ${project.stats.coveragePercent}%`);
+```
+
+---
+
+## Update Project
+
+Update an existing project.
+
+```http
+PATCH /v1/projects/{project_id}
+```
+
+### Request Body
+
+All fields are optional. Only provided fields will be updated.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Project name |
+| `description` | string | Project description |
+| `visibility` | string | Visibility level |
+| `team_id` | string | Assigned team |
+| `settings` | object | Project settings (merged) |
+| `metadata` | object | Custom metadata (merged) |
+
+### Request
+
+```bash
+curl -X PATCH "https://api.tracertm.dev/v1/projects/proj_abc123" \
+  -H "Authorization: Bearer rtm_live_sk_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Updated description for automotive systems",
+    "settings": {
+      "enable_approvals": true,
+      "approval_levels": 2
+    },
+    "metadata": {
+      "phase": "production"
+    }
+  }'
+```
+
+### Response
+
+Returns the updated project object.
+
+### SDK Examples
+
+#### Python
+
+```python
+project = client.projects.update(
+    "proj_abc123",
+    description="Updated description",
+    settings={"enable_approvals": True},
+    metadata={"phase": "production"}
+)
+```
+
+#### TypeScript
+
+```typescript
+const project = await client.projects.update('proj_abc123', {
+  description: 'Updated description',
+  settings: { enableApprovals: true },
+  metadata: { phase: 'production' }
+});
+```
+
+---
+
+## Delete Project
+
+Permanently delete a project. This action cannot be undone.
+
+```http
+DELETE /v1/projects/{project_id}
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `confirm` | boolean | false | Must be `true` to delete |
+
+### Request
+
+```bash
+curl -X DELETE "https://api.tracertm.dev/v1/projects/proj_abc123?confirm=true" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "proj_abc123",
+    "deleted": true,
+    "deleted_at": "2024-12-08T10:00:00Z"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+# Delete with confirmation
+result = client.projects.delete("proj_abc123", confirm=True)
+print(f"Deleted: {result.deleted}")
+```
+
+---
+
+## Archive Project
+
+Archive a project. Archived projects are read-only but can be restored.
+
+```http
+POST /v1/projects/{project_id}/archive
+```
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/archive" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "proj_abc123",
+    "status": "archived",
+    "archived_at": "2024-12-08T10:00:00Z",
+    "archived_by": "user_admin123"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+project = client.projects.archive("proj_abc123")
+print(f"Archived at: {project.archived_at}")
+```
+
+---
+
+## Restore Project
+
+Restore an archived project to active status.
+
+```http
+POST /v1/projects/{project_id}/restore
+```
+
+### Request
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_abc123/restore" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "proj_abc123",
+    "status": "active",
+    "archived_at": null,
+    "restored_at": "2024-12-08T11:00:00Z",
+    "restored_by": "user_admin123"
+  }
+}
+```
+
+---
+
+## Get Project Statistics
+
+Get detailed statistics for a project.
+
+```http
+GET /v1/projects/{project_id}/stats
+```
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `period` | string | `all_time` | Time period: `7d`, `30d`, `90d`, `all_time` |
+
+### Request
+
+```bash
+curl "https://api.tracertm.dev/v1/projects/proj_abc123/stats?period=30d" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "project_id": "proj_abc123",
+    "period": "30d",
+    "items": {
+      "total": 1250,
+      "by_type": {
+        "requirement": 450,
+        "test_case": 380,
+        "design": 220,
+        "issue": 200
+      },
+      "by_status": {
+        "draft": 50,
+        "in_review": 100,
+        "approved": 1000,
+        "obsolete": 100
+      },
+      "created": 75,
+      "updated": 200,
+      "approved": 50
+    },
+    "links": {
+      "total": 3400,
+      "by_type": {
+        "satisfies": 1200,
+        "verifies": 1100,
+        "implements": 600,
+        "relates_to": 500
+      },
+      "created": 150,
+      "deleted": 10
+    },
+    "coverage": {
+      "overall": 87.5,
+      "requirements_with_tests": 92.0,
+      "tests_with_results": 78.5,
+      "orphan_items": 25
+    },
+    "activity": {
+      "active_users": 12,
+      "total_changes": 450,
+      "comments": 89,
+      "approvals": 50
+    }
+  }
+}
+```
+
+---
+
+## Project Settings
+
+### Settings Object
+
+```json
+{
+  "default_workflow": "wf_standard",
+  "require_links": true,
+  "auto_number_items": true,
+  "item_prefix": "VCS",
+  "item_separator": "-",
+  "enable_approvals": true,
+  "approval_levels": 2,
+  "require_approval_comments": false,
+  "enable_comments": true,
+  "enable_attachments": true,
+  "max_attachment_size_mb": 50,
+  "allowed_attachment_types": ["pdf", "docx", "xlsx", "png", "jpg"],
+  "enable_versioning": true,
+  "require_change_reason": true,
+  "retention_days": 365
+}
+```
+
+### Settings Fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `default_workflow` | string | — | Default workflow for new items |
+| `require_links` | boolean | false | Require items to have links |
+| `auto_number_items` | boolean | true | Auto-generate item numbers |
+| `item_prefix` | string | Project key | Prefix for item IDs |
+| `item_separator` | string | `-` | Separator in item numbers |
+| `enable_approvals` | boolean | true | Enable approval workflows |
+| `approval_levels` | integer | 1 | Number of approval levels |
+| `require_approval_comments` | boolean | false | Require comments on approval |
+| `enable_comments` | boolean | true | Allow comments on items |
+| `enable_attachments` | boolean | true | Allow file attachments |
+| `max_attachment_size_mb` | integer | 50 | Max attachment size |
+| `allowed_attachment_types` | array | — | Allowed file extensions |
+| `enable_versioning` | boolean | true | Track item versions |
+| `require_change_reason` | boolean | false | Require change comments |
+| `retention_days` | integer | 365 | Data retention period |
+
+---
+
+## Error Responses
+
+### Project Not Found
+
+```json
+{
+  "error": {
+    "code": "PROJECT_NOT_FOUND",
+    "message": "Project 'proj_invalid' not found",
+    "status": 404
+  }
+}
+```
+
+### Duplicate Key
+
+```json
+{
+  "error": {
+    "code": "PROJECT_KEY_EXISTS",
+    "message": "A project with key 'VCS' already exists",
+    "status": 409,
+    "details": {
+      "field": "key",
+      "value": "VCS",
+      "existing_project_id": "proj_existing123"
+    }
+  }
+}
+```
+
+### Validation Error
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid project data",
+    "status": 422,
+    "details": {
+      "errors": [
+        {"field": "key", "message": "Key must be 2-10 uppercase letters"},
+        {"field": "name", "message": "Name is required"}
+      ]
+    }
+  }
+}
+```
+
+---
+
+## Related Documentation
+
+- [Items API](/docs/api-reference/rest-api/endpoints/requirements) - Manage items within projects
+- [Links API](/docs/api-reference/rest-api/endpoints/relationships) - Create traceability links
+- [Teams API](/docs/api-reference/rest-api/endpoints/teams) - Team management
+- [Workflows API](/docs/api-reference/rest-api/endpoints/workflows) - Configure workflows

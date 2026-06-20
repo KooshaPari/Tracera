@@ -1,0 +1,134 @@
+---
+title: "v0.6.0"
+description: "Documentation for v0.6.0"
+---
+
+# v0.6.0
+
+
+## v0.6.0
+
+Release Date: January 2025
+
+## Highlights
+
+Major improvements and new features in this release.
+
+## New Features
+
+### Enhanced Traceability Engine
+
+- 50% faster relationship traversal
+- Support for custom relationship types
+- Improved visualization
+
+```typescript
+// New relationship API
+tracertm.relationships.create({
+  source: 'REQ-001',
+  target: 'TC-001',
+  type: 'validates',
+  metadata: { confidence: 0.95 }
+})
+```
+
+### Advanced Query System
+
+- GraphQL API support
+- Complex filters
+- Aggregations
+
+### Real-time Collaboration
+
+- Live updates
+- Conflict resolution
+- Activity feeds
+
+## Improvements
+
+### Performance
+
+- Query execution: 40% faster
+- Memory usage: 25% reduction
+- Startup time: 30% improvement
+
+### User Experience
+
+- Redesigned UI
+- Dark mode
+- Customizable dashboards
+- Keyboard shortcuts
+
+### Developer Experience
+
+- Enhanced TypeScript types
+- Better error messages
+- Improved CLI
+
+## Breaking Changes
+
+### API Changes
+
+```typescript
+// Before
+tracertm.create({ type: 'requirement', data: {...} })
+
+// After
+tracertm.requirements.create({...})
+```
+
+### Configuration Format
+
+```yaml
+# Updated configuration structure
+tracertm:
+  database:
+    type: postgres
+    url: postgres://...
+```
+
+## Migration Guide
+
+### Update Dependencies
+
+```bash
+bun update @tracertm/cli @tracertm/core
+```
+
+### Run Migration
+
+```bash
+tracertm migrate --to v0.6.0
+```
+
+### Verify Migration
+
+```bash
+tracertm verify --version v0.6.0
+```
+
+## Bug Fixes
+
+- Fixed memory leak in graph traversal (#123)
+- Resolved race condition (#145)
+- Corrected timezone handling (#189)
+- Fixed validation errors (#201)
+
+## Deprecations
+
+- `tracertm.legacy.create()` - Use `tracertm.requirements.create()`
+- `--old-format` flag - Use `--format json`
+
+## Known Issues
+
+- Graph visualization slow for >10,000 nodes
+- Real-time updates ~500ms delay on slow connections
+
+## Contributors
+
+Thank you to all contributors!
+
+## Full Changelog
+
+[View on GitHub](https://github.com/tracertm/tracertm/releases/tag/v0.6.0)
+

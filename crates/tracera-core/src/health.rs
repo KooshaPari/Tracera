@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+// Copyright 2026 Koosha Pari
+
 //! Process-level health-check registry used by `/healthz`, `/readyz`, and
 //! `/startupz` HTTP probes.
 //!

@@ -1,0 +1,538 @@
+---
+title: "Client Methods"
+description: "Complete reference for all TraceRTM JavaScript SDK client methods"
+---
+
+# Client Methods
+
+Detailed reference for all methods available on the TraceRTMClient.
+
+## Client Configuration
+
+### Constructor
+
+```typescript
+import { TraceRTMClient } from "@tracertm/sdk";
+
+const client = new TraceRTMClient({
+  apiKey: string;           // Required: Your API key
+  baseUrl?: string;         // Default: "https://api.tracertm.dev/v1"
+  timeout?: number;         // Default: 30000 (30 seconds)
+  maxRetries?: number;      // Default: 3
+  retryDelay?: number;      // Default: 1000 (1 second)
+  debug?: boolean;          // Default: false
+  headers?: Record<string, string>; // Custom headers
+});
+```
+
+### Instance Properties
+
+```typescript
+client.apiKey;        // Current API key (read-only)
+client.baseUrl;       // Base URL (read-only)
+client.rateLimitRemaining; // Remaining API calls
+client.rateLimitReset;     // Rate limit reset time
+```
+
+---
+
+## Project Methods
+
+### projects.list(options?)
+
+List all accessible projects.
+
+```typescript
+const result = await client.projects.list({
+  limit?: number;      // 1-100, default 50
+  offset?: number;     // Pagination offset
+  sort?: "name" | "created_at" | "updated_at";
+  order?: "asc" | "desc";
+  search?: string;     // Search by name
+});
+
+// Returns: PaginatedResponse<Project>
+```
+
+### projects.get(id)
+
+Get a single project by ID.
+
+```typescript
+const project = await client.projects.get("proj_abc123");
+
+// Returns: Project
+```
+
+### projects.create(data)
+
+Create a new project.
+
+```typescript
+const project = await client.projects.create({
+  name: string;        // Required: 1-100 chars
+  key: string;         // Required: 2-10 chars, uppercase
+  description?: string;
+  settings?: {
+    defaultItemType?: ItemType;
+    allowedItemTypes?: ItemType[];
+    requireApproval?: boolean;
+  };
+});
+
+// Returns: Project
+```
+
+### projects.update(id, data)
+
+Update an existing project.
+
+```typescript
+const project = await client.projects.update("proj_abc123", {
+  name?: string;
+  description?: string;
+  settings?: ProjectSettings;
+});
+
+// Returns: Project
+```
+
+### projects.delete(id)
+
+Delete a project and all its contents.
+
+```typescript
+await client.projects.delete("proj_abc123");
+
+// Returns: void
+```
+
+### projects.getStats(id)
+
+Get project statistics.
+
+```typescript
+const stats = await client.projects.getStats("proj_abc123");
+
+// Returns: ProjectStats
+interface ProjectStats {
+  itemCount: number;
+  itemsByType: Record<ItemType, number>;
+  linkCount: number;
+  coveragePercent: number;
+  lastActivity: string;
+}
+```
+
+---
+
+## Item Methods
+
+### items.list(options)
+
+List items with comprehensive filtering.
+
+```typescript
+const result = await client.items.list({
+  // Required
+  projectId: string;
+
+  // Filtering
+  type?: ItemType | ItemType[];
+  status?: string | string[];
+  statusCategory?: "initial" | "in_progress" | "done";
+  priority?: Priority | Priority[];
+  tags?: string[];           // Items with ALL these tags
+  tagsAny?: string[];        // Items with ANY of these tags
+  assigneeId?: string;
+  createdBy?: string;
+
+  // Date filters
+  createdAfter?: string;     // ISO date
+  createdBefore?: string;
+  updatedAfter?: string;
+  updatedBefore?: string;
+
+  // Search
+  search?: string;           // Full-text search
+
+  // Includes
+  include?: ("links" | "history" | "comments")[];
+
+  // Pagination
+  limit?: number;            // 1-100
+  offset?: number;
+  sort?: "title" | "created_at" | "updated_at" | "priority";
+  order?: "asc" | "desc";
+});
+
+// Returns: PaginatedResponse<Item>
+```
+
+### items.get(id, options?)
+
+Get a single item.
+
+```typescript
+const item = await client.items.get("item_abc123", {
+  include?: ("links" | "history" | "comments")[];
+});
+
+// Returns: Item
+```
+
+### items.create(data)
+
+Create a new item.
+
+```typescript
+const item = await client.items.create({
+  // Required
+  projectId: string;
+  type: ItemType;
+  title: string;
+
+  // Optional
+  description?: string;
+  priority?: Priority;
+  status?: string;
+  tags?: string[];
+  assigneeId?: string;
+  dueDate?: string;          // ISO date
+  fields?: Record<string, unknown>;
+  parentId?: string;         // For hierarchies
+});
+
+// Returns: Item
+```
+
+### items.update(id, data)
+
+Update an item.
+
+```typescript
+const item = await client.items.update("item_abc123", {
+  title?: string;
+  description?: string;
+  priority?: Priority;
+  status?: string;
+  assigneeId?: string | null;
+  dueDate?: string | null;
+  fields?: Record<string, unknown>;
+
+  // Tag operations
+  tags?: string[];           // Replace all tags
+  addTags?: string[];        // Add to existing
+  removeTags?: string[];     // Remove from existing
+});
+
+// Returns: Item
+```
+
+### items.delete(id)
+
+Delete an item.
+
+```typescript
+await client.items.delete("item_abc123");
+
+// Returns: void
+```
+
+### items.bulkCreate(items)
+
+Create multiple items at once.
+
+```typescript
+const items = await client.items.bulkCreate([
+  { projectId: "proj_123", type: "requirement", title: "Req 1" },
+  { projectId: "proj_123", type: "requirement", title: "Req 2" },
+]);
+
+// Returns: Item[]
+```
+
+### items.bulkUpdate(updates)
+
+Update multiple items at once.
+
+```typescript
+const items = await client.items.bulkUpdate([
+  { id: "item_1", status: "approved" },
+  { id: "item_2", status: "approved", priority: "high" },
+]);
+
+// Returns: Item[]
+```
+
+### items.bulkDelete(ids)
+
+Delete multiple items.
+
+```typescript
+await client.items.bulkDelete(["item_1", "item_2", "item_3"]);
+
+// Returns: void
+```
+
+### items.getHistory(id, options?)
+
+Get item change history.
+
+```typescript
+const history = await client.items.getHistory("item_abc123", {
+  limit?: number;
+  offset?: number;
+});
+
+// Returns: PaginatedResponse<HistoryEntry>
+```
+
+### items.transition(id, status)
+
+Transition item to new status.
+
+```typescript
+const item = await client.items.transition("item_abc123", "approved");
+
+// Returns: Item
+```
+
+---
+
+## Link Methods
+
+### links.list(options)
+
+List links with filtering.
+
+```typescript
+const result = await client.links.list({
+  projectId?: string;
+  sourceId?: string;
+  targetId?: string;
+  type?: LinkType | LinkType[];
+  limit?: number;
+  offset?: number;
+});
+
+// Returns: PaginatedResponse<Link>
+```
+
+### links.get(id)
+
+Get a single link.
+
+```typescript
+const link = await client.links.get("link_abc123");
+
+// Returns: Link
+```
+
+### links.create(data)
+
+Create a link between items.
+
+```typescript
+const link = await client.links.create({
+  sourceId: string;          // Required
+  targetId: string;          // Required
+  type: LinkType;            // Required
+  description?: string;
+});
+
+// Returns: Link
+```
+
+### links.delete(id)
+
+Delete a link.
+
+```typescript
+await client.links.delete("link_abc123");
+
+// Returns: void
+```
+
+### links.bulkCreate(links)
+
+Create multiple links.
+
+```typescript
+const links = await client.links.bulkCreate([
+  { sourceId: "item_1", targetId: "item_2", type: "verified_by" },
+  { sourceId: "item_1", targetId: "item_3", type: "verified_by" },
+]);
+
+// Returns: Link[]
+```
+
+---
+
+## Report Methods
+
+### reports.coverage(options)
+
+Get requirement coverage report.
+
+```typescript
+const report = await client.reports.coverage({
+  projectId: string;         // Required
+  sourceType: ItemType;      // e.g., "requirement"
+  targetType: ItemType;      // e.g., "test_case"
+  linkType?: LinkType;       // Filter by link type
+  status?: string[];         // Only items with these statuses
+});
+
+// Returns: CoverageReport
+```
+
+### reports.traceabilityMatrix(options)
+
+Get traceability matrix.
+
+```typescript
+const matrix = await client.reports.traceabilityMatrix({
+  projectId: string;
+  sourceTypes: ItemType[];
+  targetTypes: ItemType[];
+  linkTypes?: LinkType[];
+  format?: "json" | "csv" | "excel";
+});
+
+// Returns: TraceabilityMatrix
+```
+
+### reports.impactAnalysis(options)
+
+Analyze change impact.
+
+```typescript
+const impact = await client.reports.impactAnalysis({
+  itemId: string;            // Starting item
+  depth?: number;            // How many levels (default: 3)
+  direction?: "upstream" | "downstream" | "both";
+  linkTypes?: LinkType[];    // Filter by link types
+});
+
+// Returns: ImpactAnalysis
+```
+
+### reports.progress(options)
+
+Get project progress report.
+
+```typescript
+const progress = await client.reports.progress({
+  projectId: string;
+  groupBy?: "type" | "status" | "assignee" | "priority";
+});
+
+// Returns: ProgressReport
+```
+
+---
+
+## Search Methods
+
+### search.items(options)
+
+Full-text search across items.
+
+```typescript
+const results = await client.search.items({
+  query: string;             // Required
+  projectIds?: string[];     // Filter to projects
+  types?: ItemType[];        // Filter by type
+  status?: string[];         // Filter by status
+  tags?: string[];           // Filter by tags
+  limit?: number;            // Default: 20
+  offset?: number;
+  highlight?: boolean;       // Include highlights
+});
+
+// Returns: SearchResults
+```
+
+### search.suggest(options)
+
+Get search suggestions.
+
+```typescript
+const suggestions = await client.search.suggest({
+  query: string;
+  projectId?: string;
+  limit?: number;            // Default: 10
+});
+
+// Returns: Suggestion[]
+```
+
+---
+
+## Webhook Methods
+
+### webhooks.list()
+
+List configured webhooks.
+
+```typescript
+const webhooks = await client.webhooks.list();
+
+// Returns: Webhook[]
+```
+
+### webhooks.create(data)
+
+Create a webhook.
+
+```typescript
+const webhook = await client.webhooks.create({
+  url: string;               // Required
+  events: WebhookEvent[];    // Required
+  secret?: string;           // For signature verification
+  active?: boolean;          // Default: true
+});
+
+// Returns: Webhook
+```
+
+### webhooks.delete(id)
+
+Delete a webhook.
+
+```typescript
+await client.webhooks.delete("webhook_abc123");
+
+// Returns: void
+```
+
+---
+
+## Utility Methods
+
+### client.ping()
+
+Test API connectivity.
+
+```typescript
+const result = await client.ping();
+// Returns: { ok: true, latency: 45 }
+```
+
+### client.getUser()
+
+Get current authenticated user.
+
+```typescript
+const user = await client.getUser();
+// Returns: User
+```
+
+---
+
+## Related Documentation
+
+- [API Reference](/docs/api-reference/sdks/javascript/api-reference) - Complete API overview
+- [Types](/docs/api-reference/sdks/javascript/types) - Type definitions
+- [Error Handling](/docs/api-reference/sdks/javascript/error-handling) - Handle errors

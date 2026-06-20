@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+// Copyright 2026 Koosha Pari
+
 //! Multi-channel notification dispatch: email, Slack, generic webhook, push.
 //!
 //! Each channel is modeled as a [`Channel`] enum variant with a per-channel

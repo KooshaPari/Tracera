@@ -1,0 +1,371 @@
+---
+title: "Search API"
+description: "Full-text and advanced search across items, links, and projects in TraceRTM"
+keywords: [search, query, filtering, full-text search, semantic search]
+---
+
+# Search API
+
+The Search API provides powerful search capabilities to find items, links, and other resources across your TraceRTM projects.
+
+## Advanced Search
+
+Perform advanced searches with filters and queries.
+
+### Endpoint
+
+```
+POST /api/v1/projects/{project_id}/search/advanced
+```
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project ID to search within |
+
+### Request Body
+
+```json
+{
+  "query": "authentication",
+  "filters": {
+    "view": "requirements",
+    "status": "active",
+    "created_after": "2025-01-01",
+    "metadata": {
+      "priority": "high"
+    }
+  }
+}
+```
+
+### Request Example
+
+```bash
+curl -X POST "https://api.tracertm.dev/v1/projects/proj_123/search/advanced" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "authentication",
+    "filters": {
+      "view": "requirements",
+      "status": "active"
+    }
+  }'
+```
+
+### Response
+
+```json
+{
+  "project_id": "proj_123",
+  "query": "authentication",
+  "filters": {
+    "view": "requirements",
+    "status": "active"
+  },
+  "results": [
+    {
+      "id": "item_req_001",
+      "title": "User Authentication Requirement",
+      "view": "requirements",
+      "status": "active",
+      "score": 0.95,
+      "matches": {
+        "title": ["authentication"],
+        "description": ["authentication", "OAuth"]
+      }
+    }
+  ],
+  "total": 1
+}
+```
+
+### Python Example
+
+```python
+from tracertm import TraceRTM
+
+client = TraceRTM(api_key="rtm_live_abc123...")
+
+# Advanced search
+results = client.search.advanced(
+    project_id="proj_123",
+    query="authentication",
+    filters={
+        "view": "requirements",
+        "status": "active",
+        "created_after": "2025-01-01"
+    }
+)
+
+print(f"Found {results.total} results:")
+for item in results.results:
+    print(f"  - {item.title} (score: {item.score})")
+```
+
+## Search Filters
+
+### View Filter
+
+Filter by item view:
+
+```python
+filters = {
+    "view": "requirements"  # or "test-cases", "design", "code", "documentation"
+}
+```
+
+### Status Filter
+
+Filter by item status:
+
+```python
+filters = {
+    "status": "active"  # or "draft", "review", "approved", "deprecated"
+}
+```
+
+### Date Filters
+
+Filter by creation or update date:
+
+```python
+filters = {
+    "created_after": "2025-01-01",
+    "created_before": "2025-12-31",
+    "updated_after": "2025-01-15"
+}
+```
+
+### Metadata Filters
+
+Filter by custom metadata:
+
+```python
+filters = {
+    "metadata": {
+        "priority": "high",
+        "component": "api",
+        "owner": "team-backend"
+    }
+}
+```
+
+### Multiple Filters
+
+Combine multiple filters:
+
+```python
+filters = {
+    "view": "requirements",
+    "status": "active",
+    "created_after": "2025-01-01",
+    "metadata": {
+        "priority": "high"
+    }
+}
+```
+
+## Query Syntax
+
+### Simple Query
+
+```python
+query = "authentication"
+```
+
+### Phrase Search
+
+```python
+query = '"OAuth 2.0 authentication"'
+```
+
+### Boolean Operators
+
+```python
+# AND (default)
+query = "authentication AND OAuth"
+
+# OR
+query = "authentication OR login"
+
+# NOT
+query = "authentication NOT basic"
+```
+
+### Field-Specific Search
+
+```python
+# Search in title
+query = "title:authentication"
+
+# Search in description
+query = "description:OAuth"
+
+# Combine
+query = "title:authentication description:OAuth"
+```
+
+## Search Examples
+
+### Find High-Priority Requirements
+
+```python
+results = client.search.advanced(
+    project_id="proj_123",
+    query="",
+    filters={
+        "view": "requirements",
+        "metadata": {
+            "priority": "high"
+        }
+    }
+)
+```
+
+### Search Recent Items
+
+```python
+from datetime import datetime, timedelta
+
+week_ago = (datetime.now() - timedelta(days=7)).isoformat()
+
+results = client.search.advanced(
+    project_id="proj_123",
+    query="",
+    filters={
+        "created_after": week_ago
+    }
+)
+```
+
+### Find Items by Component
+
+```python
+results = client.search.advanced(
+    project_id="proj_123",
+    query="",
+    filters={
+        "metadata": {
+            "component": "auth-service"
+        }
+    }
+)
+```
+
+## Search Results
+
+### Result Structure
+
+Each result includes:
+
+```json
+{
+  "id": "item_abc123",
+  "title": "Item Title",
+  "view": "requirements",
+  "status": "active",
+  "score": 0.95,
+  "matches": {
+    "title": ["matched", "terms"],
+    "description": ["matched", "terms"]
+  },
+  "snippet": "Context around matches..."
+}
+```
+
+### Relevance Score
+
+Results are sorted by relevance score (0.0 to 1.0):
+
+```python
+# Sort by score
+sorted_results = sorted(
+    results.results,
+    key=lambda x: x.score,
+    reverse=True
+)
+```
+
+## Pagination
+
+Search results support pagination:
+
+```python
+results = client.search.advanced(
+    project_id="proj_123",
+    query="authentication",
+    skip=0,
+    limit=50
+)
+```
+
+## Best Practices
+
+### 1. Use Specific Filters
+
+Narrow results with filters:
+
+```python
+# ✅ Good: Specific filters
+filters = {
+    "view": "requirements",
+    "status": "active"
+}
+
+# ❌ Bad: Too broad
+filters = {}  # Returns everything
+```
+
+### 2. Combine Query and Filters
+
+Use both query and filters:
+
+```python
+results = client.search.advanced(
+    project_id="proj_123",
+    query="authentication",  # Text search
+    filters={
+        "view": "requirements"  # Structural filter
+    }
+)
+```
+
+### 3. Cache Common Searches
+
+Cache frequently used searches:
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=50)
+def cached_search(project_id, query, filters_hash):
+    return client.search.advanced(project_id, query, filters)
+```
+
+## Error Responses
+
+### Invalid Filter
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid filter value",
+    "details": [
+      {
+        "field": "status",
+        "message": "Status must be one of: draft, active, review, approved"
+      }
+    ]
+  }
+}
+```
+
+## Related Documentation
+
+- [Items API](./02-artifacts) - Manage items
+- [Filtering API](./07-filtering) - Advanced filtering
+- [Pagination API](./08-pagination) - Paginate results

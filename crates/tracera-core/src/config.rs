@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+// Copyright 2026 Koosha Pari
+
 //! Environment-driven configuration loader.
 //!
 //! Phase 5 of the 2026-06-09 Tracera decouple plan.

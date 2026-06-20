@@ -1,0 +1,156 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "daemon": false,
+  "ui": "tui",
+  "globalDependencies": [
+    ".env",
+    ".env.local",
+    "turbo.json",
+    "tsconfig.json",
+    "tsconfig.*.json",
+    ".oxlintrc.json"
+  ],
+  "globalEnv": ["NODE_ENV", "CI", "VITE_*", "NEXT_PUBLIC_*"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "public/**",
+        "package.json",
+        "tsconfig.json",
+        "vite.config.*",
+        "next.config.*",
+        "!**/*.md",
+        "!**/*.test.*",
+        "!**/*.spec.*"
+      ],
+      "outputs": [
+        "dist/**",
+        ".next/**",
+        "!.next/cache/**",
+        "storybook-static/**",
+        "out/**",
+        ".tsbuildinfo"
+      ],
+      "outputLogs": "hash-only",
+      "env": ["NODE_ENV", "VITE_*", "NEXT_PUBLIC_*"]
+    },
+    "build:fast": {
+      "dependsOn": [],
+      "inputs": [
+        "src/**",
+        "public/**",
+        "package.json",
+        "vite.config.*",
+        "!**/*.md",
+        "!**/*.test.*",
+        "!**/*.spec.*"
+      ],
+      "outputs": ["dist/**"],
+      "outputLogs": "hash-only",
+      "env": ["NODE_ENV", "VITE_*", "NEXT_PUBLIC_*"]
+    },
+    "build:clean": {
+      "cache": false,
+      "dependsOn": []
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "outputLogs": "new-only"
+    },
+    "test": {
+      "inputs": [
+        "src/**",
+        "__tests__/**",
+        "*.test.*",
+        "*.spec.*",
+        "vitest.config.*",
+        "jest.config.*",
+        "playwright.config.*"
+      ],
+      "outputs": ["coverage/**", "test-results/**", "playwright-report/**"],
+      "dependsOn": [],
+      "outputLogs": "new-only"
+    },
+    "test:unit": {
+      "inputs": ["src/**", "__tests__/**", "*.test.*", "*.spec.*", "vitest.config.*"],
+      "outputs": ["coverage/**"],
+      "dependsOn": [],
+      "outputLogs": "new-only"
+    },
+    "test:e2e": {
+      "inputs": ["e2e/**", "playwright.config.*"],
+      "outputs": ["test-results/**", "playwright-report/**"],
+      "dependsOn": ["build"],
+      "outputLogs": "new-only",
+      "cache": false
+    },
+    "typecheck": {
+      "inputs": ["src/**", "package.json", "tsconfig.json"],
+      "outputs": [],
+      "dependsOn": [],
+      "outputLogs": "hash-only"
+    },
+    "lint": {
+      "inputs": [
+        "src/**",
+        ".eslintrc*",
+        ".oxlintrc.json",
+        "package.json"
+      ],
+      "outputs": [".eslintcache"],
+      "dependsOn": [],
+      "outputLogs": "hash-only"
+    },
+    "lint:fix": {
+      "cache": false,
+      "outputs": []
+    },
+    "//#lint": {
+      "inputs": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", ".oxlintrc.json", "package.json"],
+      "outputs": [],
+      "outputLogs": "hash-only"
+    },
+    "//#lint:fix": {
+      "cache": false,
+      "outputs": []
+    },
+    "//#typecheck": {
+      "inputs": ["**/*.ts", "**/*.tsx", ".oxlintrc.json", "package.json", "tsconfig.json"],
+      "outputs": [],
+      "outputLogs": "hash-only"
+    },
+    "format": {
+      "cache": false,
+      "outputs": []
+    },
+    "//#format": {
+      "inputs": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.js",
+        "**/*.jsx",
+        "**/*.json",
+        "**/*.css",
+        "**/*.md",
+        "package.json"
+      ],
+      "outputs": [],
+      "outputLogs": "hash-only"
+    },
+    "//#format:fix": {
+      "cache": false,
+      "outputs": []
+    },
+    "clean": {
+      "cache": false
+    },
+    "generate:types": {
+      "inputs": ["public/specs/**", "openapi.json", "package.json"],
+      "outputs": ["src/api/schema.ts", "src/generated/**"],
+      "outputLogs": "hash-only"
+    }
+  }
+}

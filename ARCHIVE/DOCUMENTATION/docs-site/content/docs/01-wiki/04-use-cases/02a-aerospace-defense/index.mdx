@@ -1,0 +1,745 @@
+---
+title: "Aerospace & Defense"
+description: "Comprehensive traceability for DO-178C, DO-254, and safety-critical systems development."
+---
+
+## Overview
+
+Aerospace and defense software development operates under some of the most stringent regulatory requirements in any industry. TracerTM provides the robust traceability infrastructure needed to meet DO-178C, DO-254, MIL-STD-498, and other critical standards while maintaining the agility required for modern development practices.
+
+### Key Challenges in Aerospace Development
+
+**Regulatory Compliance**
+- DO-178C requires complete bidirectional traceability from system requirements through verification
+- DO-254 mandates hardware design assurance with full traceability
+- RTCA/EUROCAE standards demand comprehensive documentation and audit trails
+- MIL-STD-498 requires configuration management and change control
+
+**Safety-Critical Requirements**
+- Software Design Assurance Levels (DAL) A through E dictate rigor levels
+- Catastrophic failure modes (DAL-A) require maximum traceability coverage
+- Multiple verification methods must be tracked per requirement
+- Independence requirements for verification activities
+
+**Long Development Cycles**
+- Programs span 5-15 years with evolving requirements
+- Personnel changes require knowledge preservation
+- Certification evidence must remain valid across updates
+- Baseline management across multiple software versions
+
+**Multi-Party Collaboration**
+- Prime contractors, subcontractors, and suppliers
+- Customer oversight and approval workflows
+- Independent verification and validation (IV&V) teams
+- Certification authorities (FAA, EASA, military agencies)
+
+TracerTM addresses these challenges with built-in support for aerospace workflows, audit trails, and certification evidence generation.
+
+---
+
+## DO-178C Compliance with TracerTM
+
+DO-178C (Software Considerations in Airborne Systems and Equipment Certification) is the primary standard for airborne software. TracerTM supports all traceability objectives defined in DO-178C.
+
+### Objective Achievement
+
+**Table A-3: High-Level Requirements to System Requirements**
+```bash
+# Create bidirectional traceability from system to high-level requirements
+rtm link create \
+  --from "SYS-REQ-001" \
+  --to "HLR-001,HLR-002,HLR-003" \
+  --type "derives_from" \
+  --rationale "System requirement decomposition per DO-178C"
+
+# Verify complete traceability
+rtm matrix generate \
+  --from-type "system_requirement" \
+  --to-type "high_level_requirement" \
+  --output compliance/A3-traceability.pdf
+```
+
+**Table A-4: High-Level Requirements to Low-Level Requirements**
+```bash
+# Link high-level to detailed design requirements
+rtm link create \
+  --from "HLR-001" \
+  --to "LLR-001,LLR-002,LLR-003,LLR-004" \
+  --type "derived_to" \
+  --metadata '{"dal": "A", "verification_method": "review_analysis"}'
+
+# Generate coverage report for certification
+rtm report coverage \
+  --source "HLR" \
+  --target "LLR" \
+  --dal-level "A" \
+  --format "DO178C-A4"
+```
+
+**Table A-5: Low-Level Requirements to Source Code**
+```bash
+# Link requirements to implementation
+rtm link create \
+  --from "LLR-001" \
+  --to "src/flight_control/altitude_hold.c:function:maintain_altitude" \
+  --type "implemented_in" \
+  --commit-hash "abc123" \
+  --metadata '{"complexity": "medium", "reviewed_by": "john.smith@aerospace.com"}'
+
+# Track code coverage for requirement
+rtm link create \
+  --from "LLR-001" \
+  --to "TEST-LLR-001-001,TEST-LLR-001-002" \
+  --type "verified_by" \
+  --metadata '{"mc_dc_coverage": "100%", "statement_coverage": "100%"}'
+```
+
+**Table A-6: Source Code to Executable Object Code**
+```bash
+# Link compilation artifacts for configuration management
+rtm link create \
+  --from "src/flight_control/*.c" \
+  --to "build/release/v2.1.0/flight_control.elf" \
+  --type "compiled_to" \
+  --metadata '{"compiler": "GCC 9.3.0", "optimization": "-O2", "checksum": "sha256:def456"}'
+```
+
+**Table A-7: Verification Cases to Requirements and Code**
+```bash
+# Create comprehensive test traceability
+rtm link create \
+  --from "TEST-HLR-001" \
+  --to "HLR-001" \
+  --type "verifies" \
+  --metadata '{"method": "test", "coverage_type": "normal_range"}'
+
+rtm link create \
+  --from "TEST-HLR-001" \
+  --to "src/flight_control/altitude_hold.c" \
+  --type "exercises" \
+  --metadata '{"branch_coverage": "95%", "path_coverage": "88%"}'
+```
+
+### Design Assurance Level (DAL) Management
+
+TracerTM supports DAL-specific workflows and verification requirements:
+
+```bash
+# Configure project with DAL-A requirements (most stringent)
+rtm project create "Fly-By-Wire Flight Control System" \
+  --metadata '{
+    "dal": "A",
+    "certification_basis": "DO-178C",
+    "verification_independence": "required",
+    "mc_dc_coverage_required": true,
+    "structural_coverage_required": true
+  }'
+
+# Define DAL-specific verification requirements
+rtm item create \
+  --type "verification_requirement" \
+  --title "MC/DC Coverage for All Safety-Critical Functions" \
+  --description "All software functions assigned DAL-A must achieve 100% MC/DC coverage" \
+  --metadata '{"dal": "A", "objective": "A-7.1.7"}'
+```
+
+**DAL-Specific Verification Methods:**
+
+| DAL Level | Requirements-Based Testing | Structural Coverage | Verification Independence |
+|-----------|---------------------------|---------------------|---------------------------|
+| A         | Required                  | MC/DC               | Required                  |
+| B         | Required                  | Decision            | Highly Recommended        |
+| C         | Required                  | Statement           | Recommended               |
+| D         | Required                  | N/A                 | Optional                  |
+| E         | N/A                       | N/A                 | N/A                       |
+
+```bash
+# Generate DAL-A compliance matrix
+rtm matrix generate \
+  --dal-level "A" \
+  --include-coverage-metrics \
+  --include-review-status \
+  --output "certification/DAL-A-Compliance-Matrix.pdf"
+```
+
+---
+
+## Safety-Critical Software Development Workflows
+
+### Requirements Development and Decomposition
+
+**System Safety Assessment (SSA) Integration:**
+
+```bash
+# Import system hazard analysis results
+rtm import \
+  --format "aerospace" \
+  --source "safety_analysis/FHA-results.csv" \
+  --type "failure_condition"
+
+# Link failure conditions to derived safety requirements
+rtm link create \
+  --from "FC-001:Loss_of_Altitude_Hold" \
+  --to "SAFE-REQ-001" \
+  --type "mitigated_by" \
+  --metadata '{"severity": "catastrophic", "probability": "extremely_remote"}'
+```
+
+**Derived Requirements Tracking:**
+
+DO-178C requires tracking derived requirements (those not traceable to higher-level requirements):
+
+```bash
+# Mark requirement as derived
+rtm item update "LLR-042" \
+  --metadata '{"derived": true, "justification": "Implementation constraint for memory management"}'
+
+# Link to design constraint that necessitated derivation
+rtm link create \
+  --from "LLR-042" \
+  --to "DESIGN-CONSTRAINT-003" \
+  --type "derived_from_constraint" \
+  --rationale "Required to meet 100ms timing constraint on limited hardware"
+
+# Ensure derived requirements get upward reviewed
+rtm workflow start \
+  --item "LLR-042" \
+  --workflow "derived_requirement_review" \
+  --reviewers "safety_engineer,systems_engineer"
+```
+
+### Verification and Validation Workflow
+
+**Multi-Method Verification:**
+
+Many aerospace requirements require multiple verification methods:
+
+```bash
+# Requirement verified by both test and analysis
+rtm link create \
+  --from "HLR-023:Maximum_Bank_Angle_Limit" \
+  --to "TEST-HLR-023-001" \
+  --type "verified_by" \
+  --metadata '{"method": "test", "environment": "iron_bird"}'
+
+rtm link create \
+  --from "HLR-023:Maximum_Bank_Angle_Limit" \
+  --to "ANALYSIS-HLR-023" \
+  --type "verified_by" \
+  --metadata '{"method": "analysis", "tool": "MATLAB/Simulink", "version": "R2023a"}'
+
+# Verify completeness
+rtm query \
+  --type "high_level_requirement" \
+  --filter "verification_methods.count < 1" \
+  --output "unverified_requirements.json"
+```
+
+**Independent Verification:**
+
+```bash
+# Track independent verification activities
+rtm link create \
+  --from "TEST-DAL-A-001" \
+  --to "HLR-001" \
+  --type "independently_verifies" \
+  --metadata '{
+    "performed_by": "iv_and_v_team",
+    "independent_from": "development_team",
+    "completion_date": "2024-03-15"
+  }'
+```
+
+### Configuration Management Integration
+
+**Baseline Management:**
+
+```bash
+# Create formal baseline for certification
+rtm baseline create \
+  --name "Build 2.1.0 - Certification Baseline" \
+  --items "all" \
+  --freeze true \
+  --metadata '{
+    "certification_milestone": "FAA DER Review",
+    "approved_by": "chief_engineer",
+    "approval_date": "2024-06-01",
+    "configuration_index": "CI-2.1.0"
+  }'
+
+# Track changes against baseline
+rtm report changes \
+  --baseline "Build 2.1.0" \
+  --current "main" \
+  --impact-analysis true \
+  --output "certification/change-impact-report.pdf"
+```
+
+**Problem Report Traceability:**
+
+```bash
+# Link defects to requirements and verification
+rtm link create \
+  --from "PR-1234:Altitude_Hold_Oscillation" \
+  --to "HLR-015,LLR-089,TEST-LLR-089-002" \
+  --type "affects" \
+  --metadata '{
+    "severity": "major",
+    "detected_phase": "integration_test",
+    "root_cause": "timing_issue"
+  }'
+
+# Track regression test suite
+rtm link create \
+  --from "PR-1234:Altitude_Hold_Oscillation" \
+  --to "REGTEST-PR-1234" \
+  --type "prevented_by" \
+  --metadata '{"added_to_regression_suite": "2024-04-10"}'
+```
+
+---
+
+## Requirements to Test Case Traceability for Certification
+
+### Test Coverage Requirements
+
+**Structural Coverage Analysis:**
+
+```bash
+# Import coverage data from test execution
+rtm import \
+  --format "gcov" \
+  --source "coverage/gcov-output.json" \
+  --link-to-tests true
+
+# Generate structural coverage report by DAL level
+rtm report coverage-analysis \
+  --by-dal-level \
+  --mcdc-analysis \
+  --decision-coverage \
+  --statement-coverage \
+  --output "certification/structural-coverage.pdf"
+```
+
+**Requirements Coverage Matrix:**
+
+```bash
+# Generate comprehensive coverage matrix for certification package
+rtm matrix generate \
+  --rows "high_level_requirement" \
+  --columns "test_case,review,analysis" \
+  --show-coverage-metrics \
+  --highlight-gaps \
+  --format "aerospace_compliance" \
+  --output "certification/requirements-verification-matrix.xlsx"
+```
+
+### Test Procedure Development
+
+**Test Case Derivation:**
+
+```bash
+# Create test cases from requirements
+rtm item create \
+  --type "test_case" \
+  --title "Verify Altitude Hold Engagement" \
+  --description "Test that altitude hold mode engages within 500ms of pilot command" \
+  --metadata '{
+    "test_level": "integration",
+    "test_environment": "iron_bird",
+    "dal": "A",
+    "expected_coverage": "MC/DC"
+  }'
+
+# Link to requirements under test
+rtm link create \
+  --from "TEST-HLR-001" \
+  --to "HLR-001,HLR-002" \
+  --type "verifies" \
+  --metadata '{"verification_method": "normal_range_test"}'
+```
+
+**Test Results Traceability:**
+
+```bash
+# Import test execution results
+rtm import \
+  --format "junit" \
+  --source "test_results/integration_tests_2024-06-15.xml" \
+  --link-to-requirements true
+
+# Track certification test witnessing
+rtm item update "TEST-EXECUTION-001" \
+  --metadata '{
+    "witnessed_by": "FAA DER",
+    "witness_date": "2024-06-15",
+    "witness_signature": "witnessed",
+    "official_record": "Test Report TR-2024-015"
+  }'
+```
+
+---
+
+## Audit Trail Requirements
+
+### Change Control and Traceability
+
+DO-178C requires comprehensive change tracking and justification:
+
+```bash
+# Enable audit trail for all certification artifacts
+rtm project configure \
+  --audit-trail enabled \
+  --track-all-changes true \
+  --require-change-justification true
+
+# Record requirements change with full justification
+rtm item update "HLR-015" \
+  --title "Altitude Hold Mode - Updated Bank Angle Limit" \
+  --change-request "CR-2024-045" \
+  --rationale "Customer requested reduction from 45° to 35° for passenger comfort" \
+  --impact-analysis '{
+    "affected_llr": ["LLR-089", "LLR-090"],
+    "affected_tests": ["TEST-HLR-015-001", "TEST-HLR-015-002"],
+    "affected_code": ["src/flight_control/altitude_hold.c"],
+    "regression_testing_required": true,
+    "certification_impact": "retest_required"
+  }'
+```
+
+**Review and Approval Workflow:**
+
+```bash
+# Configure multi-level approval for safety-critical changes
+rtm workflow create "safety_critical_change_approval" \
+  --stages "peer_review,safety_review,chief_engineer_approval,customer_approval" \
+  --metadata '{
+    "applicable_to": "dal_a_and_b",
+    "minimum_reviewers_per_stage": 2,
+    "independence_required": true
+  }'
+
+# Track review completion
+rtm workflow status "HLR-015" \
+  --workflow "safety_critical_change_approval" \
+  --output-format "certification_record"
+```
+
+### Certification Data Package Generation
+
+```bash
+# Generate complete certification package
+rtm export \
+  --format "certification_package" \
+  --include-all-artifacts \
+  --baseline "Build 2.1.0" \
+  --output "certification/Certification-Data-Package-v2.1.0.zip" \
+  --contents '{
+    "requirements_documents": true,
+    "traceability_matrices": true,
+    "test_procedures": true,
+    "test_results": true,
+    "review_records": true,
+    "problem_reports": true,
+    "configuration_index": true,
+    "tool_qualification": true
+  }'
+```
+
+---
+
+## Real-World Examples and Workflows
+
+### Example 1: Flight Control System Development
+
+**Scenario:** Developing a digital flight control system for a commercial aircraft (DAL-A).
+
+**Step 1: Import System Requirements**
+
+```bash
+# Import from DOORS or other requirements tool
+rtm import \
+  --format "doors_ng" \
+  --source "requirements/FCS-System-Requirements.csv" \
+  --type "system_requirement"
+
+# Tag with appropriate metadata
+rtm query --type "system_requirement" | \
+  xargs -I {} rtm item update {} \
+    --metadata '{"system": "FCS", "dal": "A", "certification_basis": "DO-178C"}'
+```
+
+**Step 2: Decompose into High-Level Requirements**
+
+```bash
+# Create HLR from system requirements
+rtm item create \
+  --type "high_level_requirement" \
+  --title "Pitch Axis Control Laws" \
+  --description "The FCS shall implement pitch axis control laws per ARP-4754A" \
+  --metadata '{"parent_system_req": "SYS-FCS-001", "dal": "A"}'
+
+# Link to parent
+rtm link create \
+  --from "SYS-FCS-001" \
+  --to "HLR-FCS-001" \
+  --type "derived_to"
+```
+
+**Step 3: Detailed Design and Low-Level Requirements**
+
+```bash
+# Create LLRs from design
+rtm item create \
+  --type "low_level_requirement" \
+  --title "Pitch Rate Feedback Gain" \
+  --description "Pitch rate feedback gain shall be 0.5 rad/s per degree of stick deflection" \
+  --metadata '{
+    "parent_hlr": "HLR-FCS-001",
+    "dal": "A",
+    "verification_method": "test_and_analysis"
+  }'
+
+rtm link create \
+  --from "HLR-FCS-001" \
+  --to "LLR-FCS-001,LLR-FCS-002,LLR-FCS-003" \
+  --type "derived_to"
+```
+
+**Step 4: Implementation and Code Traceability**
+
+```bash
+# Link to source code
+rtm link create \
+  --from "LLR-FCS-001" \
+  --to "src/flight_control/pitch_axis.c:45-67" \
+  --type "implemented_in" \
+  --metadata '{"function": "calculate_pitch_command", "cyclomatic_complexity": 8}'
+
+# Track code reviews
+rtm link create \
+  --from "src/flight_control/pitch_axis.c" \
+  --to "CODE-REVIEW-FCS-001" \
+  --type "reviewed_in" \
+  --metadata '{
+    "reviewers": ["senior_engineer_1", "senior_engineer_2"],
+    "review_date": "2024-05-10",
+    "findings": 0
+  }'
+```
+
+**Step 5: Verification**
+
+```bash
+# Create comprehensive test suite
+rtm item create \
+  --type "test_case" \
+  --title "Pitch Rate Feedback Normal Range" \
+  --description "Verify pitch rate feedback within normal operating envelope" \
+  --metadata '{"test_level": "software_integration", "dal": "A"}'
+
+rtm link create \
+  --from "TEST-FCS-001" \
+  --to "LLR-FCS-001" \
+  --type "verifies"
+
+# Import coverage results
+rtm import \
+  --format "gcov_mcdc" \
+  --source "coverage/pitch_axis_coverage.json" \
+  --link-to "LLR-FCS-001"
+```
+
+### Example 2: Software Update Impact Analysis
+
+**Scenario:** A critical defect requires updating certified software. Full impact analysis needed.
+
+```bash
+# Document the problem
+rtm item create \
+  --type "problem_report" \
+  --title "PR-2024-089: Uncommanded Roll in Turbulence" \
+  --description "Flight test revealed uncommanded roll oscillation in severe turbulence" \
+  --metadata '{
+    "severity": "critical",
+    "safety_impact": "potential_loss_of_control",
+    "dal": "A"
+  }'
+
+# Identify affected requirements
+rtm graph analyze \
+  --from "PR-2024-089" \
+  --depth 5 \
+  --direction "upstream" \
+  --output "impact_analysis/pr-2024-089-upstream.json"
+
+# Find all downstream impacts
+rtm graph analyze \
+  --from "LLR-ROLL-015" \
+  --depth 10 \
+  --direction "downstream" \
+  --include-types "code,test,review,artifact" \
+  --output "impact_analysis/pr-2024-089-downstream.json"
+
+# Generate impact report for certification
+rtm report impact-analysis \
+  --problem-report "PR-2024-089" \
+  --baseline "Build 2.1.0" \
+  --format "DO-178C" \
+  --output "certification/PR-2024-089-Impact-Analysis.pdf"
+```
+
+---
+
+## Best Practices for Aerospace Traceability
+
+### 1. Establish Traceability Early
+
+Begin traceability activities during requirements development, not as a certification afterthought:
+
+```bash
+# Create project template with aerospace standards built-in
+rtm project create "New Avionics System" \
+  --template "aerospace_do178c" \
+  --dal-level "A" \
+  --enable-workflows \
+  --enable-audit-trail
+```
+
+### 2. Maintain Bidirectional Traceability
+
+Always create links in both directions to enable both forward and backward traceability:
+
+```bash
+# Good: Bidirectional linking
+rtm link create --from "HLR-001" --to "LLR-001,LLR-002" --type "derived_to"
+rtm link create --from "LLR-001,LLR-002" --to "HLR-001" --type "derived_from"
+
+# Or use bidirectional flag
+rtm link create --from "HLR-001" --to "LLR-001" --bidirectional
+```
+
+### 3. Use Consistent Metadata
+
+Standardize metadata across the project for reporting and filtering:
+
+```bash
+# Define project metadata schema
+rtm project configure --metadata-schema '{
+  "dal": ["A", "B", "C", "D", "E"],
+  "verification_method": ["test", "review", "analysis", "demonstration"],
+  "review_status": ["not_reviewed", "in_review", "approved", "rejected"],
+  "certification_status": ["not_certified", "in_process", "certified"]
+}'
+```
+
+### 4. Automate Where Possible
+
+Integrate TracerTM with your development pipeline:
+
+```bash
+# In CI/CD pipeline
+# 1. Run tests and collect coverage
+pytest --cov=src --cov-report=json
+
+# 2. Import coverage results
+rtm import --format gcov --source coverage.json --link-to-requirements
+
+# 3. Check coverage thresholds
+rtm report coverage-check \
+  --dal-level A \
+  --mcdc-threshold 100 \
+  --fail-on-gap
+
+# 4. Generate updated traceability matrix
+rtm matrix generate --format pdf --output artifacts/matrix.pdf
+```
+
+### 5. Regular Audits and Gap Analysis
+
+Schedule periodic traceability audits:
+
+```bash
+# Monthly traceability health check
+rtm audit run \
+  --check-broken-links \
+  --check-unverified-requirements \
+  --check-missing-metadata \
+  --check-unapproved-changes \
+  --output "audits/monthly-audit-$(date +%Y-%m).json"
+
+# Generate gap report
+rtm report gaps \
+  --baseline "current" \
+  --format "executive_summary" \
+  --output "reports/traceability-gaps.pdf"
+```
+
+### 6. Tool Qualification
+
+If using TracerTM as part of the certification process, consider tool qualification:
+
+```bash
+# Generate tool qualification package
+rtm tool-qualification \
+  --standard "DO-330" \
+  --tool-category "TQL-5" \
+  --include-validation-tests \
+  --output "tool_qualification/TracerTM-DO-330-Package.zip"
+```
+
+### 7. Training and Documentation
+
+Maintain project-specific traceability guidelines:
+
+```bash
+# Generate project traceability handbook
+rtm project export-handbook \
+  --include-workflows \
+  --include-templates \
+  --include-examples \
+  --output "documentation/Traceability-Handbook.pdf"
+```
+
+---
+
+## Compliance Checklist
+
+Use this checklist to ensure DO-178C traceability compliance:
+
+- [ ] All high-level requirements traced to system requirements
+- [ ] All low-level requirements traced to high-level requirements
+- [ ] All source code traced to low-level requirements
+- [ ] All requirements have defined verification methods
+- [ ] All requirements verified by test, review, or analysis
+- [ ] Structural coverage meets DAL-specific objectives (MC/DC for DAL-A)
+- [ ] Derived requirements identified and justified
+- [ ] All changes tracked with rationale and impact analysis
+- [ ] Baselines established and configuration-controlled
+- [ ] Review and approval records maintained
+- [ ] Tool qualification completed (if applicable)
+- [ ] Certification data package generated and reviewed
+
+```bash
+# Run automated compliance check
+rtm compliance check \
+  --standard "DO-178C" \
+  --dal-level "A" \
+  --baseline "Certification-Build-2.1.0" \
+  --output "certification/compliance-checklist.pdf"
+```
+
+---
+
+## Additional Resources
+
+- **DO-178C**: Software Considerations in Airborne Systems and Equipment Certification
+- **DO-254**: Design Assurance Guidance for Airborne Electronic Hardware
+- **ARP-4754A**: Guidelines for Development of Civil Aircraft and Systems
+- **DO-330**: Software Tool Qualification Considerations
+- **FAA Order 8110.49**: Software Approval Guidelines
+
+For TracerTM-specific aerospace support:
+- Contact: aerospace-support@tracertm.com
+- Sample projects: `rtm project clone aerospace/flight-control-example`
+- Training materials: https://docs.tracertm.com/training/aerospace

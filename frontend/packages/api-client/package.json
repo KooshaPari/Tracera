@@ -3,25 +3,26 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/api-client.ts",
+  "types": "./src/api-client.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
+    ".": "./src/api-client.ts"
   },
   "scripts": {
-    "build": "npx -p typescript@5.8.3 tsc -p tsconfig.json",
-    "typecheck": "npx -p typescript@5.8.3 tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "generate": "openapi-typescript http://localhost:4000/openapi.json -o ./src/generated/schema.d.ts",
+    "test": "vitest --run",
+    "test:coverage": "vitest --run --coverage"
   },
   "dependencies": {
-    "@tracertm/types": "file:../types"
+    "@tracertm/types": "workspace:*",
+    "openapi-fetch": "^0.15.0"
   },
   "devDependencies": {
-    "@types/node": "^22.15.21",
-    "typescript": "^5.8.3",
-    "vitest": "^4.1.9"
+    "@vitest/coverage-v8": "^4.0.14",
+    "openapi-typescript": "^7.4.0",
+    "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1",
+    "vitest": "^4.0.14"
   }
 }

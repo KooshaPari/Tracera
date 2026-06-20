@@ -1,5 +1,44 @@
-"""FastAPI application package for Tracera."""
+"""Python API for TraceRTM.
 
-from tracertm.api.main import app, create_app
+Provides:
+- TraceRTMClient: Local database access for AI agents (FR36)
+- ApiClient: HTTP client for sync operations with backend API
+"""
 
-__all__ = ["app", "create_app"]
+from tracertm.api.client import TraceRTMClient
+from tracertm.api.sync_client import (
+    ApiClient,
+    ApiConfig,
+    ApiError,
+    AuthenticationError,
+    Change,
+    Conflict,
+    ConflictError,
+    ConflictStrategy,
+    NetworkError,
+    RateLimitError,
+    SyncOperation,
+    SyncStatus,
+    UploadResult,
+)
+
+__all__ = [
+    # HTTP sync client
+    "ApiClient",
+    "ApiConfig",
+    # Exceptions
+    "ApiError",
+    "AuthenticationError",
+    # Data models
+    "Change",
+    "Conflict",
+    "ConflictError",
+    "ConflictStrategy",
+    "NetworkError",
+    "RateLimitError",
+    "SyncOperation",
+    "SyncStatus",
+    # Local client
+    "TraceRTMClient",
+    "UploadResult",
+]

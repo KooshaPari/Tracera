@@ -1,0 +1,198 @@
+---
+title: "Concepts"
+description: "Core concepts and foundations of requirements traceability management"
+---
+
+# Concepts
+
+This section covers the fundamental concepts that power TraceRTM. Understanding these concepts will help you make the most of the platform.
+
+## Traceability Fundamentals
+
+Traceability is the ability to trace the life of a requirement through its development, testing, and deployment. It answers critical questions:
+
+- **Where did this requirement come from?** (backward traceability)
+- **How is this requirement implemented?** (forward traceability)
+- **What tests verify this requirement?** (test coverage)
+- **What happens if this changes?** (impact analysis)
+
+[Learn more about traceability →](/docs/wiki/concepts/traceability/what-is)
+
+## Core Concepts at a Glance
+
+### Artifacts
+
+Artifacts are the building blocks of traceability. They represent discrete units of work:
+
+| Artifact Type | Description | Examples |
+|--------------|-------------|----------|
+| Requirements | What the system should do | User stories, features, specifications |
+| Design | How the system is structured | Architecture, wireframes, data models |
+| Code | Implementation of requirements | Modules, classes, functions |
+| Tests | Verification of behavior | Unit tests, integration tests, acceptance tests |
+
+[Explore artifact types →](/docs/wiki/concepts/artifacts)
+
+### Relationships (Links)
+
+Links connect artifacts and form the traceability graph:
+
+```
+REQUIREMENT ──implements──> CODE ──tests──> TEST
+     │                                        │
+     └──────────verified_by───────────────────┘
+```
+
+Link types include:
+- `implements` / `realized_by`
+- `tests` / `verified_by`
+- `depends_on` / `blocks`
+- `parent_of` / `child_of`
+
+[Learn about relationships →](/docs/wiki/concepts/relationships)
+
+### Workflows
+
+Workflows define how artifacts move through states:
+
+```
+DRAFT → IN_PROGRESS → REVIEW → DONE
+```
+
+TraceRTM supports multiple workflow patterns:
+- Agile/Scrum workflows
+- Waterfall/V-model workflows
+- Hybrid approaches
+- Custom workflows
+
+[Explore workflows →](/docs/wiki/concepts/workflows)
+
+### Metadata & Custom Fields
+
+Every artifact carries metadata that enables filtering, searching, and reporting:
+
+- **Standard fields**: ID, title, status, owner, priority
+- **Custom fields**: Sprint, story points, risk level, regulatory classification
+- **Computed fields**: Coverage percentage, child count, link count
+
+[Learn about metadata →](/docs/wiki/concepts/metadata)
+
+### Versioning & Baselines
+
+TraceRTM tracks changes over time:
+
+- **Versions**: Every change creates a new version
+- **Baselines**: Snapshots of requirements at a point in time
+- **Branching**: Work on variations without affecting the main line
+- **Merging**: Combine changes from different branches
+
+[Learn about versioning →](/docs/wiki/concepts/versioning)
+
+### Integrations
+
+Connect TraceRTM with your existing tools:
+
+- **Issue Trackers**: Jira, Azure DevOps, GitHub Issues
+- **Source Control**: GitHub, GitLab, Bitbucket
+- **CI/CD**: Jenkins, GitHub Actions, GitLab CI
+- **Documentation**: Confluence, Notion
+
+[Explore integrations →](/docs/wiki/concepts/integrations)
+
+## Traceability Matrix
+
+The Requirements Traceability Matrix (RTM) is the central deliverable:
+
+```
+                    TESTS
+REQUIREMENTS    T-001  T-002  T-003  Coverage
+─────────────────────────────────────────────
+REQ-001           ✓      ✓             67%
+REQ-002           ✓      ✓      ✓     100%
+REQ-003                                 0%
+─────────────────────────────────────────────
+```
+
+The matrix shows:
+- Which requirements have tests
+- Coverage gaps (REQ-003 has no tests)
+- Over-testing (multiple tests per requirement)
+
+## Key Benefits
+
+### For Project Managers
+- **Visibility**: See project status at a glance
+- **Risk Management**: Identify gaps before they become problems
+- **Change Control**: Understand impact before approving changes
+
+### For Developers
+- **Context**: Understand why code exists
+- **Impact**: Know what breaks when you change something
+- **Documentation**: Traceability is living documentation
+
+### For QA Teams
+- **Coverage**: Know what's tested and what isn't
+- **Prioritization**: Focus on high-risk areas
+- **Regression**: Identify tests affected by changes
+
+### For Compliance
+- **Audit Trails**: Every change is recorded
+- **Evidence**: Demonstrate complete coverage
+- **Standards**: Meet regulatory requirements
+
+## Concept Map
+
+```
+                    ┌─────────────┐
+                    │   PROJECT   │
+                    └──────┬──────┘
+                           │
+          ┌────────────────┼────────────────┐
+          │                │                │
+    ┌─────▼─────┐   ┌──────▼──────┐   ┌────▼────┐
+    │ ARTIFACTS │   │  WORKFLOWS  │   │  USERS  │
+    └─────┬─────┘   └─────────────┘   └─────────┘
+          │
+    ┌─────┴─────┐
+    │           │
+┌───▼───┐ ┌─────▼─────┐
+│ LINKS │ │  METADATA │
+└───────┘ └───────────┘
+```
+
+## Dive Deeper
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+
+### Traceability
+- [What is Traceability?](/docs/wiki/concepts/traceability/what-is)
+- [Types of Traceability](/docs/wiki/concepts/traceability/types)
+- [Benefits](/docs/wiki/concepts/traceability/benefits)
+- [Best Practices](/docs/wiki/concepts/traceability/best-practices)
+
+### Artifacts
+- [Requirements](/docs/wiki/concepts/artifacts/requirements)
+- [Design Artifacts](/docs/wiki/concepts/artifacts/design)
+- [Test Cases](/docs/wiki/concepts/artifacts/test-cases)
+- [Code Artifacts](/docs/wiki/concepts/artifacts/code)
+
+### Relationships
+- [Link Types](/docs/wiki/concepts/relationships/types)
+- [Relationship Mapping](/docs/wiki/concepts/relationships/mapping)
+- [Visualization](/docs/wiki/concepts/relationships/visualization)
+- [Impact Analysis](/docs/wiki/concepts/relationships/impact-analysis)
+
+### Workflows
+- [Agile Workflows](/docs/wiki/concepts/workflows/agile)
+- [Waterfall Workflows](/docs/wiki/concepts/workflows/waterfall)
+- [Custom Workflows](/docs/wiki/concepts/workflows/custom)
+- [Automation](/docs/wiki/concepts/workflows/automation)
+
+</div>
+
+## Related Topics
+
+- [Getting Started](/docs/getting-started) - Set up your first project
+- [Data Model](/docs/getting-started/core-concepts/data-model) - Technical details
+- [Best Practices](/docs/wiki/best-practices) - Industry guidance
+

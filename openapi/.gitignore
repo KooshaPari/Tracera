@@ -1,0 +1,10 @@
+# OpenAPI specifications
+# These are auto-generated and should be committed for documentation
+# but ignored in some workflows
+
+# Temporary files
+*.tmp
+*.bak
+
+# Optional: Uncomment to ignore generated specs (regenerate on demand)
+# *.json

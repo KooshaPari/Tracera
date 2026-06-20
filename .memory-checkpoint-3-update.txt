@@ -1,0 +1,29 @@
+CHECKPOINT 3 STATUS UPDATE - SESSION 5 (2026-02-06 T+55)
+
+Status: ✅ MSW SETUP FIXED | 🟡 WAVE 2 PHASE 2 ACTIVE (15+ tests) | 🟢 WAVE 3 READY
+
+Key Achievements:
+1. ✅ Fixed MSW router mock issues (removed inline vi.mock())
+2. ✅ Initialized MSW server lifecycle (beforeAll, afterEach, afterAll)
+3. ✅ Wave 2 Phase 2 now executing: 15/72 app-integration tests passing
+4. ✅ Wave 3 launch briefings sent to api-performance-implementer
+5. ✅ Commit a00404607: MSW setup + router mocks
+
+Current State:
+- Wave 1: ✅ COMPLETE (18 tests, commit 222c51db2)
+- Wave 2: 🟡 Phase 2 ACTIVE (Gap 5.3 tests running, Gap 5.4 workflows, Gap 5.5 fixtures)
+- Wave 3: 🟢 LAUNCHING AT T+60 (Gap 5.6, 5.7, 5.8)
+- Timeline: T+55 checkpoint, expect T+100 completion (10-min slip due to MSW setup)
+
+Critical Path: Gap 5.7 GPU Shaders (40 min, Phase 1 T+60-T+72)
+
+Next Checkpoint: T+70 (Checkpoint 4)
+
+Files Modified:
+- /frontend/apps/web/src/__tests__/setup.ts - Added MSW server + router mocks
+- /frontend/apps/web/src/__tests__/integration/app-integration.test.tsx - Removed inline vi.mock()
+- /docs/reports/PHASE_5_CHECKPOINT_3_STATUS.md - Comprehensive checkpoint report
+
+Coordinator Messages Sent:
+1. integration-tests-architect - MSW fixes, 15 tests passing, next actions
+2. api-performance-implementer - Wave 3 launch details, critical path monitoring

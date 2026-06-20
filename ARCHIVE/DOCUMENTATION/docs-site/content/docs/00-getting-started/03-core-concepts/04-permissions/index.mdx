@@ -1,0 +1,258 @@
+---
+title: "Permissions"
+description: "Access control, roles, and authorization in TraceRTM"
+---
+
+# Permissions
+
+TraceRTM provides a flexible permission system to control who can view, create, modify, and delete artifacts and projects.
+
+## Permission Model
+
+### Role-Based Access Control (RBAC)
+
+TraceRTM uses RBAC with three levels:
+
+1. **System Roles**: Global permissions across all projects
+2. **Project Roles**: Permissions within a specific project
+3. **Agent Capabilities**: What automated agents can do
+
+## System Roles
+
+| Role | Description | Capabilities |
+|------|-------------|--------------|
+| `admin` | Full system access | All operations, user management |
+| `user` | Standard user | Create projects, full access to own projects |
+| `viewer` | Read-only access | View all projects, no modifications |
+| `agent` | Automated actor | Scoped by agent configuration |
+
+## Project Roles
+
+| Role | View | Create | Update | Delete | Manage |
+|------|------|--------|--------|--------|--------|
+| `owner` | Yes | Yes | Yes | Yes | Yes |
+| `maintainer` | Yes | Yes | Yes | Yes | No |
+| `contributor` | Yes | Yes | Yes* | No | No |
+| `viewer` | Yes | No | No | No | No |
+
+*Contributors can only update items they created
+
+## Configuring Permissions
+
+### CLI Configuration
+
+```bash
+# Add user to project
+tracertm project add-member proj-001 alice@example.com --role maintainer
+
+# Change user role
+tracertm project set-role proj-001 bob@example.com contributor
+
+# Remove user from project
+tracertm project remove-member proj-001 charlie@example.com
+```
+
+### API Configuration
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Add member to project
+client.add_project_member(
+    project_id="proj-001",
+    user_email="alice@example.com",
+    role="maintainer"
+)
+
+# List project members
+members = client.get_project_members("proj-001")
+for member in members:
+    print(f"{member.email}: {member.role}")
+```
+
+### Config File
+
+```yaml
+# .tracertm/permissions.yaml
+project_defaults:
+  public_read: false
+  allow_agent_write: true
+
+roles:
+  custom_reviewer:
+    permissions:
+      - view_items
+      - view_links
+      - add_comments
+      - transition_to_approved
+    restrictions:
+      - cannot_delete
+      - cannot_create
+```
+
+## Agent Permissions
+
+### Agent Capabilities
+
+Agents have specific capabilities that control what they can do:
+
+```yaml
+agents:
+  linker-agent:
+    capabilities:
+      - create_links
+      - read_items
+    restrictions:
+      - cannot_delete_items
+      - cannot_modify_status
+
+  analyzer-agent:
+    capabilities:
+      - read_all
+      - update_metadata
+      - transition_items
+    scoped_to_views:
+      - CODE
+      - TEST
+```
+
+### Registering Agent with Capabilities
+
+```python
+client = TraceRTMClient()
+
+agent_id = client.register_agent(
+    name="Code Analyzer",
+    capabilities=["read_items", "update_metadata", "create_links"],
+    allowed_views=["CODE", "TEST"],
+    project_ids=["proj-001", "proj-002"]
+)
+```
+
+## Permission Checks
+
+### Item-Level Checks
+
+```python
+# Check if user can edit item
+can_edit = client.check_permission(
+    user_id="alice",
+    action="update",
+    resource_type="item",
+    resource_id="FEAT-001"
+)
+
+if can_edit:
+    client.update_item("FEAT-001", status="done")
+else:
+    print("Permission denied")
+```
+
+### Bulk Permission Check
+
+```python
+# Check multiple permissions at once
+permissions = client.check_permissions(
+    user_id="bob",
+    checks=[
+        {"action": "create", "resource_type": "item", "project_id": "proj-001"},
+        {"action": "delete", "resource_type": "item", "item_id": "FEAT-001"},
+        {"action": "manage", "resource_type": "project", "project_id": "proj-001"}
+    ]
+)
+
+# Returns: [True, False, False]
+```
+
+## Audit Trail
+
+All permission-related actions are logged:
+
+```json
+{
+  "event_type": "permission_granted",
+  "actor": "admin@example.com",
+  "target_user": "alice@example.com",
+  "project_id": "proj-001",
+  "role": "maintainer",
+  "timestamp": "2024-12-07T10:00:00Z"
+}
+```
+
+### Querying Permission History
+
+```python
+events = client.get_events(
+    event_types=["permission_granted", "permission_revoked"],
+    project_id="proj-001"
+)
+```
+
+## Security Best Practices
+
+### 1. Principle of Least Privilege
+
+- Start with minimal permissions
+- Grant additional access as needed
+- Regularly audit permissions
+
+### 2. Use Project Roles
+
+- Avoid system-level admin access
+- Scope permissions to specific projects
+- Use `viewer` for external stakeholders
+
+### 3. Agent Restrictions
+
+- Limit agent capabilities to required actions
+- Scope agents to specific views
+- Monitor agent activity
+
+### 4. Regular Audits
+
+```bash
+# Export permission report
+tracertm audit permissions --project proj-001 --output report.json
+
+# Review high-privilege users
+tracertm audit users --role admin
+```
+
+## Integration with External Auth
+
+### OAuth2/OIDC
+
+```yaml
+# config.yaml
+auth:
+  provider: oauth2
+  issuer: https://auth.example.com
+  client_id: tracertm-app
+  scopes:
+    - openid
+    - profile
+    - email
+  role_mapping:
+    admin: ["tracertm:admin"]
+    user: ["tracertm:user"]
+```
+
+### LDAP/Active Directory
+
+```yaml
+auth:
+  provider: ldap
+  server: ldap://ad.example.com
+  base_dn: ou=users,dc=example,dc=com
+  group_mapping:
+    "CN=TraceRTM Admins": admin
+    "CN=TraceRTM Users": user
+```
+
+## Related Topics
+
+- [Architecture](/docs/getting-started/core-concepts/architecture) - Security architecture
+- [API Authentication](/docs/api-reference/authentication) - API auth details
+- [Agent Coordination](/docs/wiki/concepts/agent-coordination) - Agent permissions

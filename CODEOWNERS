@@ -1,0 +1,24 @@
+# CODEOWNERS — default reviewers for this repository.
+# Order matters: later rules override earlier ones.
+#
+# GitHub reads `.github/CODEOWNERS` first, then `/CODEOWNERS`, then `/docs/CODEOWNERS`.
+# Keep this file in sync with `.github/CODEOWNERS` so a fresh clone (no `.github/`
+# files visible) still picks up the right reviewers in third-party tools.
+
+# Default owner
+* @kooshapari
+
+# Governance / meta
+/.github/                @kooshapari
+/SECURITY.md             @kooshapari
+/CODEOWNERS              @kooshapari
+/.github/CODEOWNERS      @kooshapari
+
+# Polyglot drill-down
+/rust/                   @kooshapari
+/go/                     @kooshapari
+/python/                 @kooshapari
+*.rs                     @kooshapari
+*.go                     @kooshapari
+*.py                     @kooshapari
+*.ts                     @kooshapari

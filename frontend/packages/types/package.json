@@ -3,19 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/types.ts",
+  "types": "./src/types.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
+    ".": "./src/types.ts"
   },
   "scripts": {
-    "build": "npx -p typescript@5.8.3 tsc -p tsconfig.json",
-    "typecheck": "npx -p typescript@5.8.3 tsc -p tsconfig.json --noEmit"
+    "build": "tsc --build",
+    "clean": "tsc --build --clean"
   },
   "devDependencies": {
-    "typescript": "^5.8.3"
+    "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1"
   }
 }

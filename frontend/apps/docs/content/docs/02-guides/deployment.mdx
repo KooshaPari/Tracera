@@ -1,0 +1,459 @@
+---
+title: Deployment Guide
+description: Complete deployment and operations guide for TraceRTM
+---
+
+# Deployment Guide
+
+Complete deployment and operations guide for TraceRTM in various environments.
+
+## Quick Start
+
+### Prerequisites
+
+- **Docker & Docker Compose** - Container runtime
+- **Python 3.12+** - Backend runtime
+- **Node.js 20+** - Frontend build
+- **PostgreSQL 15+** - Database
+- **Redis 7+** - Caching layer
+
+### Local Development
+
+```bash
+# Clone repository
+git clone https://github.com/yourusername/tracertm.git
+cd tracertm
+
+# Start infrastructure services
+docker-compose up -d postgres redis nats
+
+# Backend setup
+uv sync
+alembic upgrade head
+
+# Frontend setup
+cd frontend
+bun install
+
+# Start development servers
+# Terminal 1 - Backend
+uv run uvicorn src.tracertm.api.main:app --reload
+
+# Terminal 2 - Frontend
+cd frontend/apps/web
+bun run dev
+
+# Terminal 3 - Docs
+cd frontend/apps/docs
+bun run dev
+```
+
+### Docker Deployment
+
+```bash
+# Build images
+docker-compose build
+
+# Start all services
+docker-compose up -d
+
+# Check logs
+docker-compose logs -f api
+```
+
+## Services
+
+### PostgreSQL
+
+- **Port**: 5432
+- **Database**: tracertm
+- **User**: tracertm
+- **Password**: Set via `POSTGRES_PASSWORD` env var
+
+```yaml
+# docker-compose.yml
+postgres:
+  image: postgres:15-alpine
+  environment:
+    POSTGRES_DB: tracertm
+    POSTGRES_USER: tracertm
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  volumes:
+    - postgres_data:/var/lib/postgresql/data
+  ports:
+    - '5432:5432'
+```
+
+### Redis
+
+- **Port**: 6379
+- **Purpose**: Caching, sessions, rate limiting
+
+```yaml
+redis:
+  image: redis:7-alpine
+  ports:
+    - '6379:6379'
+  volumes:
+    - redis_data:/data
+```
+
+### NATS
+
+- **Port**: 4222 (client), 8222 (monitoring)
+- **Purpose**: Event streaming, pub/sub
+
+```yaml
+nats:
+  image: nats:latest
+  command: ['-js', '-m', '8222']
+  ports:
+    - '4222:4222'
+    - '8222:8222'
+```
+
+### API
+
+- **Port**: 8000
+- **Endpoint**: http://localhost:8000
+- **Docs**: http://localhost:8000/docs
+
+```yaml
+api:
+  build: .
+  environment:
+    DATABASE_URL: postgresql+asyncpg://tracertm:${POSTGRES_PASSWORD}@postgres/tracertm
+    REDIS_URL: redis://redis:6379
+    NATS_URL: nats://nats:4222
+  ports:
+    - '8000:8000'
+  depends_on:
+    - postgres
+    - redis
+    - nats
+```
+
+## Configuration
+
+### Environment Variables
+
+Create a `.env` file:
+
+```bash
+# Database
+DATABASE_URL=postgresql+asyncpg://tracertm:password@localhost:5432/tracertm
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# NATS
+NATS_URL=nats://localhost:4222
+
+# API
+API_HOST=0.0.0.0
+API_PORT=8000
+API_CORS_ORIGINS=["http://localhost:5173"]
+
+# Security
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Logging
+LOG_LEVEL=INFO
+LOG_FORMAT=json
+```
+
+### Database Migrations
+
+Using Alembic for schema management:
+
+```bash
+# Create new migration
+alembic revision --autogenerate -m "Add new table"
+
+# Apply migrations
+alembic upgrade head
+
+# Rollback one migration
+alembic downgrade -1
+
+# View current version
+alembic current
+
+# View migration history
+alembic history
+```
+
+## Production Deployment
+
+### Using Docker Compose
+
+1. **Update environment variables**:
+
+```bash
+# .env.production
+DATABASE_URL=postgresql+asyncpg://tracertm:${POSTGRES_PASSWORD}@postgres:5432/tracertm
+REDIS_URL=redis://redis:6379
+SECRET_KEY=${SECRET_KEY}
+API_CORS_ORIGINS=["https://yourdomain.com"]
+```
+
+2. **Build and start**:
+
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+3. **Run migrations**:
+
+```bash
+docker-compose exec api alembic upgrade head
+```
+
+### Using Kubernetes
+
+See [Kubernetes Deployment](/02-guides/kubernetes) for detailed instructions.
+
+### Using Cloud Platforms
+
+#### Vercel (Frontend)
+
+```bash
+cd frontend/apps/web
+vercel deploy --prod
+```
+
+#### Railway (Backend)
+
+```bash
+railway up
+```
+
+#### Render (Full Stack)
+
+Create `render.yaml`:
+
+```yaml
+services:
+  - type: web
+    name: tracertm-api
+    env: python
+    buildCommand: 'uv sync && alembic upgrade head'
+    startCommand: 'uvicorn src.tracertm.api.main:app --host 0.0.0.0 --port $PORT'
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tracertm-db
+          property: connectionString
+```
+
+## Monitoring
+
+### Health Checks
+
+```bash
+# API health
+curl http://localhost:8000/health
+
+# Database health
+curl http://localhost:8000/health/db
+
+# Redis health
+curl http://localhost:8000/health/redis
+```
+
+### Metrics
+
+Prometheus metrics available at `/metrics`:
+
+```bash
+curl http://localhost:8000/metrics
+```
+
+### Logging
+
+Structured JSON logging to stdout:
+
+```json
+{
+  "timestamp": "2025-01-30T12:00:00Z",
+  "level": "INFO",
+  "message": "Request completed",
+  "path": "/api/items",
+  "method": "GET",
+  "status_code": 200,
+  "duration_ms": 42
+}
+```
+
+## Backup & Restore
+
+### Database Backup
+
+```bash
+# Backup
+docker-compose exec postgres pg_dump -U tracertm tracertm > backup.sql
+
+# Restore
+docker-compose exec -T postgres psql -U tracertm tracertm < backup.sql
+```
+
+### Automated Backups
+
+Add to crontab:
+
+```bash
+# Daily backup at 2 AM
+0 2 * * * /path/to/backup.sh
+```
+
+`backup.sh`:
+
+```bash
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+docker-compose exec postgres pg_dump -U tracertm tracertm > backup_$DATE.sql
+aws s3 cp backup_$DATE.sql s3://your-bucket/backups/
+```
+
+## Scaling
+
+### Horizontal Scaling
+
+Add more API instances:
+
+```yaml
+api:
+  deploy:
+    replicas: 3
+```
+
+### Database Connection Pooling
+
+Configure in `src/tracertm/database.py`:
+
+```python
+engine = create_async_engine(
+    DATABASE_URL,
+    pool_size=20,
+    max_overflow=10,
+    pool_pre_ping=True,
+)
+```
+
+### Redis Clustering
+
+Use Redis Cluster for high availability:
+
+```yaml
+redis:
+  image: redis:7-alpine
+  command: redis-server --cluster-enabled yes
+```
+
+## Security
+
+### HTTPS
+
+Use reverse proxy (nginx, Caddy):
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name api.yourdomain.com;
+
+    ssl_certificate /etc/ssl/cert.pem;
+    ssl_certificate_key /etc/ssl/key.pem;
+
+    location / {
+        proxy_pass http://localhost:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+### Rate Limiting
+
+Configure in API settings:
+
+```python
+from slowapi import Limiter
+
+limiter = Limiter(key_func=get_remote_address)
+
+@app.get("/api/items")
+@limiter.limit("100/minute")
+async def get_items():
+    pass
+```
+
+### Authentication
+
+Enable JWT authentication:
+
+```python
+from fastapi.security import OAuth2PasswordBearer
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+```
+
+## Troubleshooting
+
+### API won't start
+
+1. Check database connection:
+
+   ```bash
+   docker-compose logs postgres
+   ```
+
+2. Verify migrations:
+
+   ```bash
+   alembic current
+   ```
+
+3. Check logs:
+   ```bash
+   docker-compose logs api
+   ```
+
+### Database connection errors
+
+1. Verify PostgreSQL is running:
+
+   ```bash
+   docker-compose ps postgres
+   ```
+
+2. Test connection:
+   ```bash
+   psql -h localhost -U tracertm -d tracertm
+   ```
+
+### Performance issues
+
+1. Enable query logging:
+
+   ```python
+   engine = create_async_engine(DATABASE_URL, echo=True)
+   ```
+
+2. Check slow queries:
+
+   ```sql
+   SELECT * FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 10;
+   ```
+
+3. Monitor metrics:
+   ```bash
+   curl http://localhost:8000/metrics
+   ```
+
+## Related Documentation
+
+- [Architecture Overview](/01-architecture)
+- [Database Guide](/02-guides/database)
+- [Monitoring Guide](/02-guides/monitoring)

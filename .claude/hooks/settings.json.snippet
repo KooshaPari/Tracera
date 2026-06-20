@@ -1,0 +1,98 @@
+// Hook integration configuration snippet
+// Add this to ~/.claude/settings.json under "hooks" section
+
+{
+  "hooks": {
+    "enabled": true,
+    "hooks": [
+      {
+        "name": "pre-commit-security",
+        "path": ".claude/hooks/pre-commit-security.sh",
+        "events": ["pre-commit"],
+        "description": "Trivy + GitGuardian + git-secrets security scanning",
+        "enabled": true
+      },
+      {
+        "name": "bundle-size-gate",
+        "path": ".claude/hooks/bundle-size-gate.sh",
+        "events": ["pre-push"],
+        "description": "Bundle size baseline comparison with 5% threshold",
+        "enabled": true
+      },
+      {
+        "name": "pre-push-test",
+        "path": ".claude/hooks/pre-push-test.sh",
+        "events": ["pre-push"],
+        "description": "Multi-language test runner (bun/pytest/go test)",
+        "enabled": true
+      },
+      {
+        "name": "graph-performance-gate",
+        "path": ".claude/hooks/graph-performance-gate.sh",
+        "events": ["post-test"],
+        "description": "GPU/FPS monitoring, layout/culling timing baseline comparison",
+        "enabled": false,
+        "note": "Enable after benchmark baselines established"
+      }
+    ],
+    "errorHandling": "fail-on-error",
+    "timeout": 60,
+    "verbose": true,
+    "logDir": ".claude/hook-logs"
+  }
+}
+
+// Installation instructions:
+// 1. Make hook scripts executable:
+//    chmod +x .claude/hooks/*.sh
+//
+// 2. Configure Git hooks (if using git hooks directly):
+//    .git/hooks/pre-commit -> ln -s ../../.claude/hooks/pre-commit-security.sh
+//    .git/hooks/pre-push -> ln -s ../../.claude/hooks/{pre-push-test,bundle-size-gate}.sh
+//
+// 3. Or use Claude Code hook integration:
+//    - Update ~/.claude/settings.json with above configuration
+//    - Claude Code will automatically execute hooks at specified events
+//
+// Hook Descriptions:
+//
+// pre-commit-security.sh:
+//   Runs before commit to prevent security issues from being committed
+//   - Trivy: Scans for CRITICAL/HIGH severity vulnerabilities
+//   - GitGuardian: Detects exposed secrets (API keys, tokens)
+//   - git-secrets: Finds patterns matching known secret formats
+//   Exit codes: 0=pass, 1=security failure, 2=missing tool/prereq
+//
+// bundle-size-gate.sh:
+//   Enforces bundle size budget before push
+//   - Extracts production bundle sizes from dist/
+//   - Compares against baseline (stored in .claude/.bundle-baseline.json)
+//   - Fails if regression exceeds 5% threshold
+//   - Reports top 5 contributors to size increase
+//
+// pre-push-test.sh:
+//   Runs unit test suites before allowing push
+//   - Go: Tests in backend/... via "go test ./..."
+//   - Python: Tests via pytest (src/)
+//   - TypeScript: Tests via bun/npm (frontend/)
+//   - Blocking: All failed suites prevent push
+//   - Non-blocking: Missing test suites are warnings only
+//
+// graph-performance-gate.sh:
+//   Validates GPU rendering and spatial indexing performance
+//   - FPS target: 60fps sustained
+//   - Layout timing: <100ms for 10k nodes
+//   - Culling accuracy: ≥98% viewport coverage
+//   - Memory baseline: <512MB
+//   - Runs benchmark tests if available
+//
+// Environment Variables:
+//
+// CI mode (hooks behave differently in CI):
+//   HOOKS_CI=1 - Skip interactive prompts, fail hard on any error
+//
+// Debug logging:
+//   HOOKS_DEBUG=1 - Print all commands and timing information
+//
+// Hook timeouts:
+//   HOOKS_TIMEOUT=<seconds> - Override default 60s timeout per hook

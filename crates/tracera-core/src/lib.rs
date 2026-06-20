@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+// Copyright 2026 Koosha Pari
+
 //! `tracera-core` — thin Tracera live-service crate on [`traceability_core`].
 //!
 //! Shared domain types (`Artifact`, `Requirement`, `TraceLink`, coverage matrix,

@@ -1,139 +1,203 @@
-"""Test suite for /auth/me endpoint with DB account lookup.
+"""Tests for the /auth/me endpoint implementation.
 
-Verifies that the endpoint correctly fetches user data and performs
-DB-backed account lookup (B4 requirement).
+Verifies that the endpoint correctly fetches user data from WorkOS API.
 """
 
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
+from fastapi.testclient import TestClient
+
+from tests.test_constants import (
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_NOT_FOUND,
+    HTTP_OK,
+    HTTP_UNAUTHORIZED,
+)
 
 
 @pytest.fixture
-def mock_jwt_claims() -> dict[str, Any]:
-    """Fixture for JWT claims."""
-    return {
-        "sub": "user_01HXYZ123",
-        "email": "test@example.com",
-        "org_id": "org_01HXYZ456",
-        "org_name": "Test Org",
-        "iat": 1234567890,
-        "exp": 1234571490,
-    }
-
-
-@pytest.fixture
-def mock_workos_user() -> dict[str, Any]:
-    """Fixture for WorkOS user data."""
+def mock_workos_user() -> None:
+    """Mock WorkOS user response."""
     return {
         "id": "user_01HXYZ123",
         "email": "test@example.com",
         "first_name": "Test",
         "last_name": "User",
         "email_verified": True,
-        "created_at": "2026-01-01T00:00:00Z",
-        "updated_at": "2026-01-02T00:00:00Z",
-        "profile_picture_url": "https://example.com/avatar.jpg",
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-15T00:00:00Z",
+        "profile_picture_url": "https://example.com/photo.jpg",
+    }
+
+
+@pytest.fixture
+def mock_jwt_claims() -> None:
+    """Mock JWT claims from auth_guard."""
+    return {
+        "sub": "user_01HXYZ123",
+        "email": "test@example.com",
+        "iat": 1234567890,
+        "exp": 1234571490,
+        "org_id": "org_01ABC",
+        "org_name": "Test Organization",
     }
 
 
 class TestAuthMeEndpoint:
-    """Test cases for /auth/me endpoint."""
+    """Test /auth/me endpoint functionality."""
 
-    def test_me_endpoint_requires_authorization(self) -> None:
-        """Test that /me endpoint requires Authorization header."""
-        from fastapi.testclient import TestClient
+    def test_me_endpoint_returns_user_data(self, mock_workos_user: Any, mock_jwt_claims: Any) -> None:
+        """Test that /me endpoint returns real user data from WorkOS."""
+        from tracertm.api.main import app
 
-        from tracertm.api.routers.auth import router
+        client = TestClient(app)
+        headers = {"Authorization": "Bearer valid_token"}
 
-        app = TestClient.__class__.__bases__[0]
-        # Note: This is a placeholder since we don't have the full app yet
-        pytest.skip("Requires full FastAPI app setup")
-
-    def test_me_endpoint_returns_account_from_db(
-        self,
-        mock_workos_user: Any,
-        mock_jwt_claims: Any,
-    ) -> None:
-        """Test that /me returns account data from database when a DB record exists.
-
-        B4 requirement: Real DB lookup should be performed.
-        """
-        # Fake DB account returned by AccountRepository.list_by_user
-        fake_account = MagicMock()
-        fake_account.id = "acc_db_001"
-        fake_account.name = "DB Organization"
-
+        # Mock auth_guard to return claims
+        # Mock get_user to return WorkOS user data
         with (
             patch("tracertm.api.routers.auth.auth_guard") as mock_auth,
-            patch("tracertm.api.routers.auth.AccountRepository") as mock_repo_cls,
-            patch("tracertm.api.routers.auth.get_db") as mock_get_db_fn,
+            patch("tracertm.api.routers.auth.get_user") as mock_get_user,
         ):
-            # Setup auth guard to return valid claims
             mock_auth.return_value = mock_jwt_claims
+            mock_get_user.return_value = mock_workos_user
 
-            # Setup repository mock
-            mock_repo = MagicMock()
-            mock_repo.list_by_user = AsyncMock(return_value=[fake_account])
-            mock_repo_cls.return_value = mock_repo
+            response = client.get("/api/v1/auth/me", headers=headers)
 
-            # Setup database dependency
-            mock_db = MagicMock()
-            mock_get_db_fn.return_value = mock_db
+            assert response.status_code == HTTP_OK
+            data = response.json()
 
-            # Import the endpoint function
-            from tracertm.api.routers.auth import get_current_user
+            # Verify user data structure
+            assert "user" in data
+            assert "claims" in data
+            assert "account" in data
 
-            # This is a unit test of the endpoint logic
-            # In integration tests, we'd use TestClient with a full app
-            # For now, we verify the core logic through mocking
+            # Verify user fields
+            user = data["user"]
+            assert user["id"] == "user_01HXYZ123"
+            assert user["email"] == "test@example.com"
+            assert user["firstName"] == "Test"
+            assert user["lastName"] == "User"
+            assert user["emailVerified"] is True
+            assert user["profilePictureUrl"] == "https://example.com/photo.jpg"
 
-            # Verify that AccountRepository was initialized correctly
-            assert mock_repo_cls.call_count == 0  # Not called until endpoint executes
+            # Verify claims passed through
+            assert data["claims"]["sub"] == "user_01HXYZ123"
 
-    def test_me_endpoint_fallback_to_jwt_claims_when_no_db_account(
-        self,
-        mock_jwt_claims: Any,
-    ) -> None:
-        """Test that /me falls back to JWT claims when no DB account exists."""
+            # Verify account data
+            assert data["account"]["id"] == "org_01ABC"
+            assert data["account"]["name"] == "Test Organization"
+
+            # Verify get_user was called with correct user_id
+            mock_get_user.assert_called_once_with("user_01HXYZ123")
+
+    def test_me_endpoint_missing_user_id_in_claims(self) -> None:
+        """Test that /me endpoint returns 401 if user_id missing in claims."""
+        from tracertm.api.main import app
+
+        client = TestClient(app)
+        headers = {"Authorization": "Bearer valid_token"}
+
+        # Mock auth_guard to return claims without 'sub'
+        with patch("tracertm.api.routers.auth.auth_guard") as mock_auth:
+            mock_auth.return_value = {"email": "test@example.com"}  # Missing 'sub'
+
+            response = client.get("/api/v1/auth/me", headers=headers)
+
+            assert response.status_code == HTTP_UNAUTHORIZED
+            assert "missing user ID" in response.json()["detail"]
+
+    def test_me_endpoint_user_not_found(self, mock_jwt_claims: Any) -> None:
+        """Test that /me endpoint returns 404 if user not found in WorkOS."""
+        from tracertm.api.main import app
+
+        client = TestClient(app)
+        headers = {"Authorization": "Bearer valid_token"}
+
+        # Mock auth_guard to return claims
+        # Mock get_user to raise a 404 error
         with (
             patch("tracertm.api.routers.auth.auth_guard") as mock_auth,
-            patch("tracertm.api.routers.auth.AccountRepository") as mock_repo_cls,
+            patch("tracertm.api.routers.auth.get_user") as mock_get_user,
         ):
-            # Setup auth guard
             mock_auth.return_value = mock_jwt_claims
+            mock_get_user.side_effect = Exception("404 User not found")
 
-            # Setup repository to return empty list (no accounts in DB)
-            mock_repo = MagicMock()
-            mock_repo.list_by_user = AsyncMock(return_value=[])
-            mock_repo_cls.return_value = mock_repo
+            response = client.get("/api/v1/auth/me", headers=headers)
 
-            # The endpoint should fall back to JWT claims for account data
-            # Verified through unit tests in the endpoint logic
+            assert response.status_code == HTTP_NOT_FOUND
+            assert "not found" in response.json()["detail"]
 
-    def test_me_endpoint_returns_none_account_when_no_db_and_no_claims(
-        self,
-    ) -> None:
-        """Test that /me returns account=None when neither DB nor JWT has account data."""
+    def test_me_endpoint_workos_api_error(self, mock_jwt_claims: Any) -> None:
+        """Test that /me endpoint returns 500 on WorkOS API error."""
+        from tracertm.api.main import app
+
+        client = TestClient(app)
+        headers = {"Authorization": "Bearer valid_token"}
+
+        # Mock auth_guard to return claims
+        # Mock get_user to raise a general API error
+        with (
+            patch("tracertm.api.routers.auth.auth_guard") as mock_auth,
+            patch("tracertm.api.routers.auth.get_user") as mock_get_user,
+        ):
+            mock_auth.return_value = mock_jwt_claims
+            mock_get_user.side_effect = Exception("API connection failed")
+
+            response = client.get("/api/v1/auth/me", headers=headers)
+
+            assert response.status_code == HTTP_INTERNAL_SERVER_ERROR
+            assert "Failed to fetch user information" in response.json()["detail"]
+
+    def test_me_endpoint_workos_not_configured(self, mock_jwt_claims: Any) -> None:
+        """Test that /me endpoint returns 500 if WorkOS not configured."""
+        from tracertm.api.main import app
+
+        client = TestClient(app)
+        headers = {"Authorization": "Bearer valid_token"}
+
+        # Mock auth_guard to return claims
+        # Mock get_user to raise a ValueError (configuration error)
+        with (
+            patch("tracertm.api.routers.auth.auth_guard") as mock_auth,
+            patch("tracertm.api.routers.auth.get_user") as mock_get_user,
+        ):
+            mock_auth.return_value = mock_jwt_claims
+            mock_get_user.side_effect = ValueError("WORKOS_API_KEY is required")
+
+            response = client.get("/api/v1/auth/me", headers=headers)
+
+            assert response.status_code == HTTP_INTERNAL_SERVER_ERROR
+            assert "not configured" in response.json()["detail"]
+
+    def test_me_endpoint_no_account_in_claims(self, mock_workos_user: Any) -> None:
+        """Test that /me endpoint handles missing account data in claims."""
+        from tracertm.api.main import app
+
+        client = TestClient(app)
+        headers = {"Authorization": "Bearer valid_token"}
+
+        # Mock auth_guard to return claims without org_id
         claims_no_org = {
             "sub": "user_01HXYZ123",
             "email": "test@example.com",
             "iat": 1234567890,
             "exp": 1234571490,
-            # Note: no org_id or org_name
         }
 
         with (
             patch("tracertm.api.routers.auth.auth_guard") as mock_auth,
-            patch("tracertm.api.routers.auth.AccountRepository") as mock_repo_cls,
+            patch("tracertm.api.routers.auth.get_user") as mock_get_user,
         ):
-            # Setup auth guard
             mock_auth.return_value = claims_no_org
+            mock_get_user.return_value = mock_workos_user
 
-            # Setup repository to return empty list
-            mock_repo = MagicMock()
-            mock_repo.list_by_user = AsyncMock(return_value=[])
-            mock_repo_cls.return_value = mock_repo
+            response = client.get("/api/v1/auth/me", headers=headers)
 
-            # Account should be None in the response
+            assert response.status_code == HTTP_OK
+            data = response.json()
+
+            # Account should be None
+            assert data["account"] is None

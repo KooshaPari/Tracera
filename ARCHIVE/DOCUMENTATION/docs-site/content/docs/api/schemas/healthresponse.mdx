@@ -1,0 +1,25 @@
+---
+title: "HealthResponse"
+description: "Schema definition for HealthResponse"
+---
+
+# HealthResponse
+
+## Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `status` | enum: `healthy`, `degraded`, `unhealthy` | ✓ | Current health status of the service |
+| `version` | string | ✓ | API version |
+| `service` | string | ✓ | Service name |
+
+## Example
+
+```json
+{
+  "status": "example",
+  "version": "example",
+  "service": "example"
+}
+```
+

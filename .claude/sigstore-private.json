@@ -1,0 +1,8 @@
+{
+  "generated_at": "2026-02-14T04:06:10Z",
+  "mode": "private",
+  "rekor_endpoint": "",
+  "fulcio_endpoint": "",
+  "trusted_identities": [],
+  "notes": "Populate private Sigstore endpoints before production release."
+}

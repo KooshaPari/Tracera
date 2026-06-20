@@ -1,0 +1,656 @@
+---
+title: "Documentation"
+description: "Best practices for documenting artifacts and maintaining discoverable, up-to-date documentation in TraceRTM"
+---
+
+# Documentation Best Practices
+
+Well-documented artifacts are easier to understand, maintain, and trace. Good documentation practices improve team collaboration and support compliance audits.
+
+## Documentation Structure
+
+### Rich Descriptions
+
+Write comprehensive artifact descriptions:
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+
+# Well-documented feature
+feature = client.create_item(
+    title="User Authentication",
+    item_type="feature",
+    description="""
+## Overview
+This feature provides secure user authentication using email/password credentials
+with optional two-factor authentication.
+
+## Business Context
+Required for SOC2 compliance and enterprise customer onboarding.
+
+## Acceptance Criteria
+- Users can log in with valid credentials
+- Invalid credentials show clear error messages
+- Account lockout after 5 failed attempts
+- Session expires after 30 minutes of inactivity
+- 2FA available via authenticator app
+
+## Technical Notes
+- Uses bcrypt for password hashing
+- JWT tokens with 1-hour expiry
+- Rate limiting: 10 requests/minute
+
+## Dependencies
+- Database: user credentials table
+- Email service: password reset emails
+- Redis: session storage
+
+## References
+- [Security Design Doc](/docs/design/security)
+- [SOC2 Requirement SC-7](/compliance/soc2/sc-7)
+    """,
+    metadata={
+        "doc_version": "1.0",
+        "last_reviewed": "2024-12-01",
+        "reviewer": "security@example.com"
+    }
+)
+```
+
+### Standard Sections
+
+Use consistent sections across artifact types:
+
+```python
+# Template for features
+FEATURE_TEMPLATE = """
+## Overview
+{overview}
+
+## Business Value
+{business_value}
+
+## Acceptance Criteria
+{acceptance_criteria}
+
+## Technical Considerations
+{technical_notes}
+
+## Dependencies
+{dependencies}
+
+## Out of Scope
+{out_of_scope}
+"""
+
+# Template for tests
+TEST_TEMPLATE = """
+## Purpose
+{purpose}
+
+## Prerequisites
+{prerequisites}
+
+## Test Steps
+{steps}
+
+## Expected Results
+{expected_results}
+
+## Test Data
+{test_data}
+
+## Cleanup
+{cleanup}
+"""
+
+# Template for designs
+DESIGN_TEMPLATE = """
+## Context
+{context}
+
+## Decision
+{decision}
+
+## Alternatives Considered
+{alternatives}
+
+## Consequences
+{consequences}
+
+## Related Decisions
+{related}
+"""
+```
+
+## Linking Documentation
+
+### Connect Docs to Artifacts
+
+Link documentation to relevant items:
+
+```python
+# Create design document
+design_doc = client.create_item(
+    title="Authentication System Architecture",
+    item_type="design",
+    description="""
+## Architecture Overview
+The authentication system uses a stateless JWT-based approach...
+
+## Components
+1. Auth Service - handles login/logout
+2. Token Service - JWT generation and validation
+3. Session Store - Redis-based session management
+
+## Data Flow
+[Diagram: login-flow.png]
+
+## Security Considerations
+- Tokens signed with RS256
+- Refresh tokens rotated on use
+- All endpoints require HTTPS
+    """,
+    metadata={
+        "doc_type": "architecture",
+        "status": "approved",
+        "author": "alice@example.com"
+    }
+)
+
+# Link to feature
+client.create_link(design_doc.id, "FEAT-AUTH", "documents")
+
+# Link to related code
+client.create_link(design_doc.id, "CODE-AUTH-SERVICE", "describes")
+```
+
+### Documentation Hierarchy
+
+```python
+# Create documentation structure
+docs = {
+    "root": {
+        "title": "Project Documentation",
+        "type": "doc",
+        "children": ["requirements", "design", "testing"]
+    },
+    "requirements": {
+        "title": "Requirements Documentation",
+        "type": "doc",
+        "children": ["functional", "non-functional"]
+    },
+    "design": {
+        "title": "Design Documentation",
+        "type": "design",
+        "children": ["architecture", "api", "database"]
+    },
+    "testing": {
+        "title": "Test Documentation",
+        "type": "doc",
+        "children": ["strategy", "plans", "results"]
+    }
+}
+
+def create_doc_hierarchy(client, docs, parent_id=None):
+    """Create documentation hierarchy."""
+    for key, doc in docs.items():
+        if key == "root":
+            item = client.create_item(
+                title=doc["title"],
+                item_type=doc.get("type", "doc")
+            )
+            doc["id"] = item.id
+        else:
+            parent_key = next(
+                k for k, v in docs.items()
+                if key in v.get("children", [])
+            )
+            item = client.create_item(
+                title=doc["title"],
+                item_type=doc.get("type", "doc")
+            )
+            client.create_link(item.id, docs[parent_key]["id"], "child_of")
+            doc["id"] = item.id
+
+create_doc_hierarchy(client, docs)
+```
+
+## Documentation Metadata
+
+### Track Document Status
+
+```python
+# Document lifecycle metadata
+DOC_STATUS = {
+    "draft": "Initial version, not reviewed",
+    "review": "Under review",
+    "approved": "Approved for use",
+    "obsolete": "No longer current",
+    "archived": "Historical reference only"
+}
+
+# Update document status
+client.update_item(
+    design_doc.id,
+    metadata={
+        "status": "approved",
+        "approved_by": "bob@example.com",
+        "approved_date": datetime.now().isoformat(),
+        "next_review": (datetime.now() + timedelta(days=90)).isoformat()
+    }
+)
+```
+
+### Version Documentation
+
+```python
+# Track document versions
+def update_document(client, item_id, new_content, change_summary):
+    """Update document with version tracking."""
+    item = client.get_item(item_id)
+    current_version = item.metadata.get("doc_version", "1.0")
+
+    # Increment version
+    major, minor = map(int, current_version.split("."))
+    new_version = f"{major}.{minor + 1}"
+
+    # Get version history
+    history = item.metadata.get("version_history", [])
+    history.append({
+        "version": current_version,
+        "date": datetime.now().isoformat(),
+        "author": client.current_user,
+        "summary": change_summary
+    })
+
+    client.update_item(
+        item_id,
+        description=new_content,
+        metadata={
+            "doc_version": new_version,
+            "version_history": history,
+            "last_modified": datetime.now().isoformat(),
+            "modified_by": client.current_user
+        }
+    )
+
+    return new_version
+
+# Update document
+new_version = update_document(
+    client,
+    design_doc.id,
+    new_content,
+    "Added rate limiting section"
+)
+print(f"Document updated to version {new_version}")
+```
+
+## Search and Discovery
+
+### Tagging and Keywords
+
+Make documents discoverable:
+
+```python
+# Add searchable metadata
+client.update_item(
+    design_doc.id,
+    metadata={
+        "tags": ["authentication", "security", "jwt", "oauth"],
+        "keywords": ["login", "session", "token", "sso"],
+        "audience": ["developers", "security", "ops"],
+        "related_features": ["FEAT-AUTH", "FEAT-SSO", "FEAT-2FA"]
+    }
+)
+
+# Search documents
+results = client.search(
+    query="authentication security",
+    item_types=["design", "doc"],
+    tags=["security"]
+)
+
+for doc in results:
+    print(f"{doc.id}: {doc.title}")
+```
+
+### Documentation Index
+
+```python
+def generate_doc_index(client, project_id):
+    """Generate searchable documentation index."""
+    docs = client.get_items(
+        project_id=project_id,
+        item_types=["doc", "design"]
+    )
+
+    index = {
+        "by_type": {},
+        "by_tag": {},
+        "by_status": {},
+        "recent": []
+    }
+
+    for doc in docs:
+        # By type
+        doc_type = doc.metadata.get("doc_type", "general")
+        index["by_type"].setdefault(doc_type, []).append({
+            "id": doc.id,
+            "title": doc.title,
+            "status": doc.metadata.get("status")
+        })
+
+        # By tag
+        for tag in doc.metadata.get("tags", []):
+            index["by_tag"].setdefault(tag, []).append({
+                "id": doc.id,
+                "title": doc.title
+            })
+
+        # By status
+        status = doc.metadata.get("status", "draft")
+        index["by_status"].setdefault(status, []).append({
+            "id": doc.id,
+            "title": doc.title
+        })
+
+    # Recent documents
+    index["recent"] = sorted(
+        docs,
+        key=lambda d: d.metadata.get("last_modified", ""),
+        reverse=True
+    )[:10]
+
+    return index
+
+# Generate index
+doc_index = generate_doc_index(client, "PROJ-001")
+print(f"Documents by type: {list(doc_index['by_type'].keys())}")
+```
+
+## Review and Maintenance
+
+### Scheduled Reviews
+
+```python
+def find_docs_needing_review(client, project_id):
+    """Find documents that need review."""
+    docs = client.get_items(
+        project_id=project_id,
+        item_types=["doc", "design"]
+    )
+
+    needing_review = []
+    today = datetime.now()
+
+    for doc in docs:
+        next_review = doc.metadata.get("next_review")
+        if next_review:
+            review_date = datetime.fromisoformat(next_review)
+            if review_date <= today:
+                needing_review.append({
+                    "id": doc.id,
+                    "title": doc.title,
+                    "due": next_review,
+                    "owner": doc.metadata.get("owner")
+                })
+
+        # Also check for stale docs (not updated in 6 months)
+        last_modified = doc.metadata.get("last_modified")
+        if last_modified:
+            modified_date = datetime.fromisoformat(last_modified)
+            if (today - modified_date).days > 180:
+                if doc not in needing_review:
+                    needing_review.append({
+                        "id": doc.id,
+                        "title": doc.title,
+                        "reason": "stale",
+                        "last_updated": last_modified
+                    })
+
+    return needing_review
+
+# Check for review needs
+docs_to_review = find_docs_needing_review(client, "PROJ-001")
+print(f"Documents needing review: {len(docs_to_review)}")
+```
+
+### Document Quality Checks
+
+```python
+def check_doc_quality(item):
+    """Check document quality."""
+    issues = []
+
+    # Check description length
+    if not item.description or len(item.description) < 200:
+        issues.append("Description too brief")
+
+    # Check for required sections
+    required_sections = ["Overview", "Purpose"]
+    for section in required_sections:
+        if section.lower() not in item.description.lower():
+            issues.append(f"Missing section: {section}")
+
+    # Check metadata
+    if not item.metadata.get("author"):
+        issues.append("No author specified")
+
+    if not item.metadata.get("status"):
+        issues.append("No status specified")
+
+    if not item.metadata.get("tags"):
+        issues.append("No tags for discoverability")
+
+    # Check for broken links (placeholder)
+    if "[TODO]" in item.description or "[TBD]" in item.description:
+        issues.append("Contains placeholder content")
+
+    return issues
+
+# Check all documents
+for doc in client.get_items(item_type="doc"):
+    issues = check_doc_quality(doc)
+    if issues:
+        print(f"{doc.id}: {', '.join(issues)}")
+```
+
+## Generated Documentation
+
+### Auto-Generate from Artifacts
+
+```python
+def generate_requirements_doc(client, project_id):
+    """Generate requirements document from artifacts."""
+    features = client.get_items(
+        project_id=project_id,
+        item_type="feature",
+        status="approved"
+    )
+
+    doc_content = f"""
+# Requirements Specification
+**Project:** {project_id}
+**Generated:** {datetime.now().isoformat()}
+
+## Features
+
+"""
+
+    for feature in sorted(features, key=lambda f: f.id):
+        doc_content += f"""
+### {feature.id}: {feature.title}
+
+**Status:** {feature.status}
+**Priority:** {feature.metadata.get('priority', 'N/A')}
+
+{feature.description}
+
+**Linked Tests:**
+"""
+        # Get linked tests
+        links = client.get_links(target_id=feature.id, link_types=["tests"])
+        for link in links:
+            test = client.get_item(link.source_id)
+            doc_content += f"- {test.id}: {test.title}\n"
+
+        doc_content += "\n---\n"
+
+    return doc_content
+
+# Generate document
+requirements_doc = generate_requirements_doc(client, "PROJ-001")
+```
+
+### Export Documentation
+
+```python
+def export_documentation(client, project_id, format="markdown"):
+    """Export all documentation in specified format."""
+    docs = client.get_items(
+        project_id=project_id,
+        item_types=["doc", "design"]
+    )
+
+    if format == "markdown":
+        output = []
+        for doc in docs:
+            output.append(f"# {doc.title}\n\n{doc.description}\n\n---\n")
+        return "\n".join(output)
+
+    elif format == "html":
+        # Convert markdown to HTML
+        import markdown
+        md_content = export_documentation(client, project_id, "markdown")
+        return markdown.markdown(md_content)
+
+    elif format == "pdf":
+        # Use PDF generation library
+        pass
+
+# Export as markdown
+md_output = export_documentation(client, "PROJ-001", "markdown")
+with open("documentation.md", "w") as f:
+    f.write(md_output)
+```
+
+## CLI Commands
+
+```bash
+# Create documentation artifact
+tracertm create doc --title "API Reference" --template api
+
+# List all documentation
+tracertm list --type doc,design
+
+# Search documentation
+tracertm search "authentication" --type doc
+
+# Generate documentation report
+tracertm report docs --output docs-report.html
+
+# Find stale documentation
+tracertm list --type doc --not-modified-since "6 months ago"
+
+# Export documentation
+tracertm export docs --format markdown --output docs.md
+
+# Validate documentation
+tracertm validate --type doc --check quality
+```
+
+## Documentation Templates
+
+### API Documentation Template
+
+```markdown
+# API: [Endpoint Name]
+
+## Overview
+[Brief description]
+
+## Endpoint
+`[METHOD] /api/v1/[path]`
+
+## Authentication
+[Required auth method]
+
+## Request
+
+### Headers
+| Header | Required | Description |
+|--------|----------|-------------|
+| Authorization | Yes | Bearer token |
+
+### Parameters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string | Yes | Resource ID |
+
+### Body
+```json
+{
+  "field": "value"
+}
+```
+
+## Response
+
+### Success (200)
+```json
+{
+  "data": {}
+}
+```
+
+### Errors
+| Code | Description |
+|------|-------------|
+| 400 | Invalid request |
+| 401 | Unauthorized |
+| 404 | Not found |
+
+## Examples
+[Code examples]
+```
+
+### Decision Record Template
+
+```markdown
+# ADR-[Number]: [Title]
+
+## Status
+[Proposed | Accepted | Deprecated | Superseded]
+
+## Context
+[Why is this decision needed?]
+
+## Decision
+[What is the decision?]
+
+## Consequences
+[What are the results of this decision?]
+
+### Positive
+- [Benefit 1]
+- [Benefit 2]
+
+### Negative
+- [Drawback 1]
+- [Drawback 2]
+
+## Related
+- [Related decisions or documents]
+```
+
+## Related Topics
+
+- [Requirement Writing](/docs/wiki/best-practices/requirement-writing) - Clear requirements
+- [Team Collaboration](/docs/wiki/best-practices/team-collaboration) - Working together
+- [Artifacts](/docs/wiki/concepts/artifacts) - Artifact types
+- [Reports](/docs/getting-started/first-project/reports) - Documentation reports
+

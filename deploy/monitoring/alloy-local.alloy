@@ -1,0 +1,114 @@
+local.file_match "python_backend_json" {
+  path_targets = [{
+    __path__ = ".data/logs/tracertm.json",
+    job      = "python-backend",
+    service  = "tracertm-python",
+  }]
+}
+
+local.file_match "python_backend_text" {
+  path_targets = [{
+    __path__ = ".data/logs/tracertm.log",
+    job      = "python-backend-text",
+    service  = "tracertm-python",
+  }]
+}
+
+local.file_match "python_backend_errors" {
+  path_targets = [{
+    __path__ = ".data/logs/tracertm_errors.log",
+    job      = "python-backend-errors",
+    level    = "ERROR",
+    service  = "tracertm-python",
+  }]
+}
+
+local.file_match "process_compose" {
+  path_targets = [{
+    __path__ = ".process-compose/logs/*.log",
+    job      = "process-compose",
+  }]
+}
+
+local.file_match "go_backend" {
+  path_targets = [{
+    __path__ = "backend/logs/*.log",
+    job      = "go-backend",
+    service  = "tracertm-go",
+  }]
+}
+
+local.file_match "temporal" {
+  path_targets = [{
+    __path__ = ".temporal/logs/*.log",
+    job      = "temporal",
+    service  = "temporal",
+  }]
+}
+
+loki.source.file "python_backend_json" {
+  targets    = local.file_match.python_backend_json.targets
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.source.file "python_backend_text" {
+  targets    = local.file_match.python_backend_text.targets
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.source.file "python_backend_errors" {
+  targets    = local.file_match.python_backend_errors.targets
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.source.file "process_compose" {
+  targets    = local.file_match.process_compose.targets
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.source.file "go_backend" {
+  targets    = local.file_match.go_backend.targets
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.source.file "temporal" {
+  targets    = local.file_match.temporal.targets
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://localhost:3100/loki/api/v1/push"
+  }
+}
+
+otelcol.receiver.otlp "local" {
+  grpc {
+    endpoint = "127.0.0.1:4319"
+  }
+
+  output {
+    metrics = []
+    logs    = []
+    traces  = [otelcol.processor.batch.local.input]
+  }
+}
+
+otelcol.processor.batch "local" {
+  output {
+    metrics = []
+    logs    = []
+    traces  = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "127.0.0.1:4317"
+
+    tls {
+      insecure             = true
+      insecure_skip_verify = true
+    }
+  }
+}

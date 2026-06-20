@@ -1,13 +1,16 @@
 #!/bin/bash
-# Naming explosion guard for Go: detect proliferating similar names
-set -euo pipefail
 
-mapfile -t go_files < <(git ls-files -- '*.go' 2>/dev/null || true)
+# Go Naming Explosion Detection Script
+# Prevents AI from creating versioned/prefixed package/file names.
+# Catches all casing styles (Pascal, camel, snake, kebab) and positions (prefix, suffix, middle).
 
-if (( ${#go_files[@]} == 0 )); then
-  echo "No Go files to check"
-  exit 0
-fi
+set -e
 
-echo "Go naming explosion check: passed (${#go_files[@]} files checked)"
-exit 0
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+echo "🔍 Checking Go files for naming explosion patterns..."
+
+python3 scripts/quality/check_naming_explosion.py --lang go --root .

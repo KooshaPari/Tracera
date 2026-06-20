@@ -1,0 +1,2847 @@
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/param.py:333:11
+    [1m[94m|[0m
+[1m[94m333 |[0m async def project_manage(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m334 |[0m     action: str,
+[1m[94m335 |[0m     payload: dict[str, object] | None = None,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/param.py:375:11
+    [1m[94m|[0m
+[1m[94m375 |[0m async def item_manage(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^[0m
+[1m[94m376 |[0m     action: str,
+[1m[94m377 |[0m     payload: dict[str, object] | None = None,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/param.py:474:11
+    [1m[94m|[0m
+[1m[94m474 |[0m async def link_manage(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^[0m
+[1m[94m475 |[0m     action: str,
+[1m[94m476 |[0m     payload: dict[str, object] | None = None,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/param.py:519:11
+    [1m[94m|[0m
+[1m[94m519 |[0m async def trace_analyze(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m520 |[0m     kind: str,
+[1m[94m521 |[0m     payload: dict[str, object] | None = None,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/param.py:574:11
+    [1m[94m|[0m
+[1m[94m574 |[0m async def graph_analyze(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m575 |[0m     kind: str,
+[1m[94m576 |[0m     payload: dict[str, object] | None = None,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/param.py:601:11
+    [1m[94m|[0m
+[1m[94m601 |[0m async def spec_manage(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^[0m
+[1m[94m602 |[0m     kind: str,
+[1m[94m603 |[0m     action: str,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/param.py:676:11
+    [1m[94m|[0m
+[1m[94m676 |[0m async def quality_analyze(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m677 |[0m     payload: dict[str, object] | None = None,
+[1m[94m678 |[0m     ctx: object | None = None,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/param.py:685:11
+    [1m[94m|[0m
+[1m[94m685 |[0m async def config_manage(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m686 |[0m     action: str,
+[1m[94m687 |[0m     payload: dict[str, object] | None = None,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/param.py:747:11
+    [1m[94m|[0m
+[1m[94m747 |[0m async def sync_manage(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^[0m
+[1m[94m748 |[0m     action: str,
+[1m[94m749 |[0m     payload: dict[str, object] | None = None,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/param.py:809:11
+    [1m[94m|[0m
+[1m[94m809 |[0m async def export_manage(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m810 |[0m     action: str,
+[1m[94m811 |[0m     payload: dict[str, object] | None = None,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/param.py:849:11
+    [1m[94m|[0m
+[1m[94m849 |[0m async def import_manage(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m850 |[0m     action: str,
+[1m[94m851 |[0m     payload: dict[str, object] | None = None,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/param.py:918:11
+    [1m[94m|[0m
+[1m[94m918 |[0m async def ingest_manage(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m919 |[0m     action: str,
+[1m[94m920 |[0m     payload: dict[str, object] | None = None,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/param.py:970:11
+    [1m[94m|[0m
+[1m[94m970 |[0m async def backup_manage(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m971 |[0m     action: str,
+[1m[94m972 |[0m     payload: dict[str, object] | None = None,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+    [1m[94m-->[0m src/tracertm/mcp/tools/param.py:1047:11
+     [1m[94m|[0m
+[1m[94m1047 |[0m async def watch_manage(
+     [1m[94m|[0m           [1m[91m^^^^^^^^^^^^[0m
+[1m[94m1048 |[0m     action: str,
+[1m[94m1049 |[0m     payload: dict[str, object] | None = None,
+     [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+    [1m[94m-->[0m src/tracertm/mcp/tools/param.py:1096:11
+     [1m[94m|[0m
+[1m[94m1096 |[0m async def db_manage(
+     [1m[94m|[0m           [1m[91m^^^^^^^^^[0m
+[1m[94m1097 |[0m     action: str,
+[1m[94m1098 |[0m     payload: dict[str, object] | None = None,
+     [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+    [1m[94m-->[0m src/tracertm/mcp/tools/param.py:1151:11
+     [1m[94m|[0m
+[1m[94m1151 |[0m async def agents_manage(
+     [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m1152 |[0m     action: str,
+[1m[94m1153 |[0m     payload: dict[str, object] | None = None,
+     [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+    [1m[94m-->[0m src/tracertm/mcp/tools/param.py:1325:11
+     [1m[94m|[0m
+[1m[94m1325 |[0m async def progress_manage(
+     [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m1326 |[0m     action: str,
+[1m[94m1327 |[0m     payload: dict[str, object] | None = None,
+     [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+    [1m[94m-->[0m src/tracertm/mcp/tools/param.py:1411:11
+     [1m[94m|[0m
+[1m[94m1411 |[0m async def saved_queries_manage(
+     [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m1412 |[0m     action: str,
+[1m[94m1413 |[0m     payload: dict[str, object] | None = None,
+     [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+    [1m[94m-->[0m src/tracertm/mcp/tools/param.py:1471:11
+     [1m[94m|[0m
+[1m[94m1471 |[0m async def test_manage(
+     [1m[94m|[0m           [1m[91m^^^^^^^^^^^[0m
+[1m[94m1472 |[0m     action: str,
+[1m[94m1473 |[0m     payload: dict[str, object] | None = None,  # noqa: PT028
+     [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+    [1m[94m-->[0m src/tracertm/mcp/tools/param.py:1539:11
+     [1m[94m|[0m
+[1m[94m1539 |[0m async def tui_manage(
+     [1m[94m|[0m           [1m[91m^^^^^^^^^^[0m
+[1m[94m1540 |[0m     action: str,
+[1m[94m1541 |[0m     payload: dict[str, object] | None = None,
+     [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+    [1m[94m-->[0m src/tracertm/mcp/tools/param.py:1588:11
+     [1m[94m|[0m
+[1m[94m1588 |[0m async def benchmark_manage(
+     [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m1589 |[0m     action: str,
+[1m[94m1590 |[0m     payload: dict[str, object] | None = None,
+     [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+    [1m[94m-->[0m src/tracertm/mcp/tools/param.py:1642:11
+     [1m[94m|[0m
+[1m[94m1642 |[0m async def chaos_manage(
+     [1m[94m|[0m           [1m[91m^^^^^^^^^^^^[0m
+[1m[94m1643 |[0m     action: str,
+[1m[94m1644 |[0m     payload: dict[str, object] | None = None,
+     [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+    [1m[94m-->[0m src/tracertm/mcp/tools/param.py:1715:11
+     [1m[94m|[0m
+[1m[94m1715 |[0m async def design_manage(
+     [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m1716 |[0m     action: str,
+[1m[94m1717 |[0m     payload: dict[str, object] | None = None,
+     [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+  [1m[94m-->[0m src/tracertm/mcp/tools/specifications.py:21:5
+   [1m[94m|[0m
+[1m[94m20 |[0m @mcp.tool(description="Create a new Architecture Decision Record (ADR)")
+[1m[94m21 |[0m def create_adr(  # noqa: PLR0913
+   [1m[94m|[0m     [1m[91m^^^^^^^^^^[0m
+[1m[94m22 |[0m     project_id: str,
+[1m[94m23 |[0m     title: str,
+   [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+  [1m[94m-->[0m src/tracertm/mcp/tools/specifications.py:60:5
+   [1m[94m|[0m
+[1m[94m59 |[0m @mcp.tool(description="List ADRs for a project")
+[1m[94m60 |[0m def list_adrs(
+   [1m[94m|[0m     [1m[91m^^^^^^^^^[0m
+[1m[94m61 |[0m     project_id: str,
+[1m[94m62 |[0m     status: str | None = None,
+   [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+  [1m[94m-->[0m src/tracertm/mcp/tools/specifications.py:91:5
+   [1m[94m|[0m
+[1m[94m90 |[0m @mcp.tool(description="Create a new Contract (Design by Contract)")
+[1m[94m91 |[0m def create_contract(
+   [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m92 |[0m     project_id: str,
+[1m[94m93 |[0m     item_id: str,
+   [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/specifications.py:126:5
+    [1m[94m|[0m
+[1m[94m125 |[0m @mcp.tool(description="Create a new BDD Feature")
+[1m[94m126 |[0m def create_feature(  # noqa: PLR0913
+    [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m127 |[0m     project_id: str,
+[1m[94m128 |[0m     name: str,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/specifications.py:158:5
+    [1m[94m|[0m
+[1m[94m157 |[0m @mcp.tool(description="Create a new BDD Scenario for a Feature")
+[1m[94m158 |[0m def create_scenario(
+    [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m159 |[0m     feature_id: str,
+[1m[94m160 |[0m     title: str,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/mcp/tools/specifications.py:185:5
+    [1m[94m|[0m
+[1m[94m184 |[0m @mcp.tool(description="Analyze requirements quality (smells, ambiguity)")
+[1m[94m185 |[0m def analyze_quality(
+    [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m186 |[0m     item_id: str,
+[1m[94m187 |[0m ) -> dict[str, object]:
+    [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/mcp/workflow_executor.py:16:9
+   [1m[94m|[0m
+[1m[94m14 |[0m     """
+[1m[94m15 |[0m
+[1m[94m16 |[0m     def __init__(self, project_root: Path, agent_name: str) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m17 |[0m         self.project_root = project_root
+[1m[94m18 |[0m         self.agent_name = agent_name
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/account.py:51:9
+   [1m[94m|[0m
+[1m[94m49 |[0m     # )
+[1m[94m50 |[0m
+[1m[94m51 |[0m     def __getattribute__(self, name: str) -> object:
+   [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m52 |[0m         if name == "metadata":
+[1m[94m53 |[0m             return object.__getattribute__(self, "account_metadata")
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/account.py:56:9
+   [1m[94m|[0m
+[1m[94m54 |[0m         return super().__getattribute__(name)
+[1m[94m55 |[0m
+[1m[94m56 |[0m     def __setattr__(self, name: str, value: object) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^^^^[0m
+[1m[94m57 |[0m         if name == "metadata":
+[1m[94m58 |[0m             name = "account_metadata"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/account.py:61:9
+   [1m[94m|[0m
+[1m[94m59 |[0m         super().__setattr__(name, value)
+[1m[94m60 |[0m
+[1m[94m61 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m62 |[0m         return f"<Account(id={self.id!r}, name={self.name!r}, slug={self.slug!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/account_user.py:45:9
+   [1m[94m|[0m
+[1m[94m43 |[0m     account: Mapped[Account] = relationship("Account", back_populates="account_users")
+[1m[94m44 |[0m
+[1m[94m45 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m46 |[0m         return f"<AccountUser(account_id={self.account_id!r}, user_id={self.user_id!r}, role={self.role!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/agent.py:59:9
+   [1m[94m|[0m
+[1m[94m57 |[0m         super().__init__(**kwargs)
+[1m[94m58 |[0m
+[1m[94m59 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m60 |[0m         return f"<Agent(id={self.id!r}, name={self.name!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/agent_checkpoint.py:70:9
+   [1m[94m|[0m
+[1m[94m68 |[0m     )
+[1m[94m69 |[0m
+[1m[94m70 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m71 |[0m         return (
+[1m[94m72 |[0m             f"<AgentCheckpoint(id={self.id}, session_id={self.session_id}, "
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/agent_event.py:50:9
+   [1m[94m|[0m
+[1m[94m48 |[0m     )
+[1m[94m49 |[0m
+[1m[94m50 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m51 |[0m         return f"<AgentEvent(id={self.id!r}, type={self.event_type!r}, agent_id={self.agent_id!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/agent_lock.py:43:9
+   [1m[94m|[0m
+[1m[94m41 |[0m     )
+[1m[94m42 |[0m
+[1m[94m43 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m44 |[0m         return f"<AgentLock(id={self.id!r}, item_id={self.item_id!r}, agent_id={self.agent_id!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/codex_agent.py:91:9
+   [1m[94m|[0m
+[1m[94m89 |[0m     )
+[1m[94m90 |[0m
+[1m[94m91 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m92 |[0m         return f"<CodexAgentInteraction(id={self.id!r}, task_type={self.task_type!r}, status={self.status!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/edge_type.py:39:9
+   [1m[94m|[0m
+[1m[94m37 |[0m     edge_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+[1m[94m38 |[0m
+[1m[94m39 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m40 |[0m         return f"<EdgeType(id={self.id!r}, name={self.name!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/event.py:43:9
+   [1m[94m|[0m
+[1m[94m41 |[0m     )
+[1m[94m42 |[0m
+[1m[94m43 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m44 |[0m         return f"<Event(id={self.id!r}, type={self.event_type!r}, entity={self.entity_id!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/execution.py:94:9
+   [1m[94m|[0m
+[1m[94m92 |[0m     )
+[1m[94m93 |[0m
+[1m[94m94 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m95 |[0m         return f"<Execution(id={self.id!r}, type={self.execution_type!r}, status={self.status!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/execution.py:150:9
+    [1m[94m|[0m
+[1m[94m148 |[0m     execution: Mapped["Execution"] = relationship("Execution", back_populates="artifacts")
+[1m[94m149 |[0m
+[1m[94m150 |[0m     def __getattribute__(self, name: str) -> object:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m151 |[0m         if name == "metadata":
+[1m[94m152 |[0m             return object.__getattribute__(self, "artifact_metadata")
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/execution.py:155:9
+    [1m[94m|[0m
+[1m[94m153 |[0m         return super().__getattribute__(name)
+[1m[94m154 |[0m
+[1m[94m155 |[0m     def __setattr__(self, name: str, value: object) -> None:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^[0m
+[1m[94m156 |[0m         if name == "metadata":
+[1m[94m157 |[0m             name = "artifact_metadata"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/execution.py:160:9
+    [1m[94m|[0m
+[1m[94m158 |[0m         super().__setattr__(name, value)
+[1m[94m159 |[0m
+[1m[94m160 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m161 |[0m         return f"<ExecutionArtifact(id={self.id!r}, type={self.artifact_type!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/execution_config.py:85:9
+   [1m[94m|[0m
+[1m[94m83 |[0m     execution_timeout: Mapped[int] = mapped_column(Integer, nullable=False, default=600)  # seconds
+[1m[94m84 |[0m
+[1m[94m85 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m86 |[0m         return f"<ExecutionEnvironmentConfig(id={self.id!r}, project_id={self.project_id!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/external_link.py:47:9
+   [1m[94m|[0m
+[1m[94m45 |[0m     link_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+[1m[94m46 |[0m
+[1m[94m47 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m48 |[0m         return f"<ExternalLink(id={self.id!r}, provider={self.provider!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/github_app_installation.py:53:9
+   [1m[94m|[0m
+[1m[94m51 |[0m     account: Mapped[Account] = relationship("Account")
+[1m[94m52 |[0m
+[1m[94m53 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m54 |[0m         return f"<GitHubAppInstallation(id={self.id!r}, installation_id={self.installation_id!r}, account_id={self.account_id!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/github_project.py:52:9
+   [1m[94m|[0m
+[1m[94m50 |[0m     project: Mapped[Project] = relationship("Project")
+[1m[94m51 |[0m
+[1m[94m52 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m53 |[0m         return f"<GitHubProject(id={self.id!r}, project_id={self.project_id!r}, github_project_id={self.github_project_id!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/graph.py:50:9
+   [1m[94m|[0m
+[1m[94m48 |[0m     graph_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+[1m[94m49 |[0m
+[1m[94m50 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m51 |[0m         return f"<Graph(id={self.id!r}, type={self.graph_type!r}, name={self.name!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/graph_change.py:47:9
+   [1m[94m|[0m
+[1m[94m45 |[0m     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+[1m[94m46 |[0m
+[1m[94m47 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m48 |[0m         return f"<GraphChange(id={self.id!r}, type={self.change_type!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/graph_node.py:40:9
+   [1m[94m|[0m
+[1m[94m38 |[0m     is_primary: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+[1m[94m39 |[0m
+[1m[94m40 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m41 |[0m         return f"<GraphNode(graph_id={self.graph_id!r}, item_id={self.item_id!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/graph_snapshot.py:48:9
+   [1m[94m|[0m
+[1m[94m46 |[0m     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+[1m[94m47 |[0m
+[1m[94m48 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m49 |[0m         return f"<GraphSnapshot(id={self.id!r}, version={self.version!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/graph_type.py:39:9
+   [1m[94m|[0m
+[1m[94m37 |[0m     type_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+[1m[94m38 |[0m
+[1m[94m39 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m40 |[0m         return f"<GraphType(id={self.id!r}, name={self.name!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/item.py:90:9
+   [1m[94m|[0m
+[1m[94m88 |[0m         super().__init__(**kwargs)
+[1m[94m89 |[0m
+[1m[94m90 |[0m     def __getattribute__(self, name: str) -> object:
+   [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m91 |[0m         if name == "type":
+[1m[94m92 |[0m             return object.__getattribute__(self, "view")
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/item.py:97:9
+   [1m[94m|[0m
+[1m[94m95 |[0m         return super().__getattribute__(name)
+[1m[94m96 |[0m
+[1m[94m97 |[0m     def __setattr__(self, name: str, value: object) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^^^^[0m
+[1m[94m98 |[0m         if name == "type":
+[1m[94m99 |[0m             name = "item_type"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/item.py:126:9
+    [1m[94m|[0m
+[1m[94m124 |[0m         return getattr(self, key)
+[1m[94m125 |[0m
+[1m[94m126 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m127 |[0m         return f"<Item(id={self.id!r}, title={self.title!r}, view={self.view!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/item_spec.py:395:9
+    [1m[94m|[0m
+[1m[94m393 |[0m     }
+[1m[94m394 |[0m
+[1m[94m395 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m396 |[0m         return f"<RequirementSpec(id={self.id!r}, item_id={self.item_id!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/item_spec.py:535:9
+    [1m[94m|[0m
+[1m[94m533 |[0m     }
+[1m[94m534 |[0m
+[1m[94m535 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m536 |[0m         return f"<TestSpec(id={self.id!r}, item_id={self.item_id!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/item_spec.py:656:9
+    [1m[94m|[0m
+[1m[94m654 |[0m     }
+[1m[94m655 |[0m
+[1m[94m656 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m657 |[0m         return f"<EpicSpec(id={self.id!r}, item_id={self.item_id!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/item_spec.py:783:9
+    [1m[94m|[0m
+[1m[94m781 |[0m     }
+[1m[94m782 |[0m
+[1m[94m783 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m784 |[0m         return f"<UserStorySpec(id={self.id!r}, item_id={self.item_id!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/item_spec.py:910:9
+    [1m[94m|[0m
+[1m[94m908 |[0m     }
+[1m[94m909 |[0m
+[1m[94m910 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m911 |[0m         return f"<TaskSpec(id={self.id!r}, item_id={self.item_id!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+    [1m[94m-->[0m src/tracertm/models/item_spec.py:1058:9
+     [1m[94m|[0m
+[1m[94m1056 |[0m     }
+[1m[94m1057 |[0m
+[1m[94m1058 |[0m     def __repr__(self) -> str:
+     [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m1059 |[0m         return f"<DefectSpec(id={self.id!r}, item_id={self.item_id!r})>"
+     [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/item_view.py:40:9
+   [1m[94m|[0m
+[1m[94m38 |[0m     is_primary: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+[1m[94m39 |[0m
+[1m[94m40 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m41 |[0m         return f"<ItemView(item_id={self.item_id!r}, view_id={self.view_id!r}, primary={self.is_primary})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/linear_app.py:59:9
+   [1m[94m|[0m
+[1m[94m57 |[0m     )
+[1m[94m58 |[0m
+[1m[94m59 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m60 |[0m         return f"<LinearAppInstallation(id={self.id!r}, workspace_id={self.workspace_id!r}, account_id={self.account_id!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/link.py:86:9
+   [1m[94m|[0m
+[1m[94m84 |[0m         super().__init__(**kwargs)
+[1m[94m85 |[0m
+[1m[94m86 |[0m     def __getattribute__(self, name: str) -> object:
+   [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m87 |[0m         if name == "type":
+[1m[94m88 |[0m             return object.__getattribute__(self, "link_type")
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/link.py:97:9
+   [1m[94m|[0m
+[1m[94m95 |[0m         return super().__getattribute__(name)
+[1m[94m96 |[0m
+[1m[94m97 |[0m     def __setattr__(self, name: str, value: object) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^^^^[0m
+[1m[94m98 |[0m         if name == "type":
+[1m[94m99 |[0m             name = "link_type"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/link.py:108:9
+    [1m[94m|[0m
+[1m[94m106 |[0m         super().__setattr__(name, value)
+[1m[94m107 |[0m
+[1m[94m108 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m109 |[0m         return f"<Link(id={self.id!r}, type={self.link_type!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/link_type.py:39:9
+   [1m[94m|[0m
+[1m[94m37 |[0m     link_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+[1m[94m38 |[0m
+[1m[94m39 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m40 |[0m         return f"<LinkType(id={self.id!r}, name={self.name!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/node_kind.py:42:9
+   [1m[94m|[0m
+[1m[94m40 |[0m     kind_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+[1m[94m41 |[0m
+[1m[94m42 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m43 |[0m         return f"<NodeKind(id={self.id!r}, name={self.name!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/node_kind_rule.py:45:9
+   [1m[94m|[0m
+[1m[94m43 |[0m     rule_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+[1m[94m44 |[0m
+[1m[94m45 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m46 |[0m         return f"<NodeKindRule(id={self.id!r}, node_kind_id={self.node_kind_id!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/notification.py:31:9
+   [1m[94m|[0m
+[1m[94m29 |[0m     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+[1m[94m30 |[0m
+[1m[94m31 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m32 |[0m         return f"<Notification(id={self.id!r}, user={self.user_id!r}, title={self.title!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/problem.py:194:9
+    [1m[94m|[0m
+[1m[94m192 |[0m         super().__init__(**kwargs)
+[1m[94m193 |[0m
+[1m[94m194 |[0m     def __getattribute__(self, name: str) -> object:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m195 |[0m         if name == "metadata":
+[1m[94m196 |[0m             return object.__getattribute__(self, "problem_metadata")
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/problem.py:199:9
+    [1m[94m|[0m
+[1m[94m197 |[0m         return super().__getattribute__(name)
+[1m[94m198 |[0m
+[1m[94m199 |[0m     def __setattr__(self, name: str, value: object) -> None:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^[0m
+[1m[94m200 |[0m         if name == "metadata":
+[1m[94m201 |[0m             name = "problem_metadata"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/problem.py:204:9
+    [1m[94m|[0m
+[1m[94m202 |[0m         super().__setattr__(name, value)
+[1m[94m203 |[0m
+[1m[94m204 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m205 |[0m         return f"<Problem(id={self.id!r}, number={self.problem_number!r}, title={self.title!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/problem.py:236:9
+    [1m[94m|[0m
+[1m[94m234 |[0m     activity_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+[1m[94m235 |[0m
+[1m[94m236 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m237 |[0m         return f"<ProblemActivity(id={self.id!r}, type={self.activity_type!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/process.py:196:9
+    [1m[94m|[0m
+[1m[94m194 |[0m         super().__init__(**kwargs)
+[1m[94m195 |[0m
+[1m[94m196 |[0m     def __getattribute__(self, name: str) -> object:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m197 |[0m         if name == "metadata":
+[1m[94m198 |[0m             return object.__getattribute__(self, "process_metadata")
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/process.py:201:9
+    [1m[94m|[0m
+[1m[94m199 |[0m         return super().__getattribute__(name)
+[1m[94m200 |[0m
+[1m[94m201 |[0m     def __setattr__(self, name: str, value: object) -> None:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^[0m
+[1m[94m202 |[0m         if name == "metadata":
+[1m[94m203 |[0m             name = "process_metadata"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/process.py:206:9
+    [1m[94m|[0m
+[1m[94m204 |[0m         super().__setattr__(name, value)
+[1m[94m205 |[0m
+[1m[94m206 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m207 |[0m         return f"<Process(id={self.id!r}, number={self.process_number!r}, name={self.name!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/process.py:262:9
+    [1m[94m|[0m
+[1m[94m260 |[0m     output_item_ids: Mapped[list[str] | None] = mapped_column(JSONType, nullable=True)
+[1m[94m261 |[0m
+[1m[94m262 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m263 |[0m         return f"<ProcessExecution(id={self.id!r}, number={self.execution_number!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/project.py:40:9
+   [1m[94m|[0m
+[1m[94m38 |[0m     # )
+[1m[94m39 |[0m
+[1m[94m40 |[0m     def __getattribute__(self, name: str) -> object:
+   [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m41 |[0m         if name == "metadata":
+[1m[94m42 |[0m             return object.__getattribute__(self, "project_metadata")
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/project.py:45:9
+   [1m[94m|[0m
+[1m[94m43 |[0m         return super().__getattribute__(name)
+[1m[94m44 |[0m
+[1m[94m45 |[0m     def __setattr__(self, name: str, value: object) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^^^^[0m
+[1m[94m46 |[0m         if name == "metadata":
+[1m[94m47 |[0m             name = "project_metadata"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/project.py:50:9
+   [1m[94m|[0m
+[1m[94m48 |[0m         super().__setattr__(name, value)
+[1m[94m49 |[0m
+[1m[94m50 |[0m     def __getitem__(self, key: str) -> object:
+   [1m[94m|[0m         [1m[91m^^^^^^^^^^^[0m
+[1m[94m51 |[0m         return getattr(self, key)
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/project.py:53:9
+   [1m[94m|[0m
+[1m[94m51 |[0m         return getattr(self, key)
+[1m[94m52 |[0m
+[1m[94m53 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m54 |[0m         return f"<Project(id={self.id!r}, name={self.name!r})>"
+   [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/specification.py:126:9
+    [1m[94m|[0m
+[1m[94m124 |[0m         super().__init__(**kwargs)
+[1m[94m125 |[0m
+[1m[94m126 |[0m     def __getattribute__(self, name: str) -> object:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m127 |[0m         if name == "metadata":
+[1m[94m128 |[0m             return object.__getattribute__(self, "adr_metadata")
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/specification.py:131:9
+    [1m[94m|[0m
+[1m[94m129 |[0m         return super().__getattribute__(name)
+[1m[94m130 |[0m
+[1m[94m131 |[0m     def __setattr__(self, name: str, value: object) -> None:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^[0m
+[1m[94m132 |[0m         if name == "metadata":
+[1m[94m133 |[0m             name = "adr_metadata"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/specification.py:149:9
+    [1m[94m|[0m
+[1m[94m147 |[0m         self.adr_metadata = value
+[1m[94m148 |[0m
+[1m[94m149 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m150 |[0m         return f"<ADR(id={self.id!r}, number={self.adr_number!r}, title={self.title!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/specification.py:268:9
+    [1m[94m|[0m
+[1m[94m266 |[0m         super().__init__(**kwargs)
+[1m[94m267 |[0m
+[1m[94m268 |[0m     def __getattribute__(self, name: str) -> object:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m269 |[0m         if name == "metadata":
+[1m[94m270 |[0m             return object.__getattribute__(self, "contract_metadata")
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/specification.py:273:9
+    [1m[94m|[0m
+[1m[94m271 |[0m         return super().__getattribute__(name)
+[1m[94m272 |[0m
+[1m[94m273 |[0m     def __setattr__(self, name: str, value: object) -> None:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^[0m
+[1m[94m274 |[0m         if name == "metadata":
+[1m[94m275 |[0m             name = "contract_metadata"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/specification.py:291:9
+    [1m[94m|[0m
+[1m[94m289 |[0m         self.contract_metadata = value
+[1m[94m290 |[0m
+[1m[94m291 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m292 |[0m         return f"<Contract(id={self.id!r}, number={self.contract_number!r}, title={self.title!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/specification.py:391:9
+    [1m[94m|[0m
+[1m[94m389 |[0m         super().__init__(**kwargs)
+[1m[94m390 |[0m
+[1m[94m391 |[0m     def __getattribute__(self, name: str) -> object:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m392 |[0m         if name == "metadata":
+[1m[94m393 |[0m             return object.__getattribute__(self, "feature_metadata")
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/specification.py:396:9
+    [1m[94m|[0m
+[1m[94m394 |[0m         return super().__getattribute__(name)
+[1m[94m395 |[0m
+[1m[94m396 |[0m     def __setattr__(self, name: str, value: object) -> None:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^[0m
+[1m[94m397 |[0m         if name == "metadata":
+[1m[94m398 |[0m             name = "feature_metadata"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/specification.py:414:9
+    [1m[94m|[0m
+[1m[94m412 |[0m         self.feature_metadata = value
+[1m[94m413 |[0m
+[1m[94m414 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m415 |[0m         return f"<Feature(id={self.id!r}, number={self.feature_number!r}, name={self.name!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/specification.py:587:9
+    [1m[94m|[0m
+[1m[94m585 |[0m     }
+[1m[94m586 |[0m
+[1m[94m587 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m588 |[0m         return f"<Scenario(id={self.id!r}, number={self.scenario_number!r}, title={self.title!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/test_case.py:181:9
+    [1m[94m|[0m
+[1m[94m179 |[0m         super().__init__(**kwargs)
+[1m[94m180 |[0m
+[1m[94m181 |[0m     def __getattribute__(self, name: str) -> object:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m182 |[0m         if name == "metadata":
+[1m[94m183 |[0m             return object.__getattribute__(self, "test_case_metadata")
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/test_case.py:186:9
+    [1m[94m|[0m
+[1m[94m184 |[0m         return super().__getattribute__(name)
+[1m[94m185 |[0m
+[1m[94m186 |[0m     def __setattr__(self, name: str, value: object) -> None:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^[0m
+[1m[94m187 |[0m         if name == "metadata":
+[1m[94m188 |[0m             name = "test_case_metadata"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/test_case.py:191:9
+    [1m[94m|[0m
+[1m[94m189 |[0m         super().__setattr__(name, value)
+[1m[94m190 |[0m
+[1m[94m191 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m192 |[0m         return f"<TestCase(id={self.id!r}, number={self.test_case_number!r}, title={self.title!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+   [1m[94m-->[0m src/tracertm/models/test_case.py:223:9
+    [1m[94m|[0m
+[1m[94m221 |[0m     activity_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+[1m[94m222 |[0m
+[1m[94m223 |[0m     def __repr__(self) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m224 |[0m         return f"<TestCaseActivity(id={self.id!r}, type={self.activity_type!r})>"
+    [1m[94m|[0m
+
+[1m[91mD105 [0m[1mMissing docstring in magic method[0m
+  [1m[94m-->[0m src/tracertm/models/view.py:42:9
+   [1m[94m|[0m
+[1m[94m40 |[0m     view_metadata: Mapped[dict[str, object]] = mapped_column(JSONType, nullable=False, default=dict)
+[1m[94m41 |[0m
+[1m[94m42 |[0m     def __repr__(self) -> str:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m43 |[0m         return f"<View(id={self.id!r}, name={self.name!r})>"
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/preflight.py:30:7
+   [1m[94m|[0m
+[1m[94m29 |[0m @dataclass(frozen=True)
+[1m[94m30 |[0m class PreflightCheck:
+   [1m[94m|[0m       [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m31 |[0m     name: str
+[1m[94m32 |[0m     url: str | None
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/preflight.py:40:7
+   [1m[94m|[0m
+[1m[94m39 |[0m @dataclass(frozen=True)
+[1m[94m40 |[0m class PreflightResult:
+   [1m[94m|[0m       [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m41 |[0m     name: str
+[1m[94m42 |[0m     ok: bool
+   [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/preflight.py:312:5
+    [1m[94m|[0m
+[1m[94m312 |[0m def build_api_checks() -> list[PreflightCheck]:
+    [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m313 |[0m     return [
+[1m[94m314 |[0m         PreflightCheck("database", os.getenv("DATABASE_URL"), required=True, kind="tcp"),
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/preflight.py:337:5
+    [1m[94m|[0m
+[1m[94m337 |[0m def build_mcp_checks() -> list[PreflightCheck]:
+    [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m338 |[0m     return [
+[1m[94m339 |[0m         PreflightCheck("database", os.getenv("DATABASE_URL"), required=True, kind="tcp"),
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/preflight.py:362:5
+    [1m[94m|[0m
+[1m[94m362 |[0m def check_cli_available() -> bool:
+    [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m363 |[0m     try:
+[1m[94m364 |[0m         import tracertm.cli  # noqa: F401
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:106:5
+    [1m[94m|[0m
+[1m[94m106 |[0m def add_GraphServiceServicer_to_server(servicer, server) -> None:
+    [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m107 |[0m     rpc_method_handlers = {
+[1m[94m108 |[0m             "AnalyzeImpact": grpc.unary_unary_rpc_method_handler(
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:146:9
+    [1m[94m|[0m
+[1m[94m145 |[0m     @staticmethod
+[1m[94m146 |[0m     def AnalyzeImpact(request,
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m147 |[0m             target,
+[1m[94m148 |[0m             options=(),
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:173:9
+    [1m[94m|[0m
+[1m[94m172 |[0m     @staticmethod
+[1m[94m173 |[0m     def FindCycles(request,
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^[0m
+[1m[94m174 |[0m             target,
+[1m[94m175 |[0m             options=(),
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:200:9
+    [1m[94m|[0m
+[1m[94m199 |[0m     @staticmethod
+[1m[94m200 |[0m     def CalculatePath(request,
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m201 |[0m             target,
+[1m[94m202 |[0m             options=(),
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:227:9
+    [1m[94m|[0m
+[1m[94m226 |[0m     @staticmethod
+[1m[94m227 |[0m     def StreamGraphUpdates(request,
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^^^[0m
+[1m[94m228 |[0m             target,
+[1m[94m229 |[0m             options=(),
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:327:5
+    [1m[94m|[0m
+[1m[94m327 |[0m def add_AIServiceServicer_to_server(servicer, server) -> None:
+    [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m328 |[0m     rpc_method_handlers = {
+[1m[94m329 |[0m             "AnalyzeRequirement": grpc.unary_unary_rpc_method_handler(
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:367:9
+    [1m[94m|[0m
+[1m[94m366 |[0m     @staticmethod
+[1m[94m367 |[0m     def AnalyzeRequirement(request,
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^^^[0m
+[1m[94m368 |[0m             target,
+[1m[94m369 |[0m             options=(),
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:394:9
+    [1m[94m|[0m
+[1m[94m393 |[0m     @staticmethod
+[1m[94m394 |[0m     def GenerateSuggestions(request,
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m395 |[0m             target,
+[1m[94m396 |[0m             options=(),
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:421:9
+    [1m[94m|[0m
+[1m[94m420 |[0m     @staticmethod
+[1m[94m421 |[0m     def DetectEquivalences(request,
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^^^[0m
+[1m[94m422 |[0m             target,
+[1m[94m423 |[0m             options=(),
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:448:9
+    [1m[94m|[0m
+[1m[94m447 |[0m     @staticmethod
+[1m[94m448 |[0m     def ExtractEntities(request,
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m449 |[0m             target,
+[1m[94m450 |[0m             options=(),
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:548:5
+    [1m[94m|[0m
+[1m[94m548 |[0m def add_SpecAnalyticsServiceServicer_to_server(servicer, server) -> None:
+    [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m549 |[0m     rpc_method_handlers = {
+[1m[94m550 |[0m             "AnalyzeSpec": grpc.unary_unary_rpc_method_handler(
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:588:9
+    [1m[94m|[0m
+[1m[94m587 |[0m     @staticmethod
+[1m[94m588 |[0m     def AnalyzeSpec(request,
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^[0m
+[1m[94m589 |[0m             target,
+[1m[94m590 |[0m             options=(),
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:615:9
+    [1m[94m|[0m
+[1m[94m614 |[0m     @staticmethod
+[1m[94m615 |[0m     def BatchAnalyzeSpecs(request,
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^^[0m
+[1m[94m616 |[0m             target,
+[1m[94m617 |[0m             options=(),
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:642:9
+    [1m[94m|[0m
+[1m[94m641 |[0m     @staticmethod
+[1m[94m642 |[0m     def ValidateISO29148(request,
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m643 |[0m             target,
+[1m[94m644 |[0m             options=(),
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/proto/tracertm/v1/tracertm_pb2_grpc.py:669:9
+    [1m[94m|[0m
+[1m[94m668 |[0m     @staticmethod
+[1m[94m669 |[0m     def GetEARSPatterns(request,
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m670 |[0m             target,
+[1m[94m671 |[0m             options=(),
+    [1m[94m|[0m
+
+[1m[91mD106 [0m[1mMissing docstring in public nested class[0m
+   [1m[94m-->[0m src/tracertm/schemas/process.py:312:11
+    [1m[94m|[0m
+[1m[94m310 |[0m     updated_at: datetime
+[1m[94m311 |[0m
+[1m[94m312 |[0m     class Config:
+    [1m[94m|[0m           [1m[91m^^^^^^[0m
+[1m[94m313 |[0m         from_attributes = True
+    [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/api_webhooks_service.py:23:9
+   [1m[94m|[0m
+[1m[94m21 |[0m     """Service for managing API and webhooks."""
+[1m[94m22 |[0m
+[1m[94m23 |[0m     def __init__(self) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m24 |[0m         self.webhooks: dict[str, dict[str, object]] = {}
+[1m[94m25 |[0m         self.webhook_events: list[WebhookEvent] = []
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/dependency_analysis_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests; real logic not yet implemented."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/documentation_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Service for managing API documentation."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.endpoints: dict[str, dict[str, object]] = {}
+[1m[94m11 |[0m         self.schemas: dict[str, dict[str, object]] = {}
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/drill_down_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests; real drill-down logic TBD."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/execution/execution_service.py:36:9
+   [1m[94m|[0m
+[1m[94m34 |[0m     """Orchestrates test/recording executions with native subprocess or Docker and artifact storage."""
+[1m[94m35 |[0m
+[1m[94m36 |[0m     def __init__(
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m37 |[0m         self,
+[1m[94m38 |[0m         session: AsyncSession,
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/external_integration_service.py:32:9
+   [1m[94m|[0m
+[1m[94m30 |[0m     """Service for managing external integrations."""
+[1m[94m31 |[0m
+[1m[94m32 |[0m     def __init__(self) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m33 |[0m         self.integrations: dict[str, Integration] = {}
+[1m[94m34 |[0m         self.sync_history: list[dict[str, object]] = []
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/file_watcher_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests; replace with real implementation when ready."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/graph_analysis_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/graph_analysis_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def analyze(self, *args: object, **kwargs: object) -> dict[str, object]:  # noqa: ARG002
+   [1m[94m|[0m               [1m[91m^^^^^^^[0m
+[1m[94m13 |[0m         return {"status": "ok", "nodes": 0, "edges": 0}
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/services/graph_report_service.py:115:15
+    [1m[94m|[0m
+[1m[94m113 |[0m         return sorted([n for n in api_nodes if n not in covered_nodes])
+[1m[94m114 |[0m
+[1m[94m115 |[0m     async def build_report(self, project_id: str, graph_id: str) -> dict[str, object]:
+    [1m[94m|[0m               [1m[91m^^^^^^^^^^^^[0m
+[1m[94m116 |[0m         graph = await self._fetch_graph(project_id, graph_id)
+[1m[94m117 |[0m         if not graph:
+    [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/graph_service.py:17:9
+   [1m[94m|[0m
+[1m[94m15 |[0m     """Service for graph projections."""
+[1m[94m16 |[0m
+[1m[94m17 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m18 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/graph_service.py:20:15
+   [1m[94m|[0m
+[1m[94m18 |[0m         self.db_session = db_session
+[1m[94m19 |[0m
+[1m[94m20 |[0m     async def get_graph(
+   [1m[94m|[0m               [1m[91m^^^^^^^^^[0m
+[1m[94m21 |[0m         self,
+[1m[94m22 |[0m         project_id: str | None = None,
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/graph_snapshot_service.py:39:15
+   [1m[94m|[0m
+[1m[94m37 |[0m         self.graph_service = GraphService(session)
+[1m[94m38 |[0m
+[1m[94m39 |[0m     async def create_snapshot(
+   [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m40 |[0m         self,
+[1m[94m41 |[0m         project_id: str,
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/graph_snapshot_service.py:90:15
+   [1m[94m|[0m
+[1m[94m88 |[0m         return snapshot
+[1m[94m89 |[0m
+[1m[94m90 |[0m     async def get_snapshot(
+   [1m[94m|[0m               [1m[91m^^^^^^^^^^^^[0m
+[1m[94m91 |[0m         self,
+[1m[94m92 |[0m         project_id: str,
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/services/graph_snapshot_service.py:107:15
+    [1m[94m|[0m
+[1m[94m105 |[0m         return result.scalars().first()
+[1m[94m106 |[0m
+[1m[94m107 |[0m     async def diff_snapshots(
+    [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m108 |[0m         self,
+[1m[94m109 |[0m         project_id: str,
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/graph_validation_service.py:31:15
+   [1m[94m|[0m
+[1m[94m29 |[0m         self.session = session
+[1m[94m30 |[0m
+[1m[94m31 |[0m     async def validate_graph(self, project_id: str, graph_id: str) -> dict[str, object]:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m32 |[0m         graph = await self.session.execute(select(Graph).where(Graph.id == graph_id, Graph.project_id == project_id))
+[1m[94m33 |[0m         graph_obj = graph.scalar_one_or_none()
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/history_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/history_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def get_history(self, *args: object, **kwargs: object) -> list[dict[str, object]]:  # noqa: ARG002
+   [1m[94m|[0m               [1m[91m^^^^^^^^^^^[0m
+[1m[94m13 |[0m         return []
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/ingestion_service.py:14:9
+   [1m[94m|[0m
+[1m[94m12 |[0m     """Stub service used in unit tests."""
+[1m[94m13 |[0m
+[1m[94m14 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m15 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/services/integration_sync_processor.py:25:7
+   [1m[94m|[0m
+[1m[94m25 |[0m class IntegrationSyncProcessor:
+   [1m[94m|[0m       [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m26 |[0m     def __init__(self, session: AsyncSession) -> None:
+[1m[94m27 |[0m         """Initialize service.
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/integration_sync_processor.py:40:15
+   [1m[94m|[0m
+[1m[94m38 |[0m         self.logs = IntegrationSyncLogRepository(session)
+[1m[94m39 |[0m
+[1m[94m40 |[0m     async def process_queue_item(self, queue_item: object) -> dict[str, object]:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^^^^^^[0m
+[1m[94m41 |[0m         started = time.monotonic()
+[1m[94m42 |[0m         await self.queue.mark_processing(queue_item.id)
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/integration_sync_processor.py:90:15
+   [1m[94m|[0m
+[1m[94m88 |[0m             return {"status": "completed", "result": result}
+[1m[94m89 |[0m
+[1m[94m90 |[0m     async def process_pending(self, limit: int = 50) -> dict[str, object]:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m91 |[0m         pending = await self.queue.get_pending(limit=limit)
+[1m[94m92 |[0m         results = [await self.process_queue_item(item) for item in pending]
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/integration_sync_processor.py:95:15
+   [1m[94m|[0m
+[1m[94m93 |[0m         return {"processed": len(results), "results": results}
+[1m[94m94 |[0m
+[1m[94m95 |[0m     async def process_retryable(self, limit: int = 50) -> dict[str, object]:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^^^^^[0m
+[1m[94m96 |[0m         retryable = await self.queue.get_retryable()
+[1m[94m97 |[0m         results = [await self.process_queue_item(item) for item in retryable[:limit]]
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/link_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/link_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def list_links(self, *args: object, **kwargs: object) -> list[dict[str, object]]:  # noqa: ARG002
+   [1m[94m|[0m               [1m[91m^^^^^^^^^^[0m
+[1m[94m13 |[0m         return []
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/metrics_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/metrics_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def collect(self) -> dict[str, object]:
+   [1m[94m|[0m               [1m[91m^^^^^^^[0m
+[1m[94m13 |[0m         return {"metrics": {}}
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/notification_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/notification_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def notify(self, message: str) -> bool:  # noqa: ARG002
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m13 |[0m         return True
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/plugin_service.py:46:9
+   [1m[94m|[0m
+[1m[94m44 |[0m     """Service for managing plugins."""
+[1m[94m45 |[0m
+[1m[94m46 |[0m     def __init__(self) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m47 |[0m         self.plugins: dict[str, Plugin] = {}
+[1m[94m48 |[0m         self.hooks: dict[str, list[Callable]] = {}
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/progress_tracking_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/progress_tracking_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def progress(self) -> dict[str, object]:
+   [1m[94m|[0m               [1m[91m^^^^^^^^[0m
+[1m[94m13 |[0m         return {"progress": 0}
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/purge_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/purge_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def purge(self, *args: object, **kwargs: object) -> dict[str, object]:  # noqa: ARG002
+   [1m[94m|[0m               [1m[91m^^^^^[0m
+[1m[94m13 |[0m         return {"purged": True}
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/query_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/query_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def search(self, criteria: dict[str, object] | None = None) -> list[dict[str, object]]:  # noqa: ARG002
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m13 |[0m         return []
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/repair_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/repair_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def repair(self, *args: object, **kwargs: object) -> dict[str, object]:  # noqa: ARG002
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m13 |[0m         return {"repaired": True}
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/search_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+    [1m[94m-->[0m src/tracertm/services/spec_analytics_service.py:2407:9
+     [1m[94m|[0m
+[1m[94m2405 |[0m     """
+[1m[94m2406 |[0m
+[1m[94m2407 |[0m     def __init__(self) -> None:
+     [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m2408 |[0m         self.ears_analyzer = EARSPatternAnalyzer()
+[1m[94m2409 |[0m         self.quality_analyzer = RequirementQualityAnalyzer()
+     [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/stateless_ingestion_service.py:35:9
+   [1m[94m|[0m
+[1m[94m33 |[0m     """Service for stateless ingestion of MD/MDX/YAML/OpenSpec/BMad files."""
+[1m[94m34 |[0m
+[1m[94m35 |[0m     def __init__(self, session: Session) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m36 |[0m         self.session = session
+[1m[94m37 |[0m         if MarkdownIt is not None:
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/stats_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/stats_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def stats(self) -> dict[str, object]:
+   [1m[94m|[0m               [1m[91m^^^^^[0m
+[1m[94m13 |[0m         return {"counts": {}}
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/storage_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/storage_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def info(self) -> dict[str, object]:
+   [1m[94m|[0m               [1m[91m^^^^[0m
+[1m[94m13 |[0m         return {"status": "ok"}
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/sync_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/sync_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def sync(self) -> dict[str, object]:
+   [1m[94m|[0m               [1m[91m^^^^[0m
+[1m[94m13 |[0m         return {"synced": True}
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/services/temporal_service.py:25:7
+   [1m[94m|[0m
+[1m[94m24 |[0m @dataclass(frozen=True)
+[1m[94m25 |[0m class TemporalSettings:
+   [1m[94m|[0m       [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m26 |[0m     host: str
+[1m[94m27 |[0m     namespace: str
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/temporal_service.py:36:9
+   [1m[94m|[0m
+[1m[94m34 |[0m     """Service for interacting with Temporal workflows."""
+[1m[94m35 |[0m
+[1m[94m36 |[0m     def __init__(self, settings: TemporalSettings | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m37 |[0m         self.settings = settings or self._load_settings()
+[1m[94m38 |[0m         self._client: Client | None = None
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/services/temporal_service.py:201:15
+    [1m[94m|[0m
+[1m[94m199 |[0m         )
+[1m[94m200 |[0m
+[1m[94m201 |[0m     async def create_schedule(
+    [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m202 |[0m         self,
+[1m[94m203 |[0m         schedule_id: str,
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/services/temporal_service.py:260:15
+    [1m[94m|[0m
+[1m[94m258 |[0m         }
+[1m[94m259 |[0m
+[1m[94m260 |[0m     async def delete_schedule(self, schedule_id: str) -> None:
+    [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m261 |[0m         if not self.settings:
+[1m[94m262 |[0m             msg = "Temporal not configured"
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/services/temporal_service.py:268:15
+    [1m[94m|[0m
+[1m[94m266 |[0m         await handle.delete()
+[1m[94m267 |[0m
+[1m[94m268 |[0m     async def list_schedules(self, query: str | None = None) -> list[dict[str, object]]:
+    [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m269 |[0m         if not self.settings:
+[1m[94m270 |[0m             msg = "Temporal not configured"
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/services/temporal_service.py:276:15
+    [1m[94m|[0m
+[1m[94m274 |[0m         return [{"id": schedule.id, "memo": schedule.memo} async for schedule in schedules_iter]
+[1m[94m275 |[0m
+[1m[94m276 |[0m     async def list_schedules_summary(self, limit: int = 200) -> dict[str, object]:
+    [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m277 |[0m         if not self.settings:
+[1m[94m278 |[0m             msg = "Temporal not configured"
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/services/temporal_service.py:291:15
+    [1m[94m|[0m
+[1m[94m289 |[0m         return {"count": count, "items": schedules}
+[1m[94m290 |[0m
+[1m[94m291 |[0m     async def list_workflows_summary(self, limit: int = 100) -> dict[str, object]:
+    [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m292 |[0m         if not self.settings:
+[1m[94m293 |[0m             msg = "Temporal not configured"
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/services/temporal_service.py:312:15
+    [1m[94m|[0m
+[1m[94m310 |[0m         return {"counts": status_counts, "items": workflows}
+[1m[94m311 |[0m
+[1m[94m312 |[0m     async def get_summary(self, workflow_limit: int = 100, schedule_limit: int = 200) -> dict[str, object]:
+    [1m[94m|[0m               [1m[91m^^^^^^^^^^^[0m
+[1m[94m313 |[0m         health = await self.health_check()
+[1m[94m314 |[0m         schedules = await self.list_schedules_summary(limit=schedule_limit)
+    [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/trace_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/trace_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def trace(self, *args: object, **kwargs: object) -> dict[str, object]:  # noqa: ARG002
+   [1m[94m|[0m               [1m[91m^^^^^[0m
+[1m[94m13 |[0m         return {"traced": True}
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/tui_service.py:35:9
+   [1m[94m|[0m
+[1m[94m33 |[0m     """Service for managing TUI components and interactions."""
+[1m[94m34 |[0m
+[1m[94m35 |[0m     def __init__(self) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m36 |[0m         self.components: dict[str, UIComponent] = {}
+[1m[94m37 |[0m         self.current_view: str | None = None
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/verification_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/verification_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def verify(self, *args: object, **kwargs: object) -> dict[str, bool]:  # noqa: ARG002
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m13 |[0m         return {"verified": True}
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/services/view_service.py:9:9
+   [1m[94m|[0m
+[1m[94m 7 |[0m     """Stub service used in unit tests."""
+[1m[94m 8 |[0m
+[1m[94m 9 |[0m     def __init__(self, db_session: object | None = None) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m10 |[0m         self.db_session = db_session
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/services/view_service.py:12:15
+   [1m[94m|[0m
+[1m[94m10 |[0m         self.db_session = db_session
+[1m[94m11 |[0m
+[1m[94m12 |[0m     async def list_views(self) -> list[str]:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^^[0m
+[1m[94m13 |[0m         return []
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/services/workos_auth_service.py:24:7
+   [1m[94m|[0m
+[1m[94m23 |[0m @dataclass(frozen=True)
+[1m[94m24 |[0m class WorkOSSettings:
+   [1m[94m|[0m       [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m25 |[0m     client_id: str
+[1m[94m26 |[0m     api_key: str | None
+   [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+  [1m[94m-->[0m src/tracertm/services/workos_auth_service.py:37:5
+   [1m[94m|[0m
+[1m[94m37 |[0m def get_workos_settings() -> WorkOSSettings:
+   [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m38 |[0m     client_id = os.getenv("WORKOS_CLIENT_ID") or os.getenv("WORKOS_AUTHKIT_CLIENT_ID")
+[1m[94m39 |[0m     if not client_id:
+   [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+  [1m[94m-->[0m src/tracertm/services/workos_auth_service.py:87:5
+   [1m[94m|[0m
+[1m[94m87 |[0m def verify_access_token(token: str) -> dict[str, object]:
+   [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m88 |[0m     settings = get_workos_settings()
+[1m[94m89 |[0m     jwks_client = _get_jwks_client(settings)
+   [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/services/workos_auth_service.py:208:5
+    [1m[94m|[0m
+[1m[94m208 |[0m def authenticate_with_refresh_token(refresh_token: str) -> dict[str, object]:
+    [1m[94m|[0m     [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m209 |[0m     settings = get_workos_settings()
+[1m[94m210 |[0m     if not settings.api_key:
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/services/workos_auth_service.py:235:9
+    [1m[94m|[0m
+[1m[94m233 |[0m     """Wrapper class for WorkOS AuthKit helpers."""
+[1m[94m234 |[0m
+[1m[94m235 |[0m     def verify_access_token(self, token: str) -> dict[str, object]:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m236 |[0m         return verify_access_token(token)
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/services/workos_auth_service.py:238:9
+    [1m[94m|[0m
+[1m[94m236 |[0m         return verify_access_token(token)
+[1m[94m237 |[0m
+[1m[94m238 |[0m     def authenticate_with_code(self, code: str) -> dict[str, object]:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m239 |[0m         return authenticate_with_code(code)
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/services/workos_auth_service.py:241:9
+    [1m[94m|[0m
+[1m[94m239 |[0m         return authenticate_with_code(code)
+[1m[94m240 |[0m
+[1m[94m241 |[0m     def authenticate_with_refresh_token(self, refresh_token: str) -> dict[str, object]:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m242 |[0m         return authenticate_with_refresh_token(refresh_token)
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/services/workos_auth_service.py:244:9
+    [1m[94m|[0m
+[1m[94m242 |[0m         return authenticate_with_refresh_token(refresh_token)
+[1m[94m243 |[0m
+[1m[94m244 |[0m     def get_logout_url(self, session_id: str, return_to: str | None = None) -> str:
+    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m245 |[0m         return get_logout_url(session_id, return_to=return_to)
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/services/workos_auth_service.py:248:5
+    [1m[94m|[0m
+[1m[94m248 |[0m def get_user(user_id: str) -> dict[str, object]:
+    [1m[94m|[0m     [1m[91m^^^^^^^^[0m
+[1m[94m249 |[0m     settings = get_workos_settings()
+[1m[94m250 |[0m     if not settings.api_key:
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/storage/local_storage.py:24:9
+   [1m[94m|[0m
+[1m[94m22 |[0m     """Session that auto-wraps plain SQL strings for SQLAlchemy 2.x compatibility."""
+[1m[94m23 |[0m
+[1m[94m24 |[0m     def execute(self, statement: object, *args: object, **kwargs: object) -> object:
+   [1m[94m|[0m         [1m[91m^^^^^^^[0m
+[1m[94m25 |[0m         if isinstance(statement, str):
+[1m[94m26 |[0m             if "INSERT INTO sync_queue" in statement and "datetime('now', '-7 days')" in statement:
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/browser.py:24:15
+   [1m[94m|[0m
+[1m[94m22 |[0m     else:
+[1m[94m23 |[0m
+[1m[94m24 |[0m         class App:
+   [1m[94m|[0m               [1m[91m^^^[0m
+[1m[94m25 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/browser.py:27:15
+   [1m[94m|[0m
+[1m[94m25 |[0m             pass
+[1m[94m26 |[0m
+[1m[94m27 |[0m         class ComposeResult:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m28 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/browser.py:30:15
+   [1m[94m|[0m
+[1m[94m28 |[0m             pass
+[1m[94m29 |[0m
+[1m[94m30 |[0m         class Header:
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m31 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/browser.py:33:15
+   [1m[94m|[0m
+[1m[94m31 |[0m             pass
+[1m[94m32 |[0m
+[1m[94m33 |[0m         class Footer:
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m34 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/browser.py:36:15
+   [1m[94m|[0m
+[1m[94m34 |[0m             pass
+[1m[94m35 |[0m
+[1m[94m36 |[0m         class Tree:
+   [1m[94m|[0m               [1m[91m^^^^[0m
+[1m[94m37 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/browser.py:39:15
+   [1m[94m|[0m
+[1m[94m37 |[0m             pass
+[1m[94m38 |[0m
+[1m[94m39 |[0m         class Static:
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m40 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/browser.py:42:15
+   [1m[94m|[0m
+[1m[94m40 |[0m             pass
+[1m[94m41 |[0m
+[1m[94m42 |[0m         class Input:
+   [1m[94m|[0m               [1m[91m^^^^^[0m
+[1m[94m43 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/browser.py:45:15
+   [1m[94m|[0m
+[1m[94m43 |[0m             pass
+[1m[94m44 |[0m
+[1m[94m45 |[0m         class Binding:
+   [1m[94m|[0m               [1m[91m^^^^^^^[0m
+[1m[94m46 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/browser.py:91:13
+   [1m[94m|[0m
+[1m[94m89 |[0m         ]
+[1m[94m90 |[0m
+[1m[94m91 |[0m         def __init__(self) -> None:
+   [1m[94m|[0m             [1m[91m^^^^^^^^[0m
+[1m[94m92 |[0m             super().__init__()
+[1m[94m93 |[0m             self.config_manager = ConfigManager()
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/browser.py:253:13
+    [1m[94m|[0m
+[1m[94m251 |[0m         BINDINGS: ClassVar[list]
+[1m[94m252 |[0m
+[1m[94m253 |[0m         def __init__(self) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^[0m
+[1m[94m254 |[0m             msg = "Textual is required for TUI. Install with: pip install textual"
+[1m[94m255 |[0m             raise ImportError(msg)
+    [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/dashboard.py:29:15
+   [1m[94m|[0m
+[1m[94m27 |[0m     else:
+[1m[94m28 |[0m         # Create dummy classes for runtime when textual unavailable
+[1m[94m29 |[0m         class App:
+   [1m[94m|[0m               [1m[91m^^^[0m
+[1m[94m30 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/dashboard.py:32:15
+   [1m[94m|[0m
+[1m[94m30 |[0m             pass
+[1m[94m31 |[0m
+[1m[94m32 |[0m         class ComposeResult:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m33 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/dashboard.py:35:15
+   [1m[94m|[0m
+[1m[94m33 |[0m             pass
+[1m[94m34 |[0m
+[1m[94m35 |[0m         class Container:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^[0m
+[1m[94m36 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/dashboard.py:38:15
+   [1m[94m|[0m
+[1m[94m36 |[0m             pass
+[1m[94m37 |[0m
+[1m[94m38 |[0m         class Header:
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m39 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/dashboard.py:41:15
+   [1m[94m|[0m
+[1m[94m39 |[0m             pass
+[1m[94m40 |[0m
+[1m[94m41 |[0m         class Footer:
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m42 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/dashboard.py:44:15
+   [1m[94m|[0m
+[1m[94m42 |[0m             pass
+[1m[94m43 |[0m
+[1m[94m44 |[0m         class DataTable:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^[0m
+[1m[94m45 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/dashboard.py:47:15
+   [1m[94m|[0m
+[1m[94m45 |[0m             pass
+[1m[94m46 |[0m
+[1m[94m47 |[0m         class Static:
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m48 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/dashboard.py:50:15
+   [1m[94m|[0m
+[1m[94m48 |[0m             pass
+[1m[94m49 |[0m
+[1m[94m50 |[0m         class Tree:
+   [1m[94m|[0m               [1m[91m^^^^[0m
+[1m[94m51 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/dashboard.py:53:15
+   [1m[94m|[0m
+[1m[94m51 |[0m             pass
+[1m[94m52 |[0m
+[1m[94m53 |[0m         class Binding:
+   [1m[94m|[0m               [1m[91m^^^^^^^[0m
+[1m[94m54 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/dashboard.py:56:15
+   [1m[94m|[0m
+[1m[94m54 |[0m             pass
+[1m[94m55 |[0m
+[1m[94m56 |[0m         class Button:
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m57 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/dashboard.py:59:15
+   [1m[94m|[0m
+[1m[94m57 |[0m             pass
+[1m[94m58 |[0m
+[1m[94m59 |[0m         class Input:
+   [1m[94m|[0m               [1m[91m^^^^^[0m
+[1m[94m60 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/dashboard.py:504:13
+    [1m[94m|[0m
+[1m[94m502 |[0m         """Placeholder when Textual is not installed."""
+[1m[94m503 |[0m
+[1m[94m504 |[0m         def __init__(self, *args: object, **kwargs: object) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^[0m
+[1m[94m505 |[0m             msg = "Textual is required for TUI. Install with: pip install textual"
+[1m[94m506 |[0m             raise ImportError(msg)
+    [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/graph.py:27:15
+   [1m[94m|[0m
+[1m[94m25 |[0m     else:
+[1m[94m26 |[0m
+[1m[94m27 |[0m         class App:
+   [1m[94m|[0m               [1m[91m^^^[0m
+[1m[94m28 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/graph.py:30:15
+   [1m[94m|[0m
+[1m[94m28 |[0m             pass
+[1m[94m29 |[0m
+[1m[94m30 |[0m         class ComposeResult:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m31 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/graph.py:33:15
+   [1m[94m|[0m
+[1m[94m31 |[0m             pass
+[1m[94m32 |[0m
+[1m[94m33 |[0m         class Container:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^[0m
+[1m[94m34 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/graph.py:36:15
+   [1m[94m|[0m
+[1m[94m34 |[0m             pass
+[1m[94m35 |[0m
+[1m[94m36 |[0m         class Header:
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m37 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/graph.py:39:15
+   [1m[94m|[0m
+[1m[94m37 |[0m             pass
+[1m[94m38 |[0m
+[1m[94m39 |[0m         class Footer:
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m40 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/graph.py:42:15
+   [1m[94m|[0m
+[1m[94m40 |[0m             pass
+[1m[94m41 |[0m
+[1m[94m42 |[0m         class Static:
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m43 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/graph.py:45:15
+   [1m[94m|[0m
+[1m[94m43 |[0m             pass
+[1m[94m44 |[0m
+[1m[94m45 |[0m         class DataTable:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^[0m
+[1m[94m46 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/graph.py:48:15
+   [1m[94m|[0m
+[1m[94m46 |[0m             pass
+[1m[94m47 |[0m
+[1m[94m48 |[0m         class Binding:
+   [1m[94m|[0m               [1m[91m^^^^^^^[0m
+[1m[94m49 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/graph.py:51:15
+   [1m[94m|[0m
+[1m[94m49 |[0m             pass
+[1m[94m50 |[0m
+[1m[94m51 |[0m         class Region:
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m52 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/tui/apps/graph.py:96:13
+   [1m[94m|[0m
+[1m[94m94 |[0m         ]
+[1m[94m95 |[0m
+[1m[94m96 |[0m         def __init__(self) -> None:
+   [1m[94m|[0m             [1m[91m^^^^^^^^[0m
+[1m[94m97 |[0m             super().__init__()
+[1m[94m98 |[0m             self.config_manager = ConfigManager()
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/graph.py:258:13
+    [1m[94m|[0m
+[1m[94m256 |[0m         BINDINGS: ClassVar[list]
+[1m[94m257 |[0m
+[1m[94m258 |[0m         def __init__(self) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^[0m
+[1m[94m259 |[0m             msg = "Textual is required for TUI. Install with: pip install textual"
+[1m[94m260 |[0m             raise ImportError(msg)
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/graph.py:262:13
+    [1m[94m|[0m
+[1m[94m260 |[0m             raise ImportError(msg)
+[1m[94m261 |[0m
+[1m[94m262 |[0m         def setup_database(self) -> None: ...
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m263 |[0m         def load_graph_data(self) -> None: ...
+[1m[94m264 |[0m         def render_graph(self) -> None: ...
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/graph.py:263:13
+    [1m[94m|[0m
+[1m[94m262 |[0m         def setup_database(self) -> None: ...
+[1m[94m263 |[0m         def load_graph_data(self) -> None: ...
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m264 |[0m         def render_graph(self) -> None: ...
+[1m[94m265 |[0m         def on_unmount(self) -> None: ...
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/graph.py:264:13
+    [1m[94m|[0m
+[1m[94m262 |[0m         def setup_database(self) -> None: ...
+[1m[94m263 |[0m         def load_graph_data(self) -> None: ...
+[1m[94m264 |[0m         def render_graph(self) -> None: ...
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^[0m
+[1m[94m265 |[0m         def on_unmount(self) -> None: ...
+[1m[94m266 |[0m         def action_zoom_in(self) -> None: ...
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/graph.py:265:13
+    [1m[94m|[0m
+[1m[94m263 |[0m         def load_graph_data(self) -> None: ...
+[1m[94m264 |[0m         def render_graph(self) -> None: ...
+[1m[94m265 |[0m         def on_unmount(self) -> None: ...
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^[0m
+[1m[94m266 |[0m         def action_zoom_in(self) -> None: ...
+[1m[94m267 |[0m         def action_zoom_out(self) -> None: ...
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/graph.py:266:13
+    [1m[94m|[0m
+[1m[94m264 |[0m         def render_graph(self) -> None: ...
+[1m[94m265 |[0m         def on_unmount(self) -> None: ...
+[1m[94m266 |[0m         def action_zoom_in(self) -> None: ...
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m267 |[0m         def action_zoom_out(self) -> None: ...
+[1m[94m268 |[0m         def action_refresh(self) -> None: ...
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/graph.py:267:13
+    [1m[94m|[0m
+[1m[94m265 |[0m         def on_unmount(self) -> None: ...
+[1m[94m266 |[0m         def action_zoom_in(self) -> None: ...
+[1m[94m267 |[0m         def action_zoom_out(self) -> None: ...
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m268 |[0m         def action_refresh(self) -> None: ...
+[1m[94m269 |[0m         def action_help(self) -> None: ...
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/graph.py:268:13
+    [1m[94m|[0m
+[1m[94m266 |[0m         def action_zoom_in(self) -> None: ...
+[1m[94m267 |[0m         def action_zoom_out(self) -> None: ...
+[1m[94m268 |[0m         def action_refresh(self) -> None: ...
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m269 |[0m         def action_help(self) -> None: ...
+[1m[94m270 |[0m         def query_one(self, selector: str, widget_type: type | None = None) -> object: ...
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/graph.py:269:13
+    [1m[94m|[0m
+[1m[94m267 |[0m         def action_zoom_out(self) -> None: ...
+[1m[94m268 |[0m         def action_refresh(self) -> None: ...
+[1m[94m269 |[0m         def action_help(self) -> None: ...
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^[0m
+[1m[94m270 |[0m         def query_one(self, selector: str, widget_type: type | None = None) -> object: ...
+[1m[94m271 |[0m         def notify(self, message: str, *args: object, **kwargs: object) -> None: ...
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/graph.py:270:13
+    [1m[94m|[0m
+[1m[94m268 |[0m         def action_refresh(self) -> None: ...
+[1m[94m269 |[0m         def action_help(self) -> None: ...
+[1m[94m270 |[0m         def query_one(self, selector: str, widget_type: type | None = None) -> object: ...
+    [1m[94m|[0m             [1m[91m^^^^^^^^^[0m
+[1m[94m271 |[0m         def notify(self, message: str, *args: object, **kwargs: object) -> None: ...
+[1m[94m272 |[0m         def exit(self, *args: object, **kwargs: object) -> None: ...
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/graph.py:271:13
+    [1m[94m|[0m
+[1m[94m269 |[0m         def action_help(self) -> None: ...
+[1m[94m270 |[0m         def query_one(self, selector: str, widget_type: type | None = None) -> object: ...
+[1m[94m271 |[0m         def notify(self, message: str, *args: object, **kwargs: object) -> None: ...
+    [1m[94m|[0m             [1m[91m^^^^^^[0m
+[1m[94m272 |[0m         def exit(self, *args: object, **kwargs: object) -> None: ...
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/apps/graph.py:272:13
+    [1m[94m|[0m
+[1m[94m270 |[0m         def query_one(self, selector: str, widget_type: type | None = None) -> object: ...
+[1m[94m271 |[0m         def notify(self, message: str, *args: object, **kwargs: object) -> None: ...
+[1m[94m272 |[0m         def exit(self, *args: object, **kwargs: object) -> None: ...
+    [1m[94m|[0m             [1m[91m^^^^[0m
+    [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:30:15
+   [1m[94m|[0m
+[1m[94m28 |[0m     else:
+[1m[94m29 |[0m
+[1m[94m30 |[0m         class Container:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^[0m
+[1m[94m31 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:33:15
+   [1m[94m|[0m
+[1m[94m31 |[0m             pass
+[1m[94m32 |[0m
+[1m[94m33 |[0m         class Vertical:
+   [1m[94m|[0m               [1m[91m^^^^^^^^[0m
+[1m[94m34 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:36:15
+   [1m[94m|[0m
+[1m[94m34 |[0m             pass
+[1m[94m35 |[0m
+[1m[94m36 |[0m         class DataTable:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^[0m
+[1m[94m37 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:39:15
+   [1m[94m|[0m
+[1m[94m37 |[0m             pass
+[1m[94m38 |[0m
+[1m[94m39 |[0m         class Label:
+   [1m[94m|[0m               [1m[91m^^^^^[0m
+[1m[94m40 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:42:15
+   [1m[94m|[0m
+[1m[94m40 |[0m             pass
+[1m[94m41 |[0m
+[1m[94m42 |[0m         class Static:
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m43 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:45:15
+   [1m[94m|[0m
+[1m[94m43 |[0m             pass
+[1m[94m44 |[0m
+[1m[94m45 |[0m         class Button:
+   [1m[94m|[0m               [1m[91m^^^^^^[0m
+[1m[94m46 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:48:15
+   [1m[94m|[0m
+[1m[94m46 |[0m             pass
+[1m[94m47 |[0m
+[1m[94m48 |[0m         class Binding:
+   [1m[94m|[0m               [1m[91m^^^^^^^[0m
+[1m[94m49 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:51:15
+   [1m[94m|[0m
+[1m[94m49 |[0m             pass
+[1m[94m50 |[0m
+[1m[94m51 |[0m         class Message:
+   [1m[94m|[0m               [1m[91m^^^^^^^[0m
+[1m[94m52 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:54:15
+   [1m[94m|[0m
+[1m[94m52 |[0m             pass
+[1m[94m53 |[0m
+[1m[94m54 |[0m         class ComposeResult:
+   [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m55 |[0m             pass
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:255:17
+    [1m[94m|[0m
+[1m[94m253 |[0m             """Message sent when conflict is resolved."""
+[1m[94m254 |[0m
+[1m[94m255 |[0m             def __init__(self, conflict: Conflict, strategy: str) -> None:
+    [1m[94m|[0m                 [1m[91m^^^^^^^^[0m
+[1m[94m256 |[0m                 super().__init__()
+[1m[94m257 |[0m                 self.conflict = conflict
+    [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:263:17
+    [1m[94m|[0m
+[1m[94m261 |[0m             """Message sent when panel is closed."""
+[1m[94m262 |[0m
+[1m[94m263 |[0m             def __init__(self) -> None:
+    [1m[94m|[0m                 [1m[91m^^^^^^^^[0m
+[1m[94m264 |[0m                 super().__init__()
+    [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:276:13
+    [1m[94m|[0m
+[1m[94m274 |[0m         selected_conflict: object | None
+[1m[94m275 |[0m
+[1m[94m276 |[0m         def __init__(self, conflicts: list[object] | None = None, *args: object, **kwargs: object) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^[0m
+[1m[94m277 |[0m             self.conflicts = conflicts or []
+[1m[94m278 |[0m             self.selected_conflict = None
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:280:13
+    [1m[94m|[0m
+[1m[94m278 |[0m             self.selected_conflict = None
+[1m[94m279 |[0m
+[1m[94m280 |[0m         def compose(self) -> Iterator[object]:
+    [1m[94m|[0m             [1m[91m^^^^^^^[0m
+[1m[94m281 |[0m             return iter(())
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:283:13
+    [1m[94m|[0m
+[1m[94m281 |[0m             return iter(())
+[1m[94m282 |[0m
+[1m[94m283 |[0m         def on_mount(self) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^[0m
+[1m[94m284 |[0m             pass
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:286:13
+    [1m[94m|[0m
+[1m[94m284 |[0m             pass
+[1m[94m285 |[0m
+[1m[94m286 |[0m         def refresh_conflict_list(self) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m287 |[0m             pass
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:289:13
+    [1m[94m|[0m
+[1m[94m287 |[0m             pass
+[1m[94m288 |[0m
+[1m[94m289 |[0m         def on_data_table_row_selected(self, event: object) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m290 |[0m             pass
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:292:13
+    [1m[94m|[0m
+[1m[94m290 |[0m             pass
+[1m[94m291 |[0m
+[1m[94m292 |[0m         def show_conflict_detail(self, conflict: object) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m293 |[0m             pass
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:295:13
+    [1m[94m|[0m
+[1m[94m293 |[0m             pass
+[1m[94m294 |[0m
+[1m[94m295 |[0m         def action_resolve_local(self) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m296 |[0m             pass
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:298:13
+    [1m[94m|[0m
+[1m[94m296 |[0m             pass
+[1m[94m297 |[0m
+[1m[94m298 |[0m         def action_resolve_remote(self) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m299 |[0m             pass
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:301:13
+    [1m[94m|[0m
+[1m[94m299 |[0m             pass
+[1m[94m300 |[0m
+[1m[94m301 |[0m         def action_resolve_manual(self) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m302 |[0m             pass
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:304:13
+    [1m[94m|[0m
+[1m[94m302 |[0m             pass
+[1m[94m303 |[0m
+[1m[94m304 |[0m         def action_close(self) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^[0m
+[1m[94m305 |[0m             pass
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:307:13
+    [1m[94m|[0m
+[1m[94m305 |[0m             pass
+[1m[94m306 |[0m
+[1m[94m307 |[0m         def on_button_pressed(self, event: object) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^[0m
+[1m[94m308 |[0m             pass
+    [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:310:13
+    [1m[94m|[0m
+[1m[94m308 |[0m             pass
+[1m[94m309 |[0m
+[1m[94m310 |[0m         def post_message(self, message: object) -> None:
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^[0m
+[1m[94m311 |[0m             pass
+    [1m[94m|[0m
+
+[1m[91mD106 [0m[1mMissing docstring in public nested class[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:313:15
+    [1m[94m|[0m
+[1m[94m311 |[0m             pass
+[1m[94m312 |[0m
+[1m[94m313 |[0m         class ConflictResolved:
+    [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^^^^[0m
+[1m[94m314 |[0m             def __init__(self, conflict: object, strategy: str) -> None: ...
+    [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:314:17
+    [1m[94m|[0m
+[1m[94m313 |[0m         class ConflictResolved:
+[1m[94m314 |[0m             def __init__(self, conflict: object, strategy: str) -> None: ...
+    [1m[94m|[0m                 [1m[91m^^^^^^^^[0m
+[1m[94m315 |[0m
+[1m[94m316 |[0m         class ConflictPanelClosed:
+    [1m[94m|[0m
+
+[1m[91mD106 [0m[1mMissing docstring in public nested class[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:316:15
+    [1m[94m|[0m
+[1m[94m314 |[0m             def __init__(self, conflict: object, strategy: str) -> None: ...
+[1m[94m315 |[0m
+[1m[94m316 |[0m         class ConflictPanelClosed:
+    [1m[94m|[0m               [1m[91m^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m317 |[0m             def __init__(self) -> None: ...
+    [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+   [1m[94m-->[0m src/tracertm/tui/widgets/conflict_panel.py:317:17
+    [1m[94m|[0m
+[1m[94m316 |[0m         class ConflictPanelClosed:
+[1m[94m317 |[0m             def __init__(self) -> None: ...
+    [1m[94m|[0m                 [1m[91m^^^^^^^^[0m
+    [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/graph_view.py:16:9
+   [1m[94m|[0m
+[1m[94m14 |[0m     """Widget for displaying graph visualization."""
+[1m[94m15 |[0m
+[1m[94m16 |[0m     def __init__(self, *args: object, **kwargs: object) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m17 |[0m         if TEXTUAL_AVAILABLE:
+[1m[94m18 |[0m             super().__init__("Graph View", *args, **kwargs)
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/item_list.py:16:9
+   [1m[94m|[0m
+[1m[94m14 |[0m     """Widget for displaying items in a table."""
+[1m[94m15 |[0m
+[1m[94m16 |[0m     def __init__(self, *args: object, **kwargs: object) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m17 |[0m         if TEXTUAL_AVAILABLE:
+[1m[94m18 |[0m             super().__init__(*args, **kwargs)
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/state_display.py:17:9
+   [1m[94m|[0m
+[1m[94m15 |[0m     """Widget for displaying project state."""
+[1m[94m16 |[0m
+[1m[94m17 |[0m     def __init__(self, *args: object, **kwargs: object) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m18 |[0m         if TEXTUAL_AVAILABLE:
+[1m[94m19 |[0m             super().__init__(*args, **kwargs)
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/sync_status.py:29:11
+   [1m[94m|[0m
+[1m[94m27 |[0m     textual_available = False
+[1m[94m28 |[0m
+[1m[94m29 |[0m     class Static:
+   [1m[94m|[0m           [1m[91m^^^^^^[0m
+[1m[94m30 |[0m         is_mounted: bool = False
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/sync_status.py:32:13
+   [1m[94m|[0m
+[1m[94m30 |[0m         is_mounted: bool = False
+[1m[94m31 |[0m
+[1m[94m32 |[0m         def query_one(self, selector: str, expect_type: type[Any]) -> object:  # noqa: ANN401
+   [1m[94m|[0m             [1m[91m^^^^^^^^^[0m
+[1m[94m33 |[0m             msg = "Textual not available"
+[1m[94m34 |[0m             raise RuntimeError(msg)
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/sync_status.py:36:13
+   [1m[94m|[0m
+[1m[94m34 |[0m             raise RuntimeError(msg)
+[1m[94m35 |[0m
+[1m[94m36 |[0m         def update(self, content: str) -> None:
+   [1m[94m|[0m             [1m[91m^^^^^^[0m
+[1m[94m37 |[0m             return None
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/sync_status.py:39:13
+   [1m[94m|[0m
+[1m[94m37 |[0m             return None
+[1m[94m38 |[0m
+[1m[94m39 |[0m         def add_class(self, *classes: str) -> None:
+   [1m[94m|[0m             [1m[91m^^^^^^^^^[0m
+[1m[94m40 |[0m             return None
+   [1m[94m|[0m
+
+[1m[91mD102 [0m[1mMissing docstring in public method[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/sync_status.py:42:13
+   [1m[94m|[0m
+[1m[94m40 |[0m             return None
+[1m[94m41 |[0m
+[1m[94m42 |[0m         def remove_class(self, *classes: str) -> None:
+   [1m[94m|[0m             [1m[91m^^^^^^^^^^^^[0m
+[1m[94m43 |[0m             return None
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/sync_status.py:45:11
+   [1m[94m|[0m
+[1m[94m43 |[0m             return None
+[1m[94m44 |[0m
+[1m[94m45 |[0m     class Horizontal:
+   [1m[94m|[0m           [1m[91m^^^^^^^^^^[0m
+[1m[94m46 |[0m         def __init__(self, *children: object, **kwargs: object) -> None:
+[1m[94m47 |[0m             return None
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/sync_status.py:46:13
+   [1m[94m|[0m
+[1m[94m45 |[0m     class Horizontal:
+[1m[94m46 |[0m         def __init__(self, *children: object, **kwargs: object) -> None:
+   [1m[94m|[0m             [1m[91m^^^^^^^^[0m
+[1m[94m47 |[0m             return None
+   [1m[94m|[0m
+
+[1m[91mD101 [0m[1mMissing docstring in public class[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/sync_status.py:49:11
+   [1m[94m|[0m
+[1m[94m47 |[0m             return None
+[1m[94m48 |[0m
+[1m[94m49 |[0m     class reactive[T]:
+   [1m[94m|[0m           [1m[91m^^^^^^^^[0m
+[1m[94m50 |[0m         def __init__(self, default: T) -> None:
+[1m[94m51 |[0m             self.default = default
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/sync_status.py:50:13
+   [1m[94m|[0m
+[1m[94m49 |[0m     class reactive[T]:
+[1m[94m50 |[0m         def __init__(self, default: T) -> None:
+   [1m[94m|[0m             [1m[91m^^^^^^^^[0m
+[1m[94m51 |[0m             self.default = default
+   [1m[94m|[0m
+
+[1m[91mD107 [0m[1mMissing docstring in `__init__`[0m
+  [1m[94m-->[0m src/tracertm/tui/widgets/view_switcher.py:16:9
+   [1m[94m|[0m
+[1m[94m14 |[0m     """Widget for switching between views."""
+[1m[94m15 |[0m
+[1m[94m16 |[0m     def __init__(self, *args: object, **kwargs: object) -> None:
+   [1m[94m|[0m         [1m[91m^^^^^^^^[0m
+[1m[94m17 |[0m         if TEXTUAL_AVAILABLE:
+[1m[94m18 |[0m             super().__init__("Views", *args, **kwargs)
+   [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+  [1m[94m-->[0m src/tracertm/workflows/tasks.py:72:11
+   [1m[94m|[0m
+[1m[94m72 |[0m async def graph_snapshot_task(
+   [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m73 |[0m     project_id: str,
+[1m[94m74 |[0m     graph_id: str,
+   [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/workflows/tasks.py:107:11
+    [1m[94m|[0m
+[1m[94m107 |[0m async def graph_validation_task(project_id: str, graph_id: str, workflow_run_id: str | None = None) -> dict[str, object]:
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m108 |[0m     async with await _get_async_session() as session:
+[1m[94m109 |[0m         await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("running", started=True))
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/workflows/tasks.py:125:11
+    [1m[94m|[0m
+[1m[94m125 |[0m async def graph_export_task(project_id: str, workflow_run_id: str | None = None) -> dict[str, object]:
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^^^^^[0m
+[1m[94m126 |[0m     async with await _get_async_session() as session:
+[1m[94m127 |[0m         await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig(status="running", started=True))
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/workflows/tasks.py:144:11
+    [1m[94m|[0m
+[1m[94m144 |[0m async def graph_diff_task(
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m145 |[0m     project_id: str,
+[1m[94m146 |[0m     graph_id: str,
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/workflows/tasks.py:173:11
+    [1m[94m|[0m
+[1m[94m173 |[0m async def integration_sync_task(limit: int = 50, workflow_run_id: str | None = None) -> dict[str, object]:
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m174 |[0m     async with await _get_async_session() as session:
+[1m[94m175 |[0m         await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig(status="running", started=True))
+    [1m[94m|[0m
+
+[1m[91mD103 [0m[1mMissing docstring in public function[0m
+   [1m[94m-->[0m src/tracertm/workflows/tasks.py:192:11
+    [1m[94m|[0m
+[1m[94m192 |[0m async def integration_retry_task(limit: int = 50, workflow_run_id: str | None = None) -> dict[str, object]:
+    [1m[94m|[0m           [1m[91m^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m193 |[0m     async with await _get_async_session() as session:
+[1m[94m194 |[0m         await _update_workflow_run(session, workflow_run_id, WorkflowUpdateConfig("running", started=True))
+    [1m[94m|[0m
+
+Found 282 errors.

@@ -1,0 +1,390 @@
+---
+title: "Basic Examples"
+description: "Simple code examples for getting started with the TraceRTM JavaScript SDK"
+---
+
+# Basic Examples
+
+Simple, straightforward examples to get you started with the TraceRTM JavaScript SDK.
+
+## Setup
+
+All examples assume you have initialized the client:
+
+```typescript
+import { TraceRTMClient } from "@tracertm/sdk";
+
+const client = new TraceRTMClient({
+  apiKey: process.env.TRACERTM_API_KEY,
+});
+```
+
+---
+
+## Projects
+
+### List All Projects
+
+```typescript
+const projects = await client.projects.list();
+
+for (const project of projects.data) {
+  console.log(`${project.name} (${project.key})`);
+}
+```
+
+### Get a Project
+
+```typescript
+const project = await client.projects.get("proj_abc123");
+console.log(project.name);
+```
+
+### Create a Project
+
+```typescript
+const project = await client.projects.create({
+  name: "My New Project",
+  key: "MNP",
+  description: "A project for tracking requirements",
+});
+
+console.log(`Created: ${project.id}`);
+```
+
+### Update a Project
+
+```typescript
+const updated = await client.projects.update("proj_abc123", {
+  name: "Updated Project Name",
+});
+```
+
+### Delete a Project
+
+```typescript
+await client.projects.delete("proj_abc123");
+console.log("Project deleted");
+```
+
+---
+
+## Items
+
+### List Items in a Project
+
+```typescript
+const items = await client.items.list({
+  projectId: "proj_abc123",
+});
+
+console.log(`Found ${items.total} items`);
+```
+
+### Filter Items by Type
+
+```typescript
+const requirements = await client.items.list({
+  projectId: "proj_abc123",
+  type: "requirement",
+});
+```
+
+### Filter by Multiple Criteria
+
+```typescript
+const highPriorityBugs = await client.items.list({
+  projectId: "proj_abc123",
+  type: "bug",
+  priority: "high",
+  status: "open",
+});
+```
+
+### Get a Single Item
+
+```typescript
+const item = await client.items.get("item_abc123");
+console.log(item.title);
+```
+
+### Create an Item
+
+```typescript
+const requirement = await client.items.create({
+  projectId: "proj_abc123",
+  type: "requirement",
+  title: "User Login",
+  description: "Users must be able to log in with email and password",
+  priority: "high",
+});
+```
+
+### Create a Test Case
+
+```typescript
+const testCase = await client.items.create({
+  projectId: "proj_abc123",
+  type: "test_case",
+  title: "Verify Login Success",
+  description: "Test that valid credentials allow login",
+  priority: "high",
+  tags: ["auth", "smoke"],
+});
+```
+
+### Update an Item
+
+```typescript
+const updated = await client.items.update("item_abc123", {
+  status: "approved",
+  priority: "critical",
+});
+```
+
+### Update Item Tags
+
+```typescript
+// Add tags
+await client.items.update("item_abc123", {
+  addTags: ["reviewed", "v2"],
+});
+
+// Remove tags
+await client.items.update("item_abc123", {
+  removeTags: ["draft"],
+});
+
+// Replace all tags
+await client.items.update("item_abc123", {
+  tags: ["final", "released"],
+});
+```
+
+### Delete an Item
+
+```typescript
+await client.items.delete("item_abc123");
+```
+
+---
+
+## Links
+
+### List Links
+
+```typescript
+const links = await client.links.list({
+  projectId: "proj_abc123",
+});
+```
+
+### Get Links for an Item
+
+```typescript
+// Links where item is source
+const outgoing = await client.links.list({
+  sourceId: "item_abc123",
+});
+
+// Links where item is target
+const incoming = await client.links.list({
+  targetId: "item_abc123",
+});
+```
+
+### Create a Link
+
+```typescript
+const link = await client.links.create({
+  sourceId: "item_requirement",
+  targetId: "item_testcase",
+  type: "verified_by",
+});
+```
+
+### Create Different Link Types
+
+```typescript
+// Requirement traces to design
+await client.links.create({
+  sourceId: "item_req",
+  targetId: "item_design",
+  type: "traces_to",
+});
+
+// Story implements requirement
+await client.links.create({
+  sourceId: "item_story",
+  targetId: "item_req",
+  type: "implements",
+});
+
+// Epic is parent of stories
+await client.links.create({
+  sourceId: "item_epic",
+  targetId: "item_story",
+  type: "parent_of",
+});
+```
+
+### Delete a Link
+
+```typescript
+await client.links.delete("link_abc123");
+```
+
+---
+
+## Search
+
+### Basic Search
+
+```typescript
+const results = await client.search.items({
+  query: "authentication",
+});
+
+for (const hit of results.items) {
+  console.log(hit.item.title);
+}
+```
+
+### Search in Specific Project
+
+```typescript
+const results = await client.search.items({
+  query: "login",
+  projectIds: ["proj_abc123"],
+});
+```
+
+### Search by Type
+
+```typescript
+const results = await client.search.items({
+  query: "security",
+  types: ["requirement"],
+});
+```
+
+---
+
+## Reports
+
+### Get Coverage Report
+
+```typescript
+const coverage = await client.reports.coverage({
+  projectId: "proj_abc123",
+  sourceType: "requirement",
+  targetType: "test_case",
+});
+
+console.log(`Coverage: ${coverage.coveragePercent}%`);
+console.log(`Covered: ${coverage.coveredCount}`);
+console.log(`Uncovered: ${coverage.uncoveredCount}`);
+```
+
+### List Uncovered Items
+
+```typescript
+const coverage = await client.reports.coverage({
+  projectId: "proj_abc123",
+  sourceType: "requirement",
+  targetType: "test_case",
+});
+
+console.log("Requirements without tests:");
+for (const item of coverage.uncoveredItems) {
+  console.log(`- ${item.title}`);
+}
+```
+
+---
+
+## Error Handling
+
+### Basic Error Handling
+
+```typescript
+import { NotFoundError, ValidationError } from "@tracertm/sdk/errors";
+
+try {
+  const item = await client.items.get("item_nonexistent");
+} catch (error) {
+  if (error instanceof NotFoundError) {
+    console.log("Item not found");
+  } else if (error instanceof ValidationError) {
+    console.log("Invalid request");
+  } else {
+    throw error;
+  }
+}
+```
+
+### Check If Item Exists
+
+```typescript
+async function itemExists(id: string): Promise<boolean> {
+  try {
+    await client.items.get(id);
+    return true;
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return false;
+    }
+    throw error;
+  }
+}
+```
+
+---
+
+## Pagination
+
+### Iterate Through All Items
+
+```typescript
+async function getAllItems(projectId: string) {
+  const allItems = [];
+  let offset = 0;
+  const limit = 100;
+
+  while (true) {
+    const response = await client.items.list({
+      projectId,
+      limit,
+      offset,
+    });
+
+    allItems.push(...response.data);
+
+    if (!response.hasMore) {
+      break;
+    }
+
+    offset += limit;
+  }
+
+  return allItems;
+}
+```
+
+### Get First Page Only
+
+```typescript
+const firstPage = await client.items.list({
+  projectId: "proj_abc123",
+  limit: 10,
+  offset: 0,
+});
+```
+
+---
+
+## Related Documentation
+
+- [Advanced Examples](/docs/api-reference/sdks/javascript/advanced-examples) - Complex patterns
+- [API Reference](/docs/api-reference/sdks/javascript/api-reference) - Full API docs
+- [Error Handling](/docs/api-reference/sdks/javascript/error-handling) - Error types

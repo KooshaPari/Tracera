@@ -1,0 +1,224 @@
+---
+title: "TypeScript Style Guide"
+description: "TypeScript coding standards for TraceRTM frontend"
+keywords: [typescript, style, frontend, coding standards]
+---
+
+# TypeScript Style Guide
+
+TypeScript coding standards for the TraceRTM frontend.
+
+## Type Definitions
+
+### Interfaces
+
+```typescript
+// Use interfaces for object shapes
+interface Item {
+  id: string;
+  title: string;
+  view: 'requirements' | 'test-cases' | 'design';
+  status: string;
+  created_at: string;
+}
+```
+
+### Types
+
+```typescript
+// Use types for unions, intersections, etc.
+type ItemView = 'requirements' | 'test-cases' | 'design' | 'code';
+type ItemStatus = 'draft' | 'active' | 'review' | 'approved';
+
+// Intersection types
+type ItemWithLinks = Item & { links: Link[] };
+```
+
+## Component Types
+
+### React Components
+
+```typescript
+import React from 'react';
+
+interface ItemProps {
+  id: string;
+  title: string;
+  status: ItemStatus;
+  onUpdate?: (id: string) => void;
+}
+
+export function Item({ id, title, status, onUpdate }: ItemProps) {
+  return (
+    <div>
+      <h3>{title}</h3>
+      <span>{status}</span>
+    </div>
+  );
+}
+```
+
+### Function Components
+
+```typescript
+// Prefer function declarations
+export function ItemList({ items }: { items: Item[] }) {
+  return (
+    <ul>
+      {items.map(item => (
+        <li key={item.id}>{item.title}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+## Type Safety
+
+### Avoid `any`
+
+```typescript
+// Bad
+function processData(data: any) {
+  return data.value;
+}
+
+// Good
+function processData(data: { value: string }) {
+  return data.value;
+}
+```
+
+### Use Type Assertions Sparingly
+
+```typescript
+// Only when necessary
+const item = data as Item;
+
+// Better - validate first
+function isItem(data: unknown): data is Item {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'id' in data &&
+    'title' in data
+  );
+}
+```
+
+## Naming Conventions
+
+### Variables and Functions
+
+```typescript
+// camelCase for variables and functions
+const itemId = 'item_123';
+function getItemById(id: string) {
+  return items.find(item => item.id === id);
+}
+```
+
+### Components
+
+```typescript
+// PascalCase for components
+export function ItemCard() {
+  return <div>Item</div>;
+}
+```
+
+### Constants
+
+```typescript
+// UPPER_SNAKE_CASE for constants
+const MAX_ITEMS_PER_PAGE = 100;
+const API_BASE_URL = 'https://api.tracertm.dev';
+```
+
+## Code Organization
+
+### Imports
+
+```typescript
+// 1. React
+import React, { useState, useEffect } from 'react';
+
+// 2. Third-party
+import { useQuery } from '@tanstack/react-query';
+import clsx from 'clsx';
+
+// 3. Local
+import { Item } from '@/types';
+import { ItemCard } from '@/components/ItemCard';
+```
+
+### File Structure
+
+```typescript
+// 1. Imports
+import React from 'react';
+
+// 2. Types/Interfaces
+interface Props {
+  // ...
+}
+
+// 3. Component
+export function MyComponent({ ... }: Props) {
+  // 4. Hooks
+  const [state, setState] = useState();
+  
+  // 5. Effects
+  useEffect(() => {
+    // ...
+  }, []);
+  
+  // 6. Handlers
+  const handleClick = () => {
+    // ...
+  };
+  
+  // 7. Render
+  return <div>...</div>;
+}
+```
+
+## Best Practices
+
+### 1. Use Type Inference
+
+```typescript
+// Good - type inferred
+const items = ['item1', 'item2'];  // string[]
+
+// Only annotate when necessary
+const items: string[] = [];
+```
+
+### 2. Use Readonly
+
+```typescript
+// Immutable arrays
+const items: readonly Item[] = [item1, item2];
+
+// Readonly properties
+interface Config {
+  readonly apiUrl: string;
+  readonly timeout: number;
+}
+```
+
+### 3. Use Enums for Constants
+
+```typescript
+enum ItemView {
+  Requirements = 'requirements',
+  TestCases = 'test-cases',
+  Design = 'design'
+}
+```
+
+## Related Documentation
+
+- [Code Style](./01-code-style) - General code style
+- [Frontend Development](../../developer/frontend) - Frontend guide

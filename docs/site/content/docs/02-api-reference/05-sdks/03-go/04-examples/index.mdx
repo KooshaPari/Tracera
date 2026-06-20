@@ -1,0 +1,318 @@
+---
+title: "Examples Overview"
+description: "Code examples for the TraceRTM Go SDK"
+---
+
+# Examples Overview
+
+This section contains practical code examples for using the TraceRTM Go SDK.
+
+## Quick Links
+
+- [Basic Examples](/docs/api-reference/sdks/go/basic-examples) - Getting started examples
+- [Advanced Examples](/docs/api-reference/sdks/go/advanced-examples) - Complex use cases
+
+---
+
+## Getting Started Example
+
+Create a complete traceability workflow:
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "os"
+    "time"
+
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    // Initialize client
+    client := tracertm.NewClient(
+        os.Getenv("TRACERTM_API_KEY"),
+        tracertm.WithTimeout(30*time.Second),
+    )
+
+    ctx := context.Background()
+
+    // Create a project
+    project, err := client.Projects.Create(ctx, &tracertm.CreateProjectInput{
+        Name:        "Example Project",
+        Key:         "EXAMPLE",
+        Description: "Demonstrating SDK usage",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Created project: %s\n", project.ID)
+
+    // Create a requirement
+    requirement, err := client.Items.Create(ctx, project.ID, &tracertm.CreateItemInput{
+        Type:        "requirement",
+        Title:       "User Authentication",
+        Description: "System must authenticate users securely",
+        Priority:    "high",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Created requirement: %s\n", requirement.Key)
+
+    // Create a test case
+    testCase, err := client.Items.Create(ctx, project.ID, &tracertm.CreateItemInput{
+        Type:        "test_case",
+        Title:       "Verify User Login",
+        Description: "Test that users can log in with valid credentials",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Created test case: %s\n", testCase.Key)
+
+    // Create a traceability link
+    link, err := client.Links.Create(ctx, &tracertm.CreateLinkInput{
+        SourceID: requirement.ID,
+        TargetID: testCase.ID,
+        LinkType: "verified_by",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Created link: %s\n", link.ID)
+
+    // Generate coverage report
+    coverage, err := client.Reports.Coverage(ctx, &tracertm.CoverageReportInput{
+        ProjectID:  project.ID,
+        SourceType: "requirement",
+        TargetType: "test_case",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Coverage: %.1f%%\n", coverage.CoveragePercent)
+}
+```
+
+---
+
+## CRUD Operations
+
+### Create Operations
+
+```go
+// Create project
+project, err := client.Projects.Create(ctx, &tracertm.CreateProjectInput{
+    Name:        "My Project",
+    Key:         "MYPROJ",
+    Description: "A sample project",
+})
+
+// Create item
+item, err := client.Items.Create(ctx, project.ID, &tracertm.CreateItemInput{
+    Type:        "requirement",
+    Title:       "Feature Title",
+    Description: "Feature description",
+    Priority:    "high",
+    Tags:        []string{"feature", "v1"},
+})
+
+// Create link
+link, err := client.Links.Create(ctx, &tracertm.CreateLinkInput{
+    SourceID: "item_source",
+    TargetID: "item_target",
+    LinkType: "verified_by",
+})
+```
+
+### Read Operations
+
+```go
+// Get single item
+project, err := client.Projects.Get(ctx, "proj_abc123")
+item, err := client.Items.Get(ctx, "item_abc123")
+link, err := client.Links.Get(ctx, "link_abc123")
+
+// List with filters
+items, err := client.Items.List(ctx, projectID, &tracertm.ListItemsOptions{
+    Type:     "requirement",
+    Status:   "approved",
+    Priority: "high",
+    Limit:    50,
+})
+```
+
+### Update Operations
+
+```go
+// Update project
+project, err := client.Projects.Update(ctx, "proj_abc123", &tracertm.UpdateProjectInput{
+    Name:        "Updated Name",
+    Description: "Updated description",
+})
+
+// Update item
+item, err := client.Items.Update(ctx, "item_abc123", &tracertm.UpdateItemInput{
+    Title:    "Updated Title",
+    Priority: "critical",
+})
+```
+
+### Delete Operations
+
+```go
+// Delete single
+err := client.Projects.Delete(ctx, "proj_abc123")
+err := client.Items.Delete(ctx, "item_abc123")
+err := client.Links.Delete(ctx, "link_abc123")
+
+// Bulk delete
+result, err := client.Items.BulkDelete(ctx, []string{"item_1", "item_2"})
+fmt.Printf("Deleted: %d\n", result.Deleted)
+```
+
+---
+
+## Iteration Pattern
+
+Iterate through large datasets:
+
+```go
+// Iterate all items
+iter := client.Items.Iterate(ctx, projectID, &tracertm.ListItemsOptions{
+    Type: "requirement",
+})
+
+for iter.Next() {
+    item := iter.Item()
+    fmt.Printf("%s: %s\n", item.Key, item.Title)
+}
+
+if err := iter.Err(); err != nil {
+    log.Fatal(err)
+}
+```
+
+---
+
+## Error Handling Example
+
+```go
+import "errors"
+
+item, err := client.Items.Get(ctx, "item_nonexistent")
+if err != nil {
+    var notFoundErr *tracertm.NotFoundError
+    var authErr *tracertm.AuthenticationError
+    var rateLimitErr *tracertm.RateLimitError
+    var validationErr *tracertm.ValidationError
+
+    switch {
+    case errors.As(err, &notFoundErr):
+        fmt.Printf("Item not found: %s\n", notFoundErr.ResourceID)
+
+    case errors.As(err, &authErr):
+        fmt.Println("Authentication failed")
+
+    case errors.As(err, &rateLimitErr):
+        fmt.Printf("Rate limited. Retry after %d seconds\n", rateLimitErr.RetryAfter)
+
+    case errors.As(err, &validationErr):
+        fmt.Printf("Validation failed: %s\n", validationErr.Message)
+        for _, f := range validationErr.Fields {
+            fmt.Printf("  - %s: %s\n", f.Field, f.Message)
+        }
+
+    default:
+        fmt.Printf("Error: %v\n", err)
+    }
+    return
+}
+```
+
+---
+
+## Bulk Operations
+
+```go
+// Bulk create
+items, err := client.Items.BulkCreate(ctx, projectID, []*tracertm.CreateItemInput{
+    {Type: "requirement", Title: "Req 1", Priority: "high"},
+    {Type: "requirement", Title: "Req 2", Priority: "medium"},
+    {Type: "requirement", Title: "Req 3", Priority: "low"},
+})
+
+// Bulk update
+results, err := client.Items.BulkUpdate(ctx, []*tracertm.BulkUpdateInput{
+    {ID: "item_1", Update: &tracertm.UpdateItemInput{Priority: "high"}},
+    {ID: "item_2", Update: &tracertm.UpdateItemInput{Priority: "high"}},
+})
+
+// Bulk create links
+links, err := client.Links.BulkCreate(ctx, []*tracertm.CreateLinkInput{
+    {SourceID: "req_1", TargetID: "tc_1", LinkType: "verified_by"},
+    {SourceID: "req_1", TargetID: "tc_2", LinkType: "verified_by"},
+})
+```
+
+---
+
+## Search Example
+
+```go
+// Full-text search
+results, err := client.Search.Items(ctx, &tracertm.SearchInput{
+    Query:     "authentication security",
+    ProjectID: projectID,
+    Type:      "requirement",
+    Limit:     20,
+})
+
+for _, result := range results.Data {
+    fmt.Printf("%s: %s (score: %.2f)\n", result.Key, result.Title, result.Score)
+}
+
+// Get suggestions
+suggestions, err := client.Search.Suggest(ctx, &tracertm.SuggestInput{
+    Query:     "auth",
+    ProjectID: projectID,
+    Limit:     5,
+})
+```
+
+---
+
+## Reports Example
+
+```go
+// Coverage report
+coverage, err := client.Reports.Coverage(ctx, &tracertm.CoverageReportInput{
+    ProjectID:  projectID,
+    SourceType: "requirement",
+    TargetType: "test_case",
+})
+fmt.Printf("Coverage: %.1f%% (%d/%d)\n",
+    coverage.CoveragePercent,
+    coverage.CoveredCount,
+    coverage.TotalSources)
+
+// Impact analysis
+impact, err := client.Reports.ImpactAnalysis(ctx, &tracertm.ImpactAnalysisInput{
+    ItemID:    "item_abc123",
+    Direction: "downstream",
+    Depth:     3,
+})
+fmt.Printf("Items impacted: %d\n", len(impact.ImpactedItems))
+```
+
+---
+
+## Related Documentation
+
+- [Basic Examples](/docs/api-reference/sdks/go/basic-examples) - Step-by-step examples
+- [Advanced Examples](/docs/api-reference/sdks/go/advanced-examples) - Complex scenarios
+- [API Reference](/docs/api-reference/sdks/go/api-reference) - Complete API reference

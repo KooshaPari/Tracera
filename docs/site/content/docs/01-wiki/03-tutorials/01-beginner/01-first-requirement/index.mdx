@@ -1,0 +1,523 @@
+---
+title: "Your First Requirement"
+description: "A hands-on guide to creating and managing your first requirement in TracerTM"
+---
+
+# Your First Requirement
+
+Learn how to create, manage, and organize requirements in TracerTM through a practical example: building a user authentication feature.
+
+## What is a Requirement in TracerTM?
+
+In TracerTM, requirements are represented as **Items** - traceable artifacts that can represent features, stories, epics, tasks, and more. Requirements live in the **FEATURE** view and form the foundation of your traceability matrix.
+
+Unlike traditional requirements management tools, TracerTM:
+- **Stores requirements as Markdown files** in your project directory
+- **Tracks them in a SQLite database** for querying and relationships
+- **Links requirements to code, tests, and APIs** for full traceability
+- **Supports hierarchical organization** (epics → stories → tasks)
+
+Think of requirements as the "what" and "why" of your project, which you'll later link to the "how" (code), "verification" (tests), and "interface" (APIs).
+
+## Prerequisites
+
+Before creating your first requirement, ensure you have:
+- TracerTM installed (`pip install tracertm` or from source)
+- Basic familiarity with command line operations
+- A code editor for viewing Markdown files
+
+## Step 1: Create Your First Project
+
+Every requirement belongs to a project. Let's create a project for our authentication feature:
+
+```bash
+rtm project init "AuthenticationSystem" --description "User authentication and authorization system"
+```
+
+This command:
+- Creates a new project named "AuthenticationSystem"
+- Initializes a `.trace/` directory in your current folder
+- Sets up the following structure:
+  ```
+  AuthenticationSystem/
+  ├─ .trace/
+  │  ├─ tracertm.db         # SQLite database
+  │  ├─ project.yaml        # Project configuration
+  │  └─ .meta/              # Metadata storage
+  ├─ epics/                 # Epic-level requirements
+  ├─ stories/               # User stories
+  ├─ tasks/                 # Task breakdowns
+  └─ tests/                 # Test definitions
+  ```
+
+**Important**: The `.trace/` directory is your project's "brain" - it contains the database and configuration. Always run TracerTM commands from within your project directory.
+
+## Step 2: Understand Requirement Types
+
+TracerTM supports different requirement types in the FEATURE view:
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| **epic** | Large features spanning multiple stories | "User Authentication System" |
+| **feature** | Mid-level functionality | "Password Reset Flow" |
+| **story** | User-focused requirements | "As a user, I want to login with email" |
+| **task** | Implementation steps | "Create login API endpoint" |
+| **bug** | Defects or issues | "Login fails with special characters" |
+
+**Hierarchy**: Typically, you organize requirements as: `epic` → `feature` or `story` → `task`
+
+For our tutorial, we'll create an epic, then break it down into stories and tasks.
+
+## Step 3: Create Your First Requirement (Epic)
+
+Let's create a high-level epic for our authentication system using the CLI:
+
+```bash
+rtm item create "User Authentication System" \
+  --view FEATURE \
+  --type epic \
+  --description "Complete user authentication including login, registration, password reset, and session management" \
+  --priority high \
+  --status todo
+```
+
+**Command breakdown**:
+- `rtm item create` - Creates a new item
+- `"User Authentication System"` - The requirement title
+- `--view FEATURE` - Specifies this is a feature requirement (vs CODE, TEST, API, etc.)
+- `--type epic` - This is an epic-level requirement
+- `--description` - Detailed description of what this requirement covers
+- `--priority high` - Business priority (low, medium, high)
+- `--status todo` - Current state (todo, in_progress, done, blocked)
+
+**Output**:
+```
+✓ Created item: EPIC-001
+  ID: 550e8400-e29b-41d4-a716-446655440000
+  Title: User Authentication System
+  Type: epic (FEATURE)
+  Status: todo
+  Priority: high
+  Location: /path/to/AuthenticationSystem/.trace/items/EPIC-001.md
+```
+
+Notice:
+- **EPIC-001**: Auto-generated external ID for easy reference
+- **UUID**: Unique internal identifier
+- **Markdown file**: Your requirement is stored as `EPIC-001.md`
+
+## Step 4: View Your Requirement
+
+Your requirement exists in two places:
+
+### In the Database (Structured)
+
+Query using the CLI:
+
+```bash
+rtm item get EPIC-001
+```
+
+Or list all requirements:
+
+```bash
+rtm item list --view FEATURE
+```
+
+### As a Markdown File (Human-Readable)
+
+Open `.trace/items/EPIC-001.md`:
+
+```markdown
+---
+id: 550e8400-e29b-41d4-a716-446655440000
+external_id: EPIC-001
+title: User Authentication System
+view: FEATURE
+type: epic
+status: todo
+priority: high
+created_at: 2025-12-07T10:30:00Z
+updated_at: 2025-12-07T10:30:00Z
+---
+
+# User Authentication System
+
+Complete user authentication including login, registration, password reset, and session management
+
+## Metadata
+- **Status**: todo
+- **Priority**: high
+- **Type**: epic
+```
+
+You can edit this file directly, and TracerTM will sync changes back to the database on save (if file watching is enabled).
+
+## Step 5: Create a Requirement via TUI
+
+The TUI (Text User Interface) provides an interactive way to create requirements. Launch it:
+
+```bash
+rtm tui
+```
+
+**In the TUI**:
+
+1. **Navigate to Items**: Use arrow keys or press `i` to focus the items panel
+2. **Create New Item**: Press `n` for "new item"
+3. **Fill in the form**:
+   ```
+   Title: User Login with Email and Password
+   View: FEATURE
+   Type: story
+   Description: As a user, I want to login using my email and password so I can access my account
+   Priority: high
+   Status: todo
+   Parent: EPIC-001  (links this story to your epic)
+   ```
+4. **Save**: Press `Ctrl+S` or select "Create"
+
+The TUI provides:
+- **Real-time validation** of fields
+- **Autocomplete** for parent items, types, and statuses
+- **Visual hierarchy** showing parent-child relationships
+- **Live preview** of your requirement
+
+Exit the TUI with `q` or `Ctrl+C`.
+
+## Step 6: Add Rich Metadata
+
+Requirements can include custom metadata beyond the basic fields. Let's add tags, acceptance criteria, and stakeholder info:
+
+```bash
+rtm item update STORY-001 \
+  --metadata '{
+    "tags": ["security", "authentication", "mvp"],
+    "acceptance_criteria": [
+      "User can login with valid email/password",
+      "Invalid credentials show error message",
+      "Account locks after 5 failed attempts",
+      "Session persists for 7 days"
+    ],
+    "stakeholders": ["product@company.com", "security@company.com"],
+    "estimated_hours": 16
+  }'
+```
+
+**Metadata best practices**:
+- Use **tags** for categorization and filtering
+- Define **acceptance_criteria** for clear "done" conditions
+- Track **stakeholders** for communication
+- Add **estimated_hours** or story points for planning
+
+Query items by metadata:
+
+```bash
+rtm item list --view FEATURE --filter '{"tags": {"contains": "mvp"}}'
+```
+
+## Step 7: Create Child Requirements (Tasks)
+
+Break down your story into actionable tasks:
+
+```bash
+# Task 1: Create login endpoint
+rtm item create "Create POST /api/auth/login endpoint" \
+  --view FEATURE \
+  --type task \
+  --parent STORY-001 \
+  --priority high \
+  --status todo \
+  --owner "dev@company.com"
+
+# Task 2: Implement password validation
+rtm item create "Implement bcrypt password hashing" \
+  --view FEATURE \
+  --type task \
+  --parent STORY-001 \
+  --priority high \
+  --status todo \
+  --owner "dev@company.com"
+
+# Task 3: Add rate limiting
+rtm item create "Add rate limiting to prevent brute force" \
+  --view FEATURE \
+  --type task \
+  --parent STORY-001 \
+  --priority medium \
+  --status todo \
+  --owner "security@company.com"
+```
+
+**Note**: The `--parent` flag creates a hierarchical relationship:
+```
+EPIC-001: User Authentication System
+└─ STORY-001: User Login with Email and Password
+   ├─ TASK-001: Create POST /api/auth/login endpoint
+   ├─ TASK-002: Implement bcrypt password hashing
+   └─ TASK-003: Add rate limiting to prevent brute force
+```
+
+## Step 8: View and Edit Requirements
+
+### List All Requirements in a Hierarchy
+
+```bash
+rtm item list --view FEATURE --tree
+```
+
+Output:
+```
+EPIC-001: User Authentication System [todo] (high)
+├─ STORY-001: User Login with Email and Password [todo] (high)
+│  ├─ TASK-001: Create POST /api/auth/login endpoint [todo] (high)
+│  ├─ TASK-002: Implement bcrypt password hashing [todo] (high)
+│  └─ TASK-003: Add rate limiting to prevent brute force [todo] (medium)
+```
+
+### Update a Requirement
+
+Change status when work begins:
+
+```bash
+rtm item update TASK-001 --status in_progress
+```
+
+Update multiple fields:
+
+```bash
+rtm item update TASK-001 \
+  --status in_progress \
+  --priority high \
+  --owner "alice@company.com" \
+  --metadata '{"sprint": "Sprint 1", "story_points": 5}'
+```
+
+### Edit via Markdown File
+
+You can also directly edit `.trace/items/TASK-001.md`:
+
+```markdown
+---
+status: in_progress
+owner: alice@company.com
+---
+
+# Create POST /api/auth/login endpoint
+
+## Implementation Notes
+- Use Express.js router
+- Validate email format with regex
+- Return JWT token on success
+- Log failed attempts for security monitoring
+```
+
+Save the file, and TracerTM will detect changes (if file watching is enabled via `rtm watch`).
+
+## Step 9: Organize Requirements Hierarchically
+
+Good requirement organization follows this pattern:
+
+```
+Epic (Strategic)
+└─ Stories (User-Focused)
+   └─ Tasks (Implementation)
+```
+
+**Example hierarchy for our authentication system**:
+
+```bash
+# Epic
+rtm item create "User Authentication System" --view FEATURE --type epic
+
+# Stories under epic
+rtm item create "User Registration" --view FEATURE --type story --parent EPIC-001
+rtm item create "User Login" --view FEATURE --type story --parent EPIC-001
+rtm item create "Password Reset" --view FEATURE --type story --parent EPIC-001
+rtm item create "Session Management" --view FEATURE --type story --parent EPIC-001
+
+# Tasks under "User Registration" story
+rtm item create "Create user registration form" --view FEATURE --type task --parent STORY-002
+rtm item create "Validate email uniqueness" --view FEATURE --type task --parent STORY-002
+rtm item create "Send verification email" --view FEATURE --type task --parent STORY-002
+```
+
+**Visualization**:
+```
+EPIC-001: User Authentication System
+├─ STORY-001: User Login
+│  ├─ TASK-001: Create login endpoint
+│  ├─ TASK-002: Implement password hashing
+│  └─ TASK-003: Add rate limiting
+├─ STORY-002: User Registration
+│  ├─ TASK-004: Create registration form
+│  ├─ TASK-005: Validate email uniqueness
+│  └─ TASK-006: Send verification email
+├─ STORY-003: Password Reset
+└─ STORY-004: Session Management
+```
+
+**Query by hierarchy**:
+
+```bash
+# Get all children of an epic
+rtm item list --parent EPIC-001
+
+# Get all tasks (no children)
+rtm item list --view FEATURE --type task
+
+# Get all in-progress items
+rtm item list --status in_progress
+```
+
+## Step 10: Best Practices and Common Mistakes
+
+### Best Practices
+
+1. **Use Descriptive Titles**
+   - Good: "User can reset password via email link"
+   - Bad: "Password stuff"
+
+2. **Set Clear Acceptance Criteria**
+   ```bash
+   --metadata '{"acceptance_criteria": [
+     "User receives email within 60 seconds",
+     "Reset link expires after 1 hour",
+     "Old password no longer works after reset"
+   ]}'
+   ```
+
+3. **Maintain Hierarchy**
+   - Epics for large features (1-3 months)
+   - Stories for user-facing value (1-2 weeks)
+   - Tasks for implementation steps (1-3 days)
+
+4. **Use Consistent Naming**
+   - Stories: "As a [role], I want [action] so that [benefit]"
+   - Tasks: "[Verb] [object]" (e.g., "Create login endpoint")
+
+5. **Track Ownership**
+   - Always set `--owner` for accountability
+
+### Common Mistakes to Avoid
+
+1. **Creating Orphan Requirements**
+   ```bash
+   # Bad: No parent specified
+   rtm item create "Fix login bug" --view FEATURE --type task
+
+   # Good: Link to parent story
+   rtm item create "Fix login bug" --view FEATURE --type task --parent STORY-001
+   ```
+
+2. **Mixing Views**
+   ```bash
+   # Bad: Creating code items in FEATURE view
+   rtm item create "auth.py" --view FEATURE --type file
+
+   # Good: Use correct view
+   rtm item create "auth.py" --view CODE --type file
+   ```
+
+3. **Forgetting to Update Status**
+   - Stale statuses break traceability
+   - Update status when work begins/ends
+   - Use `rtm item update TASK-001 --status done`
+
+4. **Not Using Metadata**
+   ```bash
+   # Missed opportunity: No tags or criteria
+   rtm item create "Login feature" --view FEATURE --type story
+
+   # Better: Rich context
+   rtm item create "Login feature" --view FEATURE --type story \
+     --metadata '{"tags": ["auth", "mvp"], "acceptance_criteria": [...]}'
+   ```
+
+5. **Ignoring the `.trace/` Directory**
+   - Never delete `.trace/` - it contains your database
+   - Commit `.trace/project.yaml` to version control
+   - Consider gitignoring `.trace/tracertm.db` (binary)
+
+## Next Steps
+
+Now that you've created your first requirement, continue your TracerTM journey:
+
+### Link to Code
+When you write implementation code:
+```bash
+rtm item create "auth.py" --view CODE --type file
+rtm link create --from CODE-001 --to TASK-001 --type implements
+```
+
+### Link to Tests
+When you write tests:
+```bash
+rtm item create "test_login.py" --view TEST --type test_case
+rtm link create --from TEST-001 --to STORY-001 --type validates
+```
+
+### Link to APIs
+When you define APIs:
+```bash
+rtm item create "POST /api/auth/login" --view API --type endpoint
+rtm link create --from API-001 --to STORY-001 --type exposes
+```
+
+### Generate Reports
+View traceability coverage:
+```bash
+rtm report matrix
+rtm report coverage --view FEATURE
+```
+
+### Advanced Topics
+- [Creating Links Between Items](/docs/wiki/tutorials/beginner/02-first-link)
+- [Understanding Views and Item Types](/docs/wiki/concepts/views)
+- [Working with the TUI](/docs/wiki/tutorials/intermediate/tui-deep-dive)
+- [Markdown File Structure](/docs/wiki/concepts/storage)
+- [Querying and Filtering Items](/docs/wiki/tutorials/intermediate/advanced-queries)
+
+## Quick Reference
+
+```bash
+# Create a project
+rtm project init "MyProject"
+
+# Create requirements
+rtm item create "Title" --view FEATURE --type epic
+rtm item create "Title" --view FEATURE --type story --parent EPIC-001
+rtm item create "Title" --view FEATURE --type task --parent STORY-001
+
+# List requirements
+rtm item list --view FEATURE
+rtm item list --view FEATURE --tree
+rtm item list --parent EPIC-001
+
+# Update requirements
+rtm item update TASK-001 --status in_progress
+rtm item update TASK-001 --priority high --owner "user@example.com"
+
+# View requirements
+rtm item get TASK-001
+cat .trace/items/TASK-001.md
+
+# Launch TUI
+rtm tui
+```
+
+## Summary
+
+You've learned:
+- What requirements are in TracerTM (Items in the FEATURE view)
+- How to create a project and initialize the `.trace/` directory
+- Different requirement types (epic, feature, story, task, bug)
+- Creating requirements via CLI and TUI
+- Adding metadata (priority, status, tags, acceptance criteria)
+- Organizing requirements hierarchically (parent-child relationships)
+- Viewing and editing requirements (database queries and Markdown files)
+- Best practices and common pitfalls
+
+Requirements are the foundation of traceability. By creating clear, well-organized requirements and linking them to code, tests, and APIs, you'll achieve full visibility into your project's implementation status and impact analysis.
+
+Happy tracing!

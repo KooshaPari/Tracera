@@ -1,0 +1,163 @@
+---
+title: "Docker Deployment"
+description: "Deploy TraceRTM using Docker"
+keywords: [docker, deployment, containers, production]
+---
+
+# Docker Deployment
+
+Deploy TraceRTM using Docker for containerized deployments.
+
+## Dockerfile
+
+### Multi-Stage Build
+
+```dockerfile
+# Build stage
+FROM python:3.12-slim as builder
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --user -r requirements.txt
+
+# Runtime stage
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Copy dependencies
+COPY --from=builder /root/.local /root/.local
+
+# Copy application
+COPY . .
+
+# Set PATH
+ENV PATH=/root/.local/bin:$PATH
+
+# Expose port
+EXPOSE 8000
+
+# Run application
+CMD ["uvicorn", "tracertm.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+## Docker Compose
+
+### Production Configuration
+
+```yaml
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/tracertm
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+    depends_on:
+      - db
+      - redis
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  db:
+    image: postgres:14
+    environment:
+      - POSTGRES_DB=tracertm
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    restart: always
+
+volumes:
+  postgres_data:
+  redis_data:
+```
+
+## Building Images
+
+### Build Image
+
+```bash
+# Build image
+docker build -t tracertm:latest .
+
+# Tag for registry
+docker tag tracertm:latest registry.example.com/tracertm:2.4.0
+```
+
+### Push to Registry
+
+```bash
+# Push to Docker Hub
+docker push tracertm:2.4.0
+
+# Push to private registry
+docker push registry.example.com/tracertm:2.4.0
+```
+
+## Running Containers
+
+### Start Services
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f api
+
+# Check status
+docker-compose ps
+```
+
+## Production Considerations
+
+### Health Checks
+
+```yaml
+services:
+  api:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+### Resource Limits
+
+```yaml
+services:
+  api:
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+```
+
+## Related Documentation
+
+- [Docker Setup](../../02-setup/03-docker-setup) - Development setup
+- [Docker Compose](../../02-setup/03a-docker-compose) - Compose configuration
+- [Kubernetes Deployment](./02-kubernetes) - K8s deployment

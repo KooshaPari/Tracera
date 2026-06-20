@@ -1,0 +1,119 @@
+---
+title: "Configuration Reference"
+description: "Complete configuration reference for TraceRTM"
+keywords: [configuration, config, settings, reference]
+---
+
+# Configuration Reference
+
+Complete reference for all TraceRTM configuration options.
+
+## Configuration Files
+
+### .env File
+
+```bash
+# Database
+DATABASE_URL=postgresql://user:pass@host:5432/tracertm
+
+# API
+API_URL=http://localhost:8000
+SECRET_KEY=your-secret-key
+JWT_SECRET=your-jwt-secret
+
+# Redis
+REDIS_URL=redis://localhost:6379/0
+
+# Email
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=user@example.com
+SMTP_PASSWORD=password
+
+# Storage
+STORAGE_BACKEND=local
+STORAGE_PATH=/var/tracertm/storage
+
+# Logging
+LOG_LEVEL=INFO
+LOG_FORMAT=json
+```
+
+## Configuration Options
+
+### Database
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | Required |
+| `DB_POOL_SIZE` | Connection pool size | 20 |
+| `DB_MAX_OVERFLOW` | Max overflow connections | 10 |
+
+### API
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `API_URL` | API base URL | `http://localhost:8000` |
+| `SECRET_KEY` | Secret key for encryption | Required |
+| `JWT_SECRET` | JWT signing secret | Required |
+| `JWT_ALGORITHM` | JWT algorithm | `HS256` |
+| `JWT_EXPIRATION` | Token expiration (seconds) | 3600 |
+
+### Redis
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `REDIS_URL` | Redis connection URL | Optional |
+| `REDIS_PASSWORD` | Redis password | None |
+| `REDIS_MAX_CONNECTIONS` | Max connections | 50 |
+
+### Email
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SMTP_HOST` | SMTP server host | Required if enabled |
+| `SMTP_PORT` | SMTP port | 587 |
+| `SMTP_USER` | SMTP username | Required |
+| `SMTP_PASSWORD` | SMTP password | Required |
+| `SMTP_FROM` | From email address | Required |
+
+### Storage
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `STORAGE_BACKEND` | Storage backend (local/s3) | `local` |
+| `STORAGE_PATH` | Local storage path | `/var/tracertm/storage` |
+| `AWS_ACCESS_KEY_ID` | AWS access key (S3) | Required for S3 |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key (S3) | Required for S3 |
+| `AWS_S3_BUCKET` | S3 bucket name | Required for S3 |
+
+### Logging
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `LOG_LEVEL` | Log level (DEBUG/INFO/WARNING/ERROR) | `INFO` |
+| `LOG_FORMAT` | Log format (json/text) | `text` |
+| `LOG_FILE` | Log file path | None |
+
+## Environment-Specific Configs
+
+### Development
+
+```bash
+DATABASE_URL=postgresql://localhost:5432/tracertm_dev
+LOG_LEVEL=DEBUG
+DEBUG=true
+```
+
+### Production
+
+```bash
+DATABASE_URL=postgresql://prod-db:5432/tracertm_prod
+LOG_LEVEL=WARNING
+SECRET_KEY=production-secret-key
+```
+
+## Related Documentation
+
+- [Environment Variables](./05-environment-variables) - Environment setup
+- [Prerequisites](./01-prerequisites) - Required software

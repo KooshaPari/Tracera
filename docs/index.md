@@ -1,14 +1,27 @@
-# Tracera — Documentation Index
-
-This index lists the design notes, ADRs, and supporting documentation maintained alongside this repository.
-
-## Top-level documents
-
-- [`ARCHITECTURE.md`](ARCHITECTURE.md) — Architecture
-- [`ML-OPERATIONS.md`](ML-OPERATIONS.md) — Ml Operations
-- [`SSOT.md`](SSOT.md) — Ssot
-- [`evidence-contract.md`](evidence-contract.md) — Evidence Contract
-
+---
+audience: [developers, agents, pms]
 ---
 
-_This index is auto-generated. To add new documents, place `.md` files in `docs/` and re-run the documentation indexer._
+# Docs
+
+This docs tree is the canonical landing surface for this repository.
+
+## Start Here
+
+- `README.md` for workspace and repo entry points
+- `docs/sessions/` for active and historical session-led waves
+
+## Operating Model
+
+Before starting a wave, keep these roles explicit:
+
+- Spec owner
+- Research lead
+- Implementer
+- Validator
+- Docs steward
+- Release steward
+
+Keep wave-specific work in:
+
+`docs/sessions/<YYYYMMDD-descriptive-name>/`

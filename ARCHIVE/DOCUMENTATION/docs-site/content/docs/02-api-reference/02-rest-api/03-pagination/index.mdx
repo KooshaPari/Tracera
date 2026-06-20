@@ -1,0 +1,464 @@
+---
+title: "Pagination"
+description: "Complete guide to paginating API responses in TraceRTM"
+---
+
+# Pagination
+
+The TraceRTM API supports two pagination methods: offset-based pagination for simple use cases and cursor-based pagination for large datasets and real-time consistency.
+
+## Pagination Methods
+
+| Method | Best For | Consistency | Performance |
+|--------|----------|-------------|-------------|
+| **Offset-based** | Small datasets, random access | May have duplicates/gaps | O(n) for deep pages |
+| **Cursor-based** | Large datasets, streaming | Consistent results | O(1) constant time |
+
+---
+
+## Offset-Based Pagination
+
+Traditional page/offset pagination suitable for most use cases.
+
+### Request Parameters
+
+| Parameter | Type | Default | Max | Description |
+|-----------|------|---------|-----|-------------|
+| `page` | integer | 1 | — | Page number (1-indexed) |
+| `per_page` | integer | 20 | 100 | Items per page |
+| `offset` | integer | — | — | Alternative to page |
+
+### Request
+
+```bash
+# Page-based
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?page=2&per_page=50" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+
+# Offset-based
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?offset=50&per_page=50" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {"id": "item_051", "title": "Item 51"},
+    {"id": "item_052", "title": "Item 52"}
+  ],
+  "pagination": {
+    "total": 245,
+    "page": 2,
+    "per_page": 50,
+    "total_pages": 5,
+    "has_next": true,
+    "has_prev": true
+  },
+  "links": {
+    "self": "https://api.tracertm.dev/v1/projects/proj_123/items?page=2&per_page=50",
+    "first": "https://api.tracertm.dev/v1/projects/proj_123/items?page=1&per_page=50",
+    "last": "https://api.tracertm.dev/v1/projects/proj_123/items?page=5&per_page=50",
+    "next": "https://api.tracertm.dev/v1/projects/proj_123/items?page=3&per_page=50",
+    "prev": "https://api.tracertm.dev/v1/projects/proj_123/items?page=1&per_page=50"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient(api_key="rtm_live_sk_...")
+
+# Get specific page
+items = client.items.list(
+    project_id="proj_123",
+    page=2,
+    per_page=50
+)
+
+print(f"Page {items.pagination.page} of {items.pagination.total_pages}")
+print(f"Showing {len(items.data)} of {items.pagination.total} items")
+
+# Manual pagination
+page = 1
+while True:
+    response = client.items.list(project_id="proj_123", page=page, per_page=100)
+    for item in response.data:
+        process_item(item)
+
+    if not response.pagination.has_next:
+        break
+    page += 1
+```
+
+#### TypeScript
+
+```typescript
+import { TraceRTMClient } from '@tracertm/sdk';
+
+const client = new TraceRTMClient({ apiKey: 'rtm_live_sk_...' });
+
+// Get specific page
+const { data: items, pagination } = await client.items.list({
+  projectId: 'proj_123',
+  page: 2,
+  perPage: 50
+});
+
+console.log(`Page ${pagination.page} of ${pagination.totalPages}`);
+
+// Manual pagination
+let page = 1;
+while (true) {
+  const response = await client.items.list({
+    projectId: 'proj_123',
+    page,
+    perPage: 100
+  });
+
+  response.data.forEach(item => processItem(item));
+
+  if (!response.pagination.hasNext) break;
+  page++;
+}
+```
+
+---
+
+## Cursor-Based Pagination
+
+Recommended for large datasets. Uses opaque cursors for consistent, efficient pagination.
+
+### Request Parameters
+
+| Parameter | Type | Default | Max | Description |
+|-----------|------|---------|-----|-------------|
+| `cursor` | string | — | — | Pagination cursor |
+| `limit` | integer | 20 | 100 | Items to return |
+| `direction` | string | `next` | — | `next` or `prev` |
+
+### Request
+
+```bash
+# First page
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?limit=50" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+
+# Next page using cursor
+curl "https://api.tracertm.dev/v1/projects/proj_123/items?cursor=eyJpZCI6Iml0ZW1fMDUwIn0&limit=50" \
+  -H "Authorization: Bearer rtm_live_sk_..."
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {"id": "item_051", "title": "Item 51"},
+    {"id": "item_052", "title": "Item 52"}
+  ],
+  "pagination": {
+    "has_next": true,
+    "has_prev": true,
+    "next_cursor": "eyJpZCI6Iml0ZW1fMTAwIn0",
+    "prev_cursor": "eyJpZCI6Iml0ZW1fMDUxIn0"
+  }
+}
+```
+
+### SDK Examples
+
+#### Python
+
+```python
+# Cursor-based pagination
+cursor = None
+all_items = []
+
+while True:
+    response = client.items.list(
+        project_id="proj_123",
+        cursor=cursor,
+        limit=100
+    )
+    all_items.extend(response.data)
+
+    if not response.pagination.has_next:
+        break
+    cursor = response.pagination.next_cursor
+
+# Async generator (recommended)
+async for item in client.items.list_all(project_id="proj_123"):
+    process_item(item)
+
+# With filter
+async for item in client.items.list_all(
+    project_id="proj_123",
+    type="requirement",
+    status="approved"
+):
+    print(f"{item.custom_id}: {item.title}")
+```
+
+#### TypeScript
+
+```typescript
+// Cursor-based pagination
+let cursor: string | undefined;
+const allItems: Item[] = [];
+
+while (true) {
+  const response = await client.items.list({
+    projectId: 'proj_123',
+    cursor,
+    limit: 100
+  });
+
+  allItems.push(...response.data);
+
+  if (!response.pagination.hasNext) break;
+  cursor = response.pagination.nextCursor;
+}
+
+// Async iterator (recommended)
+for await (const item of client.items.listAll({ projectId: 'proj_123' })) {
+  processItem(item);
+}
+```
+
+#### Go
+
+```go
+package main
+
+import (
+    "context"
+    "github.com/tracertm/tracertm-go"
+)
+
+func main() {
+    client := tracertm.NewClient("rtm_live_sk_...")
+    ctx := context.Background()
+
+    // Cursor-based pagination
+    var cursor *string
+    var allItems []tracertm.Item
+
+    for {
+        opts := &tracertm.ListOptions{
+            Cursor: cursor,
+            Limit:  100,
+        }
+
+        resp, err := client.Items.List(ctx, "proj_123", opts)
+        if err != nil {
+            panic(err)
+        }
+
+        allItems = append(allItems, resp.Data...)
+
+        if !resp.Pagination.HasNext {
+            break
+        }
+        cursor = &resp.Pagination.NextCursor
+    }
+
+    // Iterator
+    iter := client.Items.ListAll(ctx, "proj_123", nil)
+    for iter.Next() {
+        item := iter.Item()
+        processItem(item)
+    }
+    if err := iter.Err(); err != nil {
+        panic(err)
+    }
+}
+```
+
+---
+
+## Pagination Headers
+
+All list responses include pagination headers:
+
+```http
+X-Total-Count: 245
+X-Page: 2
+X-Per-Page: 50
+X-Total-Pages: 5
+Link: <https://api.tracertm.dev/v1/items?page=1>; rel="first",
+      <https://api.tracertm.dev/v1/items?page=5>; rel="last",
+      <https://api.tracertm.dev/v1/items?page=3>; rel="next",
+      <https://api.tracertm.dev/v1/items?page=1>; rel="prev"
+```
+
+### Link Header Relations
+
+| Relation | Description |
+|----------|-------------|
+| `first` | First page URL |
+| `last` | Last page URL |
+| `next` | Next page URL (if exists) |
+| `prev` | Previous page URL (if exists) |
+
+---
+
+## Best Practices
+
+### Choose the Right Method
+
+```python
+# Offset-based: Small datasets, need total count, random page access
+items = client.items.list(project_id="proj_123", page=5, per_page=20)
+print(f"Total items: {items.pagination.total}")
+
+# Cursor-based: Large datasets, streaming, real-time data
+async for item in client.items.list_all(project_id="proj_123"):
+    process_item(item)
+```
+
+### Parallel Fetching with Offset
+
+```python
+import asyncio
+
+async def fetch_all_items_parallel(project_id: str):
+    # Get total count first
+    first_page = await client.items.list(project_id=project_id, page=1, per_page=1)
+    total = first_page.pagination.total
+    total_pages = (total + 99) // 100  # Ceiling division
+
+    # Fetch all pages in parallel
+    tasks = [
+        client.items.list(project_id=project_id, page=p, per_page=100)
+        for p in range(1, total_pages + 1)
+    ]
+    results = await asyncio.gather(*tasks)
+
+    # Combine results
+    all_items = []
+    for result in results:
+        all_items.extend(result.data)
+
+    return all_items
+```
+
+### Rate Limiting Awareness
+
+```python
+import time
+
+async def fetch_with_backoff(project_id: str):
+    cursor = None
+
+    while True:
+        try:
+            response = await client.items.list(
+                project_id=project_id,
+                cursor=cursor,
+                limit=100
+            )
+
+            for item in response.data:
+                yield item
+
+            if not response.pagination.has_next:
+                break
+            cursor = response.pagination.next_cursor
+
+        except RateLimitError as e:
+            wait_time = e.retry_after or 60
+            time.sleep(wait_time)
+```
+
+### Stable Sorting for Cursor Pagination
+
+```python
+# Always use deterministic sort for cursor pagination
+items = client.items.list(
+    project_id="proj_123",
+    cursor=cursor,
+    limit=100,
+    sort="-created_at,id"  # Secondary sort on ID for stability
+)
+```
+
+---
+
+## Pagination Limits
+
+| Plan | Max per_page | Max Total Results |
+|------|-------------|-------------------|
+| Free | 50 | 1,000 |
+| Pro | 100 | 50,000 |
+| Enterprise | 100 | Unlimited |
+
+---
+
+## Empty Results
+
+When no results match:
+
+```json
+{
+  "data": [],
+  "pagination": {
+    "total": 0,
+    "page": 1,
+    "per_page": 20,
+    "total_pages": 0,
+    "has_next": false,
+    "has_prev": false
+  }
+}
+```
+
+---
+
+## Error Responses
+
+### Invalid Page
+
+```json
+{
+  "error": {
+    "code": "INVALID_PAGE",
+    "message": "Page number exceeds total pages",
+    "status": 400,
+    "details": {
+      "requested_page": 100,
+      "total_pages": 5
+    }
+  }
+}
+```
+
+### Invalid Cursor
+
+```json
+{
+  "error": {
+    "code": "INVALID_CURSOR",
+    "message": "Pagination cursor is invalid or expired",
+    "status": 400,
+    "details": {
+      "cursor": "invalid_cursor_value",
+      "suggestion": "Start from the beginning without a cursor"
+    }
+  }
+}
+```
+
+---
+
+## Related Documentation
+
+- [Filtering](/docs/api-reference/rest-api/filtering) - Filter results
+- [Sorting](/docs/api-reference/rest-api/sorting) - Sort results
+- [Rate Limiting](/docs/api-reference/rest-api/rate-limiting) - Request limits

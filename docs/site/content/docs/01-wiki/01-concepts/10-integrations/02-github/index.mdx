@@ -1,0 +1,528 @@
+---
+title: "GitHub Integration"
+description: "Connect GitHub repositories, pull requests, and issues with TraceRTM for code traceability"
+---
+
+# GitHub Integration
+
+Connect TraceRTM with GitHub to track code changes, link pull requests to requirements, and maintain complete traceability from requirements to implementation.
+
+## Setup
+
+### Prerequisites
+
+- GitHub account with repository access
+- Personal Access Token or GitHub App
+- Repository admin access for webhooks
+
+### Configuration
+
+```yaml
+# .tracertm/config.yaml
+integrations:
+  github:
+    enabled: true
+    token: ${GITHUB_TOKEN}
+    owner: "mycompany"
+    repo: "myproject"
+
+    # Optional: Multiple repos
+    repositories:
+      - owner: mycompany
+        repo: backend
+      - owner: mycompany
+        repo: frontend
+```
+
+### CLI Setup
+
+```bash
+# Enable GitHub integration
+tracertm integrations enable github
+
+# Configure with token
+tracertm integrations configure github \
+  --token "${GITHUB_TOKEN}" \
+  --owner "mycompany" \
+  --repo "myproject"
+
+# Or use GitHub App
+tracertm integrations configure github \
+  --app-id 12345 \
+  --private-key /path/to/key.pem \
+  --installation-id 67890
+
+# Test connection
+tracertm integrations test github
+```
+
+## Pull Request Linking
+
+### Automatic Linking
+
+Reference TraceRTM items in PR titles or descriptions:
+
+```markdown
+## PR Title
+feat: Add user authentication [FEAT-001]
+
+## PR Description
+This PR implements the authentication feature.
+
+Implements: FEAT-001
+Tests: TEST-005, TEST-006
+Closes: BUG-003
+```
+
+### Link Configuration
+
+```yaml
+integrations:
+  github:
+    auto_link:
+      patterns:
+        # Link patterns in PR body
+        - regex: "Implements:\\s*(FEAT-\\d+)"
+          link_type: realized_by
+        - regex: "Tests:\\s*([\\w-]+(?:,\\s*[\\w-]+)*)"
+          link_type: verified_by
+        - regex: "Closes:\\s*(BUG-\\d+)"
+          link_type: fixes
+        - regex: "\\[(FEAT-\\d+)\\]"
+          link_type: references
+```
+
+### Manual Linking
+
+```python
+from tracertm import TraceRTMClient
+
+client = TraceRTMClient()
+github = client.get_integration("github")
+
+# Link PR to item
+github.link_pr(
+    pr_number=123,
+    item_id="FEAT-001",
+    link_type="realized_by"
+)
+
+# Get linked PRs
+prs = github.get_linked_prs("FEAT-001")
+for pr in prs:
+    print(f"#{pr.number}: {pr.title} ({pr.state})")
+```
+
+## Code Scanner
+
+### Scan Code for Links
+
+TraceRTM can scan code comments for artifact references:
+
+```python
+# src/auth/login.py
+
+def authenticate(username, password):
+    """
+    Authenticate user credentials.
+
+    Implements: FEAT-001 (User Authentication)
+    See: DESIGN-005
+    """
+    # Implementation...
+```
+
+### Scanner Configuration
+
+```yaml
+# .tracertm/scanner.yaml
+scanner:
+  github:
+    enabled: true
+
+    # File patterns to scan
+    include:
+      - "**/*.py"
+      - "**/*.js"
+      - "**/*.ts"
+      - "**/*.java"
+
+    exclude:
+      - "**/node_modules/**"
+      - "**/venv/**"
+      - "**/__pycache__/**"
+
+    # Reference patterns
+    patterns:
+      - regex: "Implements:\\s*(\\w+-\\d+)"
+        link_type: implements
+      - regex: "See:\\s*(\\w+-\\d+)"
+        link_type: references
+      - regex: "@tracertm\\s+(\\w+-\\d+)"
+        link_type: references
+```
+
+### Run Scanner
+
+```bash
+# Scan repository
+tracertm github scan
+
+# Output:
+# Scanning repository...
+# Found 45 artifact references in 23 files
+#
+# New links created:
+#   src/auth/login.py → FEAT-001 (implements)
+#   src/auth/session.py → FEAT-001 (implements)
+#   tests/test_auth.py → FEAT-001 (tests)
+```
+
+## Commit Tracking
+
+### Link Commits to Items
+
+```python
+# Get commits linked to item
+commits = github.get_commits_for_item("FEAT-001")
+
+for commit in commits:
+    print(f"{commit.sha[:7]} - {commit.message}")
+    print(f"  Author: {commit.author}")
+    print(f"  Date: {commit.date}")
+```
+
+### Commit Message Patterns
+
+```yaml
+integrations:
+  github:
+    commit_patterns:
+      # Standard pattern
+      - regex: "\\[([A-Z]+-\\d+)\\]"
+        link_type: references
+
+      # Conventional commits
+      - regex: "^(feat|fix|docs)\\(([A-Z]+-\\d+)\\)"
+        link_type: implements
+```
+
+## Issue Synchronization
+
+### Import GitHub Issues
+
+```python
+# Import issues as TraceRTM items
+imported = github.import_issues(
+    labels=["enhancement", "bug"],
+    state="open"
+)
+
+for issue in imported:
+    print(f"Created {issue.id} from GitHub #{issue.external_id}")
+```
+
+### CLI Import
+
+```bash
+# Import all issues
+tracertm github import issues
+
+# Import with filters
+tracertm github import issues --labels "bug,enhancement" --state open
+
+# Import single issue
+tracertm github import issue 123
+```
+
+### Issue Type Mapping
+
+```yaml
+integrations:
+  github:
+    issue_mapping:
+      labels:
+        "bug": bug
+        "enhancement": feature
+        "documentation": doc
+        "test": test
+
+      # Default type
+      default: task
+```
+
+## Webhooks
+
+### Configure Webhooks
+
+```python
+# Register event handlers
+@client.on("github:pull_request")
+def handle_pr(event):
+    if event.action == "opened":
+        # Scan PR for references
+        github.scan_pr(event.pull_request.number)
+
+    elif event.action == "merged":
+        # Update linked items
+        github.update_linked_items(
+            pr_number=event.pull_request.number,
+            status="done"
+        )
+
+@client.on("github:push")
+def handle_push(event):
+    # Scan new commits
+    for commit in event.commits:
+        github.scan_commit(commit.sha)
+```
+
+### Webhook Events
+
+| GitHub Event | TraceRTM Action |
+|--------------|-----------------|
+| `pull_request.opened` | Scan for links, create code artifact |
+| `pull_request.merged` | Update linked items status |
+| `pull_request.closed` | Archive code artifact |
+| `push` | Scan commits for references |
+| `issues.opened` | Import as artifact |
+| `release.published` | Create baseline |
+
+### CLI Webhook Setup
+
+```bash
+# Create webhook
+tracertm github webhook create \
+  --events "pull_request,push,issues"
+
+# List webhooks
+tracertm github webhook list
+
+# Delete webhook
+tracertm github webhook delete <webhook-id>
+```
+
+## Branch Protection
+
+### Check Requirements
+
+Add TraceRTM checks to branch protection:
+
+```yaml
+integrations:
+  github:
+    checks:
+      # Require linked item
+      require_linked_item: true
+
+      # Require tests for linked items
+      require_tests_for_features: true
+
+      # Require approval of linked items
+      require_item_approved: true
+```
+
+### Status Checks
+
+```python
+# TraceRTM reports status to GitHub
+@client.on("github:pull_request.opened")
+def check_pr(event):
+    pr = event.pull_request
+
+    # Check if PR links to TraceRTM item
+    linked_items = github.find_linked_items(pr.number)
+
+    if not linked_items:
+        github.create_check(
+            pr.head.sha,
+            name="tracertm/linked-item",
+            status="failure",
+            conclusion="action_required",
+            output={
+                "title": "No linked item",
+                "summary": "Please link this PR to a TraceRTM item"
+            }
+        )
+    else:
+        github.create_check(
+            pr.head.sha,
+            name="tracertm/linked-item",
+            status="success",
+            conclusion="success"
+        )
+```
+
+## Release Integration
+
+### Link Releases to Baselines
+
+```python
+# Create baseline from GitHub release
+@client.on("github:release.published")
+def handle_release(event):
+    release = event.release
+
+    # Create TraceRTM baseline
+    baseline = client.create_baseline(
+        name=release.tag_name,
+        description=release.body,
+        items=github.get_items_in_release(release.tag_name)
+    )
+
+    print(f"Created baseline {baseline.name}")
+```
+
+### Generate Release Notes
+
+```bash
+# Generate notes from linked items
+tracertm github release-notes --tag v1.0.0
+
+# Output:
+# Release v1.0.0
+# ════════════════════════════════════════
+#
+# Features:
+#   - FEAT-001: User Authentication
+#   - FEAT-002: Password Reset
+#
+# Bug Fixes:
+#   - BUG-003: Login timeout issue
+#   - BUG-007: Session expiration
+#
+# Tests:
+#   15 test cases passed
+#   Coverage: 87%
+```
+
+## Code Artifacts
+
+### Auto-Create Code Artifacts
+
+```yaml
+integrations:
+  github:
+    code_artifacts:
+      enabled: true
+
+      # Create artifact for each scanned file
+      create_from_files: true
+
+      # Or create from PRs
+      create_from_prs: true
+
+      # Default type
+      default_type: code
+```
+
+### View Code Coverage
+
+```python
+# Get files linked to an item
+files = github.get_linked_files("FEAT-001")
+
+for file in files:
+    print(f"{file.path}")
+    print(f"  Lines: {file.start_line}-{file.end_line}")
+    print(f"  Last modified: {file.last_modified}")
+```
+
+## Actions Integration
+
+### GitHub Actions Workflow
+
+```yaml
+# .github/workflows/tracertm.yml
+name: TraceRTM Sync
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  tracertm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install TraceRTM
+        run: pip install tracertm
+
+      - name: Scan PR
+        env:
+          TRACERTM_API_KEY: ${{ secrets.TRACERTM_API_KEY }}
+        run: |
+          tracertm github scan-pr ${{ github.event.pull_request.number }}
+
+      - name: Check Coverage
+        run: |
+          tracertm coverage check --min 80
+```
+
+## Reports
+
+### Traceability Report
+
+```bash
+# Generate GitHub traceability report
+tracertm github report traceability
+
+# Output:
+# GitHub Traceability Report
+# ════════════════════════════════════════
+#
+# Repository: mycompany/myproject
+# Period: Last 30 days
+#
+# Pull Requests: 45
+#   - With linked items: 42 (93%)
+#   - Without linked items: 3
+#
+# Commits: 156
+#   - With references: 120 (77%)
+#
+# Files Changed: 234
+#   - Linked to items: 189 (81%)
+```
+
+## Best Practices
+
+### 1. Require Item Links in PRs
+
+```yaml
+integrations:
+  github:
+    pr_requirements:
+      require_linked_item: true
+      message: "Please link this PR to a TraceRTM item using [ITEM-ID] in the title or description"
+```
+
+### 2. Use Conventional Commits
+
+```bash
+# Good: Clear references
+feat(FEAT-001): add user authentication
+fix(BUG-003): resolve login timeout
+
+# Avoid: No reference
+add authentication
+fix bug
+```
+
+### 3. Keep Code Artifacts Updated
+
+```bash
+# Regular sync
+tracertm github scan --full
+
+# Schedule in CI
+# Run weekly full scan
+```
+
+## Related Topics
+
+- [GitLab Integration](/docs/wiki/concepts/integrations/gitlab) - GitLab alternative
+- [Jira Integration](/docs/wiki/concepts/integrations/jira) - Issue tracking
+- [Jenkins Integration](/docs/wiki/concepts/integrations/jenkins) - CI/CD
+

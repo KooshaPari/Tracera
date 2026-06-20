@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+// Copyright 2026 Koosha Pari
+
 //! API navigation payloads for clickable traceability links.
 
 use serde::{Deserialize, Serialize};

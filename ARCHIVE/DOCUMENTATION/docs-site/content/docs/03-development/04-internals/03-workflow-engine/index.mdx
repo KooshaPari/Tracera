@@ -1,0 +1,14 @@
+---
+title: "Workflow Engine"
+description: "Workflow orchestration."
+---
+
+## Role in the architecture
+- Executes long-running tasks with retries.
+- State machine per workflow definition.
+- Observability hooks for progress and failures.
+
+## Considerations
+- Throughput vs. latency trade-offs.
+- Failure domains and retry/backoff strategies.
+- Data model ownership and boundaries.

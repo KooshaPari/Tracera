@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+// Copyright 2026 Koosha Pari
+
 //! Pagination primitives: offset, cursor, and keyset (seek) pagination.
 //!
 //! Three strategies are exposed, each appropriate to a different query shape:
