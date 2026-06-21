@@ -1,33 +1,116 @@
-# TracerTM 🚀
+# Tracera
 
 > Agent-native, multi-view requirements traceability and project management system.
 
 ## Overview
-TracerTM is a high-assurance RTM system that links requirements to code, tests, and deployments. It is designed for human-agent collaboration and operates at a **critical** quality tier.
 
-## Key Components
-- **Backend (Go)**: `/backend/` - Core API server (Go 1.21+).
-- **Backend (Python)**: `/` (Root) - Python services (3.11+).
-- **Frontend**: `/frontend/` - React/TypeScript SPA.
-- **Task Runner**: `Taskfile.yml` and `Taskfile.gateway.yml`.
-- **Infrastructure**: `/deploy/` - k8s and observability.
-- **Persistence**: PostgreSQL, Neo4j, Redis, NATS.
+Tracera (formerly `TracerTM`, package name `tracertm`) is a high-assurance
+Requirements Traceability Matrix (RTM) platform that links requirements to
+code, tests, and deployments. It is designed for human-agent collaboration
+and operates at a **critical** quality tier.
 
-## Developer & Agent Commands
-- `task install`: Setup all dependencies.
-- `task db:migrate`: Run database migrations.
-- `task dev:tui`: Start all services with interactive dashboard.
-- `task quality`: Run full quality gate pipeline.
+## Stack
+
+- **Core (Rust)**: `crates/tracera-core` — MSRV 1.82, edition 2021, library crate
+  (traceability engine, impact analysis, deterministic hashing).
+- **Backend (Go)**: `backend/` — module `github.com/kooshapari/tracera`,
+  Go 1.25, `backend/cmd/tracertm` is the main service entry point.
+- **Backend (Python)**: `pyproject.toml` (hatchling) — Python 3.12 / 3.13+.
+- **Frontend (TypeScript)**: `frontend/` — bun@1.1.38 + Turborepo monorepo
+  with apps (`web`, `docs`, `storybook`, `desktop`, `desktop-electrobun`) and
+  shared packages (`ui`, `api-client`, `types`, `state`, `config`, `env-manager`).
+- **Persistence**: PostgreSQL, Redis, NATS, Neo4j.
+- **Migrations**: `alembic/`.
+- **Contracts**: `proto/` (Protobuf / gRPC), `openapi/`.
+- **Infrastructure**: `deploy/{infrastructure,k8s,monitoring,nginx}`.
+- **Observability**: Grafana, Prometheus, Loki, Tempo, Grafana Alloy (Alloy-backed
+  local stack); OTLP wire via `pheno-otel` substrate.
+- **Task Runner**: `justfile` (canonical) + `Makefile` (legacy) + `mise.toml` (toolchain).
+
+## Tier-0 meta-bundle (v22-SD1 hygiene batch, 2026-06-21)
+
+- Meta-bundle: `README.md`, `AGENTS.md`, `SPEC.md`, `llms.txt`,
+  `CHANGELOG.md`, `WORKLOG.md` (v2.1 schema with `device:` field per ADR-025
+  / ADR-030), `LICENSE-MIT`, `LICENSE-APACHE`.
+- Repo config: `justfile`, `.editorconfig`, `.gitattributes`,
+  `.pre-commit-config.yaml`, `mise.toml`.
+- CI: `.github/workflows/` (lint + test + build + audit + deny + coverage).
+
+## Key Commands
+
+```bash
+# Rust core (MSRV 1.82)
+cargo build --release
+cargo test
+cargo clippy --all-targets --all-features -- -D warnings
+
+# Go backend
+cd backend && go build ./...
+cd backend && go test ./...
+
+# Python bindings
+uv sync
+uv run pytest
+
+# Frontend (bun + turbo)
+cd frontend && bun install
+bun run dev        # = turbo dev --parallel
+bun run build      # = turbo build
+
+# Canonical task runner
+just --list        # see all recipes
+just ci            # = lint + test + build + audit + deny
+just dev           # = make dev (TUI dev environment)
+just coverage      # stack-detected: cargo llvm-cov / jest / pytest / go test
+```
+
+## Persistence
+
+- **PostgreSQL** — primary data store (`backend/internal/database`).
+- **Neo4j** — graph layer for requirement → code → test relations.
+- **Redis** — cache + pub/sub for ingestion workers.
+- **NATS** — message bus for async pipelines.
 
 ## Performance & Observability
+
 - **Gateway**: `http://localhost:4000` (Unified URL).
 - **Grafana**: `http://localhost:3000`.
-- **Tracing**: shared Phenotype OTLP collector contract via the Alloy-backed local stack.
+- **Tracing**: shared Phenotype OTLP collector contract via the Alloy-backed
+  local stack.
+- **Loki** for logs, **Tempo** for traces, **Prometheus** for metrics.
+
+## Quality Gates (CI)
+
+- `cargo fmt --all` — Rust formatting
+- `cargo clippy --all-targets --all-features -- -D warnings` — Rust lint
+- `cargo test` — Rust unit + integration
+- `cargo deny check` — license + advisory + ban + source
+- `uv run ruff check .` — Python lint
+- `uv run pytest` — Python tests
+- `go test ./...` — Go tests
+- `bun run lint` / `bun run typecheck` — TypeScript checks
+- `cargo llvm-cov` (or `pytest --cov`, `go test -cover`, `jest --coverage`)
+  — coverage gate at 80% (per ADR-040)
+- `trufflehog` (pre-push) — secret scan
+- `conventional-pre-commit` (commit-msg) — commit message lint
 
 ## Agent Guidelines
+
 - All PRs require signed SLSA attestations.
 - Check `VERIFICATION_POLICY.md` for quality gate rules.
-- Architectural boundaries are enforced by `tach.toml`.
+- Architectural boundaries are enforced by `tach.toml` (where present).
 - Use the unified gateway (port 4000) for all API and frontend interactions.
+- Worklog: append 1 row per task to `WORKLOG.md` (v2.1 schema, 11 columns
+  including `device:` per ADR-025 / ADR-030).
+- Branch naming: `chore/<req-id>-<slug>-<date>` /
+  `feat/<req-id>-<slug>-<date>`.
+- Commit messages: Conventional Commits (`feat:`, `fix:`, `chore:`, etc.).
+
+## Phenotype Integration
+
+- Uses `phenotype-skills` for plugin runtime.
+- Integrates with `phenotype-observability` for telemetry (OTLP wire).
+- Worklog substrate: `pheno-worklog-schema` v2.1 (with `device:` field).
+- Deployed via `nanovms` for edge compute.
 
 For full details, see [llms-full.txt](llms-full.txt).

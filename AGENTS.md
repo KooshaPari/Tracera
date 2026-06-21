@@ -1,14 +1,29 @@
 # Tracera — AGENTS.md
 
+**Date:** 2026-06-21
+**Status:** ACTIVE
+**Substrate type:** app / multi-stack (Rust + Python + Go + TypeScript)
+**Worklog schema:** v2.1 (ADR-025 / ADR-030) — 11 columns including `device:` field
+
 ## Project Overview
 
 Tracera is a cross-platform GPU-accelerated data pipeline and visualization framework built with Rust (core) + Python (bindings) + Go (services) + TypeScript (frontend).
 
 **Repository:** `Tracera/`
 **Language:** Rust (primary), Python, Go, TypeScript
-**Build System:** Cargo (Rust), Poetry (Python), Go Modules, pnpm (TS)
+**Build System:** Cargo (Rust), uv (Python), Go Modules, pnpm (TS)
 **License:** MIT
 **CI/CD:** GitHub Actions (`.github/workflows/`)
+
+## Tier-0 meta-bundle (v22-SD1 hygiene batch)
+
+This path received tier-0 governance hygiene on 2026-06-21:
+
+- Meta-bundle: `README.md`, `AGENTS.md`, `SPEC.md`, `llms.txt`,
+  `CHANGELOG.md`, `WORKLOG.md` (v2.1 schema with `device:` field), `LICENSE`.
+- Repo config: `justfile`, `.editorconfig`, `.gitattributes`, `.pre-commit-config.yaml`.
+- CI: `.github/workflows/` (lint + test + build + audit).
+- Device values: `macbook` / `heavy-runner` / `subagent` / `ci`.
 
 ## Key Commands
 
@@ -18,25 +33,30 @@ cargo build --release
 cargo test
 
 # Python bindings
-poetry install
-poetry run pytest
+uv sync
+uv run pytest
 
 # Go services
-cd services/ && go build ./...
+cd backend/ && go build ./...
 
 # Frontend
 cd web/ && pnpm install && pnpm build
+
+# Quality gate (via just)
+just ci
 ```
 
 ## Architecture
 
 ```
 Tracera/
-├── src/           # Rust core (GPU compute, data pipeline)
-├── python/        # Python bindings (PyO3/Maturin)
-├── services/      # Go microservices (API, ingestion)
+├── crates/        # Rust workspace (tracera-core, tracera-gpu, tracera-pipeline)
+├── python/        # Python bindings (PyO3 / Maturin)
+├── backend/       # Go microservices (API, ingestion)
 ├── web/           # TypeScript frontend (WebGPU visualization)
-├── tests/         # Integration tests
+├── alembic/       # Database migrations
+├── proto/         # Protobuf / gRPC contracts
+├── tests/         # Integration tests (Python)
 └── docs/          # Documentation
 ```
 
@@ -44,7 +64,7 @@ Tracera/
 
 - **Rust:** `cargo fmt` + `cargo clippy` + `cargo test`
 - **Python:** `ruff` (lint + format) + `mypy` (type check)
-- **Go:** `go fmt` + `go vet` + `golangci-lint`
+- **Go:** `gofmt` + `go vet` + `golangci-lint`
 - **TypeScript:** `eslint` + `prettier` + `tsc --noEmit`
 
 ## Testing Strategy
@@ -57,6 +77,8 @@ Tracera/
 ## Documentation
 
 - `README.md` — Project overview
+- `SPEC.md` — Project specification (tier-0)
+- `llms.txt` — Agent-readable project summary
 - `docs/` — Full documentation
 - `AGENTS.md` — This file (agent context)
 
@@ -66,6 +88,7 @@ Tracera is part of the Phenotype ecosystem:
 - Uses `phenotype-skills` for plugin runtime
 - Integrates with `phenotype-observability` for telemetry
 - Can deploy to `nanovms` for edge compute
+- Worklog uses `pheno-worklog-schema` v2.1 (with `device:` field per ADR-025 / ADR-030)
 
 ## Team
 
@@ -77,3 +100,12 @@ Tracera is part of the Phenotype ecosystem:
 - **Active** — actively maintained
 - Requires GPU for full test suite
 - Uses workspace Cargo for multi-crate Rust
+- Convention: `chore/<req-id>-<slug>-<date>` / `feat/<req-id>-<slug>-<date>`
+- Worklog: v2.1 schema, 11 columns (`Date | Task ID | Layer | Action | Files | Notes | Device | Actor | Hash | Branch | PR-URL`)
+
+## Cross-references
+
+- ADR-023 — Agent-effort governance (lib substrate placement).
+- ADR-025 / ADR-030 — `pheno-worklog-schema` v2.1 (WORKLOG.md `device:` field).
+- ADR-039 — pheno-flake refresh template.
+- ADR-040 — Test coverage gates per tier.
