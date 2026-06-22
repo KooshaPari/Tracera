@@ -232,6 +232,7 @@ include = [
 ]
 
 [tool.pytest.ini_options]
+filterwarnings = ["ignore::DeprecationWarning:starlette.*"]
 testpaths = [
     "tests",
 ]
