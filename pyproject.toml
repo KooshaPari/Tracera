@@ -223,14 +223,6 @@ tracertm = "tracertm.cli:app"
 tracertm-mcp = "tracertm.mcp:run_server"
 rtm-mcp = "tracertm.mcp:run_server"
 
-[tool.setuptools.packages.find]
-where = [
-    "src",
-]
-include = [
-    "tracertm*",
-]
-
 [tool.pytest.ini_options]
 testpaths = [
     "tests",
