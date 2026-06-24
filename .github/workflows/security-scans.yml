@@ -78,7 +78,13 @@ jobs:
     timeout-minutes: 45
   codeql:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Default CodeQL setup is enabled at the repo/org level for this public repo.
+    # Running an advanced CodeQL job alongside it produces:
+    #   "Code Scanning could not process the submitted SARIF file:
+    #    CodeQL analyses from advanced configurations cannot be processed
+    #    when the default setup is enabled."
+    # We disable this advanced job; the default setup covers javascript, python and go.
+    if: false
     permissions:
       security-events: write
       contents: read

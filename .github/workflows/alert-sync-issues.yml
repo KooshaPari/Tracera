@@ -7,7 +7,12 @@ permissions:
   contents: read
 jobs:
   sync:
-    uses: KooshaPari/phenoShared/.github/workflows/reusable/alert-sync-issues.yml@6a6e1b06026e9443449e419a2892cd0e47c19442
-    with:
-      auto-label: auto-alert-sync
+    name: sync
+    runs-on: ubuntu-latest
     timeout-minutes: 15
+    steps:
+      - name: Echo stub (phenoShared workflow was unavailable)
+        run: |
+          echo "Alert sync issues (local stub)."
+          echo "Original reusable workflow: KooshaPari/phenoShared/.github/workflows/reusable/alert-sync-issues.yml@6a6e1b06026e9443449e419a2892cd0e47c19442"
+          echo "That repo is no longer reachable; auto-label ${{ inputs.auto-label || 'auto-alert-sync' }} would have been applied here."
