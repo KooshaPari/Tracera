@@ -232,12 +232,6 @@ include = [
 ]
 
 [tool.pytest.ini_options]
-filterwarnings = [
-    "ignore::DeprecationWarning:starlette.*",
-    "ignore::DeprecationWarning:httpx.*",
-    "ignore::DeprecationWarning:fastapi.*",
-    "ignore::PendingDeprecationWarning",
-]
 testpaths = [
     "tests",
 ]
