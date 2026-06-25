@@ -1,19 +1,15 @@
 # Traceability Matrix
 
-The 24-endpoint governance baseline is now tracked here:
+The audit baseline is captured in:
 
-- [`docs/governance/policy/endpoint_traceability_map.md`](governance/policy/endpoint_traceability_map.md)
-- [`docs/governance/policy/coverage_matrix_self_application.md`](governance/policy/coverage_matrix_self_application.md)
-- [`docs/FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md)
+- [`docs/governance/policy/endpoint_traceability_map.md`](governance/policy/endpoint_traceability_map.md) — FR→endpoint→test linkage.
+- [`docs/governance/policy/coverage_matrix_self_application.md`](governance/policy/coverage_matrix_self_application.md) — evidence self-application.
+- [`docs/FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md) — endpoint oracle and historical surface.
 
-## Governance evidence status
+Governance status snapshot:
 
-| Item | Status |
-|---|---|
-| Route inventory completeness | ✅ Mapped in endpoint policy |
-| FR→endpoint mapping | ✅ Mapped in endpoint policy |
-| Test linkage capture | ⚠ Partial (limited test fixtures exist for governance tests) |
-| Unmounted endpoint audit warning | ✅ Captured in policy rows |
+- Route inventory completeness: ✅ mapped
+- FR→endpoint linkage completeness: ✅ mapped
+- Test linkage: ⚠ partial (many endpoints are currently unmounted or untested)
+- Security control mapping: ✅ traceable via governance and SECURITY docs
 
-`FR-API` routes under `/api/v1` are now explicitly documented and should be used
-as the minimum evidence set before the next audit gate.
