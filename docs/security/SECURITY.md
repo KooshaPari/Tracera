@@ -1,52 +1,64 @@
 # Tracera API Security Policy
 
-This repository uses bearer-token auth with scoped authorization, route-level input
-validation, and CI hardening controls.
+## Threat model
 
-## Scope
+| Area | Threat | Control |
+|---|---|---|
+| Authn/Authz | Stolen or forged bearer tokens | JWT validation with required claims and optional signature/audience/issuer checks |
+| Privilege misuse | Scope or method mismatch on route | `ApiAuthzMiddleware` route-by-route scope matrix |
+| Input abuse | Oversize path/query/body or control-character injection | middleware hard limits + schema-level constraints |
+| Secret exposure | Inlined credentials in code/PR | environment-driven configuration and policy above |
 
-- `src/tracertm/api/main.py`
-- `src/tracertm/api/deps.py`
-- `src/tracertm/api/middleware/authz.py`
-- API workflow / release workflows
+## Secrets via environment
 
-## Security notes
+- `TRACERA_JWT_SECRET` must be set for production signature verification.
+- `TRACERA_JWT_AUDIENCE`, `TRACERA_JWT_ISSUER` should be set to force claim binding.
+- `TRACERA_JWT_PUBLIC_KEY` can be used for asymmetric verification paths.
+- DB and service credentials must be injected at runtime only.
 
-- Authentication is now validated in middleware (`ApiAuthzMiddleware`) for all
-  non-probe requests.
-- JWT input checks include header format, token size, required claims (`sub`, `exp`),
-  and token expiry tolerance.
-- Scope checks are enforced via normalized token scopes when scope requirements are
-  declared for the route.
-- Signature verification defaults to permissive mode when `TRACERA_JWT_SECRET` is not
-  set and must be enabled in production.
+## Input validation checklist
 
-## Runtime threat model (summary)
+- Token header parsing rejects malformed `Authorization` values.
+- Token claim validation enforces `sub` and `exp` presence and type.
+- Optional `iss`/`aud` claims are type-checked and bounded.
+- Request target validation limits path/query length and strips control characters from
+  request targets.
+- Request body size cap is enforced via `Content-Length`.
+- Router schemas use `pydantic` constraints on body, path, and query parameters.
 
-| Threat | Control |
-|---|---|
-| Replay/tampered tokens | Enforce expiry and signature/audience/issuer validation via env config |
-| Missing/forged auth headers | Middleware rejects malformed or missing Bearer tokens |
-| Privilege escalation by route | Per-prefix scope requirements in middleware |
-| Unbounded/unvalidated payloads | Expand Pydantic constraints on all router inputs |
+## Runtime authn/authz middleware check
 
-## Secrets policy (environment variables)
+`src/tracertm/api/main.py` mounts middleware in this order:
 
-- `TRACERA_JWT_SECRET`, `TRACERA_JWT_PUBLIC_KEY`, `TRACERA_JWT_AUDIENCE`,
-  `TRACERA_JWT_ISSUER`
-- DB/queue/service credentials in CI and host process environment
+1. Logging middleware
+2. Request-id middleware
+3. `ApiAuthzMiddleware`
+
+`ApiAuthzMiddleware` currently:
+
+- marks `/health`, `/ready`, `/docs`, `/redoc`, `/openapi.json` as public,
+- requires bearer auth on all other routes,
+- resolves token scope policy via:
+  - HTTP method baseline scope (`read`/`write`/`delete`),
+  - path-prefix policy (`/api/v1/traceability`, `/api/v1/evidence`, etc.),
+- returns `401`/`403` with non-sensitive `detail` only.
 
 ## Rate-limiting plan
 
-Implement in phases:
+### Phase 1 (current)
+- Request shape guardrails: path/query size limits and request body cap.
 
-1. Add sliding-window limiter middleware (in-memory first, Redis in production).
-2. Apply per-route defaults (read/write/ingest tiers).
-3. Emit `Retry-After`, `X-RateLimit-*` headers.
-4. Add CI contract tests that verify 429 behavior for burst abuse.
+### Phase 2
+- Per-route fixed-window counters (in-memory), then shared Redis adapter for
+  horizontal scale.
+- `429` enforcement with `Retry-After` and rate-limit headers.
 
-## Governance linkage
+### Phase 3
+- Abuse simulation tests in API contract suite (burst, replay, and malformed body cases).
 
-- Security control mapping: [`docs/governance/policy/endpoint_traceability_map.md`](docs/governance/policy/endpoint_traceability_map.md)
-- Coverage matrix: [`docs/governance/policy/coverage_matrix_self_application.md`](docs/governance/policy/coverage_matrix_self_application.md)
-- ADR index: [`docs/governance/policy/adr_index.md`](docs/governance/policy/adr_index.md)
+## Cross-link
+
+- Security policy: [`../../SECURITY.md`](../../SECURITY.md)
+- Governance matrix + endpoint traceability: [`../../docs/governance/policy/endpoint_traceability_map.md`](../../docs/governance/policy/endpoint_traceability_map.md)
+- Self-application coverage: [`../../docs/governance/policy/coverage_matrix_self_application.md`](../../docs/governance/policy/coverage_matrix_self_application.md)
+
