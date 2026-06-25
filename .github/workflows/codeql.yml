@@ -13,14 +13,30 @@ concurrency:
   cancel-in-progress: true
 permissions:
   contents: read
+  actions: read
+  security-events: write
 jobs:
   analyze:
-    uses: KooshaPari/phenoShared/.github/workflows/reusable/codeql.yml@30358ce629168f0e1ec3699706cb73d1f77cb751
-    permissions:
-      contents: read
-      actions: read
-      security-events: write
-    with:
-      languages: '["actions"]'
-      build-mode: none
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+        - actions
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        fetch-depth: 0
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@0daab03d71ff584ef619d027a3fd9146679c5d84
+      with:
+        languages: ${{ matrix.language }}
+        build-mode: none
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@0daab03d71ff584ef619d027a3fd9146679c5d84
+      with:
+        category: "/language:${{ matrix.language }}"
+
