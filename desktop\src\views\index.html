@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tracera Desktop (Electrobun)</title>
+    <style>
+      :root {
+        --bg: #0c1120;
+        --panel: #101a2f;
+        --text: #e8efff;
+        --muted: #b8c2df;
+        --accent: #6ee7ff;
+        --ok: #5de39a;
+        --warn: #ffcc6e;
+        --bad: #ff8ea3;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(180deg, #070a13, #121c33);
+        color: var(--text);
+        font-family: "Trebuchet MS", Verdana, sans-serif;
+      }
+
+      .wrap {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .card {
+        background: color-mix(in srgb, var(--panel) 95%, black 5%);
+        border: 1px solid #223055;
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      h1 {
+        margin-top: 0;
+        font-size: 1.6rem;
+      }
+
+      .row {
+        display: grid;
+        gap: 8px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #2b3a66;
+        background: #0a1224;
+        color: var(--text);
+      }
+
+      button {
+        border: 0;
+        padding: 10px 12px;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #001127;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        background: #3f517d;
+        color: var(--text);
+      }
+
+      pre {
+        white-space: pre-wrap;
+        background: #0a1224;
+        border: 1px solid #23315d;
+        border-radius: 8px;
+        padding: 12px;
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>Tracera Desktop Client (Electrobun shell)</h1>
+        <p class="meta">
+          Separate desktop client from web. Data sources: live Tracera service + local offline
+          cache fallback.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Service Settings</h2>
+        <div class="row">
+          <label for="baseUrl">Base URL</label>
+          <input id="baseUrl" placeholder="https://api.tracera.example.com" />
+        </div>
+        <div class="row" style="max-width: 220px">
+          <label for="ttlMinutes">Offline cache TTL (minutes)</label>
+          <input id="ttlMinutes" type="number" min="1" value="15" />
+        </div>
+        <div class="actions">
+          <button id="saveSettings">Save settings</button>
+          <button class="secondary" id="testConnection">Test connection</button>
+        </div>
+        <p id="settingsStatus" class="meta">No status yet.</p>
+      </div>
+
+      <div class="card">
+        <h2>Live endpoints</h2>
+        <div class="actions">
+          <button id="loadCoverage">Load coverage-matrix</button>
+          <button id="loadGovernance">Load governance</button>
+          <button class="secondary" id="clearCache">Clear cache</button>
+        </div>
+        <p id="endpointStatus" class="meta">Ready.</p>
+      </div>
+
+      <div class="card">
+        <h2>Payload</h2>
+        <pre id="payloadOutput">No data loaded.</pre>
+      </div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
