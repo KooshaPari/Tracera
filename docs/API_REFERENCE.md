@@ -1,15 +1,15 @@
 # API Reference (Tracera)
 
-This is the endpoint stub used for governance and audit tracing.
-
-## Operational endpoints
+## Public operational endpoints
 
 - `GET /health`
 - `GET /ready`
 - `GET /healthz`
 - `GET /readyz`
 
-## API surface (24-endpoint audit target)
+## API endpoint target set (24-business + governance slice, `/api/v1`)
+
+This list is the audit-facing contract for governance and traceability evidence.
 
 ### Auth
 
@@ -21,7 +21,7 @@ This is the endpoint stub used for governance and audit tracing.
 - `POST /api/v1/evidence`
 - `GET /api/v1/evidence/health`
 
-### Impact / Traceability
+### Impact / traceability
 
 - `GET /api/v1/impact/forward/{artifact_id}`
 - `GET /api/v1/impact/reverse/{artifact_id}`
@@ -31,7 +31,7 @@ This is the endpoint stub used for governance and audit tracing.
 - `POST /api/v1/governance/spec-check`
 - `POST /api/v1/confidence`
 
-### SDLC & Org intelligence
+### SDLC and org intelligence
 
 - `GET /api/v1/sdlc-pm/health`
 - `GET /api/v1/sdlc-pm/sprints`
@@ -41,7 +41,7 @@ This is the endpoint stub used for governance and audit tracing.
 - `GET /api/v1/org-intel/metrics`
 - `GET /api/v1/org-intel/teams`
 
-### Ingestion and comments
+### Ingestion + comments
 
 - `POST /api/v1/ingest/github`
 - `POST /api/v1/ingest/jira`
@@ -49,7 +49,10 @@ This is the endpoint stub used for governance and audit tracing.
 - `POST /api/v1/items/{item_id}/comments`
 - `DELETE /api/v1/items/{item_id}/comments/{comment_id}`
 
-## Governance linkage
+### Code-trace
 
-See [`docs/governance/policy/endpoint_traceability_map.md`](docs/governance/policy/endpoint_traceability_map.md)
-for the FR→endpoint→test matrix tied to the audit target.
+- `GET /api/v1/code-trace/{component_id}`
+
+## Governance mapping
+
+- FR→endpoint→test mapping: [`governance/policy/endpoint_traceability_map.md`](governance/policy/endpoint_traceability_map.md)
