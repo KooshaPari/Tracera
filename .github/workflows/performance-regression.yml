@@ -138,9 +138,12 @@ jobs:
 
         '
     - name: Run database migrations
-      run: 'uv run alembic upgrade head
-
-        '
+      run: |
+        if [ -f "alembic.ini" ] && [ -f "alembic/env.py" ]; then
+          uv run alembic upgrade head
+        else
+          echo "Skipping alembic migration step: alembic.ini and env.py are not available for this repository state."
+        fi
       env:
         DATABASE_URL: postgresql://tracertm:testpass@localhost:5432/tracertm
     - name: Build Go backend
