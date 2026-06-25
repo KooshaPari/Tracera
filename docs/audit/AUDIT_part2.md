@@ -125,9 +125,8 @@ Per-area roll-up: avg `2.17/5`, subtotal `26/60 = 43.3%`.
 
 ## Ranked backlog (worst-first across G-L)
 
-1. **K-Ops/Deploy** (`44.3%`) — implement real deployment + rollback mechanics before placeholder examples; add artifactized release flow and health-safe rollback gating.
+1. **H-Performance** (`36.7%`) — add resource/backpressure controls and profiling, plus documented load ceilings.
 2. **I-Data & Persistence** (`40.0%`) and **J-Docs/DX** (`40.0%`) — close backup/restore gaps first; then raise doc completeness for SSOT and governance policy.
 3. **L-Governance/Traceability** (`43.3%`) — missing `docs/governance` policy and weak enforcement of FR→traceability linkage.
-4. **H-Performance** (`36.7%`) — add resource/backpressure controls and profiling, plus documented load ceilings.
+4. **K-Ops/Deploy** (`44.3%`) — implement real deployment + rollback mechanics before placeholder examples; add artifactized release flow and health-safe rollback gating.
 5. **G-Observability** (`53.3%`) — strengthen metrics/alerting and audit event capture; traces and request correlation already partially present.
-
