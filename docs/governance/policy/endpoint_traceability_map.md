@@ -2,9 +2,13 @@
 
 Source of truth: [`docs/FEATURE_INVENTORY.md`](../../FEATURE_INVENTORY.md)
 
-## Endpoint matrix (target audit set = 24 rows)
+This table is the 24/26 endpoint governance slice used by Tracera hardening audits:
+- **24 API business routes**
+- **+2 operational probes** (`/health`, `/ready`) included for runtime governance completeness.
 
-| FR | Method | Path | Mounted? | Governance test link |
+## Endpoint matrix
+
+| FR | Method | Path | Mounted? | Test linkage |
 |---|---|---|---|---|
 | FR-API-HEALTH-001 | GET | `/health` | ✅ | `Not covered` |
 | FR-API-HEALTH-002 | GET | `/ready` | ✅ | `Not covered` |
@@ -35,5 +39,6 @@ Source of truth: [`docs/FEATURE_INVENTORY.md`](../../FEATURE_INVENTORY.md)
 
 ## Rule
 
-- `Mounted? = ❌ unmounted` indicates endpoint exists in router file but is not yet wired in `main.py`.
-- This matrix is intended to be reviewed as part of each governance PR.
+- `Unmounted = ❌ unmounted` indicates router code exists but is not included in
+  `src/tracertm/api/main.py`.
+- `Mounted = ✅` means endpoint is currently exposed via configured router mounts.
