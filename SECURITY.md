@@ -64,19 +64,56 @@ mutual agreement on a disclosure date is the goal.
 ## CVE & Advisory Process
 
 - A **CVE ID** is requested as soon as triage confirms the report is a
-  genuine, reproducible security issue.
+genuine, reproducible security issue.
 - Tracera maintainers use **GitHub Security Advisories** as the canonical
-  public disclosure surface. The advisory supersedes any earlier informal
-  note.
+public disclosure surface. The advisory supersedes any earlier informal
+note.
 - Severity is scored using **CVSS v3.1** and recorded in the advisory.
 - Patched versions are tagged and released via the `release-plz` pipeline;
-  the advisory references the fix commit and the released version.
+the advisory references the fix commit and the released version.
 
 ## Handling Expectations
 
 - Maintainers will keep reports confidential, limit access to people needed
-  to investigate and remediate the issue, and credit reporters when
-  requested and appropriate.
+to investigate and remediate the issue, and credit reporters when
+requested and appropriate.
 - Reporters are expected to avoid privacy violations, data destruction,
-  service disruption, persistence, lateral movement, and public disclosure
-  before the maintainers have had a reasonable opportunity to respond.
+service disruption, persistence, lateral movement, and public disclosure
+before the maintainers have had a reasonable opportunity to investigate and
+remediate the issue.
+
+## Runtime hardening (new)
+
+- All non-probe API requests are routed through `ApiAuthzMiddleware` in
+  `src/tracertm/api/main.py`.
+- Token and claim validation is centralized in `src/tracertm/api/deps.py`.
+- Endpoint-to-feature coverage and authz intent are now documented in the
+  governance package under `docs/governance/policy/`.
+
+## Input-validation policy
+
+- Authorization header parsing is strict (`Authorization: Bearer <token>`).
+- Required token claims include `sub` and `exp`; expired claims are rejected.
+- Scope normalization is enforced through middleware when configured for a route.
+- API body/param constraints should be explicit per router model (path,
+  query, and request schemas). Missing constraints are tracked in:
+  [`docs/governance/policy/coverage_matrix_self_application.md`](docs/governance/policy/coverage_matrix_self_application.md).
+
+## Secrets and configuration
+
+Secrets must be injected via environment values and never checked in:
+
+- `TRACERA_JWT_SECRET`
+- `TRACERA_JWT_PUBLIC_KEY`
+- `TRACERA_JWT_AUDIENCE`
+- `TRACERA_JWT_ISSUER`
+- `TRACERA_DB_DSN` and service credentials
+
+Signature verification remains permissive until `TRACERA_JWT_SECRET` is set in
+production environments.
+
+## Rate-limiting
+
+A rollout plan is documented in [`docs/security/SECURITY.md`](docs/security/SECURITY.md).
+It starts with middleware-level request buckets and moves to a shared Redis-backed
+store for multi-instance safety.
