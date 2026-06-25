@@ -42,12 +42,55 @@ SCOPE_RULES_BY_PATH_PREFIX: dict[str, set[str]] = {
     "/api/v1/auth/": {"tracera:auth"},
 }
 
+_MAX_PATH_BYTES = 2048
+_MAX_QUERY_BYTES = 2048
+_MAX_BODY_BYTES = 1_048_576
+
 
 class ApiAuthzMiddleware(BaseHTTPMiddleware):
     """Enforce API authn/authz rules before endpoint handlers run."""
 
     def _is_public(self, path: str) -> bool:
         return any(path.startswith(prefix) for prefix in PUBLIC_PREFIXES)
+
+    def _validate_request_shape(self, request: Request) -> HTTPException | None:
+        path = request.url.path
+        query = request.url.query or ""
+
+        if len(path) > _MAX_PATH_BYTES:
+            return HTTPException(
+                status_code=status.HTTP_414_REQUEST_URI_TOO_LONG,
+                detail="Request path too long",
+            )
+
+        if len(query) > _MAX_QUERY_BYTES:
+            return HTTPException(
+                status_code=status.HTTP_414_REQUEST_URI_TOO_LONG,
+                detail="Query string too long",
+            )
+
+        for idx, char in enumerate((path + "?" + query)):
+            if ord(char) < 32:
+                return HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Control character in request target at position {idx}",
+                )
+
+        content_length = request.headers.get("content-length")
+        if content_length:
+            try:
+                if int(content_length) > _MAX_BODY_BYTES:
+                    return HTTPException(
+                        status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                        detail="Request body exceeds hard size limit",
+                    )
+            except ValueError:
+                return HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid Content-Length header value",
+                )
+
+        return None
 
     def _required_scopes(self, path: str, method: str) -> set[str]:
         required = set(SCOPE_RULES_BY_METHOD.get(method.upper(), set()))
@@ -62,6 +105,13 @@ class ApiAuthzMiddleware(BaseHTTPMiddleware):
 
         if self._is_public(path):
             return await call_next(request)
+
+        shape_error = self._validate_request_shape(request)
+        if shape_error:
+            return JSONResponse(
+                status_code=shape_error.status_code,
+                content={"detail": shape_error.detail},
+            )
 
         # All non-public API calls are currently subject to token checks.
         try:
