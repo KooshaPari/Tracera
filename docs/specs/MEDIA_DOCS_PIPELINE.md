@@ -218,4 +218,3 @@ This spec is authored for content-safe automation and can be copied unchanged ac
 - app slug replacement,
 - tool substitutions in Section 3.4,
 - and app-specific `INTENT` statements.
-
