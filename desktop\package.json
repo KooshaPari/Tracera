@@ -1,0 +1,15 @@
+{
+  "name": "tracera-electrobun-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "STEP-1 Electrobun desktop shell for Tracera.",
+  "scripts": {
+    "dev": "bunx --bun electrobun run src/index.ts",
+    "build": "bunx --bun electrobun build src/index.ts",
+    "package": "bunx --bun electrobun build src/index.ts"
+  },
+  "dependencies": {
+    "electrobun": "*"
+  }
+}
