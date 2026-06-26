@@ -7,7 +7,7 @@
 
 ## Project Overview
 
-Tracera is a cross-platform GPU-accelerated data pipeline and visualization framework built with Rust (core) + Python (bindings) + Go (services) + TypeScript (frontend).
+Tracera is an agent-native requirements traceability and project-management system built around the Rust `tracera-core` crate, the `traceability-core` domain model from `phenotype-pm-core`, and polyglot integration surfaces in Python, Go, and TypeScript.
 
 **Repository:** `Tracera/`
 **Language:** Rust (primary), Python, Go, TypeScript
