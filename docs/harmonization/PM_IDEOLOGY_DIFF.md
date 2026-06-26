@@ -404,3 +404,6 @@ Required end state:
 - **AgilePlus remains optional standalone**
 - **Tracera becomes the superset**
 
+## 10. Sync Note
+
+This document is intentionally limited to the current source snapshots and the observed repository wiring in this checkout.
