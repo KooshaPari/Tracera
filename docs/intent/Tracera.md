@@ -1,19 +1,20 @@
 <!--
-propagated-from: KooshaPari/phenotype-registry @ chore/l7-001-curation-snapshot
-date: 2026-06-17
-source-commit: a1aa44660
+propagated-from: KooshaPari/phenotype-registry @ chore/l7-010-taxonomy-rerender
+date: 2026-06-21
+source-commit: 2026-06-21-rerender
 do-not-edit-locally: regenerate via scripts/propagate-intent-to-repos.py
                      or update in the source-of-truth registry repo
 -->
 ---
 repo: "Tracera"
 aliases: []
-role: unknown
+role: product / app
 status: active
-last_verified: 2026-06-17
+archived: false
+last_verified: 2026-06-21
 bound_prompts: 51
 bound_plans: 0
-bound_responses: 1
+bound_responses: 4
 device: macbook
 ---
 
@@ -21,7 +22,8 @@ device: macbook
 
 ## Intent Statement
 
-<To be filled in by hand from the most recent binding prompt. This repo is bound to 51 prompts, 0 plans, and 1 agent responses captured between 2025-08 and 2026-06-17.>
+<To be filled in by hand from the most recent binding prompt. This repo is bound to 51 prompts, 0 plans, and 4 agent responses captured between 2025-08 and 2026-06-17.>
+
 
 ## Bound Prompts
 
@@ -90,6 +92,9 @@ _…and 1 more. See `_bindings.json` for full list._
 | Date | Source | File | Kind |
 | ---- | ------ | ---- | ---- |
 | ? | ? | `e4047b4c9e4816f6.md` | ? |
+| ? | ? | `3342f2d266cacb8d.md` | ? |
+| ? | ? | `f3f8b3dece5c29af.md` | ? |
+| ? | ? | `0e47ee95cd53a499.md` | ? |
 
 ## Boundary
 
@@ -107,4 +112,5 @@ See: [`docs/boundary/Tracera.md`](../boundary/Tracera.md)
 
 | Date | Change | Worklog |
 | ---- | ------ | ------- |
+| 2026-06-21 | L7-010: role taxonomy refresh (12-role, from ECOSYSTEM_MAP.md §1) | `worklogs/L7-010-taxonomy-rerender-2026-06-21.json` |
 | 2026-06-17 | Initial binding (L7-001 sweep) | `worklogs/L7-001-intent-boundary-curation-2026-06-17.json` |
