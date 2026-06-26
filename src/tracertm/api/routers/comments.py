@@ -21,7 +21,7 @@ from tracertm.models.item_comment import ItemComment
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/items/{item_id}/comments", tags=["comments"])
+router = APIRouter(prefix="/items/{item_id}/comments", tags=["comments"])
 
 # ---------------------------------------------------------------------------
 # Pydantic schemas
