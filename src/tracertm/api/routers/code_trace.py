@@ -4,19 +4,17 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from tracertm.api.config.rate_limiting import enforce_rate_limit
 from tracertm.api.deps import auth_guard, get_db
 from tracertm.repositories.item_repository import ItemRepository
 from tracertm.repositories.link_repository import LinkRepository
 
-if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession
-
-router = APIRouter(prefix="/api/v1/analysis", tags=["analysis", "code-trace"])
+router = APIRouter(tags=["analysis", "code-trace"])
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -113,9 +111,9 @@ def _build_level(item: Any, confidence: float, strategy: str) -> dict[str, Any]:
 async def get_code_trace(
     request: Request,
     component_id: str,
+    claims: Annotated[dict[str, Any], Depends(auth_guard)],
+    db: Annotated[AsyncSession, Depends(get_db)],
     project_id: str | None = None,
-    claims: Annotated[dict[str, Any], Depends(auth_guard)] = None,
-    db: Annotated[AsyncSession, Depends(get_db)] = None,
 ) -> dict[str, Any]:
     """Return a UICodeTraceChain for the given component / item ID.
 
