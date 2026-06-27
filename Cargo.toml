@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/tracera-core"]
+members = ["crates/tracera-core", "crates/tracera-server"]
 resolver = "2"
 
 [workspace.package]
