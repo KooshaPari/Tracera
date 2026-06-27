@@ -1,5 +1,0 @@
-E:\Dev\Tracera\.venv\Lib\site-packages\fastmcp\server\auth\providers\jwt.py:12: AuthlibDeprecationWarning: authlib.jose module is deprecated, please use joserfc instead.
-It will be compatible before version 2.0.0.
-  from authlib.jose import JsonWebKey, JsonWebToken
-INFO:     Started server process [567300]
-INFO:     Waiting for application startup.
