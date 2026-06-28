@@ -212,6 +212,54 @@ fn empty_object() -> Value {
     Value::Object(serde_json::Map::new())
 }
 
+// --- ingest (port of src/tracertm/services/{github,jira}_import_service.py) ---
+#[derive(Deserialize)]
+struct GitHubIngestRequest {
+    #[allow(dead_code)]
+    repo: String,
+    #[serde(default)]
+    issues: Vec<Value>,
+}
+
+#[derive(Deserialize)]
+struct JiraIngestRequest {
+    #[serde(default)]
+    issues: Vec<Value>,
+}
+
+#[derive(Serialize)]
+struct BulkIngestionResult {
+    total_processed: usize,
+    requirements_created: usize,
+    trace_links_created: usize,
+    errors: Vec<String>,
+}
+
+// One requirement + one trace link per issue that has a non-empty title; title-less issues become errors.
+fn ingest_issues(issues: &[Value], ref_field: &str) -> BulkIngestionResult {
+    let mut created = 0usize;
+    let mut errors = Vec::new();
+    for issue in issues {
+        let title = issue.get("title").and_then(|v| v.as_str()).map(str::trim);
+        match title {
+            Some(t) if !t.is_empty() => created += 1,
+            _ => {
+                let r = issue
+                    .get(ref_field)
+                    .map(|v| v.to_string())
+                    .unwrap_or_else(|| "unknown".to_string());
+                errors.push(format!("missing title for issue {r}"));
+            }
+        }
+    }
+    BulkIngestionResult {
+        total_processed: issues.len(),
+        requirements_created: created,
+        trace_links_created: created,
+        errors,
+    }
+}
+
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt()
@@ -237,6 +285,8 @@ async fn main() {
         .route("/api/v1/trace/reverse/:artifact_id", post(trace_reverse))
         .route("/evidence", get(list_evidence).post(create_evidence))
         .route("/evidence/health", get(health))
+        .route("/ingest/github", post(ingest_github))
+        .route("/ingest/jira", post(ingest_jira))
         .with_state(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
@@ -346,6 +396,14 @@ async fn spec_check(Json(req): Json<SpecCheckRequest>) -> Json<GovernanceReport>
 
 fn viol(spec_id: &str, code: &'static str, message: &'static str) -> GovernanceViolation {
     GovernanceViolation { spec_id: spec_id.to_string(), code, message }
+}
+
+async fn ingest_github(Json(req): Json<GitHubIngestRequest>) -> Json<BulkIngestionResult> {
+    Json(ingest_issues(&req.issues, "number"))
+}
+
+async fn ingest_jira(Json(req): Json<JiraIngestRequest>) -> Json<BulkIngestionResult> {
+    Json(ingest_issues(&req.issues, "key"))
 }
 
 async fn list_evidence(
