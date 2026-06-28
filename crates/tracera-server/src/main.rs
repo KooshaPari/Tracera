@@ -4,12 +4,15 @@ use axum::{
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::net::SocketAddr;
+use std::sync::{Arc, Mutex};
 use tracing_subscriber::EnvFilter;
 
 #[derive(Clone, Default)]
 struct AppState {
     version: String,
+    evidence: Arc<Mutex<Vec<EvidenceItem>>>,
 }
 
 #[derive(Serialize)]
@@ -178,6 +181,37 @@ fn default_status() -> String {
     "draft".to_string()
 }
 
+// --- evidence store (port of src/tracertm/api/routers/evidence.py) ---
+#[derive(Clone, Serialize)]
+struct EvidenceItem {
+    id: String,
+    artifact_id: String,
+    kind: String,
+    url: String,
+    metadata: Value,
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
+}
+
+#[derive(Deserialize)]
+struct EvidenceCreate {
+    artifact_id: String,
+    kind: String,
+    url: String,
+    #[serde(default = "empty_object")]
+    metadata: Value,
+}
+
+#[derive(Serialize)]
+struct EvidenceList {
+    items: Vec<EvidenceItem>,
+    count: usize,
+}
+
+fn empty_object() -> Value {
+    Value::Object(serde_json::Map::new())
+}
+
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt()
@@ -186,6 +220,7 @@ async fn main() {
 
     let state = AppState {
         version: env!("CARGO_PKG_VERSION").to_string(),
+        evidence: Arc::new(Mutex::new(Vec::new())),
     };
 
     let app = Router::new()
@@ -200,6 +235,8 @@ async fn main() {
         .route("/api/v1/governance/spec-check", post(spec_check))
         .route("/api/v1/trace/forward/:artifact_id", post(trace_forward))
         .route("/api/v1/trace/reverse/:artifact_id", post(trace_reverse))
+        .route("/evidence", get(list_evidence).post(create_evidence))
+        .route("/evidence/health", get(health))
         .with_state(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
@@ -309,6 +346,32 @@ async fn spec_check(Json(req): Json<SpecCheckRequest>) -> Json<GovernanceReport>
 
 fn viol(spec_id: &str, code: &'static str, message: &'static str) -> GovernanceViolation {
     GovernanceViolation { spec_id: spec_id.to_string(), code, message }
+}
+
+async fn list_evidence(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Json<EvidenceList> {
+    let items = state.evidence.lock().unwrap().clone();
+    Json(EvidenceList { count: items.len(), items })
+}
+
+async fn create_evidence(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    Json(payload): Json<EvidenceCreate>,
+) -> (axum::http::StatusCode, Json<EvidenceItem>) {
+    let now = Utc::now();
+    let mut store = state.evidence.lock().unwrap();
+    let item = EvidenceItem {
+        id: format!("ev-{}", store.len() + 1),
+        artifact_id: payload.artifact_id,
+        kind: payload.kind,
+        url: payload.url,
+        metadata: payload.metadata,
+        created_at: now,
+        updated_at: now,
+    };
+    store.push(item.clone());
+    (axum::http::StatusCode::CREATED, Json(item))
 }
 
 async fn blast_radius(Json(req): Json<BlastRadiusRequest>) -> Json<BlastRadiusResponse> {
