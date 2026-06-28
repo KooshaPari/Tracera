@@ -71,3 +71,13 @@ default/
 
 # Orphan lock files
 docs/package-lock.json
+# Bloat guard (2026-06-28): electron build binaries + caches that bloated .git
+**/app-builder-bin*/
+**/app-builder*
+node_modules/
+dist/
+.cache/
+target/
+*.pack
+.venv/
+__pycache__/
