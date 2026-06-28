@@ -1,0 +1,29 @@
+# Tracera process-compose definition
+# Run with:  process-compose -f .deploy\process-compose.yml
+version: "1"
+
+services:
+  tracera_server:
+    command: cmd /c ".deploy\\launch-tracera.bat"
+    depends_on: []
+    availability:
+      restart: always
+    readiness_probe:
+      http_get:
+        path: /health
+        host: 127.0.0.1
+        port: 8090
+      period: 5s
+      timeout: 3s
+
+  tracera_frontend:
+    command: cmd /c "cd frontend && bun run preview --port 4173 --host"
+    depends_on:
+      - tracera_server
+    readiness_probe:
+      http_get:
+        host: 127.0.0.1
+        path: /
+        port: 4173
+      period: 5s
+      timeout: 3s
