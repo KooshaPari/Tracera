@@ -1,0 +1,73 @@
+name: e2e
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-proc:
+    name: e2e (process-compose stack)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install process-compose
+        run: |
+          curl -fsSL https://github.com/F1RSTLY/process-compose/releases/latest/download/process-compose_Linux_x86_64.tar.gz \
+            | tar -xz -C /usr/local/bin
+          chmod +x /usr/local/bin/process-compose
+          process-compose --version
+
+      - name: Run e2e (docker-backed)
+        env:
+          PROCESS_COMPOSE_PROFILE: e2e
+        run: |
+          set -euo pipefail
+          docker compose -f compose/docker-compose.yml up -d --wait
+          process-compose -f compose/process-compose.phase.yml up -d
+          bash ./scripts/e2e/wait-stack.sh
+          bash ./scripts/e2e/run-all-suites.sh
+          process-compose -f compose/process-compose.phase.yml down
+          docker compose -f compose/docker-compose.yml down --remove-orphans -v
+
+      - name: Upload e2e artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-logs-${{ github.run_id }}
+          path: |
+            .e2e/**/*
+            !.e2e/**/node_modules/**
+
+  e2e-gate:
+    name: e2e-gate (100% green)
+    needs: [e2e-proc]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decide
+        run: |
+          if [ "${{ needs.e2e-proc.result }}" != "success" ]; then
+            echo "::error::e2e suite failed: ${{ needs.e2e-proc.result }}"
+            exit 1
+          fi
+          echo "All e2e suites green."

@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "name": "tracera",
+  "buildCommand": "(cd frontend && bun install && bun run build)",
+  "outputDirectory": "frontend/dist",
+  "framework": "vue",
+  "installCommand": "bun install",
+  "devCommand": "(cd frontend && bun run dev)",
+  "regions": ["iad1", "fra1"],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://tracera.kooshapari.dev/api/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "crons": []
+}
