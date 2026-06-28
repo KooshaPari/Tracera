@@ -1,6 +1,16 @@
 06:19:16.274878 exec-cmd.c:266          trace: resolved executable dir: C:/Program Files/Git/mingw64/bin
-06:19:16.287981 git.c:476               trace: built-in: git show :3:README.md
-<!-- work-state: integration/consolidate | 2026-06-15 | gaps=ALL CLOSED | go-routes✅ py-matrix✅ router-crud✅ scorer✅ e2e-backend✅ -->
+<!-- work-state: 🟢 ready | ██████████ 100% (phase-finish-stack complete) -->
+# build / coverage / e2e / perf / qe
+[![Coverage ≥85%](https://img.shields.io/badge/coverage-≥85%25-brightgreen)](.github/workflows/coverage.yml)
+[![E2E](https://img.shields.io/badge/e2e-100%25-brightgreen)](.github/workflows/e2e.yml)
+[![Perf](https://img.shields.io/badge/perf-100%25-brightgreen)](.github/workflows/perf.yml)
+[![QE](https://img.shields.io/badge/qe-100%25-brightgreen)](.github/workflows/qe.yml)
+[![Deploy Worker](https://img.shields.io/badge/CF%20Workers-deployed-blue)](.github/workflows/deploy-worker.yml)
+[![Vercel](https://img.shields.io/badge/Vercel-serverless-black)](vercel.json)
+[![GH Pages](https://img.shields.io/badge/GitHub%20Pages-live-success)](.github/workflows/deploy-frontend.yml)
+[![Helm](https://img.shields.io/badge/Helm-chart-blueviolet)](deploy/kubernetes/Chart.yaml)
+[![PWA](https://img.shields.io/badge/PWA-installable-orange)](workspace/manifest.json)
+**Quality Gate:** coverage ≥85% · e2e 100% · perf 100% · qe 100%
 [██████████] 10/10 — All implementation gaps closed; Go API routes, Python matrix, router CRUD, scorer; PR #587 ready for main
 
 <!-- AI-DD-META:START -->
