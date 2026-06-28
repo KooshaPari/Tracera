@@ -38,7 +38,6 @@ pub fn make_span(envelope_id: &str) -> Span {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tracing_subscriber::fmt;
 
     #[test]
     fn make_span_has_bus_metadata() {
