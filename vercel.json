@@ -17,7 +17,7 @@
     }
   ],
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://tracera.kooshapari.dev/api/$1" },
+    { "source": "/api/(.*)", "destination": "https://tracera.pheno.studio/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "crons": []

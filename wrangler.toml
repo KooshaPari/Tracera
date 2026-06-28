@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ENVIRONMENT = "production"
-TRACERA_API = "https://tracera.kooshapari.dev"
+TRACERA_API = "https://tracera.pheno.studio"
 
 [build]
 command = "cargo build --release --bin tracera-edge"
