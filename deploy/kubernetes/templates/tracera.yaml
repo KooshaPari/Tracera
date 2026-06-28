@@ -11,8 +11,8 @@ metadata:
     app.kubernetes.io/part-of: phase-finish-stack
     app.kubernetes.io/component: backend
 spec:
-  {{- if not .Values.tracera.autoscaling.enabled }}
-  replicas: {{ .Values.tracera.replicaCount | default 1 }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount | default 1 }}
   {{- end }}
   selector:
     matchLabels:
@@ -25,8 +25,8 @@ spec:
     spec:
       containers:
         - name: tracera-server
-          image: "{{ .Values.tracera.image.repository }}:{{ .Values.tracera.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.tracera.image.pullPolicy | default "IfNotPresent" }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - name: http
               containerPort: 8080
@@ -66,8 +66,8 @@ spec:
             periodSeconds: 5
             failureThreshold: 3
           resources:
-            {{- toYaml .Values.tracera.resources | nindent 12 }}
-      {{- with .Values.tracera.nodeSelector }}
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
       nodeSelector: {{ toYaml . | nindent 8 }}
       {{- end }}
 ---
@@ -79,10 +79,10 @@ metadata:
     app.kubernetes.io/name: tracera
     app.kubernetes.io/part-of: phase-finish-stack
 spec:
-  type: {{ .Values.tracera.service.type | default "ClusterIP" }}
+  type: {{ .Values.service.type | default "ClusterIP" }}
   ports:
     - name: http
-      port: {{ .Values.tracera.service.port | default 8080 }}
+      port: {{ .Values.service.port | default 8080 }}
       targetPort: http
       protocol: TCP
   selector:

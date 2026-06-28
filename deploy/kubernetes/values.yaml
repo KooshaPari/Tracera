@@ -1,6 +1,12 @@
 # -- Tracera Helm values (default; override per environment) --
-
 replicaCount: 1
+
+# Autoscaling defaults (used by templates/tracera.yaml)
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
 
 image:
   repository: ghcr.io/kooshapari/tracera
@@ -12,11 +18,21 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+# Persistence mounted to /data on tracera pods (required by pvc.yaml)
+persistence:
+  enabled: true
+  storageClass: ""
+  size: 50Gi
+  accessModes:
+    - ReadWriteOnce
+
+# Banner text for every container's MOTD (required by configmap.yaml)
+config:
+  banner: "phase-finish-stack / Tracera v0.1.0-native-exe"
+
+# Port the tracera-server listens on (required by configmap.yaml + service.yaml)
 service:
-  type: LoadBalancer
   port: 38123
-  targetPort: 38123
-  nodePort: 30123
 
 ingress:
   enabled: false
@@ -36,13 +52,6 @@ resources:
   requests:
     cpu: 250m
     memory: 256Mi
-
-persistence:
-  enabled: true
-  size: 10Gi
-  storageClass: ""
-  accessModes:
-    - ReadWriteOnce
 
 env:
   - name: TRACERA_PORT

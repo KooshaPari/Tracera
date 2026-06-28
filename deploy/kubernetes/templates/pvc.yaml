@@ -5,10 +5,14 @@ metadata:
   labels:
     app.kubernetes.io/part-of: phase-finish-stack
 spec:
-  accessModes: ["ReadWriteOnce"]
-  {{- if .Values.persistence.data.storageClass }}
-  storageClassName: {{ .Values.persistence.data.storageClass }}
-  {{- end }}
+spec:
+  accessModes:
+    - {{ default "ReadWriteOnce" .Values.persistence.accessModes | quote }}
   resources:
     requests:
-      storage: {{ .Values.persistence.data.size | default "50Gi" }}
+      storage: {{ default "10Gi" .Values.persistence.size }}
+  {{- with .Values.persistence.storageClass }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+    requests:
+      storage: {{ .Values.persistence.size | default "50Gi" }}
