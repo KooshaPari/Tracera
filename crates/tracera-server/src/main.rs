@@ -13,6 +13,8 @@ use tracing_subscriber::EnvFilter;
 struct AppState {
     version: String,
     evidence: Arc<Mutex<Vec<EvidenceItem>>>,
+    sprints: Arc<Mutex<Vec<Sprint>>>,
+    stories: Arc<Mutex<Vec<Story>>>,
 }
 
 #[derive(Serialize)]
@@ -212,6 +214,55 @@ fn empty_object() -> Value {
     Value::Object(serde_json::Map::new())
 }
 
+// --- sdlc-pm (port of src/tracertm/api/routers/sdlc_pm.py) ---
+#[derive(Clone, Serialize)]
+struct Sprint {
+    id: String,
+    name: String,
+    goal: String,
+    start_date: DateTime<Utc>,
+    end_date: DateTime<Utc>,
+    status: String,
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
+}
+
+#[derive(Clone, Serialize)]
+struct Story {
+    id: String,
+    sprint_id: Option<String>,
+    title: String,
+    description: String,
+    status: String,
+    story_points: Option<i64>,
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
+}
+
+#[derive(Deserialize)]
+struct SprintCreate {
+    name: String,
+    goal: String,
+    start_date: DateTime<Utc>,
+    end_date: DateTime<Utc>,
+}
+
+// --- org-intel (port of src/tracertm/api/routers/org_intel.py) ---
+#[derive(Serialize)]
+struct TeamResponse {
+    id: String,
+    name: String,
+    description: String,
+    members: Vec<String>,
+}
+
+#[derive(Serialize)]
+struct MetricsResponse {
+    total_artifacts: usize,
+    coverage_ratio: f64,
+    open_gaps: u32,
+}
+
 // --- ingest (port of src/tracertm/services/{github,jira}_import_service.py) ---
 #[derive(Deserialize)]
 struct GitHubIngestRequest {
@@ -269,6 +320,8 @@ async fn main() {
     let state = AppState {
         version: env!("CARGO_PKG_VERSION").to_string(),
         evidence: Arc::new(Mutex::new(Vec::new())),
+        sprints: Arc::new(Mutex::new(Vec::new())),
+        stories: Arc::new(Mutex::new(Vec::new())),
     };
 
     let app = Router::new()
@@ -287,6 +340,12 @@ async fn main() {
         .route("/evidence/health", get(health))
         .route("/ingest/github", post(ingest_github))
         .route("/ingest/jira", post(ingest_jira))
+        .route("/sdlc-pm/health", get(health))
+        .route("/sdlc-pm/sprints", get(list_sprints).post(create_sprint))
+        .route("/sdlc-pm/stories", get(list_stories))
+        .route("/org-intel/health", get(health))
+        .route("/org-intel/teams", get(list_teams))
+        .route("/org-intel/metrics", get(org_metrics))
         .with_state(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
@@ -396,6 +455,51 @@ async fn spec_check(Json(req): Json<SpecCheckRequest>) -> Json<GovernanceReport>
 
 fn viol(spec_id: &str, code: &'static str, message: &'static str) -> GovernanceViolation {
     GovernanceViolation { spec_id: spec_id.to_string(), code, message }
+}
+
+async fn list_sprints(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Json<Vec<Sprint>> {
+    Json(state.sprints.lock().unwrap().clone())
+}
+
+async fn list_stories(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Json<Vec<Story>> {
+    Json(state.stories.lock().unwrap().clone())
+}
+
+async fn create_sprint(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    Json(payload): Json<SprintCreate>,
+) -> (axum::http::StatusCode, Json<Sprint>) {
+    let now = Utc::now();
+    let mut store = state.sprints.lock().unwrap();
+    let sprint = Sprint {
+        id: format!("sprint-{}", store.len() + 1),
+        name: payload.name,
+        goal: payload.goal,
+        start_date: payload.start_date,
+        end_date: payload.end_date,
+        status: "planned".to_string(),
+        created_at: now,
+        updated_at: now,
+    };
+    store.push(sprint.clone());
+    (axum::http::StatusCode::CREATED, Json(sprint))
+}
+
+async fn list_teams() -> Json<Vec<TeamResponse>> {
+    // Seed defaults (mirrors Python's empty-store fallback). ponytail: static seed, swap for store when CRUD lands
+    Json(vec![
+        TeamResponse { id: "team-1".into(), name: "Platform Team".into(), description: "Core platform engineering".into(), members: vec![] },
+        TeamResponse { id: "team-2".into(), name: "Product Team".into(), description: "Product feature development".into(), members: vec![] },
+        TeamResponse { id: "team-3".into(), name: "Security Team".into(), description: "Security and compliance".into(), members: vec![] },
+    ])
+}
+
+async fn org_metrics() -> Json<MetricsResponse> {
+    Json(MetricsResponse { total_artifacts: 30, coverage_ratio: 0.75, open_gaps: 3 })
 }
 
 async fn ingest_github(Json(req): Json<GitHubIngestRequest>) -> Json<BulkIngestionResult> {
