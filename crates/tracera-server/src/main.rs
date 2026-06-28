@@ -97,6 +97,87 @@ struct ConfidenceResponse {
     rationale: String,
 }
 
+// --- governance spec-check (port of src/tracertm/governance.py) ---
+#[derive(Deserialize)]
+struct GovernanceSpec {
+    spec_id: String,
+    #[serde(default)]
+    acceptance_criteria: Vec<String>,
+    #[serde(default)]
+    evidence_links: Vec<String>,
+    #[serde(default = "default_status")]
+    status: String,
+}
+
+#[derive(Deserialize)]
+struct GovernanceTrace {
+    spec_id: String,
+    #[allow(dead_code)]
+    target_id: String,
+    kind: String,
+}
+
+#[derive(Deserialize)]
+struct SpecCheckRequest {
+    #[serde(default)]
+    specs: Vec<GovernanceSpec>,
+    #[serde(default)]
+    traces: Vec<GovernanceTrace>,
+}
+
+#[derive(Serialize)]
+struct GovernanceViolation {
+    spec_id: String,
+    code: &'static str,
+    message: &'static str,
+}
+
+#[derive(Serialize)]
+struct GovernanceReport {
+    status: &'static str,
+    spec_count: usize,
+    trace_count: usize,
+    violations: Vec<GovernanceViolation>,
+}
+
+// --- blast-radius / trace neighbors ---
+#[derive(Deserialize)]
+struct BlastRadiusRequest {
+    #[serde(default)]
+    links: Vec<TraceLinkInput>,
+    changed_artifact_ids: Vec<String>,
+}
+
+#[derive(Serialize)]
+struct BlastNodeResponse {
+    artifact_id: String,
+    distance: u32,
+}
+
+#[derive(Serialize)]
+struct BlastRadiusResponse {
+    seeds: Vec<String>,
+    blast_radius: Vec<BlastNodeResponse>,
+    total: usize,
+}
+
+#[derive(Deserialize)]
+struct TraceQueryRequest {
+    #[serde(default)]
+    links: Vec<TraceLinkInput>,
+}
+
+#[derive(Serialize)]
+struct TraceNeighborsResponse {
+    artifact_id: String,
+    direction: &'static str,
+    neighbors: Vec<String>,
+}
+
+fn default_status() -> String {
+    "draft".to_string()
+}
+
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt()
@@ -115,6 +196,10 @@ async fn main() {
         .route("/api/v1/coverage-matrix", post(coverage_matrix))
         .route("/api/v1/impact", post(impact))
         .route("/api/v1/confidence", post(confidence))
+        .route("/api/v1/blast-radius", post(blast_radius))
+        .route("/api/v1/governance/spec-check", post(spec_check))
+        .route("/api/v1/trace/forward/:artifact_id", post(trace_forward))
+        .route("/api/v1/trace/reverse/:artifact_id", post(trace_reverse))
         .with_state(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
@@ -175,6 +260,129 @@ async fn confidence(Json(request): Json<ConfidenceRequest>) -> Json<ConfidenceRe
         confidence: score,
         rationale: "Jaccard token overlap baseline".to_string(),
     })
+}
+
+async fn spec_check(Json(req): Json<SpecCheckRequest>) -> Json<GovernanceReport> {
+    use std::collections::{BTreeSet, HashMap};
+    let mut traces_by_spec: HashMap<&str, BTreeSet<&str>> = HashMap::new();
+    for t in &req.traces {
+        traces_by_spec.entry(t.spec_id.as_str()).or_default().insert(t.kind.as_str());
+    }
+    let known: BTreeSet<&str> = req.specs.iter().map(|s| s.spec_id.as_str()).collect();
+    let mut violations = Vec::new();
+    let mut seen: BTreeSet<&str> = BTreeSet::new();
+    for s in &req.specs {
+        if !seen.insert(s.spec_id.as_str()) {
+            violations.push(viol(&s.spec_id, "duplicate_spec", "Duplicate spec id"));
+            continue;
+        }
+        if s.status != "approved" {
+            violations.push(viol(&s.spec_id, "not_approved", "Spec must be approved"));
+        }
+        if s.acceptance_criteria.is_empty() {
+            violations.push(viol(&s.spec_id, "missing_acceptance", "Acceptance criteria required"));
+        }
+        if s.evidence_links.is_empty() {
+            violations.push(viol(&s.spec_id, "missing_evidence", "Evidence links required"));
+        }
+        let kinds = traces_by_spec.get(s.spec_id.as_str());
+        let has = |k: &str| kinds.map(|set| set.contains(k)).unwrap_or(false);
+        if !has("implementation") {
+            violations.push(viol(&s.spec_id, "missing_implementation", "Implementation trace required"));
+        }
+        if !has("test") {
+            violations.push(viol(&s.spec_id, "missing_test", "Test trace required"));
+        }
+    }
+    for t in &req.traces {
+        if !known.contains(t.spec_id.as_str()) {
+            violations.push(viol(&t.spec_id, "orphan_trace", "Trace target has no spec"));
+        }
+    }
+    Json(GovernanceReport {
+        status: if violations.is_empty() { "pass" } else { "fail" },
+        spec_count: req.specs.len(),
+        trace_count: req.traces.len(),
+        violations,
+    })
+}
+
+fn viol(spec_id: &str, code: &'static str, message: &'static str) -> GovernanceViolation {
+    GovernanceViolation { spec_id: spec_id.to_string(), code, message }
+}
+
+async fn blast_radius(Json(req): Json<BlastRadiusRequest>) -> Json<BlastRadiusResponse> {
+    let adj = build_adjacency(&req.links);
+    let mut blast = Vec::new();
+    for node in bfs_distances(&adj, &req.changed_artifact_ids) {
+        blast.push(BlastNodeResponse { artifact_id: node.0, distance: node.1 });
+    }
+    Json(BlastRadiusResponse {
+        total: blast.len(),
+        seeds: req.changed_artifact_ids,
+        blast_radius: blast,
+    })
+}
+
+async fn trace_forward(
+    axum::extract::Path(artifact_id): axum::extract::Path<String>,
+    Json(req): Json<TraceQueryRequest>,
+) -> Json<TraceNeighborsResponse> {
+    let neighbors = neighbors_of(&req.links, &artifact_id, true);
+    Json(TraceNeighborsResponse { artifact_id, direction: "forward", neighbors })
+}
+
+async fn trace_reverse(
+    axum::extract::Path(artifact_id): axum::extract::Path<String>,
+    Json(req): Json<TraceQueryRequest>,
+) -> Json<TraceNeighborsResponse> {
+    let neighbors = neighbors_of(&req.links, &artifact_id, false);
+    Json(TraceNeighborsResponse { artifact_id, direction: "reverse", neighbors })
+}
+
+fn neighbors_of(links: &[TraceLinkInput], id: &str, forward: bool) -> Vec<String> {
+    links
+        .iter()
+        .filter_map(|l| {
+            if forward && l.source_id == id {
+                Some(l.target_id.clone())
+            } else if !forward && l.target_id == id {
+                Some(l.source_id.clone())
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
+fn build_adjacency(links: &[TraceLinkInput]) -> std::collections::HashMap<String, Vec<String>> {
+    let mut adj: std::collections::HashMap<String, Vec<String>> = std::collections::HashMap::new();
+    for l in links {
+        adj.entry(l.source_id.clone()).or_default().push(l.target_id.clone());
+    }
+    adj
+}
+
+// BFS forward reachability with distance; seeds are excluded from output. ponytail: O(V+E) plain BFS, fine for trace graphs
+fn bfs_distances(
+    adj: &std::collections::HashMap<String, Vec<String>>,
+    seeds: &[String],
+) -> Vec<(String, u32)> {
+    use std::collections::{HashSet, VecDeque};
+    let mut visited: HashSet<String> = seeds.iter().cloned().collect();
+    let mut queue: VecDeque<(String, u32)> = seeds.iter().map(|s| (s.clone(), 0)).collect();
+    let mut out = Vec::new();
+    while let Some((node, dist)) = queue.pop_front() {
+        if let Some(targets) = adj.get(&node) {
+            for t in targets {
+                if visited.insert(t.clone()) {
+                    out.push((t.clone(), dist + 1));
+                    queue.push_back((t.clone(), dist + 1));
+                }
+            }
+        }
+    }
+    out
 }
 
 fn build_coverage_matrix(request: CoverageMatrixRequest) -> CoverageMatrixResponse {
