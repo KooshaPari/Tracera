@@ -24,12 +24,12 @@ jobs:
           git reflog expire --expire=now --all || true
           git gc --prune=now --aggressive || true
           echo "AFTER: $(du -sh . | cut -f1)"
-      - name: Force-push
+      - name: Push main only (not --mirror, avoids protected releases/* refs)
         if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           cd repo.git
-          git push --force --mirror https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          echo "PUSHED"
+          git push --force https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main:main
+          echo "PUSHED main"
       - name: Dry note
         if: ${{ github.event.inputs.dry_run != 'false' }}
         run: echo "DRY RUN - no push"
