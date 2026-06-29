@@ -1,5 +1,5 @@
 name = "tracera-edge"
-main = "crates/tracera-edge/src/main.rs"
+main = "crates/tracera-edge/src/lib.rs"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
@@ -8,7 +8,7 @@ ENVIRONMENT = "production"
 TRACERA_API = "https://tracera.kooshapari.dev"
 
 [build]
-command = "cargo build --release --bin tracera-edge"
+command = "cargo install -q worker-build && worker-build --release"
 
 [[kv_namespaces]]
 binding = "TRACERA_KV"
