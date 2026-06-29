@@ -1,0 +1,37 @@
+name: debloat-history
+# Manual-only: rewrites history to strip committed build binaries (app-builder-bin etc) + blobs >5M.
+# DESTRUCTIVE: force-pushes rewritten history to main. Restore point = tag pre-debloat-backup.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type DEBLOAT to confirm history rewrite + force-push'
+        required: true
+permissions:
+  contents: write
+jobs:
+  debloat:
+    if: ${{ github.event.inputs.confirm == 'DEBLOAT' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install git-filter-repo
+        run: pipx install git-filter-repo || pip install git-filter-repo
+      - name: Mirror clone (full history, CI fast network)
+        run: |
+          git clone --mirror https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git repo.git
+          cd repo.git && du -sh . && echo "--- before ---"
+      - name: Strip bloat
+        run: |
+          cd repo.git
+          git filter-repo --force \
+            --strip-blobs-bigger-than 5M \
+            --path-glob '*app-builder*' --invert-paths \
+            --path-glob '*/node_modules/*' --invert-paths
+          du -sh . && echo "--- after ---"
+      - name: Force-push rewritten history
+        run: |
+          cd repo.git
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git 2>/dev/null || true
+          git push --force --mirror origin
+      - name: Done
+        run: echo "De-bloat complete. Restore via tag pre-debloat-backup if needed."
