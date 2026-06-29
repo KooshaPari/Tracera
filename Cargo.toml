@@ -1,6 +1,8 @@
 $CT_DECODED
 
 [workspace.metadata.dist]
+cargo-base64: invalid input
+[workspace.metadata.dist]
 cargo-dist-version = "0.28.0"
 ci = ["github"]
 installers = ["shell", "powershell", "msi"]
