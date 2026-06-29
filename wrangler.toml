@@ -1,0 +1,23 @@
+name = "tracera-edge"
+main = "crates/tracera-edge/src/lib.rs"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+TRACERA_API = "https://tracera.kooshapari.dev"
+
+[build]
+command = "cargo install -q worker-build && worker-build --release"
+
+[[kv_namespaces]]
+binding = "TRACERA_KV"
+id = "to-be-set-on-first-deploy"
+
+[[r2_buckets]]
+binding = "TRACERA_R2"
+bucket_name = "tracera-artifacts"
+
+[observability]
+enabled = true
+head_sampling_rate = 0.5
