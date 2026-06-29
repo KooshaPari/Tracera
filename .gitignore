@@ -12,6 +12,8 @@ yarn-debug.log*
 yarn-error.log*
 package-lock.json
 .pnpm-debug.log*
+**/app-builder-bin*/
+**/app-builder*
 
 # Python
 __pycache__/
@@ -43,6 +45,10 @@ wheels/
 .dmypy.json
 *.pyo
 .hypothesis/
+.venv/
+.cache/
+target/
+*.pack
 
 # OS
 .DS_Store
