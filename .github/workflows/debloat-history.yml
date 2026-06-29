@@ -2,13 +2,8 @@ name: debloat-history
 on:
   workflow_dispatch:
     inputs:
-      confirm:
-        description: 'Type DEBLOAT to confirm'
-        required: true
-      dry_run:
-        description: 'true = report only, false = force-push'
-        required: true
-        default: 'true'
+      confirm: { description: 'Type DEBLOAT', required: true }
+      dry_run: { description: 'true=report,false=push', required: true, default: 'true' }
 permissions:
   contents: write
 jobs:
@@ -25,15 +20,16 @@ jobs:
       - name: Strip bloat
         run: |
           cd repo.git
-          git filter-repo --force --strip-blobs-bigger-than 5M --path-glob '*app-builder*' --invert-paths --path-glob '*/node_modules/*' --invert-paths
+          git filter-repo --force --strip-blobs-bigger-than 5M --path-glob '*app-builder*' --invert-paths --path-glob '*/node_modules/*' --invert-paths --path-glob '*basedpyright-errors*' --invert-paths
+          git reflog expire --expire=now --all || true
+          git gc --prune=now --aggressive || true
           echo "AFTER: $(du -sh . | cut -f1)"
-          git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' 2>/dev/null | awk '/^blob/ {print $3, $4}' | sort -rn | head -15
       - name: Force-push
         if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           cd repo.git
           git push --force --mirror https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          echo "PUSHED. Restore via tag pre-debloat-backup."
+          echo "PUSHED"
       - name: Dry note
         if: ${{ github.event.inputs.dry_run != 'false' }}
-        run: echo "DRY RUN — no push."
+        run: echo "DRY RUN - no push"
