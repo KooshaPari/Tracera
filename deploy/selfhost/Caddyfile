@@ -1,0 +1,22 @@
+{HOSTNAME} {
+  # Reverse proxy to Tracera server
+  reverse_proxy tracera-server:8080
+
+  # Security headers
+  header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  header X-Content-Type-Options "nosniff"
+  header X-Frame-Options "SAMEORIGIN"
+  header X-XSS-Protection "1; mode=block"
+  header Referrer-Policy "strict-origin-when-cross-origin"
+  header Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+  # Forward auth placeholder (uncomment and configure with WorkOS AuthKit)
+  # forward_auth localhost:8081 {
+  #   uri /auth
+  #   copy_headers Authorization
+  #   strip_header X-Forwarded-Auth
+  # }
+
+  # Enable compression
+  encode gzip
+}

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  tracera-server:
+    image: tracera:latest
+    container_name: tracera-server
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    restart: unless-stopped
+    networks:
+      - tracera-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy-reverse-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      - HOSTNAME=${HOSTNAME:-tracera.pheno.studio}
+    restart: unless-stopped
+    networks:
+      - tracera-network
+    depends_on:
+      - tracera-server
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared-tunnel
+    command: tunnel run
+    environment:
+      - CLOUDFLARED_TOKEN=${CF_TUNNEL_TOKEN}
+    restart: unless-stopped
+    networks:
+      - tracera-network
+    depends_on:
+      - caddy
+
+networks:
+  tracera-network:
+    driver: bridge
+
+volumes:
+  caddy-data:
+  caddy-config:
