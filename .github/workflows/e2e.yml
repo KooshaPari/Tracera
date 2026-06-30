@@ -1,0 +1,36 @@
+name: e2e
+on:
+  push:
+    branches: [main]
+    paths: ['crates/tracera-server/**']
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Live deploy URL to test against (blank = build+run locally)'
+        required: false
+permissions:
+  contents: read
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Resolve target (local build or live URL)
+        run: |
+          if [ -n "${{ github.event.inputs.target_url }}" ]; then
+            echo "BASE=${{ github.event.inputs.target_url }}" >> $GITHUB_ENV
+          else
+            cargo build --release -p tracera-server
+            ./target/release/tracera-server & sleep 3
+            echo "BASE=http://127.0.0.1:8080" >> $GITHUB_ENV
+          fi
+      - name: E2E endpoint contracts
+        run: |
+          set -e
+          curl -fsS "$BASE/health" | grep -q '"status":"ok"'
+          curl -fsS "$BASE/ready"  | grep -q '"status":"ready"'
+          curl -fsS -X POST "$BASE/api/v1/coverage-matrix" -H 'content-type: application/json' -d '{"links":[{"source_id":"FR-1","target_id":"T-1","relationship":"verifies","confidence":0.95}]}' | grep -q '"covered"'
+          curl -fsS -X POST "$BASE/api/v1/governance/spec-check" -H 'content-type: application/json' -d '{"specs":[{"spec_id":"S1","status":"draft"}]}' | grep -q '"not_approved"'
+          echo "E2E PASS"
