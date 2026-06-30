@@ -1,65 +1,20 @@
-{$HOSTNAME} {
-	# Security headers
-	header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-	header X-Content-Type-Options "nosniff"
-	header X-Frame-Options "DENY"
-	header X-XSS-Protection "1; mode=block"
-	header Referrer-Policy "strict-origin-when-cross-origin"
-	header Permissions-Policy "geolocation=(), microphone=(), camera=()"
-	header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https:; frame-ancestors 'none'"
+http://{$TRACERA_PUBLIC_HOSTNAME}, :80 {
+	encode zstd gzip
 
-	# Reverse proxy to tracera-server
-	reverse_proxy {$TRACERA_SERVER} {
-		header_up X-Forwarded-Proto {scheme}
-		header_up X-Forwarded-Host {host}
-		header_up X-Forwarded-Port {port}
-		header_up X-Real-IP {remote_host}
-
-		# Enable WebSocket support
-		header_up Connection "upgrade"
-		header_up Upgrade "websocket"
-	}
-
-	# Optional: WorkOS AuthKit forward_auth integration
-	# Uncomment and configure for centralized authentication
-	#
-	# @protected {
-	#     path /api/* /projects/* /admin*
+	# WorkOS AuthKit middleware would be inserted here before the app proxy.
+	# forward_auth workos-authkit:3000 {
+	# 	uri /api/auth/caddy
+	# 	copy_headers X-WorkOS-User-Id X-WorkOS-Email X-WorkOS-Organization-Id
 	# }
-	#
-	# route @protected {
-	#     forward_auth localhost:9091 {
-	#         uri /auth
-	#         copy_headers Authorization Cookie
-	#         rewrite_uri /auth
-	#     }
-	# }
-	#
-	# This requires a separate authentication sidecar service.
-	# See deploy/selfhost/README.md for setup instructions.
 
-	# Health check endpoint (passthrough to backend)
-	handle /health {
-		reverse_proxy {$TRACERA_SERVER}
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		-Server
 	}
 
-	# Metrics endpoint (optional, can be protected)
-	handle /metrics {
-		reverse_proxy {$TRACERA_SERVER}
-	}
-
-	# Log access
-	log {
-		output stdout
-		format json
-	}
-}
-
-# Localhost alias for development
-localhost:8081 {
-	reverse_proxy {$TRACERA_SERVER} {
-		header_up X-Forwarded-Proto http
-		header_up X-Forwarded-Host localhost
-		header_up X-Forwarded-Port 8081
-	}
+	reverse_proxy tracera-server:8080
 }

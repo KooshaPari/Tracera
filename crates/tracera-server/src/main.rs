@@ -5,6 +5,7 @@ use axum::{
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::env;
 use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
 use tracing_subscriber::EnvFilter;
@@ -348,7 +349,10 @@ async fn main() {
         .route("/org-intel/metrics", get(org_metrics))
         .with_state(state);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+    let addr = env::var("TRACERA_BIND_ADDR")
+        .ok()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or_else(|| SocketAddr::from(([127, 0, 0, 1], 8080)));
     let listener = tokio::net::TcpListener::bind(addr).await.expect("bind");
     axum::serve(listener, app).await.expect("server failed");
 }

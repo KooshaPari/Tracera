@@ -1,81 +1,48 @@
-version: '3.8'
-
 services:
   tracera-server:
-    image: tracera:latest
-    container_name: tracera-server
-    restart: unless-stopped
-    ports:
-      - "8080:8080"
+    image: rust:1.82-bookworm
+    working_dir: /workspace
+    command: sh -lc "cargo run --release -p tracera-server"
     environment:
-      # Tracera server configuration
-      PORT: "8080"
-      LOG_LEVEL: "info"
-
-      # Database connection
-      DATABASE_URL: ${DATABASE_URL:-}
-
-      # Authentication (WorkOS)
-      WORKOS_API_KEY: ${WORKOS_API_KEY:-}
-      WORKOS_CLIENT_ID: ${WORKOS_CLIENT_ID:-}
-
-      # Optional: API keys and service integrations
-      # SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN:-}
-      # GITHUB_PAT: ${GITHUB_PAT:-}
+      TRACERA_BIND_ADDR: 0.0.0.0:8080
     volumes:
-      - tracera-data:/data
-    networks:
-      - tracera-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      - ../..:/workspace
+      - tracera-cargo-cache:/usr/local/cargo/registry
+      - tracera-target-cache:/workspace/target
+    expose:
+      - "8080"
+    restart: unless-stopped
 
   caddy:
-    image: caddy:latest
-    container_name: tracera-caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy-data:/data
-      - caddy-config:/config
-    environment:
-      HOSTNAME: ${HOSTNAME:-tracera.pheno.studio}
-      TRACERA_SERVER: tracera-server:8080
-    networks:
-      - tracera-net
+    image: caddy:2.8-alpine
     depends_on:
       - tracera-server
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    environment:
+      TRACERA_PUBLIC_HOSTNAME: ${TRACERA_PUBLIC_HOSTNAME:-tracera.pheno.studio}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    ports:
+      - "80:80"
+    restart: unless-stopped
 
   cloudflared:
     image: cloudflare/cloudflared:latest
-    container_name: tracera-cloudflared
-    restart: unless-stopped
-    command: tunnel --no-autoupdate run
-    environment:
-      TUNNEL_TOKEN: ${CF_TUNNEL_TOKEN:-}
-    networks:
-      - tracera-net
     depends_on:
       - caddy
-    profiles:
-      - cloudflare
+    command:
+      - tunnel
+      - --no-autoupdate
+      - run
+      - --token
+      - ${CF_TUNNEL_TOKEN:?CF_TUNNEL_TOKEN is required}
+    environment:
+      CF_TUNNEL_TOKEN: ${CF_TUNNEL_TOKEN}
+    restart: unless-stopped
 
 volumes:
-  tracera-data:
   caddy-data:
   caddy-config:
-
-networks:
-  tracera-net:
-    driver: bridge
+  tracera-cargo-cache:
+  tracera-target-cache:
