@@ -1,0 +1,75 @@
+{
+  "name": "Tracera — Distributed Trace Workbench",
+  "short_name": "Tracera",
+  "description": "Polyglot trace analysis, telemetry routing, and observability replay. Backend on Rust/axum (tracera-server.exe) + Go + Python; frontend via Vite + Vue 3 + TypeScript.",
+  "id": "/?source=pwa",
+  "scope": "/",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#0b1020",
+  "theme_color": "#0b1020",
+  "categories": ["developer", "productivity", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/tracera-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/tracera-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/tracera-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Trace Replay",
+      "short_name": "Replay",
+      "url": "/replay?source=pwa",
+      "icons": [{ "src": "icons/tracera-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Live Tail",
+      "short_name": "Tail",
+      "url": "/live?source=pwa",
+      "icons": [{ "src": "icons/tracera-icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "share_target": {
+    "action": "/ingest",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        { "name": "trace", "accept": ["application/json", "application/octet-stream", ".json", ".ndjson", ".log"] }
+      ]
+    }
+  },
+  "screenshots": [
+    {
+      "src": "screenshots/tracera-home.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "screenshots/tracera-home-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
+}
