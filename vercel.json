@@ -1,7 +1,8 @@
 {
   "version": 2,
   "name": "tracera",
-  "outputDirectory": "public",
+  "buildCommand": "cd frontend && npm ci && npm run build",
+  "outputDirectory": "frontend/dist",
   "regions": ["iad1"],
   "headers": [
     {
