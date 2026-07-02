@@ -16,19 +16,48 @@ permissions:
 jobs:
   publish-release:
     name: Publish release
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     if: startsWith(github.ref, 'refs/tags/')
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive: tracera-server-x86_64-linux.tar.gz
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            archive: tracera-server-x86_64-macos.tar.gz
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            archive: tracera-server-aarch64-macos.tar.gz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive: tracera-server-x86_64-windows.zip
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - uses: taiki-e/upload-rust-binary-action@v1
         with:
-          bin: tracera-server
-          target: x86_64-unknown-linux-gnu,x86_64-pc-windows-gnu,x86_64-apple-darwin,aarch64-apple-darwin
-          tar: unix
-          zip: windows
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checksum: sha256
+          targets: ${{ matrix.target }}
+      - name: Build release binary
+        working-directory: crates/tracera-server
+        run: cargo build --release --target ${{ matrix.target }}
+      - name: Create archive (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          cd crates/tracera-server/target/${{ matrix.target }}/release
+          tar -czf ${{ github.workspace }}/${{ matrix.archive }} tracera-server
+      - name: Create archive (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cd crates/tracera-server/target/${{ matrix.target }}/release
+          7z a ${{ github.workspace }}/${{ matrix.archive }} tracera-server.exe
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ matrix.archive }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-crates:
     name: Publish crates.io
