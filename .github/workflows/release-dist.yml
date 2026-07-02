@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   publish-release:
-    name: Publish release
+    name: Build and upload ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     if: startsWith(github.ref, 'refs/tags/')
     strategy:
@@ -27,7 +27,7 @@ jobs:
           - os: macos-latest
             target: x86_64-apple-darwin
             archive: tracera-server-x86_64-macos.tar.gz
-          - os: macos-latest
+          - os: macos-14
             target: aarch64-apple-darwin
             archive: tracera-server-aarch64-macos.tar.gz
           - os: windows-latest
@@ -36,26 +36,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
       - name: Build release binary
         working-directory: crates/tracera-server
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release
+      - name: Find binary path
+        id: binary
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            echo "binary_path=crates/tracera-server/target/release/tracera-server.exe" >> $GITHUB_OUTPUT
+          else
+            echo "binary_path=crates/tracera-server/target/release/tracera-server" >> $GITHUB_OUTPUT
+          fi
       - name: Create archive (Unix)
         if: runner.os != 'Windows'
         run: |
           mkdir -p dist
-          cd crates/tracera-server/target/${{ matrix.target }}/release
-          tar -czf ../../../../dist/${{ matrix.archive }} tracera-server
+          cd crates/tracera-server/target/release
+          tar -czf ../../../dist/${{ matrix.archive }} tracera-server
       - name: Create archive (Windows)
         if: runner.os == 'Windows'
         run: |
-          mkdir -p dist
-          cd crates/tracera-server/target/${{ matrix.target }}/release
-          7z a ../../../../dist/${{ matrix.archive }} tracera-server.exe
+          mkdir dist
+          cd crates/tracera-server/target/release
+          7z a ../../../dist/${{ matrix.archive }} tracera-server.exe
       - name: Upload to release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: dist/${{ matrix.archive }}
         env:
