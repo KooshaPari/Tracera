@@ -1,11 +1,7 @@
 {
   "version": 2,
   "name": "tracera",
-  "buildCommand": "echo 'Tracera: No web app deployed yet. Frontend scaffolding is planned.'",
   "outputDirectory": "public",
-  "framework": "bun",
-  "installCommand": "echo 'Tracera workspace setup'",
-  "devCommand": "echo 'Tracera development server placeholder'",
   "regions": ["iad1"],
   "headers": [
     {
