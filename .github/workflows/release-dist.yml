@@ -44,14 +44,13 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           mkdir -p dist
-          cd crates/tracera-server/target/release
-          tar -czf ../../../dist/${{ matrix.archive }} tracera-server
+          tar -czf dist/${{ matrix.archive }} -C crates/tracera-server/target/release tracera-server
       - name: Create archive (Windows)
         if: runner.os == 'Windows'
         run: |
           mkdir dist
           cd crates/tracera-server/target/release
-          7z a ../../../dist/${{ matrix.archive }} tracera-server.exe
+          7z a ../../../../dist/${{ matrix.archive }} tracera-server.exe
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
