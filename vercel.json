@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "name": "tracera",
+  "buildCommand": "echo 'Tracera: No web app deployed yet. Frontend scaffolding is planned.'",
+  "outputDirectory": ".",
+  "framework": "other",
+  "installCommand": "echo 'Tracera workspace setup'",
+  "devCommand": "echo 'Tracera development server placeholder'",
+  "regions": ["iad1"],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
+  ]
+}
