@@ -12,7 +12,15 @@ command = "cargo install -q worker-build && worker-build --release"
 
 [[kv_namespaces]]
 binding = "TRACERA_KV"
-id = "to-be-set-on-first-deploy"
+# PROVISIONING REQUIRED before first deploy:
+#   Run:  wrangler kv namespace create tracera_cache
+#   Then: paste the returned "id" below in place of the PROVISION_REQUIRED token.
+#   For Workers preview/dev:
+#   Run:  wrangler kv namespace create tracera_cache --preview
+#   Then: paste the returned "id" as "preview_id" below.
+#   The helper script at scripts/provision-workers-kv.sh automates both steps.
+id = "PROVISION_REQUIRED"
+# preview_id = "PROVISION_REQUIRED"
 
 [[r2_buckets]]
 binding = "TRACERA_R2"
