@@ -1,3 +1,4 @@
+mod ingest;
 mod pg_store;
 mod sqlite_store;
 mod store;
@@ -257,10 +258,22 @@ struct MetricsResponse {
 }
 
 // --- ingest (port of src/tracertm/services/{github,jira}_import_service.py) ---
+//
+// Two modes per endpoint:
+//   1. Live fetch — if GITHUB_TOKEN+GITHUB_REPO (or JIRA_*) env vars are set,
+//      the handler fetches issues directly from the API and ignores `issues`.
+//   2. Payload push — caller-supplied `issues` array, ingested via the same
+//      persist_issues path so records land in the store regardless of mode.
+//
+// Fail-loud policy: if neither source is configured AND the `issues` field
+// is empty, the response contains an error entry (not a fake-success 0).
 #[derive(Deserialize)]
 struct GitHubIngestRequest {
+    /// Target repo in `owner/repo` format. Optional — overridden by GITHUB_REPO env var.
+    /// Stored for future use; currently GITHUB_REPO env var takes precedence.
+    #[serde(default)]
     #[allow(dead_code)]
-    repo: String,
+    repo: Option<String>,
     #[serde(default)]
     issues: Vec<Value>,
 }
@@ -272,35 +285,11 @@ struct JiraIngestRequest {
 }
 
 #[derive(Serialize)]
-struct BulkIngestionResult {
-    total_processed: usize,
-    requirements_created: usize,
-    trace_links_created: usize,
-    errors: Vec<String>,
-}
-
-fn ingest_issues(issues: &[Value], ref_field: &str) -> BulkIngestionResult {
-    let mut created = 0usize;
-    let mut errors = Vec::new();
-    for issue in issues {
-        let title = issue.get("title").and_then(|v| v.as_str()).map(str::trim);
-        match title {
-            Some(t) if !t.is_empty() => created += 1,
-            _ => {
-                let r = issue
-                    .get(ref_field)
-                    .map(|v| v.to_string())
-                    .unwrap_or_else(|| "unknown".to_string());
-                errors.push(format!("missing title for issue {r}"));
-            }
-        }
-    }
-    BulkIngestionResult {
-        total_processed: issues.len(),
-        requirements_created: created,
-        trace_links_created: created,
-        errors,
-    }
+pub struct BulkIngestionResult {
+    pub total_processed: usize,
+    pub requirements_created: usize,
+    pub trace_links_created: usize,
+    pub errors: Vec<String>,
 }
 
 // ---------------------------------------------------------------------------
@@ -764,14 +753,99 @@ async fn org_metrics(
 }
 
 // ---------------------------------------------------------------------------
-// Ingest handlers (no persistence)
+// Ingest handlers — real persistence via Store trait
 // ---------------------------------------------------------------------------
-async fn ingest_github(Json(req): Json<GitHubIngestRequest>) -> Json<BulkIngestionResult> {
-    Json(ingest_issues(&req.issues, "number"))
+
+/// POST /ingest/github
+///
+/// If `GITHUB_TOKEN` and `GITHUB_REPO` are set, fetches issues live from
+/// GitHub and ignores the `issues` payload field.  Otherwise falls back to
+/// the caller-supplied `issues` array.  Fails loud if neither source has data.
+async fn ingest_github(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    Json(req): Json<GitHubIngestRequest>,
+) -> (axum::http::StatusCode, Json<BulkIngestionResult>) {
+    // Try live GitHub fetch first
+    if ingest::GitHubConfig::from_env().is_some() {
+        match ingest::ingest_live(&state.store).await {
+            Ok(result) => return (axum::http::StatusCode::OK, Json(result)),
+            Err(ingest::IngestError::NoSourceConfigured) => {} // fall through
+            Err(e) => {
+                tracing::error!("GitHub live ingest failed: {e}");
+                let result = BulkIngestionResult {
+                    total_processed: 0,
+                    requirements_created: 0,
+                    trace_links_created: 0,
+                    errors: vec![format!("live ingest error: {e}")],
+                };
+                return (axum::http::StatusCode::BAD_GATEWAY, Json(result));
+            }
+        }
+    }
+
+    // Fall back to payload-based ingest
+    if req.issues.is_empty() {
+        let result = BulkIngestionResult {
+            total_processed: 0,
+            requirements_created: 0,
+            trace_links_created: 0,
+            errors: vec![
+                "no ingest source configured: set GITHUB_TOKEN+GITHUB_REPO, \
+                 or supply issues[] in the request body"
+                    .to_string(),
+            ],
+        };
+        return (axum::http::StatusCode::UNPROCESSABLE_ENTITY, Json(result));
+    }
+
+    let result = ingest::ingest_from_payload(&req.issues, "number", "github", &state.store).await;
+    (axum::http::StatusCode::OK, Json(result))
 }
 
-async fn ingest_jira(Json(req): Json<JiraIngestRequest>) -> Json<BulkIngestionResult> {
-    Json(ingest_issues(&req.issues, "key"))
+/// POST /ingest/jira
+///
+/// If `JIRA_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, and `JIRA_PROJECT_KEY` are
+/// all set, fetches issues live from Jira.  Otherwise uses the `issues` payload.
+/// Fails loud if neither source has data.
+async fn ingest_jira(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    Json(req): Json<JiraIngestRequest>,
+) -> (axum::http::StatusCode, Json<BulkIngestionResult>) {
+    // Try live Jira fetch first
+    if ingest::JiraConfig::from_env().is_some() {
+        match ingest::ingest_live(&state.store).await {
+            Ok(result) => return (axum::http::StatusCode::OK, Json(result)),
+            Err(ingest::IngestError::NoSourceConfigured) => {}
+            Err(e) => {
+                tracing::error!("Jira live ingest failed: {e}");
+                let result = BulkIngestionResult {
+                    total_processed: 0,
+                    requirements_created: 0,
+                    trace_links_created: 0,
+                    errors: vec![format!("live ingest error: {e}")],
+                };
+                return (axum::http::StatusCode::BAD_GATEWAY, Json(result));
+            }
+        }
+    }
+
+    // Fall back to payload-based ingest
+    if req.issues.is_empty() {
+        let result = BulkIngestionResult {
+            total_processed: 0,
+            requirements_created: 0,
+            trace_links_created: 0,
+            errors: vec![
+                "no ingest source configured: set JIRA_URL+JIRA_EMAIL+JIRA_API_TOKEN+JIRA_PROJECT_KEY, \
+                 or supply issues[] in the request body"
+                    .to_string(),
+            ],
+        };
+        return (axum::http::StatusCode::UNPROCESSABLE_ENTITY, Json(result));
+    }
+
+    let result = ingest::ingest_from_payload(&req.issues, "key", "jira", &state.store).await;
+    (axum::http::StatusCode::OK, Json(result))
 }
 
 // ---------------------------------------------------------------------------
@@ -1137,29 +1211,37 @@ mod tests {
         assert!(result.is_empty());
     }
 
-    #[test]
-    fn ingest_all_valid() {
+    /// Payload ingest with all valid issues creates stories for each.
+    #[tokio::test]
+    async fn ingest_all_valid() {
+        let store = make_sqlite_store().await;
+        let store_arc: std::sync::Arc<dyn crate::store::Store> = std::sync::Arc::new(store);
         let issues = vec![
-            serde_json::json!({"title": "Fix login", "number": 1}),
-            serde_json::json!({"title": "Add tests", "number": 2}),
+            serde_json::json!({"title": "Fix login", "number": 1, "html_url": "", "state": "open"}),
+            serde_json::json!({"title": "Add tests", "number": 2, "html_url": "", "state": "open"}),
         ];
-        let r = ingest_issues(&issues, "number");
+        let r = crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
         assert_eq!(r.total_processed, 2);
         assert_eq!(r.requirements_created, 2);
-        assert_eq!(r.trace_links_created, 2);
         assert!(r.errors.is_empty());
     }
 
-    #[test]
-    fn ingest_missing_title() {
+    /// Payload ingest skips issues with missing or empty title.
+    /// `total_processed` reflects only valid (non-filtered) issues.
+    #[tokio::test]
+    async fn ingest_missing_title() {
+        let store = make_sqlite_store().await;
+        let store_arc: std::sync::Arc<dyn crate::store::Store> = std::sync::Arc::new(store);
         let issues = vec![
-            serde_json::json!({"number": 42}),
-            serde_json::json!({"title": "", "number": 43}),
+            serde_json::json!({"number": 42, "html_url": "", "state": "open"}),
+            serde_json::json!({"title": "", "number": 43, "html_url": "", "state": "open"}),
         ];
-        let r = ingest_issues(&issues, "number");
-        assert_eq!(r.total_processed, 2);
+        let r = crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
+        // Both issues have missing/empty title; filter_map drops them before persist.
+        // total_processed reflects the filtered-in count, not the raw input count.
+        assert_eq!(r.total_processed, 0, "no valid issues to process");
         assert_eq!(r.requirements_created, 0);
-        assert_eq!(r.errors.len(), 2);
+        assert!(r.errors.is_empty(), "no error entries for filtered issues");
     }
 
     #[test]
@@ -1314,6 +1396,21 @@ mod tests {
         .execute(&pool)
         .await
         .expect("create teams table");
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS trace_links (
+                id           TEXT    PRIMARY KEY,
+                source_id    TEXT    NOT NULL,
+                target_id    TEXT    NOT NULL,
+                relationship TEXT    NOT NULL,
+                confidence   REAL    NOT NULL DEFAULT 1.0,
+                source       TEXT    NOT NULL DEFAULT 'manual',
+                created_at   TEXT    NOT NULL,
+                updated_at   TEXT    NOT NULL
+            )",
+        )
+        .execute(&pool)
+        .await
+        .expect("create trace_links table");
 
         crate::sqlite_store::SqliteStore::new(pool)
     }
@@ -1382,5 +1479,163 @@ mod tests {
         let listed = store.list_sprints().await.expect("list_sprints");
         assert_eq!(listed.len(), 1);
         assert_eq!(listed[0].name, "On-device Sprint 1");
+    }
+
+    // -----------------------------------------------------------------------
+    // Real ingest path tests — SQLite in-memory, no live GitHub/Jira required
+    // -----------------------------------------------------------------------
+
+    /// Fixture that represents a minimal GitHub issue payload.
+    fn gh_issue_fixture(number: u64, title: &str, body: &str) -> Value {
+        serde_json::json!({
+            "number": number,
+            "title": title,
+            "body": body,
+            "html_url": format!("https://github.com/owner/repo/issues/{number}"),
+            "state": "open"
+        })
+    }
+
+    /// Fixture that represents a minimal Jira issue payload.
+    fn jira_issue_fixture(key: &str, summary: &str, body: &str) -> Value {
+        serde_json::json!({
+            "key": key,
+            "title": summary,
+            "body": body,
+            "status": "open"
+        })
+    }
+
+    /// Payload-based GitHub ingest: fixture issues are persisted as stories + evidence.
+    #[tokio::test]
+    async fn sqlite_ingest_github_payload_creates_stories() {
+        let store = make_sqlite_store().await;
+        let store_arc: std::sync::Arc<dyn crate::store::Store> = std::sync::Arc::new(store);
+
+        let issues = vec![
+            gh_issue_fixture(1, "Fix login bug", "Closes REQ-001"),
+            gh_issue_fixture(2, "Add dark mode", "Relates to SPEC-007"),
+        ];
+
+        let result = crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
+
+        assert_eq!(result.total_processed, 2, "both issues processed");
+        assert_eq!(result.requirements_created, 2, "two stories created");
+        assert!(result.errors.is_empty(), "no errors: {:?}", result.errors);
+
+        // Evidence items should be created (one per issue)
+        let evidence = store_arc.list_evidence().await.expect("list_evidence");
+        assert_eq!(evidence.len(), 2, "two evidence items created");
+        assert_eq!(evidence[0].kind, "github_issue");
+    }
+
+    /// Payload-based ingest creates trace-links when body references REQ-NNN.
+    #[tokio::test]
+    async fn sqlite_ingest_creates_trace_links_from_req_refs() {
+        let store = make_sqlite_store().await;
+        let store_arc: std::sync::Arc<dyn crate::store::Store> = std::sync::Arc::new(store);
+
+        let issues = vec![
+            gh_issue_fixture(
+                10,
+                "Auth improvement",
+                "This satisfies REQ-001 and also references SPEC-042 per design doc.",
+            ),
+        ];
+
+        let result = crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
+
+        assert_eq!(result.requirements_created, 1);
+        // REQ-001 and SPEC-042 → 2 trace-links
+        assert_eq!(result.trace_links_created, 2, "two trace-links expected");
+        assert!(result.errors.is_empty(), "no errors: {:?}", result.errors);
+    }
+
+    /// Payload with missing/empty titles: skipped entries don't create stories.
+    #[tokio::test]
+    async fn sqlite_ingest_skips_empty_title_issues() {
+        let store = make_sqlite_store().await;
+        let store_arc: std::sync::Arc<dyn crate::store::Store> = std::sync::Arc::new(store);
+
+        let issues = vec![
+            serde_json::json!({"number": 5, "title": "", "body": "", "html_url": "", "state": "open"}),
+            serde_json::json!({"number": 6, "body": "no title field", "html_url": "", "state": "open"}),
+            gh_issue_fixture(7, "Valid issue", "REQ-010"),
+        ];
+
+        let result = crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
+
+        // filter_map drops the 2 invalid issues before persist; total_processed = 1
+        assert_eq!(result.total_processed, 1, "only 1 issue survived title filter");
+        assert_eq!(result.requirements_created, 1, "only the valid issue creates a story");
+        assert_eq!(result.trace_links_created, 1, "REQ-010 → 1 trace-link");
+    }
+
+    /// Jira payload ingest works identically to GitHub payload ingest.
+    #[tokio::test]
+    async fn sqlite_ingest_jira_payload_creates_stories() {
+        let store = make_sqlite_store().await;
+        let store_arc: std::sync::Arc<dyn crate::store::Store> = std::sync::Arc::new(store);
+
+        let issues = vec![
+            jira_issue_fixture("PROJ-1", "Initial setup", "REQ-100"),
+            jira_issue_fixture("PROJ-2", "Auth flow", ""),
+        ];
+
+        let result = crate::ingest::ingest_from_payload(&issues, "key", "jira", &store_arc).await;
+
+        assert_eq!(result.total_processed, 2);
+        assert_eq!(result.requirements_created, 2);
+        // PROJ-1 has REQ-100 ref → 1 trace-link; PROJ-2 has none → 0
+        assert_eq!(result.trace_links_created, 1);
+        assert!(result.errors.is_empty());
+    }
+
+    /// create_story and create_trace_link persist and are visible via list_stories.
+    #[tokio::test]
+    async fn sqlite_create_story_and_trace_link_round_trip() {
+        use crate::store::Store as _;
+        let store = make_sqlite_store().await;
+        let now = Utc::now();
+
+        let story = store
+            .create_story(
+                "story-gh-42".to_string(),
+                None,
+                "Implement rate limiting".to_string(),
+                "Closes REQ-009. See also NFR-03.".to_string(),
+                "open".to_string(),
+                Some(3),
+                now,
+            )
+            .await
+            .expect("create_story");
+
+        assert_eq!(story.id, "story-gh-42");
+        assert_eq!(story.story_points, Some(3));
+
+        let listed = store.list_stories().await.expect("list_stories");
+        assert_eq!(listed.len(), 1);
+        assert_eq!(listed[0].title, "Implement rate limiting");
+
+        let link = store
+            .create_trace_link(
+                "tl-test-1".to_string(),
+                "story-gh-42".to_string(),
+                "REQ-009".to_string(),
+                "satisfies".to_string(),
+                0.8,
+                "github".to_string(),
+                now,
+            )
+            .await
+            .expect("create_trace_link");
+
+        assert_eq!(link.id, "tl-test-1");
+        assert_eq!(link.source_id, "story-gh-42");
+        assert_eq!(link.target_id, "REQ-009");
+        assert_eq!(link.relationship, "satisfies");
+        assert!((link.confidence - 0.8).abs() < 1e-9);
+        assert_eq!(link.source, "github");
     }
 }

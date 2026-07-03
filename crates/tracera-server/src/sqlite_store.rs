@@ -14,7 +14,9 @@ use chrono::{DateTime, Utc};
 use serde_json::Value;
 use sqlx::{Row, SqlitePool};
 
-use crate::store::{BoxFuture, EvidenceItem, Sprint, Store, StoreError, StoreResult, Story, TeamRow};
+use crate::store::{
+    BoxFuture, EvidenceItem, Sprint, Store, StoreError, StoreResult, Story, TeamRow, TraceLink,
+};
 
 #[derive(Clone)]
 pub struct SqliteStore {
@@ -200,6 +202,89 @@ impl Store for SqliteStore {
                     updated_at: str_to_ts(&r.try_get::<String, _>("updated_at").unwrap_or_default()),
                 })
                 .collect())
+        })
+    }
+
+    fn create_story(
+        &self,
+        id: String,
+        sprint_id: Option<String>,
+        title: String,
+        description: String,
+        status: String,
+        story_points: Option<i64>,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<Story>> {
+        Box::pin(async move {
+            let now_str = ts_to_str(now);
+            sqlx::query(
+                "INSERT INTO stories (id, sprint_id, title, description, status, story_points, created_at, updated_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+            )
+            .bind(&id)
+            .bind(&sprint_id)
+            .bind(&title)
+            .bind(&description)
+            .bind(&status)
+            .bind(story_points)
+            .bind(&now_str)
+            .bind(&now_str)
+            .execute(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
+
+            Ok(Story {
+                id,
+                sprint_id,
+                title,
+                description,
+                status,
+                story_points,
+                created_at: now,
+                updated_at: now,
+            })
+        })
+    }
+
+    fn create_trace_link(
+        &self,
+        id: String,
+        source_id: String,
+        target_id: String,
+        relationship: String,
+        confidence: f64,
+        source: String,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<TraceLink>> {
+        Box::pin(async move {
+            let now_str = ts_to_str(now);
+            sqlx::query(
+                "INSERT INTO trace_links \
+                 (id, source_id, target_id, relationship, confidence, source, created_at, updated_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+            )
+            .bind(&id)
+            .bind(&source_id)
+            .bind(&target_id)
+            .bind(&relationship)
+            .bind(confidence)
+            .bind(&source)
+            .bind(&now_str)
+            .bind(&now_str)
+            .execute(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
+
+            Ok(TraceLink {
+                id,
+                source_id,
+                target_id,
+                relationship,
+                confidence,
+                source,
+                created_at: now,
+                updated_at: now,
+            })
         })
     }
 
