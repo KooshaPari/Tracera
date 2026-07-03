@@ -80,6 +80,23 @@ pub struct TeamRow {
     pub members: Vec<String>,
 }
 
+/// A persistent directed trace-link between two artifact IDs.
+///
+/// Populated by the real ingest pipeline (GitHub / Jira) and also
+/// queryable as part of coverage-matrix / impact analysis.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct TraceLink {
+    pub id: String,
+    pub source_id: String,
+    pub target_id: String,
+    pub relationship: String,
+    pub confidence: f64,
+    /// Which ingest source produced this link: "github", "jira", or "manual".
+    pub source: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
 // ---------------------------------------------------------------------------
 // Store trait
 // ---------------------------------------------------------------------------
@@ -110,8 +127,43 @@ pub trait Store: Send + Sync {
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<Sprint>>;
 
-    // Stories
+    // Stories — created by real ingest pipeline
     fn list_stories(&self) -> BoxFuture<'_, StoreResult<Vec<Story>>>;
+
+    /// Create a story record.
+    ///
+    /// All fields are required for DB correctness; suppression is justified
+    /// (clippy::too_many_arguments) because there is no optional field here
+    /// and introducing an intermediate struct would add indirection without value.
+    #[allow(clippy::too_many_arguments)]
+    fn create_story(
+        &self,
+        id: String,
+        sprint_id: Option<String>,
+        title: String,
+        description: String,
+        status: String,
+        story_points: Option<i64>,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<Story>>;
+
+    // Trace-links — created by real ingest pipeline
+
+    /// Create a persistent trace-link record.
+    ///
+    /// Suppressing clippy::too_many_arguments: all 8 parameters map 1-to-1 to
+    /// DB columns; a wrapper struct would add indirection without value.
+    #[allow(clippy::too_many_arguments)]
+    fn create_trace_link(
+        &self,
+        id: String,
+        source_id: String,
+        target_id: String,
+        relationship: String,
+        confidence: f64,
+        source: String,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<TraceLink>>;
 
     // Teams
     fn list_teams(&self) -> BoxFuture<'_, StoreResult<Vec<TeamRow>>>;
