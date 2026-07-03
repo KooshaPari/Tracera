@@ -1,3 +1,7 @@
+mod pg_store;
+mod sqlite_store;
+mod store;
+
 use axum::{
     routing::{get, post},
     Json, Router,
@@ -5,22 +9,27 @@ use axum::{
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use sqlx::PgPool;
 use std::env;
 use std::net::SocketAddr;
+use std::sync::Arc;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 use uuid::Uuid;
 
+use store::{EvidenceItem, Sprint, Story, Store, TeamRow};
+
 // ---------------------------------------------------------------------------
-// App state — PgPool replaces the in-memory Vec stores dropped in the
-// Python→Rust migration. DATABASE_URL is required; missing/unreachable DB is
-// a hard startup error with an actionable message.
+// App state — Arc<dyn Store> replaces the bare PgPool.
+// DATABASE_URL scheme determines which backend is initialised at startup:
+//   postgres://...   → PgStore  (server/hosted tier, Postgres)
+//   sqlite://...     → SqliteStore (on-device/per-project tier, SQLite)
+//   <path>.db        → SqliteStore (convenience: plain file path)
+// Both are fail-loud on missing/unreachable URL — no silent fallback.
 // ---------------------------------------------------------------------------
 #[derive(Clone)]
 struct AppState {
     version: String,
-    pool: PgPool,
+    store: Arc<dyn Store>,
 }
 
 // ---------------------------------------------------------------------------
@@ -197,19 +206,8 @@ fn default_status() -> String {
 }
 
 // ---------------------------------------------------------------------------
-// Evidence store — restored from src/tracertm/api/routers/evidence.py
+// Evidence HTTP shapes (handlers delegate to store trait)
 // ---------------------------------------------------------------------------
-#[derive(Debug, Clone, Serialize)]
-struct EvidenceItem {
-    id: String,
-    artifact_id: String,
-    kind: String,
-    url: String,
-    metadata: Value,
-    created_at: DateTime<Utc>,
-    updated_at: DateTime<Utc>,
-}
-
 #[derive(Deserialize)]
 struct EvidenceCreate {
     artifact_id: String,
@@ -230,32 +228,8 @@ fn empty_object() -> Value {
 }
 
 // ---------------------------------------------------------------------------
-// SDLC-PM — restored from src/tracertm/api/routers/sdlc_pm.py
+// SDLC-PM HTTP shapes
 // ---------------------------------------------------------------------------
-#[derive(Debug, Clone, Serialize)]
-struct Sprint {
-    id: String,
-    name: String,
-    goal: String,
-    start_date: DateTime<Utc>,
-    end_date: DateTime<Utc>,
-    status: String,
-    created_at: DateTime<Utc>,
-    updated_at: DateTime<Utc>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-struct Story {
-    id: String,
-    sprint_id: Option<String>,
-    title: String,
-    description: String,
-    status: String,
-    story_points: Option<i64>,
-    created_at: DateTime<Utc>,
-    updated_at: DateTime<Utc>,
-}
-
 #[derive(Deserialize)]
 struct SprintCreate {
     name: String,
@@ -265,7 +239,7 @@ struct SprintCreate {
 }
 
 // --- org-intel (port of src/tracertm/api/routers/org_intel.py) ---
-#[derive(Debug, Clone, Serialize)]
+#[derive(Serialize)]
 struct TeamResponse {
     id: String,
     name: String,
@@ -303,8 +277,6 @@ struct BulkIngestionResult {
     errors: Vec<String>,
 }
 
-// One requirement + one trace link per issue that has a non-empty title;
-// title-less issues become errors.
 fn ingest_issues(issues: &[Value], ref_field: &str) -> BulkIngestionResult {
     let mut created = 0usize;
     let mut errors = Vec::new();
@@ -330,7 +302,7 @@ fn ingest_issues(issues: &[Value], ref_field: &str) -> BulkIngestionResult {
 }
 
 // ---------------------------------------------------------------------------
-// Startup
+// Startup — backend selection by DATABASE_URL scheme
 // ---------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
@@ -341,40 +313,73 @@ async fn main() {
         )
         .init();
 
-    // DATABASE_URL is required. Missing or unreachable DB is a hard error —
-    // no silent in-memory fallback.
     let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
         eprintln!(
             "FATAL: DATABASE_URL environment variable is not set.\n\
-             Set it to a Postgres connection string, e.g.:\n\
-             DATABASE_URL=postgres://user:pass@localhost:5432/tracera"
+             Set it to a connection string, e.g.:\n\
+             DATABASE_URL=postgres://user:pass@localhost:5432/tracera\n\
+             DATABASE_URL=sqlite:///path/to/tracera.db\n\
+             DATABASE_URL=sqlite::memory:"
         );
         std::process::exit(1);
     });
 
-    let pool = PgPool::connect(&database_url).await.unwrap_or_else(|e| {
-        eprintln!(
-            "FATAL: Cannot connect to Postgres at the provided DATABASE_URL.\n\
-             Error: {e}\n\
-             Ensure Postgres is running and DATABASE_URL is correct."
-        );
-        std::process::exit(1);
-    });
-
-    // Run pending migrations at startup.
-    sqlx::migrate!("./migrations")
-        .run(&pool)
-        .await
-        .unwrap_or_else(|e| {
-            eprintln!("FATAL: Database migration failed: {e}");
+    let store: Arc<dyn Store> = if database_url.starts_with("postgres://")
+        || database_url.starts_with("postgresql://")
+    {
+        info!("Backend: Postgres (server tier)");
+        let pool = sqlx::PgPool::connect(&database_url).await.unwrap_or_else(|e| {
+            eprintln!(
+                "FATAL: Cannot connect to Postgres at the provided DATABASE_URL.\n\
+                 Error: {e}\n\
+                 Ensure Postgres is running and DATABASE_URL is correct."
+            );
             std::process::exit(1);
         });
-
-    info!("Database migrations applied successfully");
+        sqlx::migrate!("./migrations")
+            .run(&pool)
+            .await
+            .unwrap_or_else(|e| {
+                eprintln!("FATAL: Postgres migration failed: {e}");
+                std::process::exit(1);
+            });
+        info!("Postgres migrations applied successfully");
+        Arc::new(pg_store::PgStore::new(pool))
+    } else if database_url.starts_with("sqlite://")
+        || database_url.starts_with("sqlite:")
+        || database_url.ends_with(".db")
+    {
+        info!("Backend: SQLite (on-device tier)");
+        let pool = sqlx::SqlitePool::connect(&database_url)
+            .await
+            .unwrap_or_else(|e| {
+                eprintln!(
+                    "FATAL: Cannot open SQLite database at the provided DATABASE_URL.\n\
+                     Error: {e}\n\
+                     Use DATABASE_URL=sqlite:///path/to/file.db or DATABASE_URL=sqlite::memory:"
+                );
+                std::process::exit(1);
+            });
+        sqlx::migrate!("./migrations-sqlite")
+            .run(&pool)
+            .await
+            .unwrap_or_else(|e| {
+                eprintln!("FATAL: SQLite migration failed: {e}");
+                std::process::exit(1);
+            });
+        info!("SQLite migrations applied successfully");
+        Arc::new(sqlite_store::SqliteStore::new(pool))
+    } else {
+        eprintln!(
+            "FATAL: Unrecognised DATABASE_URL scheme.\n\
+             Use postgres:// for Postgres or sqlite:// for SQLite on-device tier."
+        );
+        std::process::exit(1);
+    };
 
     let state = AppState {
         version: env!("CARGO_PKG_VERSION").to_string(),
-        pool,
+        store,
     };
 
     let app = Router::new()
@@ -455,14 +460,12 @@ async fn impact(Json(request): Json<ImpactRequest>) -> Json<ImpactResponse> {
     let links: Vec<TraceLinkInput> = request.matrix.links.clone();
     let adj = build_adjacency(&links);
 
-    // Collect conflicts from the link set
     let conflicts: Vec<TraceLinkInput> = links
         .iter()
         .filter(|l| l.relationship == "conflicts_with")
         .cloned()
         .collect();
 
-    // Seeds are always included at depth=0
     let mut affected: Vec<ImpactNodeResponse> = request
         .changed_artifact_ids
         .iter()
@@ -474,7 +477,6 @@ async fn impact(Json(request): Json<ImpactRequest>) -> Json<ImpactResponse> {
         })
         .collect();
 
-    // BFS over the adjacency graph, clamped to max_depth
     let reachable = bfs_distances(&adj, &request.changed_artifact_ids);
     let mut truncated = false;
     let mut max_depth_seen: u32 = 0;
@@ -487,9 +489,7 @@ async fn impact(Json(request): Json<ImpactRequest>) -> Json<ImpactResponse> {
         if dist > max_depth_seen {
             max_depth_seen = dist;
         }
-        // Confidence-weighted score: decays by depth (halved per hop, floored at 0.1)
         let score = (0.5_f64.powi(dist as i32)).max(0.1);
-        // via: immediate predecessors of this node in the link set
         let via: Vec<String> = links
             .iter()
             .filter(|l| l.target_id == node)
@@ -632,36 +632,15 @@ async fn trace_reverse(
 }
 
 // ---------------------------------------------------------------------------
-// Evidence handlers — backed by `evidence` table
+// Evidence handlers — delegate to store trait
 // ---------------------------------------------------------------------------
 async fn list_evidence(
     axum::extract::State(state): axum::extract::State<AppState>,
 ) -> Json<EvidenceList> {
-    let rows = sqlx::query!(
-        r#"SELECT id, artifact_id, kind, url, metadata, created_at, updated_at
-           FROM evidence
-           ORDER BY created_at ASC"#
-    )
-    .fetch_all(&state.pool)
-    .await
-    .unwrap_or_else(|e| {
-        tracing::error!("list_evidence DB error: {e}");
+    let items = state.store.list_evidence().await.unwrap_or_else(|e| {
+        tracing::error!("list_evidence store error: {e}");
         vec![]
     });
-
-    let items: Vec<EvidenceItem> = rows
-        .into_iter()
-        .map(|r| EvidenceItem {
-            id: r.id,
-            artifact_id: r.artifact_id,
-            kind: r.kind,
-            url: r.url,
-            metadata: r.metadata,
-            created_at: r.created_at,
-            updated_at: r.updated_at,
-        })
-        .collect();
-
     Json(EvidenceList {
         count: items.len(),
         items,
@@ -674,71 +653,31 @@ async fn create_evidence(
 ) -> (axum::http::StatusCode, Json<EvidenceItem>) {
     let now = Utc::now();
     let id = format!("ev-{}", Uuid::new_v4());
-    let meta_str = serde_json::to_value(&payload.metadata)
+    let meta = serde_json::to_value(&payload.metadata)
         .unwrap_or(Value::Object(serde_json::Map::new()));
 
-    sqlx::query!(
-        r#"INSERT INTO evidence (id, artifact_id, kind, url, metadata, created_at, updated_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)"#,
-        id,
-        payload.artifact_id,
-        payload.kind,
-        payload.url,
-        meta_str,
-        now,
-        now,
-    )
-    .execute(&state.pool)
-    .await
-    .unwrap_or_else(|e| {
-        tracing::error!("create_evidence DB error: {e}");
-        panic!("create_evidence: DB insert failed: {e}");
-    });
+    let item = state
+        .store
+        .create_evidence(id, payload.artifact_id, payload.kind, payload.url, meta, now)
+        .await
+        .unwrap_or_else(|e| {
+            panic!("create_evidence: store insert failed: {e}");
+        });
 
-    let item = EvidenceItem {
-        id,
-        artifact_id: payload.artifact_id,
-        kind: payload.kind,
-        url: payload.url,
-        metadata: payload.metadata,
-        created_at: now,
-        updated_at: now,
-    };
     (axum::http::StatusCode::CREATED, Json(item))
 }
 
 // ---------------------------------------------------------------------------
-// Sprint handlers — backed by `sprints` table
+// Sprint handlers — delegate to store trait
 // ---------------------------------------------------------------------------
 async fn list_sprints(
     axum::extract::State(state): axum::extract::State<AppState>,
 ) -> Json<Vec<Sprint>> {
-    let rows = sqlx::query!(
-        r#"SELECT id, name, goal, start_date, end_date, status, created_at, updated_at
-           FROM sprints
-           ORDER BY created_at ASC"#
-    )
-    .fetch_all(&state.pool)
-    .await
-    .unwrap_or_else(|e| {
-        tracing::error!("list_sprints DB error: {e}");
+    let sprints = state.store.list_sprints().await.unwrap_or_else(|e| {
+        tracing::error!("list_sprints store error: {e}");
         vec![]
     });
-
-    Json(
-        rows.into_iter()
-            .map(|r| Sprint {
-                id: r.id,
-                name: r.name,
-                goal: r.goal,
-                start_date: r.start_date,
-                end_date: r.end_date,
-                status: r.status,
-                created_at: r.created_at,
-                updated_at: r.updated_at,
-            })
-            .collect(),
-    )
+    Json(sprints)
 }
 
 async fn create_sprint(
@@ -748,89 +687,47 @@ async fn create_sprint(
     let now = Utc::now();
     let id = format!("sprint-{}", Uuid::new_v4());
 
-    sqlx::query!(
-        r#"INSERT INTO sprints (id, name, goal, start_date, end_date, status, created_at, updated_at)
-           VALUES ($1, $2, $3, $4, $5, 'planned', $6, $7)"#,
-        id,
-        payload.name,
-        payload.goal,
-        payload.start_date,
-        payload.end_date,
-        now,
-        now,
-    )
-    .execute(&state.pool)
-    .await
-    .unwrap_or_else(|e| {
-        tracing::error!("create_sprint DB error: {e}");
-        panic!("create_sprint: DB insert failed: {e}");
-    });
+    let sprint = state
+        .store
+        .create_sprint(
+            id,
+            payload.name,
+            payload.goal,
+            payload.start_date,
+            payload.end_date,
+            now,
+        )
+        .await
+        .unwrap_or_else(|e| {
+            panic!("create_sprint: store insert failed: {e}");
+        });
 
-    let sprint = Sprint {
-        id,
-        name: payload.name,
-        goal: payload.goal,
-        start_date: payload.start_date,
-        end_date: payload.end_date,
-        status: "planned".to_string(),
-        created_at: now,
-        updated_at: now,
-    };
     (axum::http::StatusCode::CREATED, Json(sprint))
 }
 
 // ---------------------------------------------------------------------------
-// Story handlers — backed by `stories` table
+// Story handlers
 // ---------------------------------------------------------------------------
 async fn list_stories(
     axum::extract::State(state): axum::extract::State<AppState>,
 ) -> Json<Vec<Story>> {
-    let rows = sqlx::query!(
-        r#"SELECT id, sprint_id, title, description, status, story_points, created_at, updated_at
-           FROM stories
-           ORDER BY created_at ASC"#
-    )
-    .fetch_all(&state.pool)
-    .await
-    .unwrap_or_else(|e| {
-        tracing::error!("list_stories DB error: {e}");
+    let stories = state.store.list_stories().await.unwrap_or_else(|e| {
+        tracing::error!("list_stories store error: {e}");
         vec![]
     });
-
-    Json(
-        rows.into_iter()
-            .map(|r| Story {
-                id: r.id,
-                sprint_id: r.sprint_id,
-                title: r.title,
-                description: r.description,
-                status: r.status,
-                story_points: r.story_points,
-                created_at: r.created_at,
-                updated_at: r.updated_at,
-            })
-            .collect(),
-    )
+    Json(stories)
 }
 
 // ---------------------------------------------------------------------------
-// Teams handler — backed by `teams` table (seeded in migration 0004)
+// Teams handler
 // ---------------------------------------------------------------------------
 async fn list_teams(
     axum::extract::State(state): axum::extract::State<AppState>,
 ) -> Json<Vec<TeamResponse>> {
-    let rows = sqlx::query!(
-        r#"SELECT id, name, description, members
-           FROM teams
-           ORDER BY id ASC"#
-    )
-    .fetch_all(&state.pool)
-    .await
-    .unwrap_or_else(|e| {
-        tracing::error!("list_teams DB error: {e}");
+    let rows: Vec<TeamRow> = state.store.list_teams().await.unwrap_or_else(|e| {
+        tracing::error!("list_teams store error: {e}");
         vec![]
     });
-
     Json(
         rows.into_iter()
             .map(|r| TeamResponse {
@@ -844,16 +741,12 @@ async fn list_teams(
 }
 
 // ---------------------------------------------------------------------------
-// Org metrics — kept as live DB count for total_artifacts from evidence table
+// Org metrics
 // ---------------------------------------------------------------------------
 async fn org_metrics(
     axum::extract::State(state): axum::extract::State<AppState>,
 ) -> Json<MetricsResponse> {
-    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM evidence")
-        .fetch_one(&state.pool)
-        .await
-        .unwrap_or(0);
-
+    let count = state.store.count_evidence().await.unwrap_or(0);
     Json(MetricsResponse {
         total_artifacts: count as usize,
         coverage_ratio: 0.75,
@@ -862,7 +755,7 @@ async fn org_metrics(
 }
 
 // ---------------------------------------------------------------------------
-// Ingest handlers (no persistence — returns ingestion summary)
+// Ingest handlers (no persistence)
 // ---------------------------------------------------------------------------
 async fn ingest_github(Json(req): Json<GitHubIngestRequest>) -> Json<BulkIngestionResult> {
     Json(ingest_issues(&req.issues, "number"))
@@ -873,7 +766,7 @@ async fn ingest_jira(Json(req): Json<JiraIngestRequest>) -> Json<BulkIngestionRe
 }
 
 // ---------------------------------------------------------------------------
-// Pure-function utilities (no DB interaction — unit-testable without a pool)
+// Pure-function utilities (no DB interaction — unit-testable without a store)
 // ---------------------------------------------------------------------------
 fn neighbors_of(links: &[TraceLinkInput], id: &str, forward: bool) -> Vec<String> {
     links
@@ -900,7 +793,6 @@ fn build_adjacency(links: &[TraceLinkInput]) -> std::collections::HashMap<String
     adj
 }
 
-// BFS forward reachability with distance; seeds are excluded from output.
 fn bfs_distances(
     adj: &std::collections::HashMap<String, Vec<String>>,
     seeds: &[String],
@@ -983,7 +875,8 @@ fn default_max_depth() -> u32 {
 }
 
 // ---------------------------------------------------------------------------
-// Unit tests — no live DB required
+// Unit tests — no live DB required for pure-function tests.
+// SQLite in-memory round-trip tests prove on-device tier works standalone.
 // ---------------------------------------------------------------------------
 #[cfg(test)]
 mod tests {
@@ -994,8 +887,6 @@ mod tests {
     // Impact traversal tests (from PR #706 — impact handler fix)
     // -----------------------------------------------------------------------
 
-    /// Build a minimal link list representing the chain:
-    ///   seed -> hop1 -> hop2 -> hop3
     fn chain_links() -> Vec<TraceLinkInput> {
         vec![
             TraceLinkInput {
@@ -1022,7 +913,6 @@ mod tests {
         ]
     }
 
-    /// Helper: run the BFS+depth-clamp logic the same way the handler does.
     fn run_impact(links: Vec<TraceLinkInput>, seeds: Vec<String>, max_depth: u32) -> ImpactResponse {
         let adj = build_adjacency(&links);
         let reachable = bfs_distances(&adj, &seeds);
@@ -1084,8 +974,6 @@ mod tests {
         resp.affected.iter().map(|n| n.artifact_id.as_str()).collect()
     }
 
-    /// Regression test for the stub: verifies that the impact handler now walks
-    /// the adjacency graph transitively, not just returning seeds.
     #[test]
     fn impact_traverses_multi_hop_at_depth_3() {
         let links = chain_links();
@@ -1093,19 +981,14 @@ mod tests {
         let resp = run_impact(links, seeds, 3);
 
         let ids = affected_ids(&resp);
-        // seed is always present at depth=0
         assert!(ids.contains(&"seed"), "seed must be in affected");
-        // 1-hop node
         assert!(ids.contains(&"hop1"), "hop1 (depth 1) must be in affected at max_depth=3");
-        // 2-hop node
         assert!(ids.contains(&"hop2"), "hop2 (depth 2) must be in affected at max_depth=3");
-        // 3-hop node — this was NOT returned by the stub (only seeds were returned)
         assert!(ids.contains(&"hop3"), "hop3 (depth 3) must be in affected at max_depth=3");
         assert!(!resp.truncated, "no truncation expected at max_depth=3 for a 3-hop chain");
         assert_eq!(resp.max_depth_seen, 3);
     }
 
-    /// Depth=1 bound must exclude the 2-hop (and deeper) nodes.
     #[test]
     fn impact_depth_1_excludes_2_hop_node() {
         let links = chain_links();
@@ -1121,7 +1004,6 @@ mod tests {
         assert_eq!(resp.max_depth_seen, 1);
     }
 
-    /// Depth=0 returns only seeds with truncated=true if graph has further edges.
     #[test]
     fn impact_depth_0_returns_only_seeds() {
         let links = chain_links();
@@ -1134,7 +1016,6 @@ mod tests {
         assert_eq!(resp.max_depth_seen, 0);
     }
 
-    /// bfs_distances itself: smoke test on adjacency
     #[test]
     fn bfs_distances_basic() {
         let links = chain_links();
@@ -1160,7 +1041,6 @@ mod tests {
         }
     }
 
-    // --- jaccard_score ---
     #[test]
     fn jaccard_identical() {
         assert!((jaccard_score("a b c", "a b c") - 1.0).abs() < 1e-9);
@@ -1173,7 +1053,6 @@ mod tests {
 
     #[test]
     fn jaccard_partial_overlap() {
-        // inter={b}, union={a,b,c} => 1/3
         let score = jaccard_score("a b", "b c");
         assert!((score - 1.0 / 3.0).abs() < 1e-9);
     }
@@ -1183,7 +1062,6 @@ mod tests {
         assert!((jaccard_score("", "") - 0.0).abs() < 1e-9);
     }
 
-    // --- classify_coverage ---
     #[test]
     fn coverage_conflict() {
         let link = make_link("a", "b", "conflicts_with", 0.5);
@@ -1208,7 +1086,6 @@ mod tests {
         assert_eq!(classify_coverage(&link), "missing");
     }
 
-    // --- neighbors_of ---
     #[test]
     fn neighbors_forward() {
         let links = vec![
@@ -1232,10 +1109,8 @@ mod tests {
         assert_eq!(ns, vec!["req-1", "req-2"]);
     }
 
-    // --- bfs_distances ---
     #[test]
     fn bfs_linear_chain() {
-        // a→b→c, seed=[a], expect b@1, c@2
         let mut adj = std::collections::HashMap::new();
         adj.insert("a".to_string(), vec!["b".to_string()]);
         adj.insert("b".to_string(), vec!["c".to_string()]);
@@ -1243,7 +1118,7 @@ mod tests {
         let map: std::collections::HashMap<_, _> = result.into_iter().collect();
         assert_eq!(map["b"], 1);
         assert_eq!(map["c"], 2);
-        assert!(!map.contains_key("a")); // seeds excluded
+        assert!(!map.contains_key("a"));
     }
 
     #[test]
@@ -1253,7 +1128,6 @@ mod tests {
         assert!(result.is_empty());
     }
 
-    // --- ingest_issues ---
     #[test]
     fn ingest_all_valid() {
         let issues = vec![
@@ -1279,7 +1153,6 @@ mod tests {
         assert_eq!(r.errors.len(), 2);
     }
 
-    // --- build_coverage_matrix stale detection ---
     #[test]
     fn coverage_matrix_stale_link() {
         let old_ts = Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap();
@@ -1300,7 +1173,6 @@ mod tests {
         assert_eq!(resp.cell_count, 1);
     }
 
-    // --- EvidenceItem round-trip serialization (mapping logic, no DB) ---
     #[test]
     fn evidence_item_serde_roundtrip() {
         let item = EvidenceItem {
@@ -1318,7 +1190,6 @@ mod tests {
         assert!(json.contains("passed"));
     }
 
-    // --- Sprint/Story/Team serialization ---
     #[test]
     fn sprint_serde() {
         let sprint = Sprint {
@@ -1356,7 +1227,7 @@ mod tests {
 
     #[test]
     fn team_response_serde() {
-        let team = TeamResponse {
+        let team = TeamRow {
             id: "team-1".to_string(),
             name: "Platform Team".to_string(),
             description: "Core platform engineering".to_string(),
@@ -1365,5 +1236,142 @@ mod tests {
         let json = serde_json::to_string(&team).unwrap();
         assert!(json.contains("Platform Team"));
         assert!(json.contains("\"members\":[]"));
+    }
+
+    // -----------------------------------------------------------------------
+    // SQLite in-memory round-trip tests — on-device tier proof
+    // No external DB required; uses sqlx SqlitePool with sqlite::memory:
+    // -----------------------------------------------------------------------
+
+    async fn make_sqlite_store() -> crate::sqlite_store::SqliteStore {
+        let pool = sqlx::SqlitePool::connect("sqlite::memory:")
+            .await
+            .expect("open in-memory SQLite");
+        // Apply SQLite migrations manually using the embedded SQL
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS evidence (
+                id TEXT PRIMARY KEY,
+                artifact_id TEXT NOT NULL,
+                kind TEXT NOT NULL,
+                url TEXT NOT NULL,
+                metadata TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )",
+        )
+        .execute(&pool)
+        .await
+        .expect("create evidence table");
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS sprints (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                goal TEXT NOT NULL DEFAULT '',
+                start_date TEXT NOT NULL,
+                end_date TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'planned',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )",
+        )
+        .execute(&pool)
+        .await
+        .expect("create sprints table");
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS stories (
+                id TEXT PRIMARY KEY,
+                sprint_id TEXT,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'open',
+                story_points INTEGER,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )",
+        )
+        .execute(&pool)
+        .await
+        .expect("create stories table");
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS teams (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL DEFAULT '',
+                members TEXT NOT NULL DEFAULT '[]',
+                created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+                updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+            )",
+        )
+        .execute(&pool)
+        .await
+        .expect("create teams table");
+
+        crate::sqlite_store::SqliteStore::new(pool)
+    }
+
+    /// SQLite evidence round-trip: create then list returns the same item.
+    #[tokio::test]
+    async fn sqlite_evidence_create_then_list() {
+        let store = make_sqlite_store().await;
+
+        // Empty initially
+        let initial = store.list_evidence().await.expect("list_evidence");
+        assert!(initial.is_empty(), "store should be empty initially");
+
+        let now = Utc::now();
+        let ev = store
+            .create_evidence(
+                "ev-test-1".to_string(),
+                "req-001".to_string(),
+                "test_result".to_string(),
+                "https://ci.example.com/run/42".to_string(),
+                serde_json::json!({"passed": true, "suite": "unit"}),
+                now,
+            )
+            .await
+            .expect("create_evidence");
+
+        assert_eq!(ev.id, "ev-test-1");
+        assert_eq!(ev.artifact_id, "req-001");
+        assert_eq!(ev.kind, "test_result");
+
+        let listed = store.list_evidence().await.expect("list_evidence after create");
+        assert_eq!(listed.len(), 1, "exactly one evidence item");
+        let found = &listed[0];
+        assert_eq!(found.id, "ev-test-1");
+        assert_eq!(found.metadata["passed"], true);
+
+        // count_evidence reflects the insert
+        let count = store.count_evidence().await.expect("count_evidence");
+        assert_eq!(count, 1);
+    }
+
+    /// SQLite sprint round-trip: create then list returns the sprint with status=planned.
+    #[tokio::test]
+    async fn sqlite_sprint_create_then_list() {
+        let store = make_sqlite_store().await;
+
+        let now = Utc::now();
+        let start = Utc.with_ymd_and_hms(2026, 1, 1, 0, 0, 0).unwrap();
+        let end = Utc.with_ymd_and_hms(2026, 1, 14, 0, 0, 0).unwrap();
+
+        let sprint = store
+            .create_sprint(
+                "sprint-sqlite-1".to_string(),
+                "On-device Sprint 1".to_string(),
+                "Prove SQLite tier works without a server".to_string(),
+                start,
+                end,
+                now,
+            )
+            .await
+            .expect("create_sprint");
+
+        assert_eq!(sprint.id, "sprint-sqlite-1");
+        assert_eq!(sprint.status, "planned");
+
+        let listed = store.list_sprints().await.expect("list_sprints");
+        assert_eq!(listed.len(), 1);
+        assert_eq!(listed[0].name, "On-device Sprint 1");
     }
 }
