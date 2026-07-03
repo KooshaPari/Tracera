@@ -1,0 +1,397 @@
+#!/usr/bin/env node
+/**
+ * tracera — Dogfooding CLI for the Tracera traceability server.
+ *
+ * Wraps the REST API at crates/tracera-server (axum) so the assistant
+ * (or any shell user) can query and mutate Tracera data from $PATH.
+ *
+ * Configuration resolution (first wins):
+ *   1. CLI flags: --api-base <url>
+ *   2. Env var: TRACERA_API_BASE
+ *   3. Config file: ~/.tracera/config.json (apiBase field)
+ *   4. Default: http://localhost:8080
+ *
+ * Usage:
+ *   tracera health
+ *   tracera sprints list [--json]
+ *   tracera teams list
+ *   tracera evidence list
+ *   tracera trace forward <artifact_id>
+ *   tracera trace reverse <artifact_id>
+ *   tracera coverage-matrix < links.json
+ *   tracera impact < impact-request.json
+ *   tracera blast-radius < blast-request.json
+ *   tracera spec-check < spec-request.json
+ *   tracera version
+ *   tracera config
+ *
+ * No external dependencies — uses node's built-in fetch (Node 18+).
+ */
+
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const process = require('node:process');
+
+const CONFIG_PATH = path.join(os.homedir(), '.tracera', 'config.json');
+const DEFAULT_API_BASE = 'http://localhost:8080';
+
+function loadConfig() {
+  const flags = parseFlags(process.argv.slice(2));
+  let apiBase = DEFAULT_API_BASE;
+  let source = 'default';
+
+  // 1. CLI flag
+  if (flags['api-base']) {
+    apiBase = flags['api-base'];
+    source = 'flag';
+  }
+  // 2. Env var
+  else if (process.env.TRACERA_API_BASE) {
+    apiBase = process.env.TRACERA_API_BASE;
+    source = 'env';
+  }
+  // 3. Config file
+  else if (fs.existsSync(CONFIG_PATH)) {
+    try {
+      const cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      if (cfg.apiBase) {
+        apiBase = cfg.apiBase;
+        source = 'file';
+      }
+    } catch (err) {
+      console.error(`warning: failed to parse ${CONFIG_PATH}: ${err.message}`);
+    }
+  }
+
+  return { apiBase, source, flags };
+}
+
+function parseFlags(argv) {
+  const flags = {};
+  const positional = [];
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i].startsWith('--')) {
+      const key = argv[i].slice(2);
+      const next = argv[i + 1];
+      if (next && !next.startsWith('--')) {
+        flags[key] = next;
+        i++;
+      } else {
+        flags[key] = true;
+      }
+    } else {
+      positional.push(argv[i]);
+    }
+  }
+  return { ...flags, _positional: positional };
+}
+
+async function api(method, url, body) {
+  const init = { method, headers: {} };
+  if (body !== undefined) {
+    init.headers['content-type'] = 'application/json';
+    init.body = typeof body === 'string' ? body : JSON.stringify(body);
+  }
+  const res = await fetch(url, init);
+  const text = await res.text();
+  let payload;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = text;
+  }
+  if (!res.ok) {
+    const message = typeof payload === 'object' && payload?.error
+      ? payload.error
+      : `HTTP ${res.status}`;
+    throw new Error(`${method} ${url} → ${res.status}: ${message}`);
+  }
+  return payload;
+}
+
+function printJson(data) {
+  console.log(JSON.stringify(data, null, 2));
+}
+
+function printTable(rows, columns) {
+  if (!rows || rows.length === 0) {
+    console.log('(no rows)');
+    return;
+  }
+  const widths = columns.map((c) =>
+    Math.max(c.label.length, ...rows.map((r) => String(r[c.key] ?? '').length))
+  );
+  const header = columns.map((c, i) => c.label.padEnd(widths[i])).join('  ');
+  const sep = widths.map((w) => '-'.repeat(w)).join('  ');
+  console.log(header);
+  console.log(sep);
+  for (const row of rows) {
+    console.log(
+      columns
+        .map((c, i) => String(row[c.key] ?? '').padEnd(widths[i]))
+        .join('  ')
+    );
+  }
+}
+
+function readStdin() {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    if (process.stdin.isTTY) {
+      resolve(null);
+      return;
+    }
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', (chunk) => (data += chunk));
+    process.stdin.on('end', () => resolve(data || null));
+    process.stdin.on('error', reject);
+  });
+}
+
+function usage() {
+  console.log(`tracera — Dogfooding CLI for the Tracera traceability server
+
+USAGE:
+  tracera <command> [args] [--json] [--api-base <url>]
+
+COMMANDS:
+  health                           GET  /health
+  sprints list                     GET  /sdlc-pm/sprints
+  sprints create <name> [goal]     POST /sdlc-pm/sprints
+  stories                          GET  /sdlc-pm/stories
+  teams                            GET  /org-intel/teams
+  metrics                          GET  /org-intel/metrics
+  evidence list                    GET  /evidence
+  evidence create <json>           POST /evidence
+  trace forward <artifact_id>      POST /api/v1/trace/forward/:id
+  trace reverse <artifact_id>      POST /api/v1/trace/reverse/:id
+  coverage-matrix [json]           POST /api/v1/coverage-matrix  (reads stdin if no arg)
+  impact [json]                    POST /api/v1/impact           (reads stdin if no arg)
+  blast-radius [json]              POST /api/v1/blast-radius     (reads stdin if no arg)
+  spec-check [json]                POST /api/v1/governance/spec-check
+  ingest github [json]             POST /ingest/github
+  ingest jira [json]               POST /ingest/jira
+  version                          Show CLI version + resolved config
+  config                           Show resolved configuration
+
+FLAGS:
+  --json                           Output JSON instead of a table
+  --api-base <url>                 Override API base URL
+
+ENV:
+  TRACERA_API_BASE                 Override API base URL
+
+CONFIG:
+  ~/.tracera/config.json           { "apiBase": "http://localhost:8080" }
+
+EXAMPLES:
+  tracera health
+  tracera sprints list --json
+  tracera coverage-matrix < matrix-request.json
+  echo '{"links":[],"stale_after_days":7}' | tracera coverage-matrix
+`);
+}
+
+const COMMANDS = {
+  async health({ apiBase, flags }) {
+    const data = await api('GET', `${apiBase}/health`);
+    if (flags.json) return printJson(data);
+    console.log(`status:    ${data.status ?? '(unknown)'}`);
+    console.log(`server:    ${apiBase}`);
+  },
+
+  async sprints({ apiBase, flags }, args) {
+    const sub = args[0];
+    if (!sub || sub === 'list') {
+      const data = await api('GET', `${apiBase}/sdlc-pm/sprints`);
+      const rows = Array.isArray(data) ? data : data.sprints ?? [];
+      if (flags.json) return printJson(rows);
+      printTable(rows, [
+        { key: 'id', label: 'ID' },
+        { key: 'name', label: 'NAME' },
+        { key: 'goal', label: 'GOAL' },
+        { key: 'status', label: 'STATUS' },
+      ]);
+      return;
+    }
+    if (sub === 'create') {
+      const name = args[1];
+      const goal = args[2];
+      if (!name) throw new Error('usage: tracera sprints create <name> [goal]');
+      const body = { name, goal: goal ?? null };
+      const data = await api('POST', `${apiBase}/sdlc-pm/sprints`, body);
+      if (flags.json) return printJson(data);
+      console.log(`created sprint: ${data.id ?? '(no id)'}`);
+      return;
+    }
+    throw new Error(`unknown sprints subcommand: ${sub}`);
+  },
+
+  async stories({ apiBase, flags }) {
+    const data = await api('GET', `${apiBase}/sdlc-pm/stories`);
+    const rows = Array.isArray(data) ? data : data.stories ?? [];
+    if (flags.json) return printJson(rows);
+    printTable(rows, [
+      { key: 'id', label: 'ID' },
+      { key: 'title', label: 'TITLE' },
+      { key: 'status', label: 'STATUS' },
+      { key: 'points', label: 'PTS' },
+    ]);
+  },
+
+  async teams({ apiBase, flags }) {
+    const data = await api('GET', `${apiBase}/org-intel/teams`);
+    const rows = Array.isArray(data) ? data : data.teams ?? [];
+    if (flags.json) return printJson(rows);
+    printTable(rows, [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'NAME' },
+      { key: 'members', label: 'MEMBERS' },
+    ]);
+  },
+
+  async metrics({ apiBase, flags }) {
+    const data = await api('GET', `${apiBase}/org-intel/metrics`);
+    if (flags.json) return printJson(data);
+    for (const [k, v] of Object.entries(data ?? {})) {
+      console.log(`${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`);
+    }
+  },
+
+  async evidence({ apiBase, flags }, args) {
+    const sub = args[0];
+    if (!sub || sub === 'list') {
+      const data = await api('GET', `${apiBase}/evidence`);
+      const rows = Array.isArray(data) ? data : data.evidence ?? [];
+      if (flags.json) return printJson(rows);
+      printTable(rows, [
+        { key: 'id', label: 'ID' },
+        { key: 'kind', label: 'KIND' },
+        { key: 'summary', label: 'SUMMARY' },
+        { key: 'created_at', label: 'CREATED' },
+      ]);
+      return;
+    }
+    if (sub === 'create') {
+      const body = args[1];
+      if (!body) throw new Error('usage: tracera evidence create <json>');
+      const data = await api('POST', `${apiBase}/evidence`, JSON.parse(body));
+      if (flags.json) return printJson(data);
+      console.log(`created evidence: ${data.id ?? '(no id)'}`);
+      return;
+    }
+    throw new Error(`unknown evidence subcommand: ${sub}`);
+  },
+
+  async trace({ apiBase, flags }, args) {
+    const direction = args[0]; // forward | reverse
+    const artifactId = args[1];
+    if (!direction || !artifactId) {
+      throw new Error('usage: tracera trace <forward|reverse> <artifact_id>');
+    }
+    const stdin = await readStdin();
+    const body = stdin ? JSON.parse(stdin) : {};
+    const data = await api(
+      'POST',
+      `${apiBase}/api/v1/trace/${direction}/${encodeURIComponent(artifactId)}`,
+      body
+    );
+    if (flags.json) return printJson(data);
+    console.log(JSON.stringify(data, null, 2));
+  },
+
+  async 'coverage-matrix'({ apiBase, flags }, args) {
+    const stdin = await readStdin();
+    const body = args[0] ? JSON.parse(args[0]) : stdin ? JSON.parse(stdin) : {};
+    const data = await api('POST', `${apiBase}/api/v1/coverage-matrix`, body);
+    printJson(data);
+  },
+
+  async impact({ apiBase, flags }, args) {
+    const stdin = await readStdin();
+    const body = args[0] ? JSON.parse(args[0]) : stdin ? JSON.parse(stdin) : {};
+    const data = await api('POST', `${apiBase}/api/v1/impact`, body);
+    printJson(data);
+  },
+
+  async 'blast-radius'({ apiBase, flags }, args) {
+    const stdin = await readStdin();
+    const body = args[0] ? JSON.parse(args[0]) : stdin ? JSON.parse(stdin) : {};
+    const data = await api('POST', `${apiBase}/api/v1/blast-radius`, body);
+    printJson(data);
+  },
+
+  async 'spec-check'({ apiBase, flags }, args) {
+    const stdin = await readStdin();
+    const body = args[0] ? JSON.parse(args[0]) : stdin ? JSON.parse(stdin) : {};
+    const data = await api('POST', `${apiBase}/api/v1/governance/spec-check`, body);
+    printJson(data);
+  },
+
+  async ingest({ apiBase, flags }, args) {
+    const source = args[0]; // github | jira
+    if (!source) throw new Error('usage: tracera ingest <github|jira> [json]');
+    const stdin = await readStdin();
+    const body = args[1] ? JSON.parse(args[1]) : stdin ? JSON.parse(stdin) : {};
+    const data = await api('POST', `${apiBase}/ingest/${source}`, body);
+    printJson(data);
+  },
+
+  async version({ apiBase, source }) {
+    console.log(`tracera CLI: ${pkgVersion()}`);
+    console.log(`api base:    ${apiBase}  (${source})`);
+    try {
+      const ready = await api('GET', `${apiBase}/ready`);
+      console.log(`server:      ${ready.status} (${ready.version ?? 'unknown'})`);
+    } catch (err) {
+      console.log(`server:      unreachable (${err.message})`);
+    }
+  },
+
+  async config({ apiBase, source }) {
+    console.log(JSON.stringify({ apiBase, source, configFile: CONFIG_PATH }, null, 2));
+  },
+};
+
+function pkgVersion() {
+  try {
+    // Read from sibling package.json — falls back to 'dev'.
+    const pkg = require('../package.json');
+    return pkg.version ?? 'dev';
+  } catch {
+    return 'dev';
+  }
+}
+
+async function main() {
+  const argv = process.argv.slice(2);
+  if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h') {
+    usage();
+    return;
+  }
+
+  const ctx = loadConfig();
+  const cmd = argv[0];
+  const rest = argv.slice(1);
+
+  const handler = COMMANDS[cmd];
+  if (!handler) {
+    console.error(`unknown command: ${cmd}\n`);
+    usage();
+    process.exit(2);
+  }
+
+  try {
+    await handler(ctx, rest);
+  } catch (err) {
+    if (ctx.flags.json) {
+      console.log(JSON.stringify({ error: err.message }));
+    } else {
+      console.error(`error: ${err.message}`);
+    }
+    process.exit(1);
+  }
+}
+
+main();

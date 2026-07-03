@@ -9,3 +9,8 @@ target/
 .venv/
 __pycache__/
 .astro/
+
+# Node lockfiles + electron-builder output (not committed per repo convention)
+package-lock.json
+frontend/apps/desktop/release/
+frontend/apps/desktop/build/icon.*

@@ -1,0 +1,12 @@
+{
+  "_comment_": "Tracera personal dogfooding config. Edit apiBase to point at your running tracera-server (default: local dev server on :8080). See docs/dogfooding.md for setup.",
+
+  "apiBase": "http://localhost:8080",
+
+  "_auth_": "Optional. If your server requires auth, set the bearer token here. NEVER commit a real token to source control — this file lives at ~/.tracera/config.json (outside any repo).",
+  "authToken": null,
+
+  "_preferences_": "Personal defaults for the CLI.",
+  "defaultOutput": "table",
+  "requestTimeoutMs": 15000
+}

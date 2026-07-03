@@ -12,7 +12,12 @@ chrono = { workspace = true, features = ["clock"] }
 http = "1"
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
+sqlx = { version = "0.9", features = ["postgres", "sqlite", "runtime-tokio", "macros", "uuid", "chrono", "migrate"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
 tower-http = { version = "0.6", features = ["fs"] }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
+uuid = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

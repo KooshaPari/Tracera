@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+# tracera-attach — Personal one-time setup for the Tracera CLI.
+#
+# Usage:
+#   ./bin/tracera-attach                      # auto-detect $PATH location
+#   ./bin/tracera-attach --dir ~/.local/bin   # explicit install dir
+#   ./bin/tracera-attach --uninstall          # remove symlink + config
+#
+# What it does:
+#   1. Creates ~/.tracera/ if missing.
+#   2. Copies bin/tracera-config.example.json → ~/.tracera/config.json
+#      (skips if config already exists — does not clobber).
+#   3. Symlinks bin/tracera → <bindir>/tracera so `tracera` is on $PATH.
+#
+# After running, you can `tracera health` from anywhere.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_EXAMPLE="${SCRIPT_DIR}/tracera-config.example.json"
+CLI_SRC="${SCRIPT_DIR}/tracera"
+
+UNINSTALL=0
+BINDIR=""
+
+for arg in "$@"; do
+  case "$arg" in
+    --uninstall) UNINSTALL=1 ;;
+    --dir=*)     BINDIR="${arg#--dir=}" ;;
+    --dir)       shift; BINDIR="${1:-}" ;;
+    --help|-h)
+      sed -n '2,/^set -euo/p' "$0" | sed 's/^# \{0,1\}//'
+      exit 0
+      ;;
+    *) echo "unknown flag: $arg" >&2; exit 2 ;;
+  esac
+done
+
+TRACERA_HOME="${TRACERA_HOME:-$HOME/.tracera}"
+CONFIG_PATH="$TRACERA_HOME/config.json"
+
+if [[ "$UNINSTALL" == "1" ]]; then
+  echo "uninstalling tracera CLI"
+  # Remove symlink from common locations
+  for d in "$HOME/.local/bin" "$HOME/bin" "/usr/local/bin"; do
+    if [[ -L "$d/tracera" ]]; then
+      rm -f "$d/tracera"
+      echo "  removed: $d/tracera"
+    fi
+  done
+  echo "  left in place (manual delete if desired): $CONFIG_PATH"
+  echo "  left in place (manual delete if desired): $TRACERA_HOME/"
+  exit 0
+fi
+
+# Auto-detect bindir if not provided.
+if [[ -z "$BINDIR" ]]; then
+  if [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+    BINDIR="$HOME/.local/bin"
+  elif [[ ":$PATH:" == *":$HOME/bin:"* ]]; then
+    BINDIR="$HOME/bin"
+  else
+    BINDIR="$HOME/.local/bin"
+    mkdir -p "$BINDIR"
+    if [[ ":$PATH:" != *":$BINDIR:"* ]]; then
+      echo "note: $BINDIR is not on your PATH. Add this to ~/.zshrc or ~/.bashrc:"
+      echo "  export PATH=\"$HOME/.local/bin:\$PATH\""
+    fi
+  fi
+fi
+
+# Ensure CLI is executable.
+chmod +x "$CLI_SRC"
+
+# 1. ~/.tracera/
+mkdir -p "$TRACERA_HOME"
+
+# 2. Config file (don't clobber existing).
+if [[ -f "$CONFIG_PATH" ]]; then
+  echo "config already exists at $CONFIG_PATH — leaving untouched"
+else
+  cp "$CONFIG_EXAMPLE" "$CONFIG_PATH"
+  echo "wrote: $CONFIG_PATH"
+fi
+
+# 3. Symlink.
+mkdir -p "$BINDIR"
+ln -sf "$CLI_SRC" "$BINDIR/tracera"
+echo "linked: $BINDIR/tracera → $CLI_SRC"
+
+echo ""
+echo "✓ tracera CLI attached. Try:"
+echo "    tracera health"
+echo "    tracera config"
+echo ""
+echo "Config file: $CONFIG_PATH"
+echo "Edit it to change apiBase, set authToken, etc."
