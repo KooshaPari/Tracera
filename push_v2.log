@@ -1,0 +1,2 @@
+Remote "origin" does not support the Git LFS locking API. Consider disabling it with:
+  $ git config lfs.https://github.com/KooshaPari/Tracera.git/info/lfs.locksverify false
