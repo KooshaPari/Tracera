@@ -23,7 +23,7 @@ Implementation path for guardrails:
 
 - enforce request-size and payload-size checks at serializer boundary;
 - return explicit `429/413` with actionable message:
-  - "retry with range filters, time window, or async/export mode."
+  - “retry with range filters, time window, or async/export mode.”
 
 ## 2) Backpressure + streaming plan for heavy endpoints
 
@@ -79,3 +79,4 @@ Add low-friction hooks before deep optimization:
 3. Add streaming fallback for oversized coverage requests.
 4. Add async job-based deferred heavy job path.
 5. Add cache and profiling gating behind feature flags.
+

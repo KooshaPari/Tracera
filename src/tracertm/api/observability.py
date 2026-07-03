@@ -51,66 +51,71 @@ class JSONFormatter(logging.Formatter):
                 "name",
                 "msg",
                 "args",
-                "created",
-                "filename",
-                "funcName",
                 "levelname",
                 "levelno",
-                "lineno",
-                "module",
-                "msecs",
-                "message",
                 "pathname",
-                "process",
-                "processName",
+                "filename",
+                "module",
+                "lineno",
+                "funcName",
+                "created",
+                "msecs",
                 "relativeCreated",
                 "thread",
                 "threadName",
-                "exc_info",
-                "exc_text",
-                "stack_info",
-                "taskName",
+                "processName",
+                "process",
                 "correlation_id",
                 "request_id",
-                "elapsed_ms",
+                "exc_info",
+                "exc_text",
             }:
                 continue
-            event[key] = value
-        return json.dumps(event)
+            event[key] = self._coerce(value)
+        return json.dumps(event, separators=(",", ":"), ensure_ascii=False)
+
+    @staticmethod
+    def _coerce(value: Any) -> Any:
+        try:
+            json.dumps(value)
+            return value
+        except TypeError:
+            return str(value)
 
 
 def configure_api_logging() -> None:
-    """Set up structured JSON logging on stdout for the API logger."""
+    """Configure root and ``tracertm`` loggers with a JSON formatter."""
     global _LOGGING_CONFIGURED
     if _LOGGING_CONFIGURED:
         return
+
+    formatter = JSONFormatter()
+    handler = logging.StreamHandler(stream=sys.stdout)
+    handler.setFormatter(formatter)
+    handler.addFilter(CorrelationIdFilter())
+
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    root.handlers = []
+    root.addHandler(handler)
+    root.propagate = False
+
+    app_logger = logging.getLogger("tracertm")
+    app_logger.setLevel(logging.INFO)
+    app_logger.handlers = [handler]
+    app_logger.propagate = False
     _LOGGING_CONFIGURED = True
 
-    logger = logging.getLogger("tracertm")
-    logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(JSONFormatter())
-    handler.addFilter(CorrelationIdFilter())
-    logger.addHandler(handler)
-    # silence noisy deps
-    logging.getLogger("neo4j").setLevel(logging.WARNING)
-    logging.getLogger("httpx").setLevel(logging.WARNING)
 
-
-def log_request_metrics(
-    logger: logging.Logger,
-    method: str,
-    path: str,
-    status: int,
-    elapsed_ms: float,
-) -> None:
-    """Log a request completion with elapsed time."""
+def log_request_metrics(logger: logging.Logger, *, method: str, path: str, status: int, elapsed_ms: float) -> None:
+    """Log a single request completion event with timing metadata."""
     logger.info(
-        f"{method} {path} {status}",
+        "request_complete",
         extra={
+            "method": method,
+            "path": path,
+            "status": status,
             "elapsed_ms": round(elapsed_ms, 2),
-            "http_method": method,
-            "http_path": path,
-            "http_status": status,
         },
     )
+

@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "E:\Dev\Tracera\scripts\verify_openapi.py", line 10, in <module>
+    from tracertm.api.main import app
+  File "E:\Dev\Tracera\src\tracertm\__init__.py", line 3, in <module>
+    from src.tracertm.matrix import TraceabilityMatrix
+ModuleNotFoundError: No module named 'src'

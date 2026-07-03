@@ -1,0 +1,4 @@
+To https://github.com/KooshaPari/Tracera.git
+ ! [remote rejected]     fix/tracera-ci-repair -> fix/tracera-ci-repair (cannot lock ref 'refs/heads/fix/tracera-ci-repair': reference already exists)
+error: failed to push some refs to 'https://github.com/KooshaPari/Tracera.git'
+EXITCODE=1 

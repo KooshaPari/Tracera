@@ -98,3 +98,4 @@ Post-restore validation:
   - run `GET /health` + `GET /ready`,
   - run impact traversal smoke,
   - verify `/api/v1/traceability` post count shape and deterministic response order.
+
