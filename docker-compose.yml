@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: tracera
+      POSTGRES_PASSWORD: tracera
+      POSTGRES_DB: tracera
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracera -d tracera"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  tracera-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      TRACERA_BIND_ADDR: "0.0.0.0:8080"
+      DATABASE_URL: "postgres://tracera:tracera@postgres:5432/tracera"
+    expose:
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pg-data:

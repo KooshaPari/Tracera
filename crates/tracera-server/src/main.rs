@@ -5,19 +5,27 @@ use axum::{
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use sqlx::PgPool;
 use std::env;
 use std::net::SocketAddr;
-use std::sync::{Arc, Mutex};
+use tracing::info;
 use tracing_subscriber::EnvFilter;
+use uuid::Uuid;
 
-#[derive(Clone, Default)]
+// ---------------------------------------------------------------------------
+// App state — PgPool replaces the in-memory Vec stores dropped in the
+// Python→Rust migration. DATABASE_URL is required; missing/unreachable DB is
+// a hard startup error with an actionable message.
+// ---------------------------------------------------------------------------
+#[derive(Clone)]
 struct AppState {
     version: String,
-    evidence: Arc<Mutex<Vec<EvidenceItem>>>,
-    sprints: Arc<Mutex<Vec<Sprint>>>,
-    stories: Arc<Mutex<Vec<Story>>>,
+    pool: PgPool,
 }
 
+// ---------------------------------------------------------------------------
+// Generic response shapes
+// ---------------------------------------------------------------------------
 #[derive(Serialize)]
 struct StatusResponse {
     status: &'static str,
@@ -29,6 +37,10 @@ struct ReadyResponse {
     version: String,
 }
 
+// ---------------------------------------------------------------------------
+// Trace-link types (coverage-matrix / impact / blast-radius / spec-check)
+// These are computation-only — no persistence needed.
+// ---------------------------------------------------------------------------
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "snake_case")]
 struct TraceLinkInput {
@@ -184,8 +196,10 @@ fn default_status() -> String {
     "draft".to_string()
 }
 
-// --- evidence store (port of src/tracertm/api/routers/evidence.py) ---
-#[derive(Clone, Serialize)]
+// ---------------------------------------------------------------------------
+// Evidence store — restored from src/tracertm/api/routers/evidence.py
+// ---------------------------------------------------------------------------
+#[derive(Debug, Clone, Serialize)]
 struct EvidenceItem {
     id: String,
     artifact_id: String,
@@ -215,8 +229,10 @@ fn empty_object() -> Value {
     Value::Object(serde_json::Map::new())
 }
 
-// --- sdlc-pm (port of src/tracertm/api/routers/sdlc_pm.py) ---
-#[derive(Clone, Serialize)]
+// ---------------------------------------------------------------------------
+// SDLC-PM — restored from src/tracertm/api/routers/sdlc_pm.py
+// ---------------------------------------------------------------------------
+#[derive(Debug, Clone, Serialize)]
 struct Sprint {
     id: String,
     name: String,
@@ -228,7 +244,7 @@ struct Sprint {
     updated_at: DateTime<Utc>,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 struct Story {
     id: String,
     sprint_id: Option<String>,
@@ -249,7 +265,7 @@ struct SprintCreate {
 }
 
 // --- org-intel (port of src/tracertm/api/routers/org_intel.py) ---
-#[derive(Serialize)]
+#[derive(Debug, Clone, Serialize)]
 struct TeamResponse {
     id: String,
     name: String,
@@ -287,7 +303,8 @@ struct BulkIngestionResult {
     errors: Vec<String>,
 }
 
-// One requirement + one trace link per issue that has a non-empty title; title-less issues become errors.
+// One requirement + one trace link per issue that has a non-empty title;
+// title-less issues become errors.
 fn ingest_issues(issues: &[Value], ref_field: &str) -> BulkIngestionResult {
     let mut created = 0usize;
     let mut errors = Vec::new();
@@ -312,17 +329,52 @@ fn ingest_issues(issues: &[Value], ref_field: &str) -> BulkIngestionResult {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Startup
+// ---------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::from_default_env().add_directive("tracera_server=info".parse().unwrap()))
+        .with_env_filter(
+            EnvFilter::from_default_env()
+                .add_directive("tracera_server=info".parse().unwrap()),
+        )
         .init();
+
+    // DATABASE_URL is required. Missing or unreachable DB is a hard error —
+    // no silent in-memory fallback.
+    let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
+        eprintln!(
+            "FATAL: DATABASE_URL environment variable is not set.\n\
+             Set it to a Postgres connection string, e.g.:\n\
+             DATABASE_URL=postgres://user:pass@localhost:5432/tracera"
+        );
+        std::process::exit(1);
+    });
+
+    let pool = PgPool::connect(&database_url).await.unwrap_or_else(|e| {
+        eprintln!(
+            "FATAL: Cannot connect to Postgres at the provided DATABASE_URL.\n\
+             Error: {e}\n\
+             Ensure Postgres is running and DATABASE_URL is correct."
+        );
+        std::process::exit(1);
+    });
+
+    // Run pending migrations at startup.
+    sqlx::migrate!("./migrations")
+        .run(&pool)
+        .await
+        .unwrap_or_else(|e| {
+            eprintln!("FATAL: Database migration failed: {e}");
+            std::process::exit(1);
+        });
+
+    info!("Database migrations applied successfully");
 
     let state = AppState {
         version: env!("CARGO_PKG_VERSION").to_string(),
-        evidence: Arc::new(Mutex::new(Vec::new())),
-        sprints: Arc::new(Mutex::new(Vec::new())),
-        stories: Arc::new(Mutex::new(Vec::new())),
+        pool,
     };
 
     let app = Router::new()
@@ -351,12 +403,17 @@ async fn main() {
 
     let addr = env::var("TRACERA_BIND_ADDR")
         .ok()
-        .and_then(|value| value.parse().ok())
+        .and_then(|v| v.parse().ok())
         .unwrap_or_else(|| SocketAddr::from(([127, 0, 0, 1], 8080)));
+
     let listener = tokio::net::TcpListener::bind(addr).await.expect("bind");
+    info!("tracera-server listening on {addr}");
     axum::serve(listener, app).await.expect("server failed");
 }
 
+// ---------------------------------------------------------------------------
+// Health / ready
+// ---------------------------------------------------------------------------
 async fn healthz() -> Json<StatusResponse> {
     Json(StatusResponse { status: "ok" })
 }
@@ -365,21 +422,30 @@ async fn health() -> Json<StatusResponse> {
     Json(StatusResponse { status: "ok" })
 }
 
-async fn readyz(axum::extract::State(state): axum::extract::State<AppState>) -> Json<ReadyResponse> {
+async fn readyz(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Json<ReadyResponse> {
     Json(ReadyResponse {
         status: "ready",
         version: state.version,
     })
 }
 
-async fn ready(axum::extract::State(state): axum::extract::State<AppState>) -> Json<ReadyResponse> {
+async fn ready(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Json<ReadyResponse> {
     Json(ReadyResponse {
         status: "ready",
         version: state.version,
     })
 }
 
-async fn coverage_matrix(Json(request): Json<CoverageMatrixRequest>) -> Json<CoverageMatrixResponse> {
+// ---------------------------------------------------------------------------
+// Computation-only handlers (no persistence)
+// ---------------------------------------------------------------------------
+async fn coverage_matrix(
+    Json(request): Json<CoverageMatrixRequest>,
+) -> Json<CoverageMatrixResponse> {
     Json(build_coverage_matrix(request))
 }
 
@@ -461,7 +527,10 @@ async fn spec_check(Json(req): Json<SpecCheckRequest>) -> Json<GovernanceReport>
     use std::collections::{BTreeSet, HashMap};
     let mut traces_by_spec: HashMap<&str, BTreeSet<&str>> = HashMap::new();
     for t in &req.traces {
-        traces_by_spec.entry(t.spec_id.as_str()).or_default().insert(t.kind.as_str());
+        traces_by_spec
+            .entry(t.spec_id.as_str())
+            .or_default()
+            .insert(t.kind.as_str());
     }
     let known: BTreeSet<&str> = req.specs.iter().map(|s| s.spec_id.as_str()).collect();
     let mut violations = Vec::new();
@@ -475,15 +544,27 @@ async fn spec_check(Json(req): Json<SpecCheckRequest>) -> Json<GovernanceReport>
             violations.push(viol(&s.spec_id, "not_approved", "Spec must be approved"));
         }
         if s.acceptance_criteria.is_empty() {
-            violations.push(viol(&s.spec_id, "missing_acceptance", "Acceptance criteria required"));
+            violations.push(viol(
+                &s.spec_id,
+                "missing_acceptance",
+                "Acceptance criteria required",
+            ));
         }
         if s.evidence_links.is_empty() {
-            violations.push(viol(&s.spec_id, "missing_evidence", "Evidence links required"));
+            violations.push(viol(
+                &s.spec_id,
+                "missing_evidence",
+                "Evidence links required",
+            ));
         }
         let kinds = traces_by_spec.get(s.spec_id.as_str());
         let has = |k: &str| kinds.map(|set| set.contains(k)).unwrap_or(false);
         if !has("implementation") {
-            violations.push(viol(&s.spec_id, "missing_implementation", "Implementation trace required"));
+            violations.push(viol(
+                &s.spec_id,
+                "missing_implementation",
+                "Implementation trace required",
+            ));
         }
         if !has("test") {
             violations.push(viol(&s.spec_id, "missing_test", "Test trace required"));
@@ -503,93 +584,21 @@ async fn spec_check(Json(req): Json<SpecCheckRequest>) -> Json<GovernanceReport>
 }
 
 fn viol(spec_id: &str, code: &'static str, message: &'static str) -> GovernanceViolation {
-    GovernanceViolation { spec_id: spec_id.to_string(), code, message }
-}
-
-async fn list_sprints(
-    axum::extract::State(state): axum::extract::State<AppState>,
-) -> Json<Vec<Sprint>> {
-    Json(state.sprints.lock().unwrap().clone())
-}
-
-async fn list_stories(
-    axum::extract::State(state): axum::extract::State<AppState>,
-) -> Json<Vec<Story>> {
-    Json(state.stories.lock().unwrap().clone())
-}
-
-async fn create_sprint(
-    axum::extract::State(state): axum::extract::State<AppState>,
-    Json(payload): Json<SprintCreate>,
-) -> (axum::http::StatusCode, Json<Sprint>) {
-    let now = Utc::now();
-    let mut store = state.sprints.lock().unwrap();
-    let sprint = Sprint {
-        id: format!("sprint-{}", store.len() + 1),
-        name: payload.name,
-        goal: payload.goal,
-        start_date: payload.start_date,
-        end_date: payload.end_date,
-        status: "planned".to_string(),
-        created_at: now,
-        updated_at: now,
-    };
-    store.push(sprint.clone());
-    (axum::http::StatusCode::CREATED, Json(sprint))
-}
-
-async fn list_teams() -> Json<Vec<TeamResponse>> {
-    // Seed defaults (mirrors Python's empty-store fallback). ponytail: static seed, swap for store when CRUD lands
-    Json(vec![
-        TeamResponse { id: "team-1".into(), name: "Platform Team".into(), description: "Core platform engineering".into(), members: vec![] },
-        TeamResponse { id: "team-2".into(), name: "Product Team".into(), description: "Product feature development".into(), members: vec![] },
-        TeamResponse { id: "team-3".into(), name: "Security Team".into(), description: "Security and compliance".into(), members: vec![] },
-    ])
-}
-
-async fn org_metrics() -> Json<MetricsResponse> {
-    Json(MetricsResponse { total_artifacts: 30, coverage_ratio: 0.75, open_gaps: 3 })
-}
-
-async fn ingest_github(Json(req): Json<GitHubIngestRequest>) -> Json<BulkIngestionResult> {
-    Json(ingest_issues(&req.issues, "number"))
-}
-
-async fn ingest_jira(Json(req): Json<JiraIngestRequest>) -> Json<BulkIngestionResult> {
-    Json(ingest_issues(&req.issues, "key"))
-}
-
-async fn list_evidence(
-    axum::extract::State(state): axum::extract::State<AppState>,
-) -> Json<EvidenceList> {
-    let items = state.evidence.lock().unwrap().clone();
-    Json(EvidenceList { count: items.len(), items })
-}
-
-async fn create_evidence(
-    axum::extract::State(state): axum::extract::State<AppState>,
-    Json(payload): Json<EvidenceCreate>,
-) -> (axum::http::StatusCode, Json<EvidenceItem>) {
-    let now = Utc::now();
-    let mut store = state.evidence.lock().unwrap();
-    let item = EvidenceItem {
-        id: format!("ev-{}", store.len() + 1),
-        artifact_id: payload.artifact_id,
-        kind: payload.kind,
-        url: payload.url,
-        metadata: payload.metadata,
-        created_at: now,
-        updated_at: now,
-    };
-    store.push(item.clone());
-    (axum::http::StatusCode::CREATED, Json(item))
+    GovernanceViolation {
+        spec_id: spec_id.to_string(),
+        code,
+        message,
+    }
 }
 
 async fn blast_radius(Json(req): Json<BlastRadiusRequest>) -> Json<BlastRadiusResponse> {
     let adj = build_adjacency(&req.links);
     let mut blast = Vec::new();
     for node in bfs_distances(&adj, &req.changed_artifact_ids) {
-        blast.push(BlastNodeResponse { artifact_id: node.0, distance: node.1 });
+        blast.push(BlastNodeResponse {
+            artifact_id: node.0,
+            distance: node.1,
+        });
     }
     Json(BlastRadiusResponse {
         total: blast.len(),
@@ -603,7 +612,11 @@ async fn trace_forward(
     Json(req): Json<TraceQueryRequest>,
 ) -> Json<TraceNeighborsResponse> {
     let neighbors = neighbors_of(&req.links, &artifact_id, true);
-    Json(TraceNeighborsResponse { artifact_id, direction: "forward", neighbors })
+    Json(TraceNeighborsResponse {
+        artifact_id,
+        direction: "forward",
+        neighbors,
+    })
 }
 
 async fn trace_reverse(
@@ -611,9 +624,257 @@ async fn trace_reverse(
     Json(req): Json<TraceQueryRequest>,
 ) -> Json<TraceNeighborsResponse> {
     let neighbors = neighbors_of(&req.links, &artifact_id, false);
-    Json(TraceNeighborsResponse { artifact_id, direction: "reverse", neighbors })
+    Json(TraceNeighborsResponse {
+        artifact_id,
+        direction: "reverse",
+        neighbors,
+    })
 }
 
+// ---------------------------------------------------------------------------
+// Evidence handlers — backed by `evidence` table
+// ---------------------------------------------------------------------------
+async fn list_evidence(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Json<EvidenceList> {
+    let rows = sqlx::query!(
+        r#"SELECT id, artifact_id, kind, url, metadata, created_at, updated_at
+           FROM evidence
+           ORDER BY created_at ASC"#
+    )
+    .fetch_all(&state.pool)
+    .await
+    .unwrap_or_else(|e| {
+        tracing::error!("list_evidence DB error: {e}");
+        vec![]
+    });
+
+    let items: Vec<EvidenceItem> = rows
+        .into_iter()
+        .map(|r| EvidenceItem {
+            id: r.id,
+            artifact_id: r.artifact_id,
+            kind: r.kind,
+            url: r.url,
+            metadata: r.metadata,
+            created_at: r.created_at,
+            updated_at: r.updated_at,
+        })
+        .collect();
+
+    Json(EvidenceList {
+        count: items.len(),
+        items,
+    })
+}
+
+async fn create_evidence(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    Json(payload): Json<EvidenceCreate>,
+) -> (axum::http::StatusCode, Json<EvidenceItem>) {
+    let now = Utc::now();
+    let id = format!("ev-{}", Uuid::new_v4());
+    let meta_str = serde_json::to_value(&payload.metadata)
+        .unwrap_or(Value::Object(serde_json::Map::new()));
+
+    sqlx::query!(
+        r#"INSERT INTO evidence (id, artifact_id, kind, url, metadata, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)"#,
+        id,
+        payload.artifact_id,
+        payload.kind,
+        payload.url,
+        meta_str,
+        now,
+        now,
+    )
+    .execute(&state.pool)
+    .await
+    .unwrap_or_else(|e| {
+        tracing::error!("create_evidence DB error: {e}");
+        panic!("create_evidence: DB insert failed: {e}");
+    });
+
+    let item = EvidenceItem {
+        id,
+        artifact_id: payload.artifact_id,
+        kind: payload.kind,
+        url: payload.url,
+        metadata: payload.metadata,
+        created_at: now,
+        updated_at: now,
+    };
+    (axum::http::StatusCode::CREATED, Json(item))
+}
+
+// ---------------------------------------------------------------------------
+// Sprint handlers — backed by `sprints` table
+// ---------------------------------------------------------------------------
+async fn list_sprints(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Json<Vec<Sprint>> {
+    let rows = sqlx::query!(
+        r#"SELECT id, name, goal, start_date, end_date, status, created_at, updated_at
+           FROM sprints
+           ORDER BY created_at ASC"#
+    )
+    .fetch_all(&state.pool)
+    .await
+    .unwrap_or_else(|e| {
+        tracing::error!("list_sprints DB error: {e}");
+        vec![]
+    });
+
+    Json(
+        rows.into_iter()
+            .map(|r| Sprint {
+                id: r.id,
+                name: r.name,
+                goal: r.goal,
+                start_date: r.start_date,
+                end_date: r.end_date,
+                status: r.status,
+                created_at: r.created_at,
+                updated_at: r.updated_at,
+            })
+            .collect(),
+    )
+}
+
+async fn create_sprint(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    Json(payload): Json<SprintCreate>,
+) -> (axum::http::StatusCode, Json<Sprint>) {
+    let now = Utc::now();
+    let id = format!("sprint-{}", Uuid::new_v4());
+
+    sqlx::query!(
+        r#"INSERT INTO sprints (id, name, goal, start_date, end_date, status, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, 'planned', $6, $7)"#,
+        id,
+        payload.name,
+        payload.goal,
+        payload.start_date,
+        payload.end_date,
+        now,
+        now,
+    )
+    .execute(&state.pool)
+    .await
+    .unwrap_or_else(|e| {
+        tracing::error!("create_sprint DB error: {e}");
+        panic!("create_sprint: DB insert failed: {e}");
+    });
+
+    let sprint = Sprint {
+        id,
+        name: payload.name,
+        goal: payload.goal,
+        start_date: payload.start_date,
+        end_date: payload.end_date,
+        status: "planned".to_string(),
+        created_at: now,
+        updated_at: now,
+    };
+    (axum::http::StatusCode::CREATED, Json(sprint))
+}
+
+// ---------------------------------------------------------------------------
+// Story handlers — backed by `stories` table
+// ---------------------------------------------------------------------------
+async fn list_stories(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Json<Vec<Story>> {
+    let rows = sqlx::query!(
+        r#"SELECT id, sprint_id, title, description, status, story_points, created_at, updated_at
+           FROM stories
+           ORDER BY created_at ASC"#
+    )
+    .fetch_all(&state.pool)
+    .await
+    .unwrap_or_else(|e| {
+        tracing::error!("list_stories DB error: {e}");
+        vec![]
+    });
+
+    Json(
+        rows.into_iter()
+            .map(|r| Story {
+                id: r.id,
+                sprint_id: r.sprint_id,
+                title: r.title,
+                description: r.description,
+                status: r.status,
+                story_points: r.story_points,
+                created_at: r.created_at,
+                updated_at: r.updated_at,
+            })
+            .collect(),
+    )
+}
+
+// ---------------------------------------------------------------------------
+// Teams handler — backed by `teams` table (seeded in migration 0004)
+// ---------------------------------------------------------------------------
+async fn list_teams(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Json<Vec<TeamResponse>> {
+    let rows = sqlx::query!(
+        r#"SELECT id, name, description, members
+           FROM teams
+           ORDER BY id ASC"#
+    )
+    .fetch_all(&state.pool)
+    .await
+    .unwrap_or_else(|e| {
+        tracing::error!("list_teams DB error: {e}");
+        vec![]
+    });
+
+    Json(
+        rows.into_iter()
+            .map(|r| TeamResponse {
+                id: r.id,
+                name: r.name,
+                description: r.description,
+                members: r.members,
+            })
+            .collect(),
+    )
+}
+
+// ---------------------------------------------------------------------------
+// Org metrics — kept as live DB count for total_artifacts from evidence table
+// ---------------------------------------------------------------------------
+async fn org_metrics(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Json<MetricsResponse> {
+    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM evidence")
+        .fetch_one(&state.pool)
+        .await
+        .unwrap_or(0);
+
+    Json(MetricsResponse {
+        total_artifacts: count as usize,
+        coverage_ratio: 0.75,
+        open_gaps: 3,
+    })
+}
+
+// ---------------------------------------------------------------------------
+// Ingest handlers (no persistence — returns ingestion summary)
+// ---------------------------------------------------------------------------
+async fn ingest_github(Json(req): Json<GitHubIngestRequest>) -> Json<BulkIngestionResult> {
+    Json(ingest_issues(&req.issues, "number"))
+}
+
+async fn ingest_jira(Json(req): Json<JiraIngestRequest>) -> Json<BulkIngestionResult> {
+    Json(ingest_issues(&req.issues, "key"))
+}
+
+// ---------------------------------------------------------------------------
+// Pure-function utilities (no DB interaction — unit-testable without a pool)
+// ---------------------------------------------------------------------------
 fn neighbors_of(links: &[TraceLinkInput], id: &str, forward: bool) -> Vec<String> {
     links
         .iter()
@@ -632,12 +893,14 @@ fn neighbors_of(links: &[TraceLinkInput], id: &str, forward: bool) -> Vec<String
 fn build_adjacency(links: &[TraceLinkInput]) -> std::collections::HashMap<String, Vec<String>> {
     let mut adj: std::collections::HashMap<String, Vec<String>> = std::collections::HashMap::new();
     for l in links {
-        adj.entry(l.source_id.clone()).or_default().push(l.target_id.clone());
+        adj.entry(l.source_id.clone())
+            .or_default()
+            .push(l.target_id.clone());
     }
     adj
 }
 
-// BFS forward reachability with distance; seeds are excluded from output. ponytail: O(V+E) plain BFS, fine for trace graphs
+// BFS forward reachability with distance; seeds are excluded from output.
 fn bfs_distances(
     adj: &std::collections::HashMap<String, Vec<String>>,
     seeds: &[String],
@@ -688,7 +951,9 @@ fn build_coverage_matrix(request: CoverageMatrixRequest) -> CoverageMatrixRespon
 fn classify_coverage(link: &TraceLinkInput) -> String {
     if link.relationship == "conflicts_with" {
         "conflict".to_string()
-    } else if matches!(link.relationship.as_str(), "verifies" | "satisfies") && link.confidence >= 0.9 {
+    } else if matches!(link.relationship.as_str(), "verifies" | "satisfies")
+        && link.confidence >= 0.9
+    {
         "covered".to_string()
     } else if matches!(link.relationship.as_str(), "verifies" | "satisfies") {
         "partial".to_string()
@@ -702,7 +967,11 @@ fn jaccard_score(a: &str, b: &str) -> f64 {
     let b_tokens: std::collections::BTreeSet<_> = b.split_whitespace().collect();
     let inter = a_tokens.intersection(&b_tokens).count() as f64;
     let union = a_tokens.union(&b_tokens).count() as f64;
-    if union == 0.0 { 0.0 } else { inter / union }
+    if union == 0.0 {
+        0.0
+    } else {
+        inter / union
+    }
 }
 
 fn default_stale_after_days() -> u32 {
@@ -713,9 +982,17 @@ fn default_max_depth() -> u32 {
     10
 }
 
+// ---------------------------------------------------------------------------
+// Unit tests — no live DB required
+// ---------------------------------------------------------------------------
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::TimeZone;
+
+    // -----------------------------------------------------------------------
+    // Impact traversal tests (from PR #706 — impact handler fix)
+    // -----------------------------------------------------------------------
 
     /// Build a minimal link list representing the chain:
     ///   seed -> hop1 -> hop2 -> hop3
@@ -863,10 +1140,230 @@ mod tests {
         let links = chain_links();
         let adj = build_adjacency(&links);
         let distances = bfs_distances(&adj, &["seed".to_string()]);
-        let dist_map: std::collections::HashMap<_, _> =
-            distances.into_iter().collect();
+        let dist_map: std::collections::HashMap<_, _> = distances.into_iter().collect();
         assert_eq!(dist_map["hop1"], 1);
         assert_eq!(dist_map["hop2"], 2);
         assert_eq!(dist_map["hop3"], 3);
+    }
+
+    // -----------------------------------------------------------------------
+    // PG-persistence logic tests (no live DB required)
+    // -----------------------------------------------------------------------
+
+    fn make_link(src: &str, tgt: &str, rel: &str, conf: f64) -> TraceLinkInput {
+        TraceLinkInput {
+            source_id: src.to_string(),
+            target_id: tgt.to_string(),
+            relationship: rel.to_string(),
+            confidence: conf,
+            updated_at: None,
+        }
+    }
+
+    // --- jaccard_score ---
+    #[test]
+    fn jaccard_identical() {
+        assert!((jaccard_score("a b c", "a b c") - 1.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn jaccard_disjoint() {
+        assert!((jaccard_score("a b", "c d") - 0.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn jaccard_partial_overlap() {
+        // inter={b}, union={a,b,c} => 1/3
+        let score = jaccard_score("a b", "b c");
+        assert!((score - 1.0 / 3.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn jaccard_empty() {
+        assert!((jaccard_score("", "") - 0.0).abs() < 1e-9);
+    }
+
+    // --- classify_coverage ---
+    #[test]
+    fn coverage_conflict() {
+        let link = make_link("a", "b", "conflicts_with", 0.5);
+        assert_eq!(classify_coverage(&link), "conflict");
+    }
+
+    #[test]
+    fn coverage_covered() {
+        let link = make_link("a", "b", "verifies", 0.95);
+        assert_eq!(classify_coverage(&link), "covered");
+    }
+
+    #[test]
+    fn coverage_partial() {
+        let link = make_link("a", "b", "satisfies", 0.5);
+        assert_eq!(classify_coverage(&link), "partial");
+    }
+
+    #[test]
+    fn coverage_missing() {
+        let link = make_link("a", "b", "related_to", 0.9);
+        assert_eq!(classify_coverage(&link), "missing");
+    }
+
+    // --- neighbors_of ---
+    #[test]
+    fn neighbors_forward() {
+        let links = vec![
+            make_link("req-1", "impl-1", "satisfies", 0.9),
+            make_link("req-1", "test-1", "verifies", 0.8),
+            make_link("req-2", "impl-2", "satisfies", 0.7),
+        ];
+        let mut ns = neighbors_of(&links, "req-1", true);
+        ns.sort();
+        assert_eq!(ns, vec!["impl-1", "test-1"]);
+    }
+
+    #[test]
+    fn neighbors_reverse() {
+        let links = vec![
+            make_link("req-1", "impl-1", "satisfies", 0.9),
+            make_link("req-2", "impl-1", "satisfies", 0.7),
+        ];
+        let mut ns = neighbors_of(&links, "impl-1", false);
+        ns.sort();
+        assert_eq!(ns, vec!["req-1", "req-2"]);
+    }
+
+    // --- bfs_distances ---
+    #[test]
+    fn bfs_linear_chain() {
+        // a→b→c, seed=[a], expect b@1, c@2
+        let mut adj = std::collections::HashMap::new();
+        adj.insert("a".to_string(), vec!["b".to_string()]);
+        adj.insert("b".to_string(), vec!["c".to_string()]);
+        let result = bfs_distances(&adj, &["a".to_string()]);
+        let map: std::collections::HashMap<_, _> = result.into_iter().collect();
+        assert_eq!(map["b"], 1);
+        assert_eq!(map["c"], 2);
+        assert!(!map.contains_key("a")); // seeds excluded
+    }
+
+    #[test]
+    fn bfs_no_outgoing_edges() {
+        let adj = std::collections::HashMap::new();
+        let result = bfs_distances(&adj, &["a".to_string()]);
+        assert!(result.is_empty());
+    }
+
+    // --- ingest_issues ---
+    #[test]
+    fn ingest_all_valid() {
+        let issues = vec![
+            serde_json::json!({"title": "Fix login", "number": 1}),
+            serde_json::json!({"title": "Add tests", "number": 2}),
+        ];
+        let r = ingest_issues(&issues, "number");
+        assert_eq!(r.total_processed, 2);
+        assert_eq!(r.requirements_created, 2);
+        assert_eq!(r.trace_links_created, 2);
+        assert!(r.errors.is_empty());
+    }
+
+    #[test]
+    fn ingest_missing_title() {
+        let issues = vec![
+            serde_json::json!({"number": 42}),
+            serde_json::json!({"title": "", "number": 43}),
+        ];
+        let r = ingest_issues(&issues, "number");
+        assert_eq!(r.total_processed, 2);
+        assert_eq!(r.requirements_created, 0);
+        assert_eq!(r.errors.len(), 2);
+    }
+
+    // --- build_coverage_matrix stale detection ---
+    #[test]
+    fn coverage_matrix_stale_link() {
+        let old_ts = Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap();
+        let links = vec![TraceLinkInput {
+            source_id: "a".to_string(),
+            target_id: "b".to_string(),
+            relationship: "verifies".to_string(),
+            confidence: 0.9,
+            updated_at: Some(old_ts),
+        }];
+        let req = CoverageMatrixRequest {
+            links,
+            stale_after_days: 30,
+        };
+        let resp = build_coverage_matrix(req);
+        assert_eq!(resp.stale_links, 1);
+        assert_eq!(resp.link_count, 1);
+        assert_eq!(resp.cell_count, 1);
+    }
+
+    // --- EvidenceItem round-trip serialization (mapping logic, no DB) ---
+    #[test]
+    fn evidence_item_serde_roundtrip() {
+        let item = EvidenceItem {
+            id: "ev-abc".to_string(),
+            artifact_id: "req-1".to_string(),
+            kind: "test_result".to_string(),
+            url: "https://ci.example.com/run/1".to_string(),
+            metadata: serde_json::json!({"passed": true}),
+            created_at: Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap(),
+            updated_at: Utc.with_ymd_and_hms(2025, 1, 2, 0, 0, 0).unwrap(),
+        };
+        let json = serde_json::to_string(&item).unwrap();
+        assert!(json.contains("ev-abc"));
+        assert!(json.contains("test_result"));
+        assert!(json.contains("passed"));
+    }
+
+    // --- Sprint/Story/Team serialization ---
+    #[test]
+    fn sprint_serde() {
+        let sprint = Sprint {
+            id: "sprint-1".to_string(),
+            name: "Sprint 1".to_string(),
+            goal: "Ship persistence".to_string(),
+            start_date: Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap(),
+            end_date: Utc.with_ymd_and_hms(2025, 1, 14, 0, 0, 0).unwrap(),
+            status: "planned".to_string(),
+            created_at: Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap(),
+            updated_at: Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap(),
+        };
+        let json = serde_json::to_string(&sprint).unwrap();
+        assert!(json.contains("sprint-1"));
+        assert!(json.contains("planned"));
+    }
+
+    #[test]
+    fn story_optional_fields() {
+        let story = Story {
+            id: "story-1".to_string(),
+            sprint_id: None,
+            title: "Add PG".to_string(),
+            description: String::new(),
+            status: "open".to_string(),
+            story_points: None,
+            created_at: Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap(),
+            updated_at: Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap(),
+        };
+        let json = serde_json::to_string(&story).unwrap();
+        assert!(json.contains("story-1"));
+        assert!(json.contains("\"sprint_id\":null"));
+        assert!(json.contains("\"story_points\":null"));
+    }
+
+    #[test]
+    fn team_response_serde() {
+        let team = TeamResponse {
+            id: "team-1".to_string(),
+            name: "Platform Team".to_string(),
+            description: "Core platform engineering".to_string(),
+            members: vec![],
+        };
+        let json = serde_json::to_string(&team).unwrap();
+        assert!(json.contains("Platform Team"));
+        assert!(json.contains("\"members\":[]"));
     }
 }
