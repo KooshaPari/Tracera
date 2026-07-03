@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO sprints (id, name, goal, start_date, end_date, status, created_at, updated_at)\n           VALUES ($1, $2, $3, $4, $5, 'planned', $6, $7)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Timestamptz",
+        "Timestamptz",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "18905a8deb4a1072da87a70ecb2050d5e063c0f9ccfe20497873d11bf8ea2928"
+}
