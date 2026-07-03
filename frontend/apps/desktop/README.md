@@ -1,102 +1,102 @@
 # Tracera Desktop
 
 A native desktop wrapper for the [Tracera](https://kooshapari.github.io/Tracera/)
-web UI. Ships as a real installable app for macOS, Windows, and Linux.
+web UI. Ships as a real installable app via **Electrobun** — the Phenotype org
+standard desktop shell (replaces the former Electron wrapper).
 
 ## What this is
 
 The web app at `https://kooshapari.github.io/Tracera/` is a Vite-built
-React SPA. This Electron app wraps that SPA in a native window so you
-can have Tracera as a real desktop application — dock icon, system
-tray, installable, persistent between reboots.
+React SPA. This Electrobun app wraps that SPA in a native WKWebView window
+with a system tray icon — giving you a real desktop application experience.
 
-The desktop shell is **dumb on purpose**: it loads whatever URL you
-point it at. By default it points at the production Pages deployment,
-but you can override it (see Configuration below).
+The desktop shell is **dumb on purpose**: it loads whatever URL you point it
+at. By default it points at the production GitHub Pages deployment, but you
+can override it (see Configuration below).
 
-## Install (dev)
+## Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Shell runtime | [Electrobun](https://electrobun.dev) ^1.18.1 |
+| Package manager | bun |
+| Main process | TypeScript (`src/index.ts`) |
+| No bundled webview | External URL loaded by WKWebView |
+
+## Dev
 
 ```bash
 cd frontend/apps/desktop
-npm install
-npm start                # loads the production Tracera
-npm run start:dev        # loads http://localhost:5173 (run web dev server first)
+bun install
+bun run dev              # opens app loading the configured target URL
 ```
 
 ## Build (release)
 
-Cross-platform installers are produced by `electron-builder`.
-
 ```bash
-npm install
-npm run build:mac        # .dmg + .zip for arm64 + x64
-npm run build:win        # .exe NSIS installer + portable
-npm run build:linux      # AppImage + .deb
-npm run build            # current platform
+bun install
+bun run build            # bunx electrobun build → builds app bundle
+bun run package          # bunx electrobun package → cross-platform installer
 ```
 
-Build artifacts land in `frontend/apps/desktop/release/<version>/`.
+Build artifacts land in `frontend/apps/desktop/build/`.
+
+## Test
+
+```bash
+# CI-safe (no display required)
+CI=1 bun test tests/e2e_desktop.test.ts
+
+# Host mode (macOS with display — launches the app)
+bun test tests/e2e_desktop.test.ts
+```
 
 ## Configuration
 
-| Env var              | Purpose                                              |
-| -------------------- | ---------------------------------------------------- |
-| `TRACERA_URL`        | Override the target URL (default: Pages production). |
-| `TRACERA_DEV_URL`    | Dev URL (only used when `--dev` flag or `TRACERA_DEV_URL` set). |
-| `npm run start:dev`  | Sets `TRACERA_DEV_URL=http://localhost:5173`.        |
+| Env var | Purpose |
+|---------|---------|
+| `TRACERA_URL` | Override the target URL (default: GitHub Pages production). |
+| `TRACERA_DEV_URL` | Dev URL override (e.g. `http://localhost:5173`). |
+
+URL precedence: `TRACERA_URL` > `TRACERA_DEV_URL` > default.
 
 The resolved target URL is shown in the tray menu under "Target: …".
 
 ## Features
 
-- **Single-instance lock** — re-launching the app focuses the existing window.
-- **System tray** — right-click for Show / Reload / Open DevTools / Quit.
-- **Close-to-tray** — closing the window keeps the app alive in the tray.
-- **External links** — open in the user's default browser, not in-app.
-- **Persistent bounds** — window size/position remembered between sessions.
-- **Sandboxed renderer** — context isolation on, no Node in renderer, preload bridge only.
+- **System tray** — click to Show / Reload / Quit; always present.
+- **Minimal RPC** — webview can call `getTargetUrl()`, `getVersion()`, `reload()`.
+- **Tray-resident** — the app stays alive in the tray when the window is closed.
+- **External URL mode** — no bundled web assets; loads the deployed Tracera SPA.
 
 ## Architecture
 
 ```
-+-------------------------+         +----------------------+
-|  Renderer (Tracera UI)  |  <--->  |  Preload (contextBridge)  |
-+-------------------------+         +----------------------+
-                                                   |
-                                                   v
-                                         +----------------------+
-                                         |  Main process        |
-                                         |  - BrowserWindow     |
-                                         |  - Tray + Menu       |
-                                         |  - IPC handlers      |
-                                         +----------------------+
++------------------------------+      Electrobun RPC      +------------------------------+
+|   WKWebView                  |  <------------------->   |   Bun main process           |
+|   (Tracera web UI — SPA)     |                          |   src/index.ts               |
+|   External URL or dev server |                          |   - BrowserWindow (WKWebView) |
++------------------------------+                          |   - Tray + context menu       |
+                                                          |   - RPC: getTargetUrl,        |
+                                                          |     getVersion, reload        |
+                                                          +------------------------------+
 ```
-
-The renderer has **no Node.js access**. It can only call the explicit
-methods exposed by `preload.js` (`window.tracera.getTargetUrl()`,
-`window.tracera.getVersion()`).
-
-## Releasing
-
-The `.github/workflows/release-desktop.yml` workflow builds installers
-on tag pushes matching `v*` (e.g. `git tag v0.1.3 && git push --tags`).
-It produces:
-
-- macOS: `.dmg` (arm64, x64) + `.zip` (arm64, x64)
-- Windows: NSIS `.exe` + portable `.exe`
-- Linux: AppImage + `.deb`
-
-…and attaches them as GitHub Release assets.
 
 ## Icons
 
-electron-builder needs PNG/ICO/ICNS files at standard paths:
+Place macOS iconset in `assets/icons/Tracera.iconset/` (standard sizes 16–1024).
+Electrobun's build step runs `iconutil` to produce `AppIcon.icns`. If absent,
+Electrobun uses its default icon.
 
-- `build/icon.png` — Linux
-- `build/icon.ico` — Windows
-- `build/icon.icns` — macOS
+## Migration from Electron
 
-If these files are missing, electron-builder falls back to a default Electron icon.
-To customize, drop your brand icons in `frontend/apps/desktop/build/`
-(*note: the `build/` subdir is locally gitignored in some environments; the directory
-itself is created on first electron-builder invocation*) and re-run `npm run build`.
+This shell replaced `electron` 39.8.5 + `electron-builder` 25.1.8. The
+`electron/main.js` and `electron/preload.js` files have been removed. The
+equivalent Electrobun files are:
+
+| Old (Electron) | New (Electrobun) |
+|----------------|-----------------|
+| `electron/main.js` | `src/index.ts` |
+| `electron/preload.js` | RPC schema in `src/rpc.ts` |
+| `package.json` `"build"` section | `electrobun.config.ts` |
+| `npm install` / `electron-builder` | `bun install` / `bunx electrobun build` |
