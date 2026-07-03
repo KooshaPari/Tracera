@@ -8,7 +8,10 @@ ENVIRONMENT = "production"
 TRACERA_API = "https://tracera.pheno.studio"
 
 [build]
-command = "cargo install -q worker-build && worker-build --release"
+# Prepend $HOME/.cargo/bin so the rustup cargo shim is used instead of any system-installed
+# cargo (e.g. Homebrew).  The shim reads rust-toolchain.toml and delegates to rustup's own
+# rustc/sysroot, which contains the wasm32-unknown-unknown target.
+command = "export PATH=\"$HOME/.cargo/bin:$PATH\" && cargo install -q worker-build && worker-build --release"
 
 [[kv_namespaces]]
 binding = "TRACERA_KV"
