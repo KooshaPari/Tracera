@@ -1,35 +1,25 @@
-name: CodeQL
-"on":
-  push:
-    branches:
-    - main
-  pull_request:
-    branches:
-    - main
-  schedule:
-  - cron: 17 4 * * 1
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-permissions:
-  contents: read
+name: CodeQL (disabled — repo uses GitHub default CodeQL setup)
+
+# This workflow is intentionally disabled. GitHub's default CodeQL setup is
+# configured for this repo (see: gh api repos/KooshaPari/Tracera/code-scanning/default-setup)
+# which analyzes actions, javascript, javascript-typescript, python, rust, typescript.
+#
+# Running an advanced CodeQL workflow alongside default setup causes:
+#   "CodeQL analyses from advanced configurations cannot be processed when
+#    the default setup is enabled"
+#
+# To re-enable advanced analysis, first disable default setup in repo settings
+# (Settings -> Code security and analysis -> Code scanning -> GitHub default setup),
+# then restore the on: triggers and job below.
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
 jobs:
-  analyze:
-    name: Analyze
+  placeholder:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-    permissions:
-      contents: read
-      actions: read
-      security-events: write
+    if: false
     steps:
-    - uses: actions/checkout@v4
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: actions
-        build-mode: none
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:actions"
+      - run: echo "Disabled — see comment in this file."
