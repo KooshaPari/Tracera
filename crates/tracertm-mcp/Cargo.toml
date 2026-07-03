@@ -1,6 +1,6 @@
 [package]
 name = "tracertm-mcp"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description = "Tracera MCP stdio server (native Rust, replaces python -m tracertm.mcp)"
 repository = "https://github.com/KooshaPari/Tracera"

@@ -1,16 +1,20 @@
-name: Alert sync issues
+name: Alert sync issues (disabled)
+
+# Alert sync was previously powered by phenoShared, which is deprecated.
+# This workflow is intentionally disabled to stop the failing cron run.
+# To re-enable with a real implementation, restore the original step and
+# implement the sync logic.
 
 on:
-  schedule:
-    - cron: '17 * * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  sync:
-    runs-on: ubuntu-24.04
+  placeholder:
+    runs-on: ubuntu-latest
+    if: false
     steps:
-      - name: Alert sync skipped - phenoShared deprecated
-        run: echo "Alert sync workflow disabled due to phenoShared deprecation. TODO: Implement custom alert sync if needed."
+      - name: Disabled
+        run: echo "Alert sync disabled (phenoShared deprecated). See comment in this file."
