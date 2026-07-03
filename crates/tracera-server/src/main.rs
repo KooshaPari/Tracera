@@ -7,7 +7,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::env;
 use std::net::SocketAddr;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use tower_http::services::{ServeDir, ServeFile};
 use tracing_subscriber::EnvFilter;
 
 #[derive(Clone, Default)]
@@ -348,6 +350,13 @@ async fn main() {
         .route("/org-intel/teams", get(list_teams))
         .route("/org-intel/metrics", get(org_metrics))
         .with_state(state);
+
+    let frontend_dist = env::var("TRACERA_FRONTEND_DIST")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("frontend/dist"));
+    let index_html = frontend_dist.join("index.html");
+    let serve_dir = ServeDir::new(&frontend_dist).fallback(ServeFile::new(&index_html));
+    let app = app.fallback_service(serve_dir);
 
     let addr = env::var("TRACERA_BIND_ADDR")
         .ok()
