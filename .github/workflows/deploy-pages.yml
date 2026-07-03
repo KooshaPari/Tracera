@@ -32,17 +32,19 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        run: cd frontend && bun install
+        run: bun install
+        working-directory: frontend/apps/web
 
       - name: Build frontend
         env:
           VITE_BASE: /Tracera/
-        run: cd frontend && bun run build
+        run: bun run vite build
+        working-directory: frontend/apps/web
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'dist'
+          path: 'frontend/dist'
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
