@@ -3,16 +3,20 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "apps/web"
+    "apps/web",
+    "apps/desktop"
   ],
   "scripts": {
     "build": "npm run build --prefix apps/web",
     "build:full": "npm run build --prefix packages/types && npm run build --prefix packages/api-client && npm run build --prefix apps/web",
     "dev": "npm run dev --prefix apps/web",
+    "desktop": "npm run start --prefix apps/desktop",
+    "desktop:dev": "npm run start:dev --prefix apps/desktop",
     "typecheck": "npm run typecheck --prefix packages/types && npm run typecheck --prefix packages/api-client"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.3",
+    "app-builder-bin": "4.2.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "vite": "^8.1.3"
