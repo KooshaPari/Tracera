@@ -34,7 +34,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "types": ["vitest/globals", "node", "@testing-library/jest-dom", "vite/client", "@webgpu/types"]
+    "types": ["node", "vite/client", "@webgpu/types"]
   },
   "include": ["src/**/*"],
   "exclude": [
