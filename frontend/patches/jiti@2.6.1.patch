@@ -1,0 +1,17 @@
+diff --git a/dist/jiti.cjs b/dist/jiti.cjs
+index 1234567..abcdefg 100644
+--- a/dist/jiti.cjs
++++ b/dist/jiti.cjs
+@@ -5435,7 +5435,12 @@
+ 		}
+ 		const Ae = new Map();
+ 		let Ne;
++		// Fallback for NodeError when not available in newer Node.js versions
++		const NodeError = typeof globalThis.NodeError !== 'undefined' 
++			? globalThis.NodeError 
++			: function(code, message) { const e = new Error(message); e.code = code; return e; };
+ 		function createError(e, t, i) {
+-			return Ae.set(e, t), ((e, t) => NodeError)(i, e);
++			return Ae.set(e, t), NodeError(i, e);
+ 		}
+ 		function isErrorStackTraceLimitWritable() {

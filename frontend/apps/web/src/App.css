@@ -1,5 +1,0 @@
-.app {
-  min-height: 100vh;
-  background: linear-gradient(135deg, var(--color-midnight) 0%, var(--color-dark-bg) 100%);
-  color: var(--color-text-primary);
-}

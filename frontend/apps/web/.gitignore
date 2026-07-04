@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+*.log
+test-results/
+
+# Playwright
+playwright-report/
+playwright-report-visual/
+playwright/.cache/
+
+# Visual Regression - Keep baseline snapshots, ignore diffs
+*-actual.png
+*-diff.png
+*-previous.png
+visual-snapshots/**/*-actual.png
+visual-snapshots/**/*-diff.png
+
+# Build outputs
+dist/
+build/
+.turbo/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Performance benchmark results
+performance-results/
+
+# Test data (large JSON files)
+test-data/

@@ -1,0 +1,933 @@
+{
+  "$schema": "https://oxc.rs/schema.json",
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.turbo/**",
+    "**/routeTree.gen.ts",
+    "**/api/*.gen.ts",
+    "**/*.generated.*",
+    "**/public/mockServiceWorker.js"
+  ],
+  "plugins": [
+    "eslint",
+    "typescript",
+    "unicorn",
+    "oxc",
+    "react",
+    "react-perf",
+    "import",
+    "jsx-a11y",
+    "promise",
+    "vitest",
+    "react-hooks",
+    "jsdoc"
+  ],
+  "jsPlugins": [
+    "eslint-plugin-check-file",
+    "eslint-plugin-boundaries",
+    "eslint-plugin-filename-export"
+  ],
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2022": true,
+    "builtin": true
+  },
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "error",
+    "style": "error",
+    "restriction": "error",
+    "perf": "error",
+    "nursery": "warn"
+  },
+  "settings": {
+    "react": {
+      "version": "19.2.0"
+    },
+    "boundaries/ignore": [
+      "**/*.test.*",
+      "**/*.spec.*",
+      "**/*.stories.*",
+      "**/__tests__/**",
+      "**/__stories__/**",
+      "packages/**",
+      "apps/**/dist/**",
+      "apps/**/node_modules/**",
+      "apps/**/mocks/**",
+      "apps/**/test/**",
+      "apps/**/workers/**"
+    ],
+    "boundaries/elements": [
+      {
+        "type": "root",
+        "pattern": "**/apps/desktop/**"
+      },
+      {
+        "type": "entry",
+        "pattern": "**/apps/web/src/main.tsx"
+      },
+      {
+        "type": "entry",
+        "pattern": "**/apps/web/src/router.tsx"
+      },
+      {
+        "type": "entry",
+        "pattern": "**/frontend/apps/web/src/main.tsx"
+      },
+      {
+        "type": "entry",
+        "pattern": "**/frontend/apps/web/src/router.tsx"
+      },
+      {
+        "type": "entry",
+        "pattern": "**/src/main.tsx"
+      },
+      {
+        "type": "entry",
+        "pattern": "**/src/router.tsx"
+      },
+      {
+        "type": "routes",
+        "pattern": "**/apps/web/src/routes/**"
+      },
+      {
+        "type": "routes",
+        "pattern": "**/frontend/apps/web/src/routes/**"
+      },
+      {
+        "type": "routes",
+        "pattern": "**/src/routes/**"
+      },
+      {
+        "type": "pages",
+        "pattern": "**/apps/web/src/pages/**"
+      },
+      {
+        "type": "pages",
+        "pattern": "**/frontend/apps/web/src/pages/**"
+      },
+      {
+        "type": "pages",
+        "pattern": "**/src/pages/**"
+      },
+      {
+        "type": "views",
+        "pattern": "**/apps/web/src/views/**"
+      },
+      {
+        "type": "views",
+        "pattern": "**/frontend/apps/web/src/views/**"
+      },
+      {
+        "type": "views",
+        "pattern": "**/src/views/**"
+      },
+      {
+        "type": "components",
+        "pattern": "**/apps/web/src/components/**"
+      },
+      {
+        "type": "components",
+        "pattern": "**/frontend/apps/web/src/components/**"
+      },
+      {
+        "type": "components",
+        "pattern": "**/src/components/**"
+      },
+      {
+        "type": "hooks",
+        "pattern": "**/apps/web/src/hooks/**"
+      },
+      {
+        "type": "hooks",
+        "pattern": "**/frontend/apps/web/src/hooks/**"
+      },
+      {
+        "type": "hooks",
+        "pattern": "**/src/hooks/**"
+      },
+      {
+        "type": "stores",
+        "pattern": "**/apps/web/src/stores/**"
+      },
+      {
+        "type": "stores",
+        "pattern": "**/frontend/apps/web/src/stores/**"
+      },
+      {
+        "type": "stores",
+        "pattern": "**/src/stores/**"
+      },
+      {
+        "type": "providers",
+        "pattern": "**/apps/web/src/providers/**"
+      },
+      {
+        "type": "providers",
+        "pattern": "**/frontend/apps/web/src/providers/**"
+      },
+      {
+        "type": "providers",
+        "pattern": "**/src/providers/**"
+      },
+      {
+        "type": "api",
+        "pattern": "**/apps/web/src/api/**"
+      },
+      {
+        "type": "api",
+        "pattern": "**/frontend/apps/web/src/api/**"
+      },
+      {
+        "type": "api",
+        "pattern": "**/src/api/**"
+      },
+      {
+        "type": "lib",
+        "pattern": "**/apps/web/src/lib/**"
+      },
+      {
+        "type": "lib",
+        "pattern": "**/frontend/apps/web/src/lib/**"
+      },
+      {
+        "type": "lib",
+        "pattern": "**/src/lib/**"
+      },
+      {
+        "type": "types",
+        "pattern": "**/apps/web/src/types/**"
+      },
+      {
+        "type": "types",
+        "pattern": "**/frontend/apps/web/src/types/**"
+      },
+      {
+        "type": "types",
+        "pattern": "**/src/types/**"
+      },
+      {
+        "type": "utils",
+        "pattern": "**/apps/web/src/utils/**"
+      },
+      {
+        "type": "utils",
+        "pattern": "**/frontend/apps/web/src/utils/**"
+      },
+      {
+        "type": "utils",
+        "pattern": "**/src/utils/**"
+      },
+      {
+        "type": "styles",
+        "pattern": "**/apps/web/src/styles/**"
+      },
+      {
+        "type": "styles",
+        "pattern": "**/frontend/apps/web/src/styles/**"
+      },
+      {
+        "type": "styles",
+        "pattern": "**/src/styles/**"
+      },
+      {
+        "type": "config",
+        "pattern": "**/apps/web/src/config.ts"
+      },
+      {
+        "type": "config",
+        "pattern": "**/frontend/apps/web/src/config.ts"
+      },
+      {
+        "type": "config",
+        "pattern": "**/src/config.ts"
+      },
+      {
+        "type": "config",
+        "pattern": "**/apps/web/src/config/**"
+      },
+      {
+        "type": "config",
+        "pattern": "**/frontend/apps/web/src/config/**"
+      },
+      {
+        "type": "config",
+        "pattern": "**/src/config/**"
+      },
+      {
+        "type": "workers",
+        "pattern": "**/apps/web/src/workers/**"
+      },
+      {
+        "type": "workers",
+        "pattern": "**/frontend/apps/web/src/workers/**"
+      },
+      {
+        "type": "workers",
+        "pattern": "**/src/workers/**"
+      },
+      {
+        "type": "shaders",
+        "pattern": "**/apps/web/src/shaders/**"
+      },
+      {
+        "type": "shaders",
+        "pattern": "**/frontend/apps/web/src/shaders/**"
+      },
+      {
+        "type": "shaders",
+        "pattern": "**/src/shaders/**"
+      },
+      {
+        "type": "root",
+        "pattern": "**/apps/web/src/**"
+      },
+      {
+        "type": "root",
+        "pattern": "**/frontend/apps/web/src/**"
+      },
+      {
+        "type": "root",
+        "pattern": "**/src/**"
+      }
+    ]
+  },
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "typescript/explicit-function-return-type": [
+      "error",
+      {
+        "allowExpressions": false,
+        "allowTypedFunctionExpressions": true,
+        "allowHigherOrderFunctions": true
+      }
+    ],
+    "typescript/explicit-module-boundary-types": "error",
+    "typescript/no-unsafe-assignment": "error",
+    "typescript/no-unsafe-member-access": "error",
+    "typescript/no-unsafe-call": "error",
+    "typescript/no-unsafe-return": "error",
+    "typescript/strict-boolean-expressions": "error",
+    "typescript/no-floating-promises": "error",
+    "typescript/await-thenable": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/prefer-nullish-coalescing": "error",
+    "typescript/prefer-optional-chain": "error",
+    "typescript/no-confusing-void-expression": "error",
+    "typescript/promise-function-async": "error",
+    "typescript/no-unnecessary-type-assertion": "error",
+    "eslint/eqeqeq": ["error", "always"],
+    "eslint/id-length": [
+      "error",
+      {
+        "min": 2,
+        "properties": "never",
+        "exceptions": [
+          "_",
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f",
+          "i",
+          "j",
+          "k",
+          "n",
+          "p",
+          "r",
+          "t",
+          "x",
+          "y",
+          "z",
+          "id",
+          "db",
+          "ctx",
+          "req",
+          "res",
+          "el",
+          "fn",
+          "op"
+        ]
+      }
+    ],
+    "eslint/no-duplicate-imports": "error",
+    "eslint/no-debugger": "error",
+    "eslint/no-eval": "error",
+    "eslint/no-implied-eval": "error",
+    "eslint/no-new-func": "error",
+    "eslint/no-script-url": "error",
+    "eslint/no-throw-literal": "error",
+    "eslint/switch-exhaustiveness-check": "warn",
+    "eslint/no-unused-vars": "error",
+    "eslint/no-unused-expressions": "error",
+    "eslint/no-console": ["error", { "allow": ["warn", "error", "info"] }],
+    "eslint/sort-imports": "off",
+    "eslint/func-style": "off",
+    "eslint/no-undefined": "off",
+    "eslint/max-params": ["error", 6],
+    "eslint/max-depth": ["error", 5],
+    "eslint/max-lines": [
+      "error",
+      {
+        "max": 750,
+        "skipBlankLines": true,
+        "skipComments": true
+      }
+    ],
+    "eslint/max-lines-per-function": [
+      "error",
+      {
+        "max": 150,
+        "skipBlankLines": true,
+        "skipComments": true,
+        "IIFEs": true
+      }
+    ],
+    "eslint/max-statements": ["error", 75],
+    "eslint/max-statements-per-line": [
+      "error",
+      {
+        "max": 1
+      }
+    ],
+    "eslint/complexity": ["error", 15],
+    "jsdoc/require-jsdoc": [
+      "warn",
+      {
+        "contexts": ["export const", "export function", "export class"],
+        "require": {
+          "ClassDeclaration": true,
+          "FunctionDeclaration": true,
+          "MethodDefinition": false,
+          "ArrowFunctionExpression": false
+        }
+      }
+    ],
+    "eslint/no-magic-numbers": [
+      "error",
+      {
+        "ignore": [-1, 0, 1, 2, 3, 4, 5, 10, 12, 16, 24, 60, 100, 1000],
+        "ignoreArrayIndexes": true,
+        "ignoreDefaultValues": true,
+        "ignoreEnums": true
+      }
+    ],
+    "unicorn/error-message": "error",
+    "unicorn/prefer-type-error": "error",
+    "unicorn/no-nested-ternary": "error",
+    "unicorn/filename-case": [
+      "error",
+      {
+        "cases": {
+          "camelCase": true,
+          "pascalCase": true,
+          "kebabCase": true
+        }
+      }
+    ],
+    "unicorn/prevent-abbreviations": [
+      "error",
+      {
+        "checkFilenames": true,
+        "allowList": {
+          "args": true,
+          "db": true,
+          "env": true,
+          "props": true,
+          "ref": true,
+          "ctx": true,
+          "req": true,
+          "res": true,
+          "id": true,
+          "url": true
+        }
+      }
+    ],
+    "react/react-in-jsx-scope": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "error",
+    "react/jsx-max-depth": "off",
+    "react/jsx-filename-extension": "off",
+    "react/jsx-no-leaked-render": "error",
+    "react/jsx-no-useless-fragment": "error",
+    "react/no-array-index-key": "error",
+    "react/jsx-key": "error",
+    "react/jsx-no-duplicate-props": "error",
+    "react-perf/jsx-no-new-object-as-prop": "warn",
+    "react-perf/jsx-no-new-array-as-prop": "warn",
+    "react-perf/jsx-no-new-function-as-prop": "warn",
+    "jsx-a11y/anchor-is-valid": "error",
+    "jsx-a11y/click-events-have-key-events": "error",
+    "jsx-a11y/no-noninteractive-element-interactions": "error",
+    "jsx-a11y/no-static-element-interactions": "error",
+    "jsx-a11y/label-has-associated-control": "error",
+    "jsx-a11y/heading-has-content": "error",
+    "jsx-a11y/role-supports-aria-props": "error",
+    "jsx-a11y/prefer-tag-over-role": "error",
+    "jsx-a11y/alt-text": "error",
+    "jsx-a11y/aria-props": "error",
+    "jsx-a11y/aria-proptypes": "error",
+    "jsx-a11y/img-redundant-alt": "error",
+    "jsx-a11y/interactive-supports-focus": "error",
+    "jsx-a11y/media-has-caption": "error",
+    "jsx-a11y/no-autofocus": "error",
+    "jsx-a11y/no-redundant-roles": "error",
+    "jsx-a11y/scope": "error",
+    "jsx-a11y/tabindex-no-positive": "error",
+    "check-file/folder-naming-convention": [
+      "error",
+      {
+        "**/*": "KEBAB_CASE"
+      }
+    ],
+    "check-file/filename-naming-convention": [
+      "error",
+      {
+        "**/*.{ts,tsx,js,jsx}": "[A-Za-z0-9$.-]*"
+      },
+      {
+        "ignoreMiddleExtensions": true
+      }
+    ],
+    "check-file/filename-blocklist": [
+      "error",
+      {
+        "**/*.tmp.{ts,tsx,js,jsx}": "**/*.{ts,tsx,js,jsx}",
+        "**/*.bak.{ts,tsx,js,jsx}": "**/*.{ts,tsx,js,jsx}",
+        "**/*.backup.{ts,tsx,js,jsx}": "**/*.{ts,tsx,js,jsx}",
+        "**/*.old.{ts,tsx,js,jsx}": "**/*.{ts,tsx,js,jsx}"
+      }
+    ],
+    "check-file/no-index": "error",
+    "boundaries/no-unknown-files": "error",
+    "boundaries/element-types": [
+      "error",
+      {
+        "default": "disallow",
+        "rules": [
+          {
+            "from": "entry",
+            "allow": [
+              "api",
+              "components",
+              "config",
+              "hooks",
+              "lib",
+              "pages",
+              "providers",
+              "routes",
+              "stores",
+              "styles",
+              "types",
+              "utils",
+              "views",
+              "workers"
+            ]
+          },
+          {
+            "from": "root",
+            "allow": [
+              "api",
+              "components",
+              "config",
+              "hooks",
+              "lib",
+              "pages",
+              "providers",
+              "routes",
+              "stores",
+              "styles",
+              "types",
+              "utils",
+              "views",
+              "workers"
+            ]
+          },
+          {
+            "from": "routes",
+            "allow": [
+              "api",
+              "components",
+              "config",
+              "hooks",
+              "lib",
+              "pages",
+              "providers",
+              "stores",
+              "styles",
+              "types",
+              "utils",
+              "views"
+            ]
+          },
+          {
+            "from": "pages",
+            "allow": [
+              "api",
+              "components",
+              "config",
+              "hooks",
+              "lib",
+              "providers",
+              "stores",
+              "styles",
+              "types",
+              "utils",
+              "views"
+            ]
+          },
+          {
+            "from": "views",
+            "allow": [
+              "api",
+              "components",
+              "config",
+              "hooks",
+              "lib",
+              "providers",
+              "stores",
+              "styles",
+              "types",
+              "utils"
+            ]
+          },
+          {
+            "from": "components",
+            "allow": [
+              "components",
+              "hooks",
+              "lib",
+              "providers",
+              "stores",
+              "styles",
+              "types",
+              "utils"
+            ]
+          },
+          {
+            "from": "hooks",
+            "allow": ["api", "lib", "providers", "stores", "types", "utils"]
+          },
+          {
+            "from": "stores",
+            "allow": ["api", "lib", "types", "utils"]
+          },
+          {
+            "from": "api",
+            "allow": ["config", "lib", "types", "utils"]
+          },
+          {
+            "from": "lib",
+            "allow": ["config", "lib", "types", "utils"]
+          },
+          {
+            "from": "utils",
+            "allow": ["types"]
+          },
+          {
+            "from": "types",
+            "allow": []
+          },
+          {
+            "from": "styles",
+            "allow": []
+          },
+          {
+            "from": "config",
+            "allow": ["types", "utils"]
+          },
+          {
+            "from": "providers",
+            "allow": ["api", "hooks", "lib", "stores", "types", "utils"]
+          },
+          {
+            "from": "workers",
+            "allow": ["api", "lib", "types", "utils"]
+          },
+          {
+            "from": "shaders",
+            "allow": ["types", "utils"]
+          }
+        ]
+      }
+    ],
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index",
+          "object",
+          "type"
+        ],
+        "pathGroups": [
+          {
+            "pattern": "@/**",
+            "group": "internal"
+          }
+        ],
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": false
+        }
+      }
+    ],
+    "import/max-dependencies": [
+      "error",
+      {
+        "max": 20
+      }
+    ],
+    "import/no-cycle": [
+      "error",
+      {
+        "maxDepth": 3,
+        "ignoreExternal": true
+      }
+    ],
+    "import/no-self-import": "error",
+    "import/no-useless-path-segments": "error",
+    "import/no-duplicates": "error",
+    "import/first": "error",
+    "import/newline-after-import": "error",
+    "import/no-default-export": "error",
+    "eslint/no-restricted-imports": [
+      "error",
+      {
+        "patterns": ["**/dist/**", "**/build/**", "**/generated/**", "**/*.gen", "**/*.generated"]
+      }
+    ],
+    "import/no-named-export": "off",
+    "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+    "typescript/ban-ts-comment": [
+      "error",
+      {
+        "ts-expect-error": "allow-with-description",
+        "ts-ignore": true,
+        "minimumDescriptionLength": 10
+      }
+    ],
+    "import/prefer-default-export": "off",
+    "oxc/no-async-await": "off",
+    "oxc/no-optional-chaining": "off",
+    "oxc/no-rest-spread-properties": "off",
+    "eslint/sort-keys": "off",
+    "eslint/no-ternary": "off",
+    "eslint/no-inline-comments": "off",
+    "eslint/init-declarations": "off",
+    "eslint/no-continue": "off",
+    "eslint/no-plusplus": "off",
+    "eslint/no-negated-condition": "off",
+    "eslint/no-await-in-loop": "warn",
+    "eslint/class-methods-use-this": "off",
+    "eslint/prefer-destructuring": "off",
+    "eslint/no-warning-comments": "off",
+    "eslint/sort-vars": "off",
+    "eslint/no-empty-function": "off",
+    "eslint/require-await": "off",
+    "eslint/func-names": "off",
+    "eslint/max-classes-per-file": "off",
+    "eslint/no-promise-executor-return": "off",
+    "unicorn/no-null": "off",
+    "unicorn/prefer-global-this": "off",
+    "unicorn/no-array-for-each": "off",
+    "unicorn/no-typeof-undefined": "off",
+    "unicorn/prefer-top-level-await": "off",
+    "import/group-exports": "off",
+    "import/exports-last": "off",
+    "import/no-relative-parent-imports": "off",
+    "import/no-namespace": "off",
+    "import/no-anonymous-default-export": "off",
+    "import/unambiguous": "off",
+    "import/no-nodejs-modules": "off",
+    "react/no-multi-comp": "off",
+    "react/jsx-props-no-spreading": "off",
+    "react/no-set-state": "off",
+    "react/no-danger": "off",
+    "react/iframe-missing-sandbox": "off",
+    "unicorn/prefer-add-event-listener": "off",
+    "promise/prefer-await-to-then": "off",
+    "promise/prefer-await-to-callbacks": "off",
+    "promise/avoid-new": "off",
+    "promise/no-nesting": "off",
+    "typescript/no-redundant-type-constituents": "off",
+    "typescript/no-unsafe-type-assertion": "off",
+    "typescript/tsconfig-error": "off",
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "default",
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "import",
+        "format": ["camelCase", "PascalCase", "UPPER_CASE"]
+      },
+      {
+        "selector": "variable",
+        "format": ["camelCase", "UPPER_CASE"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "variableLike",
+        "format": ["camelCase", "UPPER_CASE"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "parameter",
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "memberLike",
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "property",
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "objectLiteralProperty",
+        "format": null
+      },
+      {
+        "selector": "typeLike",
+        "format": ["PascalCase"]
+      },
+      {
+        "selector": "enumMember",
+        "format": ["PascalCase", "UPPER_CASE"]
+      },
+      {
+        "selector": "typeParameter",
+        "format": ["PascalCase"],
+        "prefix": ["T"]
+      },
+      {
+        "selector": "function",
+        "format": ["camelCase", "PascalCase"]
+      },
+      {
+        "selector": "method",
+        "format": ["camelCase"]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.bench.ts",
+        "**/__tests__/**"
+      ],
+      "rules": {
+        "typescript/explicit-function-return-type": "off",
+        "typescript/explicit-module-boundary-types": "off",
+        "eslint/no-magic-numbers": "off",
+        "eslint/max-lines-per-function": "off",
+        "eslint/max-statements": "off",
+        "eslint/no-console": "off",
+        "react-perf/jsx-no-new-object-as-prop": "off",
+        "react-perf/jsx-no-new-array-as-prop": "off",
+        "react-perf/jsx-no-new-function-as-prop": "off",
+        "import/no-default-export": "off",
+        "unicorn/consistent-function-scoping": "off",
+        "eslint/id-length": "off",
+        "eslint/max-nested-callbacks": "off",
+        "eslint/max-depth": "off",
+        "eslint/no-throw-literal": "off",
+        "eslint/no-constant-condition": "off",
+        "jsx-a11y/click-events-have-key-events": "off",
+        "jsx-a11y/label-has-associated-control": "off",
+        "jsx-a11y/no-static-element-interactions": "off",
+        "check-file/folder-naming-convention": "off",
+        "check-file/filename-naming-convention": "off",
+        "check-file/filename-blocklist": "off"
+      }
+    },
+    {
+      "files": ["**/*.stories.ts", "**/*.stories.tsx", "**/__stories__/**"],
+      "rules": {
+        "typescript/explicit-function-return-type": "off",
+        "typescript/explicit-module-boundary-types": "off",
+        "eslint/no-magic-numbers": "off",
+        "react-perf/jsx-no-new-object-as-prop": "off",
+        "react-perf/jsx-no-new-array-as-prop": "off",
+        "react-perf/jsx-no-new-function-as-prop": "off",
+        "import/no-default-export": "off",
+        "check-file/folder-naming-convention": "off",
+        "check-file/filename-naming-convention": "off",
+        "check-file/filename-blocklist": "off"
+      }
+    },
+    {
+      "files": ["**/routes/**/*.ts", "**/routes/**/*.tsx", "**/pages/**/*.ts", "**/pages/**/*.tsx"],
+      "rules": {
+        "import/no-default-export": "off"
+      }
+    },
+    {
+      "files": [
+        "**/*.config.ts",
+        "**/*.config.js",
+        "**/*.config.mjs",
+        "**/vite.config.*",
+        "**/vitest.config.*"
+      ],
+      "rules": {
+        "import/no-default-export": "off",
+        "eslint/no-magic-numbers": "off"
+      }
+    },
+    {
+      "files": [
+        "**/views/**/*.ts",
+        "**/views/**/*.tsx",
+        "**/api/**/*.ts",
+        "**/apps/docs/**/*.ts",
+        "**/apps/docs/**/*.tsx"
+      ],
+      "rules": {
+        "import/no-default-export": "off"
+      }
+    },
+    {
+      "files": ["**/apps/desktop/**/*.{ts,tsx,js,jsx,mjs}"],
+      "rules": {
+        "boundaries/no-unknown-files": "off",
+        "eslint/no-console": "off"
+      }
+    },
+    {
+      "files": [
+        "apps/web/src/components/**/*.{ts,tsx}",
+        "apps/web/src/hooks/**/*.{ts,tsx}",
+        "apps/web/src/pages/**/*.{ts,tsx}",
+        "apps/web/src/views/**/*.{ts,tsx}"
+      ],
+      "rules": {
+        "filename-export/match-default-export": [
+          "error",
+          {
+            "casing": "loose",
+            "stripextra": true
+          }
+        ]
+      }
+    }
+  ]
+}

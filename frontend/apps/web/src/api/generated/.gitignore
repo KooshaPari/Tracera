@@ -1,0 +1,10 @@
+# Auto-generated TypeScript types
+# Uncomment to ignore (regenerate on demand)
+# *.ts
+
+# Keep the directory
+!.gitignore
+
+# Temporary files
+*.tmp
+*.bak

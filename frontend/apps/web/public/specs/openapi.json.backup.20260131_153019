@@ -1,0 +1,2436 @@
+{
+	"openapi": "3.1.0",
+	"info": {
+		"title": "TraceRTM API",
+		"version": "1.0.0",
+		"description": "Traceability Requirements Tracking Management API - Comprehensive REST API for managing requirements, items, links, and performing advanced analysis including multi-dimensional traceability.",
+		"contact": {
+			"name": "TraceRTM Support",
+			"email": "support@tracertm.com",
+			"url": "https://tracertm.com/support"
+		},
+		"license": {
+			"name": "MIT",
+			"url": "https://opensource.org/licenses/MIT"
+		}
+	},
+	"servers": [
+		{
+			"url": "http://localhost:8000",
+			"description": "Local Development Server"
+		},
+		{
+			"url": "https://api.tracertm.com",
+			"description": "Production Server"
+		},
+		{
+			"url": "https://staging-api.tracertm.com",
+			"description": "Staging Server"
+		}
+	],
+	"tags": [
+		{
+			"name": "Health",
+			"description": "Health check and system status endpoints"
+		},
+		{
+			"name": "Items",
+			"description": "Operations for managing requirements items"
+		},
+		{
+			"name": "Links",
+			"description": "Operations for managing relationships between items"
+		},
+		{
+			"name": "Analysis",
+			"description": "Advanced analysis operations including impact analysis, cycle detection, and path finding"
+		},
+		{
+			"name": "Equivalences",
+			"description": "Operations for managing equivalent items across different projects and dimensions"
+		},
+		{
+			"name": "Canonical Concepts",
+			"description": "Operations for managing canonical concepts and their projections across dimensions"
+		},
+		{
+			"name": "Journeys",
+			"description": "Operations for managing user and system journeys through requirements"
+		},
+		{
+			"name": "Component Libraries",
+			"description": "Operations for managing component libraries and design tokens"
+		}
+	],
+	"paths": {
+		"/health": {
+			"get": {
+				"tags": ["Health"],
+				"summary": "Health Check",
+				"description": "Check the health status of the API service",
+				"operationId": "healthCheck",
+				"responses": {
+					"200": {
+						"description": "Service is healthy",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HealthResponse"
+								},
+								"example": {
+									"status": "healthy",
+									"version": "1.0.0",
+									"service": "TraceRTM API"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/items": {
+			"get": {
+				"tags": ["Items"],
+				"summary": "List Items",
+				"description": "Retrieve a paginated list of items in a project",
+				"operationId": "listItems",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "project_id",
+						"in": "query",
+						"required": true,
+						"description": "Unique identifier for the project",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "skip",
+						"in": "query",
+						"required": false,
+						"description": "Number of items to skip (for pagination)",
+						"schema": {
+							"type": "integer",
+							"minimum": 0,
+							"default": 0
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"description": "Maximum number of items to return",
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 1000,
+							"default": 100
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully retrieved items",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ItemListResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				}
+			}
+		},
+		"/api/v1/items/{item_id}": {
+			"get": {
+				"tags": ["Items"],
+				"summary": "Get Item",
+				"description": "Retrieve detailed information about a specific item",
+				"operationId": "getItem",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "item_id",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the item",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully retrieved item",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ItemDetailResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/links": {
+			"get": {
+				"tags": ["Links"],
+				"summary": "List Links",
+				"description": "Retrieve a paginated list of links between items in a project",
+				"operationId": "listLinks",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "project_id",
+						"in": "query",
+						"required": true,
+						"description": "Unique identifier for the project",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "skip",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"minimum": 0,
+							"default": 0
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 1000,
+							"default": 100
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully retrieved links",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/LinkListResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/analysis/impact/{item_id}": {
+			"get": {
+				"tags": ["Analysis"],
+				"summary": "Impact Analysis",
+				"description": "Analyze the impact of changes to a specific item, including all downstream dependencies",
+				"operationId": "getImpactAnalysis",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "item_id",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the item to analyze",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "project_id",
+						"in": "query",
+						"required": true,
+						"description": "Unique identifier for the project",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Impact analysis completed successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ImpactAnalysisResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/analysis/cycles/{project_id}": {
+			"get": {
+				"tags": ["Analysis"],
+				"summary": "Detect Cycles",
+				"description": "Detect circular dependencies in the project's dependency graph",
+				"operationId": "detectCycles",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "project_id",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the project",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Cycle detection completed successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CycleDetectionResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/analysis/shortest-path": {
+			"get": {
+				"tags": ["Analysis"],
+				"summary": "Find Shortest Path",
+				"description": "Find the shortest dependency path between two items",
+				"operationId": "findShortestPath",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "project_id",
+						"in": "query",
+						"required": true,
+						"description": "Unique identifier for the project",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "source_id",
+						"in": "query",
+						"required": true,
+						"description": "Starting item ID",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "target_id",
+						"in": "query",
+						"required": true,
+						"description": "Target item ID",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Path search completed successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ShortestPathResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/projects/{projectId}/equivalences": {
+			"get": {
+				"tags": ["Equivalences"],
+				"summary": "List Equivalences",
+				"description": "Retrieve all equivalence relationships in a project",
+				"operationId": "listEquivalences",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "projectId",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the project",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "status",
+						"in": "query",
+						"required": false,
+						"description": "Filter by equivalence status",
+						"schema": {
+							"type": "string",
+							"enum": ["suggested", "confirmed", "rejected"]
+						}
+					},
+					{
+						"name": "skip",
+						"in": "query",
+						"required": false,
+						"description": "Number of items to skip",
+						"schema": {
+							"type": "integer",
+							"minimum": 0,
+							"default": 0
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"description": "Maximum number of items to return",
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 1000,
+							"default": 100
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully retrieved equivalences",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/EquivalenceListResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/projects/{projectId}/equivalences/detect": {
+			"post": {
+				"tags": ["Equivalences"],
+				"summary": "Detect Equivalences",
+				"description": "Automatically detect potential equivalent items across different views and dimensions",
+				"operationId": "detectEquivalences",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "projectId",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the project",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/DetectEquivalencesRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Equivalence detection completed successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/EquivalenceDetectionResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/equivalences/{id}/confirm": {
+			"post": {
+				"tags": ["Equivalences"],
+				"summary": "Confirm Equivalence",
+				"description": "Confirm a suggested equivalence relationship between items",
+				"operationId": "confirmEquivalence",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the equivalence",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ConfirmEquivalenceRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Equivalence confirmed successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/EquivalenceResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/equivalences/{id}/reject": {
+			"post": {
+				"tags": ["Equivalences"],
+				"summary": "Reject Equivalence",
+				"description": "Reject a suggested equivalence relationship between items",
+				"operationId": "rejectEquivalence",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the equivalence",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RejectEquivalenceRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Equivalence rejected successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/EquivalenceResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/projects/{projectId}/canonical-concepts": {
+			"get": {
+				"tags": ["Canonical Concepts"],
+				"summary": "List Canonical Concepts",
+				"description": "Retrieve all canonical concepts in a project",
+				"operationId": "listCanonicalConcepts",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "projectId",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the project",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "skip",
+						"in": "query",
+						"required": false,
+						"description": "Number of items to skip",
+						"schema": {
+							"type": "integer",
+							"minimum": 0,
+							"default": 0
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"description": "Maximum number of items to return",
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 1000,
+							"default": 100
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully retrieved canonical concepts",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CanonicalConceptListResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			},
+			"post": {
+				"tags": ["Canonical Concepts"],
+				"summary": "Create Canonical Concept",
+				"description": "Create a new canonical concept from equivalent items",
+				"operationId": "createCanonicalConcept",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "projectId",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the project",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateCanonicalConceptRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Canonical concept created successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CanonicalConceptResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/canonical-concepts/{id}": {
+			"get": {
+				"tags": ["Canonical Concepts"],
+				"summary": "Get Canonical Concept",
+				"description": "Retrieve detailed information about a specific canonical concept",
+				"operationId": "getCanonicalConcept",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the canonical concept",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully retrieved canonical concept",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CanonicalConceptResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/canonical-concepts/{id}/projections": {
+			"get": {
+				"tags": ["Canonical Concepts"],
+				"summary": "Get Concept Projections",
+				"description": "Retrieve all projections of a canonical concept across different dimensions",
+				"operationId": "getConceptProjections",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the canonical concept",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "dimension",
+						"in": "query",
+						"required": false,
+						"description": "Filter projections by specific dimension",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully retrieved projections",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProjectionListResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/items/{id}/pivot": {
+			"post": {
+				"tags": ["Canonical Concepts"],
+				"summary": "Pivot Item to Canonical Concept",
+				"description": "Convert an item to a canonical concept projection, updating cross-dimensional references",
+				"operationId": "pivotItemToCanonical",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the item to pivot",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PivotItemRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Item pivoted successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PivotItemResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/projects/{projectId}/journeys": {
+			"get": {
+				"tags": ["Journeys"],
+				"summary": "List Journeys",
+				"description": "Retrieve all journeys in a project",
+				"operationId": "listJourneys",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "projectId",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the project",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "type",
+						"in": "query",
+						"required": false,
+						"description": "Filter by journey type",
+						"schema": {
+							"type": "string",
+							"enum": ["user", "system", "data", "integration"]
+						}
+					},
+					{
+						"name": "skip",
+						"in": "query",
+						"required": false,
+						"description": "Number of items to skip",
+						"schema": {
+							"type": "integer",
+							"minimum": 0,
+							"default": 0
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"description": "Maximum number of items to return",
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 1000,
+							"default": 100
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully retrieved journeys",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/JourneyListResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			},
+			"post": {
+				"tags": ["Journeys"],
+				"summary": "Create Journey",
+				"description": "Create a new journey mapping requirements through a process",
+				"operationId": "createJourney",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "projectId",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the project",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateJourneyRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Journey created successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/JourneyResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/projects/{projectId}/journeys/detect": {
+			"post": {
+				"tags": ["Journeys"],
+				"summary": "Detect Journeys",
+				"description": "Automatically detect potential journeys from requirement traces",
+				"operationId": "detectJourneys",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "projectId",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the project",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/DetectJourneysRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Journey detection completed successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/JourneyDetectionResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/journeys/{id}": {
+			"get": {
+				"tags": ["Journeys"],
+				"summary": "Get Journey",
+				"description": "Retrieve detailed information about a specific journey",
+				"operationId": "getJourney",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the journey",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully retrieved journey",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/JourneyResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/projects/{projectId}/component-libraries": {
+			"get": {
+				"tags": ["Component Libraries"],
+				"summary": "List Component Libraries",
+				"description": "Retrieve all component libraries in a project",
+				"operationId": "listComponentLibraries",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "projectId",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the project",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "skip",
+						"in": "query",
+						"required": false,
+						"description": "Number of items to skip",
+						"schema": {
+							"type": "integer",
+							"minimum": 0,
+							"default": 0
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"description": "Maximum number of items to return",
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 1000,
+							"default": 100
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully retrieved component libraries",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ComponentLibraryListResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/component-libraries/{id}/components": {
+			"get": {
+				"tags": ["Component Libraries"],
+				"summary": "List Components in Library",
+				"description": "Retrieve all components in a specific library",
+				"operationId": "listLibraryComponents",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the component library",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "category",
+						"in": "query",
+						"required": false,
+						"description": "Filter by component category",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "skip",
+						"in": "query",
+						"required": false,
+						"description": "Number of items to skip",
+						"schema": {
+							"type": "integer",
+							"minimum": 0,
+							"default": 0
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"description": "Maximum number of items to return",
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 1000,
+							"default": 100
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully retrieved components",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ComponentListResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/components/{id}/usage": {
+			"get": {
+				"tags": ["Component Libraries"],
+				"summary": "Get Component Usage",
+				"description": "Retrieve usage information for a specific component",
+				"operationId": "getComponentUsage",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the component",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully retrieved component usage",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ComponentUsageResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/api/v1/component-libraries/{id}/tokens": {
+			"get": {
+				"tags": ["Component Libraries"],
+				"summary": "Get Design Tokens",
+				"description": "Retrieve design tokens for a component library",
+				"operationId": "getDesignTokens",
+				"security": [
+					{
+						"bearerAuth": []
+					},
+					{
+						"apiKeyAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"description": "Unique identifier for the component library",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "category",
+						"in": "query",
+						"required": false,
+						"description": "Filter tokens by category (colors, typography, spacing, etc.)",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successfully retrieved design tokens",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DesignTokenResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"securitySchemes": {
+			"bearerAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT",
+				"description": "JWT Bearer token authentication"
+			},
+			"apiKeyAuth": {
+				"type": "apiKey",
+				"in": "header",
+				"name": "X-API-Key",
+				"description": "API key authentication"
+			}
+		},
+		"schemas": {
+			"HealthResponse": {
+				"type": "object",
+				"required": ["status", "version", "service"],
+				"properties": {
+					"status": {
+						"type": "string",
+						"enum": ["healthy", "degraded", "unhealthy"],
+						"description": "Current health status of the service"
+					},
+					"version": {
+						"type": "string",
+						"description": "API version"
+					},
+					"service": {
+						"type": "string",
+						"description": "Service name"
+					}
+				}
+			},
+			"ItemSummary": {
+				"type": "object",
+				"required": ["id", "title", "view", "status"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "Unique identifier for the item"
+					},
+					"title": {
+						"type": "string",
+						"description": "Item title"
+					},
+					"view": {
+						"type": "string",
+						"description": "View type of the item"
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"draft",
+							"in_progress",
+							"completed",
+							"approved",
+							"rejected"
+						],
+						"description": "Current status of the item"
+					}
+				}
+			},
+			"ItemListResponse": {
+				"type": "object",
+				"required": ["total", "items"],
+				"properties": {
+					"total": {
+						"type": "integer",
+						"description": "Total number of items"
+					},
+					"items": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ItemSummary"
+						}
+					}
+				}
+			},
+			"ItemDetailResponse": {
+				"type": "object",
+				"required": [
+					"id",
+					"title",
+					"view",
+					"status",
+					"created_at",
+					"updated_at"
+				],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"title": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					},
+					"view": {
+						"type": "string"
+					},
+					"status": {
+						"type": "string"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"LinkSummary": {
+				"type": "object",
+				"required": ["id", "source_id", "target_id", "type"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"source_id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "Source item ID"
+					},
+					"target_id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "Target item ID"
+					},
+					"type": {
+						"type": "string",
+						"enum": ["depends_on", "implements", "tests", "derives_from"],
+						"description": "Type of relationship"
+					}
+				}
+			},
+			"LinkListResponse": {
+				"type": "object",
+				"required": ["total", "links"],
+				"properties": {
+					"total": {
+						"type": "integer"
+					},
+					"links": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/LinkSummary"
+						}
+					}
+				}
+			},
+			"ImpactAnalysisResponse": {
+				"type": "object",
+				"required": [
+					"root_item_id",
+					"total_affected",
+					"max_depth",
+					"affected_items"
+				],
+				"properties": {
+					"root_item_id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "ID of the item being analyzed"
+					},
+					"total_affected": {
+						"type": "integer",
+						"description": "Total number of items affected by changes"
+					},
+					"max_depth": {
+						"type": "integer",
+						"description": "Maximum depth of dependency chain"
+					},
+					"affected_items": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"description": "List of affected item IDs"
+					}
+				}
+			},
+			"CycleDetectionResponse": {
+				"type": "object",
+				"required": [
+					"has_cycles",
+					"total_cycles",
+					"severity",
+					"affected_items"
+				],
+				"properties": {
+					"has_cycles": {
+						"type": "boolean",
+						"description": "Whether cycles were detected"
+					},
+					"total_cycles": {
+						"type": "integer",
+						"description": "Number of cycles found"
+					},
+					"severity": {
+						"type": "string",
+						"enum": ["none", "low", "medium", "high", "critical"],
+						"description": "Severity level of detected cycles"
+					},
+					"affected_items": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"description": "Items involved in cycles"
+					}
+				}
+			},
+			"ShortestPathResponse": {
+				"type": "object",
+				"required": ["exists", "distance", "path", "link_types"],
+				"properties": {
+					"exists": {
+						"type": "boolean",
+						"description": "Whether a path exists between the items"
+					},
+					"distance": {
+						"type": "integer",
+						"nullable": true,
+						"description": "Number of hops in the shortest path"
+					},
+					"path": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"description": "Ordered list of item IDs in the path"
+					},
+					"link_types": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"description": "Types of links in the path"
+					}
+				}
+			},
+			"EquivalenceResponse": {
+				"type": "object",
+				"required": ["id", "item_ids", "status", "confidence", "created_at"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "Unique identifier for the equivalence"
+					},
+					"item_ids": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"description": "IDs of equivalent items"
+					},
+					"status": {
+						"type": "string",
+						"enum": ["suggested", "confirmed", "rejected"],
+						"description": "Current status of the equivalence"
+					},
+					"confidence": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 1,
+						"description": "Confidence score for the equivalence (0-1)"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"notes": {
+						"type": "string",
+						"nullable": true,
+						"description": "Optional notes about the equivalence"
+					}
+				}
+			},
+			"EquivalenceListResponse": {
+				"type": "object",
+				"required": ["total", "equivalences"],
+				"properties": {
+					"total": {
+						"type": "integer"
+					},
+					"equivalences": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/EquivalenceResponse"
+						}
+					}
+				}
+			},
+			"DetectEquivalencesRequest": {
+				"type": "object",
+				"required": ["dimensions"],
+				"properties": {
+					"dimensions": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"description": "List of dimensions to check for equivalences"
+					},
+					"threshold": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 1,
+						"default": 0.8,
+						"description": "Similarity threshold for automatic detection"
+					},
+					"exclude_ids": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"description": "Item IDs to exclude from detection"
+					}
+				}
+			},
+			"EquivalenceDetectionResponse": {
+				"type": "object",
+				"required": ["detected_count", "suggestions"],
+				"properties": {
+					"detected_count": {
+						"type": "integer",
+						"description": "Number of equivalences detected"
+					},
+					"suggestions": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/EquivalenceResponse"
+						},
+						"description": "List of suggested equivalences"
+					}
+				}
+			},
+			"ConfirmEquivalenceRequest": {
+				"type": "object",
+				"properties": {
+					"notes": {
+						"type": "string",
+						"description": "Optional notes when confirming"
+					}
+				}
+			},
+			"RejectEquivalenceRequest": {
+				"type": "object",
+				"properties": {
+					"reason": {
+						"type": "string",
+						"description": "Reason for rejecting the equivalence"
+					}
+				}
+			},
+			"CanonicalConceptResponse": {
+				"type": "object",
+				"required": ["id", "name", "description", "item_ids", "created_at"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "Unique identifier for the canonical concept"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the canonical concept"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true,
+						"description": "Detailed description"
+					},
+					"item_ids": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"description": "IDs of items that project this concept"
+					},
+					"dimensions": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"description": "Dimensions covered by this concept"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"CanonicalConceptListResponse": {
+				"type": "object",
+				"required": ["total", "concepts"],
+				"properties": {
+					"total": {
+						"type": "integer"
+					},
+					"concepts": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CanonicalConceptResponse"
+						}
+					}
+				}
+			},
+			"CreateCanonicalConceptRequest": {
+				"type": "object",
+				"required": ["name", "item_ids"],
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 255,
+						"description": "Name of the canonical concept"
+					},
+					"description": {
+						"type": "string",
+						"description": "Optional description"
+					},
+					"item_ids": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"minItems": 1,
+						"description": "IDs of items to include in this concept"
+					}
+				}
+			},
+			"ProjectionResponse": {
+				"type": "object",
+				"required": ["id", "item_id", "dimension", "canonical_id"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"item_id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "ID of the projected item"
+					},
+					"dimension": {
+						"type": "string",
+						"description": "Dimension of this projection"
+					},
+					"canonical_id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "ID of the canonical concept"
+					},
+					"mapping_confidence": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 1
+					}
+				}
+			},
+			"ProjectionListResponse": {
+				"type": "object",
+				"required": ["total", "projections"],
+				"properties": {
+					"total": {
+						"type": "integer"
+					},
+					"projections": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ProjectionResponse"
+						}
+					}
+				}
+			},
+			"PivotItemRequest": {
+				"type": "object",
+				"required": ["canonical_concept_id"],
+				"properties": {
+					"canonical_concept_id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "ID of the canonical concept to pivot to"
+					},
+					"update_references": {
+						"type": "boolean",
+						"default": true,
+						"description": "Whether to update all references to this item"
+					}
+				}
+			},
+			"PivotItemResponse": {
+				"type": "object",
+				"required": ["item_id", "canonical_concept_id", "updated_references"],
+				"properties": {
+					"item_id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"canonical_concept_id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"updated_references": {
+						"type": "integer",
+						"description": "Number of references updated"
+					}
+				}
+			},
+			"JourneyResponse": {
+				"type": "object",
+				"required": ["id", "name", "type", "steps", "created_at"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "Unique identifier for the journey"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the journey"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true,
+						"description": "Detailed description"
+					},
+					"type": {
+						"type": "string",
+						"enum": ["user", "system", "data", "integration"],
+						"description": "Type of journey"
+					},
+					"steps": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/JourneyStep"
+						},
+						"description": "Ordered steps in the journey"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"JourneyStep": {
+				"type": "object",
+				"required": ["id", "order", "name", "item_id"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"order": {
+						"type": "integer",
+						"description": "Position in the journey sequence"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of this step"
+					},
+					"item_id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "Associated requirement item ID"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					},
+					"metadata": {
+						"type": "object",
+						"description": "Additional step metadata"
+					}
+				}
+			},
+			"JourneyListResponse": {
+				"type": "object",
+				"required": ["total", "journeys"],
+				"properties": {
+					"total": {
+						"type": "integer"
+					},
+					"journeys": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/JourneyResponse"
+						}
+					}
+				}
+			},
+			"CreateJourneyRequest": {
+				"type": "object",
+				"required": ["name", "type", "steps"],
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 255,
+						"description": "Name of the journey"
+					},
+					"description": {
+						"type": "string",
+						"description": "Optional description"
+					},
+					"type": {
+						"type": "string",
+						"enum": ["user", "system", "data", "integration"],
+						"description": "Type of journey"
+					},
+					"steps": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"required": ["order", "name", "item_id"],
+							"properties": {
+								"order": {
+									"type": "integer"
+								},
+								"name": {
+									"type": "string"
+								},
+								"item_id": {
+									"type": "string",
+									"format": "uuid"
+								},
+								"description": {
+									"type": "string"
+								}
+							}
+						},
+						"minItems": 1
+					}
+				}
+			},
+			"DetectJourneysRequest": {
+				"type": "object",
+				"required": ["journey_type"],
+				"properties": {
+					"journey_type": {
+						"type": "string",
+						"enum": ["user", "system", "data", "integration"],
+						"description": "Type of journey to detect"
+					},
+					"min_path_length": {
+						"type": "integer",
+						"minimum": 2,
+						"default": 3,
+						"description": "Minimum number of steps for a valid journey"
+					},
+					"max_results": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 1000,
+						"default": 100
+					}
+				}
+			},
+			"JourneyDetectionResponse": {
+				"type": "object",
+				"required": ["detected_count", "journeys"],
+				"properties": {
+					"detected_count": {
+						"type": "integer",
+						"description": "Number of journeys detected"
+					},
+					"journeys": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/JourneyResponse"
+						},
+						"description": "List of detected journeys"
+					}
+				}
+			},
+			"ComponentLibraryResponse": {
+				"type": "object",
+				"required": ["id", "name", "version", "created_at"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "Unique identifier for the library"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the component library"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					},
+					"version": {
+						"type": "string",
+						"description": "Semantic version of the library"
+					},
+					"component_count": {
+						"type": "integer",
+						"description": "Number of components in the library"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"ComponentLibraryListResponse": {
+				"type": "object",
+				"required": ["total", "libraries"],
+				"properties": {
+					"total": {
+						"type": "integer"
+					},
+					"libraries": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ComponentLibraryResponse"
+						}
+					}
+				}
+			},
+			"ComponentResponse": {
+				"type": "object",
+				"required": ["id", "name", "category", "library_id"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"name": {
+						"type": "string",
+						"description": "Component name"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					},
+					"category": {
+						"type": "string",
+						"description": "Component category"
+					},
+					"library_id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"status": {
+						"type": "string",
+						"enum": ["draft", "published", "deprecated"],
+						"description": "Component status"
+					},
+					"properties": {
+						"type": "object",
+						"description": "Component-specific properties"
+					}
+				}
+			},
+			"ComponentListResponse": {
+				"type": "object",
+				"required": ["total", "components"],
+				"properties": {
+					"total": {
+						"type": "integer"
+					},
+					"components": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ComponentResponse"
+						}
+					}
+				}
+			},
+			"ComponentUsageResponse": {
+				"type": "object",
+				"required": ["component_id", "usage_count", "used_in_items"],
+				"properties": {
+					"component_id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"usage_count": {
+						"type": "integer",
+						"description": "Total number of usages"
+					},
+					"used_in_items": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"description": "IDs of items using this component"
+					},
+					"last_used": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true,
+						"description": "When the component was last used"
+					}
+				}
+			},
+			"DesignToken": {
+				"type": "object",
+				"required": ["id", "name", "value", "category"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"name": {
+						"type": "string",
+						"description": "Token name"
+					},
+					"value": {
+						"type": "string",
+						"description": "Token value"
+					},
+					"category": {
+						"type": "string",
+						"enum": [
+							"colors",
+							"typography",
+							"spacing",
+							"shadows",
+							"borders",
+							"other"
+						],
+						"description": "Token category"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"DesignTokenResponse": {
+				"type": "object",
+				"required": ["library_id", "tokens"],
+				"properties": {
+					"library_id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"tokens": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/DesignToken"
+						}
+					},
+					"total": {
+						"type": "integer"
+					}
+				}
+			},
+			"Error": {
+				"type": "object",
+				"required": ["detail"],
+				"properties": {
+					"detail": {
+						"type": "string",
+						"description": "Error message"
+					},
+					"code": {
+						"type": "string",
+						"description": "Error code for programmatic handling"
+					}
+				}
+			}
+		},
+		"responses": {
+			"BadRequest": {
+				"description": "Bad Request - Invalid input parameters",
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/Error"
+						},
+						"example": {
+							"detail": "Invalid input format",
+							"code": "INVALID_INPUT"
+						}
+					}
+				}
+			},
+			"Unauthorized": {
+				"description": "Unauthorized - Missing or invalid authentication",
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/Error"
+						},
+						"example": {
+							"detail": "Authentication required",
+							"code": "UNAUTHORIZED"
+						}
+					}
+				}
+			},
+			"NotFound": {
+				"description": "Not Found - Resource does not exist",
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/Error"
+						},
+						"example": {
+							"detail": "Resource not found",
+							"code": "NOT_FOUND"
+						}
+					}
+				}
+			},
+			"InternalServerError": {
+				"description": "Internal Server Error",
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/Error"
+						},
+						"example": {
+							"detail": "An unexpected error occurred",
+							"code": "INTERNAL_ERROR"
+						}
+					}
+				}
+			}
+		}
+	}
+}
