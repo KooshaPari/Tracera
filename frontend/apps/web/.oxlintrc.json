@@ -1,0 +1,32 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../.oxlintrc.json"],
+  "rules": {
+    "import/no-default-export": "off",
+    "typescript/no-explicit-any": "off",
+    "typescript/no-unsafe-assignment": "off",
+    "typescript/no-unsafe-member-access": "off",
+    "typescript/no-unsafe-call": "off",
+    "typescript/no-unsafe-return": "off",
+    "typescript/explicit-module-boundary-types": "off",
+    "eslint/no-magic-numbers": "off",
+    "eslint/max-lines-per-function": "off",
+    "eslint/max-statements": "off",
+    "eslint/no-console": "off",
+    "eslint/no-ternary": "off",
+    "eslint/no-inline-comments": "off",
+    "eslint/id-length": "off",
+    "eslint/no-plusplus": "off",
+    "eslint/init-declarations": "off",
+    "eslint/prefer-destructuring": "off",
+    "eslint/no-duplicate-imports": "off",
+    "promise/avoid-new": "off",
+    "react-perf/jsx-no-new-object-as-prop": "off",
+    "react-perf/jsx-no-new-array-as-prop": "off",
+    "react-perf/jsx-no-new-function-as-prop": "off",
+    "boundaries/no-unknown-files": "off",
+    "import/no-unassigned-import": "off",
+    "unicorn/prefer-top-level-await": "off",
+    "unicorn/no-null": "off"
+  }
+}
