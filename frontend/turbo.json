@@ -33,7 +33,7 @@
         "out/**",
         ".tsbuildinfo"
       ],
-      "outputLogs": "hash-only",
+      "outputLogs": "full",
       "env": ["NODE_ENV", "VITE_*", "NEXT_PUBLIC_*"]
     },
     "build:fast": {
@@ -48,7 +48,7 @@
         "!**/*.spec.*"
       ],
       "outputs": ["dist/**"],
-      "outputLogs": "hash-only",
+      "outputLogs": "full",
       "env": ["NODE_ENV", "VITE_*", "NEXT_PUBLIC_*"]
     },
     "build:clean": {
@@ -91,7 +91,7 @@
       "inputs": ["src/**", "package.json", "tsconfig.json"],
       "outputs": [],
       "dependsOn": [],
-      "outputLogs": "hash-only"
+      "outputLogs": "full"
     },
     "lint": {
       "inputs": [
@@ -102,7 +102,7 @@
       ],
       "outputs": [".eslintcache"],
       "dependsOn": [],
-      "outputLogs": "hash-only"
+      "outputLogs": "full"
     },
     "lint:fix": {
       "cache": false,
@@ -111,7 +111,7 @@
     "//#lint": {
       "inputs": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", ".oxlintrc.json", "package.json"],
       "outputs": [],
-      "outputLogs": "hash-only"
+      "outputLogs": "full"
     },
     "//#lint:fix": {
       "cache": false,
@@ -120,7 +120,7 @@
     "//#typecheck": {
       "inputs": ["**/*.ts", "**/*.tsx", ".oxlintrc.json", "package.json", "tsconfig.json"],
       "outputs": [],
-      "outputLogs": "hash-only"
+      "outputLogs": "full"
     },
     "format": {
       "cache": false,
@@ -138,7 +138,7 @@
         "package.json"
       ],
       "outputs": [],
-      "outputLogs": "hash-only"
+      "outputLogs": "full"
     },
     "//#format:fix": {
       "cache": false,
@@ -150,7 +150,7 @@
     "generate:types": {
       "inputs": ["public/specs/**", "openapi.json", "package.json"],
       "outputs": ["src/api/schema.ts", "src/generated/**"],
-      "outputLogs": "hash-only"
+      "outputLogs": "full"
     }
   }
 }
