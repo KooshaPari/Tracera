@@ -4,13 +4,16 @@
 # Usage:
 #   ./bin/tracera-attach                      # auto-detect $PATH location
 #   ./bin/tracera-attach --dir ~/.local/bin   # explicit install dir
-#   ./bin/tracera-attach --uninstall          # remove symlink + config
+#   ./bin/tracera-attach --copy               # copy CLI (durable) instead of symlink
+#   ./bin/tracera-attach --uninstall          # remove symlink/copy + config
 #
 # What it does:
 #   1. Creates ~/.tracera/ if missing.
 #   2. Copies bin/tracera-config.example.json → ~/.tracera/config.json
 #      (skips if config already exists — does not clobber).
-#   3. Symlinks bin/tracera → <bindir>/tracera so `tracera` is on $PATH.
+#   3. Installs bin/tracera to <bindir>/tracera so `tracera` is on $PATH:
+#      - default: symlink (auto-updates when you git pull)
+#      - --copy:  real file copy (survives /tmp cleanup; needs re-run to update)
 #
 # After running, you can `tracera health` from anywhere.
 
@@ -21,11 +24,13 @@ CONFIG_EXAMPLE="${SCRIPT_DIR}/tracera-config.example.json"
 CLI_SRC="${SCRIPT_DIR}/tracera"
 
 UNINSTALL=0
+COPY_MODE=0
 BINDIR=""
 
 for arg in "$@"; do
   case "$arg" in
     --uninstall) UNINSTALL=1 ;;
+    --copy)      COPY_MODE=1 ;;
     --dir=*)     BINDIR="${arg#--dir=}" ;;
     --dir)       shift; BINDIR="${1:-}" ;;
     --help|-h)
@@ -41,9 +46,9 @@ CONFIG_PATH="$TRACERA_HOME/config.json"
 
 if [[ "$UNINSTALL" == "1" ]]; then
   echo "uninstalling tracera CLI"
-  # Remove symlink from common locations
+  # Remove symlinks AND copies from common locations
   for d in "$HOME/.local/bin" "$HOME/bin" "/usr/local/bin"; do
-    if [[ -L "$d/tracera" ]]; then
+    if [[ -e "$d/tracera" || -L "$d/tracera" ]]; then
       rm -f "$d/tracera"
       echo "  removed: $d/tracera"
     fi
@@ -83,10 +88,20 @@ else
   echo "wrote: $CONFIG_PATH"
 fi
 
-# 3. Symlink.
+# 3. Install CLI to bindir.
 mkdir -p "$BINDIR"
-ln -sf "$CLI_SRC" "$BINDIR/tracera"
-echo "linked: $BINDIR/tracera → $CLI_SRC"
+INSTALL_PATH="$BINDIR/tracera"
+
+if [[ "$COPY_MODE" == "1" ]]; then
+  cp "$CLI_SRC" "$INSTALL_PATH"
+  chmod +x "$INSTALL_PATH"
+  echo "copied: $INSTALL_PATH (from $CLI_SRC)"
+  echo "  (durable install — survives /tmp cleanup; re-run after git pull to update)"
+else
+  ln -sf "$CLI_SRC" "$INSTALL_PATH"
+  echo "linked: $INSTALL_PATH → $CLI_SRC"
+  echo "  (symlinked — auto-updates from repo; use --copy for durable install)"
+fi
 
 echo ""
 echo "✓ tracera CLI attached. Try:"

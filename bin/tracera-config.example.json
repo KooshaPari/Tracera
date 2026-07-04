@@ -1,5 +1,5 @@
 {
-  "_comment_": "Tracera personal dogfooding config. Edit apiBase to point at your running tracera-server (default: local dev server on :8080). See docs/dogfooding.md for setup.",
+  "_comment_": "Tracera personal dogfooding config. Edit apiBase to point at your running tracera-server (default: local dev server on :8080). See bin/tracera help text (tracera <subcommand> --help) for command usage; in-repo bin/ has the canonical CLI source.",
 
   "apiBase": "http://localhost:8080",
 
