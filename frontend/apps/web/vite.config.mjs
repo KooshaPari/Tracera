@@ -331,24 +331,13 @@ export default defineConfig({
         find: /^prop-types$/,
         replacement: path.resolve(__dirname, './src/lib/prop-types-shim.ts'),
       },
-      // Internal: shim imports the real package via this alias to avoid circular dependency
-      {
-        find: 'use-sync-external-store-with-selector-real',
-        replacement: path.resolve(
-          __dirname,
-          '../../node_modules/use-sync-external-store/shim/with-selector.js',
-        ),
-      },
-      // CJS use-sync-external-store/shim/with-selector has no ESM default; zustand needs default import
+      // CJS use-sync-external-store/shim/with-selector has no ESM default; zustand needs default
+      // import. Only the extension-less bare specifier is redirected to our shim — the shim
+      // itself imports the extensioned "with-selector.js" specifier directly from the real npm
+      // package via normal node resolution, so that import must NOT match this alias or it
+      // would recurse into itself.
       {
         find: 'use-sync-external-store/shim/with-selector',
-        replacement: path.resolve(
-          __dirname,
-          './src/lib/use-sync-external-store-with-selector-shim.ts',
-        ),
-      },
-      {
-        find: 'use-sync-external-store/shim/with-selector.js',
         replacement: path.resolve(
           __dirname,
           './src/lib/use-sync-external-store-with-selector-shim.ts',
