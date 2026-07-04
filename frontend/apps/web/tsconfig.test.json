@@ -2,7 +2,8 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vitest/globals", "node", "@testing-library/jest-dom", "vite/client", "@webgpu/types"]
   },
   "include": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/__tests__/**/*"]
 }
