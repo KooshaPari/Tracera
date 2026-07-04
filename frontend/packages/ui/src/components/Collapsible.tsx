@@ -20,10 +20,14 @@ const Collapsible = React.forwardRef<HTMLDivElement, CollapsibleProps>(
     <div ref={ref} className={cn('space-y-2', className)} {...props}>
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
-          return React.cloneElement(child as React.ReactElement<CollapsibleChildProps>, {
-            onOpenChange,
-            open,
-          });
+          const childProps: Partial<CollapsibleChildProps> = { open };
+          if (onOpenChange !== undefined) {
+            childProps.onOpenChange = onOpenChange;
+          }
+          return React.cloneElement(
+            child as React.ReactElement<CollapsibleChildProps>,
+            childProps,
+          );
         }
         return child;
       })}
