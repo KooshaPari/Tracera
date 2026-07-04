@@ -1,5 +1,17 @@
 name: Release Tracera Desktop
 
+# Builds cross-platform installers for the Tracera Electrobun desktop app.
+# Triggered on v* tags (release) or manual dispatch (test build).
+#
+# Output per platform:
+#   - macOS:   Tracera-<ver>-macos-<arch>.zip  (zipped .app bundle)
+#   - Windows: Tracera-<ver>-win-<arch>.zip    (zipped .exe + Resources)
+#   - Linux:   Tracera-<ver>-linux-<arch>.tar.gz
+#
+# Code signing: not configured — produces unsigned binaries. Personal
+# installation works without signing; distribution requires notarization
+# (out of scope for v0.1).
+
 on:
   push:
     tags:
@@ -16,50 +28,90 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        include:
+          - os: macos-latest
+            arch: arm64
+            artifact_subdir: dev-macos-arm64
+            package_ext: app
+            archive_format: zip
+          - os: windows-latest
+            arch: x64
+            artifact_subdir: dev-windows-x64
+            package_ext: exe
+            archive_format: zip
+          - os: ubuntu-latest
+            arch: x64
+            artifact_subdir: dev-linux-x64
+            package_ext: AppImage
+            archive_format: tar.gz
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '22'
+          bun-version: '1.3.11'
 
       - name: Install dependencies
         working-directory: frontend/apps/desktop
-        run: npm ci
+        run: bun install --frozen-lockfile
 
-      - name: Build (macOS)
-        if: matrix.os == 'macos-latest'
+      - name: Build with Electrobun
         working-directory: frontend/apps/desktop
-        env:
-          # No code signing configured — produces unsigned binaries (still installable on personal machines).
-          CSC_IDENTITY_AUTO_DISCOVERY: false
-        run: npm run build:mac
+        run: bunx electrobun build
 
-      - name: Build (Windows)
-        if: matrix.os == 'windows-latest'
+      - name: Locate built artifact
+        id: locate
         working-directory: frontend/apps/desktop
-        run: npm run build:win
+        run: |
+          set -e
+          SUB="${{ matrix.artifact_subdir }}"
+          EXT="${{ matrix.package_ext }}"
+          if [ "$EXT" = "app" ]; then
+            ARTIFACT="build/${SUB}/Tracera-dev.app"
+          else
+            ARTIFACT=$(find "build/${SUB}" -maxdepth 2 -type f -name "*.${EXT}" | head -1)
+          fi
+          if [ -z "$ARTIFACT" ] || [ ! -e "$ARTIFACT" ]; then
+            echo "::error::Built artifact not found (looked for build/${SUB}/Tracera-dev.${EXT})"
+            ls -la "build/${SUB}/" || true
+            exit 1
+          fi
+          echo "artifact=${ARTIFACT}" >> "$GITHUB_OUTPUT"
+          echo "Built artifact: ${ARTIFACT}"
 
-      - name: Build (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Archive artifact
         working-directory: frontend/apps/desktop
-        run: npm run build:linux
+        run: |
+          set -e
+          ARTIFACT="${{ steps.locate.outputs.artifact }}"
+          FMT="${{ matrix.archive_format }}"
+          APP_NAME=$(node -p "require('./package.json').name")
+          APP_VERSION=$(node -p "require('./package.json').version")
+          OUT="${APP_NAME}-${APP_VERSION}-${{ matrix.os }}-${{ matrix.arch }}.${FMT}"
+          case "$FMT" in
+            zip)
+              if [ -d "$ARTIFACT" ]; then
+                (cd "$(dirname "$ARTIFACT")" && zip -r "$OLDPWD/$OUT" "$(basename "$ARTIFACT")")
+              else
+                zip "$OUT" "$ARTIFACT"
+              fi
+              ;;
+            tar.gz)
+              tar -czf "$OUT" -C "$(dirname "$ARTIFACT")" "$(basename "$ARTIFACT")"
+              ;;
+          esac
+          echo "Archived to: ${OUT}"
+          ls -la "${OUT}"
 
-      - name: Upload artifacts
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tracera-desktop-${{ matrix.os }}
-          path: |
-            frontend/apps/desktop/release/**/*.dmg
-            frontend/apps/desktop/release/**/*.zip
-            frontend/apps/desktop/release/**/*.exe
-            frontend/apps/desktop/release/**/*.AppImage
-            frontend/apps/desktop/release/**/*.deb
-          if-no-files-found: warn
+          name: tracera-desktop-${{ matrix.os }}-${{ matrix.arch }}
+          path: frontend/apps/desktop/Tracera-*-${{ matrix.os }}-${{ matrix.arch }}.{{ matrix.archive_format }}
+          if-no-files-found: error
 
   release:
     name: Attach to GitHub Release
@@ -73,7 +125,7 @@ jobs:
           path: artifacts
 
       - name: List artifacts
-        run: ls -la artifacts/
+        run: ls -la artifacts/*/
 
       - name: Create / update GitHub Release
         uses: softprops/action-gh-release@v2
