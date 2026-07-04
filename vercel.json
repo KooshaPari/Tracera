@@ -1,8 +1,8 @@
 {
   "version": 2,
   "name": "tracera",
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/dist",
+  "buildCommand": "cd frontend && bun install && bun run build:web",
+  "outputDirectory": "frontend/apps/web/dist",
   "regions": [
     "iad1"
   ],
