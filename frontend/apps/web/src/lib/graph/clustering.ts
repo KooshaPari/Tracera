@@ -289,7 +289,7 @@ export async function detectCommunities(
   // Extract community assignments
   const communities = new Map<string, string>();
   graph.forEachNode((node, attributes) => {
-    const communityId = String(attributes.community || '0');
+    const communityId = String(attributes['community'] || '0');
     communities.set(node, communityId);
   });
 
