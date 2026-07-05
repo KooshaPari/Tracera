@@ -1,0 +1,54 @@
+# electron-builder config for Tracera desktop.
+# Wraps the existing electrobun build output (staged via scripts/prepare-bundle.ts)
+# into real NSIS / DMG / AppImage / .deb installers.
+appId: ai.phenotype.tracera
+productName: Tracera
+copyright: Copyright (c) 2026 Phenotype
+# We are NOT actually an Electron app — the launcher is the Electrobun native
+# binary. electron-builder still requires a version string for sanity checks
+# on the NSIS target; this is a no-op for installer assembly.
+electronVersion: 31.7.7
+
+directories:
+  output: release
+  buildResources: stage
+
+files:
+  - "**/*"
+  - "package.json"
+
+asar: false  # Resources/app/ must stay as a real directory so the launcher can exec Bun from it.
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: "${productName}-Setup-${version}.${ext}"
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  allowElevation: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Tracera
+  uninstallDisplayName: Tracera
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - arm64
+  category: public.app-category.developer-tools
+  artifactName: "${productName}-${version}-${arch}.${ext}"
+
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Development
+  artifactName: "${productName}-${version}.${ext}"
+
+publish: null
