@@ -12,7 +12,7 @@
  * @see docs/architecture/quadtree-culling.md
  */
 
-import { quadtree, type Quadtree } from 'd3-quadtree';
+import { quadtree, type Quadtree, type QuadtreeLeaf } from 'd3-quadtree';
 
 /**
  * Node position in graph coordinate space
@@ -102,15 +102,16 @@ export class QuadTreeNodeIndex {
     // Use d3-quadtree's visit for efficient rectangle query
     this.tree.visit((node, x1Node, y1Node, x2Node, y2Node) => {
       // If this is a leaf node, check its data
+      const leaf = node as QuadtreeLeaf<QuadTreeNode>;
       if (!node.length) {
         // Leaf node - check all points in this node
-        let current = node as any;
+        let current: QuadtreeLeaf<QuadTreeNode> | undefined = leaf;
         do {
-          const d = current.data as QuadTreeNode;
+          const d = current?.data;
           if (d && d.x >= x0 && d.x <= x1 && d.y >= y0 && d.y <= y1) {
             results.push(d);
           }
-          current = current.next;
+          current = current?.next;
         } while (current);
       }
 
@@ -166,11 +167,12 @@ export class QuadTreeNodeIndex {
     const radiusSquared = radius * radius;
 
     this.tree.visit((node, x1, y1, x2, y2) => {
+      const leaf = node as QuadtreeLeaf<QuadTreeNode>;
       if (!node.length) {
         // Leaf node - check all points
-        let current = node as any;
+        let current: QuadtreeLeaf<QuadTreeNode> | undefined = leaf;
         do {
-          const d = current.data as QuadTreeNode;
+          const d = current?.data;
           if (d) {
             const dx = d.x - x;
             const dy = d.y - y;
@@ -179,7 +181,7 @@ export class QuadTreeNodeIndex {
               results.push(d);
             }
           }
-          current = current.next;
+          current = current?.next;
         } while (current);
       }
 
