@@ -235,10 +235,10 @@ const transformSyncStatus = (data: ApiRecord): TracerTypes.SyncStatusSummary => 
       status: readEnum(provider, 'status', CREDENTIAL_STATUSES, 'active'),
     })),
     queue: {
-      completed: toNumber(queue?.completed),
-      failed: toNumber(queue?.failed),
-      pending: toNumber(queue?.pending),
-      processing: toNumber(queue?.processing),
+      completed: toNumber(queue?['completed']),
+      failed: toNumber(queue?['failed']),
+      pending: toNumber(queue?['pending']),
+      processing: toNumber(queue?['processing']),
     },
     recentSyncs: readRecordArray(data, 'recent_syncs').map((sync) => transformSyncLog(sync)),
   };
@@ -247,16 +247,16 @@ const transformSyncStatus = (data: ApiRecord): TracerTypes.SyncStatusSummary => 
 const buildConflictStats = (
   conflicts: ApiRecord | undefined,
 ): TracerTypes.IntegrationStats['conflicts'] => ({
-  pending: toNumber(conflicts?.pending),
-  resolved: toNumber(conflicts?.resolved),
+  pending: toNumber(conflicts?['pending']),
+  resolved: toNumber(conflicts?['resolved']),
 });
 
 const buildMappingsStats = (
   mappings: ApiRecord | undefined,
 ): TracerTypes.IntegrationStats['mappings'] => ({
-  active: toNumber(mappings?.active),
+  active: toNumber(mappings?['active']),
   byProvider: mappings ? readNumberRecord(mappings, 'by_provider') : {},
-  total: toNumber(mappings?.total),
+  total: toNumber(mappings?['total']),
 });
 
 const buildProviderStats = (data: ApiRecord): TracerTypes.IntegrationStats['providers'] => {
@@ -269,9 +269,9 @@ const buildProviderStats = (data: ApiRecord): TracerTypes.IntegrationStats['prov
 };
 
 const buildSyncStats = (sync: ApiRecord | undefined): TracerTypes.IntegrationStats['sync'] => ({
-  queuePending: toNumber(sync?.queue_pending),
-  recentSyncs: toNumber(sync?.recent_syncs),
-  successRate: toNumber(sync?.success_rate),
+  queuePending: toNumber(sync?['queue_pending']),
+  recentSyncs: toNumber(sync?['recent_syncs']),
+  successRate: toNumber(sync?['success_rate']),
 });
 
 const transformStats = (data: ApiRecord): TracerTypes.IntegrationStats => {
