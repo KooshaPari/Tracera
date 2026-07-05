@@ -77,13 +77,13 @@ export class GraphologyDataAdapter implements GraphologyAdapter {
     this.graph.forEachNode((nodeId, attributes) => {
       nodes.push({
         id: nodeId,
-        type: attributes.type || 'default',
+        type: attributes['type'] || 'default',
         position: {
-          x: attributes.x || 0,
-          y: attributes.y || 0,
+          x: attributes['x'] || 0,
+          y: attributes['y'] || 0,
         },
         data: {
-          label: attributes.label,
+          label: attributes['label'],
           ...attributes,
         },
       });
@@ -92,10 +92,10 @@ export class GraphologyDataAdapter implements GraphologyAdapter {
     // Convert edges
     this.graph.forEachEdge((edgeId, attributes, source, target) => {
       edges.push({
-        id: attributes.id || edgeId,
+        id: attributes['id'] || edgeId,
         source,
         target,
-        label: attributes.label,
+        label: attributes['label'],
         data: attributes,
       });
     });
