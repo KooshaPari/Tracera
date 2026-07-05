@@ -1,6 +1,7 @@
 mod ingest;
 mod pg_store;
 mod sqlite_store;
+mod queue;
 mod store;
 
 use axum::{
