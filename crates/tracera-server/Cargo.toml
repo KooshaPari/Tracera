@@ -18,6 +18,7 @@ regex = "1"
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 sqlx = { version = "0.9", features = ["postgres", "sqlite", "runtime-tokio", "macros", "uuid", "chrono", "migrate"] }
+thiserror = { workspace = true }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
 tower-http = { version = "0.6", features = ["fs"] }
 tracing = { workspace = true }
