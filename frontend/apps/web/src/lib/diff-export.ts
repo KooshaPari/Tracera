@@ -511,7 +511,7 @@ function serializeItem(item: DiffItem, options: DiffExportOptions): unknown {
   };
 
   if (options.includeFieldChanges && item.fieldChanges) {
-    serialized.fieldChanges = item.fieldChanges.map((change) => ({
+    serialized['fieldChanges'] = item.fieldChanges.map((change) => ({
       field: change.field,
       changeType: change.changeType,
       oldValue: change.oldValue,
