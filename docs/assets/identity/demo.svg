@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" width="480" height="270" role="img" aria-label="Tracera identity demo: teal flowing rhythm pulse">
+  <title>Tracera — L105 Identity Demo (teal flowing rhythm pulse)</title>
+  <defs>
+    <linearGradient id="trBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1414"/>
+      <stop offset="1" stop-color="#102323"/>
+    </linearGradient>
+    <linearGradient id="trFlow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#14b8a6" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#14b8a6" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#14b8a6" stop-opacity="0"/>
+    </linearGradient>
+    <style>
+      .tr-mono { font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace; }
+      .tr-wave {
+        animation: tr-pulse 2.6s ease-in-out infinite;
+      }
+      @keyframes tr-pulse {
+        0%, 100% { opacity: 0.55; transform: translateX(-40px); }
+        50%      { opacity: 1;    transform: translateX(40px); }
+      }
+      .tr-bead {
+        animation: tr-bead 2.6s ease-in-out infinite;
+      }
+      @keyframes tr-bead {
+        0%   { transform: translateX(0)   scale(0.7); opacity: 0.2; }
+        25%  { transform: translateX(120px) scale(1); opacity: 1; }
+        50%  { transform: translateX(240px) scale(1.2); opacity: 1; }
+        75%  { transform: translateX(360px) scale(1); opacity: 0.6; }
+        100% { transform: translateX(480px) scale(0.7); opacity: 0; }
+      }
+      .tr-label { animation: tr-fade 2.6s ease-in-out infinite; }
+      @keyframes tr-fade {
+        0%, 100% { opacity: 0.65; }
+        50%      { opacity: 1; }
+      }
+    </style>
+  </defs>
+
+  <rect width="480" height="270" fill="url(#trBg)"/>
+  <line x1="0" y1="32" x2="480" y2="32" stroke="#14b8a6" stroke-opacity="0.18" stroke-width="1"/>
+  <line x1="0" y1="238" x2="480" y2="238" stroke="#14b8a6" stroke-opacity="0.18" stroke-width="1"/>
+
+  <g class="tr-wave">
+    <path d="M 0 135 Q 60 95 120 135 T 240 135 T 360 135 T 480 135" fill="none" stroke="url(#trFlow)" stroke-width="6"/>
+    <path d="M 0 135 Q 60 175 120 135 T 240 135 T 360 135 T 480 135" fill="none" stroke="url(#trFlow)" stroke-width="3" opacity="0.5"/>
+  </g>
+
+  <g class="tr-bead">
+    <circle cx="0" cy="135" r="9" fill="#14b8a6"/>
+    <circle cx="0" cy="135" r="18" fill="none" stroke="#14b8a6" stroke-opacity="0.5" stroke-width="1.5"/>
+  </g>
+
+  <g fill="#14b8a6" opacity="0.55">
+    <circle cx="40"  cy="135" r="3"/>
+    <circle cx="160" cy="135" r="3"/>
+    <circle cx="320" cy="135" r="3"/>
+    <circle cx="440" cy="135" r="3"/>
+  </g>
+
+  <g transform="translate(220,180)" fill="#14b8a6">
+    <path d="M0 0 L-12 -10 L-12 10 Z" opacity="0.85"/>
+    <path d="M28 0 L40 -10 L40 10 Z" opacity="0.85"/>
+    <rect x="-2" y="-2" width="32" height="4" transform="rotate(28 14 0)"/>
+  </g>
+
+  <g class="tr-mono">
+    <text x="240" y="62" text-anchor="middle" font-size="18" font-weight="700" fill="#f6f8fa" letter-spacing="0.18em" class="tr-label">TRACERA</text>
+    <text x="240" y="78" text-anchor="middle" font-size="9" fill="#14b8a6" letter-spacing="0.24em" opacity="0.85">trace · correlate · audit</text>
+  </g>
+
+  <g stroke="#14b8a6" stroke-width="1.5" stroke-linecap="round" opacity="0.7">
+    <path d="M22 22 L34 22 M22 22 L22 34"/>
+    <path d="M458 22 L446 22 M458 22 L458 34"/>
+    <path d="M22 248 L34 248 M22 248 L22 236"/>
+    <path d="M458 248 L446 248 M458 248 L458 236"/>
+  </g>
+</svg>
