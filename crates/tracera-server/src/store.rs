@@ -97,6 +97,49 @@ pub struct TraceLink {
     pub updated_at: DateTime<Utc>,
 }
 
+/// ITIL Problem-management domain record.
+///
+/// Recovered from the Python `src/tracertm/models/problem.py` model
+/// (deleted in PR-554, originally authored in commit `2ece64691f`).
+/// This is the Rust port — kept to the minimum viable column set that
+/// preserves ITIL lifecycle semantics (status / impact / priority / RCA).
+/// Full ~30-field Python model (workaround, permanent_fix, KED integration,
+/// soft-delete, optimistic-locking version) is staged for follow-up work
+/// once the recovery PR proves the schema and round-trip are stable.
+///
+/// Lifecycle statuses (mirrors `ProblemStatus` in the Python model):
+///   open -> in_investigation -> pending_workaround | known_error -> awaiting_fix -> closed
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct Problem {
+    pub id: String,
+    pub project_id: String,
+    pub problem_number: String,
+    pub title: String,
+    pub description: Option<String>,
+    /// ITIL lifecycle status (snake_case): open | in_investigation | pending_workaround | known_error | awaiting_fix | closed
+    pub status: String,
+    /// Resolution classification once closed: permanent_fix | workaround_only | cannot_reproduce | deferred | by_design
+    pub resolution_type: Option<String>,
+    pub category: Option<String>,
+    pub sub_category: Option<String>,
+    pub tags: Option<Value>,
+    pub impact_level: String,
+    pub urgency: String,
+    pub priority: String,
+    pub rca_performed: bool,
+    pub root_cause_identified: bool,
+    pub workaround_available: bool,
+    pub permanent_fix_available: bool,
+    pub assigned_to: Option<String>,
+    pub assigned_team: Option<String>,
+    pub owner: Option<String>,
+    pub known_error_id: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    /// Soft-delete tombstone; non-null means the row is tombstoned.
+    pub deleted_at: Option<DateTime<Utc>>,
+}
+
 // ---------------------------------------------------------------------------
 // Store trait
 // ---------------------------------------------------------------------------
@@ -170,4 +213,52 @@ pub trait Store: Send + Sync {
 
     // Metrics
     fn count_evidence(&self) -> BoxFuture<'_, StoreResult<i64>>;
+
+    // -----------------------------------------------------------------------
+    // Problems (ITIL problem-management) — recovered from Python model
+    // originally at `src/tracertm/models/problem.py` (commit 2ece64691f).
+    // -----------------------------------------------------------------------
+
+    /// List problems for a project, optionally filtering by status.
+    ///
+    /// `status_filter` of `None` returns all non-tombstoned problems.
+    fn list_problems(
+        &self,
+        project_id: String,
+        status_filter: Option<String>,
+    ) -> BoxFuture<'_, StoreResult<Vec<Problem>>>;
+
+    /// Persist a new problem record and return it.
+    ///
+    /// All 19 fields map 1-to-1 to `problems` table columns; a wrapper struct
+    /// would add indirection without value at this size.
+    #[allow(clippy::too_many_arguments)]
+    fn create_problem(
+        &self,
+        id: String,
+        project_id: String,
+        problem_number: String,
+        title: String,
+        description: Option<String>,
+        status: String,
+        resolution_type: Option<String>,
+        category: Option<String>,
+        sub_category: Option<String>,
+        tags: Option<Value>,
+        impact_level: String,
+        urgency: String,
+        priority: String,
+        rca_performed: bool,
+        root_cause_identified: bool,
+        workaround_available: bool,
+        permanent_fix_available: bool,
+        assigned_to: Option<String>,
+        assigned_team: Option<String>,
+        owner: Option<String>,
+        known_error_id: Option<String>,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<Problem>>;
+
+    /// Count of problems for a project, scoped to non-tombstoned rows.
+    fn count_problems(&self, project_id: String) -> BoxFuture<'_, StoreResult<i64>>;
 }

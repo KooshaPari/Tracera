@@ -20,7 +20,7 @@ use tracing::info;
 use tracing_subscriber::EnvFilter;
 use uuid::Uuid;
 
-use store::{EvidenceItem, Sprint, Story, Store, TeamRow};
+use store::{EvidenceItem, Problem, Sprint, Story, Store, TeamRow};
 
 // ---------------------------------------------------------------------------
 // App state — Arc<dyn Store> replaces the bare PgPool.
@@ -393,6 +393,8 @@ async fn main() {
         .route("/sdlc-pm/health", get(health))
         .route("/sdlc-pm/sprints", get(list_sprints).post(create_sprint))
         .route("/sdlc-pm/stories", get(list_stories))
+        .route("/problems", get(list_problems).post(create_problem))
+        .route("/problems/health", get(health))
         .route("/org-intel/health", get(health))
         .route("/org-intel/teams", get(list_teams))
         .route("/org-intel/metrics", get(org_metrics))
@@ -702,6 +704,139 @@ async fn create_sprint(
         });
 
     (axum::http::StatusCode::CREATED, Json(sprint))
+}
+
+
+// ---------------------------------------------------------------------------
+// Problem handlers (ITIL problem-management) — recovered domain
+// ---------------------------------------------------------------------------
+#[derive(Deserialize)]
+struct ProblemCreateRequest {
+    project_id: String,
+    #[serde(default)]
+    title: String,
+    #[serde(default)]
+    description: Option<String>,
+    #[serde(default = "default_problem_status")]
+    status: String,
+    #[serde(default)]
+    resolution_type: Option<String>,
+    #[serde(default)]
+    category: Option<String>,
+    #[serde(default)]
+    sub_category: Option<String>,
+    #[serde(default)]
+    tags: Option<Value>,
+    #[serde(default = "default_impact")]
+    impact_level: String,
+    #[serde(default = "default_impact")]
+    urgency: String,
+    #[serde(default = "default_impact")]
+    priority: String,
+    #[serde(default)]
+    rca_performed: bool,
+    #[serde(default)]
+    root_cause_identified: bool,
+    #[serde(default)]
+    workaround_available: bool,
+    #[serde(default)]
+    permanent_fix_available: bool,
+    #[serde(default)]
+    assigned_to: Option<String>,
+    #[serde(default)]
+    assigned_team: Option<String>,
+    #[serde(default)]
+    owner: Option<String>,
+    #[serde(default)]
+    known_error_id: Option<String>,
+}
+
+fn default_problem_status() -> String {
+    "open".to_string()
+}
+
+fn default_impact() -> String {
+    "medium".to_string()
+}
+
+#[derive(Serialize)]
+struct ProblemListResponse {
+    project_id: String,
+    count: usize,
+    items: Vec<Problem>,
+}
+
+async fn list_problems(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    axum::extract::Query(params): axum::extract::Query<std::collections::HashMap<String, String>>,
+) -> Json<ProblemListResponse> {
+    let project_id = params
+        .get("project_id")
+        .cloned()
+        .unwrap_or_default();
+    let status_filter = params.get("status").cloned();
+    let items = state
+        .store
+        .list_problems(project_id.clone(), status_filter)
+        .await
+        .unwrap_or_else(|e| {
+            tracing::error!("list_problems store error: {e}");
+            vec![]
+        });
+    Json(ProblemListResponse {
+        project_id,
+        count: items.len(),
+        items,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+async fn create_problem(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    Json(payload): Json<ProblemCreateRequest>,
+) -> (axum::http::StatusCode, Json<Problem>) {
+    let now = Utc::now();
+    let id = format!("prob-{}", Uuid::new_v4());
+    // Human-readable problem number: P-YYYYMMDD-<8 hex>. Date-derived prefix
+    // matches the Python implementation's `_generate_problem_number`.
+    let problem_number = format!(
+        "P-{}-{}",
+        now.format("%Y%m%d"),
+        Uuid::new_v4().simple().to_string()[..8].to_uppercase()
+    );
+
+    let problem = state
+        .store
+        .create_problem(
+            id,
+            payload.project_id,
+            problem_number,
+            payload.title,
+            payload.description,
+            payload.status,
+            payload.resolution_type,
+            payload.category,
+            payload.sub_category,
+            payload.tags,
+            payload.impact_level,
+            payload.urgency,
+            payload.priority,
+            payload.rca_performed,
+            payload.root_cause_identified,
+            payload.workaround_available,
+            payload.permanent_fix_available,
+            payload.assigned_to,
+            payload.assigned_team,
+            payload.owner,
+            payload.known_error_id,
+            now,
+        )
+        .await
+        .unwrap_or_else(|e| {
+            panic!("create_problem: store insert failed: {e}");
+        });
+
+    (axum::http::StatusCode::CREATED, Json(problem))
 }
 
 // ---------------------------------------------------------------------------
@@ -1412,6 +1547,37 @@ mod tests {
         .execute(&pool)
         .await
         .expect("create trace_links table");
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS problems (
+                id                     TEXT    PRIMARY KEY,
+                project_id             TEXT    NOT NULL,
+                problem_number         TEXT    NOT NULL UNIQUE,
+                title                  TEXT    NOT NULL,
+                description             TEXT,
+                status                 TEXT    NOT NULL DEFAULT 'open',
+                resolution_type        TEXT,
+                category               TEXT,
+                sub_category           TEXT,
+                tags                   TEXT,
+                impact_level           TEXT    NOT NULL DEFAULT 'medium',
+                urgency                TEXT    NOT NULL DEFAULT 'medium',
+                priority               TEXT    NOT NULL DEFAULT 'medium',
+                rca_performed          INTEGER NOT NULL DEFAULT 0,
+                root_cause_identified  INTEGER NOT NULL DEFAULT 0,
+                workaround_available   INTEGER NOT NULL DEFAULT 0,
+                permanent_fix_available INTEGER NOT NULL DEFAULT 0,
+                assigned_to            TEXT,
+                assigned_team          TEXT,
+                owner                  TEXT,
+                known_error_id         TEXT,
+                created_at             TEXT    NOT NULL,
+                updated_at             TEXT    NOT NULL,
+                deleted_at             TEXT
+            )",
+        )
+        .execute(&pool)
+        .await
+        .expect("create problems table");
 
         crate::sqlite_store::SqliteStore::new(pool)
     }
@@ -1480,6 +1646,84 @@ mod tests {
         let listed = store.list_sprints().await.expect("list_sprints");
         assert_eq!(listed.len(), 1);
         assert_eq!(listed[0].name, "On-device Sprint 1");
+    }
+
+
+    /// SQLite problem round-trip: create then list returns the problem with
+    /// the same project_id + status, count reflects the insert.
+    #[tokio::test]
+    async fn sqlite_problem_create_then_list() {
+        let store = make_sqlite_store().await;
+
+        // Empty initially
+        let initial = store
+            .list_problems("proj-1".to_string(), None)
+            .await
+            .expect("list_problems empty");
+        assert!(initial.is_empty(), "store should be empty initially");
+
+        let now = Utc::now();
+        let problem = store
+            .create_problem(
+                "prob-test-1".to_string(),
+                "proj-1".to_string(),
+                "P-20260101-ABCD1234".to_string(),
+                "Login latency spikes every Friday".to_string(),
+                Some("Investigating p99 latency".to_string()),
+                "in_investigation".to_string(),
+                None,
+                Some("performance".to_string()),
+                None,
+                Some(serde_json::json!(["latency", "weekend"])),
+                "high".to_string(),
+                "medium".to_string(),
+                "high".to_string(),
+                false,
+                false,
+                false,
+                false,
+                Some("oncall@example.com".to_string()),
+                Some("platform".to_string()),
+                None,
+                None,
+                now,
+            )
+            .await
+            .expect("create_problem");
+
+        assert_eq!(problem.id, "prob-test-1");
+        assert_eq!(problem.project_id, "proj-1");
+        assert_eq!(problem.problem_number, "P-20260101-ABCD1234");
+        assert_eq!(problem.status, "in_investigation");
+        assert_eq!(problem.priority, "high");
+
+        // list (no status filter) returns the row
+        let listed = store
+            .list_problems("proj-1".to_string(), None)
+            .await
+            .expect("list_problems after create");
+        assert_eq!(listed.len(), 1, "exactly one problem");
+        let found = &listed[0];
+        assert_eq!(found.id, "prob-test-1");
+        assert_eq!(
+            found.tags.as_ref().and_then(|v| v.as_array()).map(|a| a.len()),
+            Some(2),
+            "tags round-trip as JSON array"
+        );
+
+        // list with status filter narrows correctly
+        let filtered = store
+            .list_problems("proj-1".to_string(), Some("closed".to_string()))
+            .await
+            .expect("list_problems filtered");
+        assert!(filtered.is_empty(), "no problems in 'closed' status");
+
+        // count_problems reflects the insert
+        let count = store
+            .count_problems("proj-1".to_string())
+            .await
+            .expect("count_problems");
+        assert_eq!(count, 1, "count_problems == 1");
     }
 
     // -----------------------------------------------------------------------
