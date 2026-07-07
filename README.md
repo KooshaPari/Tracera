@@ -4,7 +4,7 @@
   <a href="assets/brand/icon.svg"><img src="assets/brand/icon.svg" alt="Tracera" width="160" height="160"></a>
 </p>
 <p align="center"><em>Hexagonal trace-link matrix for Agentic + LLM observability — Rust core, Python SDK, Electron desktop.</em></p>
-<p align="center"><sub>Tracera (navy + teal + indigo) palette · <a href="assets/brand/favicon.svg">favicon</a> · brand SVG ships in `tracera-splash` worktree</sub></p>
+<p align="center"><sub>Tracera (navy + teal + indigo) palette · <a href="assets/brand/favicon.svg">favicon</a> · <a href="docs/assets/identity/">visual identity demo</a></sub></p>
 
 ---
 
