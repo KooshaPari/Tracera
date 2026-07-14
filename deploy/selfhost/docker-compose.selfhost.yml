@@ -23,6 +23,7 @@ services:
     command: sh -lc "cargo run --release -p tracera-server"
     environment:
       TRACERA_BIND_ADDR: 0.0.0.0:8080
+      TRACERA_CORS_ORIGINS: ${TRACERA_CORS_ORIGINS:-}
       DATABASE_URL: postgres://${TRACERA_POSTGRES_USER:-tracera}:${TRACERA_POSTGRES_PASSWORD:?TRACERA_POSTGRES_PASSWORD is required}@postgres:5432/${TRACERA_POSTGRES_DB:-tracera}
     volumes:
       - ../..:/workspace
