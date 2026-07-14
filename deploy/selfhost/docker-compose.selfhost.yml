@@ -28,6 +28,10 @@ services:
     environment:
       TRACERA_BIND_ADDR: 0.0.0.0:8080
       TRACERA_CORS_ORIGINS: ${TRACERA_CORS_ORIGINS:?TRACERA_CORS_ORIGINS is required}
+      TRACERA_JWT_AUDIENCE: ${TRACERA_JWT_AUDIENCE:?TRACERA_JWT_AUDIENCE is required}
+      TRACERA_JWT_ISSUER: ${TRACERA_JWT_ISSUER:?TRACERA_JWT_ISSUER is required}
+      TRACERA_JWT_PUBLIC_KEY: ${TRACERA_JWT_PUBLIC_KEY:-}
+      TRACERA_JWT_SECRET: ${TRACERA_JWT_SECRET:-}
       DATABASE_URL: ${TRACERA_DATABASE_URL:?TRACERA_DATABASE_URL is required}
     expose:
       - "8080"
@@ -62,7 +66,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - wget --quiet --spider --header="Host: $${TRACERA_PUBLIC_HOSTNAME}" http://127.0.0.1/healthz
+        - 'wget --quiet --spider --header="Host: $${TRACERA_PUBLIC_HOSTNAME}" http://127.0.0.1/healthz'
       interval: 10s
       timeout: 3s
       retries: 5

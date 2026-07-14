@@ -21,6 +21,16 @@ Set these before starting the stack:
 
 - `CF_TUNNEL_TOKEN`: Cloudflare Tunnel token for the named tunnel
 - `TRACERA_PUBLIC_HOSTNAME`: public hostname served by the tunnel, for example `tracera.pheno.studio`
+- `TRACERA_CORS_ORIGINS`: comma-separated explicit browser origins, including the Vercel origin
+- `TRACERA_DATABASE_URL`: complete Postgres connection URL used by the server
+- `TRACERA_POSTGRES_PASSWORD`: password used to initialize the bundled Postgres service
+- `TRACERA_JWT_AUDIENCE`: required JWT audience, for example `tracera-api`
+- `TRACERA_JWT_ISSUER`: required JWT issuer
+- Exactly one signing key: `TRACERA_JWT_SECRET` for HS256 or `TRACERA_JWT_PUBLIC_KEY` for RS256
+
+The server refuses to start when issuer, audience, or signing-key configuration is missing or
+ambiguous. `TRACERA_JWT_SECRET` must contain at least 32 bytes. Protected routes require scoped
+bearer tokens; health probes remain public.
 
 WorkOS AuthKit is not wired in yet, but these placeholders show where its settings would live:
 
@@ -35,13 +45,13 @@ WorkOS AuthKit is not wired in yet, but these placeholders show where its settin
 
 From the repo root:
 
-```powershell
+```bash
 docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
 ```
 
 The stack does three things:
 
-1. Builds and runs `tracera-server` from the repo on `0.0.0.0:8080`
+1. Builds and runs `tracera-server` from the production root `Dockerfile`
 2. Lets Caddy reverse proxy `http://tracera.pheno.studio` to `tracera-server:8080`
 3. Attaches cloudflared to the tunnel token so the hostname is reachable globally through Cloudflare
 
@@ -52,5 +62,6 @@ The stack does three things:
 
 ## WorkOS AuthKit
 
-The `Caddyfile` includes a commented `forward_auth` block as the insertion point for WorkOS AuthKit middleware.
-When you are ready to enforce auth, replace the placeholder with the actual upstream service and headers for your AuthKit deployment.
+The Rust server already validates scoped bearer JWTs. The `Caddyfile` includes a commented
+`forward_auth` insertion point for a future browser login/session service; it is not a replacement
+for API JWT authorization.
