@@ -1,3 +1,4 @@
+mod auth;
 mod ingest;
 mod pg_store;
 mod queue;
@@ -6,6 +7,7 @@ mod store;
 
 use axum::{
     http::{header, HeaderValue, Method, Uri},
+    middleware,
     routing::{get, post},
     Json, Router,
 };
@@ -440,11 +442,20 @@ async fn main() {
         store,
     };
 
-    let app = Router::new()
+    let auth_state = auth::AuthState::from_env().unwrap_or_else(|error| {
+        eprintln!("FATAL: Invalid JWT configuration: {error}");
+        std::process::exit(1);
+    });
+
+    let public_routes = Router::new()
         .route("/healthz", get(healthz))
         .route("/health", get(health))
         .route("/readyz", get(readyz))
         .route("/ready", get(ready))
+        .route("/evidence/health", get(health))
+        .route("/sdlc-pm/health", get(health))
+        .route("/org-intel/health", get(health));
+    let analyze_routes = Router::new()
         .route("/api/v1/coverage-matrix", post(coverage_matrix))
         .route("/api/v1/impact", post(impact))
         .route("/api/v1/confidence", post(confidence))
@@ -452,16 +463,45 @@ async fn main() {
         .route("/api/v1/governance/spec-check", post(spec_check))
         .route("/api/v1/trace/forward/:artifact_id", post(trace_forward))
         .route("/api/v1/trace/reverse/:artifact_id", post(trace_reverse))
-        .route("/evidence", get(list_evidence).post(create_evidence))
-        .route("/evidence/health", get(health))
-        .route("/ingest/github", post(ingest_github))
-        .route("/ingest/jira", post(ingest_jira))
-        .route("/sdlc-pm/health", get(health))
-        .route("/sdlc-pm/sprints", get(list_sprints).post(create_sprint))
+        .route_layer(middleware::from_fn_with_state(
+            auth_state.clone(),
+            auth::require_analyze,
+        ));
+    let read_routes = Router::new()
+        .route("/evidence", get(list_evidence))
+        .route("/sdlc-pm/sprints", get(list_sprints))
         .route("/sdlc-pm/stories", get(list_stories))
-        .route("/org-intel/health", get(health))
         .route("/org-intel/teams", get(list_teams))
         .route("/org-intel/metrics", get(org_metrics))
+        .route_layer(middleware::from_fn_with_state(
+            auth_state.clone(),
+            auth::require_read,
+        ));
+    let evidence_write_routes = Router::new()
+        .route("/evidence", post(create_evidence))
+        .route_layer(middleware::from_fn_with_state(
+            auth_state.clone(),
+            auth::require_evidence_write,
+        ));
+    let sdlc_write_routes = Router::new()
+        .route("/sdlc-pm/sprints", post(create_sprint))
+        .route_layer(middleware::from_fn_with_state(
+            auth_state.clone(),
+            auth::require_sdlc_write,
+        ));
+    let ingest_write_routes = Router::new()
+        .route("/ingest/github", post(ingest_github))
+        .route("/ingest/jira", post(ingest_jira))
+        .route_layer(middleware::from_fn_with_state(
+            auth_state,
+            auth::require_ingest_write,
+        ));
+    let app = public_routes
+        .merge(analyze_routes)
+        .merge(read_routes)
+        .merge(evidence_write_routes)
+        .merge(sdlc_write_routes)
+        .merge(ingest_write_routes)
         .with_state(state);
 
     let frontend_dist = env::var("TRACERA_FRONTEND_DIST")

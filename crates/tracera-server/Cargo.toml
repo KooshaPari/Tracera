@@ -11,6 +11,7 @@ axum = "0.7"
 base64 = { workspace = true }
 chrono = { workspace = true, features = ["clock"] }
 http = "1"
+jsonwebtoken = "9.3.1"
 # wraps: reqwest 0.13
 reqwest = { version = "0.13", features = ["json", "rustls", "rustls-native-certs"], default-features = false }
 # ref-extraction from issue bodies
