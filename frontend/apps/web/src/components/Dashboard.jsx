@@ -1,16 +1,23 @@
 import { useState, useEffect } from 'react'
-import { loadDashboardData, normalizeApiBase } from '../api.js'
+import { loadDashboardData, resolveApiConfiguration } from '../api.js'
 import './Dashboard.css'
 
 function Dashboard() {
+  const apiConfiguration = resolveApiConfiguration(import.meta.env.VITE_API_BASE)
+  const { apiBase, error: apiConfigurationError } = apiConfiguration
   const [health, setHealth] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState(apiConfigurationError)
   const [sprints, setSprints] = useState([])
   const [teams, setTeams] = useState([])
-  const apiBase = normalizeApiBase(import.meta.env.VITE_API_BASE)
 
   useEffect(() => {
+    if (apiConfigurationError) {
+      setError(apiConfigurationError)
+      setLoading(false)
+      return undefined
+    }
+
     const fetchData = async () => {
       try {
         setLoading(true)
@@ -38,7 +45,7 @@ function Dashboard() {
     // Refresh every 30 seconds
     const interval = setInterval(fetchData, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [apiBase, apiConfigurationError])
 
   return (
     <div className="dashboard">
@@ -161,7 +168,8 @@ function Dashboard() {
                 <h2>API Configuration</h2>
                 <div className="info-card">
                   <p>
-                    <strong>API Base:</strong> {apiBase || 'same origin'}
+                    <strong>API Base:</strong>{' '}
+                    {apiConfigurationError ? 'invalid configuration' : apiBase || 'same origin'}
                   </p>
                   <p className="api-note">
                     Available endpoints: /health, /sdlc-pm/sprints, /org-intel/teams, /api/v1/coverage-matrix

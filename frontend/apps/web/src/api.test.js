@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { buildApiUrl, loadDashboardData, normalizeApiBase } from './api.js'
+import {
+  buildApiUrl,
+  loadDashboardData,
+  normalizeApiBase,
+  resolveApiConfiguration,
+} from './api.js'
 
 test('blank API configuration uses same-origin relative URLs', () => {
   assert.equal(normalizeApiBase(undefined), '')
@@ -25,6 +30,20 @@ test('invalid API origins fail with a visible configuration diagnostic', () => {
     () => normalizeApiBase('file:///tmp/tracera.sock'),
     /VITE_API_BASE must be an http\(s\) origin or a root-relative path/,
   )
+})
+
+test('invalid API configuration resolves to a renderable diagnostic', () => {
+  assert.deepEqual(resolveApiConfiguration('file:///tmp/tracera.sock'), {
+    apiBase: '',
+    error: 'VITE_API_BASE must be an http(s) origin or a root-relative path',
+  })
+})
+
+test('same-origin API configuration resolves without a diagnostic', () => {
+  assert.deepEqual(resolveApiConfiguration(undefined), {
+    apiBase: '',
+    error: null,
+  })
 })
 
 test('dashboard loading preserves successes and reports every failed endpoint', async () => {

@@ -33,6 +33,20 @@ export function normalizeApiBase(value) {
   throw new Error(API_BASE_ERROR)
 }
 
+export function resolveApiConfiguration(value) {
+  try {
+    return {
+      apiBase: normalizeApiBase(value),
+      error: null,
+    }
+  } catch (error) {
+    return {
+      apiBase: '',
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
+}
+
 export function buildApiUrl(apiBase, endpoint) {
   const normalizedBase = normalizeApiBase(apiBase)
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
