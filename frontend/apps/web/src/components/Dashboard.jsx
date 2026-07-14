@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { loadDashboardData, normalizeApiBase } from '../api.js'
 import './Dashboard.css'
 
 function Dashboard() {
@@ -7,6 +8,7 @@ function Dashboard() {
   const [error, setError] = useState(null)
   const [sprints, setSprints] = useState([])
   const [teams, setTeams] = useState([])
+  const apiBase = normalizeApiBase(import.meta.env.VITE_API_BASE)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -14,40 +16,17 @@ function Dashboard() {
         setLoading(true)
         setError(null)
 
-        const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:8080'
-
-        // Fetch health status
-        try {
-          const healthRes = await fetch(`${apiBase}/health`)
-          if (healthRes.ok) {
-            const healthData = await healthRes.json()
-            setHealth(healthData)
-          }
-        } catch (err) {
-          console.warn('Health endpoint unavailable:', err.message)
-        }
-
-        // Fetch sprints
-        try {
-          const sprintsRes = await fetch(`${apiBase}/sdlc-pm/sprints`)
-          if (sprintsRes.ok) {
-            const sprintsData = await sprintsRes.json()
-            setSprints(sprintsData || [])
-          }
-        } catch (err) {
-          console.warn('Sprints endpoint unavailable:', err.message)
-        }
-
-        // Fetch teams
-        try {
-          const teamsRes = await fetch(`${apiBase}/org-intel/teams`)
-          if (teamsRes.ok) {
-            const teamsData = await teamsRes.json()
-            setTeams(teamsData || [])
-          }
-        } catch (err) {
-          console.warn('Teams endpoint unavailable:', err.message)
-        }
+        const data = await loadDashboardData(apiBase)
+        setHealth(data.health)
+        setSprints(data.sprints || [])
+        setTeams(data.teams || [])
+        setError(
+          data.failures.length > 0
+            ? data.failures
+                .map((failure) => `${failure.endpoint}: ${failure.message}`)
+                .join('; ')
+            : null,
+        )
       } catch (err) {
         setError(err.message)
       } finally {
@@ -182,7 +161,7 @@ function Dashboard() {
                 <h2>API Configuration</h2>
                 <div className="info-card">
                   <p>
-                    <strong>API Base:</strong> {import.meta.env.VITE_API_BASE || 'http://localhost:8080'}
+                    <strong>API Base:</strong> {apiBase || 'same origin'}
                   </p>
                   <p className="api-note">
                     Available endpoints: /health, /sdlc-pm/sprints, /org-intel/teams, /api/v1/coverage-matrix
