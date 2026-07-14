@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@workos-inc/authkit-react": "0.16.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.3",

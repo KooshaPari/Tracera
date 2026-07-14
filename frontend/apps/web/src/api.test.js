@@ -28,14 +28,23 @@ test('configured API origin is trimmed and has trailing slashes removed', () => 
 test('invalid API origins fail with a visible configuration diagnostic', () => {
   assert.throws(
     () => normalizeApiBase('file:///tmp/tracera.sock'),
-    /VITE_API_BASE must be an http\(s\) origin or a root-relative path/,
+    /VITE_API_BASE must use HTTPS, localhost HTTP, or a root-relative path/,
+  )
+})
+
+test('remote API origins require HTTPS while local development may use HTTP', () => {
+  assert.equal(normalizeApiBase('http://localhost:8080'), 'http://localhost:8080')
+  assert.equal(normalizeApiBase('http://127.0.0.1:8080'), 'http://127.0.0.1:8080')
+  assert.throws(
+    () => normalizeApiBase('http://api.tracera.example'),
+    /must use HTTPS/,
   )
 })
 
 test('invalid API configuration resolves to a renderable diagnostic', () => {
   assert.deepEqual(resolveApiConfiguration('file:///tmp/tracera.sock'), {
     apiBase: '',
-    error: 'VITE_API_BASE must be an http(s) origin or a root-relative path',
+    error: 'VITE_API_BASE must use HTTPS, localhost HTTP, or a root-relative path',
   })
 })
 
@@ -61,7 +70,11 @@ test('dashboard loading preserves successes and reports every failed endpoint', 
   const fetchImpl = async (url, options) => {
     const response = responses.get(url)
     assert.ok(response, `unexpected request: ${url}`)
-    assert.equal(options.headers.Authorization, 'Bearer test-access-token')
+    if (url === '/health') {
+      assert.equal(options.headers, undefined)
+    } else {
+      assert.equal(options.headers.Authorization, 'Bearer test-access-token')
+    }
     return {
       ok: response.ok,
       status: response.status,
@@ -85,10 +98,11 @@ test('dashboard loading preserves successes and reports every failed endpoint', 
 
 test('network failures are reported with endpoint context', async () => {
   const fetchImpl = async (url, options) => {
-    assert.equal(options.headers.Authorization, 'Bearer test-access-token')
     if (url === '/health') {
+      assert.equal(options.headers, undefined)
       throw new TypeError('Failed to fetch')
     }
+    assert.equal(options.headers.Authorization, 'Bearer test-access-token')
     return {
       ok: true,
       status: 200,
@@ -135,5 +149,20 @@ test('missing access token is visible and prevents API requests', async () => {
   await assert.rejects(
     () => loadDashboardData('', async () => undefined, async () => undefined),
     /WorkOS returned no access token/,
+  )
+})
+
+test('dashboard requests share the caller abort signal', async () => {
+  const controller = new AbortController()
+  const fetchImpl = async (_url, options) => {
+    assert.equal(options.signal, controller.signal)
+    return { ok: true, status: 200, json: async () => [] }
+  }
+
+  await loadDashboardData(
+    '',
+    async () => 'test-access-token',
+    fetchImpl,
+    controller.signal,
   )
 })

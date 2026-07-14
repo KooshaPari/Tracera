@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { loadDashboardData, resolveApiConfiguration } from '../api.js'
+import { createDashboardPoller } from '../polling.js'
 import './Dashboard.css'
 
 function Dashboard({ getAccessToken }) {
@@ -18,12 +19,13 @@ function Dashboard({ getAccessToken }) {
       return undefined
     }
 
-    const fetchData = async () => {
-      try {
+    const poller = createDashboardPoller({
+      load: (signal) => loadDashboardData(apiBase, getAccessToken, fetch, signal),
+      onStart: () => {
         setLoading(true)
         setError(null)
-
-        const data = await loadDashboardData(apiBase, getAccessToken)
+      },
+      onData: (data) => {
         setHealth(data.health)
         setSprints(data.sprints || [])
         setTeams(data.teams || [])
@@ -34,17 +36,16 @@ function Dashboard({ getAccessToken }) {
                 .join('; ')
             : null,
         )
-      } catch (err) {
-        setError(err.message)
-      } finally {
+      },
+      onError: (error) => {
+        setError(error instanceof Error ? error.message : String(error))
+      },
+      onSettled: () => {
         setLoading(false)
-      }
-    }
+      },
+    })
 
-    fetchData()
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchData, 30000)
-    return () => clearInterval(interval)
+    return () => poller.stop()
   }, [apiBase, apiConfigurationError, getAccessToken])
 
   return (

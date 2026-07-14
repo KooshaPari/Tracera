@@ -1,10 +1,10 @@
 const API_BASE_ERROR =
-  'VITE_API_BASE must be an http(s) origin or a root-relative path'
+  'VITE_API_BASE must use HTTPS, localhost HTTP, or a root-relative path'
 
 const DASHBOARD_ENDPOINTS = [
-  { key: 'health', path: '/health', fallback: null },
-  { key: 'sprints', path: '/sdlc-pm/sprints', fallback: [] },
-  { key: 'teams', path: '/org-intel/teams', fallback: [] },
+  { key: 'health', path: '/health', fallback: null, protected: false },
+  { key: 'sprints', path: '/sdlc-pm/sprints', fallback: [], protected: true },
+  { key: 'teams', path: '/org-intel/teams', fallback: [], protected: true },
 ]
 
 export function normalizeApiBase(value) {
@@ -20,8 +20,11 @@ export function normalizeApiBase(value) {
 
   try {
     const url = new URL(normalizedBase)
+    const isLocalDevelopmentHttp =
+      url.protocol === 'http:' &&
+      (url.hostname === 'localhost' || url.hostname === '127.0.0.1')
     if (
-      (url.protocol === 'http:' || url.protocol === 'https:') &&
+      (url.protocol === 'https:' || isLocalDevelopmentHttp) &&
       url.origin === normalizedBase
     ) {
       return normalizedBase
@@ -53,13 +56,13 @@ export function buildApiUrl(apiBase, endpoint) {
   return `${normalizedBase}${normalizedEndpoint}`
 }
 
-async function loadEndpoint(apiBase, endpoint, accessToken, fetchImpl) {
+async function loadEndpoint(apiBase, endpoint, accessToken, fetchImpl, signal) {
   try {
-    const response = await fetchImpl(buildApiUrl(apiBase, endpoint.path), {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
+    const options = { signal }
+    if (endpoint.protected) {
+      options.headers = { Authorization: `Bearer ${accessToken}` }
+    }
+    const response = await fetchImpl(buildApiUrl(apiBase, endpoint.path), options)
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`)
     }
@@ -81,7 +84,12 @@ async function loadEndpoint(apiBase, endpoint, accessToken, fetchImpl) {
   }
 }
 
-export async function loadDashboardData(apiBase, getAccessToken, fetchImpl = fetch) {
+export async function loadDashboardData(
+  apiBase,
+  getAccessToken,
+  fetchImpl = fetch,
+  signal,
+) {
   let accessToken
   try {
     accessToken = await getAccessToken()
@@ -96,7 +104,7 @@ export async function loadDashboardData(apiBase, getAccessToken, fetchImpl = fet
 
   const results = await Promise.all(
     DASHBOARD_ENDPOINTS.map((endpoint) =>
-      loadEndpoint(apiBase, endpoint, accessToken, fetchImpl),
+      loadEndpoint(apiBase, endpoint, accessToken, fetchImpl, signal),
     ),
   )
 
