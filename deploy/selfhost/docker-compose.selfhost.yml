@@ -1,16 +1,38 @@
 services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${TRACERA_POSTGRES_USER:-tracera}
+      POSTGRES_PASSWORD: ${TRACERA_POSTGRES_PASSWORD:?TRACERA_POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${TRACERA_POSTGRES_DB:-tracera}
+    volumes:
+      - tracera-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
   tracera-server:
     image: rust:1.82-bookworm
     working_dir: /workspace
     command: sh -lc "cargo run --release -p tracera-server"
     environment:
       TRACERA_BIND_ADDR: 0.0.0.0:8080
+      DATABASE_URL: postgres://${TRACERA_POSTGRES_USER:-tracera}:${TRACERA_POSTGRES_PASSWORD:?TRACERA_POSTGRES_PASSWORD is required}@postgres:5432/${TRACERA_POSTGRES_DB:-tracera}
     volumes:
       - ../..:/workspace
       - tracera-cargo-cache:/usr/local/cargo/registry
       - tracera-target-cache:/workspace/target
     expose:
       - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   caddy:
@@ -46,3 +68,4 @@ volumes:
   caddy-config:
   tracera-cargo-cache:
   tracera-target-cache:
+  tracera-postgres-data:
