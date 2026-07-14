@@ -12,5 +12,6 @@ __pycache__/
 
 # Node lockfiles + electron-builder output (not committed per repo convention)
 package-lock.json
+!frontend/package-lock.json
 frontend/apps/desktop/release/
 frontend/apps/desktop/build/icon.*

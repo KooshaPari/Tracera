@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { loadDashboardData, resolveApiConfiguration } from '../api.js'
 import './Dashboard.css'
 
-function Dashboard() {
+function Dashboard({ getAccessToken }) {
   const apiConfiguration = resolveApiConfiguration(import.meta.env.VITE_API_BASE)
   const { apiBase, error: apiConfigurationError } = apiConfiguration
   const [health, setHealth] = useState(null)
@@ -23,7 +23,7 @@ function Dashboard() {
         setLoading(true)
         setError(null)
 
-        const data = await loadDashboardData(apiBase)
+        const data = await loadDashboardData(apiBase, getAccessToken)
         setHealth(data.health)
         setSprints(data.sprints || [])
         setTeams(data.teams || [])
@@ -45,7 +45,7 @@ function Dashboard() {
     // Refresh every 30 seconds
     const interval = setInterval(fetchData, 30000)
     return () => clearInterval(interval)
-  }, [apiBase, apiConfigurationError])
+  }, [apiBase, apiConfigurationError, getAccessToken])
 
   return (
     <div className="dashboard">

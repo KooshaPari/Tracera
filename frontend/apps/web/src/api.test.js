@@ -53,9 +53,15 @@ test('dashboard loading preserves successes and reports every failed endpoint', 
     ['/org-intel/teams', { ok: true, status: 200, body: [{ id: 'platform' }] }],
   ])
 
-  const fetchImpl = async (url) => {
+  let tokenRequests = 0
+  const getAccessToken = async () => {
+    tokenRequests += 1
+    return 'test-access-token'
+  }
+  const fetchImpl = async (url, options) => {
     const response = responses.get(url)
     assert.ok(response, `unexpected request: ${url}`)
+    assert.equal(options.headers.Authorization, 'Bearer test-access-token')
     return {
       ok: response.ok,
       status: response.status,
@@ -63,8 +69,9 @@ test('dashboard loading preserves successes and reports every failed endpoint', 
     }
   }
 
-  const result = await loadDashboardData('', fetchImpl)
+  const result = await loadDashboardData('', getAccessToken, fetchImpl)
 
+  assert.equal(tokenRequests, 1)
   assert.deepEqual(result.health, { status: 'ok' })
   assert.deepEqual(result.teams, [{ id: 'platform' }])
   assert.deepEqual(result.sprints, [])
@@ -77,7 +84,8 @@ test('dashboard loading preserves successes and reports every failed endpoint', 
 })
 
 test('network failures are reported with endpoint context', async () => {
-  const fetchImpl = async (url) => {
+  const fetchImpl = async (url, options) => {
+    assert.equal(options.headers.Authorization, 'Bearer test-access-token')
     if (url === '/health') {
       throw new TypeError('Failed to fetch')
     }
@@ -88,7 +96,11 @@ test('network failures are reported with endpoint context', async () => {
     }
   }
 
-  const result = await loadDashboardData('', fetchImpl)
+  const result = await loadDashboardData(
+    '',
+    async () => 'test-access-token',
+    fetchImpl,
+  )
 
   assert.deepEqual(result.failures, [
     {
@@ -96,4 +108,32 @@ test('network failures are reported with endpoint context', async () => {
       message: 'Failed to fetch',
     },
   ])
+})
+
+test('token acquisition failure is visible and prevents API requests', async () => {
+  let requestCount = 0
+  const fetchImpl = async () => {
+    requestCount += 1
+    throw new Error('API request should not run')
+  }
+
+  await assert.rejects(
+    () =>
+      loadDashboardData(
+        '',
+        async () => {
+          throw new Error('session expired')
+        },
+        fetchImpl,
+      ),
+    /Unable to authenticate API requests: session expired/,
+  )
+  assert.equal(requestCount, 0)
+})
+
+test('missing access token is visible and prevents API requests', async () => {
+  await assert.rejects(
+    () => loadDashboardData('', async () => undefined, async () => undefined),
+    /WorkOS returned no access token/,
+  )
 })

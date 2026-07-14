@@ -53,9 +53,13 @@ export function buildApiUrl(apiBase, endpoint) {
   return `${normalizedBase}${normalizedEndpoint}`
 }
 
-async function loadEndpoint(apiBase, endpoint, fetchImpl) {
+async function loadEndpoint(apiBase, endpoint, accessToken, fetchImpl) {
   try {
-    const response = await fetchImpl(buildApiUrl(apiBase, endpoint.path))
+    const response = await fetchImpl(buildApiUrl(apiBase, endpoint.path), {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`)
     }
@@ -77,9 +81,23 @@ async function loadEndpoint(apiBase, endpoint, fetchImpl) {
   }
 }
 
-export async function loadDashboardData(apiBase, fetchImpl = fetch) {
+export async function loadDashboardData(apiBase, getAccessToken, fetchImpl = fetch) {
+  let accessToken
+  try {
+    accessToken = await getAccessToken()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    throw new Error(`Unable to authenticate API requests: ${message}`)
+  }
+
+  if (!accessToken) {
+    throw new Error('Unable to authenticate API requests: WorkOS returned no access token')
+  }
+
   const results = await Promise.all(
-    DASHBOARD_ENDPOINTS.map((endpoint) => loadEndpoint(apiBase, endpoint, fetchImpl)),
+    DASHBOARD_ENDPOINTS.map((endpoint) =>
+      loadEndpoint(apiBase, endpoint, accessToken, fetchImpl),
+    ),
   )
 
   return results.reduce(

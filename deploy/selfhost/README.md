@@ -32,14 +32,17 @@ The server refuses to start when issuer, audience, or signing-key configuration 
 ambiguous. `TRACERA_JWT_SECRET` must contain at least 32 bytes. Protected routes require scoped
 bearer tokens; health probes remain public.
 
-WorkOS AuthKit is not wired in yet, but these placeholders show where its settings would live:
+The web app uses WorkOS AuthKit directly. Set these at frontend build time:
 
-- `WORKOS_API_KEY`
-- `WORKOS_CLIENT_ID`
-- `WORKOS_COOKIE_SECRET`
-- `WORKOS_REDIRECT_URI`
-- `WORKOS_BASE_URL`
-- Any other `WORKOS_*` values required by your AuthKit middleware
+- `VITE_WORKOS_CLIENT_ID`: required public WorkOS client ID (`client_...`)
+- `VITE_WORKOS_API_HOSTNAME`: optional custom Authentication API HTTPS origin,
+  for example `https://auth.tracera.example`
+- `VITE_API_BASE`: optional Tracera API origin or root-relative path; blank uses
+  the same origin
+
+Never expose a WorkOS API key, cookie secret, or access token through a `VITE_*`
+variable. AuthKit owns browser session persistence and the application requests
+access tokens through `getAccessToken()` when calling Tracera APIs.
 
 ## Run
 
@@ -65,3 +68,17 @@ The stack does three things:
 The Rust server already validates scoped bearer JWTs. The `Caddyfile` includes a commented
 `forward_auth` insertion point for a future browser login/session service; it is not a replacement
 for API JWT authorization.
+
+Configure the WorkOS Dashboard for every deployed frontend origin:
+
+1. Add the frontend URL as an exact redirect URI, such as
+   `https://tracera.pheno.studio`.
+2. Add the frontend origin to **Authentication > Allowed origins**.
+3. Set the sign-in endpoint to the frontend `/login` URL, such as
+   `https://tracera.pheno.studio/login`.
+4. Configure the Tracera server JWT issuer, audience, and JWKS URL to validate
+   AuthKit access tokens before exposing protected API routes.
+
+The browser never stores application-managed tokens or sends secrets through
+the build environment. Each dashboard refresh obtains one access token from
+AuthKit and sends it as `Authorization: Bearer <token>` to protected API calls.
