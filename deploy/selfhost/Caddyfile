@@ -1,4 +1,4 @@
-http://{$TRACERA_PUBLIC_HOSTNAME}, :80 {
+http://{$TRACERA_PUBLIC_HOSTNAME} {
 	encode zstd gzip
 
 	# WorkOS AuthKit middleware would be inserted here before the app proxy.

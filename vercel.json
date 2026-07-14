@@ -5,20 +5,5 @@
   "outputDirectory": "frontend/dist",
   "regions": [
     "iad1"
-  ],
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
-      ]
-    }
   ]
 }

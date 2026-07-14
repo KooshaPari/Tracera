@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:17-alpine
+    image: postgres:17.10-alpine3.24
     environment:
       POSTGRES_USER: ${TRACERA_POSTGRES_USER:-tracera}
       POSTGRES_PASSWORD: ${TRACERA_POSTGRES_PASSWORD:?TRACERA_POSTGRES_PASSWORD is required}
@@ -15,6 +15,10 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - database
     restart: unless-stopped
 
   tracera-server:
@@ -30,12 +34,23 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - app
+      - database
     restart: unless-stopped
 
   caddy:
-    image: caddy:2.8-alpine
+    image: caddy:2.11.4-alpine
     depends_on:
-      - tracera-server
+      tracera-server:
+        condition: service_healthy
     environment:
       TRACERA_PUBLIC_HOSTNAME: ${TRACERA_PUBLIC_HOSTNAME:-tracera.pheno.studio}
     volumes:
@@ -44,12 +59,33 @@ services:
       - caddy-config:/config
     ports:
       - "80:80"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget --quiet --spider --header="Host: $${TRACERA_PUBLIC_HOSTNAME}" http://127.0.0.1/healthz
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    networks:
+      - app
+      - edge
     restart: unless-stopped
 
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.7.1
     depends_on:
-      - caddy
+      caddy:
+        condition: service_healthy
     command:
       - tunnel
       - --no-autoupdate
@@ -58,9 +94,24 @@ services:
       - ${CF_TUNNEL_TOKEN:?CF_TUNNEL_TOKEN is required}
     environment:
       CF_TUNNEL_TOKEN: ${CF_TUNNEL_TOKEN}
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - edge
     restart: unless-stopped
 
 volumes:
   caddy-data:
   caddy-config:
   tracera-postgres-data:
+
+networks:
+  app:
+  database:
+    internal: true
+  edge:
