@@ -1,10 +1,11 @@
 mod ingest;
 mod pg_store;
-mod sqlite_store;
 mod queue;
+mod sqlite_store;
 mod store;
 
 use axum::{
+    http::{header, HeaderValue, Method, Uri},
     routing::{get, post},
     Json, Router,
 };
@@ -15,12 +16,13 @@ use std::env;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use tower_http::services::{ServeDir, ServeFile};
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 use uuid::Uuid;
 
-use store::{EvidenceItem, Sprint, Story, Store, TeamRow};
+use store::{EvidenceItem, Sprint, Store, Story, TeamRow};
 
 // ---------------------------------------------------------------------------
 // App state — Arc<dyn Store> replaces the bare PgPool.
@@ -293,6 +295,70 @@ pub struct BulkIngestionResult {
     pub errors: Vec<String>,
 }
 
+fn parse_cors_origins(value: Option<&str>) -> Result<Option<Vec<HeaderValue>>, String> {
+    let Some(value) = value else {
+        return Ok(None);
+    };
+
+    let mut origins = Vec::new();
+    for raw_origin in value.split(',') {
+        let origin = raw_origin.trim();
+        if origin.is_empty() || origin == "*" {
+            return Err("origins must be explicit non-empty http(s) origins".to_string());
+        }
+
+        let uri = origin
+            .parse::<Uri>()
+            .map_err(|_| format!("invalid CORS origin: {origin}"))?;
+        let (scheme, authority) = origin
+            .split_once("://")
+            .ok_or_else(|| format!("invalid CORS origin: {origin}"))?;
+        if !matches!(scheme, "http" | "https")
+            || uri.authority().is_none()
+            || authority.is_empty()
+            || authority
+                .chars()
+                .any(|character| matches!(character, '/' | '?' | '#' | '@'))
+        {
+            return Err(format!("invalid CORS origin: {origin}"));
+        }
+
+        origins.push(
+            HeaderValue::from_str(origin)
+                .map_err(|_| format!("invalid CORS origin header: {origin}"))?,
+        );
+    }
+
+    Ok(Some(origins))
+}
+
+#[cfg(test)]
+mod cors_tests {
+    use super::parse_cors_origins;
+
+    #[test]
+    fn cors_origins_are_explicit_and_validated() {
+        assert!(parse_cors_origins(None).unwrap().is_none());
+
+        let origins = parse_cors_origins(Some(
+            "https://tracera-kappa.vercel.app, http://localhost:5173",
+        ))
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            origins
+                .iter()
+                .map(|origin| origin.to_str().unwrap())
+                .collect::<Vec<_>>(),
+            vec!["https://tracera-kappa.vercel.app", "http://localhost:5173"]
+        );
+
+        assert!(parse_cors_origins(Some("*")).is_err());
+        assert!(parse_cors_origins(Some("tracera.example.com")).is_err());
+        assert!(parse_cors_origins(Some("ftp://tracera.example.com")).is_err());
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Startup — backend selection by DATABASE_URL scheme
 // ---------------------------------------------------------------------------
@@ -300,8 +366,7 @@ pub struct BulkIngestionResult {
 async fn main() {
     tracing_subscriber::fmt()
         .with_env_filter(
-            EnvFilter::from_default_env()
-                .add_directive("tracera_server=info".parse().unwrap()),
+            EnvFilter::from_default_env().add_directive("tracera_server=info".parse().unwrap()),
         )
         .init();
 
@@ -316,58 +381,59 @@ async fn main() {
         std::process::exit(1);
     });
 
-    let store: Arc<dyn Store> = if database_url.starts_with("postgres://")
-        || database_url.starts_with("postgresql://")
-    {
-        info!("Backend: Postgres (server tier)");
-        let pool = sqlx::PgPool::connect(&database_url).await.unwrap_or_else(|e| {
-            eprintln!(
-                "FATAL: Cannot connect to Postgres at the provided DATABASE_URL.\n\
+    let store: Arc<dyn Store> =
+        if database_url.starts_with("postgres://") || database_url.starts_with("postgresql://") {
+            info!("Backend: Postgres (server tier)");
+            let pool = sqlx::PgPool::connect(&database_url)
+                .await
+                .unwrap_or_else(|e| {
+                    eprintln!(
+                        "FATAL: Cannot connect to Postgres at the provided DATABASE_URL.\n\
                  Error: {e}\n\
                  Ensure Postgres is running and DATABASE_URL is correct."
-            );
-            std::process::exit(1);
-        });
-        sqlx::migrate!("./migrations")
-            .run(&pool)
-            .await
-            .unwrap_or_else(|e| {
-                eprintln!("FATAL: Postgres migration failed: {e}");
-                std::process::exit(1);
-            });
-        info!("Postgres migrations applied successfully");
-        Arc::new(pg_store::PgStore::new(pool))
-    } else if database_url.starts_with("sqlite://")
-        || database_url.starts_with("sqlite:")
-        || database_url.ends_with(".db")
-    {
-        info!("Backend: SQLite (on-device tier)");
-        let pool = sqlx::SqlitePool::connect(&database_url)
-            .await
-            .unwrap_or_else(|e| {
-                eprintln!(
-                    "FATAL: Cannot open SQLite database at the provided DATABASE_URL.\n\
+                    );
+                    std::process::exit(1);
+                });
+            sqlx::migrate!("./migrations")
+                .run(&pool)
+                .await
+                .unwrap_or_else(|e| {
+                    eprintln!("FATAL: Postgres migration failed: {e}");
+                    std::process::exit(1);
+                });
+            info!("Postgres migrations applied successfully");
+            Arc::new(pg_store::PgStore::new(pool))
+        } else if database_url.starts_with("sqlite://")
+            || database_url.starts_with("sqlite:")
+            || database_url.ends_with(".db")
+        {
+            info!("Backend: SQLite (on-device tier)");
+            let pool = sqlx::SqlitePool::connect(&database_url)
+                .await
+                .unwrap_or_else(|e| {
+                    eprintln!(
+                        "FATAL: Cannot open SQLite database at the provided DATABASE_URL.\n\
                      Error: {e}\n\
                      Use DATABASE_URL=sqlite:///path/to/file.db or DATABASE_URL=sqlite::memory:"
-                );
-                std::process::exit(1);
-            });
-        sqlx::migrate!("./migrations-sqlite")
-            .run(&pool)
-            .await
-            .unwrap_or_else(|e| {
-                eprintln!("FATAL: SQLite migration failed: {e}");
-                std::process::exit(1);
-            });
-        info!("SQLite migrations applied successfully");
-        Arc::new(sqlite_store::SqliteStore::new(pool))
-    } else {
-        eprintln!(
-            "FATAL: Unrecognised DATABASE_URL scheme.\n\
+                    );
+                    std::process::exit(1);
+                });
+            sqlx::migrate!("./migrations-sqlite")
+                .run(&pool)
+                .await
+                .unwrap_or_else(|e| {
+                    eprintln!("FATAL: SQLite migration failed: {e}");
+                    std::process::exit(1);
+                });
+            info!("SQLite migrations applied successfully");
+            Arc::new(sqlite_store::SqliteStore::new(pool))
+        } else {
+            eprintln!(
+                "FATAL: Unrecognised DATABASE_URL scheme.\n\
              Use postgres:// for Postgres or sqlite:// for SQLite on-device tier."
-        );
-        std::process::exit(1);
-    };
+            );
+            std::process::exit(1);
+        };
 
     let state = AppState {
         version: env!("CARGO_PKG_VERSION").to_string(),
@@ -405,6 +471,23 @@ async fn main() {
     let serve_dir = ServeDir::new(&frontend_dist).fallback(ServeFile::new(&index_html));
     let app = app.fallback_service(serve_dir);
 
+    let cors_origins = env::var("TRACERA_CORS_ORIGINS").ok();
+    let cors_origins = parse_cors_origins(cors_origins.as_deref()).unwrap_or_else(|error| {
+        eprintln!("FATAL: Invalid TRACERA_CORS_ORIGINS: {error}");
+        std::process::exit(1);
+    });
+    let app = if let Some(origins) = cors_origins {
+        info!(origin_count = origins.len(), "CORS allowlist enabled");
+        app.layer(
+            CorsLayer::new()
+                .allow_origin(AllowOrigin::list(origins))
+                .allow_methods([Method::GET, Method::POST])
+                .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE]),
+        )
+    } else {
+        app
+    };
+
     let addr = env::var("TRACERA_BIND_ADDR")
         .ok()
         .and_then(|v| v.parse().ok())
@@ -435,9 +518,7 @@ async fn readyz(
     })
 }
 
-async fn ready(
-    axum::extract::State(state): axum::extract::State<AppState>,
-) -> Json<ReadyResponse> {
+async fn ready(axum::extract::State(state): axum::extract::State<AppState>) -> Json<ReadyResponse> {
     Json(ReadyResponse {
         status: "ready",
         version: state.version,
@@ -575,7 +656,11 @@ async fn spec_check(Json(req): Json<SpecCheckRequest>) -> Json<GovernanceReport>
         }
     }
     Json(GovernanceReport {
-        status: if violations.is_empty() { "pass" } else { "fail" },
+        status: if violations.is_empty() {
+            "pass"
+        } else {
+            "fail"
+        },
         spec_count: req.specs.len(),
         trace_count: req.traces.len(),
         violations,
@@ -652,12 +737,19 @@ async fn create_evidence(
 ) -> (axum::http::StatusCode, Json<EvidenceItem>) {
     let now = Utc::now();
     let id = format!("ev-{}", Uuid::new_v4());
-    let meta = serde_json::to_value(&payload.metadata)
-        .unwrap_or(Value::Object(serde_json::Map::new()));
+    let meta =
+        serde_json::to_value(&payload.metadata).unwrap_or(Value::Object(serde_json::Map::new()));
 
     let item = state
         .store
-        .create_evidence(id, payload.artifact_id, payload.kind, payload.url, meta, now)
+        .create_evidence(
+            id,
+            payload.artifact_id,
+            payload.kind,
+            payload.url,
+            meta,
+            now,
+        )
         .await
         .unwrap_or_else(|e| {
             panic!("create_evidence: store insert failed: {e}");
@@ -997,7 +1089,11 @@ mod tests {
         ]
     }
 
-    fn run_impact(links: Vec<TraceLinkInput>, seeds: Vec<String>, max_depth: u32) -> ImpactResponse {
+    fn run_impact(
+        links: Vec<TraceLinkInput>,
+        seeds: Vec<String>,
+        max_depth: u32,
+    ) -> ImpactResponse {
         let adj = build_adjacency(&links);
         let reachable = bfs_distances(&adj, &seeds);
 
@@ -1055,7 +1151,10 @@ mod tests {
     }
 
     fn affected_ids(resp: &ImpactResponse) -> Vec<&str> {
-        resp.affected.iter().map(|n| n.artifact_id.as_str()).collect()
+        resp.affected
+            .iter()
+            .map(|n| n.artifact_id.as_str())
+            .collect()
     }
 
     #[test]
@@ -1066,10 +1165,22 @@ mod tests {
 
         let ids = affected_ids(&resp);
         assert!(ids.contains(&"seed"), "seed must be in affected");
-        assert!(ids.contains(&"hop1"), "hop1 (depth 1) must be in affected at max_depth=3");
-        assert!(ids.contains(&"hop2"), "hop2 (depth 2) must be in affected at max_depth=3");
-        assert!(ids.contains(&"hop3"), "hop3 (depth 3) must be in affected at max_depth=3");
-        assert!(!resp.truncated, "no truncation expected at max_depth=3 for a 3-hop chain");
+        assert!(
+            ids.contains(&"hop1"),
+            "hop1 (depth 1) must be in affected at max_depth=3"
+        );
+        assert!(
+            ids.contains(&"hop2"),
+            "hop2 (depth 2) must be in affected at max_depth=3"
+        );
+        assert!(
+            ids.contains(&"hop3"),
+            "hop3 (depth 3) must be in affected at max_depth=3"
+        );
+        assert!(
+            !resp.truncated,
+            "no truncation expected at max_depth=3 for a 3-hop chain"
+        );
         assert_eq!(resp.max_depth_seen, 3);
     }
 
@@ -1081,10 +1192,22 @@ mod tests {
 
         let ids = affected_ids(&resp);
         assert!(ids.contains(&"seed"), "seed present");
-        assert!(ids.contains(&"hop1"), "hop1 (depth 1) reachable within max_depth=1");
-        assert!(!ids.contains(&"hop2"), "hop2 (depth 2) must NOT appear at max_depth=1");
-        assert!(!ids.contains(&"hop3"), "hop3 (depth 3) must NOT appear at max_depth=1");
-        assert!(resp.truncated, "truncated flag must be set when nodes are clamped");
+        assert!(
+            ids.contains(&"hop1"),
+            "hop1 (depth 1) reachable within max_depth=1"
+        );
+        assert!(
+            !ids.contains(&"hop2"),
+            "hop2 (depth 2) must NOT appear at max_depth=1"
+        );
+        assert!(
+            !ids.contains(&"hop3"),
+            "hop3 (depth 3) must NOT appear at max_depth=1"
+        );
+        assert!(
+            resp.truncated,
+            "truncated flag must be set when nodes are clamped"
+        );
         assert_eq!(resp.max_depth_seen, 1);
     }
 
@@ -1096,7 +1219,10 @@ mod tests {
 
         let ids = affected_ids(&resp);
         assert_eq!(ids, vec!["seed"]);
-        assert!(resp.truncated, "must be truncated when max_depth=0 and edges exist");
+        assert!(
+            resp.truncated,
+            "must be truncated when max_depth=0 and edges exist"
+        );
         assert_eq!(resp.max_depth_seen, 0);
     }
 
@@ -1442,7 +1568,10 @@ mod tests {
         assert_eq!(ev.artifact_id, "req-001");
         assert_eq!(ev.kind, "test_result");
 
-        let listed = store.list_evidence().await.expect("list_evidence after create");
+        let listed = store
+            .list_evidence()
+            .await
+            .expect("list_evidence after create");
         assert_eq!(listed.len(), 1, "exactly one evidence item");
         let found = &listed[0];
         assert_eq!(found.id, "ev-test-1");
@@ -1518,7 +1647,8 @@ mod tests {
             gh_issue_fixture(2, "Add dark mode", "Relates to SPEC-007"),
         ];
 
-        let result = crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
+        let result =
+            crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
 
         assert_eq!(result.total_processed, 2, "both issues processed");
         assert_eq!(result.requirements_created, 2, "two stories created");
@@ -1536,15 +1666,14 @@ mod tests {
         let store = make_sqlite_store().await;
         let store_arc: std::sync::Arc<dyn crate::store::Store> = std::sync::Arc::new(store);
 
-        let issues = vec![
-            gh_issue_fixture(
-                10,
-                "Auth improvement",
-                "This satisfies REQ-001 and also references SPEC-042 per design doc.",
-            ),
-        ];
+        let issues = vec![gh_issue_fixture(
+            10,
+            "Auth improvement",
+            "This satisfies REQ-001 and also references SPEC-042 per design doc.",
+        )];
 
-        let result = crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
+        let result =
+            crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
 
         assert_eq!(result.requirements_created, 1);
         // REQ-001 and SPEC-042 → 2 trace-links
@@ -1564,11 +1693,18 @@ mod tests {
             gh_issue_fixture(7, "Valid issue", "REQ-010"),
         ];
 
-        let result = crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
+        let result =
+            crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
 
         // filter_map drops the 2 invalid issues before persist; total_processed = 1
-        assert_eq!(result.total_processed, 1, "only 1 issue survived title filter");
-        assert_eq!(result.requirements_created, 1, "only the valid issue creates a story");
+        assert_eq!(
+            result.total_processed, 1,
+            "only 1 issue survived title filter"
+        );
+        assert_eq!(
+            result.requirements_created, 1,
+            "only the valid issue creates a story"
+        );
         assert_eq!(result.trace_links_created, 1, "REQ-010 → 1 trace-link");
     }
 
