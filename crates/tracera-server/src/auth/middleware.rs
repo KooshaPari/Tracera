@@ -1,3 +1,7 @@
+use super::{
+    claims::Claims,
+    config::{AuthConfig, SigningMode},
+};
 use axum::{
     extract::{Request, State},
     http::{header, HeaderMap, HeaderValue, StatusCode},
@@ -6,51 +10,23 @@ use axum::{
     Json,
 };
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
-use serde::{Deserialize, Serialize};
-use std::{collections::HashSet, env, sync::Arc};
+use serde::Serialize;
+use std::{collections::HashSet, sync::Arc};
 
-const READ_SCOPE: &[&str] = &["tracera:read"];
+pub(super) const READ_SCOPE: &[&str] = &["tracera:read"];
 const ANALYZE_SCOPE: &[&str] = &["tracera:analyze"];
-const EVIDENCE_WRITE_SCOPES: &[&str] = &["tracera:write", "tracera:evidence"];
+pub(super) const EVIDENCE_WRITE_SCOPES: &[&str] = &["tracera:write", "tracera:evidence"];
 const SDLC_WRITE_SCOPES: &[&str] = &["tracera:write", "tracera:sdlc"];
-const INGEST_WRITE_SCOPES: &[&str] = &["tracera:write", "tracera:ingest"];
+pub(super) const INGEST_WRITE_SCOPES: &[&str] = &["tracera:write", "tracera:ingest"];
 
 #[derive(Clone)]
 pub struct AuthState {
     verifier: Arc<JwtVerifier>,
 }
 
-struct JwtVerifier {
+pub(super) struct JwtVerifier {
     key: DecodingKey,
     validation: Validation,
-}
-
-#[derive(Debug, Deserialize)]
-struct Claims {
-    sub: String,
-    #[allow(dead_code)]
-    exp: usize,
-    #[allow(dead_code)]
-    iss: String,
-    #[allow(dead_code)]
-    aud: String,
-    #[serde(default)]
-    scope: String,
-    #[serde(default)]
-    permissions: Vec<String>,
-}
-
-#[derive(Debug)]
-enum SigningMode {
-    Hs256(String),
-    Rs256(String),
-}
-
-#[derive(Debug)]
-struct AuthConfig {
-    audience: String,
-    issuer: String,
-    signing: SigningMode,
 }
 
 #[derive(Serialize)]
@@ -58,59 +34,8 @@ struct AuthErrorBody {
     error: &'static str,
 }
 
-impl AuthConfig {
-    fn from_env() -> Result<Self, String> {
-        Self::from_values(
-            env::var("TRACERA_JWT_AUDIENCE").ok(),
-            env::var("TRACERA_JWT_ISSUER").ok(),
-            env::var("TRACERA_JWT_SECRET").ok(),
-            env::var("TRACERA_JWT_PUBLIC_KEY").ok(),
-        )
-    }
-
-    fn from_values(
-        audience: Option<String>,
-        issuer: Option<String>,
-        secret: Option<String>,
-        public_key: Option<String>,
-    ) -> Result<Self, String> {
-        let audience = required_value("TRACERA_JWT_AUDIENCE", audience)?;
-        let issuer = required_value("TRACERA_JWT_ISSUER", issuer)?;
-        let secret = non_empty(secret);
-        let public_key = non_empty(public_key).map(|value| value.replace("\\n", "\n"));
-
-        let signing = match (secret, public_key) {
-            (Some(secret), None) => {
-                if secret.as_bytes().len() < 32 {
-                    return Err("TRACERA_JWT_SECRET must contain at least 32 bytes".to_string());
-                }
-                SigningMode::Hs256(secret)
-            }
-            (None, Some(public_key)) => SigningMode::Rs256(public_key),
-            (Some(_), Some(_)) => {
-                return Err(
-                    "configure exactly one of TRACERA_JWT_SECRET or TRACERA_JWT_PUBLIC_KEY"
-                        .to_string(),
-                )
-            }
-            (None, None) => {
-                return Err(
-                    "configure exactly one of TRACERA_JWT_SECRET or TRACERA_JWT_PUBLIC_KEY"
-                        .to_string(),
-                )
-            }
-        };
-
-        Ok(Self {
-            audience,
-            issuer,
-            signing,
-        })
-    }
-}
-
 impl JwtVerifier {
-    fn from_config(config: AuthConfig) -> Result<Self, String> {
+    pub(super) fn from_config(config: AuthConfig) -> Result<Self, String> {
         let (algorithm, key) = match config.signing {
             SigningMode::Hs256(secret) => (
                 Algorithm::HS256,
@@ -132,7 +57,11 @@ impl JwtVerifier {
         Ok(Self { key, validation })
     }
 
-    fn authorize(&self, headers: &HeaderMap, required_scopes: &[&str]) -> Result<(), AuthFailure> {
+    pub(super) fn authorize(
+        &self,
+        headers: &HeaderMap,
+        required_scopes: &[&str],
+    ) -> Result<(), AuthFailure> {
         let token = bearer_token(headers)?;
         let token_data = decode::<Claims>(token, &self.key, &self.validation)
             .map_err(|_| AuthFailure::Unauthorized)?;
@@ -164,7 +93,7 @@ impl AuthState {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-enum AuthFailure {
+pub(super) enum AuthFailure {
     Unauthorized,
     Forbidden,
 }
@@ -191,18 +120,7 @@ impl IntoResponse for AuthFailure {
     }
 }
 
-fn required_value(name: &str, value: Option<String>) -> Result<String, String> {
-    non_empty(value).ok_or_else(|| format!("{name} must be configured"))
-}
-
-fn non_empty(value: Option<String>) -> Option<String> {
-    value.and_then(|value| {
-        let value = value.trim().to_string();
-        (!value.is_empty()).then_some(value)
-    })
-}
-
-fn bearer_token(headers: &HeaderMap) -> Result<&str, AuthFailure> {
+pub(super) fn bearer_token(headers: &HeaderMap) -> Result<&str, AuthFailure> {
     let mut values = headers.get_all(header::AUTHORIZATION).iter();
     let value = values.next().ok_or(AuthFailure::Unauthorized)?;
     if values.next().is_some() {
@@ -269,6 +187,3 @@ pub async fn require_ingest_write(
 ) -> Response {
     authorize(state, request, next, INGEST_WRITE_SCOPES).await
 }
-
-#[cfg(test)]
-mod tests;

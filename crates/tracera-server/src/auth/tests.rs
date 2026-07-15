@@ -1,5 +1,12 @@
-use super::*;
-use jsonwebtoken::{encode, EncodingKey, Header};
+use super::{
+    config::AuthConfig,
+    middleware::{
+        bearer_token, AuthFailure, JwtVerifier, EVIDENCE_WRITE_SCOPES,
+        INGEST_WRITE_SCOPES, READ_SCOPE,
+    },
+};
+use axum::http::{header, HeaderMap, HeaderValue};
+use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
 use serde::Serialize;
 use std::time::{SystemTime, UNIX_EPOCH};
 
