@@ -7,44 +7,49 @@
 - `GET /healthz`
 - `GET /readyz`
 
-## API endpoint target set (24-business + governance slice, `/api/v1`)
+## API endpoint target set (hybrid surface)
+
+Current Tracera frontend/runtime contract is split:
+
+- **Governance compute endpoints** remain on `/api/v1/*`.
+- **Operational and metadata endpoints** are mounted at root paths for compatibility.
 
 This list is the audit-facing contract for governance and traceability evidence.
 
 ### Auth
 
-- `GET /api/v1/auth/me`
+- `GET /api/v1/auth/me` (auth route not currently mounted in `tracera-server`)
 
 ### Evidence
 
-- `GET /api/v1/evidence`
-- `POST /api/v1/evidence`
-- `GET /api/v1/evidence/health`
+- `GET /evidence`
+- `POST /evidence`
+- `GET /evidence/health`
 
 ### Impact / traceability
 
-- `GET /api/v1/impact/forward/{artifact_id}`
-- `GET /api/v1/impact/reverse/{artifact_id}`
+- `POST /api/v1/trace/forward/{artifact_id}`
+- `POST /api/v1/trace/reverse/{artifact_id}`
 - `POST /api/v1/impact`
-- `POST /api/v1/impact/blast-radius`
+- `POST /api/v1/blast-radius`
 - `POST /api/v1/coverage-matrix`
 - `POST /api/v1/governance/spec-check`
 - `POST /api/v1/confidence`
 
 ### SDLC and org intelligence
 
-- `GET /api/v1/sdlc-pm/health`
-- `GET /api/v1/sdlc-pm/sprints`
-- `GET /api/v1/sdlc-pm/stories`
-- `POST /api/v1/sdlc-pm/sprints`
-- `GET /api/v1/org-intel/health`
-- `GET /api/v1/org-intel/metrics`
-- `GET /api/v1/org-intel/teams`
+- `GET /sdlc-pm/health`
+- `GET /sdlc-pm/sprints`
+- `GET /sdlc-pm/stories`
+- `POST /sdlc-pm/sprints`
+- `GET /org-intel/health`
+- `GET /org-intel/metrics`
+- `GET /org-intel/teams`
 
 ### Ingestion + comments
 
-- `POST /api/v1/ingest/github`
-- `POST /api/v1/ingest/jira`
+- `POST /ingest/github`
+- `POST /ingest/jira`
 - `GET /api/v1/items/{item_id}/comments`
 - `POST /api/v1/items/{item_id}/comments`
 - `DELETE /api/v1/items/{item_id}/comments/{comment_id}`
