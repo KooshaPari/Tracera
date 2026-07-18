@@ -12,6 +12,7 @@
     "build": "bunx electrobun build",
     "build:release": "bunx electrobun build --env=production",
     "package": "bunx electrobun package",
+    "typecheck": "bunx tsc --noEmit --project tsconfig.json",
     "test:e2e": "bun test tests/e2e_desktop.test.ts --timeout 60000",
     "postinstall": "bun scripts/postinstall.ts",
     "postbuild": "bun scripts/prepare-bundle.ts",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@types/bun": "^1.3.14",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.8.3"
   }
 }

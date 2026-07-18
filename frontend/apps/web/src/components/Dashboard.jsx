@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { traceraClient } from '../services/traceraClient'
+import { isHealthOk, mergeDashboardFetchResults } from './dashboardState'
 import './Dashboard.css'
 
 const activeEndpoints = [
@@ -43,48 +44,13 @@ function Dashboard() {
           traceraClient.getMetrics(),
           traceraClient.getEvidence(),
         ])
-
-        const [healthRes, sprintsRes, teamsRes, metricsRes, evidenceRes] = results
-
-        const errors = []
-        if (healthRes.status === 'fulfilled') {
-          setHealth(healthRes.value ?? { status: 'unknown' })
-        } else {
-          errors.push(healthRes.reason?.message || 'health check failed')
-          setHealth({ status: 'unknown' })
-        }
-
-        if (sprintsRes.status === 'fulfilled') {
-          setSprints(Array.isArray(sprintsRes.value) ? sprintsRes.value : [])
-        } else {
-          errors.push(sprintsRes.reason?.message || 'sprints load failed')
-          setSprints([])
-        }
-
-        if (teamsRes.status === 'fulfilled') {
-          setTeams(Array.isArray(teamsRes.value) ? teamsRes.value : [])
-        } else {
-          errors.push(teamsRes.reason?.message || 'teams load failed')
-          setTeams([])
-        }
-
-        if (metricsRes.status === 'fulfilled') {
-          setMetrics(metricsRes.value || null)
-        } else {
-          errors.push(metricsRes.reason?.message || 'metrics load failed')
-          setMetrics(null)
-        }
-
-        if (evidenceRes.status === 'fulfilled') {
-          setEvidenceCount(Number(evidenceRes.value?.count || 0))
-        } else {
-          errors.push(evidenceRes.reason?.message || 'evidence load failed')
-          setEvidenceCount(0)
-        }
-
-        if (errors.length > 0) {
-          setError(errors.join(' | '))
-        }
+        const merged = mergeDashboardFetchResults(results)
+        setHealth(merged.health)
+        setSprints(merged.sprints)
+        setTeams(merged.teams)
+        setMetrics(merged.metrics)
+        setEvidenceCount(merged.evidenceCount)
+        setError(merged.error)
       } catch (err) {
         if (!stopped) {
           setError(err?.message || 'Unable to load dashboard data')
@@ -105,7 +71,7 @@ function Dashboard() {
   }, [])
 
   const activeSprints = sprints.filter((sprint) => sprint.status === 'active').length
-  const isHealthy = health?.status === 'ok'
+  const isHealthy = isHealthOk(health)
   const endpointListText = activeEndpoints.join(', ')
   const coverageRatio = Number(metrics?.coverage_ratio)
   const displayCoverageRatio = Number.isFinite(coverageRatio) ? (coverageRatio * 100).toFixed(1) : '0.0'

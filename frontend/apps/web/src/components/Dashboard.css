@@ -316,6 +316,61 @@
   background: rgba(0, 0, 0, 0.3);
 }
 
+.top-nav {
+  background: rgba(15, 23, 42, 0.9);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(4px);
+}
+
+.top-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.8rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.top-nav .top-nav-links {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.top-nav .nav-item {
+  border: 1px solid transparent;
+  background: var(--color-card-bg);
+  color: var(--color-text-secondary);
+  border-radius: 8px;
+  padding: 0.45rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.top-nav .nav-item:hover,
+.top-nav .nav-item.active {
+  border-color: var(--color-teal);
+  color: var(--color-text-primary);
+}
+
+.top-nav .nav-item.active {
+  background: rgba(126, 186, 181, 0.15);
+}
+
+.trace-list,
+.top-nav ul,
+.dashboard ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.trace-list li {
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .dashboard-header {
@@ -336,5 +391,10 @@
 
   .teams-grid {
     grid-template-columns: 1fr;
+  }
+
+  .top-nav-inner {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
