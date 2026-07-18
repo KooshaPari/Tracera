@@ -2,17 +2,16 @@
   "name": "tracera-frontend",
   "private": true,
   "workspaces": [
-    "packages/*",
     "apps/web",
     "apps/desktop"
   ],
   "scripts": {
     "build": "npm run build --prefix apps/web",
-    "build:full": "npm run build --prefix packages/types && npm run build --prefix packages/api-client && npm run build --prefix apps/web",
+    "build:full": "npm run build --prefix apps/web",
     "dev": "npm run dev --prefix apps/web",
     "desktop": "npm run start --prefix apps/desktop",
     "desktop:dev": "npm run start:dev --prefix apps/desktop",
-    "typecheck": "npm run typecheck --prefix packages/types && npm run typecheck --prefix packages/api-client"
+    "typecheck": "npm run --workspaces --if-present typecheck"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.3",
