@@ -1,4 +1,8 @@
-const DEFAULT_API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080'
+const DEFAULT_API_BASE =
+  (typeof import.meta !== 'undefined' &&
+    import.meta.env &&
+    import.meta.env.VITE_API_BASE) ||
+  'http://localhost:8080'
 
 async function parseJson(response) {
   const contentType = response.headers.get('content-type') || ''

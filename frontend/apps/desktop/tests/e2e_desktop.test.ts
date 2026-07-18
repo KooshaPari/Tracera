@@ -29,7 +29,10 @@ import * as path from "path";
 // Mode detection
 // ---------------------------------------------------------------------------
 
-const HEADLESS = !!process.env.HEADLESS || process.env.CI === "1";
+const HEADLESS =
+  !!process.env.HEADLESS ||
+  process.env.CI === "1" ||
+  !process.env.DISPLAY;
 const DESKTOP_DIR = path.resolve(import.meta.dir, "..");
 
 // ---------------------------------------------------------------------------
@@ -151,15 +154,12 @@ describe("Tracera desktop — build smoke (CI-safe)", () => {
   }, 15_000);
 
   test("src/index.ts bun typecheck passes", async () => {
-    const proc = Bun.spawn(
-      ["bun", "tsc", "--noEmit", "--project", "tsconfig.json"],
-      {
-        cwd: DESKTOP_DIR,
-        stdout: "pipe",
-        stderr: "pipe",
-        env: { ...process.env, PATH: process.env.PATH ?? "" },
-      },
-    );
+    const proc = Bun.spawn(["bunx", "tsc", "--noEmit", "--project", "tsconfig.json"], {
+      cwd: DESKTOP_DIR,
+      stdout: "pipe",
+      stderr: "pipe",
+      env: { ...process.env, PATH: process.env.PATH ?? "" },
+    });
     const [stdout, stderr, exitCode] = await Promise.all([
       new Response(proc.stdout as ReadableStream).text(),
       new Response(proc.stderr as ReadableStream).text(),

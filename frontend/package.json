@@ -9,6 +9,8 @@
     "build": "npm run build --prefix apps/web",
     "build:full": "npm run build --prefix apps/web",
     "dev": "npm run dev --prefix apps/web",
+    "smoke": "node scripts/frontend-alignment-smoke.mjs",
+    "test:client": "node scripts/test-tracera-client.mjs",
     "desktop": "npm run start --prefix apps/desktop",
     "desktop:dev": "npm run start:dev --prefix apps/desktop",
     "typecheck": "npm run --workspaces --if-present typecheck"

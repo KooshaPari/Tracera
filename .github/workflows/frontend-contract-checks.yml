@@ -1,0 +1,49 @@
+name: Frontend contract checks
+
+on:
+  push:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-contract-checks.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TRACERA_API_BASE: ${{ vars.TRACERA_API_BASE }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install frontend deps
+        run: bun install
+        working-directory: frontend
+
+      - name: Build web bundle
+        run: npm run build
+        working-directory: frontend
+
+      - name: Workspace typecheck
+        run: npm run typecheck
+        working-directory: frontend
+
+      - name: Tracera client contract unit tests
+        run: npm run test:client
+        working-directory: frontend
+
+      - name: Frontend backend smoke (optional, if TRACERA_API_BASE set)
+        run: |
+          if [ -n "${TRACERA_API_BASE}" ]; then
+            VITE_API_BASE="${TRACERA_API_BASE}" npm run smoke
+          else
+            echo "Skipping live smoke: TRACERA_API_BASE not set"
+          fi
+        working-directory: frontend
