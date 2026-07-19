@@ -6,6 +6,14 @@ description = "Tracera server crate"
 repository = "https://github.com/KooshaPari/Tracera"
 license = "MIT"
 
+[features]
+default = []
+# The phenodag queue absorption surface is intentionally opt-in until its
+# HTTP/service wiring is complete. Keeping it behind a feature prevents the
+# production binary from compiling an unreachable API while preserving the
+# implementation for dedicated queue integration builds.
+phenodag-queue = []
+
 [dependencies]
 axum = "0.7"
 base64 = { workspace = true }
@@ -20,10 +28,11 @@ serde_json = { workspace = true }
 sqlx = { version = "0.9", features = ["postgres", "sqlite", "runtime-tokio", "macros", "uuid", "chrono", "migrate"] }
 thiserror = { workspace = true }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
-tower-http = { version = "0.6", features = ["fs"] }
+tower-http = { version = "0.6", features = ["fs", "limit", "set-header"] }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
 uuid = { workspace = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tower = { version = "0.5", features = ["util"] }

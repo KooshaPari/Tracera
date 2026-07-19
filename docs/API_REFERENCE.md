@@ -14,7 +14,16 @@ Current Tracera frontend/runtime contract is split:
 - **Governance compute endpoints** remain on `/api/v1/*`.
 - **Operational and metadata endpoints** are mounted at root paths for compatibility.
 
-This list is the audit-facing contract for governance and traceability evidence.
+This list is the audit-facing target contract for governance and traceability evidence. It is
+not a claim that every route is mounted in the Rust server; verify the `Mounted` column in
+[`governance/policy/endpoint_traceability_map.md`](governance/policy/endpoint_traceability_map.md)
+before integrating against a route.
+
+## Mounted Rust surface
+
+The currently deployed Rust server guarantees the operational probes and evidence routes above,
+plus only the routes marked `Mounted = ✅` in the governance matrix. Historical Python routes
+remain documented below as migration targets, not as deployed capabilities.
 
 ### Auth
 

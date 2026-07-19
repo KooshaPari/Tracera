@@ -2,52 +2,47 @@
 
 ## 1) Bootstrap
 
+The shipped API is the Rust `tracera-server` binary in
+`crates/tracera-server`. The historical Python `tracertm` service is not the
+runtime used by the web dashboard.
+
 ```bash
-python -m venv .venv
-# macOS/Linux
-source .venv/bin/activate
-# Windows (PowerShell)
-. .venv\\Scripts\\Activate.ps1
-pip install -r requirements.txt
+cargo build --release -p tracera-server
 ```
 
 ## 2) Configure runtime security inputs
 
 ```bash
-export TRACERA_JWT_SECRET=<production-secret>
-export TRACERA_JWT_AUDIENCE=tracera-api
-export TRACERA_JWT_ISSUER=tracera
+export TRACERA_BIND_ADDR=127.0.0.1:8080
+export TRACERA_DB_PATH=/tmp/tracera-quickstart.db
 ```
 
 ## 3) Start API
 
 ```bash
-python -m uvicorn tracertm.api.main:app --reload --port 8000
+./target/release/tracera-server
 ```
 
 ## 4) Verify hardening points
 
 ```bash
-curl -i http://127.0.0.1:8000/health
-curl -i http://127.0.0.1:8000/ready
-curl -i http://127.0.0.1:8000/api/v1/evidence
+curl -i http://127.0.0.1:8080/health
+curl -i http://127.0.0.1:8080/ready
+curl -i http://127.0.0.1:8080/evidence
 ```
 
 Expected behavior:
 
 - `/health` and `/ready` return 200 without auth (public probes).
-- `/api/v1/...` returns `401` until bearer token is supplied to `Authorization`.
-- Middleware validation errors return JSON with `detail`.
+- Evidence and governance endpoints are currently unauthenticated; expose the
+  server only behind the authenticated Caddy/WorkOS boundary described in
+  [`deploy/selfhost/README.md`](../deploy/selfhost/README.md).
 
-## 5) Authenticated smoke checks
+## 5) Deployment authentication
 
-```bash
-TOKEN="Bearer <jwt>"
-curl -i -H "Authorization: $TOKEN" http://127.0.0.1:8000/api/v1/evidence
-curl -i -H "Authorization: $TOKEN" -H "Content-Type: application/json" \
-  -d '{"sources":["demo"],"targets":["demo"]}' \
-  http://127.0.0.1:8000/api/v1/coverage-matrix
-```
+Authentication is enforced at the Caddy/WorkOS ingress in the self-hosted
+deployment. Do not expose port 8080 directly. After configuring the ingress,
+repeat the checks above through the public HTTPS hostname.
 
 ## 6) API surface checks
 

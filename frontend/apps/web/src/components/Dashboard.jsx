@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { traceraClient } from '../services/traceraClient'
 import { isHealthOk, mergeDashboardFetchResults } from './dashboardState'
 import './Dashboard.css'
@@ -28,21 +28,26 @@ function Dashboard() {
   const [teams, setTeams] = useState([])
   const [metrics, setMetrics] = useState(null)
   const [evidenceCount, setEvidenceCount] = useState(0)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     let stopped = false
+    let inFlight = false
+    const controller = new AbortController()
 
     const fetchData = async () => {
+      if (stopped || inFlight) return
+      inFlight = true
       setLoading(true)
       setError(null)
 
       try {
         const results = await Promise.allSettled([
-          traceraClient.getHealth(),
-          traceraClient.getSprints(),
-          traceraClient.getTeams(),
-          traceraClient.getMetrics(),
-          traceraClient.getEvidence(),
+          traceraClient.getHealth({ signal: controller.signal }),
+          traceraClient.getSprints({ signal: controller.signal }),
+          traceraClient.getTeams({ signal: controller.signal }),
+          traceraClient.getMetrics({ signal: controller.signal }),
+          traceraClient.getEvidence({ signal: controller.signal }),
         ])
         const merged = mergeDashboardFetchResults(results)
         setHealth(merged.health)
@@ -59,6 +64,7 @@ function Dashboard() {
         if (!stopped) {
           setLoading(false)
         }
+        inFlight = false
       }
     }
 
@@ -66,9 +72,10 @@ function Dashboard() {
     const timer = setInterval(fetchData, 30000)
     return () => {
       stopped = true
+      controller.abort()
       clearInterval(timer)
     }
-  }, [])
+  }, [refreshKey])
 
   const activeSprints = sprints.filter((sprint) => sprint.status === 'active').length
   const isHealthy = isHealthOk(health)
@@ -88,15 +95,18 @@ function Dashboard() {
       <main className="dashboard-main">
         <div className="container">
           {loading && (
-            <div className="loading">
+            <div className="loading" role="status" aria-live="polite">
               <div className="spinner"></div>
               <p>Loading data...</p>
             </div>
           )}
 
           {error && (
-            <div className="error-banner">
+            <div className="error-banner" role="alert">
               <strong>Error:</strong> {error}
+              <button type="button" className="retry-button" onClick={() => setRefreshKey((key) => key + 1)}>
+                Retry
+              </button>
             </div>
           )}
 

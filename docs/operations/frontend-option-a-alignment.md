@@ -9,20 +9,30 @@ Active calls from the web dashboard now go through `apps/web/src/services/tracer
 - `GET /org-intel/teams`
 - `GET /org-intel/metrics`
 - `GET /evidence`
+- Optional POST computation endpoints are now contract-tested and available in client helper:
+  - `POST /api/v1/coverage-matrix`
+  - `POST /api/v1/impact`
+  - `POST /api/v1/confidence`
+  - `POST /api/v1/governance/spec-check`
+  - `POST /api/v1/blast-radius`
+  - `POST /api/v1/trace/forward/:artifact_id`
+  - `POST /api/v1/trace/reverse/:artifact_id`
 
 ## Runtime behavior
 - `Dashboard.jsx` uses one client module for API calls.
 - Each call is fetched in parallel with `Promise.allSettled`.
 - Partial failures are surfaced in the UI while preserving partial state.
 - Non-JSON responses are normalized defensively to avoid hard parser failures.
+- Contract source-of-truth for Option A is `docs/operations/openapi_contract_guard.md`.
 
 ## Validation commands (required)
 
 ```bash
 cd Tracera/frontend
 npm run build          # web bundle build
-npm run test:client    # traceraClient contract tests (mocked)
-npm run smoke          # endpoint contract smoke (default: http://127.0.0.1:8080)
+npm run test:unit      # traceraClient contract + dashboard state tests (mocked)
+npm run smoke:parity   # endpoint parity smoke (default: http://127.0.0.1:8080)
+npm run smoke:post     # runtime POST endpoint smoke (server required)
 npm run typecheck      # workspace typecheck entrypoint
 ```
 

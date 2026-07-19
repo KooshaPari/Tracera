@@ -28,21 +28,16 @@ pub struct AgentHeartbeat {
 ///
 /// SQL semantics (port of phenodag):
 /// - UPDATE agents SET last_heartbeat=CURRENT_TIMESTAMP, status='active' WHERE id=?
-pub async fn record_heartbeat(
-    pool: &Pool<Sqlite>,
-    agent: &str,
-) -> Result<(), HeartbeatError> {
+pub async fn record_heartbeat(pool: &Pool<Sqlite>, agent: &str) -> Result<(), HeartbeatError> {
     if agent.is_empty() {
         return Err(HeartbeatError::MissingAgent);
     }
     let now = Utc::now();
-    let res = sqlx::query(
-        "UPDATE agents SET last_heartbeat = ?, status = 'active' WHERE id = ?",
-    )
-    .bind(now.to_rfc3339())
-    .bind(agent)
-    .execute(pool)
-    .await?;
+    let res = sqlx::query("UPDATE agents SET last_heartbeat = ?, status = 'active' WHERE id = ?")
+        .bind(now.to_rfc3339())
+        .bind(agent)
+        .execute(pool)
+        .await?;
     if res.rows_affected() == 0 {
         return Err(HeartbeatError::AgentNotFound(agent.into()));
     }
@@ -159,7 +154,7 @@ mod tests {
             .unwrap();
         let n = reclaim_stale(&pool, Duration::minutes(1)).await.unwrap();
         assert_eq!(n, 1);
-        let (status, agent,): (String, Option<String>) =
+        let (status, agent): (String, Option<String>) =
             sqlx::query_as("SELECT status, assigned_agent FROM tasks WHERE id = ?")
                 .bind("T1")
                 .fetch_one(&pool)

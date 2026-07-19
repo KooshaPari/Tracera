@@ -20,6 +20,5 @@ permissions: {}
 jobs:
   placeholder:
     runs-on: ubuntu-latest
-    if: false
     steps:
       - run: echo "Disabled — see comment in this file."

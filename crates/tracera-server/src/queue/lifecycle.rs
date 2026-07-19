@@ -153,14 +153,12 @@ mod tests {
     }
 
     async fn claim_for(pool: &sqlx::SqlitePool, id: &str, agent: &str) {
-        sqlx::query(
-            "UPDATE tasks SET status = 'in_progress', assigned_agent = ? WHERE id = ?",
-        )
-        .bind(agent)
-        .bind(id)
-        .execute(pool)
-        .await
-        .unwrap();
+        sqlx::query("UPDATE tasks SET status = 'in_progress', assigned_agent = ? WHERE id = ?")
+            .bind(agent)
+            .bind(id)
+            .execute(pool)
+            .await
+            .unwrap();
         sqlx::query("INSERT INTO claims (task_id, agent_id, claimed_at) VALUES (?, ?, ?)")
             .bind(id)
             .bind(agent)
@@ -176,7 +174,7 @@ mod tests {
         ready_task(&pool, "T1").await;
         claim_for(&pool, "T1", "A1").await;
         release_task(&pool, "T1", "A1").await.unwrap();
-        let (status, agent,): (String, Option<String>) =
+        let (status, agent): (String, Option<String>) =
             sqlx::query_as("SELECT status, assigned_agent FROM tasks WHERE id = ?")
                 .bind("T1")
                 .fetch_one(&pool)

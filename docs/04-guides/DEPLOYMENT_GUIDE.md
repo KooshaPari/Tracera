@@ -1,4 +1,11 @@
-# TraceRTM Deployment Guide
+# TraceRTM Deployment Guide (historical Python reference)
+
+> **Not the current runtime path.** This recovered guide describes the retired
+> Python/FastAPI stack (port 8000, PostgreSQL/Redis, Alembic, and JWT settings).
+> The shipped service is the Rust `tracera-server` on `127.0.0.1:8080`; use
+> [`../quickstart.md`](../quickstart.md) and [`../../deploy/selfhost/README.md`](../../deploy/selfhost/README.md)
+> for current local and self-hosted deployment instructions. Do not copy the
+> commands below to deploy the current service.
 
 > **Recovered June 2026.** Restored from git history (`9e78f48dd^`). Production deployments must supply
 > `TRACERA_JWT_SECRET`, `TRACERA_JWT_AUDIENCE`, and `TRACERA_JWT_ISSUER` (see [`../quickstart.md`](../quickstart.md)).
@@ -184,4 +191,3 @@ redis-cli -h localhost ping
 ---
 
 **For more information, see README.md and API documentation.**
-

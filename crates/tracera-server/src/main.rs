@@ -1,26 +1,45 @@
 mod ingest;
 mod pg_store;
-mod sqlite_store;
+#[cfg(feature = "phenodag-queue")]
 mod queue;
+mod sqlite_store;
 mod store;
 
 use axum::{
+    extract::DefaultBodyLimit,
     routing::{get, post},
     Json, Router,
 };
 use chrono::{DateTime, Utc};
+use http::{header, HeaderValue};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::env;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
-use tower_http::services::{ServeDir, ServeFile};
+use tower_http::{
+    services::{ServeDir, ServeFile},
+    set_header::SetResponseHeaderLayer,
+};
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 use uuid::Uuid;
 
-use store::{EvidenceItem, Problem, Sprint, Story, Store, TeamRow};
+/// Maximum request size accepted by JSON and form extractors.
+///
+/// This is intentionally generous for bulk ingest while bounding memory use
+/// for malformed or unauthenticated requests. Individual payload fields still
+/// need domain validation at their handlers.
+const MAX_REQUEST_BODY_BYTES: usize = 8 * 1024 * 1024;
+const MAX_ID_CHARS: usize = 256;
+const MAX_SHORT_TEXT_CHARS: usize = 256;
+const MAX_LONG_TEXT_CHARS: usize = 16 * 1024;
+const MAX_URL_CHARS: usize = 2048;
+const MAX_METADATA_BYTES: usize = 64 * 1024;
+const MAX_INGEST_ISSUES: usize = 1_000;
+
+use store::{EvidenceItem, Problem, Sprint, Store, Story, TeamRow};
 
 // ---------------------------------------------------------------------------
 // App state — Arc<dyn Store> replaces the bare PgPool.
@@ -33,6 +52,7 @@ use store::{EvidenceItem, Problem, Sprint, Story, Store, TeamRow};
 #[derive(Clone)]
 struct AppState {
     version: String,
+    backend: &'static str,
     store: Arc<dyn Store>,
 }
 
@@ -42,12 +62,131 @@ struct AppState {
 #[derive(Serialize)]
 struct StatusResponse {
     status: &'static str,
+    service: &'static str,
 }
 
 #[derive(Serialize)]
 struct ReadyResponse {
     status: &'static str,
+    service: &'static str,
     version: String,
+    backend: &'static str,
+}
+
+#[derive(Serialize)]
+struct ErrorResponse {
+    error: &'static str,
+}
+
+fn validate_text(
+    value: &str,
+    field: &'static str,
+    max: usize,
+    required: bool,
+) -> Result<(), &'static str> {
+    let trimmed = value.trim();
+    if required && trimmed.is_empty() {
+        return Err(field);
+    }
+    if value.chars().count() > max {
+        return Err(field);
+    }
+    Ok(())
+}
+
+fn bad_request(field: &'static str) -> (axum::http::StatusCode, Json<ErrorResponse>) {
+    (
+        axum::http::StatusCode::BAD_REQUEST,
+        Json(ErrorResponse { error: field }),
+    )
+}
+
+fn validate_evidence(payload: &EvidenceCreate) -> Result<(), &'static str> {
+    validate_text(
+        &payload.artifact_id,
+        "invalid artifact_id",
+        MAX_ID_CHARS,
+        true,
+    )?;
+    validate_text(&payload.kind, "invalid kind", MAX_SHORT_TEXT_CHARS, true)?;
+    validate_text(&payload.url, "invalid url", MAX_URL_CHARS, true)?;
+    if serde_json::to_vec(&payload.metadata)
+        .map(|v| v.len())
+        .unwrap_or(MAX_METADATA_BYTES + 1)
+        > MAX_METADATA_BYTES
+    {
+        return Err("metadata too large");
+    }
+    Ok(())
+}
+
+fn validate_sprint(payload: &SprintCreate) -> Result<(), &'static str> {
+    validate_text(&payload.name, "invalid name", MAX_SHORT_TEXT_CHARS, true)?;
+    validate_text(&payload.goal, "invalid goal", MAX_LONG_TEXT_CHARS, true)?;
+    if payload.end_date < payload.start_date {
+        return Err("invalid date range");
+    }
+    Ok(())
+}
+
+fn validate_problem(payload: &ProblemCreateRequest) -> Result<(), &'static str> {
+    validate_text(
+        &payload.project_id,
+        "invalid project_id",
+        MAX_ID_CHARS,
+        true,
+    )?;
+    validate_text(&payload.title, "invalid title", MAX_SHORT_TEXT_CHARS, true)?;
+    for (value, field) in [
+        (payload.description.as_deref(), "invalid description"),
+        (
+            payload.resolution_type.as_deref(),
+            "invalid resolution_type",
+        ),
+        (payload.category.as_deref(), "invalid category"),
+        (payload.sub_category.as_deref(), "invalid sub_category"),
+        (payload.assigned_to.as_deref(), "invalid assigned_to"),
+        (payload.assigned_team.as_deref(), "invalid assigned_team"),
+        (payload.owner.as_deref(), "invalid owner"),
+        (payload.known_error_id.as_deref(), "invalid known_error_id"),
+    ] {
+        if let Some(value) = value {
+            validate_text(value, field, MAX_LONG_TEXT_CHARS, false)?;
+        }
+    }
+    for (value, field) in [
+        (&payload.status, "invalid status"),
+        (&payload.impact_level, "invalid impact_level"),
+        (&payload.urgency, "invalid urgency"),
+        (&payload.priority, "invalid priority"),
+    ] {
+        validate_text(value, field, MAX_SHORT_TEXT_CHARS, true)?;
+    }
+    if let Some(tags) = &payload.tags {
+        if serde_json::to_vec(tags)
+            .map(|v| v.len())
+            .unwrap_or(MAX_METADATA_BYTES + 1)
+            > MAX_METADATA_BYTES
+        {
+            return Err("tags too large");
+        }
+    }
+    Ok(())
+}
+
+fn validate_ingest_issues(issues: &[Value]) -> Result<(), &'static str> {
+    if issues.len() > MAX_INGEST_ISSUES {
+        return Err("too many issues");
+    }
+    if issues.iter().any(|issue| {
+        serde_json::to_vec(issue)
+            .map(|v| v.len())
+            .unwrap_or(MAX_LONG_TEXT_CHARS + 1)
+            > MAX_LONG_TEXT_CHARS
+    }) {
+        return Err("issue payload too large");
+    }
+    Ok(())
 }
 
 // ---------------------------------------------------------------------------
@@ -300,8 +439,7 @@ pub struct BulkIngestionResult {
 async fn main() {
     tracing_subscriber::fmt()
         .with_env_filter(
-            EnvFilter::from_default_env()
-                .add_directive("tracera_server=info".parse().unwrap()),
+            EnvFilter::from_default_env().add_directive("tracera_server=info".parse().unwrap()),
         )
         .init();
 
@@ -316,65 +454,94 @@ async fn main() {
         std::process::exit(1);
     });
 
-    let store: Arc<dyn Store> = if database_url.starts_with("postgres://")
-        || database_url.starts_with("postgresql://")
-    {
-        info!("Backend: Postgres (server tier)");
-        let pool = sqlx::PgPool::connect(&database_url).await.unwrap_or_else(|e| {
-            eprintln!(
-                "FATAL: Cannot connect to Postgres at the provided DATABASE_URL.\n\
+    let (store, backend): (Arc<dyn Store>, &'static str) =
+        if database_url.starts_with("postgres://") || database_url.starts_with("postgresql://") {
+            info!("Backend: Postgres (server tier)");
+            let pool = sqlx::PgPool::connect(&database_url)
+                .await
+                .unwrap_or_else(|e| {
+                    eprintln!(
+                        "FATAL: Cannot connect to Postgres at the provided DATABASE_URL.\n\
                  Error: {e}\n\
                  Ensure Postgres is running and DATABASE_URL is correct."
-            );
-            std::process::exit(1);
-        });
-        sqlx::migrate!("./migrations")
-            .run(&pool)
-            .await
-            .unwrap_or_else(|e| {
-                eprintln!("FATAL: Postgres migration failed: {e}");
-                std::process::exit(1);
-            });
-        info!("Postgres migrations applied successfully");
-        Arc::new(pg_store::PgStore::new(pool))
-    } else if database_url.starts_with("sqlite://")
-        || database_url.starts_with("sqlite:")
-        || database_url.ends_with(".db")
-    {
-        info!("Backend: SQLite (on-device tier)");
-        let pool = sqlx::SqlitePool::connect(&database_url)
-            .await
-            .unwrap_or_else(|e| {
-                eprintln!(
-                    "FATAL: Cannot open SQLite database at the provided DATABASE_URL.\n\
+                    );
+                    std::process::exit(1);
+                });
+            sqlx::migrate!("./migrations")
+                .run(&pool)
+                .await
+                .unwrap_or_else(|e| {
+                    eprintln!("FATAL: Postgres migration failed: {e}");
+                    std::process::exit(1);
+                });
+            info!("Postgres migrations applied successfully");
+            (Arc::new(pg_store::PgStore::new(pool)), "postgres")
+        } else if database_url.starts_with("sqlite://")
+            || database_url.starts_with("sqlite:")
+            || database_url.ends_with(".db")
+        {
+            info!("Backend: SQLite (on-device tier)");
+            let pool = sqlx::SqlitePool::connect(&database_url)
+                .await
+                .unwrap_or_else(|e| {
+                    eprintln!(
+                        "FATAL: Cannot open SQLite database at the provided DATABASE_URL.\n\
                      Error: {e}\n\
                      Use DATABASE_URL=sqlite:///path/to/file.db or DATABASE_URL=sqlite::memory:"
-                );
-                std::process::exit(1);
-            });
-        sqlx::migrate!("./migrations-sqlite")
-            .run(&pool)
-            .await
-            .unwrap_or_else(|e| {
-                eprintln!("FATAL: SQLite migration failed: {e}");
-                std::process::exit(1);
-            });
-        info!("SQLite migrations applied successfully");
-        Arc::new(sqlite_store::SqliteStore::new(pool))
-    } else {
-        eprintln!(
-            "FATAL: Unrecognised DATABASE_URL scheme.\n\
+                    );
+                    std::process::exit(1);
+                });
+            sqlx::migrate!("./migrations-sqlite")
+                .run(&pool)
+                .await
+                .unwrap_or_else(|e| {
+                    eprintln!("FATAL: SQLite migration failed: {e}");
+                    std::process::exit(1);
+                });
+            info!("SQLite migrations applied successfully");
+            (Arc::new(sqlite_store::SqliteStore::new(pool)), "sqlite")
+        } else {
+            eprintln!(
+                "FATAL: Unrecognised DATABASE_URL scheme.\n\
              Use postgres:// for Postgres or sqlite:// for SQLite on-device tier."
-        );
-        std::process::exit(1);
-    };
+            );
+            std::process::exit(1);
+        };
 
     let state = AppState {
         version: env!("CARGO_PKG_VERSION").to_string(),
+        backend,
         store,
     };
 
-    let app = Router::new()
+    let app = build_router(state);
+
+    let frontend_dist = env::var("TRACERA_FRONTEND_DIST")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("frontend/dist"));
+    let index_html = frontend_dist.join("index.html");
+    let serve_dir = ServeDir::new(&frontend_dist).fallback(ServeFile::new(&index_html));
+    let app = app.fallback_service(serve_dir);
+
+    let addr = env::var("TRACERA_BIND_ADDR")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or_else(|| SocketAddr::from(([127, 0, 0, 1], 8080)));
+
+    if !addr.ip().is_loopback() {
+        tracing::warn!(
+            %addr,
+            "server is bound beyond loopback; put it behind an authenticated TLS reverse proxy"
+        );
+    }
+
+    let listener = tokio::net::TcpListener::bind(addr).await.expect("bind");
+    info!("tracera-server listening on {addr}");
+    axum::serve(listener, app).await.expect("server failed");
+}
+
+fn build_router(state: AppState) -> Router {
+    Router::new()
         .route("/healthz", get(healthz))
         .route("/health", get(health))
         .route("/readyz", get(readyz))
@@ -398,34 +565,41 @@ async fn main() {
         .route("/org-intel/health", get(health))
         .route("/org-intel/teams", get(list_teams))
         .route("/org-intel/metrics", get(org_metrics))
-        .with_state(state);
-
-    let frontend_dist = env::var("TRACERA_FRONTEND_DIST")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("frontend/dist"));
-    let index_html = frontend_dist.join("index.html");
-    let serve_dir = ServeDir::new(&frontend_dist).fallback(ServeFile::new(&index_html));
-    let app = app.fallback_service(serve_dir);
-
-    let addr = env::var("TRACERA_BIND_ADDR")
-        .ok()
-        .and_then(|v| v.parse().ok())
-        .unwrap_or_else(|| SocketAddr::from(([127, 0, 0, 1], 8080)));
-
-    let listener = tokio::net::TcpListener::bind(addr).await.expect("bind");
-    info!("tracera-server listening on {addr}");
-    axum::serve(listener, app).await.expect("server failed");
+        .with_state(state)
+        .layer(DefaultBodyLimit::max(MAX_REQUEST_BODY_BYTES))
+        .layer(SetResponseHeaderLayer::if_not_present(
+            header::X_CONTENT_TYPE_OPTIONS,
+            HeaderValue::from_static("nosniff"),
+        ))
+        .layer(SetResponseHeaderLayer::if_not_present(
+            header::X_FRAME_OPTIONS,
+            HeaderValue::from_static("DENY"),
+        ))
+        .layer(SetResponseHeaderLayer::if_not_present(
+            header::REFERRER_POLICY,
+            HeaderValue::from_static("no-referrer"),
+        ))
 }
 
 // ---------------------------------------------------------------------------
 // Health / ready
 // ---------------------------------------------------------------------------
 async fn healthz() -> Json<StatusResponse> {
-    Json(StatusResponse { status: "ok" })
+    Json(StatusResponse {
+        status: "ok",
+        service: "tracera-server",
+    })
 }
 
-async fn health() -> Json<StatusResponse> {
-    Json(StatusResponse { status: "ok" })
+async fn health(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Json<ReadyResponse> {
+    Json(ReadyResponse {
+        status: "ok",
+        service: "tracera-server",
+        version: state.version,
+        backend: state.backend,
+    })
 }
 
 async fn readyz(
@@ -433,16 +607,18 @@ async fn readyz(
 ) -> Json<ReadyResponse> {
     Json(ReadyResponse {
         status: "ready",
+        service: "tracera-server",
         version: state.version,
+        backend: state.backend,
     })
 }
 
-async fn ready(
-    axum::extract::State(state): axum::extract::State<AppState>,
-) -> Json<ReadyResponse> {
+async fn ready(axum::extract::State(state): axum::extract::State<AppState>) -> Json<ReadyResponse> {
     Json(ReadyResponse {
         status: "ready",
+        service: "tracera-server",
         version: state.version,
+        backend: state.backend,
     })
 }
 
@@ -577,7 +753,11 @@ async fn spec_check(Json(req): Json<SpecCheckRequest>) -> Json<GovernanceReport>
         }
     }
     Json(GovernanceReport {
-        status: if violations.is_empty() { "pass" } else { "fail" },
+        status: if violations.is_empty() {
+            "pass"
+        } else {
+            "fail"
+        },
         spec_count: req.specs.len(),
         trace_count: req.traces.len(),
         violations,
@@ -651,21 +831,38 @@ async fn list_evidence(
 async fn create_evidence(
     axum::extract::State(state): axum::extract::State<AppState>,
     Json(payload): Json<EvidenceCreate>,
-) -> (axum::http::StatusCode, Json<EvidenceItem>) {
+) -> Result<
+    (axum::http::StatusCode, Json<EvidenceItem>),
+    (axum::http::StatusCode, Json<ErrorResponse>),
+> {
+    validate_evidence(&payload).map_err(bad_request)?;
     let now = Utc::now();
     let id = format!("ev-{}", Uuid::new_v4());
-    let meta = serde_json::to_value(&payload.metadata)
-        .unwrap_or(Value::Object(serde_json::Map::new()));
+    let meta =
+        serde_json::to_value(&payload.metadata).unwrap_or(Value::Object(serde_json::Map::new()));
 
     let item = state
         .store
-        .create_evidence(id, payload.artifact_id, payload.kind, payload.url, meta, now)
+        .create_evidence(
+            id,
+            payload.artifact_id,
+            payload.kind,
+            payload.url,
+            meta,
+            now,
+        )
         .await
-        .unwrap_or_else(|e| {
-            panic!("create_evidence: store insert failed: {e}");
-        });
+        .map_err(|e| {
+            tracing::error!("create_evidence store insert failed: {e}");
+            (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "evidence persistence failed",
+                }),
+            )
+        })?;
 
-    (axum::http::StatusCode::CREATED, Json(item))
+    Ok((axum::http::StatusCode::CREATED, Json(item)))
 }
 
 // ---------------------------------------------------------------------------
@@ -684,7 +881,8 @@ async fn list_sprints(
 async fn create_sprint(
     axum::extract::State(state): axum::extract::State<AppState>,
     Json(payload): Json<SprintCreate>,
-) -> (axum::http::StatusCode, Json<Sprint>) {
+) -> Result<(axum::http::StatusCode, Json<Sprint>), (axum::http::StatusCode, Json<ErrorResponse>)> {
+    validate_sprint(&payload).map_err(bad_request)?;
     let now = Utc::now();
     let id = format!("sprint-{}", Uuid::new_v4());
 
@@ -699,13 +897,18 @@ async fn create_sprint(
             now,
         )
         .await
-        .unwrap_or_else(|e| {
-            panic!("create_sprint: store insert failed: {e}");
-        });
+        .map_err(|e| {
+            tracing::error!("create_sprint store insert failed: {e}");
+            (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "sprint persistence failed",
+                }),
+            )
+        })?;
 
-    (axum::http::StatusCode::CREATED, Json(sprint))
+    Ok((axum::http::StatusCode::CREATED, Json(sprint)))
 }
-
 
 // ---------------------------------------------------------------------------
 // Problem handlers (ITIL problem-management) — recovered domain
@@ -770,10 +973,7 @@ async fn list_problems(
     axum::extract::State(state): axum::extract::State<AppState>,
     axum::extract::Query(params): axum::extract::Query<std::collections::HashMap<String, String>>,
 ) -> Json<ProblemListResponse> {
-    let project_id = params
-        .get("project_id")
-        .cloned()
-        .unwrap_or_default();
+    let project_id = params.get("project_id").cloned().unwrap_or_default();
     let status_filter = params.get("status").cloned();
     let items = state
         .store
@@ -794,7 +994,9 @@ async fn list_problems(
 async fn create_problem(
     axum::extract::State(state): axum::extract::State<AppState>,
     Json(payload): Json<ProblemCreateRequest>,
-) -> (axum::http::StatusCode, Json<Problem>) {
+) -> Result<(axum::http::StatusCode, Json<Problem>), (axum::http::StatusCode, Json<ErrorResponse>)>
+{
+    validate_problem(&payload).map_err(bad_request)?;
     let now = Utc::now();
     let id = format!("prob-{}", Uuid::new_v4());
     // Human-readable problem number: P-YYYYMMDD-<8 hex>. Date-derived prefix
@@ -832,11 +1034,17 @@ async fn create_problem(
             now,
         )
         .await
-        .unwrap_or_else(|e| {
-            panic!("create_problem: store insert failed: {e}");
-        });
+        .map_err(|e| {
+            tracing::error!("create_problem store insert failed: {e}");
+            (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "problem persistence failed",
+                }),
+            )
+        })?;
 
-    (axum::http::StatusCode::CREATED, Json(problem))
+    Ok((axum::http::StatusCode::CREATED, Json(problem)))
 }
 
 // ---------------------------------------------------------------------------
@@ -901,6 +1109,17 @@ async fn ingest_github(
     axum::extract::State(state): axum::extract::State<AppState>,
     Json(req): Json<GitHubIngestRequest>,
 ) -> (axum::http::StatusCode, Json<BulkIngestionResult>) {
+    if let Err(error) = validate_ingest_issues(&req.issues) {
+        return (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(BulkIngestionResult {
+                total_processed: 0,
+                requirements_created: 0,
+                trace_links_created: 0,
+                errors: vec![error.to_string()],
+            }),
+        );
+    }
     // Try live GitHub fetch first
     if ingest::GitHubConfig::from_env().is_some() {
         match ingest::ingest_live(&state.store).await {
@@ -947,6 +1166,17 @@ async fn ingest_jira(
     axum::extract::State(state): axum::extract::State<AppState>,
     Json(req): Json<JiraIngestRequest>,
 ) -> (axum::http::StatusCode, Json<BulkIngestionResult>) {
+    if let Err(error) = validate_ingest_issues(&req.issues) {
+        return (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(BulkIngestionResult {
+                total_processed: 0,
+                requirements_created: 0,
+                trace_links_created: 0,
+                errors: vec![error.to_string()],
+            }),
+        );
+    }
     // Try live Jira fetch first
     if ingest::JiraConfig::from_env().is_some() {
         match ingest::ingest_live(&state.store).await {
@@ -1100,7 +1330,179 @@ fn default_max_depth() -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use axum::body::Body;
     use chrono::TimeZone;
+    use http::{Request, StatusCode};
+    use tower::ServiceExt;
+
+    #[tokio::test]
+    async fn api_router_emits_readiness_and_security_contract() {
+        let store = make_sqlite_store().await;
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            store: Arc::new(store),
+        });
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/readyz")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers()[header::X_CONTENT_TYPE_OPTIONS],
+            "nosniff"
+        );
+        assert_eq!(response.headers()[header::X_FRAME_OPTIONS], "DENY");
+        assert_eq!(response.headers()[header::REFERRER_POLICY], "no-referrer");
+    }
+
+    #[tokio::test]
+    async fn api_router_rejects_malformed_json_and_oversized_bodies() {
+        let store = make_sqlite_store().await;
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            store: Arc::new(store),
+        });
+
+        let malformed = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/api/v1/coverage-matrix")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from("{"))
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        assert_eq!(malformed.status(), StatusCode::BAD_REQUEST);
+
+        let oversized = app
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/evidence")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(vec![b'x'; MAX_REQUEST_BODY_BYTES + 1]))
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        assert_eq!(oversized.status(), StatusCode::PAYLOAD_TOO_LARGE);
+    }
+
+    #[tokio::test]
+    async fn api_router_sanitizes_persistence_failures() {
+        let store = make_sqlite_store().await;
+        store.pool.close().await;
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            store: Arc::new(store),
+        });
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/evidence")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        r#"{"artifact_id":"artifact-1","kind":"test","url":"https://example.test"}"#,
+                    ))
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+        let body = axum::body::to_bytes(response.into_body(), 1024)
+            .await
+            .expect("body");
+        assert_eq!(body.as_ref(), br#"{"error":"evidence persistence failed"}"#);
+    }
+
+    #[tokio::test]
+    async fn health_and_readiness_response_shapes_are_stable() {
+        let health = healthz().await.0;
+        assert_eq!(health.status, "ok");
+        assert_eq!(health.service, "tracera-server");
+
+        let state = AppState {
+            version: "0.1.3-test".to_string(),
+            backend: "sqlite",
+            store: Arc::new(make_sqlite_store().await),
+        };
+        let ready = readyz(axum::extract::State(state)).await.0;
+        assert_eq!(ready.status, "ready");
+        assert_eq!(ready.service, "tracera-server");
+        assert_eq!(ready.version, "0.1.3-test");
+        assert_eq!(ready.backend, "sqlite");
+    }
+
+    #[test]
+    fn malformed_json_is_rejected_before_domain_validation() {
+        let malformed = serde_json::from_str::<EvidenceCreate>(r#"{"artifact_id":"unterminated"}"#);
+        assert!(
+            malformed.is_err(),
+            "axum Json must reject malformed payloads"
+        );
+    }
+
+    #[test]
+    fn request_limits_reject_oversized_evidence_and_ingest_batches() {
+        let payload = EvidenceCreate {
+            artifact_id: "a".into(),
+            kind: "test".into(),
+            url: "https://example.test".into(),
+            metadata: serde_json::json!({"body": "x".repeat(MAX_METADATA_BYTES)}),
+        };
+        assert_eq!(validate_evidence(&payload), Err("metadata too large"));
+        let issues = vec![serde_json::json!({"title": "x"}); MAX_INGEST_ISSUES + 1];
+        assert_eq!(validate_ingest_issues(&issues), Err("too many issues"));
+    }
+
+    #[test]
+    fn request_limits_reject_invalid_sprint_dates_and_empty_problem_title() {
+        let sprint = SprintCreate {
+            name: "Sprint".into(),
+            goal: "Goal".into(),
+            start_date: Utc::now(),
+            end_date: Utc::now() - chrono::Duration::days(1),
+        };
+        assert_eq!(validate_sprint(&sprint), Err("invalid date range"));
+        let problem = ProblemCreateRequest {
+            project_id: "project".into(),
+            title: String::new(),
+            description: None,
+            status: default_problem_status(),
+            resolution_type: None,
+            category: None,
+            sub_category: None,
+            tags: None,
+            impact_level: default_impact(),
+            urgency: default_impact(),
+            priority: default_impact(),
+            rca_performed: false,
+            root_cause_identified: false,
+            workaround_available: false,
+            permanent_fix_available: false,
+            assigned_to: None,
+            assigned_team: None,
+            owner: None,
+            known_error_id: None,
+        };
+        assert_eq!(validate_problem(&problem), Err("invalid title"));
+    }
 
     // -----------------------------------------------------------------------
     // Impact traversal tests (from PR #706 — impact handler fix)
@@ -1132,7 +1534,11 @@ mod tests {
         ]
     }
 
-    fn run_impact(links: Vec<TraceLinkInput>, seeds: Vec<String>, max_depth: u32) -> ImpactResponse {
+    fn run_impact(
+        links: Vec<TraceLinkInput>,
+        seeds: Vec<String>,
+        max_depth: u32,
+    ) -> ImpactResponse {
         let adj = build_adjacency(&links);
         let reachable = bfs_distances(&adj, &seeds);
 
@@ -1190,7 +1596,10 @@ mod tests {
     }
 
     fn affected_ids(resp: &ImpactResponse) -> Vec<&str> {
-        resp.affected.iter().map(|n| n.artifact_id.as_str()).collect()
+        resp.affected
+            .iter()
+            .map(|n| n.artifact_id.as_str())
+            .collect()
     }
 
     #[test]
@@ -1201,10 +1610,22 @@ mod tests {
 
         let ids = affected_ids(&resp);
         assert!(ids.contains(&"seed"), "seed must be in affected");
-        assert!(ids.contains(&"hop1"), "hop1 (depth 1) must be in affected at max_depth=3");
-        assert!(ids.contains(&"hop2"), "hop2 (depth 2) must be in affected at max_depth=3");
-        assert!(ids.contains(&"hop3"), "hop3 (depth 3) must be in affected at max_depth=3");
-        assert!(!resp.truncated, "no truncation expected at max_depth=3 for a 3-hop chain");
+        assert!(
+            ids.contains(&"hop1"),
+            "hop1 (depth 1) must be in affected at max_depth=3"
+        );
+        assert!(
+            ids.contains(&"hop2"),
+            "hop2 (depth 2) must be in affected at max_depth=3"
+        );
+        assert!(
+            ids.contains(&"hop3"),
+            "hop3 (depth 3) must be in affected at max_depth=3"
+        );
+        assert!(
+            !resp.truncated,
+            "no truncation expected at max_depth=3 for a 3-hop chain"
+        );
         assert_eq!(resp.max_depth_seen, 3);
     }
 
@@ -1216,10 +1637,22 @@ mod tests {
 
         let ids = affected_ids(&resp);
         assert!(ids.contains(&"seed"), "seed present");
-        assert!(ids.contains(&"hop1"), "hop1 (depth 1) reachable within max_depth=1");
-        assert!(!ids.contains(&"hop2"), "hop2 (depth 2) must NOT appear at max_depth=1");
-        assert!(!ids.contains(&"hop3"), "hop3 (depth 3) must NOT appear at max_depth=1");
-        assert!(resp.truncated, "truncated flag must be set when nodes are clamped");
+        assert!(
+            ids.contains(&"hop1"),
+            "hop1 (depth 1) reachable within max_depth=1"
+        );
+        assert!(
+            !ids.contains(&"hop2"),
+            "hop2 (depth 2) must NOT appear at max_depth=1"
+        );
+        assert!(
+            !ids.contains(&"hop3"),
+            "hop3 (depth 3) must NOT appear at max_depth=1"
+        );
+        assert!(
+            resp.truncated,
+            "truncated flag must be set when nodes are clamped"
+        );
         assert_eq!(resp.max_depth_seen, 1);
     }
 
@@ -1231,7 +1664,10 @@ mod tests {
 
         let ids = affected_ids(&resp);
         assert_eq!(ids, vec!["seed"]);
-        assert!(resp.truncated, "must be truncated when max_depth=0 and edges exist");
+        assert!(
+            resp.truncated,
+            "must be truncated when max_depth=0 and edges exist"
+        );
         assert_eq!(resp.max_depth_seen, 0);
     }
 
@@ -1608,7 +2044,10 @@ mod tests {
         assert_eq!(ev.artifact_id, "req-001");
         assert_eq!(ev.kind, "test_result");
 
-        let listed = store.list_evidence().await.expect("list_evidence after create");
+        let listed = store
+            .list_evidence()
+            .await
+            .expect("list_evidence after create");
         assert_eq!(listed.len(), 1, "exactly one evidence item");
         let found = &listed[0];
         assert_eq!(found.id, "ev-test-1");
@@ -1647,7 +2086,6 @@ mod tests {
         assert_eq!(listed.len(), 1);
         assert_eq!(listed[0].name, "On-device Sprint 1");
     }
-
 
     /// SQLite problem round-trip: create then list returns the problem with
     /// the same project_id + status, count reflects the insert.
@@ -1706,7 +2144,11 @@ mod tests {
         let found = &listed[0];
         assert_eq!(found.id, "prob-test-1");
         assert_eq!(
-            found.tags.as_ref().and_then(|v| v.as_array()).map(|a| a.len()),
+            found
+                .tags
+                .as_ref()
+                .and_then(|v| v.as_array())
+                .map(|a| a.len()),
             Some(2),
             "tags round-trip as JSON array"
         );
@@ -1762,7 +2204,8 @@ mod tests {
             gh_issue_fixture(2, "Add dark mode", "Relates to SPEC-007"),
         ];
 
-        let result = crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
+        let result =
+            crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
 
         assert_eq!(result.total_processed, 2, "both issues processed");
         assert_eq!(result.requirements_created, 2, "two stories created");
@@ -1780,15 +2223,14 @@ mod tests {
         let store = make_sqlite_store().await;
         let store_arc: std::sync::Arc<dyn crate::store::Store> = std::sync::Arc::new(store);
 
-        let issues = vec![
-            gh_issue_fixture(
-                10,
-                "Auth improvement",
-                "This satisfies REQ-001 and also references SPEC-042 per design doc.",
-            ),
-        ];
+        let issues = vec![gh_issue_fixture(
+            10,
+            "Auth improvement",
+            "This satisfies REQ-001 and also references SPEC-042 per design doc.",
+        )];
 
-        let result = crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
+        let result =
+            crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
 
         assert_eq!(result.requirements_created, 1);
         // REQ-001 and SPEC-042 → 2 trace-links
@@ -1808,11 +2250,18 @@ mod tests {
             gh_issue_fixture(7, "Valid issue", "REQ-010"),
         ];
 
-        let result = crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
+        let result =
+            crate::ingest::ingest_from_payload(&issues, "number", "github", &store_arc).await;
 
         // filter_map drops the 2 invalid issues before persist; total_processed = 1
-        assert_eq!(result.total_processed, 1, "only 1 issue survived title filter");
-        assert_eq!(result.requirements_created, 1, "only the valid issue creates a story");
+        assert_eq!(
+            result.total_processed, 1,
+            "only 1 issue survived title filter"
+        );
+        assert_eq!(
+            result.requirements_created, 1,
+            "only the valid issue creates a story"
+        );
         assert_eq!(result.trace_links_created, 1, "REQ-010 → 1 trace-link");
     }
 

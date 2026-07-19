@@ -51,10 +51,19 @@ jobs:
         run: |
           mkdir dist
           7z a dist/${{ matrix.archive }} target/${{ matrix.target }}/release/tracera-server.exe
+      - name: Generate archive provenance manifest
+        shell: bash
+        env:
+          TRACERA_RELEASE_ARTIFACTS: dist/${{ matrix.archive }}
+        run: |
+          node frontend/scripts/release-manifest.mjs dist/release-manifest-${{ matrix.target }}.json
+          node frontend/scripts/verify-release-manifest.mjs dist/release-manifest-${{ matrix.target }}.json
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/${{ matrix.archive }}
+          files: |
+            dist/${{ matrix.archive }}
+            dist/release-manifest-${{ matrix.target }}.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -319,10 +319,7 @@ pub async fn persist_issues(
 
     for issue in issues {
         if issue.title.trim().is_empty() {
-            errors.push(format!(
-                "skipping {}: empty title",
-                issue.external_id
-            ));
+            errors.push(format!("skipping {}: empty title", issue.external_id));
             continue;
         }
 
@@ -343,10 +340,7 @@ pub async fn persist_issues(
         {
             Ok(_) => requirements_created += 1,
             Err(e) => {
-                errors.push(format!(
-                    "create_story {}: {e}",
-                    issue.external_id
-                ));
+                errors.push(format!("create_story {}: {e}", issue.external_id));
                 continue;
             }
         }
@@ -370,10 +364,7 @@ pub async fn persist_issues(
                 )
                 .await
             {
-                errors.push(format!(
-                    "create_evidence {}: {e}",
-                    issue.external_id
-                ));
+                errors.push(format!("create_evidence {}: {e}", issue.external_id));
             }
         }
 
@@ -419,9 +410,7 @@ pub async fn persist_issues(
 ///
 /// Fails loud with `IngestError::NoSourceConfigured` if neither source has
 /// its required env vars set — never returns a fake-success empty result.
-pub async fn ingest_live(
-    store: &Arc<dyn Store>,
-) -> Result<BulkIngestionResult, IngestError> {
+pub async fn ingest_live(store: &Arc<dyn Store>) -> Result<BulkIngestionResult, IngestError> {
     let gh_cfg = GitHubConfig::from_env();
     let jira_cfg = JiraConfig::from_env();
 
@@ -433,13 +422,22 @@ pub async fn ingest_live(
 
     if let Some(cfg) = gh_cfg {
         let issues = fetch_github_issues(&cfg).await?;
-        tracing::info!("GitHub: fetched {} issues from {}/{}", issues.len(), cfg.owner, cfg.repo);
+        tracing::info!(
+            "GitHub: fetched {} issues from {}/{}",
+            issues.len(),
+            cfg.owner,
+            cfg.repo
+        );
         all_issues.extend(issues);
     }
 
     if let Some(cfg) = jira_cfg {
         let issues = fetch_jira_issues(&cfg).await?;
-        tracing::info!("Jira: fetched {} issues from project {}", issues.len(), cfg.project_key);
+        tracing::info!(
+            "Jira: fetched {} issues from project {}",
+            issues.len(),
+            cfg.project_key
+        );
         all_issues.extend(issues);
     }
 
@@ -545,9 +543,9 @@ mod tests {
     fn normalised_issue_from_payload_skips_empty_title() {
         // ingest_from_payload skips issues with empty titles
         // (validated by the filter_map inside)
-        let issues = vec![
+        let issues = [
             serde_json::json!({"title": "", "number": 1}),
-            serde_json::json!({"number": 2}),  // missing title
+            serde_json::json!({"number": 2}), // missing title
         ];
         // Can't call async ingest_from_payload here, but we verify
         // the filter_map logic directly:

@@ -90,7 +90,7 @@ Electrobun uses its default icon.
 
 ## Migration from Electron
 
-This shell replaced `electron` 39.8.5 + `electron-builder` 25.1.8. The
+This shell replaced the retired Electron/electron-builder packaging path. The
 `electron/main.js` and `electron/preload.js` files have been removed. The
 equivalent Electrobun files are:
 
@@ -99,4 +99,4 @@ equivalent Electrobun files are:
 | `electron/main.js` | `src/index.ts` |
 | `electron/preload.js` | RPC schema in `src/rpc.ts` |
 | `package.json` `"build"` section | `electrobun.config.ts` |
-| `npm install` / `electron-builder` | `bun install` / `bunx electrobun build` |
+| `npm install` / legacy Electron packaging | `bun install` / `bunx electrobun build` |

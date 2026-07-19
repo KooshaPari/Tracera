@@ -1,0 +1,58 @@
+name: Runtime latency smoke
+
+on:
+  push:
+    paths:
+      - 'crates/tracera-server/**'
+      - 'frontend/**'
+      - 'scripts/runtime-smoke.sh'
+      - 'scripts/runtime-latency-smoke.py'
+      - 'scripts/test-runtime-latency-smoke.sh'
+      - '.github/workflows/runtime-latency-smoke.yml'
+  pull_request:
+    paths:
+      - 'crates/tracera-server/**'
+      - 'frontend/**'
+      - 'scripts/runtime-smoke.sh'
+      - 'scripts/runtime-latency-smoke.py'
+      - 'scripts/test-runtime-latency-smoke.sh'
+      - '.github/workflows/runtime-latency-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Build frontend bundle
+        working-directory: frontend
+        run: bun install --frozen-lockfile && npm run build
+      - name: Build native server
+        run: cargo build --release -p tracera-server
+      - name: Run ephemeral runtime and latency smoke
+        run: |
+          tmp_dir="$(mktemp -d)"
+          DATABASE_URL="sqlite://${tmp_dir}/tracera.db?mode=rwc" \
+          TRACERA_BIND_ADDR="127.0.0.1:18080" \
+          TRACERA_FRONTEND_DIST="${GITHUB_WORKSPACE}/frontend/dist" \
+          RUST_LOG=tracera_server=warn ./target/release/tracera-server >/tmp/tracera-latency.log 2>&1 &
+          pid="$!"
+          trap 'kill "${pid}" 2>/dev/null || true; wait "${pid}" 2>/dev/null || true; rm -rf "${tmp_dir}"' EXIT
+          for _ in $(seq 1 50); do curl --silent --fail http://127.0.0.1:18080/health >/dev/null && break; sleep 0.1; done
+          curl --silent --fail http://127.0.0.1:18080/ready >/dev/null
+          ./scripts/runtime-latency-smoke.py --base-url http://127.0.0.1:18080 --requests 80 --concurrency 4 --json
+        env:
+          # runtime-smoke selects a free port and exports no reusable service;
+          # latency is run against the explicit ephemeral port below instead.
+          TRACERA_SERVER_BIN: ./target/release/tracera-server
+
+      - name: Run latency harness contract test
+        run: ./scripts/test-runtime-latency-smoke.sh

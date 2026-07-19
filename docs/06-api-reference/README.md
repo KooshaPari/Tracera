@@ -1,5 +1,9 @@
 # API Reference
 
+> Runtime note: production uses the Rust `crates/tracera-server` binary.
+> References to `src/tracertm` below are historical migration records, not the
+> deployed route implementation.
+
 > **Recovered June 2026.** Restored from git history (`9e78f48dd^`) and repointed to the current thin-service
 > contract. The legacy `api-documentation.md` / `workflows.md` siblings from the pre-consolidation tree are
 > not restored; use the maintained references below instead.
@@ -33,13 +37,10 @@ Authoritative lists:
 
 ## Authentication
 
-All `/api/v1/*` routes require a bearer JWT unless noted otherwise in the quickstart. Set:
-
-```bash
-export TRACERA_JWT_SECRET=<production-secret>
-export TRACERA_JWT_AUDIENCE=tracera-api
-export TRACERA_JWT_ISSUER=tracera
-```
+The Rust server currently exposes evidence/governance routes without embedded
+JWT middleware. Public deployments MUST place it behind the authenticated
+Caddy/WorkOS boundary in `deploy/selfhost/README.md`; do not expose port 8080
+directly.
 
 ## Related documentation
 

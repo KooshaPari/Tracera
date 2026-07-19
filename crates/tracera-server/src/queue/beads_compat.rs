@@ -36,7 +36,8 @@ pub fn bd_call(args: &[&str]) -> Result<String, BeadsError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test] fn missing_bd_is_not_found() {
+    #[test]
+    fn missing_bd_is_not_found() {
         // PATH manipulation: not testing bd presence; just type checks.
         let _ = bd_call(&["help"]);
     }

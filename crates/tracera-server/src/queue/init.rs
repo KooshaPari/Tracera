@@ -29,16 +29,17 @@ pub async fn seed_default_agent(pool: &Pool<Sqlite>) -> Result<(), InitError> {
             last_heartbeat TEXT
          )",
     )
-    .execute(pool).await?;
+    .execute(pool)
+    .await?;
     let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM agents")
-        .fetch_one(pool).await?;
+        .fetch_one(pool)
+        .await?;
     if count.0 == 0 {
-        sqlx::query(
-            "INSERT INTO agents (id, status, last_heartbeat) VALUES (?, 'active', ?)",
-        )
-        .bind(DEFAULT_AGENT)
-        .bind(chrono::Utc::now().to_rfc3339())
-        .execute(pool).await?;
+        sqlx::query("INSERT INTO agents (id, status, last_heartbeat) VALUES (?, 'active', ?)")
+            .bind(DEFAULT_AGENT)
+            .bind(chrono::Utc::now().to_rfc3339())
+            .execute(pool)
+            .await?;
     }
     Ok(())
 }
@@ -53,7 +54,9 @@ mod tests {
             let pool = init_queue("sqlite::memory:").await.unwrap();
             seed_default_agent(&pool).await.unwrap();
             let n: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM agents")
-                .fetch_one(&pool).await.unwrap();
+                .fetch_one(&pool)
+                .await
+                .unwrap();
             assert_eq!(n.0, 1);
         });
     }

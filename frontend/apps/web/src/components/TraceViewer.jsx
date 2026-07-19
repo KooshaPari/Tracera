@@ -6,15 +6,17 @@ function TraceViewer() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [items, setItems] = useState([])
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     let stopped = false
+    const controller = new AbortController()
 
     const load = async () => {
       setLoading(true)
       setError(null)
       try {
-        const evidence = await traceraClient.getEvidence()
+        const evidence = await traceraClient.getEvidence({ signal: controller.signal })
         if (!stopped) {
           setItems(evidence.items || [])
         }
@@ -32,16 +34,17 @@ function TraceViewer() {
     load()
     return () => {
       stopped = true
+      controller.abort()
     }
-  }, [])
+  }, [refreshKey])
 
   return (
     <main className="dashboard-main">
       <div className="container">
         <section className="data-section">
           <h2>Evidence Trace Viewer</h2>
-          {loading && <p>Loading evidence...</p>}
-          {error && <div className="error-banner"><strong>Error:</strong> {error}</div>}
+          {loading && <p role="status" aria-live="polite">Loading evidence...</p>}
+          {error && <div className="error-banner" role="alert"><strong>Error:</strong> {error} <button type="button" className="retry-button" onClick={() => setRefreshKey((key) => key + 1)}>Retry</button></div>}
           {!loading && !items.length && <p>No evidence items available.</p>}
           <ul className="sprints-list">
             {items.map((item, index) => (

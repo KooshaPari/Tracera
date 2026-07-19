@@ -1,5 +1,10 @@
 # Tracera Feature Inventory — Migration Safety Oracle
 
+> Historical migration oracle: entries labelled “CURRENT” describe the former
+> Python `tracertm` service and are retained only for migration safety. They
+> are not the live Rust `tracera-server` contract; use [`API_REFERENCE.md`](API_REFERENCE.md)
+> for deployed routes.
+
 **Generated:** 2026-06-24
 **Purpose:** Authoritative catalog of every capability that has EVER existed across ALL branches and git history. Migrations MUST consult this oracle before dropping any feature.
 **Scope:** Full repo at `E:/Dev/Tracera`. Surveyed via targeted `git log --diff-filter=A/D`, `git ls-tree --name-only -r`, and `git show <ref>:<path>` against historical commit `9e78f48d~1` (the last "fat" main pre-security-fix), `feat/trc013-bulk-tracelink-ingestion`, and current `HEAD` (= `main`).
@@ -17,7 +22,7 @@
 
 ## 1. API ENDPOINTS
 
-### 1a. CURRENT — registered in `src/tracertm/api/main.py` (HEAD)
+### 1a. HISTORICAL PYTHON — registered in `src/tracertm/api/main.py` (archived)
 
 Mounted via `app.include_router(...)` with `prefix="/api/v1"` (`src/tracertm/api/main.py:22-26`).
 

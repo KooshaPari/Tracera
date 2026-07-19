@@ -6,22 +6,32 @@
     "apps/desktop"
   ],
   "scripts": {
-    "build": "npm run build --prefix apps/web",
-    "build:full": "npm run build --prefix apps/web",
-    "dev": "npm run dev --prefix apps/web",
+    "build": "npm --prefix apps/web run build",
+    "build:full": "npm --prefix apps/web run build",
+    "test:bundle": "npm --prefix apps/web run build && node scripts/check-bundle-budget.mjs",
+    "release:manifest": "node scripts/release-manifest.mjs",
+    "verify:release-manifest": "node scripts/verify-release-manifest.mjs",
+    "test:release-manifest": "node scripts/test-release-manifest.mjs",
+    "dev": "npm --prefix apps/web run dev",
+    "smoke:parity": "node scripts/frontend-alignment-smoke.mjs",
     "smoke": "node scripts/frontend-alignment-smoke.mjs",
-    "test:state": "node scripts/test-dashboard-state.mjs",
+    "test:state": "node --test scripts/test-dashboard-state.mjs",
     "test:client": "node scripts/test-tracera-client.mjs",
-    "test:unit": "npm run test:state && npm run test:client",
-    "desktop": "npm run start --prefix apps/desktop",
-    "desktop:dev": "npm run start:dev --prefix apps/desktop",
+    "test:routes": "node scripts/test-ui-route-mapping.mjs",
+    "test:a11y": "node scripts/test-ui-a11y-contract.mjs",
+    "test:theme": "node scripts/test-theme-contract.mjs",
+    "test:contract-doc": "node scripts/test-contract-doc.mjs",
+    "test:server-contract": "node scripts/test-server-contract-doc.mjs",
+    "smoke:post": "node scripts/frontend-post-smoke.mjs",
+    "test:unit": "npm run test:state && npm run test:client && npm run test:contract-doc && npm run test:server-contract && npm run test:routes && npm run test:a11y && npm run test:theme && npm run test:bundle",
+    "desktop": "npm --prefix apps/desktop run start",
+    "desktop:dev": "npm --prefix apps/desktop run start:dev",
     "typecheck": "npm run --workspaces --if-present typecheck"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.3",
-    "app-builder-bin": "4.2.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "vite": "^8.1.3"
+    "vite": "^8.1.5"
   }
 }

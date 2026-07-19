@@ -40,11 +40,16 @@ async fn main() {
                 }]
             })),
             "tools/call" => {
-                let name = req.pointer("/params/name").and_then(|v| v.as_str()).unwrap_or("");
+                let name = req
+                    .pointer("/params/name")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
                 if name == "get_health" {
                     Some(json!({ "content": [{ "type": "text", "text": "{\"status\":\"ok\"}" }] }))
                 } else {
-                    Some(json!({ "content": [{ "type": "text", "text": "unknown tool" }], "isError": true }))
+                    Some(
+                        json!({ "content": [{ "type": "text", "text": "unknown tool" }], "isError": true }),
+                    )
                 }
             }
             _ => None,

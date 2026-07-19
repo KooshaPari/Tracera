@@ -14,11 +14,19 @@ pub enum SqliteInitError {
 pub async fn open_with_wal(path: &str) -> Result<Pool<Sqlite>, SqliteInitError> {
     let pool = SqlitePool::connect(path).await?;
     if !path.contains(":memory:") {
-        sqlx::query("PRAGMA journal_mode = WAL").execute(&pool).await?;
-        sqlx::query("PRAGMA synchronous = NORMAL").execute(&pool).await?;
+        sqlx::query("PRAGMA journal_mode = WAL")
+            .execute(&pool)
+            .await?;
+        sqlx::query("PRAGMA synchronous = NORMAL")
+            .execute(&pool)
+            .await?;
     }
-    sqlx::query("PRAGMA busy_timeout = 5000").execute(&pool).await?;
-    sqlx::query("PRAGMA foreign_keys = ON").execute(&pool).await?;
+    sqlx::query("PRAGMA busy_timeout = 5000")
+        .execute(&pool)
+        .await?;
+    sqlx::query("PRAGMA foreign_keys = ON")
+        .execute(&pool)
+        .await?;
     Ok(pool)
 }
 
@@ -36,7 +44,9 @@ mod tests {
             let pool = open_with_wal("sqlite::memory:").await.unwrap();
             // busy_timeout should be set
             let timeout: (i64,) = sqlx::query_as("PRAGMA busy_timeout")
-                .fetch_one(&pool).await.unwrap();
+                .fetch_one(&pool)
+                .await
+                .unwrap();
             assert_eq!(timeout.0, 5000);
         });
     }

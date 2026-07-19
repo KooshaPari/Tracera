@@ -23,6 +23,13 @@ spec:
         app.kubernetes.io/name: tracera
         app.kubernetes.io/part-of: phase-finish-stack
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: tracera-server
           image: "{{ .Values.tracera.image.repository }}:{{ .Values.tracera.image.tag | default .Chart.AppVersion }}"
@@ -31,6 +38,11 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
           env:
             - name: RUST_LOG
               valueFrom:
@@ -52,21 +64,31 @@ spec:
                 configMapKeyRef:
                   name: {{ include "phase-finish-stack.fullname" . }}-env
                   key: OTEL_EXPORTER_OTLP_ENDPOINT
+          {{- with .Values.secrets.existingSecret }}
           envFrom:
             - secretRef:
-                name: {{ include "phase-finish-stack.fullname" . }}-secrets
+                name: {{ . }}
+          {{- end }}
           livenessProbe:
             httpGet: { path: /health, port: http }
             initialDelaySeconds: 5
             periodSeconds: 10
             failureThreshold: 3
           readinessProbe:
-            httpGet: { path: /health/ready, port: http }
+            httpGet:
+              path: /ready
+              port: http
             initialDelaySeconds: 2
             periodSeconds: 5
             failureThreshold: 3
           resources:
             {{- toYaml .Values.tracera.resources | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
       {{- with .Values.tracera.nodeSelector }}
       nodeSelector: {{ toYaml . | nindent 8 }}
       {{- end }}

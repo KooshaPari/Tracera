@@ -26,7 +26,8 @@ pub struct StatusReport {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test] fn report_serializes() {
+    #[test]
+    fn report_serializes() {
         let r = StatusReport {
             tasks_total: 0,
             tasks_by_status: std::collections::BTreeMap::new(),

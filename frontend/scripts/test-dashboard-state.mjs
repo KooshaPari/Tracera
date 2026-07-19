@@ -1,19 +1,9 @@
 #!/usr/bin/env node
+import test from 'node:test'
 import assert from 'node:assert/strict'
 import { isHealthOk, mergeDashboardFetchResults } from '../apps/web/src/components/dashboardState.js'
 
-function runCase(name, fn) {
-  try {
-    fn()
-    console.log(`PASS ${name}`)
-  } catch (err) {
-    console.error(`FAIL ${name}`)
-    console.error(err.message)
-    process.exitCode = 1
-  }
-}
-
-runCase('mergeDashboardFetchResults: returns normalized success payload', () => {
+test('mergeDashboardFetchResults: returns normalized success payload', () => {
   const merged = mergeDashboardFetchResults([
     { status: 'fulfilled', value: { status: 'ok' } },
     { status: 'fulfilled', value: [{ id: 'S1' }, { id: 'S2' }] },
@@ -30,7 +20,7 @@ runCase('mergeDashboardFetchResults: returns normalized success payload', () => 
   assert.deepEqual(merged.metrics, { total_artifacts: 5, coverage_ratio: 0.5, open_gaps: 2 })
 })
 
-runCase('mergeDashboardFetchResults: handles missing + malformed evidence gracefully', () => {
+test('mergeDashboardFetchResults: handles missing + malformed evidence gracefully', () => {
   const merged = mergeDashboardFetchResults([
     { status: 'fulfilled', value: { status: 'ok' } },
     { status: 'rejected', reason: new Error('sprints') },
@@ -48,7 +38,7 @@ runCase('mergeDashboardFetchResults: handles missing + malformed evidence gracef
   assert.equal(merged.health?.status, 'ok')
 })
 
-runCase('mergeDashboardFetchResults: preserves fallback health and null evidence', () => {
+test('mergeDashboardFetchResults: preserves fallback health and null evidence', () => {
   const merged = mergeDashboardFetchResults([
     { status: 'rejected', reason: new Error('boom') },
     { status: 'fulfilled', value: [] },
@@ -62,10 +52,8 @@ runCase('mergeDashboardFetchResults: preserves fallback health and null evidence
   assert.ok(merged.error.includes('boom'))
 })
 
-runCase('isHealthOk: validates explicit ok only', () => {
+test('isHealthOk: validates explicit ok only', () => {
   assert.equal(isHealthOk({ status: 'ok' }), true)
   assert.equal(isHealthOk({ status: 'unknown' }), false)
   assert.equal(isHealthOk(null), false)
 })
-
-console.log('dashboard state tests complete')

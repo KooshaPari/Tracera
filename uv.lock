@@ -1,3 +1,5 @@
+# Historical benchmark/tooling lockfile retained for reproducibility. This
+# repository has no Python project manifest; Tracera runtime builds from Rust.
 version = 1
 revision = 3
 requires-python = ">=3.13"

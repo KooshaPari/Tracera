@@ -14,19 +14,13 @@
     "package": "bunx electrobun package",
     "typecheck": "bunx tsc --noEmit --project tsconfig.json",
     "test:e2e": "bun test tests/e2e_desktop.test.ts --timeout 60000",
-    "postinstall": "bun scripts/postinstall.ts",
-    "postbuild": "bun scripts/prepare-bundle.ts",
-    "dist:win": "electron-builder --win nsis --x64",
-    "dist:mac": "electron-builder --mac dmg --arm64",
-    "dist:linux": "electron-builder --linux AppImage deb",
-    "dist:all": "electron-builder -mwl"
+    "postinstall": "bun scripts/postinstall.ts"
   },
   "dependencies": {
     "electrobun": "^1.18.1"
   },
   "devDependencies": {
     "@types/bun": "^1.3.14",
-    "electron-builder": "^25.1.8",
     "typescript": "^5.8.3"
   }
 }

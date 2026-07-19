@@ -31,19 +31,40 @@ jobs:
         run: npm run build
         working-directory: frontend
 
+      - name: Enforce frontend bundle budget
+        run: node scripts/check-bundle-budget.mjs
+        working-directory: frontend
+
       - name: Workspace typecheck
         run: npm run typecheck
         working-directory: frontend
 
-      - name: Tracera client contract unit tests
-        run: npm run test:client
+      - name: Tracera client contract + dashboard state tests
+        run: npm run test:unit
         working-directory: frontend
 
-      - name: Frontend backend smoke (optional, if TRACERA_API_BASE set)
+      - name: Generate and verify release manifest
+        run: npm run release:manifest && npm run verify:release-manifest
+        working-directory: frontend
+
+      - name: Verify reproducible release manifest
+        run: npm run test:release-manifest
+        working-directory: frontend
+
+      - name: Frontend parity smoke (optional, if TRACERA_API_BASE set)
         run: |
           if [ -n "${TRACERA_API_BASE}" ]; then
-            VITE_API_BASE="${TRACERA_API_BASE}" npm run smoke
+            VITE_API_BASE="${TRACERA_API_BASE}" npm run smoke:parity
           else
-            echo "Skipping live smoke: TRACERA_API_BASE not set"
+            echo "Skipping parity smoke: TRACERA_API_BASE not set"
+          fi
+        working-directory: frontend
+
+      - name: Frontend POST parity smoke (optional, if TRACERA_API_BASE set)
+        run: |
+          if [ -n "${TRACERA_API_BASE}" ]; then
+            VITE_API_BASE="${TRACERA_API_BASE}" npm run smoke:post
+          else
+            echo "Skipping POST smoke: TRACERA_API_BASE not set"
           fi
         working-directory: frontend

@@ -10,7 +10,12 @@ target/
 __pycache__/
 .astro/
 
+# Release manifests are generated per build/commit and must be archived as CI
+# artifacts, not committed from a developer worktree.
+/release-manifest.json
+
 # Node lockfiles + electron-builder output (not committed per repo convention)
 package-lock.json
 frontend/apps/desktop/release/
 frontend/apps/desktop/build/icon.*
+sidecar/go/tracera-sidecar

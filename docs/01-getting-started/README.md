@@ -3,9 +3,11 @@
 > **Recovered June 2026.** Restored from git history (`9e78f48dd^`) after docs consolidation removed the
 > `docs/01-getting-started/` tree. For the current thin-service bootstrap, start with
 > [`../quickstart.md`](../quickstart.md) and [`../API_REFERENCE.md`](../API_REFERENCE.md)
-> (17 mounted `/api/v1` routes + 8 contract-only unmounted routes as of June 2026).
+> The recovered route counts describe the historical Python service. The live
+> dashboard uses the Rust `tracera-server`; see [`../API_REFERENCE.md`](../API_REFERENCE.md)
+> and [`../quickstart.md`](../quickstart.md) for the current contract.
 
-Welcome to the Trace RTM documentation! This section provides everything you need to get started with the project.
+Welcome to the Tracera documentation! This section provides everything you need to get started with the project.
 
 <!-- RICH-MEDIA-STUB: type=recording-gif subject="TraceRTM getting-started: install, init config, first trace" journey="getting-started" status=TODO -->
 > 📽️ **[RICH-MEDIA STUB — needs journey capture]** type: recording-gif · subject: TraceRTM getting-started: install, init config, first trace · journey: `getting-started` · status: TODO

@@ -41,8 +41,8 @@ impl Store for PgStore {
                 .into_iter()
                 .map(|r| {
                     let meta_str: String = r.try_get("metadata").unwrap_or_default();
-                    let metadata: Value =
-                        serde_json::from_str(&meta_str).unwrap_or(Value::Object(Default::default()));
+                    let metadata: Value = serde_json::from_str(&meta_str)
+                        .unwrap_or(Value::Object(Default::default()));
                     EvidenceItem {
                         id: r.try_get("id").unwrap_or_default(),
                         artifact_id: r.try_get("artifact_id").unwrap_or_default(),
@@ -67,8 +67,7 @@ impl Store for PgStore {
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<EvidenceItem>> {
         Box::pin(async move {
-            let meta_str =
-                serde_json::to_string(&metadata).unwrap_or_else(|_| "{}".to_string());
+            let meta_str = serde_json::to_string(&metadata).unwrap_or_else(|_| "{}".to_string());
             sqlx::query(
                 "INSERT INTO evidence \
                  (id, artifact_id, kind, url, metadata, created_at, updated_at) \
@@ -272,12 +271,11 @@ impl Store for PgStore {
 
     fn list_teams(&self) -> BoxFuture<'_, StoreResult<Vec<TeamRow>>> {
         Box::pin(async move {
-            let rows = sqlx::query(
-                "SELECT id, name, description, members FROM teams ORDER BY id ASC",
-            )
-            .fetch_all(&self.pool)
-            .await
-            .map_err(StoreError::from)?;
+            let rows =
+                sqlx::query("SELECT id, name, description, members FROM teams ORDER BY id ASC")
+                    .fetch_all(&self.pool)
+                    .await
+                    .map_err(StoreError::from)?;
 
             Ok(rows
                 .into_iter()

@@ -262,7 +262,10 @@ mod tests {
         // Key includes a version token so a schema change can bump the suffix without
         // having to manually flush the namespace.
         let key = cache_key_for_metrics();
-        assert!(key.ends_with(":v1"), "key '{key}' must include a :vN suffix");
+        assert!(
+            key.ends_with(":v1"),
+            "key '{key}' must include a :vN suffix"
+        );
     }
 
     #[test]

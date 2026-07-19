@@ -11,7 +11,7 @@ function App() {
   return (
     <div className="app">
       <TopNav current={page} onNavigate={setPage} />
-      {page === 'traces' ? <TraceViewer /> : page === 'coverage' ? <CoverageMatrix /> : <Dashboard />}
+      {page === 'trace' ? <TraceViewer /> : page === 'coverage' ? <CoverageMatrix /> : <Dashboard />}
     </div>
   )
 }

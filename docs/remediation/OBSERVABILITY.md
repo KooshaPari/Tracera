@@ -1,5 +1,11 @@
 # Tracera Remediation: Observability (G-Obs) Additions
 
+> Historical record: the implementation snippets below describe the former
+> Python `tracertm` service. Runtime observability is now implemented by the
+> Rust `crates/tracera-server` binary. Use [`docs/API_REFERENCE.md`](../API_REFERENCE.md)
+> and [`deploy/selfhost/README.md`](../../deploy/selfhost/README.md) for the
+> current operational contract.
+
 ## Scope
 
 - Add missing standard operational endpoints `/health` and `/ready`.

@@ -1,3 +1,5 @@
+# Historical Python/FastAPI image. The current runtime image is Dockerfile.rust.
+# Keep this file only for reproducibility of the retired tracertm service.
 FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \

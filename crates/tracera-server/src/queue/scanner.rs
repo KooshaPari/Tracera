@@ -31,13 +31,18 @@ fn scan_recursive(dir: &Path, out: &mut Vec<ScanEntry>) -> Result<(), ScanError>
     let git = dir.join(".git");
     let (is_git, head) = if git.exists() {
         // Try HEAD; if it fails (mangled git), still report as git with no head.
-        let head = std::fs::read_to_string(git.join("HEAD")).ok()
+        let head = std::fs::read_to_string(git.join("HEAD"))
+            .ok()
             .and_then(|s| s.trim().strip_prefix("ref: ").map(String::from));
         (true, head)
     } else {
         (false, None)
     };
-    out.push(ScanEntry { path: dir.to_path_buf(), is_git, head_sha: head });
+    out.push(ScanEntry {
+        path: dir.to_path_buf(),
+        is_git,
+        head_sha: head,
+    });
 
     // Recurse one level (avoid deep walk; P2 is a seed, not a full tree walker)
     if let Ok(rd) = std::fs::read_dir(dir) {
@@ -55,7 +60,8 @@ fn scan_recursive(dir: &Path, out: &mut Vec<ScanEntry>) -> Result<(), ScanError>
 mod tests {
     use super::*;
     use std::fs;
-    #[test] fn empty_dir() {
+    #[test]
+    fn empty_dir() {
         let tmp = std::env::temp_dir().join(format!("scan_test_{}", std::process::id()));
         fs::create_dir_all(&tmp).unwrap();
         let r = scan_dir(&tmp).unwrap();
