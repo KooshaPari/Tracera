@@ -8,6 +8,9 @@ cd "$ROOT_DIR"
 
 fail() { printf 'deployment manifest check failed: %s\n' "$1" >&2; exit 1; }
 
+command -v rg >/dev/null 2>&1 \
+  || fail "ripgrep (rg) is required for secret scanning"
+
 [[ -f Dockerfile.rust ]] || fail "Dockerfile.rust is missing"
 grep -q 'dockerfile: Dockerfile.rust' docker-compose.yml \
   || fail "docker-compose.yml must build the Rust server from Dockerfile.rust"

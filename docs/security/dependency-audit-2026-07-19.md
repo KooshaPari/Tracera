@@ -10,7 +10,10 @@ OSV Scanner scanned `Cargo.lock`, `frontend/bun.lock`, `uv.lock`, and
   refreshing Vite to 8.1.5, and raising the Go sidecar baseline to 1.23, the
   current scan reports 4 known Python tooling vulnerabilities; npm and Go are
   clean.
-- 0 critical, 8 high, 4 medium, 1 unknown
+- The initial 13-finding report was severity-rated as 0 critical, 8 high,
+  4 medium, and 1 unknown. The current four Python findings should be
+  re-scanned for their current severity before this document is refreshed;
+  those initial totals must not be read as the post-remediation count.
 - All reported entries have an available fixed version
 
 The findings are not silently treated as runtime-server vulnerabilities: the

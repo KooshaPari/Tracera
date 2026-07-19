@@ -31,7 +31,10 @@ function makeResponse({
 function createResponseResolver(routeMap) {
   return async function fetchMock(input) {
     const url = String(input);
-    const pathname = url.replace('http://localhost:8080', '');
+    // Resolve the path independently of the configured loopback host. This
+    // keeps the contract test valid for localhost, 127.0.0.1, IPv6 loopback,
+    // and CI-injected VITE_API_BASE values.
+    const pathname = new URL(url).pathname;
 
     if (routeMap[pathname]) {
       return routeMap[pathname]();
