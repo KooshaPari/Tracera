@@ -8,7 +8,9 @@ cd "$ROOT"
 
 failures=0
 check() {
-  local label=$1 pattern=$2
+  local label pattern
+  label=$1
+  pattern=$2
   local hits
   hits=$(git grep -nI -E -e "$pattern" -- . ':!*.lock' ':!docs/audit/**' ':!audit/**' \
     ':!scripts/verify-secret-provenance.sh' || true)

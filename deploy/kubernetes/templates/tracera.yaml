@@ -23,6 +23,7 @@ spec:
         app.kubernetes.io/name: tracera
         app.kubernetes.io/part-of: phase-finish-stack
     spec:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001
