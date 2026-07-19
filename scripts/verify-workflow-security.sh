@@ -27,4 +27,13 @@ guard="$workflows/security-guard-hook-audit.yml"
 ! grep -qE 'Security guard skipped|Security guard placeholder' "$guard" \
   || fail "security guard workflow contains a fail-open placeholder"
 
+release="$workflows/release-dist.yml"
+[[ -f "$release" ]] || fail "release-dist workflow is missing"
+grep -q 'actions/setup-node@v4' "$release" \
+  || fail "release workflow must pin Node before manifest generation"
+grep -q 'release-manifest-' "$release" \
+  || fail "release workflow must publish per-target provenance manifests"
+grep -q 'verify-release-manifest.mjs' "$release" \
+  || fail "release workflow must verify provenance before upload"
+
 echo "workflow security gate passed"

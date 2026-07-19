@@ -1,5 +1,9 @@
 # TraceRTM MCP/CLI/API Capability Matrix (Offline + Online)
 
+> **Historical reference.** This matrix documents the retired Python MCP/CLI
+> stack. The supported runtime is the Rust `tracera-server` and its current
+> API contract; use this file only when migrating legacy integrations.
+
 > **Recovered June 2026.** Restored from git history (`9e78f48dd^`). See
 > [`../API_REFERENCE.md`](../API_REFERENCE.md) for the current HTTP surface (17 mounted `/api/v1` routes).
 
