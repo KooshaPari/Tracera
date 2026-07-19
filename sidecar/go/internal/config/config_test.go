@@ -27,6 +27,7 @@ func TestInitializeContextEnabled(t *testing.T) {
 	t.Setenv("TRACERA_SIDE_CAR_ENABLED", "1")
 	t.Setenv("TRACERA_API_BASE", "http://server:8080")
 	t.Setenv("TRACERA_SIDE_CAR_POLL_INTERVAL", "3s")
+	t.Setenv("TRACERA_SIDE_CAR_QUEUE", "/tmp/tracera.sock")
 	cfg := InitializeContext()
 	if !cfg.Enabled {
 		t.Fatalf("expected sidecar enabled")
@@ -36,6 +37,9 @@ func TestInitializeContextEnabled(t *testing.T) {
 	}
 	if cfg.PollInterval != 3*time.Second {
 		t.Fatalf("expected custom poll interval, got: %s", cfg.PollInterval)
+	}
+	if cfg.QueueEndpoint != "/tmp/tracera.sock" {
+		t.Fatalf("expected queue endpoint override, got: %q", cfg.QueueEndpoint)
 	}
 }
 

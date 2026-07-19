@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -20,7 +19,7 @@ func main() {
 	}
 
 	slog.Info("starting tracera-sidecar", "version", config.Version)
-	slog.Info("sidecar configuration", "api_base", ctx.APIBase, "poll_interval_seconds", int(ctx.PollInterval.Seconds()))
+	slog.Info("sidecar configuration", "api_base", ctx.APIBase, "poll_interval_seconds", int(ctx.PollInterval.Seconds()), "queue_endpoint", ctx.QueueEndpoint)
 
 	// Lightweight readiness marker for future orchestration path wiring.
 	var ticks atomic.Int64
@@ -33,8 +32,7 @@ func main() {
 	for {
 		select {
 		case <-ticker.C:
-			ticks.Add(1)
-			fmt.Printf("sidecar_tick=%d api_base=%s\n", ticks.Load(), ctx.APIBase)
+			slog.Info("sidecar heartbeat", "tick", ticks.Add(1), "api_base", ctx.APIBase)
 		case <-sig:
 			slog.Info("stopping tracera-sidecar")
 			return
