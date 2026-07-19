@@ -23,6 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install manifest scanner
+        run: sudo apt-get update && sudo apt-get install --yes ripgrep
+
       - name: Run read-only capability report (JSON contract)
         run: ./scripts/test-deployment-capability-report.sh
 
