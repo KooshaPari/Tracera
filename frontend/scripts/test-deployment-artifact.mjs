@@ -1,19 +1,13 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import { isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { isAbsolute, join, resolve, sep } from 'node:path'
 
 const dist = process.argv[2] || 'dist'
 if (isAbsolute(dist) || dist.split(/[\\/]/).includes('..')) {
   throw new Error('Deployment artifact path must remain relative to the working directory')
 }
 const distRoot = resolve(dist)
-const insideDist = (candidate) => {
-  const path = resolve(candidate)
-  const rel = relative(distRoot, path)
-  return rel === '' || (!isAbsolute(rel) && rel !== '..' && !rel.startsWith(`..${sep}`))
-}
 const indexPath = join(distRoot, 'index.html')
-if (!insideDist(indexPath)) throw new Error('Deployment entrypoint escapes artifact root')
 if (!existsSync(indexPath)) throw new Error(`Missing deployment entrypoint: ${indexPath}`)
 
 const index = readFileSync(indexPath, 'utf8')
@@ -27,7 +21,9 @@ const assets = existsSync(assetDir)
   : []
 const javascript = assets.map((name) => {
   const assetPath = join(assetDir, name)
-  if (!insideDist(assetPath)) throw new Error(`Deployment asset escapes artifact root: ${name}`)
+  if (!assetPath.startsWith(`${assetDir}${sep}`)) {
+    throw new Error(`Deployment asset escapes artifact root: ${name}`)
+  }
   return readFileSync(assetPath, 'utf8')
 }).join('\n')
 if (!javascript.includes('Traceability') || !javascript.includes('Evidence')) {
