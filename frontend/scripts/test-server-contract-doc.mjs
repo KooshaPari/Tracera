@@ -17,8 +17,8 @@ const rows = contract.split('\n').filter((line) => /^\|\s*(GET|POST)\s*\|/.test(
 assert.ok(rows.length > 0, 'contract document must contain endpoint rows');
 
 const routes = new Set();
-for (const match of server.matchAll(/\.route\("([^"]+)"\s*,\s*([^\n]+)\)/g)) {
-  const [, endpoint, handlers] = match;
+for (const match of server.matchAll(/\.route\((['"])([^'"]+)\1\s*,\s*([^\n]+)\)/g)) {
+  const [, , endpoint, handlers] = match;
   for (const method of ['get', 'post']) {
     if (new RegExp(`\\b${method}\\s*\\(`).test(handlers)) {
       routes.add(`${method.toUpperCase()} ${endpoint}`);

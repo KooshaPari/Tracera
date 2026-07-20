@@ -11,7 +11,7 @@ const topNavSource = fs.readFileSync(topNavPath, 'utf8');
 const checks = [
   {
     name: 'TopNav includes trace entry',
-    ok: /{ id:\s*['\"]trace['\"],\s*label:\s*['\"]Evidence['\"]\s*}/.test(topNavSource),
+    ok: /{ id:\s*['"]trace['"],\s*label:\s*['"]Evidence['"]\s*}/.test(topNavSource),
   },
   {
     name: 'TopNav onNavigate callback wired',
@@ -19,11 +19,11 @@ const checks = [
   },
   {
     name: 'App maps trace id to TraceViewer',
-    ok: /page\s*===\s*['\"]trace['\"]/.test(appSource),
+    ok: /page\s*===\s*['"]trace['"]/.test(appSource),
   },
   {
     name: 'App uses fallback dashboard route',
-    ok: /:\s*<Dashboard\s*\/>/.test(appSource),
+    ok: /let\s+PageComponent\s*=\s*Dashboard/.test(appSource),
   },
 ];
 

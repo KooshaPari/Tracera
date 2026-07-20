@@ -18,17 +18,12 @@ async function request(path) {
   return text ? JSON.parse(text) : {}
 }
 
-(async () => {
+try {
   const failures = []
   for (const path of endpoints) {
     try {
       const payload = await request(path)
       const isArrayPayload = Array.isArray(payload)
-      const hasCountOrItems =
-        payload &&
-        (typeof payload === 'object' &&
-          (Object.prototype.hasOwnProperty.call(payload, 'count') || Object.prototype.hasOwnProperty.call(payload, 'items')))
-
       if (path === '/evidence' && !(Array.isArray(payload?.items) || Number.isInteger(payload?.count))) {
         throw new Error('evidence response must include items/count')
       }
@@ -55,7 +50,7 @@ async function request(path) {
   }
 
   console.log('\nTracera frontend backend alignment smoke: PASS')
-})().catch((err) => {
+} catch (err) {
   console.error(err)
   process.exitCode = 1
-})
+}

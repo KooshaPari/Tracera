@@ -101,7 +101,7 @@ async function request({ name, path, method, body }) {
   console.log(`PASS ${name}`)
 }
 
-(async () => {
+try {
   for (const test of checks) {
     try {
       await request(test)
@@ -118,8 +118,7 @@ async function request({ name, path, method, body }) {
   }
 
   console.log('\nTracera POST endpoint smoke: PASS')
-})().catch((err) => {
+} catch (err) {
   console.error(err)
   process.exitCode = 1
-})
-
+}
