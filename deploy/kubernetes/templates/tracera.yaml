@@ -44,6 +44,15 @@ spec:
             readOnlyRootFilesystem: true
             capabilities:
               drop: [ALL]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+              ephemeral-storage: 128Mi
+            limits:
+              cpu: 1
+              memory: 512Mi
+              ephemeral-storage: 512Mi
           env:
             - name: RUST_LOG
               valueFrom:
