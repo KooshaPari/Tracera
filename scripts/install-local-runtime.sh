@@ -11,6 +11,15 @@ app_dst="${HOME}/Applications/Tracera-dev-0.1.0.app"
 agent_dir="${HOME}/Library/LaunchAgents"
 agent="${agent_dir}/com.phenotype.tracera-server.plist"
 
+if command -v lsof >/dev/null 2>&1; then
+  listener="$(lsof -nP -tiTCP:8080 -sTCP:LISTEN 2>/dev/null | head -1 || true)"
+  if [[ -n "$listener" ]]; then
+    owner="$(ps -p "$listener" -o comm= 2>/dev/null | sed 's/^ *//' || true)"
+    echo "port 8080 is already owned by PID ${listener}${owner:+ (${owner})}; refusing duplicate launchd startup" >&2
+    exit 1
+  fi
+fi
+
 mkdir -p "$agent_dir" "${HOME}/Applications"
 build_log="$(mktemp -t tracera-build.XXXXXX)"
 if ! cargo build --release -p tracera-server 2>"$build_log"; then
@@ -43,14 +52,6 @@ cat > "$agent" <<PLIST
 PLIST
 
 launchctl bootout "gui/$(id -u)" "$agent" >/dev/null 2>&1 || true
-if command -v lsof >/dev/null 2>&1; then
-  listener="$(lsof -nP -tiTCP:8080 -sTCP:LISTEN 2>/dev/null | head -1 || true)"
-  if [[ -n "$listener" ]]; then
-    owner="$(ps -p "$listener" -o comm= 2>/dev/null | sed 's/^ *//' || true)"
-    echo "port 8080 is already owned by PID ${listener}${owner:+ (${owner})}; refusing duplicate launchd startup" >&2
-    exit 1
-  fi
-fi
 launchctl bootstrap "gui/$(id -u)" "$agent"
 TRACERA_URL="http://127.0.0.1:8080" open "$app_dst"
 echo "installed desktop: $app_dst"
