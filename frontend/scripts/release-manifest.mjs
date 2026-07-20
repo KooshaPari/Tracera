@@ -11,6 +11,7 @@ import { tmpdir } from 'node:os'
 import { execFileSync } from 'node:child_process'
 
 const repoRoot = resolve(import.meta.dirname, '..', '..')
+const SAFE_PATH = '/usr/bin:/bin:/usr/sbin:/sbin'
 function repoPath(value, label, allowTemp = false) {
   const path = resolve(repoRoot, value)
   const tempRoot = resolve(tmpdir())
@@ -30,7 +31,11 @@ function readJson(path) {
 
 function git(args) {
   try {
-    return execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8' }).trim()
+    return execFileSync('git', args, {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: { ...process.env, PATH: SAFE_PATH },
+    }).trim()
   } catch {
     return null
   }
