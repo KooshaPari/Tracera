@@ -2,16 +2,16 @@
 /** Validate release-manifest.json before promotion or archival. */
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
-import { isAbsolute, relative, resolve } from 'node:path'
+import { resolve, sep } from 'node:path'
 import { tmpdir } from 'node:os'
 
 const repoRoot = resolve(import.meta.dirname, '..', '..')
 function repoPath(value, label, allowTemp = false) {
   const path = resolve(repoRoot, value)
-  const rel = relative(repoRoot, path)
   const tempRoot = resolve(tmpdir())
-  if ((!allowTemp && (isAbsolute(rel) || rel === '..' || rel.startsWith(`..${process.platform === 'win32' ? '\\' : '/'}`))) ||
-      (allowTemp && isAbsolute(rel) && !path.startsWith(tempRoot))) {
+  const insideRepo = path === repoRoot || path.startsWith(`${repoRoot}${sep}`)
+  const insideTemp = path === tempRoot || path.startsWith(`${tempRoot}${sep}`)
+  if ((!allowTemp && !insideRepo) || (allowTemp && !insideRepo && !insideTemp)) {
     throw new Error(`${label} must remain inside the repository`)
   }
   return path

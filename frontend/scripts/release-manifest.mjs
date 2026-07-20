@@ -6,17 +6,17 @@
  */
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { basename, relative, resolve, isAbsolute } from 'node:path'
+import { basename, resolve, sep } from 'node:path'
 import { tmpdir } from 'node:os'
 import { execFileSync } from 'node:child_process'
 
 const repoRoot = resolve(import.meta.dirname, '..', '..')
 function repoPath(value, label, allowTemp = false) {
   const path = resolve(repoRoot, value)
-  const rel = relative(repoRoot, path)
   const tempRoot = resolve(tmpdir())
-  if ((!allowTemp && (isAbsolute(rel) || rel === '..' || rel.startsWith(`..${process.platform === 'win32' ? '\\' : '/'}`))) ||
-      (allowTemp && isAbsolute(rel) && !path.startsWith(tempRoot))) {
+  const insideRepo = path === repoRoot || path.startsWith(`${repoRoot}${sep}`)
+  const insideTemp = path === tempRoot || path.startsWith(`${tempRoot}${sep}`)
+  if ((!allowTemp && !insideRepo) || (allowTemp && !insideRepo && !insideTemp)) {
     throw new Error(`${label} must remain inside the repository`)
   }
   return path
