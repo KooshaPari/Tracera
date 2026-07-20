@@ -50,11 +50,13 @@ function Dashboard() {
           traceraClient.getEvidence({ signal: controller.signal }),
         ])
         const merged = mergeDashboardFetchResults(results)
-        setHealth(merged.health)
-        setSprints(merged.sprints)
-        setTeams(merged.teams)
-        setMetrics(merged.metrics)
-        setEvidenceCount(merged.evidenceCount)
+        // Keep last-known-good values when one endpoint is temporarily unavailable.
+        // The aggregated error remains visible so stale data is never mistaken for fresh data.
+        setHealth((previous) => results[0].status === 'fulfilled' ? merged.health : previous)
+        setSprints((previous) => results[1].status === 'fulfilled' ? merged.sprints : previous)
+        setTeams((previous) => results[2].status === 'fulfilled' ? merged.teams : previous)
+        setMetrics((previous) => results[3].status === 'fulfilled' ? merged.metrics : previous)
+        setEvidenceCount((previous) => results[4].status === 'fulfilled' ? merged.evidenceCount : previous)
         setError(merged.error)
       } catch (err) {
         if (!stopped) {
