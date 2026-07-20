@@ -9,7 +9,7 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 gate="$root/scripts/verify-deployment-security.sh"
 
 "$gate" --mode private
-if TRACERA_PUBLIC_HOSTNAME=tracera.example.test "$gate" --mode public >/tmp/tracera-public-security-gate.log 2>&1; then
+if TRACERA_PUBLIC_HOSTNAME=tracera.test "$gate" --mode public >/tmp/tracera-public-security-gate.log 2>&1; then
   echo "DEPLOYMENT SECURITY TEST FAIL: public mode unexpectedly passed without auth" >&2
   cat /tmp/tracera-public-security-gate.log >&2
   exit 1
