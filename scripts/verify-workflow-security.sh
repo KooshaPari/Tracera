@@ -41,5 +41,9 @@ crates="$workflows/release-crates.yml"
 [[ -f "$crates" ]] || fail "release-crates workflow is missing"
 grep -q 'does not match release tag' "$crates" \
   || fail "crate release must fail closed on tag/version mismatch"
+latency="$workflows/runtime-latency-smoke.yml"
+[[ -f "$latency" ]] || fail "runtime latency workflow is missing"
+grep -q 'toolchain: stable' "$latency" \
+  || fail "runtime latency workflow must select an explicit Rust toolchain"
 
 echo "workflow security gate passed"
