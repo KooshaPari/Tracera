@@ -18,9 +18,15 @@ assert.ok(rows.length > 0, 'contract document must contain endpoint rows');
 
 const routes = new Set();
 for (const line of server.split('\n')) {
-  const match = line.match(/\.route\("([^"]+)",\s*(.*)\)$/);
-  if (!match) continue;
-  const [, endpoint, handlers] = match;
+  const marker = '.route("';
+  const start = line.indexOf(marker);
+  if (start < 0) continue;
+  const endpointStart = start + marker.length;
+  const endpointEnd = line.indexOf('"', endpointStart);
+  const comma = line.indexOf(',', endpointEnd);
+  if (endpointEnd < 0 || comma < 0) continue;
+  const endpoint = line.slice(endpointStart, endpointEnd);
+  const handlers = line.slice(comma + 1);
   for (const method of ['get', 'post']) {
     if (new RegExp(`\\b${method}\\s*\\(`).test(handlers)) {
       routes.add(`${method.toUpperCase()} ${endpoint}`);
