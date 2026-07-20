@@ -69,9 +69,9 @@ function CoverageMatrix() {
                 <p className="sprint-goal">{metrics?.total_artifacts ?? 0}</p>
               </div>
             </div>
-          ) : (
+          ) : !error ? (
             <p>No coverage metrics available.</p>
-          )}
+          ) : null}
         </section>
       </div>
     </main>

@@ -45,7 +45,7 @@ function TraceViewer() {
           <h2>Evidence Trace Viewer</h2>
           {loading && <p role="status" aria-live="polite">Loading evidence...</p>}
           {error && <div className="error-banner" role="alert"><strong>Error:</strong> {error} <button type="button" className="retry-button" onClick={() => setRefreshKey((key) => key + 1)}>Retry</button></div>}
-          {!loading && !items.length && <p>No evidence items available.</p>}
+          {!loading && !error && !items.length && <p>No evidence items available.</p>}
           <ul className="sprints-list">
             {items.map((item, index) => (
               <li className="sprint-card" key={item.id || `${item.type || 'item'}-${index}`}>
