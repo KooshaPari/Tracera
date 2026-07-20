@@ -4,7 +4,10 @@ set -euo pipefail
 # Secret-free local runtime smoke.  Uses an ephemeral SQLite database and the
 # checked-in frontend bundle; no network or production credentials required.
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-server_bin="${TRACERA_SERVER_BIN:-${repo_root}/target/debug/tracera-server}"
+# Release is the canonical runtime artifact (installer and CI both build it).
+# Callers can still point at an alternate artifact explicitly for focused
+# development builds via TRACERA_SERVER_BIN.
+server_bin="${TRACERA_SERVER_BIN:-${repo_root}/target/release/tracera-server}"
 frontend_dist="${TRACERA_FRONTEND_DIST:-${repo_root}/frontend/dist}"
 if [[ -n "${TRACERA_SMOKE_PORT:-}" ]]; then
   port="${TRACERA_SMOKE_PORT}"
