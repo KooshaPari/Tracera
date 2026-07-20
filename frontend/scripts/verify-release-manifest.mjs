@@ -33,7 +33,10 @@ else {
   if (!manifest.git?.commit) fail('missing source commit')
   if (manifest.reproducibility?.secrets_included !== false) fail('secrets_included must be false')
   for (const lockfile of manifest.reproducibility?.lockfiles ?? []) {
-    if (!existsSync(resolve(repoRoot, lockfile))) fail(`missing lockfile ${lockfile}`)
+    let lockfilePath
+    try { lockfilePath = repoPath(lockfile, 'lockfile') }
+    catch (error) { fail(error.message); continue }
+    if (!existsSync(lockfilePath)) fail(`missing lockfile ${lockfile}`)
   }
   for (const artifact of manifest.artifacts ?? []) {
     if (!artifact.present) fail(`artifact missing: ${artifact.path}`)
