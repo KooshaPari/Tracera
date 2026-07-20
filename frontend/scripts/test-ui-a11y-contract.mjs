@@ -11,6 +11,8 @@ assert.match(css, /\.nav-item:focus-visible/)
 assert.match(nav, /<nav[^>]+aria-label=["']Primary navigation["']/)
 assert.match(nav, /aria-current=\{current === page\.id \? ['"]page['"] : undefined\}/)
 const dashboard = fs.readFileSync(new URL('../apps/web/src/components/Dashboard.jsx', import.meta.url), 'utf8')
+const traceViewer = fs.readFileSync(new URL('../apps/web/src/components/TraceViewer.jsx', import.meta.url), 'utf8')
+const coverageMatrix = fs.readFileSync(new URL('../apps/web/src/components/CoverageMatrix.jsx', import.meta.url), 'utf8')
 const statusIcons = dashboard.match(/className="status-icon"/g) || []
 assert.equal(statusIcons.length, 4, 'Dashboard should expose four status icon wrappers')
 assert.equal(
@@ -18,5 +20,9 @@ assert.equal(
   4,
   'Dashboard status icons must be decorative to assistive technology',
 )
+for (const [name, source] of [['TraceViewer', traceViewer], ['CoverageMatrix', coverageMatrix]]) {
+  assert.match(source, /role="status" aria-live="polite"/, `${name} loading state must be announced politely`)
+  assert.match(source, /role="alert"/, `${name} errors must be announced assertively`)
+}
 
 console.log('UI accessibility contract: PASS')
