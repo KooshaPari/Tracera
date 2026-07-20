@@ -41,6 +41,15 @@ jobs:
           TRACERA_API_BASE: ${{ vars.TRACERA_API_BASE }}
         run: |
           test -n "$TRACERA_API_BASE"
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            case "$TRACERA_API_BASE" in
+              https://*) ;;
+              *) echo "TRACERA_API_BASE must be a public HTTPS origin for production Pages deploys" >&2; exit 1 ;;
+            esac
+            case "$TRACERA_API_BASE" in
+              http://10.*|http://100.64.*|http://100.65.*|http://100.66.*|http://100.67.*|http://100.68.*|http://100.69.*|http://100.70.*|http://100.71.*|http://100.72.*|http://100.73.*|http://100.74.*|http://100.75.*|http://100.76.*|http://100.77.*|http://100.78.*|http://100.79.*|http://100.80.*|http://100.81.*|http://100.82.*|http://100.83.*|http://100.84.*|http://100.85.*|http://100.86.*|http://100.87.*|http://100.88.*|http://100.89.*|http://100.90.*|http://100.91.*|http://100.92.*|http://100.93.*|http://100.94.*|http://100.95.*|http://100.96.*|http://100.97.*|http://100.98.*|http://100.99.*|http://127.*|http://192.168.*|http://localhost*) echo "TRACERA_API_BASE must not target a private/local network" >&2; exit 1 ;;
+            esac
+          fi
           VITE_BASE="$VITE_BASE" VITE_API_BASE="$TRACERA_API_BASE" bun run vite build
         working-directory: frontend/apps/web
 
