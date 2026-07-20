@@ -31,6 +31,7 @@ function Dashboard() {
   const [metrics, setMetrics] = useState(null)
   const [evidenceCount, setEvidenceCount] = useState(0)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
 
   useEffect(() => {
     let stopped = false
@@ -62,6 +63,9 @@ function Dashboard() {
         setMetrics((previous) => results[4].status === 'fulfilled' ? merged.metrics : previous)
         setEvidenceCount((previous) => results[5].status === 'fulfilled' ? merged.evidenceCount : previous)
         setError(merged.error)
+        if (results.some((result) => result.status === 'fulfilled')) {
+          setLastUpdatedAt(new Date())
+        }
       } catch (err) {
         if (!stopped) {
           setError(err?.message || 'Unable to load dashboard data')
@@ -94,6 +98,10 @@ function Dashboard() {
   const endpointListText = activeEndpoints.join(', ')
   const coverageRatio = Number(metrics?.coverage_ratio)
   const displayCoverageRatio = Number.isFinite(coverageRatio) ? (coverageRatio * 100).toFixed(1) : '0.0'
+  const hasDashboardData = Boolean(health || readiness || teams.length || sprints.length || metrics)
+  const freshnessLabel = lastUpdatedAt
+    ? `Last updated ${lastUpdatedAt.toLocaleTimeString()}`
+    : 'Waiting for the first update'
 
   return (
     <div className="dashboard">
@@ -109,13 +117,14 @@ function Dashboard() {
           {loading && (
             <div className="loading" role="status" aria-live="polite">
               <div className="spinner"></div>
-              <p>Loading data...</p>
+              <p>{hasDashboardData ? 'Refreshing data…' : 'Loading data…'}</p>
             </div>
           )}
 
           {error && (
             <div className="error-banner" role="alert" aria-busy={loading}>
-              <strong>Error:</strong> {error}
+              <strong>Some data could not be refreshed.</strong> {error}
+              {hasDashboardData && <span className="stale-note"> Existing values may be stale.</span>}
               <button
                 type="button"
                 className="retry-button"
@@ -126,6 +135,7 @@ function Dashboard() {
               </button>
             </div>
           )}
+          <p className="data-freshness" role="status" aria-live="polite">{freshnessLabel}</p>
 
           <section className="status-section">
             <h2>System Status</h2>

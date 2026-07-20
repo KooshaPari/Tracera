@@ -71,6 +71,19 @@
   color: var(--color-error-text);
 }
 
+.stale-note {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.data-freshness {
+  margin: -1rem 0 2rem;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  text-align: end;
+}
+
 .retry-button {
   margin-inline-start: 1rem;
   min-height: 2.75rem;

@@ -20,6 +20,8 @@ assert.equal(
   5,
   'Dashboard status icons must be decorative to assistive technology',
 )
+assert.match(dashboard, /Existing values may be stale/, 'partial refreshes must disclose stale values')
+assert.match(dashboard, /data-freshness/, 'dashboard must expose refresh freshness to assistive technology')
 for (const [name, source] of [['TraceViewer', traceViewer], ['CoverageMatrix', coverageMatrix]]) {
   assert.match(source, /role="status" aria-live="polite"/, `${name} loading state must be announced politely`)
   assert.match(source, /role="alert"/, `${name} errors must be announced assertively`)
