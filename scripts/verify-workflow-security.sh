@@ -17,6 +17,8 @@ grep -qE '(if:.*secrets\.VERCEL_TOKEN|HAS_VERCEL_TOKEN:.*secrets\.VERCEL_TOKEN)'
   || fail "Vercel deployment must be gated on a configured token"
 grep -qE '(if:.*secrets\.VERCEL_ORG_ID|HAS_VERCEL_ORG:.*secrets\.VERCEL_ORG_ID)' "$vercel" \
   || fail "Vercel deployment must be gated on a configured org id"
+grep -q 'Fail production deployment when Vercel secrets are unavailable' "$vercel" \
+  || fail "Vercel production deploy must fail closed when secrets are missing"
 ! grep -R -nE 'gh secret (set|delete)|gh secret [a-z-]+.*--body' "$workflows" \
   || fail "workflows must not mutate repository secrets at runtime"
 
