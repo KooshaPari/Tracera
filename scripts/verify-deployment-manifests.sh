@@ -6,7 +6,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-fail() { printf 'deployment manifest check failed: %s\n' "$1" >&2; exit 1; }
+fail() { local message="$1"; printf 'deployment manifest check failed: %s\n' "$message" >&2; exit 1; }
 
 command -v rg >/dev/null 2>&1 \
   || fail "ripgrep (rg) is required for secret scanning"

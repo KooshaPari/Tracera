@@ -7,11 +7,14 @@ import TopNav from './components/TopNav'
 
 function App() {
   const [page, setPage] = useState('dashboard')
+  let PageComponent = Dashboard
+  if (page === 'trace') PageComponent = TraceViewer
+  if (page === 'coverage') PageComponent = CoverageMatrix
 
   return (
     <div className="app">
       <TopNav current={page} onNavigate={setPage} />
-      {page === 'trace' ? <TraceViewer /> : page === 'coverage' ? <CoverageMatrix /> : <Dashboard />}
+      <PageComponent />
     </div>
   )
 }

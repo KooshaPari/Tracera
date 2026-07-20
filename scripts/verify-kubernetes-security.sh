@@ -5,7 +5,7 @@ set -euo pipefail
 # does not contact a cluster; run it before rendering/applying manifests.
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CHART="$ROOT_DIR/deploy/kubernetes"
-fail() { printf 'kubernetes security check failed: %s\n' "$1" >&2; exit 1; }
+fail() { local message="$1"; printf 'kubernetes security check failed: %s\n' "$message" >&2; exit 1; }
 
 [[ -f "$CHART/templates/tracera.yaml" ]] || fail "deployment template missing"
 [[ -f "$CHART/values.yaml" ]] || fail "values file missing"

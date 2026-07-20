@@ -6,7 +6,7 @@ repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 chart_dir="$repo_dir/deploy/kubernetes"
 json=false
 [[ "${1:-}" == "--json" ]] && json=true
-has() { command -v "$1" >/dev/null 2>&1; }
+has() { local command_name="$1"; command -v "$command_name" >/dev/null 2>&1; }
 helm_installed=false; helm_lint=false; cluster=false; compose=false
 has helm && helm_installed=true && helm lint "$chart_dir" >/dev/null 2>&1 && helm_lint=true
 has kubectl && kubectl cluster-info >/dev/null 2>&1 && cluster=true
