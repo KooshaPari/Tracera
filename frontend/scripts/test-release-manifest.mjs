@@ -23,7 +23,7 @@ try {
   execFileSync(process.execPath, [verify, first], { cwd: root, env, stdio: 'ignore' })
   let rejected = false
   try {
-    execFileSync(process.execPath, [verify, '/tmp/../outside-release-manifest.json'], { cwd: root, env, stdio: 'pipe' })
+    execFileSync(process.execPath, [verify, join(root, '..', 'outside-release-manifest.json')], { cwd: root, env, stdio: 'pipe' })
   } catch {
     rejected = true
   }
