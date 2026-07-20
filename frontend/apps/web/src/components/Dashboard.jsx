@@ -114,7 +114,7 @@ function Dashboard() {
             <h2>System Status</h2>
             <div className="status-grid">
               <div className="status-card">
-                <div className="status-icon">{isHealthy ? '✓' : '?'}</div>
+                <div className="status-icon" aria-hidden="true">{isHealthy ? '✓' : '?'}</div>
                 <div className="status-info">
                   <h3>Backend Health</h3>
                   <p className={isHealthy ? 'status-ok' : 'status-unknown'}>
@@ -124,7 +124,7 @@ function Dashboard() {
               </div>
 
               <div className="status-card">
-                <div className="status-icon">{teams.length}</div>
+                <div className="status-icon" aria-hidden="true">{teams.length}</div>
                 <div className="status-info">
                   <h3>Teams</h3>
                   <p>{teams.length} team{teams.length !== 1 ? 's' : ''} registered</p>
@@ -132,7 +132,7 @@ function Dashboard() {
               </div>
 
               <div className="status-card">
-                <div className="status-icon">{sprints.length}</div>
+                <div className="status-icon" aria-hidden="true">{sprints.length}</div>
                 <div className="status-info">
                   <h3>Active Sprints</h3>
                   <p>{activeSprints} active / {sprints.length} total</p>
@@ -140,7 +140,7 @@ function Dashboard() {
               </div>
 
               <div className="status-card">
-                <div className="status-icon">{evidenceCount}</div>
+                <div className="status-icon" aria-hidden="true">{evidenceCount}</div>
                 <div className="status-info">
                   <h3>Evidence Items</h3>
                   <p>{evidenceCount} available</p>
