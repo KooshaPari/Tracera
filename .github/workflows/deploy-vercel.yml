@@ -16,29 +16,33 @@ jobs:
     env:
       HAS_VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       HAS_VERCEL_ORG: ${{ secrets.VERCEL_ORG_ID }}
+      HAS_VERCEL_PROJECT: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - name: Skip when Vercel secrets are unavailable
-        if: ${{ env.HAS_VERCEL_TOKEN == '' || env.HAS_VERCEL_ORG == '' }}
+        if: ${{ env.HAS_VERCEL_TOKEN == '' || env.HAS_VERCEL_ORG == '' || env.HAS_VERCEL_PROJECT == '' }}
         run: echo "Vercel secrets unavailable; deployment skipped."
 
+      - name: Validate Vercel project configuration
+        if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}
+        run: test -n "$HAS_VERCEL_TOKEN" && test -n "$HAS_VERCEL_ORG" && test -n "$HAS_VERCEL_PROJECT"
+
       - uses: actions/checkout@v4
-        if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' }}
+        if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}
 
       - uses: oven-sh/setup-bun@v1
-        if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' }}
+        if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}
         with:
           bun-version: latest
 
       - name: Deploy to Vercel (preview on PR, production on main)
-        if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' }}
-        working-directory: frontend
+        if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID || '' }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            bunx vercel deploy --token "$VERCEL_TOKEN"
+            bunx vercel deploy --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN"
           else
-            bunx vercel deploy --prod --token "$VERCEL_TOKEN"
+            bunx vercel deploy --prod --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN"
           fi

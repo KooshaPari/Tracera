@@ -38,8 +38,14 @@ jobs:
       - name: Build frontend
         env:
           VITE_BASE: /Tracera/
-        run: bun run vite build
+          TRACERA_API_BASE: ${{ vars.TRACERA_API_BASE }}
+        run: |
+          test -n "$TRACERA_API_BASE"
+          VITE_BASE="$VITE_BASE" VITE_API_BASE="$TRACERA_API_BASE" bun run vite build
         working-directory: frontend/apps/web
+
+      - name: Verify canonical Tracera artifact
+        run: node frontend/scripts/test-deployment-artifact.mjs frontend/dist
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
