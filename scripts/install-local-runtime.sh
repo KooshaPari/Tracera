@@ -10,14 +10,22 @@ app_src="$repo_root/frontend/apps/desktop/build/dev-macos-arm64/Tracera-dev.app"
 app_dst="${HOME}/Applications/Tracera-dev-0.1.0.app"
 agent_dir="${HOME}/Library/LaunchAgents"
 agent="${agent_dir}/com.phenotype.tracera-server.plist"
+runtime_port="${TRACERA_PORT:-8080}"
 
-if command -v lsof >/dev/null 2>&1; then
-  listener="$(lsof -nP -tiTCP:8080 -sTCP:LISTEN 2>/dev/null | head -1 || true)"
-  if [[ -n "$listener" ]]; then
-    owner="$(ps -p "$listener" -o comm= 2>/dev/null | sed 's/^ *//' || true)"
-    echo "port 8080 is already owned by PID ${listener}${owner:+ (${owner})}; refusing duplicate launchd startup" >&2
-    exit 1
-  fi
+# Stop only this installer-owned job before checking for duplicate listeners.
+launchctl bootout "gui/$(id -u)" "$agent" >/dev/null 2>&1 || true
+
+if ! command -v lsof >/dev/null 2>&1; then
+  echo "cannot verify TCP port ownership: lsof is required" >&2
+  exit 1
+fi
+listener="$(lsof -nP -tiTCP:"$runtime_port" -sTCP:LISTEN 2>/dev/null | head -1 || true)"
+if [[ -n "$listener" ]]; then
+  owner="$(ps -p "$listener" -o comm= 2>/dev/null | sed 's/^ *//' || true)"
+  echo "port $runtime_port is already owned by PID ${listener}${owner:+ (${owner})}; refusing duplicate launchd startup" >&2
+  ps -p "$listener" -o pid=,command= >&2 2>/dev/null || true
+  echo "stop the owning service or set TRACERA_PORT before retrying" >&2
+  exit 1
 fi
 
 mkdir -p "$agent_dir" "${HOME}/Applications"
@@ -43,6 +51,9 @@ cat > "$agent" <<PLIST
 <plist version="1.0"><dict>
   <key>Label</key><string>com.phenotype.tracera-server</string>
   <key>ProgramArguments</key><array><string>${server_bin}</string></array>
+  <key>EnvironmentVariables</key><dict>
+    <key>TRACERA_BIND_ADDR</key><string>127.0.0.1:${runtime_port}</string>
+  </dict>
   <key>WorkingDirectory</key><string>${repo_root}</string>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
@@ -51,8 +62,7 @@ cat > "$agent" <<PLIST
 </dict></plist>
 PLIST
 
-launchctl bootout "gui/$(id -u)" "$agent" >/dev/null 2>&1 || true
 launchctl bootstrap "gui/$(id -u)" "$agent"
-TRACERA_URL="http://127.0.0.1:8080" open "$app_dst"
+TRACERA_URL="http://127.0.0.1:${runtime_port}" open "$app_dst"
 echo "installed desktop: $app_dst"
 echo "installed backend agent: $agent"
