@@ -13,6 +13,15 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Configure these environments in repository settings with required
+    # reviewers/branch protections.  The workflow keeps preview and production
+    # approvals separate while preventing overlapping deploy races.
+    environment:
+      name: ${{ github.event_name == 'pull_request' && 'vercel-preview' || 'vercel-production' }}
+    concurrency:
+      group: vercel-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
     env:
       HAS_VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       HAS_VERCEL_ORG: ${{ secrets.VERCEL_ORG_ID }}
