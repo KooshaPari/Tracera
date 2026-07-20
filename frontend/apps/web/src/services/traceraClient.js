@@ -45,7 +45,11 @@ async function safeRequest(url, options = {}) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
   const abortExternal = () => controller.abort(externalSignal.reason)
-  externalSignal?.addEventListener('abort', abortExternal, { once: true })
+  if (externalSignal?.aborted) {
+    controller.abort(externalSignal.reason)
+  } else {
+    externalSignal?.addEventListener('abort', abortExternal, { once: true })
+  }
   try {
     const response = await fetch(url, {
     headers: {

@@ -256,4 +256,24 @@ await runCase('request timeout aborts stalled fetch deterministically', async ()
   );
 });
 
+await runCase('pre-aborted external signal rejects before dispatch', async () => {
+  const controller = new AbortController();
+  controller.abort();
+  let dispatched = false;
+  global.fetch = async (_url, options) => {
+    dispatched = true;
+    assert.equal(options.signal.aborted, true);
+    throw new Error('aborted by signal');
+  };
+
+  await assert.rejects(
+    () => traceraClient.getHealth({ signal: controller.signal }),
+    (error) => {
+      assert.equal(error.message, 'Request aborted');
+      return true;
+    },
+  );
+  assert.equal(dispatched, true);
+});
+
 console.log('traceraClient tests complete');
