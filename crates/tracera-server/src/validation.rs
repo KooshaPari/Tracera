@@ -19,3 +19,24 @@ pub(crate) fn validate_text(
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::validate_text;
+
+    #[test]
+    fn required_text_rejects_whitespace_only_values() {
+        assert_eq!(validate_text(" \n\t", "name", 8, true), Err("name"));
+    }
+
+    #[test]
+    fn optional_empty_text_is_allowed() {
+        assert_eq!(validate_text("", "description", 8, false), Ok(()));
+    }
+
+    #[test]
+    fn character_limit_is_unicode_safe() {
+        assert_eq!(validate_text("éé", "label", 1, false), Err("label"));
+        assert_eq!(validate_text("é", "label", 1, false), Ok(()));
+    }
+}
