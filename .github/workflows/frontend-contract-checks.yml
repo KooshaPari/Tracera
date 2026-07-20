@@ -35,6 +35,10 @@ jobs:
         run: node scripts/check-bundle-budget.mjs
         working-directory: frontend
 
+      - name: Verify canonical dashboard artifact
+        run: node scripts/test-deployment-artifact.mjs dist
+        working-directory: frontend
+
       - name: Workspace typecheck
         run: npm run typecheck
         working-directory: frontend
