@@ -61,6 +61,7 @@ async function runCase(name, fn) {
 await runCase('traceraClient happy path (GET + POST contracts)', async () => {
   global.fetch = createResponseResolver({
     '/health': () => makeResponse({ body: { status: 'ok' } }),
+    '/readyz': () => makeResponse({ body: { status: 'ready' } }),
     '/sdlc-pm/sprints': () => makeResponse({ body: [{ id: 'S1', status: 'active' }] }),
     '/org-intel/teams': () => makeResponse({ body: [{ id: 'T1', name: 'core' }] }),
     '/org-intel/metrics': () =>
@@ -106,6 +107,9 @@ await runCase('traceraClient happy path (GET + POST contracts)', async () => {
 
   const health = await traceraClient.getHealth();
   assert.deepEqual(health, { status: 'ok' });
+
+  const readiness = await traceraClient.getReadiness();
+  assert.deepEqual(readiness, { status: 'ready' });
 
   const sprints = await traceraClient.getSprints();
   assert.equal(sprints.length, 1);

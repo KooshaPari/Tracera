@@ -75,6 +75,11 @@ export const traceraClient = {
     return parseResponse(response, { status: 'unknown' })
   },
 
+  async getReadiness(options) {
+    const response = await safeRequest(`${DEFAULT_API_BASE}/readyz`, options)
+    return parseResponse(response, { status: 'unknown' })
+  },
+
   async getSprints(options) {
     const response = await safeRequest(`${DEFAULT_API_BASE}/sdlc-pm/sprints`, options)
     return parseResponse(response, [])

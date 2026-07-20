@@ -13,6 +13,7 @@ any future language-sidecar layers (Go/Zig/Mojo).
 | Method | Path | Consumer | Expected shape |
 |---|---|---|---|
 | GET | `/health` | `traceraClient.getHealth`, Dashboard status widget | Object (default `{ status: 'unknown' }`) |
+| GET | `/readyz` | `traceraClient.getReadiness`, deployment/readiness probes | Object (default `{ status: 'unknown' }`) |
 | GET | `/sdlc-pm/sprints` | `traceraClient.getSprints`, Dashboard sprints view | Array |
 | GET | `/org-intel/teams` | `traceraClient.getTeams`, Dashboard teams card | Array |
 | GET | `/org-intel/metrics` | `traceraClient.getMetrics`, Dashboard metrics cards | Object |

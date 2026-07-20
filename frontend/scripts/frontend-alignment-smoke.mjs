@@ -3,6 +3,7 @@
 const base = process.env.VITE_API_BASE || 'http://127.0.0.1:8080'
 const endpoints = [
   '/health',
+  '/readyz',
   '/sdlc-pm/sprints',
   '/org-intel/teams',
   '/org-intel/metrics',
