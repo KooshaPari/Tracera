@@ -30,7 +30,8 @@ jobs:
           if [ "$CRATE_VERSION" = "$TAG_VERSION" ]; then
             cargo publish -p tracera-server --token "${{ secrets.CARGO_REGISTRY_TOKEN }}"
           else
-            echo "::notice::Skipping tracera-server publish: crate version $CRATE_VERSION does not match tag $TAG_VERSION"
+            echo "tracera-server version $CRATE_VERSION does not match release tag $TAG_VERSION" >&2
+            exit 1
           fi
       - name: Publish tracertm-mcp
         run: |
@@ -39,7 +40,8 @@ jobs:
           if [ "$CRATE_VERSION" = "$TAG_VERSION" ]; then
             cargo publish -p tracertm-mcp --token "${{ secrets.CARGO_REGISTRY_TOKEN }}"
           else
-            echo "::notice::Skipping tracertm-mcp publish: crate version $CRATE_VERSION does not match tag $TAG_VERSION"
+            echo "tracertm-mcp version $CRATE_VERSION does not match release tag $TAG_VERSION" >&2
+            exit 1
           fi
 
   dry-run:

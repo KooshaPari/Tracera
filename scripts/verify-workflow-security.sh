@@ -37,5 +37,9 @@ grep -q 'release-manifest-' "$release" \
   || fail "release workflow must publish per-target provenance manifests"
 grep -q 'verify-release-manifest.mjs' "$release" \
   || fail "release workflow must verify provenance before upload"
+crates="$workflows/release-crates.yml"
+[[ -f "$crates" ]] || fail "release-crates workflow is missing"
+grep -q 'does not match release tag' "$crates" \
+  || fail "crate release must fail closed on tag/version mismatch"
 
 echo "workflow security gate passed"
