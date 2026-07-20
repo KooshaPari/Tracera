@@ -46,8 +46,7 @@ try {
 
   if (failures.length > 0) {
     console.error(`\nSmoke check failed with ${failures.length} endpoint failure(s).`)
-    process.exitCode = 1
-    return
+    process.exit(1)
   }
 
   console.log('\nTracera frontend backend alignment smoke: PASS')
