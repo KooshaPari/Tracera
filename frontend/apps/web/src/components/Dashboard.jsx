@@ -109,10 +109,15 @@ function Dashboard() {
           )}
 
           {error && (
-            <div className="error-banner" role="alert">
+            <div className="error-banner" role="alert" aria-busy={loading}>
               <strong>Error:</strong> {error}
-              <button type="button" className="retry-button" onClick={() => setRefreshKey((key) => key + 1)}>
-                Retry
+              <button
+                type="button"
+                className="retry-button"
+                disabled={loading}
+                onClick={() => setRefreshKey((key) => key + 1)}
+              >
+                {loading ? 'Retrying…' : 'Retry'}
               </button>
             </div>
           )}
