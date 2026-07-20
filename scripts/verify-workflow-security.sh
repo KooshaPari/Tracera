@@ -26,6 +26,8 @@ grep -q 'Fail production deployment when Vercel secrets are unavailable' "$verce
 # become the only passing check in this workflow.
 guard="$workflows/security-guard-hook-audit.yml"
 [[ -f "$guard" ]] || fail "security guard workflow is missing"
+grep -q 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' "$guard" \
+  || fail "security guard workflow checkout must be pinned"
 ! grep -qE 'Security guard skipped|Security guard placeholder' "$guard" \
   || fail "security guard workflow contains a fail-open placeholder"
 
