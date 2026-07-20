@@ -12,6 +12,16 @@ if [[ "$mode" != "private" && "$mode" != "public" ]]; then
   exit 2
 fi
 
+if [[ "$mode" == "public" ]]; then
+  public_hostname="${TRACERA_PUBLIC_HOSTNAME:-}"
+  [[ -n "$public_hostname" ]] \
+    || { echo "public mode requires TRACERA_PUBLIC_HOSTNAME" >&2; exit 1; }
+  [[ "$public_hostname" =~ ^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$ ]] \
+    || { echo "public mode requires a DNS-safe TRACERA_PUBLIC_HOSTNAME" >&2; exit 1; }
+  [[ "$public_hostname" != *example* && "$public_hostname" != localhost && "$public_hostname" != *.local ]] \
+    || { echo "public mode rejects placeholder/local TRACERA_PUBLIC_HOSTNAME" >&2; exit 1; }
+fi
+
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 compose="$root/deploy/selfhost/docker-compose.selfhost.yml"
 caddy="$root/deploy/selfhost/Caddyfile"
