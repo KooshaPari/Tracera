@@ -36,7 +36,7 @@ function Dashboard() {
     const controller = new AbortController()
 
     const fetchData = async () => {
-      if (stopped || inFlight) return
+      if (stopped || inFlight || document.visibilityState === 'hidden') return
       inFlight = true
       setLoading(true)
       setError(null)
@@ -70,10 +70,15 @@ function Dashboard() {
 
     fetchData()
     const timer = setInterval(fetchData, 30000)
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') fetchData()
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
     return () => {
       stopped = true
       controller.abort()
       clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
     }
   }, [refreshKey])
 
