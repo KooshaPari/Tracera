@@ -4,6 +4,7 @@ mod pg_store;
 mod queue;
 mod sqlite_store;
 mod store;
+mod validation;
 
 use axum::{
     extract::DefaultBodyLimit,
@@ -32,12 +33,10 @@ use uuid::Uuid;
 /// for malformed or unauthenticated requests. Individual payload fields still
 /// need domain validation at their handlers.
 const MAX_REQUEST_BODY_BYTES: usize = 8 * 1024 * 1024;
-const MAX_ID_CHARS: usize = 256;
-const MAX_SHORT_TEXT_CHARS: usize = 256;
-const MAX_LONG_TEXT_CHARS: usize = 16 * 1024;
-const MAX_URL_CHARS: usize = 2048;
-const MAX_METADATA_BYTES: usize = 64 * 1024;
-const MAX_INGEST_ISSUES: usize = 1_000;
+use validation::{
+    validate_text, MAX_ID_CHARS, MAX_INGEST_ISSUES, MAX_LONG_TEXT_CHARS, MAX_METADATA_BYTES,
+    MAX_SHORT_TEXT_CHARS, MAX_URL_CHARS,
+};
 
 use store::{EvidenceItem, Problem, Sprint, Store, Story, TeamRow};
 
@@ -76,22 +75,6 @@ struct ReadyResponse {
 #[derive(Serialize)]
 struct ErrorResponse {
     error: &'static str,
-}
-
-fn validate_text(
-    value: &str,
-    field: &'static str,
-    max: usize,
-    required: bool,
-) -> Result<(), &'static str> {
-    let trimmed = value.trim();
-    if required && trimmed.is_empty() {
-        return Err(field);
-    }
-    if value.chars().count() > max {
-        return Err(field);
-    }
-    Ok(())
 }
 
 fn bad_request(field: &'static str) -> (axum::http::StatusCode, Json<ErrorResponse>) {
