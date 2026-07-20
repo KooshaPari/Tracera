@@ -12,7 +12,17 @@ agent_dir="${HOME}/Library/LaunchAgents"
 agent="${agent_dir}/com.phenotype.tracera-server.plist"
 
 mkdir -p "$agent_dir" "${HOME}/Applications"
-cargo build --release -p tracera-server
+build_log="$(mktemp -t tracera-build.XXXXXX)"
+if ! cargo build --release -p tracera-server 2>"$build_log"; then
+  if grep -q "mis-aligned LINKEDIT" "$build_log"; then
+    mv "$repo_root/target/release" "$repo_root/target/release-corrupt-$(date +%s)"
+    cargo build --release -p tracera-server
+  else
+    cat "$build_log" >&2
+    exit 1
+  fi
+fi
+rm -f "$build_log"
 bun --cwd "$repo_root/frontend/apps/desktop" run build
 [[ -x "$server_bin" ]] || { echo "release server missing: $server_bin" >&2; exit 1; }
 [[ -d "$app_src" ]] || { echo "desktop bundle missing: $app_src" >&2; exit 1; }
