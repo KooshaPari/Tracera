@@ -6,11 +6,23 @@
  */
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { basename, resolve } from 'node:path'
+import { basename, relative, resolve, isAbsolute } from 'node:path'
+import { tmpdir } from 'node:os'
 import { execFileSync } from 'node:child_process'
 
 const repoRoot = resolve(import.meta.dirname, '..', '..')
-const output = process.argv[2] ? resolve(process.argv[2]) : resolve(repoRoot, 'release-manifest.json')
+function repoPath(value, label, allowTemp = false) {
+  const path = resolve(repoRoot, value)
+  const rel = relative(repoRoot, path)
+  const tempRoot = resolve(tmpdir())
+  if ((!allowTemp && (isAbsolute(rel) || rel === '..' || rel.startsWith(`..${process.platform === 'win32' ? '\\' : '/'}`))) ||
+      (allowTemp && isAbsolute(rel) && !path.startsWith(tempRoot))) {
+    throw new Error(`${label} must remain inside the repository`)
+  }
+  return path
+}
+
+const output = process.argv[2] ? repoPath(process.argv[2], 'manifest output', true) : resolve(repoRoot, 'release-manifest.json')
 
 function readJson(path) {
   return JSON.parse(readFileSync(resolve(repoRoot, path), 'utf8'))
@@ -39,7 +51,7 @@ const generatedAt = process.env.SOURCE_DATE_EPOCH
   ? new Date(Number(process.env.SOURCE_DATE_EPOCH) * 1000).toISOString()
   : new Date().toISOString()
 const artifacts = artifactPaths.map((item) => {
-  const path = resolve(repoRoot, item)
+  const path = repoPath(item, 'release artifact')
   if (!existsSync(path)) return { path: item, present: false }
   return { path: item, name: basename(path), present: true, bytes: readFileSync(path).byteLength, sha256: sha256(path) }
 })

@@ -16,6 +16,7 @@ import statistics
 import sys
 import threading
 import time
+from urllib.parse import urlparse
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
@@ -112,6 +113,11 @@ def main() -> int:
     parser.add_argument("--path", dest="paths", action="append", help="path to exercise (repeatable)")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     args = parser.parse_args()
+    parsed = urlparse(args.base_url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc or parsed.username or parsed.password:
+        parser.error("base-url must be an http(s) URL without embedded credentials")
+    if any(char in args.base_url for char in ("\n", "\r", "\t")):
+        parser.error("base-url contains control characters")
     if args.concurrency < 1 or args.requests < 1 or args.warmup < 0 or args.timeout <= 0:
         parser.error("concurrency/requests must be positive; warmup must be non-negative")
     result = run(args)

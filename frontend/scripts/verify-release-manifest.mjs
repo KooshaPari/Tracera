@@ -2,10 +2,24 @@
 /** Validate release-manifest.json before promotion or archival. */
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { isAbsolute, relative, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
 
 const repoRoot = resolve(import.meta.dirname, '..', '..')
-const manifestPath = resolve(process.argv[2] ?? resolve(repoRoot, 'release-manifest.json'))
+function repoPath(value, label, allowTemp = false) {
+  const path = resolve(repoRoot, value)
+  const rel = relative(repoRoot, path)
+  const tempRoot = resolve(tmpdir())
+  if ((!allowTemp && (isAbsolute(rel) || rel === '..' || rel.startsWith(`..${process.platform === 'win32' ? '\\' : '/'}`))) ||
+      (allowTemp && isAbsolute(rel) && !path.startsWith(tempRoot))) {
+    throw new Error(`${label} must remain inside the repository`)
+  }
+  return path
+}
+
+let manifestPath
+try { manifestPath = repoPath(process.argv[2] ?? 'release-manifest.json', 'manifest', Boolean(process.argv[2])) }
+catch (error) { fail(error.message); manifestPath = '' }
 const fail = (message) => {
   console.error(`release manifest invalid: ${message}`)
   process.exitCode = 1
@@ -22,7 +36,7 @@ else {
   }
   for (const artifact of manifest.artifacts ?? []) {
     if (!artifact.present) fail(`artifact missing: ${artifact.path}`)
-    const path = resolve(repoRoot, artifact.path)
+    const path = repoPath(artifact.path, 'artifact')
     if (!existsSync(path)) fail(`artifact disappeared: ${artifact.path}`)
     else {
       const hash = createHash('sha256').update(readFileSync(path)).digest('hex')
