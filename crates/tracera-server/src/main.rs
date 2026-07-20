@@ -1,3 +1,4 @@
+mod health;
 mod ingest;
 mod pg_store;
 #[cfg(feature = "phenodag-queue")]
@@ -58,20 +59,6 @@ struct AppState {
 // ---------------------------------------------------------------------------
 // Generic response shapes
 // ---------------------------------------------------------------------------
-#[derive(Serialize)]
-struct StatusResponse {
-    status: &'static str,
-    service: &'static str,
-}
-
-#[derive(Serialize)]
-struct ReadyResponse {
-    status: &'static str,
-    service: &'static str,
-    version: String,
-    backend: &'static str,
-}
-
 #[derive(Serialize)]
 struct ErrorResponse {
     error: &'static str,
@@ -533,10 +520,10 @@ async fn main() {
 
 fn build_router(state: AppState) -> Router {
     Router::new()
-        .route("/healthz", get(healthz))
-        .route("/health", get(health))
-        .route("/readyz", get(readyz))
-        .route("/ready", get(ready))
+        .route("/healthz", get(health::healthz))
+        .route("/health", get(health::health))
+        .route("/readyz", get(health::readyz))
+        .route("/ready", get(health::ready))
         .route("/api/v1/coverage-matrix", post(coverage_matrix))
         .route("/api/v1/impact", post(impact))
         .route("/api/v1/confidence", post(confidence))
@@ -545,15 +532,15 @@ fn build_router(state: AppState) -> Router {
         .route("/api/v1/trace/forward/:artifact_id", post(trace_forward))
         .route("/api/v1/trace/reverse/:artifact_id", post(trace_reverse))
         .route("/evidence", get(list_evidence).post(create_evidence))
-        .route("/evidence/health", get(health))
+        .route("/evidence/health", get(health::health))
         .route("/ingest/github", post(ingest_github))
         .route("/ingest/jira", post(ingest_jira))
-        .route("/sdlc-pm/health", get(health))
+        .route("/sdlc-pm/health", get(health::health))
         .route("/sdlc-pm/sprints", get(list_sprints).post(create_sprint))
         .route("/sdlc-pm/stories", get(list_stories))
         .route("/problems", get(list_problems).post(create_problem))
-        .route("/problems/health", get(health))
-        .route("/org-intel/health", get(health))
+        .route("/problems/health", get(health::health))
+        .route("/org-intel/health", get(health::health))
         .route("/org-intel/teams", get(list_teams))
         .route("/org-intel/metrics", get(org_metrics))
         .with_state(state)
@@ -570,47 +557,6 @@ fn build_router(state: AppState) -> Router {
             header::REFERRER_POLICY,
             HeaderValue::from_static("no-referrer"),
         ))
-}
-
-// ---------------------------------------------------------------------------
-// Health / ready
-// ---------------------------------------------------------------------------
-async fn healthz() -> Json<StatusResponse> {
-    Json(StatusResponse {
-        status: "ok",
-        service: "tracera-server",
-    })
-}
-
-async fn health(
-    axum::extract::State(state): axum::extract::State<AppState>,
-) -> Json<ReadyResponse> {
-    Json(ReadyResponse {
-        status: "ok",
-        service: "tracera-server",
-        version: state.version,
-        backend: state.backend,
-    })
-}
-
-async fn readyz(
-    axum::extract::State(state): axum::extract::State<AppState>,
-) -> Json<ReadyResponse> {
-    Json(ReadyResponse {
-        status: "ready",
-        service: "tracera-server",
-        version: state.version,
-        backend: state.backend,
-    })
-}
-
-async fn ready(axum::extract::State(state): axum::extract::State<AppState>) -> Json<ReadyResponse> {
-    Json(ReadyResponse {
-        status: "ready",
-        service: "tracera-server",
-        version: state.version,
-        backend: state.backend,
-    })
 }
 
 // ---------------------------------------------------------------------------
@@ -1424,7 +1370,7 @@ mod tests {
 
     #[tokio::test]
     async fn health_and_readiness_response_shapes_are_stable() {
-        let health = healthz().await.0;
+        let health = health::healthz().await.0;
         assert_eq!(health.status, "ok");
         assert_eq!(health.service, "tracera-server");
 
@@ -1433,7 +1379,7 @@ mod tests {
             backend: "sqlite",
             store: Arc::new(make_sqlite_store().await),
         };
-        let ready = readyz(axum::extract::State(state)).await.0;
+        let ready = health::readyz(axum::extract::State(state)).await.0;
         assert_eq!(ready.status, "ready");
         assert_eq!(ready.service, "tracera-server");
         assert_eq!(ready.version, "0.1.3-test");
