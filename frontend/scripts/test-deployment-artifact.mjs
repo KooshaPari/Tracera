@@ -3,7 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { isAbsolute, join, resolve, sep } from 'node:path'
 
 const dist = process.argv[2] || 'dist'
-if (isAbsolute(dist) || dist.split(/[\\/]/).includes('..')) {
+if (!/^[A-Za-z0-9._/-]+$/.test(dist) || isAbsolute(dist) || dist.includes('..')) {
   throw new Error('Deployment artifact path must remain relative to the working directory')
 }
 const distRoot = resolve(dist)
@@ -17,7 +17,7 @@ if (!/<title>\s*Tracera\b/i.test(index)) {
 
 const assetDir = join(distRoot, 'assets')
 const assets = existsSync(assetDir)
-  ? readdirSync(assetDir).filter((name) => name.endsWith('.js') && !name.includes('/') && !name.includes('\\'))
+  ? readdirSync(assetDir).filter((name) => /^[A-Za-z0-9._-]+\.js$/.test(name))
   : []
 const javascript = assets.map((name) => {
   const assetPath = join(assetDir, name)
