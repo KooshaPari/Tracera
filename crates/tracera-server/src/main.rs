@@ -518,10 +518,12 @@ async fn main() {
         );
     }
 
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap_or_else(|error| {
-        eprintln!("FATAL: cannot bind Tracera server to {addr}: {error}");
-        std::process::exit(1);
-    });
+    let listener = tokio::net::TcpListener::bind(addr)
+        .await
+        .unwrap_or_else(|error| {
+            eprintln!("FATAL: cannot bind Tracera server to {addr}: {error}");
+            std::process::exit(1);
+        });
     info!("tracera-server listening on {addr}");
     if let Err(error) = axum::serve(listener, app).await {
         eprintln!("FATAL: Tracera server stopped unexpectedly: {error}");
