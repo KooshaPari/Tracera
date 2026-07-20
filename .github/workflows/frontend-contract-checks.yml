@@ -55,20 +55,20 @@ jobs:
         run: npm run test:release-manifest
         working-directory: frontend
 
-      - name: Frontend parity smoke (optional, if TRACERA_API_BASE set)
+      - name: Frontend parity smoke (optional, if public HTTPS API set)
         run: |
-          if [ -n "${TRACERA_API_BASE}" ]; then
+          if [[ "${TRACERA_API_BASE}" == https://* ]]; then
             VITE_API_BASE="${TRACERA_API_BASE}" npm run smoke:parity
           else
-            echo "Skipping parity smoke: TRACERA_API_BASE not set"
+            echo "Skipping parity smoke: no public HTTPS TRACERA_API_BASE"
           fi
         working-directory: frontend
 
-      - name: Frontend POST parity smoke (optional, if TRACERA_API_BASE set)
+      - name: Frontend POST parity smoke (optional, if public HTTPS API set)
         run: |
-          if [ -n "${TRACERA_API_BASE}" ]; then
+          if [[ "${TRACERA_API_BASE}" == https://* ]]; then
             VITE_API_BASE="${TRACERA_API_BASE}" npm run smoke:post
           else
-            echo "Skipping POST smoke: TRACERA_API_BASE not set"
+            echo "Skipping POST smoke: no public HTTPS TRACERA_API_BASE"
           fi
         working-directory: frontend
