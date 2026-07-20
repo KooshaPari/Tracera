@@ -47,7 +47,7 @@ function CoverageMatrix() {
         <section className="data-section">
           <h2>Coverage Matrix (Runtime)</h2>
           {loading && <p role="status" aria-live="polite">Loading coverage metrics...</p>}
-          {error && <div className="error-banner" role="alert"><strong>Error:</strong> {error} <button type="button" className="retry-button" onClick={() => setRefreshKey((key) => key + 1)}>Retry</button></div>}
+          {error && <div className="error-banner" role="alert" aria-busy={loading}><strong>Error:</strong> {error} <button type="button" className="retry-button" disabled={loading} onClick={() => setRefreshKey((key) => key + 1)}>{loading ? 'Retrying…' : 'Retry'}</button></div>}
           {metrics ? (
             <div className="sprints-list">
               <div className="sprint-card">
