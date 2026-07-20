@@ -19,6 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify polyglot runtime boundary
+        run: ./scripts/verify-polyglot-boundary.sh
+
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
