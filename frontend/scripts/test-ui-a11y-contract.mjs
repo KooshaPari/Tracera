@@ -14,10 +14,10 @@ const dashboard = fs.readFileSync(new URL('../apps/web/src/components/Dashboard.
 const traceViewer = fs.readFileSync(new URL('../apps/web/src/components/TraceViewer.jsx', import.meta.url), 'utf8')
 const coverageMatrix = fs.readFileSync(new URL('../apps/web/src/components/CoverageMatrix.jsx', import.meta.url), 'utf8')
 const statusIcons = dashboard.match(/className="status-icon"/g) || []
-assert.equal(statusIcons.length, 4, 'Dashboard should expose four status icon wrappers')
+assert.equal(statusIcons.length, 5, 'Dashboard should expose five status icon wrappers')
 assert.equal(
   (dashboard.match(/className="status-icon" aria-hidden="true"/g) || []).length,
-  4,
+  5,
   'Dashboard status icons must be decorative to assistive technology',
 )
 for (const [name, source] of [['TraceViewer', traceViewer], ['CoverageMatrix', coverageMatrix]]) {

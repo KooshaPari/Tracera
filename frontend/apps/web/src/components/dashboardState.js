@@ -1,5 +1,6 @@
 export const FALLBACK_ENDPOINT_ERROR_MESSAGES = {
   health: 'health check failed',
+  readiness: 'readiness check failed',
   sprints: 'sprints load failed',
   teams: 'teams load failed',
   metrics: 'metrics load failed',
@@ -12,10 +13,11 @@ const asNumber = (value) => {
 }
 
 export const mergeDashboardFetchResults = (results) => {
-  const [healthRes, sprintsRes, teamsRes, metricsRes, evidenceRes] = results
+  const [healthRes, readinessRes, sprintsRes, teamsRes, metricsRes, evidenceRes] = results
   const errors = []
 
   const health = healthRes.status === 'fulfilled' ? healthRes.value ?? { status: 'unknown' } : { status: 'unknown' }
+  const readiness = readinessRes.status === 'fulfilled' ? readinessRes.value ?? { status: 'unknown' } : { status: 'unknown' }
   const sprints = sprintsRes.status === 'fulfilled' && Array.isArray(sprintsRes.value) ? sprintsRes.value : []
   const teams = teamsRes.status === 'fulfilled' && Array.isArray(teamsRes.value) ? teamsRes.value : []
   const metrics = metricsRes.status === 'fulfilled' ? metricsRes.value || null : null
@@ -23,6 +25,9 @@ export const mergeDashboardFetchResults = (results) => {
 
   if (healthRes.status !== 'fulfilled') {
     errors.push(healthRes.reason?.message || FALLBACK_ENDPOINT_ERROR_MESSAGES.health)
+  }
+  if (readinessRes.status !== 'fulfilled') {
+    errors.push(readinessRes.reason?.message || FALLBACK_ENDPOINT_ERROR_MESSAGES.readiness)
   }
   if (sprintsRes.status !== 'fulfilled') {
     errors.push(sprintsRes.reason?.message || FALLBACK_ENDPOINT_ERROR_MESSAGES.sprints)
@@ -39,6 +44,7 @@ export const mergeDashboardFetchResults = (results) => {
 
   return {
     health,
+    readiness,
     sprints,
     teams,
     metrics,

@@ -5,6 +5,7 @@ import './Dashboard.css'
 
 const activeEndpoints = [
   '/health',
+  '/readyz',
   '/sdlc-pm/sprints',
   '/org-intel/teams',
   '/org-intel/metrics',
@@ -22,6 +23,7 @@ function asDate(value) {
 
 function Dashboard() {
   const [health, setHealth] = useState(null)
+  const [readiness, setReadiness] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [sprints, setSprints] = useState([])
@@ -44,6 +46,7 @@ function Dashboard() {
       try {
         const results = await Promise.allSettled([
           traceraClient.getHealth({ signal: controller.signal }),
+          traceraClient.getReadiness({ signal: controller.signal }),
           traceraClient.getSprints({ signal: controller.signal }),
           traceraClient.getTeams({ signal: controller.signal }),
           traceraClient.getMetrics({ signal: controller.signal }),
@@ -53,10 +56,11 @@ function Dashboard() {
         // Keep last-known-good values when one endpoint is temporarily unavailable.
         // The aggregated error remains visible so stale data is never mistaken for fresh data.
         setHealth((previous) => results[0].status === 'fulfilled' ? merged.health : previous)
-        setSprints((previous) => results[1].status === 'fulfilled' ? merged.sprints : previous)
-        setTeams((previous) => results[2].status === 'fulfilled' ? merged.teams : previous)
-        setMetrics((previous) => results[3].status === 'fulfilled' ? merged.metrics : previous)
-        setEvidenceCount((previous) => results[4].status === 'fulfilled' ? merged.evidenceCount : previous)
+        setReadiness((previous) => results[1].status === 'fulfilled' ? merged.readiness : previous)
+        setSprints((previous) => results[2].status === 'fulfilled' ? merged.sprints : previous)
+        setTeams((previous) => results[3].status === 'fulfilled' ? merged.teams : previous)
+        setMetrics((previous) => results[4].status === 'fulfilled' ? merged.metrics : previous)
+        setEvidenceCount((previous) => results[5].status === 'fulfilled' ? merged.evidenceCount : previous)
         setError(merged.error)
       } catch (err) {
         if (!stopped) {
@@ -86,6 +90,7 @@ function Dashboard() {
 
   const activeSprints = sprints.filter((sprint) => sprint.status === 'active').length
   const isHealthy = isHealthOk(health)
+  const isReady = readiness?.status === 'ready'
   const endpointListText = activeEndpoints.join(', ')
   const coverageRatio = Number(metrics?.coverage_ratio)
   const displayCoverageRatio = Number.isFinite(coverageRatio) ? (coverageRatio * 100).toFixed(1) : '0.0'
@@ -131,6 +136,16 @@ function Dashboard() {
                   <h3>Backend Health</h3>
                   <p className={isHealthy ? 'status-ok' : 'status-unknown'}>
                     {isHealthy ? 'Healthy' : 'Checking...'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="status-card">
+                <div className="status-icon" aria-hidden="true">{isReady ? '✓' : '?'}</div>
+                <div className="status-info">
+                  <h3>Backend Readiness</h3>
+                  <p className={isReady ? 'status-ok' : 'status-unknown'}>
+                    {isReady ? 'Ready' : 'Waiting...'}
                   </p>
                 </div>
               </div>

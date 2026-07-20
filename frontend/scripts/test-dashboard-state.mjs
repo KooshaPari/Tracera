@@ -6,6 +6,7 @@ import { isHealthOk, mergeDashboardFetchResults } from '../apps/web/src/componen
 test('mergeDashboardFetchResults: returns normalized success payload', () => {
   const merged = mergeDashboardFetchResults([
     { status: 'fulfilled', value: { status: 'ok' } },
+    { status: 'fulfilled', value: { status: 'ready' } },
     { status: 'fulfilled', value: [{ id: 'S1' }, { id: 'S2' }] },
     { status: 'fulfilled', value: [{ id: 'T1' }] },
     { status: 'fulfilled', value: { total_artifacts: 5, coverage_ratio: 0.5, open_gaps: 2 } },
@@ -23,6 +24,7 @@ test('mergeDashboardFetchResults: returns normalized success payload', () => {
 test('mergeDashboardFetchResults: handles missing + malformed evidence gracefully', () => {
   const merged = mergeDashboardFetchResults([
     { status: 'fulfilled', value: { status: 'ok' } },
+    { status: 'rejected', reason: new Error('readiness') },
     { status: 'rejected', reason: new Error('sprints') },
     { status: 'fulfilled', value: [] },
     { status: 'rejected', reason: new Error('metrics') },
@@ -41,6 +43,7 @@ test('mergeDashboardFetchResults: handles missing + malformed evidence gracefull
 test('mergeDashboardFetchResults: preserves fallback health and null evidence', () => {
   const merged = mergeDashboardFetchResults([
     { status: 'rejected', reason: new Error('boom') },
+    { status: 'fulfilled', value: { status: 'ready' } },
     { status: 'fulfilled', value: [] },
     { status: 'fulfilled', value: [{ id: 'team-x' }] },
     { status: 'fulfilled', value: { total_artifacts: 1 } },
