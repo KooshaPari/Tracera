@@ -18,6 +18,13 @@ try {
     throw new Error('SOURCE_DATE_EPOCH did not produce byte-identical manifests')
   }
   execFileSync('node', [verify, first], { cwd: root, env, stdio: 'ignore' })
+  let rejected = false
+  try {
+    execFileSync('node', [verify, '/tmp/../outside-release-manifest.json'], { cwd: root, env, stdio: 'pipe' })
+  } catch {
+    rejected = true
+  }
+  if (!rejected) throw new Error('manifest verifier accepted path outside permitted roots')
   console.log('release manifest reproducibility: PASS')
 } finally {
   rmSync(first, { force: true })

@@ -6,6 +6,11 @@ import { resolve, sep } from 'node:path'
 import { tmpdir } from 'node:os'
 
 const repoRoot = resolve(import.meta.dirname, '..', '..')
+const fail = (message) => {
+  console.error(`release manifest invalid: ${message}`)
+  process.exitCode = 1
+}
+
 function repoPath(value, label, allowTemp = false) {
   const path = resolve(repoRoot, value)
   const tempRoot = resolve(tmpdir())
@@ -20,10 +25,6 @@ function repoPath(value, label, allowTemp = false) {
 let manifestPath
 try { manifestPath = repoPath(process.argv[2] ?? 'release-manifest.json', 'manifest', Boolean(process.argv[2])) }
 catch (error) { fail(error.message); manifestPath = '' }
-const fail = (message) => {
-  console.error(`release manifest invalid: ${message}`)
-  process.exitCode = 1
-}
 
 if (!existsSync(manifestPath)) fail(`missing ${manifestPath}`)
 else {
