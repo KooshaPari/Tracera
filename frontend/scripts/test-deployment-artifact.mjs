@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import { isAbsolute, join, resolve, sep } from 'node:path'
+import { isAbsolute, join, sep } from 'node:path'
 
 const dist = process.argv[2] || 'dist'
 if (!/^[A-Za-z0-9._/-]+$/.test(dist) || isAbsolute(dist) || dist.includes('..')) {
   throw new Error('Deployment artifact path must remain relative to the working directory')
 }
-const distRoot = resolve(dist) // NOSONAR: dist is allowlisted above before canonicalization.
+const distRoot = join(process.cwd(), dist)
 const indexPath = join(distRoot, 'index.html')
 if (!existsSync(indexPath)) throw new Error(`Missing deployment entrypoint: ${indexPath}`)
 
