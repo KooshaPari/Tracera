@@ -8,6 +8,9 @@ if (!/^[A-Za-z0-9._/-]+$/.test(dist) || isAbsolute(dist) || dist.includes('..'))
 }
 const distRoot = join(process.cwd(), dist)
 const indexPath = join(distRoot, 'index.html')
+if (!indexPath.startsWith(`${distRoot}${sep}`)) {
+  throw new Error('Deployment entrypoint escapes artifact root')
+}
 if (!existsSync(indexPath)) throw new Error(`Missing deployment entrypoint: ${indexPath}`)
 
 const index = readFileSync(indexPath, 'utf8')
