@@ -25,10 +25,6 @@ The currently deployed Rust server guarantees the operational probes and evidenc
 plus only the routes marked `Mounted = ✅` in the governance matrix. Historical Python routes
 remain documented below as migration targets, not as deployed capabilities.
 
-### Auth
-
-- `GET /api/v1/auth/me` (auth route not currently mounted in `tracera-server`)
-
 ### Evidence
 
 - `GET /evidence`
@@ -55,16 +51,20 @@ remain documented below as migration targets, not as deployed capabilities.
 - `GET /org-intel/metrics`
 - `GET /org-intel/teams`
 
-### Ingestion + comments
+### Ingestion
 
 - `POST /ingest/github`
 - `POST /ingest/jira`
+
+### Migration targets (not mounted)
+
+The following historical Python routes are retained as migration targets only. They are not
+part of the Rust server contract and must not be called by deployed clients until a route is
+added to `crates/tracera-server/src/main.rs` and covered by an integration test:
+
 - `GET /api/v1/items/{item_id}/comments`
 - `POST /api/v1/items/{item_id}/comments`
 - `DELETE /api/v1/items/{item_id}/comments/{comment_id}`
-
-### Code-trace
-
 - `GET /api/v1/code-trace/{component_id}`
 
 ## Governance mapping
