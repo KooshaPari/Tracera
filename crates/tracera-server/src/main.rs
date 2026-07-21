@@ -20,6 +20,7 @@ use std::env;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::time::Instant;
 use tower_http::{
     services::{ServeDir, ServeFile},
     set_header::SetResponseHeaderLayer,
@@ -53,6 +54,7 @@ use store::{EvidenceItem, Problem, Sprint, Store, Story, TeamRow};
 struct AppState {
     version: String,
     backend: &'static str,
+    started_at: Instant,
     store: Arc<dyn Store>,
 }
 
@@ -481,6 +483,7 @@ async fn main() {
     let state = AppState {
         version: env!("CARGO_PKG_VERSION").to_string(),
         backend,
+        started_at: Instant::now(),
         store,
     };
 
@@ -1278,6 +1281,7 @@ mod tests {
         let app = build_router(AppState {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
+            started_at: Instant::now(),
             store: Arc::new(store),
         });
 
@@ -1306,6 +1310,7 @@ mod tests {
         let app = build_router(AppState {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
+            started_at: Instant::now(),
             store: Arc::new(store),
         });
 
@@ -1344,6 +1349,7 @@ mod tests {
         let app = build_router(AppState {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
+            started_at: Instant::now(),
             store: Arc::new(store),
         });
 
@@ -1377,6 +1383,7 @@ mod tests {
         let state = AppState {
             version: "0.1.3-test".to_string(),
             backend: "sqlite",
+            started_at: Instant::now(),
             store: Arc::new(make_sqlite_store().await),
         };
         let ready = health::readyz(axum::extract::State(state)).await.0;
@@ -1384,6 +1391,7 @@ mod tests {
         assert_eq!(ready.service, "tracera-server");
         assert_eq!(ready.version, "0.1.3-test");
         assert_eq!(ready.backend, "sqlite");
+        assert!(ready.uptime_seconds < 2);
     }
 
     #[test]
