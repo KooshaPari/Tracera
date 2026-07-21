@@ -60,7 +60,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: frontend/apps/desktop
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --ignore-scripts
 
       - name: Build with Electrobun
         working-directory: frontend/apps/desktop

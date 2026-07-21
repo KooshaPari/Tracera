@@ -38,7 +38,7 @@ jobs:
         working-directory: frontend
         run: bun install --frozen-lockfile --ignore-scripts && npm run build
       - name: Build native server
-        run: cargo build --release -p tracera-server
+        run: cargo build --locked --release -p tracera-server
       - name: Run ephemeral runtime and latency smoke
         run: |
           tmp_dir="$(mktemp -d)"
