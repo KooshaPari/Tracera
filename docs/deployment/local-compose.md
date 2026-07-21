@@ -16,6 +16,16 @@ docker compose --env-file .env.local -f docker-compose.local.yml up -d --build
 curl --fail --silent http://127.0.0.1:18081/health
 ```
 
+Run the read-only operational probe after startup or restart. It checks all
+three Compose services, API liveness/readiness, and the frontend response; it
+does not change service state. Set `TRACERA_TAILSCALE_URL` to additionally
+probe the desktop URL from the host:
+
+```sh
+scripts/local-stack-health.sh
+TRACERA_TAILSCALE_URL=http://100.112.14.98:18081 scripts/local-stack-health.sh
+```
+
 The same env file makes restarts deterministic. Restart only this Compose
 project (the existing Grapheon service on port 8080 is unrelated):
 
