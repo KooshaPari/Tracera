@@ -2,7 +2,7 @@ const DEFAULT_API_BASE =
   (typeof import.meta !== 'undefined' &&
     import.meta.env &&
     import.meta.env.VITE_API_BASE) ||
-  'http://localhost:8080'
+  (typeof window !== 'undefined' ? window.location.origin : '')
 
 export const DEFAULT_REQUEST_TIMEOUT_MS = 15_000
 

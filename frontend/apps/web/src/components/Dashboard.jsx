@@ -266,7 +266,7 @@ function Dashboard() {
             <h2>API Configuration</h2>
             <div className="info-card">
               <p>
-                <strong>API Base:</strong> {import.meta.env.VITE_API_BASE || 'http://localhost:8080'}
+                <strong>API Base:</strong> {import.meta.env.VITE_API_BASE || window.location.origin}
               </p>
               <p className="api-note">Active backend endpoints: {endpointListText}</p>
             </div>
