@@ -69,11 +69,11 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            bunx --package vercel@41.7.2 vercel deploy --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" \
+            bunx vercel@41.7.2 deploy --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" \
               --build-env "VITE_API_BASE=$TRACERA_API_BASE" \
               --env "VITE_API_BASE=$TRACERA_API_BASE"
           else
-            bunx --package vercel@41.7.2 vercel deploy --prod --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" \
+            bunx vercel@41.7.2 deploy --prod --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" \
               --build-env "VITE_API_BASE=$TRACERA_API_BASE" \
               --env "VITE_API_BASE=$TRACERA_API_BASE"
           fi

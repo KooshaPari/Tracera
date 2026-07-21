@@ -4,7 +4,7 @@ WORKDIR /workspace
 COPY Cargo.toml Cargo.lock ./
 COPY crates ./crates
 
-RUN cargo build --release -p tracera-server
+RUN cargo build --locked --release -p tracera-server
 
 FROM debian:bookworm-slim
 
