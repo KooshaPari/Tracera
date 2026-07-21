@@ -564,6 +564,10 @@ fn build_router(state: AppState) -> Router {
             header::REFERRER_POLICY,
             HeaderValue::from_static("no-referrer"),
         ))
+        .layer(SetResponseHeaderLayer::if_not_present(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static("no-store"),
+        ))
 }
 
 // ---------------------------------------------------------------------------
@@ -1314,6 +1318,7 @@ mod tests {
         );
         assert_eq!(response.headers()[header::X_FRAME_OPTIONS], "DENY");
         assert_eq!(response.headers()[header::REFERRER_POLICY], "no-referrer");
+        assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
     }
 
     #[tokio::test]
