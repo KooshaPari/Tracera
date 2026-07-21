@@ -4,12 +4,17 @@ on:
   push:
     paths:
       - 'sidecar/go/**'
+      - 'scripts/verify-polyglot-boundary.sh'
       - '.github/workflows/sidecar-bootstrap-checks.yml'
-      - 'docs/operations/*polyglot*'
+      - 'docs/operations/go-zig-mojo-adr.md'
+      - 'docs/operations/polyglot-roadmap-phase1-tasks.md'
   pull_request:
     paths:
       - 'sidecar/go/**'
-      - 'docs/operations/*polyglot*'
+      - 'scripts/verify-polyglot-boundary.sh'
+      - '.github/workflows/sidecar-bootstrap-checks.yml'
+      - 'docs/operations/go-zig-mojo-adr.md'
+      - 'docs/operations/polyglot-roadmap-phase1-tasks.md'
   workflow_dispatch:
 
 jobs:
