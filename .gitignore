@@ -10,6 +10,10 @@ target/
 __pycache__/
 .astro/
 
+# Local Compose credentials and host overrides (never commit secrets).
+.env.local
+.env.*.local
+
 # Release manifests are generated per build/commit and must be archived as CI
 # artifacts, not committed from a developer worktree.
 /release-manifest.json
