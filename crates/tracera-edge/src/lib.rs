@@ -8,6 +8,8 @@ const KV_BINDING: &str = "TRACERA_KV";
 /// Cache TTL in seconds for the `/org-intel/metrics` endpoint.
 /// Metrics are recomputed at most once per 5 minutes.
 const METRICS_CACHE_TTL_SECS: u64 = 300;
+/// Keep edge-side matrix expansion aligned with the Rust API memory guard.
+const MAX_COVERAGE_LINKS: usize = 25_000;
 
 /// Derive the KV cache key for the org-intel metrics endpoint.
 /// Pure function — no KV I/O — so it can be tested natively without WASM.
@@ -63,7 +65,7 @@ struct MetricsResponse {
 }
 
 #[derive(Serialize)]
-struct NotImplementedResponse {
+struct ApiErrorResponse {
     error: &'static str,
 }
 
@@ -113,6 +115,12 @@ async fn fetch(req: Request, env: Env, _ctx: worker::Context) -> Result<Response
 
 async fn coverage_matrix(mut req: Request, _ctx: RouteContext<()>) -> Result<Response> {
     let request = req.json::<CoverageMatrixRequest>().await?;
+    if request.links.len() > MAX_COVERAGE_LINKS {
+        return Response::from_json(&ApiErrorResponse {
+            error: "coverage matrix exceeds link limit; use a paged export",
+        })
+        .map(|response| response.with_status(413));
+    }
     Response::from_json(&build_coverage_matrix(request))
 }
 
@@ -229,7 +237,7 @@ fn default_stale_after_days() -> u32 {
 }
 
 fn not_implemented(_req: Request, _ctx: RouteContext<()>) -> Result<Response> {
-    Response::from_json(&NotImplementedResponse {
+    Response::from_json(&ApiErrorResponse {
         error: "not implemented",
     })
     .map(|resp| resp.with_status(501))
