@@ -21,6 +21,12 @@
   box-sizing: border-box;
 }
 
+/* Ensure keyboard users retain a visible indicator on every interactive control. */
+:focus-visible {
+  outline: 3px solid var(--color-warning);
+  outline-offset: 2px;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
