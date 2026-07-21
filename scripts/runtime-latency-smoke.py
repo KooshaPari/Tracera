@@ -24,7 +24,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
-DEFAULT_PATHS = ("/health", "/ready", "/evidence", "/sdlc-pm/sprints")
+DEFAULT_PATHS = ("/health", "/ready", "/", "/evidence", "/sdlc-pm/sprints")
 
 
 @dataclass(frozen=True)
@@ -100,6 +100,10 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         "status_counts": dict(Counter(str(sample.status) for sample in samples)),
         "error_counts": dict(Counter(sample.error for sample in samples if sample.error)),
         "paths": list(paths),
+        "thresholds": {
+            "p95_ms": args.p95_threshold_ms,
+            "max_ms": args.max_threshold_ms,
+        },
     }
 
 
@@ -110,6 +114,18 @@ def main() -> int:
     parser.add_argument("--requests", type=int, default=80)
     parser.add_argument("--warmup", type=float, default=1.0)
     parser.add_argument("--timeout", type=float, default=3.0)
+    parser.add_argument(
+        "--p95-threshold-ms",
+        type=float,
+        default=float(os.environ.get("TRACERA_LATENCY_P95_MS", "0")),
+        help="fail when p95 exceeds this value; 0 disables the threshold",
+    )
+    parser.add_argument(
+        "--max-threshold-ms",
+        type=float,
+        default=float(os.environ.get("TRACERA_LATENCY_MAX_MS", "0")),
+        help="fail when max latency exceeds this value; 0 disables the threshold",
+    )
     parser.add_argument("--path", dest="paths", action="append", help="path to exercise (repeatable)")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     args = parser.parse_args()
@@ -118,13 +134,30 @@ def main() -> int:
         parser.error("base-url must be an http(s) URL without embedded credentials")
     if any(char in args.base_url for char in ("\n", "\r", "\t")):
         parser.error("base-url contains control characters")
-    if args.concurrency < 1 or args.requests < 1 or args.warmup < 0 or args.timeout <= 0:
-        parser.error("concurrency/requests must be positive; warmup must be non-negative")
+    if (
+        args.concurrency < 1
+        or args.requests < 1
+        or args.warmup < 0
+        or args.timeout <= 0
+        or args.p95_threshold_ms < 0
+        or args.max_threshold_ms < 0
+    ):
+        parser.error("concurrency/requests must be positive; warmup and thresholds must be non-negative")
     result = run(args)
+    latency = result["latency_ms"]
+    threshold_failures = []
+    if args.p95_threshold_ms and latency["p95"] > args.p95_threshold_ms:
+        threshold_failures.append(
+            f"p95 {latency['p95']:.2f}ms > {args.p95_threshold_ms:.2f}ms"
+        )
+    if args.max_threshold_ms and latency["max"] > args.max_threshold_ms:
+        threshold_failures.append(
+            f"max {latency['max']:.2f}ms > {args.max_threshold_ms:.2f}ms"
+        )
+    result["threshold_failures"] = threshold_failures
     if args.json:
         print(json.dumps(result, sort_keys=True))
     else:
-        latency = result["latency_ms"]
         print(
             "runtime latency smoke: "
             f"{result['requests']} requests @ c={result['concurrency']}, "
@@ -132,7 +165,9 @@ def main() -> int:
             f"rps={result['requests_per_second']} failures={result['failures']} "
             f"4xx={result['client_errors']}"
         )
-    return 1 if result["failures"] else 0
+        if threshold_failures:
+            print("latency threshold: FAIL: " + "; ".join(threshold_failures), file=sys.stderr)
+    return 1 if result["failures"] or threshold_failures else 0
 
 
 if __name__ == "__main__":

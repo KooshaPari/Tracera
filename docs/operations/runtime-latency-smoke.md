@@ -13,9 +13,22 @@ python3 scripts/runtime-latency-smoke.py --requests 200 --concurrency 8 --json
 ```
 
 The command reports p50/p95/p99/max latency, request rate, status/error
-counts, and failure totals. A non-zero exit means a transport failure or a
-server-side 5xx. HTTP 4xx responses are reported separately so a contract or
-auth failure is not conflated with a runtime outage.
+counts, and failure totals. A non-zero exit means a transport failure, a
+server-side 5xx, or an explicitly configured latency threshold was exceeded.
+HTTP 4xx responses are reported separately so a contract or auth failure is
+not conflated with a runtime outage. The default path mix includes `/` so the
+frontend and API are checked together.
+
+For a bounded local SLO check, configure thresholds either with flags or
+environment variables. Values are milliseconds; `0` disables a threshold:
+
+```sh
+TRACERA_LATENCY_P95_MS=250 TRACERA_LATENCY_MAX_MS=1000 \
+  python3 scripts/runtime-latency-smoke.py --base-url http://127.0.0.1:18081
+```
+
+Threshold failures are reported as `latency threshold: FAIL: ...` on stderr
+and return exit code 1. The check is read-only and has no service mutation.
 
 This is a local smoke, not a capacity claim. Run it against a dedicated
 staging deployment before changing production limits.
