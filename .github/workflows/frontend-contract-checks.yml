@@ -47,6 +47,18 @@ jobs:
         run: npm run test:unit
         working-directory: frontend
 
+      # Keep the highest-risk UI/API contracts visible as named CI gates.  The
+      # aggregate unit target above remains the fast canonical suite; these
+      # explicit invocations make failures attributable in branch protection
+      # and prevent a future aggregate-script edit from silently dropping them.
+      - name: Verify client/server route parity
+        run: npm run test:client-server-parity
+        working-directory: frontend
+
+      - name: Verify UI accessibility contract
+        run: npm run test:a11y
+        working-directory: frontend
+
       - name: Generate and verify release manifest
         run: npm run release:manifest && npm run verify:release-manifest
         working-directory: frontend
