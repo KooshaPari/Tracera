@@ -35,6 +35,10 @@ use uuid::Uuid;
 /// for malformed or unauthenticated requests. Individual payload fields still
 /// need domain validation at their handlers.
 const MAX_REQUEST_BODY_BYTES: usize = 8 * 1024 * 1024;
+/// Maximum number of links expanded into an in-memory coverage matrix.
+/// Requests above this bound must use a future paged/export path instead of
+/// allowing an unbounded response allocation.
+const MAX_COVERAGE_LINKS: usize = 25_000;
 use validation::{
     validate_text, MAX_ID_CHARS, MAX_INGEST_ISSUES, MAX_LONG_TEXT_CHARS, MAX_METADATA_BYTES,
     MAX_SHORT_TEXT_CHARS, MAX_URL_CHARS,
@@ -567,8 +571,16 @@ fn build_router(state: AppState) -> Router {
 // ---------------------------------------------------------------------------
 async fn coverage_matrix(
     Json(request): Json<CoverageMatrixRequest>,
-) -> Json<CoverageMatrixResponse> {
-    Json(build_coverage_matrix(request))
+) -> Result<Json<CoverageMatrixResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    if request.links.len() > MAX_COVERAGE_LINKS {
+        return Err((
+            axum::http::StatusCode::PAYLOAD_TOO_LARGE,
+            Json(ErrorResponse {
+                error: "coverage matrix exceeds link limit; use a paged export",
+            }),
+        ));
+    }
+    Ok(Json(build_coverage_matrix(request)))
 }
 
 async fn impact(Json(request): Json<ImpactRequest>) -> Json<ImpactResponse> {
@@ -1327,6 +1339,30 @@ mod tests {
             .await
             .expect("response");
         assert_eq!(malformed.status(), StatusCode::BAD_REQUEST);
+
+        let too_many_links = serde_json::json!({
+            "links": (0..=MAX_COVERAGE_LINKS)
+                .map(|index| serde_json::json!({
+                    "source_id": format!("source-{index}"),
+                    "target_id": format!("target-{index}"),
+                    "relationship": "verifies",
+                    "confidence": 1.0
+                }))
+                .collect::<Vec<_>>()
+        });
+        let limited = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/api/v1/coverage-matrix")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(serde_json::to_vec(&too_many_links).unwrap()))
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        assert_eq!(limited.status(), StatusCode::PAYLOAD_TOO_LARGE);
 
         let oversized = app
             .oneshot(
