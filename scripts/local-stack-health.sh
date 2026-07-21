@@ -20,10 +20,13 @@ command -v docker >/dev/null 2>&1 || die "docker is required"
 [[ "${timeout_seconds}" =~ ^[1-9][0-9]*$ ]] || die "timeout must be a positive integer"
 
 compose=(docker compose --env-file "${env_file}" -f "${compose_file}")
-mapfile -t running < <("${compose[@]}" ps --services --filter status=running 2>/dev/null | sort)
+# Keep this compatible with the system Bash shipped by macOS (3.2); avoid
+# mapfile/readarray, which were introduced after that version.
+running="$("${compose[@]}" ps --services --filter status=running 2>/dev/null | sort)" || \
+  die "unable to inspect Compose service status"
 expected=(frontend postgres tracera-server)
 for service in "${expected[@]}"; do
-  printf '%s\n' "${running[@]}" | grep -Fxq "${service}" || \
+  printf '%s\n' "${running}" | grep -Fxq "${service}" || \
     die "Compose service is not running: ${service}"
 done
 
@@ -47,4 +50,4 @@ if [[ -n "${tailnet_url}" ]]; then
   check_http "${tailnet_url}" "tailscale"
 fi
 
-echo "local stack health: PASS (services=${running[*]})"
+echo "local stack health: PASS (services=${running//$'\n'/ })"
