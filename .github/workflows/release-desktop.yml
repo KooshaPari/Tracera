@@ -64,7 +64,7 @@ jobs:
 
       - name: Build with Electrobun
         working-directory: frontend/apps/desktop
-        run: bunx electrobun build
+        run: bunx --no-install electrobun build
 
       - name: Locate built artifact
         id: locate

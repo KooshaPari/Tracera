@@ -36,7 +36,7 @@ jobs:
           bun-version: latest
       - name: Build frontend bundle
         working-directory: frontend
-        run: bun install --frozen-lockfile && npm run build
+        run: bun install --frozen-lockfile --ignore-scripts && npm run build
       - name: Build native server
         run: cargo build --release -p tracera-server
       - name: Run ephemeral runtime and latency smoke
