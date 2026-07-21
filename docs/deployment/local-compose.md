@@ -48,3 +48,23 @@ docker compose --env-file .env.local -f docker-compose.local.yml down
 
 To inspect failures without exposing credentials, use `docker compose ... logs
 --tail=100` and redact environment values before sharing output.
+
+## Credential drift recovery
+
+The PostgreSQL role password lives in the persistent volume. Updating
+`POSTGRES_PASSWORD` in `.env.local` does not update that existing role, so a
+stack can show all services as running while the API health check fails. The
+health probe detects PostgreSQL authentication-failure log signatures and
+prints a secret-free recovery hint. Repair the role in place using the value
+already intended for the API; do not remove the volume or print the value:
+
+```sh
+docker compose --env-file .env.local -f docker-compose.local.yml exec postgres \
+  psql -U tracera -d tracera -c \
+  "ALTER ROLE tracera WITH PASSWORD '<value from .env.local>';"
+docker compose --env-file .env.local -f docker-compose.local.yml restart tracera-server
+scripts/local-stack-health.sh
+```
+
+The placeholder is deliberate. Never paste a real password into shared logs,
+documentation, or shell history.
