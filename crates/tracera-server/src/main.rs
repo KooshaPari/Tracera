@@ -1,3 +1,4 @@
+mod db;
 mod health;
 mod ingest;
 mod pg_store;
@@ -433,7 +434,7 @@ async fn main() {
     let (store, backend): (Arc<dyn Store>, &'static str) =
         if database_url.starts_with("postgres://") || database_url.starts_with("postgresql://") {
             info!("Backend: Postgres (server tier)");
-            let pool = sqlx::PgPool::connect(&database_url)
+            let pool = db::connect_postgres(&database_url)
                 .await
                 .unwrap_or_else(|e| {
                     eprintln!(
@@ -457,16 +458,14 @@ async fn main() {
             || database_url.ends_with(".db")
         {
             info!("Backend: SQLite (on-device tier)");
-            let pool = sqlx::SqlitePool::connect(&database_url)
-                .await
-                .unwrap_or_else(|e| {
-                    eprintln!(
-                        "FATAL: Cannot open SQLite database at the provided DATABASE_URL.\n\
+            let pool = db::connect_sqlite(&database_url).await.unwrap_or_else(|e| {
+                eprintln!(
+                    "FATAL: Cannot open SQLite database at the provided DATABASE_URL.\n\
                      Error: {e}\n\
                      Use DATABASE_URL=sqlite:///path/to/file.db or DATABASE_URL=sqlite::memory:"
-                    );
-                    std::process::exit(1);
-                });
+                );
+                std::process::exit(1);
+            });
             sqlx::migrate!("./migrations-sqlite")
                 .run(&pool)
                 .await

@@ -1,6 +1,7 @@
 //! TRC-PHENO-005: WAL SQLite init.
 
-use sqlx::{Pool, Sqlite, SqlitePool};
+use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite};
+use std::time::Duration;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -12,7 +13,12 @@ pub enum SqliteInitError {
 /// Open a SQLite pool with WAL mode and busy_timeout.
 /// In-memory databases cannot use WAL; the pragmas are skipped for those.
 pub async fn open_with_wal(path: &str) -> Result<Pool<Sqlite>, SqliteInitError> {
-    let pool = SqlitePool::connect(path).await?;
+    let pool = SqlitePoolOptions::new()
+        .max_connections(8)
+        .acquire_timeout(Duration::from_secs(5))
+        .idle_timeout(Some(Duration::from_secs(600)))
+        .connect(path)
+        .await?;
     if !path.contains(":memory:") {
         sqlx::query("PRAGMA journal_mode = WAL")
             .execute(&pool)
