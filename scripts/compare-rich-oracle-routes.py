@@ -58,14 +58,30 @@ def oracle_routes(root: Path) -> set[str]:
     return routes
 
 
+def go_routes(file: Path) -> set[str]:
+    """Extract Echo registrations from a gateway routes.go file."""
+    routes: set[str] = set()
+    pattern = re.compile(
+        r'(?:api|protected|oauth|s\.echo)\.(?:GET|POST|PUT|PATCH|DELETE)\("([^\"]+)'
+    )
+    for path in pattern.findall(file.read_text(errors="replace")):
+        if path.startswith("/api/"):
+            routes.add(path)
+        elif path.startswith("/") and file.name == "routes.go":
+            routes.add("/api/v1" + path)
+    return routes
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("frontend_checkout", type=Path)
     parser.add_argument("oracle_checkout", type=Path)
+    parser.add_argument("--go-routes", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     rich = frontend_routes(args.frontend_checkout)
     oracle = oracle_routes(args.oracle_checkout)
+    gateway = go_routes(args.go_routes) if args.go_routes else set()
     rich_normalized = {normalize(route): route for route in rich}
     oracle_normalized = {normalize(route): route for route in oracle}
     overlap = sorted(set(rich_normalized) & set(oracle_normalized))
@@ -79,6 +95,10 @@ def main() -> int:
         ],
         "frontend_only": sorted(set(rich_normalized) - set(oracle_normalized)),
         "oracle_only": sorted(set(oracle_normalized) - set(rich_normalized)),
+        "gateway_routes": len(gateway),
+        "gateway_normalized_matches": len(
+            set(normalize(route) for route in rich) & {normalize(route) for route in gateway}
+        ),
         "normalization": "all {param} segments collapse to {} for comparison only",
     }
     rendered = json.dumps(report, indent=2) + "\n"
