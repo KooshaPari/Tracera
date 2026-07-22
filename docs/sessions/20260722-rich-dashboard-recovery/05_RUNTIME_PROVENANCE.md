@@ -52,3 +52,16 @@ The missing Python image recipe must be supplied under
 changes only `python-backend.build`. It must never be merged into the stable
 source snapshot or used to alter Grapheon port `8080`. Materialized checkouts
 must retain the exact ref/hash above and record checksums before any launch.
+
+## Validation checkpoint (2026-07-22 14:25 UTC)
+
+- Rich worktree `/private/tmp/tracera-rich-integrated-20260722` restored its
+  frozen Bun lockfile and installed 533 packages with Bun 1.3.11.
+- `bun run build` passed: 1,895 modules transformed; production bundle emitted
+  to `frontend/dist`. Vite emitted only deprecation and chunk-size warnings.
+- `scripts/validate-rich-route-matrix.mjs` reports 94 route templates, 57
+  declared exact paths, and 46 unclassified exact paths when evaluated against
+  the canonical manifest. This remains a fail-closed promotion gate.
+- No runtime launch or public deployment was claimed: the rich worktree does
+  not contain the canonical manifest, and the oracle source tuple is still
+  incomplete.
