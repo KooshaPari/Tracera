@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "snapshot": {
+    "approved_frontend_ref": "36b6055faeed18bc398e5fb99242f31dcdf3e6b0",
+    "approved_frontend_ref_name": "origin/legacy/grapheon-wip-final-2026-07-17",
+    "backend_source": "crates/tracera-server/src/main.rs",
+    "frontend_source": "frontend/apps/web/src",
+    "captured_at": "2026-07-22"
+  },
+  "statuses": ["rust-native", "python-oracle", "unavailable"],
+  "capabilities": [
+    {"id":"health","status":"rust-native","backend":["/health","/healthz","/ready","/readyz"],"frontend":["/api/v1/health"]},
+    {"id":"traceability-analysis","status":"rust-native","backend":["/api/v1/coverage-matrix","/api/v1/impact","/api/v1/confidence","/api/v1/blast-radius","/api/v1/governance/spec-check","/api/v1/trace/forward/{artifact_id}","/api/v1/trace/reverse/{artifact_id}"],"frontend":["/api/v1/projects/{id}/matrix","/api/v1/graph/analysis/impact","/api/v1/graph/impact/{id}"]},
+    {"id":"evidence","status":"rust-native","backend":["/evidence"],"frontend":["/api/v1/items","/api/v1/items/{id}"]},
+    {"id":"sdlc-project-management","status":"rust-native","backend":["/sdlc-pm/health","/sdlc-pm/sprints","/sdlc-pm/stories"],"frontend":["/api/v1/projects","/api/v1/projects/{id}"]},
+    {"id":"organization-intelligence","status":"rust-native","backend":["/org-intel/health","/org-intel/teams","/org-intel/metrics"],"frontend":["/api/v1/agents","/api/v1/agents/{id}"]},
+    {"id":"graph-exploration","status":"python-oracle","backend":[],"frontend":["/api/v1/graph/full","/api/v1/graph/traverse/{id}","/api/v1/graph/ancestors/{id}","/api/v1/graph/descendants/{id}","/api/v1/graph/dependencies/{id}","/api/v1/graph/path","/api/v1/graph/paths","/api/v1/graph/topo-sort","/api/v1/graph/orphans","/api/v1/graph/cycles"]},
+    {"id":"items-and-links-crud","status":"python-oracle","backend":[],"frontend":["/api/v1/items","/api/v1/links","/api/v1/links/{id}"]},
+    {"id":"projects-and-import-export","status":"python-oracle","backend":[],"frontend":["/api/v1/projects/{id}/import","/api/v1/projects/{id}/matrix/export","/api/v1/projects/{id}/export?format"]},
+    {"id":"journeys","status":"python-oracle","backend":[],"frontend":["/api/v1/projects/{projectId}/journeys","/api/v1/journeys/{journeyId}","/api/v1/journeys/{journeyId}/steps"]},
+    {"id":"concepts-libraries-equivalences","status":"python-oracle","backend":[],"frontend":["/api/v1/concepts/{conceptId}","/api/v1/libraries/{libraryId}","/api/v1/equivalences/{equivalenceId}","/api/v1/projects/{projectId}/equivalences"]},
+    {"id":"search-and-indexing","status":"python-oracle","backend":[],"frontend":["/api/v1/search","/api/v1/search/suggest","/api/v1/search/reindex","/api/v1/search/stats","/api/v1/search/health"]},
+    {"id":"authentication-and-account","status":"python-oracle","backend":[],"frontend":["/api/v1/auth/login","/api/v1/auth/logout","/api/v1/auth/me","/api/v1/auth/refresh","/api/v1/auth/profile","/api/v1/auth/account","/api/v1/csrf-token"]},
+    {"id":"agent-orchestration","status":"python-oracle","backend":[],"frontend":["/api/v1/agents/register","/api/v1/agents/heartbeat","/api/v1/agents/task/assign","/api/v1/agents/task/result","/api/v1/agents/task/error"]},
+    {"id":"executions-and-codex","status":"python-oracle","backend":[],"frontend":["/api/v1/projects/{project_id}/executions","/api/v1/projects/{project_id}/codex/interactions","/api/v1/projects/{project_id}/execution-config"]},
+    {"id":"notifications-and-settings","status":"python-oracle","backend":[],"frontend":["/api/v1/notifications","/api/v1/settings"]},
+    {"id":"telemetry-and-websocket","status":"unavailable","backend":[],"frontend":["/api/v1/metrics/web-vitals","/api/v1/metrics/errors","/api/v1/ws"]}
+  ]
+}
