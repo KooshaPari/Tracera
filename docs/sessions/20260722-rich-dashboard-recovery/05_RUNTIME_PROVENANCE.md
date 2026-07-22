@@ -131,3 +131,9 @@ forwarded refs and correct default button behavior. The formerly failing legacy
 forms fixture suite passes **19/19**, and the rich production build still passes
 (1,895 modules). The change is preserved on
 `wip/20260722T1522-18c4a5ddffb51138` pending promotion review.
+
+Post-repair aggregate rerun reports **253/265 passed**. The two previously
+unloadable DOMPurify suites are now executable and pass **79/79** after adding
+the declared test dependency. The remaining 12 failures are isolated to
+`command-palette.test.tsx` missing local test bindings (`container`, `user`,
+and query destructuring); they are not hidden by the runner.
