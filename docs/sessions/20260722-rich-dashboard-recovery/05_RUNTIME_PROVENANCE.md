@@ -106,3 +106,11 @@ must retain the exact ref/hash above and record checksums before any launch.
 - Public mode fails closed without a real `TRACERA_PUBLIC_HOSTNAME`; a
   placeholder hostname is rejected as well. No public deployment is implied
   by the private-mode pass.
+
+## Rich UI static checkpoint (2026-07-22 14:56 UTC)
+
+- A source scan found no production `<img>` element without an `alt` attribute;
+  the only missing-alt matches are intentionally adversarial XSS test fixtures.
+- Existing rich source contains dedicated accessibility and security test trees.
+- A direct Vitest invocation could not complete in the isolated worktree because
+  the package has no configured test script/dependency; no test pass is claimed.
