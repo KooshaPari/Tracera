@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { traceraClient } from '../apps/web/src/services/traceraClient.js';
+// The client derives its browser fallback from window.location.origin.  Keep
+// this Node contract test deterministic without weakening production URL
+// validation or relying on a CI-provided VITE_API_BASE.
+global.window = { location: { origin: 'http://127.0.0.1:8080' } };
+const { traceraClient } = await import('../apps/web/src/services/traceraClient.js');
 
 function makeHeaders(value) {
   return {
