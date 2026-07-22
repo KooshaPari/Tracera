@@ -22,18 +22,18 @@ unsupported; prefixes and Go-owned routes still require normalization. A live
 bundle must publish a generated route matrix with `frontend-only`,
 `python-owned`, `go-owned`, and `matched` classifications.
 
-The current manifest covers 57 frontend paths exactly; the rich API inventory
-contains 94. **46 paths are currently unclassified**, including agent status and
-task routes, AuthKit lifecycle routes, component/library/token operations,
-equivalence mutations, events, journeys, Codex review, execution artifacts, and
-search indexing. These must be classified before enabling those UI surfaces.
+The current manifest now classifies all 94 rich frontend route templates exactly
+across the existing capability families. Classification is not backend parity:
+the Python-oracle families remain gated until an authoritative runtime source
+tuple is recovered, and the unavailable telemetry/WebSocket family remains
+explicitly unavailable.
 
 The existing 16-family capability manifest already has semantic buckets for
 most of these paths (authentication, agents, journeys, concepts/libraries/
-equivalences, search, executions/Codex, notifications/settings). The 46-path
-count is therefore an **exact-template coverage gap**, not 46 new product
-domains. The next matrix pass must expand those existing buckets to concrete
-templates and leave only genuinely unmapped paths as `unavailable`.
+equivalences, search, executions/Codex, notifications/settings). The prior
+46-path count was an **exact-template coverage gap**, not 46 new product
+domains. The expanded matrix resolves that bookkeeping gap while preserving
+the separate runtime-ownership and availability gates.
 
 ## Incompatible snapshots
 
