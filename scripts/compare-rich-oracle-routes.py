@@ -67,7 +67,7 @@ def go_routes(file: Path) -> set[str]:
     for path in pattern.findall(file.read_text(errors="replace")):
         if path.startswith("/api/"):
             routes.add(path)
-        elif path.startswith("/") and file.name == "routes.go":
+        elif path.startswith("/"):
             routes.add("/api/v1" + path)
     return routes
 
