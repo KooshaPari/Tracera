@@ -72,16 +72,24 @@ def go_routes(file: Path) -> set[str]:
     return routes
 
 
+def rust_routes(file: Path) -> set[str]:
+    """Extract Axum route literals from the native Tracera server."""
+    pattern = re.compile(r'\.route\("([^"]+)"')
+    return set(pattern.findall(file.read_text(errors="replace")))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("frontend_checkout", type=Path)
     parser.add_argument("oracle_checkout", type=Path)
     parser.add_argument("--go-routes", type=Path)
+    parser.add_argument("--rust-main", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     rich = frontend_routes(args.frontend_checkout)
     oracle = oracle_routes(args.oracle_checkout)
     gateway = go_routes(args.go_routes) if args.go_routes else set()
+    native = rust_routes(args.rust_main) if args.rust_main else set()
     rich_normalized = {normalize(route): route for route in rich}
     oracle_normalized = {normalize(route): route for route in oracle}
     overlap = sorted(set(rich_normalized) & set(oracle_normalized))
@@ -98,6 +106,10 @@ def main() -> int:
         "gateway_routes": len(gateway),
         "gateway_normalized_matches": len(
             set(normalize(route) for route in rich) & {normalize(route) for route in gateway}
+        ),
+        "rust_routes": len(native),
+        "rust_normalized_matches": len(
+            {normalize(route) for route in rich} & {normalize(route) for route in native}
         ),
         "normalization": "all {param} segments collapse to {} for comparison only",
     }

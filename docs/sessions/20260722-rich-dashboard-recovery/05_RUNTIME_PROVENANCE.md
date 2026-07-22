@@ -50,6 +50,11 @@ The reproducible comparison is now encoded in
 normalized candidate matches, and both directional gaps. Normalization collapses
 parameter names only for comparison and never changes the promotion gate.
 
+The comparator also extracts Axum route literals. Against the current native
+server it reports 23 Rust routes and zero normalized rich-template matches;
+this is expected for the current API shape and confirms that the rich surface
+cannot be enabled by simply pointing its client at the Rust listener.
+
 ## Incompatible snapshots
 
 - `origin/releases/stable`'s `ARCHIVE/DOCKER/docker-compose.yml` uses `backend`
