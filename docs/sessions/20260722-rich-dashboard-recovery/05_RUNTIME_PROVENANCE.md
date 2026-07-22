@@ -143,3 +143,14 @@ keyboard close behavior, and local query/user bindings). The configured
 aggregate now passes **344/344 tests across 12 files**. Axe still emits a
 non-fatal jsdom canvas diagnostic, but no test is suppressed or marked passing
 by configuration.
+
+## Synchronized release checkpoint (2026-07-22 23:44 UTC)
+
+- Canonical checkout is clean at `9a875ff54`.
+- Capability manifest validation passes (16 capability families).
+- Deployment-manifest and Kubernetes security checks pass in secret-free static
+  mode.
+- Durable rich WIP refs `95334238c` (a11y fixtures) and `3f5eebe52`
+  (DOMPurify dependency) are present on origin; the rich build and aggregate
+  test run pass independently. These refs remain promotion candidates, not a
+  claim that the canonical checkout contains the rich frontend.
