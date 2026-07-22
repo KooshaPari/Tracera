@@ -16,15 +16,28 @@ from pathlib import Path
 RESERVED_HOST_PORT = 8080
 PORT_RE = re.compile(r"(?:^|[\"'\s-])(?:127\.0\.0\.1:)?(\d{2,5}):\d{1,5}(?:[\"'\s]|$)")
 CONTAINER_NAME_RE = re.compile(r"^\s*container_name:\s*([^#\s]+)", re.MULTILINE)
+SERVICE_RE = re.compile(r"^  ([a-zA-Z0-9_.-]+):\s*$", re.MULTILINE)
+BUILD_CONTEXT_RE = re.compile(r"^\s*context:\s*([^#\s]+)", re.MULTILINE)
+BUILD_DOCKERFILE_RE = re.compile(r"^\s*dockerfile:\s*([^#\s]+)", re.MULTILINE)
+UPSTREAM_RE = re.compile(r"^\s*upstream\s+([a-zA-Z0-9_.-]+)\s*\{", re.MULTILINE)
+UPSTREAM_SERVER_RE = re.compile(r"^\s*server\s+([a-zA-Z0-9_.-]+):\d+", re.MULTILINE)
 
 
-def validate_checkout(root: Path, compose: Path) -> tuple[list[str], list[str]]:
+def validate_checkout(
+    root: Path, compose: Path, *, http_only: bool = False, nginx_config: Path | None = None
+) -> tuple[list[str], list[str]]:
     """Return (errors, observations) for *root* and its Compose text."""
     errors: list[str] = []
     observations: list[str] = []
 
+    # Accept either a conventional nginx/ tree or the isolated artifact's
+    # flat layout.  The latter keeps the evidence-copied configs immutable and
+    # makes Compose mounts explicit relative to the override file.
     nginx_conf = root / "nginx" / "nginx.conf"
     nginx_conf_d = root / "nginx" / "conf.d"
+    if not nginx_conf.is_file():
+        nginx_conf = root / "nginx.conf"
+        nginx_conf_d = root / "conf.d"
     if not nginx_conf.is_file():
         errors.append(f"missing required nginx config: {nginx_conf}")
     if not nginx_conf_d.is_dir():
@@ -35,6 +48,38 @@ def validate_checkout(root: Path, compose: Path) -> tuple[list[str], list[str]]:
         return errors, observations
 
     text = compose.read_text(encoding="utf-8")
+    services = set(SERVICE_RE.findall(text))
+    # Validate build inputs before launch. Compose reports these late and with
+    # opaque errors; this gate makes an incomplete stable ref explicit.
+    contexts = BUILD_CONTEXT_RE.findall(text)
+    dockerfiles = BUILD_DOCKERFILE_RE.findall(text)
+    for context in contexts:
+        context_path = (compose.parent / context).resolve()
+        if not context_path.is_dir():
+            errors.append(f"missing build context: {context} ({context_path})")
+    for dockerfile, context in zip(dockerfiles, contexts):
+        dockerfile_path = (compose.parent / context / dockerfile).resolve()
+        if not dockerfile_path.is_file():
+            errors.append(f"missing build Dockerfile: {dockerfile} ({dockerfile_path})")
+    if contexts:
+        observations.append(f"build contexts checked: {len(contexts)}")
+
+    gateway = nginx_config or nginx_conf
+    if gateway.is_file():
+        gateway_text = gateway.read_text(encoding="utf-8")
+        upstreams = set(UPSTREAM_RE.findall(gateway_text))
+        upstream_servers = set(UPSTREAM_SERVER_RE.findall(gateway_text))
+        missing_upstreams = sorted(upstream_servers - services)
+        if missing_upstreams:
+            errors.append(
+                "nginx upstream services absent from Compose: " + ", ".join(missing_upstreams)
+            )
+        if upstreams:
+            observations.append("nginx upstreams: " + ", ".join(sorted(upstreams)))
+        if http_only and re.search(r"(?:ssl_certificate|listen\s+443\s+ssl)", gateway_text):
+            errors.append("HTTP-only mode cannot include TLS certificate or HTTPS directives")
+        if http_only and re.search(r"/etc/nginx/certs|conf\.d/ssl", gateway_text):
+            errors.append("HTTP-only mode cannot require an nginx cert mount")
     host_ports = [int(match.group(1)) for match in PORT_RE.finditer(text)]
     if RESERVED_HOST_PORT in host_ports:
         errors.append("host port 8080 is reserved for Grapheon and must not be published")
@@ -60,10 +105,22 @@ def main() -> int:
         default=None,
         help="Compose file relative to checkout (default: docker-compose.yml)",
     )
+    parser.add_argument(
+        "--http-only",
+        action="store_true",
+        help="reject TLS directives/cert mounts; intended for disposable local smoke stacks",
+    )
+    parser.add_argument(
+        "--nginx-config",
+        type=Path,
+        default=None,
+        help="nginx config to inspect (default: checkout nginx config)",
+    )
     args = parser.parse_args()
     root = args.checkout.resolve()
     compose = (args.compose or (root / "docker-compose.yml")).resolve()
-    errors, observations = validate_checkout(root, compose)
+    gateway = args.nginx_config.resolve() if args.nginx_config else None
+    errors, observations = validate_checkout(root, compose, http_only=args.http_only, nginx_config=gateway)
     for observation in observations:
         print(f"INFO: {observation}")
     if errors:
