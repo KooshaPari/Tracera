@@ -124,3 +124,10 @@ The rich worktree now has a canonical Vitest harness. Current evidence:
   28 failures are concentrated in legacy `forms.test.tsx` fixtures that render
   non-labellable `<div>` controls, not production page components. They remain
   visible failures and are not suppressed.
+
+The approved rich WIP then fixed the underlying shared UI primitive defect:
+`@tracertm/ui` `Input` and `Button` now render semantic native elements with
+forwarded refs and correct default button behavior. The formerly failing legacy
+forms fixture suite passes **19/19**, and the rich production build still passes
+(1,895 modules). The change is preserved on
+`wip/20260722T1522-18c4a5ddffb51138` pending promotion review.
