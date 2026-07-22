@@ -14,6 +14,7 @@
     "package": "bunx electrobun package",
     "typecheck": "bunx tsc --noEmit --project tsconfig.json",
     "test:e2e": "bun test tests/e2e_desktop.test.ts --timeout 60000",
+    "test:local-compose": "bun test tests/localCompose.test.ts",
     "postinstall": "bun scripts/postinstall.ts"
   },
   "dependencies": {

@@ -62,6 +62,17 @@ URL precedence: `TRACERA_URL` > `TRACERA_DEV_URL` > default.
 
 The resolved target URL is shown in the tray menu under "Target: …".
 
+To have the `.app` start and stop the desktop-hosted stack, opt in explicitly:
+
+```bash
+TRACERA_LOCAL_COMPOSE=1 TRACERA_REPO_ROOT=/absolute/path/to/Tracera bun run dev
+```
+
+The launcher uses Docker Compose, waits for `/health` and `/ready`, loads
+`http://127.0.0.1:18081/`, and runs `docker compose down` when the app exits.
+It rejects port 8080 because that port belongs to Grapheon. The default app
+mode remains external-URL-only and does not mutate host services.
+
 ## Features
 
 - **System tray** — click to Show / Reload / Quit; always present.
