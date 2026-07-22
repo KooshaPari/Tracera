@@ -13,7 +13,7 @@ import json
 import re
 from pathlib import Path
 
-ROUTE_RE = re.compile(r"[\"'](/api/v1[^\"']+)[\"']")
+ROUTE_RE = re.compile(r"(/api/v1[^\s`\"'\},)]+)")
 DECORATOR_RE = re.compile(
     r"@(?:\w+\.)?(?:get|post|put|patch|delete)\([\"']([^\"']+)"
 )
@@ -33,7 +33,9 @@ ROUTER_NAMES = {
 
 
 def normalize(route: str) -> str:
-    return re.sub(r"\{[^}]+\}|:[A-Za-z_][\w-]*", "{}", route).rstrip("/") or "/"
+    route = route.split("?", 1)[0]
+    route = re.sub(r"\$\{[^}]+\}|\{[^}]+\}|:[A-Za-z_][\w-]*", "{}", route)
+    return route.rstrip("/") or "/"
 
 
 def frontend_routes(root: Path) -> set[str]:
@@ -41,6 +43,24 @@ def frontend_routes(root: Path) -> set[str]:
     for file in (root / "frontend/apps/web/src/api").glob("*.ts"):
         routes.update(ROUTE_RE.findall(file.read_text(errors="replace")))
     return routes
+
+
+def frontend_route_methods(root: Path) -> dict[str, set[str]]:
+    """Extract methods only when route and method share a fetch call."""
+    result: dict[str, set[str]] = {}
+    call_re = re.compile(
+        r"fetch\((?P<body>.{0,1200}?method\s*:\s*['\"](?:GET|POST|PUT|PATCH|DELETE)['\"])",
+        re.DOTALL,
+    )
+    method_re = re.compile(r"method\s*:\s*['\"](GET|POST|PUT|PATCH|DELETE)['\"]")
+    for file in (root / "frontend/apps/web/src/api").glob("*.ts"):
+        source = file.read_text(errors="replace")
+        for call in call_re.finditer(source):
+            methods = method_re.findall(call.group("body"))
+            routes = ROUTE_RE.findall(call.group("body"))
+            for route in routes:
+                result.setdefault(normalize(route), set()).update(methods or {"GET"})
+    return result
 
 
 def oracle_routes(root: Path) -> set[str]:
@@ -99,6 +119,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     rich = frontend_routes(args.frontend_checkout)
+    rich_methods = frontend_route_methods(args.frontend_checkout)
     oracle = oracle_routes(args.oracle_checkout)
     gateway = go_routes(args.go_routes) if args.go_routes else set()
     gateway_methods = go_route_methods(args.go_routes) if args.go_routes else {}
@@ -114,6 +135,9 @@ def main() -> int:
             {"rich": rich_normalized[route], "oracle": oracle_normalized[route]}
             for route in overlap
         ],
+        "frontend_method_inventory": {
+            route: sorted(methods) for route, methods in sorted(rich_methods.items())
+        },
         "frontend_only": sorted(set(rich_normalized) - set(oracle_normalized)),
         "oracle_only": sorted(set(oracle_normalized) - set(rich_normalized)),
         "gateway_routes": len(gateway),

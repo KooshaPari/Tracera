@@ -62,6 +62,12 @@ on 28 normalized paths. These are candidate overlaps only; handler behavior,
 auth middleware, method contracts, and response schemas still require
 endpoint-level verification before promotion.
 
+The rich-client method extractor finds only five direct route/method pairs in
+the current API modules; dynamic URL builders remain intentionally unresolved.
+This is a lower bound, not a claim that the other rich routes are GET-only.
+The comparator now emits this inventory so unresolved client contracts remain a
+visible promotion blocker.
+
 ## Incompatible snapshots
 
 - `origin/releases/stable`'s `ARCHIVE/DOCKER/docker-compose.yml` uses `backend`
