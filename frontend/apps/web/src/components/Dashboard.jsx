@@ -98,7 +98,7 @@ function Dashboard() {
   const endpointListText = activeEndpoints.join(', ')
   const coverageRatio = Number(metrics?.coverage_ratio)
   const displayCoverageRatio = Number.isFinite(coverageRatio) ? (coverageRatio * 100).toFixed(1) : '0.0'
-  const hasDashboardData = Boolean(health || readiness || teams.length || sprints.length || metrics)
+  const hasDashboardData = Boolean(health || readiness || teams.length || sprints.length || metrics || evidenceCount)
   const freshnessLabel = lastUpdatedAt
     ? `Last updated ${lastUpdatedAt.toLocaleTimeString()}`
     : 'Waiting for the first update'
