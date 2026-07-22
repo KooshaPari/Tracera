@@ -7,7 +7,8 @@ Date: 2026-07-22
 - Schema: `docs/sessions/20260722-agent-harness-portfolio/artifacts/benchmark_run.schema.json`
 - Version: `1.0.0` (Draft 2020-12)
 - Producer: `helios-cli/harness` `benchmark_envelope.add_envelope`
-- Source snapshot: HeliosCLI local working branch; snapshot/airlock branch is pending because the host was resource-saturated.
+- Source snapshot: HeliosCLI `wip/20260722T1118-18c498974ea07408`.
+- Tracera artifact snapshot: `wip/20260722T1120-18c498ad488db268`.
 
 ## Event mapping
 
@@ -38,7 +39,7 @@ print('fastjsonschema_pass')
 PY
 ```
 
-The strict envelope has already passed Draft 2020-12 validation in the Helios workspace. A direct fastjsonschema pass should be run in the target Tracera environment before enabling ingestion.
+Result in the shared workspace: `fastjsonschema_pass`. The strict envelope has also passed Draft 2020-12 validation in the Helios workspace; rerun both checks in CI before enabling ingestion.
 
 ## Remaining caveats
 
