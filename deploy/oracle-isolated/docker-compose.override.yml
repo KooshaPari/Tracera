@@ -1,0 +1,30 @@
+services:
+  # Disposable rich-dashboard oracle overlay.  Apply this after the stable
+  # TraceRTM compose file; !override prevents the stable host bindings from
+  # leaking onto Grapheon's reserved ports.
+  nginx:
+    ports: !override
+      - "127.0.0.1:18000:80"
+    volumes: !override
+      - ./deploy/oracle-isolated/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/oracle-isolated/conf.d:/etc/nginx/conf.d:ro
+
+  go-backend:
+    ports: !override
+      - "127.0.0.1:18081:8080"
+
+  python-backend:
+    ports: !override
+      - "127.0.0.1:18080:8000"
+
+  postgres:
+    ports: !override
+      - "127.0.0.1:15432:5432"
+
+  redis:
+    ports: !override
+      - "127.0.0.1:16379:6379"
+
+  nats:
+    ports: !override
+      - "127.0.0.1:14222:4222"
