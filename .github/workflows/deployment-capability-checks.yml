@@ -5,11 +5,15 @@ on:
     paths:
       - 'deploy/kubernetes/**'
       - 'scripts/test-deployment-capability-report.sh'
+      - 'frontend/scripts/validate-capability-manifest.mjs'
+      - 'docs/sessions/20260722-rich-dashboard-recovery/capability-manifest.json'
       - '.github/workflows/deployment-capability-checks.yml'
   pull_request:
     paths:
       - 'deploy/kubernetes/**'
       - 'scripts/test-deployment-capability-report.sh'
+      - 'frontend/scripts/validate-capability-manifest.mjs'
+      - 'docs/sessions/20260722-rich-dashboard-recovery/capability-manifest.json'
       - '.github/workflows/deployment-capability-checks.yml'
   workflow_dispatch:
 
@@ -25,6 +29,14 @@ jobs:
 
       - name: Install manifest scanner
         run: sudo apt-get update && sudo apt-get install --yes ripgrep
+
+      - name: Validate rich dashboard capability manifest
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+
+      - name: Run rich capability manifest validator
+        run: bun frontend/scripts/validate-capability-manifest.mjs
 
       - name: Run read-only capability report (JSON contract)
         run: ./scripts/test-deployment-capability-report.sh

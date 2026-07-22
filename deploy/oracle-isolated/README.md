@@ -1,5 +1,24 @@
 # TracerTM Nginx API Gateway
 
+## Recovery provenance (2026-07-22)
+
+This directory is an isolation overlay, not a claim that one historical ref
+contains the complete oracle runtime. The required source artifacts were
+audited across all recent Compose-bearing refs and no single ref contained the
+full tuple (Python Dockerfile, Go Dockerfile, Python source, Go source, Compose,
+and Nginx assets).
+
+| Component | Evidence | Status |
+| --- | --- | --- |
+| Rich frontend | `origin/legacy/grapheon-wip-final-2026-07-17` / `36b6055fa` | recovered |
+| Python oracle | `bf6cd11ad26e2942d6bcad7f91c0a76601468f09` | source + root Dockerfile |
+| Go oracle candidate | `3423caf276aa55b925ab9e484af09e35e71ae934` | non-equivalent backend tree; rejected for silent merge |
+| Nginx assets | canonical `deploy/nginx/*` lineage `b105840ad` | isolated overlay |
+| Ports | `docker-compose.override.yml` | loopback remap; Grapheon `8080` reserved |
+
+Runtime launch remains gated until a Go source/Dockerfile pair is proven
+compatible with the Python oracle ref and passes `scripts/validate-oracle-compose.py`.
+
 Production-ready Nginx configuration for intelligent routing between Go and Python backends.
 
 ## Architecture Overview
