@@ -45,6 +45,11 @@ gateway rewrites may produce additional semantic matches, but they are not
 counted until an explicit route map proves them. The Python candidate therefore
 cannot yet back the rich dashboard in production.
 
+The reproducible comparison is now encoded in
+`scripts/compare-rich-oracle-routes.py`; it emits the rich/oracle counts,
+normalized candidate matches, and both directional gaps. Normalization collapses
+parameter names only for comparison and never changes the promotion gate.
+
 ## Incompatible snapshots
 
 - `origin/releases/stable`'s `ARCHIVE/DOCKER/docker-compose.yml` uses `backend`
