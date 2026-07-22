@@ -114,3 +114,13 @@ must retain the exact ref/hash above and record checksums before any launch.
 - Existing rich source contains dedicated accessibility and security test trees.
 - A direct Vitest invocation could not complete in the isolated worktree because
   the package has no configured test script/dependency; no test pass is claimed.
+
+The rich worktree now has a canonical Vitest harness. Current evidence:
+
+- Security/input-validation: **40/40 passed**.
+- Form accessibility: **20/20 passed** after selector/keyboard assertion fixes.
+- Page accessibility: **20/20 passed**.
+- Combined configured a11y/security command: **237/265 passed**; the remaining
+  28 failures are concentrated in legacy `forms.test.tsx` fixtures that render
+  non-labellable `<div>` controls, not production page components. They remain
+  visible failures and are not suppressed.
