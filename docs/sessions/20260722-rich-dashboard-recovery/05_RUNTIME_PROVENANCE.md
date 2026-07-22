@@ -154,3 +154,14 @@ by configuration.
   (DOMPurify dependency) are present on origin; the rich build and aggregate
   test run pass independently. These refs remain promotion candidates, not a
   claim that the canonical checkout contains the rich frontend.
+
+## Promotion order and no-go gates
+
+Promotion must preserve rich base `36b6055fa` and apply the reviewed WIP line in
+order: websocket lifecycle `0590fa178`, route validator `e1cf3e49f`, semantic
+UI primitives `384ab0c1b`, Vitest harness/security `98cec6b0e` and `3f5eebe52`,
+then a11y fixture repair `95334238c`. Before merge or launch, all of these must
+be true: rich build passes; the 344-test aggregate passes; route ownership has
+an authoritative backend owner; public security mode passes with a real
+hostname; and the complete oracle source tuple is checksummed. Any missing
+condition is an explicit no-go.
