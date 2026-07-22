@@ -1,0 +1,14 @@
+services:
+  # Keep the disposable smoke stack focused on the rich dashboard data plane.
+  # Services assigned to this profile are excluded unless --profile telemetry
+  # is explicitly supplied; no image pulls are needed for the smoke path.
+  nginx-exporter:
+    profiles: [telemetry]
+  postgres-exporter:
+    profiles: [telemetry]
+  redis-exporter:
+    profiles: [telemetry]
+  prometheus:
+    profiles: [telemetry]
+  grafana:
+    profiles: [telemetry]
