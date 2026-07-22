@@ -26,7 +26,7 @@
     "test:api-base": "node scripts/validate-api-base.mjs",
     "test:api-base-contract": "node --test scripts/test-api-base.mjs",
     "smoke:post": "node scripts/frontend-post-smoke.mjs",
-    "test:unit": "npm run test:state && npm run test:client && npm run test:contract-doc && npm run test:server-contract && npm run test:client-server-parity && npm run test:api-base && npm run test:routes && npm run test:a11y && npm run test:theme && npm run test:bundle",
+    "test:unit": "npm run test:state && npm run test:client && npm run test:contract-doc && npm run test:server-contract && npm run test:client-server-parity && npm run test:api-base && npm run test:api-base-contract && npm run test:routes && npm run test:a11y && npm run test:theme && npm run test:bundle",
     "desktop": "npm --prefix apps/desktop run start",
     "desktop:dev": "npm --prefix apps/desktop run start:dev",
     "typecheck": "npm run --workspaces --if-present typecheck"
