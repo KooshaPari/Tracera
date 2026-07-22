@@ -137,3 +137,9 @@ unloadable DOMPurify suites are now executable and pass **79/79** after adding
 the declared test dependency. The remaining 12 failures are isolated to
 `command-palette.test.tsx` missing local test bindings (`container`, `user`,
 and query destructuring); they are not hidden by the runner.
+
+Those command-palette fixtures are now repaired (valid listbox ownership,
+keyboard close behavior, and local query/user bindings). The configured
+aggregate now passes **344/344 tests across 12 files**. Axe still emits a
+non-fatal jsdom canvas diagnostic, but no test is suppressed or marked passing
+by configuration.
