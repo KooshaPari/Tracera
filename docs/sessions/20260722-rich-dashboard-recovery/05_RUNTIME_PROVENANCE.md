@@ -57,8 +57,9 @@ cannot be enabled by simply pointing its client at the Rust listener.
 
 The same comparator, run against the isolated `routes.go` object from
 `1052cf01e6f6a9449944deecc08a696020aa2f27`, reports 141 Echo registrations and
-29 normalized rich-template candidates. Those are candidate overlaps only;
-handler behavior, auth middleware, methods, and response schemas still require
+43 normalized rich-template candidates. The gateway exposes multiple methods
+on 28 normalized paths. These are candidate overlaps only; handler behavior,
+auth middleware, method contracts, and response schemas still require
 endpoint-level verification before promotion.
 
 ## Incompatible snapshots

@@ -33,7 +33,7 @@ ROUTER_NAMES = {
 
 
 def normalize(route: str) -> str:
-    return re.sub(r"\{[^}]+\}", "{}", route).rstrip("/") or "/"
+    return re.sub(r"\{[^}]+\}|:[A-Za-z_][\w-]*", "{}", route).rstrip("/") or "/"
 
 
 def frontend_routes(root: Path) -> set[str]:
@@ -72,6 +72,18 @@ def go_routes(file: Path) -> set[str]:
     return routes
 
 
+def go_route_methods(file: Path) -> dict[str, set[str]]:
+    """Return normalized gateway path -> registered HTTP methods."""
+    result: dict[str, set[str]] = {}
+    pattern = re.compile(
+        r'(?:api|protected|oauth|s\.echo)\.(GET|POST|PUT|PATCH|DELETE)\("([^\"]+)'
+    )
+    for method, path in pattern.findall(file.read_text(errors="replace")):
+        full_path = path if path.startswith("/api/") else "/api/v1" + path
+        result.setdefault(normalize(full_path), set()).add(method)
+    return result
+
+
 def rust_routes(file: Path) -> set[str]:
     """Extract Axum route literals from the native Tracera server."""
     pattern = re.compile(r'\.route\("([^"]+)"')
@@ -89,6 +101,7 @@ def main() -> int:
     rich = frontend_routes(args.frontend_checkout)
     oracle = oracle_routes(args.oracle_checkout)
     gateway = go_routes(args.go_routes) if args.go_routes else set()
+    gateway_methods = go_route_methods(args.go_routes) if args.go_routes else {}
     native = rust_routes(args.rust_main) if args.rust_main else set()
     rich_normalized = {normalize(route): route for route in rich}
     oracle_normalized = {normalize(route): route for route in oracle}
@@ -107,6 +120,9 @@ def main() -> int:
         "gateway_normalized_matches": len(
             set(normalize(route) for route in rich) & {normalize(route) for route in gateway}
         ),
+        "gateway_method_inventory": {
+            route: sorted(methods) for route, methods in sorted(gateway_methods.items())
+        },
         "rust_routes": len(native),
         "rust_normalized_matches": len(
             {normalize(route) for route in rich} & {normalize(route) for route in native}
