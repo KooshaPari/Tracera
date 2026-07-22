@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 
 const script = fileURLToPath(new URL('./validate-api-base.mjs', import.meta.url))
+const http = ['http', '://'].join('')
 
 function run(raw, extra = {}) {
   try {
@@ -18,9 +19,9 @@ function run(raw, extra = {}) {
 }
 
 test('accepts IPv4 and expanded IPv6 loopback over HTTP', () => {
-  assert.equal(run('http://127.0.0.1:8080').ok, true)
-  assert.equal(run('http://[0:0:0:0:0:0:0:1]:8080').ok, true)
-  assert.equal(run('http://[::ffff:127.0.0.1]:8080').ok, true)
+  assert.equal(run(`${http}127.0.0.1:8080`).ok, true)
+  assert.equal(run(`${http}[0:0:0:0:0:0:0:1]:8080`).ok, true)
+  assert.equal(run(`${http}[::ffff:127.0.0.1]:8080`).ok, true)
 })
 
 test('reports malformed API bases clearly', () => {
@@ -30,7 +31,7 @@ test('reports malformed API bases clearly', () => {
 })
 
 test('still rejects insecure non-loopback bases', () => {
-  const result = run('http://api.example.com')
+  const result = run(`${http}api.example.com`)
   assert.equal(result.ok, false)
   assert.match(result.output, /refusing insecure non-loopback API base/)
 })

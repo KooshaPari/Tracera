@@ -14,7 +14,7 @@ try {
 const hostname = url.hostname.replace(/^\[|\]$/g, '').toLowerCase()
 const ipv6Loopback = (value) => {
   if (net.isIP(value) !== 6) return false
-  const mappedIpv4 = value.match(/(\d+\.\d+\.\d+\.\d+)$/)?.[1]
+  const mappedIpv4 = value.includes('.') ? value.slice(value.lastIndexOf(':') + 1) : null
   if (mappedIpv4 && net.isIP(mappedIpv4) === 4) {
     const octets = mappedIpv4.split('.').map(Number)
     const high = ((octets[0] << 8) | octets[1]).toString(16)
@@ -24,7 +24,7 @@ const ipv6Loopback = (value) => {
   const parts = value.split(':')
   const marker = parts.indexOf('')
   const expanded = marker >= 0
-    ? [...parts.slice(0, marker), ...Array(9 - parts.length).fill('0'), ...parts.slice(marker + 1)]
+    ? [...parts.slice(0, marker), ...new Array(9 - parts.length).fill('0'), ...parts.slice(marker + 1)]
     : parts
   if (expanded.length !== 8) return false
   const words = expanded.map((part) => Number.parseInt(part || '0', 16))
