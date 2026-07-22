@@ -35,6 +35,16 @@ equivalences, search, executions/Codex, notifications/settings). The prior
 domains. The expanded matrix resolves that bookkeeping gap while preserving
 the separate runtime-ownership and availability gates.
 
+## Oracle parity checkpoint (2026-07-22 14:35 UTC)
+
+Static expansion of the materialized Python candidate yields 20 unique
+`/api/v1` routes (37 decorator occurrences including duplicates and tests).
+Only `/api/v1/auth/me` is an exact-template match with the rich frontend
+inventory. This is a conservative comparison: parameter-name normalization and
+gateway rewrites may produce additional semantic matches, but they are not
+counted until an explicit route map proves them. The Python candidate therefore
+cannot yet back the rich dashboard in production.
+
 ## Incompatible snapshots
 
 - `origin/releases/stable`'s `ARCHIVE/DOCKER/docker-compose.yml` uses `backend`
