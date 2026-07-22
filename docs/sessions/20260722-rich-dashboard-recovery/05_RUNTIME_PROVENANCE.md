@@ -92,3 +92,11 @@ must retain the exact ref/hash above and record checksums before any launch.
 - No runtime launch or public deployment was claimed: the rich worktree does
   not contain the canonical manifest, and the oracle source tuple is still
   incomplete.
+
+## Deployment security checkpoint (2026-07-22 14:48 UTC)
+
+- `scripts/verify-deployment-security.sh --mode private`: passed.
+- `scripts/verify-deployment-manifests.sh`: passed in secret-free static mode.
+- Public mode fails closed without a real `TRACERA_PUBLIC_HOSTNAME`; a
+  placeholder hostname is rejected as well. No public deployment is implied
+  by the private-mode pass.
