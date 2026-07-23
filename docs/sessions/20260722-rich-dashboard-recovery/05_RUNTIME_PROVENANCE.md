@@ -311,3 +311,15 @@ The deployment capability workflow now runs the isolated overlay validator with
 HTTP-only, loopback-port, and internal-network requirements whenever the
 overlay or validator changes. The same command passes locally. CI remains
 static and fail-closed; it does not imply Docker runtime availability.
+
+### Graph/search/traceability audit (2026-07-23 01:17 UTC)
+
+The rich client exercises graph routes such as `/graph/full`, `/graph/impact`,
+and `/graph/path`. The Go gateway registers these directly on the base API
+group with no visible auth middleware; the Python oracle has no equivalent
+graph router in the inspected surface. Search and traceability are likewise
+registered directly on the Go base group, while the Python domain routers use
+`auth_guard`. These routes are therefore **Go-owned but security-unproven**;
+they must not be exposed through the rich frontend until an authenticated
+contract is established or the gateway routes them to an authoritative guarded
+implementation.
