@@ -238,3 +238,13 @@ names and methods overlap, but the authorization boundary does not. This is a
 **security-blocking mismatch**: those Go handlers cannot be promoted as
 equivalent until authentication middleware and status/error/schema parity are
 proven.
+
+### Gateway ownership hardening (2026-07-23 00:47 UTC)
+
+The isolated Nginx overlay now routes `/api/v1/items` and
+`/api/v1/projects` (including project executions) to the Python backend before
+the broad Go regex. This prevents the gateway from exposing the Go handlers'
+unproven authentication boundary while preserving the Go route inventory for
+later review. The Compose safety gate passes, and a focused assertion confirms
+the Python location precedes the Go location. Direct Go listener access remains
+out of scope and is still a promotion risk.
