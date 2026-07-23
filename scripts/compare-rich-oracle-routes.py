@@ -32,6 +32,19 @@ ROUTER_NAMES = {
 }
 
 
+def workspace_path(raw: Path, label: str, *, directory: bool = False) -> Path:
+    """Resolve a CLI path while preventing traversal outside the workspace."""
+    candidate = raw.expanduser().resolve()
+    workspace = Path.cwd().resolve()
+    if candidate != workspace and workspace not in candidate.parents:
+        raise ValueError(f"{label} must remain inside the current workspace")
+    if directory and not candidate.is_dir():
+        raise ValueError(f"{label} must be an existing directory")
+    if not directory and not candidate.is_file():
+        raise ValueError(f"{label} must be an existing file")
+    return candidate
+
+
 def normalize(route: str) -> str:
     route = route.split("?", 1)[0]
     route = re.sub(r"\$\{[^}]+\}|\{[^}]+\}|:[A-Za-z_][\w-]*", "{}", route)
@@ -119,12 +132,20 @@ def main() -> int:
     parser.add_argument("--rust-main", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    rich = frontend_routes(args.frontend_checkout)
-    rich_methods = frontend_route_methods(args.frontend_checkout)
-    oracle = oracle_routes(args.oracle_checkout)
-    gateway = go_routes(args.go_routes) if args.go_routes else set()
-    gateway_methods = go_route_methods(args.go_routes) if args.go_routes else {}
-    native = rust_routes(args.rust_main) if args.rust_main else set()
+    try:
+        frontend_checkout = workspace_path(args.frontend_checkout, "frontend checkout", directory=True)
+        oracle_checkout = workspace_path(args.oracle_checkout, "oracle checkout", directory=True)
+        go_routes_path = workspace_path(args.go_routes, "Go routes file") if args.go_routes else None
+        rust_main_path = workspace_path(args.rust_main, "Rust main file") if args.rust_main else None
+        output_path = args.output.resolve() if args.output else None
+    except ValueError as error:
+        parser.error(str(error))
+    rich = frontend_routes(frontend_checkout)
+    rich_methods = frontend_route_methods(frontend_checkout)
+    oracle = oracle_routes(oracle_checkout)
+    gateway = go_routes(go_routes_path) if go_routes_path else set()
+    gateway_methods = go_route_methods(go_routes_path) if go_routes_path else {}
+    native = rust_routes(rust_main_path) if rust_main_path else set()
     rich_normalized = {normalize(route): route for route in rich}
     oracle_normalized = {normalize(route): route for route in oracle}
     overlap = sorted(set(rich_normalized) & set(oracle_normalized))
@@ -155,8 +176,8 @@ def main() -> int:
         "normalization": "all {param} segments collapse to {} for comparison only",
     }
     rendered = json.dumps(report, indent=2) + "\n"
-    if args.output:
-        args.output.write_text(rendered)
+    if output_path:
+        output_path.write_text(rendered)
     print(rendered, end="")
     return 0
 

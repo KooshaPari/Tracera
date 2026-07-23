@@ -3,6 +3,17 @@ set -euo pipefail
 
 export PATH="${HOME}/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:${PATH}"
 
+# Xcode beta linkers can emit malformed Mach-O LINKEDIT layouts rejected by
+# dyld when Cargo loads proc-macro dylibs. Prefer the installed stable Xcode
+# for native macOS builds while leaving an explicit DEVELOPER_DIR override
+# authoritative for CI/remote builders.
+if [[ -z "${DEVELOPER_DIR:-}" ]]; then
+  selected_developer_dir="$(xcode-select -p 2>/dev/null || true)"
+  if [[ "$selected_developer_dir" == *"Xcode-beta"* && -d "/Applications/Xcode.app/Contents/Developer" ]]; then
+    export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
+  fi
+fi
+
 # Install the supported native macOS runtime without Docker.
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 server_bin="$repo_root/target/release/tracera-server"
@@ -11,6 +22,12 @@ app_dst="${HOME}/Applications/Tracera-dev-0.1.0.app"
 agent_dir="${HOME}/Library/LaunchAgents"
 agent="${agent_dir}/com.phenotype.tracera-server.plist"
 runtime_port="${TRACERA_PORT:-8080}"
+database_path="${TRACERA_DB_PATH:-$repo_root/data/tracera.db}"
+
+# Allow CI/remote builders to isolate linker artifacts without changing the
+# source checkout. Cargo uses this same variable for the release output path.
+target_dir="${CARGO_TARGET_DIR:-$repo_root/target}"
+server_bin="$target_dir/release/tracera-server"
 
 # Stop only this installer-owned job before checking for duplicate listeners.
 launchctl bootout "gui/$(id -u)" "$agent" >/dev/null 2>&1 || true
@@ -29,6 +46,7 @@ if [[ -n "$listener" ]]; then
 fi
 
 mkdir -p "$agent_dir" "${HOME}/Applications"
+mkdir -p "$(dirname "$database_path")"
 build_log="$(mktemp -t tracera-build.XXXXXX)"
 if ! cargo build --release -p tracera-server 2>"$build_log"; then
   if grep -q "mis-aligned LINKEDIT" "$build_log"; then
@@ -53,6 +71,7 @@ cat > "$agent" <<PLIST
   <key>ProgramArguments</key><array><string>${server_bin}</string></array>
   <key>EnvironmentVariables</key><dict>
     <key>TRACERA_BIND_ADDR</key><string>127.0.0.1:${runtime_port}</string>
+    <key>DATABASE_URL</key><string>${DATABASE_URL:-sqlite://${database_path}?mode=rwc}</string>
   </dict>
   <key>WorkingDirectory</key><string>${repo_root}</string>
   <key>RunAtLoad</key><true/>

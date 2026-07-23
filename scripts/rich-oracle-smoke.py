@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import ipaddress
 from dataclasses import asdict, dataclass
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
@@ -38,9 +39,21 @@ class Probe:
 
 
 def validate_base(raw: str) -> str:
+    if any(char in raw for char in ("\n", "\r", "\t")):
+        raise ValueError("API base must not contain control characters")
     parsed = urlsplit(raw)
     if parsed.scheme not in {"http", "https"} or not parsed.hostname:
         raise ValueError("API base must be an http(s) URL with a hostname")
+    if parsed.username or parsed.password:
+        raise ValueError("API base must not contain credentials")
+    hostname = parsed.hostname.rstrip(".").lower()
+    if hostname != "localhost":
+        try:
+            address = ipaddress.ip_address(hostname)
+        except ValueError as error:
+            raise ValueError("API base must target localhost or a loopback address") from error
+        if not address.is_loopback:
+            raise ValueError("API base must target localhost or a loopback address")
     if parsed.port != 18000:
         raise ValueError(f"API base must target oracle gateway port 18000 (got {parsed.port})")
     if parsed.path not in {"", "/"} or parsed.query or parsed.fragment:

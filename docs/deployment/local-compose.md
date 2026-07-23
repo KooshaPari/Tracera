@@ -35,8 +35,17 @@ docker compose --env-file .env.local -f docker-compose.local.yml ps
 curl --fail --silent http://127.0.0.1:18081/health
 ```
 
-From another Tailnet device, open `http://<desktop-tailscale-ip>:18081/` and
-check `http://<desktop-tailscale-ip>:18081/health`.
+The default frontend bind is loopback-only. For deliberate Tailnet access,
+bind to the desktop's Tailscale address explicitly (or to all interfaces only
+when the host firewall is understood):
+
+```sh
+TRACERA_LOCAL_BIND_ADDR=100.112.14.98 \
+  docker compose --env-file .env.local -f docker-compose.local.yml up -d
+```
+
+Then open `http://<desktop-tailscale-ip>:18081/` and check
+`http://<desktop-tailscale-ip>:18081/health` from another Tailnet device.
 Override the port with `TRACERA_LOCAL_PORT=18082` if 18081 is occupied. Do not
 bind port 8080: it is reserved by the existing Grapheon service on the desktop.
 

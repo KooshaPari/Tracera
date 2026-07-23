@@ -23,6 +23,7 @@ CONTAINER_NAME_RE = re.compile(r"^\s*container_name:\s*([^#\s]+)", re.MULTILINE)
 SERVICE_RE = re.compile(r"^  ([a-zA-Z0-9_.-]+):\s*$", re.MULTILINE)
 BUILD_CONTEXT_RE = re.compile(r"^\s*context:\s*([^#\s]+)", re.MULTILINE)
 BUILD_DOCKERFILE_RE = re.compile(r"^\s*dockerfile:\s*([^#\s]+)", re.MULTILINE)
+SERVICE_BLOCK_RE = re.compile(r"^  ([a-zA-Z0-9_.-]+):\s*$([\s\S]*?)(?=^  [a-zA-Z0-9_.-]+:\s*$|\Z)", re.MULTILINE)
 UPSTREAM_RE = re.compile(r"^\s*upstream\s+([a-zA-Z0-9_.-]+)\s*\{", re.MULTILINE)
 UPSTREAM_SERVER_RE = re.compile(r"^\s*server\s+([a-zA-Z0-9_.-]+):\d+", re.MULTILINE)
 
@@ -75,12 +76,18 @@ def validate_checkout(
     # Validate build inputs before launch. Compose reports these late and with
     # opaque errors; this gate makes an incomplete stable ref explicit.
     contexts = BUILD_CONTEXT_RE.findall(text)
-    dockerfiles = BUILD_DOCKERFILE_RE.findall(text)
     for context in contexts:
         context_path = (project_base / context).resolve()
         if not context_path.is_dir():
             errors.append(f"missing build context: {context} ({context_path})")
-    for dockerfile, context in zip(dockerfiles, contexts):
+    build_contexts_checked = 0
+    for service, block in SERVICE_BLOCK_RE.findall(text):
+        context_match = BUILD_CONTEXT_RE.search(block)
+        if not context_match:
+            continue
+        context = context_match.group(1)
+        dockerfile_match = BUILD_DOCKERFILE_RE.search(block)
+        dockerfile = dockerfile_match.group(1) if dockerfile_match else "Dockerfile"
         dockerfile_path = (project_base / context / dockerfile).resolve()
         if not dockerfile_path.is_file():
             errors.append(f"missing build Dockerfile: {dockerfile} ({dockerfile_path})")
@@ -89,15 +96,18 @@ def validate_checkout(
             if ignore_file.is_file():
                 ignored = ignore_file.read_text(encoding="utf-8", errors="replace")
                 dockerfile_text = dockerfile_path.read_text(encoding="utf-8", errors="replace")
-                for source in re.findall(r"^COPY\s+([^\s]+)", dockerfile_text, re.MULTILINE):
-                    if source.startswith("--") or source.startswith("$"):
-                        continue
-                    if re.search(rf"(?m)^\s*{re.escape(source)}\s*$", ignored):
-                        errors.append(
-                            f"Dockerfile COPY source excluded by .dockerignore: {source}"
-                        )
+                for copy_line in re.findall(r"^COPY\s+(.+)$", dockerfile_text, re.MULTILINE):
+                    sources = copy_line.split()[:-1]
+                    for source in sources:
+                        if source.startswith("--") or source.startswith("$"):
+                            continue
+                        if re.search(rf"(?m)^\s*{re.escape(source)}\s*$", ignored):
+                            errors.append(
+                                f"Dockerfile COPY source excluded by .dockerignore: {source}"
+                            )
+        build_contexts_checked += 1
     if contexts:
-        observations.append(f"build contexts checked: {len(contexts)}")
+        observations.append(f"build contexts checked: {build_contexts_checked}")
 
     gateway = nginx_config or nginx_conf
     if gateway.is_file():

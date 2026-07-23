@@ -50,7 +50,8 @@ jobs:
           trap 'kill "${pid}" 2>/dev/null || true; wait "${pid}" 2>/dev/null || true; rm -rf "${tmp_dir}"' EXIT
           for _ in $(seq 1 50); do curl --silent --fail http://127.0.0.1:18080/health >/dev/null && break; sleep 0.1; done
           curl --silent --fail http://127.0.0.1:18080/ready >/dev/null
-          ./scripts/runtime-latency-smoke.py --base-url http://127.0.0.1:18080 --requests 80 --concurrency 4 --json
+          TRACERA_LATENCY_P95_MS=250 TRACERA_LATENCY_MAX_MS=1000 \
+            ./scripts/runtime-latency-smoke.py --base-url http://127.0.0.1:18080 --requests 80 --concurrency 4 --json
         env:
           # runtime-smoke selects a free port and exports no reusable service;
           # latency is run against the explicit ephemeral port below instead.
