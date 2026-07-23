@@ -266,3 +266,11 @@ only `backend`. The validator gained `--require-internal-network` and passes
 with the overlay, in addition to the loopback-port and route-order checks.
 This prevents peer containers outside the backend network from reaching the
 service listeners; Nginx remains the only published entry point.
+
+### Compose render checkpoint (2026-07-23 01:06 UTC)
+
+`docker compose config --quiet` passes against the materialized oracle plus the
+isolated override after correcting the NATS port indentation. Rendered
+services show Nginx on `edge`+`backend`, Go/Python/data services on `backend`
+only, and all six host bindings explicitly on `127.0.0.1`. The backend network
+renders as `internal: true`; no container launch was performed.

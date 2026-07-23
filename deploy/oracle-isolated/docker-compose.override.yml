@@ -42,6 +42,8 @@ services:
   nats:
     networks: !override
       - backend
+    ports: !override
+      - "127.0.0.1:14222:4222"
 
 networks:
   edge:
@@ -49,5 +51,3 @@ networks:
   backend:
     driver: bridge
     internal: true
-    ports: !override
-      - "127.0.0.1:14222:4222"
