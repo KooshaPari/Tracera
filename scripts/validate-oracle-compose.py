@@ -34,6 +34,7 @@ def validate_checkout(
     http_only: bool = False,
     nginx_config: Path | None = None,
     project_root: Path | None = None,
+    require_internal_network: bool = False,
 ) -> tuple[list[str], list[str]]:
     """Return (errors, observations) for *root* and its Compose text."""
     errors: list[str] = []
@@ -59,6 +60,17 @@ def validate_checkout(
         return errors, observations
 
     text = compose.read_text(encoding="utf-8")
+    if require_internal_network:
+        if not re.search(r"^\s*internal:\s*true\s*$", text, re.MULTILINE):
+            errors.append("required internal backend network is not declared")
+        if not re.search(r"(?m)^\s*nginx:\s*$[\s\S]{0,400}?\bedge\b", text):
+            errors.append("nginx service is not attached to the edge network")
+        for service in ("go-backend", "python-backend"):
+            if not re.search(
+                rf"(?m)^\s*{re.escape(service)}:\s*$[\s\S]{{0,400}}?\bbackend\b",
+                text,
+            ):
+                errors.append(f"{service} is not attached to the internal backend network")
     services = set(SERVICE_RE.findall(text))
     # Validate build inputs before launch. Compose reports these late and with
     # opaque errors; this gate makes an incomplete stable ref explicit.
@@ -141,6 +153,11 @@ def main() -> int:
         default=None,
         help="Compose project root for relative build contexts and nginx assets",
     )
+    parser.add_argument(
+        "--require-internal-network",
+        action="store_true",
+        help="Require an internal backend network and edge-attached gateway",
+    )
     args = parser.parse_args()
     root = args.checkout.resolve()
     compose = (args.compose or (root / "docker-compose.yml")).resolve()
@@ -152,6 +169,7 @@ def main() -> int:
         http_only=args.http_only,
         nginx_config=gateway,
         project_root=project_root,
+        require_internal_network=args.require_internal_network,
     )
     for observation in observations:
         print(f"INFO: {observation}")

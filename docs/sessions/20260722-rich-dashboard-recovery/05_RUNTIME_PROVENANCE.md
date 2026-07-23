@@ -257,3 +257,12 @@ overlay passes with all six published ports bound to `127.0.0.1`; this keeps
 the Go and Python listeners inaccessible from the LAN while Nginx remains the
 only local entry point. Container-network bypass and direct Go handler auth
 parity remain separate no-go conditions.
+
+### Container-network isolation checkpoint (2026-07-23 01:03 UTC)
+
+The isolated overlay now defines an `edge` network and an `internal: true`
+`backend` network. Nginx joins both; Go, Python, Postgres, Redis, and NATS join
+only `backend`. The validator gained `--require-internal-network` and passes
+with the overlay, in addition to the loopback-port and route-order checks.
+This prevents peer containers outside the backend network from reaching the
+service listeners; Nginx remains the only published entry point.

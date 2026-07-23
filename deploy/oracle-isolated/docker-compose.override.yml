@@ -3,6 +3,9 @@ services:
   # TraceRTM compose file; !override prevents the stable host bindings from
   # leaking onto Grapheon's reserved ports.
   nginx:
+    networks: !override
+      - edge
+      - backend
     ports: !override
       - "127.0.0.1:18000:80"
     volumes: !override
@@ -10,10 +13,14 @@ services:
       - ./deploy/oracle-isolated/conf.d:/etc/nginx/conf.d:ro
 
   go-backend:
+    networks: !override
+      - backend
     ports: !override
       - "127.0.0.1:18081:8080"
 
   python-backend:
+    networks: !override
+      - backend
     build:
       context: .
       dockerfile: deploy/oracle-isolated/python/Dockerfile
@@ -21,13 +28,26 @@ services:
       - "127.0.0.1:18080:8000"
 
   postgres:
+    networks: !override
+      - backend
     ports: !override
       - "127.0.0.1:15432:5432"
 
   redis:
+    networks: !override
+      - backend
     ports: !override
       - "127.0.0.1:16379:6379"
 
   nats:
+    networks: !override
+      - backend
+
+networks:
+  edge:
+    driver: bridge
+  backend:
+    driver: bridge
+    internal: true
     ports: !override
       - "127.0.0.1:14222:4222"
