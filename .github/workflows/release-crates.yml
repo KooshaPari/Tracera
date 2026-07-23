@@ -22,6 +22,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # stable toolchain action
+        with:
+          toolchain: stable
       - name: Check formatting
         run: cargo fmt --all -- --check
       - name: Run workspace tests
@@ -43,6 +45,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # stable toolchain action
+        with:
+          toolchain: stable
       - name: Publish tracera-server
         run: |
           CRATE_VERSION=$(grep '^version' crates/tracera-server/Cargo.toml | head -1 | cut -d'"' -f2)
@@ -74,6 +78,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # stable toolchain action
+        with:
+          toolchain: stable
       - name: Dry-run tracera-server
         working-directory: crates/tracera-server
         run: cargo publish --dry-run --locked
