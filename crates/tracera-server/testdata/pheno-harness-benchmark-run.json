@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "tenant_id": "phenotype",
+  "session_id": "ses_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "run_id": "run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "attempt_id": "att_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "subject": {"repo": "pheno-harness", "commit": "unknown", "harness": "pheno-harness", "runtime": "python", "model": "mlx", "hardware": "unknown"},
+  "result": {"status": "passed", "outcome_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "replay_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "failure_class": "none", "artifacts": [{"kind": "report", "uri": "urn:pheno:suite:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}]}
+}
