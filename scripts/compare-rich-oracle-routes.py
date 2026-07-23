@@ -13,7 +13,7 @@ import json
 import re
 from pathlib import Path
 
-ROUTE_RE = re.compile(r"(/api/v1[^\s`\"'\},)]+)")
+ROUTE_RE = re.compile(r"(/api/v1[^\s`\"',)]+)")
 DECORATOR_RE = re.compile(
     r"@(?:\w+\.)?(?:get|post|put|patch|delete)\([\"']([^\"']+)"
 )
@@ -74,7 +74,8 @@ def oracle_routes(root: Path) -> set[str]:
         for path in DECORATOR_RE.findall(file.read_text(errors="replace")):
             if path.startswith("/"):
                 suffix = "" if path == "/" else path
-                routes.add(f"/api/v1{prefix}{suffix}")
+            base = prefix if prefix.startswith("/api/v1") else f"/api/v1{prefix}"
+            routes.add(f"{base}{suffix}")
     return routes
 
 

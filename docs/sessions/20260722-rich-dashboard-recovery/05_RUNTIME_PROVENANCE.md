@@ -195,3 +195,13 @@ INFO: host ports: 18000, 18081, 18080, 15432, 16379, 14222
 INFO: fixed container_name values: none
 OK: oracle checkout passes Compose safety gate
 ```
+
+## Route comparator repair checkpoint (2026-07-23 00:35 UTC)
+
+The route comparator was corrected to avoid double-prefixing Python routers
+that already declare `/api/v1`, and to preserve brace/template parameters in
+frontend route extraction. Against materialized rich ref `36b6055fa` and
+oracle ref `1052cf01` it now reports 104 rich routes, 71 oracle routes, 9
+normalized rich/oracle matches, and 141 Go gateway registrations with 44
+normalized rich/gateway matches. These are candidate overlaps only; method,
+schema, and authorization parity remain unproven.
