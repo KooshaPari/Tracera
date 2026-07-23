@@ -227,3 +227,14 @@ and AuthKit handlers have separate token/cookie behavior. Rich calls all of
 these routes, including cookie credentials. Classification remains **partial**
 until response schemas, cookie attributes, and provider-disabled behavior are
 tested end to end; route presence is not promotion evidence.
+
+### Item/project execution audit (2026-07-23 00:40 UTC)
+
+The Python oracle requires `auth_guard` on item CRUD and every execution
+operation. In the Go gateway source, `registerProjectRoutes` and
+`registerItemRoutes` attach handlers directly to the base `/api/v1` Echo group,
+while only selected auth routes create an authenticated subgroup. The route
+names and methods overlap, but the authorization boundary does not. This is a
+**security-blocking mismatch**: those Go handlers cannot be promoted as
+equivalent until authentication middleware and status/error/schema parity are
+proven.
