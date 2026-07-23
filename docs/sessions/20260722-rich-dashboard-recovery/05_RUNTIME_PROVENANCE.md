@@ -294,6 +294,14 @@ The Python build reached Docker but failed because the local daemon socket
 `~/.colima/default/docker.sock` is unavailable. This is an environment
 availability blocker; no build/image/container success is claimed.
 
+### Python image build checkpoint (2026-07-23 01:35 UTC)
+
+In the disposable oracle root, a minimal context-specific `.dockerignore`
+allowed the Python image to build successfully and tag as
+`tracera-oracle-audit-python-backend:latest`. An isolated container import
+smoke also passed (`import tracertm.api.main`); only the optional APM exporter
+warning was emitted. The full Compose stack and health path remain unlaunched.
+
 ### Dockerfile ignore-contract checkpoint (2026-07-23 01:30 UTC)
 
 With Colima running, the disposable Python build reached Docker and failed at
