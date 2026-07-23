@@ -166,6 +166,16 @@ an authoritative backend owner; public security mode passes with a real
 hostname; and the complete oracle source tuple is checksummed. Any missing
 condition is an explicit no-go.
 
+## Overlay validation checkpoint (2026-07-23 00:04 UTC)
+
+The disposable Python Dockerfile is context-compatible with the oracle source:
+the pinned `1052cf01` object contains `pyproject.toml`, `README.md`, `src`,
+`alembic`, and `config`, which are exactly the files it copies. The standalone
+materialized checkout still fails `scripts/validate-oracle-compose.py
+--http-only` because it lacks root Compose/nginx assets; those are supplied by
+the isolated overlay and must not be inferred from the source ref. No container
+launch was attempted.
+
 The new `scripts/verify-oracle-provenance.py` gate checks the tuple directly
 from Git objects. It fails for both candidate refs tested: `1052cf01` and
 `3423caf2` contain Compose, backend Dockerfile, Python metadata, and nginx, but
