@@ -323,3 +323,13 @@ registered directly on the Go base group, while the Python domain routers use
 they must not be exposed through the rich frontend until an authenticated
 contract is established or the gateway routes them to an authoritative guarded
 implementation.
+
+### Global middleware verification (2026-07-23 01:18 UTC)
+
+The Go server's global middleware stack contains recovery, tracing, logging,
+CORS, CSRF, cache/ETag, error handling, and rate limiting, but no global
+authentication middleware. Authentication is attached only to selected
+`protected` Echo groups in `registerAuthRoutes` and OAuth routes. The graph,
+search, traceability, item, and project registrations remain on the base API
+group. The earlier security classification is therefore confirmed, not a
+false negative from route-local inspection.
