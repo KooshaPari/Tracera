@@ -324,6 +324,15 @@ they must not be exposed through the rich frontend until an authenticated
 contract is established or the gateway routes them to an authoritative guarded
 implementation.
 
+### Fail-closed domain policy (2026-07-23 01:20 UTC)
+
+The isolated Nginx overlay now returns `503` with `Cache-Control: no-store` for
+`/api/v1/graph`, `/api/v1/search`, and `/api/v1/traceability` before the broad
+Go proxy. A focused ordering assertion and the full Compose safety gate pass.
+This intentionally trades temporary feature availability for a fail-closed
+security boundary until authenticated Go ownership or guarded Python routes are
+implemented.
+
 ### Global middleware verification (2026-07-23 01:18 UTC)
 
 The Go server's global middleware stack contains recovery, tracing, logging,
