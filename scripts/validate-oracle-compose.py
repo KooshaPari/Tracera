@@ -84,6 +84,18 @@ def validate_checkout(
         dockerfile_path = (project_base / context / dockerfile).resolve()
         if not dockerfile_path.is_file():
             errors.append(f"missing build Dockerfile: {dockerfile} ({dockerfile_path})")
+        else:
+            ignore_file = (project_base / context / ".dockerignore").resolve()
+            if ignore_file.is_file():
+                ignored = ignore_file.read_text(encoding="utf-8", errors="replace")
+                dockerfile_text = dockerfile_path.read_text(encoding="utf-8", errors="replace")
+                for source in re.findall(r"^COPY\s+([^\s]+)", dockerfile_text, re.MULTILINE):
+                    if source.startswith("--") or source.startswith("$"):
+                        continue
+                    if re.search(rf"(?m)^\s*{re.escape(source)}\s*$", ignored):
+                        errors.append(
+                            f"Dockerfile COPY source excluded by .dockerignore: {source}"
+                        )
     if contexts:
         observations.append(f"build contexts checked: {len(contexts)}")
 

@@ -294,6 +294,14 @@ The Python build reached Docker but failed because the local daemon socket
 `~/.colima/default/docker.sock` is unavailable. This is an environment
 availability blocker; no build/image/container success is claimed.
 
+### Dockerfile ignore-contract checkpoint (2026-07-23 01:30 UTC)
+
+With Colima running, the disposable Python build reached Docker and failed at
+`COPY pyproject.toml`: the oracle root `.dockerignore` excludes that file even
+though the Dockerfile requires it. `scripts/validate-oracle-compose.py` now
+detects Dockerfile `COPY` sources excluded by the active `.dockerignore` and
+fails before launch. The actual oracle root is therefore still a build no-go.
+
 ### Item/execution schema triage (2026-07-23 01:14 UTC)
 
 The Python execution router defines `POST` create (`201`), `POST` start
