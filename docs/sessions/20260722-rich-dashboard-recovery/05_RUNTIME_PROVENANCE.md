@@ -215,3 +215,15 @@ registration. It is therefore **missing from Go**, not safe to route through
 the Go service. The remaining eight overlap entries lack an extracted
 frontend method in the current API inventory and remain **unclassified** until
 request/response schemas and auth guards are inspected directly.
+
+### Authentication overlap audit (2026-07-23 00:38 UTC)
+
+Direct source inspection confirms the shared auth routes are not equivalent by
+route presence alone. The Go gateway registers `POST /auth/logout`, `GET
+/auth/me`, `POST /auth/refresh`, and AuthKit authorize/callback/refresh only
+when the auth provider and AuthKit configuration are available. The Python
+oracle protects `/auth/me` and `/auth/logout` with `auth_guard`, while refresh
+and AuthKit handlers have separate token/cookie behavior. Rich calls all of
+these routes, including cookie credentials. Classification remains **partial**
+until response schemas, cookie attributes, and provider-disabled behavior are
+tested end to end; route presence is not promotion evidence.
