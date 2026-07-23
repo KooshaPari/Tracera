@@ -274,3 +274,13 @@ isolated override after correcting the NATS port indentation. Rendered
 services show Nginx on `edge`+`backend`, Go/Python/data services on `backend`
 only, and all six host bindings explicitly on `127.0.0.1`. The backend network
 renders as `internal: true`; no container launch was performed.
+
+### Build smoke checkpoint (2026-07-23 01:08 UTC)
+
+The bounded Python image build was attempted against the materialized oracle
+Compose file plus the isolated override and failed before build execution:
+Compose resolves the project directory to `/private/tmp/tracera-oracle-audit`,
+where `deploy/oracle-isolated/python/Dockerfile` is absent. The static gate had
+been run with the current repository as project root, so it does not prove
+launchability against the historical checkout. This is a confirmed
+build-context/provenance no-go; no image or container was launched.
