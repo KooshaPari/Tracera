@@ -284,3 +284,12 @@ where `deploy/oracle-isolated/python/Dockerfile` is absent. The static gate had
 been run with the current repository as project root, so it does not prove
 launchability against the historical checkout. This is a confirmed
 build-context/provenance no-go; no image or container was launched.
+
+### Disposable materialization checkpoint (2026-07-23 01:10 UTC)
+
+The pinned oracle worktree was populated with the isolated Dockerfile, Nginx
+assets, and override. Compose config then passed with the corrected project
+root, proving the previous path mismatch is repairable in a disposable root.
+The Python build reached Docker but failed because the local daemon socket
+`~/.colima/default/docker.sock` is unavailable. This is an environment
+availability blocker; no build/image/container success is claimed.
