@@ -14,8 +14,28 @@ permissions:
   contents: read
 
 jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Run workspace tests
+        run: cargo test --workspace --locked
+      - name: Run strict workspace clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Validate publish packages
+        run: |
+          cargo publish --dry-run --locked -p tracera-server
+          cargo publish --dry-run --locked -p tracertm-mcp
+
   publish:
     if: github.event_name == 'push'
+    needs: preflight
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -28,7 +48,7 @@ jobs:
           CRATE_VERSION=$(grep '^version' crates/tracera-server/Cargo.toml | head -1 | cut -d'"' -f2)
           TAG_VERSION="${GITHUB_REF_NAME#v}"
           if [ "$CRATE_VERSION" = "$TAG_VERSION" ]; then
-            cargo publish -p tracera-server --token "${{ secrets.CARGO_REGISTRY_TOKEN }}"
+            cargo publish --locked -p tracera-server --token "${{ secrets.CARGO_REGISTRY_TOKEN }}"
           else
             echo "tracera-server version $CRATE_VERSION does not match release tag $TAG_VERSION" >&2
             exit 1
@@ -38,7 +58,7 @@ jobs:
           CRATE_VERSION=$(grep '^version' crates/tracertm-mcp/Cargo.toml | head -1 | cut -d'"' -f2)
           TAG_VERSION="${GITHUB_REF_NAME#v}"
           if [ "$CRATE_VERSION" = "$TAG_VERSION" ]; then
-            cargo publish -p tracertm-mcp --token "${{ secrets.CARGO_REGISTRY_TOKEN }}"
+            cargo publish --locked -p tracertm-mcp --token "${{ secrets.CARGO_REGISTRY_TOKEN }}"
           else
             echo "tracertm-mcp version $CRATE_VERSION does not match release tag $TAG_VERSION" >&2
             exit 1
@@ -46,6 +66,7 @@ jobs:
 
   dry-run:
     if: github.event_name == 'pull_request'
+    needs: preflight
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -55,7 +76,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Dry-run tracera-server
         working-directory: crates/tracera-server
-        run: cargo publish --dry-run
+        run: cargo publish --dry-run --locked
       - name: Dry-run tracertm-mcp
         working-directory: crates/tracertm-mcp
-        run: cargo publish --dry-run
+        run: cargo publish --dry-run --locked

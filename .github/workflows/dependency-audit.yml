@@ -33,3 +33,14 @@ jobs:
           # Keep the audit fail-closed for the authoritative Rust, web, and Go manifests.
           scan-args: |-
             scan source Cargo.lock frontend/bun.lock sidecar/go/go.mod
+
+  rust-policy:
+    name: Rust dependency policy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --version 0.19.0 --locked
+      - name: Check advisories, licenses, bans, and sources
+        run: cargo deny check advisories licenses bans sources
