@@ -165,3 +165,9 @@ be true: rich build passes; the 344-test aggregate passes; route ownership has
 an authoritative backend owner; public security mode passes with a real
 hostname; and the complete oracle source tuple is checksummed. Any missing
 condition is an explicit no-go.
+
+The new `scripts/verify-oracle-provenance.py` gate checks the tuple directly
+from Git objects. It fails for both candidate refs tested: `1052cf01` and
+`3423caf2` contain Compose, backend Dockerfile, Python metadata, and nginx, but
+both lack the required root `Dockerfile`. This is machine-verified evidence
+that neither ref is launch-complete without the isolated overlay recipe.
