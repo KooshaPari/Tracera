@@ -205,3 +205,13 @@ oracle ref `1052cf01` it now reports 104 rich routes, 71 oracle routes, 9
 normalized rich/oracle matches, and 141 Go gateway registrations with 44
 normalized rich/gateway matches. These are candidate overlaps only; method,
 schema, and authorization parity remain unproven.
+
+### Endpoint contract triage
+
+The only rich route with an explicit frontend method in the normalized overlap
+set is `POST /api/v1/agent/sessions`. The Python oracle implements that route
+with a `201` `AgentSessionResponse`; the Go gateway has no corresponding
+registration. It is therefore **missing from Go**, not safe to route through
+the Go service. The remaining eight overlap entries lack an extracted
+frontend method in the current API inventory and remain **unclassified** until
+request/response schemas and auth guards are inspected directly.
