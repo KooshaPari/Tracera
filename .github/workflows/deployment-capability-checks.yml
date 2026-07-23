@@ -6,6 +6,8 @@ on:
       - 'deploy/kubernetes/**'
       - 'scripts/test-deployment-capability-report.sh'
       - 'frontend/scripts/validate-capability-manifest.mjs'
+      - 'deploy/oracle-isolated/**'
+      - 'scripts/validate-oracle-compose.py'
       - 'docs/sessions/20260722-rich-dashboard-recovery/capability-manifest.json'
       - '.github/workflows/deployment-capability-checks.yml'
   pull_request:
@@ -13,6 +15,8 @@ on:
       - 'deploy/kubernetes/**'
       - 'scripts/test-deployment-capability-report.sh'
       - 'frontend/scripts/validate-capability-manifest.mjs'
+      - 'deploy/oracle-isolated/**'
+      - 'scripts/validate-oracle-compose.py'
       - 'docs/sessions/20260722-rich-dashboard-recovery/capability-manifest.json'
       - '.github/workflows/deployment-capability-checks.yml'
   workflow_dispatch:
@@ -43,6 +47,15 @@ jobs:
 
       - name: Verify deployment manifests
         run: ./scripts/verify-deployment-manifests.sh
+
+      - name: Validate isolated oracle safety overlay
+        run: >-
+          python3 scripts/validate-oracle-compose.py .
+          --project-root .
+          --compose deploy/oracle-isolated/docker-compose.override.yml
+          --nginx-config deploy/oracle-isolated/nginx.conf
+          --http-only
+          --require-internal-network
 
       - name: Upload capability evidence
         run: ./deploy/kubernetes/capability-report.sh --json | tee deployment-capability.json

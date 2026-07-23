@@ -293,3 +293,10 @@ root, proving the previous path mismatch is repairable in a disposable root.
 The Python build reached Docker but failed because the local daemon socket
 `~/.colima/default/docker.sock` is unavailable. This is an environment
 availability blocker; no build/image/container success is claimed.
+
+### CI safety wiring checkpoint (2026-07-23 01:13 UTC)
+
+The deployment capability workflow now runs the isolated overlay validator with
+HTTP-only, loopback-port, and internal-network requirements whenever the
+overlay or validator changes. The same command passes locally. CI remains
+static and fail-closed; it does not imply Docker runtime availability.
