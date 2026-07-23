@@ -24,7 +24,12 @@ UPSTREAM_SERVER_RE = re.compile(r"^\s*server\s+([a-zA-Z0-9_.-]+):\d+", re.MULTIL
 
 
 def validate_checkout(
-    root: Path, compose: Path, *, http_only: bool = False, nginx_config: Path | None = None
+    root: Path,
+    compose: Path,
+    *,
+    http_only: bool = False,
+    nginx_config: Path | None = None,
+    project_root: Path | None = None,
 ) -> tuple[list[str], list[str]]:
     """Return (errors, observations) for *root* and its Compose text."""
     errors: list[str] = []
@@ -33,11 +38,13 @@ def validate_checkout(
     # Accept either a conventional nginx/ tree or the isolated artifact's
     # flat layout.  The latter keeps the evidence-copied configs immutable and
     # makes Compose mounts explicit relative to the override file.
-    nginx_conf = root / "nginx" / "nginx.conf"
-    nginx_conf_d = root / "nginx" / "conf.d"
+    project_base = project_root or root
+    nginx_root = nginx_config.parent if nginx_config else project_base
+    nginx_conf = nginx_root / "nginx" / "nginx.conf"
+    nginx_conf_d = nginx_root / "nginx" / "conf.d"
     if not nginx_conf.is_file():
-        nginx_conf = root / "nginx.conf"
-        nginx_conf_d = root / "conf.d"
+        nginx_conf = nginx_root / "nginx.conf"
+        nginx_conf_d = nginx_root / "conf.d"
     if not nginx_conf.is_file():
         errors.append(f"missing required nginx config: {nginx_conf}")
     if not nginx_conf_d.is_dir():
@@ -54,11 +61,11 @@ def validate_checkout(
     contexts = BUILD_CONTEXT_RE.findall(text)
     dockerfiles = BUILD_DOCKERFILE_RE.findall(text)
     for context in contexts:
-        context_path = (compose.parent / context).resolve()
+        context_path = (project_base / context).resolve()
         if not context_path.is_dir():
             errors.append(f"missing build context: {context} ({context_path})")
     for dockerfile, context in zip(dockerfiles, contexts):
-        dockerfile_path = (compose.parent / context / dockerfile).resolve()
+        dockerfile_path = (project_base / context / dockerfile).resolve()
         if not dockerfile_path.is_file():
             errors.append(f"missing build Dockerfile: {dockerfile} ({dockerfile_path})")
     if contexts:
@@ -116,11 +123,24 @@ def main() -> int:
         default=None,
         help="nginx config to inspect (default: checkout nginx config)",
     )
+    parser.add_argument(
+        "--project-root",
+        type=Path,
+        default=None,
+        help="Compose project root for relative build contexts and nginx assets",
+    )
     args = parser.parse_args()
     root = args.checkout.resolve()
     compose = (args.compose or (root / "docker-compose.yml")).resolve()
+    project_root = args.project_root.resolve() if args.project_root else root
     gateway = args.nginx_config.resolve() if args.nginx_config else None
-    errors, observations = validate_checkout(root, compose, http_only=args.http_only, nginx_config=gateway)
+    errors, observations = validate_checkout(
+        root,
+        compose,
+        http_only=args.http_only,
+        nginx_config=gateway,
+        project_root=project_root,
+    )
     for observation in observations:
         print(f"INFO: {observation}")
     if errors:
