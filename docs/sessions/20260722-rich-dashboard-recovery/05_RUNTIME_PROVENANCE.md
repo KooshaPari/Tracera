@@ -294,6 +294,17 @@ The Python build reached Docker but failed because the local daemon socket
 `~/.colima/default/docker.sock` is unavailable. This is an environment
 availability blocker; no build/image/container success is claimed.
 
+### Item/execution schema triage (2026-07-23 01:14 UTC)
+
+The Python execution router defines `POST` create (`201`), `POST` start
+(`202`), complete, artifact CRUD, and explicit `403`/`404`/`409` branches,
+all behind `auth_guard`. The Go route inventory contains no
+`/projects/{project}/executions` registrations at all. Item CRUD has route
+overlap, but Go emits ad-hoc `{error: ...}` objects and Python returns
+structured item/list responses with different error handling. Classification:
+executions are **Python-only**; items are **schema/auth partial**. The Nginx
+Python-authoritative rule is therefore required, not merely an optimization.
+
 ### CI safety wiring checkpoint (2026-07-23 01:13 UTC)
 
 The deployment capability workflow now runs the isolated overlay validator with
