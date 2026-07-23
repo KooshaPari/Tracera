@@ -8,6 +8,7 @@ on:
       - 'frontend/scripts/validate-capability-manifest.mjs'
       - 'deploy/oracle-isolated/**'
       - 'scripts/validate-oracle-compose.py'
+      - 'scripts/test-oracle-routing-policy.sh'
       - 'docs/sessions/20260722-rich-dashboard-recovery/capability-manifest.json'
       - '.github/workflows/deployment-capability-checks.yml'
   pull_request:
@@ -17,6 +18,7 @@ on:
       - 'frontend/scripts/validate-capability-manifest.mjs'
       - 'deploy/oracle-isolated/**'
       - 'scripts/validate-oracle-compose.py'
+      - 'scripts/test-oracle-routing-policy.sh'
       - 'docs/sessions/20260722-rich-dashboard-recovery/capability-manifest.json'
       - '.github/workflows/deployment-capability-checks.yml'
   workflow_dispatch:
@@ -56,6 +58,9 @@ jobs:
           --nginx-config deploy/oracle-isolated/nginx.conf
           --http-only
           --require-internal-network
+
+      - name: Verify fail-closed oracle routing policy
+        run: ./scripts/test-oracle-routing-policy.sh
 
       - name: Upload capability evidence
         run: ./deploy/kubernetes/capability-report.sh --json | tee deployment-capability.json

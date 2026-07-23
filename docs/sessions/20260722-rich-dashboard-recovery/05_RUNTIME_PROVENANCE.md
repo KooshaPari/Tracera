@@ -324,6 +324,13 @@ they must not be exposed through the rich frontend until an authenticated
 contract is established or the gateway routes them to an authoritative guarded
 implementation.
 
+### Routing regression-test checkpoint (2026-07-23 01:22 UTC)
+
+Added `scripts/test-oracle-routing-policy.sh` and wired it into deployment
+capability CI. It asserts that graph/search/traceability fail-closed locations
+precede the broad Go proxy and retain `503` plus `no-store` behavior. The test
+and full static overlay validator pass locally.
+
 ### Fail-closed domain policy (2026-07-23 01:20 UTC)
 
 The isolated Nginx overlay now returns `503` with `Cache-Control: no-store` for
