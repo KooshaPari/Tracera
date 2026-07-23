@@ -248,3 +248,12 @@ unproven authentication boundary while preserving the Go route inventory for
 later review. The Compose safety gate passes, and a focused assertion confirms
 the Python location precedes the Go location. Direct Go listener access remains
 out of scope and is still a promotion risk.
+
+### Listener exposure hardening (2026-07-23 00:57 UTC)
+
+The Compose safety validator now fails closed for published ports that are not
+loopback-bound (including hostless `HOST:CONTAINER` mappings). The isolated
+overlay passes with all six published ports bound to `127.0.0.1`; this keeps
+the Go and Python listeners inaccessible from the LAN while Nginx remains the
+only local entry point. Container-network bypass and direct Go handler auth
+parity remain separate no-go conditions.

@@ -15,6 +15,10 @@ from pathlib import Path
 
 RESERVED_HOST_PORT = 8080
 PORT_RE = re.compile(r"(?:^|[\"'\s-])(?:127\.0\.0\.1:)?(\d{2,5}):\d{1,5}(?:[\"'\s]|$)")
+PUBLISHED_PORT_RE = re.compile(
+    r"^[\s-]*[\"'](?:(?P<host>[^:\"']+):)?(?P<port>\d{2,5}):\d{1,5}[\"']\s*$",
+    re.MULTILINE,
+)
 CONTAINER_NAME_RE = re.compile(r"^\s*container_name:\s*([^#\s]+)", re.MULTILINE)
 SERVICE_RE = re.compile(r"^  ([a-zA-Z0-9_.-]+):\s*$", re.MULTILINE)
 BUILD_CONTEXT_RE = re.compile(r"^\s*context:\s*([^#\s]+)", re.MULTILINE)
@@ -88,6 +92,14 @@ def validate_checkout(
         if http_only and re.search(r"/etc/nginx/certs|conf\.d/ssl", gateway_text):
             errors.append("HTTP-only mode cannot require an nginx cert mount")
     host_ports = [int(match.group(1)) for match in PORT_RE.finditer(text)]
+    for match in PUBLISHED_PORT_RE.finditer(text):
+        host = match.group("host")
+        if host not in (None, "127.0.0.1"):
+            errors.append(
+                f"published host must be loopback, found {host}:{match.group('port')}"
+            )
+        if host is None:
+            errors.append(f"published port must bind loopback: {match.group('port')}")
     if RESERVED_HOST_PORT in host_ports:
         errors.append("host port 8080 is reserved for Grapheon and must not be published")
     observations.append(
