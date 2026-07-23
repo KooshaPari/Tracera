@@ -181,3 +181,17 @@ from Git objects. It fails for both candidate refs tested: `1052cf01` and
 `3423caf2` contain Compose, backend Dockerfile, Python metadata, and nginx, but
 both lack the required root `Dockerfile`. This is machine-verified evidence
 that neither ref is launch-complete without the isolated overlay recipe.
+
+## Overlay gate repair checkpoint (2026-07-23 00:28 UTC)
+
+The safety validator now accepts an explicit Compose project root and gateway
+config. This is required because the isolated override lives under
+`deploy/oracle-isolated/` while its build context is the repository root.
+Validated command (read-only, no container launch):
+
+```text
+INFO: build contexts checked: 1
+INFO: host ports: 18000, 18081, 18080, 15432, 16379, 14222
+INFO: fixed container_name values: none
+OK: oracle checkout passes Compose safety gate
+```
