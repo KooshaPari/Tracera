@@ -19,20 +19,27 @@ services:
       dockerfile: Dockerfile.rust
     environment:
       TRACERA_BIND_ADDR: 0.0.0.0:8080
+      TRACERA_TRUSTED_PROXY: "true"
       DATABASE_URL: postgres://tracera:${POSTGRES_PASSWORD}@postgres:5432/tracera
     expose: ["8080"]
     depends_on:
       postgres: {condition: service_healthy}
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/health"]
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+      retries: 12
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.local
     ports:
-      - "${TRACERA_LOCAL_PORT:-18081}:80"
+      - "${TRACERA_LOCAL_BIND_ADDR:-127.0.0.1}:${TRACERA_LOCAL_PORT:-18081}:80"
     depends_on:
-      tracera-server: {condition: service_started}
+      tracera-server: {condition: service_healthy}
     restart: unless-stopped
 
 volumes:
