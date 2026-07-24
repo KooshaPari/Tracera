@@ -23,15 +23,19 @@ pub struct DupGroup {
 pub fn levenshtein(a: &str, b: &str) -> usize {
     let a: Vec<char> = a.chars().collect();
     let b: Vec<char> = b.chars().collect();
-    if a.is_empty() { return b.len(); }
-    if b.is_empty() { return a.len(); }
+    if a.is_empty() {
+        return b.len();
+    }
+    if b.is_empty() {
+        return a.len();
+    }
     let mut prev: Vec<usize> = (0..=b.len()).collect();
     let mut curr = vec![0; b.len() + 1];
     for i in 1..=a.len() {
         curr[0] = i;
         for j in 1..=b.len() {
-            let cost = if a[i-1] == b[j-1] { 0 } else { 1 };
-            curr[j] = (prev[j] + 1).min(curr[j-1] + 1).min(prev[j-1] + cost);
+            let cost = if a[i - 1] == b[j - 1] { 0 } else { 1 };
+            curr[j] = (prev[j] + 1).min(curr[j - 1] + 1).min(prev[j - 1] + cost);
         }
         std::mem::swap(&mut prev, &mut curr);
     }
@@ -41,7 +45,9 @@ pub fn levenshtein(a: &str, b: &str) -> usize {
 /// Similarity in [0.0, 1.0]: 1.0 = identical, 0.0 = completely different.
 pub fn similarity(a: &str, b: &str) -> f32 {
     let max_len = a.chars().count().max(b.chars().count()) as f32;
-    if max_len == 0.0 { return 1.0; }
+    if max_len == 0.0 {
+        return 1.0;
+    }
     1.0 - (levenshtein(a, b) as f32 / max_len)
 }
 
@@ -53,7 +59,8 @@ pub fn find_dupes(items: &[(String, String)], threshold: f32) -> Vec<DupGroup> {
         let mut placed = false;
         for g in groups.iter_mut() {
             if similarity(&g.root_title, title) >= threshold {
-                g.similar.push((id.clone(), title.clone(), similarity(&g.root_title, title)));
+                g.similar
+                    .push((id.clone(), title.clone(), similarity(&g.root_title, title)));
                 placed = true;
                 break;
             }
@@ -73,10 +80,20 @@ pub fn find_dupes(items: &[(String, String)], threshold: f32) -> Vec<DupGroup> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test] fn lev_basic() { assert_eq!(levenshtein("kitten", "sitting"), 3); }
-    #[test] fn sim_identical() { assert!((similarity("foo", "foo") - 1.0).abs() < 1e-6); }
-    #[test] fn sim_different() { assert!(similarity("abc", "xyz") < 0.5); }
-    #[test] fn find_dupes_groups() {
+    #[test]
+    fn lev_basic() {
+        assert_eq!(levenshtein("kitten", "sitting"), 3);
+    }
+    #[test]
+    fn sim_identical() {
+        assert!((similarity("foo", "foo") - 1.0).abs() < 1e-6);
+    }
+    #[test]
+    fn sim_different() {
+        assert!(similarity("abc", "xyz") < 0.5);
+    }
+    #[test]
+    fn find_dupes_groups() {
         let items = vec![
             ("1".into(), "Implement PKCE state binding".into()),
             ("2".into(), "Implement PKCE states binding".into()),

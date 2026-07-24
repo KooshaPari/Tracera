@@ -260,5 +260,8 @@ pub trait Store: Send + Sync {
     ) -> BoxFuture<'_, StoreResult<Problem>>;
 
     /// Count of problems for a project, scoped to non-tombstoned rows.
+    // Kept as part of the store contract for backend parity; production HTTP
+    // handlers currently expose problem listings rather than aggregate counts.
+    #[allow(dead_code)]
     fn count_problems(&self, project_id: String) -> BoxFuture<'_, StoreResult<i64>>;
 }

@@ -7,50 +7,64 @@
 - `GET /healthz`
 - `GET /readyz`
 
-## API endpoint target set (24-business + governance slice, `/api/v1`)
+## API endpoint target set (hybrid surface)
 
-This list is the audit-facing contract for governance and traceability evidence.
+Current Tracera frontend/runtime contract is split:
 
-### Auth
+- **Governance compute endpoints** remain on `/api/v1/*`.
+- **Operational and metadata endpoints** are mounted at root paths for compatibility.
 
-- `GET /api/v1/auth/me`
+This list is the audit-facing target contract for governance and traceability evidence. It is
+not a claim that every route is mounted in the Rust server; verify the `Mounted` column in
+[`governance/policy/endpoint_traceability_map.md`](governance/policy/endpoint_traceability_map.md)
+before integrating against a route.
+
+## Mounted Rust surface
+
+The currently deployed Rust server guarantees the operational probes and evidence routes above,
+plus only the routes marked `Mounted = ✅` in the governance matrix. Historical Python routes
+remain documented below as migration targets, not as deployed capabilities.
 
 ### Evidence
 
-- `GET /api/v1/evidence`
-- `POST /api/v1/evidence`
-- `GET /api/v1/evidence/health`
+- `GET /evidence`
+- `POST /evidence`
+- `GET /evidence/health`
 
 ### Impact / traceability
 
-- `GET /api/v1/impact/forward/{artifact_id}`
-- `GET /api/v1/impact/reverse/{artifact_id}`
+- `POST /api/v1/trace/forward/{artifact_id}`
+- `POST /api/v1/trace/reverse/{artifact_id}`
 - `POST /api/v1/impact`
-- `POST /api/v1/impact/blast-radius`
+- `POST /api/v1/blast-radius`
 - `POST /api/v1/coverage-matrix`
 - `POST /api/v1/governance/spec-check`
 - `POST /api/v1/confidence`
 
 ### SDLC and org intelligence
 
-- `GET /api/v1/sdlc-pm/health`
-- `GET /api/v1/sdlc-pm/sprints`
-- `GET /api/v1/sdlc-pm/stories`
-- `POST /api/v1/sdlc-pm/sprints`
-- `GET /api/v1/org-intel/health`
-- `GET /api/v1/org-intel/metrics`
-- `GET /api/v1/org-intel/teams`
+- `GET /sdlc-pm/health`
+- `GET /sdlc-pm/sprints`
+- `GET /sdlc-pm/stories`
+- `POST /sdlc-pm/sprints`
+- `GET /org-intel/health`
+- `GET /org-intel/metrics`
+- `GET /org-intel/teams`
 
-### Ingestion + comments
+### Ingestion
 
-- `POST /api/v1/ingest/github`
-- `POST /api/v1/ingest/jira`
+- `POST /ingest/github`
+- `POST /ingest/jira`
+
+### Migration targets (not mounted)
+
+The following historical Python routes are retained as migration targets only. They are not
+part of the Rust server contract and must not be called by deployed clients until a route is
+added to `crates/tracera-server/src/main.rs` and covered by an integration test:
+
 - `GET /api/v1/items/{item_id}/comments`
 - `POST /api/v1/items/{item_id}/comments`
 - `DELETE /api/v1/items/{item_id}/comments/{comment_id}`
-
-### Code-trace
-
 - `GET /api/v1/code-trace/{component_id}`
 
 ## Governance mapping

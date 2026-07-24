@@ -62,6 +62,17 @@ URL precedence: `TRACERA_URL` > `TRACERA_DEV_URL` > default.
 
 The resolved target URL is shown in the tray menu under "Target: …".
 
+To have the `.app` start and stop the desktop-hosted stack, opt in explicitly:
+
+```bash
+TRACERA_LOCAL_COMPOSE=1 TRACERA_REPO_ROOT=/absolute/path/to/Tracera bun run dev
+```
+
+The launcher uses Docker Compose, waits for `/health` and `/ready`, loads
+`http://127.0.0.1:18081/`, and runs `docker compose down` when the app exits.
+It rejects port 8080 because that port belongs to Grapheon. The default app
+mode remains external-URL-only and does not mutate host services.
+
 ## Features
 
 - **System tray** — click to Show / Reload / Quit; always present.
@@ -90,7 +101,7 @@ Electrobun uses its default icon.
 
 ## Migration from Electron
 
-This shell replaced `electron` 39.8.5 + `electron-builder` 25.1.8. The
+This shell replaced the retired Electron/electron-builder packaging path. The
 `electron/main.js` and `electron/preload.js` files have been removed. The
 equivalent Electrobun files are:
 
@@ -99,4 +110,4 @@ equivalent Electrobun files are:
 | `electron/main.js` | `src/index.ts` |
 | `electron/preload.js` | RPC schema in `src/rpc.ts` |
 | `package.json` `"build"` section | `electrobun.config.ts` |
-| `npm install` / `electron-builder` | `bun install` / `bunx electrobun build` |
+| `npm install` / legacy Electron packaging | `bun install` / `bunx electrobun build` |

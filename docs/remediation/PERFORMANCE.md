@@ -11,6 +11,14 @@
 
 These limits are additive and reversible guardrails while no dedicated queue/batching layer exists.
 
+### Current enforcement
+
+The Rust API and Cloudflare edge façade enforce the 25,000-link hard ceiling for
+`POST /api/v1/coverage-matrix`. Requests above the ceiling return `413` with
+`coverage matrix exceeds link limit; use a paged export`. This protects both
+in-memory matrix construction paths from unbounded response allocation. The
+Rust route and edge crate each carry regression coverage for the guard.
+
 - `coverage-matrix`
   - 1,000 links: immediate in-memory build (current behavior)
   - 5,000 links: soft warning with structured warning log
@@ -79,4 +87,3 @@ Add low-friction hooks before deep optimization:
 3. Add streaming fallback for oversized coverage requests.
 4. Add async job-based deferred heavy job path.
 5. Add cache and profiling gating behind feature flags.
-

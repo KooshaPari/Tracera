@@ -5,7 +5,7 @@ This stack runs Tracera on your desktop, publishes it through Caddy, and exposes
 ## Layout
 
 - `docker-compose.selfhost.yml`: Tracera server, Caddy, and cloudflared tunnel
-- `Caddyfile`: local reverse proxy plus security headers
+- `Caddyfile`: TLS reverse proxy plus security headers
 - `README.md`: runbook and environment variables
 
 ## Prerequisites
@@ -31,11 +31,38 @@ WorkOS AuthKit is not wired in yet, but these placeholders show where its settin
 - `WORKOS_BASE_URL`
 - Any other `WORKOS_*` values required by your AuthKit middleware
 
+## Ingress security gate
+
+The server is intentionally bound to `0.0.0.0:8080` only inside the compose
+network; Caddy is the ingress boundary and port 8080 must not be published.
+The compose stack publishes Caddy's HTTP/HTTPS ports (`80` and `443`); Caddy
+obtains a certificate automatically for `TRACERA_PUBLIC_HOSTNAME`.
+Run the secret-free private-boundary check before every deployment:
+
+```sh
+./scripts/verify-deployment-security.sh --mode private
+
+# Validate build inputs, ports, probes, and secret-free manifests
+./scripts/verify-deployment-manifests.sh
+```
+
+The checked-in Caddyfile contains an AuthKit insertion point, but its
+`forward_auth` block is commented and therefore does **not** protect public
+traffic. Before enabling a Cloudflare Tunnel or public DNS, configure an active
+`forward_auth`, `basic_auth`, or JWT directive and run the strict gate:
+
+```sh
+./scripts/verify-deployment-security.sh --mode public
+```
+
+The strict gate fails closed until authentication and an HTTPS listener are
+present. It does not inspect or require credentials, so it is safe to run in CI.
+
 ## Run
 
-From the repo root:
+From the repo root (macOS/Linux):
 
-```powershell
+```sh
 docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
 ```
 

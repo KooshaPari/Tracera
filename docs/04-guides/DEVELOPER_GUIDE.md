@@ -1,5 +1,10 @@
 # Developer Guide
 
+> **Historical reference.** This recovered guide describes the former
+> TraceRTM/Python development model. The supported server and route
+> implementation now lives in the Rust workspace; use the current API and
+> deployment guides for new work.
+
 > **Recovered June 2026.** Restored from git history (`9e78f48dd^`). When adding HTTP routes, align with
 > the governance contract in [`../governance/policy/endpoint_traceability_map.md`](../governance/policy/endpoint_traceability_map.md)
 > and [`../API_REFERENCE.md`](../API_REFERENCE.md) (17 mounted + 8 unmounted `/api/v1` routes).

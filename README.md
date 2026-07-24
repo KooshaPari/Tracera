@@ -3,7 +3,7 @@
 <p align="center">
   <a href="assets/brand/icon.svg"><img src="assets/brand/icon.svg" alt="Tracera" width="160" height="160"></a>
 </p>
-<p align="center"><em>Hexagonal trace-link matrix for Agentic + LLM observability — Rust core, Python SDK, Electron desktop.</em></p>
+<p align="center"><em>Hexagonal trace-link matrix for Agentic + LLM observability — Rust core, web UI, Electrobun desktop.</em></p>
 <p align="center"><sub>Tracera (navy + teal + indigo) palette · <a href="assets/brand/favicon.svg">favicon</a> · <a href="docs/assets/identity/">visual identity demo</a></sub></p>
 
 ---
@@ -11,7 +11,9 @@
 Tracera is the Phenotype-org **trace + observability + audit ledger** for
 agentic and LLM workflows. It captures structured trace-links across runs,
 distills short-term + long-term memory, and serves an Electron desktop
-viewer over OKF-bundled session history.
+viewer over OKF-bundled session history. The supported runtime is the Rust
+workspace; older Python/FastAPI references are retained only as historical
+migration material.
 
 ## Where to start
 
@@ -25,7 +27,7 @@ viewer over OKF-bundled session history.
 - `src/` — Rust core (hexagonal: domain + adapters)
 - `crates/` — Cargo workspace members
 - `frontend/` — web app
-- `backend/` — Python SDK / service layer
+- `docs/` — canonical guides, contracts, and operational runbooks
 - `assets/brand/` — Tracera brand iconography (source of truth: `icon.svg`)
 - `audit/` — scorecard + L-pillar audit output
 
@@ -38,8 +40,8 @@ cargo build --workspace
 # Frontend
 cd frontend && bun install && bun run dev
 
-# Backend / API
-cd backend && uv sync && uv run pytest
+# Rust API server
+cargo run -p tracera-server
 ```
 
 See the getting-started guide for the full setup, including the

@@ -1,6 +1,8 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+Write-Warning 'This launcher targets the retired Python/FastAPI service on port 8000. Use the Rust tracera-server and deploy/selfhost instructions for current deployments.'
+
 $repoRoot = 'E:\Dev\Tracera'
 $docsUrl = 'http://localhost:8000/docs'
 

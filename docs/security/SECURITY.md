@@ -1,4 +1,11 @@
-# Tracera API Security Policy
+# Tracera API Security Policy (historical Python reference)
+
+> **Scope warning:** this document describes the retired Python/FastAPI
+> `tracertm` service and its JWT middleware. It is retained as audit evidence,
+> not as the current Rust runtime security contract. For the live service use
+> [`../quickstart.md`](../quickstart.md),
+> [`../../deploy/selfhost/README.md`](../../deploy/selfhost/README.md), and the
+> Kubernetes security policy.
 
 ## Threat model
 
@@ -61,4 +68,3 @@
 - Security policy: [`../../SECURITY.md`](../../SECURITY.md)
 - Governance matrix + endpoint traceability: [`../../docs/governance/policy/endpoint_traceability_map.md`](../../docs/governance/policy/endpoint_traceability_map.md)
 - Self-application coverage: [`../../docs/governance/policy/coverage_matrix_self_application.md`](../../docs/governance/policy/coverage_matrix_self_application.md)
-

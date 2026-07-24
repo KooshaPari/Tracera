@@ -1,0 +1,86 @@
+name: Frontend contract checks
+
+on:
+  push:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-contract-checks.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TRACERA_API_BASE: ${{ vars.TRACERA_API_BASE }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1
+        with:
+          bun-version: latest
+
+      - name: Install frontend deps
+        run: bun install --frozen-lockfile --ignore-scripts
+        working-directory: frontend
+
+      - name: Build web bundle
+        run: npm run build
+        working-directory: frontend
+
+      - name: Enforce frontend bundle budget
+        run: node scripts/check-bundle-budget.mjs
+        working-directory: frontend
+
+      - name: Verify canonical dashboard artifact
+        run: node scripts/test-deployment-artifact.mjs dist
+        working-directory: frontend
+
+      - name: Workspace typecheck
+        run: npm run typecheck
+        working-directory: frontend
+
+      - name: Tracera client contract + dashboard state tests
+        run: npm run test:unit
+        working-directory: frontend
+
+      # Keep the highest-risk UI/API contracts visible as named CI gates.  The
+      # aggregate unit target above remains the fast canonical suite; these
+      # explicit invocations make failures attributable in branch protection
+      # and prevent a future aggregate-script edit from silently dropping them.
+      - name: Verify client/server route parity
+        run: npm run test:client-server-parity
+        working-directory: frontend
+
+      - name: Verify UI accessibility contract
+        run: npm run test:a11y
+        working-directory: frontend
+
+      - name: Generate and verify release manifest
+        run: npm run release:manifest && npm run verify:release-manifest
+        working-directory: frontend
+
+      - name: Verify reproducible release manifest
+        run: npm run test:release-manifest
+        working-directory: frontend
+
+      - name: Frontend parity smoke (optional, if public HTTPS API set)
+        run: |
+          if [[ "${TRACERA_API_BASE}" == https://* ]]; then
+            VITE_API_BASE="${TRACERA_API_BASE}" npm run smoke:parity
+          else
+            echo "Skipping parity smoke: no public HTTPS TRACERA_API_BASE"
+          fi
+        working-directory: frontend
+
+      - name: Frontend POST parity smoke (optional, if public HTTPS API set)
+        run: |
+          if [[ "${TRACERA_API_BASE}" == https://* ]]; then
+            VITE_API_BASE="${TRACERA_API_BASE}" npm run smoke:post
+          else
+            echo "Skipping POST smoke: no public HTTPS TRACERA_API_BASE"
+          fi
+        working-directory: frontend

@@ -17,6 +17,7 @@
 
 import { BrowserWindow, Tray, defineElectrobunRPC, type MenuItemConfig } from "electrobun/bun";
 import type { BunRequests, WebviewRequests } from "./rpc";
+import { startLocalCompose, LOCAL_URL } from "./compose";
 
 // ---------------------------------------------------------------------------
 // Target URL resolution
@@ -26,12 +27,22 @@ const DEFAULT_URL = "https://kooshapari.github.io/Tracera/";
 const APP_VERSION = "0.1.0";
 
 function resolveTargetUrl(): string {
+  if (process.env.TRACERA_LOCAL_COMPOSE === "1") return `${LOCAL_URL}/`;
   if (process.env.TRACERA_URL) return process.env.TRACERA_URL;
   if (process.env.TRACERA_DEV_URL) return process.env.TRACERA_DEV_URL;
   return DEFAULT_URL;
 }
 
 const targetUrl = resolveTargetUrl();
+
+let stopLocalCompose: (() => Promise<void>) | undefined;
+if (process.env.TRACERA_LOCAL_COMPOSE === "1") {
+  const repoRoot = process.env.TRACERA_REPO_ROOT;
+  if (!repoRoot) throw new Error("TRACERA_REPO_ROOT is required when TRACERA_LOCAL_COMPOSE=1");
+  void startLocalCompose({ repoRoot }).then((stop) => { stopLocalCompose = stop; }).catch((error) => {
+    log("local Compose startup failed:", error instanceof Error ? error.message : error);
+  });
+}
 
 function log(...args: unknown[]): void {
   console.log("[tracera-desktop]", ...args);
@@ -129,4 +140,5 @@ log("tray created, id=", tray.id);
 // Keep the process alive even when the window is closed (tray-resident app).
 process.on("beforeExit", () => {
   tray.remove();
+  void stopLocalCompose?.();
 });

@@ -4,7 +4,7 @@
 //! Reference: github.com/KooshaPari/phenodag/blob/main/phenodag.go (cmdClaim, line 1313)
 
 use chrono::Utc;
-use sqlx::{Pool, Sqlite, Transaction, SqlitePool};
+use sqlx::{Pool, Sqlite, Transaction};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -45,11 +45,10 @@ pub async fn atomic_claim(
     .await?;
     if res.rows_affected() == 0 {
         // Either task doesn't exist or wasn't 'ready'.
-        let exists: Option<(String,)> =
-            sqlx::query_as("SELECT status FROM tasks WHERE id = ?")
-                .bind(task_id)
-                .fetch_optional(&mut *tx)
-                .await?;
+        let exists: Option<(String,)> = sqlx::query_as("SELECT status FROM tasks WHERE id = ?")
+            .bind(task_id)
+            .fetch_optional(&mut *tx)
+            .await?;
         tx.rollback().await.ok();
         return match exists {
             None => Err(ClaimError::TaskNotFound(task_id.into())),
@@ -107,7 +106,7 @@ mod tests {
             .await
             .unwrap();
         atomic_claim(&pool, "T1", "agent-a").await.unwrap();
-        let (status, agent,): (String, Option<String>) =
+        let (status, agent): (String, Option<String>) =
             sqlx::query_as("SELECT status, assigned_agent FROM tasks WHERE id = ?")
                 .bind("T1")
                 .fetch_one(&pool)

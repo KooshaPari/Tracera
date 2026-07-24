@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: phase-finish-stack-env
+  name: {{ include "phase-finish-stack.fullname" . }}-env
   labels:
     app.kubernetes.io/part-of: phase-finish-stack
 data:
@@ -18,23 +18,3 @@ data:
   ENABLE_DAG_ORCHESTRATION: "true"
   ENABLE_OTEL: "true"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://phase-finish-stack-otel-collector:4317"
-
----
-# Secret placeholders — populate via `kubectl create secret` or ExternalSecret
-apiVersion: v1
-kind: Secret
-metadata:
-  name: phase-finish-stack-secrets
-  labels:
-    app.kubernetes.io/part-of: phase-finish-stack
-type: Opaque
-stringData:
-  TRACE_API_KEY: "REPLACE_ME"
-  CIVIS_PROVIDER_TOKEN: "REPLACE_ME"
-  PHENOTYPE_REGISTRY_TOKEN: "REPLACE_ME"
-  GITHUB_PAT: "REPLACE_ME"
-  POSTGRES_PASSWORD: "REPLACE_ME"
-  NEO4J_PASSWORD: "REPLACE_ME"
-  NATS_TOKEN: "REPLACE_ME"
-  DRAGONFLY_PASSWORD: "REPLACE_ME"
-  MINIO_ROOT_PASSWORD: "REPLACE_ME"

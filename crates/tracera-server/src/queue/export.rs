@@ -33,9 +33,15 @@ pub fn to_json(snap: &QueueSnapshot) -> Result<String, serde_json::Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test] fn roundtrip_json() {
+    #[test]
+    fn roundtrip_json() {
         let s = QueueSnapshot {
-            tasks: vec![TaskSnapshot { id: "T1".into(), status: "ready".into(), assigned_agent: None, updated_at: "2026-07-05T00:00:00Z".into() }],
+            tasks: vec![TaskSnapshot {
+                id: "T1".into(),
+                status: "ready".into(),
+                assigned_agent: None,
+                updated_at: "2026-07-05T00:00:00Z".into(),
+            }],
             agents: vec![],
             exported_at: "2026-07-05T00:00:00Z".into(),
         };

@@ -46,7 +46,11 @@ fn opt_ts_to_str(dt: Option<DateTime<Utc>>) -> Option<String> {
 }
 
 fn str_to_opt_ts(s: Option<String>) -> Option<DateTime<Utc>> {
-    s.and_then(|v| DateTime::parse_from_rfc3339(&v).ok().map(|dt| dt.with_timezone(&Utc)))
+    s.and_then(|v| {
+        DateTime::parse_from_rfc3339(&v)
+            .ok()
+            .map(|dt| dt.with_timezone(&Utc))
+    })
 }
 
 impl Store for SqliteStore {
@@ -64,16 +68,20 @@ impl Store for SqliteStore {
                 .into_iter()
                 .map(|r| {
                     let meta_str: String = r.try_get("metadata").unwrap_or_default();
-                    let metadata: Value =
-                        serde_json::from_str(&meta_str).unwrap_or(Value::Object(Default::default()));
+                    let metadata: Value = serde_json::from_str(&meta_str)
+                        .unwrap_or(Value::Object(Default::default()));
                     EvidenceItem {
                         id: r.try_get("id").unwrap_or_default(),
                         artifact_id: r.try_get("artifact_id").unwrap_or_default(),
                         kind: r.try_get("kind").unwrap_or_default(),
                         url: r.try_get("url").unwrap_or_default(),
                         metadata,
-                        created_at: str_to_ts(&r.try_get::<String, _>("created_at").unwrap_or_default()),
-                        updated_at: str_to_ts(&r.try_get::<String, _>("updated_at").unwrap_or_default()),
+                        created_at: str_to_ts(
+                            &r.try_get::<String, _>("created_at").unwrap_or_default(),
+                        ),
+                        updated_at: str_to_ts(
+                            &r.try_get::<String, _>("updated_at").unwrap_or_default(),
+                        ),
                     }
                 })
                 .collect();
@@ -92,8 +100,7 @@ impl Store for SqliteStore {
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<EvidenceItem>> {
         Box::pin(async move {
-            let meta_str = serde_json::to_string(&metadata)
-                .unwrap_or_else(|_| "{}".to_string());
+            let meta_str = serde_json::to_string(&metadata).unwrap_or_else(|_| "{}".to_string());
             let now_str = ts_to_str(now);
 
             sqlx::query(
@@ -139,11 +146,17 @@ impl Store for SqliteStore {
                     id: r.try_get("id").unwrap_or_default(),
                     name: r.try_get("name").unwrap_or_default(),
                     goal: r.try_get("goal").unwrap_or_default(),
-                    start_date: str_to_ts(&r.try_get::<String, _>("start_date").unwrap_or_default()),
+                    start_date: str_to_ts(
+                        &r.try_get::<String, _>("start_date").unwrap_or_default(),
+                    ),
                     end_date: str_to_ts(&r.try_get::<String, _>("end_date").unwrap_or_default()),
                     status: r.try_get("status").unwrap_or_default(),
-                    created_at: str_to_ts(&r.try_get::<String, _>("created_at").unwrap_or_default()),
-                    updated_at: str_to_ts(&r.try_get::<String, _>("updated_at").unwrap_or_default()),
+                    created_at: str_to_ts(
+                        &r.try_get::<String, _>("created_at").unwrap_or_default(),
+                    ),
+                    updated_at: str_to_ts(
+                        &r.try_get::<String, _>("updated_at").unwrap_or_default(),
+                    ),
                 })
                 .collect())
         })
@@ -207,8 +220,12 @@ impl Store for SqliteStore {
                     description: r.try_get("description").unwrap_or_default(),
                     status: r.try_get("status").unwrap_or_default(),
                     story_points: r.try_get("story_points").ok(),
-                    created_at: str_to_ts(&r.try_get::<String, _>("created_at").unwrap_or_default()),
-                    updated_at: str_to_ts(&r.try_get::<String, _>("updated_at").unwrap_or_default()),
+                    created_at: str_to_ts(
+                        &r.try_get::<String, _>("created_at").unwrap_or_default(),
+                    ),
+                    updated_at: str_to_ts(
+                        &r.try_get::<String, _>("updated_at").unwrap_or_default(),
+                    ),
                 })
                 .collect())
         })
@@ -299,17 +316,17 @@ impl Store for SqliteStore {
 
     fn list_teams(&self) -> BoxFuture<'_, StoreResult<Vec<TeamRow>>> {
         Box::pin(async move {
-            let rows = sqlx::query(
-                "SELECT id, name, description, members FROM teams ORDER BY id ASC",
-            )
-            .fetch_all(&self.pool)
-            .await
-            .map_err(StoreError::from)?;
+            let rows =
+                sqlx::query("SELECT id, name, description, members FROM teams ORDER BY id ASC")
+                    .fetch_all(&self.pool)
+                    .await
+                    .map_err(StoreError::from)?;
 
             Ok(rows
                 .into_iter()
                 .map(|r| {
-                    let members_str: String = r.try_get("members").unwrap_or_else(|_| "[]".to_string());
+                    let members_str: String =
+                        r.try_get("members").unwrap_or_else(|_| "[]".to_string());
                     let members: Vec<String> =
                         serde_json::from_str(&members_str).unwrap_or_default();
                     TeamRow {

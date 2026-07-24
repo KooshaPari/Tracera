@@ -5,6 +5,7 @@ services:
     command: sh -lc "cargo run --release -p tracera-server"
     environment:
       TRACERA_BIND_ADDR: 0.0.0.0:8080
+      TRACERA_TRUSTED_PROXY: "true"
     volumes:
       - ../..:/workspace
       - tracera-cargo-cache:/usr/local/cargo/registry
@@ -25,6 +26,7 @@ services:
       - caddy-config:/config
     ports:
       - "80:80"
+      - "443:443"
     restart: unless-stopped
 
   cloudflared:

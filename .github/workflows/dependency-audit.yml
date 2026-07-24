@@ -1,0 +1,48 @@
+name: Dependency audit
+
+on:
+  push:
+    paths:
+      - Cargo.lock
+      - frontend/bun.lock
+      - uv.lock
+      - sidecar/go/go.mod
+      - .github/workflows/dependency-audit.yml
+  pull_request:
+    paths:
+      - Cargo.lock
+      - frontend/bun.lock
+      - uv.lock
+      - sidecar/go/go.mod
+      - .github/workflows/dependency-audit.yml
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  osv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: google/osv-scanner-action/osv-scanner-action@e69cc6c86b31f1e7e23935bbe7031b50e51082de # v2.0.2
+        with:
+          # uv.lock is historical benchmark tooling; Tracera has no Python runtime manifest.
+          # Keep the audit fail-closed for the authoritative Rust, web, and Go manifests.
+          scan-args: |-
+            scan source Cargo.lock frontend/bun.lock sidecar/go/go.mod
+
+  rust-policy:
+    name: Rust dependency policy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # stable toolchain action
+        with:
+          toolchain: stable
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --version 0.19.0 --locked
+      - name: Check advisories, licenses, bans, and sources
+        run: cargo deny check advisories licenses bans sources

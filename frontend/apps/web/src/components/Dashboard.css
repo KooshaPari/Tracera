@@ -68,7 +68,43 @@
   padding: 1rem 1.5rem;
   margin-bottom: 2rem;
   border-radius: 4px;
-  color: #fca5a5;
+  color: var(--color-error-text);
+}
+
+.stale-note {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.data-freshness {
+  margin: -1rem 0 2rem;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  text-align: end;
+}
+
+.retry-button {
+  margin-inline-start: 1rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.retry-button:focus-visible,
+.nav-item:focus-visible {
+  outline: 3px solid var(--color-warning);
+  outline-offset: 2px;
+}
+
+.retry-button:disabled {
+  cursor: progress;
+  opacity: 0.65;
 }
 
 /* Status Section */
@@ -245,7 +281,7 @@
 
 .sprint-status.planned {
   background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
+  color: var(--color-info);
 }
 
 .sprint-status.active {
@@ -255,7 +291,7 @@
 
 .sprint-status.completed {
   background: rgba(107, 114, 128, 0.2);
-  color: #9ca3af;
+  color: var(--color-muted);
 }
 
 .sprint-goal {
@@ -316,6 +352,62 @@
   background: rgba(0, 0, 0, 0.3);
 }
 
+.top-nav {
+  background: rgba(15, 23, 42, 0.9);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(4px);
+}
+
+.top-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.8rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.top-nav .top-nav-links {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.top-nav .nav-item {
+  border: 1px solid transparent;
+  background: var(--color-card-bg);
+  color: var(--color-text-secondary);
+  border-radius: 8px;
+  padding: 0.45rem 0.8rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.top-nav .nav-item:hover,
+.top-nav .nav-item.active {
+  border-color: var(--color-teal);
+  color: var(--color-text-primary);
+}
+
+.top-nav .nav-item.active {
+  background: rgba(126, 186, 181, 0.15);
+}
+
+.trace-list,
+.top-nav ul,
+.dashboard ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.trace-list li {
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .dashboard-header {
@@ -336,5 +428,19 @@
 
   .teams-grid {
     grid-template-columns: 1fr;
+  }
+
+  .top-nav-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
