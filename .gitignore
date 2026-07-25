@@ -18,6 +18,10 @@ __pycache__/
 # artifacts, not committed from a developer worktree.
 /release-manifest.json
 
+# Runtime data directory (SQLite DBs, uploaded artifacts). Always local-only.
+/data/
+/data/*
+
 # Node lockfiles + electron-builder output (not committed per repo convention)
 package-lock.json
 frontend/apps/desktop/release/

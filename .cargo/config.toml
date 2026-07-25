@@ -1,0 +1,26 @@
+# Tracera local cargo configuration.
+#
+# Workaround for an upstream linker bug on stable rustc (1.94+) on
+# Apple Silicon macOS: the system `ld64` produces proc-macro dylibs
+# (notably `libsqlx_macros-*.dylib`) whose `LC_LINKEDIT` segment ends
+# up mis-aligned, which then crashes the rustc invocation that tries
+# to dlopen them with `mis-aligned LINKEDIT string pool` (offset
+# `0x00841F24` in the typical reproduction).
+#
+# The documented fix is to force `rust-lld` as the linker for the
+# proc-macro dylib step. `rust-lld` ships with every rust toolchain
+# and is added to PATH by rustup when a toolchain is active, so this
+# config is portable across all rustup-managed toolchains and does not
+# hardcode a per-user install path.
+#
+# See:
+#   - https://github.com/rust-lang/rust/issues/117458
+#   - https://github.com/aws/aws-lc-rs/issues/380
+#
+# This applies only to aarch64-apple-darwin (Apple Silicon macOS);
+# x86_64 macOS, Linux, and Windows use their default toolchains
+# unchanged.
+
+[target.aarch64-apple-darwin]
+linker = "rust-lld"
+rustflags = ["-C", "link-arg=-no_compact_unwind"]
