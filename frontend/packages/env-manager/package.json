@@ -1,0 +1,46 @@
+{
+  "name": "@tracertm/env-manager",
+  "version": "1.0.0",
+  "description": "Environment variable manager for TraceRTM frontend",
+  "keywords": [
+    "config",
+    "env",
+    "environment",
+    "tracertm"
+  ],
+  "license": "MIT",
+  "author": "TraceRTM",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "type": "module",
+  "main": "./dist/env-manager.js",
+  "types": "./dist/env-manager.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/env-manager.d.ts",
+      "import": "./dist/env-manager.js"
+    },
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "import": "./dist/config.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "format": "bun x oxfmt src"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@vitest/coverage-v8": "^4.0.14",
+    "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1",
+    "vitest": "^4.0.14"
+  },
+  "peerDependencies": {
+    "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1"
+  }
+}

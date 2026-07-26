@@ -3,25 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "description": "Tracera desktop app — Electrobun shell loading the Tracera web UI with system tray support.",
-  "author": {
-    "name": "Phenotype",
-    "email": "kooshapari@gmail.com"
-  },
   "scripts": {
     "dev": "bunx electrobun dev",
-    "build": "bunx electrobun build && bun scripts/postbundle.ts",
-    "build:release": "bunx electrobun build --env=production && bun scripts/postbundle.ts",
+    "build": "bunx electrobun build",
     "package": "bunx electrobun package",
-    "typecheck": "bunx tsc --noEmit --project tsconfig.json",
     "test:e2e": "bun test tests/e2e_desktop.test.ts --timeout 60000",
-    "test:local-compose": "bun test tests/localCompose.test.ts",
     "postinstall": "bun scripts/postinstall.ts"
   },
   "dependencies": {
     "electrobun": "^1.18.1"
   },
   "devDependencies": {
-    "@types/bun": "^1.3.14",
-    "typescript": "^5.8.3"
+    "@types/bun": "^1.3.14"
   }
 }
