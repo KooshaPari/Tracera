@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { LOCAL_URL, startLocalCompose, type CommandRunner } from "../src/compose";
+import { LOCAL_URL, startBundle, type CommandRunner } from "../src/compose";
+import { DEFAULT_TARGET_URL, resolveTargetUrl } from "../src/target";
 
 function runner(commands: string[][]): CommandRunner {
   return (command) => {
@@ -8,22 +9,47 @@ function runner(commands: string[][]): CommandRunner {
   };
 }
 
-describe("desktop local Compose lifecycle", () => {
-  test("starts, waits for health, and stops with an injected runner", async () => {
+describe("desktop bundle lifecycle", () => {
+  test("starts the bundled stack, waits for health, and stops with an injected runner", async () => {
     const commands: string[][] = [];
-    const stop = await startLocalCompose({
-      repoRoot: "/tmp/tracera",
+    const stop = await startBundle({
+      cliPath: "/Applications/Tracera.app/Contents/Resources/tracera-bundle/bin/tracera",
       run: runner(commands),
-      fetchImpl: async (input) => new Response(JSON.stringify({ status: String(input).endsWith("/ready") ? "ready" : "ok" }), { status: 200 }),
+      fetchImpl: async () => new Response(JSON.stringify({ status: "ok" }), { status: 200 }),
       timeoutMs: 100,
     });
     await stop();
-    expect(commands[0]).toEqual(["docker", "compose", "--env-file", "/tmp/tracera/.env.local", "-f", "/tmp/tracera/docker-compose.local.yml", "up", "-d"]);
-    expect(commands[1]?.at(-1)).toBe("down");
+    expect(commands[0]?.[0]).toContain("tracera");
+    expect(commands[0]).toContain("up");
+    expect(commands[1]).toContain("down");
     expect(LOCAL_URL).toBe("http://127.0.0.1:18081");
   });
 
-  test("rejects Grapheon port 8080 before spawning", async () => {
-    await expect(startLocalCompose({ repoRoot: "/tmp/tracera", env: { TRACERA_LOCAL_PORT: "8080" }, run: runner([]) })).rejects.toThrow("reserved for Grapheon");
+  test("exposes the local URL pointing at the bundled stack", () => {
+    expect(LOCAL_URL).toBe("http://127.0.0.1:18081");
+  });
+
+  test("defaults packaged apps to the local stack, never a hosted site", () => {
+    expect(DEFAULT_TARGET_URL).toBe("http://127.0.0.1:18081");
+    expect(resolveTargetUrl({})).toBe("http://127.0.0.1:18081/");
+    expect(resolveTargetUrl({ TRACERA_LOCAL_PORT: "19999" })).toBe("http://127.0.0.1:19999/");
+  });
+
+  test("allows an explicit hosted override without making it the default", () => {
+    expect(resolveTargetUrl({ TRACERA_HOSTED_URL: "https://example.com/tracera/" }))
+      .toBe("https://example.com/tracera/");
+    expect(resolveTargetUrl({ TRACERA_URL: "https://staging.example.com" }))
+      .toBe("https://staging.example.com");
+  });
+
+  test("rejects when no CLI path is provided and none can be resolved", async () => {
+    await expect(
+      startBundle({
+        cliPath: "/nonexistent/tracera",
+        run: runner([]),
+        fetchImpl: async () => new Response("", { status: 503 }),
+        timeoutMs: 50,
+      }),
+    ).rejects.toThrow();
   });
 });

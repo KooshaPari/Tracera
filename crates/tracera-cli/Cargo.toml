@@ -1,0 +1,29 @@
+[package]
+name = "tracera-cli"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Tracera CLI — manages the bundled/local Tracera Compose stack across docker, podman, apple-container, and WSL2 runtimes."
+authors = ["Phenotype <kooshapari@gmail.com>"]
+
+[[bin]]
+name = "tracera"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+chrono = { workspace = true }
+clap = { version = "4", features = ["derive", "env"] }
+rand = "0.8"
+reqwest = { version = "0.13", features = ["json", "rustls"], default-features = false }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "process", "time", "io-util"] }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+which = "7"
+
+[dev-dependencies]
+tempfile = { workspace = true }

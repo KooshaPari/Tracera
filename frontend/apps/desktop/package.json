@@ -9,8 +9,8 @@
   },
   "scripts": {
     "dev": "bunx electrobun dev",
-    "build": "bunx electrobun build",
-    "build:release": "bunx electrobun build --env=production",
+    "build": "bunx electrobun build && bun scripts/postbundle.ts",
+    "build:release": "bunx electrobun build --env=production && bun scripts/postbundle.ts",
     "package": "bunx electrobun package",
     "typecheck": "bunx tsc --noEmit --project tsconfig.json",
     "test:e2e": "bun test tests/e2e_desktop.test.ts --timeout 60000",

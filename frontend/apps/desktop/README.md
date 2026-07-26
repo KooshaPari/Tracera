@@ -1,18 +1,18 @@
 # Tracera Desktop
 
-A native desktop wrapper for the [Tracera](https://kooshapari.github.io/Tracera/)
+A native desktop wrapper for the Tracera local runtime.
 web UI. Ships as a real installable app via **Electrobun** — the Phenotype org
 standard desktop shell (replaces the former Electron wrapper).
 
 ## What this is
 
-The web app at `https://kooshapari.github.io/Tracera/` is a Vite-built
-React SPA. This Electrobun app wraps that SPA in a native WKWebView window
+The desktop app connects to the durable local Tracera server at
+`http://127.0.0.1:8080/` by default. A hosted URL is never selected implicitly.
+The React SPA is wrapped in a native WKWebView window
 with a system tray icon — giving you a real desktop application experience.
 
-The desktop shell is **dumb on purpose**: it loads whatever URL you point it
-at. By default it points at the production GitHub Pages deployment, but you
-can override it (see Configuration below).
+The desktop shell loads the local runtime by default. Hosted/staging URLs are
+explicit opt-ins through the environment variables below.
 
 ## Stack
 
@@ -55,10 +55,11 @@ bun test tests/e2e_desktop.test.ts
 
 | Env var | Purpose |
 |---------|---------|
-| `TRACERA_URL` | Override the target URL (default: GitHub Pages production). |
+| `TRACERA_URL` | Explicit target URL override (including staging/hosted deployments). |
+| `TRACERA_HOSTED_URL` | Explicit hosted deployment override (lower precedence than `TRACERA_URL`). |
 | `TRACERA_DEV_URL` | Dev URL override (e.g. `http://localhost:5173`). |
 
-URL precedence: `TRACERA_URL` > `TRACERA_DEV_URL` > default.
+URL precedence: `TRACERA_URL` > `TRACERA_HOSTED_URL` > `TRACERA_DEV_URL` > local default.
 
 The resolved target URL is shown in the tray menu under "Target: …".
 
@@ -68,8 +69,9 @@ To have the `.app` start and stop the desktop-hosted stack, opt in explicitly:
 TRACERA_LOCAL_COMPOSE=1 TRACERA_REPO_ROOT=/absolute/path/to/Tracera bun run dev
 ```
 
-The launcher uses Docker Compose, waits for `/health` and `/ready`, loads
-`http://127.0.0.1:18081/`, and runs `docker compose down` when the app exits.
+For an explicit bundled Compose stack, set `TRACERA_URL=http://127.0.0.1:18081/`.
+The launcher then waits for `/health` and `/ready`, and runs `docker compose down`
+when the app exits. The packaged default does not require a bundled CLI.
 It rejects port 8080 because that port belongs to Grapheon. The default app
 mode remains external-URL-only and does not mutate host services.
 
