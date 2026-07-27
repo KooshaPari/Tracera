@@ -592,20 +592,25 @@ const getDevHost = (): string =>
 
 const buildChecks = (): PreflightCheck[] => {
   const checks: PreflightCheck[] = [];
+  const configuredApiUrl = (import.meta.env?.VITE_API_URL ?? '').trim().replace(/\/$/, '');
   if (import.meta.env.PROD) {
-    const baseUrl = import.meta.env?.VITE_API_URL || window.location.origin;
+    const baseUrl = configuredApiUrl || window.location.origin;
     checks.push({ name: 'backend', url: baseUrl });
     return checks;
   }
 
-  // Use single Caddy URL when app is served via gateway (port 4000) or VITE_API_URL points at Caddy
+  // A configured API URL is the gateway origin. Never fan out from the browser
+  // to legacy service ports (8000/8080): the gateway owns routing, CORS, and
+  // readiness semantics for the approved dashboard.
+  if (configuredApiUrl) {
+    checks.push({ name: 'backend', url: configuredApiUrl });
+    return checks;
+  }
+
+  // Use single Caddy URL when app is served via gateway (port 4000).
   const devHost = getDevHost();
-  const useCaddy =
-    window.location.port === '4000' || (import.meta.env?.VITE_API_URL ?? '').includes(':4000');
-  const caddyBase =
-    window.location.port === '4000'
-      ? window.location.origin
-      : (import.meta.env?.VITE_API_URL ?? '').replace(/\/$/, '') || `http://${devHost}:4000`;
+  const useCaddy = window.location.port === '4000';
+  const caddyBase = window.location.port === '4000' ? window.location.origin : `http://${devHost}:4000`;
 
   if (useCaddy) {
     checks.push({ name: 'backend', url: caddyBase });
