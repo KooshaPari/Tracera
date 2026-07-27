@@ -5,7 +5,7 @@
   "description": "Tracera desktop app — Electrobun shell loading the Tracera web UI with system tray support.",
   "scripts": {
     "dev": "bunx electrobun dev",
-    "build": "bunx electrobun build",
+    "build": "bunx electrobun build && bun scripts/postbundle.ts",
     "package": "bunx electrobun package",
     "test:e2e": "bun test tests/e2e_desktop.test.ts --timeout 60000",
     "postinstall": "bun scripts/postinstall.ts"
