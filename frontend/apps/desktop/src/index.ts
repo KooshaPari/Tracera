@@ -1,132 +1,70 @@
 /**
- * Tracera desktop — Electrobun main process (bun side).
+ * Tracera desktop entry — Electrobun BrowserWindow launcher.
  *
- * Responsibilities:
- *  1. Open a BrowserWindow loading the Tracera web UI URL.
- *  2. Set up a system tray icon with a context menu (Show, Reload, Quit).
- *  3. Expose a minimal RPC surface for the webview (target URL, version, reload).
+ * Default: the bundled local stack (Tracera.app/Contents/Resources/tracera-bundle/).
+ * Opt-in hosted: set TRACERA_URL or TRACERA_HOSTED_URL in the environment.
  *
- * Target URL precedence (first wins):
- *   1. TRACERA_URL env var
- *   2. TRACERA_DEV_URL env var
- *   3. Default: https://kooshapari.github.io/Tracera/
- *
- * The shell is dumb by design: it does NOT bundle or serve the web UI.
- * It relies on the external deployment. Use TRACERA_URL to override.
+ * On startup we call `startBundle()` which invokes the bundled `tracera` CLI to
+ * bring the compose stack up and waits for /health to return ok before opening
+ * the BrowserWindow.  The CLI auto-detects apple-container | docker | podman |
+ * wsl+docker and falls back gracefully.
  */
+import { app, BrowserWindow } from "electron";
+import { startBundle } from "./bundle";
+import { resolveTargetUrl } from "./target";
 
-import { BrowserWindow, Tray, defineElectrobunRPC, type MenuItemConfig } from "electrobun/bun";
-import type { BunRequests, WebviewRequests } from "./rpc";
+let stopBundle: (() => Promise<void>) | null = null;
 
-// ---------------------------------------------------------------------------
-// Target URL resolution
-// ---------------------------------------------------------------------------
+async function main() {
+  const targetUrl = resolveTargetUrl(process.env);
 
-const DEFAULT_URL = "https://kooshapari.github.io/Tracera/";
-const APP_VERSION = "0.1.0";
-
-function resolveTargetUrl(): string {
-  if (process.env.TRACERA_URL) return process.env.TRACERA_URL;
-  if (process.env.TRACERA_DEV_URL) return process.env.TRACERA_DEV_URL;
-  return DEFAULT_URL;
-}
-
-const targetUrl = resolveTargetUrl();
-
-function log(...args: unknown[]): void {
-  console.log("[tracera-desktop]", ...args);
-}
-
-log("target URL:", targetUrl);
-
-// ---------------------------------------------------------------------------
-// RPC (bun side)
-// ---------------------------------------------------------------------------
-
-const rpc = defineElectrobunRPC<{ bun: BunRequests; webview: WebviewRequests }>(
-  "bun",
-  {
-    handlers: {
-      requests: {
-        getTargetUrl: () => targetUrl,
-        getVersion: () => APP_VERSION,
-        reload: () => {
-          win.webview.loadURL(targetUrl);
-        },
-      },
-    },
-  },
-);
-
-// ---------------------------------------------------------------------------
-// Main window
-// ---------------------------------------------------------------------------
-
-const win = new BrowserWindow({
-  title: "Tracera",
-  frame: { x: 100, y: 100, width: 1280, height: 820 },
-  url: targetUrl,
-  titleBarStyle: "hiddenInset",
-  rpc,
-});
-
-log("window created, id=", win.id);
-
-// ---------------------------------------------------------------------------
-// System tray
-// ---------------------------------------------------------------------------
-
-function buildTrayMenu(): Array<MenuItemConfig> {
-  return [
-    {
-      type: "normal",
-      label: "Show Tracera",
-      action: "show-window",
-    },
-    { type: "separator" },
-    {
-      type: "normal",
-      label: "Reload",
-      action: "reload-window",
-    },
-    { type: "separator" },
-    {
-      type: "normal",
-      label: `Target: ${targetUrl}`,
-      enabled: false,
-    },
-    { type: "separator" },
-    {
-      type: "normal",
-      label: "Quit Tracera",
-      action: "quit",
-    },
-  ];
-}
-
-// Electrobun Tray — constructor handles non-macOS gracefully (logs a warning
-// and sets visible=false; the rest of the app continues normally).
-const tray = new Tray({ title: "Tracera" });
-tray.setMenu(buildTrayMenu());
-
-tray.on("tray-clicked", (event: unknown) => {
-  const e = event as { action?: string } | null;
-  const action = e?.action ?? "";
-
-  if (action === "show-window" || action === "") {
-    // bare click or explicit show
-    win.show();
-  } else if (action === "reload-window") {
-    win.webview.loadURL(targetUrl);
-  } else if (action === "quit") {
-    log("quit via tray");
-    process.exit(0);
+  // Auto-start the bundled stack for local URLs unless explicitly skipped.
+  const isLocal = targetUrl.startsWith("http://127.0.0.1");
+  const skipBundle = process.env.TRACERA_SKIP_BUNDLE === "1";
+  if (isLocal && !skipBundle) {
+    console.log("[tracera-desktop] starting bundled stack ...");
+    try {
+      stopBundle = await startBundle({
+        log: (...args) => console.log("[tracera-desktop]", ...args),
+      });
+      console.log("[tracera-desktop] bundled stack healthy.");
+    } catch (err) {
+      console.error("[tracera-desktop] bundled stack failed to start:", err);
+      // Fall through — the window will open but may show a connection error.
+    }
   }
+
+  console.log("[tracera-desktop] target URL:", targetUrl);
+  const win = new BrowserWindow({
+    width: 1280,
+    height: 800,
+    title: "Tracera",
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  win.loadURL(targetUrl);
+  win.on("closed", () => {
+    app.quit();
+  });
+}
+
+app.on("ready", () => {
+  main().catch((err) => {
+    console.error("[tracera-desktop] fatal:", err);
+    app.quit();
+  });
 });
 
-log("tray created, id=", tray.id);
-
-// Keep the process alive even when the window is closed (tray-resident app).
-process.on("beforeExit", () => {
-  tray.remove();
+app.on("window-all-closed", async () => {
+  if (stopBundle) {
+    try {
+      await stopBundle();
+    } catch {
+      /* best-effort */
+    }
+  }
+  app.quit();
 });
