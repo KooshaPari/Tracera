@@ -1,70 +1,40 @@
+#!/usr/bin/env bun
 /**
- * Tracera desktop entry — Electrobun BrowserWindow launcher.
+ * Tracera desktop — Electrobun main-process entry point.
  *
- * Default: the bundled local stack (Tracera.app/Contents/Resources/tracera-bundle/).
- * Opt-in hosted: set TRACERA_URL or TRACERA_HOSTED_URL in the environment.
+ * On launch the bundled CLI brings up the local compose stack (postgres +
+ * tracera-server + frontend-nginx) and we wait until /health returns ok.
+ * The BrowserWindow then opens at the resolved target URL.
  *
- * On startup we call `startBundle()` which invokes the bundled `tracera` CLI to
- * bring the compose stack up and waits for /health to return ok before opening
- * the BrowserWindow.  The CLI auto-detects apple-container | docker | podman |
- * wsl+docker and falls back gracefully.
+ * TRACERA_URL env var overrides the default for pointing at staging
+ * or other deployments. TRACERA_SKIP_BUNDLE=1 disables auto-start.
  */
-import { app, BrowserWindow } from "electron";
-import { startBundle } from "./bundle";
-import { resolveTargetUrl } from "./target";
 
-let stopBundle: (() => Promise<void>) | null = null;
+import { resolveBundleCli, startBundle, LOCAL_URL } from "./bundle.js";
+import { resolveTargetUrl } from "./target.js";
 
-async function main() {
-  const targetUrl = resolveTargetUrl(process.env);
+const log = (...args: unknown[]) => console.log("[tracera-desktop]", ...args);
 
-  // Auto-start the bundled stack for local URLs unless explicitly skipped.
-  const isLocal = targetUrl.startsWith("http://127.0.0.1");
-  const skipBundle = process.env.TRACERA_SKIP_BUNDLE === "1";
-  if (isLocal && !skipBundle) {
-    console.log("[tracera-desktop] starting bundled stack ...");
-    try {
-      stopBundle = await startBundle({
-        log: (...args) => console.log("[tracera-desktop]", ...args),
-      });
-      console.log("[tracera-desktop] bundled stack healthy.");
-    } catch (err) {
-      console.error("[tracera-desktop] bundled stack failed to start:", err);
-      // Fall through — the window will open but may show a connection error.
-    }
+const targetUrl = resolveTargetUrl(process.env);
+log("target URL:", targetUrl);
+
+const isPackaged = !!resolveBundleCli(import.meta.dir);
+const skipBundle = process.env.TRACERA_SKIP_BUNDLE === "1";
+
+if (isPackaged && !skipBundle) {
+  try {
+    log("starting bundled stack…");
+    const stop = await startBundle({ localUrl: targetUrl, log });
+    log("bundled stack ready");
+
+    // Expose shutdown hook for Electrobun lifecycle
+    globalThis.__traceraStop = stop;
+  } catch (err) {
+    log("bundle start failed:", err);
+    // Fall through — the BrowserWindow will open and show the error
   }
-
-  console.log("[tracera-desktop] target URL:", targetUrl);
-  const win = new BrowserWindow({
-    width: 1280,
-    height: 800,
-    title: "Tracera",
-    webPreferences: {
-      contextIsolation: true,
-      nodeIntegration: false,
-    },
-  });
-
-  win.loadURL(targetUrl);
-  win.on("closed", () => {
-    app.quit();
-  });
+} else if (skipBundle) {
+  log("TRACERA_SKIP_BUNDLE=1 — not starting bundled stack");
+} else {
+  log("no bundled CLI found — not starting stack (dev mode)");
 }
-
-app.on("ready", () => {
-  main().catch((err) => {
-    console.error("[tracera-desktop] fatal:", err);
-    app.quit();
-  });
-});
-
-app.on("window-all-closed", async () => {
-  if (stopBundle) {
-    try {
-      await stopBundle();
-    } catch {
-      /* best-effort */
-    }
-  }
-  app.quit();
-});
