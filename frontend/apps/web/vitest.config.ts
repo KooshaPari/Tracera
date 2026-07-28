@@ -35,6 +35,7 @@ export default defineConfig({
     ],
     globals: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    pool: 'forks',
     reporters: [
       'verbose',
       ['json', { outputFile: './test-results/api-routes.json' }],
