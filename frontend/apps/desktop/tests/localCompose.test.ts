@@ -30,12 +30,14 @@ describe("desktop bundle lifecycle", () => {
   });
 
   test("defaults packaged apps to the local stack, never a hosted site", () => {
-    expect(DEFAULT_TARGET_URL).toBe("http://127.0.0.1:18081");
+    expect(DEFAULT_TARGET_URL).toBe("http://127.0.0.1:18000");
     expect(resolveTargetUrl({})).toBe("http://127.0.0.1:18081/");
     expect(resolveTargetUrl({ TRACERA_LOCAL_PORT: "19999" })).toBe("http://127.0.0.1:19999/");
   });
 
   test("allows an explicit hosted override without making it the default", () => {
+    expect(resolveTargetUrl({ TRACERA_GATEWAY_URL: "http://127.0.0.1:18000" }))
+      .toBe("http://127.0.0.1:18000");
     expect(resolveTargetUrl({ TRACERA_HOSTED_URL: "https://example.com/tracera/" }))
       .toBe("https://example.com/tracera/");
     expect(resolveTargetUrl({ TRACERA_URL: "https://staging.example.com" }))

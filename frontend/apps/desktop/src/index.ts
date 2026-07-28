@@ -21,7 +21,8 @@ log("target URL:", targetUrl);
 const isPackaged = !!resolveBundleCli(import.meta.dir);
 const skipBundle = process.env.TRACERA_SKIP_BUNDLE === "1";
 
-if (isPackaged && !skipBundle) {
+// The bundled CLI serves legacy 18081; canonical rich gateway 18000 is external.
+if (isPackaged && !skipBundle && targetUrl.startsWith(LOCAL_URL)) {
   try {
     log("starting bundled stack…");
     const stop = await startBundle({ localUrl: targetUrl, log });

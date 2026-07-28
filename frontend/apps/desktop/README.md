@@ -10,9 +10,8 @@ The web app at `https://kooshapari.github.io/Tracera/` is a Vite-built
 React SPA. This Electrobun app wraps that SPA in a native WKWebView window
 with a system tray icon — giving you a real desktop application experience.
 
-The desktop shell is **dumb on purpose**: it loads whatever URL you point it
-at. By default it points at the production GitHub Pages deployment, but you
-can override it (see Configuration below).
+The desktop shell loads the canonical local rich-dashboard gateway at
+`http://127.0.0.1:18000/` by default. Hosted/staging URLs are explicit opt-ins.
 
 ## Stack
 
@@ -55,10 +54,11 @@ bun test tests/e2e_desktop.test.ts
 
 | Env var | Purpose |
 |---------|---------|
-| `TRACERA_URL` | Override the target URL (default: GitHub Pages production). |
+| `TRACERA_GATEWAY_URL` | Explicit gateway origin (canonical rich-dashboard mode). |
+| `TRACERA_URL` | Explicit target URL override (including hosted deployments). |
 | `TRACERA_DEV_URL` | Dev URL override (e.g. `http://localhost:5173`). |
 
-URL precedence: `TRACERA_URL` > `TRACERA_DEV_URL` > default.
+URL precedence: `TRACERA_GATEWAY_URL` > `TRACERA_URL` > `TRACERA_HOSTED_URL` > `TRACERA_DEV_URL` > local default.
 
 The resolved target URL is shown in the tray menu under "Target: …".
 
