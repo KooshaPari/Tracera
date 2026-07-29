@@ -15,4 +15,4 @@ crate-type = ["cdylib"]
 chrono = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-worker = "0.4"
+worker = "0.8"
