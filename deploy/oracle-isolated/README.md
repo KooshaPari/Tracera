@@ -108,6 +108,25 @@ Handles high-throughput CRUD operations:
 
 ## Setup
 
+### Host-boundary requirement
+
+Always launch this disposable stack with `docker-compose.override.yml` in
+addition to the historical base Compose file.  The base file may publish
+dependency listeners on all interfaces; the overlay remaps every publication
+to loopback (`127.0.0.1`) and keeps the backend network internal.  Validate the
+overlay before launch:
+
+```bash
+python3 scripts/test-oracle-compose.py
+python3 scripts/validate-oracle-compose.py . \
+  --compose deploy/oracle-isolated/docker-compose.override.yml \
+  --project-root . --require-internal-network
+```
+
+Do not expose PostgreSQL, Redis/Dragonfly, NATS, or the backend ports directly
+to a LAN or tailnet.  Only the loopback gateway (`127.0.0.1:18000`) is a
+browser-facing entry point for this local recovery stack.
+
 ### Development
 
 1. **Start services**:

@@ -14,8 +14,8 @@ const AUTH_ROUTES = {
 
 // API configuration (gateway-only; no direct backend URLs)
 const { VITE_API_URL, VITE_WS_URL } = import.meta.env || {};
-const API_BASE_URL = VITE_API_URL || 'http://localhost:4000';
-const WS_BASE_URL = VITE_WS_URL || 'ws://localhost:4000';
+const API_BASE_URL = VITE_API_URL || 'http://127.0.0.1:18000';
+const WS_BASE_URL = VITE_WS_URL || 'ws://127.0.0.1:18000';
 // 30 seconds
 const API_TIMEOUT = 30_000;
 

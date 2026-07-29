@@ -607,18 +607,18 @@ const buildChecks = (): PreflightCheck[] => {
     return checks;
   }
 
-  // Use single Caddy URL when app is served via gateway (port 4000).
+  // Use the approved local gateway. Direct legacy service ports are never
+  // browser origins; they bypass the readiness/auth contract.
   const devHost = getDevHost();
-  const useCaddy = window.location.port === '4000';
-  const caddyBase = window.location.port === '4000' ? window.location.origin : `http://${devHost}:4000`;
+  const useGateway = window.location.port === '18000';
+  const gatewayBase = useGateway ? window.location.origin : `http://${devHost}:18000`;
 
-  if (useCaddy) {
-    checks.push({ name: 'backend', url: caddyBase });
+  if (useGateway) {
+    checks.push({ name: 'backend', url: gatewayBase });
     return checks;
   }
 
-  checks.push({ name: 'python-backend', url: `http://${devHost}:8000` });
-  checks.push({ name: 'go-backend', url: `http://${devHost}:8080` });
+  checks.push({ name: 'backend', url: gatewayBase });
   return checks;
 };
 

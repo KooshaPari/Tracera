@@ -4,7 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { getCSRFHeaders } from '@/lib/csrf';
 import { logger } from '@/lib/logger';
 
-const API_BASE_URL_DEFAULT = 'http://localhost:4000';
+const API_BASE_URL_DEFAULT = 'http://127.0.0.1:18000';
 const AUTH_TOKEN_KEY = 'auth_token';
 const HTTP_UNAUTHORIZED = Number('401');
 const REFRESH_INTERVAL_MINUTES = Number('20');

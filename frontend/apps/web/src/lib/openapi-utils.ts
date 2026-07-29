@@ -174,7 +174,7 @@ export function getSupportedAuthTypes(
  */
 export function getServerUrls(spec: OpenAPISpec): string[] {
   if (!spec.servers || spec.servers.length === 0) {
-    return ['http://localhost:4000'];
+    return ['http://127.0.0.1:18000'];
   }
   return spec.servers.map((server) => server.url);
 }

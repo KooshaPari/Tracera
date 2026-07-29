@@ -6,7 +6,7 @@ import { client } from '@/api/client';
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:18000';
 const REFRESH_RUNS_INTERVAL_MS = 15_000;
 const REFRESH_SCHEDULES_INTERVAL_MS = 30_000;
 
