@@ -9,117 +9,72 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as SearchRouteImport } from './routes/search'
-import { Route as ProjectsRouteImport } from './routes/projects'
-import { Route as LandingRouteImport } from './routes/landing'
-import { Route as ItemsRouteImport } from './routes/items'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as HomeRouteImport } from './routes/home'
-import { Route as GraphRouteImport } from './routes/graph'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as AgentsRouteImport } from './routes/agents'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as RootRouteImport } from './routes/root'
-import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
-import { Route as ItemsTreeRouteImport } from './routes/items.tree'
-import { Route as ItemsTableRouteImport } from './routes/items.table'
-import { Route as ItemsKanbanRouteImport } from './routes/items.kanban'
-import { Route as ItemsItemIdRouteImport } from './routes/items.$itemId'
-import { Route as AuthRegisterRouteImport } from './routes/auth.register'
-import { Route as AuthLogoutRouteImport } from './routes/auth.logout'
-import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AgentsRouteImport } from './routes/agents'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as GraphRouteImport } from './routes/graph'
+import { Route as HomeRouteImport } from './routes/home'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as ItemsRouteImport } from './routes/items'
+import { Route as LandingRouteImport } from './routes/landing'
+import { Route as ProjectsRouteImport } from './routes/projects'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
-import { Route as ProjectsProjectIdTemporalRouteImport } from './routes/projects.$projectId.temporal'
-import { Route as ProjectsProjectIdSpecificationsRouteImport } from './routes/projects.$projectId.specifications'
-import { Route as ProjectsProjectIdSettingsRouteImport } from './routes/projects.$projectId.settings'
-import { Route as ProjectsProjectIdScenarioActivityRouteImport } from './routes/projects.$projectId.scenario-activity'
-import { Route as ProjectsProjectIdFeaturesRouteImport } from './routes/projects.$projectId.features'
-import { Route as ProjectsProjectIdEquivalenceRouteImport } from './routes/projects.$projectId.equivalence'
-import { Route as ProjectsProjectIdContractsRouteImport } from './routes/projects.$projectId.contracts'
-import { Route as ProjectsProjectIdComplianceRouteImport } from './routes/projects.$projectId.compliance'
-import { Route as ProjectsProjectIdAgentsRouteImport } from './routes/projects.$projectId.agents'
+import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AuthLogoutRouteImport } from './routes/auth.logout'
+import { Route as AuthRegisterRouteImport } from './routes/auth.register'
+import { Route as ItemsItemIdRouteImport } from './routes/items.$itemId'
+import { Route as ItemsKanbanRouteImport } from './routes/items.kanban'
+import { Route as ItemsTableRouteImport } from './routes/items.table'
+import { Route as ItemsTreeRouteImport } from './routes/items.tree'
+import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as ProjectsProjectIdAdrsRouteImport } from './routes/projects.$projectId.adrs'
-import { Route as ProjectsProjectIdViewsWireframeRouteImport } from './routes/projects.$projectId.views.wireframe'
-import { Route as ProjectsProjectIdViewsWebhooksRouteImport } from './routes/projects.$projectId.views.webhooks'
-import { Route as ProjectsProjectIdViewsTestSuitesRouteImport } from './routes/projects.$projectId.views.test-suites'
-import { Route as ProjectsProjectIdViewsTestRunsRouteImport } from './routes/projects.$projectId.views.test-runs'
-import { Route as ProjectsProjectIdViewsTestCasesRouteImport } from './routes/projects.$projectId.views.test-cases'
-import { Route as ProjectsProjectIdViewsTestRouteImport } from './routes/projects.$projectId.views.test'
-import { Route as ProjectsProjectIdViewsSecurityRouteImport } from './routes/projects.$projectId.views.security'
-import { Route as ProjectsProjectIdViewsQaDashboardRouteImport } from './routes/projects.$projectId.views.qa-dashboard'
-import { Route as ProjectsProjectIdViewsProcessRouteImport } from './routes/projects.$projectId.views.process'
-import { Route as ProjectsProjectIdViewsProblemRouteImport } from './routes/projects.$projectId.views.problem'
-import { Route as ProjectsProjectIdViewsPerformanceRouteImport } from './routes/projects.$projectId.views.performance'
-import { Route as ProjectsProjectIdViewsMonitoringRouteImport } from './routes/projects.$projectId.views.monitoring'
-import { Route as ProjectsProjectIdViewsJourneyRouteImport } from './routes/projects.$projectId.views.journey'
-import { Route as ProjectsProjectIdViewsIntegrationsRouteImport } from './routes/projects.$projectId.views.integrations'
-import { Route as ProjectsProjectIdViewsInfrastructureRouteImport } from './routes/projects.$projectId.views.infrastructure'
-import { Route as ProjectsProjectIdViewsFeatureRouteImport } from './routes/projects.$projectId.views.feature'
-import { Route as ProjectsProjectIdViewsDomainRouteImport } from './routes/projects.$projectId.views.domain'
-import { Route as ProjectsProjectIdViewsDependencyRouteImport } from './routes/projects.$projectId.views.dependency'
-import { Route as ProjectsProjectIdViewsDataflowRouteImport } from './routes/projects.$projectId.views.dataflow'
-import { Route as ProjectsProjectIdViewsDatabaseRouteImport } from './routes/projects.$projectId.views.database'
-import { Route as ProjectsProjectIdViewsCoverageRouteImport } from './routes/projects.$projectId.views.coverage'
-import { Route as ProjectsProjectIdViewsConfigurationRouteImport } from './routes/projects.$projectId.views.configuration'
-import { Route as ProjectsProjectIdViewsCodeRouteImport } from './routes/projects.$projectId.views.code'
-import { Route as ProjectsProjectIdViewsArchitectureRouteImport } from './routes/projects.$projectId.views.architecture'
-import { Route as ProjectsProjectIdViewsApiRouteImport } from './routes/projects.$projectId.views.api'
-import { Route as ProjectsProjectIdViewsViewTypeRouteImport } from './routes/projects.$projectId.views.$viewType'
-import { Route as ProjectsProjectIdFeaturesFeatureIdRouteImport } from './routes/projects.$projectId.features.$featureId'
-import { Route as ProjectsProjectIdContractsContractIdRouteImport } from './routes/projects.$projectId.contracts.$contractId'
+import { Route as ProjectsProjectIdAgentsRouteImport } from './routes/projects.$projectId.agents'
+import { Route as ProjectsProjectIdComplianceRouteImport } from './routes/projects.$projectId.compliance'
+import { Route as ProjectsProjectIdContractsRouteImport } from './routes/projects.$projectId.contracts'
+import { Route as ProjectsProjectIdEquivalenceRouteImport } from './routes/projects.$projectId.equivalence'
+import { Route as ProjectsProjectIdFeaturesRouteImport } from './routes/projects.$projectId.features'
+import { Route as ProjectsProjectIdScenarioActivityRouteImport } from './routes/projects.$projectId.scenario-activity'
+import { Route as ProjectsProjectIdSettingsRouteImport } from './routes/projects.$projectId.settings'
+import { Route as ProjectsProjectIdSpecificationsRouteImport } from './routes/projects.$projectId.specifications'
+import { Route as ProjectsProjectIdTemporalRouteImport } from './routes/projects.$projectId.temporal'
 import { Route as ProjectsProjectIdAdrsAdrIdRouteImport } from './routes/projects.$projectId.adrs.$adrId'
+import { Route as ProjectsProjectIdContractsContractIdRouteImport } from './routes/projects.$projectId.contracts.$contractId'
+import { Route as ProjectsProjectIdFeaturesFeatureIdRouteImport } from './routes/projects.$projectId.features.$featureId'
+import { Route as ProjectsProjectIdViewsViewTypeRouteImport } from './routes/projects.$projectId.views.$viewType'
+import { Route as ProjectsProjectIdViewsApiRouteImport } from './routes/projects.$projectId.views.api'
+import { Route as ProjectsProjectIdViewsArchitectureRouteImport } from './routes/projects.$projectId.views.architecture'
+import { Route as ProjectsProjectIdViewsCodeRouteImport } from './routes/projects.$projectId.views.code'
+import { Route as ProjectsProjectIdViewsConfigurationRouteImport } from './routes/projects.$projectId.views.configuration'
+import { Route as ProjectsProjectIdViewsCoverageRouteImport } from './routes/projects.$projectId.views.coverage'
+import { Route as ProjectsProjectIdViewsDatabaseRouteImport } from './routes/projects.$projectId.views.database'
+import { Route as ProjectsProjectIdViewsDataflowRouteImport } from './routes/projects.$projectId.views.dataflow'
+import { Route as ProjectsProjectIdViewsDependencyRouteImport } from './routes/projects.$projectId.views.dependency'
+import { Route as ProjectsProjectIdViewsDomainRouteImport } from './routes/projects.$projectId.views.domain'
+import { Route as ProjectsProjectIdViewsFeatureRouteImport } from './routes/projects.$projectId.views.feature'
+import { Route as ProjectsProjectIdViewsInfrastructureRouteImport } from './routes/projects.$projectId.views.infrastructure'
+import { Route as ProjectsProjectIdViewsIntegrationsRouteImport } from './routes/projects.$projectId.views.integrations'
+import { Route as ProjectsProjectIdViewsJourneyRouteImport } from './routes/projects.$projectId.views.journey'
+import { Route as ProjectsProjectIdViewsMonitoringRouteImport } from './routes/projects.$projectId.views.monitoring'
+import { Route as ProjectsProjectIdViewsPerformanceRouteImport } from './routes/projects.$projectId.views.performance'
+import { Route as ProjectsProjectIdViewsProblemRouteImport } from './routes/projects.$projectId.views.problem'
+import { Route as ProjectsProjectIdViewsProcessRouteImport } from './routes/projects.$projectId.views.process'
+import { Route as ProjectsProjectIdViewsQaDashboardRouteImport } from './routes/projects.$projectId.views.qa-dashboard'
+import { Route as ProjectsProjectIdViewsSecurityRouteImport } from './routes/projects.$projectId.views.security'
+import { Route as ProjectsProjectIdViewsTestRouteImport } from './routes/projects.$projectId.views.test'
+import { Route as ProjectsProjectIdViewsTestCasesRouteImport } from './routes/projects.$projectId.views.test-cases'
+import { Route as ProjectsProjectIdViewsTestRunsRouteImport } from './routes/projects.$projectId.views.test-runs'
+import { Route as ProjectsProjectIdViewsTestSuitesRouteImport } from './routes/projects.$projectId.views.test-suites'
+import { Route as ProjectsProjectIdViewsWebhooksRouteImport } from './routes/projects.$projectId.views.webhooks'
+import { Route as ProjectsProjectIdViewsWireframeRouteImport } from './routes/projects.$projectId.views.wireframe'
 import { Route as ProjectsProjectIdViewsViewTypeItemIdRouteImport } from './routes/projects.$projectId.views.$viewType.$itemId'
 import { Route as ProjectsProjectIdFeaturesFeatureIdScenariosScenarioIdRouteImport } from './routes/projects.$projectId.features.$featureId.scenarios.$scenarioId'
 
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SearchRoute = SearchRouteImport.update({
-  id: '/search',
-  path: '/search',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProjectsRoute = ProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LandingRoute = LandingRouteImport.update({
-  id: '/landing',
-  path: '/landing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ItemsRoute = ItemsRouteImport.update({
-  id: '/items',
-  path: '/items',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/index',
-  path: '/index',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HomeRoute = HomeRouteImport.update({
-  id: '/home',
-  path: '/home',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GraphRoute = GraphRouteImport.update({
-  id: '/graph',
-  path: '/graph',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AgentsRoute = AgentsRouteImport.update({
-  id: '/agents',
-  path: '/agents',
+const RootRoute = RootRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -127,49 +82,54 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RootRoute = RootRouteImport.update({
-  id: '/',
-  path: '/',
+const AgentsRoute = AgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
-  id: '/$projectId',
-  path: '/$projectId',
-  getParentRoute: () => ProjectsRoute,
-} as any)
-const ItemsTreeRoute = ItemsTreeRouteImport.update({
-  id: '/tree',
-  path: '/tree',
-  getParentRoute: () => ItemsRoute,
-} as any)
-const ItemsTableRoute = ItemsTableRouteImport.update({
-  id: '/table',
-  path: '/table',
-  getParentRoute: () => ItemsRoute,
-} as any)
-const ItemsKanbanRoute = ItemsKanbanRouteImport.update({
-  id: '/kanban',
-  path: '/kanban',
-  getParentRoute: () => ItemsRoute,
-} as any)
-const ItemsItemIdRoute = ItemsItemIdRouteImport.update({
-  id: '/$itemId',
-  path: '/$itemId',
-  getParentRoute: () => ItemsRoute,
-} as any)
-const AuthRegisterRoute = AuthRegisterRouteImport.update({
-  id: '/auth/register',
-  path: '/auth/register',
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthLogoutRoute = AuthLogoutRouteImport.update({
-  id: '/auth/logout',
-  path: '/auth/logout',
+const GraphRoute = GraphRouteImport.update({
+  id: '/graph',
+  path: '/graph',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthLoginRoute = AuthLoginRouteImport.update({
-  id: '/auth/login',
-  path: '/auth/login',
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/index',
+  path: '/index',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItemsRoute = ItemsRouteImport.update({
+  id: '/items',
+  path: '/items',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandingRoute = LandingRouteImport.update({
+  id: '/landing',
+  path: '/landing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsRoute = ProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
@@ -177,40 +137,60 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProjectsProjectIdTemporalRoute =
-  ProjectsProjectIdTemporalRouteImport.update({
-    id: '/temporal',
-    path: '/temporal',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdSpecificationsRoute =
-  ProjectsProjectIdSpecificationsRouteImport.update({
-    id: '/specifications',
-    path: '/specifications',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdSettingsRoute =
-  ProjectsProjectIdSettingsRouteImport.update({
-    id: '/settings',
-    path: '/settings',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdScenarioActivityRoute =
-  ProjectsProjectIdScenarioActivityRouteImport.update({
-    id: '/scenario-activity',
-    path: '/scenario-activity',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdFeaturesRoute =
-  ProjectsProjectIdFeaturesRouteImport.update({
-    id: '/features',
-    path: '/features',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdEquivalenceRoute =
-  ProjectsProjectIdEquivalenceRouteImport.update({
-    id: '/equivalence',
-    path: '/equivalence',
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLogoutRoute = AuthLogoutRouteImport.update({
+  id: '/auth/logout',
+  path: '/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/auth/register',
+  path: '/auth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ItemsItemIdRoute = ItemsItemIdRouteImport.update({
+  id: '/$itemId',
+  path: '/$itemId',
+  getParentRoute: () => ItemsRoute,
+} as any)
+const ItemsKanbanRoute = ItemsKanbanRouteImport.update({
+  id: '/kanban',
+  path: '/kanban',
+  getParentRoute: () => ItemsRoute,
+} as any)
+const ItemsTableRoute = ItemsTableRouteImport.update({
+  id: '/table',
+  path: '/table',
+  getParentRoute: () => ItemsRoute,
+} as any)
+const ItemsTreeRoute = ItemsTreeRouteImport.update({
+  id: '/tree',
+  path: '/tree',
+  getParentRoute: () => ItemsRoute,
+} as any)
+const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
+  id: '/$projectId',
+  path: '/$projectId',
+  getParentRoute: () => ProjectsRoute,
+} as any)
+const ProjectsProjectIdAdrsRoute = ProjectsProjectIdAdrsRouteImport.update({
+  id: '/adrs',
+  path: '/adrs',
+  getParentRoute: () => ProjectsProjectIdRoute,
+} as any)
+const ProjectsProjectIdAgentsRoute = ProjectsProjectIdAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => ProjectsProjectIdRoute,
+} as any)
+const ProjectsProjectIdComplianceRoute =
+  ProjectsProjectIdComplianceRouteImport.update({
+    id: '/compliance',
+    path: '/compliance',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
 const ProjectsProjectIdContractsRoute =
@@ -219,164 +199,64 @@ const ProjectsProjectIdContractsRoute =
     path: '/contracts',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
-const ProjectsProjectIdComplianceRoute =
-  ProjectsProjectIdComplianceRouteImport.update({
-    id: '/compliance',
-    path: '/compliance',
+const ProjectsProjectIdEquivalenceRoute =
+  ProjectsProjectIdEquivalenceRouteImport.update({
+    id: '/equivalence',
+    path: '/equivalence',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
-const ProjectsProjectIdAgentsRoute = ProjectsProjectIdAgentsRouteImport.update({
-  id: '/agents',
-  path: '/agents',
-  getParentRoute: () => ProjectsProjectIdRoute,
-} as any)
-const ProjectsProjectIdAdrsRoute = ProjectsProjectIdAdrsRouteImport.update({
-  id: '/adrs',
-  path: '/adrs',
-  getParentRoute: () => ProjectsProjectIdRoute,
-} as any)
-const ProjectsProjectIdViewsWireframeRoute =
-  ProjectsProjectIdViewsWireframeRouteImport.update({
-    id: '/views/wireframe',
-    path: '/views/wireframe',
+const ProjectsProjectIdFeaturesRoute =
+  ProjectsProjectIdFeaturesRouteImport.update({
+    id: '/features',
+    path: '/features',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
-const ProjectsProjectIdViewsWebhooksRoute =
-  ProjectsProjectIdViewsWebhooksRouteImport.update({
-    id: '/views/webhooks',
-    path: '/views/webhooks',
+const ProjectsProjectIdScenarioActivityRoute =
+  ProjectsProjectIdScenarioActivityRouteImport.update({
+    id: '/scenario-activity',
+    path: '/scenario-activity',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
-const ProjectsProjectIdViewsTestSuitesRoute =
-  ProjectsProjectIdViewsTestSuitesRouteImport.update({
-    id: '/views/test-suites',
-    path: '/views/test-suites',
+const ProjectsProjectIdSettingsRoute =
+  ProjectsProjectIdSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
-const ProjectsProjectIdViewsTestRunsRoute =
-  ProjectsProjectIdViewsTestRunsRouteImport.update({
-    id: '/views/test-runs',
-    path: '/views/test-runs',
+const ProjectsProjectIdSpecificationsRoute =
+  ProjectsProjectIdSpecificationsRouteImport.update({
+    id: '/specifications',
+    path: '/specifications',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
-const ProjectsProjectIdViewsTestCasesRoute =
-  ProjectsProjectIdViewsTestCasesRouteImport.update({
-    id: '/views/test-cases',
-    path: '/views/test-cases',
+const ProjectsProjectIdTemporalRoute =
+  ProjectsProjectIdTemporalRouteImport.update({
+    id: '/temporal',
+    path: '/temporal',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
-const ProjectsProjectIdViewsTestRoute =
-  ProjectsProjectIdViewsTestRouteImport.update({
-    id: '/views/test',
-    path: '/views/test',
-    getParentRoute: () => ProjectsProjectIdRoute,
+const ProjectsProjectIdAdrsAdrIdRoute =
+  ProjectsProjectIdAdrsAdrIdRouteImport.update({
+    id: '/$adrId',
+    path: '/$adrId',
+    getParentRoute: () => ProjectsProjectIdAdrsRoute,
   } as any)
-const ProjectsProjectIdViewsSecurityRoute =
-  ProjectsProjectIdViewsSecurityRouteImport.update({
-    id: '/views/security',
-    path: '/views/security',
-    getParentRoute: () => ProjectsProjectIdRoute,
+const ProjectsProjectIdContractsContractIdRoute =
+  ProjectsProjectIdContractsContractIdRouteImport.update({
+    id: '/$contractId',
+    path: '/$contractId',
+    getParentRoute: () => ProjectsProjectIdContractsRoute,
   } as any)
-const ProjectsProjectIdViewsQaDashboardRoute =
-  ProjectsProjectIdViewsQaDashboardRouteImport.update({
-    id: '/views/qa-dashboard',
-    path: '/views/qa-dashboard',
-    getParentRoute: () => ProjectsProjectIdRoute,
+const ProjectsProjectIdFeaturesFeatureIdRoute =
+  ProjectsProjectIdFeaturesFeatureIdRouteImport.update({
+    id: '/$featureId',
+    path: '/$featureId',
+    getParentRoute: () => ProjectsProjectIdFeaturesRoute,
   } as any)
-const ProjectsProjectIdViewsProcessRoute =
-  ProjectsProjectIdViewsProcessRouteImport.update({
-    id: '/views/process',
-    path: '/views/process',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsProblemRoute =
-  ProjectsProjectIdViewsProblemRouteImport.update({
-    id: '/views/problem',
-    path: '/views/problem',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsPerformanceRoute =
-  ProjectsProjectIdViewsPerformanceRouteImport.update({
-    id: '/views/performance',
-    path: '/views/performance',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsMonitoringRoute =
-  ProjectsProjectIdViewsMonitoringRouteImport.update({
-    id: '/views/monitoring',
-    path: '/views/monitoring',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsJourneyRoute =
-  ProjectsProjectIdViewsJourneyRouteImport.update({
-    id: '/views/journey',
-    path: '/views/journey',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsIntegrationsRoute =
-  ProjectsProjectIdViewsIntegrationsRouteImport.update({
-    id: '/views/integrations',
-    path: '/views/integrations',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsInfrastructureRoute =
-  ProjectsProjectIdViewsInfrastructureRouteImport.update({
-    id: '/views/infrastructure',
-    path: '/views/infrastructure',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsFeatureRoute =
-  ProjectsProjectIdViewsFeatureRouteImport.update({
-    id: '/views/feature',
-    path: '/views/feature',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsDomainRoute =
-  ProjectsProjectIdViewsDomainRouteImport.update({
-    id: '/views/domain',
-    path: '/views/domain',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsDependencyRoute =
-  ProjectsProjectIdViewsDependencyRouteImport.update({
-    id: '/views/dependency',
-    path: '/views/dependency',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsDataflowRoute =
-  ProjectsProjectIdViewsDataflowRouteImport.update({
-    id: '/views/dataflow',
-    path: '/views/dataflow',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsDatabaseRoute =
-  ProjectsProjectIdViewsDatabaseRouteImport.update({
-    id: '/views/database',
-    path: '/views/database',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsCoverageRoute =
-  ProjectsProjectIdViewsCoverageRouteImport.update({
-    id: '/views/coverage',
-    path: '/views/coverage',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsConfigurationRoute =
-  ProjectsProjectIdViewsConfigurationRouteImport.update({
-    id: '/views/configuration',
-    path: '/views/configuration',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsCodeRoute =
-  ProjectsProjectIdViewsCodeRouteImport.update({
-    id: '/views/code',
-    path: '/views/code',
-    getParentRoute: () => ProjectsProjectIdRoute,
-  } as any)
-const ProjectsProjectIdViewsArchitectureRoute =
-  ProjectsProjectIdViewsArchitectureRouteImport.update({
-    id: '/views/architecture',
-    path: '/views/architecture',
+const ProjectsProjectIdViewsViewTypeRoute =
+  ProjectsProjectIdViewsViewTypeRouteImport.update({
+    id: '/views/$viewType',
+    path: '/views/$viewType',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
 const ProjectsProjectIdViewsApiRoute =
@@ -385,29 +265,149 @@ const ProjectsProjectIdViewsApiRoute =
     path: '/views/api',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
-const ProjectsProjectIdViewsViewTypeRoute =
-  ProjectsProjectIdViewsViewTypeRouteImport.update({
-    id: '/views/$viewType',
-    path: '/views/$viewType',
+const ProjectsProjectIdViewsArchitectureRoute =
+  ProjectsProjectIdViewsArchitectureRouteImport.update({
+    id: '/views/architecture',
+    path: '/views/architecture',
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
-const ProjectsProjectIdFeaturesFeatureIdRoute =
-  ProjectsProjectIdFeaturesFeatureIdRouteImport.update({
-    id: '/$featureId',
-    path: '/$featureId',
-    getParentRoute: () => ProjectsProjectIdFeaturesRoute,
+const ProjectsProjectIdViewsCodeRoute =
+  ProjectsProjectIdViewsCodeRouteImport.update({
+    id: '/views/code',
+    path: '/views/code',
+    getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
-const ProjectsProjectIdContractsContractIdRoute =
-  ProjectsProjectIdContractsContractIdRouteImport.update({
-    id: '/$contractId',
-    path: '/$contractId',
-    getParentRoute: () => ProjectsProjectIdContractsRoute,
+const ProjectsProjectIdViewsConfigurationRoute =
+  ProjectsProjectIdViewsConfigurationRouteImport.update({
+    id: '/views/configuration',
+    path: '/views/configuration',
+    getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
-const ProjectsProjectIdAdrsAdrIdRoute =
-  ProjectsProjectIdAdrsAdrIdRouteImport.update({
-    id: '/$adrId',
-    path: '/$adrId',
-    getParentRoute: () => ProjectsProjectIdAdrsRoute,
+const ProjectsProjectIdViewsCoverageRoute =
+  ProjectsProjectIdViewsCoverageRouteImport.update({
+    id: '/views/coverage',
+    path: '/views/coverage',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsDatabaseRoute =
+  ProjectsProjectIdViewsDatabaseRouteImport.update({
+    id: '/views/database',
+    path: '/views/database',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsDataflowRoute =
+  ProjectsProjectIdViewsDataflowRouteImport.update({
+    id: '/views/dataflow',
+    path: '/views/dataflow',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsDependencyRoute =
+  ProjectsProjectIdViewsDependencyRouteImport.update({
+    id: '/views/dependency',
+    path: '/views/dependency',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsDomainRoute =
+  ProjectsProjectIdViewsDomainRouteImport.update({
+    id: '/views/domain',
+    path: '/views/domain',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsFeatureRoute =
+  ProjectsProjectIdViewsFeatureRouteImport.update({
+    id: '/views/feature',
+    path: '/views/feature',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsInfrastructureRoute =
+  ProjectsProjectIdViewsInfrastructureRouteImport.update({
+    id: '/views/infrastructure',
+    path: '/views/infrastructure',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsIntegrationsRoute =
+  ProjectsProjectIdViewsIntegrationsRouteImport.update({
+    id: '/views/integrations',
+    path: '/views/integrations',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsJourneyRoute =
+  ProjectsProjectIdViewsJourneyRouteImport.update({
+    id: '/views/journey',
+    path: '/views/journey',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsMonitoringRoute =
+  ProjectsProjectIdViewsMonitoringRouteImport.update({
+    id: '/views/monitoring',
+    path: '/views/monitoring',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsPerformanceRoute =
+  ProjectsProjectIdViewsPerformanceRouteImport.update({
+    id: '/views/performance',
+    path: '/views/performance',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsProblemRoute =
+  ProjectsProjectIdViewsProblemRouteImport.update({
+    id: '/views/problem',
+    path: '/views/problem',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsProcessRoute =
+  ProjectsProjectIdViewsProcessRouteImport.update({
+    id: '/views/process',
+    path: '/views/process',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsQaDashboardRoute =
+  ProjectsProjectIdViewsQaDashboardRouteImport.update({
+    id: '/views/qa-dashboard',
+    path: '/views/qa-dashboard',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsSecurityRoute =
+  ProjectsProjectIdViewsSecurityRouteImport.update({
+    id: '/views/security',
+    path: '/views/security',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsTestRoute =
+  ProjectsProjectIdViewsTestRouteImport.update({
+    id: '/views/test',
+    path: '/views/test',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsTestCasesRoute =
+  ProjectsProjectIdViewsTestCasesRouteImport.update({
+    id: '/views/test-cases',
+    path: '/views/test-cases',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsTestRunsRoute =
+  ProjectsProjectIdViewsTestRunsRouteImport.update({
+    id: '/views/test-runs',
+    path: '/views/test-runs',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsTestSuitesRoute =
+  ProjectsProjectIdViewsTestSuitesRouteImport.update({
+    id: '/views/test-suites',
+    path: '/views/test-suites',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsWebhooksRoute =
+  ProjectsProjectIdViewsWebhooksRouteImport.update({
+    id: '/views/webhooks',
+    path: '/views/webhooks',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+const ProjectsProjectIdViewsWireframeRoute =
+  ProjectsProjectIdViewsWireframeRouteImport.update({
+    id: '/views/wireframe',
+    path: '/views/wireframe',
+    getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
 const ProjectsProjectIdViewsViewTypeItemIdRoute =
   ProjectsProjectIdViewsViewTypeItemIdRouteImport.update({
@@ -831,74 +831,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/search': {
-      id: '/search'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof SearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/projects': {
-      id: '/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof ProjectsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/landing': {
-      id: '/landing'
-      path: '/landing'
-      fullPath: '/landing'
-      preLoaderRoute: typeof LandingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/items': {
-      id: '/items'
-      path: '/items'
-      fullPath: '/items'
-      preLoaderRoute: typeof ItemsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/index': {
-      id: '/index'
-      path: '/index'
-      fullPath: '/index'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/home': {
-      id: '/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/graph': {
-      id: '/graph'
-      path: '/graph'
-      fullPath: '/graph'
-      preLoaderRoute: typeof GraphRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/agents': {
-      id: '/agents'
-      path: '/agents'
-      fullPath: '/agents'
-      preLoaderRoute: typeof AgentsRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof RootRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -908,67 +845,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof RootRouteImport
+    '/agents': {
+      id: '/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AgentsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/projects/$projectId': {
-      id: '/projects/$projectId'
-      path: '/$projectId'
-      fullPath: '/projects/$projectId'
-      preLoaderRoute: typeof ProjectsProjectIdRouteImport
-      parentRoute: typeof ProjectsRoute
-    }
-    '/items/tree': {
-      id: '/items/tree'
-      path: '/tree'
-      fullPath: '/items/tree'
-      preLoaderRoute: typeof ItemsTreeRouteImport
-      parentRoute: typeof ItemsRoute
-    }
-    '/items/table': {
-      id: '/items/table'
-      path: '/table'
-      fullPath: '/items/table'
-      preLoaderRoute: typeof ItemsTableRouteImport
-      parentRoute: typeof ItemsRoute
-    }
-    '/items/kanban': {
-      id: '/items/kanban'
-      path: '/kanban'
-      fullPath: '/items/kanban'
-      preLoaderRoute: typeof ItemsKanbanRouteImport
-      parentRoute: typeof ItemsRoute
-    }
-    '/items/$itemId': {
-      id: '/items/$itemId'
-      path: '/$itemId'
-      fullPath: '/items/$itemId'
-      preLoaderRoute: typeof ItemsItemIdRouteImport
-      parentRoute: typeof ItemsRoute
-    }
-    '/auth/register': {
-      id: '/auth/register'
-      path: '/auth/register'
-      fullPath: '/auth/register'
-      preLoaderRoute: typeof AuthRegisterRouteImport
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/logout': {
-      id: '/auth/logout'
-      path: '/auth/logout'
-      fullPath: '/auth/logout'
-      preLoaderRoute: typeof AuthLogoutRouteImport
+    '/graph': {
+      id: '/graph'
+      path: '/graph'
+      fullPath: '/graph'
+      preLoaderRoute: typeof GraphRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/login': {
-      id: '/auth/login'
-      path: '/auth/login'
-      fullPath: '/auth/login'
-      preLoaderRoute: typeof AuthLoginRouteImport
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/index': {
+      id: '/index'
+      path: '/index'
+      fullPath: '/index'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/items': {
+      id: '/items'
+      path: '/items'
+      fullPath: '/items'
+      preLoaderRoute: typeof ItemsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landing': {
+      id: '/landing'
+      path: '/landing'
+      fullPath: '/landing'
+      preLoaderRoute: typeof LandingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/callback': {
@@ -978,60 +922,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/projects/$projectId/temporal': {
-      id: '/projects/$projectId/temporal'
-      path: '/temporal'
-      fullPath: '/projects/$projectId/temporal'
-      preLoaderRoute: typeof ProjectsProjectIdTemporalRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/projects/$projectId/specifications': {
-      id: '/projects/$projectId/specifications'
-      path: '/specifications'
-      fullPath: '/projects/$projectId/specifications'
-      preLoaderRoute: typeof ProjectsProjectIdSpecificationsRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
+    '/auth/logout': {
+      id: '/auth/logout'
+      path: '/auth/logout'
+      fullPath: '/auth/logout'
+      preLoaderRoute: typeof AuthLogoutRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/projects/$projectId/settings': {
-      id: '/projects/$projectId/settings'
-      path: '/settings'
-      fullPath: '/projects/$projectId/settings'
-      preLoaderRoute: typeof ProjectsProjectIdSettingsRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
+    '/auth/register': {
+      id: '/auth/register'
+      path: '/auth/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/projects/$projectId/scenario-activity': {
-      id: '/projects/$projectId/scenario-activity'
-      path: '/scenario-activity'
-      fullPath: '/projects/$projectId/scenario-activity'
-      preLoaderRoute: typeof ProjectsProjectIdScenarioActivityRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
+    '/items/$itemId': {
+      id: '/items/$itemId'
+      path: '/$itemId'
+      fullPath: '/items/$itemId'
+      preLoaderRoute: typeof ItemsItemIdRouteImport
+      parentRoute: typeof ItemsRoute
     }
-    '/projects/$projectId/features': {
-      id: '/projects/$projectId/features'
-      path: '/features'
-      fullPath: '/projects/$projectId/features'
-      preLoaderRoute: typeof ProjectsProjectIdFeaturesRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
+    '/items/kanban': {
+      id: '/items/kanban'
+      path: '/kanban'
+      fullPath: '/items/kanban'
+      preLoaderRoute: typeof ItemsKanbanRouteImport
+      parentRoute: typeof ItemsRoute
     }
-    '/projects/$projectId/equivalence': {
-      id: '/projects/$projectId/equivalence'
-      path: '/equivalence'
-      fullPath: '/projects/$projectId/equivalence'
-      preLoaderRoute: typeof ProjectsProjectIdEquivalenceRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
+    '/items/table': {
+      id: '/items/table'
+      path: '/table'
+      fullPath: '/items/table'
+      preLoaderRoute: typeof ItemsTableRouteImport
+      parentRoute: typeof ItemsRoute
     }
-    '/projects/$projectId/contracts': {
-      id: '/projects/$projectId/contracts'
-      path: '/contracts'
-      fullPath: '/projects/$projectId/contracts'
-      preLoaderRoute: typeof ProjectsProjectIdContractsRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
+    '/items/tree': {
+      id: '/items/tree'
+      path: '/tree'
+      fullPath: '/items/tree'
+      preLoaderRoute: typeof ItemsTreeRouteImport
+      parentRoute: typeof ItemsRoute
     }
-    '/projects/$projectId/compliance': {
-      id: '/projects/$projectId/compliance'
-      path: '/compliance'
-      fullPath: '/projects/$projectId/compliance'
-      preLoaderRoute: typeof ProjectsProjectIdComplianceRouteImport
+    '/projects/$projectId': {
+      id: '/projects/$projectId'
+      path: '/$projectId'
+      fullPath: '/projects/$projectId'
+      preLoaderRoute: typeof ProjectsProjectIdRouteImport
+      parentRoute: typeof ProjectsRoute
+    }
+    '/projects/$projectId/adrs': {
+      id: '/projects/$projectId/adrs'
+      path: '/adrs'
+      fullPath: '/projects/$projectId/adrs'
+      preLoaderRoute: typeof ProjectsProjectIdAdrsRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
     '/projects/$projectId/agents': {
@@ -1041,179 +992,88 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdAgentsRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/adrs': {
-      id: '/projects/$projectId/adrs'
-      path: '/adrs'
-      fullPath: '/projects/$projectId/adrs'
-      preLoaderRoute: typeof ProjectsProjectIdAdrsRouteImport
+    '/projects/$projectId/compliance': {
+      id: '/projects/$projectId/compliance'
+      path: '/compliance'
+      fullPath: '/projects/$projectId/compliance'
+      preLoaderRoute: typeof ProjectsProjectIdComplianceRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/views/wireframe': {
-      id: '/projects/$projectId/views/wireframe'
-      path: '/views/wireframe'
-      fullPath: '/projects/$projectId/views/wireframe'
-      preLoaderRoute: typeof ProjectsProjectIdViewsWireframeRouteImport
+    '/projects/$projectId/contracts': {
+      id: '/projects/$projectId/contracts'
+      path: '/contracts'
+      fullPath: '/projects/$projectId/contracts'
+      preLoaderRoute: typeof ProjectsProjectIdContractsRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/views/webhooks': {
-      id: '/projects/$projectId/views/webhooks'
-      path: '/views/webhooks'
-      fullPath: '/projects/$projectId/views/webhooks'
-      preLoaderRoute: typeof ProjectsProjectIdViewsWebhooksRouteImport
+    '/projects/$projectId/equivalence': {
+      id: '/projects/$projectId/equivalence'
+      path: '/equivalence'
+      fullPath: '/projects/$projectId/equivalence'
+      preLoaderRoute: typeof ProjectsProjectIdEquivalenceRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/views/test-suites': {
-      id: '/projects/$projectId/views/test-suites'
-      path: '/views/test-suites'
-      fullPath: '/projects/$projectId/views/test-suites'
-      preLoaderRoute: typeof ProjectsProjectIdViewsTestSuitesRouteImport
+    '/projects/$projectId/features': {
+      id: '/projects/$projectId/features'
+      path: '/features'
+      fullPath: '/projects/$projectId/features'
+      preLoaderRoute: typeof ProjectsProjectIdFeaturesRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/views/test-runs': {
-      id: '/projects/$projectId/views/test-runs'
-      path: '/views/test-runs'
-      fullPath: '/projects/$projectId/views/test-runs'
-      preLoaderRoute: typeof ProjectsProjectIdViewsTestRunsRouteImport
+    '/projects/$projectId/scenario-activity': {
+      id: '/projects/$projectId/scenario-activity'
+      path: '/scenario-activity'
+      fullPath: '/projects/$projectId/scenario-activity'
+      preLoaderRoute: typeof ProjectsProjectIdScenarioActivityRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/views/test-cases': {
-      id: '/projects/$projectId/views/test-cases'
-      path: '/views/test-cases'
-      fullPath: '/projects/$projectId/views/test-cases'
-      preLoaderRoute: typeof ProjectsProjectIdViewsTestCasesRouteImport
+    '/projects/$projectId/settings': {
+      id: '/projects/$projectId/settings'
+      path: '/settings'
+      fullPath: '/projects/$projectId/settings'
+      preLoaderRoute: typeof ProjectsProjectIdSettingsRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/views/test': {
-      id: '/projects/$projectId/views/test'
-      path: '/views/test'
-      fullPath: '/projects/$projectId/views/test'
-      preLoaderRoute: typeof ProjectsProjectIdViewsTestRouteImport
+    '/projects/$projectId/specifications': {
+      id: '/projects/$projectId/specifications'
+      path: '/specifications'
+      fullPath: '/projects/$projectId/specifications'
+      preLoaderRoute: typeof ProjectsProjectIdSpecificationsRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/views/security': {
-      id: '/projects/$projectId/views/security'
-      path: '/views/security'
-      fullPath: '/projects/$projectId/views/security'
-      preLoaderRoute: typeof ProjectsProjectIdViewsSecurityRouteImport
+    '/projects/$projectId/temporal': {
+      id: '/projects/$projectId/temporal'
+      path: '/temporal'
+      fullPath: '/projects/$projectId/temporal'
+      preLoaderRoute: typeof ProjectsProjectIdTemporalRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/views/qa-dashboard': {
-      id: '/projects/$projectId/views/qa-dashboard'
-      path: '/views/qa-dashboard'
-      fullPath: '/projects/$projectId/views/qa-dashboard'
-      preLoaderRoute: typeof ProjectsProjectIdViewsQaDashboardRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
+    '/projects/$projectId/adrs/$adrId': {
+      id: '/projects/$projectId/adrs/$adrId'
+      path: '/$adrId'
+      fullPath: '/projects/$projectId/adrs/$adrId'
+      preLoaderRoute: typeof ProjectsProjectIdAdrsAdrIdRouteImport
+      parentRoute: typeof ProjectsProjectIdAdrsRoute
     }
-    '/projects/$projectId/views/process': {
-      id: '/projects/$projectId/views/process'
-      path: '/views/process'
-      fullPath: '/projects/$projectId/views/process'
-      preLoaderRoute: typeof ProjectsProjectIdViewsProcessRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
+    '/projects/$projectId/contracts/$contractId': {
+      id: '/projects/$projectId/contracts/$contractId'
+      path: '/$contractId'
+      fullPath: '/projects/$projectId/contracts/$contractId'
+      preLoaderRoute: typeof ProjectsProjectIdContractsContractIdRouteImport
+      parentRoute: typeof ProjectsProjectIdContractsRoute
     }
-    '/projects/$projectId/views/problem': {
-      id: '/projects/$projectId/views/problem'
-      path: '/views/problem'
-      fullPath: '/projects/$projectId/views/problem'
-      preLoaderRoute: typeof ProjectsProjectIdViewsProblemRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
+    '/projects/$projectId/features/$featureId': {
+      id: '/projects/$projectId/features/$featureId'
+      path: '/$featureId'
+      fullPath: '/projects/$projectId/features/$featureId'
+      preLoaderRoute: typeof ProjectsProjectIdFeaturesFeatureIdRouteImport
+      parentRoute: typeof ProjectsProjectIdFeaturesRoute
     }
-    '/projects/$projectId/views/performance': {
-      id: '/projects/$projectId/views/performance'
-      path: '/views/performance'
-      fullPath: '/projects/$projectId/views/performance'
-      preLoaderRoute: typeof ProjectsProjectIdViewsPerformanceRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/monitoring': {
-      id: '/projects/$projectId/views/monitoring'
-      path: '/views/monitoring'
-      fullPath: '/projects/$projectId/views/monitoring'
-      preLoaderRoute: typeof ProjectsProjectIdViewsMonitoringRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/journey': {
-      id: '/projects/$projectId/views/journey'
-      path: '/views/journey'
-      fullPath: '/projects/$projectId/views/journey'
-      preLoaderRoute: typeof ProjectsProjectIdViewsJourneyRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/integrations': {
-      id: '/projects/$projectId/views/integrations'
-      path: '/views/integrations'
-      fullPath: '/projects/$projectId/views/integrations'
-      preLoaderRoute: typeof ProjectsProjectIdViewsIntegrationsRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/infrastructure': {
-      id: '/projects/$projectId/views/infrastructure'
-      path: '/views/infrastructure'
-      fullPath: '/projects/$projectId/views/infrastructure'
-      preLoaderRoute: typeof ProjectsProjectIdViewsInfrastructureRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/feature': {
-      id: '/projects/$projectId/views/feature'
-      path: '/views/feature'
-      fullPath: '/projects/$projectId/views/feature'
-      preLoaderRoute: typeof ProjectsProjectIdViewsFeatureRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/domain': {
-      id: '/projects/$projectId/views/domain'
-      path: '/views/domain'
-      fullPath: '/projects/$projectId/views/domain'
-      preLoaderRoute: typeof ProjectsProjectIdViewsDomainRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/dependency': {
-      id: '/projects/$projectId/views/dependency'
-      path: '/views/dependency'
-      fullPath: '/projects/$projectId/views/dependency'
-      preLoaderRoute: typeof ProjectsProjectIdViewsDependencyRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/dataflow': {
-      id: '/projects/$projectId/views/dataflow'
-      path: '/views/dataflow'
-      fullPath: '/projects/$projectId/views/dataflow'
-      preLoaderRoute: typeof ProjectsProjectIdViewsDataflowRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/database': {
-      id: '/projects/$projectId/views/database'
-      path: '/views/database'
-      fullPath: '/projects/$projectId/views/database'
-      preLoaderRoute: typeof ProjectsProjectIdViewsDatabaseRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/coverage': {
-      id: '/projects/$projectId/views/coverage'
-      path: '/views/coverage'
-      fullPath: '/projects/$projectId/views/coverage'
-      preLoaderRoute: typeof ProjectsProjectIdViewsCoverageRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/configuration': {
-      id: '/projects/$projectId/views/configuration'
-      path: '/views/configuration'
-      fullPath: '/projects/$projectId/views/configuration'
-      preLoaderRoute: typeof ProjectsProjectIdViewsConfigurationRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/code': {
-      id: '/projects/$projectId/views/code'
-      path: '/views/code'
-      fullPath: '/projects/$projectId/views/code'
-      preLoaderRoute: typeof ProjectsProjectIdViewsCodeRouteImport
-      parentRoute: typeof ProjectsProjectIdRoute
-    }
-    '/projects/$projectId/views/architecture': {
-      id: '/projects/$projectId/views/architecture'
-      path: '/views/architecture'
-      fullPath: '/projects/$projectId/views/architecture'
-      preLoaderRoute: typeof ProjectsProjectIdViewsArchitectureRouteImport
+    '/projects/$projectId/views/$viewType': {
+      id: '/projects/$projectId/views/$viewType'
+      path: '/views/$viewType'
+      fullPath: '/projects/$projectId/views/$viewType'
+      preLoaderRoute: typeof ProjectsProjectIdViewsViewTypeRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
     '/projects/$projectId/views/api': {
@@ -1223,33 +1083,173 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdViewsApiRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/views/$viewType': {
-      id: '/projects/$projectId/views/$viewType'
-      path: '/views/$viewType'
-      fullPath: '/projects/$projectId/views/$viewType'
-      preLoaderRoute: typeof ProjectsProjectIdViewsViewTypeRouteImport
+    '/projects/$projectId/views/architecture': {
+      id: '/projects/$projectId/views/architecture'
+      path: '/views/architecture'
+      fullPath: '/projects/$projectId/views/architecture'
+      preLoaderRoute: typeof ProjectsProjectIdViewsArchitectureRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/features/$featureId': {
-      id: '/projects/$projectId/features/$featureId'
-      path: '/$featureId'
-      fullPath: '/projects/$projectId/features/$featureId'
-      preLoaderRoute: typeof ProjectsProjectIdFeaturesFeatureIdRouteImport
-      parentRoute: typeof ProjectsProjectIdFeaturesRoute
+    '/projects/$projectId/views/code': {
+      id: '/projects/$projectId/views/code'
+      path: '/views/code'
+      fullPath: '/projects/$projectId/views/code'
+      preLoaderRoute: typeof ProjectsProjectIdViewsCodeRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/contracts/$contractId': {
-      id: '/projects/$projectId/contracts/$contractId'
-      path: '/$contractId'
-      fullPath: '/projects/$projectId/contracts/$contractId'
-      preLoaderRoute: typeof ProjectsProjectIdContractsContractIdRouteImport
-      parentRoute: typeof ProjectsProjectIdContractsRoute
+    '/projects/$projectId/views/configuration': {
+      id: '/projects/$projectId/views/configuration'
+      path: '/views/configuration'
+      fullPath: '/projects/$projectId/views/configuration'
+      preLoaderRoute: typeof ProjectsProjectIdViewsConfigurationRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
     }
-    '/projects/$projectId/adrs/$adrId': {
-      id: '/projects/$projectId/adrs/$adrId'
-      path: '/$adrId'
-      fullPath: '/projects/$projectId/adrs/$adrId'
-      preLoaderRoute: typeof ProjectsProjectIdAdrsAdrIdRouteImport
-      parentRoute: typeof ProjectsProjectIdAdrsRoute
+    '/projects/$projectId/views/coverage': {
+      id: '/projects/$projectId/views/coverage'
+      path: '/views/coverage'
+      fullPath: '/projects/$projectId/views/coverage'
+      preLoaderRoute: typeof ProjectsProjectIdViewsCoverageRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/database': {
+      id: '/projects/$projectId/views/database'
+      path: '/views/database'
+      fullPath: '/projects/$projectId/views/database'
+      preLoaderRoute: typeof ProjectsProjectIdViewsDatabaseRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/dataflow': {
+      id: '/projects/$projectId/views/dataflow'
+      path: '/views/dataflow'
+      fullPath: '/projects/$projectId/views/dataflow'
+      preLoaderRoute: typeof ProjectsProjectIdViewsDataflowRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/dependency': {
+      id: '/projects/$projectId/views/dependency'
+      path: '/views/dependency'
+      fullPath: '/projects/$projectId/views/dependency'
+      preLoaderRoute: typeof ProjectsProjectIdViewsDependencyRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/domain': {
+      id: '/projects/$projectId/views/domain'
+      path: '/views/domain'
+      fullPath: '/projects/$projectId/views/domain'
+      preLoaderRoute: typeof ProjectsProjectIdViewsDomainRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/feature': {
+      id: '/projects/$projectId/views/feature'
+      path: '/views/feature'
+      fullPath: '/projects/$projectId/views/feature'
+      preLoaderRoute: typeof ProjectsProjectIdViewsFeatureRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/infrastructure': {
+      id: '/projects/$projectId/views/infrastructure'
+      path: '/views/infrastructure'
+      fullPath: '/projects/$projectId/views/infrastructure'
+      preLoaderRoute: typeof ProjectsProjectIdViewsInfrastructureRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/integrations': {
+      id: '/projects/$projectId/views/integrations'
+      path: '/views/integrations'
+      fullPath: '/projects/$projectId/views/integrations'
+      preLoaderRoute: typeof ProjectsProjectIdViewsIntegrationsRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/journey': {
+      id: '/projects/$projectId/views/journey'
+      path: '/views/journey'
+      fullPath: '/projects/$projectId/views/journey'
+      preLoaderRoute: typeof ProjectsProjectIdViewsJourneyRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/monitoring': {
+      id: '/projects/$projectId/views/monitoring'
+      path: '/views/monitoring'
+      fullPath: '/projects/$projectId/views/monitoring'
+      preLoaderRoute: typeof ProjectsProjectIdViewsMonitoringRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/performance': {
+      id: '/projects/$projectId/views/performance'
+      path: '/views/performance'
+      fullPath: '/projects/$projectId/views/performance'
+      preLoaderRoute: typeof ProjectsProjectIdViewsPerformanceRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/problem': {
+      id: '/projects/$projectId/views/problem'
+      path: '/views/problem'
+      fullPath: '/projects/$projectId/views/problem'
+      preLoaderRoute: typeof ProjectsProjectIdViewsProblemRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/process': {
+      id: '/projects/$projectId/views/process'
+      path: '/views/process'
+      fullPath: '/projects/$projectId/views/process'
+      preLoaderRoute: typeof ProjectsProjectIdViewsProcessRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/qa-dashboard': {
+      id: '/projects/$projectId/views/qa-dashboard'
+      path: '/views/qa-dashboard'
+      fullPath: '/projects/$projectId/views/qa-dashboard'
+      preLoaderRoute: typeof ProjectsProjectIdViewsQaDashboardRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/security': {
+      id: '/projects/$projectId/views/security'
+      path: '/views/security'
+      fullPath: '/projects/$projectId/views/security'
+      preLoaderRoute: typeof ProjectsProjectIdViewsSecurityRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/test': {
+      id: '/projects/$projectId/views/test'
+      path: '/views/test'
+      fullPath: '/projects/$projectId/views/test'
+      preLoaderRoute: typeof ProjectsProjectIdViewsTestRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/test-cases': {
+      id: '/projects/$projectId/views/test-cases'
+      path: '/views/test-cases'
+      fullPath: '/projects/$projectId/views/test-cases'
+      preLoaderRoute: typeof ProjectsProjectIdViewsTestCasesRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/test-runs': {
+      id: '/projects/$projectId/views/test-runs'
+      path: '/views/test-runs'
+      fullPath: '/projects/$projectId/views/test-runs'
+      preLoaderRoute: typeof ProjectsProjectIdViewsTestRunsRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/test-suites': {
+      id: '/projects/$projectId/views/test-suites'
+      path: '/views/test-suites'
+      fullPath: '/projects/$projectId/views/test-suites'
+      preLoaderRoute: typeof ProjectsProjectIdViewsTestSuitesRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/webhooks': {
+      id: '/projects/$projectId/views/webhooks'
+      path: '/views/webhooks'
+      fullPath: '/projects/$projectId/views/webhooks'
+      preLoaderRoute: typeof ProjectsProjectIdViewsWebhooksRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
+    }
+    '/projects/$projectId/views/wireframe': {
+      id: '/projects/$projectId/views/wireframe'
+      path: '/views/wireframe'
+      fullPath: '/projects/$projectId/views/wireframe'
+      preLoaderRoute: typeof ProjectsProjectIdViewsWireframeRouteImport
+      parentRoute: typeof ProjectsProjectIdRoute
     }
     '/projects/$projectId/views/$viewType/$itemId': {
       id: '/projects/$projectId/views/$viewType/$itemId'

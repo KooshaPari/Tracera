@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { requireAuth } from '@/lib/route-guards';
 import { ADRDetailView } from '@/views/ADRDetailView';
 
-export const Route = createFileRoute('/projects/$projectId/adrs/$adrId' as any)({
+export const Route = createFileRoute('/projects/$projectId/adrs/$adrId')({
   beforeLoad: async () => {
     await requireAuth();
   },

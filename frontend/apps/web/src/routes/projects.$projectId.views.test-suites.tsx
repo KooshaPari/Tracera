@@ -20,7 +20,7 @@ const TestSuiteViewRoute = () => {
 
 export { TestSuiteViewRoute };
 
-export const Route = createFileRoute('/projects/$projectId/views/test-suites' as any)({
+export const Route = createFileRoute('/projects/$projectId/views/test-suites')({
   component: TestSuiteViewRoute,
   loader: async () => ({}),
 });

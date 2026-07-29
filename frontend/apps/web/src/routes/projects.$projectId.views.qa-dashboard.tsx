@@ -18,7 +18,7 @@ export const QADashboardViewRoute = () => {
   );
 };
 
-export const Route = createFileRoute('/projects/$projectId/views/qa-dashboard' as any)({
+export const Route = createFileRoute('/projects/$projectId/views/qa-dashboard')({
   component: QADashboardViewRoute,
   loader: async () => ({}),
 });

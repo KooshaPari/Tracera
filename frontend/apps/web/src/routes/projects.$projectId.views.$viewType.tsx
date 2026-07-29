@@ -300,7 +300,7 @@ function ViewTypeComponent(): React.JSX.Element {
   return renderUnknownView(viewType);
 }
 
-export const Route = createFileRoute(ROUTE_PATH)({
+export const Route = createFileRoute('/projects/$projectId/views/$viewType')({
   beforeLoad: async (): Promise<void> => {
     await requireAuth();
   },
