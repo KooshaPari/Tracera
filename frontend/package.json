@@ -14,7 +14,7 @@
     "dev:docs": "TURBO_DAEMON=false turbo dev --filter=@tracertm/docs",
     "dev:storybook": "TURBO_DAEMON=false turbo dev --filter=@tracertm/storybook",
     "dev:desktop": "TURBO_DAEMON=false turbo dev --filter=@tracertm/desktop",
-    "build": "turbo build --concurrency=8 --filter=!@tracertm/storybook",
+    "build": "turbo build --concurrency=8",
     "build:web": "turbo build --filter=@tracertm/web",
     "build:docs": "turbo build --filter=@tracertm/docs",
     "build:storybook": "turbo build --filter=@tracertm/storybook",
