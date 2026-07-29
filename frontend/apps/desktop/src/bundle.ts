@@ -39,6 +39,30 @@ export type BundleOptions = {
   timeoutMs?: number;
 };
 
+type ReadinessPayload = { status?: string };
+
+/** Probe both service gates used by the bundled stack.
+ *
+ * A successful TCP response is not sufficient for desktop startup: the
+ * frontend can answer before migrations and dependent services are ready.
+ * Keep this helper injectable so startup tests exercise the exact gate.
+ */
+export async function probeBundleReady(
+  url: string,
+  fetchImpl: typeof fetch,
+): Promise<boolean> {
+  const [health, ready] = await Promise.all([
+    fetchImpl(`${url.replace(/\/$/, "")}/health`),
+    fetchImpl(`${url.replace(/\/$/, "")}/ready`),
+  ]);
+  if (!health.ok || !ready.ok) return false;
+  const [healthBody, readyBody] = (await Promise.all([
+    health.json(),
+    ready.json(),
+  ])) as [ReadinessPayload, ReadinessPayload];
+  return healthBody.status === "ok" && readyBody.status === "ready";
+}
+
 /**
  * Resolve the path to the bundled `tracera` CLI. Walks up from `import.meta.dir`
  * looking for the bundle layout created by `bunx electrobun build` and the
@@ -87,20 +111,21 @@ export async function startBundle(opts: BundleOptions = {}): Promise<() => Promi
   if (exitCode !== 0) throw new Error(`tracera up failed with exit code ${exitCode}`);
 
   const url = opts.localUrl ?? LOCAL_URL;
-  const deadline = Date.now() + (opts.timeoutMs ?? 180_000);
+  const timeoutMs = opts.timeoutMs ?? 180_000;
+  const deadline = Date.now() + timeoutMs;
+  let delayMs = 250;
   while (Date.now() < deadline) {
     try {
-      const res = await fetchImpl(`${url}/health`);
-      if (res.ok) {
-        const body = (await res.json()) as { status?: string };
-        if (body.status === "ok") break;
-      }
-    } catch {
-      /* still booting */
+      if (await probeBundleReady(url, fetchImpl)) break;
+    } catch (error) {
+      log("bundle readiness probe failed; retrying:", error);
     }
-    await sleep(2000);
+    await sleep(Math.min(delayMs, Math.max(0, deadline - Date.now())));
+    delayMs = Math.min(delayMs * 2, 2000);
   }
-  if (Date.now() >= deadline) throw new Error(`bundled stack not healthy at ${url}`);
+  if (!(await probeBundleReady(url, fetchImpl).catch(() => false))) {
+    throw new Error(`bundled stack did not pass /health and /ready within ${timeoutMs}ms at ${url}`);
+  }
 
   return async () => {
     const down = run([cliPath, "down"], { cwd: process.cwd(), env });

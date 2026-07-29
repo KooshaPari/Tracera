@@ -1,0 +1,31 @@
+{
+  "name": "@tracera/electron",
+  "version": "0.1.0",
+  "private": true,
+  "author": "Phenotype",
+  "description": "Production desktop shell for the canonical Tracera dashboard.",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "electron .",
+    "build": "esbuild src/main.ts src/preload.ts --bundle --platform=node --format=cjs --outdir=dist",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "package:web": "node scripts/package-web.mjs",
+    "package": "npm run build && npm run package:web && electron-builder --dir",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^37.2.6",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.27.0",
+    "typescript": "^5.9.3"
+  },
+  "build": {
+    "appId": "com.phenotype.tracera",
+    "productName": "Tracera",
+    "files": ["dist/**", "scripts/**"],
+    "mac": { "category": "public.app-category.developer-tools" },
+    "win": { "target": "nsis" },
+    "linux": { "target": "AppImage", "category": "Development" }
+  }
+}

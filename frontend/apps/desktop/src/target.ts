@@ -14,6 +14,8 @@ export function resolveTargetUrl(env: Record<string, string | undefined>): strin
   if (explicit) return explicit;
   const development = env.TRACERA_DEV_URL?.trim();
   if (development) return development;
-  const port = env.TRACERA_LOCAL_PORT?.trim() || "18081";
+  // The rich dashboard gateway is the only implicit local target. The legacy
+  // bundled frontend remains available only through an explicit override.
+  const port = env.TRACERA_LOCAL_PORT?.trim() || "18000";
   return `http://127.0.0.1:${port}/`;
 }
