@@ -162,7 +162,7 @@
     "@storybook/addon-docs": "8.6.14",
     "@storybook/addon-themes": "8.6.14",
     "@storybook/react": "8.6.14",
-    "@storybook/react-vite": "8.6.14",
+    "@storybook/react-vite": "10.5.5",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-query-devtools": "^5.91.1",
     "@tanstack/react-start": "^1.158.1",
