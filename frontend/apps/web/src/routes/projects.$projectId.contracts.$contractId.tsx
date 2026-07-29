@@ -5,7 +5,7 @@ import { ContractDetailView } from '@/views/ContractDetailView';
 
 const ContractDetailPage = () => <ContractDetailView />;
 
-export const Route = createFileRoute('/projects/$projectId/contracts/$contractId' as any)({
+export const Route = createFileRoute('/projects/$projectId/contracts/$contractId')({
   beforeLoad: async () => {
     await requireAuth();
   },

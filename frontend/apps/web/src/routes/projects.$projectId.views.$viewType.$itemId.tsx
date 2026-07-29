@@ -33,7 +33,7 @@ function ItemDetailComponent() {
   return <ItemDetailRouter item={item} projectId={projectIdValue} />;
 }
 
-export const Route = createFileRoute('/projects/$projectId/views/$viewType/$itemId' as any)({
+export const Route = createFileRoute('/projects/$projectId/views/$viewType/$itemId')({
   beforeLoad: async () => {
     await requireAuth();
   },

@@ -18,7 +18,7 @@ export function TestCaseViewRoute() {
   );
 }
 
-export const Route = createFileRoute('/projects/$projectId/views/test-cases' as any)({
+export const Route = createFileRoute('/projects/$projectId/views/test-cases')({
   component: TestCaseViewRoute,
   loader: async () => ({}),
 });

@@ -126,7 +126,7 @@ const README = `Tracera desktop — bundled stack
 ====================================
 
 This directory is the self-contained backend that \`Tracera.app\` brings up
-on launch. The Electron-style \`bin/tracera\` CLI is a Rust binary that
+on launch. The \`bin/tracera\` CLI is a Rust binary that
 auto-detects the host's container runtime (apple-container > docker >
 podman > wsl+docker) and drives Compose via that runtime.
 

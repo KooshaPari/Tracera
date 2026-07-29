@@ -15,7 +15,10 @@ describe("desktop bundle lifecycle", () => {
     const stop = await startBundle({
       cliPath: "/Applications/Tracera.app/Contents/Resources/tracera-bundle/bin/tracera",
       run: runner(commands),
-      fetchImpl: async () => new Response(JSON.stringify({ status: "ok" }), { status: 200 }),
+      fetchImpl: async (input) => new Response(
+        JSON.stringify(String(input).endsWith("/ready") ? { status: "ready" } : { status: "ok" }),
+        { status: 200 },
+      ),
       timeoutMs: 100,
     });
     await stop();
@@ -31,7 +34,7 @@ describe("desktop bundle lifecycle", () => {
 
   test("defaults packaged apps to the local stack, never a hosted site", () => {
     expect(DEFAULT_TARGET_URL).toBe("http://127.0.0.1:18000");
-    expect(resolveTargetUrl({})).toBe("http://127.0.0.1:18081/");
+    expect(resolveTargetUrl({})).toBe("http://127.0.0.1:18000/");
     expect(resolveTargetUrl({ TRACERA_LOCAL_PORT: "19999" })).toBe("http://127.0.0.1:19999/");
   });
 

@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { API_ORIGIN, WS_ORIGIN } from '@/config/api-origin';
 /**
  * Real-time WebSocket Client for NATS Event Propagation
  *
@@ -46,10 +47,10 @@ export class RealtimeClient {
   private maxReconnectAttempts = 10;
   private reconnectDelay = 5000; // 5 seconds
 
-  constructor(private url: string = 'ws://localhost:4000/api/v1/ws') {
+  constructor(private url: string = `${WS_ORIGIN}/api/v1/ws`) {
     // Use gateway host (same as API) so ws connects to :4000, not the frontend origin (:5173)
     if (typeof window !== 'undefined') {
-      const base = import.meta.env?.VITE_API_URL || 'http://localhost:4000';
+      const base = API_ORIGIN;
       const wsBase = import.meta.env?.VITE_WS_URL || base.replace(/^http/, 'ws');
       this.url = `${wsBase.replace(/\/$/, '')}/api/v1/ws`;
     }

@@ -11,7 +11,7 @@ export const ProcessViewRoute = (): ReactElement => {
 
 export const PROCESS_VIEW = ProcessViewRoute;
 
-export const Route = createFileRoute('/projects/$projectId/views/process' as any)({
+export const Route = createFileRoute('/projects/$projectId/views/process')({
   component: ProcessViewRoute,
   loader: async () => ({}),
 });

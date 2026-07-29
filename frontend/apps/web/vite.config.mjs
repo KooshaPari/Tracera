@@ -412,7 +412,10 @@ export default defineConfig({
     proxy: {
       '/api': {
         changeOrigin: true,
-        target: 'http://localhost:8080',
+        // Keep development traffic on the canonical rich-dashboard gateway. The
+        // Rust Grapheon service on :8080 is a separate product and does not own
+        // the /api contract consumed by this SPA.
+        target: process.env.VITE_API_URL ?? 'http://127.0.0.1:18000',
       },
     },
     // Warm up frequently used files

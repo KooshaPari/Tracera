@@ -4,14 +4,18 @@ on:
   push:
     paths:
       - Cargo.lock
+      - frontend/package.json
       - frontend/bun.lock
+      - frontend/apps/*/package.json
       - uv.lock
       - sidecar/go/go.mod
       - .github/workflows/dependency-audit.yml
   pull_request:
     paths:
       - Cargo.lock
+      - frontend/package.json
       - frontend/bun.lock
+      - frontend/apps/*/package.json
       - uv.lock
       - sidecar/go/go.mod
       - .github/workflows/dependency-audit.yml

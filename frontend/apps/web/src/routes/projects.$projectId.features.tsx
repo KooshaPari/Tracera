@@ -6,7 +6,7 @@ function FeaturesPage() {
   return null;
 }
 
-export const Route = createFileRoute('/projects/$projectId/features' as any)({
+export const Route = createFileRoute('/projects/$projectId/features')({
   component: FeaturesPage,
   beforeLoad: ({ params }) => {
     requireAuth();

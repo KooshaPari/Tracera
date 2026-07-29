@@ -11,7 +11,7 @@ export const ProblemViewRoute = (): ReactElement => {
 
 export const PROBLEM_VIEW = ProblemViewRoute;
 
-export const Route = createFileRoute('/projects/$projectId/views/problem' as any)({
+export const Route = createFileRoute('/projects/$projectId/views/problem')({
   component: ProblemViewRoute,
   loader: async () => ({}),
 });

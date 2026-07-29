@@ -3,9 +3,12 @@
  */
 
 import { cleanup } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
+import { toHaveNoViolations } from 'jest-axe';
 import React from 'react';
-import { afterEach, afterAll, beforeAll, vi } from 'vitest';
+import { afterEach, afterAll, beforeAll, expect, vi } from 'vitest';
+
+expect.extend({ toHaveNoViolations });
 
 type TestGlobals = typeof globalThis & {
   WebGL2RenderingContext?: unknown;

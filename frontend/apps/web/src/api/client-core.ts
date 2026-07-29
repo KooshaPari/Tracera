@@ -24,12 +24,12 @@ const getBackendURL = (_path?: string): string => {
     return url.replace(/\/$/, '');
   }
 
-  return 'http://localhost:4000';
+  return 'http://127.0.0.1:18000';
 };
 
 const API_BASE_URL = getBackendURL();
 
-const apiClient = createClient<AnyPaths>({
+const rawApiClient = createClient<AnyPaths>({
   baseUrl: API_BASE_URL,
   credentials: 'include',
   headers: {
@@ -37,10 +37,31 @@ const apiClient = createClient<AnyPaths>({
   },
 });
 
-if (!apiClient) {
+if (!rawApiClient) {
   logger.error('API client failed to initialize');
   throw new Error('API client initialization failed');
 }
+
+type LegacyRequestInit = Record<string, unknown>;
+type LegacyApiClient = typeof rawApiClient & {
+  get<T>(path: string, init?: LegacyRequestInit): Promise<T>;
+  post<T>(path: string, init?: LegacyRequestInit): Promise<T>;
+  put<T>(path: string, init?: LegacyRequestInit): Promise<T>;
+  delete<T = unknown>(path: string, init?: LegacyRequestInit): Promise<T>;
+};
+
+const unwrap = async <T>(request: Promise<{ data?: unknown; error?: unknown }>): Promise<T> => {
+  const response = await request;
+  if (response.error !== undefined) throw response.error;
+  return response.data as T;
+};
+
+const apiClient: LegacyApiClient = Object.assign(rawApiClient, {
+  get: <T>(path: string, init?: LegacyRequestInit) => unwrap<T>(rawApiClient.GET(path as never, init as never)),
+  post: <T>(path: string, init?: LegacyRequestInit) => unwrap<T>(rawApiClient.POST(path as never, init as never)),
+  put: <T>(path: string, init?: LegacyRequestInit) => unwrap<T>(rawApiClient.PUT(path as never, init as never)),
+  delete: <T>(path: string, init?: LegacyRequestInit) => unwrap<T>(rawApiClient.DELETE(path as never, init as never)),
+});
 
 const normalizeToken = (token: string): string => {
   if (token === '') {

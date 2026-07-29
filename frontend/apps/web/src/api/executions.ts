@@ -187,7 +187,7 @@ const create = async (projectId: string, data: ExecutionCreate): Promise<Executi
   );
 
 const downloadArtifact = (projectId: string, executionId: string, artifactId: string): string =>
-  `${import.meta.env.VITE_API_URL ?? 'http://localhost:4000'}/api/v1/projects/${projectId}/executions/${executionId}/artifacts/${artifactId}/download`;
+  `${import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:18000'}/api/v1/projects/${projectId}/executions/${executionId}/artifacts/${artifactId}/download`;
 
 const get = async (projectId: string, executionId: string): Promise<Execution> =>
   handleApiResponse(

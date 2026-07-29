@@ -9,7 +9,9 @@ import { useAuthStore } from '@/stores/authStore';
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+import { API_ORIGIN } from '@/config/api-origin';
+
+const API_URL = API_ORIGIN;
 
 interface LinkFilters {
   projectId?: string | undefined;
