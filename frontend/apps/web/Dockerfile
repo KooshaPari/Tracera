@@ -44,7 +44,7 @@ RUN test -d /app/apps/web/dist && ls -lh /app/apps/web/dist || \
 # ============================================================================
 # RUNTIME STAGE: Lightweight Nginx server (~50MB total)
 # ============================================================================
-FROM nginx:1.27-alpine
+FROM nginx:1.31-alpine
 
 LABEL maintainer="TracerTM Team"
 LABEL description="TracerTM web frontend service"
