@@ -10,7 +10,7 @@
 
 Tracera is the Phenotype-org **trace + observability + audit ledger** for
 agentic and LLM workflows. It captures structured trace-links across runs,
-distills short-term + long-term memory, and serves an Electron desktop
+distills short-term + long-term memory, and serves an Electrobun desktop
 viewer over OKF-bundled session history. The supported runtime is the Rust
 workspace; older Python/FastAPI references are retained only as historical
 migration material.

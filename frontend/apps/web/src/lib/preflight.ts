@@ -166,18 +166,18 @@ const buildCheckItems = (checks: PreflightCheck[]): string =>
     .map(
       (check) =>
         `<li data-check="${check.name}" data-state="checking" data-active="false" class="preflight-item" style="display:none;align-items:flex-start;gap:12px;padding:12px;border-radius:12px;margin-bottom:10px;opacity:0.25;">
-					<span data-status style="width:16px;height:16px;border-radius:999px;background:#f59e0b;display:inline-flex;align-items:center;justify-content:center;margin-top:4px;color:#0b0f14;font-weight:700;font-size:10px;">●</span>
+					<span data-status role="img" aria-label="Checking" style="width:16px;height:16px;border-radius:999px;background:#f59e0b;display:inline-flex;align-items:center;justify-content:center;margin-top:4px;color:#0b0f14;font-weight:700;font-size:10px;">●</span>
 					<div style="flex:1;">
 						<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
 							<span data-label style="color:#e6edf3;font-weight:600;">${check.name}</span>
-							<span data-icon style="font-size:14px;color:#f59e0b;">●</span>
-							<span data-status-text style="font-size:12px;color:#fcd34d;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Checking</span>
+							<span data-icon aria-hidden="true" style="font-size:14px;color:#f59e0b;">●</span>
+							<span data-status-text role="status" aria-live="polite" style="font-size:12px;color:#fcd34d;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Checking</span>
 						</div>
 					<div data-error style="margin-top:4px;color:#fca5a5;font-size:13px;display:none;"></div>
 					<div data-hint style="margin-top:4px;color:#f59e0b;font-size:12px;display:none;"></div>
 					<div data-skeleton class="preflight-skeleton" style="width:60%;margin-top:6px;display:none;"></div>
 				</div>
-					<button data-retry style="margin-left:8px;display:none;padding:6px 10px;border-radius:8px;border:1px solid #f59e0b;background:#f59e0b;color:#0b0f14;font-weight:600;cursor:pointer;">Retry</button>
+					<button type="button" data-retry aria-label="Retry ${check.name} health check" style="margin-left:8px;display:none;padding:6px 10px;border-radius:8px;border:1px solid #f59e0b;background:#f59e0b;color:#0b0f14;font-weight:600;cursor:pointer;">Retry</button>
 				</li>`,
     )
     .join('');
@@ -195,9 +195,9 @@ const buildInfraSkeleton = (infraItems: string[]): string =>
     .map(
       (name) =>
         `<li data-infra="${name}" data-state="checking" class="infra-item" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;margin-bottom:8px;">
-					<span data-infra-status style="width:12px;height:12px;border-radius:999px;background:#f59e0b;display:inline-block;"></span>
+					<span data-infra-status role="img" aria-label="Checking" style="width:12px;height:12px;border-radius:999px;background:#f59e0b;display:inline-block;"></span>
 					<span style="flex:1;color:#e6edf3;">${INFRA_DISPLAY_NAMES[name] || name}</span>
-					<span data-infra-text style="font-size:11px;color:#fcd34d;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Checking</span>
+					<span data-infra-text role="status" aria-live="polite" style="font-size:11px;color:#fcd34d;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Checking</span>
 					<div class="preflight-skeleton" style="width:120px;"></div>
 				</li>`,
     )
@@ -355,6 +355,7 @@ const setCheckStatusVisuals = (
   if (status) {
     status.style.background = PREFLIGHT_STATE_COLORS[state];
     status.textContent = PREFLIGHT_STATUS_ICONS[state];
+    status.setAttribute('aria-label', getStatusLabel(update));
   }
   if (icon) {
     icon.textContent = PREFLIGHT_STATUS_ICONS[state];
@@ -437,6 +438,7 @@ const updateInfraStatus = (map: Record<string, InfraStatus>): void => {
     const text = entry.querySelector('[data-infra-text]') as HTMLElement | null;
     if (dot) {
       dot.style.background = display.color;
+      dot.setAttribute('aria-label', display.label);
     }
     if (shimmer) {
       shimmer.style.display = status === 'unknown' ? 'block' : 'none';
@@ -473,7 +475,10 @@ const fadeOutAndReload = (): void => {
 const checkHealth = async (target: string): Promise<HealthCheckResult> => {
   const normalized = target.replace(/\/$/, '');
   const explicit = normalized.includes('/api/');
-  const paths = explicit ? [''] : ['/health', '/api/v1/health'];
+  // Prefer the readiness contract when the service exposes it.  `/health` only
+  // proves the process is alive; `/ready` gates the UI on its dependencies.
+  // Keep the health fallbacks for older adapters that have not published ready.
+  const paths = explicit ? [''] : ['/ready', '/health', '/api/v1/health'];
 
   for (const path of paths) {
     const url = `${normalized}${path}`;
@@ -736,8 +741,8 @@ export const renderPreflightFailure = (result: PreflightResult): void => {
 			<p style="margin:0 0 12px 0;color:#9aa4b2;">The frontend requires the backend services to be reachable before it can start.</p>
 			<ul style="margin:0 0 16px 20px;line-height:1.6;color:#fca5a5;">${details}</ul>
 			<div style="display:flex;gap:12px;margin-top:16px;">
-				<button id="preflight-retry" style="padding:8px 14px;border-radius:8px;border:1px solid #f59e0b;background:#f59e0b;color:#0b0f14;font-weight:600;cursor:pointer;">Retry all</button>
-				<button id="preflight-refresh" style="padding:8px 14px;border-radius:8px;border:1px solid #334155;background:#0f1720;color:#e6edf3;cursor:pointer;">Refresh</button>
+				<button type="button" id="preflight-retry" aria-label="Reload the dashboard and retry all readiness checks" style="padding:8px 14px;border-radius:8px;border:1px solid #f59e0b;background:#f59e0b;color:#0b0f14;font-weight:600;cursor:pointer;">Reload and retry</button>
+				<button type="button" id="preflight-refresh" aria-label="Refresh the dashboard" style="padding:8px 14px;border-radius:8px;border:1px solid #334155;background:#0f1720;color:#e6edf3;cursor:pointer;">Refresh</button>
 			</div>
 			<p style="margin:12px 0 0;color:#9aa4b2;">Start the services and retry.</p>
 		</div>

@@ -38,7 +38,7 @@ describe('Command Palette Keyboard Navigation', () => {
     pressKey('k', { metaKey: true });
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: /search commands/i })).toBeInTheDocument();
     });
 
     const results = await axe(container);
@@ -51,7 +51,7 @@ describe('Command Palette Keyboard Navigation', () => {
     // Test Cmd+K (Mac)
     pressKey('k', { metaKey: true });
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: /search commands/i })).toBeInTheDocument();
     });
 
     // Close
@@ -60,7 +60,7 @@ describe('Command Palette Keyboard Navigation', () => {
     // Test Ctrl+K (Windows/Linux)
     pressKey('k', { ctrlKey: true });
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: /search commands/i })).toBeInTheDocument();
     });
   });
 
@@ -69,12 +69,12 @@ describe('Command Palette Keyboard Navigation', () => {
 
     pressKey('k', { metaKey: true });
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: /search commands/i })).toBeInTheDocument();
     });
 
     pressEscape();
     await waitFor(() => {
-      expect(screen.queryByPlaceholderText(/search commands/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole('combobox', { name: /search commands/i })).not.toBeInTheDocument();
     });
   });
 
@@ -83,7 +83,7 @@ describe('Command Palette Keyboard Navigation', () => {
 
     pressKey('k', { metaKey: true });
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: /search commands/i })).toBeInTheDocument();
     });
 
     // Test arrow down
@@ -100,7 +100,7 @@ describe('Command Palette Keyboard Navigation', () => {
 
     pressKey('k', { metaKey: true });
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: /search commands/i })).toBeInTheDocument();
     });
 
     // Press enter to execute first command
@@ -113,7 +113,7 @@ describe('Command Palette Keyboard Navigation', () => {
 
     pressKey('k', { metaKey: true });
     await waitFor(() => {
-      const searchInput = screen.getByPlaceholderText(/search commands/i);
+      const searchInput = screen.getByRole('combobox', { name: /search commands/i });
       expect(searchInput).toBeInTheDocument();
       expect(searchInput).toHaveFocus();
     });

@@ -4,6 +4,27 @@
  */
 
 import { configureAxe } from 'jest-axe';
+import { expect } from 'vitest';
+
+// jest-axe's Jest matcher relies on `expectAssertion.call`, which Vitest 4
+// does not provide. Keep the same assertion semantics with a native Vitest
+// adapter instead of passing the incompatible matcher through unchanged.
+expect.extend({
+  toHaveNoViolations(received: {
+    violations?: readonly { id?: string; help?: string; nodes?: readonly unknown[] }[];
+  }) {
+    const violations = received?.violations ?? [];
+    return {
+      pass: violations.length === 0,
+      message: () =>
+        violations.length === 0
+          ? 'Expected axe to report at least one accessibility violation'
+          : `Expected no accessibility violations, received ${violations.length}: ${violations
+              .map((violation) => `${violation.id ?? 'unknown'} (${violation.help ?? 'no help'})`)
+              .join(', ')}`,
+    };
+  },
+});
 
 // Configure axe-core with WCAG 2.1 Level AA standards
 export const axe = configureAxe({

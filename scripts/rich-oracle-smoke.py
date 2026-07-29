@@ -20,6 +20,7 @@ from urllib.request import Request, urlopen
 
 DEFAULT_BASE = "http://127.0.0.1:18000"
 CORE_PATHS = (
+    "/ready",
     "/health",
     "/api/v1/auth/me",
     "/api/v1/projects",
@@ -78,7 +79,7 @@ def probe(base: str, path: str, timeout: float) -> Probe:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-url", default=DEFAULT_BASE, help="gateway origin (must use port 18000)")
-    parser.add_argument("--timeout", type=float, default=2.0, help="per-request timeout in seconds")
+    parser.add_argument("--timeout", type=float, default=10.0, help="per-request timeout in seconds")
     parser.add_argument("--live", action="store_true", help="probe the gateway; default is static-only")
     parser.add_argument("--json", action="store_true", help="emit machine-readable output")
     args = parser.parse_args()

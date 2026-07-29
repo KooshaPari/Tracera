@@ -3,7 +3,7 @@
  * Tests combobox ARIA pattern, keyboard navigation, focus management
  */
 
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { axe } from './setup';
@@ -44,6 +44,9 @@ function MockCommandPalette({ open, onClose }: { open: boolean; onClose: () => v
               aria-activedescendant='cmd-item-nav-home'
               role='combobox'
               autoComplete='off'
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') onClose();
+              }}
             />
             <span id='command-hint' className='sr-only'>
               5 results found. Use arrow keys to navigate, Enter to select, Home/End to jump, Escape
@@ -144,18 +147,18 @@ describe('CommandPalette - Keyboard Navigation', () => {
     expect(input).toHaveFocus();
 
     // Arrow down should not cause error
-    await user.keyboard('{ArrowDown}');
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
     expect(input).toHaveFocus();
   });
 
   it('should support Escape to close', async () => {
     const handleClose = vi.fn();
 
-    render(<MockCommandPalette open onClose={handleClose} />);
+    const { getByRole } = render(<MockCommandPalette open onClose={handleClose} />);
     const input = getByRole('combobox');
     input.focus();
 
-    await user.keyboard('{Escape}');
+    fireEvent.keyDown(input, { key: 'Escape' });
     expect(handleClose).toHaveBeenCalled();
   });
 
@@ -165,7 +168,7 @@ describe('CommandPalette - Keyboard Navigation', () => {
 
     input.focus();
     // Enter key should work
-    await user.keyboard('{Enter}');
+    fireEvent.keyDown(input, { key: 'Enter' });
     // No error should occur
   });
 
@@ -175,7 +178,7 @@ describe('CommandPalette - Keyboard Navigation', () => {
     const input = getByRole('combobox');
 
     input.focus();
-    await user.keyboard('{Tab}');
+    fireEvent.keyDown(input, { key: 'Tab' });
     // Tab should allow natural focus movement
   });
 });
@@ -253,13 +256,13 @@ describe('CommandPalette - Screen Reader Accessibility', () => {
 
 describe('CommandPalette - WCAG 2.1 AA Compliance', () => {
   it('should pass axe accessibility audit', async () => {
-    render(<MockCommandPalette open onClose={() => {}} />);
+    const { container } = render(<MockCommandPalette open onClose={() => {}} />);
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
 
   it('should have sufficient color contrast', () => {
-    render(<MockCommandPalette open onClose={() => {}} />);
+    const { container } = render(<MockCommandPalette open onClose={() => {}} />);
 
     // All text should have sufficient contrast
     const textElements = container.querySelectorAll('p, span, button, input');

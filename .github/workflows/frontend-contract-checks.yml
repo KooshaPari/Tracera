@@ -39,6 +39,11 @@ jobs:
         run: node scripts/test-deployment-artifact.mjs dist
         working-directory: frontend
 
+      - name: Verify rich oracle gateway contract
+        # Static mode enforces the approved loopback gateway (18000) and route
+        # allowlist without requiring CI to provision the disposable oracle.
+        run: python3 scripts/rich-oracle-smoke.py --json
+
       - name: Workspace typecheck
         run: npm run typecheck
         working-directory: frontend

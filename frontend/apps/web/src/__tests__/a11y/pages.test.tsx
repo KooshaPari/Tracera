@@ -4,7 +4,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render as rtlRender, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { axe } from './setup';
@@ -36,6 +36,17 @@ const queryClient = new QueryClient({
 function TestWrapper({ children }: { children: React.ReactNode }) {
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
+
+// Keep the page-level tests concise while exposing the DOM handles needed by
+// axe and the loading-state rerender assertion.
+let container: HTMLElement;
+let rerender: ReturnType<typeof rtlRender>['rerender'];
+const render = (ui: Parameters<typeof rtlRender>[0]) => {
+  const result = rtlRender(ui);
+  container = result.container;
+  rerender = result.rerender;
+  return result;
+};
 
 describe('Page Structure', () => {
   it('should have valid HTML document structure', async () => {
