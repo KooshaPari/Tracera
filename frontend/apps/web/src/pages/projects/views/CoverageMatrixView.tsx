@@ -1,8 +1,7 @@
 import { AlertTriangle, CheckCircle, Filter, Grid, Percent, Search, XCircle } from 'lucide-react';
 import { useState } from 'react';
 
-import type { TraceabilityMatrixItem } from '@tracertm/types';
-
+import type { CoverageViewFilter, TraceabilityMatrixCell } from '../../../hooks/coverage/hooks';
 import { useCoverageGaps, useTraceabilityMatrix } from '../../../hooks/useCoverage';
 
 const statusColors: Record<string, string> = {
@@ -26,32 +25,22 @@ interface CoverageMatrixViewProps {
 }
 
 export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
-  const [viewFilter, setViewFilter] = useState('');
+  const [viewFilter, setViewFilter] = useState<CoverageViewFilter | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
   const [showGapsOnly, setShowGapsOnly] = useState(false);
 
   const {
     data: matrix,
-    isLoading: matrixLoading,
-    error: matrixError,
-  } = useTraceabilityMatrix(projectId, viewFilter || undefined);
-  const { data: gaps } = useCoverageGaps(projectId, viewFilter || undefined);
+  } = useTraceabilityMatrix(projectId, viewFilter ?? 'unit');
+  const { data: gaps } = useCoverageGaps(projectId, viewFilter ?? 'unit');
 
   const items = showGapsOnly
-    ? (matrix?.matrix ?? []).filter((item) => !item.isCovered)
+    ? (matrix?.matrix ?? []).filter((item) => !item.covered)
     : (matrix?.matrix ?? []);
 
   const filteredItems = items.filter((item) =>
-    item.requirementTitle.toLowerCase().includes(searchQuery.toLowerCase()),
+    item.requirementId.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-
-  if (matrixError) {
-    return (
-      <div className='rounded-lg border border-red-200 bg-red-50 p-4 text-red-700'>
-        Error loading coverage matrix: {matrixError.message}
-      </div>
-    );
-  }
 
   return (
     <div className='space-y-6'>
@@ -140,16 +129,16 @@ export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
           <select
             value={viewFilter}
             onChange={(e) => {
-              setViewFilter(e.target.value);
+              const next = e.target.value;
+              setViewFilter(next === '' ? undefined : (next as CoverageViewFilter));
             }}
             className='bg-background rounded-lg border px-3 py-2'
           >
             <option value=''>All Views</option>
-            <option value='FEATURE'>Features</option>
-            <option value='CODE'>Code</option>
-            <option value='TEST'>Tests</option>
-            <option value='API'>API</option>
-            <option value='DATABASE'>Database</option>
+            <option value='unit'>Unit</option>
+            <option value='integration'>Integration</option>
+            <option value='e2e'>E2E</option>
+            <option value='manual'>Manual</option>
           </select>
           <label className='flex cursor-pointer items-center gap-2'>
             <input
@@ -166,11 +155,7 @@ export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
       </div>
 
       {/* Matrix Table */}
-      {matrixLoading ? (
-        <div className='flex items-center justify-center py-12'>
-          <div className='border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent' />
-        </div>
-      ) : filteredItems.length === 0 ? (
+      {filteredItems.length === 0 ? (
         <div className='rounded-lg border border-dashed p-12 text-center'>
           <Grid className='text-muted-foreground mx-auto h-12 w-12' />
           <h3 className='mt-4 text-lg font-semibold'>
@@ -223,20 +208,20 @@ export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
                 key={gap.requirementId}
                 className='rounded-lg border border-yellow-200 bg-white p-2 text-sm'
               >
-                <div className='truncate font-medium'>{gap.requirementTitle}</div>
+                <div className='truncate font-medium'>{gap.title}</div>
                 <div className='text-muted-foreground flex items-center gap-2 text-xs'>
-                  <span>{gap.requirementView}</span>
-                  {gap.priority && (
+                  <span>{gap.severity}</span>
+                  {gap.reason && (
                     <span
                       className={`rounded px-1.5 py-0.5 ${
-                        gap.priority === 'critical'
+                        gap.severity === 'critical'
                           ? 'bg-red-100 text-red-700'
-                          : gap.priority === 'high'
+                          : gap.severity === 'high'
                             ? 'bg-orange-100 text-orange-700'
                             : 'bg-gray-100 text-gray-700'
                       }`}
                     >
-                      {gap.priority}
+                      {gap.severity}
                     </span>
                   )}
                 </div>
@@ -252,20 +237,20 @@ export function CoverageMatrixView({ projectId }: CoverageMatrixViewProps) {
   );
 }
 
-function MatrixRow({ item }: { item: TraceabilityMatrixItem }) {
+function MatrixRow({ item }: { item: TraceabilityMatrixCell }) {
   return (
     <tr className='hover:bg-muted/30 border-b'>
       <td className='px-4 py-3'>
-        <div className='font-medium'>{item.requirementTitle}</div>
+        <div className='font-medium'>{item.requirementId}</div>
       </td>
       <td className='px-4 py-3'>
-        <span className='text-muted-foreground text-sm'>{item.requirementView}</span>
+        <span className='text-muted-foreground text-sm'>Requirement</span>
       </td>
       <td className='px-4 py-3'>
-        <span className='text-sm'>{item.requirementStatus}</span>
+        <span className='text-sm'>{item.covered ? 'Covered' : 'Uncovered'}</span>
       </td>
       <td className='px-4 py-3'>
-        {item.isCovered ? (
+        {item.covered ? (
           <span className='inline-flex items-center gap-1 text-green-600'>
             <CheckCircle className='h-4 w-4' /> Yes
           </span>
@@ -276,15 +261,15 @@ function MatrixRow({ item }: { item: TraceabilityMatrixItem }) {
         )}
       </td>
       <td className='px-4 py-3'>
-        <span className='text-sm font-medium'>{item.testCount}</span>
+        <span className='text-sm font-medium'>{item.testIds.length}</span>
       </td>
       <td className='px-4 py-3'>
         <span
           className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-            statusColors[item.overallStatus] ?? statusColors['not_tested']
+            statusColors[item.covered ? 'passed' : 'not_tested'] ?? statusColors['not_tested']
           }`}
         >
-          {statusLabels[item.overallStatus] ?? 'Unknown'}
+          {item.covered ? 'Covered' : 'Not Tested'}
         </span>
       </td>
     </tr>

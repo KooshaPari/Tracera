@@ -172,8 +172,7 @@ async function postCoverage(
 ): Promise<CoverageRecord> {
   const response = await client.apiClient.post<CoverageRecord>(
     `/api/v1/projects/${projectId}/coverage`,
-    payload,
-    { headers: await client.getAuthHeaders() },
+    { body: payload, headers: await client.getAuthHeaders() },
   );
   return response;
 }
@@ -185,8 +184,7 @@ async function patchCoverage(
 ): Promise<CoverageRecord> {
   const response = await client.apiClient.put<CoverageRecord>(
     `/api/v1/projects/${projectId}/coverage/${coverageId}`,
-    payload,
-    { headers: await client.getAuthHeaders() },
+    { body: payload, headers: await client.getAuthHeaders() },
   );
   return response;
 }
@@ -204,8 +202,7 @@ async function postVerifyCoverage(
 ): Promise<{ verified: boolean }> {
   const response = await client.apiClient.post<{ verified: boolean }>(
     `/api/v1/projects/${projectId}/coverage/${coverageId}/verify`,
-    {},
-    { headers: await client.getAuthHeaders() },
+    { body: {}, headers: await client.getAuthHeaders() },
   );
   return response;
 }
