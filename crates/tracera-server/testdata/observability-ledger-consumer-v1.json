@@ -1,0 +1,37 @@
+{
+  "evidence": {
+    "artifact_id": "obs-ledger-consumer-v1",
+    "kind": "contract_fixture",
+    "url": "https://example.test/evidence/obs-ledger-consumer-v1",
+    "metadata": {
+      "consumer": "observability-ledger-consumer-v1",
+      "schema_version": 1,
+      "producer": "PhenoObservability",
+      "trace_id": "trace-observability-ledger-v1",
+      "span_id": "span-tracera-evidence-v1",
+      "parent_span_id": "span-phenotype-runtime-v1",
+      "correlation_id": "corr-observability-ledger-v1"
+    }
+  },
+  "trace": {
+    "artifact_id": "obs-ledger-consumer-v1",
+    "links": [
+      {
+        "source_id": "obs-ledger-consumer-v1",
+        "target_id": "verification-run-20260731",
+        "relationship": "verified_by",
+        "confidence": 1.0
+      },
+      {
+        "source_id": "verification-run-20260731",
+        "target_id": "immutable-report-20260731",
+        "relationship": "produces",
+        "confidence": 1.0
+      }
+    ]
+  },
+  "expected": {
+    "evidence_count": 1,
+    "trace_neighbors": ["verification-run-20260731"]
+  }
+}
