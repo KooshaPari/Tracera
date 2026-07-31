@@ -20,8 +20,8 @@ import re
 
 compose = Path("docker-compose.yml").read_text(encoding="utf-8")
 server = re.search(r"(?ms)^  tracera-server:\n(.*?)(?=^  [a-zA-Z0-9_-]+:|^volumes:|\Z)", compose)
-if not server or '"127.0.0.1:18000:8080"' not in server.group(1):
-    raise SystemExit("tracera-server must publish the bundled rich dashboard only on 127.0.0.1:18000")
+if not server or '"${TRACERA_LOCAL_BIND_ADDR:-127.0.0.1}:${TRACERA_LOCAL_PORT:-18000}:8080"' not in server.group(1):
+    raise SystemExit("tracera-server must default the bundled rich dashboard to loopback :18000")
 PY
 ! grep -qE '^[[:space:]]*-[[:space:]]*"?8080:8080' docker-compose.yml \
   || fail "backend port 8080 must remain internal"

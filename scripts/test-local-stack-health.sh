@@ -12,7 +12,11 @@ touch "${tmp_dir}/compose.yml" "${tmp_dir}/env"
 cat >"${tmp_dir}/bin/docker" <<'EOF'
 #!/usr/bin/env bash
 if printf '%s\n' "$*" | grep -Fq ' ps '; then
-  printf '%s\n' frontend postgres tracera-server
+  if [[ "${TRACERA_LEGACY_LOCAL_STACK:-0}" == "1" ]]; then
+    printf '%s\n' frontend postgres tracera-server
+  else
+    printf '%s\n' postgres tracera-server
+  fi
   exit 0
 fi
 if printf '%s\n' "$*" | grep -Fq ' logs '; then
@@ -23,15 +27,35 @@ exit 0
 EOF
 cat >"${tmp_dir}/bin/curl" <<'EOF'
 #!/usr/bin/env bash
-exit 22
+if [[ "${MOCK_CURL_FAIL:-0}" == "1" ]]; then
+  exit 22
+fi
+case "$*" in
+  */health*) printf '%s\n' '{"status":"ok"}' ;;
+  */ready*) printf '%s\n' '{"status":"ready"}' ;;
+  *) printf '%s\n' '200' ;;
+esac
+exit 0
 EOF
 chmod 755 "${tmp_dir}/bin/docker" "${tmp_dir}/bin/curl"
+
+canonical_output="$({
+  PATH="${tmp_dir}/bin:${PATH}" \
+    TRACERA_COMPOSE_FILE="${tmp_dir}/compose.yml" \
+    TRACERA_ENV_FILE="${tmp_dir}/env" \
+    TRACERA_LEGACY_LOCAL_STACK=0 \
+    "${repo_root}/scripts/local-stack-health.sh"
+} 2>&1)"
+[[ "$?" -eq 0 ]] || { printf '%s\n' "${canonical_output}" >&2; exit 1; }
+printf '%s\n' "${canonical_output}" | grep -Fq 'local stack health: PASS'
 
 set +e
 output="$({
   PATH="${tmp_dir}/bin:${PATH}" \
     TRACERA_COMPOSE_FILE="${tmp_dir}/compose.yml" \
     TRACERA_ENV_FILE="${tmp_dir}/env" \
+    TRACERA_LEGACY_LOCAL_STACK=1 \
+    MOCK_CURL_FAIL=1 \
     "${repo_root}/scripts/local-stack-health.sh"
 } 2>&1)"
 status=$?

@@ -5,21 +5,32 @@ python3 - <<'PY'
 from pathlib import Path
 import re
 
-compose = Path("docker-compose.local.yml").read_text(encoding="utf-8")
+compose = Path("docker-compose.yml").read_text(encoding="utf-8")
+legacy_compose = Path("docker-compose.local.yml").read_text(encoding="utf-8")
 dockerfile = Path("Dockerfile.rust").read_text(encoding="utf-8")
 
 assert "HEALTHCHECK" in dockerfile, "Rust image must define a healthcheck"
 assert "wget -q -O /dev/null http://127.0.0.1:8080/health" in dockerfile, (
     "Rust image healthcheck must probe loopback /health"
 )
-server = re.search(r"(?ms)^  tracera-server:\n(.*?)(?=^  [a-zA-Z0-9_-]+:|\Z)", compose)
-frontend = re.search(r"(?ms)^  frontend:\n(.*?)(?=^  [a-zA-Z0-9_-]+:|\Z)", compose)
-assert server and "healthcheck:" in server.group(1), "server service healthcheck missing"
-assert frontend and "condition: service_healthy" in frontend.group(1), (
-    "frontend must wait for a healthy server"
+assert "TRACERA_FRONTEND_DIST=/opt/tracera/frontend/dist" in dockerfile, (
+    "Rust image must serve the approved rich dashboard"
 )
-assert '"${TRACERA_LOCAL_BIND_ADDR:-127.0.0.1}:${TRACERA_LOCAL_PORT:-18081}:80"' in compose, (
-    "frontend publication must default to loopback"
+assert "COPY --from=frontend-build /workspace/frontend/dist /opt/tracera/frontend/dist" in dockerfile, (
+    "Rust image must contain the built rich dashboard"
+)
+server = re.search(r"(?ms)^  tracera-server:\n(.*?)(?=^  [a-zA-Z0-9_-]+:|\Z)", compose)
+assert server and "depends_on:" in server.group(1), "server database dependency missing"
+assert '"${TRACERA_LOCAL_BIND_ADDR:-127.0.0.1}:${TRACERA_LOCAL_PORT:-18000}:8080"' in server.group(1), (
+    "rich dashboard gateway must default to loopback :18000"
+)
+assert "\n  frontend:" not in compose, "canonical stack must not publish a split frontend"
+legacy_frontend = re.search(r"(?ms)^  frontend:\n(.*?)(?=^  [a-zA-Z0-9_-]+:|\Z)", legacy_compose)
+assert legacy_frontend and "condition: service_healthy" in legacy_frontend.group(1), (
+    "explicit legacy frontend must wait for a healthy server"
+)
+assert '"${TRACERA_LOCAL_BIND_ADDR:-127.0.0.1}:${TRACERA_LOCAL_PORT:-18081}:80"' in legacy_compose, (
+    "legacy frontend publication must remain explicitly available on :18081"
 )
 print("local Compose readiness contract: PASS")
 PY
