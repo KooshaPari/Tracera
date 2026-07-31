@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 // The client derives its browser fallback from window.location.origin.  Keep
 // this Node contract test deterministic without weakening production URL
-// validation or relying on a CI-provided VITE_API_BASE.
+// validation or relying on a CI-provided VITE_API_URL.
 global.window = { location: { origin: 'http://127.0.0.1:8080' } };
 const { traceraClient } = await import('../apps/web/src/services/traceraClient.js');
 
@@ -37,7 +37,7 @@ function createResponseResolver(routeMap) {
     const url = String(input);
     // Resolve the path independently of the configured loopback host. This
     // keeps the contract test valid for localhost, 127.0.0.1, IPv6 loopback,
-    // and CI-injected VITE_API_BASE values.
+    // and CI-injected VITE_API_URL values.
     const pathname = new URL(url).pathname;
 
     if (routeMap[pathname]) {

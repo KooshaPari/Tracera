@@ -75,7 +75,7 @@ jobs:
       - name: Frontend parity smoke (optional, if public HTTPS API set)
         run: |
           if [[ "${TRACERA_API_BASE}" == https://* ]]; then
-            VITE_API_BASE="${TRACERA_API_BASE}" npm run smoke:parity
+            VITE_API_URL="${TRACERA_API_BASE}" npm run smoke:parity
           else
             echo "Skipping parity smoke: no public HTTPS TRACERA_API_BASE"
           fi
@@ -84,7 +84,7 @@ jobs:
       - name: Frontend POST parity smoke (optional, if public HTTPS API set)
         run: |
           if [[ "${TRACERA_API_BASE}" == https://* ]]; then
-            VITE_API_BASE="${TRACERA_API_BASE}" npm run smoke:post
+            VITE_API_URL="${TRACERA_API_BASE}" npm run smoke:post
           else
             echo "Skipping POST smoke: no public HTTPS TRACERA_API_BASE"
           fi

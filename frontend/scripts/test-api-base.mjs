@@ -9,7 +9,7 @@ const http = ['http', '://'].join('')
 function run(raw, extra = {}) {
   try {
     execFileSync(process.execPath, [script], {
-      env: { ...process.env, VITE_API_BASE: raw, ...extra },
+      env: { ...process.env, VITE_API_URL: raw, ...extra },
       stdio: 'pipe',
     })
     return { ok: true, output: '' }
@@ -34,4 +34,9 @@ test('still rejects insecure non-loopback bases', () => {
   const result = run(`${http}api.example.com`)
   assert.equal(result.ok, false)
   assert.match(result.output, /refusing insecure non-loopback API base/)
+})
+
+test('uses VITE_API_URL as the canonical variable', () => {
+  const result = run('https://api.example.com', { VITE_API_BASE: 'not a URL', PRODUCTION_DEPLOY: '1' })
+  assert.equal(result.ok, true)
 })

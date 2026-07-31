@@ -33,4 +33,9 @@ if (!javascript.includes('Traceability') || !javascript.includes('Evidence')) {
   throw new Error('Deployment artifact is missing canonical dashboard markers')
 }
 
+const expectedOrigin = process.env.EXPECTED_API_ORIGIN?.replace(/\/$/, '')
+if (expectedOrigin && !javascript.includes(expectedOrigin)) {
+  throw new Error(`Deployment artifact is missing configured API origin: ${expectedOrigin}`)
+}
+
 console.log(`Canonical Tracera artifact verified: ${indexPath} (${assets.length} JS assets)`)

@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import net from 'node:net'
 
-const raw = process.env.VITE_API_BASE || 'http://localhost:8080'
+const raw = process.env.VITE_API_URL || 'http://localhost:8080'
 const allowInsecure = process.env.ALLOW_INSECURE_API_BASE === '1'
 const production = process.env.PRODUCTION_DEPLOY === '1'
 let url
