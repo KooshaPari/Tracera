@@ -1,3 +1,28 @@
+# Build the approved rich dashboard with the workspace-pinned Bun release.
+# Keep VITE_API_URL empty so the packaged SPA uses the Rust server's same-origin
+# API and WebSocket routes in the production image.
+FROM oven/bun:1.1.38-alpine AS frontend-build
+
+WORKDIR /workspace/frontend
+
+RUN apk add --no-cache python3 make g++
+
+COPY frontend/package.json frontend/bun.lock ./
+COPY frontend/apps ./apps
+COPY frontend/packages ./packages
+COPY frontend/scripts ./scripts
+COPY frontend/turbo.json frontend/tsconfig.json frontend/tsconfig.packages.json ./
+
+RUN bun install --frozen-lockfile
+
+ENV NODE_ENV=production
+ENV VITE_API_URL=
+
+# Use the documented `bun run` form; older pinned Bun releases do not parse
+# `bun --cwd <dir> run <script>` as a script invocation.
+RUN cd apps/web && bun run build
+RUN test -f /workspace/frontend/dist/index.html
+
 FROM rust:1.94-bookworm AS build
 
 WORKDIR /workspace
@@ -13,8 +38,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /workspace/target/release/tracera-server /usr/local/bin/tracera-server
+COPY --from=frontend-build /workspace/frontend/dist /opt/tracera/frontend/dist
 
 ENV TRACERA_BIND_ADDR=0.0.0.0:8080
+ENV TRACERA_FRONTEND_DIST=/opt/tracera/frontend/dist
 EXPOSE 8080
 
 HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=12 \
