@@ -26,6 +26,10 @@ services:
       TRACERA_BIND_ADDR: "0.0.0.0:8080"
       TRACERA_TRUSTED_PROXY: "true"
       DATABASE_URL: "postgres://tracera:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/tracera"
+    # The Rust image serves the approved rich dashboard and API from one origin.
+    # Keep browser access local while leaving the database un-published.
+    ports:
+      - "127.0.0.1:18000:8080"
     expose:
       - "8080"
     depends_on:
