@@ -2282,8 +2282,7 @@ mod tests {
             Some("dcc9db42084136d3f72cb1d788b286a721b10e1f")
         );
 
-        let issue = crate::ingest::benchmark_run_to_issue(&envelope)
-            .expect("valid dcc9 envelope");
+        let issue = crate::ingest::benchmark_run_to_issue(&envelope).expect("valid dcc9 envelope");
         let run_id = envelope
             .get("run_id")
             .and_then(Value::as_str)
