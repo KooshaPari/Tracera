@@ -38,13 +38,13 @@ jobs:
       - name: Build frontend
         env:
           VITE_BASE: /Tracera/
-          TRACERA_API_BASE: ${{ vars.TRACERA_API_BASE }}
+          VITE_API_URL: ${{ vars.TRACERA_API_BASE }}
         run: |
-          test -n "$TRACERA_API_BASE"
+          test -n "$VITE_API_URL"
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            VITE_API_URL="$TRACERA_API_BASE" PRODUCTION_DEPLOY=1 npm run test:api-base
+            PRODUCTION_DEPLOY=1 npm run test:api-base
           fi
-          VITE_BASE="$VITE_BASE" VITE_API_URL="$TRACERA_API_BASE" bun run vite build
+          VITE_BASE="$VITE_BASE" bun run vite build
         working-directory: frontend/apps/web
 
       - name: Verify canonical Tracera artifact

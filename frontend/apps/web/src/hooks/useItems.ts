@@ -8,7 +8,7 @@ import itemsUtils from '@/hooks/use-items/items-utils';
 import { QUERY_CONFIGS, queryKeys } from '@/lib/queryConfig';
 import { useAuthStore } from '@/stores/authStore';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:18000';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 interface ItemFilters {
   projectId?: string | undefined;

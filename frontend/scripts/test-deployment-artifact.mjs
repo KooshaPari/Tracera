@@ -14,8 +14,8 @@ if (!indexPath.startsWith(`${distRoot}${sep}`)) {
 if (!existsSync(indexPath)) throw new Error(`Missing deployment entrypoint: ${indexPath}`)
 
 const index = readFileSync(indexPath, 'utf8') // NOSONAR: indexPath uses an allowlisted relative input and fixed filename.
-if (!/<title>\s*Tracera\b/i.test(index)) {
-  throw new Error('Deployment artifact is missing canonical TRACERA title')
+if (!/<title>\s*Tracera\s*<\/title>/i.test(index)) {
+  throw new Error('Deployment artifact is missing canonical Tracera title')
 }
 
 const assetDir = join(distRoot, 'assets')

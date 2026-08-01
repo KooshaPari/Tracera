@@ -2,7 +2,7 @@ import { client } from '@/api/client';
 
 const { getAuthHeaders } = client;
 
-const DEFAULT_API_URL = 'http://127.0.0.1:18000';
+const DEFAULT_API_URL = '';
 const DEFAULT_REQUIREMENT_LIMIT = Number('100');
 const DEFAULT_TEST_LIMIT = Number('100');
 const DEFAULT_FLAKY_THRESHOLD = Number('0.2');

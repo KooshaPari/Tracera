@@ -28,7 +28,7 @@ export function useNotifications() {
   const { token } = useAuthStore();
   const queryClient = useQueryClient();
   const sseClientRef = useRef<SSEClient | null>(null);
-  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:18000';
+  const API_URL = import.meta.env.VITE_API_URL || '';
 
   // Fetch initial notifications
   const query = useQuery({

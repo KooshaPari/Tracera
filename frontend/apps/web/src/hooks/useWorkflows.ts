@@ -6,7 +6,7 @@ import { client } from '@/api/client';
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:18000';
+const API_URL = import.meta.env.VITE_API_URL || '';
 const REFRESH_RUNS_INTERVAL_MS = 15_000;
 const REFRESH_SCHEDULES_INTERVAL_MS = 30_000;
 
@@ -45,7 +45,7 @@ const useWorkflowRuns = (
   status?: string,
   workflowName?: string,
   limit = 100,
-): ReturnType<typeof useQuery> =>
+ ) =>
   useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => {
@@ -72,7 +72,7 @@ const useWorkflowRuns = (
     refetchInterval: REFRESH_RUNS_INTERVAL_MS,
   });
 
-const useWorkflowSchedules = (projectId: string): ReturnType<typeof useQuery> =>
+const useWorkflowSchedules = (projectId: string) =>
   useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => {
@@ -94,7 +94,7 @@ const useWorkflowSchedules = (projectId: string): ReturnType<typeof useQuery> =>
     refetchInterval: REFRESH_SCHEDULES_INTERVAL_MS,
   });
 
-const useBootstrapWorkflowSchedules = (): ReturnType<typeof useMutation> => {
+const useBootstrapWorkflowSchedules = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (projectId: string) => {
@@ -117,7 +117,7 @@ const useBootstrapWorkflowSchedules = (): ReturnType<typeof useMutation> => {
   });
 };
 
-const useDeleteWorkflowSchedule = (): ReturnType<typeof useMutation> => {
+const useDeleteWorkflowSchedule = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ projectId, cronId }: { projectId: string; cronId: string }) => {

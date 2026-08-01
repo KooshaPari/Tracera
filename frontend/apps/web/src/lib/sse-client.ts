@@ -207,7 +207,7 @@ export function createNotificationSSEClient(
     return null;
   }
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:18000';
+  const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
   return new SSEClient({
     url: `${API_URL}/api/v1/notifications/stream`,

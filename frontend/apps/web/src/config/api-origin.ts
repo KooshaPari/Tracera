@@ -1,6 +1,6 @@
 /** Single browser origin for the approved Tracera gateway. */
 export const API_ORIGIN = (
-  import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:18000'
+  import.meta.env.VITE_API_URL ?? ''
 ).replace(/\/$/, '');
 
 export const WS_ORIGIN = (

@@ -114,10 +114,9 @@ try {
   if (errors.length) {
     console.error(`\nPOST smoke failed with ${errors.length} failures`)
     process.exitCode = 1
-    return
+  } else {
+    console.log('\nTracera POST endpoint smoke: PASS')
   }
-
-  console.log('\nTracera POST endpoint smoke: PASS')
 } catch (err) {
   console.error(err)
   process.exitCode = 1

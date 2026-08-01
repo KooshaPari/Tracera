@@ -24,7 +24,7 @@ const getBackendURL = (_path?: string): string => {
     return url.replace(/\/$/, '');
   }
 
-  return 'http://127.0.0.1:18000';
+  return '';
 };
 
 const API_BASE_URL = getBackendURL();

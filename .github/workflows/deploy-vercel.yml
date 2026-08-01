@@ -26,7 +26,7 @@ jobs:
       HAS_VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       HAS_VERCEL_ORG: ${{ secrets.VERCEL_ORG_ID }}
       HAS_VERCEL_PROJECT: ${{ secrets.VERCEL_PROJECT_ID }}
-      TRACERA_API_BASE: ${{ vars.TRACERA_API_BASE }}
+      VITE_API_URL: ${{ vars.TRACERA_API_BASE }}
     steps:
       - name: Skip when Vercel secrets are unavailable
         if: ${{ github.event_name == 'pull_request' && (env.HAS_VERCEL_TOKEN == '' || env.HAS_VERCEL_ORG == '' || env.HAS_VERCEL_PROJECT == '') }}
@@ -53,12 +53,12 @@ jobs:
       - name: Validate and stage API base for Vercel build
         if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}
         run: |
-          test -n "$TRACERA_API_BASE" || {
-            echo "TRACERA_API_BASE repository variable is required for Vercel builds." >&2
+          test -n "$VITE_API_URL" || {
+            echo "The configured API URL repository variable is required for Vercel builds." >&2
             exit 1
           }
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            VITE_API_URL="$TRACERA_API_BASE" PRODUCTION_DEPLOY=1 npm --prefix frontend run test:api-base
+            PRODUCTION_DEPLOY=1 npm --prefix frontend run test:api-base
           fi
 
       - name: Deploy to Vercel (preview on PR, production on main)
@@ -70,10 +70,10 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             bunx vercel@41.7.2 deploy --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" \
-              --build-env "VITE_API_URL=$TRACERA_API_BASE" \
-              --env "VITE_API_URL=$TRACERA_API_BASE"
+              --build-env "VITE_API_URL=$VITE_API_URL" \
+              --env "VITE_API_URL=$VITE_API_URL"
           else
             bunx vercel@41.7.2 deploy --prod --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" \
-              --build-env "VITE_API_URL=$TRACERA_API_BASE" \
-              --env "VITE_API_URL=$TRACERA_API_BASE"
+              --build-env "VITE_API_URL=$VITE_API_URL" \
+              --env "VITE_API_URL=$VITE_API_URL"
           fi
