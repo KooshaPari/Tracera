@@ -3,8 +3,9 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { getCSRFHeaders } from '@/lib/csrf';
 import { logger } from '@/lib/logger';
+import { API_ORIGIN } from '@/config/api-origin';
 
-const API_BASE_URL_DEFAULT = '';
+const API_BASE_URL_DEFAULT = API_ORIGIN;
 const AUTH_TOKEN_KEY = 'auth_token';
 const HTTP_UNAUTHORIZED = Number('401');
 const REFRESH_INTERVAL_MINUTES = Number('20');

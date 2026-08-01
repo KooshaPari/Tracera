@@ -3,6 +3,7 @@ import type { HttpMethod } from 'openapi-typescript-helpers';
 import createClient from 'openapi-fetch';
 
 import { logger } from '@/lib/logger';
+import { API_ORIGIN } from '@/config/api-origin';
 
 import { getCSRFHeaders } from '../lib/csrf';
 import { useAuthStore } from '../stores/authStore';
@@ -14,7 +15,7 @@ type AnyPaths = { [path: string]: { [method in HttpMethod]: any } };
 
 const getBackendURL = (_path?: string): string => {
   const { env } = import.meta;
-  let url = '';
+  let url = API_ORIGIN;
 
   if (env && env.VITE_API_URL) {
     url = env.VITE_API_URL;
@@ -24,7 +25,7 @@ const getBackendURL = (_path?: string): string => {
     return url.replace(/\/$/, '');
   }
 
-  return '';
+  return API_ORIGIN;
 };
 
 const API_BASE_URL = getBackendURL();
