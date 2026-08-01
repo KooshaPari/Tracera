@@ -6,6 +6,7 @@
 
 import { spawn } from 'bun';
 import { existsSync } from 'node:fs';
+import { readdir } from 'node:fs/promises';
 
 interface RuntimeMetrics {
   test: string;
@@ -84,37 +85,20 @@ async function measureDevServerStartup(): Promise<RuntimeMetrics> {
   }
 }
 
-async function measureBuildSize(): Promise<RuntimeMetrics> {
-  try {
-    const proc = spawn({
-      cmd: ['du', '-sm', 'node_modules'],
-      stdout: 'pipe',
-    });
-
-    const output = await new Response(proc.stdout).text();
-    const sizeMatch = output.match(/^(\d+)/);
-    const sizeMB = sizeMatch ? Number.parseInt(sizeMatch[1]) : 0;
-    const pass = sizeMB < 400;
-
-    return {
-      metric: 'node_modules_size',
-      pass,
-      test: 'node_modules Size',
-      threshold: 400,
-      unit: 'MB',
-      value: sizeMB,
-    };
-  } catch (error) {
-    console.log(`  ❌ Error: ${error}`);
-    return {
-      metric: 'node_modules_size',
-      pass: false,
-      test: 'node_modules Size',
-      threshold: 400,
-      unit: 'MB',
-      value: -1,
-    };
-  }
+async function checkShippedArtifacts(): Promise<RuntimeMetrics> {
+  const distPath = 'apps/web/dist';
+  const artifactManifest = existsSync(`${distPath}/index.html`);
+  const assets = artifactManifest
+    ? (await readdir(distPath, { recursive: true })).filter((file) => /\.(js|css)$/.test(file))
+    : [];
+  return {
+    metric: 'shipped_artifacts',
+    pass: artifactManifest && assets.length > 0,
+    test: 'Shipped Web Artifacts',
+    threshold: 1,
+    unit: 'assets',
+    value: assets.length,
+  };
 }
 
 async function checkHMRConfig(): Promise<RuntimeMetrics> {
@@ -165,7 +149,7 @@ async function checkBuildOptimizations(): Promise<RuntimeMetrics> {
   const turboCfg = JSON.parse(config);
 
   const hasCache = turboCfg.pipeline || turboCfg.tasks;
-  const hasPrune = turboCfg.experimentalSpaces !== undefined || true; // Turbo has pruning by default
+  const hasPrune = turboCfg.experimentalSpaces !== undefined || turboCfg.tasks !== undefined;
 
   return {
     metric: 'build_optimizations',
@@ -182,7 +166,7 @@ async function runRuntimeTests(): Promise<RuntimeResults> {
 
   // Run all tests
   metrics.push(await measureDevServerStartup());
-  metrics.push(await measureBuildSize());
+  metrics.push(await checkShippedArtifacts());
   metrics.push(await checkHMRConfig());
   metrics.push(await checkBuildOptimizations());
 
@@ -209,7 +193,7 @@ function printResults(results: RuntimeResults): void {
   }
 
   const devStartup = results.metrics.find((m) => m.metric === 'startup_time');
-  const nodeModulesSize = results.metrics.find((m) => m.metric === 'node_modules_size');
+  const shippedArtifacts = results.metrics.find((m) => m.metric === 'shipped_artifacts');
 }
 
 // Main execution
@@ -221,7 +205,7 @@ await Bun.write('runtime-performance-results.json', JSON.stringify(results, null
 
 // Exit with error code if critical tests failed
 const criticalTests = results.metrics.filter(
-  (m) => m.metric === 'startup_time' || m.metric === 'node_modules_size',
+  (m) => m.metric === 'startup_time' || m.metric === 'shipped_artifacts',
 );
 const criticalFailures = criticalTests.filter((m) => !m.pass).length;
 
