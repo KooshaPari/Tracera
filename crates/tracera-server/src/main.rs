@@ -2270,6 +2270,57 @@ mod tests {
         assert!(result.errors.is_empty());
     }
 
+    /// A real Helios envelope maps through the benchmark adapter and persists
+    /// its run URI plus replay hash in the existing story/evidence contract.
+    #[tokio::test]
+    async fn sqlite_ingest_helios_dcc9_envelope_persists_run_provenance() {
+        let envelope: Value =
+            serde_json::from_str(include_str!("../testdata/helios-dcc9-replay-run.json"))
+                .expect("dcc9 Helios fixture JSON");
+        assert_eq!(
+            envelope.pointer("/subject/commit").and_then(Value::as_str),
+            Some("dcc9db42084136d3f72cb1d788b286a721b10e1f")
+        );
+
+        let issue = crate::ingest::benchmark_run_to_issue(&envelope)
+            .expect("valid dcc9 envelope");
+        let run_id = envelope
+            .get("run_id")
+            .and_then(Value::as_str)
+            .expect("run_id");
+        let replay_hash = envelope
+            .pointer("/result/replay_hash")
+            .and_then(Value::as_str)
+            .expect("replay_hash");
+        assert_eq!(issue.external_id, format!("helios-{run_id}"));
+        assert!(issue.body.contains(replay_hash));
+
+        let store = make_sqlite_store().await;
+        let store_arc: std::sync::Arc<dyn crate::store::Store> = std::sync::Arc::new(store);
+        let result = crate::ingest::persist_issues(std::slice::from_ref(&issue), &store_arc)
+            .await
+            .expect("persist dcc9 Helios issue");
+        assert_eq!(result.total_processed, 1);
+        assert_eq!(result.requirements_created, 1);
+        assert!(
+            result.errors.is_empty(),
+            "no persistence errors: {:?}",
+            result.errors
+        );
+
+        let stories = store_arc.list_stories().await.expect("list_stories");
+        assert_eq!(stories.len(), 1);
+        assert_eq!(stories[0].id, format!("story-helios-{run_id}"));
+        assert!(stories[0].description.contains(replay_hash));
+
+        let evidence = store_arc.list_evidence().await.expect("list_evidence");
+        assert_eq!(evidence.len(), 1);
+        assert_eq!(evidence[0].artifact_id, stories[0].id);
+        assert_eq!(evidence[0].kind, "helios_issue");
+        assert_eq!(evidence[0].url, format!("urn:helios:run:{run_id}"));
+        assert_eq!(evidence[0].metadata["external_id"], issue.external_id);
+    }
+
     /// create_story and create_trace_link persist and are visible via list_stories.
     #[tokio::test]
     async fn sqlite_create_story_and_trace_link_round_trip() {
