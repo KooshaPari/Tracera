@@ -165,13 +165,25 @@ export const DocumentationView = () => {
                 </div>
               </div>
               <div className='flex items-center gap-1'>
-                <button className='hover:bg-accent rounded p-2' title='Preview'>
+                <button
+                  className='hover:bg-accent rounded p-2'
+                  title='Preview'
+                  aria-label='Preview documentation'
+                >
                   <Eye className='h-4 w-4' />
                 </button>
-                <button className='hover:bg-accent rounded p-2' title='Edit'>
+                <button
+                  className='hover:bg-accent rounded p-2'
+                  title='Edit'
+                  aria-label='Edit documentation'
+                >
                   <Edit className='h-4 w-4' />
                 </button>
-                <button className='hover:bg-accent rounded p-2' title='Open'>
+                <button
+                  className='hover:bg-accent rounded p-2'
+                  title='Open'
+                  aria-label='Open documentation'
+                >
                   <ChevronRight className='h-4 w-4' />
                 </button>
               </div>
