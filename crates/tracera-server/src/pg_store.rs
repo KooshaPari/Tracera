@@ -8,16 +8,20 @@
 use chrono::{DateTime, Utc};
 use serde_json::Value;
 use sqlx::{PgPool, Row};
+use std::time::Duration;
+use tokio::time::timeout;
 
 use crate::store::{
-    BoxFuture, EvidenceItem, Problem, Sprint, Store, StoreError, StoreResult, Story, TeamRow,
-    TraceLink,
+    BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint, Store, StoreError, StoreResult,
+    Story, TeamRow, TraceLink,
 };
 
 #[derive(Clone)]
 pub struct PgStore {
     pub pool: PgPool,
 }
+
+const READINESS_TIMEOUT: Duration = Duration::from_secs(1);
 
 impl PgStore {
     pub fn new(pool: PgPool) -> Self {
@@ -293,6 +297,72 @@ impl Store for PgStore {
         })
     }
 
+    fn list_projects(&self, params: ListParams) -> BoxFuture<'_, StoreResult<Vec<ProjectSummary>>> {
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT project_id::text AS project_id,
+                        COUNT(*)::bigint AS problem_count,
+                        MIN(created_at) AS created_at,
+                        MAX(updated_at) AS updated_at
+                 FROM problems
+                 WHERE deleted_at IS NULL
+                 GROUP BY project_id
+                 ORDER BY MAX(updated_at) DESC, project_id ASC LIMIT $1 OFFSET $2",
+            )
+            .bind(params.page_size as i64)
+            .bind(params.offset() as i64)
+            .fetch_all(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
+
+            Ok(rows
+                .into_iter()
+                .map(|row| {
+                    let id: String = row.try_get("project_id").unwrap_or_default();
+                    let created_at = row.try_get("created_at").unwrap_or_else(|_| Utc::now());
+                    let updated_at = row.try_get("updated_at").unwrap_or_else(|_| Utc::now());
+                    ProjectSummary {
+                        name: format!("Project {id}"),
+                        description: Some("Derived from persisted problem records".to_string()),
+                        metadata: Value::Object(Default::default()),
+                        id,
+                        created_at,
+                        updated_at,
+                        problem_count: row.try_get("problem_count").unwrap_or_default(),
+                    }
+                })
+                .collect())
+        })
+    }
+
+    fn get_project(&self, project_id: String) -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>> {
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT project_id::text AS project_id,
+                        COUNT(*)::bigint AS problem_count,
+                        MIN(created_at) AS created_at,
+                        MAX(updated_at) AS updated_at
+                 FROM problems
+                 WHERE deleted_at IS NULL AND project_id = $1
+                 GROUP BY project_id",
+            )
+            .bind(&project_id)
+            .fetch_all(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
+
+            Ok(rows.into_iter().next().map(|row| ProjectSummary {
+                id: project_id.clone(),
+                name: format!("Project {project_id}"),
+                description: Some("Derived from persisted problem records".to_string()),
+                metadata: Value::Object(Default::default()),
+                problem_count: row.try_get("problem_count").unwrap_or_default(),
+                created_at: row.try_get("created_at").unwrap_or_else(|_| Utc::now()),
+                updated_at: row.try_get("updated_at").unwrap_or_else(|_| Utc::now()),
+            }))
+        })
+    }
+
     fn count_evidence(&self) -> BoxFuture<'_, StoreResult<i64>> {
         Box::pin(async move {
             let row = sqlx::query("SELECT COUNT(*) AS cnt FROM evidence")
@@ -304,6 +374,19 @@ impl Store for PgStore {
         })
     }
 
+    fn check_readiness(&self) -> BoxFuture<'_, StoreResult<()>> {
+        Box::pin(async move {
+            timeout(
+                READINESS_TIMEOUT,
+                sqlx::query("SELECT 1").execute(&self.pool),
+            )
+            .await
+            .map_err(|_| StoreError::Database("readiness probe timed out".to_string()))?
+            .map(|_| ())
+            .map_err(StoreError::from)
+        })
+    }
+
     // -----------------------------------------------------------------------
     // Problems (ITIL) — Postgres implementations
     // -----------------------------------------------------------------------
@@ -312,6 +395,7 @@ impl Store for PgStore {
         &self,
         project_id: String,
         status_filter: Option<String>,
+        params: ListParams,
     ) -> BoxFuture<'_, StoreResult<Vec<Problem>>> {
         Box::pin(async move {
             let rows = match status_filter {
@@ -323,11 +407,13 @@ impl Store for PgStore {
                          permanent_fix_available, assigned_to, assigned_team, owner, known_error_id, \
                          created_at, updated_at, deleted_at \
                          FROM problems \
-                         WHERE project_id = $1::uuid AND status = $2 AND deleted_at IS NULL \
-                         ORDER BY created_at DESC",
+                         WHERE project_id = $1 AND status = $2 AND deleted_at IS NULL \
+                         ORDER BY created_at DESC, id ASC LIMIT $3 OFFSET $4",
                     )
                     .bind(&project_id)
                     .bind(&status)
+                    .bind(params.page_size as i64)
+                    .bind(params.offset() as i64)
                     .fetch_all(&self.pool)
                     .await
                     .map_err(StoreError::from)?
@@ -340,10 +426,12 @@ impl Store for PgStore {
                          permanent_fix_available, assigned_to, assigned_team, owner, known_error_id, \
                          created_at, updated_at, deleted_at \
                          FROM problems \
-                         WHERE project_id = $1::uuid AND deleted_at IS NULL \
-                         ORDER BY created_at DESC",
+                         WHERE project_id = $1 AND deleted_at IS NULL \
+                         ORDER BY created_at DESC, id ASC LIMIT $2 OFFSET $3",
                     )
                     .bind(&project_id)
+                    .bind(params.page_size as i64)
+                    .bind(params.offset() as i64)
                     .fetch_all(&self.pool)
                     .await
                     .map_err(StoreError::from)?
@@ -390,7 +478,7 @@ impl Store for PgStore {
                  root_cause_identified, workaround_available, permanent_fix_available, \
                  assigned_to, assigned_team, owner, known_error_id, created_at, updated_at, deleted_at\
                  ) VALUES (\
-                 $1, $2::uuid, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13, $14, $15, \
+                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13, $14, $15, \
                  $16, $17, $18, $19, $20, $21, $22, $23, NULL)",
             )
             .bind(&id)
@@ -453,7 +541,7 @@ impl Store for PgStore {
         Box::pin(async move {
             let row = sqlx::query(
                 "SELECT COUNT(*) AS cnt FROM problems \
-                 WHERE project_id = $1::uuid AND deleted_at IS NULL",
+                 WHERE project_id = $1 AND deleted_at IS NULL",
             )
             .bind(&project_id)
             .fetch_one(&self.pool)

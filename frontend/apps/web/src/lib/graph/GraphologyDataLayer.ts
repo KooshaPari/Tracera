@@ -18,7 +18,6 @@
  */
 
 import type { Node, Edge } from '@xyflow/react';
-import type { Attributes } from 'graphology-types';
 
 import Graph from 'graphology';
 // Import clustering
@@ -32,10 +31,12 @@ import { density, diameter } from 'graphology-metrics/graph';
 
 import { logger } from '@/lib/logger';
 
+type GraphAttributes = Record<string, unknown>;
+
 /**
  * Node attributes stored in Graphology
  */
-export interface GraphologyNodeData extends Attributes {
+export interface GraphologyNodeData extends GraphAttributes {
   id: string;
   label: string;
   type: string;
@@ -50,7 +51,7 @@ export interface GraphologyNodeData extends Attributes {
 /**
  * Edge attributes stored in Graphology
  */
-export interface GraphologyEdgeData extends Attributes {
+export interface GraphologyEdgeData extends GraphAttributes {
   id: string;
   label?: string | undefined;
   type?: string | undefined;

@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { LOCAL_URL, startBundle, type CommandRunner } from "../src/compose";
-import { DEFAULT_TARGET_URL, resolveTargetUrl } from "../src/target";
+import {
+  DEFAULT_TARGET_URL,
+  LEGACY_BUNDLE_OVERRIDE,
+  resolveTargetUrl,
+} from "../src/target";
 
 function runner(commands: string[][]): CommandRunner {
   return (command) => {
@@ -36,6 +40,7 @@ describe("desktop bundle lifecycle", () => {
     expect(DEFAULT_TARGET_URL).toBe("http://127.0.0.1:18000");
     expect(resolveTargetUrl({})).toBe("http://127.0.0.1:18000/");
     expect(resolveTargetUrl({ TRACERA_LOCAL_PORT: "19999" })).toBe("http://127.0.0.1:19999/");
+    expect(resolveTargetUrl({ TRACERA_LOCAL_PORT: "18081" })).toBe("http://127.0.0.1:18000/");
   });
 
   test("allows an explicit hosted override without making it the default", () => {
@@ -45,6 +50,15 @@ describe("desktop bundle lifecycle", () => {
       .toBe("https://example.com/tracera/");
     expect(resolveTargetUrl({ TRACERA_URL: "https://staging.example.com" }))
       .toBe("https://staging.example.com");
+  });
+
+  test("permits the legacy bundle only with an explicit developer override", () => {
+    expect(
+      resolveTargetUrl({
+        [LEGACY_BUNDLE_OVERRIDE]: "1",
+        TRACERA_LOCAL_PORT: "18081",
+      }),
+    ).toBe("http://127.0.0.1:18081/");
   });
 
   test("rejects when no CLI path is provided and none can be resolved", async () => {

@@ -55,6 +55,14 @@ export interface CacheManagerConfig {
   indexedDBMaxEntries?: number;
 }
 
+interface CacheManagerStats {
+  totalRequests: number;
+  memoryHits: number;
+  indexedDBHits: number;
+  serviceWorkerHits: number;
+  misses: number;
+}
+
 /**
  * Size threshold for cache routing
  */
@@ -71,7 +79,7 @@ export class CacheManager {
   public indexedDBCache: IndexedDBCache | null = null;
   public serviceWorkerCache: ServiceWorkerCache | null = null;
   private readonly config: Required<CacheManagerConfig>;
-  private stats = {
+  private stats: CacheManagerStats = {
     totalRequests: 0,
     memoryHits: 0,
     indexedDBHits: 0,
@@ -289,7 +297,7 @@ export class CacheManager {
    * Get aggregated statistics
    */
   async getStats(): Promise<{
-    overall: typeof this.stats & { hitRatio: number };
+    overall: CacheManagerStats & { hitRatio: number };
     memory: CacheStatistics | null;
     indexedDB: CacheStatistics | null;
     serviceWorker: CacheStatistics | null;

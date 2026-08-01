@@ -9,6 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiError, handleApiResponse } from '../../api/client-errors';
 import { api } from '../../api/endpoints';
+import { setCSRFToken } from '../../lib/csrf';
 import { useAuthStore } from '../../stores/auth-store';
 
 // -----------------------------------------------------------------------------
@@ -28,6 +29,17 @@ const createJsonResponse = (data: unknown, status = 200): Response =>
 describe('API Client Integration', () => {
   describe('auth flow', () => {
     beforeEach(async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+          const path = typeof url === 'string' ? url : url instanceof Request ? url.url : url.href;
+          if (path.includes('/api/v1/auth/logout') && init?.method === 'POST') {
+            return createJsonResponse({});
+          }
+          return createJsonResponse({}, 404);
+        }),
+      );
+      setCSRFToken('integration-csrf-token');
       await useAuthStore
         .getState()
         .logout()
@@ -44,21 +56,21 @@ describe('API Client Integration', () => {
       };
       const mockToken = 'access-token-123';
 
-      vi.stubGlobal(
-        'fetch',
-        vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+      const fetchMock = vi.fn(
+        async (url: string | URL | Request, init?: RequestInit) => {
           const path = typeof url === 'string' ? url : url instanceof Request ? url.url : url.href;
-          if (path.includes('/api/v1/auth/login') && init?.method === 'POST') {
+          if (path.includes('/api/v1/auth/authkit/callback') && init?.method === 'POST') {
             return createJsonResponse({
               access_token: mockToken,
               user: mockUser,
             });
           }
           return createJsonResponse({}, 404);
-        }),
+        },
       );
+      vi.stubGlobal('fetch', fetchMock);
 
-      await useAuthStore.getState().login('test@example.com', 'password');
+      await useAuthStore.getState().loginWithCode('authorization-code', 'csrf-state');
 
       const state = useAuthStore.getState();
       expect(state.isAuthenticated).toBeTruthy();
@@ -66,6 +78,16 @@ describe('API Client Integration', () => {
       expect(state.user?.email).toBe('test@example.com');
       expect(state.token).toBe(mockToken);
       expect(localStorage.getItem('auth_token')).toBe(mockToken);
+      const callbackCall = fetchMock.mock.calls.find(
+        ([url, init]) =>
+          typeof url === 'string' &&
+          url.includes('/api/v1/auth/authkit/callback') &&
+          init?.method === 'POST',
+      );
+      expect(callbackCall).toBeDefined();
+      expect(new Headers(callbackCall?.[1]?.headers).get('X-CSRF-Token')).toBe(
+        'integration-csrf-token',
+      );
     });
   });
 

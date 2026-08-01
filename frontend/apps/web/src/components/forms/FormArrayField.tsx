@@ -1,5 +1,5 @@
 import type * as React from 'react';
-import type { ArrayPath, Control, FieldArray, FieldValues } from 'react-hook-form';
+import type { ArrayPath, Control, FieldValues } from 'react-hook-form';
 
 import { Plus, Trash2 } from 'lucide-react';
 import { useFieldArray } from 'react-hook-form';
@@ -14,7 +14,7 @@ export interface FormArrayFieldProps<T extends FieldValues> {
   label: string;
   helpText?: string;
   renderField: (index: number) => React.ReactNode;
-  defaultValue?: FieldArray<T, ArrayPath<T>>;
+  defaultValue?: unknown;
   addButtonLabel?: string;
   removeButtonLabel?: string;
   minItems?: number;
@@ -56,9 +56,9 @@ export function FormArrayField<T extends FieldValues>({
           size='sm'
           onClick={() => {
             if (defaultValue !== undefined) {
-              append(defaultValue);
+              append(defaultValue as never);
             } else {
-              append({} as FieldArray<T, ArrayPath<T>>);
+              append({} as never);
             }
           }}
           disabled={!canAdd}

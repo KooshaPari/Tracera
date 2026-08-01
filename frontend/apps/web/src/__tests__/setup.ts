@@ -5,8 +5,18 @@
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { toHaveNoViolations } from 'jest-axe';
+import { createRequire } from 'node:module';
 import React from 'react';
 import { afterEach, afterAll, beforeAll, expect, vi } from 'vitest';
+
+// Keep the shared keyboard/mouse surface available to legacy a11y tests.  The
+// CJS entrypoint avoids Bun + ESM interop returning an object without setup().
+const require = createRequire(import.meta.url);
+const userEventModule = require('@testing-library/user-event') as {
+  default?: { setup: typeof import('@testing-library/user-event').default.setup };
+  setup?: typeof import('@testing-library/user-event').default.setup;
+};
+const userEvent = userEventModule.default ?? userEventModule;
 
 expect.extend({ toHaveNoViolations });
 
@@ -119,6 +129,10 @@ Object.defineProperty(globalThis, 'localStorage', {
 });
 
 // Cleanup after each test
+beforeEach(() => {
+  globalThis.user = userEvent.setup();
+});
+
 afterEach(() => {
   cleanup();
   localStorageMock.clear();
@@ -144,6 +158,7 @@ if (typeof globalThis.window !== 'undefined') {
 // Mock navigator.clipboard
 if (typeof navigator !== 'undefined') {
   Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
     value: {
       readText: vi.fn(async () => ''),
       writeText: vi.fn(async () => {}),

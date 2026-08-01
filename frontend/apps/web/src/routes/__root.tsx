@@ -110,37 +110,31 @@ const RootComponent = () => {
   // Background health polling; updates connection status store on loss/recovery
   useConnectionHealth();
 
-  // Prefetch likely navigation targets for faster perceived performance
+  // Prefetch only when the user is already on a project page and likely to need graph views.
   useEffect(() => {
-    // Prefetch common routes after initial render
+    if (!location.pathname.includes('/projects/')) {
+      return;
+    }
+
     const prefetchRoutes = async () => {
       try {
-        const routes = [router.preloadRoute({ to: '/projects' })];
-
-        // Only preload graph if user is on a project-related page
-        if (location.pathname.includes('/projects/')) {
-          const projectId = location.pathname.split('/')[2];
-          if (projectId) {
-            routes.push(
-              router.preloadRoute({
-                params: {
-                  projectId,
-                  viewType: 'graph',
-                },
-                to: '/projects/$projectId/views/$viewType',
-              }),
-            );
-          }
+        const projectId = location.pathname.split('/')[2];
+        if (!projectId) {
+          return;
         }
 
-        // Preload routes user is likely to navigate to
-        await Promise.all(routes);
+        await router.preloadRoute({
+          params: {
+            projectId,
+            viewType: 'graph',
+          },
+          to: '/projects/$projectId/views/$viewType',
+        });
       } catch {
         // Silently ignore prefetch errors
       }
     };
 
-    // Delay prefetch to not block initial render
     const timeoutId = setTimeout(prefetchRoutes, 1000);
     return () => {
       clearTimeout(timeoutId);

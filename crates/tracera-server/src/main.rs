@@ -10,6 +10,7 @@ mod validation;
 
 use axum::{
     extract::DefaultBodyLimit,
+    response::IntoResponse,
     routing::{get, post},
     Json, Router,
 };
@@ -40,12 +41,14 @@ const MAX_REQUEST_BODY_BYTES: usize = 8 * 1024 * 1024;
 /// Requests above this bound must use a future paged/export path instead of
 /// allowing an unbounded response allocation.
 const MAX_COVERAGE_LINKS: usize = 25_000;
+const PUBLIC_BIND_MODE_ENV: &str = "TRACERA_PUBLIC_BIND_MODE";
+const AUTHENTICATED_PROXY_MODE: &str = "authenticated-proxy";
 use validation::{
     validate_text, MAX_ID_CHARS, MAX_INGEST_ISSUES, MAX_LONG_TEXT_CHARS, MAX_METADATA_BYTES,
     MAX_SHORT_TEXT_CHARS, MAX_URL_CHARS,
 };
 
-use store::{EvidenceItem, Problem, Sprint, Store, Story, TeamRow};
+use store::{EvidenceItem, ListParams, Problem, Sprint, Store, Story, TeamRow};
 
 // ---------------------------------------------------------------------------
 // App state — Arc<dyn Store> replaces the bare PgPool.
@@ -61,6 +64,20 @@ struct AppState {
     backend: &'static str,
     started_at: Instant,
     store: Arc<dyn Store>,
+}
+
+/// Reject public listeners unless the operator explicitly acknowledges that
+/// traffic reaches this process only through an authenticated reverse proxy.
+/// The server itself intentionally has no browser credential model; allowing a
+/// public bind without this acknowledgement would expose mutating endpoints.
+fn validate_bind_address(addr: SocketAddr, public_bind_mode: Option<&str>) -> Result<(), String> {
+    if addr.ip().is_loopback() || public_bind_mode == Some(AUTHENTICATED_PROXY_MODE) {
+        return Ok(());
+    }
+
+    Err(format!(
+        "refusing non-loopback bind to {addr}; bind to loopback or set {PUBLIC_BIND_MODE_ENV}={AUTHENTICATED_PROXY_MODE} only behind an authenticated reverse proxy"
+    ))
 }
 
 // ---------------------------------------------------------------------------
@@ -368,6 +385,23 @@ struct TeamResponse {
 }
 
 #[derive(Serialize)]
+struct ProjectResponse {
+    id: String,
+    name: String,
+    description: Option<String>,
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
+    metadata: Value,
+    problem_count: i64,
+}
+
+#[derive(Serialize)]
+struct ProjectListResponse {
+    count: usize,
+    items: Vec<ProjectResponse>,
+}
+
+#[derive(Serialize)]
 struct MetricsResponse {
     total_artifacts: usize,
     coverage_ratio: f64,
@@ -504,11 +538,10 @@ async fn main() {
         .and_then(|v| v.parse().ok())
         .unwrap_or_else(|| SocketAddr::from(([127, 0, 0, 1], 8080)));
 
-    if !addr.ip().is_loopback() {
-        tracing::warn!(
-            %addr,
-            "server is bound beyond loopback; put it behind an authenticated TLS reverse proxy"
-        );
+    let public_bind_mode = env::var(PUBLIC_BIND_MODE_ENV).ok();
+    if let Err(error) = validate_bind_address(addr, public_bind_mode.as_deref()) {
+        eprintln!("FATAL: {error}");
+        std::process::exit(1);
     }
 
     let listener = tokio::net::TcpListener::bind(addr)
@@ -544,6 +577,8 @@ fn build_router(state: AppState) -> Router {
         .route("/sdlc-pm/health", get(health::health))
         .route("/sdlc-pm/sprints", get(list_sprints).post(create_sprint))
         .route("/sdlc-pm/stories", get(list_stories))
+        .route("/api/v1/projects", get(list_projects))
+        .route("/api/v1/projects/:project_id", get(get_project))
         .route("/problems", get(list_problems).post(create_problem))
         .route("/problems/health", get(health::health))
         .route("/org-intel/health", get(health::health))
@@ -924,25 +959,34 @@ struct ProblemListResponse {
     items: Vec<Problem>,
 }
 
+#[derive(serde::Deserialize, Default)]
+struct ProblemQuery {
+    project_id: Option<String>,
+    status: Option<String>,
+    #[serde(flatten)]
+    pagination: ListParams,
+}
+
 async fn list_problems(
     axum::extract::State(state): axum::extract::State<AppState>,
-    axum::extract::Query(params): axum::extract::Query<std::collections::HashMap<String, String>>,
-) -> Json<ProblemListResponse> {
-    let project_id = params.get("project_id").cloned().unwrap_or_default();
-    let status_filter = params.get("status").cloned();
+    axum::extract::Query(params): axum::extract::Query<ProblemQuery>,
+) -> Result<Json<ProblemListResponse>, (axum::http::StatusCode, String)> {
+    let pagination = params.pagination.validated().map_err(|e| (axum::http::StatusCode::BAD_REQUEST, e))?;
+    let project_id = params.project_id.unwrap_or_default();
+    let status_filter = params.status;
     let items = state
         .store
-        .list_problems(project_id.clone(), status_filter)
+        .list_problems(project_id.clone(), status_filter, pagination)
         .await
         .unwrap_or_else(|e| {
             tracing::error!("list_problems store error: {e}");
             vec![]
         });
-    Json(ProblemListResponse {
+    Ok(Json(ProblemListResponse {
         project_id,
         count: items.len(),
         items,
-    })
+    }))
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1035,6 +1079,55 @@ async fn list_teams(
             })
             .collect(),
     )
+}
+
+async fn list_projects(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    axum::extract::Query(params): axum::extract::Query<ListParams>,
+) -> Result<Json<ProjectListResponse>, (axum::http::StatusCode, String)> {
+    let pagination = params.validated().map_err(|e| (axum::http::StatusCode::BAD_REQUEST, e))?;
+    let projects = state.store.list_projects(pagination).await.unwrap_or_else(|e| {
+        tracing::error!("list_projects store error: {e}");
+        vec![]
+    });
+    Ok(Json(ProjectListResponse {
+        count: projects.len(),
+        items: projects
+            .into_iter()
+            .map(|project| ProjectResponse {
+                id: project.id,
+                name: project.name,
+                description: project.description,
+                created_at: project.created_at,
+                updated_at: project.updated_at,
+                metadata: project.metadata,
+                problem_count: project.problem_count,
+            })
+            .collect(),
+    }))
+}
+
+async fn get_project(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    axum::extract::Path(project_id): axum::extract::Path<String>,
+) -> axum::response::Response {
+    match state.store.get_project(project_id.clone()).await {
+        Ok(Some(project)) => Json(ProjectResponse {
+            id: project.id,
+            name: project.name,
+            description: project.description,
+            created_at: project.created_at,
+            updated_at: project.updated_at,
+            metadata: project.metadata,
+            problem_count: project.problem_count,
+        })
+        .into_response(),
+        Ok(None) => axum::http::StatusCode::NOT_FOUND.into_response(),
+        Err(error) => {
+            tracing::error!("get_project store error: {error}");
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1288,7 +1381,131 @@ mod tests {
     use axum::body::Body;
     use chrono::TimeZone;
     use http::{Request, StatusCode};
+    use sqlx::{postgres::PgPoolOptions, PgPool, Row};
     use tower::ServiceExt;
+
+    const PG_STORE_CONTRACT_POOL_CONNECTIONS: u32 = 4;
+
+    struct PgStoreContractFixture {
+        pool: PgPool,
+        schema_name: String,
+    }
+
+    impl PgStoreContractFixture {
+        fn store(&self) -> crate::pg_store::PgStore {
+            crate::pg_store::PgStore::new(self.pool.clone())
+        }
+
+        async fn assert_all_connection_search_paths(&self) -> Result<(), String> {
+            let (first, second, third, fourth) = tokio::join!(
+                self.pool.acquire(),
+                self.pool.acquire(),
+                self.pool.acquire(),
+                self.pool.acquire(),
+            );
+            let mut first = first.map_err(|error| format!("acquire connection 1: {error}"))?;
+            let mut second = second.map_err(|error| format!("acquire connection 2: {error}"))?;
+            let mut third = third.map_err(|error| format!("acquire connection 3: {error}"))?;
+            let mut fourth = fourth.map_err(|error| format!("acquire connection 4: {error}"))?;
+            let (first, second, third, fourth) = tokio::join!(
+                sqlx::query_scalar::<_, String>("SELECT current_schema()").fetch_one(&mut *first),
+                sqlx::query_scalar::<_, String>("SELECT current_schema()").fetch_one(&mut *second),
+                sqlx::query_scalar::<_, String>("SELECT current_schema()").fetch_one(&mut *third),
+                sqlx::query_scalar::<_, String>("SELECT current_schema()").fetch_one(&mut *fourth),
+            );
+            for (connection, active_schema) in [
+                ("connection 1", first),
+                ("connection 2", second),
+                ("connection 3", third),
+                ("connection 4", fourth),
+            ] {
+                let active_schema = active_schema
+                    .map_err(|error| format!("read {connection} search_path: {error}"))?;
+                if active_schema != self.schema_name {
+                    return Err(format!(
+                        "{connection} used schema {active_schema}, expected {}",
+                        self.schema_name
+                    ));
+                }
+            }
+            Ok(())
+        }
+
+        async fn cleanup(self) -> Result<(), sqlx::Error> {
+            let result = drop_pg_store_contract_schema(&self.pool, &self.schema_name).await;
+            self.pool.close().await;
+            result
+        }
+    }
+
+    async fn drop_pg_store_contract_schema(
+        pool: &PgPool,
+        schema_name: &str,
+    ) -> Result<(), sqlx::Error> {
+        // `schema_name` is generated exclusively from UUID::simple below.
+        let drop_schema = format!("DROP SCHEMA IF EXISTS {schema_name} CASCADE");
+        sqlx::query(sqlx::AssertSqlSafe(drop_schema))
+            .execute(pool)
+            .await
+            .map(|_| ())
+    }
+
+    async fn make_pg_store_contract_fixture() -> PgStoreContractFixture {
+        let database_url = env::var("TRACERA_TEST_DATABASE_URL")
+            .expect("TRACERA_TEST_DATABASE_URL is required for the ignored PgStore contract test");
+        let schema_name = format!("tracera_pgstore_test_{}", Uuid::new_v4().simple());
+        let bootstrap_pool = PgPoolOptions::new()
+            .max_connections(1)
+            .connect(&database_url)
+            .await
+            .expect("connect to TRACERA_TEST_DATABASE_URL");
+        let create_schema = format!("CREATE SCHEMA {}", schema_name);
+        // `schema_name` is generated exclusively from UUID::simple above.
+        sqlx::query(sqlx::AssertSqlSafe(create_schema))
+            .execute(&bootstrap_pool)
+            .await
+            .expect("create generated Postgres test schema");
+        let search_path = format!("{}, public", schema_name);
+        let pool = match PgPoolOptions::new()
+            .max_connections(PG_STORE_CONTRACT_POOL_CONNECTIONS)
+            .after_connect(move |connection, _| {
+                let search_path = search_path.clone();
+                Box::pin(async move {
+                    sqlx::query("SELECT set_config('search_path', $1, false)")
+                        .bind(search_path)
+                        .execute(connection)
+                        .await
+                        .map(|_| ())
+                })
+            })
+            .connect(&database_url)
+            .await
+        {
+            Ok(pool) => pool,
+            Err(error) => {
+                if let Err(cleanup_error) =
+                    drop_pg_store_contract_schema(&bootstrap_pool, &schema_name).await
+                {
+                    eprintln!("fixture cleanup after pool connection failure: {cleanup_error}");
+                }
+                bootstrap_pool.close().await;
+                panic!("connect PgStore pool with generated-schema search_path: {error}");
+            }
+        };
+        bootstrap_pool.close().await;
+        if let Err(error) = sqlx::migrate!("./migrations")
+            .run(&pool)
+            .await
+        {
+            if let Err(cleanup_error) = drop_pg_store_contract_schema(&pool, &schema_name).await {
+                eprintln!("fixture cleanup after migration failure: {cleanup_error}");
+            }
+            pool.close().await;
+            panic!("apply production Postgres migrations to generated schema: {error}");
+        }
+
+        PgStoreContractFixture { pool, schema_name }
+    }
 
     #[tokio::test]
     async fn api_router_emits_readiness_and_security_contract() {
@@ -1318,6 +1535,72 @@ mod tests {
         assert_eq!(response.headers()[header::X_FRAME_OPTIONS], "DENY");
         assert_eq!(response.headers()[header::REFERRER_POLICY], "no-referrer");
         assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+    }
+
+    #[tokio::test]
+    async fn readiness_fails_closed_when_the_store_is_unavailable() {
+        let store = make_sqlite_store().await;
+        store.pool.close().await;
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: Arc::new(store),
+        });
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/readyz")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+        let body = axum::body::to_bytes(response.into_body(), 1024)
+            .await
+            .expect("body");
+        assert_eq!(
+            body.as_ref(),
+            br#"{"status":"not_ready","service":"tracera-server"}"#
+        );
+    }
+
+    #[tokio::test]
+    async fn api_router_serves_project_contract_from_store() {
+        let store = make_sqlite_store().await;
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: Arc::new(store),
+        });
+
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/projects")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers()[header::CONTENT_TYPE],
+            "application/json"
+        );
+
+        let body = axum::body::to_bytes(response.into_body(), 1024)
+            .await
+            .expect("body");
+        let payload: serde_json::Value = serde_json::from_slice(&body).expect("json body");
+        assert_eq!(payload["count"], 0);
+        assert_eq!(payload["items"], serde_json::json!([]));
     }
 
     #[tokio::test]
@@ -1414,24 +1697,149 @@ mod tests {
         assert_eq!(body.as_ref(), br#"{"error":"evidence persistence failed"}"#);
     }
 
+    /// Consumer-facing v1 contract: evidence is stored/listed, then the same
+    /// artifact is traversed through request-supplied explicit trace links.
+    #[tokio::test]
+    async fn observability_ledger_consumer_v1_fixture_round_trip() {
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../testdata/observability-ledger-consumer-v1.json"
+        ))
+        .expect("consumer fixture is valid JSON");
+        let evidence = fixture["evidence"].clone();
+        let artifact_id = fixture["trace"]["artifact_id"]
+            .as_str()
+            .expect("trace artifact_id");
+        let expected_count = fixture["expected"]["evidence_count"]
+            .as_u64()
+            .expect("expected evidence count");
+        let expected_neighbors = fixture["expected"]["trace_neighbors"].clone();
+
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: Arc::new(make_sqlite_store().await),
+        });
+
+        let created = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/evidence")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        serde_json::to_vec(&evidence).expect("evidence JSON"),
+                    ))
+                    .expect("create evidence request"),
+            )
+            .await
+            .expect("create evidence response");
+        assert_eq!(created.status(), StatusCode::CREATED);
+        let created_body: Value = serde_json::from_slice(
+            &axum::body::to_bytes(created.into_body(), MAX_REQUEST_BODY_BYTES)
+                .await
+                .expect("created evidence body"),
+        )
+        .expect("created evidence JSON");
+        assert!(created_body["id"]
+            .as_str()
+            .is_some_and(|id| id.starts_with("ev-")));
+        assert_eq!(created_body["artifact_id"], evidence["artifact_id"]);
+        assert_eq!(created_body["kind"], evidence["kind"]);
+        assert_eq!(created_body["url"], evidence["url"]);
+        assert_eq!(created_body["metadata"], evidence["metadata"]);
+        for field in ["trace_id", "span_id", "parent_span_id", "correlation_id"] {
+            assert!(created_body["metadata"][field].as_str().is_some());
+        }
+        assert_eq!(created_body["metadata"]["producer"], "PhenoObservability");
+
+        let listed = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/evidence")
+                    .body(Body::empty())
+                    .expect("list evidence request"),
+            )
+            .await
+            .expect("list evidence response");
+        assert_eq!(listed.status(), StatusCode::OK);
+        let listed_body: Value = serde_json::from_slice(
+            &axum::body::to_bytes(listed.into_body(), MAX_REQUEST_BODY_BYTES)
+                .await
+                .expect("listed evidence body"),
+        )
+        .expect("listed evidence JSON");
+        assert_eq!(listed_body["count"], expected_count);
+        assert_eq!(
+            listed_body["items"].as_array().map(Vec::len),
+            Some(expected_count as usize)
+        );
+        assert_eq!(
+            listed_body["items"][0]["artifact_id"],
+            evidence["artifact_id"]
+        );
+        assert_eq!(listed_body["items"][0]["metadata"], evidence["metadata"]);
+
+        let trace = app
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri(format!("/api/v1/trace/forward/{artifact_id}"))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        serde_json::to_vec(&fixture["trace"]).expect("trace JSON"),
+                    ))
+                    .expect("trace request"),
+            )
+            .await
+            .expect("trace response");
+        assert_eq!(trace.status(), StatusCode::OK);
+        let trace_body: Value = serde_json::from_slice(
+            &axum::body::to_bytes(trace.into_body(), MAX_REQUEST_BODY_BYTES)
+                .await
+                .expect("trace body"),
+        )
+        .expect("trace JSON");
+        assert_eq!(trace_body["artifact_id"], artifact_id);
+        assert_eq!(trace_body["direction"], "forward");
+        assert_eq!(trace_body["neighbors"], expected_neighbors);
+    }
+
     #[tokio::test]
     async fn health_and_readiness_response_shapes_are_stable() {
         let health = health::healthz().await.0;
         assert_eq!(health.status, "ok");
         assert_eq!(health.service, "tracera-server");
 
+        let store = Arc::new(make_sqlite_store().await);
         let state = AppState {
             version: "0.1.3-test".to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: Arc::new(make_sqlite_store().await),
+            store,
         };
-        let ready = health::readyz(axum::extract::State(state)).await.0;
+        let ready = match health::readyz(axum::extract::State(state)).await {
+            Ok(response) => response.0,
+            Err(_) => panic!("healthy store is ready"),
+        };
         assert_eq!(ready.status, "ready");
         assert_eq!(ready.service, "tracera-server");
         assert_eq!(ready.version, "0.1.3-test");
         assert_eq!(ready.backend, "sqlite");
         assert!(ready.uptime_seconds < 2);
+    }
+
+    #[test]
+    fn non_loopback_bind_requires_authenticated_proxy_acknowledgement() {
+        let loopback = "127.0.0.1:8080".parse().expect("loopback address");
+        let public = "0.0.0.0:8080".parse().expect("public address");
+
+        assert!(validate_bind_address(loopback, None).is_ok());
+        assert!(validate_bind_address(public, None).is_err());
+        assert!(validate_bind_address(public, Some("authenticated-proxy")).is_ok());
+        assert!(validate_bind_address(public, Some("anything-else")).is_err());
     }
 
     #[test]
@@ -1886,6 +2294,39 @@ mod tests {
         assert!(json.contains("\"members\":[]"));
     }
 
+    /// SQLite team round-trip: JSON-encoded members decode back into Vec<String>.
+    #[tokio::test]
+    async fn sqlite_team_list_decodes_members_json_array() {
+        let store = make_sqlite_store().await;
+
+        sqlx::query(
+            "INSERT INTO teams (id, name, description, members, created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+        )
+        .bind("team-decoding-1")
+        .bind("Platform Team")
+        .bind("Core platform engineering")
+        .bind(r#"["alice","bob","carol"]"#)
+        .bind("2026-07-29T00:00:00Z")
+        .bind("2026-07-29T00:00:00Z")
+        .execute(&store.pool)
+        .await
+        .expect("insert team row");
+
+        let teams = store.list_teams().await.expect("list_teams");
+        let team = teams
+            .into_iter()
+            .find(|row| row.id == "team-decoding-1")
+            .expect("inserted team should be returned");
+
+        assert_eq!(team.name, "Platform Team");
+        assert_eq!(team.description, "Core platform engineering");
+        assert_eq!(
+            team.members,
+            vec!["alice".to_string(), "bob".to_string(), "carol".to_string()]
+        );
+    }
+
     // -----------------------------------------------------------------------
     // SQLite in-memory round-trip tests — on-device tier proof
     // No external DB required; uses sqlx SqlitePool with sqlite::memory:
@@ -2003,6 +2444,186 @@ mod tests {
         crate::sqlite_store::SqliteStore::new(pool)
     }
 
+    #[tokio::test]
+    async fn sqlite_migrations_support_problems_backed_projects() {
+        let pool = sqlx::SqlitePool::connect("sqlite::memory:")
+            .await
+            .expect("open in-memory SQLite");
+        sqlx::migrate!("./migrations-sqlite")
+            .run(&pool)
+            .await
+            .expect("apply production SQLite migrations");
+        let store = crate::sqlite_store::SqliteStore::new(pool);
+        let now = Utc::now();
+
+        store
+            .create_problem(
+                "prob-migration-1".to_string(),
+                "project-migration-1".to_string(),
+                "P-20260729-00000001".to_string(),
+                "Production migration contract".to_string(),
+                None,
+                "open".to_string(),
+                None,
+                None,
+                None,
+                None,
+                "medium".to_string(),
+                "medium".to_string(),
+                "medium".to_string(),
+                false,
+                false,
+                false,
+                false,
+                None,
+                None,
+                None,
+                None,
+                now,
+            )
+            .await
+            .expect("persist problem after production migrations");
+
+        let projects = store.list_projects(ListParams::default()).await.expect("list projects");
+        assert_eq!(projects.len(), 1);
+        assert_eq!(projects[0].id, "project-migration-1");
+        assert_eq!(projects[0].problem_count, 1);
+        assert!(store
+            .get_project("project-migration-1".to_string())
+            .await
+            .expect("get project")
+            .is_some());
+    }
+
+    /// Live Postgres contract for textual project IDs.  This test is explicit
+    /// opt-in because it creates and drops an isolated schema in the database
+    /// named by `TRACERA_TEST_DATABASE_URL`.
+    #[tokio::test]
+    #[ignore = "requires TRACERA_TEST_DATABASE_URL and CREATE/DROP SCHEMA privileges"]
+    async fn pg_store_contract_supports_textual_project_ids_in_an_isolated_schema() {
+        let fixture = make_pg_store_contract_fixture().await;
+        let contract_result = run_pg_store_textual_project_id_contract(&fixture).await;
+        let cleanup_result = fixture.cleanup().await;
+
+        match (contract_result, cleanup_result) {
+            (Ok(()), Ok(())) => {}
+            (Err(primary_error), cleanup_result) => {
+                if let Err(cleanup_error) = cleanup_result {
+                    eprintln!("fixture cleanup after contract failure: {cleanup_error}");
+                }
+                panic!("PgStore textual project-id contract failed: {primary_error}");
+            }
+            (Ok(()), Err(cleanup_error)) => {
+                panic!("generated-schema cleanup failed after contract success: {cleanup_error}");
+            }
+        }
+    }
+
+    async fn run_pg_store_textual_project_id_contract(
+        fixture: &PgStoreContractFixture,
+    ) -> Result<(), String> {
+        let store = fixture.store();
+        let project_id = "project/external-not-a-uuid".to_string();
+        let other_project_id = "project/isolated-other".to_string();
+        let now = Utc::now();
+
+        if !store
+            .list_problems(project_id.clone(), None, ListParams::default())
+            .await
+            .map_err(|error| format!("list empty generated schema: {error}"))?
+            .is_empty()
+        {
+            return Err("generated schema was not empty".to_string());
+        }
+
+        store
+            .create_problem(
+                "pg-problem-text-id".to_string(),
+                project_id.clone(),
+                "P-PG-TEXT-0001".to_string(),
+                "PgStore accepts a textual project identifier".to_string(),
+                None,
+                "open".to_string(),
+                None,
+                None,
+                None,
+                None,
+                "medium".to_string(),
+                "medium".to_string(),
+                "medium".to_string(),
+                false,
+                false,
+                false,
+                false,
+                None,
+                None,
+                None,
+                None,
+                now,
+            )
+            .await
+            .map_err(|error| format!("create a problem with a non-UUID project id: {error}"))?;
+
+        store
+            .create_problem(
+                "pg-problem-other-project".to_string(),
+                other_project_id.clone(),
+                "P-PG-TEXT-0002".to_string(),
+                "Fixture isolation sentinel".to_string(),
+                None,
+                "closed".to_string(),
+                None,
+                None,
+                None,
+                None,
+                "medium".to_string(),
+                "medium".to_string(),
+                "medium".to_string(),
+                false,
+                false,
+                false,
+                false,
+                None,
+                None,
+                None,
+                None,
+                now,
+            )
+            .await
+            .map_err(|error| format!("create a problem in the other fixture project: {error}"))?;
+
+        let listed = store
+            .list_problems(project_id.clone(), None, ListParams::default())
+            .await
+            .map_err(|error| format!("list text-id project: {error}"))?;
+        if listed.len() != 1 || listed[0].project_id != project_id {
+            return Err(format!("expected one problem for textual project id, got {listed:?}"));
+        }
+
+        if !store
+            .list_problems(project_id.clone(), Some("closed".to_string()), ListParams::default())
+            .await
+            .map_err(|error| format!("filter text-id project: {error}"))?
+            .is_empty()
+        {
+            return Err("closed filter returned another project's problem".to_string());
+        }
+        let project_count = store
+            .count_problems(project_id)
+            .await
+            .map_err(|error| format!("count text-id project: {error}"))?;
+        let other_project_count = store
+            .count_problems(other_project_id)
+            .await
+            .map_err(|error| format!("count other fixture project: {error}"))?;
+        if project_count != 1 || other_project_count != 1 {
+            return Err(format!(
+                "expected one problem in each fixture project, got {project_count} and {other_project_count}"
+            ));
+        }
+        fixture.assert_all_connection_search_paths().await
+    }
+
     /// SQLite evidence round-trip: create then list returns the same item.
     #[tokio::test]
     async fn sqlite_evidence_create_then_list() {
@@ -2080,7 +2701,7 @@ mod tests {
 
         // Empty initially
         let initial = store
-            .list_problems("proj-1".to_string(), None)
+            .list_problems("proj-1".to_string(), None, ListParams::default())
             .await
             .expect("list_problems empty");
         assert!(initial.is_empty(), "store should be empty initially");
@@ -2122,7 +2743,7 @@ mod tests {
 
         // list (no status filter) returns the row
         let listed = store
-            .list_problems("proj-1".to_string(), None)
+            .list_problems("proj-1".to_string(), None, ListParams::default())
             .await
             .expect("list_problems after create");
         assert_eq!(listed.len(), 1, "exactly one problem");
@@ -2140,7 +2761,7 @@ mod tests {
 
         // list with status filter narrows correctly
         let filtered = store
-            .list_problems("proj-1".to_string(), Some("closed".to_string()))
+            .list_problems("proj-1".to_string(), Some("closed".to_string()), ListParams::default())
             .await
             .expect("list_problems filtered");
         assert!(filtered.is_empty(), "no problems in 'closed' status");
@@ -2316,5 +2937,26 @@ mod tests {
         assert_eq!(link.relationship, "satisfies");
         assert!((link.confidence - 0.8).abs() < 1e-9);
         assert_eq!(link.source, "github");
+
+        let row = sqlx::query(
+            "SELECT id, source_id, target_id, relationship, confidence, source, created_at, updated_at \
+             FROM trace_links WHERE id = ?1",
+        )
+        .bind("tl-test-1")
+        .fetch_one(&store.pool)
+        .await
+        .expect("trace link row should persist");
+
+        let persisted_source_id: String = row.try_get("source_id").unwrap_or_default();
+        let persisted_target_id: String = row.try_get("target_id").unwrap_or_default();
+        let persisted_relationship: String = row.try_get("relationship").unwrap_or_default();
+        let persisted_confidence: f64 = row.try_get("confidence").unwrap_or_default();
+        let persisted_source: String = row.try_get("source").unwrap_or_default();
+
+        assert_eq!(persisted_source_id, "story-gh-42");
+        assert_eq!(persisted_target_id, "REQ-009");
+        assert_eq!(persisted_relationship, "satisfies");
+        assert!((persisted_confidence - 0.8).abs() < 1e-9);
+        assert_eq!(persisted_source, "github");
     }
 }

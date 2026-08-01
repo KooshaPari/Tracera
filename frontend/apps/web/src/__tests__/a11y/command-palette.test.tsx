@@ -57,22 +57,20 @@ function MockCommandPalette({ open, onClose }: { open: boolean; onClose: () => v
         </div>
 
         <div id='command-listbox' role='listbox'>
-          <div>
-            <div className='text-muted-foreground'>NAVIGATE</div>
-            <button
-              id='cmd-item-nav-home'
-              role='option'
-              aria-selected
-              aria-describedby='cmd-item-nav-home-desc'
-            >
-              <div id='cmd-item-nav-home-desc'>Home</div>
-              <div>Main dashboard</div>
-            </button>
-          </div>
-
-          <div role='status' aria-live='polite' aria-atomic='true'>
-            <p>5 results found for "test"</p>
-          </div>
+          <button
+            id='cmd-item-nav-home'
+            role='option'
+            aria-selected
+            aria-label='Home - Main dashboard'
+            aria-describedby='cmd-item-nav-home-desc'
+          >
+            <span id='cmd-item-nav-home-desc' className='sr-only'>
+              Home - Main dashboard
+            </span>
+          </button>
+        </div>
+        <div role='status' aria-live='polite' aria-atomic='true'>
+          <p>5 results found for "test"</p>
         </div>
       </div>
     </div>

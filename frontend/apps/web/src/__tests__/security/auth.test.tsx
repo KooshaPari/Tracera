@@ -34,7 +34,7 @@ describe('Authentication Security Tests', () => {
       expect(sessionToken).toBeNull();
     });
 
-    it('should clear tokens on logout', () => {
+    it('should clear tokens on logout', async () => {
       const { result } = renderHook(() => useAuthStore());
 
       act(() => {
@@ -47,8 +47,8 @@ describe('Authentication Security Tests', () => {
 
       expect(localStorage.getItem('auth_token')).toBe('test-token-123');
 
-      act(() => {
-        result.current.logout();
+      await act(async () => {
+        await result.current.logout();
       });
 
       expect(localStorage.getItem('auth_token')).toBeNull();
@@ -186,11 +186,12 @@ describe('Authentication Security Tests', () => {
       expect(result.current.token).toBeNull();
     });
 
-    it('should update authentication state on login', async () => {
+    it('should update authentication state through the AuthKit callback contract', () => {
       const { result } = renderHook(() => useAuthStore());
 
-      await act(async () => {
-        await result.current.login('test@example.com', 'password123');
+      act(() => {
+        result.current.setToken('authkit-token');
+        result.current.setUser({ email: 'test@example.com', id: '1' });
       });
 
       expect(result.current.isAuthenticated).toBeTruthy();
@@ -199,21 +200,11 @@ describe('Authentication Security Tests', () => {
       expect(result.current.token).not.toBeNull();
     });
 
-    it('should handle login errors gracefully', async () => {
+    it('should keep auth state empty until an AuthKit callback succeeds', () => {
       const { result } = renderHook(() => useAuthStore());
-
-      // Test that login errors don't leave inconsistent state
-      try {
-        await act(async () => {
-          // Mock API failure would happen here in real implementation
-          await result.current.login('test@example.com', 'wrong-password');
-        });
-      } catch {
-        // Expected to potentially throw in future implementation
-      }
-
-      // Current mock implementation succeeds, so this validates current behavior
-      // In production, this would test that failed logins don't set auth state
+      expect(result.current.isAuthenticated).toBe(false);
+      expect(result.current.token).toBeNull();
+      expect(result.current.user).toBeNull();
     });
 
     it('should persist authentication state across page reloads', () => {
@@ -260,7 +251,7 @@ describe('Authentication Security Tests', () => {
       expect(refreshSpy).toHaveBeenCalled();
     });
 
-    it('should clear sensitive data on session timeout', () => {
+    it('should clear sensitive data on session timeout', async () => {
       const { result } = renderHook(() => useAuthStore());
 
       act(() => {
@@ -272,8 +263,8 @@ describe('Authentication Security Tests', () => {
         });
       });
 
-      act(() => {
-        result.current.logout();
+      await act(async () => {
+        await result.current.logout();
       });
 
       expect(result.current.token).toBeNull();
@@ -317,13 +308,14 @@ describe('Authentication Security Tests', () => {
   });
 
   describe('Password Security Best Practices', () => {
-    it('should not store passwords in state or localStorage', async () => {
+    it('should not store passwords in state or localStorage', () => {
       const { result } = renderHook(() => useAuthStore());
 
       const password = 'super-secret-password';
 
-      await act(async () => {
-        await result.current.login('test@example.com', password);
+      act(() => {
+        result.current.setToken('authkit-token');
+        result.current.setUser({ email: 'test@example.com', id: '1' });
       });
 
       // Check that password is not stored anywhere
@@ -526,7 +518,7 @@ describe('Authentication Security Tests', () => {
   });
 
   describe('Session Fixation Prevention', () => {
-    it('should regenerate session token on login', async () => {
+    it('should replace a prior token when AuthKit establishes a session', () => {
       const { result } = renderHook(() => useAuthStore());
 
       const oldToken = 'old-session-token';
@@ -535,14 +527,13 @@ describe('Authentication Security Tests', () => {
         result.current.setToken(oldToken);
       });
 
-      await act(async () => {
-        await result.current.login('test@example.com', 'password');
+      act(() => {
+        result.current.setToken('new-authkit-token');
+        result.current.setUser({ email: 'test@example.com', id: '1' });
       });
 
-      // Token should be set (in real implementation, would be different from old token)
-      expect(result.current.token).not.toBeNull();
-      // Current mock uses 'mock-jwt-token', future implementation would generate new token
-      expect(result.current.token).toBe('mock-jwt-token');
+      expect(result.current.token).toBe('new-authkit-token');
+      expect(result.current.token).not.toBe(oldToken);
     });
 
     it('should invalidate old tokens after password change', () => {

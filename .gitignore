@@ -27,3 +27,19 @@ package-lock.json
 frontend/apps/desktop/release/
 frontend/apps/desktop/build/icon.*
 sidecar/go/tracera-sidecar
+
+# Build caches (Turbo / Wrangler / Helios / Turbo logs)
+.turbo/
+frontend/.turbo/
+**/.turbo/
+frontend/.wrangler/
+**/.wrangler/
+frontend/.helios-harness/
+**/.helios-harness/
+frontend/runtime-performance-results.json
+**/runtime-performance-results.json
+frontend/**/.tsbuildinfo
+**/*.tsbuildinfo
+Tracera/worktrees/
+**/worktrees/
+frontend/packages/**/build/

@@ -1,4 +1,4 @@
-use axum::{extract::State, Json};
+use axum::{extract::State, http::StatusCode, Json};
 use serde::Serialize;
 
 use super::AppState;
@@ -40,17 +40,32 @@ pub(super) async fn health(State(state): State<AppState>) -> Json<ReadyResponse>
     })
 }
 
-pub(super) async fn readyz(State(state): State<AppState>) -> Json<ReadyResponse> {
+pub(super) async fn readyz(
+    State(state): State<AppState>,
+) -> Result<Json<ReadyResponse>, (StatusCode, Json<StatusResponse>)> {
+    if let Err(error) = state.store.check_readiness().await {
+        tracing::warn!(%error, backend = state.backend, "readiness store probe failed");
+        return Err((
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(StatusResponse {
+                status: "not_ready",
+                service: "tracera-server",
+            }),
+        ));
+    }
+
     let uptime_seconds = uptime_seconds(&state);
-    Json(ReadyResponse {
+    Ok(Json(ReadyResponse {
         status: "ready",
         service: "tracera-server",
         version: state.version,
         backend: state.backend,
         uptime_seconds,
-    })
+    }))
 }
 
-pub(super) async fn ready(State(state): State<AppState>) -> Json<ReadyResponse> {
+pub(super) async fn ready(
+    State(state): State<AppState>,
+) -> Result<Json<ReadyResponse>, (StatusCode, Json<StatusResponse>)> {
     readyz(State(state)).await
 }

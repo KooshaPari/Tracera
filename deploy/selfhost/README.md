@@ -21,6 +21,9 @@ Set these before starting the stack:
 
 - `CF_TUNNEL_TOKEN`: Cloudflare Tunnel token for the named tunnel
 - `TRACERA_PUBLIC_HOSTNAME`: public hostname served by the tunnel, for example `tracera.pheno.studio`
+- `TRACERA_PUBLIC_BIND_MODE`: must be exactly `authenticated-proxy`; set it
+  only after Caddy has an active authentication directive. The Rust gateway
+  otherwise refuses non-loopback binding at startup.
 
 WorkOS AuthKit is not wired in yet, but these placeholders show where its settings would live:
 
@@ -49,7 +52,8 @@ Run the secret-free private-boundary check before every deployment:
 The checked-in Caddyfile contains an AuthKit insertion point, but its
 `forward_auth` block is commented and therefore does **not** protect public
 traffic. Before enabling a Cloudflare Tunnel or public DNS, configure an active
-`forward_auth`, `basic_auth`, or JWT directive and run the strict gate:
+`forward_auth`, `basic_auth`, or JWT directive, then set
+`TRACERA_PUBLIC_BIND_MODE=authenticated-proxy` and run the strict gate:
 
 ```sh
 ./scripts/verify-deployment-security.sh --mode public

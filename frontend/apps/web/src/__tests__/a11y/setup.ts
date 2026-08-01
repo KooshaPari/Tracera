@@ -68,7 +68,9 @@ export function pressKey(key: string, options: KeyboardEventInit = {}) {
       ...options,
     });
     if (event) {
-      document.dispatchEvent(event);
+      // CommandPalette listens on globalThis/window; dispatch there so tests
+      // exercise the same event boundary as the production listener.
+      globalThis.dispatchEvent(event);
     }
   });
   return event;

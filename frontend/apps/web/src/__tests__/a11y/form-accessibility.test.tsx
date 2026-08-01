@@ -155,13 +155,13 @@ describe('Form Accessibility - Required Indicators', () => {
   });
 
   it('should have accessible required indicator in label', () => {
-    const { getByLabelText } = render(<AccessibleForm />);
+    const { getByLabelText, getAllByLabelText } = render(<AccessibleForm />);
 
     const titleLabel = getByLabelText(/title/i);
     expect(titleLabel).toBeInTheDocument();
 
     // Check for aria-label="required" on the asterisk
-    const requiredIndicator = getByLabelText('required');
+    const requiredIndicator = getAllByLabelText('required')[0];
     expect(requiredIndicator).toHaveTextContent('*');
   });
 
@@ -336,7 +336,7 @@ describe('Form Accessibility - Dialog Focus Trap', () => {
     const { getByRole, getByText } = render(<AccessibleForm />);
 
     const dialog = getByRole('dialog');
-    const title = getByText('Create Item');
+    const title = getByRole('heading', { name: 'Create Item' });
     const description = getByText(/Fill in the required fields/);
 
     expect(title).toHaveAttribute('id');

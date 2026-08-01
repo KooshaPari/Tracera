@@ -938,9 +938,18 @@ function FlowGraphViewInnerComponent({
     cacheStats: useMemo(() => {
       const stats = getCacheStats();
       return {
-        grouping: toPerformanceCacheStats(stats.groupings, 'graph-groupings-store'),
-        layout: toPerformanceCacheStats(stats.layouts, 'graph-layouts-store'),
-        search: toPerformanceCacheStats(stats.searches, 'graph-search-store'),
+        grouping: toPerformanceCacheStats(
+          { count: stats.grouping.totalEntries, hitRate: stats.grouping.hitRatio },
+          'graph-groupings-store',
+        ),
+        layout: toPerformanceCacheStats(
+          { count: stats.layout.totalEntries, hitRate: stats.layout.hitRatio },
+          'graph-layouts-store',
+        ),
+        search: toPerformanceCacheStats(
+          { count: stats.search.totalEntries, hitRate: stats.search.hitRatio },
+          'graph-search-store',
+        ),
       };
     }, [getCacheStats]),
     edges: links,

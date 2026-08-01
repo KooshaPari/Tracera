@@ -15,8 +15,8 @@ use serde_json::Value;
 use sqlx::{Row, SqlitePool};
 
 use crate::store::{
-    BoxFuture, EvidenceItem, Problem, Sprint, Store, StoreError, StoreResult, Story, TeamRow,
-    TraceLink,
+    BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint, Store, StoreError, StoreResult,
+    Story, TeamRow, TraceLink,
 };
 
 #[derive(Clone)]
@@ -340,6 +340,87 @@ impl Store for SqliteStore {
         })
     }
 
+    fn list_projects(&self, params: ListParams) -> BoxFuture<'_, StoreResult<Vec<ProjectSummary>>> {
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT project_id, COUNT(*) AS problem_count, MIN(created_at) AS created_at, MAX(updated_at) AS updated_at
+                 FROM problems
+                 WHERE deleted_at IS NULL
+                 GROUP BY project_id
+                 ORDER BY MAX(updated_at) DESC, project_id ASC LIMIT ?1 OFFSET ?2",
+            )
+            .bind(params.page_size as i64)
+            .bind(params.offset() as i64)
+            .fetch_all(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
+
+            Ok(rows
+                .into_iter()
+                .map(|row| {
+                    let id: String = row.try_get("project_id").unwrap_or_default();
+                    let problem_count: i64 = row.try_get("problem_count").unwrap_or_default();
+                    let created_at = row
+                        .try_get::<String, _>("created_at")
+                        .ok()
+                        .map(|s| str_to_ts(&s))
+                        .unwrap_or_else(Utc::now);
+                    let updated_at = row
+                        .try_get::<String, _>("updated_at")
+                        .ok()
+                        .map(|s| str_to_ts(&s))
+                        .unwrap_or_else(Utc::now);
+                    ProjectSummary {
+                        name: format!("Project {id}"),
+                        description: Some("Derived from persisted problem records".to_string()),
+                        metadata: Value::Object(Default::default()),
+                        id,
+                        created_at,
+                        updated_at,
+                        problem_count,
+                    }
+                })
+                .collect())
+        })
+    }
+
+    fn get_project(&self, project_id: String) -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>> {
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT project_id, COUNT(*) AS problem_count, MIN(created_at) AS created_at, MAX(updated_at) AS updated_at
+                 FROM problems
+                 WHERE deleted_at IS NULL AND project_id = ?1
+                 GROUP BY project_id",
+            )
+            .bind(&project_id)
+            .fetch_all(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
+
+            Ok(rows.into_iter().next().map(|row| {
+                let created_at = row
+                    .try_get::<String, _>("created_at")
+                    .ok()
+                    .map(|s| str_to_ts(&s))
+                    .unwrap_or_else(Utc::now);
+                let updated_at = row
+                    .try_get::<String, _>("updated_at")
+                    .ok()
+                    .map(|s| str_to_ts(&s))
+                    .unwrap_or_else(Utc::now);
+                ProjectSummary {
+                    id: project_id.clone(),
+                    name: format!("Project {project_id}"),
+                    description: Some("Derived from persisted problem records".to_string()),
+                    metadata: Value::Object(Default::default()),
+                    problem_count: row.try_get("problem_count").unwrap_or_default(),
+                    created_at,
+                    updated_at,
+                }
+            }))
+        })
+    }
+
     fn count_evidence(&self) -> BoxFuture<'_, StoreResult<i64>> {
         Box::pin(async move {
             let row = sqlx::query("SELECT COUNT(*) as cnt FROM evidence")
@@ -351,6 +432,16 @@ impl Store for SqliteStore {
         })
     }
 
+    fn check_readiness(&self) -> BoxFuture<'_, StoreResult<()>> {
+        Box::pin(async move {
+            sqlx::query("SELECT 1")
+                .execute(&self.pool)
+                .await
+                .map(|_| ())
+                .map_err(StoreError::from)
+        })
+    }
+
     // -----------------------------------------------------------------------
     // Problems (ITIL) — SQLite implementations
     // -----------------------------------------------------------------------
@@ -359,6 +450,7 @@ impl Store for SqliteStore {
         &self,
         project_id: String,
         status_filter: Option<String>,
+        params: ListParams,
     ) -> BoxFuture<'_, StoreResult<Vec<Problem>>> {
         Box::pin(async move {
             // Status filter is interpolated as a literal; the column whitelist
@@ -375,10 +467,12 @@ impl Store for SqliteStore {
                          created_at, updated_at, deleted_at \
                          FROM problems \
                          WHERE project_id = ?1 AND status = ?2 AND deleted_at IS NULL \
-                         ORDER BY created_at DESC",
+                         ORDER BY created_at DESC, id ASC LIMIT ?3 OFFSET ?4",
                     )
                     .bind(&project_id)
                     .bind(&status)
+                    .bind(params.page_size as i64)
+                    .bind(params.offset() as i64)
                     .fetch_all(&self.pool)
                     .await
                     .map_err(StoreError::from)?
@@ -392,9 +486,11 @@ impl Store for SqliteStore {
                          created_at, updated_at, deleted_at \
                          FROM problems \
                          WHERE project_id = ?1 AND deleted_at IS NULL \
-                         ORDER BY created_at DESC",
+                         ORDER BY created_at DESC, id ASC LIMIT ?2 OFFSET ?3",
                     )
                     .bind(&project_id)
+                    .bind(params.page_size as i64)
+                    .bind(params.offset() as i64)
                     .fetch_all(&self.pool)
                     .await
                     .map_err(StoreError::from)?
