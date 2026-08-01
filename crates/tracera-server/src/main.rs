@@ -1697,6 +1697,62 @@ mod tests {
         assert_eq!(body.as_ref(), br#"{"error":"evidence persistence failed"}"#);
     }
 
+    #[tokio::test]
+    async fn project_listing_returns_structured_5xx_when_store_is_unavailable() {
+        let store = make_sqlite_store().await;
+        store.pool.close().await;
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: Arc::new(store),
+        });
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/projects")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+        let body = axum::body::to_bytes(response.into_body(), 1024)
+            .await
+            .expect("body");
+        assert_eq!(body.as_ref(), br#"{"error":"project listing failed"}"#);
+    }
+
+    #[tokio::test]
+    async fn problem_listing_returns_structured_5xx_when_store_is_unavailable() {
+        let store = make_sqlite_store().await;
+        store.pool.close().await;
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: Arc::new(store),
+        });
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/problems?project_id=project-1")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+        let body = axum::body::to_bytes(response.into_body(), 1024)
+            .await
+            .expect("body");
+        assert_eq!(body.as_ref(), br#"{"error":"problem listing failed"}"#);
+    }
+
     /// Consumer-facing v1 contract: evidence is stored/listed, then the same
     /// artifact is traversed through request-supplied explicit trace links.
     #[tokio::test]
