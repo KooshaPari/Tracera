@@ -68,6 +68,14 @@ jobs:
         working-directory: frontend/apps/desktop
         run: bun install --frozen-lockfile --ignore-scripts
 
+      - name: Verify packaged CLI, compose, and manifest inputs
+        run: |
+          set -euo pipefail
+          test -f crates/tracera-cli/Cargo.toml
+          test -f docker-compose.yml
+          test -f frontend/scripts/release-manifest.mjs
+          test -f frontend/scripts/verify-release-manifest.mjs
+
       - name: Build with Electrobun
         working-directory: frontend/apps/desktop
         run: bunx --no-install electrobun build

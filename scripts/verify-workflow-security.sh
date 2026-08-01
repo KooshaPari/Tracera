@@ -39,6 +39,18 @@ grep -q 'release-manifest-' "$release" \
   || fail "release workflow must publish per-target provenance manifests"
 grep -q 'verify-release-manifest.mjs' "$release" \
   || fail "release workflow must verify provenance before upload"
+desktop="$workflows/release-desktop.yml"
+[[ -f "$desktop" ]] || fail "desktop release workflow is missing"
+grep -q 'Verify packaged CLI, compose, and manifest inputs' "$desktop" \
+  || fail "desktop release must assert packaged input presence"
+grep -q 'crates/tracera-cli/Cargo.toml' "$desktop" \
+  || fail "desktop release must check the bundled CLI manifest"
+grep -q 'docker-compose.yml' "$desktop" \
+  || fail "desktop release must check the bundled compose manifest"
+grep -q 'frontend/scripts/release-manifest.mjs' "$desktop" \
+  || fail "desktop release must check release-manifest tooling"
+grep -q 'frontend/scripts/verify-release-manifest.mjs' "$desktop" \
+  || fail "desktop release must check release-manifest verification tooling"
 crates="$workflows/release-crates.yml"
 [[ -f "$crates" ]] || fail "release-crates workflow is missing"
 grep -q 'does not match release tag' "$crates" \
