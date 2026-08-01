@@ -9,7 +9,7 @@ lineage freeze (95334238c)
         |          |
         |          +--> implement typed missing routes/adapters
         |
-        +--> rich web build --> local nginx/compose :18081
+        +--> rich web build --> rich gateway :18000
                                       |
                                       +--> Electrobun desktop smoke
                                                    |
@@ -25,4 +25,3 @@ Semantic merge rules:
 3. Resolve API differences at typed client/server boundaries, never with silent
    fallback to hosted pages.
 4. Keep the current app as rollback until installed local dogfood is verified.
-
