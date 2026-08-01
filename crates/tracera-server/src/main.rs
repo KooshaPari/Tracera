@@ -2,8 +2,6 @@ mod db;
 mod health;
 mod ingest;
 mod pg_store;
-#[cfg(feature = "phenodag-queue")]
-mod queue;
 mod sqlite_store;
 mod store;
 mod validation;
