@@ -166,7 +166,9 @@ jobs:
           version: "latest"
       - run: uv python install ${{ matrix.python-version }}
       - run: uv sync --all-extras
-      - run: uv run pytest --cov --cov-report=xml --cov-report=term-missing -v
+      # Keep CI deterministic: third-party pytest entrypoints (notably
+      # schemathesis/jsonschema_rs) can stall collection on constrained runners.
+      - run: PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 uv run pytest --cov --cov-report=xml --cov-report=term-missing -v
       - uses: codecov/codecov-action@v4
         if: matrix.python-version == '3.12'
         with:
