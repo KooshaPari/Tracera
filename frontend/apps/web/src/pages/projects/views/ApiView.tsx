@@ -39,7 +39,7 @@ const apiGroups: ApiGroup[] = [
         id: '1.1',
         method: 'GET',
         path: '/',
-        responseExample: '[{'id': 'uuid', 'name': 'Project'}]',
+        responseExample: '[{"id": "uuid", "name": "Project"}]',
         status: 'implemented',
       },
       {
@@ -47,7 +47,7 @@ const apiGroups: ApiGroup[] = [
         id: '1.2',
         method: 'POST',
         path: '/',
-        requestBody: '{'name': 'string'}',
+        requestBody: '{"name": "string"}',
         status: 'implemented',
       },
       {
