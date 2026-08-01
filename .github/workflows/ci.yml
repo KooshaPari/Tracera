@@ -30,6 +30,41 @@ env:
 # STAGE 1: Detect languages (file presence, fast)
 # ===========================================================================
 jobs:
+  # Main branch protection requires these exact, strict contexts.  The
+  # smart-discovery jobs below remain advisory; these two gates are the
+  # authoritative workspace checks and run on GitHub-hosted runners.
+  lint:
+    name: ci / lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # stable
+        with:
+          components: rustfmt, clippy
+      - name: Rust format
+        run: cargo fmt --all -- --check
+      - name: Rust clippy
+        run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+
+  test:
+    name: ci / test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # stable
+      - name: Rust tests
+        run: cargo test --workspace --all-features --locked --no-fail-fast
+
   detect:
     name: Detect Languages
     runs-on: ubuntu-latest
