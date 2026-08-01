@@ -33,10 +33,11 @@ posts, chat channels, or social media. Use private channels only.
 
 ## Runtime controls
 
-The Rust server defaults to loopback (`127.0.0.1:8080`). When
-`TRACERA_BIND_ADDR` is configured to a non-loopback address, startup emits a
-warning; deployments must place the service behind an authenticated TLS
-reverse proxy before exposing it externally. The Rust HTTP layer also caps
+The Rust server defaults to loopback (`127.0.0.1:8080`). A non-loopback bind is
+rejected unless `TRACERA_PUBLIC_BIND_MODE=authenticated-proxy` is explicitly
+set. With that deployment mode, the service must be placed behind an
+authenticated TLS reverse proxy before exposure; this proxy acknowledgement is
+deployment policy, not Rust-layer authentication. The Rust HTTP layer also caps
 request bodies at 8 MiB and adds `nosniff`, `DENY`, and `no-referrer` response
 headers. The body cap bounds parser memory use without changing JSON contracts.
 
