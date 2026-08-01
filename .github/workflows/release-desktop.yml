@@ -151,11 +151,24 @@ jobs:
         with:
           subject-path: frontend/apps/desktop/${{ steps.archive.outputs.archive }}
 
+      - name: Generate and verify release manifest
+        shell: bash
+        env:
+          TRACERA_RELEASE_ARTIFACTS: frontend/apps/desktop/${{ steps.archive.outputs.archive }}
+          SOURCE_DATE_EPOCH: '0'
+        run: |
+          set -euo pipefail
+          node frontend/scripts/release-manifest.mjs release-manifest.json
+          node frontend/scripts/verify-release-manifest.mjs release-manifest.json
+          test -s release-manifest.json
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: tracera-desktop-${{ matrix.platform }}-${{ matrix.arch }}
-          path: frontend/apps/desktop/tracera-desktop-*-${{ matrix.platform }}-${{ matrix.arch }}.{{ matrix.archive_format }}
+          path: |
+            frontend/apps/desktop/tracera-desktop-*-${{ matrix.platform }}-${{ matrix.arch }}.{{ matrix.archive_format }}
+            release-manifest.json
           if-no-files-found: error
 
   release:
