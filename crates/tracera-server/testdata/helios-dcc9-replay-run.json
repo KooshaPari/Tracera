@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "tenant_id": "phenotype",
+  "session_id": "ses_acd94c2d4447191a92e0b1b12e5db86c59e720be0eecb87d092abee2ab158ef8",
+  "run_id": "run_caf5719c7a404271a52b9f423b65b9355a8f663f6c610c2a7e7d07200a1876d0",
+  "attempt_id": "att_571e7870b7ad687f2be62f73cd670fd1be7254f1dd1d16cfbc6e48c845763703",
+  "subject": {
+    "repo": "/private/tmp/helios-cli-pr616-fix",
+    "ref": "fix/benchmark-provenance-corrections-20260801",
+    "commit": "dcc9db42084136d3f72cb1d788b286a721b10e1f",
+    "harness": "helios-harness"
+  },
+  "result": {
+    "status": "passed",
+    "outcome_sha256": "7509b9a41b7d5443d6168cf6dc4c6ccf309e2ad1223aeff08129394902d140ae",
+    "replay_hash": "dc10b0aea065bcc18973ad747eb1e06da1dbe341cc9ea27801b059b4d9518083"
+  }
+}
