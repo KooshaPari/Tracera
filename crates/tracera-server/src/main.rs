@@ -970,18 +970,24 @@ struct ProblemQuery {
 async fn list_problems(
     axum::extract::State(state): axum::extract::State<AppState>,
     axum::extract::Query(params): axum::extract::Query<ProblemQuery>,
-) -> Result<Json<ProblemListResponse>, (axum::http::StatusCode, String)> {
-    let pagination = params.pagination.validated().map_err(|e| (axum::http::StatusCode::BAD_REQUEST, e))?;
+) -> Result<Json<ProblemListResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    let pagination = params.pagination.validated().map_err(|_| bad_request("invalid pagination"))?;
     let project_id = params.project_id.unwrap_or_default();
     let status_filter = params.status;
     let items = state
         .store
         .list_problems(project_id.clone(), status_filter, pagination)
         .await
-        .unwrap_or_else(|e| {
+        .map_err(|e| {
             tracing::error!("list_problems store error: {e}");
-            vec![]
+            (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "problem listing failed",
+                }),
+            )
         });
+        })?;
     Ok(Json(ProblemListResponse {
         project_id,
         count: items.len(),
@@ -1084,12 +1090,17 @@ async fn list_teams(
 async fn list_projects(
     axum::extract::State(state): axum::extract::State<AppState>,
     axum::extract::Query(params): axum::extract::Query<ListParams>,
-) -> Result<Json<ProjectListResponse>, (axum::http::StatusCode, String)> {
-    let pagination = params.validated().map_err(|e| (axum::http::StatusCode::BAD_REQUEST, e))?;
-    let projects = state.store.list_projects(pagination).await.unwrap_or_else(|e| {
+) -> Result<Json<ProjectListResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    let pagination = params.validated().map_err(|_| bad_request("invalid pagination"))?;
+    let projects = state.store.list_projects(pagination).await.map_err(|e| {
         tracing::error!("list_projects store error: {e}");
-        vec![]
-    });
+        (
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "project listing failed",
+            }),
+        )
+    })?;
     Ok(Json(ProjectListResponse {
         count: projects.len(),
         items: projects
