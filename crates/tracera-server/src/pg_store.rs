@@ -335,6 +335,14 @@ impl Store for PgStore {
         })
     }
 
+    fn count_projects(&self) -> BoxFuture<'_, StoreResult<i64>> {
+        Box::pin(async move {
+            let row = sqlx::query("SELECT COUNT(DISTINCT project_id) AS cnt FROM problems WHERE deleted_at IS NULL")
+                .fetch_one(&self.pool).await.map_err(StoreError::from)?;
+            Ok(row.try_get("cnt").unwrap_or(0))
+        })
+    }
+
     fn get_project(&self, project_id: String) -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>> {
         Box::pin(async move {
             let rows = sqlx::query(
@@ -549,6 +557,19 @@ impl Store for PgStore {
             .map_err(StoreError::from)?;
             let count: i64 = row.try_get("cnt").unwrap_or(0);
             Ok(count)
+        })
+    }
+
+    fn count_problems_filtered(&self, project_id: String, status_filter: Option<String>) -> BoxFuture<'_, StoreResult<i64>> {
+        Box::pin(async move {
+            let (query, status) = match status_filter {
+                Some(_) => ("SELECT COUNT(*) AS cnt FROM problems WHERE project_id = $1 AND status = $2 AND deleted_at IS NULL", status_filter),
+                None => ("SELECT COUNT(*) AS cnt FROM problems WHERE project_id = $1 AND deleted_at IS NULL", None),
+            };
+            let mut request = sqlx::query(query).bind(&project_id);
+            if let Some(status) = status { request = request.bind(status); }
+            let row = request.fetch_one(&self.pool).await.map_err(StoreError::from)?;
+            Ok(row.try_get("cnt").unwrap_or(0))
         })
     }
 }

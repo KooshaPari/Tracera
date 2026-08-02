@@ -997,7 +997,7 @@ async fn list_problems(
     let status_filter = params.status;
     let items = state
         .store
-        .list_problems(project_id.clone(), status_filter, pagination)
+        .list_problems(project_id.clone(), status_filter.clone(), pagination)
         .await
         .map_err(|e| {
             tracing::error!("list_problems store error: {e}");
@@ -1008,9 +1008,20 @@ async fn list_problems(
                 }),
             )
         })?;
+    let total = state
+        .store
+        .count_problems_filtered(project_id.clone(), status_filter)
+        .await
+        .map_err(|e| {
+            tracing::error!("count_problems store error: {e}");
+            (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse { error: "problem count failed" }),
+            )
+        })?;
     Ok(Json(ProblemListResponse {
         project_id,
-        count: items.len(),
+        count: total.max(0) as usize,
         items,
     }))
 }
@@ -1131,8 +1142,15 @@ async fn list_projects(
             }),
         )
     })?;
+    let total = state.store.count_projects().await.map_err(|e| {
+        tracing::error!("count_projects store error: {e}");
+        (
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse { error: "project count failed" }),
+        )
+    })?;
     Ok(Json(ProjectListResponse {
-        count: projects.len(),
+        count: total.max(0) as usize,
         items: projects
             .into_iter()
             .map(|project| ProjectResponse {

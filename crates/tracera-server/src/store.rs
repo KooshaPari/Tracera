@@ -253,6 +253,8 @@ pub trait Store: Send + Sync {
 
     // Projects (derived from persisted problem rows; no dedicated projects table yet)
     fn list_projects(&self, params: ListParams) -> BoxFuture<'_, StoreResult<Vec<ProjectSummary>>>;
+    /// Total number of visible projects, independent of page size/offset.
+    fn count_projects(&self) -> BoxFuture<'_, StoreResult<i64>>;
     fn get_project(&self, project_id: String) -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>>;
 
     // Metrics
@@ -316,4 +318,32 @@ pub trait Store: Send + Sync {
     // handlers currently expose problem listings rather than aggregate counts.
     #[allow(dead_code)]
     fn count_problems(&self, project_id: String) -> BoxFuture<'_, StoreResult<i64>>;
+
+    /// Total visible problems for a project, optionally filtered by status.
+    fn count_problems_filtered(
+        &self,
+        project_id: String,
+        status_filter: Option<String>,
+    ) -> BoxFuture<'_, StoreResult<i64>>;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ListParams, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE};
+
+    #[test]
+    fn list_params_defaults_and_offset_are_stable() {
+        let params = ListParams::default();
+        assert_eq!(params.page, 1);
+        assert_eq!(params.page_size, DEFAULT_PAGE_SIZE);
+        assert_eq!(ListParams { page: 3, page_size: 25 }.offset(), 50);
+    }
+
+    #[test]
+    fn list_params_reject_zero_and_oversized_values() {
+        assert!(ListParams { page: 0, page_size: 1 }.validated().is_err());
+        assert!(ListParams { page: 1, page_size: 0 }.validated().is_err());
+        assert!(ListParams { page: 1, page_size: MAX_PAGE_SIZE + 1 }.validated().is_err());
+        assert!(ListParams { page: 1, page_size: MAX_PAGE_SIZE }.validated().is_ok());
+    }
 }
