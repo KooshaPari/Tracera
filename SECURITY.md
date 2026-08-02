@@ -34,12 +34,22 @@ posts, chat channels, or social media. Use private channels only.
 ## Runtime controls
 
 The Rust server defaults to loopback (`127.0.0.1:8080`). A non-loopback bind is
-rejected unless `TRACERA_PUBLIC_BIND_MODE=authenticated-proxy` is explicitly
-set. With that deployment mode, the service must be placed behind an
-authenticated TLS reverse proxy before exposure; this proxy acknowledgement is
-deployment policy, not Rust-layer authentication. The Rust HTTP layer also caps
-request bodies at 8 MiB and adds `nosniff`, `DENY`, and `no-referrer` response
-headers. The body cap bounds parser memory use without changing JSON contracts.
+rejected unless `TRACERA_PUBLIC_BIND_MODE` declares one of these explicit
+deployment boundaries:
+
+- `authenticated-proxy`: only behind a real authenticated TLS reverse proxy.
+- `loopback-published`: only for the canonical Compose profile, whose host
+  publication is hard-coded to `127.0.0.1`.
+- `private-network`: only for a Compose profile with no backend host-port
+  publication and a sibling private-network gateway.
+
+These values are deployment assertions, not Rust-layer authentication. Do not
+use a Tailnet IP or `TRACERA_LOCAL_BIND_ADDR` to override the canonical local
+profile: its published host port is intentionally hard-bound to loopback. For
+remote access, use an authenticated self-host ingress or a separately reviewed
+Tailnet proxy boundary. The Rust HTTP layer also caps request bodies at 8 MiB
+and adds `nosniff`, `DENY`, and `no-referrer` response headers. The body cap
+bounds parser memory use without changing JSON contracts.
 
 - All non-probe API requests go through `ApiAuthzMiddleware` in
   `src/tracertm/api/main.py`.

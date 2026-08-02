@@ -19,7 +19,9 @@ services:
       dockerfile: Dockerfile.rust
     environment:
       TRACERA_BIND_ADDR: 0.0.0.0:8080
-      TRACERA_TRUSTED_PROXY: "true"
+      # This legacy profile publishes no backend host port; the server is
+      # reachable only by the sibling nginx container on the private network.
+      TRACERA_PUBLIC_BIND_MODE: "private-network"
       DATABASE_URL: postgres://tracera:${POSTGRES_PASSWORD}@postgres:5432/tracera
     expose: ["8080"]
     depends_on:
@@ -37,7 +39,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.local
     ports:
-      - "${TRACERA_LOCAL_BIND_ADDR:-127.0.0.1}:${TRACERA_LOCAL_PORT:-18081}:80"
+      - "127.0.0.1:${TRACERA_LOCAL_PORT:-18081}:80"
     depends_on:
       tracera-server: {condition: service_healthy}
     restart: unless-stopped

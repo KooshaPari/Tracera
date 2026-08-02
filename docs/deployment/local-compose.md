@@ -38,18 +38,12 @@ docker compose --env-file .env.local -f docker-compose.yml ps
 curl --fail --silent http://127.0.0.1:18000/health
 ```
 
-The canonical Compose file intentionally binds loopback only. For deliberate
-Tailnet access, set the bind address and keep the public host port at `:18000`;
-do not replace the service's internal `:8080` listener:
-
-```sh
-TRACERA_LOCAL_BIND_ADDR=100.112.14.98 TRACERA_LOCAL_PORT=18000 \
-  docker compose --env-file .env.local -f docker-compose.yml up -d
-```
-
-Then open
-`http://<desktop-tailscale-ip>:18000/` and check
-`http://<desktop-tailscale-ip>:18000/health` from another Tailnet device.
+The canonical Compose file intentionally hard-binds its published port to
+loopback. `TRACERA_LOCAL_BIND_ADDR` is not a supported override and must not be
+used to expose the Rust service directly on a Tailnet address. For remote
+access, use an authenticated self-host ingress or a separately reviewed
+Tailnet proxy boundary; retain the service's internal `:8080` listener and the
+canonical local gateway on `127.0.0.1:18000`.
 
 ## Explicit legacy split-frontend stack
 

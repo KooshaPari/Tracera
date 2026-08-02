@@ -43,6 +43,8 @@ const MAX_REQUEST_BODY_BYTES: usize = 8 * 1024 * 1024;
 const MAX_COVERAGE_LINKS: usize = 25_000;
 const PUBLIC_BIND_MODE_ENV: &str = "TRACERA_PUBLIC_BIND_MODE";
 const AUTHENTICATED_PROXY_MODE: &str = "authenticated-proxy";
+const LOOPBACK_PUBLISHED_MODE: &str = "loopback-published";
+const PRIVATE_NETWORK_MODE: &str = "private-network";
 use validation::{
     validate_text, MAX_ID_CHARS, MAX_INGEST_ISSUES, MAX_LONG_TEXT_CHARS, MAX_METADATA_BYTES,
     MAX_SHORT_TEXT_CHARS, MAX_URL_CHARS,
@@ -66,17 +68,26 @@ struct AppState {
     store: Arc<dyn Store>,
 }
 
-/// Reject public listeners unless the operator explicitly acknowledges that
-/// traffic reaches this process only through an authenticated reverse proxy.
-/// The server itself intentionally has no browser credential model; allowing a
-/// public bind without this acknowledgement would expose mutating endpoints.
+/// Reject non-loopback listeners unless the deployment explicitly declares its
+/// network boundary. The server intentionally has no browser credential model:
+/// `authenticated-proxy` is valid only behind a real authenticated TLS proxy;
+/// `loopback-published` is reserved for the canonical Compose profile, whose
+/// host publication is hard-coded to 127.0.0.1; and `private-network` is for
+/// profiles that publish no host port and expose the listener only on the
+/// private container network. These modes are deployment assertions, not
+/// application authentication.
 fn validate_bind_address(addr: SocketAddr, public_bind_mode: Option<&str>) -> Result<(), String> {
-    if addr.ip().is_loopback() || public_bind_mode == Some(AUTHENTICATED_PROXY_MODE) {
+    if addr.ip().is_loopback()
+        || matches!(
+            public_bind_mode,
+            Some(AUTHENTICATED_PROXY_MODE | LOOPBACK_PUBLISHED_MODE | PRIVATE_NETWORK_MODE)
+        )
+    {
         return Ok(());
     }
 
     Err(format!(
-        "refusing non-loopback bind to {addr}; bind to loopback or set {PUBLIC_BIND_MODE_ENV}={AUTHENTICATED_PROXY_MODE} only behind an authenticated reverse proxy"
+        "refusing non-loopback bind to {addr}; bind to loopback or set {PUBLIC_BIND_MODE_ENV} to an explicit authenticated-proxy, loopback-published, or private-network deployment mode"
     ))
 }
 
@@ -807,15 +818,20 @@ async fn trace_reverse(
 // ---------------------------------------------------------------------------
 async fn list_evidence(
     axum::extract::State(state): axum::extract::State<AppState>,
-) -> Json<EvidenceList> {
-    let items = state.store.list_evidence().await.unwrap_or_else(|e| {
+) -> Result<Json<EvidenceList>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    let items = state.store.list_evidence().await.map_err(|e| {
         tracing::error!("list_evidence store error: {e}");
-        vec![]
-    });
-    Json(EvidenceList {
+        (
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "evidence listing failed",
+            }),
+        )
+    })?;
+    Ok(Json(EvidenceList {
         count: items.len(),
         items,
-    })
+    }))
 }
 
 async fn create_evidence(
@@ -860,12 +876,17 @@ async fn create_evidence(
 // ---------------------------------------------------------------------------
 async fn list_sprints(
     axum::extract::State(state): axum::extract::State<AppState>,
-) -> Json<Vec<Sprint>> {
-    let sprints = state.store.list_sprints().await.unwrap_or_else(|e| {
+) -> Result<Json<Vec<Sprint>>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    let sprints = state.store.list_sprints().await.map_err(|e| {
         tracing::error!("list_sprints store error: {e}");
-        vec![]
-    });
-    Json(sprints)
+        (
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "sprint listing failed",
+            }),
+        )
+    })?;
+    Ok(Json(sprints))
 }
 
 async fn create_sprint(
@@ -1056,12 +1077,17 @@ async fn create_problem(
 // ---------------------------------------------------------------------------
 async fn list_stories(
     axum::extract::State(state): axum::extract::State<AppState>,
-) -> Json<Vec<Story>> {
-    let stories = state.store.list_stories().await.unwrap_or_else(|e| {
+) -> Result<Json<Vec<Story>>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    let stories = state.store.list_stories().await.map_err(|e| {
         tracing::error!("list_stories store error: {e}");
-        vec![]
-    });
-    Json(stories)
+        (
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "story listing failed",
+            }),
+        )
+    })?;
+    Ok(Json(stories))
 }
 
 // ---------------------------------------------------------------------------
@@ -1069,12 +1095,17 @@ async fn list_stories(
 // ---------------------------------------------------------------------------
 async fn list_teams(
     axum::extract::State(state): axum::extract::State<AppState>,
-) -> Json<Vec<TeamResponse>> {
-    let rows: Vec<TeamRow> = state.store.list_teams().await.unwrap_or_else(|e| {
+) -> Result<Json<Vec<TeamResponse>>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    let rows: Vec<TeamRow> = state.store.list_teams().await.map_err(|e| {
         tracing::error!("list_teams store error: {e}");
-        vec![]
-    });
-    Json(
+        (
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "team listing failed",
+            }),
+        )
+    })?;
+    Ok(Json(
         rows.into_iter()
             .map(|r| TeamResponse {
                 id: r.id,
@@ -1083,7 +1114,7 @@ async fn list_teams(
                 members: r.members,
             })
             .collect(),
-    )
+    ))
 }
 
 async fn list_projects(
@@ -1145,13 +1176,21 @@ async fn get_project(
 // ---------------------------------------------------------------------------
 async fn org_metrics(
     axum::extract::State(state): axum::extract::State<AppState>,
-) -> Json<MetricsResponse> {
-    let count = state.store.count_evidence().await.unwrap_or(0);
-    Json(MetricsResponse {
+) -> Result<Json<MetricsResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    let count = state.store.count_evidence().await.map_err(|e| {
+        tracing::error!("org_metrics store error: {e}");
+        (
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "organization metrics failed",
+            }),
+        )
+    })?;
+    Ok(Json(MetricsResponse {
         total_artifacts: count as usize,
         coverage_ratio: 0.75,
         open_gaps: 3,
-    })
+    }))
 }
 
 // ---------------------------------------------------------------------------
@@ -1763,6 +1802,44 @@ mod tests {
         assert_eq!(body.as_ref(), br#"{"error":"problem listing failed"}"#);
     }
 
+    #[tokio::test]
+    async fn remaining_list_handlers_return_structured_5xx_when_store_is_unavailable() {
+        let store = make_sqlite_store().await;
+        store.pool.close().await;
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: Arc::new(store),
+        });
+
+        for (uri, error) in [
+            ("/evidence", "evidence listing failed"),
+            ("/sdlc-pm/sprints", "sprint listing failed"),
+            ("/sdlc-pm/stories", "story listing failed"),
+            ("/org-intel/teams", "team listing failed"),
+            ("/org-intel/metrics", "organization metrics failed"),
+        ] {
+            let response = app
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .uri(uri)
+                        .body(Body::empty())
+                        .expect("request"),
+                )
+                .await
+                .expect("response");
+
+            assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR, "{uri}");
+            let body = axum::body::to_bytes(response.into_body(), 1024)
+                .await
+                .expect("body");
+            let expected = format!(r#"{{"error":"{error}"}}"#);
+            assert_eq!(body.as_ref(), expected.as_bytes(), "{uri}");
+        }
+    }
+
     /// Consumer-facing v1 contract: evidence is stored/listed, then the same
     /// artifact is traversed through request-supplied explicit trace links.
     #[tokio::test]
@@ -1905,6 +1982,8 @@ mod tests {
         assert!(validate_bind_address(loopback, None).is_ok());
         assert!(validate_bind_address(public, None).is_err());
         assert!(validate_bind_address(public, Some("authenticated-proxy")).is_ok());
+        assert!(validate_bind_address(public, Some("loopback-published")).is_ok());
+        assert!(validate_bind_address(public, Some("private-network")).is_ok());
         assert!(validate_bind_address(public, Some("anything-else")).is_err());
     }
 
