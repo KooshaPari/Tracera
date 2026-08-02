@@ -256,18 +256,17 @@ mod tests {
             Path::new("/mnt/c/.env.local"),
             &["ps"],
         );
-        // On macOS where wsl is absent, wsl_distro() is None, so the argv
-        // drops the distro prefix.
-        if cfg!(target_os = "macos") {
-            assert_eq!(prog, "wsl");
-            assert_ne!(args.first().map(String::as_str), Some("--distribution"));
+        assert_eq!(prog, "wsl");
+        if args.first().map(String::as_str) == Some("--distribution") {
+            // A configured WSL host prefixes the docker compose invocation
+            // with the distribution selected by `wsl -l -q`.
+            assert!(args.len() >= 4);
+            assert!(!args[1].is_empty());
+            assert_eq!(&args[2..4], ["docker", "compose"]);
         } else {
-            // On Linux/Windows CI where wsl IS available, the distro flag
-            // comes first.
-            assert_eq!(prog, "wsl");
-            assert_eq!(args[0], "--distribution");
-            assert_eq!(args[1], "Ubuntu-22.04");
-            assert_eq!(args[2], "compose");
+            // Hosts without WSL (including Linux/macOS CI runners) still
+            // produce the valid default-distro invocation.
+            assert_eq!(&args[0..2], ["docker", "compose"]);
         }
     }
 

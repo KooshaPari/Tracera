@@ -159,14 +159,6 @@ fn probe_wsl_docker() -> bool {
     }
 }
 
-/// Resolve a free TCP port by binding to port 0 and reading what the OS assigned.
-pub fn pick_free_port() -> anyhow::Result<u16> {
-    use std::net::TcpListener;
-    let listener = TcpListener::bind("127.0.0.1:0")?;
-    let port = listener.local_addr()?.port();
-    Ok(port)
-}
-
 /// Returns the path to the `wsl.exe` distribution root (used only when
 /// constructing `wsl --distribution <name> -- ...` invocations).
 pub fn wsl_distro() -> Option<String> {
