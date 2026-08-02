@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/search.py
-# hypothesis_version: 6.148.7
-
-['%Y-%m-%d', '+00:00', '--created-after', '--created-before', '--fuzzy', '--limit', '--owner', '--status', '--type', '--updated-after', '--updated-before', '--view', '-l', '-o', '-s', '-t', '-v', 'ID', 'Search commands', 'Status', 'Title', 'Type', 'View', 'Z', 'blue', 'current_project_id', 'cyan', 'green', 'magenta', 'storage_dir', 'yellow']

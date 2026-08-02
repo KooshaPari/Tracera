@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/benchmark.py
-# hypothesis_version: 6.148.7
-
-['1000ms', '5000ms', 'Duration', 'Full Refresh', 'Incremental Refresh', 'Operation', 'Performance Summary', 'Query Time', 'Rows', 'Size', 'Status', 'Target', 'View', 'blue', 'bold', 'cyan', 'database_url', 'green', 'magenta', 'meets_target', 'postgresql://', 'red', 'refresh', 'report', 'right', 'summary', 'views', 'yellow', '✓', '✗']

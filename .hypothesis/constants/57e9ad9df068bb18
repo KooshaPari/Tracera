@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/bulk_service.py
-# hypothesis_version: 6.151.4
-
-[100, 'blocked', 'bulk_operation', 'bulk_update', 'complete', 'conflict_count', 'current_status', 'filters', 'id', 'new_status', 'parallel_execution', 'status', 'success_count', 'title', 'total_count', 'updates']

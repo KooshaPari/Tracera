@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/problem.py
-# hypothesis_version: 6.151.4
-
-[100, 255, 500, 'CASCADE', 'assigned_to', 'awaiting_fix', 'by_design', 'cannot_reproduce', 'category', 'closed', 'critical', 'deferred', 'environmental', 'extend_existing', 'fishbone', 'five_whys', 'fmea', 'high', 'human', 'impact_level', 'in_investigation', 'kepner_tregoe', 'known_error', 'low', 'medium', 'metadata', 'open', 'other', 'pareto', 'pending_workaround', 'permanent_fix', 'priority', 'problem_activities', 'problem_id', 'problem_metadata', 'problems', 'problems.id', 'process', 'project_id', 'projects.id', 'status', 'systematic', 'technology', 'version_id_col', 'workaround_only']

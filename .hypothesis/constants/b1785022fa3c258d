@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/repositories/specification_repository.py
-# hypothesis_version: 6.151.4
-
-[0.0, 100, '%Y%m%d', 'accepted', 'approved', 'archived', 'deprecated', 'draft', 'executing', 'failed', 'implemented', 'passed', 'proposed', 'ready', 'rejected', 'review', 'system']

@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/testing_factories.py
-# hypothesis_version: 6.148.7
-
-['A test project', 'FEATURE', 'Test Item', 'Test Project', 'depends_on', 'feature', 'medium', 'source', 'target', 'test-project', 'todo']

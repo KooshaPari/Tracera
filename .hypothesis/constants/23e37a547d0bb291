@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/node_kind.py
-# hypothesis_version: 6.151.4
-
-[200, 255, 'CASCADE', 'extend_existing', 'name', 'node_kinds', 'project_id', 'projects.id']

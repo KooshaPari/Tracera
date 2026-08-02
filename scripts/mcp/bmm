@@ -1,3 +1,0 @@
-#!/bin/bash
-# BMM CLI Wrapper
-exec "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/.venv/bin/python" "/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/scripts/mcp/bmm_cli.py" "$@"

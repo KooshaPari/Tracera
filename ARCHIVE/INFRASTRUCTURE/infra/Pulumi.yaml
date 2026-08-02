@@ -1,3 +1,0 @@
-name: tracertm-iac
-runtime: nodejs
-description: Infrastructure as Code for TraceRTM using Pulumi Node.js runtime and existing Kubernetes manifests managed via code.

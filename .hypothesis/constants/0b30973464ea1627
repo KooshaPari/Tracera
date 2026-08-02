@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/storage_helper.py
-# hypothesis_version: 6.148.7
-
-[100, 1000, 3600, 86400, '%Y-%m-%d %H:%M', ', ', '...', 'Created', 'External ID', 'F', 'Field', 'ID', 'Items', 'Link ID', 'Links', 'Metadata', 'N/A', 'Owner', 'Parent', 'Priority', 'Project', 'Source', 'Status', 'Sync Status', 'Target', 'Title', 'Type', 'Updated', 'Value', 'Version', 'View', '[green]✓[/green]', 'auto_sync', 'blocked', 'blocks', 'blue', 'current_project_id', 'current_project_name', 'cyan', 'database_url', 'depends_on', 'dim', 'done', 'external_id', 'green', 'high', 'implements', 'in_progress', 'just now', 'last_error', 'last_sync_time', 'low', 'medium', 'red', 'related_to', 'storage_dir', 'tests', 'todo', 'true', 'white', 'yellow']

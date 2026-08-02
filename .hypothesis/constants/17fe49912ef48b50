@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/history.py
-# hypothesis_version: 6.148.7
-
-['%Y-%m-%d', '%Y-%m-%d %H:%M:%S', '+00:00', ', ', '--at', '--confirm', '--limit', '--version', '-l', '-v', 'Agent', 'Deleted', 'Details', 'Event', 'Item ID', 'Item ID to rollback', 'N/A', 'Time', 'Updated', 'Z', 'current_project_id', 'cyan', 'description', 'description updated', 'dim', 'green', 'item', 'item_created', 'item_deleted', 'item_metadata', 'item_updated', 'owner', 'priority', 'rollback', 'status', 'system', 'title', 'version', 'yellow']

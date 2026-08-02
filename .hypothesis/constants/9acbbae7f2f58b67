@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/agent.py
-# hypothesis_version: 6.148.7
-
-[255, 'CASCADE', 'active', 'agent_metadata', 'agent_type', 'agents', 'capabilities', 'config', 'generic', 'project_id', 'projects.id', 'status']

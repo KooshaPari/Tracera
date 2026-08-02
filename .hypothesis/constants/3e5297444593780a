@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/security_compliance_service.py
-# hypothesis_version: 6.148.7
-
-['COMPLIANT', 'NON_COMPLIANT', 'action', 'admin', 'allowed', 'audit_stats', 'cleared_count', 'compliance_status', 'delete', 'details', 'encryption_enabled', 'event_id', 'event_type', 'event_types', 'generated_at', 'logged', 'read', 'recommendations', 'resource', 'role', 'status', 'timestamp', 'total_events', 'unique_users', 'user', 'user_id', 'viewer', 'write']

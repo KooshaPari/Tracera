@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/saved_queries.py
-# hypothesis_version: 6.148.7
-
-[', ', '--filter', '--query', '--status', '--view', '-f', '-q', '-s', '-v', '.config', 'Filter criteria', 'Filters', 'Name', 'Query name', 'Query name to delete', 'Query name to run', 'Query string', 'Saved Queries', 'Status filter', 'View filter', 'cyan', 'delete', 'filter', 'green', 'list', 'query', 'run', 'save', 'saved_queries.json', 'status', 'tracertm', 'view', 'w']
