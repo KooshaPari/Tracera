@@ -17,6 +17,11 @@ use std::path::PathBuf;
 
 use which::which;
 
+#[cfg(target_os = "macos")]
+const APPLE_CONTAINER_BINARY: &str = "/usr/local/bin/container";
+#[cfg(not(target_os = "macos"))]
+const APPLE_CONTAINER_BINARY: &str = "container";
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Backend {
     Docker,
@@ -46,7 +51,7 @@ impl Backend {
         match self {
             Backend::Docker => "docker",
             Backend::Podman => "podman",
-            Backend::AppleContainer => "container",
+            Backend::AppleContainer => APPLE_CONTAINER_BINARY,
             Backend::WslDocker => "wsl",
         }
     }
@@ -66,6 +71,9 @@ impl Backend {
     pub fn probe(self) -> bool {
         match self {
             Backend::WslDocker => probe_wsl_docker(),
+            Backend::AppleContainer => {
+                which(self.binary()).is_ok() || std::path::Path::new(self.binary()).is_file()
+            }
             other => which(other.binary()).is_ok(),
         }
     }
@@ -116,13 +124,20 @@ impl fmt::Display for Backend {
 /// (and then Podman, then WSL2+docker) when it's not.
 pub fn detect(preferred: Option<Backend>) -> anyhow::Result<Backend> {
     if let Some(b) = preferred {
-        if b.probe() {
+        if b.compose_works() {
             return Ok(b);
         }
+        if !b.probe() {
+            anyhow::bail!(
+                "TRACERA_BACKEND={} requested but {} is not available",
+                b.label(),
+                b.binary()
+            );
+        }
         anyhow::bail!(
-            "TRACERA_BACKEND={} requested but {} is not available on PATH",
-            b.label(),
-            b.binary()
+            "TRACERA_BACKEND={} is installed but its compose command is unavailable; "
+                "install the backend's Compose integration or choose another runtime",
+            b.label()
         );
     }
 
@@ -232,4 +247,15 @@ where
         );
     }
     Ok(String::from_utf8_lossy(&output.stdout).into_owned())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Backend, APPLE_CONTAINER_BINARY};
+
+    #[test]
+    fn apple_container_uses_native_binary_path() {
+        assert_eq!(Backend::AppleContainer.binary(), APPLE_CONTAINER_BINARY);
+        assert_eq!(Backend::AppleContainer.compose_argv(), &["compose"]);
+    }
 }
