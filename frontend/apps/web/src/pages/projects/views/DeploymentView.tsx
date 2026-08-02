@@ -185,9 +185,10 @@ export const DeploymentView = () => {
                 href={env.url}
                 target='_blank'
                 rel='noopener'
+                aria-label={`Open ${env.name} deployment site in a new tab`}
                 className='text-muted-foreground hover:text-primary'
               >
-                <ExternalLink className='h-4 w-4' />
+                <ExternalLink className='h-4 w-4' aria-hidden='true' />
               </a>
             </div>
             {env.lastDeploy && (
