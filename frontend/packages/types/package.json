@@ -13,6 +13,6 @@
     "clean": "tsc --build --clean"
   },
   "devDependencies": {
-    "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1"
+    "typescript": "5.9.3"
   }
 }

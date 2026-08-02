@@ -11,8 +11,8 @@ interface CollapsibleProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'o
 }
 
 interface CollapsibleChildProps {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  open?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
 }
 
 const Collapsible = React.forwardRef<HTMLDivElement, CollapsibleProps>(
