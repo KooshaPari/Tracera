@@ -986,7 +986,6 @@ async fn list_problems(
                     error: "problem listing failed",
                 }),
             )
-        });
         })?;
     Ok(Json(ProblemListResponse {
         project_id,
