@@ -14,10 +14,10 @@ Required invariants:
   Helm template fails closed when that reference is omitted. Optional ingest
   credentials (`GITHUB_*` / `JIRA_*`) may be supplied in the same Secret.
 - `TRACERA_BIND_ADDR` and `TRACERA_PUBLIC_BIND_MODE` are explicit pod-level
-  settings. The default `0.0.0.0:8080` + `private-network` pair is only a
-  cluster-boundary assertion; it does not authenticate callers. Public access
-  requires a separately reviewed TLS ingress with authentication and an
-  `authenticated-proxy` mode acknowledgement.
+  settings. Any non-loopback bind also requires `TRACERA_AUTH_TOKEN` from the
+  provisioned Secret; the Rust layer enforces it on every non-health route.
+  Public access still requires a separately reviewed TLS ingress with
+  authentication and an `authenticated-proxy` mode acknowledgement.
 - Liveness is `/health`; readiness is `/ready`. A probe must not use an
   undocumented alias because it can mark an unhealthy process ready.
 - The Service defaults to `ClusterIP`; publishing the backend port requires an

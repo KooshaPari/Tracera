@@ -28,6 +28,7 @@ services:
       # mode permits the container-internal listener without granting LAN or
       # internet exposure.
       TRACERA_PUBLIC_BIND_MODE: "loopback-published"
+      TRACERA_AUTH_TOKEN: ${TRACERA_AUTH_TOKEN:?TRACERA_AUTH_TOKEN is required}
       DATABASE_URL: "postgres://tracera:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/tracera"
     # The Rust image serves the approved rich dashboard and API from one origin.
     # Keep browser access local while leaving the database un-published.

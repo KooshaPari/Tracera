@@ -21,10 +21,10 @@ redesign is included in this packet.
 ## Chosen contract
 
 1. Loopback binding remains the default and needs no additional environment.
-2. A non-loopback bind fails closed unless
-   `TRACERA_PUBLIC_BIND_MODE=authenticated-proxy` is explicitly supplied.
-   This is an acknowledgement gate, not an implementation of end-user auth;
-   self-host ingress must still enforce authentication.
+2. A non-loopback bind fails closed unless an explicit
+   `TRACERA_PUBLIC_BIND_MODE` and non-empty `TRACERA_AUTH_TOKEN` are supplied.
+   The token is enforced in-process on every non-health route; self-host
+   ingress must still enforce authentication.
 3. `/health` remains a process liveness endpoint. `/ready` and `/readyz` return
    HTTP 503 with a stable non-sensitive JSON status whenever the store probe
    fails.

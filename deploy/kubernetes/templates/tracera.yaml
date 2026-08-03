@@ -74,6 +74,11 @@ spec:
                 configMapKeyRef:
                   name: {{ include "phase-finish-stack.fullname" . }}-env
                   key: TRACERA_PUBLIC_BIND_MODE
+            - name: TRACERA_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "tracera.secrets.existingSecret must reference a provisioned Secret containing TRACERA_AUTH_TOKEN" .Values.secrets.existingSecret }}
+                  key: TRACERA_AUTH_TOKEN
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               valueFrom:
                 configMapKeyRef:

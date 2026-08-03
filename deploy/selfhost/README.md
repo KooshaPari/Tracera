@@ -24,6 +24,8 @@ Set these before starting the stack:
 - `TRACERA_PUBLIC_BIND_MODE`: must be exactly `authenticated-proxy`; set it
   only after Caddy has an active authentication directive. The Rust gateway
   otherwise refuses non-loopback binding at startup.
+- `TRACERA_AUTH_TOKEN`: non-empty bearer token supplied to the Rust gateway;
+  every non-health route requires `Authorization: Bearer <token>`.
 
 WorkOS AuthKit is not wired in yet, but these placeholders show where its settings would live:
 
@@ -72,7 +74,8 @@ docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
 
 The stack does three things:
 
-1. Builds and runs `tracera-server` from the repo on `0.0.0.0:8080`
+1. Builds and runs `tracera-server` from the repo on `0.0.0.0:8080` with the
+   required in-process bearer token
 2. Lets Caddy reverse proxy `http://tracera.pheno.studio` to `tracera-server:8080`
 3. Attaches cloudflared to the tunnel token so the hostname is reachable globally through Cloudflare
 

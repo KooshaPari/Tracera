@@ -1,4 +1,5 @@
 mod db;
+mod auth;
 mod health;
 mod ingest;
 mod pg_store;
@@ -42,6 +43,7 @@ const MAX_REQUEST_BODY_BYTES: usize = 8 * 1024 * 1024;
 /// allowing an unbounded response allocation.
 const MAX_COVERAGE_LINKS: usize = 25_000;
 const PUBLIC_BIND_MODE_ENV: &str = "TRACERA_PUBLIC_BIND_MODE";
+const AUTH_TOKEN_ENV: &str = "TRACERA_AUTH_TOKEN";
 const AUTHENTICATED_PROXY_MODE: &str = "authenticated-proxy";
 const LOOPBACK_PUBLISHED_MODE: &str = "loopback-published";
 const PRIVATE_NETWORK_MODE: &str = "private-network";
@@ -68,26 +70,33 @@ struct AppState {
     store: Arc<dyn Store>,
 }
 
-/// Reject non-loopback listeners unless the deployment explicitly declares its
-/// network boundary. The server intentionally has no browser credential model:
-/// `authenticated-proxy` is valid only behind a real authenticated TLS proxy;
-/// `loopback-published` is reserved for the canonical Compose profile, whose
-/// host publication is hard-coded to 127.0.0.1; and `private-network` is for
-/// profiles that publish no host port and expose the listener only on the
-/// private container network. These modes are deployment assertions, not
-/// application authentication.
-fn validate_bind_address(addr: SocketAddr, public_bind_mode: Option<&str>) -> Result<(), String> {
-    if addr.ip().is_loopback()
-        || matches!(
-            public_bind_mode,
-            Some(AUTHENTICATED_PROXY_MODE | LOOPBACK_PUBLISHED_MODE | PRIVATE_NETWORK_MODE)
-        )
-    {
+/// Reject non-loopback listeners unless a bearer token is configured. Network
+/// mode remains an explicit deployment assertion, while the in-process token
+/// prevents an accidental direct launch from exposing unauthenticated writes.
+fn validate_bind_address(
+    addr: SocketAddr,
+    public_bind_mode: Option<&str>,
+    auth_token: Option<&str>,
+) -> Result<(), String> {
+    if addr.ip().is_loopback() {
+        return Ok(());
+    }
+
+    if !matches!(
+        public_bind_mode,
+        Some(AUTHENTICATED_PROXY_MODE | LOOPBACK_PUBLISHED_MODE | PRIVATE_NETWORK_MODE)
+    ) {
+        return Err(format!(
+            "refusing non-loopback bind to {addr}; set {PUBLIC_BIND_MODE_ENV} to an explicit authenticated-proxy, loopback-published, or private-network deployment mode"
+        ));
+    }
+
+    if auth_token.is_some_and(|token| !token.is_empty()) {
         return Ok(());
     }
 
     Err(format!(
-        "refusing non-loopback bind to {addr}; bind to loopback or set {PUBLIC_BIND_MODE_ENV} to an explicit authenticated-proxy, loopback-published, or private-network deployment mode"
+        "refusing non-loopback bind to {addr}; {AUTH_TOKEN_ENV} must contain a bearer token"
     ))
 }
 
@@ -535,7 +544,11 @@ async fn main() {
         store,
     };
 
-    let app = build_router(state);
+    let auth_token = env::var(AUTH_TOKEN_ENV)
+        .ok()
+        .filter(|token| !token.is_empty())
+        .map(Arc::<str>::from);
+    let app = build_router_with_auth(state, auth_token.clone());
 
     let frontend_dist = env::var("TRACERA_FRONTEND_DIST")
         .map(PathBuf::from)
@@ -550,7 +563,11 @@ async fn main() {
         .unwrap_or_else(|| SocketAddr::from(([127, 0, 0, 1], 8080)));
 
     let public_bind_mode = env::var(PUBLIC_BIND_MODE_ENV).ok();
-    if let Err(error) = validate_bind_address(addr, public_bind_mode.as_deref()) {
+    if let Err(error) = validate_bind_address(
+        addr,
+        public_bind_mode.as_deref(),
+        auth_token.as_deref(),
+    ) {
         eprintln!("FATAL: {error}");
         std::process::exit(1);
     }
@@ -569,6 +586,10 @@ async fn main() {
 }
 
 fn build_router(state: AppState) -> Router {
+    build_router_with_auth(state, None)
+}
+
+fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Router {
     Router::new()
         .route("/healthz", get(health::healthz))
         .route("/health", get(health::health))
@@ -596,6 +617,10 @@ fn build_router(state: AppState) -> Router {
         .route("/org-intel/teams", get(list_teams))
         .route("/org-intel/metrics", get(org_metrics))
         .with_state(state)
+        .layer(axum::middleware::from_fn_with_state(
+            auth_token,
+            auth::require_bearer,
+        ))
         .layer(DefaultBodyLimit::max(MAX_REQUEST_BODY_BYTES))
         .layer(SetResponseHeaderLayer::if_not_present(
             header::X_CONTENT_TYPE_OPTIONS,
@@ -1605,6 +1630,57 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn public_auth_requires_bearer_for_application_routes_but_not_probes() {
+        let store = make_sqlite_store().await;
+        let app = build_router_with_auth(
+            AppState {
+                version: env!("CARGO_PKG_VERSION").to_string(),
+                backend: "sqlite",
+                started_at: Instant::now(),
+                store: Arc::new(store),
+            },
+            Some(Arc::<str>::from("secret")),
+        );
+
+        let unauthorized = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/evidence")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        assert_eq!(unauthorized.status(), StatusCode::UNAUTHORIZED);
+        assert_eq!(unauthorized.headers()[header::WWW_AUTHENTICATE], "Bearer");
+
+        let health = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/health")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        assert_eq!(health.status(), StatusCode::OK);
+
+        let authorized = app
+            .oneshot(
+                Request::builder()
+                    .uri("/evidence")
+                    .header(header::AUTHORIZATION, "Bearer secret")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        assert_eq!(authorized.status(), StatusCode::OK);
+    }
+
+    #[tokio::test]
     async fn readiness_fails_closed_when_the_store_is_unavailable() {
         let store = make_sqlite_store().await;
         store.pool.close().await;
@@ -1997,12 +2073,13 @@ mod tests {
         let loopback = "127.0.0.1:8080".parse().expect("loopback address");
         let public = "0.0.0.0:8080".parse().expect("public address");
 
-        assert!(validate_bind_address(loopback, None).is_ok());
-        assert!(validate_bind_address(public, None).is_err());
-        assert!(validate_bind_address(public, Some("authenticated-proxy")).is_ok());
-        assert!(validate_bind_address(public, Some("loopback-published")).is_ok());
-        assert!(validate_bind_address(public, Some("private-network")).is_ok());
-        assert!(validate_bind_address(public, Some("anything-else")).is_err());
+        assert!(validate_bind_address(loopback, None, None).is_ok());
+        assert!(validate_bind_address(public, None, None).is_err());
+        assert!(validate_bind_address(public, Some("authenticated-proxy"), None).is_err());
+        assert!(validate_bind_address(public, Some("loopback-published"), Some("secret")).is_ok());
+        assert!(validate_bind_address(public, Some("private-network"), Some("secret")).is_ok());
+        assert!(validate_bind_address(public, Some("anything-else"), Some("secret")).is_err());
+        assert!(validate_bind_address(public, Some("private-network"), Some("")).is_err());
     }
 
     #[test]

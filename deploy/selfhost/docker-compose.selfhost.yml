@@ -6,6 +6,7 @@ services:
     environment:
       TRACERA_BIND_ADDR: 0.0.0.0:8080
       TRACERA_PUBLIC_BIND_MODE: ${TRACERA_PUBLIC_BIND_MODE:?TRACERA_PUBLIC_BIND_MODE=authenticated-proxy is required after ingress auth is enabled}
+      TRACERA_AUTH_TOKEN: ${TRACERA_AUTH_TOKEN:?TRACERA_AUTH_TOKEN is required for in-process API protection}
     volumes:
       - ../..:/workspace
       - tracera-cargo-cache:/usr/local/cargo/registry

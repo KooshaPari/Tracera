@@ -22,6 +22,7 @@ services:
       # This legacy profile publishes no backend host port; the server is
       # reachable only by the sibling nginx container on the private network.
       TRACERA_PUBLIC_BIND_MODE: "private-network"
+      TRACERA_AUTH_TOKEN: ${TRACERA_AUTH_TOKEN:?TRACERA_AUTH_TOKEN is required}
       DATABASE_URL: postgres://tracera:${POSTGRES_PASSWORD}@postgres:5432/tracera
     expose: ["8080"]
     depends_on:
