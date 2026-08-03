@@ -97,9 +97,8 @@ describe('Authentication Security Tests', () => {
       expect(validateJWT('invalid')).toBeFalsy();
       expect(validateJWT('a.b')).toBeFalsy();
 
-      // Mock valid JWT structure
-      const validJWT =
-        'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U';
+      // Mock a structurally valid JWT without embedding a signed token fixture.
+      const validJWT = 'aGVhZGVy.cGF5bG9hZA.c2lnbmF0dXJl';
       expect(validateJWT(validJWT)).toBeTruthy();
     });
 
