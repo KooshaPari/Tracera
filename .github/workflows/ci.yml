@@ -179,6 +179,10 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Gitleaks scans the complete PR commit range; a shallow checkout
+          # can omit the base SHA and make the scan fail before inspection.
+          fetch-depth: 0
       - name: gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
