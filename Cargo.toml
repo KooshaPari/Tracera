@@ -11,7 +11,7 @@ description = "Tracera - Traceability and impact analysis for Phenotype"
 authors = ["kooshapari"]
 
 [workspace.dependencies]
-base64 = "0.22"
+base64 = "0.23"
 chrono = { version = "0.4", features = ["serde"] }
 indexmap = { version = "2", features = ["serde"] }
 serde = { version = "1", features = ["derive"] }
