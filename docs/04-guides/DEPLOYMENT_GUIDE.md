@@ -96,7 +96,8 @@ REDIS_URL=redis://host:6379
 LOG_LEVEL=INFO
 API_HOST=0.0.0.0
 API_PORT=8000
-TRACERA_JWT_SECRET=<production-secret>
+# Inject this value from the deployment secret manager; never commit a literal.
+TRACERA_JWT_SECRET="${TRACERA_JWT_SECRET:?set via the deployment secret manager}"
 TRACERA_JWT_AUDIENCE=tracera-api
 TRACERA_JWT_ISSUER=tracera
 ```

@@ -16,10 +16,24 @@ jobs:
         run: cargo build --locked --release -p tracera-server
       - name: Smoke test endpoints
         run: |
-          ./target/release/tracera-server &
+          set -euo pipefail
+          tmp_dir="$(mktemp -d)"
+          DATABASE_URL="sqlite://${tmp_dir}/tracera.db?mode=rwc" \
+          TRACERA_BIND_ADDR="127.0.0.1:18080" \
+          RUST_LOG=tracera_server=warn \
+            ./target/release/tracera-server >/tmp/tracera-nightly.log 2>&1 &
           SRV=$!
-          sleep 3
-          curl -fsS http://127.0.0.1:8080/health
-          curl -fsS http://127.0.0.1:8080/ready
-          curl -fsS -X POST http://127.0.0.1:8080/api/v1/coverage-matrix -H 'content-type: application/json' -d '{"links":[]}'
-          kill $SRV
+          cleanup() {
+            kill "${SRV}" 2>/dev/null || true
+            wait "${SRV}" 2>/dev/null || true
+            rm -rf "${tmp_dir}"
+          }
+          trap cleanup EXIT
+          for _ in $(seq 1 50); do
+            curl --silent --fail http://127.0.0.1:18080/health >/dev/null && break
+            sleep 0.1
+          done
+          curl --silent --fail http://127.0.0.1:18080/health
+          curl --silent --fail http://127.0.0.1:18080/ready
+          curl --silent --fail -X POST http://127.0.0.1:18080/api/v1/coverage-matrix \
+            -H 'content-type: application/json' -d '{"links":[]}'
