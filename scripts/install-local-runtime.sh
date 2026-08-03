@@ -17,7 +17,10 @@ fi
 # Install the supported native macOS runtime without Docker.
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 server_bin="$repo_root/target/release/tracera-server"
-app_src="$repo_root/frontend/apps/desktop/build/dev-macos-arm64/Tracera-dev.app"
+# The postbundle step normalizes the Electrobun artifact name and patches its
+# CFBundleName to Tracera.app. Keep the installer aligned with that shipped
+# artifact rather than the pre-postbundle Electrobun directory name.
+app_src="$repo_root/frontend/apps/desktop/build/dev-macos-arm64/Tracera.app"
 app_dst="${HOME}/Applications/Tracera-dev-0.1.0.app"
 agent_dir="${HOME}/Library/LaunchAgents"
 agent="${agent_dir}/com.phenotype.tracera-server.plist"
@@ -58,7 +61,10 @@ if ! cargo build --release -p tracera-server 2>"$build_log"; then
   fi
 fi
 rm -f "$build_log"
-bun --cwd "$repo_root/frontend/apps/desktop" run build
+(
+  cd "$repo_root/frontend/apps/desktop"
+  bun run build
+)
 [[ -x "$server_bin" ]] || { echo "release server missing: $server_bin" >&2; exit 1; }
 [[ -d "$app_src" ]] || { echo "desktop bundle missing: $app_src" >&2; exit 1; }
 ditto "$app_src" "$app_dst"
