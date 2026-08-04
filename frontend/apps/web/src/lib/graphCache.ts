@@ -289,11 +289,16 @@ class BaseLRUCache<T> {
   }
 }
 
-const cacheFactory = (maxEntries?: number, maxMemory?: number): BaseLRUCache<GraphCacheValue> =>
-  new BaseLRUCache({
-    maxEntries,
-    maxMemory,
-  });
+const cacheFactory = (maxEntries?: number, maxMemory?: number): BaseLRUCache<GraphCacheValue> => {
+  const config: Partial<CacheStoreConfig> = {};
+  if (maxEntries !== undefined) {
+    config.maxEntries = maxEntries;
+  }
+  if (maxMemory !== undefined) {
+    config.maxMemory = maxMemory;
+  }
+  return new BaseLRUCache(config);
+};
 
 export const graphCache = new Map<string, GraphCacheEntry>();
 export const groupingCache = cacheFactory();
