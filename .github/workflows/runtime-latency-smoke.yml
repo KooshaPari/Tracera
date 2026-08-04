@@ -33,7 +33,7 @@ jobs:
           toolchain: stable
       - uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1
         with:
-          bun-version: latest
+          bun-version: '1.1.38'
       - name: Build frontend bundle
         working-directory: frontend
         run: bun install --frozen-lockfile --ignore-scripts && npm run build
