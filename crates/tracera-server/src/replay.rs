@@ -13,17 +13,17 @@ const KEYRING_ENV: &str = "TRACERA_REPLAY_PUBLIC_KEYS_JSON";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum KeyringError {
-    InvalidJson(String),
-    InvalidKeyId(String),
-    InvalidKeyEncoding(String),
+    Json(String),
+    KeyId(String),
+    KeyEncoding(String),
 }
 
 impl std::fmt::Display for KeyringError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::InvalidJson(message) => write!(f, "invalid replay public-key JSON: {message}"),
-            Self::InvalidKeyId(message) => write!(f, "invalid replay key_id: {message}"),
-            Self::InvalidKeyEncoding(message) => {
+            Self::Json(message) => write!(f, "invalid replay public-key JSON: {message}"),
+            Self::KeyId(message) => write!(f, "invalid replay key_id: {message}"),
+            Self::KeyEncoding(message) => {
                 write!(f, "invalid replay public-key encoding: {message}")
             }
         }
@@ -53,13 +53,13 @@ impl PublicKeyring {
 
     /// Parse a JSON object shaped as `{ "key-id": "base64-public-key" }`.
     pub fn from_json_str(raw: &str) -> Result<Self, KeyringError> {
-        let value: Value = serde_json::from_str(raw)
-            .map_err(|error| KeyringError::InvalidJson(error.to_string()))?;
-        let entries = value.as_object().ok_or_else(|| {
-            KeyringError::InvalidJson("keyring must be a JSON object".to_string())
-        })?;
+        let value: Value =
+            serde_json::from_str(raw).map_err(|error| KeyringError::Json(error.to_string()))?;
+        let entries = value
+            .as_object()
+            .ok_or_else(|| KeyringError::Json("keyring must be a JSON object".to_string()))?;
         if entries.is_empty() {
-            return Err(KeyringError::InvalidJson(
+            return Err(KeyringError::Json(
                 "keyring must contain at least one key".to_string(),
             ));
         }
@@ -67,32 +67,34 @@ impl PublicKeyring {
         let mut keys = BTreeMap::new();
         for (key_id, encoded) in entries {
             validate_key_id(key_id)?;
-            let encoded = encoded.as_str().ok_or_else(|| {
-                KeyringError::InvalidKeyEncoding(format!("{key_id} must be a string"))
-            })?;
+            let encoded = encoded
+                .as_str()
+                .ok_or_else(|| KeyringError::KeyEncoding(format!("{key_id} must be a string")))?;
             let raw = STANDARD.decode(encoded).map_err(|error| {
-                KeyringError::InvalidKeyEncoding(format!("{key_id} is not valid base64: {error}"))
+                KeyringError::KeyEncoding(format!("{key_id} is not valid base64: {error}"))
             })?;
             if STANDARD.encode(&raw) != encoded {
-                return Err(KeyringError::InvalidKeyEncoding(format!(
+                return Err(KeyringError::KeyEncoding(format!(
                     "{key_id} must use canonical base64"
                 )));
             }
-            let bytes: [u8; 32] = raw.try_into().map_err(|_| {
-                KeyringError::InvalidKeyEncoding(format!("{key_id} must encode 32 bytes"))
-            })?;
+            let bytes: [u8; 32] = raw
+                .try_into()
+                .map_err(|_| KeyringError::KeyEncoding(format!("{key_id} must encode 32 bytes")))?;
             let key = VerifyingKey::from_bytes(&bytes).map_err(|error| {
-                KeyringError::InvalidKeyEncoding(format!("{key_id} is not an Ed25519 key: {error}"))
+                KeyringError::KeyEncoding(format!("{key_id} is not an Ed25519 key: {error}"))
             })?;
             keys.insert(key_id.clone(), key);
         }
         Ok(Self { keys })
     }
 
+    #[cfg(test)]
     pub fn contains(&self, key_id: &str) -> bool {
         self.keys.contains_key(key_id)
     }
 
+    #[cfg(test)]
     pub fn len(&self) -> usize {
         self.keys.len()
     }
@@ -217,7 +219,6 @@ pub fn verify_benchmark_envelope(
     let events = object
         .get("events")
         .ok_or_else(|| VerificationError::Schema("events is required".to_string()))?;
-    let actual_hash = replay_hash(events)?;
     let result = object
         .get("result")
         .and_then(Value::as_object)
@@ -226,12 +227,6 @@ pub fn verify_benchmark_envelope(
         .get("replay_hash")
         .and_then(Value::as_str)
         .ok_or_else(|| VerificationError::Schema("result.replay_hash is required".to_string()))?;
-    if expected_hash != actual_hash {
-        return Err(VerificationError::ReplayHashMismatch {
-            expected: expected_hash.to_string(),
-            actual: actual_hash,
-        });
-    }
     let signature = object
         .get("signature")
         .and_then(Value::as_object)
@@ -270,6 +265,16 @@ pub fn verify_benchmark_envelope(
         )
         .map_err(|_| VerificationError::InvalidSignature)?;
 
+    // Authenticate the full unsigned envelope before trusting the replay hash.
+    // This keeps a stale hash on a tampered payload from masking signature failure.
+    let actual_hash = replay_hash(events)?;
+    if expected_hash != actual_hash {
+        return Err(VerificationError::ReplayHashMismatch {
+            expected: expected_hash.to_string(),
+            actual: actual_hash,
+        });
+    }
+
     Ok(VerifiedBenchmark {
         key_id: key_id.to_string(),
         replay_hash: expected_hash.to_string(),
@@ -280,13 +285,13 @@ pub fn verify_benchmark_envelope(
 fn validate_key_id(key_id: &str) -> Result<(), KeyringError> {
     let mut chars = key_id.chars();
     let first = chars.next().ok_or_else(|| {
-        KeyringError::InvalidKeyId("must be 1-128 safe identifier characters".to_string())
+        KeyringError::KeyId("must be 1-128 safe identifier characters".to_string())
     })?;
     if !first.is_ascii_alphanumeric()
         || key_id.len() > 128
         || chars.any(|ch| !(ch.is_ascii_alphanumeric() || matches!(ch, '.' | '_' | '-')))
     {
-        return Err(KeyringError::InvalidKeyId(format!(
+        return Err(KeyringError::KeyId(format!(
             "{key_id:?} must match [A-Za-z0-9][A-Za-z0-9._-]{{0,127}}"
         )));
     }
@@ -304,12 +309,14 @@ mod tests {
         SigningKey::generate(&mut OsRng)
     }
 
-    fn generated_keyring(signing_key: &SigningKey) -> PublicKeyring {
+    fn generated_keyring_with_id(signing_key: &SigningKey, key_id: &str) -> PublicKeyring {
         let public_key = STANDARD.encode(signing_key.verifying_key().to_bytes());
-        PublicKeyring::from_json_str(
-            &serde_json::json!({"producer-20260804-a": public_key}).to_string(),
-        )
-        .expect("generated public key should parse")
+        PublicKeyring::from_json_str(&serde_json::json!({key_id: public_key}).to_string())
+            .expect("generated public key should parse")
+    }
+
+    fn generated_keyring(signing_key: &SigningKey) -> PublicKeyring {
+        generated_keyring_with_id(signing_key, "producer-20260804-a")
     }
 
     fn signed_fixture(signing_key: &SigningKey) -> Value {
@@ -347,12 +354,12 @@ mod tests {
     #[test]
     fn rejects_bad_base64_and_wrong_length() {
         let invalid = PublicKeyring::from_json_str(r#"{"producer-a":"not base64"}"#);
-        assert!(matches!(invalid, Err(KeyringError::InvalidKeyEncoding(_))));
+        assert!(matches!(invalid, Err(KeyringError::KeyEncoding(_))));
 
         let short = STANDARD.encode([1_u8; 31]);
         let invalid =
             PublicKeyring::from_json_str(&serde_json::json!({"producer-a": short}).to_string());
-        assert!(matches!(invalid, Err(KeyringError::InvalidKeyEncoding(_))));
+        assert!(matches!(invalid, Err(KeyringError::KeyEncoding(_))));
     }
 
     #[test]
@@ -360,10 +367,10 @@ mod tests {
         let key = STANDARD.encode([1_u8; 32]);
         let invalid =
             PublicKeyring::from_json_str(&serde_json::json!({"producer/a": key}).to_string());
-        assert!(matches!(invalid, Err(KeyringError::InvalidKeyId(_))));
+        assert!(matches!(invalid, Err(KeyringError::KeyId(_))));
         assert!(matches!(
             PublicKeyring::from_json_str("{}"),
-            Err(KeyringError::InvalidJson(_))
+            Err(KeyringError::Json(_))
         ));
     }
 
@@ -403,7 +410,10 @@ mod tests {
         let envelope = signed_fixture(&signing_key);
         let other = generated_signing_key();
         assert!(matches!(
-            verify_benchmark_envelope(&envelope, &generated_keyring(&other)),
+            verify_benchmark_envelope(
+                &envelope,
+                &generated_keyring_with_id(&other, "other-producer-20260804-a")
+            ),
             Err(VerificationError::UnknownKey(_))
         ));
 
