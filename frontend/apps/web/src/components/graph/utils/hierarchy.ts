@@ -114,7 +114,7 @@ export function buildHierarchy(items: Item[], links: Link[]): Map<string, Hierar
         break;
       }
 
-      const { parentId } = current;
+      const parentId: string | undefined = current.parentId;
       current = parentId ? hierarchyMap.get(parentId) : undefined;
     }
 
