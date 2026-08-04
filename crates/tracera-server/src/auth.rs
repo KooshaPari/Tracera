@@ -53,8 +53,8 @@ fn is_health_route(path: &str) -> bool {
 fn constant_time_equal(left: &[u8], right: &[u8]) -> bool {
     let mut difference = left.len() ^ right.len();
     for index in 0..left.len().max(right.len()) {
-        difference |= left.get(index).copied().unwrap_or_default()
-            ^ right.get(index).copied().unwrap_or_default();
+        difference |= usize::from(left.get(index).copied().unwrap_or_default())
+            ^ usize::from(right.get(index).copied().unwrap_or_default());
     }
     difference == 0
 }

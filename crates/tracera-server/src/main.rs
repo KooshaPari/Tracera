@@ -52,7 +52,7 @@ use validation::{
     MAX_SHORT_TEXT_CHARS, MAX_URL_CHARS,
 };
 
-use store::{EvidenceItem, ListParams, Problem, Sprint, Store, Story, TeamRow};
+use store::{EvidenceItem, ListParams, Problem, Sprint, Store, Story, TeamRow, TraceLink};
 
 // ---------------------------------------------------------------------------
 // App state — Arc<dyn Store> replaces the bare PgPool.
@@ -358,6 +358,26 @@ struct TraceNeighborsResponse {
     neighbors: Vec<String>,
 }
 
+#[derive(Serialize)]
+struct PersistedTraceLinkResponse {
+    id: String,
+    source_id: String,
+    target_id: String,
+    relationship: String,
+    confidence: f64,
+    source: String,
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
+    direction: &'static str,
+}
+
+#[derive(Serialize)]
+struct PersistedTraceLinkListResponse {
+    artifact_id: String,
+    count: usize,
+    items: Vec<PersistedTraceLinkResponse>,
+}
+
 fn default_status() -> String {
     "draft".to_string()
 }
@@ -602,6 +622,10 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/api/v1/governance/spec-check", post(spec_check))
         .route("/api/v1/trace/forward/:artifact_id", post(trace_forward))
         .route("/api/v1/trace/reverse/:artifact_id", post(trace_reverse))
+        .route(
+            "/api/v1/trace/:artifact_id/links",
+            get(list_persisted_trace_links),
+        )
         .route("/evidence", get(list_evidence).post(create_evidence))
         .route("/evidence/health", get(health::health))
         .route("/ingest/github", post(ingest_github))
@@ -836,6 +860,54 @@ async fn trace_reverse(
         direction: "reverse",
         neighbors,
     })
+}
+
+async fn list_persisted_trace_links(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    axum::extract::Path(artifact_id): axum::extract::Path<String>,
+) -> Result<Json<PersistedTraceLinkListResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    validate_text(&artifact_id, "invalid artifact_id", MAX_ID_CHARS, true).map_err(bad_request)?;
+    let links = state
+        .store
+        .list_trace_links_for_artifact(artifact_id.clone())
+        .await
+        .map_err(|e| {
+            tracing::error!("list persisted trace links store error: {e}");
+            (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "trace link listing failed",
+                }),
+            )
+        })?;
+    let items: Vec<PersistedTraceLinkResponse> = links
+        .into_iter()
+        .map(|link| persisted_trace_link_response(link, &artifact_id))
+        .collect();
+
+    Ok(Json(PersistedTraceLinkListResponse {
+        artifact_id,
+        count: items.len(),
+        items,
+    }))
+}
+
+fn persisted_trace_link_response(link: TraceLink, artifact_id: &str) -> PersistedTraceLinkResponse {
+    PersistedTraceLinkResponse {
+        direction: if link.source_id == artifact_id {
+            "forward"
+        } else {
+            "reverse"
+        },
+        id: link.id,
+        source_id: link.source_id,
+        target_id: link.target_id,
+        relationship: link.relationship,
+        confidence: link.confidence,
+        source: link.source,
+        created_at: link.created_at,
+        updated_at: link.updated_at,
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1744,6 +1816,71 @@ mod tests {
         let payload: serde_json::Value = serde_json::from_slice(&body).expect("json body");
         assert_eq!(payload["count"], 0);
         assert_eq!(payload["items"], serde_json::json!([]));
+    }
+
+    #[tokio::test]
+    async fn api_router_lists_persisted_trace_links_for_an_artifact() {
+        use crate::store::Store as _;
+
+        let store = make_sqlite_store().await;
+        let now = Utc::now();
+        store
+            .create_trace_link(
+                "link-1".to_string(),
+                "REQ-001".to_string(),
+                "src/lib.rs".to_string(),
+                "implemented_by".to_string(),
+                0.91,
+                "github".to_string(),
+                now,
+            )
+            .await
+            .expect("seed persisted trace link");
+        store
+            .create_trace_link(
+                "link-2".to_string(),
+                "src/lib.rs".to_string(),
+                "test/lib_test.rs".to_string(),
+                "verified_by".to_string(),
+                0.87,
+                "manual".to_string(),
+                now,
+            )
+            .await
+            .expect("seed second persisted trace link");
+
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: Arc::new(store),
+        });
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/trace/src%2Flib.rs/links")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = axum::body::to_bytes(response.into_body(), 1024)
+            .await
+            .expect("body");
+        let payload: serde_json::Value = serde_json::from_slice(&body).expect("json body");
+        assert_eq!(payload["artifact_id"], "src/lib.rs");
+        assert_eq!(payload["count"], 2);
+        assert_eq!(payload["items"][0]["id"], "link-1");
+        assert_eq!(payload["items"][0]["direction"], "reverse");
+        assert_eq!(payload["items"][0]["relationship"], "implemented_by");
+        assert_eq!(payload["items"][0]["confidence"], 0.91);
+        assert_eq!(payload["items"][0]["source"], "github");
+        assert_eq!(payload["items"][1]["id"], "link-2");
+        assert_eq!(payload["items"][1]["direction"], "forward");
+        assert_eq!(payload["items"][1]["relationship"], "verified_by");
     }
 
     #[tokio::test]
@@ -3198,5 +3335,47 @@ mod tests {
         assert_eq!(persisted_relationship, "satisfies");
         assert!((persisted_confidence - 0.8).abs() < 1e-9);
         assert_eq!(persisted_source, "github");
+    }
+
+    #[tokio::test]
+    async fn sqlite_store_lists_only_trace_links_incident_to_the_artifact() {
+        use crate::store::Store as _;
+
+        let store = make_sqlite_store().await;
+        let now = Utc::now();
+        for (id, source_id, target_id) in [
+            ("trace-source", "artifact-1", "artifact-2"),
+            ("trace-target", "artifact-3", "artifact-1"),
+            ("trace-other", "artifact-4", "artifact-5"),
+        ] {
+            store
+                .create_trace_link(
+                    id.to_string(),
+                    source_id.to_string(),
+                    target_id.to_string(),
+                    "verifies".to_string(),
+                    1.0,
+                    "manual".to_string(),
+                    now,
+                )
+                .await
+                .expect("seed persisted trace link");
+        }
+
+        let links = store
+            .list_trace_links_for_artifact("artifact-1".to_string())
+            .await
+            .expect("list persisted trace links");
+
+        assert_eq!(
+            links
+                .iter()
+                .map(|link| link.id.as_str())
+                .collect::<Vec<_>>(),
+            ["trace-source", "trace-target",]
+        );
+        assert!(links
+            .iter()
+            .all(|link| link.source_id == "artifact-1" || link.target_id == "artifact-1"));
     }
 }

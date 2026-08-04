@@ -248,6 +248,16 @@ pub trait Store: Send + Sync {
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<TraceLink>>;
 
+    /// List every persisted link incident to an artifact.
+    ///
+    /// This is deliberately unpaged because it answers the complete local
+    /// neighborhood for one artifact; callers must not infer artifact types
+    /// or synthesize links that are absent from persistence.
+    fn list_trace_links_for_artifact(
+        &self,
+        artifact_id: String,
+    ) -> BoxFuture<'_, StoreResult<Vec<TraceLink>>>;
+
     // Teams
     fn list_teams(&self) -> BoxFuture<'_, StoreResult<Vec<TeamRow>>>;
 

@@ -314,6 +314,26 @@ impl Store for SqliteStore {
         })
     }
 
+    fn list_trace_links_for_artifact(
+        &self,
+        artifact_id: String,
+    ) -> BoxFuture<'_, StoreResult<Vec<TraceLink>>> {
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT id, source_id, target_id, relationship, confidence, source, created_at, updated_at \
+                 FROM trace_links \
+                 WHERE source_id = ?1 OR target_id = ?1 \
+                 ORDER BY created_at ASC, id ASC",
+            )
+            .bind(&artifact_id)
+            .fetch_all(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
+
+            Ok(rows.into_iter().map(row_to_trace_link).collect())
+        })
+    }
+
     fn list_teams(&self) -> BoxFuture<'_, StoreResult<Vec<TeamRow>>> {
         Box::pin(async move {
             let rows =
@@ -668,6 +688,19 @@ fn row_to_problem(r: sqlx::sqlite::SqliteRow) -> Problem {
         created_at: str_to_ts(&r.try_get::<String, _>("created_at").unwrap_or_default()),
         updated_at: str_to_ts(&r.try_get::<String, _>("updated_at").unwrap_or_default()),
         deleted_at: str_to_opt_ts(r.try_get::<Option<String>, _>("deleted_at").ok().flatten()),
+    }
+}
+
+fn row_to_trace_link(r: sqlx::sqlite::SqliteRow) -> TraceLink {
+    TraceLink {
+        id: r.try_get("id").unwrap_or_default(),
+        source_id: r.try_get("source_id").unwrap_or_default(),
+        target_id: r.try_get("target_id").unwrap_or_default(),
+        relationship: r.try_get("relationship").unwrap_or_default(),
+        confidence: r.try_get("confidence").unwrap_or_default(),
+        source: r.try_get("source").unwrap_or_default(),
+        created_at: str_to_ts(&r.try_get::<String, _>("created_at").unwrap_or_default()),
+        updated_at: str_to_ts(&r.try_get::<String, _>("updated_at").unwrap_or_default()),
     }
 }
 
