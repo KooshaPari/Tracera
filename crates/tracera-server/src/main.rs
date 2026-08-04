@@ -2,9 +2,9 @@ mod db;
 mod health;
 mod ingest;
 mod pg_store;
-mod replay;
 #[cfg(feature = "phenodag-queue")]
 mod queue;
+mod replay;
 mod sqlite_store;
 mod store;
 mod validation;
@@ -46,7 +46,7 @@ use validation::{
     MAX_SHORT_TEXT_CHARS, MAX_URL_CHARS,
 };
 
-use store::{EvidenceItem, Problem, Sprint, Store, Story, TeamRow};
+use store::{BenchmarkRun, EvidenceItem, Problem, Sprint, Store, Story, TeamRow};
 
 // ---------------------------------------------------------------------------
 // App state — Arc<dyn Store> replaces the bare PgPool.
@@ -62,6 +62,7 @@ struct AppState {
     backend: &'static str,
     started_at: Instant,
     store: Arc<dyn Store>,
+    replay_keyring: replay::PublicKeyring,
 }
 
 // ---------------------------------------------------------------------------
@@ -484,11 +485,17 @@ async fn main() {
             std::process::exit(1);
         };
 
+    let replay_keyring = replay::PublicKeyring::from_env().unwrap_or_else(|error| {
+        eprintln!("FATAL: invalid TRACERA_REPLAY_PUBLIC_KEYS_JSON: {error}");
+        std::process::exit(1);
+    });
+
     let state = AppState {
         version: env!("CARGO_PKG_VERSION").to_string(),
         backend,
         started_at: Instant::now(),
         store,
+        replay_keyring,
     };
 
     let app = build_router(state);
@@ -536,12 +543,13 @@ fn build_router(state: AppState) -> Router {
         .route("/api/v1/confidence", post(confidence))
         .route("/api/v1/blast-radius", post(blast_radius))
         .route("/api/v1/governance/spec-check", post(spec_check))
-        .route("/api/v1/trace/forward/:artifact_id", post(trace_forward))
-        .route("/api/v1/trace/reverse/:artifact_id", post(trace_reverse))
+        .route("/api/v1/trace/forward/{artifact_id}", post(trace_forward))
+        .route("/api/v1/trace/reverse/{artifact_id}", post(trace_reverse))
         .route("/evidence", get(list_evidence).post(create_evidence))
         .route("/evidence/health", get(health::health))
         .route("/ingest/github", post(ingest_github))
         .route("/ingest/jira", post(ingest_jira))
+        .route("/ingest/benchmark", post(ingest_benchmark))
         .route("/sdlc-pm/health", get(health::health))
         .route("/sdlc-pm/sprints", get(list_sprints).post(create_sprint))
         .route("/sdlc-pm/stories", get(list_stories))
@@ -1170,6 +1178,138 @@ async fn ingest_jira(
     (axum::http::StatusCode::OK, Json(result))
 }
 
+/// POST /ingest/benchmark
+///
+/// Accepts only an Ed25519-signed replay-v2 envelope.  The verifier runs
+/// before the existing benchmark mapper and Store write, so no unverified
+/// replay, signature, or outcome metadata reaches persistence.
+async fn ingest_benchmark(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    Json(envelope): Json<Value>,
+) -> Result<
+    (axum::http::StatusCode, Json<BenchmarkRun>),
+    (axum::http::StatusCode, Json<ErrorResponse>),
+> {
+    let verified = replay::verify_benchmark_envelope(&envelope, &state.replay_keyring)
+        .map_err(benchmark_verification_error)?;
+    ingest::benchmark_run_to_issue(&envelope).map_err(|error| {
+        tracing::warn!("benchmark replay mapper rejected verified envelope: {error}");
+        bad_request("invalid benchmark envelope")
+    })?;
+
+    let run_id = benchmark_required_string(&envelope, "run_id")?;
+    let session_id = benchmark_required_string(&envelope, "session_id")?;
+    let attempt_id = benchmark_required_string(&envelope, "attempt_id")?;
+    let outcome_sha256 = envelope
+        .pointer("/result/outcome_sha256")
+        .and_then(Value::as_str)
+        .filter(|hash| is_sha256_hex(hash))
+        .ok_or_else(|| bad_request("invalid result.outcome_sha256"))?
+        .to_string();
+    let status = envelope
+        .pointer("/result/status")
+        .and_then(Value::as_str)
+        .ok_or_else(|| bad_request("invalid result.status"))?
+        .to_string();
+
+    if let Some(existing) = state
+        .store
+        .get_benchmark_run(run_id.clone())
+        .await
+        .map_err(benchmark_store_error)?
+    {
+        if existing.replay_hash == verified.replay_hash {
+            return Ok((axum::http::StatusCode::OK, Json(existing)));
+        }
+        return Err((
+            axum::http::StatusCode::CONFLICT,
+            Json(ErrorResponse {
+                error: "benchmark run_id conflicts with a different replay_hash",
+            }),
+        ));
+    }
+
+    let metadata = serde_json::json!({
+        "verification": {
+            "schema_version": "2.0.0",
+            "replay_hash": verified.replay_hash.clone(),
+            "outcome_sha256": outcome_sha256.clone(),
+            "key_id": verified.key_id.clone(),
+            "signature_digest": verified.signature_digest.clone(),
+        }
+    });
+    let record = state
+        .store
+        .create_benchmark_run(
+            run_id.clone(),
+            session_id,
+            attempt_id,
+            "2.0.0".to_string(),
+            verified.replay_hash,
+            outcome_sha256,
+            verified.key_id,
+            verified.signature_digest,
+            status,
+            metadata,
+            Utc::now(),
+        )
+        .await
+        .map_err(benchmark_store_error)?;
+    let status = if record.run_id == run_id {
+        axum::http::StatusCode::CREATED
+    } else {
+        axum::http::StatusCode::OK
+    };
+    Ok((status, Json(record)))
+}
+
+fn benchmark_required_string(
+    envelope: &Value,
+    field: &'static str,
+) -> Result<String, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    envelope
+        .get(field)
+        .and_then(Value::as_str)
+        .filter(|value| !value.is_empty())
+        .map(str::to_string)
+        .ok_or_else(|| bad_request("invalid benchmark envelope"))
+}
+
+fn is_sha256_hex(value: &str) -> bool {
+    value.len() == 64 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
+}
+
+fn benchmark_verification_error(
+    error: replay::VerificationError,
+) -> (axum::http::StatusCode, Json<ErrorResponse>) {
+    let status = match error {
+        replay::VerificationError::UnknownKey(_) => axum::http::StatusCode::UNAUTHORIZED,
+        replay::VerificationError::ReplayHashMismatch { .. } => {
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY
+        }
+        _ => axum::http::StatusCode::BAD_REQUEST,
+    };
+    tracing::warn!("benchmark replay verification rejected envelope: {error}");
+    (
+        status,
+        Json(ErrorResponse {
+            error: "benchmark replay verification failed",
+        }),
+    )
+}
+
+fn benchmark_store_error(
+    error: store::StoreError,
+) -> (axum::http::StatusCode, Json<ErrorResponse>) {
+    tracing::error!("benchmark replay persistence failed: {error}");
+    (
+        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+        Json(ErrorResponse {
+            error: "benchmark replay persistence failed",
+        }),
+    )
+}
+
 // ---------------------------------------------------------------------------
 // Pure-function utilities (no DB interaction — unit-testable without a store)
 // ---------------------------------------------------------------------------
@@ -1287,9 +1427,128 @@ fn default_max_depth() -> u32 {
 mod tests {
     use super::*;
     use axum::body::Body;
+    use base64::{engine::general_purpose::STANDARD, Engine as _};
     use chrono::TimeZone;
+    use ed25519_dalek::{Signer, SigningKey};
     use http::{Request, StatusCode};
+    use rand_core::OsRng;
     use tower::ServiceExt;
+
+    fn signed_benchmark_envelope() -> (Value, replay::PublicKeyring, SigningKey) {
+        let signing_key = SigningKey::generate(&mut OsRng);
+        let identity = "a".repeat(64);
+        let events = serde_json::json!([{
+            "type": "run_started",
+            "seq": 0,
+            "details": {"suite": "signed-replay"}
+        }]);
+        let mut envelope = serde_json::json!({
+            "schema_version": "2.0.0",
+            "run_id": format!("run_{identity}"),
+            "session_id": format!("ses_{identity}"),
+            "attempt_id": format!("att_{identity}"),
+            "events": events,
+            "result": {
+                "status": "passed",
+                "outcome_sha256": "b".repeat(64),
+                "replay_hash": replay::replay_hash(&events).expect("events hash")
+            }
+        });
+        sign_benchmark_envelope(&mut envelope, &signing_key);
+        let keyring = replay::PublicKeyring::from_json_str(
+            &serde_json::json!({
+                "test-producer": STANDARD.encode(signing_key.verifying_key().to_bytes())
+            })
+            .to_string(),
+        )
+        .expect("test keyring");
+        (envelope, keyring, signing_key)
+    }
+
+    fn sign_benchmark_envelope(envelope: &mut Value, signing_key: &SigningKey) {
+        let signature =
+            signing_key.sign(&replay::signed_envelope_bytes(envelope).expect("unsigned envelope"));
+        envelope["signature"] = serde_json::json!({
+            "algorithm": "ed25519",
+            "key_id": "test-producer",
+            "signature_b64": STANDARD.encode(signature.to_bytes())
+        });
+    }
+
+    async fn replay_app(keyring: replay::PublicKeyring) -> Router {
+        build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: Arc::new(make_sqlite_store().await),
+            replay_keyring: keyring,
+        })
+    }
+
+    async fn post_benchmark(app: Router, envelope: &Value) -> axum::response::Response {
+        app.oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/ingest/benchmark")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    serde_json::to_vec(envelope).expect("benchmark JSON"),
+                ))
+                .expect("request"),
+        )
+        .await
+        .expect("response")
+    }
+
+    #[tokio::test]
+    async fn benchmark_ingest_persists_verified_envelope_and_is_idempotent() {
+        let (envelope, keyring, _) = signed_benchmark_envelope();
+        let app = replay_app(keyring).await;
+
+        let created = post_benchmark(app.clone(), &envelope).await;
+        assert_eq!(created.status(), StatusCode::CREATED);
+        let created_body = axum::body::to_bytes(created.into_body(), 4096)
+            .await
+            .expect("created benchmark body");
+        let record: Value = serde_json::from_slice(&created_body).expect("created benchmark JSON");
+        assert_eq!(record["key_id"], "test-producer");
+        assert_eq!(record["schema_version"], "2.0.0");
+        assert_eq!(
+            record["metadata"]["verification"]["key_id"],
+            "test-producer"
+        );
+        let duplicate = post_benchmark(app, &envelope).await;
+        assert_eq!(duplicate.status(), StatusCode::OK);
+    }
+
+    #[tokio::test]
+    async fn benchmark_ingest_rejects_tampered_signature() {
+        let (mut envelope, keyring, _) = signed_benchmark_envelope();
+        envelope["events"][0]["details"]["suite"] = Value::String("tampered".to_string());
+        let response = post_benchmark(replay_app(keyring).await, &envelope).await;
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[tokio::test]
+    async fn benchmark_ingest_rejects_unknown_key() {
+        let (mut envelope, _, _) = signed_benchmark_envelope();
+        envelope["signature"]["key_id"] = Value::String("unknown-producer".to_string());
+        let response = post_benchmark(
+            replay_app(replay::PublicKeyring::default()).await,
+            &envelope,
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    }
+
+    #[tokio::test]
+    async fn benchmark_ingest_rejects_re_signed_hash_mismatch() {
+        let (mut envelope, keyring, signing_key) = signed_benchmark_envelope();
+        envelope["result"]["replay_hash"] = Value::String("c".repeat(64));
+        sign_benchmark_envelope(&mut envelope, &signing_key);
+        let response = post_benchmark(replay_app(keyring).await, &envelope).await;
+        assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    }
 
     #[tokio::test]
     async fn api_router_emits_readiness_and_security_contract() {
@@ -1299,6 +1558,7 @@ mod tests {
             backend: "sqlite",
             started_at: Instant::now(),
             store: Arc::new(store),
+            replay_keyring: replay::PublicKeyring::default(),
         });
 
         let response = app
@@ -1329,6 +1589,7 @@ mod tests {
             backend: "sqlite",
             started_at: Instant::now(),
             store: Arc::new(store),
+            replay_keyring: replay::PublicKeyring::default(),
         });
 
         let malformed = app
@@ -1392,6 +1653,7 @@ mod tests {
             backend: "sqlite",
             started_at: Instant::now(),
             store: Arc::new(store),
+            replay_keyring: replay::PublicKeyring::default(),
         });
 
         let response = app
@@ -1426,6 +1688,7 @@ mod tests {
             backend: "sqlite",
             started_at: Instant::now(),
             store: Arc::new(make_sqlite_store().await),
+            replay_keyring: replay::PublicKeyring::default(),
         };
         let ready = health::readyz(axum::extract::State(state)).await.0;
         assert_eq!(ready.status, "ready");
@@ -1896,6 +2159,10 @@ mod tests {
         let pool = sqlx::SqlitePool::connect("sqlite::memory:")
             .await
             .expect("open in-memory SQLite");
+        sqlx::migrate!("./migrations-sqlite")
+            .run(&pool)
+            .await
+            .expect("apply SQLite migrations");
         // Apply SQLite migrations manually using the embedded SQL
         sqlx::query(
             "CREATE TABLE IF NOT EXISTS evidence (

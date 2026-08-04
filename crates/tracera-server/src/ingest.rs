@@ -73,13 +73,6 @@ pub struct NormalisedIssue {
 
 /// Map a Helios benchmark envelope into the existing story/evidence ingest path.
 /// The envelope remains content-addressed through its outcome/replay hashes.
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "public ingest adapter exercised by contract and integration callers"
-    )
-)]
 pub fn benchmark_run_to_issue(envelope: &Value) -> Result<NormalisedIssue, IngestError> {
     let run_id = envelope
         .get("run_id")
