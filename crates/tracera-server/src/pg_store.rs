@@ -10,8 +10,8 @@ use serde_json::Value;
 use sqlx::{PgPool, Row};
 
 use crate::store::{
-    BoxFuture, EvidenceItem, Problem, Sprint, Store, StoreError, StoreResult, Story, TeamRow,
-    TraceLink,
+    BenchmarkRun, BoxFuture, EvidenceItem, Problem, Sprint, Store, StoreError, StoreResult, Story,
+    TeamRow, TraceLink,
 };
 
 #[derive(Clone)]
@@ -22,6 +22,20 @@ pub struct PgStore {
 impl PgStore {
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
+    }
+
+    fn get_benchmark_run_by_replay_hash(
+        &self,
+        replay_hash: String,
+    ) -> BoxFuture<'_, StoreResult<Option<BenchmarkRun>>> {
+        Box::pin(async move {
+            let row = sqlx::query("SELECT run_id, session_id, attempt_id, schema_version, replay_hash, outcome_sha256, key_id, signature_digest, status, metadata::text, created_at, updated_at FROM benchmark_runs WHERE replay_hash = $1")
+            .bind(replay_hash)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
+            Ok(row.map(pg_row_to_benchmark_run))
+        })
     }
 }
 
@@ -304,6 +318,82 @@ impl Store for PgStore {
         })
     }
 
+    fn get_benchmark_run(
+        &self,
+        run_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<BenchmarkRun>>> {
+        Box::pin(async move {
+            let row = sqlx::query(
+                "SELECT run_id, session_id, attempt_id, schema_version, replay_hash, \
+                 outcome_sha256, key_id, signature_digest, status, metadata::text, created_at, updated_at \
+                 FROM benchmark_runs WHERE run_id = $1",
+            )
+            .bind(&run_id)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
+            Ok(row.map(pg_row_to_benchmark_run))
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn create_benchmark_run(
+        &self,
+        run_id: String,
+        session_id: String,
+        attempt_id: String,
+        schema_version: String,
+        replay_hash: String,
+        outcome_sha256: String,
+        key_id: String,
+        signature_digest: String,
+        status: String,
+        metadata: Value,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<BenchmarkRun>> {
+        Box::pin(async move {
+            if let Some(existing) = self.get_benchmark_run(run_id.clone()).await? {
+                if existing.replay_hash != replay_hash {
+                    return Err(StoreError::Database(
+                        "benchmark run_id already exists with a different replay_hash".to_string(),
+                    ));
+                }
+                return Ok(existing);
+            }
+
+            let metadata_str =
+                serde_json::to_string(&metadata).unwrap_or_else(|_| "{}".to_string());
+            sqlx::query(
+                "INSERT INTO benchmark_runs \
+                 (run_id, session_id, attempt_id, schema_version, replay_hash, outcome_sha256, \
+                  key_id, signature_digest, status, metadata, created_at, updated_at) \
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12) \
+                 ON CONFLICT DO NOTHING",
+            )
+            .bind(&run_id)
+            .bind(&session_id)
+            .bind(&attempt_id)
+            .bind(&schema_version)
+            .bind(&replay_hash)
+            .bind(&outcome_sha256)
+            .bind(&key_id)
+            .bind(&signature_digest)
+            .bind(&status)
+            .bind(&metadata_str)
+            .bind(now)
+            .bind(now)
+            .execute(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
+
+            self.get_benchmark_run_by_replay_hash(replay_hash)
+                .await?
+                .ok_or_else(|| {
+                    StoreError::Database("benchmark run insert returned no row".to_string())
+                })
+        })
+    }
+
     // -----------------------------------------------------------------------
     // Problems (ITIL) — Postgres implementations
     // -----------------------------------------------------------------------
@@ -497,5 +587,24 @@ fn pg_row_to_problem(r: sqlx::postgres::PgRow) -> Problem {
         created_at: r.try_get("created_at").unwrap_or_else(|_| Utc::now()),
         updated_at: r.try_get("updated_at").unwrap_or_else(|_| Utc::now()),
         deleted_at: r.try_get("deleted_at").ok().flatten(),
+    }
+}
+
+fn pg_row_to_benchmark_run(r: sqlx::postgres::PgRow) -> BenchmarkRun {
+    let metadata_str: String = r.try_get("metadata").unwrap_or_else(|_| "{}".to_string());
+    let metadata = serde_json::from_str(&metadata_str).unwrap_or(Value::Object(Default::default()));
+    BenchmarkRun {
+        run_id: r.try_get("run_id").unwrap_or_default(),
+        session_id: r.try_get("session_id").unwrap_or_default(),
+        attempt_id: r.try_get("attempt_id").unwrap_or_default(),
+        schema_version: r.try_get("schema_version").unwrap_or_default(),
+        replay_hash: r.try_get("replay_hash").unwrap_or_default(),
+        outcome_sha256: r.try_get("outcome_sha256").unwrap_or_default(),
+        key_id: r.try_get("key_id").unwrap_or_default(),
+        signature_digest: r.try_get("signature_digest").unwrap_or_default(),
+        status: r.try_get("status").unwrap_or_default(),
+        metadata,
+        created_at: r.try_get("created_at").unwrap_or_else(|_| Utc::now()),
+        updated_at: r.try_get("updated_at").unwrap_or_else(|_| Utc::now()),
     }
 }

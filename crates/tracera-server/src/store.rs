@@ -97,6 +97,23 @@ pub struct TraceLink {
     pub updated_at: DateTime<Utc>,
 }
 
+/// Verified benchmark-run provenance retained for replay and idempotency.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct BenchmarkRun {
+    pub run_id: String,
+    pub session_id: String,
+    pub attempt_id: String,
+    pub schema_version: String,
+    pub replay_hash: String,
+    pub outcome_sha256: String,
+    pub key_id: String,
+    pub signature_digest: String,
+    pub status: String,
+    pub metadata: Value,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
 /// ITIL Problem-management domain record.
 ///
 /// Recovered from the Python `src/tracertm/models/problem.py` model
@@ -213,6 +230,28 @@ pub trait Store: Send + Sync {
 
     // Metrics
     fn count_evidence(&self) -> BoxFuture<'_, StoreResult<i64>>;
+
+    // Verified benchmark replay provenance.
+    fn get_benchmark_run(&self, run_id: String)
+        -> BoxFuture<'_, StoreResult<Option<BenchmarkRun>>>;
+
+    /// Insert a benchmark run, or return the existing row when the stable
+    /// run/replay identity is submitted again. A conflicting hash is an error.
+    #[allow(clippy::too_many_arguments)]
+    fn create_benchmark_run(
+        &self,
+        run_id: String,
+        session_id: String,
+        attempt_id: String,
+        schema_version: String,
+        replay_hash: String,
+        outcome_sha256: String,
+        key_id: String,
+        signature_digest: String,
+        status: String,
+        metadata: Value,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<BenchmarkRun>>;
 
     // -----------------------------------------------------------------------
     // Problems (ITIL problem-management) — recovered from Python model

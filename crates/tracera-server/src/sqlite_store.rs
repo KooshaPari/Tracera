@@ -15,8 +15,8 @@ use serde_json::Value;
 use sqlx::{Row, SqlitePool};
 
 use crate::store::{
-    BoxFuture, EvidenceItem, Problem, Sprint, Store, StoreError, StoreResult, Story, TeamRow,
-    TraceLink,
+    BenchmarkRun, BoxFuture, EvidenceItem, Problem, Sprint, Store, StoreError, StoreResult, Story,
+    TeamRow, TraceLink,
 };
 
 #[derive(Clone)]
@@ -27,6 +27,20 @@ pub struct SqliteStore {
 impl SqliteStore {
     pub fn new(pool: SqlitePool) -> Self {
         Self { pool }
+    }
+
+    fn get_benchmark_run_by_replay_hash(
+        &self,
+        replay_hash: String,
+    ) -> BoxFuture<'_, StoreResult<Option<BenchmarkRun>>> {
+        Box::pin(async move {
+            let row = sqlx::query("SELECT run_id, session_id, attempt_id, schema_version, replay_hash, outcome_sha256, key_id, signature_digest, status, metadata, created_at, updated_at FROM benchmark_runs WHERE replay_hash = ?1")
+            .bind(replay_hash)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
+            Ok(row.map(row_to_benchmark_run))
+        })
     }
 }
 
@@ -351,6 +365,83 @@ impl Store for SqliteStore {
         })
     }
 
+    fn get_benchmark_run(
+        &self,
+        run_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<BenchmarkRun>>> {
+        Box::pin(async move {
+            let row = sqlx::query(
+                "SELECT run_id, session_id, attempt_id, schema_version, replay_hash, \
+                 outcome_sha256, key_id, signature_digest, status, metadata, created_at, updated_at \
+                 FROM benchmark_runs WHERE run_id = ?1",
+            )
+            .bind(&run_id)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
+            Ok(row.map(row_to_benchmark_run))
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn create_benchmark_run(
+        &self,
+        run_id: String,
+        session_id: String,
+        attempt_id: String,
+        schema_version: String,
+        replay_hash: String,
+        outcome_sha256: String,
+        key_id: String,
+        signature_digest: String,
+        status: String,
+        metadata: Value,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<BenchmarkRun>> {
+        Box::pin(async move {
+            if let Some(existing) = self.get_benchmark_run(run_id.clone()).await? {
+                if existing.replay_hash != replay_hash {
+                    return Err(StoreError::Database(
+                        "benchmark run_id already exists with a different replay_hash".to_string(),
+                    ));
+                }
+                return Ok(existing);
+            }
+
+            let metadata_str =
+                serde_json::to_string(&metadata).unwrap_or_else(|_| "{}".to_string());
+            let now_str = ts_to_str(now);
+            sqlx::query(
+                "INSERT INTO benchmark_runs \
+                 (run_id, session_id, attempt_id, schema_version, replay_hash, outcome_sha256, \
+                  key_id, signature_digest, status, metadata, created_at, updated_at) \
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12) \
+                 ON CONFLICT DO NOTHING",
+            )
+            .bind(&run_id)
+            .bind(&session_id)
+            .bind(&attempt_id)
+            .bind(&schema_version)
+            .bind(&replay_hash)
+            .bind(&outcome_sha256)
+            .bind(&key_id)
+            .bind(&signature_digest)
+            .bind(&status)
+            .bind(&metadata_str)
+            .bind(&now_str)
+            .bind(&now_str)
+            .execute(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
+
+            self.get_benchmark_run_by_replay_hash(replay_hash)
+                .await?
+                .ok_or_else(|| {
+                    StoreError::Database("benchmark run insert returned no row".to_string())
+                })
+        })
+    }
+
     // -----------------------------------------------------------------------
     // Problems (ITIL) — SQLite implementations
     // -----------------------------------------------------------------------
@@ -554,9 +645,135 @@ fn row_to_problem(r: sqlx::sqlite::SqliteRow) -> Problem {
     }
 }
 
+fn row_to_benchmark_run(r: sqlx::sqlite::SqliteRow) -> BenchmarkRun {
+    let metadata_str: String = r.try_get("metadata").unwrap_or_else(|_| "{}".to_string());
+    let metadata = serde_json::from_str(&metadata_str).unwrap_or(Value::Object(Default::default()));
+    BenchmarkRun {
+        run_id: r.try_get("run_id").unwrap_or_default(),
+        session_id: r.try_get("session_id").unwrap_or_default(),
+        attempt_id: r.try_get("attempt_id").unwrap_or_default(),
+        schema_version: r.try_get("schema_version").unwrap_or_default(),
+        replay_hash: r.try_get("replay_hash").unwrap_or_default(),
+        outcome_sha256: r.try_get("outcome_sha256").unwrap_or_default(),
+        key_id: r.try_get("key_id").unwrap_or_default(),
+        signature_digest: r.try_get("signature_digest").unwrap_or_default(),
+        status: r.try_get("status").unwrap_or_default(),
+        metadata,
+        created_at: str_to_ts(&r.try_get::<String, _>("created_at").unwrap_or_default()),
+        updated_at: str_to_ts(&r.try_get::<String, _>("updated_at").unwrap_or_default()),
+    }
+}
+
 // Keep the helpers visible to clippy even when no other code in this module
 // currently uses them — they're shared with the PgStore port in a follow-up.
 #[allow(dead_code)]
 fn _keep_helpers() {
     let _ = opt_ts_to_str(None);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::store::Store;
+
+    async fn benchmark_store() -> SqliteStore {
+        let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
+        sqlx::migrate!("./migrations-sqlite")
+            .run(&pool)
+            .await
+            .expect("apply SQLite benchmark-run migration");
+        SqliteStore::new(pool)
+    }
+
+    #[tokio::test]
+    async fn benchmark_run_create_is_idempotent_and_replay_hash_is_unique() {
+        let store = benchmark_store().await;
+        let now = Utc::now();
+        let metadata = serde_json::json!({
+            "schema_version": "2.0.0",
+            "replay_hash": "a".repeat(64),
+            "outcome_sha256": "b".repeat(64),
+            "key_id": "producer-a",
+            "signature_digest": "c".repeat(64)
+        });
+        let first = store
+            .create_benchmark_run(
+                "run_a".to_string(),
+                "ses_a".to_string(),
+                "att_a".to_string(),
+                "2.0.0".to_string(),
+                "a".repeat(64),
+                "b".repeat(64),
+                "producer-a".to_string(),
+                "c".repeat(64),
+                "passed".to_string(),
+                metadata.clone(),
+                now,
+            )
+            .await
+            .unwrap();
+        let second = store
+            .create_benchmark_run(
+                "run_a".to_string(),
+                "ses-a-new".to_string(),
+                "att-a-new".to_string(),
+                "2.0.0".to_string(),
+                "a".repeat(64),
+                "d".repeat(64),
+                "producer-b".to_string(),
+                "e".repeat(64),
+                "failed".to_string(),
+                serde_json::json!({"changed": true}),
+                now + chrono::Duration::seconds(1),
+            )
+            .await
+            .unwrap();
+        assert_eq!(first.run_id, second.run_id);
+        assert_eq!(first.replay_hash, second.replay_hash);
+        assert_eq!(first.metadata, metadata);
+        assert_eq!(second.status, "passed");
+
+        let loaded = store
+            .get_benchmark_run("run_a".to_string())
+            .await
+            .unwrap()
+            .expect("idempotent row");
+        assert_eq!(loaded.signature_digest, "c".repeat(64));
+
+        let conflicting_hash = store
+            .create_benchmark_run(
+                "run_a".to_string(),
+                "ses_a".to_string(),
+                "att_a".to_string(),
+                "2.0.0".to_string(),
+                "f".repeat(64),
+                "b".repeat(64),
+                "producer-a".to_string(),
+                "c".repeat(64),
+                "passed".to_string(),
+                metadata,
+                now,
+            )
+            .await;
+        assert!(conflicting_hash.is_err());
+
+        let same_replay = store
+            .create_benchmark_run(
+                "run_b".to_string(),
+                "ses_b".to_string(),
+                "att_b".to_string(),
+                "2.0.0".to_string(),
+                "a".repeat(64),
+                "b".repeat(64),
+                "producer-a".to_string(),
+                "c".repeat(64),
+                "passed".to_string(),
+                serde_json::json!({}),
+                now,
+            )
+            .await;
+        let same_replay = same_replay.expect("same replay hash should be idempotent");
+        assert_eq!(same_replay.run_id, "run_a");
+        assert_eq!(same_replay.replay_hash, "a".repeat(64));
+    }
 }
