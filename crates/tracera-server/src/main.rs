@@ -2,6 +2,7 @@ mod db;
 mod health;
 mod ingest;
 mod pg_store;
+mod replay;
 #[cfg(feature = "phenodag-queue")]
 mod queue;
 mod sqlite_store;

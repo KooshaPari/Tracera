@@ -18,6 +18,7 @@ phenodag-queue = []
 axum = "0.8"
 base64 = { workspace = true }
 chrono = { workspace = true, features = ["clock"] }
+ed25519-dalek = { workspace = true }
 http = "1"
 # wraps: reqwest 0.13
 reqwest = { version = "0.13", features = ["json", "rustls", "rustls-native-certs"], default-features = false }
@@ -34,5 +35,6 @@ tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
 uuid = { workspace = true }
 
 [dev-dependencies]
+rand_core = { workspace = true }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 tower = { version = "0.5", features = ["util"] }
