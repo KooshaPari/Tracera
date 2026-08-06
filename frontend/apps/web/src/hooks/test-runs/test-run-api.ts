@@ -1,6 +1,7 @@
 import type { TestResult, TestRun, TestRunActivity, TestRunStats } from '@tracertm/types';
 
 import { client } from '@/api/client';
+import { API_ORIGIN } from '@/config/api-origin';
 
 import type { CreateTestRunData, SubmitTestResultData, TestRunFilters } from './test-run-types';
 
@@ -9,7 +10,7 @@ import { testRunParsers } from './test-run-parsers';
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:18000';
+const API_URL = API_ORIGIN;
 
 interface TestRunsResponse {
   testRuns: TestRun[];

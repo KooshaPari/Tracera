@@ -4,11 +4,12 @@ import { toast } from 'sonner';
 import type { CreateItemData, CreateItemWithSpecData } from '@/hooks/use-items/items-utils';
 import type { Item, TypedItem, ViewType, ItemStatus } from '@tracertm/types';
 
+import { API_ORIGIN } from '@/config/api-origin';
 import itemsUtils from '@/hooks/use-items/items-utils';
 import { QUERY_CONFIGS, queryKeys } from '@/lib/queryConfig';
 import { useAuthStore } from '@/stores/authStore';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:18000';
+const API_URL = API_ORIGIN;
 
 interface ItemFilters {
   projectId?: string | undefined;

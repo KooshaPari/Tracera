@@ -6,12 +6,13 @@ import * as ReactQuery from '@tanstack/react-query';
 import type { Branch, Version } from '@/components/temporal/TemporalNavigator';
 
 import { client } from '@/api/client';
+import { API_ORIGIN } from '@/config/api-origin';
 import { QUERY_CONFIGS, queryKeys } from '@/lib/queryConfig';
 
 const { getAuthHeaders } = client;
 const { useMutation, useQuery, useQueryClient } = ReactQuery;
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:18000';
+const API_URL = API_ORIGIN;
 type JsonObject = Record<string, unknown>;
 type TemporalConflict = Record<string, unknown>;
 

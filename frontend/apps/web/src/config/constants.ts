@@ -1,3 +1,5 @@
+import { API_ORIGIN, WS_ORIGIN } from './api-origin';
+
 // Application constants
 
 const APP_NAME = 'TraceRTM';
@@ -13,9 +15,8 @@ const AUTH_ROUTES = {
 } as const;
 
 // API configuration (gateway-only; no direct backend URLs)
-const { VITE_API_URL, VITE_WS_URL } = import.meta.env || {};
-const API_BASE_URL = VITE_API_URL || 'http://127.0.0.1:18000';
-const WS_BASE_URL = VITE_WS_URL || 'ws://127.0.0.1:18000';
+const API_BASE_URL = API_ORIGIN;
+const WS_BASE_URL = WS_ORIGIN;
 // 30 seconds
 const API_TIMEOUT = 30_000;
 

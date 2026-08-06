@@ -1,14 +1,14 @@
 import { client } from '@/api/client';
+import { API_ORIGIN } from '@/config/api-origin';
 
 const { getAuthHeaders } = client;
 
-const DEFAULT_API_URL = 'http://127.0.0.1:18000';
 const DEFAULT_REQUIREMENT_LIMIT = Number('100');
 const DEFAULT_TEST_LIMIT = Number('100');
 const DEFAULT_FLAKY_THRESHOLD = Number('0.2');
 const DEFAULT_FLAKY_LIMIT = Number('50');
 const DEFAULT_QUARANTINED_LIMIT = Number('50');
-const API_URL = import.meta.env.VITE_API_URL ?? DEFAULT_API_URL;
+const API_URL = API_ORIGIN;
 
 const getBulkHeaders = (): Record<string, string> => ({
   ...getAuthHeaders(),
