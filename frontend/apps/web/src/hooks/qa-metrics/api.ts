@@ -1,4 +1,5 @@
 import { client } from '@/api/client';
+import { API_ORIGIN } from '@/config/api-origin';
 
 import type {
   CoverageMetrics,
@@ -21,7 +22,7 @@ import {
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:18000';
+const API_URL = API_ORIGIN;
 
 async function readJsonRecord(res: Response): Promise<Record<string, unknown>> {
   const json: unknown = await res.json();

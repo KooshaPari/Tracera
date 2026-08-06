@@ -2,6 +2,7 @@ import type { HttpMethod } from 'openapi-typescript-helpers';
 
 import createClient from 'openapi-fetch';
 
+import { API_ORIGIN } from '@/config/api-origin';
 import { logger } from '@/lib/logger';
 
 import { getCSRFHeaders } from '../lib/csrf';
@@ -12,22 +13,7 @@ import { responseHandlers } from './client-response-handlers';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- openapi-fetch needs explicit HttpMethod keys to avoid PathsWithMethod resolving to never under exactOptionalPropertyTypes
 type AnyPaths = { [path: string]: { [method in HttpMethod]: any } };
 
-const getBackendURL = (_path?: string): string => {
-  const { env } = import.meta;
-  let url = '';
-
-  if (env && env.VITE_API_URL) {
-    url = env.VITE_API_URL;
-  }
-
-  if (url !== '') {
-    return url.replace(/\/$/, '');
-  }
-
-  return 'http://127.0.0.1:18000';
-};
-
-const API_BASE_URL = getBackendURL();
+const API_BASE_URL = API_ORIGIN;
 
 const rawApiClient = createClient<AnyPaths>({
   baseUrl: API_BASE_URL,

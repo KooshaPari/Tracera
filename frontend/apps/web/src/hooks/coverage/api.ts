@@ -8,10 +8,11 @@ import type {
 } from '@tracertm/types';
 
 import { client } from '@/api/client';
+import { API_ORIGIN } from '@/config/api-origin';
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
+const API_URL = API_ORIGIN;
 
 function transformCoverage(data: Record<string, unknown>): TestCoverage {
   return {
