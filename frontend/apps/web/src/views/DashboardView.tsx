@@ -243,7 +243,8 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
         <div>
           <h1 className='text-2xl font-bold tracking-tight'>Traceability Dashboard</h1>
           <p className='text-muted-foreground text-sm'>
-            Monitor project health and system-wide traceability status.
+            Monitor project health and system-wide traceability status. Traceability and Evidence
+            details are available in each project.
           </p>
           <div className='mt-3 flex flex-wrap items-center gap-2'>
             <Badge variant='outline' className='text-xs'>
