@@ -83,9 +83,10 @@ const readStringRecord = (record: ApiRecord, key: string): Record<string, string
     return undefined;
   }
 
-  return Object.fromEntries(
-    Object.entries(value).filter(([, entryValue]): entryValue is string => typeof entryValue === 'string'),
+  const stringEntries = Object.entries(value).filter(
+    (entry): entry is [string, string] => typeof entry[1] === 'string',
   );
+  return Object.fromEntries(stringEntries);
 };
 
 const readNumberRecord = (record: ApiRecord, key: string): Record<string, number> => {
