@@ -192,7 +192,7 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "chromatic": "^18.1.0",
     "comlink": "^4.4.2",
-    "graphql": "^16.8.1",
+    "graphql": "^17.0.2",
     "happy-dom": "^20.4.0",
     "jest-axe": "^11.0.0",
     "jsdom": "^30.0.1",
