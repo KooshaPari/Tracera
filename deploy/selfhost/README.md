@@ -20,6 +20,7 @@ This stack runs Tracera on your desktop, publishes it through Caddy, and exposes
 Set these before starting the stack:
 
 - `CF_TUNNEL_TOKEN`: Cloudflare Tunnel token for the named tunnel
+- `POSTGRES_PASSWORD`: database password for the private Postgres service
 - `TRACERA_PUBLIC_HOSTNAME`: public hostname served by the tunnel, for example `tracera.pheno.studio`
 
 WorkOS AuthKit is not wired in yet, but these placeholders show where its settings would live:
@@ -57,6 +58,12 @@ traffic. Before enabling a Cloudflare Tunnel or public DNS, configure an active
 
 The strict gate fails closed until authentication and an HTTPS listener are
 present. It does not inspect or require credentials, so it is safe to run in CI.
+
+The server image is built from `Dockerfile.rust` and uses the compose Postgres
+service through `DATABASE_URL`. The image currently packages the Rust API only;
+the checked-in frontend bundle is not part of this image, so this stack is not
+a dashboard release until a separately validated frontend image or bundle is
+provided. Do not treat a green API health probe as frontend dogfood evidence.
 
 ## Run
 

@@ -1,3 +1,4 @@
+mod auth;
 mod db;
 mod health;
 mod ingest;
@@ -40,6 +41,11 @@ const MAX_REQUEST_BODY_BYTES: usize = 8 * 1024 * 1024;
 /// Requests above this bound must use a future paged/export path instead of
 /// allowing an unbounded response allocation.
 const MAX_COVERAGE_LINKS: usize = 25_000;
+const PUBLIC_BIND_MODE_ENV: &str = "TRACERA_PUBLIC_BIND_MODE";
+const AUTH_TOKEN_ENV: &str = "TRACERA_AUTH_TOKEN";
+const AUTHENTICATED_PROXY_MODE: &str = "authenticated-proxy";
+const LOOPBACK_PUBLISHED_MODE: &str = "loopback-published";
+const PRIVATE_NETWORK_MODE: &str = "private-network";
 use validation::{
     validate_text, MAX_ID_CHARS, MAX_INGEST_ISSUES, MAX_LONG_TEXT_CHARS, MAX_METADATA_BYTES,
     MAX_SHORT_TEXT_CHARS, MAX_URL_CHARS,
@@ -61,6 +67,30 @@ struct AppState {
     backend: &'static str,
     started_at: Instant,
     store: Arc<dyn Store>,
+}
+
+fn validate_bind_address(
+    addr: SocketAddr,
+    public_bind_mode: Option<&str>,
+    auth_token: Option<&str>,
+) -> Result<(), String> {
+    if addr.ip().is_loopback() {
+        return Ok(());
+    }
+    if !matches!(
+        public_bind_mode,
+        Some(AUTHENTICATED_PROXY_MODE | LOOPBACK_PUBLISHED_MODE | PRIVATE_NETWORK_MODE)
+    ) {
+        return Err(format!(
+            "refusing non-loopback bind to {addr}; set {PUBLIC_BIND_MODE_ENV} to an explicit authenticated-proxy, loopback-published, or private-network deployment mode"
+        ));
+    }
+    if auth_token.is_some_and(|token| !token.is_empty()) {
+        return Ok(());
+    }
+    Err(format!(
+        "refusing non-loopback bind to {addr}; {AUTH_TOKEN_ENV} must contain a bearer token"
+    ))
 }
 
 // ---------------------------------------------------------------------------
@@ -490,7 +520,11 @@ async fn main() {
         store,
     };
 
-    let app = build_router(state);
+    let auth_token = env::var(AUTH_TOKEN_ENV)
+        .ok()
+        .filter(|token| !token.is_empty())
+        .map(Arc::<str>::from);
+    let app = build_router_with_auth(state, auth_token.clone());
 
     let frontend_dist = env::var("TRACERA_FRONTEND_DIST")
         .map(PathBuf::from)
@@ -504,11 +538,13 @@ async fn main() {
         .and_then(|v| v.parse().ok())
         .unwrap_or_else(|| SocketAddr::from(([127, 0, 0, 1], 8080)));
 
-    if !addr.ip().is_loopback() {
-        tracing::warn!(
-            %addr,
-            "server is bound beyond loopback; put it behind an authenticated TLS reverse proxy"
-        );
+    if let Err(error) = validate_bind_address(
+        addr,
+        env::var(PUBLIC_BIND_MODE_ENV).ok().as_deref(),
+        auth_token.as_deref(),
+    ) {
+        eprintln!("FATAL: {error}");
+        std::process::exit(1);
     }
 
     let listener = tokio::net::TcpListener::bind(addr)
@@ -525,6 +561,10 @@ async fn main() {
 }
 
 fn build_router(state: AppState) -> Router {
+    build_router_with_auth(state, None)
+}
+
+fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Router {
     Router::new()
         .route("/healthz", get(health::healthz))
         .route("/health", get(health::health))
@@ -535,8 +575,8 @@ fn build_router(state: AppState) -> Router {
         .route("/api/v1/confidence", post(confidence))
         .route("/api/v1/blast-radius", post(blast_radius))
         .route("/api/v1/governance/spec-check", post(spec_check))
-        .route("/api/v1/trace/forward/:artifact_id", post(trace_forward))
-        .route("/api/v1/trace/reverse/:artifact_id", post(trace_reverse))
+        .route("/api/v1/trace/forward/{artifact_id}", post(trace_forward))
+        .route("/api/v1/trace/reverse/{artifact_id}", post(trace_reverse))
         .route("/evidence", get(list_evidence).post(create_evidence))
         .route("/evidence/health", get(health::health))
         .route("/ingest/github", post(ingest_github))
@@ -550,6 +590,10 @@ fn build_router(state: AppState) -> Router {
         .route("/org-intel/teams", get(list_teams))
         .route("/org-intel/metrics", get(org_metrics))
         .with_state(state)
+        .layer(axum::middleware::from_fn_with_state(
+            auth_token,
+            auth::require_bearer,
+        ))
         .layer(DefaultBodyLimit::max(MAX_REQUEST_BODY_BYTES))
         .layer(SetResponseHeaderLayer::if_not_present(
             header::X_CONTENT_TYPE_OPTIONS,
@@ -1289,6 +1333,68 @@ mod tests {
     use chrono::TimeZone;
     use http::{Request, StatusCode};
     use tower::ServiceExt;
+
+    #[test]
+    fn public_bind_requires_explicit_mode_and_token() {
+        let loopback = "127.0.0.1:8080".parse().expect("loopback address");
+        let public = "0.0.0.0:8080".parse().expect("public address");
+
+        assert!(validate_bind_address(loopback, None, None).is_ok());
+        assert!(validate_bind_address(public, None, None).is_err());
+        assert!(validate_bind_address(public, Some(AUTHENTICATED_PROXY_MODE), None).is_err());
+        assert!(validate_bind_address(public, Some(PRIVATE_NETWORK_MODE), Some("secret")).is_ok());
+        assert!(validate_bind_address(public, Some(PRIVATE_NETWORK_MODE), Some("")).is_err());
+    }
+
+    #[tokio::test]
+    async fn public_auth_requires_bearer_for_application_routes_but_not_probes() {
+        let store = make_sqlite_store().await;
+        let app = build_router_with_auth(
+            AppState {
+                version: env!("CARGO_PKG_VERSION").to_string(),
+                backend: "sqlite",
+                started_at: Instant::now(),
+                store: Arc::new(store),
+            },
+            Some(Arc::<str>::from("secret")),
+        );
+
+        let unauthorized = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/evidence")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        assert_eq!(unauthorized.status(), StatusCode::UNAUTHORIZED);
+
+        let health = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/health")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        assert_eq!(health.status(), StatusCode::OK);
+
+        let authorized = app
+            .oneshot(
+                Request::builder()
+                    .uri("/evidence")
+                    .header(header::AUTHORIZATION, "Bearer secret")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        assert_eq!(authorized.status(), StatusCode::OK);
+    }
 
     #[tokio::test]
     async fn api_router_emits_readiness_and_security_contract() {
