@@ -13,6 +13,8 @@ import { responseHandlers } from './client-response-handlers';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- openapi-fetch needs explicit HttpMethod keys to avoid PathsWithMethod resolving to never under exactOptionalPropertyTypes
 type AnyPaths = { [path: string]: { [method in HttpMethod]: any } };
 
+const getBackendURL = (_path?: string): string => API_ORIGIN;
+
 const API_BASE_URL = API_ORIGIN;
 
 const rawApiClient = createClient<AnyPaths>({
