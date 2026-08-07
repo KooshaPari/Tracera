@@ -72,7 +72,7 @@ function useUpdateTestRun(): UseMutationResult<
 function useStartTestRun(): UseMutationResult<
   { id: string; status: string; startedAt?: string | undefined },
   Error,
-  { id: string; executedBy?: string | undefined }
+  { id: string; executedBy?: string }
 > {
   const queryClient = useQueryClient();
   return useMutation({
@@ -91,7 +91,7 @@ function useStartTestRun(): UseMutationResult<
 function useCompleteTestRun(): UseMutationResult<
   { id: string; status: string; passRate?: number | undefined; completedAt?: string | undefined },
   Error,
-  { id: string; failureSummary?: string | undefined; notes?: string | undefined }
+  { id: string; failureSummary?: string; notes?: string }
 > {
   const queryClient = useQueryClient();
   return useMutation({
