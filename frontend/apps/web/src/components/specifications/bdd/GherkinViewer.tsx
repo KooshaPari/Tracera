@@ -10,7 +10,7 @@ import * as stepBadgeModule from './StepBadge';
 
 interface GherkinViewerProps {
   content: string;
-  className?: string;
+  className?: string | undefined;
   height?: string;
   collapsible?: boolean;
   showLineNumbers?: boolean;
@@ -218,7 +218,7 @@ function RawGherkinCard({
   editorOptions,
   height,
 }: {
-  className?: string;
+  className?: string | undefined;
   content: string;
   editorOptions: editor.IStandaloneEditorConstructionOptions;
   height: string;
