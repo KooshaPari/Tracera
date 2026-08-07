@@ -1,6 +1,7 @@
 import type { Process, ProcessExecution } from '@tracertm/types';
 
 import { client } from '@/api/client';
+import { API_ORIGIN } from '@/config/api-origin';
 
 import type {
   CreateExecutionData,
@@ -14,7 +15,7 @@ import { processParsers } from './process-parsers';
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:18000';
+const API_URL = API_ORIGIN;
 
 interface ProcessesResponse {
   processes: Process[];

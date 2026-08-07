@@ -1,3 +1,5 @@
+import { API_ORIGIN } from '@/config/api-origin';
+
 export function Settings() {
   return (
     <div className='space-y-6'>
@@ -22,7 +24,7 @@ export function Settings() {
             <label className='text-sm font-medium'>Backend URL</label>
             <input
               type='text'
-              defaultValue='http://127.0.0.1:18000'
+              defaultValue={API_ORIGIN}
               className='mt-1 h-10 w-full rounded-lg border px-3'
             />
           </div>
