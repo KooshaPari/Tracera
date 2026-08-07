@@ -32,7 +32,7 @@ import type { Item, Link, LinkType } from '@tracertm/types';
 
 import { useGraphPerformanceMonitor } from '@/hooks/useGraphPerformanceMonitor';
 import { calculateEdgeMidpoint, getEdgeLODTier } from '@/lib/edgeLOD';
-import { useGraphCache } from '@/lib/graphCache';
+import { useGraphCache, type GraphCacheStats } from '@/lib/graphCache';
 import { buildGraphIndices, getRelatedItems } from '@/lib/graphIndexing';
 import { GraphSpatialIndex, type SpatialEdge, type SpatialNode } from '@/lib/spatialIndex';
 import { Button } from '@tracertm/ui/components/Button';
@@ -85,31 +85,27 @@ interface EdgeStyleCacheEntry {
 
 const edgeStyleCache = new Map<LinkType, EdgeStyleCacheEntry>();
 
-interface StoreCacheStatsBlock {
-  count: number;
-  hitRate: number;
-}
-
 const toPerformanceCacheStats = (
-  statsBlock: StoreCacheStatsBlock,
+  statsBlock: GraphCacheStats,
   backendType: string,
 ): CacheStatistics => {
-  const normalizedHitRatio = Number.isFinite(statsBlock.hitRate)
-    ? Math.min(Math.max(statsBlock.hitRate, 0), 1)
+  const normalizedHitRatio = Number.isFinite(statsBlock.hitRatio)
+    ? Math.min(Math.max(statsBlock.hitRatio, 0), 1)
     : 0;
-  const totalEntries = Number.isFinite(statsBlock.count) ? Math.max(statsBlock.count, 0) : 0;
-  const totalHits = Math.round(totalEntries * normalizedHitRatio);
+  const totalEntries = Number.isFinite(statsBlock.totalEntries)
+    ? Math.max(statsBlock.totalEntries, 0)
+    : 0;
 
   return {
     backendType,
     hitRatio: normalizedHitRatio,
-    maxEntries: totalEntries,
-    maxMemory: 0,
-    memoryUsagePercent: 0,
+    maxEntries: statsBlock.maxEntries,
+    maxMemory: statsBlock.maxMemory,
+    memoryUsagePercent: statsBlock.memoryUsagePercent,
     totalEntries,
-    totalHits,
-    totalMemory: 0,
-    totalMisses: Math.max(totalEntries - totalHits, 0),
+    totalHits: statsBlock.totalHits,
+    totalMemory: statsBlock.totalMemory,
+    totalMisses: statsBlock.totalMisses,
   };
 };
 
