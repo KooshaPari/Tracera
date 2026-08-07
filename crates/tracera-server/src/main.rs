@@ -1414,6 +1414,116 @@ mod tests {
         assert_eq!(body.as_ref(), br#"{"error":"evidence persistence failed"}"#);
     }
 
+    /// Consumer-facing v1 contract: evidence is stored/listed, then the same
+    /// artifact is traversed through request-supplied explicit trace links.
+    #[tokio::test]
+    async fn observability_ledger_consumer_v1_fixture_round_trip() {
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../testdata/observability-ledger-consumer-v1.json"
+        ))
+        .expect("consumer fixture is valid JSON");
+        let evidence = fixture["evidence"].clone();
+        let artifact_id = fixture["trace"]["artifact_id"]
+            .as_str()
+            .expect("trace artifact_id");
+        let expected_count = fixture["expected"]["evidence_count"]
+            .as_u64()
+            .expect("expected evidence count");
+        let expected_neighbors = fixture["expected"]["trace_neighbors"].clone();
+
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: Arc::new(make_sqlite_store().await),
+        });
+
+        let created = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/evidence")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        serde_json::to_vec(&evidence).expect("evidence JSON"),
+                    ))
+                    .expect("create evidence request"),
+            )
+            .await
+            .expect("create evidence response");
+        assert_eq!(created.status(), StatusCode::CREATED);
+        let created_body: Value = serde_json::from_slice(
+            &axum::body::to_bytes(created.into_body(), MAX_REQUEST_BODY_BYTES)
+                .await
+                .expect("created evidence body"),
+        )
+        .expect("created evidence JSON");
+        assert!(created_body["id"]
+            .as_str()
+            .is_some_and(|id| id.starts_with("ev-")));
+        assert_eq!(created_body["artifact_id"], evidence["artifact_id"]);
+        assert_eq!(created_body["kind"], evidence["kind"]);
+        assert_eq!(created_body["url"], evidence["url"]);
+        assert_eq!(created_body["metadata"], evidence["metadata"]);
+        for field in ["trace_id", "span_id", "parent_span_id", "correlation_id"] {
+            assert!(created_body["metadata"][field].as_str().is_some());
+        }
+        assert_eq!(created_body["metadata"]["producer"], "PhenoObservability");
+
+        let listed = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/evidence")
+                    .body(Body::empty())
+                    .expect("list evidence request"),
+            )
+            .await
+            .expect("list evidence response");
+        assert_eq!(listed.status(), StatusCode::OK);
+        let listed_body: Value = serde_json::from_slice(
+            &axum::body::to_bytes(listed.into_body(), MAX_REQUEST_BODY_BYTES)
+                .await
+                .expect("listed evidence body"),
+        )
+        .expect("listed evidence JSON");
+        assert_eq!(listed_body["count"], expected_count);
+        assert_eq!(
+            listed_body["items"].as_array().map(Vec::len),
+            Some(expected_count as usize)
+        );
+        assert_eq!(
+            listed_body["items"][0]["artifact_id"],
+            evidence["artifact_id"]
+        );
+        assert_eq!(listed_body["items"][0]["metadata"], evidence["metadata"]);
+
+        let trace = app
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri(format!("/api/v1/trace/forward/{artifact_id}"))
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        serde_json::to_vec(&fixture["trace"]).expect("trace JSON"),
+                    ))
+                    .expect("trace request"),
+            )
+            .await
+            .expect("trace response");
+        assert_eq!(trace.status(), StatusCode::OK);
+        let trace_body: Value = serde_json::from_slice(
+            &axum::body::to_bytes(trace.into_body(), MAX_REQUEST_BODY_BYTES)
+                .await
+                .expect("trace body"),
+        )
+        .expect("trace JSON");
+        assert_eq!(trace_body["artifact_id"], artifact_id);
+        assert_eq!(trace_body["direction"], "forward");
+        assert_eq!(trace_body["neighbors"], expected_neighbors);
+    }
+
     #[tokio::test]
     async fn health_and_readiness_response_shapes_are_stable() {
         let health = health::healthz().await.0;
