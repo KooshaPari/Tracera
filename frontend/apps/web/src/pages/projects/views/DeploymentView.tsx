@@ -26,7 +26,9 @@ interface Deployment {
 
 interface Environment {
   name: string;
-  url?: string;
+  // Keep the field present because deployment targets are optional at build time
+  // (exactOptionalPropertyTypes rejects `url: undefined` for an optional field).
+  url: string | undefined;
   status: "healthy" | "degraded" | "down";
   lastDeploy: Deployment | null;
 }
