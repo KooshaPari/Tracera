@@ -1,3 +1,5 @@
+import type { UseMutationResult } from '@tanstack/react-query';
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { TestCase, TestCaseStats, TestCaseStatus } from '@tracertm/types';
@@ -61,7 +63,11 @@ function useTestCase(id: string): ReturnType<typeof useQuery<TestCase, Error>> {
   });
 }
 
-function useCreateTestCase(): ReturnType<typeof useMutation> {
+function useCreateTestCase(): UseMutationResult<
+  { id: string; testCaseNumber: string },
+  Error,
+  CreateTestCaseData
+> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: CreateTestCaseData) => testCasesApi.createTestCase(data),
@@ -71,7 +77,11 @@ function useCreateTestCase(): ReturnType<typeof useMutation> {
   });
 }
 
-function useUpdateTestCase(): ReturnType<typeof useMutation> {
+function useUpdateTestCase(): UseMutationResult<
+  { id: string; version: number },
+  Error,
+  UseUpdateTestCaseInput
+> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, data }: UseUpdateTestCaseInput) =>
@@ -85,7 +95,11 @@ function useUpdateTestCase(): ReturnType<typeof useMutation> {
   });
 }
 
-function useTransitionTestCaseStatus(): ReturnType<typeof useMutation> {
+function useTransitionTestCaseStatus(): UseMutationResult<
+  { id: string; status: string; version: number },
+  Error,
+  UseTestCaseStatusInput
+> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, newStatus, reason }: UseTestCaseStatusInput) =>
@@ -99,7 +113,11 @@ function useTransitionTestCaseStatus(): ReturnType<typeof useMutation> {
   });
 }
 
-function useSubmitTestCaseForReview(): ReturnType<typeof useMutation> {
+function useSubmitTestCaseForReview(): UseMutationResult<
+  { id: string; status: string; reviewedBy: string },
+  Error,
+  UseSubmitTestCaseForReviewInput
+> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, reviewer, notes }: UseSubmitTestCaseForReviewInput) =>
@@ -113,7 +131,11 @@ function useSubmitTestCaseForReview(): ReturnType<typeof useMutation> {
   });
 }
 
-function useApproveTestCase(): ReturnType<typeof useMutation> {
+function useApproveTestCase(): UseMutationResult<
+  { id: string; status: string; approvedBy: string },
+  Error,
+  UseApproveTestCaseInput
+> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, notes }: UseApproveTestCaseInput) =>
@@ -127,7 +149,11 @@ function useApproveTestCase(): ReturnType<typeof useMutation> {
   });
 }
 
-function useDeprecateTestCase(): ReturnType<typeof useMutation> {
+function useDeprecateTestCase(): UseMutationResult<
+  { id: string; status: string },
+  Error,
+  UseDeprecateTestCaseInput
+> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, reason, replacementTestCaseId }: UseDeprecateTestCaseInput) =>
@@ -141,7 +167,7 @@ function useDeprecateTestCase(): ReturnType<typeof useMutation> {
   });
 }
 
-function useDeleteTestCase(): ReturnType<typeof useMutation> {
+function useDeleteTestCase(): UseMutationResult<void, Error, string> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => testCasesApi.deleteTestCase(id),
