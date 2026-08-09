@@ -135,8 +135,7 @@ pub fn detect(preferred: Option<Backend>) -> anyhow::Result<Backend> {
             );
         }
         anyhow::bail!(
-            "TRACERA_BACKEND={} is installed but its compose command is unavailable; "
-                "install the backend's Compose integration or choose another runtime",
+            "TRACERA_BACKEND={} is installed but its compose command is unavailable; install the backend's Compose integration or choose another runtime",
             b.label()
         );
     }
