@@ -13,6 +13,8 @@ import { responseHandlers } from './client-response-handlers';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- openapi-fetch needs explicit HttpMethod keys to avoid PathsWithMethod resolving to never under exactOptionalPropertyTypes
 type AnyPaths = { [path: string]: { [method in HttpMethod]: any } };
 
+const getBackendURL = (_path?: string): string => API_ORIGIN;
+
 const API_BASE_URL = API_ORIGIN;
 
 const rawApiClient = createClient<AnyPaths>({
@@ -29,6 +31,7 @@ if (!rawApiClient) {
 }
 
 type LegacyRequestInit = Record<string, unknown>;
+type LegacyHttpMethod = Extract<HttpMethod, 'get' | 'post' | 'put' | 'delete'>;
 type LegacyApiClient = typeof rawApiClient & {
   get<T>(path: string, init?: LegacyRequestInit): Promise<T>;
   post<T>(path: string, init?: LegacyRequestInit): Promise<T>;
@@ -42,11 +45,24 @@ const unwrap = async <T>(request: Promise<{ data?: unknown; error?: unknown }>):
   return response.data as T;
 };
 
+const requestLegacyEndpoint = <T>(
+  method: LegacyHttpMethod,
+  path: string,
+  init?: LegacyRequestInit,
+): Promise<T> => {
+  // openapi-fetch types require 3 args; cast through `any` to allow the no-init
+  // overload used by the legacy helpers, matching the existing `as never` style.
+  const request = init === undefined
+    ? (rawApiClient.request as any)(method, path)
+    : (rawApiClient.request as any)(method, path, init);
+  return unwrap<T>(request);
+};
+
 const apiClient: LegacyApiClient = Object.assign(rawApiClient, {
-  get: <T>(path: string, init?: LegacyRequestInit) => unwrap<T>(rawApiClient.GET(path as never, init as never)),
-  post: <T>(path: string, init?: LegacyRequestInit) => unwrap<T>(rawApiClient.POST(path as never, init as never)),
-  put: <T>(path: string, init?: LegacyRequestInit) => unwrap<T>(rawApiClient.PUT(path as never, init as never)),
-  delete: <T>(path: string, init?: LegacyRequestInit) => unwrap<T>(rawApiClient.DELETE(path as never, init as never)),
+  get: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>('get', path, init),
+  post: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>('post', path, init),
+  put: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>('put', path, init),
+  delete: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>('delete', path, init),
 });
 
 const normalizeToken = (token: string): string => {
