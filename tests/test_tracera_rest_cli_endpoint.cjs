@@ -34,6 +34,9 @@ test('keeps flag, environment, and file precedence', () => {
     writeFileSync(join(home, '.tracera', 'config.json'), JSON.stringify({
       apiBase: 'http://127.0.0.1:19000',
     }));
+    const fileResult = config({ HOME: home, TRACERA_API_BASE: '' });
+    assert.equal(fileResult.apiBase, 'http://127.0.0.1:19000');
+    assert.equal(fileResult.source, 'file');
     assert.equal(
       config({ HOME: home, TRACERA_API_BASE: 'http://127.0.0.1:19001' }).apiBase,
       'http://127.0.0.1:19001'
