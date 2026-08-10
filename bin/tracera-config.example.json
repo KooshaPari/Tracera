@@ -1,7 +1,7 @@
 {
-  "_comment_": "Tracera personal dogfooding config. Edit apiBase to point at your running tracera-server (default: local dev server on :8080). See bin/tracera help text (tracera <subcommand> --help) for command usage; in-repo bin/ has the canonical CLI source.",
+  "_comment_": "Tracera personal dogfooding config. Edit apiBase to point at your running Tracera rich gateway (default: loopback :18000). See bin/tracera help text (tracera <subcommand> --help) for command usage; in-repo bin/ has the canonical CLI source.",
 
-  "apiBase": "http://localhost:8080",
+  "apiBase": "http://127.0.0.1:18000",
 
   "_auth_": "Optional. If your server requires auth, set the bearer token here. NEVER commit a real token to source control — this file lives at ~/.tracera/config.json (outside any repo).",
   "authToken": null,
