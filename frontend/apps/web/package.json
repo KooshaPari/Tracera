@@ -125,7 +125,7 @@
     "graphology-metrics": "^2.4.0",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
-    "immer": "^10.1.1",
+    "immer": "^11.1.16",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
     "lucide-react": "^1.28.0",
