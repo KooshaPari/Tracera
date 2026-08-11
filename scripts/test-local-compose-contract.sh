@@ -18,6 +18,12 @@ assert "wget -q -O /dev/null http://127.0.0.1:8080/health" in dockerfile, (
 server = re.search(r"(?ms)^  tracera-server:\n(.*?)(?=^  [a-zA-Z0-9_-]+:|\Z)", compose)
 frontend = re.search(r"(?ms)^  frontend:\n(.*?)(?=^  [a-zA-Z0-9_-]+:|\Z)", compose)
 assert server and "healthcheck:" in server.group(1), "server service healthcheck missing"
+assert 'TRACERA_PUBLIC_BIND_MODE: "private-network"' in server.group(1), (
+    "private backend must declare its private-network deployment boundary"
+)
+assert "TRACERA_AUTH_TOKEN: ${TRACERA_AUTH_TOKEN:?TRACERA_AUTH_TOKEN is required}" in server.group(1), (
+    "private backend must receive the required in-process API bearer token"
+)
 assert frontend and "condition: service_healthy" in frontend.group(1), (
     "frontend must wait for a healthy server"
 )

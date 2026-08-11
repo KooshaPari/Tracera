@@ -19,6 +19,10 @@ services:
       dockerfile: Dockerfile.rust
     environment:
       TRACERA_BIND_ADDR: 0.0.0.0:8080
+      # The API is reachable only through the sibling frontend on this private
+      # Compose network; declare that boundary for the Rust listener.
+      TRACERA_PUBLIC_BIND_MODE: "private-network"
+      TRACERA_AUTH_TOKEN: ${TRACERA_AUTH_TOKEN:?TRACERA_AUTH_TOKEN is required}
       TRACERA_TRUSTED_PROXY: "true"
       DATABASE_URL: postgres://tracera:${POSTGRES_PASSWORD}@postgres:5432/tracera
     expose: ["8080"]
