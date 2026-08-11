@@ -1,0 +1,86 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RUSTFLAGS: -Dwarnings
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint-types-unit:
+    name: Lint / Types / Unit (Node 22, ubuntu)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: dtolnay/rust-toolchain@5c142a9a4cb939ce7a7645f2e9651ab4428b7832
+        with: { toolchain: stable, components: rustfmt, clippy }
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: ./crates/gateway -> target }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test:unit
+      - run: pnpm -r build
+
+  rust:
+    name: Cargo (ubuntu + macOS)
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dtolnay/rust-toolchain@5c142a9a4cb939ce7a7645f2e9651ab4428b7832
+        with: { toolchain: stable, components: rustfmt, clippy }
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: ./crates/gateway -> target }
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: { repository: KooshaPari/OmniRoute, path: ../OmniRoute-pr232-policyfix-20260703, ref: main }
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy -p omniroute-gateway --all-targets -- -D warnings
+      - run: cargo test -p omniroute-gateway
+
+  e2e:
+    name: Playwright e2e (ubuntu)
+    runs-on: ubuntu-latest
+    needs: [lint-types-unit]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter web build
+      - run: npx playwright install --with-deps
+      - run: pnpm test:e2e
+
+  size:
+    name: Bundle size budget
+    runs-on: ubuntu-latest
+    needs: [lint-types-unit]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:web
+      - run: pnpm size
