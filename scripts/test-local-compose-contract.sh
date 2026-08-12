@@ -2,6 +2,7 @@
 set -euo pipefail
 
 python3 - <<'PY'
+import json
 from pathlib import Path
 import re
 
@@ -10,6 +11,7 @@ dockerfile = Path("Dockerfile.rust").read_text(encoding="utf-8")
 frontend_dockerfile = Path("frontend/Dockerfile.local").read_text(encoding="utf-8")
 nginx = Path("frontend/deploy/nginx.local.conf").read_text(encoding="utf-8")
 api_origin = Path("frontend/apps/web/src/config/api-origin.ts").read_text(encoding="utf-8")
+frontend_package = json.loads(Path("frontend/package.json").read_text(encoding="utf-8"))
 
 assert "HEALTHCHECK" in dockerfile, "Rust image must define a healthcheck"
 assert "wget -q -O /dev/null http://127.0.0.1:8080/health" in dockerfile, (
@@ -26,6 +28,31 @@ assert '"${TRACERA_LOCAL_BIND_ADDR:-127.0.0.1}:${TRACERA_LOCAL_PORT:-18081}:80"'
 )
 assert "ENV VITE_API_URL=" in frontend_dockerfile, (
     "local frontend build must opt into the browser's same-origin API path"
+)
+assert frontend_package["packageManager"] == "bun@1.3.11", (
+    "frontend package manager must remain the tracked Bun toolchain"
+)
+assert "FROM oven/bun:1.3.11-alpine AS build" in frontend_dockerfile, (
+    "local frontend image must use the tracked Bun toolchain"
+)
+assert "COPY package.json bun.lock turbo.json tsconfig.json ./" in frontend_dockerfile, (
+    "local frontend image must install from tracked workspace metadata"
+)
+assert "COPY packages ./packages" in frontend_dockerfile, (
+    "local frontend image must include workspace packages required by the web app"
+)
+assert "RUN bun install --frozen-lockfile" in frontend_dockerfile, (
+    "local frontend image must perform a locked Bun install"
+)
+assert re.search(
+    r"RUN bun install --frozen-lockfile --ignore-scripts\s+RUN bun run postinstall",
+    frontend_dockerfile,
+), (
+    "local frontend image must skip incompatible dependency lifecycle hooks, "
+    "then explicitly apply Tracera's root postinstall patches"
+)
+assert "package-lock.json" not in frontend_dockerfile and "npm ci" not in frontend_dockerfile, (
+    "local frontend image must not depend on ignored npm lockfile state"
 )
 assert "VITE_API_BASE" not in frontend_dockerfile, (
     "local frontend build must not set the unused VITE_API_BASE variable"
