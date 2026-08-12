@@ -33,7 +33,7 @@
         "out/**",
         ".tsbuildinfo"
       ],
-      "outputLogs": "hash-only",
+      "outputLogs": "full",
       "env": ["NODE_ENV", "VITE_*", "NEXT_PUBLIC_*"]
     },
     "build:fast": {
