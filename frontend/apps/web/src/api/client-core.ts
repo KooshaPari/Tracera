@@ -203,13 +203,18 @@ const applyCsrfHeaders = (request: Request): void => {
   }
 };
 
+const protectedBackendRoots = ['/api/', '/evidence', '/sdlc-pm/', '/org-intel/'] as const;
+
+const isProtectedBackendPath = (pathname: string): boolean =>
+  protectedBackendRoots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
+
 const applyAuthHeaders = (request: Request): void => {
   if (!globalThis.window) {
     return;
   }
 
-  const { url } = request;
-  if (!url.includes(apiConstants.apiPathSegment)) {
+  const { pathname } = new URL(request.url);
+  if (!isProtectedBackendPath(pathname)) {
     return;
   }
 
@@ -250,4 +255,4 @@ const clientCore: ClientCore = {
   validateSession,
 };
 
-export { clientCore, type ClientCore };
+export { clientCore, isProtectedBackendPath, type ClientCore };
