@@ -21,6 +21,7 @@
     "build:parallel": "turbo build --parallel --concurrency=8",
     "test": "turbo test --concurrency=4",
     "test:unit": "turbo test --filter=@tracertm/web --concurrency=4",
+    "test:turbo-build-order": "node scripts/test-turbo-build-order.mjs",
     "test:parallel": "turbo test --parallel --concurrency=4",
     "test:perf": "bun scripts/run-all-performance-tests.ts",
     "test:perf:build": "bun scripts/test-build-performance.ts",

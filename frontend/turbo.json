@@ -37,7 +37,7 @@
       "env": ["NODE_ENV", "VITE_*", "NEXT_PUBLIC_*"]
     },
     "build:fast": {
-      "dependsOn": [],
+      "dependsOn": ["^build"],
       "inputs": [
         "src/**",
         "public/**",
