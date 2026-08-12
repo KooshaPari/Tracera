@@ -127,7 +127,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tracera-desktop-${{ matrix.os }}-${{ matrix.arch }}
-          path: frontend/apps/desktop/Tracera-*-${{ matrix.os }}-${{ matrix.arch }}.{{ matrix.archive_format }}
+          path: frontend/apps/desktop/Tracera-*-${{ matrix.os }}-${{ matrix.arch }}.${{ matrix.archive_format }}
           if-no-files-found: error
 
   release:
