@@ -1,0 +1,43 @@
+{
+  "metrics": [
+    {
+      "metric": "startup_time",
+      "pass": false,
+      "test": "Dev Server Startup",
+      "threshold": 3000,
+      "unit": "ms",
+      "value": -1
+    },
+    {
+      "metric": "shipped_artifacts",
+      "pass": false,
+      "test": "Shipped Web Artifacts",
+      "threshold": 1,
+      "unit": "assets",
+      "value": 0
+    },
+    {
+      "metric": "hmr_config",
+      "pass": false,
+      "test": "HMR Configuration",
+      "threshold": 1,
+      "unit": "boolean",
+      "value": 0
+    },
+    {
+      "metric": "build_optimizations",
+      "pass": false,
+      "test": "Build Optimizations",
+      "threshold": 1,
+      "unit": "boolean",
+      "value": 0
+    }
+  ],
+  "overallSuccess": false,
+  "summary": {
+    "failed": 4,
+    "passed": 0,
+    "totalTests": 4
+  },
+  "timestamp": "2026-08-01T22:24:06.124Z"
+}
