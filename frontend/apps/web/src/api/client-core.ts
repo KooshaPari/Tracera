@@ -203,7 +203,7 @@ const applyCsrfHeaders = (request: Request): void => {
   }
 };
 
-const protectedBackendRoots = ['/api/', '/evidence', '/sdlc-pm/', '/org-intel/'] as const;
+const protectedBackendRoots = ['/api', '/evidence', '/sdlc-pm', '/org-intel'] as const;
 
 const isProtectedBackendPath = (pathname: string): boolean =>
   protectedBackendRoots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
