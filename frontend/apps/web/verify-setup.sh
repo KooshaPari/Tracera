@@ -92,7 +92,7 @@ if [ -f ".env.local" ]; then
     fi
 else
     echo "⚠️  .env.local not found"
-    echo "   Create it with: echo 'VITE_API_URL=http://localhost:8000' > .env.local"
+    echo "   Create it with: echo 'VITE_API_URL=http://127.0.0.1:18000' > .env.local"
 fi
 echo ""
 
@@ -133,12 +133,12 @@ fi
 # Check if backend is running
 echo "🔌 Checking backend connection..."
 if command -v curl &> /dev/null; then
-    API_URL=${VITE_API_URL:-"http://localhost:8000"}
+    API_URL=${VITE_API_URL:-"http://127.0.0.1:18000"}
     if curl -s -o /dev/null -w "%{http_code}" "$API_URL/health" | grep -q "200"; then
         echo "✅ Backend is running at $API_URL"
     else
         echo "⚠️  Backend not responding at $API_URL"
-        echo "   Make sure the backend is running on port 8000"
+        echo "   Make sure the backend gateway is running on port 18000"
     fi
 else
     echo "⚠️  curl not found, skipping backend check"
@@ -149,6 +149,6 @@ echo "✨ Verification complete!"
 echo ""
 echo "Next steps:"
 echo "1. Install dependencies: bun install"
-echo "2. Set environment: echo 'VITE_API_URL=http://localhost:8000' > .env.local"
+echo "2. Set environment: echo 'VITE_API_URL=http://127.0.0.1:18000' > .env.local"
 echo "3. Start dev server: bun run dev"
 echo "4. Open browser: http://localhost:5173"

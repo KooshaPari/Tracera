@@ -1,10 +1,22 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
-import { clientCore } from "@/api/client-core";
-import { API_ORIGIN } from "@/config/api-origin";
+import { isProtectedBackendPath } from '../../api/client-core';
 
-describe("clientCore", () => {
-  it("returns the configured backend origin for a backend path", () => {
-    expect(clientCore.getBackendURL("/api/v1/evidence")).toBe(API_ORIGIN);
+describe(isProtectedBackendPath, () => {
+  it.each([
+    '/api/v1/coverage-matrix',
+    '/evidence',
+    '/evidence/ev-123',
+    '/sdlc-pm/sprints',
+    '/org-intel/teams',
+  ])('recognizes protected Tracera backend route %s', (pathname) => {
+    expect(isProtectedBackendPath(pathname)).toBe(true);
   });
+
+  it.each(['/health', '/ready', '/assets/app.js', '/not-a-tracera-route'])(
+    'does not attach bearer credentials to public or static route %s',
+    (pathname) => {
+      expect(isProtectedBackendPath(pathname)).toBe(false);
+    },
+  );
 });

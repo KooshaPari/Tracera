@@ -19,11 +19,10 @@ services:
       dockerfile: Dockerfile.rust
     environment:
       TRACERA_BIND_ADDR: 0.0.0.0:8080
-      # The API is reachable only through the sibling frontend on this private
-      # Compose network; declare that boundary for the Rust listener.
+      # This legacy profile publishes no backend host port; the server is
+      # reachable only by the sibling nginx container on the private network.
       TRACERA_PUBLIC_BIND_MODE: "private-network"
       TRACERA_AUTH_TOKEN: ${TRACERA_AUTH_TOKEN:?TRACERA_AUTH_TOKEN is required}
-      TRACERA_TRUSTED_PROXY: "true"
       DATABASE_URL: postgres://tracera:${POSTGRES_PASSWORD}@postgres:5432/tracera
     expose: ["8080"]
     depends_on:
@@ -41,7 +40,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.local
     ports:
-      - "${TRACERA_LOCAL_BIND_ADDR:-127.0.0.1}:${TRACERA_LOCAL_PORT:-18081}:80"
+      - "127.0.0.1:${TRACERA_LOCAL_PORT:-18081}:80"
     depends_on:
       tracera-server: {condition: service_healthy}
     restart: unless-stopped

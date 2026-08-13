@@ -25,8 +25,9 @@ async function fetchProjects(token: string | null): Promise<Project[]> {
     throw new Error('Failed to fetch projects');
   }
   const data = await res.json();
-  // API returns { total: number, projects: Project[] }, extract projects array
-  const projectsArray = Array.isArray(data) ? data : (data['projects'] ?? []);
+  // The gateway publishes its project summaries as { count, items } while
+  // established adapters use either an array or { projects }.
+  const projectsArray = Array.isArray(data) ? data : (data['projects'] ?? data['items'] ?? []);
   // Transform snake_case to camelCase for frontend compatibility
   return projectsArray.map((project: any) =>
     Object.assign(project, {

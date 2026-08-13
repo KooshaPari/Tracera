@@ -8,6 +8,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useCreateProject, useProject, useProjects } from '../../hooks/useProjects';
+import { useAuthStore } from '../../stores/authStore';
 
 // Mock fetch (vi.fn() compatible with fetch at runtime)
 const mockFetch = vi.fn();
@@ -28,6 +29,7 @@ const createWrapper = () => {
 describe(useProjects, () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useAuthStore.setState({ token: 'gateway-contract-token' });
   });
 
   it('should fetch projects', async () => {
@@ -53,6 +55,27 @@ describe(useProjects, () => {
     expect(mockFetch).toHaveBeenCalledOnce();
   });
 
+  it('should normalize the Rust gateway count and items project envelope', async () => {
+    const gatewayProjects = [
+      { description: 'Derived from a persisted problem', id: 'problem-1', name: 'Gateway project' },
+    ];
+
+    mockFetch.mockResolvedValueOnce({
+      json: async () => ({ count: 1, items: gatewayProjects }),
+      ok: true,
+    });
+
+    const { result } = renderHook(() => useProjects(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBeTruthy();
+    });
+
+    expect(result.current.data).toEqual(gatewayProjects);
+  });
+
   it('should handle fetch error', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
@@ -74,6 +97,7 @@ describe(useProjects, () => {
 describe(useProject, () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useAuthStore.setState({ token: null });
   });
 
   it('should fetch a single project', async () => {
@@ -120,6 +144,7 @@ describe(useProject, () => {
 describe(useCreateProject, () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useAuthStore.setState({ token: null });
   });
 
   it('should create a project', async () => {

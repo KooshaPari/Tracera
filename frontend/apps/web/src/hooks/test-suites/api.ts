@@ -7,7 +7,6 @@ import type {
 } from '@tracertm/types';
 
 import { client } from '@/api/client';
-import { API_ORIGIN } from '@/config/api-origin';
 
 import { asJsonObject, getOptionalArray, getOptionalNumber, getString } from './decoders';
 import {
@@ -19,7 +18,7 @@ import {
 
 const { getAuthHeaders } = client;
 
-const API_URL = API_ORIGIN;
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 interface TestSuiteFilters {
   projectId: string;

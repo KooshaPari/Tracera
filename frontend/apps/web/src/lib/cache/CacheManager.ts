@@ -55,14 +55,6 @@ export interface CacheManagerConfig {
   indexedDBMaxEntries?: number;
 }
 
-/**
- * Size threshold for cache routing
- */
-const SIZE_THRESHOLDS = {
-  MEMORY: 100 * 1024, // 100KB - use memory cache
-  INDEXEDDB: 5 * 1024 * 1024, // 5MB - use IndexedDB
-} as const;
-
 interface CacheManagerStats {
   totalRequests: number;
   memoryHits: number;
@@ -70,6 +62,14 @@ interface CacheManagerStats {
   serviceWorkerHits: number;
   misses: number;
 }
+
+/**
+ * Size threshold for cache routing
+ */
+const SIZE_THRESHOLDS = {
+  MEMORY: 100 * 1024, // 100KB - use memory cache
+  INDEXEDDB: 5 * 1024 * 1024, // 5MB - use IndexedDB
+} as const;
 
 /**
  * Unified cache manager

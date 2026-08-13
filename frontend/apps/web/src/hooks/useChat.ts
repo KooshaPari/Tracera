@@ -8,14 +8,13 @@ import type { SSEEvent, ToolCall } from '@/lib/ai/types';
 
 import { createAgentSession } from '@/api/agent';
 import { client } from '@/api/client';
-import { API_ORIGIN } from '@/config/api-origin';
 import { buildSystemPrompt } from '@/lib/ai/systemPrompt';
 import { logger } from '@/lib/logger';
 import { useChatStore } from '@/stores/chat-store';
 
 const { getAuthHeaders } = client;
 
-const API_URL = API_ORIGIN;
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 interface SendMessageOptions {
   onChunk?: (chunk: string) => void;

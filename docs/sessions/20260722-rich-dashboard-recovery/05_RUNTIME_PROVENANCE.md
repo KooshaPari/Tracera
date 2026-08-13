@@ -365,3 +365,19 @@ authentication middleware. Authentication is attached only to selected
 search, traceability, item, and project registrations remain on the base API
 group. The earlier security classification is therefore confirmed, not a
 false negative from route-local inspection.
+
+### Release-integrity checkpoint (2026-08-01 04:39 UTC)
+
+The repository-local release manifest was verified without starting services or
+modifying state:
+
+```text
+cd Tracera && node frontend/scripts/verify-release-manifest.mjs release-manifest.json
+release manifest verified: .../Tracera/release-manifest.json
+```
+
+The validator checks the `tracera.release-manifest.v1` schema, source commit,
+`secrets_included=false`, lockfiles, and artifact SHA-256/byte lengths. This is
+an independent promotion gate. Test execution remains deferred while the host
+has approximately 766 MiB free; a prior Go test attempt failed with
+`no space left on device` in `~/Library/Caches/go-build`.

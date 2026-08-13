@@ -33,12 +33,25 @@ posts, chat channels, or social media. Use private channels only.
 
 ## Runtime controls
 
-The Rust server defaults to loopback (`127.0.0.1:8080`). When
-`TRACERA_BIND_ADDR` is configured to a non-loopback address, startup emits a
-warning; deployments must place the service behind an authenticated TLS
-reverse proxy before exposing it externally. The Rust HTTP layer also caps
-request bodies at 8 MiB and adds `nosniff`, `DENY`, and `no-referrer` response
-headers. The body cap bounds parser memory use without changing JSON contracts.
+The Rust server defaults to loopback (`127.0.0.1:8080`). A non-loopback bind is
+rejected unless `TRACERA_PUBLIC_BIND_MODE` declares an explicit deployment
+boundary *and* `TRACERA_AUTH_TOKEN` contains a non-empty bearer token:
+
+- `authenticated-proxy`: only behind a real authenticated TLS reverse proxy.
+- `loopback-published`: only for the canonical Compose profile, whose host
+  publication is hard-coded to `127.0.0.1`.
+- `private-network`: only for a Compose profile with no backend host-port
+  publication and a sibling private-network gateway.
+
+The Rust layer enforces that token as `Authorization: Bearer <token>` on every
+non-health route; `/health`, `/healthz`, `/ready`, `/readyz`, and suffix
+`/health`/`/healthz` probes stay unauthenticated for orchestrator checks. Do not
+use a Tailnet IP or `TRACERA_LOCAL_BIND_ADDR` to override the canonical local
+profile: its published host port is intentionally hard-bound to loopback. For
+remote access, use an authenticated self-host ingress or a separately reviewed
+Tailnet proxy boundary. The Rust HTTP layer also caps request bodies at 8 MiB
+and adds `nosniff`, `DENY`, and `no-referrer` response headers. The body cap
+bounds parser memory use without changing JSON contracts.
 
 - All non-probe API requests go through `ApiAuthzMiddleware` in
   `src/tracertm/api/main.py`.
@@ -69,6 +82,7 @@ Secrets must be provided through environment variables and never checked into so
 - `TRACERA_JWT_PUBLIC_KEY`
 - `TRACERA_JWT_AUDIENCE`
 - `TRACERA_JWT_ISSUER`
+- `TRACERA_AUTH_TOKEN`
 - `TRACERA_DB_DSN` and any service credentials
 
 Set `TRACERA_JWT_SECRET` and related verification knobs in production before

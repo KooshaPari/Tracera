@@ -7,15 +7,9 @@ import { GherkinViewer } from '@/components/specifications/bdd/GherkinViewer';
 import { ScenarioCard } from '@/components/specifications/bdd/ScenarioCard';
 import { useScenario, useScenarioActivities } from '@/hooks/useSpecifications';
 import { Button, Card } from '@tracertm/ui';
+import type { ScenarioActivity } from '@tracertm/types';
 
 const ROWS_SELECT_ID = 'scenario-activity-rows';
-
-interface ScenarioActivity {
-  activityType: string;
-  createdAt?: string | null;
-  description?: string | null;
-  id: string;
-}
 
 function ScenarioActivityCard({
   activities,

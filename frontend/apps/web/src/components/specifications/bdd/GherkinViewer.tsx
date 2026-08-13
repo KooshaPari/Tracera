@@ -373,7 +373,7 @@ export function GherkinViewer({
   if (!parsed.feature && parsed.scenarios.length === 0) {
     return (
       <RawGherkinCard
-        {...(className === undefined ? {} : { className })}
+        {...(className ? { className } : {})}
         content={content}
         editorOptions={editorOptions}
         height={height}

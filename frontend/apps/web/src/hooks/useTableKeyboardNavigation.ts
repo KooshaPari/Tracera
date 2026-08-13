@@ -189,10 +189,10 @@ export function useTableKeyboardNavigation({
       return;
     }
 
-    container.addEventListener('keydown', handleKeyDown);
+    container.addEventListener('keydown', handleKeyDown as EventListener);
 
     return () => {
-      container.removeEventListener('keydown', handleKeyDown);
+      container.removeEventListener('keydown', handleKeyDown as EventListener);
     };
   }, [containerId, handleKeyDown]);
 

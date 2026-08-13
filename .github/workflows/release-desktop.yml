@@ -4,9 +4,9 @@ name: Release Tracera Desktop
 # Triggered on v* tags (release) or manual dispatch (test build).
 #
 # Output per platform:
-#   - macOS:   Tracera-<ver>-macos-<arch>.zip  (zipped .app bundle)
-#   - Windows: Tracera-<ver>-win-<arch>.zip    (zipped .exe + Resources)
-#   - Linux:   Tracera-<ver>-linux-<arch>.tar.gz
+#   - macOS:   tracera-desktop-<ver>-macos-<arch>.zip  (zipped .app bundle)
+#   - Windows: tracera-desktop-<ver>-windows-<arch>.zip
+#   - Linux:   tracera-desktop-<ver>-linux-<arch>.tar.gz
 #
 # Code signing: not configured — produces unsigned binaries. Personal
 # installation works without signing; distribution requires notarization
@@ -36,16 +36,19 @@ jobs:
           # Pin the Apple runner; macos-latest may switch to a beta Xcode and
           # produce proc-macro dylibs with LINKEDIT layouts rejected by dyld.
           - os: macos-14
+            platform: macos
             arch: arm64
             artifact_subdir: dev-macos-arm64
             package_ext: app
             archive_format: zip
           - os: windows-latest
+            platform: windows
             arch: x64
             artifact_subdir: dev-windows-x64
             package_ext: exe
             archive_format: zip
           - os: ubuntu-latest
+            platform: linux
             arch: x64
             artifact_subdir: dev-linux-x64
             package_ext: AppImage
@@ -60,6 +63,9 @@ jobs:
         with:
           bun-version: '1.3.11'
 
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Record Apple toolchain
         if: startsWith(matrix.os, 'macos-')
         run: xcodebuild -version
@@ -68,19 +74,40 @@ jobs:
         working-directory: frontend/apps/desktop
         run: bun install --frozen-lockfile --ignore-scripts
 
+      - name: Verify packaged CLI, compose, and manifest inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f crates/tracera-cli/Cargo.toml
+          test -f docker-compose.yml
+          test -f frontend/scripts/release-manifest.mjs
+          test -f frontend/scripts/verify-release-manifest.mjs
+          test "$(node -p "require('./frontend/apps/desktop/package.json').name")" = "tracera-desktop"
+
+      - name: Build native CLI for desktop bundle
+        run: cargo build --locked --release -p tracera-cli
+
       - name: Build with Electrobun
         working-directory: frontend/apps/desktop
-        run: bunx --no-install electrobun build
+        run: bun run build
 
       - name: Locate built artifact
         id: locate
         working-directory: frontend/apps/desktop
+        shell: bash
         run: |
           set -e
+          case "${{ matrix.platform }}:${{ matrix.arch }}:${{ matrix.package_ext }}:${{ matrix.archive_format }}:${{ matrix.artifact_subdir }}" in
+            macos:arm64:app:zip:dev-macos-arm64|windows:x64:exe:zip:dev-windows-x64|linux:x64:AppImage:tar.gz:dev-linux-x64) ;;
+            *) echo "::error::Unsupported desktop packaging tuple"; exit 1 ;;
+          esac
           SUB="${{ matrix.artifact_subdir }}"
           EXT="${{ matrix.package_ext }}"
           if [ "$EXT" = "app" ]; then
-            ARTIFACT="build/${SUB}/Tracera-dev.app"
+            ARTIFACT="build/${SUB}/Tracera.app"
+            if [ ! -d "$ARTIFACT" ]; then
+              ARTIFACT="build/${SUB}/Tracera-dev.app"
+            fi
           else
             ARTIFACT=$(find "build/${SUB}" -maxdepth 2 -type f -name "*.${EXT}" | head -1)
           fi
@@ -95,13 +122,14 @@ jobs:
       - name: Archive artifact
         id: archive
         working-directory: frontend/apps/desktop
+        shell: bash
         run: |
           set -e
           ARTIFACT="${{ steps.locate.outputs.artifact }}"
           FMT="${{ matrix.archive_format }}"
           APP_NAME=$(node -p "require('./package.json').name")
           APP_VERSION=$(node -p "require('./package.json').version")
-          OUT="${APP_NAME}-${APP_VERSION}-${{ matrix.os }}-${{ matrix.arch }}.${FMT}"
+          OUT="${APP_NAME}-${APP_VERSION}-${{ matrix.platform }}-${{ matrix.arch }}.${FMT}"
           case "$FMT" in
             zip)
               if [ -d "$ARTIFACT" ]; then
@@ -123,11 +151,24 @@ jobs:
         with:
           subject-path: frontend/apps/desktop/${{ steps.archive.outputs.archive }}
 
+      - name: Generate and verify release manifest
+        shell: bash
+        env:
+          TRACERA_RELEASE_ARTIFACTS: frontend/apps/desktop/${{ steps.archive.outputs.archive }}
+          SOURCE_DATE_EPOCH: '0'
+        run: |
+          set -euo pipefail
+          node frontend/scripts/release-manifest.mjs release-manifest.json
+          node frontend/scripts/verify-release-manifest.mjs release-manifest.json
+          test -s release-manifest.json
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tracera-desktop-${{ matrix.os }}-${{ matrix.arch }}
-          path: frontend/apps/desktop/Tracera-*-${{ matrix.os }}-${{ matrix.arch }}.{{ matrix.archive_format }}
+          name: tracera-desktop-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            frontend/apps/desktop/tracera-desktop-*-${{ matrix.platform }}-${{ matrix.arch }}.{{ matrix.archive_format }}
+            release-manifest.json
           if-no-files-found: error
 
   release:

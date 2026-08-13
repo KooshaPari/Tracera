@@ -24,8 +24,16 @@ services:
       dockerfile: Dockerfile.rust
     environment:
       TRACERA_BIND_ADDR: "0.0.0.0:8080"
-      TRACERA_TRUSTED_PROXY: "true"
+      # The host publication below is hard-coded to loopback. This explicit
+      # mode permits the container-internal listener without granting LAN or
+      # internet exposure.
+      TRACERA_PUBLIC_BIND_MODE: "loopback-published"
+      TRACERA_AUTH_TOKEN: ${TRACERA_AUTH_TOKEN:?TRACERA_AUTH_TOKEN is required}
       DATABASE_URL: "postgres://tracera:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/tracera"
+    # The Rust image serves the approved rich dashboard and API from one origin.
+    # Keep browser access local while leaving the database un-published.
+    ports:
+      - "127.0.0.1:${TRACERA_LOCAL_PORT:-18000}:8080"
     expose:
       - "8080"
     depends_on:

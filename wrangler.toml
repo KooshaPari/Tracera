@@ -22,8 +22,8 @@ binding = "TRACERA_KV"
 #   Run:  wrangler kv namespace create tracera_cache --preview
 #   Then: paste the returned "id" as "preview_id" below.
 #   The helper script at scripts/provision-workers-kv.sh automates both steps.
-id = "PROVISION_REQUIRED"
-# preview_id = "PROVISION_REQUIRED"
+id = "8fc0f7553f42414b937c94f4e130ead8"
+preview_id = "5689e98368034100bd9d9e4d7f131eda"
 
 [[r2_buckets]]
 binding = "TRACERA_R2"

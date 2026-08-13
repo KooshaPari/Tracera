@@ -19,12 +19,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { client } from '@/api/client';
-import { API_ORIGIN } from '@/config/api-origin';
 import { logger } from '@/lib/logger';
 
 const { getAuthHeaders } = client;
 
-const API_URL = API_ORIGIN;
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 // =============================================================================
 // Types

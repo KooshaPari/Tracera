@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const base = process.env.VITE_API_BASE || 'http://127.0.0.1:8080'
+const base = process.env.VITE_API_URL || 'http://127.0.0.1:8080'
 
 const checks = [
   {
@@ -114,10 +114,9 @@ try {
   if (errors.length) {
     console.error(`\nPOST smoke failed with ${errors.length} failures`)
     process.exitCode = 1
-    return
+  } else {
+    console.log('\nTracera POST endpoint smoke: PASS')
   }
-
-  console.log('\nTracera POST endpoint smoke: PASS')
 } catch (err) {
   console.error(err)
   process.exitCode = 1

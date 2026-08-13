@@ -31,6 +31,7 @@ if (!rawApiClient) {
 }
 
 type LegacyRequestInit = Record<string, unknown>;
+type LegacyHttpMethod = Extract<HttpMethod, 'get' | 'post' | 'put' | 'delete'>;
 type LegacyApiClient = typeof rawApiClient & {
   get<T>(path: string, init?: LegacyRequestInit): Promise<T>;
   post<T>(path: string, init?: LegacyRequestInit): Promise<T>;
@@ -44,11 +45,24 @@ const unwrap = async <T>(request: Promise<{ data?: unknown; error?: unknown }>):
   return response.data as T;
 };
 
+const requestLegacyEndpoint = <T>(
+  method: LegacyHttpMethod,
+  path: string,
+  init?: LegacyRequestInit,
+): Promise<T> => {
+  // openapi-fetch types require 3 args; cast through `any` to allow the no-init
+  // overload used by the legacy helpers, matching the existing `as never` style.
+  const request = init === undefined
+    ? (rawApiClient.request as any)(method, path)
+    : (rawApiClient.request as any)(method, path, init);
+  return unwrap<T>(request);
+};
+
 const apiClient: LegacyApiClient = Object.assign(rawApiClient, {
-  get: <T>(path: string, init?: LegacyRequestInit) => unwrap<T>(rawApiClient.GET(path as never, init as never)),
-  post: <T>(path: string, init?: LegacyRequestInit) => unwrap<T>(rawApiClient.POST(path as never, init as never)),
-  put: <T>(path: string, init?: LegacyRequestInit) => unwrap<T>(rawApiClient.PUT(path as never, init as never)),
-  delete: <T>(path: string, init?: LegacyRequestInit) => unwrap<T>(rawApiClient.DELETE(path as never, init as never)),
+  get: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>('get', path, init),
+  post: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>('post', path, init),
+  put: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>('put', path, init),
+  delete: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>('delete', path, init),
 });
 
 const normalizeToken = (token: string): string => {
@@ -189,13 +203,18 @@ const applyCsrfHeaders = (request: Request): void => {
   }
 };
 
+const protectedBackendRoots = ['/api', '/evidence', '/sdlc-pm', '/org-intel'] as const;
+
+const isProtectedBackendPath = (pathname: string): boolean =>
+  protectedBackendRoots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
+
 const applyAuthHeaders = (request: Request): void => {
   if (!globalThis.window) {
     return;
   }
 
-  const { url } = request;
-  if (!url.includes(apiConstants.apiPathSegment)) {
+  const { pathname } = new URL(request.url);
+  if (!isProtectedBackendPath(pathname)) {
     return;
   }
 
@@ -236,4 +255,4 @@ const clientCore: ClientCore = {
   validateSession,
 };
 
-export { clientCore, type ClientCore };
+export { clientCore, isProtectedBackendPath, type ClientCore };

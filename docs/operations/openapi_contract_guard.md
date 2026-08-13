@@ -33,11 +33,13 @@ any future language-sidecar layers (Go/Zig/Mojo).
 
 ## Evidence for enforcement
 
-- Runtime client parity:
-  - `frontend/apps/web/src/services/traceraClient.js`
+- Runtime client/bootstrap parity:
+  - `frontend/apps/web/src/api/client-core.ts` (typed rich-dashboard transport)
+  - `frontend/apps/web/src/config/api-origin.ts` (canonical gateway origin)
+  - `frontend/apps/web/src/lib/preflight.ts` (readiness gate)
 - Contract tests:
   - `frontend/scripts/test-tracera-client.mjs`
-  - `frontend/scripts/test-contract-doc.mjs` (checks every documented path against the client)
+  - `frontend/scripts/test-contract-doc.mjs` (checks every documented path against Rust routes and the rich-client bootstrap)
 - Runtime parity smoke:
   - `npm run smoke:parity` (GET surface)
   - `npm run smoke:post` (POST surface)
@@ -59,7 +61,7 @@ No code movement into Go/Zig/Mojo is approved until this contract remains green 
 
 ## Browser deployment transport policy
 
-`VITE_API_BASE` is consumed by browser JavaScript. A non-loopback `http://` value is
+`VITE_API_URL` is consumed by browser JavaScript. A non-loopback `http://` value is
 rejected by `npm run test:api-base` because it causes mixed-content failures from an
 HTTPS dashboard and exposes API traffic without transport encryption. Production builds
 must use an HTTPS ingress (for example `https://tracera.pheno.studio`).

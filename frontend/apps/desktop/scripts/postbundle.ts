@@ -14,11 +14,12 @@
  * hasn't run `cargo build --release -p tracera-cli` yet).
  */
 import { join, dirname } from "node:path";
-import { existsSync, mkdirSync, rmSync, copyFileSync, chmodSync, writeFileSync, renameSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync, copyFileSync, cpSync, chmodSync, writeFileSync, renameSync, readFileSync } from "node:fs";
 
 const DESKTOP_DIR = import.meta.dir.replace(/[/\\]scripts$/, "");
 const REPO_ROOT = join(DESKTOP_DIR, "..", "..", "..");
 const CLI_SRC = join(REPO_ROOT, "target", "release", "tracera");
+const FRONTEND_DIST = join(REPO_ROOT, "frontend", "dist");
 
 function log(...args: unknown[]): void {
   process.stdout.write(`[postbundle] ${args.join(" ")}\n`);
@@ -189,12 +190,22 @@ async function main(): Promise<void> {
   }
 
   const bundle = join(finalApp, "Contents", "Resources", "tracera-bundle");
+  const resources = join(finalApp, "Contents", "Resources");
   const binDir = join(bundle, "bin");
   const scriptsDir = join(bundle, "scripts");
 
   rmSync(bundle, { recursive: true, force: true });
   mkdirSync(binDir, { recursive: true });
   mkdirSync(scriptsDir, { recursive: true });
+
+  // Ship the built SPA alongside the shell. This keeps the installed artifact
+  // self-describing and makes the web UI available even when no source checkout
+  // is present next to the app.
+  if (!existsSync(join(FRONTEND_DIST, "index.html"))) {
+    throw new Error(`frontend build missing at ${FRONTEND_DIST}; run the web build first`);
+  }
+  cpSync(FRONTEND_DIST, resources, { recursive: true, force: true });
+  log(`bundled frontend → ${resources}`);
 
   // CLI binary
   copyFileSync(CLI_SRC, join(binDir, "tracera"));

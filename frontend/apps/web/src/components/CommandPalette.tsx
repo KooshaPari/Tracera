@@ -298,7 +298,6 @@ function CommandPaletteComponent() {
       onClick={() => {
         setOpen(false);
       }}
-      aria-hidden='true'
     >
       <div className='bg-background/80 fixed inset-0 backdrop-blur-sm' aria-hidden='true' />
       <div

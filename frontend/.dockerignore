@@ -1,0 +1,13 @@
+node_modules
+dist
+.turbo
+.vercel
+.git
+.gitignore
+*.log
+*.tsbuildinfo
+coverage
+apps/*/dist
+apps/*/node_modules
+packages/*/dist
+packages/*/node_modules

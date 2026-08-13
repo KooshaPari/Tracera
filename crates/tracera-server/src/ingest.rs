@@ -22,6 +22,7 @@ use std::sync::Arc;
 
 use chrono::Utc;
 use regex::Regex;
+use reqwest::Url;
 use serde_json::Value;
 use uuid::Uuid;
 
@@ -293,6 +294,48 @@ pub struct JiraConfig {
     pub project_key: String,
 }
 
+const JIRA_ERROR_BODY_LIMIT: usize = 512;
+
+fn validate_jira_base_url(raw: &str) -> Result<Url, IngestError> {
+    let raw = raw.trim();
+    let authority = raw
+        .strip_prefix("https://")
+        .filter(|authority| !authority.is_empty() && !authority.starts_with('/'));
+    if authority.is_none() {
+        return Err(IngestError::Fetch(
+            "Jira URL must use HTTPS and include a host".to_string(),
+        ));
+    }
+    let mut base =
+        Url::parse(raw).map_err(|e| IngestError::Fetch(format!("invalid Jira URL: {e}")))?;
+    if base.scheme() != "https" {
+        return Err(IngestError::Fetch("Jira URL must use HTTPS".to_string()));
+    }
+    if base.host_str().is_none() || !base.username().is_empty() || base.password().is_some() {
+        return Err(IngestError::Fetch(
+            "Jira URL must contain a host and no embedded credentials".to_string(),
+        ));
+    }
+    if base.query().is_some() || base.fragment().is_some() {
+        return Err(IngestError::Fetch(
+            "Jira URL must not contain a query or fragment".to_string(),
+        ));
+    }
+    if !base.path().ends_with('/') {
+        base.set_path(&format!("{}/", base.path()));
+    }
+    Ok(base)
+}
+
+fn redact_upstream_body(body: &str) -> String {
+    let sensitive = Regex::new(
+        r#"(?i)(authorization|api[_-]?token|password|secret|token)\s*[:=]\s*("[^"]*"|'[^']*'|[^,\s}]+)"#,
+    )
+    .expect("valid upstream redaction regex");
+    let redacted = sensitive.replace_all(body, "$1=[REDACTED]");
+    redacted.chars().take(JIRA_ERROR_BODY_LIMIT).collect()
+}
+
 impl JiraConfig {
     /// Read from environment. Returns `None` if any required variable is absent.
     pub fn from_env() -> Option<Self> {
@@ -310,23 +353,43 @@ impl JiraConfig {
 /// // wraps: reqwest 0.13
 pub async fn fetch_jira_issues(cfg: &JiraConfig) -> Result<Vec<NormalisedIssue>, IngestError> {
     // wraps: reqwest 0.13
+    let base_url = validate_jira_base_url(&cfg.base_url)?;
+    let origin = (
+        base_url.scheme().to_string(),
+        base_url.host_str().unwrap_or_default().to_string(),
+        base_url.port_or_known_default(),
+    );
     let client = reqwest::Client::builder()
         .user_agent("tracera-ingest/0.1 (github.com/KooshaPari/Tracera)")
+        // Never follow a redirect to another origin with Jira Basic auth.
+        .redirect(reqwest::redirect::Policy::custom(move |attempt| {
+            let target = attempt.url();
+            let same_origin = target.scheme() == origin.0
+                && target.host_str().unwrap_or_default() == origin.1
+                && target.port_or_known_default() == origin.2;
+            if same_origin {
+                attempt.follow()
+            } else {
+                attempt.stop()
+            }
+        }))
         .build()
         .map_err(|e| IngestError::Fetch(e.to_string()))?;
 
-    let url = format!(
-        "{}/rest/api/3/search?jql=project%3D{}&maxResults=100&fields=summary,description,status,issuetype",
-        cfg.base_url.trim_end_matches('/'),
-        cfg.project_key
-    );
+    let mut url = base_url
+        .join("rest/api/3/search")
+        .map_err(|e| IngestError::Fetch(format!("invalid Jira URL: {e}")))?;
+    url.query_pairs_mut()
+        .append_pair("jql", &format!("project={}", cfg.project_key))
+        .append_pair("maxResults", "100")
+        .append_pair("fields", "summary,description,status,issuetype");
 
     use base64::Engine as _;
     let auth = base64::engine::general_purpose::STANDARD
         .encode(format!("{}:{}", cfg.email, cfg.api_token));
 
     let resp = client
-        .get(&url)
+        .get(url)
         .header("Authorization", format!("Basic {auth}"))
         .header("Accept", "application/json")
         .send()
@@ -337,7 +400,8 @@ pub async fn fetch_jira_issues(cfg: &JiraConfig) -> Result<Vec<NormalisedIssue>,
         let status = resp.status();
         let body = resp.text().await.unwrap_or_default();
         return Err(IngestError::Fetch(format!(
-            "Jira API returned {status}: {body}"
+            "Jira API returned {status}: {}",
+            redact_upstream_body(&body)
         )));
     }
 
@@ -686,5 +750,20 @@ mod tests {
         //  by checking that None is a valid return from the Option chain)
         let no_config: Option<GitHubConfig> = None;
         assert!(no_config.is_none());
+    }
+
+    #[test]
+    fn jira_base_url_requires_https_and_host() {
+        assert!(validate_jira_base_url("http://jira.example.com").is_err());
+        assert!(validate_jira_base_url("https:///missing-host").is_err());
+        assert!(validate_jira_base_url("https://jira.example.com").is_ok());
+    }
+
+    #[test]
+    fn jira_error_body_is_redacted_and_bounded() {
+        let body = format!("token=super-secret; {}", "x".repeat(2_000));
+        let safe = redact_upstream_body(&body);
+        assert!(!safe.contains("super-secret"));
+        assert!(safe.chars().count() <= JIRA_ERROR_BODY_LIMIT);
     }
 }

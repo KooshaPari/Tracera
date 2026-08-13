@@ -9,7 +9,6 @@ import type {
 } from '@tracertm/types';
 
 import { client } from '@/api/client';
-import { API_ORIGIN } from '@/config/api-origin';
 import {
   asArray,
   asBoolean,
@@ -23,7 +22,7 @@ import {
 
 const { getAuthHeaders } = client;
 
-const API_URL = API_ORIGIN;
+const API_URL = import.meta.env.VITE_API_URL ?? '';
 
 interface ProblemFilters {
   projectId: string;

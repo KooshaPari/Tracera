@@ -11,6 +11,12 @@ tracera:
   service:
     type: ClusterIP
     port: 8080
+  # The pod listener is private to the cluster Service.  The Rust gateway
+  # requires an explicit boundary assertion for any non-loopback listener;
+  # keep this paired with the ClusterIP default unless an ingress review
+  # changes both values together.
+  bindAddress: "0.0.0.0:8080"
+  publicBindMode: "private-network"
   resources:
     limits:
       cpu: 1000m
@@ -35,4 +41,7 @@ persistence:
 
 # Reference a provisioned secret; chart never emits placeholder credentials.
 secrets:
-  existingSecret: ""
+  # Provision this Secret before installing the chart.  It must contain
+  # DATABASE_URL and may contain optional ingest credentials (GITHUB_*/JIRA_*).
+  # The chart never creates the Secret or emits credentials.
+  existingSecret: "tracera-runtime"

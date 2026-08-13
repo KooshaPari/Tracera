@@ -34,6 +34,35 @@ impl From<sqlx::Error> for StoreError {
 
 pub type StoreResult<T> = Result<T, StoreError>;
 
+pub const DEFAULT_PAGE_SIZE: u32 = 50;
+pub const MAX_PAGE_SIZE: u32 = 500;
+
+#[derive(Debug, Clone, Copy, serde::Deserialize)]
+pub struct ListParams {
+    #[serde(default = "default_page")]
+    pub page: u32,
+    #[serde(default = "default_page_size")]
+    pub page_size: u32,
+}
+
+const fn default_page() -> u32 { 1 }
+const fn default_page_size() -> u32 { DEFAULT_PAGE_SIZE }
+
+impl Default for ListParams {
+    fn default() -> Self { Self { page: 1, page_size: DEFAULT_PAGE_SIZE } }
+}
+
+impl ListParams {
+    pub fn validated(self) -> Result<Self, String> {
+        if self.page == 0 { return Err("page must be >= 1".into()); }
+        if self.page_size == 0 || self.page_size > MAX_PAGE_SIZE {
+            return Err(format!("page_size must be between 1 and {MAX_PAGE_SIZE}"));
+        }
+        Ok(self)
+    }
+    pub fn offset(self) -> u64 { (self.page as u64 - 1) * self.page_size as u64 }
+}
+
 // ---------------------------------------------------------------------------
 // Domain types (copied from main.rs — single source of truth here)
 // ---------------------------------------------------------------------------
@@ -78,6 +107,17 @@ pub struct TeamRow {
     pub name: String,
     pub description: String,
     pub members: Vec<String>,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct ProjectSummary {
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub metadata: Value,
+    pub problem_count: i64,
 }
 
 /// A persistent directed trace-link between two artifact IDs.
@@ -208,11 +248,34 @@ pub trait Store: Send + Sync {
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<TraceLink>>;
 
+    /// List every persisted link incident to an artifact.
+    ///
+    /// This is deliberately unpaged because it answers the complete local
+    /// neighborhood for one artifact; callers must not infer artifact types
+    /// or synthesize links that are absent from persistence.
+    fn list_trace_links_for_artifact(
+        &self,
+        artifact_id: String,
+    ) -> BoxFuture<'_, StoreResult<Vec<TraceLink>>>;
+
     // Teams
     fn list_teams(&self) -> BoxFuture<'_, StoreResult<Vec<TeamRow>>>;
 
+    // Projects (derived from persisted problem rows; no dedicated projects table yet)
+    fn list_projects(&self, params: ListParams) -> BoxFuture<'_, StoreResult<Vec<ProjectSummary>>>;
+    /// Total number of visible projects, independent of page size/offset.
+    fn count_projects(&self) -> BoxFuture<'_, StoreResult<i64>>;
+    fn get_project(&self, project_id: String) -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>>;
+
     // Metrics
     fn count_evidence(&self) -> BoxFuture<'_, StoreResult<i64>>;
+
+    /// Verify that the backing store can accept a minimal query.
+    ///
+    /// Readiness must reflect live datastore availability rather than process
+    /// uptime. This intentionally performs no domain query and returns no
+    /// internal error details to HTTP callers.
+    fn check_readiness(&self) -> BoxFuture<'_, StoreResult<()>>;
 
     // -----------------------------------------------------------------------
     // Problems (ITIL problem-management) — recovered from Python model
@@ -226,6 +289,7 @@ pub trait Store: Send + Sync {
         &self,
         project_id: String,
         status_filter: Option<String>,
+        params: ListParams,
     ) -> BoxFuture<'_, StoreResult<Vec<Problem>>>;
 
     /// Persist a new problem record and return it.
@@ -264,4 +328,32 @@ pub trait Store: Send + Sync {
     // handlers currently expose problem listings rather than aggregate counts.
     #[allow(dead_code)]
     fn count_problems(&self, project_id: String) -> BoxFuture<'_, StoreResult<i64>>;
+
+    /// Total visible problems for a project, optionally filtered by status.
+    fn count_problems_filtered(
+        &self,
+        project_id: String,
+        status_filter: Option<String>,
+    ) -> BoxFuture<'_, StoreResult<i64>>;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ListParams, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE};
+
+    #[test]
+    fn list_params_defaults_and_offset_are_stable() {
+        let params = ListParams::default();
+        assert_eq!(params.page, 1);
+        assert_eq!(params.page_size, DEFAULT_PAGE_SIZE);
+        assert_eq!(ListParams { page: 3, page_size: 25 }.offset(), 50);
+    }
+
+    #[test]
+    fn list_params_reject_zero_and_oversized_values() {
+        assert!(ListParams { page: 0, page_size: 1 }.validated().is_err());
+        assert!(ListParams { page: 1, page_size: 0 }.validated().is_err());
+        assert!(ListParams { page: 1, page_size: MAX_PAGE_SIZE + 1 }.validated().is_err());
+        assert!(ListParams { page: 1, page_size: MAX_PAGE_SIZE }.validated().is_ok());
+    }
 }
