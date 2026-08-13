@@ -10,7 +10,7 @@ value into shell history:
 
 ```sh
 cp .env.example .env.local
-# Replace POSTGRES_PASSWORD with a long random value in .env.local.
+# Replace POSTGRES_PASSWORD and TRACERA_AUTH_TOKEN with distinct long random values in .env.local.
 chmod 600 .env.local
 docker compose --env-file .env.local -f docker-compose.local.yml up -d --build
 curl --fail --silent http://127.0.0.1:18081/health
