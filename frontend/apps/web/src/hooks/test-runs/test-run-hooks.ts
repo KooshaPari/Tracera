@@ -76,7 +76,7 @@ function useStartTestRun(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { id: string; executedBy?: string }) => {
+    mutationFn: async (vars: { id: string; executedBy?: string | undefined }) => {
       const result = await testRunApi.startTestRun(vars.id, vars.executedBy);
       return result;
     },
@@ -95,7 +95,11 @@ function useCompleteTestRun(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { id: string; failureSummary?: string; notes?: string }) => {
+    mutationFn: async (vars: {
+      id: string;
+      failureSummary?: string | undefined;
+      notes?: string | undefined;
+    }) => {
       const result = await testRunApi.completeTestRun(vars.id, vars.failureSummary, vars.notes);
       return result;
     },
