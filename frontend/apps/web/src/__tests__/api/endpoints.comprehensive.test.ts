@@ -105,6 +105,22 @@ describe('API Endpoints - Comprehensive Tests', () => {
         });
       });
 
+      it('should normalize the Rust gateway count and items project envelope', async () => {
+        const gatewayEnvelope = { count: 1, items: [mockProjects[0]] };
+        vi.mocked(apiClient.GET).mockResolvedValue({
+          data: gatewayEnvelope,
+          error: undefined,
+          response: new Response(),
+        });
+        vi.mocked(safeApiCall).mockResolvedValue({
+          data: gatewayEnvelope,
+          error: undefined,
+          response: new Response(),
+        });
+
+        await expect(projectsApi.list()).resolves.toEqual(gatewayEnvelope.items);
+      });
+
       it('should list projects with pagination params', async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockProjects,

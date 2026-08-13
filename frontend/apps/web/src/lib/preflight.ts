@@ -590,6 +590,11 @@ const fetchMcpStatus = async (baseUrl: string): Promise<Record<string, InfraStat
   }
 };
 
+const getDevHost = (): string =>
+  window.location.hostname && window.location.hostname !== 'localhost'
+    ? window.location.hostname
+    : '127.0.0.1';
+
 const buildChecks = (): PreflightCheck[] => {
   const checks: PreflightCheck[] = [];
   const configuredApiUrl = (import.meta.env?.VITE_API_URL ?? '').trim().replace(/\/$/, '');
@@ -607,9 +612,18 @@ const buildChecks = (): PreflightCheck[] => {
     return checks;
   }
 
-  // Keep development on the browser origin too: Vite proxies this path while
-  // the local Compose nginx serves it directly.
-  checks.push({ name: 'backend', url: window.location.origin });
+  // Use the approved local gateway. Direct legacy service ports are never
+  // browser origins; they bypass the readiness/auth contract.
+  const devHost = getDevHost();
+  const useGateway = window.location.port === '18000';
+  const gatewayBase = useGateway ? window.location.origin : `http://${devHost}:18000`;
+
+  if (useGateway) {
+    checks.push({ name: 'backend', url: gatewayBase });
+    return checks;
+  }
+
+  checks.push({ name: 'backend', url: gatewayBase });
   return checks;
 };
 

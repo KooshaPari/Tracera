@@ -1,4 +1,4 @@
-import { API_ORIGIN, WS_ORIGIN } from './api-origin';
+import { API_ORIGIN, WS_ORIGIN } from '@/config/api-origin';
 
 // Application constants
 

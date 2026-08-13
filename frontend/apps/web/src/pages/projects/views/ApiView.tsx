@@ -293,6 +293,7 @@ export const ApiView = ({ projectId }: ApiViewProps) => {
                       <button
                         onClick={async () => copyPath(endpoint, group)}
                         className='hover:bg-accent rounded p-1'
+                        aria-label={`Copy ${endpoint.method} ${endpoint.path} endpoint`}
                       >
                         {copied === endpoint.id ? (
                           <Check className='h-4 w-4 text-green-500' />
@@ -300,7 +301,11 @@ export const ApiView = ({ projectId }: ApiViewProps) => {
                           <Copy className='h-4 w-4' />
                         )}
                       </button>
-                      <button className='hover:bg-accent rounded p-1' title='Try it'>
+                      <button
+                        className='hover:bg-accent rounded p-1'
+                        title='Try it'
+                        aria-label={`Try ${endpoint.method} ${endpoint.path} endpoint`}
+                      >
                         <Play className='h-4 w-4' />
                       </button>
                     </div>

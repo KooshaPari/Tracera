@@ -156,7 +156,6 @@ const buildUIStore = (set: StoreSetter, get: StoreGetter): UIState => ({
 });
 
 export const useUIStore = create<UIState>()(
-  // @ts-expect-error Zustand persist middleware incompatible with exactOptionalPropertyTypes
   persist<UIState>((set, get) => buildUIStore(set, get), {
     name: 'tracertm-ui-store',
     partialize: (state: UIState) =>

@@ -1,4 +1,3 @@
-import { API_ORIGIN } from '@/config/api-origin';
 import { logger } from '@/lib/logger';
 /**
  * OpenAPI Utilities
@@ -175,7 +174,7 @@ export function getSupportedAuthTypes(
  */
 export function getServerUrls(spec: OpenAPISpec): string[] {
   if (!spec.servers || spec.servers.length === 0) {
-    return [API_ORIGIN];
+    return [''];
   }
   return spec.servers.map((server) => server.url);
 }

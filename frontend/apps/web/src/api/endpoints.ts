@@ -30,6 +30,8 @@ const { apiClient, handleApiResponse, safeApiCall } = client;
 export const projectsApi = {
   list: async (params?: PaginationParams): Promise<Project[]> => {
     const response = await handleApiResponse<{
+      count?: number;
+      items?: Project[];
       total: number;
       projects: Project[];
     }>(
@@ -39,8 +41,9 @@ export const projectsApi = {
         }),
       ),
     );
-    // API returns { total: number, projects: Project[] }, extract projects array
-    return Array.isArray(response) ? response : response.projects || [];
+    // The gateway publishes { count, items }, while established adapters use
+    // either an array or { projects }.
+    return Array.isArray(response) ? response : response.projects || response.items || [];
   },
 
   get: async (id: string): Promise<Project> => {

@@ -15,6 +15,13 @@ grep -q 'readOnlyRootFilesystem: true' "$CHART/templates/tracera.yaml" || fail "
 grep -q 'allowPrivilegeEscalation: false' "$CHART/templates/tracera.yaml" || fail "privilege escalation must be disabled"
 grep -q 'seccompProfile:' "$CHART/templates/tracera.yaml" || fail "seccomp profile must be explicit"
 grep -q 'secretRef:' "$CHART/templates/tracera.yaml" || fail "runtime secrets must come from a Secret reference"
+grep -q 'DATABASE_URL' "$CHART/values.yaml" || fail "chart values must document the required DATABASE_URL Secret key"
+grep -q 'TRACERA_BIND_ADDR' "$CHART/templates/tracera.yaml" || fail "pod must configure TRACERA_BIND_ADDR explicitly"
+grep -q 'TRACERA_PUBLIC_BIND_MODE' "$CHART/templates/tracera.yaml" || fail "pod must configure TRACERA_PUBLIC_BIND_MODE explicitly"
+! grep -q 'TRACERA_BACKEND_URL' "$CHART/templates/tracera.yaml" \
+  || fail "Rust pod must not inject the unused TRACERA_BACKEND_URL contract"
+grep -q 'required .*existingSecret' "$CHART/templates/tracera.yaml" \
+  || fail "chart must fail closed when no runtime Secret is configured"
 grep -q 'path: /ready' "$CHART/templates/tracera.yaml" || fail "readiness must use /ready"
 grep -q 'path: /health' "$CHART/templates/tracera.yaml" || fail "liveness must use /health"
 grep -q 'type: ClusterIP' "$CHART/values.yaml" || fail "service must default to internal ClusterIP"

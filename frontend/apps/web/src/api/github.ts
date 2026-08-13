@@ -4,9 +4,8 @@
  */
 
 import { client } from '@/api/client';
-import { API_ORIGIN } from '@/config/api-origin';
 
-const API_URL = API_ORIGIN;
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 /**
  * Default fetch config for authenticated requests

@@ -11,20 +11,20 @@
 import { BrowserWindow, Tray, defineElectrobunRPC, type MenuItemConfig } from "electrobun/bun";
 import type { BunRequests, WebviewRequests } from "./rpc";
 import { resolveBundleCli, startBundle, LOCAL_URL } from "./bundle.js";
-import { resolveTargetUrl } from "./target.js";
+import { LEGACY_BUNDLE_OVERRIDE, resolveTargetUrl } from "./target.js";
 
 const APP_VERSION = "0.1.0";
 const log = (...args: unknown[]) => console.log("[tracera-desktop]", ...args);
 const targetUrl = resolveTargetUrl(process.env);
 const skipBundle = process.env.TRACERA_SKIP_BUNDLE === "1";
+const allowLegacyBundle = process.env[LEGACY_BUNDLE_OVERRIDE] === "1";
 let stopBundle: (() => Promise<void>) | undefined;
 
 log("target URL:", targetUrl);
 
-// The packaged legacy stack is opt-in.  Rich mode (18000) is supplied by the
-// gateway supervisor/Compose wrapper and must never be silently replaced by
-// the old 18081 frontend-only stack.
-if (!skipBundle && targetUrl.startsWith(LOCAL_URL) && resolveBundleCli(import.meta.dir)) {
+// The packaged legacy stack is explicit-only. Rich mode (18000) is the
+// default and must not be replaced unless a developer explicitly opts in.
+if (allowLegacyBundle && !skipBundle && targetUrl.startsWith(LOCAL_URL) && resolveBundleCli(import.meta.dir)) {
   try {
     log("starting bundled stack...");
     stopBundle = await startBundle({ localUrl: targetUrl, log });
@@ -32,6 +32,8 @@ if (!skipBundle && targetUrl.startsWith(LOCAL_URL) && resolveBundleCli(import.me
   } catch (error) {
     log("bundle start failed:", error);
   }
+} else if (!allowLegacyBundle && targetUrl.startsWith(LOCAL_URL)) {
+  log(`legacy bundle disabled by default; set ${LEGACY_BUNDLE_OVERRIDE}=1 to opt in`);
 } else if (skipBundle) {
   log("TRACERA_SKIP_BUNDLE=1 - not starting bundled stack");
 } else {

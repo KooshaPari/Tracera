@@ -9,8 +9,9 @@ use std::sync::Arc;
 
 pub(crate) type AuthToken = Option<Arc<str>>;
 
-/// Require a bearer token for application routes when configured. Health and
-/// readiness probes stay public so container orchestrators can inspect them.
+/// Protect every application route when a public listener is enabled. Health
+/// probes remain unauthenticated so orchestrators can determine liveness and
+/// readiness without carrying application credentials.
 pub(crate) async fn require_bearer(
     State(expected): State<AuthToken>,
     request: Request<Body>,
@@ -52,8 +53,8 @@ fn is_health_route(path: &str) -> bool {
 fn constant_time_equal(left: &[u8], right: &[u8]) -> bool {
     let mut difference = left.len() ^ right.len();
     for index in 0..left.len().max(right.len()) {
-        difference |= (left.get(index).copied().unwrap_or_default()
-            ^ right.get(index).copied().unwrap_or_default()) as usize;
+        difference |= usize::from(left.get(index).copied().unwrap_or_default())
+            ^ usize::from(right.get(index).copied().unwrap_or_default());
     }
     difference == 0
 }
@@ -82,5 +83,6 @@ mod tests {
             assert!(is_health_route(path), "{path} should be a probe route");
         }
         assert!(!is_health_route("/evidence"));
+        assert!(!is_health_route("/api/v1/projects"));
     }
 }

@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import type { SSEClient } from '@/lib/sse-client';
 
-import { API_ORIGIN } from '@/config/api-origin';
 import { createNotificationSSEClient } from '@/lib/sse-client';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -29,7 +28,7 @@ export function useNotifications() {
   const { token } = useAuthStore();
   const queryClient = useQueryClient();
   const sseClientRef = useRef<SSEClient | null>(null);
-  const API_URL = API_ORIGIN;
+  const API_URL = import.meta.env.VITE_API_URL || '';
 
   // Fetch initial notifications
   const query = useQuery({

@@ -123,7 +123,7 @@ describe('Input Accessibility', () => {
   });
 
   it('should support error states with aria-invalid', async () => {
-    render(
+    const { container } = render(
       <div>
         <label htmlFor='error-input'>Error Input</label>
         <Input id='error-input' aria-invalid='true' aria-describedby='error-msg' />
@@ -137,7 +137,7 @@ describe('Input Accessibility', () => {
 
 describe('Select Accessibility', () => {
   it('should not have violations with label', async () => {
-    render(
+    const { container } = render(
       <div>
         <label htmlFor='country'>Country</label>
         {/* Select component requires proper context - skip hook validation */}
@@ -153,7 +153,7 @@ describe('Select Accessibility', () => {
   });
 
   it('should not have violations when disabled', async () => {
-    render(
+    const { container } = render(
       <div>
         <label htmlFor='disabled-select'>Disabled Select</label>
         {/* Use native select for a11y testing */}
@@ -169,7 +169,7 @@ describe('Select Accessibility', () => {
 
 describe('Alert Accessibility', () => {
   it('should not have violations', async () => {
-    render(
+    const { container } = render(
       <Alert>
         <h4>Alert Title</h4>
         <p>Alert description content</p>
@@ -192,13 +192,13 @@ describe('Alert Accessibility', () => {
 
 describe('Badge Accessibility', () => {
   it('should not have violations', async () => {
-    render(<Badge>New</Badge>);
+    const { container } = render(<Badge>New</Badge>);
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
 
   it('should have sufficient color contrast', async () => {
-    render(
+    const { container } = render(
       <div>
         <Badge variant='default'>Default</Badge>
         <Badge variant='secondary'>Secondary</Badge>
@@ -213,7 +213,7 @@ describe('Badge Accessibility', () => {
 
 describe('Card Accessibility', () => {
   it('should not have violations', async () => {
-    render(
+    const { container } = render(
       <Card>
         <h3>Card Title</h3>
         <p>Card content</p>
@@ -224,7 +224,7 @@ describe('Card Accessibility', () => {
   });
 
   it('should support semantic headings', async () => {
-    render(
+    const { container } = render(
       <Card>
         <h2>Section Title</h2>
         <p>Description text</p>
@@ -239,7 +239,7 @@ describe('Card Accessibility', () => {
 
 describe('Dialog Accessibility', () => {
   it('should not have violations when open', async () => {
-    render(
+    const { container } = render(
       <Dialog open onOpenChange={() => {}}>
         <div role='dialog' aria-labelledby='dialog-title'>
           <h2 id='dialog-title'>Dialog Title</h2>
@@ -267,7 +267,7 @@ describe('Dialog Accessibility', () => {
 
 describe('Tooltip Accessibility', () => {
   it('should not have violations', async () => {
-    render(
+    const { container } = render(
       <Tooltip>
         <button>Hover me</button>
         <span role='tooltip'>Tooltip content</span>

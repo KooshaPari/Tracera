@@ -1,7 +1,5 @@
 // Execution API endpoints for QA Integration
 
-import { API_ORIGIN } from '@/config/api-origin';
-
 import { client, handleApiResponse, safeApiCall } from './client';
 
 const { apiClient } = client;
@@ -189,7 +187,7 @@ const create = async (projectId: string, data: ExecutionCreate): Promise<Executi
   );
 
 const downloadArtifact = (projectId: string, executionId: string, artifactId: string): string =>
-  `${API_ORIGIN}/api/v1/projects/${projectId}/executions/${executionId}/artifacts/${artifactId}/download`;
+  `${import.meta.env.VITE_API_URL ?? ''}/api/v1/projects/${projectId}/executions/${executionId}/artifacts/${artifactId}/download`;
 
 const get = async (projectId: string, executionId: string): Promise<Execution> =>
   handleApiResponse(

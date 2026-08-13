@@ -13,6 +13,7 @@ import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
+import { buildTraceabilityCsv, downloadTraceabilityCsv } from '@/lib/traceabilityCsv';
 import { Badge, Input } from '@tracertm/ui';
 import { Button } from '@tracertm/ui/components/Button';
 import { Card } from '@tracertm/ui/components/Card';
@@ -124,6 +125,20 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
     return { covered, partial, uncovered };
   }, [matrix]);
 
+  const handleExportCsv = () => {
+    try {
+      const csv = buildTraceabilityCsv({
+        features: matrix.features,
+        linkedFeatureIdsByRequirement: matrix.coverage,
+        requirements: matrix.requirements,
+      });
+      downloadTraceabilityCsv(csv, 'traceability-matrix.csv');
+      toast.success('Matrix exported to CSV');
+    } catch {
+      toast.error('Unable to export matrix to CSV');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className='animate-pulse space-y-8 p-6'>
@@ -154,7 +169,7 @@ export function TraceabilityMatrixView({ projectId }: TraceabilityMatrixViewProp
           variant='outline'
           size='sm'
           className='gap-2 rounded-lg font-mono text-xs uppercase tracking-wider'
-          onClick={() => toast.success('Matrix exported to CSV')}
+          onClick={handleExportCsv}
         >
           <Download className='h-3.5 w-3.5' /> Export CSV
         </Button>

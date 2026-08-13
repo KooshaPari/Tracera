@@ -61,7 +61,7 @@ const useCreateContract = (): queryUtils.MutationResult<
   });
 };
 
-const useUpdateContract = (): MutationResult<
+const useUpdateContract = (): queryUtils.MutationResult<
   UpdateContractResult,
   { id: string; data: specificationsApi.UpdateContractData }
 > => {

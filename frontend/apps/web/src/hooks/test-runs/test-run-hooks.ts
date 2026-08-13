@@ -95,11 +95,7 @@ function useCompleteTestRun(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: {
-      id: string;
-      failureSummary?: string | undefined;
-      notes?: string | undefined;
-    }) => {
+    mutationFn: async (vars: { id: string; failureSummary?: string | undefined; notes?: string | undefined }) => {
       const result = await testRunApi.completeTestRun(vars.id, vars.failureSummary, vars.notes);
       return result;
     },

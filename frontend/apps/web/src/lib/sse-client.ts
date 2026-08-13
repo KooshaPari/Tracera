@@ -2,8 +2,6 @@
  * Server-Sent Events (SSE) client with automatic reconnection and exponential backoff
  */
 
-import { API_ORIGIN } from '@/config/api-origin';
-
 export interface SSEClientOptions {
   url: string;
   headers?: Record<string, string>;
@@ -209,7 +207,7 @@ export function createNotificationSSEClient(
     return null;
   }
 
-  const API_URL = API_ORIGIN;
+  const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
   return new SSEClient({
     url: `${API_URL}/api/v1/notifications/stream`,

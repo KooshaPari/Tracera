@@ -5,7 +5,7 @@ import { createRequire } from 'node:module';
 import { afterEach, beforeEach } from 'vitest';
 import { expect } from 'vitest';
 
-expect.extend({ toHaveNoViolations });
+expect.extend({ toHaveNoViolations } as never);
 
 // Setup localStorage mock BEFORE any tests run
 const localStorageMock = (() => {

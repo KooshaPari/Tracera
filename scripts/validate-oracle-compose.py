@@ -26,6 +26,7 @@ BUILD_DOCKERFILE_RE = re.compile(r"^\s*dockerfile:\s*([^#\s]+)", re.MULTILINE)
 SERVICE_BLOCK_RE = re.compile(r"^  ([a-zA-Z0-9_.-]+):\s*$([\s\S]*?)(?=^  [a-zA-Z0-9_.-]+:\s*$|\Z)", re.MULTILINE)
 UPSTREAM_RE = re.compile(r"^\s*upstream\s+([a-zA-Z0-9_.-]+)\s*\{", re.MULTILINE)
 UPSTREAM_SERVER_RE = re.compile(r"^\s*server\s+([a-zA-Z0-9_.-]+):\d+", re.MULTILINE)
+NETWORK_ALIAS_RE = re.compile(r"^\s*-\s+([a-zA-Z0-9_.-]+)\s*$", re.MULTILINE)
 
 
 def validate_checkout(
@@ -112,15 +113,30 @@ def validate_checkout(
     gateway = nginx_config or nginx_conf
     if gateway.is_file():
         gateway_text = gateway.read_text(encoding="utf-8")
-        upstreams = set(UPSTREAM_RE.findall(gateway_text))
-        upstream_servers = set(UPSTREAM_SERVER_RE.findall(gateway_text))
-        missing_upstreams = sorted(upstream_servers - services)
+        nginx_sources = [gateway_text]
+        # nginx.conf includes conf.d at runtime. Validate mounted fragments so
+        # a valid main file cannot mask an unresolvable upstream host.
+        if nginx_conf_d.is_dir():
+            nginx_sources.extend(
+                path.read_text(encoding="utf-8", errors="replace")
+                for path in sorted(nginx_conf_d.glob("*.conf"))
+            )
+        nginx_text = "\n".join(nginx_sources)
+        upstreams = set(UPSTREAM_RE.findall(nginx_text))
+        upstream_servers = set(UPSTREAM_SERVER_RE.findall(nginx_text))
+        network_aliases = set()
+        for _, block in SERVICE_BLOCK_RE.findall(text):
+            network_aliases.update(NETWORK_ALIAS_RE.findall(block))
+        missing_upstreams = sorted(upstream_servers - services - network_aliases)
         if missing_upstreams:
             errors.append(
-                "nginx upstream services absent from Compose: " + ", ".join(missing_upstreams)
+                "nginx upstream hosts absent from Compose services or network aliases: "
+                + ", ".join(missing_upstreams)
             )
         if upstreams:
             observations.append("nginx upstreams: " + ", ".join(sorted(upstreams)))
+        if upstream_servers:
+            observations.append("nginx upstream hosts: " + ", ".join(sorted(upstream_servers)))
         if http_only and re.search(r"(?:ssl_certificate|listen\s+443\s+ssl)", gateway_text):
             errors.append("HTTP-only mode cannot include TLS certificate or HTTPS directives")
         if http_only and re.search(r"/etc/nginx/certs|conf\.d/ssl", gateway_text):

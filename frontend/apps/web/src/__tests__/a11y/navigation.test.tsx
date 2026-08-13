@@ -123,7 +123,7 @@ describe('Command Palette Keyboard Navigation', () => {
     render(<CommandPalette />);
 
     pressKey('k', { metaKey: true });
-    const searchInput = await screen.findByPlaceholderText(/search commands/i);
+    const searchInput = await screen.findByRole('combobox', { name: /search commands/i });
 
     await globalThis.user.type(searchInput, 'dashboard');
     // Should filter to dashboard-related commands

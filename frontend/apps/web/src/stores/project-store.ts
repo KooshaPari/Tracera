@@ -170,7 +170,6 @@ const buildProjectStore = (set: StoreSetter, get: StoreGetter): ProjectState => 
 });
 
 export const useProjectStore = create<ProjectState>()(
-  // @ts-expect-error Zustand persist middleware incompatible with exactOptionalPropertyTypes
   persist<ProjectState>((set, get) => buildProjectStore(set, get), {
     name: 'tracertm-project-store',
     partialize: (state: ProjectState) =>

@@ -1,6 +1,4 @@
-import { API_ORIGIN } from '@/config/api-origin';
-
-const API_URL = API_ORIGIN;
+const API_URL = import.meta.env.VITE_API_URL ?? '';
 
 const setOptionalParam = (
   params: URLSearchParams,

@@ -12,10 +12,12 @@
 ## Runtime mismatch
 
 The rich client defaults to `http://localhost:4000` in
-`frontend/apps/web/src/api/client-core.ts`. The local stack is exposed at
-`127.0.0.1:18081` (frontend proxy) and Rust directly at `127.0.0.1:8080`.
-The convergence patch must use an explicit local default and retain hosted URLs
-only as opt-in environment overrides.
+`frontend/apps/web/src/api/client-core.ts`. The approved local runtime is the
+rich gateway at `127.0.0.1:18000`; it fronts the API and is the default origin
+for the desktop/web build. Rust remains directly reachable at
+`127.0.0.1:8080` for backend diagnostics. The bundled legacy stack on `18081`
+is an explicit opt-in compatibility/latency-smoke surface, not the production
+or rich-dashboard default. Hosted URLs remain opt-in environment overrides.
 
 ## API evidence
 
@@ -23,4 +25,3 @@ The rich UI requires Projects, Items, Links, Graph, Agents, Events, Matrix,
 Impact, Reports, Settings and related `/api/v1/*` routes. The current Rust route
 registry does not provide all of these. Mock tests are useful for UI quality but
 do not establish live compatibility.
-

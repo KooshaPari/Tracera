@@ -5,7 +5,8 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { createRetryFetch } from '@/lib/fetch-retry';
 import { renderPreflightFailure, runFrontendPreflight } from '@/lib/preflight';
-import { initSentry } from '@/lib/sentry';
+import { captureException, initSentry } from '@/lib/sentry';
+import { renderFrontendStartupFailure } from '@/lib/startup-failure';
 import { AppProviders } from '@/providers/app-providers';
 import { ThemeProvider } from '@/providers/theme-provider';
 
@@ -94,6 +95,8 @@ async function bootstrap(): Promise<void> {
 }
 
 // eslint-disable-next-line jest/require-hook
-bootstrap().catch(() => {
-    // Preflight or render failed; preflight UI or error boundary handles it
+bootstrap().catch((error: unknown) => {
+  const exception = error instanceof Error ? error : new Error(String(error));
+  captureException(exception, { phase: 'frontend-bootstrap' });
+  renderFrontendStartupFailure();
 });

@@ -25,12 +25,11 @@ import type { Edge, Node } from '@xyflow/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { client } from '@/api/client';
-import { API_ORIGIN } from '@/config/api-origin';
 import { logger } from '@/lib/logger';
 
 const { getAuthHeaders } = client;
 
-const API_URL = API_ORIGIN;
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 /**
  * Viewport bounds with zoom level

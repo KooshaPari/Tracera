@@ -405,7 +405,6 @@ const buildChatStore = (set: StoreSetter, get: StoreGetter): ChatState => ({
 });
 
 export const useChatStore = create<ChatState>()(
-  // @ts-expect-error Zustand persist middleware incompatible with exactOptionalPropertyTypes
   persist<ChatState>((set, get) => buildChatStore(set, get), {
     name: 'tracertm-chat-store',
     partialize: (state: ChatState) =>

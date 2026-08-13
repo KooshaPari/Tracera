@@ -1,35 +1,18 @@
 services:
-  postgres:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_USER: tracera
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-      POSTGRES_DB: tracera
-    expose:
-      - "5432"
-    volumes:
-      - pg-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tracera -d tracera"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-      start_period: 10s
-
   tracera-server:
-    build:
-      context: ../..
-      dockerfile: Dockerfile.rust
+    image: rust:1.82-bookworm
+    working_dir: /workspace
+    command: sh -lc "cargo run --release -p tracera-server"
     environment:
       TRACERA_BIND_ADDR: 0.0.0.0:8080
-      TRACERA_PUBLIC_BIND_MODE: ${TRACERA_PUBLIC_BIND_MODE:?TRACERA_PUBLIC_BIND_MODE=authenticated-proxy is required}
+      TRACERA_PUBLIC_BIND_MODE: ${TRACERA_PUBLIC_BIND_MODE:?TRACERA_PUBLIC_BIND_MODE=authenticated-proxy is required after ingress auth is enabled}
       TRACERA_AUTH_TOKEN: ${TRACERA_AUTH_TOKEN:?TRACERA_AUTH_TOKEN is required for in-process API protection}
-      DATABASE_URL: postgres://tracera:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/tracera
+    volumes:
+      - ../..:/workspace
+      - tracera-cargo-cache:/usr/local/cargo/registry
+      - tracera-target-cache:/workspace/target
     expose:
       - "8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
     restart: unless-stopped
 
   caddy:
@@ -62,6 +45,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  pg-data:
   caddy-data:
   caddy-config:
+  tracera-cargo-cache:
+  tracera-target-cache:

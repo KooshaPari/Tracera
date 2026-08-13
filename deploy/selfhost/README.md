@@ -20,8 +20,12 @@ This stack runs Tracera on your desktop, publishes it through Caddy, and exposes
 Set these before starting the stack:
 
 - `CF_TUNNEL_TOKEN`: Cloudflare Tunnel token for the named tunnel
-- `POSTGRES_PASSWORD`: database password for the private Postgres service
 - `TRACERA_PUBLIC_HOSTNAME`: public hostname served by the tunnel, for example `tracera.pheno.studio`
+- `TRACERA_PUBLIC_BIND_MODE`: must be exactly `authenticated-proxy`; set it
+  only after Caddy has an active authentication directive. The Rust gateway
+  otherwise refuses non-loopback binding at startup.
+- `TRACERA_AUTH_TOKEN`: non-empty bearer token supplied to the Rust gateway;
+  every non-health route requires `Authorization: Bearer <token>`.
 
 WorkOS AuthKit is not wired in yet, but these placeholders show where its settings would live:
 
@@ -50,7 +54,8 @@ Run the secret-free private-boundary check before every deployment:
 The checked-in Caddyfile contains an AuthKit insertion point, but its
 `forward_auth` block is commented and therefore does **not** protect public
 traffic. Before enabling a Cloudflare Tunnel or public DNS, configure an active
-`forward_auth`, `basic_auth`, or JWT directive and run the strict gate:
+`forward_auth`, `basic_auth`, or JWT directive, then set
+`TRACERA_PUBLIC_BIND_MODE=authenticated-proxy` and run the strict gate:
 
 ```sh
 ./scripts/verify-deployment-security.sh --mode public
@@ -58,12 +63,6 @@ traffic. Before enabling a Cloudflare Tunnel or public DNS, configure an active
 
 The strict gate fails closed until authentication and an HTTPS listener are
 present. It does not inspect or require credentials, so it is safe to run in CI.
-
-The server image is built from `Dockerfile.rust` and uses the compose Postgres
-service through `DATABASE_URL`. The image currently packages the Rust API only;
-the checked-in frontend bundle is not part of this image, so this stack is not
-a dashboard release until a separately validated frontend image or bundle is
-provided. Do not treat a green API health probe as frontend dogfood evidence.
 
 ## Run
 
@@ -75,7 +74,8 @@ docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
 
 The stack does three things:
 
-1. Builds and runs `tracera-server` from the repo on `0.0.0.0:8080`
+1. Builds and runs `tracera-server` from the repo on `0.0.0.0:8080` with the
+   required in-process bearer token
 2. Lets Caddy reverse proxy `http://tracera.pheno.studio` to `tracera-server:8080`
 3. Attaches cloudflared to the tunnel token so the hostname is reachable globally through Cloudflare
 
