@@ -118,8 +118,8 @@ jobs:
 
   rust-build:
     name: Rust Build
-    needs: [rust-lint, rust-test]
-    if: always() && !failure() && !cancelled()
+    needs: [detect-changes, rust-lint, rust-test]
+    if: always() && !failure() && !cancelled() && needs.detect-changes.outputs.rust == 'true'
     runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
       - uses: actions/checkout@v4
