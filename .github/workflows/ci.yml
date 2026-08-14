@@ -289,42 +289,75 @@ jobs:
   # ===========================================================================
   # STAGE 5: Aggregation gate for branch protection
   # ===========================================================================
-  ci:
-    name: CI
+  lint:
+    # These display names are branch-protection contexts. Keep them stable.
+    name: ci / lint
     if: always()
     needs:
       - detect-changes
       - rust-lint
-      - rust-test
       - python-lint
-      - python-test
       - go-lint
-      - go-test
       - typescript-lint
-      - typescript-test
       - security-scan
       - dependency-review
       - trunk-check
     runs-on: ubuntu-latest
     steps:
-      - name: Check all jobs
+      - name: Aggregate lint and quality gates
         run: |
-          # Fail if any required job failed (not skipped)
-          results=("${{ needs.rust-lint.result }}" \
-                   "${{ needs.rust-test.result }}" \
-                   "${{ needs.python-lint.result }}" \
-                   "${{ needs.python-test.result }}" \
-                   "${{ needs.go-lint.result }}" \
-                   "${{ needs.go-test.result }}" \
-                   "${{ needs.typescript-lint.result }}" \
-                   "${{ needs.typescript-test.result }}" \
-                   "${{ needs.security-scan.result }}")
-          
+          # Skipped path-filtered jobs are valid; failures and cancellations are not.
+          results=(
+            "rust-lint=${{ needs.rust-lint.result }}"
+            "python-lint=${{ needs.python-lint.result }}"
+            "go-lint=${{ needs.go-lint.result }}"
+            "typescript-lint=${{ needs.typescript-lint.result }}"
+            "security-scan=${{ needs.security-scan.result }}"
+            "dependency-review=${{ needs.dependency-review.result }}"
+            "trunk-check=${{ needs.trunk-check.result }}"
+          )
+
           for result in "${results[@]}"; do
+            echo "$result"
+            result="${result#*=}"
             if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
-              echo "❌ Required job failed: $result"
+              echo "Required lint or quality gate failed: $result"
               exit 1
             fi
           done
-          
-          echo "✅ All required checks passed"
+
+          echo "All lint and quality gates passed or were skipped"
+
+  test:
+    # These display names are branch-protection contexts. Keep them stable.
+    name: ci / test
+    if: always()
+    needs:
+      - lint
+      - rust-test
+      - python-test
+      - go-test
+      - typescript-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate test gates
+        run: |
+          # A passing test context must attest both lint and every executed test job.
+          results=(
+            "lint=${{ needs.lint.result }}"
+            "rust-test=${{ needs.rust-test.result }}"
+            "python-test=${{ needs.python-test.result }}"
+            "go-test=${{ needs.go-test.result }}"
+            "typescript-test=${{ needs.typescript-test.result }}"
+          )
+
+          for result in "${results[@]}"; do
+            echo "$result"
+            result="${result#*=}"
+            if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
+              echo "Required test gate failed: $result"
+              exit 1
+            fi
+          done
+
+          echo "All test gates passed or were skipped"
