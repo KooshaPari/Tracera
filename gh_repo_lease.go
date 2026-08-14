@@ -24,26 +24,26 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	_ "modernc.org/sqlite"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // LeaseKind mirrors AgilePlus ClaimKind for repo-level resources.
 type LeaseKind string
 
 const (
-	LeaseKindRepo     LeaseKind = "repo"     // Full repository
-	LeaseKindBranch   LeaseKind = "branch"   // Specific branch
-	LeaseKindWorktree LeaseKind = "worktree" // Worktree within repo
-	LeaseKindSubrepo  LeaseKind = "subrepo"  // Logical subproject
+	LeaseKindRepo      LeaseKind = "repo"      // Full repository
+	LeaseKindBranch    LeaseKind = "branch"    // Specific branch
+	LeaseKindWorktree  LeaseKind = "worktree"  // Worktree within repo
+	LeaseKindSubrepo   LeaseKind = "subrepo"   // Logical subproject
 )
 
 // LeaseState tracks claim lifecycle (Active → Draining → Expired).
 type LeaseState string
 
 const (
-	LeaseStateActive   LeaseState = "active"   // Lease held, valid until TTL
-	LeaseStateDraining LeaseState = "draining" // TTL expired, grace period
-	LeaseStateExpired  LeaseState = "expired"  // Returned to pool
+	LeaseStateActive   LeaseState = "active"    // Lease held, valid until TTL
+	LeaseStateDraining LeaseState = "draining"  // TTL expired, grace period
+	LeaseStateExpired  LeaseState = "expired"   // Returned to pool
 )
 
 // LeaseReason is a structured reason for the claim (reuses AgilePlus pattern).
@@ -54,17 +54,17 @@ type LeaseReason struct {
 
 // Lease represents an exclusive claim on a remote repo resource.
 type Lease struct {
-	ID              string      // UUID
-	Kind            LeaseKind   // repo, branch, worktree, subrepo
-	Resource        string      // owner/repo[:branch][:worktree]
-	State           LeaseState  // active, draining, expired
-	ChatID          string      // Claiming chat/agent ID
-	TTLSeconds      int64       // Lease duration (default 3600)
-	EpochToken      int64       // Fencing token (clock timestamp)
-	AcquiredAt      time.Time   // Lease start time
-	LastHeartbeat   time.Time   // Last renewal
-	Reason          LeaseReason // Structured claim reason
-	GitHubCoordPath string      // Path to coordination repo (audit trail)
+	ID              string            // UUID
+	Kind            LeaseKind         // repo, branch, worktree, subrepo
+	Resource        string            // owner/repo[:branch][:worktree]
+	State           LeaseState        // active, draining, expired
+	ChatID          string            // Claiming chat/agent ID
+	TTLSeconds      int64             // Lease duration (default 3600)
+	EpochToken      int64             // Fencing token (clock timestamp)
+	AcquiredAt      time.Time         // Lease start time
+	LastHeartbeat   time.Time         // Last renewal
+	Reason          LeaseReason       // Structured claim reason
+	GitHubCoordPath string            // Path to coordination repo (audit trail)
 }
 
 // LeaseStore manages leases with TTL, heartbeat, reap, and transfer semantics.
@@ -105,10 +105,7 @@ type SQLiteLeaseStore struct {
 
 // NewSQLiteLeaseStore creates a lease store backed by SQLite + GitHub coordination.
 func NewSQLiteLeaseStore(dbPath, coordRepoURL, githubToken string) (*SQLiteLeaseStore, error) {
-	// Use the pure-Go modernc.org/sqlite driver (driver name "sqlite").
-	// DSN: ?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL) for safer concurrent access.
-	dsn := dbPath + "?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_loc=UTC"
-	db, err := sql.Open("sqlite", dsn)
+	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return nil, fmt.Errorf("open sqlite: %w", err)
 	}
@@ -170,7 +167,7 @@ func (s *SQLiteLeaseStore) Acquire(ctx context.Context, lease *Lease) error {
 // Heartbeat renews a lease (checks epoch fencing).
 func (s *SQLiteLeaseStore) Heartbeat(ctx context.Context, id string, chatID string, epoch int64) error {
 	now := time.Now().Unix()
-	newEpoch := epoch + 1 // ponytail: monotonically increment epoch on each heartbeat; prevents stale claimants from reusing old epochs
+	newEpoch := epoch + 1 // Increment epoch to ensure uniqueness (fencing token must change)
 	// Update both last_heartbeat and epoch_token (new epoch prevents stale heartbeats)
 	result, err := s.db.ExecContext(ctx,
 		`UPDATE leases SET last_heartbeat=?, epoch_token=? WHERE id=? AND chat_id=? AND epoch_token=? AND state='active'`,
@@ -271,10 +268,9 @@ func (s *SQLiteLeaseStore) Get(ctx context.Context, id string) (*Lease, error) {
 		return nil, err
 	}
 
-	// Convert Unix timestamps back to time.Time (modernc.org/sqlite scans
-	// INTEGER columns into int64; convert here so callers get time.Time).
-	lease.AcquiredAt = time.Unix(acquiredAtUnix, 0).UTC()
-	lease.LastHeartbeat = time.Unix(lastHeartbeatUnix, 0).UTC()
+	// Convert Unix timestamps back to time.Time
+	lease.AcquiredAt = time.Unix(acquiredAtUnix, 0)
+	lease.LastHeartbeat = time.Unix(lastHeartbeatUnix, 0)
 
 	return lease, nil
 }
@@ -292,14 +288,11 @@ func (s *SQLiteLeaseStore) ListActive(ctx context.Context) ([]*Lease, error) {
 	var leases []*Lease
 	for rows.Next() {
 		lease := &Lease{}
-		var acquiredAtUnix, lastHeartbeatUnix int64
 		if err := rows.Scan(&lease.ID, &lease.Kind, &lease.Resource, &lease.State, &lease.ChatID,
-			&lease.TTLSeconds, &lease.EpochToken, &acquiredAtUnix, &lastHeartbeatUnix,
+			&lease.TTLSeconds, &lease.EpochToken, &lease.AcquiredAt, &lease.LastHeartbeat,
 			&lease.Reason.Kind, &lease.Reason.Value, &lease.GitHubCoordPath); err != nil {
 			return nil, err
 		}
-		lease.AcquiredAt = time.Unix(acquiredAtUnix, 0).UTC()
-		lease.LastHeartbeat = time.Unix(lastHeartbeatUnix, 0).UTC()
 		leases = append(leases, lease)
 	}
 
