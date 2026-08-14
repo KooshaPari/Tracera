@@ -42,7 +42,7 @@ jobs:
         run: |
           test -n "$VITE_API_URL"
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            PRODUCTION_DEPLOY=1 npm run test:api-base
+            PRODUCTION_DEPLOY=1 npm --prefix frontend run test:api-base
           fi
           VITE_BASE="$VITE_BASE" bun run vite build
         working-directory: frontend/apps/web
