@@ -9,7 +9,7 @@ const http = ['http', '://'].join('')
 function run(raw, extra = {}) {
   try {
     execFileSync(process.execPath, [script], {
-      env: { ...process.env, VITE_API_URL: raw, ...extra },
+      env: { ...process.env, PRODUCTION_DEPLOY: '0', VITE_API_URL: raw, ...extra },
       stdio: 'pipe',
     })
     return { ok: true, output: '' }
