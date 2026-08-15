@@ -6,6 +6,7 @@
     "**/.turbo/**",
     "**/routeTree.gen.ts",
     "**/api/*.gen.ts",
+    "**/apps/web/src/api/schema.ts",
     "**/*.generated.*",
     "**/public/mockServiceWorker.js"
   ],
