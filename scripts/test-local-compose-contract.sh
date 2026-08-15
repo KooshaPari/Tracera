@@ -14,6 +14,9 @@ frontend_package = json.loads(Path("frontend/package.json").read_text(encoding="
 package_manager = frontend_package["packageManager"]
 package_manager_name, package_manager_version = package_manager.split("@", 1)
 assert package_manager_name == "bun", "frontend packageManager must declare Bun"
+assert package_manager_version == "1.3.11", (
+    "frontend packageManager must use the supported Bun 1.3.11 toolchain"
+)
 bun_image = re.search(r"^FROM oven/bun:([^\s]+)-alpine AS frontend-build$", dockerfile, re.M)
 assert bun_image, "frontend build stage must use an explicit Bun Alpine image"
 assert bun_image.group(1) == package_manager_version, (
