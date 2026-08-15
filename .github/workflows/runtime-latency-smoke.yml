@@ -41,21 +41,50 @@ jobs:
         run: cargo build --locked --release -p tracera-server
       - name: Run ephemeral runtime and latency smoke
         run: |
+          port="$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1]); s.close()')"
           tmp_dir="$(mktemp -d)"
+          log_path="${RUNNER_TEMP:-/tmp}/tracera-latency.log"
+          pid=""
+          cleanup() {
+            if [[ -n "${pid}" ]] && kill -0 "${pid}" 2>/dev/null; then
+              kill "${pid}" 2>/dev/null || true
+              wait "${pid}" 2>/dev/null || true
+            fi
+          }
+          trap cleanup EXIT
           DATABASE_URL="sqlite://${tmp_dir}/tracera.db?mode=rwc" \
-          TRACERA_BIND_ADDR="127.0.0.1:18080" \
+          TRACERA_BIND_ADDR="127.0.0.1:${port}" \
           TRACERA_FRONTEND_DIST="${GITHUB_WORKSPACE}/frontend/dist" \
-          RUST_LOG=tracera_server=warn ./target/release/tracera-server >/tmp/tracera-latency.log 2>&1 &
+          RUST_LOG=tracera_server=warn ./target/release/tracera-server >"${log_path}" 2>&1 &
           pid="$!"
-          trap 'kill "${pid}" 2>/dev/null || true; wait "${pid}" 2>/dev/null || true; rm -rf "${tmp_dir}"' EXIT
-          for _ in $(seq 1 50); do curl --silent --fail http://127.0.0.1:18080/health >/dev/null && break; sleep 0.1; done
-          curl --silent --fail http://127.0.0.1:18080/ready >/dev/null
+          ready=0
+          for _ in $(seq 1 50); do
+            if curl --silent --show-error --fail "http://127.0.0.1:${port}/health" >/dev/null; then
+              ready=1
+              break
+            fi
+            if ! kill -0 "${pid}" 2>/dev/null; then
+              break
+            fi
+            sleep 0.1
+          done
+          if [[ "${ready}" != "1" ]]; then
+            echo "runtime latency smoke: server did not become ready" >&2
+            cat "${log_path}" >&2
+            exit 1
+          fi
+          if ! curl --silent --show-error --fail "http://127.0.0.1:${port}/ready" >/dev/null; then
+            echo "runtime latency smoke: /ready failed" >&2
+            cat "${log_path}" >&2
+            exit 1
+          fi
           TRACERA_LATENCY_P95_MS=250 TRACERA_LATENCY_MAX_MS=1000 \
-            ./scripts/runtime-latency-smoke.py --base-url http://127.0.0.1:18080 --requests 80 --concurrency 4 --json
+            ./scripts/runtime-latency-smoke.py --base-url "http://127.0.0.1:${port}" --requests 80 --concurrency 4 --json
         env:
-          # runtime-smoke selects a free port and exports no reusable service;
-          # latency is run against the explicit ephemeral port below instead.
+          # The workflow keeps this server alive through the latency harness.
           TRACERA_SERVER_BIN: ./target/release/tracera-server
 
       - name: Run latency harness contract test
-        run: ./scripts/test-runtime-latency-smoke.sh
+        run: |
+          bash ./scripts/test-runtime-latency-workflow.sh
+          ./scripts/test-runtime-latency-smoke.sh
