@@ -5,7 +5,7 @@ FROM oven/bun:1.1.38-alpine AS frontend-build
 
 WORKDIR /workspace/frontend
 
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache bash python3 make g++
 
 COPY frontend/package.json frontend/bun.lock ./
 COPY frontend/apps ./apps
@@ -13,7 +13,8 @@ COPY frontend/packages ./packages
 COPY frontend/scripts ./scripts
 COPY frontend/turbo.json frontend/tsconfig.json frontend/tsconfig.packages.json ./
 
-RUN bun install --frozen-lockfile
+RUN bun install --frozen-lockfile --ignore-scripts
+RUN bun run postinstall
 
 ENV NODE_ENV=production
 ENV VITE_API_URL=
