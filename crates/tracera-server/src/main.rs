@@ -620,10 +620,10 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/api/v1/confidence", post(confidence))
         .route("/api/v1/blast-radius", post(blast_radius))
         .route("/api/v1/governance/spec-check", post(spec_check))
-        .route("/api/v1/trace/forward/:artifact_id", post(trace_forward))
-        .route("/api/v1/trace/reverse/:artifact_id", post(trace_reverse))
+        .route("/api/v1/trace/forward/{artifact_id}", post(trace_forward))
+        .route("/api/v1/trace/reverse/{artifact_id}", post(trace_reverse))
         .route(
-            "/api/v1/trace/:artifact_id/links",
+            "/api/v1/trace/{artifact_id}/links",
             get(list_persisted_trace_links),
         )
         .route("/evidence", get(list_evidence).post(create_evidence))
@@ -634,7 +634,7 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/sdlc-pm/sprints", get(list_sprints).post(create_sprint))
         .route("/sdlc-pm/stories", get(list_stories))
         .route("/api/v1/projects", get(list_projects))
-        .route("/api/v1/projects/:project_id", get(get_project))
+        .route("/api/v1/projects/{project_id}", get(get_project))
         .route("/problems", get(list_problems).post(create_problem))
         .route("/problems/health", get(health::health))
         .route("/org-intel/health", get(health::health))
