@@ -10,6 +10,7 @@ compose = Path("docker-compose.yml").read_text(encoding="utf-8")
 legacy_compose = Path("docker-compose.local.yml").read_text(encoding="utf-8")
 dockerfile = Path("Dockerfile.rust").read_text(encoding="utf-8")
 frontend_package = json.loads(Path("frontend/package.json").read_text(encoding="utf-8"))
+web_package = json.loads(Path("frontend/apps/web/package.json").read_text(encoding="utf-8"))
 
 package_manager = frontend_package["packageManager"]
 package_manager_name, package_manager_version = package_manager.split("@", 1)
@@ -35,6 +36,19 @@ if frontend_package.get("scripts", {}).get("postinstall", "").startswith("bash "
     assert dockerfile.index(bash_install.group(0)) < dockerfile.index(postinstall_command), (
         "frontend build must install Bash before postinstall"
     )
+
+web_postinstall_command = "RUN bun run postinstall"
+web_workdir = "WORKDIR /workspace/frontend/apps/web"
+web_build_command = "RUN bun run build"
+assert web_package.get("scripts", {}).get("postinstall"), (
+    "web workspace must declare the router compatibility postinstall hook"
+)
+assert dockerfile.count(web_postinstall_command) >= 2, (
+    "frontend image must run the web workspace postinstall explicitly"
+)
+assert dockerfile.index(web_workdir) < dockerfile.rindex(web_postinstall_command) < dockerfile.index(web_build_command), (
+    "web workspace postinstall must run after entering apps/web and before its build"
+)
 
 assert "HEALTHCHECK" in dockerfile, "Rust image must define a healthcheck"
 assert "wget -q -O /dev/null http://127.0.0.1:8080/health" in dockerfile, (

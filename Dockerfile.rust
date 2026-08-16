@@ -22,6 +22,7 @@ ENV VITE_API_URL=
 # Use the documented `bun run` form; older pinned Bun releases do not parse
 # `bun --cwd <dir> run <script>` as a script invocation.
 WORKDIR /workspace/frontend/apps/web
+RUN bun run postinstall
 RUN bun run build
 RUN test -f /workspace/frontend/dist/index.html
 
