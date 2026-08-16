@@ -20,9 +20,6 @@ use anyhow::Context;
 
 #[derive(Debug, Clone)]
 pub struct BundleLayout {
-    /// Root of the Tracera installation (the worktree, or `~/.tracera` for
-    /// the bundled app).
-    pub root: PathBuf,
     /// Directory holding docker-compose.bundle.yml and assets.
     pub compose_dir: PathBuf,
     /// Path to the compose file (image-based, no build directives).
@@ -92,7 +89,6 @@ impl BundleLayout {
             .unwrap_or(18081);
 
         Ok(Self {
-            root,
             compose_dir: bundle_dir,
             compose_file,
             env_file,
@@ -115,7 +111,6 @@ impl BundleLayout {
                     .and_then(|s| s.parse().ok())
                     .unwrap_or(18081);
                 return Ok(Self {
-                    root: cursor.to_path_buf(),
                     compose_dir: cursor.to_path_buf(),
                     compose_file: candidate,
                     env_file,
