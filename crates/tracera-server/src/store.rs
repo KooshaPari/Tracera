@@ -45,22 +45,35 @@ pub struct ListParams {
     pub page_size: u32,
 }
 
-const fn default_page() -> u32 { 1 }
-const fn default_page_size() -> u32 { DEFAULT_PAGE_SIZE }
+const fn default_page() -> u32 {
+    1
+}
+const fn default_page_size() -> u32 {
+    DEFAULT_PAGE_SIZE
+}
 
 impl Default for ListParams {
-    fn default() -> Self { Self { page: 1, page_size: DEFAULT_PAGE_SIZE } }
+    fn default() -> Self {
+        Self {
+            page: 1,
+            page_size: DEFAULT_PAGE_SIZE,
+        }
+    }
 }
 
 impl ListParams {
     pub fn validated(self) -> Result<Self, String> {
-        if self.page == 0 { return Err("page must be >= 1".into()); }
+        if self.page == 0 {
+            return Err("page must be >= 1".into());
+        }
         if self.page_size == 0 || self.page_size > MAX_PAGE_SIZE {
             return Err(format!("page_size must be between 1 and {MAX_PAGE_SIZE}"));
         }
         Ok(self)
     }
-    pub fn offset(self) -> u64 { (self.page as u64 - 1) * self.page_size as u64 }
+    pub fn offset(self) -> u64 {
+        (self.page as u64 - 1) * self.page_size as u64
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -265,7 +278,8 @@ pub trait Store: Send + Sync {
     fn list_projects(&self, params: ListParams) -> BoxFuture<'_, StoreResult<Vec<ProjectSummary>>>;
     /// Total number of visible projects, independent of page size/offset.
     fn count_projects(&self) -> BoxFuture<'_, StoreResult<i64>>;
-    fn get_project(&self, project_id: String) -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>>;
+    fn get_project(&self, project_id: String)
+        -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>>;
 
     // Metrics
     fn count_evidence(&self) -> BoxFuture<'_, StoreResult<i64>>;
@@ -346,14 +360,41 @@ mod tests {
         let params = ListParams::default();
         assert_eq!(params.page, 1);
         assert_eq!(params.page_size, DEFAULT_PAGE_SIZE);
-        assert_eq!(ListParams { page: 3, page_size: 25 }.offset(), 50);
+        assert_eq!(
+            ListParams {
+                page: 3,
+                page_size: 25
+            }
+            .offset(),
+            50
+        );
     }
 
     #[test]
     fn list_params_reject_zero_and_oversized_values() {
-        assert!(ListParams { page: 0, page_size: 1 }.validated().is_err());
-        assert!(ListParams { page: 1, page_size: 0 }.validated().is_err());
-        assert!(ListParams { page: 1, page_size: MAX_PAGE_SIZE + 1 }.validated().is_err());
-        assert!(ListParams { page: 1, page_size: MAX_PAGE_SIZE }.validated().is_ok());
+        assert!(ListParams {
+            page: 0,
+            page_size: 1
+        }
+        .validated()
+        .is_err());
+        assert!(ListParams {
+            page: 1,
+            page_size: 0
+        }
+        .validated()
+        .is_err());
+        assert!(ListParams {
+            page: 1,
+            page_size: MAX_PAGE_SIZE + 1
+        }
+        .validated()
+        .is_err());
+        assert!(ListParams {
+            page: 1,
+            page_size: MAX_PAGE_SIZE
+        }
+        .validated()
+        .is_ok());
     }
 }
