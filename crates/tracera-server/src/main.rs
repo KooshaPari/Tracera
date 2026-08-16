@@ -1,5 +1,5 @@
-mod db;
 mod auth;
+mod db;
 mod health;
 mod ingest;
 mod pg_store;
@@ -583,11 +583,9 @@ async fn main() {
         .unwrap_or_else(|| SocketAddr::from(([127, 0, 0, 1], 8080)));
 
     let public_bind_mode = env::var(PUBLIC_BIND_MODE_ENV).ok();
-    if let Err(error) = validate_bind_address(
-        addr,
-        public_bind_mode.as_deref(),
-        auth_token.as_deref(),
-    ) {
+    if let Err(error) =
+        validate_bind_address(addr, public_bind_mode.as_deref(), auth_token.as_deref())
+    {
         eprintln!("FATAL: {error}");
         std::process::exit(1);
     }
@@ -1089,7 +1087,10 @@ async fn list_problems(
     axum::extract::State(state): axum::extract::State<AppState>,
     axum::extract::Query(params): axum::extract::Query<ProblemQuery>,
 ) -> Result<Json<ProblemListResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
-    let pagination = params.pagination.validated().map_err(|_| bad_request("invalid pagination"))?;
+    let pagination = params
+        .pagination
+        .validated()
+        .map_err(|_| bad_request("invalid pagination"))?;
     let project_id = params.project_id.unwrap_or_default();
     let status_filter = params.status;
     let items = state
@@ -1113,7 +1114,9 @@ async fn list_problems(
             tracing::error!("count_problems store error: {e}");
             (
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                Json(ErrorResponse { error: "problem count failed" }),
+                Json(ErrorResponse {
+                    error: "problem count failed",
+                }),
             )
         })?;
     Ok(Json(ProblemListResponse {
@@ -1229,7 +1232,9 @@ async fn list_projects(
     axum::extract::State(state): axum::extract::State<AppState>,
     axum::extract::Query(params): axum::extract::Query<ListParams>,
 ) -> Result<Json<ProjectListResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
-    let pagination = params.validated().map_err(|_| bad_request("invalid pagination"))?;
+    let pagination = params
+        .validated()
+        .map_err(|_| bad_request("invalid pagination"))?;
     let projects = state.store.list_projects(pagination).await.map_err(|e| {
         tracing::error!("list_projects store error: {e}");
         (
@@ -1243,7 +1248,9 @@ async fn list_projects(
         tracing::error!("count_projects store error: {e}");
         (
             axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ErrorResponse { error: "project count failed" }),
+            Json(ErrorResponse {
+                error: "project count failed",
+            }),
         )
     })?;
     Ok(Json(ProjectListResponse {
@@ -1657,10 +1664,7 @@ mod tests {
             }
         };
         bootstrap_pool.close().await;
-        if let Err(error) = sqlx::migrate!("./migrations")
-            .run(&pool)
-            .await
-        {
+        if let Err(error) = sqlx::migrate!("./migrations").run(&pool).await {
             if let Err(cleanup_error) = drop_pg_store_contract_schema(&pool, &schema_name).await {
                 eprintln!("fixture cleanup after migration failure: {cleanup_error}");
             }
@@ -1805,10 +1809,7 @@ mod tests {
             .expect("response");
 
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            response.headers()[header::CONTENT_TYPE],
-            "application/json"
-        );
+        assert_eq!(response.headers()[header::CONTENT_TYPE], "application/json");
 
         let body = axum::body::to_bytes(response.into_body(), 1024)
             .await
@@ -2062,7 +2063,11 @@ mod tests {
                 .await
                 .expect("response");
 
-            assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR, "{uri}");
+            assert_eq!(
+                response.status(),
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "{uri}"
+            );
             let body = axum::body::to_bytes(response.into_body(), 1024)
                 .await
                 .expect("body");
@@ -2861,7 +2866,10 @@ mod tests {
             .await
             .expect("persist problem after production migrations");
 
-        let projects = store.list_projects(ListParams::default()).await.expect("list projects");
+        let projects = store
+            .list_projects(ListParams::default())
+            .await
+            .expect("list projects");
         assert_eq!(projects.len(), 1);
         assert_eq!(projects[0].id, "project-migration-1");
         assert_eq!(projects[0].problem_count, 1);
@@ -2974,11 +2982,17 @@ mod tests {
             .await
             .map_err(|error| format!("list text-id project: {error}"))?;
         if listed.len() != 1 || listed[0].project_id != project_id {
-            return Err(format!("expected one problem for textual project id, got {listed:?}"));
+            return Err(format!(
+                "expected one problem for textual project id, got {listed:?}"
+            ));
         }
 
         if !store
-            .list_problems(project_id.clone(), Some("closed".to_string()), ListParams::default())
+            .list_problems(
+                project_id.clone(),
+                Some("closed".to_string()),
+                ListParams::default(),
+            )
             .await
             .map_err(|error| format!("filter text-id project: {error}"))?
             .is_empty()
@@ -3138,7 +3152,11 @@ mod tests {
 
         // list with status filter narrows correctly
         let filtered = store
-            .list_problems("proj-1".to_string(), Some("closed".to_string()), ListParams::default())
+            .list_problems(
+                "proj-1".to_string(),
+                Some("closed".to_string()),
+                ListParams::default(),
+            )
             .await
             .expect("list_problems filtered");
         assert!(filtered.is_empty(), "no problems in 'closed' status");
