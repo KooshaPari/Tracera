@@ -603,7 +603,6 @@ async fn main() {
     }
 }
 
-
 /// CSRF protection middleware.
 ///
 /// For state-mutating requests (POST/PUT/DELETE/PATCH), verifies that the
@@ -666,6 +665,7 @@ async fn csrf_protection(
     Ok(next.run(request).await)
 }
 
+#[cfg(test)]
 fn build_router(state: AppState) -> Router {
     build_router_with_auth(state, None)
 }
