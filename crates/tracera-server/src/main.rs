@@ -11,7 +11,6 @@ mod validation;
 
 use axum::{
     extract::DefaultBodyLimit,
-    response::IntoResponse,
     routing::{get, post},
     Json, Router,
 };
@@ -1266,24 +1265,35 @@ async fn list_projects(
 async fn get_project(
     axum::extract::State(state): axum::extract::State<AppState>,
     axum::extract::Path(project_id): axum::extract::Path<String>,
-) -> axum::response::Response {
-    match state.store.get_project(project_id.clone()).await {
-        Ok(Some(project)) => Json(ProjectResponse {
-            id: project.id,
-            name: project.name,
-            description: project.description,
-            created_at: project.created_at,
-            updated_at: project.updated_at,
-            metadata: project.metadata,
-            problem_count: project.problem_count,
-        })
-        .into_response(),
-        Ok(None) => axum::http::StatusCode::NOT_FOUND.into_response(),
-        Err(error) => {
+) -> Result<Json<ProjectResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    let project = state
+        .store
+        .get_project(project_id)
+        .await
+        .map_err(|error| {
             tracing::error!("get_project store error: {error}");
-            axum::http::StatusCode::INTERNAL_SERVER_ERROR.into_response()
-        }
-    }
+            (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "project lookup failed",
+                }),
+            )
+        })?
+        .ok_or((
+            axum::http::StatusCode::NOT_FOUND,
+            Json(ErrorResponse {
+                error: "project not found",
+            }),
+        ))?;
+    Ok(Json(ProjectResponse {
+        id: project.id,
+        name: project.name,
+        description: project.description,
+        created_at: project.created_at,
+        updated_at: project.updated_at,
+        metadata: project.metadata,
+        problem_count: project.problem_count,
+    }))
 }
 
 // ---------------------------------------------------------------------------
@@ -2026,6 +2036,61 @@ mod tests {
             .await
             .expect("body");
         assert_eq!(body.as_ref(), br#"{"error":"project listing failed"}"#);
+    }
+
+    #[tokio::test]
+    async fn project_lookup_returns_structured_not_found() {
+        let store = make_sqlite_store().await;
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: Arc::new(store),
+        });
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/projects/missing-project")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        let body = axum::body::to_bytes(response.into_body(), 1024)
+            .await
+            .expect("body");
+        assert_eq!(body.as_ref(), br#"{"error":"project not found"}"#);
+    }
+
+    #[tokio::test]
+    async fn project_lookup_returns_structured_5xx_when_store_is_unavailable() {
+        let store = make_sqlite_store().await;
+        store.pool.close().await;
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: Arc::new(store),
+        });
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/projects/project-1")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+        let body = axum::body::to_bytes(response.into_body(), 1024)
+            .await
+            .expect("body");
+        assert_eq!(body.as_ref(), br#"{"error":"project lookup failed"}"#);
     }
 
     #[tokio::test]
