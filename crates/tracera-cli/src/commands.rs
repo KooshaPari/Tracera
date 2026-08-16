@@ -1,6 +1,6 @@
 //! Subcommand implementations and CLI surface.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use anyhow::Context;
 use clap::{Args, Parser, Subcommand};
@@ -182,7 +182,7 @@ fn bump_log_level(cli: &Cli) {
 async fn cmd_up(
     backend: Backend,
     layout: &BundleLayout,
-    cwd: &PathBuf,
+    cwd: &Path,
     args: UpArgs,
 ) -> anyhow::Result<()> {
     ensure_env_file(&layout.env_file, layout.local_port)?;
@@ -196,7 +196,7 @@ async fn cmd_up(
         &layout.project_name,
         &layout.compose_file,
         &layout.env_file,
-        cwd.clone(),
+        cwd.to_path_buf(),
         &sub,
     )
     .await?;
@@ -217,7 +217,7 @@ async fn cmd_up(
 async fn cmd_down(
     backend: Backend,
     layout: &BundleLayout,
-    cwd: &PathBuf,
+    cwd: &Path,
     args: DownArgs,
 ) -> anyhow::Result<()> {
     ensure_env_file(&layout.env_file, layout.local_port)?;
@@ -231,7 +231,7 @@ async fn cmd_down(
         &layout.project_name,
         &layout.compose_file,
         &layout.env_file,
-        cwd.clone(),
+        cwd.to_path_buf(),
         &sub,
     )
     .await?;
@@ -241,7 +241,7 @@ async fn cmd_down(
     Ok(())
 }
 
-async fn cmd_status(backend: Backend, layout: &BundleLayout, cwd: &PathBuf) -> anyhow::Result<()> {
+async fn cmd_status(backend: Backend, layout: &BundleLayout, cwd: &Path) -> anyhow::Result<()> {
     ensure_env_file(&layout.env_file, layout.local_port)?;
     sync_bundle_env_symlink(&layout.compose_dir, &layout.env_file)?;
     let code = compose::run_inherited(
@@ -249,7 +249,7 @@ async fn cmd_status(backend: Backend, layout: &BundleLayout, cwd: &PathBuf) -> a
         &layout.project_name,
         &layout.compose_file,
         &layout.env_file,
-        cwd.clone(),
+        cwd.to_path_buf(),
         &["ps"],
     )
     .await?;
@@ -262,7 +262,7 @@ async fn cmd_status(backend: Backend, layout: &BundleLayout, cwd: &PathBuf) -> a
 async fn cmd_logs(
     backend: Backend,
     layout: &BundleLayout,
-    cwd: &PathBuf,
+    cwd: &Path,
     args: LogsArgs,
 ) -> anyhow::Result<()> {
     ensure_env_file(&layout.env_file, layout.local_port)?;
@@ -272,7 +272,7 @@ async fn cmd_logs(
         &layout.project_name,
         &layout.compose_file,
         &layout.env_file,
-        cwd.clone(),
+        cwd.to_path_buf(),
         args.service.as_deref(),
         args.follow,
     )
@@ -283,6 +283,9 @@ async fn cmd_logs(
     Ok(())
 }
 
+// Each platform block is mutually exclusive. Explicit returns keep that
+// control flow obvious to Rust across target-specific compilation.
+#[allow(clippy::needless_return)]
 fn cmd_open(layout: &BundleLayout) -> anyhow::Result<()> {
     #[cfg(target_os = "macos")]
     {
@@ -319,7 +322,7 @@ fn cmd_open(layout: &BundleLayout) -> anyhow::Result<()> {
 async fn cmd_doctor(
     backend: Backend,
     layout: &BundleLayout,
-    cwd: &PathBuf,
+    cwd: &Path,
     args: DoctorArgs,
 ) -> anyhow::Result<()> {
     ensure_env_file(&layout.env_file, layout.local_port)?;
@@ -348,7 +351,7 @@ async fn cmd_doctor(
         &layout.project_name,
         &layout.compose_file,
         &layout.env_file,
-        cwd.clone(),
+        cwd.to_path_buf(),
     )
     .await
     .unwrap_or_else(|_| "[]".to_string());
