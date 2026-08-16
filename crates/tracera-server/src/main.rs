@@ -603,6 +603,7 @@ async fn main() {
     }
 }
 
+#[cfg(test)]
 fn build_router(state: AppState) -> Router {
     build_router_with_auth(state, None)
 }

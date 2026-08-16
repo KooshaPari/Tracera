@@ -148,7 +148,7 @@ async fn org_metrics(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
     if let Some(cached) = kv.get(&cache_key).text().await? {
         return Response::ok(cached).map(|r| {
             r.with_headers({
-                let mut h = worker::Headers::new();
+                let h = worker::Headers::new();
                 // Safety: these header values are static and valid.
                 let _ = h.set("content-type", "application/json");
                 let _ = h.set("x-cache", "HIT");
@@ -183,7 +183,7 @@ async fn org_metrics(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
 
     Response::ok(body).map(|r| {
         r.with_headers({
-            let mut h = worker::Headers::new();
+            let h = worker::Headers::new();
             let _ = h.set("content-type", "application/json");
             let _ = h.set("x-cache", "MISS");
             h
