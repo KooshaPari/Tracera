@@ -15,8 +15,8 @@ use serde_json::Value;
 use sqlx::{Row, SqlitePool};
 
 use crate::store::{
-    BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint, Store, StoreError, StoreResult,
-    Story, TeamRow, TraceLink,
+    BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint, Store, StoreError,
+    StoreResult, Story, TeamRow, TraceLink,
 };
 
 #[derive(Clone)]
@@ -406,13 +406,20 @@ impl Store for SqliteStore {
 
     fn count_projects(&self) -> BoxFuture<'_, StoreResult<i64>> {
         Box::pin(async move {
-            let row = sqlx::query("SELECT COUNT(DISTINCT project_id) AS cnt FROM problems WHERE deleted_at IS NULL")
-                .fetch_one(&self.pool).await.map_err(StoreError::from)?;
+            let row = sqlx::query(
+                "SELECT COUNT(DISTINCT project_id) AS cnt FROM problems WHERE deleted_at IS NULL",
+            )
+            .fetch_one(&self.pool)
+            .await
+            .map_err(StoreError::from)?;
             Ok(row.try_get("cnt").unwrap_or(0))
         })
     }
 
-    fn get_project(&self, project_id: String) -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>> {
+    fn get_project(
+        &self,
+        project_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>> {
         Box::pin(async move {
             let rows = sqlx::query(
                 "SELECT project_id, COUNT(*) AS problem_count, MIN(created_at) AS created_at, MAX(updated_at) AS updated_at
@@ -642,15 +649,24 @@ impl Store for SqliteStore {
         })
     }
 
-    fn count_problems_filtered(&self, project_id: String, status_filter: Option<String>) -> BoxFuture<'_, StoreResult<i64>> {
+    fn count_problems_filtered(
+        &self,
+        project_id: String,
+        status_filter: Option<String>,
+    ) -> BoxFuture<'_, StoreResult<i64>> {
         Box::pin(async move {
             let (query, status) = match status_filter {
                 Some(_) => ("SELECT COUNT(*) AS cnt FROM problems WHERE project_id = ?1 AND status = ?2 AND deleted_at IS NULL", status_filter),
                 None => ("SELECT COUNT(*) AS cnt FROM problems WHERE project_id = ?1 AND deleted_at IS NULL", None),
             };
             let mut request = sqlx::query(query).bind(&project_id);
-            if let Some(status) = status { request = request.bind(status); }
-            let row = request.fetch_one(&self.pool).await.map_err(StoreError::from)?;
+            if let Some(status) = status {
+                request = request.bind(status);
+            }
+            let row = request
+                .fetch_one(&self.pool)
+                .await
+                .map_err(StoreError::from)?;
             Ok(row.try_get("cnt").unwrap_or(0))
         })
     }
