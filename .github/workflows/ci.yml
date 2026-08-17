@@ -367,12 +367,12 @@ jobs:
                    "${{ needs.typescript-lint.result }}" \
                    "${{ needs.typescript-test.result }}" \
                    "${{ needs.security-scan.result }}")
-          
+
           for result in "${results[@]}"; do
             if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
               echo "❌ Required job failed: $result"
               exit 1
             fi
           done
-          
+
           echo "✅ All required checks passed"
