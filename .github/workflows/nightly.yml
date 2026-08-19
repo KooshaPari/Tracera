@@ -16,10 +16,20 @@ jobs:
         run: cargo build --release -p tracera-server
       - name: Smoke test endpoints
         run: |
-          ./target/release/tracera-server &
+          set -euo pipefail
+          ./target/release/tracera-server >server.log 2>&1 &
           SRV=$!
-          sleep 3
-          curl -fsS http://127.0.0.1:8080/health
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          if ! curl -fsS http://127.0.0.1:8080/health; then
+            echo "--- server.log ---"
+            cat server.log || true
+            exit 1
+          fi
           curl -fsS http://127.0.0.1:8080/ready
           curl -fsS -X POST http://127.0.0.1:8080/api/v1/coverage-matrix -H 'content-type: application/json' -d '{"links":[]}'
-          kill $SRV
+          kill $SRV || true
+        env:
+          DATABASE_URL: sqlite::memory:
