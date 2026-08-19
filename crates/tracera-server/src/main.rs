@@ -620,8 +620,8 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/api/v1/confidence", post(confidence))
         .route("/api/v1/blast-radius", post(blast_radius))
         .route("/api/v1/governance/spec-check", post(spec_check))
-        .route("/api/v1/trace/forward/:artifact_id", post(trace_forward))
-        .route("/api/v1/trace/reverse/:artifact_id", post(trace_reverse))
+        .route("/api/v1/trace/forward/{artifact_id}", post(trace_forward))
+        .route("/api/v1/trace/reverse/{artifact_id}", post(trace_reverse))
         .route(
             "/api/v1/trace/:artifact_id/links",
             get(list_persisted_trace_links),
