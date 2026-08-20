@@ -9,7 +9,6 @@ mod sqlite_store;
 mod store;
 mod validation;
 
-use tower_governor::{GovernorConfigBuilder, GovernorLayer};
 use axum::{
     extract::DefaultBodyLimit,
     response::IntoResponse,
@@ -728,9 +727,7 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
             HeaderValue::from_static("no-store"),
         ))
         .layer(axum::middleware::from_fn(csrf_protection))
-        .layer(GovernorLayer {
-            config: governor_config,
-        })
+        
 }
 
 // ---------------------------------------------------------------------------
