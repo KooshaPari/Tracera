@@ -291,6 +291,7 @@ jobs:
   required-ci-lint:
     name: ci / lint
     if: always()
+    permissions: {}
     needs:
       - rust-lint
       - python-lint
@@ -315,6 +316,7 @@ jobs:
   required-ci-test:
     name: ci / test
     if: always()
+    permissions: {}
     needs:
       - rust-test
       - python-test
