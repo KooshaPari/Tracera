@@ -607,6 +607,69 @@ async fn main() {
     }
 }
 
+
+/// CSRF protection middleware.
+///
+/// For state-mutating requests (POST/PUT/DELETE/PATCH), verifies that the
+/// request originates from an allowed origin. This prevents cross-site request
+/// forgery attacks where a malicious site could submit forms on behalf of
+/// authenticated users.
+///
+/// Since Tracera uses bearer token auth (not cookies), CSRF risk is lower,
+/// but this provides defense-in-depth.
+async fn csrf_protection(
+    request: axum::http::Request<axum::body::Body>,
+    next: axum::middleware::Next,
+) -> Result<axum::http::Response<axum::body::Body>, axum::http::StatusCode> {
+    let method = request.method().clone();
+
+    // Only check state-mutating methods
+    if method == axum::http::Method::GET
+        || method == axum::http::Method::HEAD
+        || method == axum::http::Method::OPTIONS
+    {
+        return Ok(next.run(request).await);
+    }
+
+    // Check Origin header
+    if let Some(origin) = request.headers().get("origin") {
+        if let Ok(origin_str) = origin.to_str() {
+            // Allow same-origin and localhost in development
+            let allowed = [
+                "http://localhost",
+                "http://127.0.0.1",
+                "https://tracera.phenotype.space",
+                "https://trace.pheno.studio",
+            ];
+            let is_allowed = allowed.iter().any(|a| origin_str.starts_with(a));
+            if !is_allowed {
+                tracing::warn!(origin = origin_str, "CSRF: blocked cross-origin request");
+                return Err(axum::http::StatusCode::FORBIDDEN);
+            }
+        }
+    } else {
+        // No Origin header — check Referer
+        if let Some(referer) = request.headers().get("referer") {
+            if let Ok(referer_str) = referer.to_str() {
+                let allowed = [
+                    "http://localhost",
+                    "http://127.0.0.1",
+                    "https://tracera.phenotype.space",
+                    "https://trace.pheno.studio",
+                ];
+                let is_allowed = allowed.iter().any(|a| referer_str.starts_with(a));
+                if !is_allowed {
+                    tracing::warn!(referer = referer_str, "CSRF: blocked cross-origin referer");
+                    return Err(axum::http::StatusCode::FORBIDDEN);
+                }
+            }
+        }
+        // If neither Origin nor Referer is present, allow (e.g., API clients)
+    }
+
+    Ok(next.run(request).await)
+}
+
 fn build_router(state: AppState) -> Router {
     build_router_with_auth(state, None)
 }
@@ -664,6 +727,7 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
             header::CACHE_CONTROL,
             HeaderValue::from_static("no-store"),
         ))
+        .layer(axum::middleware::from_fn(csrf_protection))
         .layer(GovernorLayer {
             config: governor_config,
         })
