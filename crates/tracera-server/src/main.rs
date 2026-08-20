@@ -27,7 +27,6 @@ use std::time::Instant;
 use tower_http::{
     services::{ServeDir, ServeFile},
     set_header::SetResponseHeaderLayer,
-    timeout::TimeoutLayer,
 };
 use tracing::info;
 use tracing_subscriber::EnvFilter;
