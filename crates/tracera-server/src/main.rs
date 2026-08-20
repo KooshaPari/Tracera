@@ -9,6 +9,7 @@ mod sqlite_store;
 mod store;
 mod validation;
 
+use tower_governor::{GovernorConfigBuilder, GovernorLayer};
 use axum::{
     extract::DefaultBodyLimit,
     response::IntoResponse,
@@ -27,6 +28,7 @@ use std::time::Instant;
 use tower_http::{
     services::{ServeDir, ServeFile},
     set_header::SetResponseHeaderLayer,
+    timeout::TimeoutLayer,
 };
 use tracing::info;
 use tracing_subscriber::EnvFilter;
@@ -662,6 +664,9 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
             header::CACHE_CONTROL,
             HeaderValue::from_static("no-store"),
         ))
+        .layer(GovernorLayer {
+            config: governor_config,
+        })
 }
 
 // ---------------------------------------------------------------------------
