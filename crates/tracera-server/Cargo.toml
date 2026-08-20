@@ -36,3 +36,4 @@ uuid = { workspace = true }
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 tower = { version = "0.5", features = ["util"] }
+tower-governor = "0.4"
