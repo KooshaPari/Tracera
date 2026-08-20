@@ -634,7 +634,7 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/sdlc-pm/sprints", get(list_sprints).post(create_sprint))
         .route("/sdlc-pm/stories", get(list_stories))
         .route("/api/v1/projects", get(list_projects))
-        .route("/api/v1/projects/:project_id", get(get_project))
+        .route("/api/v1/projects/{project_id}", get(get_project))
         .route("/problems", get(list_problems).post(create_problem))
         .route("/problems/health", get(health::health))
         .route("/org-intel/health", get(health::health))
