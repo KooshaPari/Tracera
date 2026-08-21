@@ -12,10 +12,15 @@ const packageJson = JSON.parse(
 
 assert.equal(
   packageJson.scripts["typecheck:web"],
-  "bun x tsc --build --pretty false apps/web/tsconfig.json",
+  "bun x tsc --noEmit --pretty false -p apps/web/tsconfig.json",
 );
 assert.equal(
   packageJson.scripts["typecheck:packages"],
-  "bun x tsc --build --pretty false packages/*/tsconfig.json",
+  "bun x tsc --noEmit --pretty false -p packages/api-client/tsconfig.json -p packages/config/tsconfig.json -p packages/env-manager/tsconfig.json -p packages/state/tsconfig.json -p packages/types/tsconfig.json -p packages/ui/tsconfig.json",
+);
+assert.equal(
+  packageJson.scripts.pretypecheck,
+  "node scripts/test-native-typecheck-contract.mjs",
 );
 assert.doesNotMatch(packageJson.scripts.typecheck, /oxlint-tsgolint/);
+assert.doesNotMatch(packageJson.scripts.typecheck, /--build/);
