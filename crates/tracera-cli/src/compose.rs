@@ -120,8 +120,12 @@ pub fn sync_bundle_env_symlink(compose_dir: &Path, env_file: &Path) -> anyhow::R
         // Real file (not a symlink) — leave it alone; user-provided.
         return Ok(());
     }
+    #[cfg(unix)]
     std::os::unix::fs::symlink(env_file, &link)
         .with_context(|| format!("symlinking {} -> {}", link.display(), env_file.display()))?;
+    #[cfg(windows)]
+    std::fs::copy(env_file, &link)
+        .with_context(|| format!("copying {} -> {}", env_file.display(), link.display()))?;
     tracing::info!(link = %link.display(), target = %env_file.display(), "created bundle env symlink");
     Ok(())
 }
@@ -157,9 +161,7 @@ pub fn ensure_env_file(env_file: &Path, local_port: u16) -> anyhow::Result<()> {
 }
 
 fn generate_password() -> String {
-    use rand::RngCore;
-    let mut bytes = [0u8; 24];
-    rand::rngs::OsRng.fill_bytes(&mut bytes);
+    let bytes: [u8; 24] = rand::random();
     // Avoid shell-quoting issues — keep it URL-safe ASCII.
     use std::fmt::Write;
     let mut s = String::with_capacity(32);
