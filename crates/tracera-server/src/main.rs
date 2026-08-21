@@ -726,7 +726,6 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
             HeaderValue::from_static("no-store"),
         ))
         .layer(axum::middleware::from_fn(csrf_protection))
-        
 }
 
 // ---------------------------------------------------------------------------
