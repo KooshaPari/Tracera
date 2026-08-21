@@ -104,7 +104,7 @@
     "@tracertm/ui": "workspace:*",
     "@trpc/client": "^10.45.2",
     "@trpc/react-query": "^10.45.2",
-    "@trpc/server": "^10.45.2",
+    "@trpc/server": "^11.18.0",
     "@types/rbush": "^4.0.0",
     "@workos-inc/authkit-react": "^0.16.0",
     "@xyflow/react": "^12.9.3",
