@@ -9,7 +9,9 @@ const http = ['http', '://'].join('')
 function run(raw, extra = {}) {
   try {
     execFileSync(process.execPath, [script], {
-      env: { ...process.env, VITE_API_URL: raw, ...extra },
+      // Keep ordinary policy cases independent from the caller's deployment
+      // environment; the production rule is covered explicitly below.
+      env: { ...process.env, PRODUCTION_DEPLOY: '', VITE_API_URL: raw, ...extra },
       stdio: 'pipe',
     })
     return { ok: true, output: '' }
