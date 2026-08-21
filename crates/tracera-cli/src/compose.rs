@@ -157,9 +157,9 @@ pub fn ensure_env_file(env_file: &Path, local_port: u16) -> anyhow::Result<()> {
 }
 
 fn generate_password() -> String {
-    use rand::RngCore;
+    use rand::RngExt;
     let mut bytes = [0u8; 24];
-    rand::rngs::OsRng.fill_bytes(&mut bytes);
+    rand::rng().fill(&mut bytes);
     // Avoid shell-quoting issues — keep it URL-safe ASCII.
     use std::fmt::Write;
     let mut s = String::with_capacity(32);
@@ -224,6 +224,13 @@ mod tests {
         assert_eq!(args[env_idx + 1], "/tmp/.env.local");
         assert!(args.windows(2).any(|w| w[0] == "-f" && w[1] == "/tmp/docker-compose.bundle.yml"));
         assert_eq!(args[args.len() - 2..], ["up", "-d"]);
+    }
+
+    #[test]
+    fn generated_password_is_url_safe_hex() {
+        let password = generate_password();
+        assert_eq!(password.len(), 48);
+        assert!(password.bytes().all(|byte| byte.is_ascii_hexdigit()));
     }
 
     #[test]
