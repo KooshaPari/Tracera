@@ -246,13 +246,15 @@ mod tests {
         assert_eq!(prog, "wsl");
         if args.first().map(String::as_str) == Some("--distribution") {
             // When WSL is available, the runtime-provided distro is followed
-            // by the compose subcommand. Do not hard-code a local distro name.
-            assert!(args.len() > 2);
-            assert_eq!(args[2], "compose");
+            // by `docker compose`. Do not hard-code a local distro name.
+            assert!(args.len() > 3);
+            assert_eq!(args[2], "docker");
+            assert_eq!(args[3], "compose");
         } else {
             // WSL may be unavailable on CI or a developer machine; the
             // command remains valid without an optional distribution prefix.
-            assert_eq!(args.first().map(String::as_str), Some("compose"));
+            assert_eq!(args.first().map(String::as_str), Some("docker"));
+            assert_eq!(args.get(1).map(String::as_str), Some("compose"));
         }
     }
 
