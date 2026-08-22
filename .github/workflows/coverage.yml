@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: coverage-${ github.ref }
+  group: coverage-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -34,4 +34,4 @@ jobs:
           name: coverage-report
           path: lcov.info
       - name: Coverage summary
-        run: cargo llvm-cov --workspace --summary
+        run: cargo llvm-cov --workspace --text
