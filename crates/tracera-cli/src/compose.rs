@@ -25,12 +25,31 @@ pub fn compose_argv(
     env_file: &Path,
     subcommand: &[&str],
 ) -> (String, Vec<String>) {
+    let wsl_distro = crate::runtime::wsl_distro();
+    compose_argv_with_wsl_distro(
+        backend,
+        project_name,
+        compose_file,
+        env_file,
+        subcommand,
+        wsl_distro.as_deref(),
+    )
+}
+
+fn compose_argv_with_wsl_distro(
+    backend: Backend,
+    project_name: &str,
+    compose_file: &Path,
+    env_file: &Path,
+    subcommand: &[&str],
+    wsl_distro: Option<&str>,
+) -> (String, Vec<String>) {
     let mut args: Vec<String> = Vec::with_capacity(10 + subcommand.len());
 
     if matches!(backend, Backend::WslDocker) {
-        if let Some(distro) = crate::runtime::wsl_distro() {
+        if let Some(distro) = wsl_distro {
             args.push("--distribution".into());
-            args.push(distro);
+            args.push(distro.to_string());
         }
     }
 
@@ -230,32 +249,30 @@ mod tests {
 
     #[test]
     fn compose_argv_wsl_prefixes_docker_with_distribution() {
-        // The real `wsl_distro()` shells out to `wsl -l -q`, which doesn't
-        // exist on a macOS dev box. We just assert that when wsl_distro()
-        // returns None, no `--distribution` flag is added — and the argv
-        // layout is otherwise identical to the Docker backend.
-        let (prog, args) = compose_argv(
+        let (prog, args) = compose_argv_with_wsl_distro(
             Backend::WslDocker,
             "tracera-bundle",
             Path::new("/mnt/c/docker-compose.bundle.yml"),
             Path::new("/mnt/c/.env.local"),
             &["ps"],
+            Some("Ubuntu-22.04"),
         );
-        // On macOS where wsl is absent, wsl_distro() is None, so the argv
-        // drops the distro prefix.
         assert_eq!(prog, "wsl");
-        if args.first().map(String::as_str) == Some("--distribution") {
-            // When WSL is available, the runtime-provided distro is followed
-            // by `docker compose`. Do not hard-code a local distro name.
-            assert!(args.len() > 3);
-            assert_eq!(args[2], "docker");
-            assert_eq!(args[3], "compose");
-        } else {
-            // WSL may be unavailable on CI or a developer machine; the
-            // command remains valid without an optional distribution prefix.
-            assert_eq!(args.first().map(String::as_str), Some("docker"));
-            assert_eq!(args.get(1).map(String::as_str), Some("compose"));
-        }
+        assert_eq!(args[0], "--distribution");
+        assert_eq!(args[1], "Ubuntu-22.04");
+        assert_eq!(args[2], "docker");
+        assert_eq!(args[3], "compose");
+
+        let (_prog, args_without_distro) = compose_argv_with_wsl_distro(
+            Backend::WslDocker,
+            "tracera-bundle",
+            Path::new("/mnt/c/docker-compose.bundle.yml"),
+            Path::new("/mnt/c/.env.local"),
+            &["ps"],
+            None,
+        );
+        assert_eq!(args_without_distro[0], "docker");
+        assert_eq!(args_without_distro[1], "compose");
     }
 
     #[test]
