@@ -243,16 +243,16 @@ mod tests {
         );
         // On macOS where wsl is absent, wsl_distro() is None, so the argv
         // drops the distro prefix.
-        if cfg!(target_os = "macos") {
-            assert_eq!(prog, "wsl");
-            assert_ne!(args.first().map(String::as_str), Some("--distribution"));
-        } else {
-            // On Linux/Windows CI where wsl IS available, the distro flag
-            // comes first.
-            assert_eq!(prog, "wsl");
-            assert_eq!(args[0], "--distribution");
-            assert_eq!(args[1], "Ubuntu-22.04");
+        assert_eq!(prog, "wsl");
+        if args.first().map(String::as_str) == Some("--distribution") {
+            // When WSL is available, the runtime-provided distro is followed
+            // by the compose subcommand. Do not hard-code a local distro name.
+            assert!(args.len() > 2);
             assert_eq!(args[2], "compose");
+        } else {
+            // WSL may be unavailable on CI or a developer machine; the
+            // command remains valid without an optional distribution prefix.
+            assert_eq!(args.first().map(String::as_str), Some("compose"));
         }
     }
 
