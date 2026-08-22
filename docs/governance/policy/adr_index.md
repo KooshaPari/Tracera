@@ -4,6 +4,7 @@
 
 - [`ADR_MODEL_DECOUPLE_STRATEGY.md`](../ADR_MODEL_DECOUPLE_STRATEGY.md)
 - [`docs/reports/SECURITY_AUDIT_DAG.md`](../reports/SECURITY_AUDIT_DAG.md)
+- [`ADR-SERVER-001-endpoint-regression-audit.md`](ADR-SERVER-001-endpoint-regression-audit.md) — Tiered inventory of endpoints deleted during the Python→Rust migration (must-restore / useful / can-defer), with recovery plan.
 
 ## Current governance evidence
 
