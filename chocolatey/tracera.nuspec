@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata>
+    <id>tracera</id>
+    <title>Tracera</title>
+    <version>2.2.0</version>
+    <authors>KooshaPari</authors>
+    <owners>KooshaPari</owners>
+    <projectUrl>https://github.com/KooshaPari/Tracera</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/KooshaPari/Tracera/main/packaging/icons/tracera-icon.png</iconUrl>
+    <docsUrl>https://github.com/KooshaPari/Tracera/blob/main/README.md</docsUrl>
+    <bugTrackerUrl>https://github.com/KooshaPari/Tracera/issues</bugTrackerUrl>
+    <licenseUrl>https://github.com/KooshaPari/Tracera/blob/main/LICENSE-MIT</licenseUrl>
+    <projectSourceUrl>https://github.com/KooshaPari/Tracera</projectSourceUrl>
+    <packageSourceUrl>https://github.com/KooshaPari/Tracera</packageSourceUrl>
+    <docs>Multi-view requirements traceability and project management system for AI agents</docs>
+    <summary>Requirements traceability + project management — like Jira/Lattice but for AI agents</summary>
+    <description><![CDATA[Tracera is an agent-native multi-view requirements traceability and project management system. It provides:
+
+- Multi-view traceability (Story → Trace → Audit)
+- Coverage matrix analysis
+- SQLite (default) or PostgreSQL backend
+- REST + MCP API for agents
+- Cloudflare Worker edge deployment
+- Desktop shell (Electrobun)
+
+Use Tracera to give your AI agents a structured place to file issues, link requirements, and verify coverage.
+]]></description>
+    <releaseNotes>https://github.com/KooshaPari/Tracera/releases/tag/v2.2.0</releaseNotes>
+    <tags>tracability project-management ai-agents spec-driven governance requirements</tags>
+    <license type="expression">MIT</license>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/KooshaPari/Tracera</projectSourceUrl>
+    <dependencies>
+      <dependency id="git" version="2.39.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>
