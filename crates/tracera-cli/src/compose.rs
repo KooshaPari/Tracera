@@ -25,7 +25,11 @@ pub fn compose_argv(
     env_file: &Path,
     subcommand: &[&str],
 ) -> (String, Vec<String>) {
-    let wsl_distro = crate::runtime::wsl_distro();
+    let wsl_distro = if matches!(backend, Backend::WslDocker) {
+        crate::runtime::wsl_distro()
+    } else {
+        None
+    };
     compose_argv_with_wsl_distro(
         backend,
         project_name,
