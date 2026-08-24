@@ -153,7 +153,7 @@
   },
   "devDependencies": {
     "@axe-core/react": "^4.11.0",
-    "@pact-foundation/pact": "^16.0.4",
+    "@pact-foundation/pact": "^17.1.2",
     "@pact-foundation/pact-node": "^10.18.0",
     "@percy/playwright": "^1.0.10",
     "@playwright/test": "^1.62.1",
