@@ -206,7 +206,7 @@
     "sharp": "^0.35.3",
     "storybook": "10.5.8",
     "svgo": "^4.0.0",
-    "swagger-ui-dist": "^5.30.3",
+    "swagger-ui-dist": "^5.32.14",
     "tailwindcss": "^4.1.17",
     "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1",
     "v8": "^0.1.0",
