@@ -102,7 +102,7 @@
     "@tracertm/state": "workspace:*",
     "@tracertm/types": "workspace:*",
     "@tracertm/ui": "workspace:*",
-    "@trpc/client": "^10.45.2",
+    "@trpc/client": "^11.18.0",
     "@trpc/react-query": "^10.45.2",
     "@trpc/server": "^11.18.0",
     "@types/rbush": "^4.0.0",
