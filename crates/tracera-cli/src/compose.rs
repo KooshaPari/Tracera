@@ -99,8 +99,20 @@ pub async fn run_inherited(
 }
 
 /// Probe compose for whether a given service is running.
-pub async fn ps(backend: Backend, project_name: &str, compose_file: &Path, env_file: &Path, _cwd: PathBuf) -> anyhow::Result<String> {
-    let (program, argv) = compose_argv(backend, project_name, compose_file, env_file, &["ps", "--format", "json"]);
+pub async fn ps(
+    backend: Backend,
+    project_name: &str,
+    compose_file: &Path,
+    env_file: &Path,
+    _cwd: PathBuf,
+) -> anyhow::Result<String> {
+    let (program, argv) = compose_argv(
+        backend,
+        project_name,
+        compose_file,
+        env_file,
+        &["ps", "--format", "json"],
+    );
     run_capture(&program, argv).await
 }
 
@@ -158,14 +170,17 @@ pub fn ensure_env_file(env_file: &Path, local_port: u16) -> anyhow::Result<()> {
     if env_file.exists() {
         // Validate it has a password; if not, regenerate.
         let existing = std::fs::read_to_string(env_file).unwrap_or_default();
-        if existing.lines().any(|l| l.starts_with("POSTGRES_PASSWORD=") && l.len() > "POSTGRES_PASSWORD=".len())
+        if existing
+            .lines()
+            .any(|l| l.starts_with("POSTGRES_PASSWORD=") && l.len() > "POSTGRES_PASSWORD=".len())
         {
             return Ok(());
         }
     }
 
     if let Some(parent) = env_file.parent() {
-        std::fs::create_dir_all(parent).with_context(|| format!("creating {}", parent.display()))?;
+        std::fs::create_dir_all(parent)
+            .with_context(|| format!("creating {}", parent.display()))?;
     }
 
     let password = generate_password();
@@ -247,7 +262,9 @@ mod tests {
         assert_eq!(args[project_idx + 1], "tracera-bundle");
         let env_idx = args.iter().position(|a| a == "--env-file").unwrap();
         assert_eq!(args[env_idx + 1], "/tmp/.env.local");
-        assert!(args.windows(2).any(|w| w[0] == "-f" && w[1] == "/tmp/docker-compose.bundle.yml"));
+        assert!(args
+            .windows(2)
+            .any(|w| w[0] == "-f" && w[1] == "/tmp/docker-compose.bundle.yml"));
         assert_eq!(args[args.len() - 2..], ["up", "-d"]);
     }
 
@@ -316,7 +333,10 @@ mod tests {
 
         sync_bundle_env_symlink(&compose_dir, &target).unwrap();
         let body = std::fs::read_to_string(compose_dir.join(".env.local")).unwrap();
-        assert_eq!(body, "POSTGRES_PASSWORD=USER\n", "user file was overwritten");
+        assert_eq!(
+            body, "POSTGRES_PASSWORD=USER\n",
+            "user file was overwritten"
+        );
 
         std::fs::remove_dir_all(&tmp).unwrap();
     }
