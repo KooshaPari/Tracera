@@ -32,12 +32,11 @@ use tracing::info;
 use tracing_subscriber::EnvFilter;
 use uuid::Uuid;
 
-/// Maximum request size accepted by JSON and form extractors.
-///
-/// This is intentionally generous for bulk ingest while bounding memory use
-/// for malformed or unauthenticated requests. Individual payload fields still
-/// need domain validation at their handlers.
-const MAX_REQUEST_BODY_BYTES: usize = 8 * 1024 * 1024;
+use std::time::Duration;
+use metrics_exporter_prometheus::{Matcher, PrometheusBuilder};
+
+static PROM_HANDLE: std::sync::OnceLock<metrics_exporter_prometheus::PrometheusHandle> = std::sync::OnceLock::new();
+
 /// Maximum number of links expanded into an in-memory coverage matrix.
 /// Requests above this bound must use a future paged/export path instead of
 /// allowing an unbounded response allocation.
@@ -46,6 +45,9 @@ const PUBLIC_BIND_MODE_ENV: &str = "TRACERA_PUBLIC_BIND_MODE";
 const AUTH_TOKEN_ENV: &str = "TRACERA_AUTH_TOKEN";
 const AUTHENTICATED_PROXY_MODE: &str = "authenticated-proxy";
 const LOOPBACK_PUBLISHED_MODE: &str = "loopback-published";
+
+/// Maximum allowed request body size (10 MB).
+const MAX_REQUEST_BODY_BYTES: usize = 10 * 1024 * 1024;
 const PRIVATE_NETWORK_MODE: &str = "private-network";
 use validation::{
     validate_text, MAX_ID_CHARS, MAX_INGEST_ISSUES, MAX_LONG_TEXT_CHARS, MAX_METADATA_BYTES,
@@ -575,7 +577,8 @@ async fn main() {
         .unwrap_or_else(|_| PathBuf::from("frontend/dist"));
     let index_html = frontend_dist.join("index.html");
     let serve_dir = ServeDir::new(&frontend_dist).fallback(ServeFile::new(&index_html));
-    let app = app.fallback_service(serve_dir);
+    let app = app
+        .fallback_service(serve_dir);
 
     let addr = env::var("TRACERA_BIND_ADDR")
         .ok()
@@ -668,6 +671,72 @@ async fn csrf_protection(
     Ok(next.run(request).await)
 }
 
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Simple in-memory per-IP rate limiter (no external crate needed)
+// ---------------------------------------------------------------------------
+// ── Rate Limiter (axum middleware) ─────────────────────────────────
+// Simple in-memory per-IP rate limiter using axum middleware (no external crates).
+#[allow(dead_code)]
+async fn rate_limit_middleware(
+    req: axum::http::Request<axum::body::Body>,
+    next: axum::middleware::Next,
+) -> Result<axum::response::Response, std::convert::Infallible> {
+    use std::collections::HashMap;
+    use std::net::IpAddr;
+    use std::sync::OnceLock;
+    use tokio::sync::RwLock;
+
+    static LIMITS: OnceLock<RwLock<HashMap<IpAddr, (u32, std::time::Instant)>>> = OnceLock::new();
+    let limits = LIMITS.get_or_init(|| RwLock::new(HashMap::new()));
+
+    let max_rps: u32 = std::env::var("TRACERA_RATE_LIMIT_RPS")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(100);
+
+    let ip = req
+        .extensions()
+        .get::<axum::extract::ConnectInfo<SocketAddr>>()
+        .map(|c| c.0.ip())
+        .unwrap_or_else(|| "0.0.0.0".parse().unwrap());
+
+    let now = std::time::Instant::now();
+    let mut map = limits.write().await;
+    let entry = map.entry(ip).or_insert((0, now));
+    if now.duration_since(entry.1).as_secs() >= 1 {
+        entry.0 = 0;
+        entry.1 = now;
+    }
+    entry.0 += 1;
+    let over_limit = entry.0 > max_rps;
+    drop(map);
+
+    if over_limit {
+        return Ok(axum::response::Response::builder()
+            .status(429)
+            .header("content-type", "application/json")
+            .header("retry-after", "1")
+            .body(axum::body::Body::from("{\"error\":\"rate_limit_exceeded\",\"retry_after_seconds\":1}"))
+            .unwrap());
+    }
+
+    Ok(next.run(req).await)
+}
+async fn prom_metrics_handler() -> impl IntoResponse {
+    let recorder = PROM_HANDLE.get_or_init(|| {
+        metrics_exporter_prometheus::PrometheusBuilder::new()
+            .install_recorder()
+            .expect("install prometheus recorder")
+            .clone()
+    });
+    (
+        [(axum::http::header::CONTENT_TYPE, "text/plain; version=0.0.4")],
+        recorder.render(),
+    )
+}
+
 fn build_router(state: AppState) -> Router {
     build_router_with_auth(state, None)
 }
@@ -678,6 +747,7 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/health", get(health::health))
         .route("/readyz", get(health::readyz))
         .route("/ready", get(health::ready))
+        .route("/metrics", get(prom_metrics_handler))
         .route("/api/v1/coverage-matrix", post(coverage_matrix))
         .route("/api/v1/impact", post(impact))
         .route("/api/v1/confidence", post(confidence))
@@ -726,9 +796,7 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
             HeaderValue::from_static("no-store"),
         ))
         .layer(axum::middleware::from_fn(csrf_protection))
-        
 }
-
 // ---------------------------------------------------------------------------
 // Computation-only handlers (no persistence)
 // ---------------------------------------------------------------------------

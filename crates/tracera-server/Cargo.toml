@@ -32,6 +32,14 @@ tower-http = { version = "0.7", features = ["fs", "limit", "set-header"] }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
 uuid = { workspace = true }
+# Observability + security + rate limiting
+
+metrics-exporter-prometheus = { version = "0.16", default-features = false, features = ["http-listener"] }
+tower = { version = "0.5", features = ["limit", "load-shed", "util"] }
+tracing-opentelemetry = { workspace = true }
+opentelemetry = { workspace = true }
+opentelemetry_sdk = { workspace = true, features = ["rt-tokio"] }
+opentelemetry-otlp = { workspace = true, default-features = false, features = ["grpc-tonic", "trace"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
