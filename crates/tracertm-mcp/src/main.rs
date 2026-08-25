@@ -11,7 +11,9 @@ fn api_base() -> String {
 }
 
 fn auth_token() -> Option<String> {
-    std::env::var("TRACERA_AUTH_TOKEN").ok().filter(|t| !t.is_empty())
+    std::env::var("TRACERA_AUTH_TOKEN")
+        .ok()
+        .filter(|t| !t.is_empty())
 }
 
 #[derive(Debug, Deserialize)]
@@ -23,7 +25,9 @@ struct CreateIssueInput {
     priority: String,
 }
 
-fn default_priority() -> String { "medium".to_string() }
+fn default_priority() -> String {
+    "medium".to_string()
+}
 
 #[derive(Debug, Deserialize)]
 struct TraceLinkInput {
@@ -35,14 +39,22 @@ struct TraceLinkInput {
     confidence: f64,
 }
 
-fn default_relationship() -> String { "satisfies".to_string() }
-fn default_confidence() -> f64 { 1.0 }
+fn default_relationship() -> String {
+    "satisfies".to_string()
+}
+fn default_confidence() -> f64 {
+    1.0
+}
 
 #[derive(Debug, Deserialize)]
-struct QueryTraceInput { artifact_id: String }
+struct QueryTraceInput {
+    artifact_id: String,
+}
 
 #[derive(Debug, Deserialize)]
-struct CoverageMatrixInput { links: Vec<CoverageLink> }
+struct CoverageMatrixInput {
+    links: Vec<CoverageLink>,
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 struct CoverageLink {
@@ -62,10 +74,18 @@ async fn http_get(path: &str) -> Result<String, String> {
     if let Some(token) = auth_token() {
         req = req.bearer_auth(token);
     }
-    let resp = req.send().await.map_err(|e| format!("HTTP request failed: {e}"))?;
+    let resp = req
+        .send()
+        .await
+        .map_err(|e| format!("HTTP request failed: {e}"))?;
     let status = resp.status();
-    let body = resp.text().await.map_err(|e| format!("Failed to read response body: {e}"))?;
-    if !status.is_success() { return Err(format!("HTTP {status}: {body}")); }
+    let body = resp
+        .text()
+        .await
+        .map_err(|e| format!("Failed to read response body: {e}"))?;
+    if !status.is_success() {
+        return Err(format!("HTTP {status}: {body}"));
+    }
     Ok(body)
 }
 
@@ -76,10 +96,18 @@ async fn http_post(path: &str, payload: &Value) -> Result<String, String> {
     if let Some(token) = auth_token() {
         req = req.bearer_auth(token);
     }
-    let resp = req.send().await.map_err(|e| format!("HTTP request failed: {e}"))?;
+    let resp = req
+        .send()
+        .await
+        .map_err(|e| format!("HTTP request failed: {e}"))?;
     let status = resp.status();
-    let body = resp.text().await.map_err(|e| format!("Failed to read response body: {e}"))?;
-    if !status.is_success() { return Err(format!("HTTP {status}: {body}")); }
+    let body = resp
+        .text()
+        .await
+        .map_err(|e| format!("Failed to read response body: {e}"))?;
+    if !status.is_success() {
+        return Err(format!("HTTP {status}: {body}"));
+    }
     Ok(body)
 }
 
@@ -150,7 +178,10 @@ fn tool_error(text: &str) -> Value {
 
 fn uuid_v4() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
-    let t = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_nanos();
+    let t = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
     format!("{:032x}", t)
 }
 
@@ -251,8 +282,14 @@ async fn main() {
             })),
             "tools/list" => Some(tool_definitions()),
             "tools/call" => {
-                let name = req.pointer("/params/name").and_then(|v| v.as_str()).unwrap_or("");
-                let args = req.pointer("/params/arguments").cloned().unwrap_or(json!({}));
+                let name = req
+                    .pointer("/params/name")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
+                let args = req
+                    .pointer("/params/arguments")
+                    .cloned()
+                    .unwrap_or(json!({}));
                 Some(handle_tool_call(name, &args).await)
             }
             _ => None,
@@ -268,7 +305,10 @@ async fn read_message<R: AsyncReadExt + Unpin>(r: &mut R, buf: &mut Vec<u8>) -> 
     loop {
         if let Some(hdr_end) = find_subslice(buf, b"\r\n\r\n") {
             let header = String::from_utf8_lossy(&buf[..hdr_end]).to_string();
-            let len = header.lines().find_map(|l| l.strip_prefix("Content-Length:")).and_then(|v| v.trim().parse::<usize>().ok());
+            let len = header
+                .lines()
+                .find_map(|l| l.strip_prefix("Content-Length:"))
+                .and_then(|v| v.trim().parse::<usize>().ok());
             if let Some(len) = len {
                 let body_start = hdr_end + 4;
                 if buf.len() >= body_start + len {
