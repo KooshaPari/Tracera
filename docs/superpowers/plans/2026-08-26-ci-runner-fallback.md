@@ -13,6 +13,7 @@
 ### Task 1: Add the workflow runner selector contract test
 
 **Files:**
+
 - Create: `scripts/test-ci-runner-selection.mjs`
 
 - [ ] **Step 1: Write the failing test**
@@ -28,6 +29,7 @@ Expected: FAIL because the current workflows hard-code Blacksmith labels and hav
 ### Task 2: Make CI runner-selectable
 
 **Files:**
+
 - Modify: `.github/workflows/ci.yml`
 
 - [ ] **Step 1: Add the dispatch input**
@@ -41,6 +43,7 @@ Use `${{ inputs.runner || 'ubuntu-latest' }}` for `rust-lint`, `rust-test`, `rus
 ### Task 3: Make Infisical runner-selectable
 
 **Files:**
+
 - Modify: `.github/workflows/infisical.yml`
 
 - [ ] **Step 1: Add the dispatch input**
@@ -49,7 +52,7 @@ Under `workflow_dispatch`, add the same `runner` choices and `ubuntu-latest` def
 
 - [ ] **Step 2: Select the runner**
 
-Use `${{ inputs.runner || 'ubuntu-latest' }}` for `sync-secrets`.
+Use `${{ inputs.runner || 'ubuntu-latest' }}` for `sync-secrets` and add `if: github.event_name != 'pull_request'` so PR validation does not fail on intentionally unavailable repository secrets.
 
 ### Task 4: Verify and commit
 

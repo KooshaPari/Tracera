@@ -34,6 +34,10 @@ for (const job of [
   }
 }
 
+if (!workflows['.github/workflows/infisical.yml'].includes("if: github.event_name != 'pull_request'")) {
+  failures.push('infisical.yml: pull requests must not require unavailable secret credentials');
+}
+
 if (failures.length) {
   console.error(failures.map((failure) => `FAIL: ${failure}`).join('\n'));
   process.exit(1);
