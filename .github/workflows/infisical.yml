@@ -6,7 +6,22 @@ name: Infisical Sync
 
 on:
   workflow_call:
+    inputs:
+      runner:
+        required: false
+        type: string
+        default: ubuntu-latest
   workflow_dispatch:
+    inputs:
+      runner:
+        description: Runner pool for manual secret synchronization
+        required: false
+        type: choice
+        default: ubuntu-latest
+        options:
+          - ubuntu-latest
+          - blacksmith-2vcpu-ubuntu-2204
+          - blacksmith-4vcpu-ubuntu-2204
   push:
     branches: [main, master]
     paths:
@@ -16,7 +31,7 @@ on:
 jobs:
   sync-secrets:
     name: Pull secrets from Infisical
-    runs-on: blacksmith-2vcpu-ubuntu-2204
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     timeout-minutes: 5
     steps:
       - name: Checkout
