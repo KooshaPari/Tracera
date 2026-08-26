@@ -16,8 +16,13 @@ pub(crate) async fn connect_postgres(url: &str) -> Result<PgPool, sqlx::Error> {
 }
 
 pub(crate) async fn connect_sqlite(url: &str) -> Result<SqlitePool, sqlx::Error> {
+    let max_connections = if url.contains(":memory:") {
+        1
+    } else {
+        SQLITE_MAX_CONNECTIONS
+    };
     let pool = SqlitePoolOptions::new()
-        .max_connections(SQLITE_MAX_CONNECTIONS)
+        .max_connections(max_connections)
         .acquire_timeout(ACQUIRE_TIMEOUT)
         .idle_timeout(Some(IDLE_TIMEOUT))
         .connect(url)
