@@ -12,7 +12,7 @@ mod validation;
 use axum::{
     extract::DefaultBodyLimit,
     response::IntoResponse,
-    routing::{get, post},
+    routing::{delete, get, post, put},
     Json, Router,
 };
 use chrono::{DateTime, Utc};
@@ -142,6 +142,40 @@ fn validate_sprint(payload: &SprintCreate) -> Result<(), &'static str> {
     if payload.end_date < payload.start_date {
         return Err("invalid date range");
     }
+    Ok(())
+}
+
+fn validate_story(payload: &StoryCreate) -> Result<(), &'static str> {
+    validate_text(&payload.title, "invalid title", MAX_SHORT_TEXT_CHARS, true)?;
+    validate_text(
+        &payload.description,
+        "invalid description",
+        MAX_LONG_TEXT_CHARS,
+        false,
+    )?;
+    validate_text(&payload.status, "invalid status", MAX_SHORT_TEXT_CHARS, true)?;
+    Ok(())
+}
+
+fn validate_trace_link(payload: &TraceLinkCreate) -> Result<(), &'static str> {
+    validate_text(
+        &payload.source_id,
+        "invalid source_id",
+        MAX_ID_CHARS,
+        true,
+    )?;
+    validate_text(
+        &payload.target_id,
+        "invalid target_id",
+        MAX_ID_CHARS,
+        true,
+    )?;
+    validate_text(
+        &payload.relationship,
+        "invalid relationship",
+        MAX_SHORT_TEXT_CHARS,
+        true,
+    )?;
     Ok(())
 }
 
@@ -415,6 +449,26 @@ struct SprintCreate {
     goal: String,
     start_date: DateTime<Utc>,
     end_date: DateTime<Utc>,
+}
+
+#[derive(Deserialize)]
+struct StoryCreate {
+    title: String,
+    #[serde(default)]
+    description: String,
+    #[serde(default = "default_story_status")]
+    status: String,
+}
+
+fn default_story_status() -> String {
+    "open".to_string()
+}
+
+#[derive(Deserialize)]
+struct TraceLinkCreate {
+    source_id: String,
+    target_id: String,
+    relationship: String,
 }
 
 // --- org-intel (port of src/tracertm/api/routers/org_intel.py) ---
@@ -766,8 +820,10 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/sdlc-pm/health", get(health::health))
         .route("/sdlc-pm/sprints", get(list_sprints).post(create_sprint))
         .route("/sdlc-pm/stories", get(list_stories))
-        .route("/api/v1/projects", get(list_projects))
-        .route("/api/v1/projects/{project_id}", get(get_project))
+        .route("/api/v1/stories", get(list_stories_api).post(create_story))
+        .route("/api/v1/trace", post(create_trace_link))
+        .route("/api/v1/projects", get(list_projects).post(create_project_stub))
+        .route("/api/v1/projects/{project_id}", get(get_project).put(update_project_stub).delete(delete_project_stub))
         .route("/problems", get(list_problems).post(create_problem))
         .route("/problems/health", get(health::health))
         .route("/org-intel/health", get(health::health))
@@ -1329,6 +1385,103 @@ async fn list_stories(
         )
     })?;
     Ok(Json(stories))
+}
+
+async fn create_story(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    Json(payload): Json<StoryCreate>,
+) -> Result<(axum::http::StatusCode, Json<Story>), (axum::http::StatusCode, Json<ErrorResponse>)> {
+    validate_story(&payload).map_err(bad_request)?;
+    let now = Utc::now();
+    let id = format!("story-{}", Uuid::new_v4());
+
+    let story = state
+        .store
+        .create_story(
+            id,
+            None,
+            payload.title,
+            payload.description,
+            payload.status,
+            None,
+            now,
+        )
+        .await
+        .map_err(|e| {
+            tracing::error!("create_story store insert failed: {e}");
+            (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "story persistence failed",
+                }),
+            )
+        })?;
+
+    Ok((axum::http::StatusCode::CREATED, Json(story)))
+}
+
+async fn list_stories_api(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Result<Json<Vec<Story>>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    let stories = state.store.list_stories().await.map_err(|e| {
+        tracing::error!("list_stories_api store error: {e}");
+        (
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "story listing failed",
+            }),
+        )
+    })?;
+    Ok(Json(stories))
+}
+
+async fn create_trace_link(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    Json(payload): Json<TraceLinkCreate>,
+) -> Result<(axum::http::StatusCode, Json<TraceLink>), (axum::http::StatusCode, Json<ErrorResponse>)> {
+    validate_trace_link(&payload).map_err(bad_request)?;
+    let now = Utc::now();
+    let id = format!("tl-{}", Uuid::new_v4());
+
+    let link = state
+        .store
+        .create_trace_link(
+            id,
+            payload.source_id,
+            payload.target_id,
+            payload.relationship,
+            1.0,
+            "api".to_string(),
+            now,
+        )
+        .await
+        .map_err(|e| {
+            tracing::error!("create_trace_link store insert failed: {e}");
+            (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "trace link persistence failed",
+                }),
+            )
+        })?;
+
+    Ok((axum::http::StatusCode::CREATED, Json(link)))
+}
+
+async fn create_project_stub() -> axum::http::StatusCode {
+    axum::http::StatusCode::NOT_IMPLEMENTED
+}
+
+async fn update_project_stub(
+    axum::extract::Path(_project_id): axum::extract::Path<String>,
+) -> axum::http::StatusCode {
+    axum::http::StatusCode::NOT_IMPLEMENTED
+}
+
+async fn delete_project_stub(
+    axum::extract::Path(_project_id): axum::extract::Path<String>,
+) -> axum::http::StatusCode {
+    axum::http::StatusCode::NOT_IMPLEMENTED
 }
 
 // ---------------------------------------------------------------------------
