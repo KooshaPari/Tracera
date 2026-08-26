@@ -64,9 +64,6 @@ struct CoverageLink {
     confidence: f64,
 }
 
-#[derive(Debug, Deserialize)]
-struct ListIssuesInput {}
-
 async fn http_get(path: &str) -> Result<String, String> {
     let url = format!("{}{}", api_base(), path);
     let client = reqwest::Client::new();
@@ -119,7 +116,7 @@ async fn handle_tool_call(name: &str, args: &Value) -> Value {
                 Err(e) => return tool_error(&format!("invalid arguments: {e}")),
             };
             let id = format!("story-{}", uuid_v4());
-            let payload = json!({"id": id, "title": input.title, "description": input.description, "status": "open", "story_points": null});
+            let payload = json!({"id": id, "title": input.title, "description": input.description, "priority": input.priority, "status": "open", "story_points": null});
             match http_post("/api/v1/stories", &payload).await {
                 Ok(body) => tool_result(&body),
                 Err(e) => tool_error(&e),
