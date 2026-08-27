@@ -124,7 +124,8 @@ jobs:
       - run: cargo test --all --workspace --verbose
         env:
           CARGO_INCREMENTAL: 0
-      - run: cargo test --all --workspace --doc
+      # Workspace members are binary-only (no library doc-test targets). The
+      # preceding workspace test command covers their Rust test targets.
 
   rust-build:
     name: Rust Build

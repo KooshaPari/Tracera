@@ -202,7 +202,11 @@ pub fn wsl_distro() -> Option<String> {
 /// Run a command, inheriting stdio (for human-facing output).
 ///
 /// `program` is the binary path or name (resolved via the OS PATH).
-pub async fn run_inherited<I, S>(program: &str, args: I, cwd: Option<PathBuf>) -> anyhow::Result<i32>
+pub async fn run_inherited<I, S>(
+    program: &str,
+    args: I,
+    cwd: Option<PathBuf>,
+) -> anyhow::Result<i32>
 where
     I: IntoIterator<Item = S>,
     S: AsRef<std::ffi::OsStr>,
