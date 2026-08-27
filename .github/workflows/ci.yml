@@ -77,6 +77,7 @@ jobs:
               - 'package-lock.json'
               - 'pnpm-lock.yaml'
               - 'yarn.lock'
+              - 'frontend/bun.lock'
               - 'bun.lockb'
               - '**/*.ts'
               - '**/*.tsx'
@@ -240,7 +241,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
       - run: npm ci || true
       - run: npx biome lint . || true
       - run: npx biome format --check . || true
@@ -255,7 +255,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
       - run: npm ci || true
       - run: npm test || true
 
