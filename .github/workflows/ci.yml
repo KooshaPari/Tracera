@@ -124,7 +124,19 @@ jobs:
       - run: cargo test --all --workspace --verbose
         env:
           CARGO_INCREMENTAL: 0
-      - run: cargo test --all --workspace --doc
+      # This workspace currently contains binary-only crates. Cargo exits 101
+      # when --doc is requested without any library target, so only run the
+      # redundant doctest pass when the workspace actually exposes one.
+      - name: Run doctests when library targets exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          metadata="$(cargo metadata --no-deps --format-version 1)"
+          if [[ "$metadata" == *'"kind":["lib"'* ]]; then
+            cargo test --all --workspace --doc
+          else
+            echo "No library targets in workspace; skipping cargo doctest pass"
+          fi
 
   rust-build:
     name: Rust Build
