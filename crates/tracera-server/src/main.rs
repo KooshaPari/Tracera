@@ -154,23 +154,18 @@ fn validate_story(payload: &StoryCreate) -> Result<(), &'static str> {
         MAX_LONG_TEXT_CHARS,
         false,
     )?;
-    validate_text(&payload.status, "invalid status", MAX_SHORT_TEXT_CHARS, true)?;
+    validate_text(
+        &payload.status,
+        "invalid status",
+        MAX_SHORT_TEXT_CHARS,
+        true,
+    )?;
     Ok(())
 }
 
 fn validate_trace_link(payload: &TraceLinkCreate) -> Result<(), &'static str> {
-    validate_text(
-        &payload.source_id,
-        "invalid source_id",
-        MAX_ID_CHARS,
-        true,
-    )?;
-    validate_text(
-        &payload.target_id,
-        "invalid target_id",
-        MAX_ID_CHARS,
-        true,
-    )?;
+    validate_text(&payload.source_id, "invalid source_id", MAX_ID_CHARS, true)?;
+    validate_text(&payload.target_id, "invalid target_id", MAX_ID_CHARS, true)?;
     validate_text(
         &payload.relationship,
         "invalid relationship",
@@ -824,8 +819,16 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/sdlc-pm/stories", get(list_stories))
         .route("/api/v1/stories", get(list_stories_api).post(create_story))
         .route("/api/v1/trace", post(create_trace_link))
-        .route("/api/v1/projects", get(list_projects).post(create_project_stub))
-        .route("/api/v1/projects/{project_id}", get(get_project).put(update_project_stub).delete(delete_project_stub))
+        .route(
+            "/api/v1/projects",
+            get(list_projects).post(create_project_stub),
+        )
+        .route(
+            "/api/v1/projects/{project_id}",
+            get(get_project)
+                .put(update_project_stub)
+                .delete(delete_project_stub),
+        )
         .route("/problems", get(list_problems).post(create_problem))
         .route("/problems/health", get(health::health))
         .route("/org-intel/health", get(health::health))
@@ -1445,7 +1448,8 @@ async fn list_stories_api(
 async fn create_trace_link(
     axum::extract::State(state): axum::extract::State<AppState>,
     Json(payload): Json<TraceLinkCreate>,
-) -> Result<(axum::http::StatusCode, Json<TraceLink>), (axum::http::StatusCode, Json<ErrorResponse>)> {
+) -> Result<(axum::http::StatusCode, Json<TraceLink>), (axum::http::StatusCode, Json<ErrorResponse>)>
+{
     validate_trace_link(&payload).map_err(bad_request)?;
     let now = Utc::now();
     let id = format!("tl-{}", Uuid::new_v4());
