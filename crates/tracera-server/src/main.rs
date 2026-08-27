@@ -794,7 +794,7 @@ async fn not_implemented() -> impl axum::response::IntoResponse {
     )
 }
 
-#[allow(dead_code)]
+#[cfg(test)]
 fn build_router(state: AppState) -> Router {
     build_router_with_auth(state, None)
 }
