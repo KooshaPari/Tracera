@@ -33,8 +33,6 @@ use tracing::info;
 use tracing_subscriber::EnvFilter;
 use uuid::Uuid;
 
-use std::time::Duration;
-use metrics_exporter_prometheus::{Matcher, PrometheusBuilder};
 
 static PROM_HANDLE: std::sync::OnceLock<metrics_exporter_prometheus::PrometheusHandle> = std::sync::OnceLock::new();
 
