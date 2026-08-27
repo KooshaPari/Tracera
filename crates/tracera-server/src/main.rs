@@ -1,5 +1,5 @@
-mod auth;
 mod db;
+mod auth;
 mod health;
 mod ingest;
 mod pg_store;
@@ -9,10 +9,11 @@ mod sqlite_store;
 mod store;
 mod validation;
 
+use axum::extract::ws::{Message as WsMessage, WebSocket, WebSocketUpgrade};
 use axum::{
     extract::DefaultBodyLimit,
     response::IntoResponse,
-    routing::{delete, get, post},
+    routing::{any, delete, get, post, put},
     Json, Router,
 };
 use chrono::{DateTime, Utc};
@@ -32,8 +33,8 @@ use tracing::info;
 use tracing_subscriber::EnvFilter;
 use uuid::Uuid;
 
-static PROM_HANDLE: std::sync::OnceLock<metrics_exporter_prometheus::PrometheusHandle> =
-    std::sync::OnceLock::new();
+
+static PROM_HANDLE: std::sync::OnceLock<metrics_exporter_prometheus::PrometheusHandle> = std::sync::OnceLock::new();
 
 /// Maximum number of links expanded into an in-memory coverage matrix.
 /// Requests above this bound must use a future paged/export path instead of
@@ -151,18 +152,23 @@ fn validate_story(payload: &StoryCreate) -> Result<(), &'static str> {
         MAX_LONG_TEXT_CHARS,
         false,
     )?;
-    validate_text(
-        &payload.status,
-        "invalid status",
-        MAX_SHORT_TEXT_CHARS,
-        true,
-    )?;
+    validate_text(&payload.status, "invalid status", MAX_SHORT_TEXT_CHARS, true)?;
     Ok(())
 }
 
 fn validate_trace_link(payload: &TraceLinkCreate) -> Result<(), &'static str> {
-    validate_text(&payload.source_id, "invalid source_id", MAX_ID_CHARS, true)?;
-    validate_text(&payload.target_id, "invalid target_id", MAX_ID_CHARS, true)?;
+    validate_text(
+        &payload.source_id,
+        "invalid source_id",
+        MAX_ID_CHARS,
+        true,
+    )?;
+    validate_text(
+        &payload.target_id,
+        "invalid target_id",
+        MAX_ID_CHARS,
+        true,
+    )?;
     validate_text(
         &payload.relationship,
         "invalid relationship",
@@ -624,7 +630,8 @@ async fn main() {
         .unwrap_or_else(|_| PathBuf::from("frontend/dist"));
     let index_html = frontend_dist.join("index.html");
     let serve_dir = ServeDir::new(&frontend_dist).fallback(ServeFile::new(&index_html));
-    let app = app.fallback_service(serve_dir);
+    let app = app
+        .fallback_service(serve_dir);
 
     let addr = env::var("TRACERA_BIND_ADDR")
         .ok()
@@ -632,9 +639,11 @@ async fn main() {
         .unwrap_or_else(|| SocketAddr::from(([127, 0, 0, 1], 8080)));
 
     let public_bind_mode = env::var(PUBLIC_BIND_MODE_ENV).ok();
-    if let Err(error) =
-        validate_bind_address(addr, public_bind_mode.as_deref(), auth_token.as_deref())
-    {
+    if let Err(error) = validate_bind_address(
+        addr,
+        public_bind_mode.as_deref(),
+        auth_token.as_deref(),
+    ) {
         eprintln!("FATAL: {error}");
         std::process::exit(1);
     }
@@ -651,6 +660,7 @@ async fn main() {
         std::process::exit(1);
     }
 }
+
 
 /// CSRF protection middleware.
 ///
@@ -761,9 +771,7 @@ async fn rate_limit_middleware(
             .status(429)
             .header("content-type", "application/json")
             .header("retry-after", "1")
-            .body(axum::body::Body::from(
-                "{\"error\":\"rate_limit_exceeded\",\"retry_after_seconds\":1}",
-            ))
+            .body(axum::body::Body::from("{\"error\":\"rate_limit_exceeded\",\"retry_after_seconds\":1}"))
             .unwrap());
     }
 
@@ -777,27 +785,23 @@ async fn prom_metrics_handler() -> impl IntoResponse {
             .clone()
     });
     (
-        [(
-            axum::http::header::CONTENT_TYPE,
-            "text/plain; version=0.0.4",
-        )],
+        [(axum::http::header::CONTENT_TYPE, "text/plain; version=0.0.4")],
         recorder.render(),
     )
 }
 
-#[cfg_attr(not(test), allow(dead_code))]
-fn build_router(state: AppState) -> Router {
-    build_router_with_auth(state, None)
-}
 
+/// Stub handler for Tier-2 endpoints not yet implemented.
+/// Returns 501 Not Implemented with a structured JSON error payload.
 async fn not_implemented() -> impl axum::response::IntoResponse {
     (
         axum::http::StatusCode::NOT_IMPLEMENTED,
-        axum::Json(serde_json::json!({
-            "error": "not_implemented",
-            "message": "ADR-SERVER-001"
-        })),
+        axum::Json(serde_json::json!({"error": "not_implemented", "message": "ADR-SERVER-001"})),
     )
+}
+
+fn build_router(state: AppState) -> Router {
+    build_router_with_auth(state, None)
 }
 
 fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Router {
@@ -827,312 +831,143 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/sdlc-pm/stories", get(list_stories))
         .route("/api/v1/stories", get(list_stories_api).post(create_story))
         .route("/api/v1/trace", post(create_trace_link))
-        .route(
-            "/api/v1/projects",
-            get(list_projects).post(create_project_stub),
-        )
-        .route(
-            "/api/v1/projects/{project_id}",
-            get(get_project)
-                .put(update_project_stub)
-                .delete(delete_project_stub),
-        )
+        .route("/api/v1/projects", get(list_projects).post(create_project_stub))
+        .route("/api/v1/projects/{project_id}", get(get_project).put(update_project_stub).delete(delete_project_stub))
         .route("/problems", get(list_problems).post(create_problem))
         .route("/problems/health", get(health::health))
         .route("/org-intel/health", get(health::health))
         .route("/org-intel/teams", get(list_teams))
         .route("/org-intel/metrics", get(org_metrics))
-        // Tier-2 Endpoints (ADR-SERVER-001) - 501 stubs
         // Items
-        .route("/api/v1/items", get(not_implemented).post(not_implemented))
-        .route("/api/v1/items/summary", get(not_implemented))
-        .route("/api/v1/items/bulk-update", post(not_implemented))
-        .route(
-            "/api/v1/items/{id}",
-            get(not_implemented)
-                .put(not_implemented)
-                .delete(not_implemented),
-        )
-        .route(
-            "/api/v1/items/{item_id}/pivot-targets",
-            get(not_implemented),
-        )
-        .route("/api/v1/items/{item_id}/pivot", post(not_implemented))
+        .route("/api/v1/items", any(not_implemented))
+        .route("/api/v1/items/summary", any(not_implemented))
+        .route("/api/v1/items/bulk-update", any(not_implemented))
+        .route("/api/v1/items/{id}", any(not_implemented))
+        .route("/api/v1/items/{item_id}/pivot-targets", any(not_implemented))
+        .route("/api/v1/items/{item_id}/pivot", any(not_implemented))
         // Links
-        .route("/api/v1/links", get(not_implemented).post(not_implemented))
-        .route(
-            "/api/v1/links/{id}",
-            get(not_implemented)
-                .put(not_implemented)
-                .delete(not_implemented),
-        )
-        .route("/api/v1/links/grouped", get(not_implemented))
-        .route("/api/v1/projects/{project_id}/links", get(not_implemented))
+        .route("/api/v1/links", any(not_implemented))
+        .route("/api/v1/links/{id}", any(not_implemented))
+        .route("/api/v1/links/grouped", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/links", any(not_implemented))
         // Graph
-        .route("/api/v1/graph/ancestors/{id}", get(not_implemented))
-        .route("/api/v1/graph/descendants/{id}", get(not_implemented))
-        .route("/api/v1/graph/impact/{id}", get(not_implemented))
-        .route("/api/v1/graph/dependencies/{id}", get(not_implemented))
-        .route("/api/v1/graph/traverse/{id}", get(not_implemented))
-        .route("/api/v1/graph/path", get(not_implemented))
-        .route("/api/v1/graph/paths", get(not_implemented))
-        .route("/api/v1/graph/full", get(not_implemented))
-        .route("/api/v1/graph/cycles", get(not_implemented))
-        .route("/api/v1/graph/topo-sort", get(not_implemented))
-        .route("/api/v1/graph/orphans", get(not_implemented))
-        .route("/api/v1/graph/analysis/centrality", get(not_implemented))
-        .route("/api/v1/graph/analysis/coverage", get(not_implemented))
-        .route("/api/v1/graph/analysis/cycles", get(not_implemented))
-        .route("/api/v1/graph/analysis/dependencies", get(not_implemented))
-        .route("/api/v1/graph/analysis/dependents", get(not_implemented))
-        .route("/api/v1/graph/analysis/impact", get(not_implemented))
-        .route("/api/v1/graph/analysis/metrics", get(not_implemented))
-        .route("/api/v1/graph/analysis/shortest-path", get(not_implemented))
-        .route("/api/v1/graph/cache/invalidate", post(not_implemented))
+        .route("/api/v1/graph/ancestors/{id}", any(not_implemented))
+        .route("/api/v1/graph/descendants/{id}", any(not_implemented))
+        .route("/api/v1/graph/impact/{id}", any(not_implemented))
+        .route("/api/v1/graph/dependencies/{id}", any(not_implemented))
+        .route("/api/v1/graph/traverse/{id}", any(not_implemented))
+        .route("/api/v1/graph/path", any(not_implemented))
+        .route("/api/v1/graph/paths", any(not_implemented))
+        .route("/api/v1/graph/full", any(not_implemented))
+        .route("/api/v1/graph/cycles", any(not_implemented))
+        .route("/api/v1/graph/topo-sort", any(not_implemented))
+        .route("/api/v1/graph/orphans", any(not_implemented))
+        .route("/api/v1/graph/analysis/centrality", any(not_implemented))
+        .route("/api/v1/graph/analysis/coverage", any(not_implemented))
+        .route("/api/v1/graph/analysis/cycles", any(not_implemented))
+        .route("/api/v1/graph/analysis/dependencies", any(not_implemented))
+        .route("/api/v1/graph/analysis/dependents", any(not_implemented))
+        .route("/api/v1/graph/analysis/impact", any(not_implemented))
+        .route("/api/v1/graph/analysis/metrics", any(not_implemented))
+        .route("/api/v1/graph/analysis/shortest-path", any(not_implemented))
+        .route("/api/v1/graph/cache/invalidate", any(not_implemented))
         // Search
-        .route("/api/v1/search", get(not_implemented).post(not_implemented))
-        .route("/api/v1/search/suggest", get(not_implemented))
-        .route(
-            "/api/v1/search/index/{id}",
-            post(not_implemented).delete(not_implemented),
-        )
-        .route("/api/v1/search/batch-index", post(not_implemented))
-        .route("/api/v1/search/reindex", post(not_implemented))
-        .route("/api/v1/search/stats", get(not_implemented))
-        .route("/api/v1/search/health", get(not_implemented))
+        .route("/api/v1/search", any(not_implemented))
+        .route("/api/v1/search/suggest", any(not_implemented))
+        .route("/api/v1/search/index/{id}", any(not_implemented))
+        .route("/api/v1/search/batch-index", any(not_implemented))
+        .route("/api/v1/search/reindex", any(not_implemented))
+        .route("/api/v1/search/stats", any(not_implemented))
+        .route("/api/v1/search/health", any(not_implemented))
         // Projects extended
-        .route("/api/v1/projects/{project_id}/export", get(not_implemented))
-        .route(
-            "/api/v1/projects/{project_id}/import",
-            post(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/versions/compare",
-            post(not_implemented),
-        )
-        .route("/api/v1/import", post(not_implemented))
+        .route("/api/v1/projects/{project_id}/export", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/import", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/versions/compare", any(not_implemented))
+        .route("/api/v1/import", any(not_implemented))
         // Auth
-        .route("/api/v1/auth/login", post(not_implemented))
-        .route("/api/v1/auth/logout", post(not_implemented))
-        .route("/api/v1/auth/refresh", post(not_implemented))
-        .route("/api/v1/auth/verify", post(not_implemented))
-        .route("/api/v1/auth/me", get(not_implemented))
-        .route("/api/v1/csrf-token", get(not_implemented))
+        .route("/api/v1/auth/login", any(not_implemented))
+        .route("/api/v1/auth/logout", any(not_implemented))
+        .route("/api/v1/auth/refresh", any(not_implemented))
+        .route("/api/v1/auth/verify", any(not_implemented))
+        .route("/api/v1/auth/me", any(not_implemented))
+        .route("/api/v1/csrf-token", any(not_implemented))
         // Equivalences
-        .route(
-            "/api/v1/equivalences",
-            get(not_implemented).post(not_implemented),
-        )
-        .route(
-            "/api/v1/equivalences/{id}",
-            get(not_implemented)
-                .put(not_implemented)
-                .delete(not_implemented),
-        )
-        .route("/api/v1/equivalences/confirm", post(not_implemented))
-        .route("/api/v1/equivalences/reject", post(not_implemented))
-        .route("/api/v1/equivalences/batch", post(not_implemented))
-        .route(
-            "/api/v1/projects/{project_id}/equivalences",
-            get(not_implemented).post(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/equivalences/{id}",
-            get(not_implemented)
-                .put(not_implemented)
-                .delete(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/equivalences/canonical",
-            get(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/equivalences/projections",
-            get(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/equivalences/detect",
-            post(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/equivalences/batch",
-            post(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/equivalences/stats",
-            get(not_implemented),
-        )
+        .route("/api/v1/equivalences", any(not_implemented))
+        .route("/api/v1/equivalences/{id}", any(not_implemented))
+        .route("/api/v1/equivalences/confirm", any(not_implemented))
+        .route("/api/v1/equivalences/reject", any(not_implemented))
+        .route("/api/v1/equivalences/batch", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/equivalences", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/equivalences/{id}", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/equivalences/canonical", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/equivalences/projections", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/equivalences/detect", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/equivalences/batch", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/equivalences/stats", any(not_implemented))
         // Journeys
-        .route(
-            "/api/v1/journeys",
-            get(not_implemented).post(not_implemented),
-        )
-        .route(
-            "/api/v1/journeys/{id}",
-            get(not_implemented)
-                .put(not_implemented)
-                .delete(not_implemented),
-        )
-        .route(
-            "/api/v1/journeys/{id}/steps",
-            get(not_implemented).post(not_implemented),
-        )
-        .route(
-            "/api/v1/journeys/{id}/steps/{step_id}",
-            get(not_implemented)
-                .put(not_implemented)
-                .delete(not_implemented),
-        )
-        .route("/api/v1/journeys/{id}/detect", post(not_implemented))
-        .route("/api/v1/journeys/{id}/visualize", get(not_implemented))
-        .route(
-            "/api/v1/projects/{project_id}/journeys",
-            get(not_implemented).post(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}",
-            get(not_implemented)
-                .put(not_implemented)
-                .delete(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/steps",
-            get(not_implemented).post(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/steps/{step_id}",
-            get(not_implemented)
-                .put(not_implemented)
-                .delete(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/detect",
-            post(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/visualize",
-            get(not_implemented),
-        )
+        .route("/api/v1/journeys", any(not_implemented))
+        .route("/api/v1/journeys/{id}", any(not_implemented))
+        .route("/api/v1/journeys/{id}/steps", any(not_implemented))
+        .route("/api/v1/journeys/{id}/steps/{step_id}", any(not_implemented))
+        .route("/api/v1/journeys/{id}/detect", any(not_implemented))
+        .route("/api/v1/journeys/{id}/visualize", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/journeys", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/journeys/{id}", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/journeys/{id}/steps", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/journeys/{id}/steps/{step_id}", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/journeys/{id}/detect", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/journeys/{id}/visualize", any(not_implemented))
         // Component library
-        .route(
-            "/api/v1/libraries",
-            get(not_implemented).post(not_implemented),
-        )
-        .route(
-            "/api/v1/libraries/{id}",
-            get(not_implemented)
-                .put(not_implemented)
-                .delete(not_implemented),
-        )
-        .route("/api/v1/libraries/{id}/components", get(not_implemented))
-        .route("/api/v1/libraries/{id}/tokens", get(not_implemented))
-        .route(
-            "/api/v1/components",
-            get(not_implemented).post(not_implemented),
-        )
-        .route(
-            "/api/v1/components/{id}",
-            get(not_implemented)
-                .put(not_implemented)
-                .delete(not_implemented),
-        )
-        .route("/api/v1/components/{id}/usage", get(not_implemented))
-        .route("/api/v1/tokens", get(not_implemented).post(not_implemented))
+        .route("/api/v1/libraries", any(not_implemented))
+        .route("/api/v1/libraries/{id}", any(not_implemented))
+        .route("/api/v1/libraries/{id}/components", any(not_implemented))
+        .route("/api/v1/libraries/{id}/tokens", any(not_implemented))
+        .route("/api/v1/components", any(not_implemented))
+        .route("/api/v1/components/{id}", any(not_implemented))
+        .route("/api/v1/components/{id}/usage", any(not_implemented))
+        .route("/api/v1/tokens", any(not_implemented))
         // Codex / Docs / AI
-        .route(
-            "/api/v1/projects/{project_id}/codex/auth-status",
-            get(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/codex/interactions",
-            get(not_implemented).post(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/codex/review-image",
-            post(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/codex/review-video",
-            post(not_implemented),
-        )
-        .route("/api/v1/docs", get(not_implemented))
-        .route("/api/v1/docs/search", get(not_implemented))
-        .route("/api/v1/docs/{id}", get(not_implemented))
-        .route("/api/v1/ai/analyze", post(not_implemented))
-        .route("/api/v1/ai/stream-chat", post(not_implemented))
-        .route("/api/v1/spec-analytics/analyze", post(not_implemented))
-        .route(
-            "/api/v1/spec-analytics/batch-analyze",
-            post(not_implemented),
-        )
-        .route(
-            "/api/v1/spec-analytics/ears-patterns",
-            post(not_implemented),
-        )
-        .route(
-            "/api/v1/spec-analytics/validate-iso29148",
-            post(not_implemented),
-        )
+        .route("/api/v1/projects/{project_id}/codex/auth-status", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/codex/interactions", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/codex/review-image", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/codex/review-video", any(not_implemented))
+        .route("/api/v1/docs", any(not_implemented))
+        .route("/api/v1/docs/search", any(not_implemented))
+        .route("/api/v1/docs/{id}", any(not_implemented))
+        .route("/api/v1/ai/analyze", any(not_implemented))
+        .route("/api/v1/ai/stream-chat", any(not_implemented))
+        .route("/api/v1/spec-analytics/analyze", any(not_implemented))
+        .route("/api/v1/spec-analytics/batch-analyze", any(not_implemented))
+        .route("/api/v1/spec-analytics/ears-patterns", any(not_implemented))
+        .route("/api/v1/spec-analytics/validate-iso29148", any(not_implemented))
         // Executions
-        .route(
-            "/api/v1/projects/{project_id}/executions",
-            get(not_implemented).post(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/executions/{id}",
-            get(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/executions/{id}/start",
-            post(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/executions/{id}/complete",
-            post(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/executions/{id}/artifacts",
-            get(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/execution-config",
-            get(not_implemented).put(not_implemented),
-        )
+        .route("/api/v1/projects/{project_id}/executions", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/executions/{id}", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/executions/{id}/start", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/executions/{id}/complete", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/executions/{id}/artifacts", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/execution-config", any(not_implemented))
         // Settings / Mutations / Events
-        .route(
-            "/api/v1/settings",
-            get(not_implemented).put(not_implemented),
-        )
-        .route(
-            "/api/v1/mutations",
-            get(not_implemented).post(not_implemented),
-        )
-        .route("/api/v1/events", get(not_implemented).post(not_implemented))
-        .route("/api/v1/events/{id}", get(not_implemented))
+        .route("/api/v1/settings", any(not_implemented))
+        .route("/api/v1/mutations", any(not_implemented))
+        .route("/api/v1/events", any(not_implemented))
+        .route("/api/v1/events/{id}", any(not_implemented))
         // Storage / Distributed
-        .route("/storage/list", get(not_implemented))
-        .route("/storage/read/{key}", get(not_implemented))
-        .route("/storage/write/{key}", post(not_implemented))
-        .route("/storage/delete/{key}", delete(not_implemented))
-        .route("/storage/exists/{key}", get(not_implemented))
-        .route("/storage/stats", get(not_implemented))
-        .route("/storage/health", get(not_implemented))
-        .route(
-            "/distributed-operations",
-            get(not_implemented).post(not_implemented),
-        )
-        .route("/distributed-operations/{id}", get(not_implemented))
-        .route("/distributed-operations/{id}/start", post(not_implemented))
-        .route(
-            "/distributed-operations/{id}/complete",
-            post(not_implemented),
-        )
-        .route(
-            "/distributed-operations/{id}/artifacts",
-            get(not_implemented),
-        )
-        .route("/distributed-operations/{id}/cancel", post(not_implemented))
-        .route("/distributed-operations/{id}/status", get(not_implemented))
+        .route("/storage/list", any(not_implemented))
+        .route("/storage/read/{key}", any(not_implemented))
+        .route("/storage/write/{key}", any(not_implemented))
+        .route("/storage/delete/{key}", any(not_implemented))
+        .route("/storage/exists/{key}", any(not_implemented))
+        .route("/storage/stats", any(not_implemented))
+        .route("/storage/health", any(not_implemented))
+        .route("/distributed-operations", any(not_implemented))
+        .route("/distributed-operations/{id}", any(not_implemented))
+        .route("/distributed-operations/{id}/start", any(not_implemented))
+        .route("/distributed-operations/{id}/complete", any(not_implemented))
+        .route("/distributed-operations/{id}/artifacts", any(not_implemented))
+        .route("/distributed-operations/{id}/cancel", any(not_implemented))
+        .route("/distributed-operations/{id}/status", any(not_implemented))
+
         .layer(axum::middleware::from_fn_with_state(
             auth_token,
             auth::require_bearer,
@@ -1155,11 +990,73 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
             HeaderValue::from_static("no-store"),
         ))
         .layer(axum::middleware::from_fn(csrf_protection))
+        // WebSocket endpoint
+        .route("/ws/trace", axum::routing::get(ws_trace_handler))
+        // Tier-2 Endpoints (ADR-SERVER-001) - 501 stubs
+        .route("/api/v1/items", any(not_implemented))
+        .route("/api/v1/items/{id}", any(not_implemented))
+        .route("/api/v1/links", any(not_implemented))
+        .route("/api/v1/links/{id}", any(not_implemented))
+        .route("/api/v1/graph/forward/{id}", any(not_implemented))
+        .route("/api/v1/graph/reverse/{id}", any(not_implemented))
+        .route("/api/v1/graph/adjacency", any(not_implemented))
+        .route("/api/v1/graph/communities", any(not_implemented))
+        .route("/api/v1/graph/impact", any(not_implemented))
+        .route("/api/v1/graph/path", any(not_implemented))
+        .route("/api/v1/search", any(not_implemented))
+        .route("/api/v1/search/fulltext", any(not_implemented))
+        .route("/api/v1/search/similar", any(not_implemented))
+        .route("/api/v1/projects/{id}/members", any(not_implemented))
+        .route("/api/v1/auth/login", any(not_implemented))
+        .route("/api/v1/auth/logout", any(not_implemented))
+        .route("/api/v1/auth/refresh", any(not_implemented))
+        .route("/api/v1/equivalences", any(not_implemented))
+        .route("/api/v1/equivalences/{id}", any(not_implemented))
+        .route("/api/v1/journeys", any(not_implemented))
+        .route("/api/v1/journeys/{id}", any(not_implemented))
+        .route("/api/v1/journeys/{id}/events", any(not_implemented))
+        .route("/api/v1/components", any(not_implemented))
+        .route("/api/v1/components/{id}", any(not_implemented))
+        .route("/api/v1/components/{id}/dependencies", any(not_implemented))
+        .route("/api/v1/codex/entries", any(not_implemented))
+        .route("/api/v1/codex/entries/{id}", any(not_implemented))
+        .route("/api/v1/codex/search", any(not_implemented))
+        .route("/api/v1/docs", any(not_implemented))
+        .route("/api/v1/docs/{id}", any(not_implemented))
+        .route("/api/v1/ai/infer", any(not_implemented))
+        .route("/api/v1/ai/suggest", any(not_implemented))
+        .route("/api/v1/ai/classify", any(not_implemented))
+        .route("/api/v1/executions", any(not_implemented))
+        .route("/api/v1/executions/{id}", any(not_implemented))
+        .route("/api/v1/executions/{id}/logs", any(not_implemented))
+        .route("/api/v1/executions/{id}/cancel", any(not_implemented))
+        .route("/api/v1/executions/{id}/rerun", any(not_implemented))
+        .route("/api/v1/storage/artifacts", any(not_implemented))
+        .route("/api/v1/storage/artifacts/{id}", any(not_implemented))
+        .route("/api/v1/storage/artifacts/{id}/download", any(not_implemented))
+        .route("/api/v1/storage/artifacts/{id}/upload", any(not_implemented))
+        .route("/api/v1/distributed/agents", any(not_implemented))
+        .route("/api/v1/distributed/agents/{id}", any(not_implemented))
+        .route("/api/v1/distributed/tasks", any(not_implemented))
+        .route("/api/v1/distributed/tasks/{id}", any(not_implemented))
+        .route("/api/v1/distributed/tasks/{id}/claim", any(not_implemented))
+        .route("/api/v1/distributed/tasks/{id}/complete", any(not_implemented))
+        .route("/api/v1/distributed/tasks/{id}/fail", any(not_implemented))
+        .route("/api/v1/distributed/queues", any(not_implemented))
+        .route("/api/v1/distributed/queues/{id}", any(not_implemented))
+        .route("/api/v1/distributed/queues/{id}/enqueue", any(not_implemented))
+        .route("/api/v1/distributed/queues/{id}/dequeue", any(not_implemented))
+        .route("/api/v1/distributed/locks", any(not_implemented))
+        .route("/api/v1/distributed/locks/{id}", any(not_implemented))
+        .route("/api/v1/sync/status", any(not_implemented))
+        .route("/api/v1/sync/import", any(not_implemented))
+        .route("/api/v1/sync/export", any(not_implemented))
+        .route("/api/v1/sync/diff", any(not_implemented))
+        .route("/api/v1/sync/merge", any(not_implemented))
+        .route("/api/v1/sync/history", any(not_implemented))
         .with_state(state)
 }
-// ---------------------------------------------------------------------------
-// Computation-only handlers (no persistence)
-// ---------------------------------------------------------------------------
+        
 async fn coverage_matrix(
     Json(request): Json<CoverageMatrixRequest>,
 ) -> Result<Json<CoverageMatrixResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
@@ -1582,10 +1479,7 @@ async fn list_problems(
     axum::extract::State(state): axum::extract::State<AppState>,
     axum::extract::Query(params): axum::extract::Query<ProblemQuery>,
 ) -> Result<Json<ProblemListResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
-    let pagination = params
-        .pagination
-        .validated()
-        .map_err(|_| bad_request("invalid pagination"))?;
+    let pagination = params.pagination.validated().map_err(|_| bad_request("invalid pagination"))?;
     let project_id = params.project_id.unwrap_or_default();
     let status_filter = params.status;
     let items = state
@@ -1609,9 +1503,7 @@ async fn list_problems(
             tracing::error!("count_problems store error: {e}");
             (
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                Json(ErrorResponse {
-                    error: "problem count failed",
-                }),
+                Json(ErrorResponse { error: "problem count failed" }),
             )
         })?;
     Ok(Json(ProblemListResponse {
@@ -1747,8 +1639,7 @@ async fn list_stories_api(
 async fn create_trace_link(
     axum::extract::State(state): axum::extract::State<AppState>,
     Json(payload): Json<TraceLinkCreate>,
-) -> Result<(axum::http::StatusCode, Json<TraceLink>), (axum::http::StatusCode, Json<ErrorResponse>)>
-{
+) -> Result<(axum::http::StatusCode, Json<TraceLink>), (axum::http::StatusCode, Json<ErrorResponse>)> {
     validate_trace_link(&payload).map_err(bad_request)?;
     let now = Utc::now();
     let id = format!("tl-{}", Uuid::new_v4());
@@ -1825,9 +1716,7 @@ async fn list_projects(
     axum::extract::State(state): axum::extract::State<AppState>,
     axum::extract::Query(params): axum::extract::Query<ListParams>,
 ) -> Result<Json<ProjectListResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
-    let pagination = params
-        .validated()
-        .map_err(|_| bad_request("invalid pagination"))?;
+    let pagination = params.validated().map_err(|_| bad_request("invalid pagination"))?;
     let projects = state.store.list_projects(pagination).await.map_err(|e| {
         tracing::error!("list_projects store error: {e}");
         (
@@ -1841,9 +1730,7 @@ async fn list_projects(
         tracing::error!("count_projects store error: {e}");
         (
             axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ErrorResponse {
-                error: "project count failed",
-            }),
+            Json(ErrorResponse { error: "project count failed" }),
         )
     })?;
     Ok(Json(ProjectListResponse {
@@ -2257,7 +2144,10 @@ mod tests {
             }
         };
         bootstrap_pool.close().await;
-        if let Err(error) = sqlx::migrate!("./migrations").run(&pool).await {
+        if let Err(error) = sqlx::migrate!("./migrations")
+            .run(&pool)
+            .await
+        {
             if let Err(cleanup_error) = drop_pg_store_contract_schema(&pool, &schema_name).await {
                 eprintln!("fixture cleanup after migration failure: {cleanup_error}");
             }
@@ -2402,7 +2292,10 @@ mod tests {
             .expect("response");
 
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(response.headers()[header::CONTENT_TYPE], "application/json");
+        assert_eq!(
+            response.headers()[header::CONTENT_TYPE],
+            "application/json"
+        );
 
         let body = axum::body::to_bytes(response.into_body(), 1024)
             .await
@@ -2656,11 +2549,7 @@ mod tests {
                 .await
                 .expect("response");
 
-            assert_eq!(
-                response.status(),
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "{uri}"
-            );
+            assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR, "{uri}");
             let body = axum::body::to_bytes(response.into_body(), 1024)
                 .await
                 .expect("body");
@@ -3459,10 +3348,7 @@ mod tests {
             .await
             .expect("persist problem after production migrations");
 
-        let projects = store
-            .list_projects(ListParams::default())
-            .await
-            .expect("list projects");
+        let projects = store.list_projects(ListParams::default()).await.expect("list projects");
         assert_eq!(projects.len(), 1);
         assert_eq!(projects[0].id, "project-migration-1");
         assert_eq!(projects[0].problem_count, 1);
@@ -3575,17 +3461,11 @@ mod tests {
             .await
             .map_err(|error| format!("list text-id project: {error}"))?;
         if listed.len() != 1 || listed[0].project_id != project_id {
-            return Err(format!(
-                "expected one problem for textual project id, got {listed:?}"
-            ));
+            return Err(format!("expected one problem for textual project id, got {listed:?}"));
         }
 
         if !store
-            .list_problems(
-                project_id.clone(),
-                Some("closed".to_string()),
-                ListParams::default(),
-            )
+            .list_problems(project_id.clone(), Some("closed".to_string()), ListParams::default())
             .await
             .map_err(|error| format!("filter text-id project: {error}"))?
             .is_empty()
@@ -3745,11 +3625,7 @@ mod tests {
 
         // list with status filter narrows correctly
         let filtered = store
-            .list_problems(
-                "proj-1".to_string(),
-                Some("closed".to_string()),
-                ListParams::default(),
-            )
+            .list_problems("proj-1".to_string(), Some("closed".to_string()), ListParams::default())
             .await
             .expect("list_problems filtered");
         assert!(filtered.is_empty(), "no problems in 'closed' status");

@@ -15,7 +15,7 @@ default = []
 phenodag-queue = []
 
 [dependencies]
-axum = "0.8"
+axum = { version = "0.8", features = ["ws"] }
 base64 = { workspace = true }
 chrono = { workspace = true, features = ["clock"] }
 http = "1"
@@ -28,14 +28,12 @@ serde_json = { workspace = true }
 sqlx = { version = "0.9", features = ["postgres", "sqlite", "runtime-tokio", "macros", "uuid", "chrono", "migrate"] }
 thiserror = { workspace = true }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
-tower-http = { version = "0.7", features = ["fs", "limit", "set-header"] }
+tower-http = { version = "0.7", features = ["fs", "limit", "set-header", "cors"] }
 tracing = { workspace = true }
+metrics = "0.24"
+metrics-exporter-prometheus = "0.16"
 tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
 uuid = { workspace = true }
-# Observability + security + rate limiting
-
-metrics-exporter-prometheus = { version = "0.16", default-features = false, features = ["http-listener"] }
-tower = { version = "0.5", features = ["limit", "load-shed", "util"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
