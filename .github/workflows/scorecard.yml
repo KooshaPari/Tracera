@@ -20,8 +20,11 @@ jobs:
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-latest
-    security:
-      permissions: read-all
+    permissions:
+      # Needed for Code scanning upload.
+      security-events: write
+      # Needed for the OIDC token when publish_results is enabled.
+      id-token: write
 
     steps:
       - name: Checkout

@@ -3,18 +3,18 @@ name: Go sidecar bootstrap checks
 on:
   push:
     paths:
-      - 'sidecar/go/**'
-      - 'scripts/verify-polyglot-boundary.sh'
-      - '.github/workflows/sidecar-bootstrap-checks.yml'
-      - 'docs/operations/go-zig-mojo-adr.md'
-      - 'docs/operations/polyglot-roadmap-phase1-tasks.md'
+      - "sidecar/go/**"
+      - "scripts/verify-polyglot-boundary.sh"
+      - ".github/workflows/sidecar-bootstrap-checks.yml"
+      - "docs/operations/go-zig-mojo-adr.md"
+      - "docs/operations/polyglot-roadmap-phase1-tasks.md"
   pull_request:
     paths:
-      - 'sidecar/go/**'
-      - 'scripts/verify-polyglot-boundary.sh'
-      - '.github/workflows/sidecar-bootstrap-checks.yml'
-      - 'docs/operations/go-zig-mojo-adr.md'
-      - 'docs/operations/polyglot-roadmap-phase1-tasks.md'
+      - "sidecar/go/**"
+      - "scripts/verify-polyglot-boundary.sh"
+      - ".github/workflows/sidecar-bootstrap-checks.yml"
+      - "docs/operations/go-zig-mojo-adr.md"
+      - "docs/operations/polyglot-roadmap-phase1-tasks.md"
   workflow_dispatch:
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23.10'
+          go-version: "1.25.13"
 
       - name: Run Go sidecar tests
         working-directory: sidecar/go

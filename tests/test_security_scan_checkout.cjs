@@ -9,7 +9,7 @@ const workflow = readFileSync(
 );
 
 test('Security Scan checks out full history before gitleaks', () => {
-  const securityJob = workflow.match(/  security:\n([\s\S]*?)(?=\n  [\w-]+:|\n?$)/);
+  const securityJob = workflow.match(/  security-scan:\n([\s\S]*?)(?=\n  [\w-]+:|\n?$)/);
   assert.ok(securityJob, 'Security Scan job must exist');
   assert.match(
     securityJob[1],

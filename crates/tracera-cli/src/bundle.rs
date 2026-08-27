@@ -22,6 +22,7 @@ use anyhow::Context;
 pub struct BundleLayout {
     /// Root of the Tracera installation (the worktree, or `~/.tracera` for
     /// the bundled app).
+    #[allow(dead_code)]
     pub root: PathBuf,
     /// Directory holding docker-compose.bundle.yml and assets.
     pub compose_dir: PathBuf,
@@ -79,9 +80,11 @@ impl BundleLayout {
         let home = std::env::var_os("HOME")
             .map(PathBuf::from)
             .context("HOME not set")?;
-        let root = home.join("Library").join("Application Support").join("Tracera");
-        std::fs::create_dir_all(&root)
-            .with_context(|| format!("creating {}", root.display()))?;
+        let root = home
+            .join("Library")
+            .join("Application Support")
+            .join("Tracera");
+        std::fs::create_dir_all(&root).with_context(|| format!("creating {}", root.display()))?;
 
         let env_file = root.join(".env.local");
         let local_port: u16 = std::env::var("TRACERA_LOCAL_PORT")

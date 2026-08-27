@@ -1,6 +1,6 @@
 //! Subcommand implementations and CLI surface.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use anyhow::Context;
 use clap::{Args, Parser, Subcommand};
@@ -147,9 +147,13 @@ fn resolve_layout(cli: &Cli) -> anyhow::Result<BundleLayout> {
         // User override: behave as if the bundle lives at <root>/tracera-bundle
         // if <root>/tracera-bundle/docker-compose.bundle.yml exists, otherwise
         // treat <root> as the compose directory.
-        let candidate = root.join("tracera-bundle").join("docker-compose.bundle.yml");
+        let candidate = root
+            .join("tracera-bundle")
+            .join("docker-compose.bundle.yml");
         if candidate.exists() {
-            return BundleLayout::resolve(Some(&root.join("tracera-bundle").join("bin").join("tracera")));
+            return BundleLayout::resolve(Some(
+                &root.join("tracera-bundle").join("bin").join("tracera"),
+            ));
         }
         let standalone = root.join("docker-compose.local.yml");
         if standalone.exists() {
@@ -157,7 +161,10 @@ fn resolve_layout(cli: &Cli) -> anyhow::Result<BundleLayout> {
             let fake = root.join("target").join("release").join("tracera");
             return BundleLayout::resolve(Some(&fake));
         }
-        anyhow::bail!("--root {} contains neither tracera-bundle/ nor docker-compose.local.yml", root.display());
+        anyhow::bail!(
+            "--root {} contains neither tracera-bundle/ nor docker-compose.local.yml",
+            root.display()
+        );
     }
     BundleLayout::resolve(None)
 }
@@ -175,7 +182,7 @@ fn bump_log_level(cli: &Cli) {
 async fn cmd_up(
     backend: Backend,
     layout: &BundleLayout,
-    cwd: &PathBuf,
+    cwd: &Path,
     args: UpArgs,
 ) -> anyhow::Result<()> {
     ensure_env_file(&layout.env_file, layout.local_port)?;
@@ -184,7 +191,15 @@ async fn cmd_up(
     if args.build {
         sub.push("--build");
     }
-    let code = compose::run_inherited(backend, &layout.project_name, &layout.compose_file, &layout.env_file, cwd.clone(), &sub).await?;
+    let code = compose::run_inherited(
+        backend,
+        &layout.project_name,
+        &layout.compose_file,
+        &layout.env_file,
+        cwd.to_path_buf(),
+        &sub,
+    )
+    .await?;
     if code != 0 {
         anyhow::bail!("compose up exited with code {code}");
     }
@@ -202,7 +217,7 @@ async fn cmd_up(
 async fn cmd_down(
     backend: Backend,
     layout: &BundleLayout,
-    cwd: &PathBuf,
+    cwd: &Path,
     args: DownArgs,
 ) -> anyhow::Result<()> {
     ensure_env_file(&layout.env_file, layout.local_port)?;
@@ -211,27 +226,57 @@ async fn cmd_down(
     if args.volumes {
         sub.push("--volumes");
     }
-    let code = compose::run_inherited(backend, &layout.project_name, &layout.compose_file, &layout.env_file, cwd.clone(), &sub).await?;
+    let code = compose::run_inherited(
+        backend,
+        &layout.project_name,
+        &layout.compose_file,
+        &layout.env_file,
+        cwd.to_path_buf(),
+        &sub,
+    )
+    .await?;
     if code != 0 {
         anyhow::bail!("compose down exited with code {code}");
     }
     Ok(())
 }
 
-async fn cmd_status(backend: Backend, layout: &BundleLayout, cwd: &PathBuf) -> anyhow::Result<()> {
+async fn cmd_status(backend: Backend, layout: &BundleLayout, cwd: &Path) -> anyhow::Result<()> {
     ensure_env_file(&layout.env_file, layout.local_port)?;
     sync_bundle_env_symlink(&layout.compose_dir, &layout.env_file)?;
-    let code = compose::run_inherited(backend, &layout.project_name, &layout.compose_file, &layout.env_file, cwd.clone(), &["ps"]).await?;
+    let code = compose::run_inherited(
+        backend,
+        &layout.project_name,
+        &layout.compose_file,
+        &layout.env_file,
+        cwd.to_path_buf(),
+        &["ps"],
+    )
+    .await?;
     if code != 0 {
         anyhow::bail!("compose ps exited with code {code}");
     }
     Ok(())
 }
 
-async fn cmd_logs(backend: Backend, layout: &BundleLayout, cwd: &PathBuf, args: LogsArgs) -> anyhow::Result<()> {
+async fn cmd_logs(
+    backend: Backend,
+    layout: &BundleLayout,
+    cwd: &Path,
+    args: LogsArgs,
+) -> anyhow::Result<()> {
     ensure_env_file(&layout.env_file, layout.local_port)?;
     sync_bundle_env_symlink(&layout.compose_dir, &layout.env_file)?;
-    let code = compose::logs(backend, &layout.project_name, &layout.compose_file, &layout.env_file, cwd.clone(), args.service.as_deref(), args.follow).await?;
+    let code = compose::logs(
+        backend,
+        &layout.project_name,
+        &layout.compose_file,
+        &layout.env_file,
+        cwd.to_path_buf(),
+        args.service.as_deref(),
+        args.follow,
+    )
+    .await?;
     if code != 0 {
         anyhow::bail!("compose logs exited with code {code}");
     }
@@ -241,47 +286,74 @@ async fn cmd_logs(backend: Backend, layout: &BundleLayout, cwd: &PathBuf, args: 
 fn cmd_open(layout: &BundleLayout) -> anyhow::Result<()> {
     #[cfg(target_os = "macos")]
     {
-        let status = std::process::Command::new("open").arg(&layout.local_url).status()?;
+        let status = std::process::Command::new("open")
+            .arg(&layout.local_url)
+            .status()?;
         if !status.success() {
             anyhow::bail!("open {} failed", layout.local_url);
         }
-        return Ok(());
+        Ok(())
     }
     #[cfg(target_os = "windows")]
     {
-        let status = std::process::Command::new("cmd").args(["/c", "start", "", &layout.local_url]).status()?;
+        let status = std::process::Command::new("cmd")
+            .args(["/c", "start", "", &layout.local_url])
+            .status()?;
         if !status.success() {
             anyhow::bail!("start {} failed", layout.local_url);
         }
-        return Ok(());
+        Ok(())
     }
     #[cfg(all(unix, not(target_os = "macos")))]
     {
-        let status = std::process::Command::new("xdg-open").arg(&layout.local_url).status()?;
+        let status = std::process::Command::new("xdg-open")
+            .arg(&layout.local_url)
+            .status()?;
         if !status.success() {
             anyhow::bail!("xdg-open {} failed", layout.local_url);
         }
-        return Ok(());
+        Ok(())
     }
 }
 
 async fn cmd_doctor(
     backend: Backend,
     layout: &BundleLayout,
-    cwd: &PathBuf,
+    cwd: &Path,
     args: DoctorArgs,
 ) -> anyhow::Result<()> {
     ensure_env_file(&layout.env_file, layout.local_port)?;
     sync_bundle_env_symlink(&layout.compose_dir, &layout.env_file)?;
     let mut report = serde_json::Map::new();
-    report.insert("backend".into(), serde_json::Value::String(backend.to_string()));
-    report.insert("compose_file".into(), serde_json::Value::String(layout.compose_file.display().to_string()));
-    report.insert("env_file".into(), serde_json::Value::String(layout.env_file.display().to_string()));
-    report.insert("local_url".into(), serde_json::Value::String(layout.local_url.clone()));
+    report.insert(
+        "backend".into(),
+        serde_json::Value::String(backend.to_string()),
+    );
+    report.insert(
+        "compose_file".into(),
+        serde_json::Value::String(layout.compose_file.display().to_string()),
+    );
+    report.insert(
+        "env_file".into(),
+        serde_json::Value::String(layout.env_file.display().to_string()),
+    );
+    report.insert(
+        "local_url".into(),
+        serde_json::Value::String(layout.local_url.clone()),
+    );
     report.insert("bundled".into(), serde_json::Value::Bool(layout.bundled));
 
-    let running_json = ps(backend, &layout.project_name, &layout.compose_file, &layout.env_file, cwd.clone()).await.unwrap_or_else(|_| "[]".to_string());
-    let running: serde_json::Value = serde_json::from_str(&running_json).unwrap_or_else(|_| serde_json::Value::Array(vec![]));
+    let running_json = ps(
+        backend,
+        &layout.project_name,
+        &layout.compose_file,
+        &layout.env_file,
+        cwd.to_path_buf(),
+    )
+    .await
+    .unwrap_or_else(|_| "[]".to_string());
+    let running: serde_json::Value =
+        serde_json::from_str(&running_json).unwrap_or_else(|_| serde_json::Value::Array(vec![]));
     report.insert("running".into(), running);
 
     let client = reqwest::Client::builder()
@@ -304,7 +376,10 @@ async fn cmd_doctor(
                 }
             }
             Err(e) => {
-                detail.insert(path.trim_start_matches('/').into(), serde_json::json!({ "error": e.to_string() }));
+                detail.insert(
+                    path.trim_start_matches('/').into(),
+                    serde_json::json!({ "error": e.to_string() }),
+                );
             }
         }
     }

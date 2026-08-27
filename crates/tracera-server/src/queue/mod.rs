@@ -3,6 +3,11 @@
 //! Ports the full phenodag v0.3.0 (Go) surface into Tracera's Rust core.
 //! See docs/specs/008-phenodag-absorption.md.
 
+// The queue API is an opt-in absorption surface. Until HTTP/service wiring
+// consumes every port, keep the implementation compilable under
+// `--all-features` without turning intentionally dormant exports into errors.
+#![allow(dead_code, unused_imports)]
+
 pub mod beads_compat;
 pub mod claim;
 pub mod dedup;

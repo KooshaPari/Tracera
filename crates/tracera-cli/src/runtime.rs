@@ -174,6 +174,7 @@ fn probe_wsl_docker() -> bool {
 }
 
 /// Resolve a free TCP port by binding to port 0 and reading what the OS assigned.
+#[allow(dead_code)]
 pub fn pick_free_port() -> anyhow::Result<u16> {
     use std::net::TcpListener;
     let listener = TcpListener::bind("127.0.0.1:0")?;
@@ -202,7 +203,11 @@ pub fn wsl_distro() -> Option<String> {
 /// Run a command, inheriting stdio (for human-facing output).
 ///
 /// `program` is the binary path or name (resolved via the OS PATH).
-pub async fn run_inherited<I, S>(program: &str, args: I, cwd: Option<PathBuf>) -> anyhow::Result<i32>
+pub async fn run_inherited<I, S>(
+    program: &str,
+    args: I,
+    cwd: Option<PathBuf>,
+) -> anyhow::Result<i32>
 where
     I: IntoIterator<Item = S>,
     S: AsRef<std::ffi::OsStr>,
