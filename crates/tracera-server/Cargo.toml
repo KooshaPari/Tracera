@@ -1,3 +1,40 @@
 [package]
 name = "tracera-server"
-version = "
+version = "0.1.3"
+edition = "2021"
+description = "Tracera server crate"
+repository = "https://github.com/KooshaPari/Tracera"
+license = "MIT"
+
+[features]
+default = []
+# The phenodag queue absorption surface is intentionally opt-in until its
+# HTTP/service wiring is complete. Keeping it behind a feature prevents the
+# production binary from compiling an unreachable API while preserving the
+# implementation for dedicated queue integration builds.
+phenodag-queue = []
+
+[dependencies]
+axum = { version = "0.8", features = ["ws"] }
+base64 = { workspace = true }
+chrono = { workspace = true, features = ["clock"] }
+http = "1"
+# wraps: reqwest 0.13
+reqwest = { version = "0.13", features = ["json", "rustls", "rustls-native-certs"], default-features = false }
+# ref-extraction from issue bodies
+regex = "1"
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+sqlx = { version = "0.9", features = ["postgres", "sqlite", "runtime-tokio", "macros", "uuid", "chrono", "migrate"] }
+thiserror = { workspace = true }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
+tower-http = { version = "0.7", features = ["fs", "limit", "set-header", "cors"] }
+tracing = { workspace = true }
+metrics = "0.24"
+metrics-exporter-prometheus = "0.16"
+tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
+uuid = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tower = { version = "0.5", features = ["util"] }
