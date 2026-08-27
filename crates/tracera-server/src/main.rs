@@ -12,7 +12,7 @@ mod validation;
 use axum::{
     extract::DefaultBodyLimit,
     response::IntoResponse,
-    routing::{get, post},
+    routing::{delete, get, post},
     Json, Router,
 };
 use chrono::{DateTime, Utc};
@@ -790,6 +790,16 @@ fn build_router(state: AppState) -> Router {
     build_router_with_auth(state, None)
 }
 
+async fn not_implemented() -> impl axum::response::IntoResponse {
+    (
+        axum::http::StatusCode::NOT_IMPLEMENTED,
+        axum::Json(serde_json::json!({
+            "error": "not_implemented",
+            "message": "ADR-SERVER-001"
+        })),
+    )
+}
+
 fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Router {
     Router::new()
         .route("/healthz", get(health::healthz))
@@ -832,21 +842,30 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/org-intel/health", get(health::health))
         .route("/org-intel/teams", get(list_teams))
         .route("/org-intel/metrics", get(org_metrics))
-async fn not_implemented() -> impl axum::response::IntoResponse {
-    (axum::http::StatusCode::NOT_IMPLEMENTED, axum::Json(serde_json::json!({"error":"not_implemented","message":"ADR-SERVER-001"})))
-}
-
         // Tier-2 Endpoints (ADR-SERVER-001) - 501 stubs
         // Items
         .route("/api/v1/items", get(not_implemented).post(not_implemented))
         .route("/api/v1/items/summary", get(not_implemented))
         .route("/api/v1/items/bulk-update", post(not_implemented))
-        .route("/api/v1/items/{id}", get(not_implemented).put(not_implemented).delete(not_implemented))
-        .route("/api/v1/items/{item_id}/pivot-targets", get(not_implemented))
+        .route(
+            "/api/v1/items/{id}",
+            get(not_implemented)
+                .put(not_implemented)
+                .delete(not_implemented),
+        )
+        .route(
+            "/api/v1/items/{item_id}/pivot-targets",
+            get(not_implemented),
+        )
         .route("/api/v1/items/{item_id}/pivot", post(not_implemented))
         // Links
         .route("/api/v1/links", get(not_implemented).post(not_implemented))
-        .route("/api/v1/links/{id}", get(not_implemented).put(not_implemented).delete(not_implemented))
+        .route(
+            "/api/v1/links/{id}",
+            get(not_implemented)
+                .put(not_implemented)
+                .delete(not_implemented),
+        )
         .route("/api/v1/links/grouped", get(not_implemented))
         .route("/api/v1/projects/{project_id}/links", get(not_implemented))
         // Graph
@@ -873,15 +892,24 @@ async fn not_implemented() -> impl axum::response::IntoResponse {
         // Search
         .route("/api/v1/search", get(not_implemented).post(not_implemented))
         .route("/api/v1/search/suggest", get(not_implemented))
-        .route("/api/v1/search/index/{id}", post(not_implemented).delete(not_implemented))
+        .route(
+            "/api/v1/search/index/{id}",
+            post(not_implemented).delete(not_implemented),
+        )
         .route("/api/v1/search/batch-index", post(not_implemented))
         .route("/api/v1/search/reindex", post(not_implemented))
         .route("/api/v1/search/stats", get(not_implemented))
         .route("/api/v1/search/health", get(not_implemented))
         // Projects extended
         .route("/api/v1/projects/{project_id}/export", get(not_implemented))
-        .route("/api/v1/projects/{project_id}/import", post(not_implemented))
-        .route("/api/v1/projects/{project_id}/versions/compare", post(not_implemented))
+        .route(
+            "/api/v1/projects/{project_id}/import",
+            post(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/versions/compare",
+            post(not_implemented),
+        )
         .route("/api/v1/import", post(not_implemented))
         // Auth
         .route("/api/v1/auth/login", post(not_implemented))
@@ -891,64 +919,194 @@ async fn not_implemented() -> impl axum::response::IntoResponse {
         .route("/api/v1/auth/me", get(not_implemented))
         .route("/api/v1/csrf-token", get(not_implemented))
         // Equivalences
-        .route("/api/v1/equivalences", get(not_implemented).post(not_implemented))
-        .route("/api/v1/equivalences/{id}", get(not_implemented).put(not_implemented).delete(not_implemented))
+        .route(
+            "/api/v1/equivalences",
+            get(not_implemented).post(not_implemented),
+        )
+        .route(
+            "/api/v1/equivalences/{id}",
+            get(not_implemented)
+                .put(not_implemented)
+                .delete(not_implemented),
+        )
         .route("/api/v1/equivalences/confirm", post(not_implemented))
         .route("/api/v1/equivalences/reject", post(not_implemented))
         .route("/api/v1/equivalences/batch", post(not_implemented))
-        .route("/api/v1/projects/{project_id}/equivalences", get(not_implemented).post(not_implemented))
-        .route("/api/v1/projects/{project_id}/equivalences/{id}", get(not_implemented).put(not_implemented).delete(not_implemented))
-        .route("/api/v1/projects/{project_id}/equivalences/canonical", get(not_implemented))
-        .route("/api/v1/projects/{project_id}/equivalences/projections", get(not_implemented))
-        .route("/api/v1/projects/{project_id}/equivalences/detect", post(not_implemented))
-        .route("/api/v1/projects/{project_id}/equivalences/batch", post(not_implemented))
-        .route("/api/v1/projects/{project_id}/equivalences/stats", get(not_implemented))
+        .route(
+            "/api/v1/projects/{project_id}/equivalences",
+            get(not_implemented).post(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/equivalences/{id}",
+            get(not_implemented)
+                .put(not_implemented)
+                .delete(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/equivalences/canonical",
+            get(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/equivalences/projections",
+            get(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/equivalences/detect",
+            post(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/equivalences/batch",
+            post(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/equivalences/stats",
+            get(not_implemented),
+        )
         // Journeys
-        .route("/api/v1/journeys", get(not_implemented).post(not_implemented))
-        .route("/api/v1/journeys/{id}", get(not_implemented).put(not_implemented).delete(not_implemented))
-        .route("/api/v1/journeys/{id}/steps", get(not_implemented).post(not_implemented))
-        .route("/api/v1/journeys/{id}/steps/{step_id}", get(not_implemented).put(not_implemented).delete(not_implemented))
+        .route(
+            "/api/v1/journeys",
+            get(not_implemented).post(not_implemented),
+        )
+        .route(
+            "/api/v1/journeys/{id}",
+            get(not_implemented)
+                .put(not_implemented)
+                .delete(not_implemented),
+        )
+        .route(
+            "/api/v1/journeys/{id}/steps",
+            get(not_implemented).post(not_implemented),
+        )
+        .route(
+            "/api/v1/journeys/{id}/steps/{step_id}",
+            get(not_implemented)
+                .put(not_implemented)
+                .delete(not_implemented),
+        )
         .route("/api/v1/journeys/{id}/detect", post(not_implemented))
         .route("/api/v1/journeys/{id}/visualize", get(not_implemented))
-        .route("/api/v1/projects/{project_id}/journeys", get(not_implemented).post(not_implemented))
-        .route("/api/v1/projects/{project_id}/journeys/{id}", get(not_implemented).put(not_implemented).delete(not_implemented))
-        .route("/api/v1/projects/{project_id}/journeys/{id}/steps", get(not_implemented).post(not_implemented))
-        .route("/api/v1/projects/{project_id}/journeys/{id}/steps/{step_id}", get(not_implemented).put(not_implemented).delete(not_implemented))
-        .route("/api/v1/projects/{project_id}/journeys/{id}/detect", post(not_implemented))
-        .route("/api/v1/projects/{project_id}/journeys/{id}/visualize", get(not_implemented))
+        .route(
+            "/api/v1/projects/{project_id}/journeys",
+            get(not_implemented).post(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/journeys/{id}",
+            get(not_implemented)
+                .put(not_implemented)
+                .delete(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/journeys/{id}/steps",
+            get(not_implemented).post(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/journeys/{id}/steps/{step_id}",
+            get(not_implemented)
+                .put(not_implemented)
+                .delete(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/journeys/{id}/detect",
+            post(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/journeys/{id}/visualize",
+            get(not_implemented),
+        )
         // Component library
-        .route("/api/v1/libraries", get(not_implemented).post(not_implemented))
-        .route("/api/v1/libraries/{id}", get(not_implemented).put(not_implemented).delete(not_implemented))
+        .route(
+            "/api/v1/libraries",
+            get(not_implemented).post(not_implemented),
+        )
+        .route(
+            "/api/v1/libraries/{id}",
+            get(not_implemented)
+                .put(not_implemented)
+                .delete(not_implemented),
+        )
         .route("/api/v1/libraries/{id}/components", get(not_implemented))
         .route("/api/v1/libraries/{id}/tokens", get(not_implemented))
-        .route("/api/v1/components", get(not_implemented).post(not_implemented))
-        .route("/api/v1/components/{id}", get(not_implemented).put(not_implemented).delete(not_implemented))
+        .route(
+            "/api/v1/components",
+            get(not_implemented).post(not_implemented),
+        )
+        .route(
+            "/api/v1/components/{id}",
+            get(not_implemented)
+                .put(not_implemented)
+                .delete(not_implemented),
+        )
         .route("/api/v1/components/{id}/usage", get(not_implemented))
         .route("/api/v1/tokens", get(not_implemented).post(not_implemented))
         // Codex / Docs / AI
-        .route("/api/v1/projects/{project_id}/codex/auth-status", get(not_implemented))
-        .route("/api/v1/projects/{project_id}/codex/interactions", get(not_implemented).post(not_implemented))
-        .route("/api/v1/projects/{project_id}/codex/review-image", post(not_implemented))
-        .route("/api/v1/projects/{project_id}/codex/review-video", post(not_implemented))
+        .route(
+            "/api/v1/projects/{project_id}/codex/auth-status",
+            get(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/codex/interactions",
+            get(not_implemented).post(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/codex/review-image",
+            post(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/codex/review-video",
+            post(not_implemented),
+        )
         .route("/api/v1/docs", get(not_implemented))
         .route("/api/v1/docs/search", get(not_implemented))
         .route("/api/v1/docs/{id}", get(not_implemented))
         .route("/api/v1/ai/analyze", post(not_implemented))
         .route("/api/v1/ai/stream-chat", post(not_implemented))
         .route("/api/v1/spec-analytics/analyze", post(not_implemented))
-        .route("/api/v1/spec-analytics/batch-analyze", post(not_implemented))
-        .route("/api/v1/spec-analytics/ears-patterns", post(not_implemented))
-        .route("/api/v1/spec-analytics/validate-iso29148", post(not_implemented))
+        .route(
+            "/api/v1/spec-analytics/batch-analyze",
+            post(not_implemented),
+        )
+        .route(
+            "/api/v1/spec-analytics/ears-patterns",
+            post(not_implemented),
+        )
+        .route(
+            "/api/v1/spec-analytics/validate-iso29148",
+            post(not_implemented),
+        )
         // Executions
-        .route("/api/v1/projects/{project_id}/executions", get(not_implemented).post(not_implemented))
-        .route("/api/v1/projects/{project_id}/executions/{id}", get(not_implemented))
-        .route("/api/v1/projects/{project_id}/executions/{id}/start", post(not_implemented))
-        .route("/api/v1/projects/{project_id}/executions/{id}/complete", post(not_implemented))
-        .route("/api/v1/projects/{project_id}/executions/{id}/artifacts", get(not_implemented))
-        .route("/api/v1/projects/{project_id}/execution-config", get(not_implemented).put(not_implemented))
+        .route(
+            "/api/v1/projects/{project_id}/executions",
+            get(not_implemented).post(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/executions/{id}",
+            get(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/executions/{id}/start",
+            post(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/executions/{id}/complete",
+            post(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/executions/{id}/artifacts",
+            get(not_implemented),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/execution-config",
+            get(not_implemented).put(not_implemented),
+        )
         // Settings / Mutations / Events
-        .route("/api/v1/settings", get(not_implemented).put(not_implemented))
-        .route("/api/v1/mutations", get(not_implemented).post(not_implemented))
+        .route(
+            "/api/v1/settings",
+            get(not_implemented).put(not_implemented),
+        )
+        .route(
+            "/api/v1/mutations",
+            get(not_implemented).post(not_implemented),
+        )
         .route("/api/v1/events", get(not_implemented).post(not_implemented))
         .route("/api/v1/events/{id}", get(not_implemented))
         // Storage / Distributed
@@ -959,14 +1117,22 @@ async fn not_implemented() -> impl axum::response::IntoResponse {
         .route("/storage/exists/{key}", get(not_implemented))
         .route("/storage/stats", get(not_implemented))
         .route("/storage/health", get(not_implemented))
-        .route("/distributed-operations", get(not_implemented).post(not_implemented))
+        .route(
+            "/distributed-operations",
+            get(not_implemented).post(not_implemented),
+        )
         .route("/distributed-operations/{id}", get(not_implemented))
         .route("/distributed-operations/{id}/start", post(not_implemented))
-        .route("/distributed-operations/{id}/complete", post(not_implemented))
-        .route("/distributed-operations/{id}/artifacts", get(not_implemented))
+        .route(
+            "/distributed-operations/{id}/complete",
+            post(not_implemented),
+        )
+        .route(
+            "/distributed-operations/{id}/artifacts",
+            get(not_implemented),
+        )
         .route("/distributed-operations/{id}/cancel", post(not_implemented))
         .route("/distributed-operations/{id}/status", get(not_implemented))
-
         .layer(axum::middleware::from_fn_with_state(
             auth_token,
             auth::require_bearer,
@@ -989,12 +1155,11 @@ async fn not_implemented() -> impl axum::response::IntoResponse {
             HeaderValue::from_static("no-store"),
         ))
         .layer(axum::middleware::from_fn(csrf_protection))
+        .with_state(state)
 }
 // ---------------------------------------------------------------------------
 // Computation-only handlers (no persistence)
 // ---------------------------------------------------------------------------
-        .with_state(state)
-        
 async fn coverage_matrix(
     Json(request): Json<CoverageMatrixRequest>,
 ) -> Result<Json<CoverageMatrixResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
