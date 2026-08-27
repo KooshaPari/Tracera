@@ -989,8 +989,6 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
             HeaderValue::from_static("no-store"),
         ))
         .layer(axum::middleware::from_fn(csrf_protection))
-        // WebSocket endpoint
-        .route("/ws/trace", axum::routing::get(ws_trace_handler))
         // Tier-2 Endpoints (ADR-SERVER-001) - 501 stubs
         .route("/api/v1/items", any(not_implemented))
         .route("/api/v1/items/{id}", any(not_implemented))
