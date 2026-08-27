@@ -22,6 +22,7 @@ use anyhow::Context;
 pub struct BundleLayout {
     /// Root of the Tracera installation (the worktree, or `~/.tracera` for
     /// the bundled app).
+    #[allow(dead_code)]
     pub root: PathBuf,
     /// Directory holding docker-compose.bundle.yml and assets.
     pub compose_dir: PathBuf,

@@ -174,6 +174,7 @@ fn probe_wsl_docker() -> bool {
 }
 
 /// Resolve a free TCP port by binding to port 0 and reading what the OS assigned.
+#[allow(dead_code)]
 pub fn pick_free_port() -> anyhow::Result<u16> {
     use std::net::TcpListener;
     let listener = TcpListener::bind("127.0.0.1:0")?;

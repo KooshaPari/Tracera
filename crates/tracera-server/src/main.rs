@@ -12,7 +12,7 @@ mod validation;
 use axum::{
     extract::DefaultBodyLimit,
     response::IntoResponse,
-    routing::{delete, get, post, put},
+    routing::{get, post},
     Json, Router,
 };
 use chrono::{DateTime, Utc};
@@ -31,9 +31,6 @@ use tower_http::{
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 use uuid::Uuid;
-
-use metrics_exporter_prometheus::{Matcher, PrometheusBuilder};
-use std::time::Duration;
 
 static PROM_HANDLE: std::sync::OnceLock<metrics_exporter_prometheus::PrometheusHandle> =
     std::sync::OnceLock::new();
@@ -788,6 +785,7 @@ async fn prom_metrics_handler() -> impl IntoResponse {
     )
 }
 
+#[cfg_attr(not(test), allow(dead_code))]
 fn build_router(state: AppState) -> Router {
     build_router_with_auth(state, None)
 }

@@ -69,6 +69,7 @@ pub async fn atomic_claim(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use sqlx::SqlitePool;
 
     async fn make_pool() -> SqlitePool {
         let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
