@@ -1,4 +1,4 @@
-mod db;
+﻿mod db;
 mod auth;
 mod health;
 mod ingest;
@@ -9,11 +9,10 @@ mod sqlite_store;
 mod store;
 mod validation;
 
-use axum::extract::ws::{Message as WsMessage, WebSocket, WebSocketUpgrade};
 use axum::{
     extract::DefaultBodyLimit,
     response::IntoResponse,
-    routing::{any, delete, get, post, put},
+    routing::{any, get, post},
     Json, Router,
 };
 use chrono::{DateTime, Utc};
