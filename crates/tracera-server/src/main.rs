@@ -829,8 +829,6 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/org-intel/health", get(health::health))
         .route("/org-intel/teams", get(list_teams))
         .route("/org-intel/metrics", get(org_metrics))
-        .with_state(state)
-        
 async fn not_implemented() -> impl axum::response::IntoResponse {
     (axum::http::StatusCode::NOT_IMPLEMENTED, axum::Json(serde_json::json!({"error":"not_implemented","message":"ADR-SERVER-001"})))
 }
@@ -992,6 +990,8 @@ async fn not_implemented() -> impl axum::response::IntoResponse {
 // ---------------------------------------------------------------------------
 // Computation-only handlers (no persistence)
 // ---------------------------------------------------------------------------
+        .with_state(state)
+        
 async fn coverage_matrix(
     Json(request): Json<CoverageMatrixRequest>,
 ) -> Result<Json<CoverageMatrixResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
