@@ -831,6 +831,10 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/org-intel/metrics", get(org_metrics))
         .with_state(state)
         
+async fn not_implemented() -> impl axum::response::IntoResponse {
+    (axum::http::StatusCode::NOT_IMPLEMENTED, axum::Json(serde_json::json!({"error":"not_implemented","message":"ADR-SERVER-001"})))
+}
+
         // Tier-2 Endpoints (ADR-SERVER-001) - 501 stubs
         // Items
         .route("/api/v1/items", get(not_implemented).post(not_implemented))
