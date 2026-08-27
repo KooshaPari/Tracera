@@ -21,12 +21,6 @@ struct CreateIssueInput {
     title: String,
     #[serde(default)]
     description: String,
-    #[serde(default = "default_priority")]
-    priority: String,
-}
-
-fn default_priority() -> String {
-    "medium".to_string()
 }
 
 #[derive(Debug, Deserialize)]
@@ -63,9 +57,6 @@ struct CoverageLink {
     relationship: String,
     confidence: f64,
 }
-
-#[derive(Debug, Deserialize)]
-struct ListIssuesInput {}
 
 async fn http_get(path: &str) -> Result<String, String> {
     let url = format!("{}{}", api_base(), path);
