@@ -23,10 +23,6 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1", features = ["serde", "v4", "v5"] }
 proptest = "1"
-opentelemetry = "0.27"
-opentelemetry_sdk = "0.32"
-opentelemetry-otlp = "0.27"
-tracing-opentelemetry = "0.28"
 [workspace.metadata.dist]
 cargo-dist-version = "0.28.0"
 ci = ["github"]

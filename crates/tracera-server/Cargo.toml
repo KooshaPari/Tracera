@@ -36,10 +36,6 @@ uuid = { workspace = true }
 
 metrics-exporter-prometheus = { version = "0.16", default-features = false, features = ["http-listener"] }
 tower = { version = "0.5", features = ["limit", "load-shed", "util"] }
-tracing-opentelemetry = { workspace = true }
-opentelemetry = { workspace = true }
-opentelemetry_sdk = { workspace = true, features = ["rt-tokio"] }
-opentelemetry-otlp = { workspace = true, default-features = false, features = ["grpc-tonic", "trace"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
