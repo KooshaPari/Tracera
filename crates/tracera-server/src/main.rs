@@ -13,7 +13,7 @@ use axum::extract::ws::{Message as WsMessage, WebSocket, WebSocketUpgrade};
 use axum::{
     extract::DefaultBodyLimit,
     response::IntoResponse,
-    routing::{any, delete, get, post, put},
+    routing::{any, get, post},
     Json, Router,
 };
 use chrono::{DateTime, Utc};
@@ -802,6 +802,14 @@ async fn not_implemented() -> impl axum::response::IntoResponse {
     )
 }
 
+async fn ws_trace_handler(
+    ws: WebSocketUpgrade,
+) -> impl axum::response::IntoResponse {
+    ws.on_upgrade(|_socket| async {
+        // Placeholder: WebSocket trace streaming not yet implemented.
+    })
+}
+
 fn build_router(state: AppState) -> Router {
     build_router_with_auth(state, None)
 }
@@ -833,8 +841,10 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/sdlc-pm/stories", get(list_stories))
         .route("/api/v1/stories", get(list_stories_api).post(create_story))
         .route("/api/v1/trace", post(create_trace_link))
-        .route("/api/v1/projects", get(list_projects).post(create_project_stub))
-        .route("/api/v1/projects/{project_id}", get(get_project).put(update_project_stub).delete(delete_project_stub))
+        .route("/api/v1/projects", get(list_projects))
+        .route("/api/v1/projects", any(not_implemented))
+        .route("/api/v1/projects/{project_id}", get(get_project))
+        .route("/api/v1/projects/{project_id}", any(not_implemented))
         .route("/problems", get(list_problems).post(create_problem))
         .route("/problems/health", get(health::health))
         .route("/org-intel/health", get(health::health))
@@ -1671,21 +1681,7 @@ async fn create_trace_link(
     Ok((axum::http::StatusCode::CREATED, Json(link)))
 }
 
-async fn create_project_stub() -> axum::http::StatusCode {
-    axum::http::StatusCode::NOT_IMPLEMENTED
-}
 
-async fn update_project_stub(
-    axum::extract::Path(_project_id): axum::extract::Path<String>,
-) -> axum::http::StatusCode {
-    axum::http::StatusCode::NOT_IMPLEMENTED
-}
-
-async fn delete_project_stub(
-    axum::extract::Path(_project_id): axum::extract::Path<String>,
-) -> axum::http::StatusCode {
-    axum::http::StatusCode::NOT_IMPLEMENTED
-}
 
 // ---------------------------------------------------------------------------
 // Teams handler
