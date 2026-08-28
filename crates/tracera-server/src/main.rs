@@ -2195,6 +2195,26 @@ mod tests {
 
     const PG_STORE_CONTRACT_POOL_CONNECTIONS: u32 = 4;
 
+    async fn browser_csrf_token(app: &axum::Router) -> String {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/csrf-token")
+                    .body(Body::empty())
+                    .expect("CSRF token request"),
+            )
+            .await
+            .expect("CSRF token response");
+        let body = axum::body::to_bytes(response.into_body(), 1024)
+            .await
+            .expect("CSRF token body");
+        serde_json::from_slice::<serde_json::Value>(&body).expect("CSRF token payload")["token"]
+            .as_str()
+            .expect("CSRF token")
+            .to_owned()
+    }
+
     struct PgStoreContractFixture {
         pool: PgPool,
         schema_name: String,
@@ -2724,6 +2744,7 @@ mod tests {
             started_at: Instant::now(),
             store: Arc::new(store),
         });
+        let csrf_token = browser_csrf_token(&app).await;
 
         let malformed = app
             .clone()
@@ -2731,6 +2752,8 @@ mod tests {
                 Request::builder()
                     .method("POST")
                     .uri("/api/v1/coverage-matrix")
+                    .header("origin", CANONICAL_BROWSER_ORIGIN)
+                    .header("x-csrf-token", &csrf_token)
                     .header(header::CONTENT_TYPE, "application/json")
                     .body(Body::from("{"))
                     .expect("request"),
@@ -2755,6 +2778,8 @@ mod tests {
                 Request::builder()
                     .method("POST")
                     .uri("/api/v1/coverage-matrix")
+                    .header("origin", CANONICAL_BROWSER_ORIGIN)
+                    .header("x-csrf-token", &csrf_token)
                     .header(header::CONTENT_TYPE, "application/json")
                     .body(Body::from(serde_json::to_vec(&too_many_links).unwrap()))
                     .expect("request"),
@@ -2768,6 +2793,8 @@ mod tests {
                 Request::builder()
                     .method("POST")
                     .uri("/evidence")
+                    .header("origin", CANONICAL_BROWSER_ORIGIN)
+                    .header("x-csrf-token", &csrf_token)
                     .header(header::CONTENT_TYPE, "application/json")
                     .body(Body::from(vec![b'x'; MAX_REQUEST_BODY_BYTES + 1]))
                     .expect("request"),
@@ -2787,12 +2814,15 @@ mod tests {
             started_at: Instant::now(),
             store: Arc::new(store),
         });
+        let csrf_token = browser_csrf_token(&app).await;
 
         let response = app
             .oneshot(
                 Request::builder()
                     .method("POST")
                     .uri("/evidence")
+                    .header("origin", CANONICAL_BROWSER_ORIGIN)
+                    .header("x-csrf-token", &csrf_token)
                     .header(header::CONTENT_TYPE, "application/json")
                     .body(Body::from(
                         r#"{"artifact_id":"artifact-1","kind":"test","url":"https://example.test"}"#,
@@ -2930,6 +2960,7 @@ mod tests {
             started_at: Instant::now(),
             store: Arc::new(make_sqlite_store().await),
         });
+        let csrf_token = browser_csrf_token(&app).await;
 
         let created = app
             .clone()
@@ -2937,6 +2968,8 @@ mod tests {
                 Request::builder()
                     .method("POST")
                     .uri("/evidence")
+                    .header("origin", CANONICAL_BROWSER_ORIGIN)
+                    .header("x-csrf-token", &csrf_token)
                     .header(header::CONTENT_TYPE, "application/json")
                     .body(Body::from(
                         serde_json::to_vec(&evidence).expect("evidence JSON"),
@@ -2997,6 +3030,8 @@ mod tests {
                 Request::builder()
                     .method("POST")
                     .uri(format!("/api/v1/trace/forward/{artifact_id}"))
+                    .header("origin", CANONICAL_BROWSER_ORIGIN)
+                    .header("x-csrf-token", &csrf_token)
                     .header(header::CONTENT_TYPE, "application/json")
                     .body(Body::from(
                         serde_json::to_vec(&fixture["trace"]).expect("trace JSON"),
