@@ -45,7 +45,7 @@ pub(crate) async fn require_bearer(
 fn is_health_route(path: &str) -> bool {
     matches!(
         path,
-        "/health" | "/healthz" | "/ready" | "/readyz" | "/api/v1/health"
+        "/health" | "/healthz" | "/ready" | "/readyz" | "/api/v1/health" | "/api/v1/csrf-token"
     ) || path.ends_with("/health")
         || path.ends_with("/healthz")
 }
@@ -79,6 +79,7 @@ mod tests {
             "/readyz",
             "/evidence/health",
             "/api/v1/health",
+            "/api/v1/csrf-token",
         ] {
             assert!(is_health_route(path), "{path} should be a probe route");
         }

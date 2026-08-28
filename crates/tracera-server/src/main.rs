@@ -25,6 +25,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
 use tower_http::{
+    cors::CorsLayer,
     services::{ServeDir, ServeFile},
     set_header::SetResponseHeaderLayer,
 };
@@ -807,6 +808,8 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/ready", get(health::ready))
         .route("/metrics", get(prom_metrics_handler))
         .route("/api/v1/coverage-matrix", post(coverage_matrix))
+        .route("/api/v1/health", get(health::health))
+        .route("/api/v1/csrf-token", get(csrf_token))
         .route("/api/v1/impact", post(impact))
         .route("/api/v1/confidence", post(confidence))
         .route("/api/v1/blast-radius", post(blast_radius))
@@ -899,7 +902,6 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/api/v1/auth/refresh", any(not_implemented))
         .route("/api/v1/auth/verify", any(not_implemented))
         .route("/api/v1/auth/me", any(not_implemented))
-        .route("/api/v1/csrf-token", any(not_implemented))
         // Equivalences
         .route("/api/v1/equivalences", any(not_implemented))
         .route("/api/v1/equivalences/{id}", any(not_implemented))
@@ -1139,7 +1141,29 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
             HeaderValue::from_static("no-store"),
         ))
         .layer(axum::middleware::from_fn(csrf_protection))
+        .layer(
+            CorsLayer::new()
+                .allow_origin([
+                    HeaderValue::from_static("http://127.0.0.1:4173"),
+                    HeaderValue::from_static("http://localhost:4173"),
+                ])
+                .allow_methods(tower_http::cors::Any)
+                .allow_headers(tower_http::cors::Any),
+        )
         .with_state(state)
+}
+
+#[derive(Serialize)]
+struct CsrfTokenResponse {
+    token: String,
+    valid: bool,
+}
+
+async fn csrf_token() -> Json<CsrfTokenResponse> {
+    Json(CsrfTokenResponse {
+        token: Uuid::new_v4().to_string(),
+        valid: true,
+    })
 }
 
 async fn coverage_matrix(
@@ -2392,6 +2416,100 @@ mod tests {
         let payload: serde_json::Value = serde_json::from_slice(&body).expect("json body");
         assert_eq!(payload["count"], 0);
         assert_eq!(payload["items"], serde_json::json!([]));
+    }
+
+    #[tokio::test]
+    async fn browser_api_preflight_allows_local_frontend() {
+        let store = make_sqlite_store().await;
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: Arc::new(store),
+        });
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method("OPTIONS")
+                    .uri("/api/v1/health")
+                    .header("origin", "http://127.0.0.1:4173")
+                    .header("access-control-request-method", "GET")
+                    .header("access-control-request-headers", "content-type")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers()[header::ACCESS_CONTROL_ALLOW_ORIGIN],
+            "http://127.0.0.1:4173"
+        );
+    }
+
+    #[tokio::test]
+    async fn csrf_token_is_available_without_bearer_auth() {
+        let store = make_sqlite_store().await;
+        let app = build_router_with_auth(
+            AppState {
+                version: env!("CARGO_PKG_VERSION").to_string(),
+                backend: "sqlite",
+                started_at: Instant::now(),
+                store: Arc::new(store),
+            },
+            Some(Arc::<str>::from("secret")),
+        );
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/csrf-token")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = axum::body::to_bytes(response.into_body(), 1024)
+            .await
+            .expect("body");
+        let payload: serde_json::Value = serde_json::from_slice(&body).expect("json body");
+        assert!(payload["valid"].as_bool().expect("valid boolean"));
+        assert!(payload["token"]
+            .as_str()
+            .is_some_and(|token| !token.is_empty()));
+    }
+
+    #[tokio::test]
+    async fn in_memory_server_lists_projects_after_migrations() {
+        let database_url = "sqlite::memory:";
+        let pool = db::connect_sqlite(database_url).await.expect("connect");
+        sqlx::migrate!("./migrations-sqlite")
+            .run(&pool)
+            .await
+            .expect("migrate");
+        let store = Arc::new(sqlite_store::SqliteStore::new(pool));
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store,
+        });
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/projects")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+
+        assert_eq!(response.status(), StatusCode::OK);
     }
 
     #[tokio::test]
