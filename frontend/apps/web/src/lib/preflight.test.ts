@@ -13,8 +13,14 @@ const RUST_READY_RESPONSE = {
 describe('frontend preflight', () => {
   beforeEach(() => {
     document.body.innerHTML = '<div id="root"></div>';
-    HTMLElement.prototype.animate = vi.fn() as unknown as typeof HTMLElement.prototype.animate;
-    HTMLElement.prototype.scrollTo = vi.fn() as unknown as typeof HTMLElement.prototype.scrollTo;
+    Object.defineProperty(HTMLElement.prototype, 'animate', {
+      configurable: true,
+      value: vi.fn(),
+    });
+    Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
+      configurable: true,
+      value: vi.fn(),
+    });
   });
 
   afterEach(() => {
@@ -24,17 +30,13 @@ describe('frontend preflight', () => {
   it('renders only the dependencies advertised by the Rust readiness contract', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(async (input: string | URL | Request) => {
-        const url = String(input);
-        if (url.endsWith('/api/v1/health')) {
-          return {
-            json: async () => RUST_READY_RESPONSE,
-            ok: true,
+      vi.fn(
+        () =>
+          new Response(JSON.stringify(RUST_READY_RESPONSE), {
+            headers: { 'content-type': 'application/json' },
             status: 200,
-          };
-        }
-        return { ok: true, status: 200 };
-      }),
+          }),
+      ),
     );
 
     await expect(runFrontendPreflight()).resolves.toEqual({ errors: [], ok: true });
@@ -47,12 +49,17 @@ describe('frontend preflight', () => {
   it('uses a failure color with WCAG AA contrast against the preflight card', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => Promise.reject(new Error('offline'))),
+      vi.fn(() => {
+        throw new Error('offline');
+      }),
     );
 
     await runFrontendPreflight();
 
-    const status = document.querySelector('[data-status-text]') as HTMLElement;
+    const status = document.querySelector<HTMLElement>('[data-status-text]');
+    if (!status) {
+      throw new Error('Expected a preflight status element');
+    }
     expect(status).toHaveTextContent('Down');
     expect(contrastRatio(status.style.color, '#211b23')).toBeGreaterThanOrEqual(4.5);
   });

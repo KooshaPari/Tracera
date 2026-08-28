@@ -31,8 +31,8 @@ interface InfraDisplay {
 }
 
 interface InfraProbe {
-  authoritative: boolean;
-  status: Record<string, InfraStatus>;
+  readonly authoritative: boolean;
+  readonly status: Readonly<Record<string, InfraStatus>>;
 }
 
 const DEFAULT_TIMEOUT_MS = Number('8000');
@@ -429,7 +429,7 @@ const getInfraDisplay = (status: InfraStatus): InfraDisplay => ({
 
 const updateInfraStatus = (
   map: Record<string, InfraStatus>,
-  options: { authoritative?: boolean } = {},
+  options: Readonly<{ authoritative?: boolean }> = {},
 ): void => {
   const list = document.querySelector('[data-infra-list]');
   if (!list) {
@@ -439,7 +439,7 @@ const updateInfraStatus = (
   const entries = [...list.querySelectorAll('[data-infra]')];
   entries.forEach((entry) => {
     const key = entry instanceof HTMLElement ? entry.dataset.infra || '' : '';
-    if (options.authoritative && !(key in map)) {
+    if (options.authoritative === true && !(key in map)) {
       entry.remove();
       return;
     }
@@ -563,7 +563,13 @@ const fetchPythonInfra = async (baseUrl: string): Promise<InfraProbe> => {
       status?: string | undefined;
     };
 
-    if (data.service === 'tracera-server' && data.status && data.backend) {
+    if (
+      data.service === 'tracera-server' &&
+      data.status !== undefined &&
+      data.status.length > 0 &&
+      data.backend !== undefined &&
+      data.backend.length > 0
+    ) {
       return { authoritative: true, status: { database: 'healthy' } };
     }
 
