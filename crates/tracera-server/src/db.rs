@@ -65,13 +65,21 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn in_memory_sqlite_uses_a_single_connection() {
+    async fn in_memory_sqlite_uses_one_connection_for_a_shared_schema() {
         let pool = connect_sqlite("sqlite::memory:").await.unwrap();
-        let _first_connection = pool.acquire().await.expect("first connection");
+        assert_eq!(pool.options().get_max_connections(), 1);
+        sqlx::query("CREATE TABLE replay_connection_contract (id INTEGER PRIMARY KEY)")
+            .execute(&pool)
+            .await
+            .unwrap();
 
-        assert!(
-            pool.acquire().await.is_err(),
-            "a separate SQLite in-memory connection would not share migrations or state"
-        );
+        let table_name: String = sqlx::query_scalar(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'replay_connection_contract'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+        assert_eq!(table_name, "replay_connection_contract");
     }
 }

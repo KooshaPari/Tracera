@@ -30,6 +30,11 @@ interface InfraDisplay {
   state: PreflightState;
 }
 
+interface InfraProbe {
+  authoritative: boolean;
+  status: Record<string, InfraStatus>;
+}
+
 const DEFAULT_TIMEOUT_MS = Number('8000');
 const FULL_PERCENT = Number('100');
 const RELOAD_DELAY_MS = Number('240');
@@ -41,14 +46,14 @@ const OPACITY_STEP = Number('0.15');
 const PREFLIGHT_STATE_COLORS: Record<PreflightState, string> = {
   checking: '#f59e0b',
   healthy: '#22c55e',
-  unhealthy: '#ef4444',
+  unhealthy: '#f87171',
 };
 
 const INFRA_STATUS_COLORS: Record<InfraStatus, string> = {
   degraded: '#f59e0b',
   healthy: '#22c55e',
   unknown: '#6b7280',
-  unhealthy: '#ef4444',
+  unhealthy: '#f87171',
 };
 
 const INFRA_STATUS_LABELS: Record<InfraStatus, string> = {
@@ -422,7 +427,10 @@ const getInfraDisplay = (status: InfraStatus): InfraDisplay => ({
   state: INFRA_STATUS_STATES[status],
 });
 
-const updateInfraStatus = (map: Record<string, InfraStatus>): void => {
+const updateInfraStatus = (
+  map: Record<string, InfraStatus>,
+  options: { authoritative?: boolean } = {},
+): void => {
   const list = document.querySelector('[data-infra-list]');
   if (!list) {
     return;
@@ -431,6 +439,10 @@ const updateInfraStatus = (map: Record<string, InfraStatus>): void => {
   const entries = [...list.querySelectorAll('[data-infra]')];
   entries.forEach((entry) => {
     const key = entry instanceof HTMLElement ? entry.dataset.infra || '' : '';
+    if (options.authoritative && !(key in map)) {
+      entry.remove();
+      return;
+    }
     const status = (map[key] || 'unknown') as InfraStatus;
     const display = getInfraDisplay(status);
     const dot = entry.querySelector('[data-infra-status]') as HTMLElement | null;
@@ -534,19 +546,26 @@ const normalizeInfraStatus = (value?: string | null): InfraStatus | null => {
   return null;
 };
 
-const fetchPythonInfra = async (baseUrl: string): Promise<Record<string, InfraStatus>> => {
+const fetchPythonInfra = async (baseUrl: string): Promise<InfraProbe> => {
   const normalized = baseUrl.replace(/\/$/, '');
   const status: Record<string, InfraStatus> = {};
 
   try {
     const response = await fetchWithTimeout(`${normalized}/api/v1/health`);
     if (!response.ok) {
-      return status;
+      return { authoritative: false, status };
     }
     const data = (await response.json()) as {
+      backend?: string | undefined;
       components?: Record<string, { status?: string }> | undefined;
       integration?: Record<string, { status?: string }> | undefined;
+      service?: string | undefined;
+      status?: string | undefined;
     };
+
+    if (data.service === 'tracera-server' && data.status && data.backend) {
+      return { authoritative: true, status: { database: 'healthy' } };
+    }
 
     const components = data.components || {};
     const integration = data.integration || {};
@@ -567,10 +586,10 @@ const fetchPythonInfra = async (baseUrl: string): Promise<Record<string, InfraSt
       status.go_backend = goStatus;
     }
   } catch {
-    return status;
+    return { authoritative: false, status };
   }
 
-  return status;
+  return { authoritative: false, status };
 };
 
 const fetchMcpStatus = async (baseUrl: string): Promise<Record<string, InfraStatus>> => {
@@ -633,8 +652,12 @@ const updateInfraIfNeeded = async (check: PreflightCheck, ok: boolean): Promise<
     return;
   }
   const infra = await fetchPythonInfra(check.url);
+  if (infra.authoritative) {
+    updateInfraStatus(infra.status, { authoritative: true });
+    return;
+  }
   const mcpStatus = await fetchMcpStatus(check.url);
-  updateInfraStatus({ ...infra, ...mcpStatus });
+  updateInfraStatus({ ...infra.status, ...mcpStatus });
 };
 
 const updateProgress = (completed: number, total: number): void => {

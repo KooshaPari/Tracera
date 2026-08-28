@@ -16,9 +16,10 @@ use axum::{
     Json, Router,
 };
 use chrono::{DateTime, Utc};
-use http::{header, HeaderValue};
+use http::{header, HeaderValue, Method, Uri};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::collections::VecDeque;
 use std::env;
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -35,6 +36,8 @@ use uuid::Uuid;
 
 static PROM_HANDLE: std::sync::OnceLock<metrics_exporter_prometheus::PrometheusHandle> =
     std::sync::OnceLock::new();
+static CSRF_TOKENS: std::sync::OnceLock<tokio::sync::Mutex<VecDeque<String>>> =
+    std::sync::OnceLock::new();
 
 /// Maximum number of links expanded into an in-memory coverage matrix.
 /// Requests above this bound must use a future paged/export path instead of
@@ -48,6 +51,8 @@ const LOOPBACK_PUBLISHED_MODE: &str = "loopback-published";
 /// Maximum allowed request body size (10 MB).
 const MAX_REQUEST_BODY_BYTES: usize = 10 * 1024 * 1024;
 const PRIVATE_NETWORK_MODE: &str = "private-network";
+const CANONICAL_BROWSER_ORIGIN: &str = "http://127.0.0.1:18000";
+const MAX_CSRF_TOKENS: usize = 1024;
 use validation::{
     validate_text, MAX_ID_CHARS, MAX_INGEST_ISSUES, MAX_LONG_TEXT_CHARS, MAX_METADATA_BYTES,
     MAX_SHORT_TEXT_CHARS, MAX_URL_CHARS,
@@ -660,8 +665,9 @@ async fn main() {
 /// forgery attacks where a malicious site could submit forms on behalf of
 /// authenticated users.
 ///
-/// Since Tracera uses bearer token auth (not cookies), CSRF risk is lower,
-/// but this provides defense-in-depth.
+/// Tokens are process-local and bounded. They are deliberately independent of
+/// bearer authentication: browser mutations must prove both the canonical
+/// browser origin and possession of a token issued by this process.
 async fn csrf_protection(
     request: axum::http::Request<axum::body::Body>,
     next: axum::middleware::Next,
@@ -676,43 +682,67 @@ async fn csrf_protection(
         return Ok(next.run(request).await);
     }
 
-    // Check Origin header
-    if let Some(origin) = request.headers().get("origin") {
-        if let Ok(origin_str) = origin.to_str() {
-            // Allow same-origin and localhost in development
-            let allowed = [
-                "http://localhost",
-                "http://127.0.0.1",
-                "https://tracera.phenotype.space",
-                "https://trace.pheno.studio",
-            ];
-            let is_allowed = allowed.iter().any(|a| origin_str.starts_with(a));
-            if !is_allowed {
-                tracing::warn!(origin = origin_str, "CSRF: blocked cross-origin request");
-                return Err(axum::http::StatusCode::FORBIDDEN);
-            }
-        }
-    } else {
-        // No Origin header — check Referer
-        if let Some(referer) = request.headers().get("referer") {
-            if let Ok(referer_str) = referer.to_str() {
-                let allowed = [
-                    "http://localhost",
-                    "http://127.0.0.1",
-                    "https://tracera.phenotype.space",
-                    "https://trace.pheno.studio",
-                ];
-                let is_allowed = allowed.iter().any(|a| referer_str.starts_with(a));
-                if !is_allowed {
-                    tracing::warn!(referer = referer_str, "CSRF: blocked cross-origin referer");
-                    return Err(axum::http::StatusCode::FORBIDDEN);
-                }
-            }
-        }
-        // If neither Origin nor Referer is present, allow (e.g., API clients)
+    let origin_is_canonical = request
+        .headers()
+        .get(header::ORIGIN)
+        .and_then(|value| value.to_str().ok())
+        .is_some_and(is_canonical_browser_origin);
+    let referer_is_canonical = request
+        .headers()
+        .get(header::REFERER)
+        .and_then(|value| value.to_str().ok())
+        .is_some_and(is_canonical_browser_origin);
+    if !origin_is_canonical && !referer_is_canonical {
+        tracing::warn!("CSRF: blocked request without canonical Origin or Referer");
+        return Err(axum::http::StatusCode::FORBIDDEN);
+    }
+
+    let Some(token) = request
+        .headers()
+        .get("x-csrf-token")
+        .and_then(|value| value.to_str().ok())
+    else {
+        tracing::warn!("CSRF: blocked request without token");
+        return Err(axum::http::StatusCode::FORBIDDEN);
+    };
+    if !csrf_token_is_issued(token).await {
+        tracing::warn!("CSRF: blocked request with unissued token");
+        return Err(axum::http::StatusCode::FORBIDDEN);
     }
 
     Ok(next.run(request).await)
+}
+
+fn is_canonical_browser_origin(value: &str) -> bool {
+    let Ok(uri) = value.parse::<Uri>() else {
+        return false;
+    };
+    uri.scheme_str() == Some("http")
+        && uri
+            .authority()
+            .is_some_and(|authority| authority.as_str() == "127.0.0.1:18000")
+}
+
+fn csrf_tokens() -> &'static tokio::sync::Mutex<VecDeque<String>> {
+    CSRF_TOKENS.get_or_init(|| tokio::sync::Mutex::new(VecDeque::new()))
+}
+
+async fn issue_csrf_token() -> String {
+    let token = Uuid::new_v4().to_string();
+    let mut tokens = csrf_tokens().lock().await;
+    tokens.push_back(token.clone());
+    if tokens.len() > MAX_CSRF_TOKENS {
+        tokens.pop_front();
+    }
+    token
+}
+
+async fn csrf_token_is_issued(candidate: &str) -> bool {
+    csrf_tokens()
+        .lock()
+        .await
+        .iter()
+        .any(|token| token == candidate)
 }
 
 // ---------------------------------------------------------------------------
@@ -1143,12 +1173,21 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .layer(axum::middleware::from_fn(csrf_protection))
         .layer(
             CorsLayer::new()
-                .allow_origin([
-                    HeaderValue::from_static("http://127.0.0.1:4173"),
-                    HeaderValue::from_static("http://localhost:4173"),
+                .allow_origin(HeaderValue::from_static(CANONICAL_BROWSER_ORIGIN))
+                .allow_methods([
+                    Method::GET,
+                    Method::POST,
+                    Method::PUT,
+                    Method::PATCH,
+                    Method::DELETE,
+                    Method::OPTIONS,
                 ])
-                .allow_methods(tower_http::cors::Any)
-                .allow_headers(tower_http::cors::Any),
+                .allow_headers([
+                    header::AUTHORIZATION,
+                    header::CONTENT_TYPE,
+                    http::HeaderName::from_static("x-csrf-token"),
+                ])
+                .allow_credentials(true),
         )
         .with_state(state)
 }
@@ -1161,7 +1200,7 @@ struct CsrfTokenResponse {
 
 async fn csrf_token() -> Json<CsrfTokenResponse> {
     Json(CsrfTokenResponse {
-        token: Uuid::new_v4().to_string(),
+        token: issue_csrf_token().await,
         valid: true,
     })
 }
@@ -2419,7 +2458,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn browser_api_preflight_allows_local_frontend() {
+    async fn browser_api_preflight_allows_the_canonical_gateway_with_credentials() {
         let store = make_sqlite_store().await;
         let app = build_router(AppState {
             version: env!("CARGO_PKG_VERSION").to_string(),
@@ -2433,9 +2472,12 @@ mod tests {
                 Request::builder()
                     .method("OPTIONS")
                     .uri("/api/v1/health")
-                    .header("origin", "http://127.0.0.1:4173")
-                    .header("access-control-request-method", "GET")
-                    .header("access-control-request-headers", "content-type")
+                    .header("origin", "http://127.0.0.1:18000")
+                    .header("access-control-request-method", "POST")
+                    .header(
+                        "access-control-request-headers",
+                        "content-type,x-csrf-token",
+                    )
                     .body(Body::empty())
                     .expect("request"),
             )
@@ -2445,8 +2487,104 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             response.headers()[header::ACCESS_CONTROL_ALLOW_ORIGIN],
-            "http://127.0.0.1:4173"
+            "http://127.0.0.1:18000"
         );
+        assert_eq!(
+            response.headers()[header::ACCESS_CONTROL_ALLOW_CREDENTIALS],
+            "true"
+        );
+    }
+
+    #[tokio::test]
+    async fn csrf_rejects_missing_spoofed_and_untracked_browser_requests() {
+        let store = make_sqlite_store().await;
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: Arc::new(store),
+        });
+        let payload = r#"{"links":[{"source_id":"FR-1","target_id":"T-1","relationship":"verifies","confidence":0.95}]}"#;
+
+        let missing_token = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/api/v1/coverage-matrix")
+                    .header("origin", "http://127.0.0.1:18000")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(payload))
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        assert_eq!(missing_token.status(), StatusCode::FORBIDDEN);
+
+        let csrf = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/csrf-token")
+                    .body(Body::empty())
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        let csrf_body = axum::body::to_bytes(csrf.into_body(), 1024)
+            .await
+            .expect("csrf body");
+        let csrf_token = serde_json::from_slice::<serde_json::Value>(&csrf_body)
+            .expect("csrf payload")["token"]
+            .as_str()
+            .expect("csrf token")
+            .to_owned();
+
+        let spoofed_origin = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/api/v1/coverage-matrix")
+                    .header("origin", "http://127.0.0.1:18000.attacker.invalid")
+                    .header("x-csrf-token", &csrf_token)
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(payload))
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        assert_eq!(spoofed_origin.status(), StatusCode::FORBIDDEN);
+
+        let missing_origin = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/api/v1/coverage-matrix")
+                    .header("x-csrf-token", &csrf_token)
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(payload))
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        assert_eq!(missing_origin.status(), StatusCode::FORBIDDEN);
+
+        let valid_request = app
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/api/v1/coverage-matrix")
+                    .header("origin", "http://127.0.0.1:18000")
+                    .header("x-csrf-token", csrf_token)
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(payload))
+                    .expect("request"),
+            )
+            .await
+            .expect("response");
+        assert_eq!(valid_request.status(), StatusCode::OK);
     }
 
     #[tokio::test]
