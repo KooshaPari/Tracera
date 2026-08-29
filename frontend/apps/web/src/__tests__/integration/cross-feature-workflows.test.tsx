@@ -49,6 +49,9 @@ class MockApiClient {
 
   async searchItems(query: string) {
     await new Promise((resolve) => setTimeout(resolve, this.delay));
+    if (query === 'nonexistent') {
+      return [];
+    }
     return [
       { id: '1', name: `Result matching "${query}"` },
       { id: '2', name: `Another result for "${query}"` },
@@ -606,7 +609,7 @@ describe('Cross-Feature Workflow Integration', () => {
             onChange={(e) => {
               setWorkflowState({
                 ...workflowState,
-                itemsAdded: Number.parseInt(e.target.value, 10),
+                itemsAdded: Number.parseInt(e.target.value, 10) || 0,
               });
             }}
             min='0'
@@ -621,7 +624,7 @@ describe('Cross-Feature Workflow Integration', () => {
             onChange={(e) => {
               setWorkflowState({
                 ...workflowState,
-                linksCreated: Number.parseInt(e.target.value, 10),
+                linksCreated: Number.parseInt(e.target.value, 10) || 0,
               });
             }}
             min='0'

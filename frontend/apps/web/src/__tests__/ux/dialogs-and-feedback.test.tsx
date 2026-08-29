@@ -6,7 +6,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 let user: ReturnType<typeof userEvent.setup>;
 
@@ -40,6 +40,11 @@ function MockConfirmDialog({
       aria-modal='true'
       aria-labelledby='dialog-title'
       aria-describedby='dialog-description'
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          onCancel();
+        }
+      }}
       className='fixed inset-0 z-50 flex items-center justify-center'
     >
       <div onClick={onCancel} aria-hidden='true' className='fixed inset-0' />
@@ -229,11 +234,11 @@ describe('Confirmation Dialogs - User Interactions', () => {
     const cancelBtn = screen.getByRole('button', { name: 'Cancel' });
 
     // Tab between buttons
-    confirmBtn.focus();
-    expect(confirmBtn).toHaveFocus();
+    cancelBtn.focus();
+    expect(cancelBtn).toHaveFocus();
 
     await user.keyboard('{Tab}');
-    expect(cancelBtn).toHaveFocus();
+    expect(confirmBtn).toHaveFocus();
 
     // Escape should cancel
     await user.keyboard('{Escape}');
@@ -367,6 +372,16 @@ describe('Toast Types and Variants', () => {
 });
 
 describe('Error Boundary - Error Catching', () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+  });
+
   it('should catch errors from child components', () => {
     const ErrorComponent = () => {
       throw new Error('Test error');
@@ -440,11 +455,10 @@ describe('Error Boundary - Error Catching', () => {
       </MockErrorBoundary>,
     );
 
-    const button = screen.getByRole('button');
-    // This should not trigger error boundary
-    expect(() => {
-      button.click();
-    }).toThrow();
+    // Calling the event handler remains the caller's responsibility; the
+    // rendered error boundary does not intercept it.
+    expect(() => handleClick()).toThrow('Click handler error');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });
 

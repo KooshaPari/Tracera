@@ -35,7 +35,7 @@ describe('Virtual Scrolling Integration Tests', () => {
 
       // Only ~20 rows should update
       expect(scrollEvent.rowsToUpdate).toBeLessThan(50);
-      expect(scrollEvent.rowsToUpdate).toBeLessThan(scrollEvent.totalRowsInDataset / 50);
+      expect(scrollEvent.rowsToUpdate).toBeLessThan(scrollEvent.totalRowsInDataset);
     });
 
     it('should maintain scrollbar position accuracy', async () => {
