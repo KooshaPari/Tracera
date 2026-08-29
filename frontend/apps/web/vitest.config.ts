@@ -36,13 +36,9 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     pool: 'forks',
-    reporters: [
-      'verbose',
-      ['json', { outputFile: './test-results/api-routes.json' }],
-      ['html', { outputFile: './test-results/api-routes.html' }],
-    ],
+    reporters: ['dot'],
     setupFiles: ['./src/__tests__/setup.ts'],
     testTimeout: 60_000,
-    ui: true,
+    ui: false,
   },
 });
