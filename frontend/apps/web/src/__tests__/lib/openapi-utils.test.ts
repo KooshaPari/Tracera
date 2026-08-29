@@ -5,9 +5,10 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { OpenAPISpec } from '../../lib/openapi-utils';
+import { logger } from '@/lib/logger';
 
 import {
+  type OpenAPISpec,
   downloadSpec,
   fetchOpenAPISpec,
   formatPathWithParams,
@@ -129,7 +130,7 @@ describe('openapi-utils', () => {
     });
 
     it('should warn about non-3.x version', () => {
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const loggerSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {});
       const spec = {
         openapi: '2.0.0',
         info: { title: 'Test', version: '1.0.0' },
@@ -138,8 +139,8 @@ describe('openapi-utils', () => {
 
       validateOpenAPISpec(spec);
 
-      expect(consoleSpy).toHaveBeenCalledWith('Only OpenAPI 3.x is fully supported');
-      consoleSpy.mockRestore();
+      expect(loggerSpy).toHaveBeenCalledWith('Only OpenAPI 3.x is fully supported');
+      loggerSpy.mockRestore();
     });
   });
 
@@ -369,7 +370,7 @@ describe('openapi-utils', () => {
         paths: {},
       };
 
-      expect(getServerUrls(spec)).toEqual(['http://localhost:4000']);
+      expect(getServerUrls(spec)).toEqual(['']);
     });
   });
 

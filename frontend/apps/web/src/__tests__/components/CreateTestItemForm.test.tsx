@@ -17,7 +17,7 @@ describe(CreateTestItemForm, () => {
     render(<CreateTestItemForm onSubmit={onSubmit} onCancel={onCancel} />);
 
     // Check for title
-    expect(screen.getByText('Create Test Item')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Create Test Item' })).toBeInTheDocument();
 
     // Check for required sections
     expect(screen.getByText('Test Details')).toBeInTheDocument();

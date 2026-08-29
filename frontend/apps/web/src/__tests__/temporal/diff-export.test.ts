@@ -104,7 +104,7 @@ describe(exportDiff, () => {
     it('should export diff as CSV', async () => {
       const result = await exportDiff(mockDiff, {
         format: 'csv',
-        includeFieldChanges: false,
+        includeFieldChanges: true,
         includeUnchanged: false,
       });
 
@@ -113,6 +113,9 @@ describe(exportDiff, () => {
       expect(result.content).toContain('Item ID,Title,Type');
       expect(result.content).toContain('New Feature');
       expect(result.content).toContain('Old Bug');
+      expect(result.content).toContain(
+        'item1,Modified Requirement,requirement,field_change,moderate,,status,open,closed',
+      );
     });
 
     it('should handle CSV field escaping', async () => {
@@ -136,7 +139,9 @@ describe(exportDiff, () => {
       });
 
       const content = result.content as string;
-      expect(content).toContain('Feature with "quotes" and, commas');
+      expect(content).toContain(
+        'item1,"Feature with ""quotes"" and, commas",feature,added,major,0,,,',
+      );
     });
   });
 

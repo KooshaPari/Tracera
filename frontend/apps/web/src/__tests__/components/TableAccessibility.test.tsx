@@ -3,7 +3,7 @@
  * Tests the accessible table components directly
  */
 
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -34,7 +34,7 @@ describe('Table Components - Accessibility', () => {
       );
 
       const table = container.querySelector('table');
-      expect(table).toHaveAttribute('role', 'table');
+      expect(screen.getByRole('table')).toBe(table);
       expect(table).toHaveAttribute('aria-label', 'Test table');
     });
 
@@ -82,7 +82,7 @@ describe('Table Components - Accessibility', () => {
       );
 
       const thead = container.querySelector('thead');
-      expect(thead).toHaveAttribute('role', 'rowgroup');
+      expect(screen.getByRole('rowgroup')).toBe(thead);
     });
   });
 
@@ -99,7 +99,7 @@ describe('Table Components - Accessibility', () => {
       );
 
       const tbody = container.querySelector('tbody');
-      expect(tbody).toHaveAttribute('role', 'rowgroup');
+      expect(screen.getByRole('rowgroup')).toBe(tbody);
     });
   });
 
@@ -116,7 +116,7 @@ describe('Table Components - Accessibility', () => {
       );
 
       const tr = container.querySelector('tr');
-      expect(tr).toHaveAttribute('role', 'row');
+      expect(screen.getByRole('row')).toBe(tr);
     });
 
     it('should support aria-rowindex', () => {
@@ -240,7 +240,7 @@ describe('Table Components - Accessibility', () => {
       );
 
       const td = container.querySelector('td');
-      expect(td).toHaveAttribute('role', 'gridcell');
+      expect(screen.getByRole('cell')).toBe(td);
     });
 
     it('should support aria-colindex', () => {
@@ -322,14 +322,14 @@ describe('Table Components - Accessibility', () => {
       );
 
       const table = container.querySelector('table');
-      expect(table).toHaveAttribute('role', 'table');
+      expect(screen.getByRole('table')).toBe(table);
       expect(table).toHaveAttribute('aria-label');
 
       const thead = container.querySelector('thead');
-      expect(thead).toHaveAttribute('role', 'rowgroup');
+      expect(screen.getAllByRole('rowgroup')).toContain(thead);
 
       const tbody = container.querySelector('tbody');
-      expect(tbody).toHaveAttribute('role', 'rowgroup');
+      expect(screen.getAllByRole('rowgroup')).toContain(tbody);
 
       const headers = container.querySelectorAll('th');
       expect(headers.length).toBe(3);
@@ -341,7 +341,7 @@ describe('Table Components - Accessibility', () => {
       const cells = container.querySelectorAll('td');
       expect(cells.length).toBe(3);
       cells.forEach((cell, index) => {
-        expect(cell).toHaveAttribute('role', 'gridcell');
+        expect(cell).toHaveRole('cell');
         expect(cell).toHaveAttribute('aria-colindex', String(index + 1));
       });
     });

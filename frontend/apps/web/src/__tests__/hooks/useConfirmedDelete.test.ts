@@ -12,6 +12,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useConfirmedBulkDelete, useConfirmedDelete } from '@/hooks/useConfirmedDelete';
+import { logger } from '@/lib/logger';
 
 // Mock sonner toast
 vi.mock('sonner', () => ({
@@ -24,6 +25,7 @@ vi.mock('sonner', () => ({
 describe(useConfirmedDelete, () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(logger, 'error').mockImplementation(() => {});
   });
 
   it('initializes with closed dialog', () => {
@@ -109,7 +111,13 @@ describe(useConfirmedDelete, () => {
 
   it('sets isDeleting during execution', async () => {
     const { result } = renderHook(() => useConfirmedDelete());
-    const deleteFunction = vi.fn(async () => new Promise((resolve) => setTimeout(resolve, 100)));
+    let resolveDelete!: () => void;
+    const deleteFunction = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveDelete = resolve;
+        }),
+    );
 
     act(() => {
       result.current.requestDelete({
@@ -118,13 +126,19 @@ describe(useConfirmedDelete, () => {
       });
     });
 
-    void act(async () => {
-      await result.current.executeDelete(deleteFunction);
+    let deletePromise!: Promise<void>;
+    act(() => {
+      deletePromise = result.current.executeDelete(deleteFunction);
     });
 
-    await waitFor(() => {
-      expect(result.current.isDeleting).toBeFalsy();
+    expect(result.current.isDeleting).toBeTruthy();
+
+    await act(async () => {
+      resolveDelete();
+      await deletePromise;
     });
+
+    expect(result.current.isDeleting).toBeFalsy();
   });
 
   it('cancels delete operation', () => {
@@ -211,6 +225,7 @@ describe(useConfirmedDelete, () => {
 describe(useConfirmedBulkDelete, () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(logger, 'error').mockImplementation(() => {});
   });
 
   it('initializes with closed dialog', () => {

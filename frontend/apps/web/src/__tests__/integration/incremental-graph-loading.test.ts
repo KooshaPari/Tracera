@@ -4,7 +4,7 @@
  * Tests the full flow from API request to graph rendering
  */
 
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { StreamChunk } from '../../lib/graph/IncrementalGraphBuilder';
@@ -176,18 +176,14 @@ describe(IncrementalGraphBuilder, () => {
     it('supports cancellation', async () => {
       const builder = new IncrementalGraphBuilder();
 
-      // Mock a slow stream
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        body: new ReadableStream({
-          async start(controller) {
-            // Simulate slow stream
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            controller.enqueue(new TextEncoder().encode('{"type":"node"}\n'));
-            controller.close();
-          },
+      // Model the fetch contract: aborting its signal rejects with AbortError.
+      globalThis.fetch = vi.fn((_url, init) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => {
+            reject(new DOMException('The operation was aborted', 'AbortError'));
+          });
         }),
-        ok: true,
-      });
+      );
 
       const promise = builder.loadFromStream('/api/v1/projects/test/graph/stream', {});
 
@@ -337,14 +333,13 @@ describe(useIncrementalGraph, () => {
     );
 
     // Trigger load
-    result.current.loadGraph();
-
-    // Wait for loading to complete
-    await waitFor(() => {
-      expect(result.current.state.isLoading).toBeFalsy();
+    await act(async () => {
+      await result.current.loadGraph();
     });
 
-    expect(result.current.state.nodes.length).toBeGreaterThan(0);
+    await waitFor(() => {
+      expect(result.current.state.nodes.length).toBeGreaterThan(0);
+    });
   });
 
   it('handles errors', async () => {
@@ -361,7 +356,9 @@ describe(useIncrementalGraph, () => {
       }),
     );
 
-    result.current.loadGraph();
+    await act(async () => {
+      await result.current.loadGraph();
+    });
 
     await waitFor(() => {
       expect(result.current.state.error).toBeDefined();
@@ -369,15 +366,13 @@ describe(useIncrementalGraph, () => {
   });
 
   it('supports cancellation', async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      body: new ReadableStream({
-        async start(controller) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          controller.close();
-        },
+    globalThis.fetch = vi.fn((_url, init) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => {
+          reject(new DOMException('The operation was aborted', 'AbortError'));
+        });
       }),
-      ok: true,
-    });
+    );
 
     const { result } = renderHook(() =>
       useIncrementalGraph({
@@ -386,7 +381,10 @@ describe(useIncrementalGraph, () => {
       }),
     );
 
-    result.current.loadGraph();
+    let loadPromise!: Promise<void>;
+    act(() => {
+      loadPromise = result.current.loadGraph();
+    });
 
     // Wait for loading to start
     await waitFor(() => {
@@ -394,7 +392,13 @@ describe(useIncrementalGraph, () => {
     });
 
     // Abort
-    result.current.abort();
+    act(() => {
+      result.current.abort();
+    });
+
+    await act(async () => {
+      await loadPromise;
+    });
 
     expect(result.current.state.isLoading).toBeFalsy();
   });

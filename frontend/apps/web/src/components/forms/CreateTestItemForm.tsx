@@ -73,12 +73,22 @@ const testItemSchema = z.object({
   ]),
   test_framework: z.string().max(100).optional(),
   language: z.string().max(50).optional(),
-  oracle_type: z
-    .enum(['assertion', 'golden', 'metamorphic', 'property', 'differential'])
-    .optional(),
-  coverage_type: z.enum(['statement', 'branch', 'mcdc', 'path', 'condition']).optional(),
-  safety_level: z.enum(['DAL-A', 'DAL-B', 'DAL-C', 'DAL-D', 'DAL-E']).optional(),
-  expected_duration_ms: z.coerce.number().int().positive().optional(),
+  oracle_type: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.enum(['assertion', 'golden', 'metamorphic', 'property', 'differential']).optional(),
+  ),
+  coverage_type: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.enum(['statement', 'branch', 'mcdc', 'path', 'condition']).optional(),
+  ),
+  safety_level: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.enum(['DAL-A', 'DAL-B', 'DAL-C', 'DAL-D', 'DAL-E']).optional(),
+  ),
+  expected_duration_ms: z.preprocess(
+    (value) => (typeof value === 'number' && Number.isNaN(value) ? undefined : value),
+    z.number().int().positive().optional(),
+  ),
   is_critical_path: z.boolean().optional(),
 });
 

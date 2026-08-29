@@ -76,50 +76,69 @@ function exportAsCSV(
   const rows: string[] = [];
 
   // Header
-  rows.push('Item ID,Title,Type,Change Type,Significance,Field Count');
+  rows.push(
+    'Item ID,Title,Type,Change Type,Significance,Field Count,Field,Old Value,New Value',
+  );
 
   // Added items
   diff.added.forEach((item) => {
-    rows.push(
+    rows.push([
       escapeCSVField(item.itemId),
       escapeCSVField(item.title),
       escapeCSVField(item.type),
       'added',
       item.significance,
       '0',
-    );
+      '',
+      '',
+      '',
+    ].join(','));
   });
 
   // Removed items
   diff.removed.forEach((item) => {
-    rows.push(
+    rows.push([
       escapeCSVField(item.itemId),
       escapeCSVField(item.title),
       escapeCSVField(item.type),
       'removed',
       item.significance,
       '0',
-    );
+      '',
+      '',
+      '',
+    ].join(','));
   });
 
   // Modified items
   diff.modified.forEach((item) => {
-    rows.push(
+    rows.push([
       escapeCSVField(item.itemId),
       escapeCSVField(item.title),
       escapeCSVField(item.type),
       'modified',
       item.significance,
       String(item.fieldChanges?.length || 0),
-    );
+      '',
+      '',
+      '',
+    ].join(','));
 
     // Add field changes if requested
     if (options.includeFieldChanges && item.fieldChanges) {
       item.fieldChanges.forEach((change) => {
         rows.push(
-          `"${item.itemId}",,${escapeCSVField(change.field)},${change.changeType}`,
-          `Old Value,${escapeCSVField(formatValue(change.oldValue))}`,
-          `New Value,${escapeCSVField(formatValue(change.newValue))}`,
+          [
+            escapeCSVField(item.itemId),
+            escapeCSVField(item.title),
+            escapeCSVField(item.type),
+            'field_change',
+            item.significance,
+            '',
+            escapeCSVField(change.field),
+            escapeCSVField(change.oldValue),
+            escapeCSVField(change.newValue),
+          ].join(','),
         );
       });
     }
