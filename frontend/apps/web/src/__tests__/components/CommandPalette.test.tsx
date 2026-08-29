@@ -11,7 +11,7 @@
  * - Edge cases and error states
  */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -69,6 +69,9 @@ const clearProjectContext = () => {
 };
 
 const renderCommandPalette = () => render(<CommandPalette />);
+const queryInput = () => screen.queryByRole('combobox', { name: /search commands/i });
+const getInput = () => screen.getByRole('combobox', { name: /search commands/i });
+const findInput = () => screen.findByRole('combobox', { name: /search commands/i });
 
 describe('CommandPalette Component', () => {
   let user: ReturnType<typeof userEvent.setup>;
@@ -87,7 +90,7 @@ describe('CommandPalette Component', () => {
   describe('Visibility and Rendering', () => {
     it('should not render initially (closed by default)', () => {
       renderCommandPalette();
-      expect(screen.queryByPlaceholderText(/search commands/i)).not.toBeInTheDocument();
+      expect(queryInput()).not.toBeInTheDocument();
     });
 
     it('should render when opened with Cmd+K on macOS', async () => {
@@ -96,7 +99,7 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+        expect(getInput()).toBeInTheDocument();
       });
     });
 
@@ -106,7 +109,7 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { ctrlKey: true, key: 'k' });
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+        expect(getInput()).toBeInTheDocument();
       });
     });
 
@@ -116,14 +119,14 @@ describe('CommandPalette Component', () => {
       // Open palette
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+        expect(getInput()).toBeInTheDocument();
       });
 
       // Close with Escape
       fireEvent.keyDown(globalThis, { key: 'Escape' });
 
       await waitFor(() => {
-        expect(screen.queryByPlaceholderText(/search commands/i)).not.toBeInTheDocument();
+        expect(queryInput()).not.toBeInTheDocument();
       });
     });
 
@@ -133,17 +136,17 @@ describe('CommandPalette Component', () => {
       // Open palette
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+        expect(getInput()).toBeInTheDocument();
       });
 
       // Click backdrop (the parent div with fixed positioning)
-      const backdrop = screen.getByPlaceholderText(/search commands/i).closest('.fixed');
+      const backdrop = getInput().closest('.fixed');
       if (backdrop) {
         fireEvent.click(backdrop);
       }
 
       await waitFor(() => {
-        expect(screen.queryByPlaceholderText(/search commands/i)).not.toBeInTheDocument();
+        expect(queryInput()).not.toBeInTheDocument();
       });
     });
 
@@ -153,7 +156,7 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
       await waitFor(() => {
-        const input = screen.getByPlaceholderText(/search commands/i);
+        const input = getInput();
         expect(input).toBeInTheDocument();
         // Note: Component doesn't have autoFocus on the input element
       });
@@ -176,10 +179,10 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
       await waitFor(() => {
-        expect(screen.getByText('navigation')).toBeInTheDocument();
-        expect(screen.getByText('Go to Dashboard')).toBeInTheDocument();
-        expect(screen.getByText('Go to Projects')).toBeInTheDocument();
-        expect(screen.getByText('Go to Settings')).toBeInTheDocument();
+        expect(screen.getAllByText('NAVIGATE')).toHaveLength(2);
+        expect(screen.getByText('Mission Control')).toBeInTheDocument();
+        expect(screen.getByText('Project Registry')).toBeInTheDocument();
+        expect(screen.getByText('System Parameters')).toBeInTheDocument();
       });
     });
 
@@ -190,21 +193,21 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
       await waitFor(() => {
-        expect(screen.getByText('view')).toBeInTheDocument();
-        expect(screen.getByText('Feature View')).toBeInTheDocument();
-        expect(screen.getByText('Code View')).toBeInTheDocument();
-        expect(screen.getByText('Test View')).toBeInTheDocument();
-        expect(screen.getByText('Graph View')).toBeInTheDocument();
+        expect(screen.getByText('VIEWS')).toBeInTheDocument();
+        expect(screen.getByText('Feature Layer')).toBeInTheDocument();
+        expect(screen.getByText('Source Mapping')).toBeInTheDocument();
+        expect(screen.getByText('Validation Suite')).toBeInTheDocument();
+        expect(screen.getByText('Workflow Runs')).toBeInTheDocument();
       });
     });
 
-    it('should display action category commands', async () => {
+    it('should display system category commands', async () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
       await waitFor(() => {
-        expect(screen.getByText('action')).toBeInTheDocument();
-        expect(screen.getByText('Create New Item')).toBeInTheDocument();
+        expect(screen.getByText('SYSTEM')).toBeInTheDocument();
+        expect(screen.getByText('System Parameters')).toBeInTheDocument();
       });
     });
 
@@ -215,9 +218,9 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
       await waitFor(() => {
-        expect(screen.getByText('Epics, features, stories')).toBeInTheDocument();
-        expect(screen.getByText('Modules and files')).toBeInTheDocument();
-        expect(screen.getByText('Test suites and cases')).toBeInTheDocument();
+        expect(screen.getByText('Logic & requirements')).toBeInTheDocument();
+        expect(screen.getByText('Repository links')).toBeInTheDocument();
+        expect(screen.getByText('Test coverage matrix')).toBeInTheDocument();
       });
     });
   });
@@ -227,13 +230,13 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const input = await screen.findByPlaceholderText(/search commands/i);
+      const input = await findInput();
 
       await user.type(input, 'dashboard');
 
       await waitFor(() => {
-        expect(screen.getByText('Go to Dashboard')).toBeInTheDocument();
-        expect(screen.queryByText('Go to Projects')).not.toBeInTheDocument();
+        expect(screen.getByText('Mission Control')).toBeInTheDocument();
+        expect(screen.queryByText('Project Registry')).not.toBeInTheDocument();
       });
     });
 
@@ -243,13 +246,13 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const input = await screen.findByPlaceholderText(/search commands/i);
+      const input = await findInput();
 
-      await user.type(input, 'epics');
+      await user.type(input, 'logic');
 
       await waitFor(() => {
-        expect(screen.getByText('Feature View')).toBeInTheDocument();
-        expect(screen.queryByText('Code View')).not.toBeInTheDocument();
+        expect(screen.getByText('Feature Layer')).toBeInTheDocument();
+        expect(screen.queryByText('Source Mapping')).not.toBeInTheDocument();
       });
     });
 
@@ -257,12 +260,12 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const input = await screen.findByPlaceholderText(/search commands/i);
+      const input = await findInput();
 
       await user.type(input, 'home');
 
       await waitFor(() => {
-        expect(screen.getByText('Go to Dashboard')).toBeInTheDocument();
+        expect(screen.getByText('Mission Control')).toBeInTheDocument();
       });
     });
 
@@ -270,7 +273,7 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const input = await screen.findByPlaceholderText(/search commands/i);
+      const input = await findInput();
 
       await user.type(input, 'nonexistentcommand12345');
 
@@ -283,12 +286,12 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const input = await screen.findByPlaceholderText(/search commands/i);
+      const input = await findInput();
 
       await user.type(input, 'DASHBOARD');
 
       await waitFor(() => {
-        expect(screen.getByText('Go to Dashboard')).toBeInTheDocument();
+        expect(screen.getByText('Mission Control')).toBeInTheDocument();
       });
     });
 
@@ -297,14 +300,14 @@ describe('CommandPalette Component', () => {
 
       // Open, search, close
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
-      const input = await screen.findByPlaceholderText(/search commands/i);
+      const input = await findInput();
       await user.type(input, 'test');
       fireEvent.keyDown(globalThis, { key: 'Escape' });
 
       // Reopen
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const newInput = await screen.findByPlaceholderText(/search commands/i);
+      const newInput = await findInput();
       expect(newInput).toHaveValue('');
     });
   });
@@ -315,19 +318,19 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+        expect(getInput()).toBeInTheDocument();
       });
 
       // First item should be selected by default (index 0)
-      const firstItem = screen.getByText('Go to Dashboard').closest('button');
-      expect(firstItem).toHaveClass('bg-accent');
+      const firstItem = screen.getByText('Mission Control').closest('button');
+      expect(firstItem).toHaveAttribute('aria-selected', 'true');
 
       // Navigate down
       fireEvent.keyDown(globalThis, { key: 'ArrowDown' });
 
       await waitFor(() => {
-        const secondItem = screen.getByText('Go to Projects').closest('button');
-        expect(secondItem).toHaveClass('bg-accent');
+        const secondItem = screen.getByText('Project Registry').closest('button');
+        expect(secondItem).toHaveAttribute('aria-selected', 'true');
       });
     });
 
@@ -336,7 +339,7 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+        expect(getInput()).toBeInTheDocument();
       });
 
       // Navigate down twice
@@ -347,8 +350,8 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { key: 'ArrowUp' });
 
       await waitFor(() => {
-        const secondItem = screen.getByText('Go to Projects').closest('button');
-        expect(secondItem).toHaveClass('bg-accent');
+        const secondItem = screen.getByText('Project Registry').closest('button');
+        expect(secondItem).toHaveAttribute('aria-selected', 'true');
       });
     });
 
@@ -357,14 +360,14 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+        expect(getInput()).toBeInTheDocument();
       });
 
       // Try to navigate up from first item
       fireEvent.keyDown(globalThis, { key: 'ArrowUp' });
 
-      const firstItem = screen.getByText('Go to Dashboard').closest('button');
-      expect(firstItem).toHaveClass('bg-accent');
+      const firstItem = screen.getByText('Mission Control').closest('button');
+      expect(firstItem).toHaveAttribute('aria-selected', 'true');
     });
 
     it('should not go beyond last item when navigating down', async () => {
@@ -372,7 +375,7 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+        expect(getInput()).toBeInTheDocument();
       });
 
       // Navigate down many times (more than total commands)
@@ -381,8 +384,8 @@ describe('CommandPalette Component', () => {
       }
 
       // Should stay at last item
-      const lastItem = screen.getByText('Create New Item').closest('button');
-      expect(lastItem).toHaveClass('bg-accent');
+      const lastItem = screen.getByText('System Parameters').closest('button');
+      expect(lastItem).toHaveAttribute('aria-selected', 'true');
     });
 
     it('should filter results when search query changes', async () => {
@@ -391,16 +394,16 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const input = await screen.findByPlaceholderText(/search commands/i);
+      const input = await findInput();
 
       // Change search query to filter results
       await user.type(input, 'test');
 
-      // Should show Test View in filtered results
+      // Should show the validation view in filtered results
       await waitFor(() => {
-        expect(screen.getByText('Test View')).toBeInTheDocument();
+        expect(screen.getByText('Validation Suite')).toBeInTheDocument();
         // Other views should not be visible since they don't match "test"
-        expect(screen.queryByText('Feature View')).not.toBeInTheDocument();
+        expect(screen.queryByText('Feature Layer')).not.toBeInTheDocument();
       });
     });
   });
@@ -411,10 +414,10 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+        expect(getInput()).toBeInTheDocument();
       });
 
-      // Execute first command (Go to Dashboard)
+      // Execute first command (Mission Control)
       fireEvent.keyDown(globalThis, { key: 'Enter' });
 
       await waitFor(() => {
@@ -426,7 +429,7 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const dashboardCommand = await screen.findByText('Go to Dashboard');
+      const dashboardCommand = await screen.findByText('Mission Control');
       fireEvent.click(dashboardCommand);
 
       expect(mockNavigate).toHaveBeenCalledWith({ to: '/home' });
@@ -437,13 +440,13 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+        expect(getInput()).toBeInTheDocument();
       });
 
       fireEvent.keyDown(globalThis, { key: 'Enter' });
 
       await waitFor(() => {
-        expect(screen.queryByPlaceholderText(/search commands/i)).not.toBeInTheDocument();
+        expect(queryInput()).not.toBeInTheDocument();
       });
     });
 
@@ -451,11 +454,11 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const dashboardCommand = await screen.findByText('Go to Dashboard');
+      const dashboardCommand = await screen.findByText('Mission Control');
       fireEvent.click(dashboardCommand);
 
       await waitFor(() => {
-        expect(screen.queryByPlaceholderText(/search commands/i)).not.toBeInTheDocument();
+        expect(queryInput()).not.toBeInTheDocument();
       });
     });
 
@@ -463,7 +466,7 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const projectsCommand = await screen.findByText('Go to Projects');
+      const projectsCommand = await screen.findByText('Project Registry');
       fireEvent.click(projectsCommand);
 
       expect(mockNavigate).toHaveBeenCalledWith({ to: '/projects' });
@@ -473,7 +476,7 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const settingsCommand = await screen.findByText('Go to Settings');
+      const settingsCommand = await screen.findByText('System Parameters');
       fireEvent.click(settingsCommand);
 
       expect(mockNavigate).toHaveBeenCalledWith({ to: '/settings' });
@@ -485,16 +488,11 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const codeViewCommand = await screen.findByText('Code View');
+      const codeViewCommand = await screen.findByText('Source Mapping');
       fireEvent.click(codeViewCommand);
 
-      // The navigate call uses TanStack Router format with params
       expect(mockNavigate).toHaveBeenCalledWith({
-        params: {
-          projectId: 'test-project-123',
-          viewType: 'code',
-        },
-        to: '/projects/$projectId/views/$viewType',
+        to: '/projects/test-project-123/views/code',
       });
     });
   });
@@ -509,7 +507,7 @@ describe('CommandPalette Component', () => {
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/search commands/i)).toBeInTheDocument();
+        expect(getInput()).toBeInTheDocument();
       });
     });
 
@@ -517,7 +515,7 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const input = await screen.findByPlaceholderText(/search commands/i);
+      const input = await findInput();
 
       // Search for something that doesn't exist
       await user.type(input, 'nonexistent');
@@ -535,7 +533,9 @@ describe('CommandPalette Component', () => {
       const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true });
       const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
 
-      globalThis.dispatchEvent(event);
+      act(() => {
+        globalThis.dispatchEvent(event);
+      });
 
       expect(preventDefaultSpy).toHaveBeenCalled();
     });
@@ -544,7 +544,7 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const input = await screen.findByPlaceholderText(/search commands/i);
+      const input = await findInput();
 
       // Type and delete
       await user.type(input, 'test');
@@ -552,8 +552,8 @@ describe('CommandPalette Component', () => {
 
       // Should show all commands again
       await waitFor(() => {
-        expect(screen.getByText('Go to Dashboard')).toBeInTheDocument();
-        expect(screen.getByText('Go to Projects')).toBeInTheDocument();
+        expect(screen.getByText('Mission Control')).toBeInTheDocument();
+        expect(screen.getByText('Project Registry')).toBeInTheDocument();
       });
     });
 
@@ -579,7 +579,7 @@ describe('CommandPalette Component', () => {
         writable: true,
       });
 
-      expect(screen.queryByPlaceholderText(/search commands/i)).not.toBeInTheDocument();
+      expect(queryInput()).not.toBeInTheDocument();
     });
   });
 
@@ -588,7 +588,7 @@ describe('CommandPalette Component', () => {
       renderCommandPalette();
       fireEvent.keyDown(globalThis, { key: 'k', metaKey: true });
 
-      const input = await screen.findByPlaceholderText(/search commands/i);
+      const input = await findInput();
       expect(input).toHaveAttribute('type', 'text');
     });
 
@@ -599,7 +599,7 @@ describe('CommandPalette Component', () => {
       await waitFor(() => {
         expect(screen.getByText('↑↓')).toBeInTheDocument();
         expect(screen.getByText('↵')).toBeInTheDocument();
-        expect(screen.getByText('⌘K')).toBeInTheDocument();
+        expect(screen.getByText('ESC')).toBeInTheDocument();
       });
     });
   });

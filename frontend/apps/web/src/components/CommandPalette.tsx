@@ -184,7 +184,8 @@ function CommandPaletteComponent() {
     return commands.filter(
       (c) =>
         c.title.toLowerCase().includes(q) ||
-        (c.description?.toLowerCase().includes(q) ?? c.keywords?.some((k) => k.includes(q))),
+        (c.description?.toLowerCase().includes(q) ?? false) ||
+        (c.keywords?.some((k) => k.includes(q)) ?? false),
     );
   }, [query, commands]);
 
