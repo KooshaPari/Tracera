@@ -188,6 +188,7 @@ describe(RecoveryProgress, () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -223,6 +224,7 @@ describe(useAutoRecovery, () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 

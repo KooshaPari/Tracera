@@ -5,7 +5,7 @@
 
 import { QueryClient } from '@tanstack/react-query';
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -45,6 +45,7 @@ describe('Projects List Page', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     queryClient.clear();
   });
 
@@ -655,8 +656,6 @@ describe('Projects List Page', () => {
     });
 
     it('debounces search input', async () => {
-      vi.useFakeTimers();
-
       const { fetchProjects } = await import('@/api/projects');
 
       vi.mocked(fetchProjects).mockResolvedValue({ data: [], total: 0 });
@@ -668,18 +667,17 @@ describe('Projects List Page', () => {
       });
 
       const searchInput = screen.getByPlaceholderText(/search projects/i);
-      await userEvent.type(searchInput, 'test');
+      vi.useFakeTimers();
+      fireEvent.change(searchInput, { target: { value: 'test' } });
 
       // Search should not trigger immediately
       expect(fetchProjects).toHaveBeenCalledTimes(1); // Initial load only
 
-      vi.advanceTimersByTime(300); // Debounce delay
-
-      await waitFor(() => {
-        expect(fetchProjects).toHaveBeenCalledTimes(2); // Now with search
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(300); // Debounce delay
       });
 
-      vi.useRealTimers();
+      expect(fetchProjects).toHaveBeenCalledTimes(2); // Now with search
     });
 
     it('clears search with clear button', async () => {
