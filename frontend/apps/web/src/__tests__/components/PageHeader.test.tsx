@@ -394,7 +394,7 @@ describe('PageHeader Component', () => {
 
   describe('Accessibility', () => {
     it('should have semantic heading element', () => {
-      render(<PageHeader title='Dashboard' />);
+      const { container } = render(<PageHeader title='Dashboard' />);
 
       const heading = container.querySelector('h1');
       expect(heading).toBeInTheDocument();
@@ -402,7 +402,7 @@ describe('PageHeader Component', () => {
     });
 
     it('should have proper breadcrumb navigation', () => {
-      render(
+      const { container } = render(
         <PageHeader
           title='Page'
           breadcrumbs={[{ href: '/', label: 'Home' }, { label: 'Projects' }]}
@@ -414,7 +414,7 @@ describe('PageHeader Component', () => {
     });
 
     it('should have ordered list for breadcrumbs', () => {
-      render(
+      const { container } = render(
         <PageHeader
           title='Page'
           breadcrumbs={[{ href: '/', label: 'Home' }, { label: 'Projects' }]}
