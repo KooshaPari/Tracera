@@ -10,9 +10,25 @@ import { useAuthStore } from '../../stores/authStore';
 
 describe(useAuth, () => {
   beforeEach(() => {
-    const { logout } = useAuthStore.getState();
-    logout();
+    useAuthStore.getState().stopAutoRefresh();
+    useAuthStore.setState({
+      account: null,
+      authKitRefreshToken: null,
+      isAuthenticated: false,
+      isLoading: false,
+      refreshTimer: null,
+      token: null,
+      user: null,
+    });
     localStorage.clear();
+    vi.mocked(globalThis.fetch).mockReset();
+    vi.mocked(globalThis.fetch).mockResolvedValue(
+      Response.json({
+        refresh_token: 'refresh-token',
+        token: 'mock-jwt-token',
+        user: { email: 'test@example.com', id: '1', name: 'Test User' },
+      }),
+    );
   });
 
   describe(useAuth, () => {
@@ -29,11 +45,11 @@ describe(useAuth, () => {
       expect(result.current).toHaveProperty('updateProfile');
     });
 
-    it('should handle login', async () => {
+    it('should handle AuthKit callback login', async () => {
       const { result } = renderHook(() => useAuth());
 
       await act(async () => {
-        await result.current.login('test@example.com', 'password');
+        await result.current.login('authorization-code', 'state-123');
       });
 
       expect(result.current.isAuthenticated).toBeTruthy();
@@ -44,11 +60,11 @@ describe(useAuth, () => {
       const { result } = renderHook(() => useAuth());
 
       await act(async () => {
-        await result.current.login('test@example.com', 'password');
+        await result.current.login('authorization-code', 'state-123');
       });
 
-      act(() => {
-        result.current.logout();
+      await act(async () => {
+        await result.current.logout();
       });
 
       expect(result.current.isAuthenticated).toBeFalsy();
@@ -61,7 +77,7 @@ describe(useAuth, () => {
       const { result: authResult } = renderHook(() => useAuth());
 
       await act(async () => {
-        await authResult.current.login('test@example.com', 'password');
+        await authResult.current.login('authorization-code', 'state-123');
       });
 
       const { result } = renderHook(() => useUser());
@@ -82,7 +98,7 @@ describe(useAuth, () => {
       const { result: authResult } = renderHook(() => useAuth());
 
       await act(async () => {
-        await authResult.current.login('test@example.com', 'password');
+        await authResult.current.login('authorization-code', 'state-123');
       });
 
       const { result } = renderHook(() => useIsAuthenticated());
