@@ -79,8 +79,12 @@ ui: false,
 - [ ] Change the frontend root command to execute that bounded script directly:
 
 ```json
-"test:unit": "bun --cwd apps/web run test"
+"test:unit": "bun run --cwd apps/web test"
 ```
+
+`bun --cwd apps/web run test` is deliberately not used: Bun 1.3.11 prints
+command usage and exits zero without running the script. The contract test must
+assert the executable form above so CI cannot silently false-green.
 
 - [ ] Change the GitHub Actions unit-test step to `bun run test:unit`, retaining `working-directory: frontend`.
 - [ ] Rerun the focused contract test and require green.
