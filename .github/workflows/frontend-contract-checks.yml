@@ -49,7 +49,7 @@ jobs:
         working-directory: frontend
 
       - name: Tracera client contract + dashboard state tests
-        run: bun run test:unit
+        run: npm run test:unit
         working-directory: frontend
 
       - name: Verify client/server route audit

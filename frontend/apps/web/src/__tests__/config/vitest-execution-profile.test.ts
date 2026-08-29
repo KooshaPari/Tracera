@@ -11,6 +11,6 @@ describe("Vitest execution profile", () => {
     expect(packageJson.scripts.test).toBe("vitest run --reporter=dot --no-ui");
     expect(packageJson.scripts["test:watch"]).toBe("vitest --reporter=dot --no-ui");
     expect(packageJson.scripts["test:ui"]).toBe("vitest --ui --reporter=verbose");
-    expect(frontendPackageJson.scripts["test:unit"]).toBe("bun run --cwd apps/web test");
+    expect(frontendPackageJson.scripts["test:unit"]).toBe("npm --prefix apps/web test --");
   });
 });

@@ -20,7 +20,7 @@
     "build:storybook": "turbo build --filter=@tracertm/storybook",
     "build:parallel": "turbo build --parallel --concurrency=8",
     "test": "turbo test --concurrency=4",
-    "test:unit": "bun run --cwd apps/web test",
+    "test:unit": "npm --prefix apps/web test --",
     "test:a11y": "bun --cwd apps/web run test:a11y",
     "test:api-base": "node scripts/test-api-base.mjs",
     "test:client-server-parity": "node scripts/test-client-server-parity.mjs",
