@@ -29,6 +29,8 @@ export default defineConfig({
       '**/*.benchmark.test.ts',
       '**/*.perf.test.tsx',
       '**/performance/**',
+      // This is a TanStack production route for `/views/test`, not a test file.
+      'src/routes/projects.$projectId.views.test.tsx',
       'src/lib/graph/__tests__/**',
       'src/lib/__tests__/gpuForceLayout.benchmark.test.ts',
       'src/lib/__tests__/spatialIndex.benchmark.test.ts',

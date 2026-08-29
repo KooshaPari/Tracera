@@ -4,7 +4,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { TaskPriority, WorkerPool } from '../../workers/WorkerPool';
+import { TaskPriority, WorkerPool } from '../../workers/worker-pool';
 
 // Mock Worker
 class MockWorker {

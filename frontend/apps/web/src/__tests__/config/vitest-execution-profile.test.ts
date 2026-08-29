@@ -13,4 +13,13 @@ describe("Vitest execution profile", () => {
     expect(packageJson.scripts["test:ui"]).toBe("vitest --ui --reporter=verbose");
     expect(frontendPackageJson.scripts["test:unit"]).toBe("npm --prefix apps/web test --");
   });
+
+  it("ignores only the TanStack route whose public segment is named test", () => {
+    const exclusions = vitestConfig.test?.exclude ?? [];
+
+    expect(exclusions).toContain("src/routes/projects.$projectId.views.test.tsx");
+    expect(exclusions.filter((pattern) => pattern.includes("routes"))).toEqual([
+      "src/routes/projects.$projectId.views.test.tsx",
+    ]);
+  });
 });

@@ -11,7 +11,7 @@ import { createMCPClient } from '../../api/mcp-client';
 // Mock fetch globally
 globalThis.fetch = vi.fn();
 
-describe(MCPClient, () => {
+describe('MCPClient', () => {
   let client: MCPClient;
 
   beforeEach(() => {

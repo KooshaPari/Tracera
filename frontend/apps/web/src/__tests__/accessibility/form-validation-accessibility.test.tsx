@@ -9,7 +9,6 @@ import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { axe } from '../a11y/setup';
-import '../a11y/jest-axe';
 
 let user = userEvent.setup();
 

@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { Mutation } from '@tracertm/types';
 
-import { useSyncStore } from '../../stores/syncStore';
+import { useSyncStore } from '../../stores/sync-store';
 
 // Mock mutation factory
 const createMockMutation = (overrides?: Partial<Mutation>): Mutation => ({
