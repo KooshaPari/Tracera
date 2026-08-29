@@ -15,6 +15,7 @@ import {
   useProjects,
   useUpdateProject,
 } from '../../hooks/useProjects';
+import { useAuthStore } from '../../stores/authStore';
 
 // Mock fetch (vi.fn() compatible with fetch at runtime)
 const mockFetch = vi.fn();
@@ -34,7 +35,8 @@ const createWrapper = () => {
 
 describe('useProjects - Comprehensive Coverage', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockFetch.mockReset();
+    useAuthStore.setState({ token: 'test-token' });
   });
 
   describe(useProjects, () => {
