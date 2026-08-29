@@ -3,9 +3,14 @@
  * Target: 88.65% → 95% coverage
  * Focus: Remaining uncovered lines (147-148, 174-179)
  */
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { connectWebSocket, disconnectWebSocket, getWebSocketManager } from '../../api/websocket';
+import {
+  WebSocketManager,
+  connectWebSocket,
+  disconnectWebSocket,
+  getWebSocketManager,
+} from '../../api/websocket';
 
 // Mock WebSocket
 class MockWebSocket {
@@ -21,7 +26,15 @@ class MockWebSocket {
   onerror: ((event: Event) => void) | null = null;
   onmessage: ((event: MessageEvent) => void) | null = null;
 
-  send = vi.fn();
+  send = vi.fn((data: string) => {
+    if (JSON.parse(data).type === 'auth') {
+      queueMicrotask(() => {
+        this.onmessage?.(
+          new MessageEvent('message', { data: JSON.stringify({ type: 'auth_success' }) }),
+        );
+      });
+    }
+  });
   close = vi.fn();
 
   constructor(url: string) {
@@ -36,26 +49,22 @@ class MockWebSocket {
   }
 }
 
-// Mock window and WebSocket
-globalThis.window = {
-  clearInterval: vi.fn(),
-  location: {
-    host: 'localhost:4000',
-    protocol: 'ws:',
-  },
-  setInterval: vi.fn(
-    (_fn: TimerHandler, _delay?: number) => 1 as unknown as ReturnType<typeof setInterval>,
-  ),
-} as any;
-
 globalThis.WebSocket = MockWebSocket as any;
-globalThis.window = globalThis.window;
 
 describe('WebSocket - Comprehensive Coverage (Remaining Gaps)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset singleton
-    vi.resetModules();
+    globalThis.WebSocket = MockWebSocket as any;
+    vi.spyOn(globalThis, 'setInterval').mockImplementation(
+      (_handler: TimerHandler, _timeout?: number) => 1 as ReturnType<typeof setInterval>,
+    );
+    vi.spyOn(globalThis, 'clearInterval').mockImplementation(() => {});
+    getWebSocketManager(() => 'test-token');
+  });
+
+  afterEach(() => {
+    disconnectWebSocket();
+    vi.restoreAllMocks();
   });
 
   describe('Heartbeat functionality', () => {
@@ -69,10 +78,10 @@ describe('WebSocket - Comprehensive Coverage (Remaining Gaps)', () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify heartbeat interval was set
-      expect(globalThis.window.setInterval).toHaveBeenCalled();
+      expect(globalThis.setInterval).toHaveBeenCalled();
 
       // Simulate heartbeat tick
-      const heartbeatFn = vi.mocked(globalThis.window.setInterval).mock.calls[0]?.[0];
+      const heartbeatFn = vi.mocked(globalThis.setInterval).mock.calls[0]?.[0];
       if (heartbeatFn && typeof heartbeatFn === 'function') {
         heartbeatFn();
       }
@@ -92,7 +101,11 @@ describe('WebSocket - Comprehensive Coverage (Remaining Gaps)', () => {
       class ConnectingWebSocket extends MockWebSocket {
         constructor(url: string) {
           super(url);
-          this.readyState = MockWebSocket.CONNECTING;
+          Object.defineProperty(this, 'readyState', {
+            configurable: true,
+            get: () => MockWebSocket.CONNECTING,
+            set: () => {},
+          });
         }
       }
 
@@ -104,7 +117,7 @@ describe('WebSocket - Comprehensive Coverage (Remaining Gaps)', () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Simulate heartbeat tick
-      const heartbeatFn = vi.mocked(globalThis.window.setInterval).mock.calls[0]?.[0];
+      const heartbeatFn = vi.mocked(globalThis.setInterval).mock.calls[0]?.[0];
       if (heartbeatFn && typeof heartbeatFn === 'function') {
         heartbeatFn();
       }
@@ -205,22 +218,16 @@ describe('WebSocket - Comprehensive Coverage (Remaining Gaps)', () => {
   describe('Connection state management', () => {
     it('should handle connection in non-browser environment', async () => {
       // Temporarily remove window
-      const originalWindow = globalThis.window;
-      (globalThis as any).window = undefined;
-      (globalThis as any).window = undefined;
+      const windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'window');
+      Object.defineProperty(globalThis, 'window', { configurable: true, value: undefined });
 
-      const manager = getWebSocketManager();
-      const startHeartbeatSpy = vi.spyOn(manager as any, 'startHeartbeat');
+      expect(() => new WebSocketManager(() => 'test-token')).toThrow(
+        'WebSocketManager requires a browser environment',
+      );
 
-      // Should not start heartbeat without window
-      await connectWebSocket();
-      expect(startHeartbeatSpy).not.toHaveBeenCalled();
-
-      // Restore window
-      globalThis.window = originalWindow;
-      globalThis.window = originalWindow;
-
-      disconnectWebSocket();
+      if (windowDescriptor) {
+        Object.defineProperty(globalThis, 'window', windowDescriptor);
+      }
     });
 
     it('should properly clean up heartbeat on disconnect', async () => {
@@ -234,7 +241,7 @@ describe('WebSocket - Comprehensive Coverage (Remaining Gaps)', () => {
 
       // Should have stopped heartbeat
       expect(stopHeartbeatSpy).toHaveBeenCalled();
-      expect(globalThis.window.clearInterval).toHaveBeenCalled();
+      expect(globalThis.clearInterval).toHaveBeenCalled();
     });
   });
 

@@ -13,16 +13,6 @@ import {
   subscribeToChannel,
 } from '@/api/websocket';
 
-// Mock window for browser environment
-const mockWindow = {
-  clearInterval: vi.fn(),
-  location: { protocol: 'http:' },
-  setInterval: vi.fn((_fn: () => void, _delay: number) => 123 as any),
-};
-
-globalThis.window = mockWindow as any;
-globalThis.window = mockWindow as any;
-
 // Mock WebSocket (intentionally uses on* properties to mirror WebSocket API)
 class MockWebSocket {
   static CONNECTING = 0;
@@ -48,15 +38,18 @@ class MockWebSocket {
     }, 0);
   }
 
-  send(_data: string) {
-    // Mock send
+  send(data: string) {
+    if (JSON.parse(data).type === 'auth') {
+      queueMicrotask(() => {
+        this.onmessage?.(
+          new MessageEvent('message', { data: JSON.stringify({ type: 'auth_success' }) }),
+        );
+      });
+    }
   }
 
   close() {
     this.readyState = MockWebSocket.CLOSED;
-    if (this.onclose) {
-      this.onclose(new CloseEvent('close'));
-    }
   }
 
   addEventListener(event: string, handler: EventListener) {
@@ -103,13 +96,8 @@ vi.mock('@/api/client', () => ({
 describe('WebSocket API', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset singleton by clearing the module cache
-    vi.resetModules();
-    // Re-import to get fresh singleton
-    vi.doMock('@/api/websocket', async () => {
-      const actual = await vi.importActual('@/api/websocket');
-      return actual;
-    });
+    globalThis.WebSocket = MockWebSocket as any;
+    getWebSocketManager(() => 'test-token');
   });
 
   afterEach(() => {
@@ -120,6 +108,7 @@ describe('WebSocket API', () => {
       // Ignore errors
     }
     vi.clearAllTimers();
+    vi.restoreAllMocks();
   });
 
   describe(WebSocketManager, () => {
