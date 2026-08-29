@@ -79,14 +79,17 @@ ui: false,
 - [ ] Change the frontend root command to execute that bounded script directly:
 
 ```json
-"test:unit": "bun run --cwd apps/web test"
+"test:unit": "npm --prefix apps/web test --"
 ```
 
 `bun --cwd apps/web run test` is deliberately not used: Bun 1.3.11 prints
 command usage and exits zero without running the script. The contract test must
-assert the executable form above so CI cannot silently false-green.
+assert the executable form above so CI cannot silently false-green. Nested
+`bun run` is also excluded because it executes Vitest under Bun; jsdom's
+`os.cpus()` then recursively re-enters `navigator.hardwareConcurrency`. Routing
+through npm keeps Vitest on Node, matching the passing direct invocation.
 
-- [ ] Change the GitHub Actions unit-test step to `bun run test:unit`, retaining `working-directory: frontend`.
+- [ ] Keep the GitHub Actions unit-test step on `npm run test:unit`, retaining `working-directory: frontend`; Bun remains the dependency installer and build tool.
 - [ ] Rerun the focused contract test and require green.
 - [ ] Run `bun x tsc --noEmit --pretty false -p tsconfig.json` from `frontend/apps/web` and require no new type error in the test/config files.
 - [ ] Commit:
