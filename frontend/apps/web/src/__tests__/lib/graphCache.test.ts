@@ -1,4 +1,5 @@
 import * as Vitest from 'vitest';
+import { renderHook } from '@testing-library/react';
 
 import {
   cacheKeys,
@@ -117,7 +118,7 @@ Vitest.describe('Graph Cache - LRU Implementation', () => {
       const cache = createGraphCache(1000, 1024); // 1 KB limit
 
       const largeObject = {
-        data: 'x'.repeat(500), // ~1KB
+        data: 'x'.repeat(600), // Serialized payload exceeds half the 1 KB budget
       };
 
       cache.set('key1', largeObject);
@@ -293,18 +294,17 @@ Vitest.describe('Graph Cache - LRU Implementation', () => {
 
     Vitest.it('should report caution pressure between 70-85%', () => {
       const cache = createGraphCache(100, 100); // 100 bytes limit
-      const largeObject = { data: 'x'.repeat(50) }; // ~50 bytes
+      const largeObject = { data: 'x'.repeat(60) }; // 71 serialized bytes
 
       cache.set('key1', largeObject);
-      cache.set('key2', largeObject);
 
       const pressure = cache.getMemoryPressure();
-      Vitest.expect(['caution', 'critical']).toContain(pressure);
+      Vitest.expect(pressure).toBe('caution');
     });
 
     Vitest.it('should report critical pressure above 85%', () => {
       const cache = createGraphCache(100, 100);
-      const largeObject = { data: 'x'.repeat(100) };
+      const largeObject = { data: 'x'.repeat(79) }; // 90 serialized bytes
 
       cache.set('key1', largeObject);
 
@@ -401,7 +401,8 @@ Vitest.describe('Graph Cache - LRU Implementation', () => {
     });
 
     Vitest.it('should provide cache operations', () => {
-      const cache = useGraphCache();
+      const { result } = renderHook(() => useGraphCache());
+      const cache = result.current;
 
       Vitest.expect(cache.layoutCache).toBeDefined();
       Vitest.expect(cache.groupingCache).toBeDefined();
@@ -410,7 +411,8 @@ Vitest.describe('Graph Cache - LRU Implementation', () => {
     });
 
     Vitest.it('should get statistics for all caches', () => {
-      const cache = useGraphCache();
+      const { result } = renderHook(() => useGraphCache());
+      const cache = result.current;
 
       layoutCache.set('key1', {
         positions: {},
