@@ -3,12 +3,16 @@
  * Tests newly implemented features for phases 8-16
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const setupUser = () => userEvent.setup();
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 // Mock Link Sharing Component
 function MockLinkSharing({
@@ -357,19 +361,20 @@ describe('Link Sharing - Basic Functionality', () => {
 
     render(<MockLinkSharing itemId='item-1' />);
 
-    const user = setupUser();
     const copyBtn = screen.getByRole('button', { name: /Copy/i });
-    await user.click(copyBtn);
+    await act(async () => {
+      fireEvent.click(copyBtn);
+      await Promise.resolve();
+    });
 
     expect(copyBtn).toHaveTextContent('Copied!');
 
-    vi.advanceTimersByTime(2000);
-
-    await waitFor(() => {
-      expect(copyBtn).toHaveTextContent('Copy');
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
     });
 
-    vi.useRealTimers();
+    expect(copyBtn).toHaveTextContent('Copy');
+    expect(copyBtn).toHaveAccessibleName('Copy link');
   });
 
   it('should open shared link in new tab', async () => {
