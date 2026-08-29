@@ -15,7 +15,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { AuthResponse, LoginRequest, User } from '@/api/auth';
+import type { AuthResponse, User } from '@/api/auth';
 
 import {
   AuthError,
@@ -81,43 +81,36 @@ const mockAuthResponse: AuthResponse = {
   user: mockUser,
 };
 
-const mockLoginRequest: LoginRequest = {
-  email: 'user@example.com',
-  password: 'password123',
-};
-
 describe('Authentication API', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     // Mock CSRF token availability
     vi.mocked(csrfLib.getCSRFToken).mockReturnValue('csrf-token-123');
     vi.mocked(csrfLib.fetchCSRFToken).mockResolvedValue('csrf-token-123');
   });
 
   // ========================================================================
-  // LOGIN TESTS
+  // AUTHKIT AUTHORIZATION TESTS
   // ========================================================================
 
-  describe('login', () => {
-    it('should successfully login with valid credentials', async () => {
-      // Mock the API call
-      vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(mockAuthResponse);
+  describe('AuthKit authorization', () => {
+    it('should return the hosted authorization URL', async () => {
+      const authorization = { authorization_url: 'https://auth.example.test/authorize' };
+      vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(authorization);
 
-      const result = await authApi.login(mockLoginRequest);
+      const result = await authApi.getAuthorizationUrl('sign-in');
 
-      // Verify CSRF token was fetched
-      expect(csrfLib.getCSRFToken).toHaveBeenCalled();
+      // Authorization URL discovery is a read-only GET and must not require CSRF.
+      expect(csrfLib.getCSRFToken).not.toHaveBeenCalled();
 
       // Verify API was called correctly
       expect(authClient.safeApiCall).toHaveBeenCalled();
 
       // Verify response
-      expect(result).toEqual(mockAuthResponse);
-      expect(result.user.email).toBe('user@example.com');
-      expect(result.token).toBeDefined();
+      expect(result).toEqual(authorization);
     });
 
-    it('should throw AuthError on invalid credentials', async () => {
+    it('should throw AuthError on an invalid authorization code', async () => {
       const apiError = new ApiError(401, 'Unauthorized', {
         code: 'INVALID_CREDENTIALS',
         message: 'Invalid email or password',
@@ -125,10 +118,10 @@ describe('Authentication API', () => {
 
       vi.mocked(authClient.handleApiResponse).mockRejectedValueOnce(apiError);
 
-      await expect(authApi.login(mockLoginRequest)).rejects.toThrow(AuthError);
+      await expect(authApi.exchangeCode('invalid-code', 'state-123')).rejects.toThrow(AuthError);
     });
 
-    it('should throw AuthError on user not found', async () => {
+    it('should throw AuthError when the AuthKit user is not found', async () => {
       const apiError = new ApiError(404, 'Not Found', {
         code: 'USER_NOT_FOUND',
         message: 'User not found',
@@ -136,14 +129,14 @@ describe('Authentication API', () => {
 
       vi.mocked(authClient.handleApiResponse).mockRejectedValueOnce(apiError);
 
-      await expect(authApi.login(mockLoginRequest)).rejects.toThrow(AuthError);
+      await expect(authApi.exchangeCode('code-123', 'state-123')).rejects.toThrow(AuthError);
     });
 
-    it('should throw AuthError on CSRF token missing', async () => {
+    it('should throw AuthError when code exchange cannot obtain CSRF', async () => {
       vi.mocked(csrfLib.getCSRFToken).mockReturnValue(null);
       vi.mocked(csrfLib.fetchCSRFToken).mockRejectedValueOnce(new Error('CSRF fetch failed'));
 
-      await expect(authApi.login(mockLoginRequest)).rejects.toThrow(AuthError);
+      await expect(authApi.exchangeCode('code-123', 'state-123')).rejects.toThrow(AuthError);
     });
 
     it('should handle rate limiting (429)', async () => {
@@ -153,7 +146,7 @@ describe('Authentication API', () => {
 
       vi.mocked(authClient.handleApiResponse).mockRejectedValueOnce(apiError);
 
-      await expect(authApi.login(mockLoginRequest)).rejects.toThrow(AuthError);
+      await expect(authApi.exchangeCode('code-123', 'state-123')).rejects.toThrow(AuthError);
     });
 
     it('should handle server errors (500)', async () => {
@@ -163,7 +156,7 @@ describe('Authentication API', () => {
 
       vi.mocked(authClient.handleApiResponse).mockRejectedValueOnce(apiError);
 
-      await expect(authApi.login(mockLoginRequest)).rejects.toThrow(AuthError);
+      await expect(authApi.exchangeCode('code-123', 'state-123')).rejects.toThrow(AuthError);
     });
   });
 
@@ -240,6 +233,10 @@ describe('Authentication API', () => {
   // ========================================================================
 
   describe('getCurrentUser', () => {
+    beforeEach(() => {
+      globalThis.localStorage.setItem('auth_token', 'token-abc123');
+    });
+
     it('should return current user', async () => {
       vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(mockUser);
 
@@ -666,7 +663,7 @@ describe('Authentication API', () => {
       vi.mocked(csrfLib.fetchCSRFToken).mockResolvedValueOnce('fetched-csrf-token');
       vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(mockAuthResponse);
 
-      await authApi.login(mockLoginRequest);
+      await authApi.exchangeCode('code-123', 'state-123');
 
       expect(csrfLib.getCSRFToken).toHaveBeenCalled();
       expect(csrfLib.fetchCSRFToken).toHaveBeenCalled();
@@ -676,7 +673,7 @@ describe('Authentication API', () => {
       vi.mocked(csrfLib.getCSRFToken).mockReturnValueOnce('cached-token');
       vi.mocked(authClient.handleApiResponse).mockResolvedValueOnce(mockAuthResponse);
 
-      await authApi.login(mockLoginRequest);
+      await authApi.exchangeCode('code-123', 'state-123');
 
       expect(csrfLib.getCSRFToken).toHaveBeenCalled();
       expect(csrfLib.fetchCSRFToken).not.toHaveBeenCalled();
@@ -686,7 +683,7 @@ describe('Authentication API', () => {
       vi.mocked(csrfLib.getCSRFToken).mockReturnValueOnce(null);
       vi.mocked(csrfLib.fetchCSRFToken).mockRejectedValueOnce(new Error('CSRF unavailable'));
 
-      await expect(authApi.login(mockLoginRequest)).rejects.toThrow(AuthError);
+      await expect(authApi.exchangeCode('code-123', 'state-123')).rejects.toThrow(AuthError);
     });
 
     it('should ensure CSRF for all state-changing operations', async () => {
