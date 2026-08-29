@@ -11,7 +11,19 @@ class MockWorker {
   public onmessage: ((event: MessageEvent) => void) | null = null;
   public onerror: ((event: ErrorEvent) => void) | null = null;
 
-  postMessage(message: any) {
+  addEventListener(type: string, listener: EventListener) {
+    if (type === 'message') {
+      this.onmessage = listener as (event: MessageEvent) => void;
+    }
+    if (type === 'error') {
+      this.onerror = listener as (event: ErrorEvent) => void;
+    }
+  }
+
+  postMessage(message: any, transferables: Transferable[] = []) {
+    if (transferables.length > 0) {
+      structuredClone(message, { transfer: transferables });
+    }
     // Simulate async response
     setTimeout(() => {
       if (this.onmessage) {
@@ -30,6 +42,15 @@ class MockWorker {
 
   terminate() {
     // Cleanup
+  }
+
+  removeEventListener(type: string, listener: EventListener) {
+    if (type === 'message' && this.onmessage === listener) {
+      this.onmessage = null;
+    }
+    if (type === 'error' && this.onerror === listener) {
+      this.onerror = null;
+    }
   }
 }
 
@@ -81,11 +102,17 @@ describe(WorkerPool, () => {
     });
 
     it('should respect task priority', async () => {
+      const priorityPool = new WorkerPool({
+        maxWorkers: 1,
+        minWorkers: 1,
+        workerFactory: () => new MockWorker() as any,
+      });
       const results: number[] = [];
+      const activeTask = priorityPool.executeTask('test', { index: -1 });
 
-      // Queue low priority tasks first
+      // Fill the only worker, then compare ordering within the pending queue.
       const lowPriorityTasks = Array.from({ length: 3 }, (_, i) =>
-        pool
+        priorityPool
           .executeTask(
             'test',
             { index: i, priority: 'low' },
@@ -97,7 +124,7 @@ describe(WorkerPool, () => {
       );
 
       // Queue high priority task
-      const highPriorityTask = pool
+      const highPriorityTask = priorityPool
         .executeTask(
           'test',
           { priority: 'high' },
@@ -107,10 +134,11 @@ describe(WorkerPool, () => {
         )
         .then(() => results.push(99));
 
-      await Promise.all([...lowPriorityTasks, highPriorityTask]);
+      await Promise.all([activeTask, ...lowPriorityTasks, highPriorityTask]);
 
-      // High priority task should be processed earlier
+      // Priority orders queued work; it does not preempt an active worker.
       expect(results[0]).toBe(99);
+      priorityPool.terminate();
     });
 
     it('should handle task timeout', async () => {
