@@ -7,16 +7,31 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Mock the router hooks BEFORE any imports that use them
 vi.mock('@tanstack/react-router', () => ({
   useLocation: () => ({ pathname: '/' }),
+  useMatches: () => [],
   useNavigate: () => vi.fn(),
   useParams: () => ({}),
   useRouter: () => ({ navigate: vi.fn() }),
 }));
 
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { Header } from '../../../components/layout/Header';
 import { ThemeProvider } from '../../../providers/theme-provider';
+
+const renderHeader = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <Header />
+      </ThemeProvider>
+    </QueryClientProvider>,
+  );
+};
 
 describe(Header, () => {
   beforeEach(() => {
@@ -24,42 +39,22 @@ describe(Header, () => {
   });
 
   it('renders header with title', () => {
-    render(
-      <ThemeProvider>
-        <Header />
-      </ThemeProvider>,
-    );
+    renderHeader();
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
   });
 
-  it('displays search input', () => {
-    render(
-      <ThemeProvider>
-        <Header />
-      </ThemeProvider>,
-    );
-    expect(screen.getByPlaceholderText(/Search items/i)).toBeInTheDocument();
+  it('renders as the page banner', () => {
+    renderHeader();
+    expect(screen.getByRole('banner')).toBeInTheDocument();
   });
 
-  it('displays create button', () => {
-    render(
-      <ThemeProvider>
-        <Header />
-      </ThemeProvider>,
-    );
-    expect(screen.getByText('Create')).toBeInTheDocument();
+  it('displays the unauthenticated sign-in action', () => {
+    renderHeader();
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });
 
-  it('handles theme toggle', async () => {
-    const _user = userEvent.setup();
-    render(
-      <ThemeProvider>
-        <Header />
-      </ThemeProvider>,
-    );
-
-    // Theme toggle button should be present
-    const themeButtons = screen.getAllByRole('button');
-    expect(themeButtons.length).toBeGreaterThan(0);
+  it('displays the notification status', () => {
+    renderHeader();
+    expect(screen.getByText('0')).toBeInTheDocument();
   });
 });

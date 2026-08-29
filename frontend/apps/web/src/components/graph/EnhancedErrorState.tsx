@@ -43,7 +43,18 @@ export const EnhancedErrorState = memo(function EnhancedErrorState({
           }
         : error;
 
-  const handleCopyError = () => {};
+  const handleCopyError = (): void => {
+    const details = [
+      errorDetails.message,
+      errorDetails.code ? `Code: ${errorDetails.code}` : undefined,
+      errorDetails.timestamp ? `Timestamp: ${errorDetails.timestamp.toISOString()}` : undefined,
+      errorDetails.stack,
+    ]
+      .filter((value): value is string => Boolean(value))
+      .join('\n\n');
+
+    void Promise.resolve(globalThis.navigator?.clipboard?.writeText(details)).catch(() => undefined);
+  };
 
   if (variant === 'inline') {
     return (

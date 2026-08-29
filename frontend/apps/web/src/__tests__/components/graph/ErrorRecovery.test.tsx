@@ -7,6 +7,7 @@ import { NetworkErrorState } from '@/components/graph/NetworkErrorState';
 import { RecoveryProgress } from '@/components/graph/RecoveryProgress';
 import { TimeoutErrorState } from '@/components/graph/TimeoutErrorState';
 import { useAutoRecovery } from '@/hooks/useAutoRecovery';
+import { logger } from '@/lib/logger';
 
 describe(EnhancedErrorState, () => {
   it('renders error message as string', () => {
@@ -37,8 +38,9 @@ describe(EnhancedErrorState, () => {
 
   it('copies error to clipboard', async () => {
     const writeText = vi.fn();
-    Object.assign(navigator, {
-      clipboard: { writeText },
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
     });
 
     const error = new Error('Test error');
@@ -92,6 +94,7 @@ describe(GraphErrorBoundary, () => {
   beforeEach(() => {
     // Suppress console errors in tests
     vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(logger, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -206,7 +209,9 @@ describe(RecoveryProgress, () => {
   });
 
   it('updates countdown over time', () => {
-    render(<RecoveryProgress retryCount={0} maxRetries={3} nextRetryIn={5000} />);
+    const { rerender } = render(
+      <RecoveryProgress retryCount={0} maxRetries={3} nextRetryIn={5000} />,
+    );
 
     act(() => {
       vi.advanceTimersByTime(1000);
@@ -338,7 +343,7 @@ describe(useAutoRecovery, () => {
     const retry = vi.fn();
     let error: Error | null = new Error('Test error');
 
-    const { result: _result, rerender } = renderHook(() => useAutoRecovery(error, retry));
+    const { result, rerender } = renderHook(() => useAutoRecovery(error, retry));
 
     expect(result.current.isRetrying).toBeTruthy();
 
