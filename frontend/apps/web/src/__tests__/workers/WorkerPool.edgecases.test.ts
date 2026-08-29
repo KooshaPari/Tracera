@@ -53,9 +53,8 @@ describe('WorkerPool Edge Cases', () => {
   let pool: WorkerPool;
 
   afterEach(() => {
-    if (pool) {
-      pool.terminate();
-    }
+    pool?.terminate();
+    vi.useRealTimers();
   });
 
   describe('postMessage failure', () => {
@@ -119,6 +118,7 @@ describe('WorkerPool Edge Cases', () => {
       // Second task should succeed (worker restart + queue processing)
       const secondResult = await pool.executeTask('test', { index: 1 });
       expect(secondResult).toEqual({ processed: true });
+      expect(pool.getStats()).toMatchObject({ busyWorkers: 0, queuedTasks: 0 });
     });
   });
 
@@ -138,7 +138,8 @@ describe('WorkerPool Edge Cases', () => {
         },
       });
 
-      await expect(pool.executeTask('test', {})).rejects.toThrow();
+      await expect(pool.executeTask('test', {})).rejects.toThrow('Worker error: Worker crashed');
+      expect(pool.getStats()).toMatchObject({ busyWorkers: 0, queuedTasks: 0 });
     });
 
     it('should handle error event when no task is associated', async () => {
@@ -155,6 +156,53 @@ describe('WorkerPool Edge Cases', () => {
       // Pool should still function after spurious error
       const result = await pool.executeTask('test', { data: 1 });
       expect(result).toEqual({ processed: true });
+    });
+  });
+
+  describe('worker lifecycle', () => {
+    it('should reject a timed-out task and replace its worker once', async () => {
+      vi.useFakeTimers();
+      const workerFactory = vi.fn(() => {
+        const worker = new EventDrivenMockWorker();
+        worker.postMessage = () => {};
+        return worker as unknown as Worker;
+      });
+      pool = new WorkerPool({
+        maxWorkers: 1,
+        minWorkers: 1,
+        taskTimeout: 25,
+        workerFactory,
+      });
+
+      const task = pool.executeTask('nonresponding', {});
+      const rejection = expect(task).rejects.toThrow('Task timeout after 25ms');
+
+      await vi.advanceTimersByTimeAsync(25);
+      await rejection;
+
+      expect(workerFactory).toHaveBeenCalledTimes(2);
+      expect(pool.getStats()).toMatchObject({ busyWorkers: 0, totalWorkers: 1 });
+    });
+
+    it('should reject an active task and clear timers when terminated', async () => {
+      vi.useFakeTimers();
+      pool = new WorkerPool({
+        maxWorkers: 1,
+        minWorkers: 1,
+        workerFactory: () => {
+          const worker = new EventDrivenMockWorker();
+          worker.postMessage = () => {};
+          return worker as unknown as Worker;
+        },
+      });
+
+      const task = pool.executeTask('nonresponding', {});
+      const rejection = expect(task).rejects.toThrow('Worker pool terminated');
+
+      pool.terminate();
+
+      await rejection;
+      expect(vi.getTimerCount()).toBe(0);
     });
   });
 
@@ -201,6 +249,7 @@ describe('WorkerPool Edge Cases', () => {
 
       expect(result).toBe('done');
       expect(progressUpdates).toEqual([0.5, 1]);
+      expect(pool.getStats()).toMatchObject({ busyWorkers: 0, queuedTasks: 0 });
     });
 
     it('should ignore progress messages without numeric progress value', async () => {
@@ -264,6 +313,7 @@ describe('WorkerPool Edge Cases', () => {
       });
 
       await expect(pool.executeTask('test', {})).rejects.toThrow('Computation failed');
+      expect(pool.getStats()).toMatchObject({ busyWorkers: 0, queuedTasks: 0 });
     });
 
     it('should reject with default message when error type has no error field', async () => {
@@ -287,6 +337,7 @@ describe('WorkerPool Edge Cases', () => {
       });
 
       await expect(pool.executeTask('test', {})).rejects.toThrow('Worker task failed');
+      expect(pool.getStats()).toMatchObject({ busyWorkers: 0, queuedTasks: 0 });
     });
   });
 
@@ -371,8 +422,6 @@ describe('WorkerPool Edge Cases', () => {
       const statsAfter = pool.getStats();
       // Should have cleaned up to minWorkers
       expect(statsAfter.totalWorkers).toBeLessThanOrEqual(statsBefore.totalWorkers);
-
-      vi.useRealTimers();
     });
   });
 

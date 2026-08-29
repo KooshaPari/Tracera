@@ -30,7 +30,9 @@ interface WorkerTask {
 interface WorkerInstance {
   busy: boolean;
   currentTaskId?: string | undefined;
+  errorHandler: (error: ErrorEvent) => void;
   lastUsed: number;
+  messageHandler: (event: MessageEvent<WorkerMessage>) => void;
   taskCount: number;
   timeoutId?: ReturnType<typeof setTimeout> | undefined;
   worker: Worker;
@@ -55,6 +57,7 @@ interface WorkerMessage<T = unknown> {
 export class WorkerPool {
   public static readonly TaskPriority = TASK_PRIORITY;
 
+  private activeTasks = new Map<string, WorkerTask>();
   private cleanupInterval?: ReturnType<typeof setInterval> | undefined;
   private config: Required<WorkerPoolConfig>;
   private isShuttingDown = false;
@@ -124,20 +127,39 @@ export class WorkerPool {
   public terminate(): void {
     this.isShuttingDown = true;
 
-    if (this.cleanupInterval) {
+    if (this.cleanupInterval !== undefined) {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = undefined;
     }
 
+    const terminationError = new Error('Worker pool terminated');
+
     for (const task of this.taskQueue) {
-      task.reject(new Error('Worker pool terminated'));
+      task.reject(terminationError);
     }
 
     this.taskQueue = [];
 
+    for (const task of this.activeTasks.values()) {
+      task.reject(terminationError);
+    }
+
+    this.activeTasks.clear();
+
+    const workerObjects = new Set<Worker>();
     for (const worker of this.workers) {
+      if (worker.timeoutId !== undefined) {
+        clearTimeout(worker.timeoutId);
+        worker.timeoutId = undefined;
+      }
+
+      this.detachWorkerListeners(worker);
+      workerObjects.add(worker.worker);
+    }
+
+    for (const worker of workerObjects) {
       try {
-        worker.worker.terminate();
+        worker.terminate();
       } catch {}
     }
 
@@ -149,6 +171,7 @@ export class WorkerPool {
     workerInstance.currentTaskId = task.id;
     workerInstance.lastUsed = Date.now();
     workerInstance.taskCount += 1;
+    this.activeTasks.set(task.id, task);
 
     const timeoutId = setTimeout(() => {
       this.handleTaskTimeout(workerInstance, task);
@@ -165,15 +188,12 @@ export class WorkerPool {
 
       workerInstance.worker.postMessage(payload, task.transferables ?? []);
     } catch (error) {
-      clearTimeout(timeoutId);
-      workerInstance.timeoutId = undefined;
-      workerInstance.busy = false;
-      workerInstance.currentTaskId = undefined;
+      const releasedTask = this.releaseWorkerTask(workerInstance);
 
       if (error instanceof Error) {
-        task.reject(error);
+        releasedTask?.reject(error);
       } else {
-        task.reject(new Error(String(error)));
+        releasedTask?.reject(new Error(String(error)));
       }
 
       this.processQueue();
@@ -197,6 +217,7 @@ export class WorkerPool {
     for (const worker of workersToRemove) {
       const workerIndex = this.workers.indexOf(worker);
       if (workerIndex !== -1) {
+        this.detachWorkerListeners(worker);
         try {
           worker.worker.terminate();
         } catch {}
@@ -205,36 +226,46 @@ export class WorkerPool {
     }
   }
 
-  private createWorker(): WorkerInstance {
+  private buildWorker(): WorkerInstance {
     const worker = this.config.workerFactory();
     const instance: WorkerInstance = {
       busy: false,
       currentTaskId: undefined,
+      errorHandler: () => {},
       lastUsed: Date.now(),
+      messageHandler: () => {},
       taskCount: 0,
       timeoutId: undefined,
       worker,
     };
 
-    worker.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
+    instance.messageHandler = (event: MessageEvent<WorkerMessage>) => {
       this.handleWorkerMessage(instance, event.data);
-    });
+    };
 
-    worker.addEventListener('error', (error: ErrorEvent) => {
+    instance.errorHandler = (error: ErrorEvent) => {
       this.handleWorkerError(instance, error);
-    });
+    };
 
+    worker.addEventListener('message', instance.messageHandler);
+    worker.addEventListener('error', instance.errorHandler);
+
+    return instance;
+  }
+
+  private createWorker(): WorkerInstance {
+    const instance = this.buildWorker();
     this.workers.push(instance);
     return instance;
   }
 
-  private findTaskById(taskId: string): WorkerTask | void {
-    const queuedTask = this.taskQueue.find((task) => task.id === taskId);
-    if (queuedTask) {
-      return queuedTask;
-    }
+  private detachWorkerListeners(workerInstance: WorkerInstance): void {
+    workerInstance.worker.removeEventListener('message', workerInstance.messageHandler);
+    workerInstance.worker.removeEventListener('error', workerInstance.errorHandler);
+  }
 
-    return undefined;
+  private findTaskById(taskId: string): WorkerTask | void {
+    return this.activeTasks.get(taskId);
   }
 
   private getAvailableWorker(): WorkerInstance | void {
@@ -242,49 +273,45 @@ export class WorkerPool {
   }
 
   private handleTaskTimeout(workerInstance: WorkerInstance, task: WorkerTask): void {
-    task.reject(new Error(`Task timeout after ${task.timeout ?? this.config.taskTimeout}ms`));
+    if (workerInstance.currentTaskId !== task.id || this.activeTasks.get(task.id) !== task) {
+      return;
+    }
+
+    const timedOutTask = this.releaseWorkerTask(workerInstance);
+    timedOutTask?.reject(
+      new Error(`Task timeout after ${task.timeout ?? this.config.taskTimeout}ms`),
+    );
     this.restartWorker(workerInstance);
   }
 
   private handleWorkerError(workerInstance: WorkerInstance, error: ErrorEvent): void {
-    const taskId = workerInstance.currentTaskId;
-
-    if (taskId) {
-      const task = this.findTaskById(taskId);
-      if (task) {
-        task.reject(new Error(`Worker error: ${error.message}`));
-      }
-    }
+    const task = this.releaseWorkerTask(workerInstance);
+    task?.reject(new Error(`Worker error: ${error.message}`));
 
     this.restartWorker(workerInstance);
   }
 
   private handleWorkerMessage(workerInstance: WorkerInstance, message: WorkerMessage): void {
+    if (workerInstance.currentTaskId !== message.id) {
+      return;
+    }
+
     const task = this.findTaskById(message.id);
 
     if (!task) {
       return;
     }
 
-    if (workerInstance.timeoutId) {
-      clearTimeout(workerInstance.timeoutId);
-      workerInstance.timeoutId = undefined;
-    }
-
     if (message.type === 'result') {
-      workerInstance.busy = false;
-      workerInstance.currentTaskId = undefined;
-      workerInstance.lastUsed = Date.now();
-      task.resolve(message.data);
+      this.releaseWorkerTask(workerInstance)?.resolve(message.data);
       this.processQueue();
       return;
     }
 
     if (message.type === 'error') {
-      workerInstance.busy = false;
-      workerInstance.currentTaskId = undefined;
-      workerInstance.lastUsed = Date.now();
-      task.reject(new Error(message.error ?? 'Worker task failed'));
+      this.releaseWorkerTask(workerInstance)?.reject(
+        new Error(message.error ?? 'Worker task failed'),
+      );
       this.processQueue();
       return;
     }
@@ -315,17 +342,40 @@ export class WorkerPool {
     }
   }
 
+  private releaseWorkerTask(workerInstance: WorkerInstance): WorkerTask | undefined {
+    const taskId = workerInstance.currentTaskId;
+    const task = taskId ? this.activeTasks.get(taskId) : undefined;
+
+    if (taskId) {
+      this.activeTasks.delete(taskId);
+    }
+
+    if (workerInstance.timeoutId) {
+      clearTimeout(workerInstance.timeoutId);
+    }
+
+    workerInstance.timeoutId = undefined;
+    workerInstance.busy = false;
+    workerInstance.currentTaskId = undefined;
+    workerInstance.lastUsed = Date.now();
+
+    return task;
+  }
+
   private restartWorker(workerInstance: WorkerInstance): void {
     const workerIndex = this.workers.indexOf(workerInstance);
     if (workerIndex === -1) {
       return;
     }
 
+    this.releaseWorkerTask(workerInstance);
+    this.detachWorkerListeners(workerInstance);
+
     try {
       workerInstance.worker.terminate();
     } catch {}
 
-    this.workers[workerIndex] = this.createWorker();
+    this.workers[workerIndex] = this.buildWorker();
     this.processQueue();
   }
 
