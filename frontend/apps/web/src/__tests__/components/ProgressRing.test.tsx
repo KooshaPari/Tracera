@@ -111,19 +111,20 @@ describe(ProgressBar, () => {
   });
 
   it('handles 0% progress', () => {
-    const { container } = render(<ProgressBar percentage={0} />);
-    const progressDiv = container.querySelector('div > div');
-    expect(progressDiv).toHaveStyle('width: 0%');
+    render(<ProgressBar percentage={0} />);
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
+    expect(screen.getByText('0%')).toBeInTheDocument();
   });
 
   it('handles 100% progress', () => {
-    const { container } = render(<ProgressBar percentage={100} />);
-    const progressDiv = container.querySelector('div > div');
-    expect(progressDiv).toHaveStyle('width: 100%');
+    render(<ProgressBar percentage={100} />);
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
+    expect(screen.getByText('100%')).toBeInTheDocument();
   });
 
   it('caps percentage at 100', () => {
     render(<ProgressBar percentage={150} showLabel />);
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
     expect(screen.getByText('100%')).toBeInTheDocument();
   });
 

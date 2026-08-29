@@ -116,6 +116,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   animated = true,
   className = '',
 }) => {
+  const normalizedPercentage = Math.min(Math.max(percentage, 0), 100);
   const heightMap = {
     lg: 'h-3',
     md: 'h-2',
@@ -139,15 +140,22 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   return (
     <div className={className}>
       <div
+        aria-label='Progress'
+        aria-valuemax={100}
+        aria-valuemin={0}
+        aria-valuenow={normalizedPercentage}
         className={`w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 ${heightMap[height]}`}
+        role='progressbar'
       >
         <div
           className={`${barColor} ${heightMap[height]} rounded-full ${animated ? 'transition-all duration-500' : ''}`}
-          style={{ width: `${Math.min(Math.max(percentage, 0), 100)}%` }}
+          style={{ width: `${normalizedPercentage}%` }}
         />
       </div>
       {showLabel && (
-        <p className='mt-1 text-xs text-gray-600 dark:text-gray-400'>{Math.round(percentage)}%</p>
+        <p className='mt-1 text-xs text-gray-600 dark:text-gray-400'>
+          {Math.round(normalizedPercentage)}%
+        </p>
       )}
     </div>
   );
