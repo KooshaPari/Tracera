@@ -3,13 +3,18 @@
  */
 
 import { act, renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAuth, useIsAuthenticated, useUser } from '../../hooks/useAuth';
+import { clearCSRFToken, setCSRFToken } from '../../lib/csrf';
+import { logger } from '../../lib/logger';
 import { useAuthStore } from '../../stores/authStore';
 
 describe(useAuth, () => {
+  let csrfDebugSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
+    csrfDebugSpy = vi.spyOn(logger, 'debug').mockImplementation(() => {});
     useAuthStore.getState().stopAutoRefresh();
     useAuthStore.setState({
       account: null,
@@ -21,6 +26,7 @@ describe(useAuth, () => {
       user: null,
     });
     localStorage.clear();
+    setCSRFToken('test-csrf-token');
     vi.mocked(globalThis.fetch).mockReset();
     vi.mocked(globalThis.fetch).mockResolvedValue(
       Response.json({
@@ -29,6 +35,11 @@ describe(useAuth, () => {
         user: { email: 'test@example.com', id: '1', name: 'Test User' },
       }),
     );
+  });
+
+  afterEach(() => {
+    clearCSRFToken();
+    csrfDebugSpy.mockRestore();
   });
 
   describe(useAuth, () => {
