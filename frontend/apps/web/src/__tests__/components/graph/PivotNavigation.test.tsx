@@ -163,7 +163,7 @@ describe('PivotNavigation Component', () => {
     });
 
     it('returns null when no equivalent items and showEmpty is false', () => {
-      render(
+      const { container } = render(
         <PivotNavigation
           currentItem={mockCurrentItem}
           currentPerspective='product'
@@ -455,6 +455,12 @@ describe('PivotNavigation Component', () => {
           perspectiveId: 'technical',
           source: 'equivalence',
         },
+        {
+          confidence: 0.85,
+          item: mockSecurityItem,
+          perspectiveId: 'technical',
+          source: 'canonical',
+        },
       ];
 
       render(
@@ -472,7 +478,7 @@ describe('PivotNavigation Component', () => {
       await user.click(technicalButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/api/i)).toBeInTheDocument();
+        expect(screen.getByText('api')).toBeInTheDocument();
       });
     });
   });
@@ -605,9 +611,9 @@ describe('PivotNavigation Component', () => {
       await user.click(pivotButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/Technical/i)).toBeInTheDocument();
-        expect(screen.getByText(/UI/i)).toBeInTheDocument();
-        expect(screen.getByText(/Security/i)).toBeInTheDocument();
+        expect(screen.getByText('Technical View')).toBeInTheDocument();
+        expect(screen.getByText('UI View')).toBeInTheDocument();
+        expect(screen.getByText('Security View')).toBeInTheDocument();
       });
     });
 
@@ -634,7 +640,7 @@ describe('PivotNavigation Component', () => {
     });
 
     it('returns null when no equivalents in compact mode with showEmpty false', () => {
-      render(
+      const { container } = render(
         <PivotNavigation
           currentItem={mockCurrentItem}
           currentPerspective='product'
@@ -774,11 +780,11 @@ describe('PivotNavigation Component', () => {
 
       // Tab to first button
       await user.tab();
-      expect(screen.getByText(/Technical/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Technical/i })).toHaveFocus();
 
       // Press Enter to activate
       await user.keyboard('{Enter}');
-      expect(onPivot).toHaveBeenCalledTimes(0); // Might not be called on Enter in popover
+      expect(onPivot).toHaveBeenCalledWith('technical', 'item-2');
     });
   });
 });
@@ -828,7 +834,7 @@ describe(buildPivotTargets, () => {
 
     expect(targets).toHaveLength(1);
     expect(targets[0].item.id).toBe('item-2');
-    expect(targets[0].perspective).toBe('technical');
+    expect(targets[0].perspectiveId).toBe('technical');
     expect(targets[0].source).toBe('canonical');
   });
 

@@ -414,15 +414,15 @@ export function buildPivotTargets(
   // From equivalence links
   for (const link of equivalenceLinks) {
     const targetId = link.sourceItemId === currentItem.id ? link.targetItemId : link.sourceItemId;
-    if (seenIds.has(targetId)) {
+    if (targetId === currentItem.id || seenIds.has(targetId)) {
       continue;
     }
-    seenIds.add(targetId);
 
     const item = itemsMap.get(targetId);
     if (!item) {
       continue;
     }
+    seenIds.add(targetId);
 
     results.push({
       confidence: link.confidence,
@@ -440,12 +440,11 @@ export function buildPivotTargets(
     if (seenIds.has(projection.itemId)) {
       continue;
     }
-    seenIds.add(projection.itemId);
-
     const item = itemsMap.get(projection.itemId);
     if (!item) {
       continue;
     }
+    seenIds.add(projection.itemId);
 
     results.push({
       confidence: projection.confidence,
