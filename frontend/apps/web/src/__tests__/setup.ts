@@ -22,6 +22,7 @@ expect.extend({ toHaveNoViolations });
 
 type TestGlobals = typeof globalThis & {
   WebGL2RenderingContext?: unknown;
+  WebGLRenderingContext?: unknown;
   IntersectionObserver?: new (...args: unknown[]) => unknown;
   ResizeObserver?: new (...args: unknown[]) => unknown;
   WebSocket?: new (url: string) => unknown;
@@ -29,21 +30,28 @@ type TestGlobals = typeof globalThis & {
   __setFetchImpl__?: (impl: typeof fetch) => void;
 };
 
-// Mock WebGL2RenderingContext FIRST before any imports
+// Sigma reads WebGL constants while its module is loading. Keep this import-time
+// contract constructor-free: rendering behavior remains covered by graph mocks.
 if (typeof globalThis !== 'undefined') {
-  const WebGL2RenderingContextMock = {
+  const WebGLRenderingContextMock = {
     BOOL: 35_670,
     BYTE: 5120,
     FLOAT: 5126,
     INT: 5124,
     SHORT: 5122,
+    TRIANGLES: 4,
     UNSIGNED_BYTE: 5121,
     UNSIGNED_INT: 5125,
     UNSIGNED_SHORT: 5123,
   };
+  Object.defineProperty(globalThis, 'WebGLRenderingContext', {
+    configurable: true,
+    value: WebGLRenderingContextMock as unknown as typeof WebGLRenderingContext,
+    writable: true,
+  });
   Object.defineProperty(globalThis, 'WebGL2RenderingContext', {
     configurable: true,
-    value: WebGL2RenderingContextMock as unknown as typeof WebGL2RenderingContext,
+    value: WebGLRenderingContextMock as unknown as typeof WebGL2RenderingContext,
     writable: true,
   });
 }
