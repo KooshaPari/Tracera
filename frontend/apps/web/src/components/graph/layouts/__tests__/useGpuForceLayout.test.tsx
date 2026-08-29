@@ -6,10 +6,11 @@
 
 import type { Edge, Node } from '@xyflow/react';
 
-import { renderHook, waitFor } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useGpuForceLayout } from '../useGpuForceLayout';
+import { disposeGPUForceLayout } from '../gpuForceLayout';
 
 const createNodes = (count: number): Node[] =>
   Array.from({ length: count }, (_, i) => ({
@@ -26,7 +27,56 @@ const createEdges = (count: number): Edge[] =>
     target: `node-${i + 1}`,
   }));
 
+class MockLayoutWorker {
+  private messageListeners: Array<(event: MessageEvent) => void> = [];
+
+  addEventListener(type: string, listener: (event: MessageEvent) => void) {
+    if (type === 'message') {
+      this.messageListeners.push(listener);
+    }
+  }
+
+  postMessage(request: { nodes: Array<{ id: string }> }) {
+    queueMicrotask(() => {
+      const event = {
+        data: {
+          duration: 5,
+          positions: request.nodes.map((node, index) => ({
+            id: node.id,
+            x: index + 1,
+            y: index + 1,
+          })),
+          type: 'result',
+        },
+      } as MessageEvent;
+      this.messageListeners.forEach((listener) => listener(event));
+    });
+  }
+
+  terminate() {}
+}
+
+const originalGetContext = HTMLCanvasElement.prototype.getContext;
+
 describe(useGpuForceLayout, () => {
+  beforeEach(() => {
+    vi.stubGlobal('Worker', MockLayoutWorker);
+    Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+      configurable: true,
+      value: vi.fn(() => null),
+    });
+    disposeGPUForceLayout();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+      configurable: true,
+      value: originalGetContext,
+    });
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
   describe('basic functionality', () => {
     it('should initialize with empty nodes', () => {
       const { result } = renderHook(() => useGpuForceLayout([], []));
@@ -46,9 +96,9 @@ describe(useGpuForceLayout, () => {
         }),
       );
 
-      // Should start computing
       await waitFor(() => {
-        expect(result.current.nodes.length).toBe(10);
+        expect(result.current.duration).not.toBeNull();
+        expect(result.current.isComputing).toBeFalsy();
       });
 
       // Positions should be updated
@@ -133,7 +183,8 @@ describe(useGpuForceLayout, () => {
       );
 
       await waitFor(() => {
-        expect(result.current.nodes.length).toBe(20);
+        expect(result.current.duration).not.toBeNull();
+        expect(result.current.isComputing).toBeFalsy();
       });
 
       const node0 = result.current.nodes[0];
@@ -163,9 +214,12 @@ describe(useGpuForceLayout, () => {
       const nodes = createNodes(5);
       const edges = createEdges(5);
 
-      const { result } = renderHook(() => useGpuForceLayout([], [], { enabled: false }));
+      const { result } = renderHook(() => useGpuForceLayout([], []));
 
-      const layoutedNodes = await result.current.calculateLayout(nodes, edges);
+      let layoutedNodes: Node[] = [];
+      await act(async () => {
+        layoutedNodes = await result.current.calculateLayout(nodes, edges);
+      });
 
       expect(layoutedNodes).toHaveLength(5);
       const firstNode = layoutedNodes[0];

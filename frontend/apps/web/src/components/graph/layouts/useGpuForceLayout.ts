@@ -10,7 +10,7 @@
 
 import type { Edge, Node } from '@xyflow/react';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { ForceSimulationConfig } from './gpuForceLayout';
 import type {
@@ -28,6 +28,7 @@ import { getGPUForceLayout } from './gpuForceLayout';
 
 const WORKER_THRESHOLD = 1000; // Use worker for graphs with >1000 nodes
 const ANIMATION_DURATION = 800; // Ms for layout transition animation
+const EMPTY_FORCE_CONFIG: ForceSimulationConfig = {};
 
 // ============================================================================
 // TYPES
@@ -60,8 +61,22 @@ export function useGpuForceLayout<T extends Record<string, unknown>>(
     enabled = true,
     animateTransitions = true,
     animationDuration = ANIMATION_DURATION,
-    config = {},
+    config: rawConfig = EMPTY_FORCE_CONFIG,
   } = options;
+
+  const config = useMemo<ForceSimulationConfig>(
+    () => ({ ...rawConfig }),
+    [
+      rawConfig.attractionStrength,
+      rawConfig.centeringStrength,
+      rawConfig.damping,
+      rawConfig.iterations,
+      rawConfig.maxDistance,
+      rawConfig.minDistance,
+      rawConfig.repulsionStrength,
+      rawConfig.theta,
+    ],
+  );
 
   const [layoutedNodes, setLayoutedNodes] = useState<Node<T>[]>(nodes);
   const [state, setState] = useState<GPUForceLayoutState>({
