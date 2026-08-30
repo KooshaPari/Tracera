@@ -1,4 +1,4 @@
-import { useParams } from '@tanstack/react-router';
+import { useLocation, useParams } from '@tanstack/react-router';
 import React, { memo, useState } from 'react';
 
 import { useProjects } from '@/hooks/useProjects';
@@ -46,6 +46,7 @@ const SidebarComponent = function SidebarComponent(): JSX.Element {
   const { currentProject, recentProjects } = useProjectStore();
   const { data: allProjects } = useProjects();
   const { projectId } = useParams({ strict: false });
+  const { pathname } = useLocation();
   const isTestEnv = Boolean(globalThis.navigator?.webdriver);
 
   const {
@@ -81,7 +82,6 @@ const SidebarComponent = function SidebarComponent(): JSX.Element {
     recentSort,
     searchQuery,
   });
-
   resetNavItemRefs();
 
   const handleProjectAction = useProjectActionHandler(recentProjects);
@@ -114,6 +114,7 @@ const SidebarComponent = function SidebarComponent(): JSX.Element {
       activeTab={activeTab}
       collapsedGroups={collapsedGroups}
       currentProjectId={currentProject?.id}
+      currentPathname={pathname}
       filteredNavGroups={filteredNavGroups}
       isCollapsed={isCollapsed}
       isResizing={isResizing}

@@ -18,6 +18,7 @@ interface SidebarViewProps {
   activeTab: Record<string, string>;
   collapsedGroups: Record<string, boolean>;
   currentProjectId?: string | number | undefined;
+  currentPathname: string;
   filteredNavGroups: SidebarGroup[];
   isCollapsed: boolean;
   isResizing: boolean;
@@ -48,6 +49,7 @@ export const SidebarView = ({
   activeTab: _activeTab,
   collapsedGroups,
   currentProjectId,
+  currentPathname,
   filteredNavGroups,
   isCollapsed,
   isResizing,
@@ -74,6 +76,10 @@ export const SidebarView = ({
   const showRecent = !isCollapsed && recentProjects.length > 0;
   const showNoResults =
     searchQuery.length > 0 && filteredNavGroups.length === 0 && recentProjects.length === 0;
+  const isActivePath = React.useCallback(
+    (href: string): boolean => currentPathname === href.split('?')[0],
+    [currentPathname],
+  );
 
   const navStyle = React.useMemo<React.CSSProperties | undefined>(
     () =>
@@ -227,7 +233,7 @@ export const SidebarView = ({
                                 <SidebarNavItemRow
                                   ref={navItemRefSetter}
                                   item={overviewItem}
-                                  isActive={onTabValue(group.label, 'overview') === 'overview'}
+                                  isActive={isActivePath(overviewItem.href)}
                                   isCollapsed={false}
                                   renderTitle={renderTitle}
                                 />
@@ -242,7 +248,7 @@ export const SidebarView = ({
                                   key={item.href}
                                   ref={navItemRefSetter}
                                   item={item}
-                                  isActive={onTabValue(group.label, 'overview') === item.title}
+                                  isActive={isActivePath(item.href)}
                                   isCollapsed={false}
                                   renderTitle={renderTitle}
                                 />
@@ -256,7 +262,7 @@ export const SidebarView = ({
                                 <SidebarNavItemRow
                                   ref={navItemRefSetter}
                                   item={settingsItem}
-                                  isActive={onTabValue(group.label, 'overview') === 'settings'}
+                                  isActive={isActivePath(settingsItem.href)}
                                   isCollapsed={false}
                                   renderTitle={renderTitle}
                                 />
@@ -312,7 +318,7 @@ export const SidebarView = ({
                               {group.items[0] ? (
                                 <SidebarNavItemRow
                                   item={group.items[0]}
-                                  isActive={false}
+                                  isActive={isActivePath(group.items[0].href)}
                                   isCollapsed={false}
                                   renderTitle={renderTitle}
                                 />
@@ -326,7 +332,7 @@ export const SidebarView = ({
                                 <SidebarNavItemRow
                                   key={item.href}
                                   item={item}
-                                  isActive={false}
+                                  isActive={isActivePath(item.href)}
                                   isCollapsed={false}
                                   renderTitle={renderTitle}
                                 />
@@ -384,6 +390,7 @@ export const SidebarView = ({
                                   <div className='w-full max-w-full min-w-0 space-y-0.5 overflow-hidden pl-0'>
                                     {category.views.map((view) => {
                                       const ViewIcon = view.icon;
+                                      const isActive = isActivePath(view.href);
 
                                       return (
                                         <Ui.Tooltip key={view.href}>
@@ -394,9 +401,11 @@ export const SidebarView = ({
                                                 'group flex items-center gap-2 rounded-lg px-3 py-1.5 border transition-all duration-200 ease-out cursor-pointer relative min-w-0 w-full max-w-full text-xs overflow-hidden box-border',
                                                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary',
                                                 'hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99]',
-                                                'text-muted-foreground border border-transparent bg-background/10 hover:bg-background/20 hover:text-foreground',
+                                                isActive
+                                                  ? 'bg-primary/10 text-primary border-primary/30 ring-2 ring-primary/20'
+                                                  : 'text-muted-foreground border border-transparent bg-background/10 hover:bg-background/20 hover:text-foreground',
                                               )}
-                                              aria-current='page'
+                                              aria-current={isActive ? 'page' : undefined}
                                             >
                                               <ViewIcon className='h-4 w-4 shrink-0' />
                                               <span className='min-w-0 flex-1 truncate overflow-hidden font-medium'>
@@ -450,7 +459,7 @@ export const SidebarView = ({
                               key={item.href}
                               ref={navItemRefSetter}
                               item={item}
-                              isActive={false}
+                              isActive={isActivePath(item.href)}
                               isCollapsed={false}
                               renderTitle={renderTitle}
                             />
@@ -476,7 +485,7 @@ export const SidebarView = ({
                             key={item.href}
                             ref={navItemRefSetter}
                             item={item}
-                            isActive={false}
+                            isActive={isActivePath(item.href)}
                             isCollapsed={isCollapsed}
                             renderTitle={renderTitle}
                           />

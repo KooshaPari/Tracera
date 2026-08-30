@@ -18,7 +18,7 @@ describe('websocketStore', () => {
 
       expect(result.current.isConnected).toBeFalsy();
       expect(result.current.reconnectAttempts).toBe(0);
-      expect(result.current.lastEvent).toBeNull();
+      expect(result.current.lastEvent).toBeUndefined();
       expect(result.current.events).toEqual([]);
       expect(result.current.activeChannels.size).toBe(0);
     });
@@ -133,7 +133,7 @@ describe('websocketStore', () => {
       });
 
       expect(result.current.events).toEqual([]);
-      expect(result.current.lastEvent).toBeNull();
+      expect(result.current.lastEvent).toBeUndefined();
     });
   });
 

@@ -90,6 +90,7 @@ const ProjectsListFiltersBar = memo(function ProjectsListFiltersBar({
       <Button
         variant='ghost'
         size='icon'
+        aria-label='Reverse sort order'
         onClick={onSortOrderToggle}
         className='h-10 w-10 rounded-xl'
       >

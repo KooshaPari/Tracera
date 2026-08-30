@@ -54,11 +54,12 @@ vi.mock('../../../hooks/useProjects', () => ({
 
 import { Sidebar } from '../../../components/layout/Sidebar';
 
-const user = userEvent.setup();
+let user: ReturnType<typeof userEvent.setup>;
 
 describe('Sidebar Navigation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    user = userEvent.setup();
     localStorage.clear();
     mockPathname = '/';
     mockParams = {};
@@ -362,6 +363,7 @@ describe('Sidebar Navigation', () => {
       const searchInput = screen.getByPlaceholderText('Search navigation...');
       await user.type(searchInput, 'code');
 
+      expect(searchInput).toHaveValue('code');
       // Code View should be visible
       expect(screen.getByText('Code View')).toBeInTheDocument();
       // Features should not be visible as it doesn't match "code"
