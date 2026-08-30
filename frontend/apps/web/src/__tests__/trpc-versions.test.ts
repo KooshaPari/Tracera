@@ -20,6 +20,6 @@ describe('tRPC dependency versions', () => {
   it('keeps the client, React Query bridge, and server on the same release', async () => {
     const dependencies = await readWebDependencies();
 
-    expect(new Set(Object.values(dependencies))).toEqual(new Set(['^11.18.0']));
+    expect(new Set(Object.values(dependencies))).toEqual(new Set(['^10.45.2']));
   });
 });
