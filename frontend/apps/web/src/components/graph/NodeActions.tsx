@@ -32,6 +32,7 @@ export const NodeActions = memo(function NodeActions({
             <Button
               size='sm'
               variant='ghost'
+              aria-label={isExpanded ? 'Collapse node' : 'Expand node'}
               className='h-6 w-6 p-0'
               onClick={(e) => {
                 e.stopPropagation();
@@ -49,6 +50,7 @@ export const NodeActions = memo(function NodeActions({
             <Button
               size='sm'
               variant='ghost'
+              aria-label='Open details'
               className='h-6 w-6 p-0'
               onClick={(e) => {
                 e.stopPropagation();
@@ -66,6 +68,7 @@ export const NodeActions = memo(function NodeActions({
             <Button
               size='sm'
               variant='ghost'
+              aria-label='More actions'
               className='h-6 w-6 p-0'
               onClick={(e) => {
                 e.stopPropagation();

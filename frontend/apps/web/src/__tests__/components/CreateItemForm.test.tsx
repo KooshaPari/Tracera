@@ -53,7 +53,7 @@ describe(CreateItemForm, () => {
   it('should call onCancel when X button is clicked', async () => {
     render(<CreateItemForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
-    const closeButton = screen.getByRole('button', { name: '' });
+    const closeButton = screen.getByRole('button', { name: 'Close dialog' });
     await globalThis.user.click(closeButton);
 
     expect(mockOnCancel).toHaveBeenCalled();

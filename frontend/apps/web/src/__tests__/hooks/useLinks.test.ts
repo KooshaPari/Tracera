@@ -8,6 +8,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useCreateLink, useLinks } from '../../hooks/useLinks';
+import { useAuthStore } from '../../stores/authStore';
 
 // Mock fetch at module level
 const mockFetch = vi.fn();
@@ -28,6 +29,7 @@ const createWrapper = () => {
 describe(useLinks, () => {
   beforeEach(() => {
     mockFetch.mockClear();
+    useAuthStore.setState({ token: 'link-contract-token' });
   });
 
   it('should fetch links', async () => {
@@ -138,6 +140,7 @@ describe(useLinks, () => {
 describe(useCreateLink, () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useAuthStore.setState({ token: 'link-contract-token' });
   });
 
   it('should create a link', async () => {

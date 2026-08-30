@@ -279,7 +279,7 @@ describe(NodeHoverTooltip, () => {
       status: 'active',
     };
 
-    render(
+    const { container } = render(
       <NodeHoverTooltip
         nodeId='test-node'
         nodeType='requirement'
@@ -294,7 +294,7 @@ describe(NodeHoverTooltip, () => {
   });
 
   it('positions tooltip based on position prop', () => {
-    render(
+    const { container } = render(
       <NodeHoverTooltip
         nodeId='test-node'
         nodeType='requirement'
@@ -367,7 +367,7 @@ describe(NodeQuickActions, () => {
     const input = screen.getByPlaceholderText('Node ID');
     await user.type(input, 'target-node-123');
 
-    const addButton = screen.getByRole('button', { name: /add/i });
+    const addButton = screen.getByRole('button', { name: 'Confirm link to node' });
     await user.click(addButton);
 
     expect(onAddLink).toHaveBeenCalledWith('test-node', 'target-node-123');
@@ -413,7 +413,7 @@ describe(NodeQuickActions, () => {
     const input = screen.getByPlaceholderText('Tag name');
     await user.type(input, 'important');
 
-    const addButton = screen.getByRole('button', { name: /add/i });
+    const addButton = screen.getByRole('button', { name: 'Confirm tag for node' });
     await user.click(addButton);
 
     expect(onAddTag).toHaveBeenCalledWith('test-node', 'important');
@@ -469,7 +469,7 @@ describe(NodeQuickActions, () => {
       await user.type(inputEl, 'test-tag');
     }
 
-    const addButton = screen.getByRole('button', { name: /add/i });
+    const addButton = screen.getByRole('button', { name: 'Confirm tag for node' });
     await user.click(addButton);
 
     await waitFor(() => {

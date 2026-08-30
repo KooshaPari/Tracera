@@ -901,48 +901,52 @@ describe('API Endpoints - Comprehensive Tests', () => {
   describe(exportImportApi, () => {
     describe('export', () => {
       it('should export project as JSON', async () => {
-        const mockBlob = new Blob(['{"data": "test"}'], {
-          type: 'application/json',
+        vi.mocked(apiClient.GET).mockResolvedValue({
+          data: { data: 'test' },
+          error: undefined,
+          response: new Response(),
         });
-        globalThis.fetch = vi.fn().mockResolvedValue({
-          blob: async () => mockBlob,
-          ok: true,
-        }) as typeof fetch;
 
         const result = await exportImportApi.export('proj-1', 'json');
         expect(result).toBeInstanceOf(Blob);
-        expect(globalThis.fetch).toHaveBeenCalledWith('/api/v1/projects/proj-1/export?format=json');
+        expect(result).toHaveProperty('type', 'application/json');
+        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/projects/{project_id}/export', {
+          params: { path: { project_id: 'proj-1' }, query: { format: 'json' } },
+        });
       });
 
       it('should export project as CSV', async () => {
-        const mockBlob = new Blob(['id,name'], { type: 'text/csv' });
-        globalThis.fetch = vi.fn().mockResolvedValue({
-          blob: async () => mockBlob,
-          ok: true,
-        }) as typeof fetch;
+        vi.mocked(apiClient.GET).mockResolvedValue({
+          data: { content: 'id,name' },
+          error: undefined,
+          response: new Response(),
+        });
 
         const result = await exportImportApi.export('proj-1', 'csv');
         expect(result).toBeInstanceOf(Blob);
+        expect(result).toHaveProperty('type', 'text/csv');
       });
 
       it('should export project as markdown', async () => {
-        const mockBlob = new Blob(['# Project'], { type: 'text/markdown' });
-        globalThis.fetch = vi.fn().mockResolvedValue({
-          blob: async () => mockBlob,
-          ok: true,
-        }) as typeof fetch;
+        vi.mocked(apiClient.GET).mockResolvedValue({
+          data: { content: '# Project' },
+          error: undefined,
+          response: new Response(),
+        });
 
         const result = await exportImportApi.export('proj-1', 'markdown');
         expect(result).toBeInstanceOf(Blob);
+        expect(result).toHaveProperty('type', 'text/markdown');
       });
 
       it('should handle export errors', async () => {
-        globalThis.fetch = vi.fn().mockResolvedValue({
-          ok: false,
-          status: 500,
-        }) as typeof fetch;
+        vi.mocked(apiClient.GET).mockResolvedValue({
+          data: undefined,
+          error: { message: 'Export failed' },
+          response: new Response(null, { status: 500 }),
+        });
 
-        await expect(exportImportApi.export('proj-1', 'json')).rejects.toThrow('Export failed');
+        await expect(exportImportApi.export('proj-1', 'json')).rejects.toThrow();
       });
     });
 

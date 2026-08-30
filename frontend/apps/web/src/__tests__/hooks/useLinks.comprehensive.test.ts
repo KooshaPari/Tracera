@@ -9,6 +9,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useCreateLink, useDeleteLink, useLinks, useTraceabilityGraph } from '../../hooks/useLinks';
+import { useAuthStore } from '../../stores/authStore';
 
 // Mock fetch
 const mockFetch = vi.fn();
@@ -29,6 +30,7 @@ const createWrapper = () => {
 describe('useLinks - Comprehensive Coverage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useAuthStore.setState({ token: 'link-contract-token' });
   });
 
   describe(useLinks, () => {
@@ -69,33 +71,33 @@ describe('useLinks - Comprehensive Coverage', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('project_id=proj-1'),
         expect.objectContaining({
-          headers: {
+          headers: expect.objectContaining({
             'X-Bulk-Operation': 'true',
-          },
+          }),
         }),
       );
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('source_id=item-1'),
         expect.objectContaining({
-          headers: {
+          headers: expect.objectContaining({
             'X-Bulk-Operation': 'true',
-          },
+          }),
         }),
       );
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('target_id=item-2'),
         expect.objectContaining({
-          headers: {
+          headers: expect.objectContaining({
             'X-Bulk-Operation': 'true',
-          },
+          }),
         }),
       );
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('type=depends_on'),
         expect.objectContaining({
-          headers: {
+          headers: expect.objectContaining({
             'X-Bulk-Operation': 'true',
-          },
+          }),
         }),
       );
     });
@@ -119,9 +121,9 @@ describe('useLinks - Comprehensive Coverage', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('project_id=proj-1'),
         expect.objectContaining({
-          headers: {
+          headers: expect.objectContaining({
             'X-Bulk-Operation': 'true',
-          },
+          }),
         }),
       );
     });
@@ -145,9 +147,9 @@ describe('useLinks - Comprehensive Coverage', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('type=implements'),
         expect.objectContaining({
-          headers: {
+          headers: expect.objectContaining({
             'X-Bulk-Operation': 'true',
-          },
+          }),
         }),
       );
     });

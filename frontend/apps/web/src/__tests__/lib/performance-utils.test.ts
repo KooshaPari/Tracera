@@ -92,17 +92,22 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
 
   describe('Performance monitoring', () => {
     it('should measure function execution time', async () => {
+      vi.useFakeTimers();
       const fn = async () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
         return 'done';
       };
 
-      const startTime = performance.now();
-      await fn();
-      const endTime = performance.now();
-      const duration = endTime - startTime;
+      try {
+        const startTime = performance.now();
+        const result = fn();
+        await vi.advanceTimersByTimeAsync(10);
 
-      expect(duration).toBeGreaterThanOrEqual(10);
+        await expect(result).resolves.toBe('done');
+        expect(performance.now() - startTime).toBe(10);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('should track render performance', () => {

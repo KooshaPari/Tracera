@@ -42,6 +42,7 @@ const ActionPopover = ({ buttonLabel, buttonTitle, children, icon }: ActionPopov
 interface ActionInputProps {
   buttonLabel: string;
   buttonTitle: string;
+  confirmLabel: string;
   icon: React.ReactNode;
   inputId: string;
   inputLabel: string;
@@ -54,6 +55,7 @@ interface ActionInputProps {
 const ActionInput = ({
   buttonLabel,
   buttonTitle,
+  confirmLabel,
   icon,
   inputId,
   inputLabel,
@@ -81,7 +83,7 @@ const ActionInput = ({
             onChange={handleChange}
             aria-label={inputLabel}
           />
-          <Button size='sm' onClick={onConfirm} aria-label={buttonLabel}>
+          <Button size='sm' onClick={onConfirm} aria-label={confirmLabel}>
             Add
           </Button>
         </div>
@@ -159,6 +161,7 @@ const NodeQuickActions = memo(function NodeQuickActions({
       <ActionInput
         buttonLabel='Add link to another node'
         buttonTitle='Add link to another node'
+        confirmLabel='Confirm link to node'
         icon={<Link2 className='h-3 w-3' aria-hidden='true' />}
         inputId='link-target'
         inputLabel='Link to node'
@@ -170,6 +173,7 @@ const NodeQuickActions = memo(function NodeQuickActions({
       <ActionInput
         buttonLabel='Add tag to node'
         buttonTitle='Add tag to node'
+        confirmLabel='Confirm tag for node'
         icon={<Tag className='h-3 w-3' aria-hidden='true' />}
         inputId='tag'
         inputLabel='Add tag'
