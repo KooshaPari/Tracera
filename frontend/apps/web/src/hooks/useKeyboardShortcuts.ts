@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export interface KeyboardShortcut {
   key: string;
@@ -41,7 +41,13 @@ export function useKeyboardShortcuts(
   unregister: (id: string) => void;
 } {
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
-  const [_registeredShortcuts, setRegisteredShortcuts] = useState<RegisteredShortcut[]>([]);
+  const [registeredShortcuts, setRegisteredShortcuts] = useState<RegisteredShortcut[]>([]);
+  const shortcutsRef = useRef(shortcuts);
+  shortcutsRef.current = shortcuts;
+
+  const shortcutSignature = JSON.stringify(
+    shortcuts.map(({ action: _action, ...shortcut }) => shortcut),
+  );
 
   // Add provided shortcuts to registry
   useEffect(() => {
@@ -50,9 +56,15 @@ export function useKeyboardShortcuts(
     }
 
     const shortcutIds = new Set(
-      shortcuts.map((shortcut) => {
+      shortcutsRef.current.map((shortcut, index) => {
         const id = `shortcut-${shortcutCounter++}`;
-        shortcutRegistry.push({ id, shortcut });
+        shortcutRegistry.push({
+          id,
+          shortcut: {
+            ...shortcut,
+            action: () => shortcutsRef.current[index]?.action(),
+          },
+        });
         return id;
       }),
     );
@@ -61,13 +73,12 @@ export function useKeyboardShortcuts(
 
     return () => {
       shortcutRegistry = shortcutRegistry.filter((item) => !shortcutIds.has(item.id));
-      setRegisteredShortcuts([...shortcutRegistry]);
     };
-  }, [shortcuts, enabled]);
+  }, [shortcutSignature, enabled]);
 
   const allShortcuts = useMemo(
     () =>
-      shortcutRegistry.map((item) => ({
+      registeredShortcuts.map((item) => ({
         alt: item.shortcut.alt,
         category: item.shortcut.category,
         context: item.shortcut.context,
@@ -77,7 +88,7 @@ export function useKeyboardShortcuts(
         meta: item.shortcut.meta,
         shift: item.shortcut.shift,
       })),
-    [],
+    [registeredShortcuts],
   );
 
   // Global keyboard listener
