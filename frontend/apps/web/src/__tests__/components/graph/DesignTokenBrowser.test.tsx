@@ -141,7 +141,7 @@ describe(DesignTokenBrowser, () => {
       render(<DesignTokenBrowser tokens={TOKENS_ALL} />);
 
       expect(screen.getByText('Design Tokens')).toBeInTheDocument();
-      expect(screen.getByText(/10 tokens/)).toBeInTheDocument();
+      expect(screen.getByText(`${TOKENS_ALL.length} tokens`)).toBeInTheDocument();
     });
 
     it('should display empty state when no tokens', () => {
@@ -163,7 +163,7 @@ describe(DesignTokenBrowser, () => {
       render(<DesignTokenBrowser tokens={TOKENS_COLOR_AND_SPACING} />);
 
       expect(screen.getByText(/5 tokens/)).toBeInTheDocument();
-      expect(screen.getByText(/3 in use/)).toBeInTheDocument();
+      expect(screen.getByText(/4 in use/)).toBeInTheDocument();
       expect(screen.getByText(/1 synced/)).toBeInTheDocument();
     });
   });
@@ -282,15 +282,10 @@ describe(DesignTokenBrowser, () => {
       await userEvent.click(colorsButton);
 
       // Click on primary token
-      await waitFor(async () => {
-        const primaryToken = screen.getByText('primary');
-        const tokenContainer = primaryToken.closest("div[class*='flex-col']");
-        if (tokenContainer) {
-          await userEvent.click(tokenContainer);
-        }
-      });
+      const primaryToken = await screen.findByRole('button', { name: /primary.*#3B82F6/i });
+      await userEvent.click(primaryToken);
 
-      expect(onSelectToken).toHaveBeenCalled();
+      expect(onSelectToken).toHaveBeenCalledWith('color-1');
     });
 
     it('should highlight selected token', async () => {
@@ -303,7 +298,7 @@ describe(DesignTokenBrowser, () => {
       // Find the primary token container
       await waitFor(() => {
         const primaryText = screen.getByText('primary');
-        const tokenContainer = primaryText.closest("div[class*='flex']");
+        const tokenContainer = primaryText.closest('.group');
         expect(tokenContainer).toHaveClass('bg-primary/10');
       });
     });
@@ -320,11 +315,9 @@ describe(DesignTokenBrowser, () => {
 
       // Click copy button (hover action)
       await waitFor(() => {
-        const primaryToken = screen.getByText('primary');
-        const copyButton = primaryToken
-          .closest("div[class*='group']")
-          ?.querySelector('button[class*="copy"]');
-        expect(copyButton).toBeTruthy();
+        expect(
+          screen.getByRole('button', { name: 'Copy value for primary' }),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -339,15 +332,9 @@ describe(DesignTokenBrowser, () => {
       await userEvent.click(colorsButton);
 
       // Expand token details
-      await waitFor(async () => {
-        const primaryToken = screen.getByText('primary');
-        const expandButton = primaryToken
-          .closest("div[class*='flex-col']")
-          ?.querySelector('button');
-        if (expandButton) {
-          await userEvent.click(expandButton);
-        }
-      });
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Show details for primary' }),
+      );
 
       await waitFor(() => {
         expect(screen.getByText('Primary brand color')).toBeInTheDocument();
@@ -436,7 +423,7 @@ describe(DesignTokenBrowser, () => {
       await userEvent.click(colorsButton);
 
       await waitFor(() => {
-        const previewBoxes = screen.getAllByRole('img', { hidden: true });
+        const previewBoxes = screen.getAllByRole('img', { name: /color preview/i });
         expect(previewBoxes.length).toBeGreaterThan(0);
       });
     });

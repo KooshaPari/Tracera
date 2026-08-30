@@ -136,7 +136,8 @@ function DesignTokenBrowserComponent({
         (t) =>
           t.name.toLowerCase().includes(query) ||
           t.path.some((p) => p.toLowerCase().includes(query)) ||
-          (t.description?.toLowerCase().includes(query) ?? t.value.toLowerCase().includes(query)) ||
+          (t.description?.toLowerCase().includes(query) ?? false) ||
+          t.value.toLowerCase().includes(query) ||
           t.tags?.some((tag) => tag.toLowerCase().includes(query)),
       );
     }
@@ -333,7 +334,7 @@ function DesignTokenBrowserComponent({
                   key={type}
                   type={type}
                   tokens={typeTokens}
-                  isExpanded={expandedCategories.has(type)}
+                  isExpanded={searchQuery.length > 0 || expandedCategories.has(type)}
                   onToggle={() => {
                     toggleCategory(type);
                   }}
@@ -534,6 +535,7 @@ function TokenListItem({
                 variant='ghost'
                 size='sm'
                 className='h-6 w-6 p-0'
+                aria-label={`Copy value for ${token.name}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   onCopyValue(token.resolvedValue ?? token.value);
@@ -573,6 +575,7 @@ function TokenListItem({
               variant='ghost'
               size='sm'
               className='h-6 w-6 p-0'
+              aria-label={`${expandDetails ? 'Hide' : 'Show'} details for ${token.name}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setExpandDetails(!expandDetails);
@@ -730,6 +733,8 @@ function TokenPreview({ token }: TokenPreviewProps) {
           className='border-muted h-8 w-8 shrink-0 rounded-md border-2'
           style={colorPreviewStyle(value)}
           title={value}
+          role='img'
+          aria-label={`${token.name} color preview`}
         />
       );
     }
@@ -739,6 +744,8 @@ function TokenPreview({ token }: TokenPreviewProps) {
         <div
           className='border-muted h-8 w-8 shrink-0 rounded-md border'
           style={shadowPreviewStyle(value)}
+          role='img'
+          aria-label={`${token.name} shadow preview`}
         />
       );
     }
@@ -749,12 +756,18 @@ function TokenPreview({ token }: TokenPreviewProps) {
         <div
           className='h-8 w-8 shrink-0 rounded border-2'
           style={borderPreviewStyle(token.type === 'radius' ? value : '4px')}
+          role='img'
+          aria-label={`${token.name} ${token.type} preview`}
         />
       );
     }
     default: {
       return (
-        <div className='border-muted bg-muted flex h-8 w-8 shrink-0 items-center justify-center rounded border'>
+        <div
+          className='border-muted bg-muted flex h-8 w-8 shrink-0 items-center justify-center rounded border'
+          role='img'
+          aria-label={`${token.name} token preview`}
+        >
           <Code className='text-muted-foreground h-4 w-4' />
         </div>
       );
