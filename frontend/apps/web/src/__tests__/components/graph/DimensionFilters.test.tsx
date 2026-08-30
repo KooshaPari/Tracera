@@ -194,12 +194,12 @@ describe('DimensionFilters Component', () => {
         />,
       );
 
-      const maturityButton = screen.getByRole('button', { name: /Maturity/i });
+      const maturityButton = screen.getByRole('button', { name: /^Maturity/i });
       await globalThis.user.click(maturityButton);
 
       // Popover should open with filter options
       await waitFor(() => {
-        expect(screen.getByText(/show items with/i)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /^idea$/i })).toBeInTheDocument();
       });
     });
 
@@ -213,10 +213,10 @@ describe('DimensionFilters Component', () => {
         />,
       );
 
-      const maturityButton = screen.getByRole('button', { name: /Maturity/i });
+      const maturityButton = screen.getByRole('button', { name: /^Maturity/i });
       await globalThis.user.click(maturityButton);
 
-      const ideaButton = screen.getByRole('button', { name: /idea/i });
+      const ideaButton = screen.getByRole('button', { name: /^idea$/i });
       await globalThis.user.click(ideaButton);
 
       await waitFor(() => {
@@ -233,7 +233,7 @@ describe('DimensionFilters Component', () => {
     });
 
     it('supports multi-select for enum filters', async () => {
-      render(
+      const { rerender } = render(
         <DimensionFilters
           activeFilters={[]}
           onFiltersChange={onFiltersChange}
@@ -242,11 +242,20 @@ describe('DimensionFilters Component', () => {
         />,
       );
 
-      const maturityButton = screen.getByRole('button', { name: /Maturity/i });
+      const maturityButton = screen.getByRole('button', { name: /^Maturity/i });
       await globalThis.user.click(maturityButton);
 
-      const ideaButton = screen.getByRole('button', { name: /idea/i });
+      const ideaButton = screen.getByRole('button', { name: /^idea$/i });
       await globalThis.user.click(ideaButton);
+
+      rerender(
+        <DimensionFilters
+          activeFilters={[{ dimension: 'maturity', operator: 'eq', value: 'idea' }]}
+          onFiltersChange={onFiltersChange}
+          displayMode='filter'
+          onDisplayModeChange={onDisplayModeChange}
+        />,
+      );
 
       const draftButton = screen.getByRole('button', { name: /draft/i });
       await globalThis.user.click(draftButton);
@@ -282,10 +291,10 @@ describe('DimensionFilters Component', () => {
         />,
       );
 
-      const maturityButton = screen.getByRole('button', { name: /Maturity/i });
+      const maturityButton = screen.getByRole('button', { name: /^Maturity/i });
       await globalThis.user.click(maturityButton);
 
-      const ideaButton = screen.getByRole('button', { name: /idea/i });
+      const ideaButton = screen.getByRole('button', { name: /^idea$/i });
       await globalThis.user.click(ideaButton);
 
       await waitFor(() => {
@@ -318,10 +327,10 @@ describe('DimensionFilters Component', () => {
         />,
       );
 
-      const maturityButton = screen.getByRole('button', { name: /Maturity/i });
+      const maturityButton = screen.getByRole('button', { name: /^Maturity/i });
       await globalThis.user.click(maturityButton);
 
-      const ideaButton = screen.getByRole('button', { name: /idea/i });
+      const ideaButton = screen.getByRole('button', { name: /^idea$/i });
       await globalThis.user.click(ideaButton);
 
       await waitFor(() => {
@@ -339,8 +348,7 @@ describe('DimensionFilters Component', () => {
         />,
       );
 
-      const xButtons = screen.getAllByRole('button', { name: '' });
-      const maturityXButton = xButtons[0]; // First X button
+      const maturityXButton = screen.getByRole('button', { name: 'Remove Maturity filter' });
 
       await globalThis.user.click(maturityXButton);
 
@@ -379,7 +387,7 @@ describe('DimensionFilters Component', () => {
         />,
       );
 
-      const coverageButton = screen.getByRole('button', { name: /Coverage/i });
+      const coverageButton = screen.getByRole('button', { name: /^Coverage/i });
       await globalThis.user.click(coverageButton);
 
       // Should show range slider
@@ -398,7 +406,7 @@ describe('DimensionFilters Component', () => {
         />,
       );
 
-      const coverageButton = screen.getByRole('button', { name: /Coverage/i });
+      const coverageButton = screen.getByRole('button', { name: /^Coverage/i });
       await globalThis.user.click(coverageButton);
 
       await waitFor(() => {
@@ -427,10 +435,10 @@ describe('DimensionFilters Component', () => {
         />,
       );
 
-      const coverageButton = screen.getByRole('button', { name: /Coverage/i });
+      const coverageButton = screen.getByRole('button', { name: /^Coverage/i });
       await globalThis.user.click(coverageButton);
 
-      const clearButton = await screen.findByRole('button', { name: /Clear/i });
+      const clearButton = await screen.findByRole('button', { name: /^Clear$/i });
       expect(clearButton).toBeInTheDocument();
     });
   });
@@ -461,13 +469,9 @@ describe('DimensionFilters Component', () => {
         />,
       );
 
-      const buttons = screen.getAllByRole('button');
-      // Assume the second button in the mode selector is "Highlight"
-      // This is component-specific and may need adjustment
-      await globalThis.user.click(buttons[1]);
+      await globalThis.user.click(screen.getByRole('button', { name: 'Highlight mode' }));
 
-      // At least one mode change should be triggered
-      expect(onDisplayModeChange).toHaveBeenCalledTimes(0);
+      expect(onDisplayModeChange).toHaveBeenCalledWith('highlight');
     });
 
     it('highlights current display mode', () => {

@@ -246,6 +246,7 @@ function DimensionFiltersComponent({
                         variant={isActive ? 'default' : 'ghost'}
                         size='sm'
                         className='h-7 w-7 p-0'
+                        aria-label={`${option.label} mode`}
                         onClick={() => {
                           onDisplayModeChange(option.id);
                         }}
@@ -351,6 +352,7 @@ function DimensionFiltersComponent({
                     variant='ghost'
                     size='sm'
                     className='h-4 w-4 p-0 hover:bg-transparent'
+                    aria-label={`Remove ${config.label} filter`}
                     onClick={() => {
                       handleRemoveFilter(filter.dimension);
                     }}
