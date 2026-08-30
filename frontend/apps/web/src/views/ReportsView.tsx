@@ -175,7 +175,10 @@ export function ReportsView() {
                 setSelectedProject(v === 'all' ? '' : v);
               }}
             >
-              <SelectTrigger className='bg-background h-11 rounded-xl border-none shadow-md'>
+              <SelectTrigger
+                aria-label='Project context'
+                className='bg-background h-11 rounded-xl border-none shadow-md'
+              >
                 <SelectValue placeholder='All Active Projects' />
               </SelectTrigger>
               <SelectContent>
@@ -228,6 +231,12 @@ export function ReportsView() {
                     {template.format.map((format) => (
                       <button
                         key={format}
+                        type='button'
+                        aria-label={`Select ${format.toUpperCase()} for ${template.name}`}
+                        aria-pressed={
+                          selectedFormat[template.id] === format ||
+                          (!selectedFormat[template.id] && template.format[0] === format)
+                        }
                         onClick={() => {
                           setSelectedFormat({
                             ...selectedFormat,
@@ -254,6 +263,7 @@ export function ReportsView() {
                   }}
                   className='shadow-primary/10 h-11 w-full gap-2 rounded-xl font-black tracking-[0.1em] uppercase shadow-lg'
                   disabled={generateReportMutation.isPending}
+                  aria-label={`Compile ${template.name}${generateReportMutation.isPending ? ' (in progress)' : ''}`}
                 >
                   {generateReportMutation.isPending ? (
                     <TrendingUp className='h-4 w-4 animate-bounce' />
@@ -297,6 +307,7 @@ export function ReportsView() {
               <Button
                 variant='ghost'
                 size='icon'
+                aria-label={`Download ${r.name}`}
                 className='group-hover:bg-primary rounded-full transition-all group-hover:text-white'
               >
                 <Download className='h-4 w-4' />

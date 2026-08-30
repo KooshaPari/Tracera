@@ -4,7 +4,6 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useItems } from '../../hooks/useItems';
@@ -16,13 +15,13 @@ import { ProjectDetailView } from '../../views/ProjectDetailView';
 vi.mock('@tanstack/react-router', async () => {
   const actual = await vi.importActual('@tanstack/react-router');
   return {
+    ...actual,
     Link: ({ children, to }: any) => (
       <a href={typeof to === 'string' ? to : to.toString()}>{children}</a>
     ),
     useNavigate: () => vi.fn(),
     useParams: () => ({ projectId: 'proj-1' }),
     useSearch: () => ({}),
-    ...actual,
   };
 });
 
@@ -38,8 +37,6 @@ vi.mock('../../hooks/useProjects', () => ({
   useProject: vi.fn(),
   useUpdateProject: vi.fn(),
 }));
-
-const user = userEvent.setup();
 
 describe(ProjectDetailView, () => {
   let queryClient: QueryClient;
@@ -67,14 +64,14 @@ describe(ProjectDetailView, () => {
     } as any);
 
     vi.mocked(useItems).mockReturnValue({
-      data: [],
+      data: { items: [], total: 0 },
       error: null,
       isError: false,
       isLoading: false,
     } as any);
 
     vi.mocked(useLinks).mockReturnValue({
-      data: [],
+      data: { links: [], total: 0 },
       error: null,
       isError: false,
       isLoading: false,
@@ -102,17 +99,20 @@ describe(ProjectDetailView, () => {
     } as any);
 
     vi.mocked(useItems).mockReturnValue({
-      data: [
-        { id: 'item-1', status: 'todo' },
-        { id: 'item-2', status: 'done' },
-      ],
+      data: {
+        items: [
+          { id: 'item-1', status: 'todo', title: 'Item 1', type: 'feature' },
+          { id: 'item-2', status: 'done', title: 'Item 2', type: 'feature' },
+        ],
+        total: 2,
+      },
       error: null,
       isError: false,
       isLoading: false,
     } as any);
 
     vi.mocked(useLinks).mockReturnValue({
-      data: [{ id: 'link-1' }],
+      data: { links: [{ id: 'link-1' }], total: 1 },
       error: null,
       isError: false,
       isLoading: false,
@@ -127,7 +127,7 @@ describe(ProjectDetailView, () => {
     expect(screen.getByText(/Total Items/i)).toBeInTheDocument();
   });
 
-  it('handles tab switching', async () => {
+  it('exposes project views', () => {
     vi.mocked(useProject).mockReturnValue({
       data: {
         id: 'proj-1',
@@ -139,14 +139,14 @@ describe(ProjectDetailView, () => {
     } as any);
 
     vi.mocked(useItems).mockReturnValue({
-      data: [],
+      data: { items: [], total: 0 },
       error: null,
       isError: false,
       isLoading: false,
     } as any);
 
     vi.mocked(useLinks).mockReturnValue({
-      data: [],
+      data: { links: [], total: 0 },
       error: null,
       isError: false,
       isLoading: false,
@@ -158,13 +158,14 @@ describe(ProjectDetailView, () => {
       </QueryClientProvider>,
     );
 
-    // Find and click tabs
-    const tabs = screen.getAllByRole('tab');
-    const secondTab = tabs[1];
-    if (secondTab) {
-      await user.click(secondTab);
-      // Should switch to different tab content
-    }
+    expect(screen.getByRole('link', { name: 'Features' })).toHaveAttribute(
+      'href',
+      '/projects/proj-1/views/feature',
+    );
+    expect(screen.getByRole('link', { name: 'Traceability' })).toHaveAttribute(
+      'href',
+      '/projects/proj-1/views/graph',
+    );
   });
 
   it('displays items by type', () => {
@@ -204,7 +205,7 @@ describe(ProjectDetailView, () => {
     } as any);
 
     vi.mocked(useLinks).mockReturnValue({
-      data: [],
+      data: { links: [], total: 0 },
       error: null,
       isError: false,
       isLoading: false,
