@@ -82,7 +82,7 @@ describe('useItems hooks', () => {
   );
 
   describe(useItems, () => {
-    it('should not fetch without projectId', () => {
+    it('should fetch the unfiltered item collection without projectId', async () => {
       (fetch as any).mockResolvedValueOnce({
         json: async () => ({ items: mockItems, total: mockItems.length }),
         ok: true,
@@ -90,8 +90,14 @@ describe('useItems hooks', () => {
 
       const { result } = renderHook(() => useItems(), { wrapper });
 
-      expect(result.current.fetchStatus).toBe('idle');
-      expect(fetch).not.toHaveBeenCalled();
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBeTruthy();
+      });
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/items?include_specs=true'),
+        expect.any(Object),
+      );
     });
 
     it('should fetch items with multiple filters', async () => {
@@ -157,7 +163,7 @@ describe('useItems hooks', () => {
         expect(result.current.isSuccess).toBeTruthy();
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['items'] }));
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['items'] });
     });
 
     it('should include optional fields in request', async () => {
@@ -211,10 +217,7 @@ describe('useItems hooks', () => {
         expect(result.current.isSuccess).toBeTruthy();
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['items'] }));
-      expect(invalidateSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ queryKey: ['items', 'item-1'] }),
-      );
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['items'] });
     });
   });
 
@@ -255,7 +258,7 @@ describe('useItems hooks', () => {
         expect(result.current.isSuccess).toBeTruthy();
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['items'] }));
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['items'] });
     });
   });
 });

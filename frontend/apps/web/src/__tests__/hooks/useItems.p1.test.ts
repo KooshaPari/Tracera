@@ -3,7 +3,10 @@
  * Coverage targets: All hooks, fetch functions, transformations, error handling
  */
 
-import { renderHook, waitFor } from '@testing-library/react';
+import { createElement, type ReactNode } from 'react';
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { renderHook as testingLibraryRenderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -17,7 +20,9 @@ import {
 
 // Mock auth store
 vi.mock('../../stores/authStore', () => ({
-  useAuthStore: vi.fn(() => ({ token: 'test-token' })),
+  useAuthStore: vi.fn((selector: (state: { token: string }) => unknown) =>
+    selector({ token: 'test-token' }),
+  ),
 }));
 
 // Mock sonner toast
@@ -52,6 +57,19 @@ async function createMockResponse(data: unknown, status = 200) {
     status,
   });
 }
+
+const renderHook: typeof testingLibraryRenderHook = (callback, options) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      mutations: { retry: false },
+      queries: { retry: false },
+    },
+  });
+  const wrapper = ({ children }: { children: ReactNode }) =>
+    createElement(QueryClientProvider, { client: queryClient }, children);
+
+  return testingLibraryRenderHook(callback, { ...options, wrapper });
+};
 
 describe('useItems Hooks - P1 Coverage', () => {
   beforeEach(() => {
@@ -239,11 +257,11 @@ describe('useItems Hooks - P1 Coverage', () => {
       expect(result.current.data).toBeDefined();
     });
 
-    it('should be disabled when no ID provided', async () => {
+    it('should be disabled when no ID provided', () => {
       const { result } = renderHook(() => useItem(''));
 
-      // With empty ID, query should be disabled
-      expect(result.current.isDisabled).toBeTruthy();
+      expect(result.current.fetchStatus).toBe('idle');
+      expect(global.fetch).not.toHaveBeenCalled();
     });
 
     it('should handle fetch error', async () => {
@@ -451,6 +469,7 @@ describe('useItems Hooks - P1 Coverage', () => {
   describe('Item Transformation', () => {
     it('should transform snake_case to camelCase', async () => {
       const snakeCaseItem = {
+        ...mockItem,
         created_at: '2024-01-01T00:00:00Z',
         project_id: 'proj-1',
         updated_at: '2024-01-02T00:00:00Z',
@@ -464,8 +483,11 @@ describe('useItems Hooks - P1 Coverage', () => {
         expect(result.current.isLoading).toBeFalsy();
       });
 
-      // Transformation should occur
-      expect(result.current.data).toBeDefined();
+      expect(result.current.data).toMatchObject({
+        createdAt: '2024-01-01T00:00:00Z',
+        projectId: 'proj-1',
+        updatedAt: '2024-01-02T00:00:00Z',
+      });
     });
 
     it('should handle requirement type fields', async () => {

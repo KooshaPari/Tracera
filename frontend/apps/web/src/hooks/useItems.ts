@@ -255,11 +255,15 @@ function useItem(id: string): ReturnType<typeof useQuery<Item>> {
 }
 
 function useCreateItem(): ReturnType<typeof useMutation<Item, Error, CreateItemData>> {
+  const queryClient = useQueryClient();
   const token = useAuthToken();
   return useMutation({
     mutationFn: async (data: CreateItemData): Promise<Item> => {
       const result = await createItem(itemsUtils.normalizeCreateItemData(data), token);
       return result;
+    },
+    onSuccess: async (): Promise<void> => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
     },
   });
 }
@@ -267,20 +271,28 @@ function useCreateItem(): ReturnType<typeof useMutation<Item, Error, CreateItemD
 function useUpdateItem(): ReturnType<
   typeof useMutation<Item, Error, { id: string; data: Partial<Item> }>
 > {
+  const queryClient = useQueryClient();
   const token = useAuthToken();
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Item> }): Promise<Item> => {
       const result = await updateItem(id, data, token);
       return result;
     },
+    onSuccess: async (): Promise<void> => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
+    },
   });
 }
 
 function useDeleteItem(): ReturnType<typeof useMutation<void, Error, string>> {
+  const queryClient = useQueryClient();
   const token = useAuthToken();
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
       await deleteItem(id, token);
+    },
+    onSuccess: async (): Promise<void> => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
     },
   });
 }
