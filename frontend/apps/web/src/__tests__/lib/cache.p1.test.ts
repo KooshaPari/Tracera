@@ -394,6 +394,7 @@ describe('Cache System - P1 Coverage', () => {
     it('should prewarm projects', async () => {
       const cache = getCacheManager();
       const setSpy = vi.spyOn(cache, 'set');
+      setSpy.mockClear();
 
       const projectData = { id: 'proj-1', name: 'Test Project' };
       await prewarmCache({
@@ -418,6 +419,7 @@ describe('Cache System - P1 Coverage', () => {
     it('should prewarm both projects and items', async () => {
       const cache = getCacheManager();
       const setSpy = vi.spyOn(cache, 'set');
+      setSpy.mockClear();
 
       await prewarmCache({
         items: [{ data: { id: 'item-1' }, id: 'item-1' }],
@@ -430,6 +432,7 @@ describe('Cache System - P1 Coverage', () => {
     it('should handle empty prewarm data', async () => {
       const cache = getCacheManager();
       const setSpy = vi.spyOn(cache, 'set');
+      setSpy.mockClear();
 
       await prewarmCache({});
 

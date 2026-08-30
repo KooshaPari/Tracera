@@ -382,7 +382,7 @@ describe('Undo/Redo Functionality', () => {
     const redoBtn = screen.getByRole('button', { name: 'Redo' });
     await user.click(redoBtn);
 
-    expect(handleStateChange).toHaveBeenLastCalledWith('Tes');
+    expect(handleStateChange).toHaveBeenLastCalledWith('Test');
   });
 
   it('should disable undo when no history', () => {
@@ -528,13 +528,13 @@ describe('Bulk Selection and Operations', () => {
     render(<MockBulkSelection />);
 
     // Initially shows 0/3
-    expect(screen.getByText('0/3')).toBeInTheDocument();
+    expect(screen.getByLabelText('Select all items').parentElement).toHaveTextContent('0/3');
 
     const item1Checkbox = screen.getByLabelText('Select Item 1');
     await user.click(item1Checkbox);
 
     // Now shows 1/3
-    expect(screen.getByText('1/3')).toBeInTheDocument();
+    expect(screen.getByLabelText('Select all items').parentElement).toHaveTextContent('1/3');
   });
 
   it('should clear selection after bulk action', async () => {
@@ -548,7 +548,7 @@ describe('Bulk Selection and Operations', () => {
 
     // Selection should be cleared
     expect(item1Checkbox).not.toBeChecked();
-    expect(screen.getByText('0/3')).toBeInTheDocument();
+    expect(screen.getByLabelText('Select all items').parentElement).toHaveTextContent('0/3');
   });
 
   it('should support keyboard selection (Shift + Click)', async () => {

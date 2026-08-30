@@ -443,8 +443,9 @@ describe('enterprise-optimizations', () => {
   });
 
   describe('useErrorReporter', () => {
-    it('should report error', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    it('should report error', async () => {
+      const { logger } = await import('@/lib/logger');
+      const consoleSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
       const { result } = renderHook(() => useErrorReporter());
 
       const error = new EnterpriseError('Test error', 'TEST_CODE');

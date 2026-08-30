@@ -306,10 +306,7 @@ describe('DashboardView', () => {
 
       const links = screen.getAllByRole('link');
       const projectLinks = links.filter(
-        (link) =>
-          link.getAttribute('href')?.startsWith('/projects/p1') ??
-          link.getAttribute('href')?.startsWith('/projects/p2') ??
-          link.getAttribute('href')?.startsWith('/projects/p3'),
+        (link) => /^\/projects\/(p1|p2|p3)(\/|$)/.test(link.getAttribute('href') ?? ''),
       );
       expect(projectLinks.length).toBeGreaterThanOrEqual(3);
     });
@@ -482,7 +479,7 @@ describe('DashboardView', () => {
 
       expect(screen.getByText(/Traceability Dashboard/i)).toBeInTheDocument();
       expect(
-        screen.getByText(/Monitor project health and system-wide traceability status/i),
+        screen.getByText(/Monitor project health, Evidence coverage, and system-wide traceability status/i),
       ).toBeInTheDocument();
     });
 
