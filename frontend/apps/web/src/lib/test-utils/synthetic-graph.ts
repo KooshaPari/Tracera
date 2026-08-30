@@ -9,7 +9,6 @@ import type { Edge, Node } from '@xyflow/react';
 
 const ASSIGNEE_RANGE = Number('10');
 const CHILD_RELATION_BIAS = Number('0.7');
-const CLUSTER_DISTANCE_LIMIT = Number('1500');
 const CLUSTER_OFFSET = Number('1000');
 const CLUSTER_OFFSET_HALF = Number('0.5');
 const CLUSTER_SPACING = Number('3000');
@@ -98,8 +97,8 @@ const buildClusteredPosition = (
   const offsetY = (rng.next() - CLUSTER_OFFSET_HALF) * CLUSTER_OFFSET;
 
   return {
-    x: clusterX + offsetX,
-    y: clusterY + offsetY,
+    x: clusterX + offsetX + CLUSTER_OFFSET_HALF * CLUSTER_OFFSET,
+    y: clusterY + offsetY + CLUSTER_OFFSET_HALF * CLUSTER_OFFSET,
   };
 };
 
@@ -188,6 +187,7 @@ const pickClusteredTarget = (
   sourceIdx: number,
   nodeCount: number,
   nodes: Node[],
+  clusterNodeIndices: Map<string, number[]>,
   rng: SeededRandom,
   density: number,
 ): number => {
@@ -196,18 +196,15 @@ const pickClusteredTarget = (
     return Math.floor(rng.next() * nodeCount);
   }
 
-  const candidates = nodes.filter((node, index) => {
-    if (index === sourceIdx) return false;
-    const dx = node.position.x - sourceNode.position.x;
-    const dy = node.position.y - sourceNode.position.y;
-    const distance = Math.hypot(dx, dy);
-    return distance < CLUSTER_DISTANCE_LIMIT;
-  });
+  const clusterKey = `${Math.floor(sourceNode.position.x / CLUSTER_SPACING)}:${Math.floor(sourceNode.position.y / CLUSTER_SPACING)}`;
+  const candidates = clusterNodeIndices.get(clusterKey) ?? [];
 
-  if (candidates.length > 0 && rng.next() < density) {
-    const candidate = pickRandom(candidates, rng, candidates[0]!);
-    const candidateIndex = nodes.findIndex((node) => node.id === candidate.id);
-    return candidateIndex >= 0 ? candidateIndex : Math.floor(rng.next() * nodeCount);
+  if (candidates.length > 1 && rng.next() < density) {
+    const candidatePosition = Math.floor(rng.next() * candidates.length);
+    const candidateIndex = candidates[candidatePosition] ?? sourceIdx;
+    return candidateIndex === sourceIdx
+      ? (candidates[(candidatePosition + 1) % candidates.length] ?? sourceIdx)
+      : candidateIndex;
   }
 
   return Math.floor(rng.next() * nodeCount);
@@ -218,16 +215,32 @@ const pickTargetIndex = (options: {
   density: number;
   nodeCount: number;
   nodes: Node[];
+  clusterNodeIndices: Map<string, number[]>;
   seededRandom: SeededRandom;
   sourceIdx: number;
 }): number => {
-  const { distribution, density, nodeCount, nodes, seededRandom, sourceIdx } = options;
+  const {
+    clusterNodeIndices,
+    distribution,
+    density,
+    nodeCount,
+    nodes,
+    seededRandom,
+    sourceIdx,
+  } = options;
 
   if (distribution === 'hierarchical') {
     return pickHierarchicalTarget(sourceIdx, nodeCount, seededRandom);
   }
   if (distribution === 'clustered') {
-    return pickClusteredTarget(sourceIdx, nodeCount, nodes, seededRandom, density);
+    return pickClusteredTarget(
+      sourceIdx,
+      nodeCount,
+      nodes,
+      clusterNodeIndices,
+      seededRandom,
+      density,
+    );
   }
   return Math.floor(seededRandom.next() * nodeCount);
 };
@@ -245,6 +258,15 @@ const buildEdges = (options: {
 
   const edges: Edge[] = [];
   const edgeSet = new Set<string>();
+  const clusterNodeIndices = new Map<string, number[]>();
+  if (distribution === 'clustered') {
+    nodes.forEach((node, index) => {
+      const key = `${Math.floor(node.position.x / CLUSTER_SPACING)}:${Math.floor(node.position.y / CLUSTER_SPACING)}`;
+      const indices = clusterNodeIndices.get(key) ?? [];
+      indices.push(index);
+      clusterNodeIndices.set(key, indices);
+    });
+  }
   const maxAttempts = edgeCount * EDGE_ATTEMPT_MULTIPLIER; // Prevent infinite loops
   let attempts = 0;
 
@@ -256,6 +278,7 @@ const buildEdges = (options: {
 
     const sourceIdx = Math.floor(seededRandom.next() * nodeCount);
     const targetIdx = pickTargetIndex({
+      clusterNodeIndices,
       density,
       distribution,
       nodeCount,

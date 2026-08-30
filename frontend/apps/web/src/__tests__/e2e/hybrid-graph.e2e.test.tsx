@@ -11,6 +11,7 @@
  */
 
 import { render, screen, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { HybridGraphView } from '@/components/graph/HybridGraphView';
@@ -20,6 +21,19 @@ import {
   generatePerformanceGraph,
   generateSyntheticGraph,
 } from '@/lib/test-utils/synthetic-graph';
+
+const sigma = {
+  off: vi.fn(),
+  on: vi.fn(),
+};
+
+vi.mock('@react-sigma/core', () => ({
+  SigmaContainer: ({ children, className }: { children: ReactNode; className?: string }) => (
+    <div className={className}>{children}</div>
+  ),
+  useLoadGraph: () => vi.fn(),
+  useSigma: () => sigma,
+}));
 
 // Mock performance API for FPS measurement
 const mockPerformance = {
@@ -326,7 +340,7 @@ describe('Hybrid Graph E2E Tests', () => {
       const renderTime = performance.now() - startTime;
 
       expect(renderTime).toBeLessThan(30_000); // 30 seconds for stress test
-    });
+    }, 35_000);
   });
 
   describe('Graph Metrics', () => {

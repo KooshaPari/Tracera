@@ -1,4 +1,4 @@
-import type { Edge, Node } from '@xyflow/react';
+import { ReactFlowProvider, type Edge, type Node } from '@xyflow/react';
 
 import { Layers, Zap } from 'lucide-react';
 import { memo, useMemo, useState } from 'react';
@@ -139,11 +139,13 @@ export const HybridGraphView = memo(function HybridGraphView({
         />
       ) : (
         // ReactFlow mode (<10k nodes)
-        <FlowGraphViewInner
-          items={reactFlowItems}
-          links={reactFlowLinks}
-          onNavigateToItem={handleNodeClick}
-        />
+        <ReactFlowProvider>
+          <FlowGraphViewInner
+            items={reactFlowItems}
+            links={reactFlowLinks}
+            onNavigateToItem={handleNodeClick}
+          />
+        </ReactFlowProvider>
       )}
 
       {/* Rich node detail panel (WebGL mode only) */}
