@@ -302,9 +302,45 @@ if (typeof globalThis !== 'undefined') {
       callback(new Blob());
     }
   };
-  Object.defineProperty(globalThis, 'HTMLCanvasElement', {
+  const nativeCanvas = globalThis.HTMLCanvasElement;
+  if (typeof nativeCanvas === 'function') {
+    // document.createElement('canvas') uses jsdom's original realm constructor.
+    // Patch that prototype instead of replacing the global constructor, which
+    // would leave created canvases on the unimplemented jsdom prototype.
+    Object.defineProperties(nativeCanvas.prototype, {
+      getContext: {
+        configurable: true,
+        value: MockCanvas.prototype.getContext,
+        writable: true,
+      },
+      toBlob: {
+        configurable: true,
+        value: MockCanvas.prototype.toBlob,
+        writable: true,
+      },
+      toDataURL: {
+        configurable: true,
+        value: MockCanvas.prototype.toDataURL,
+        writable: true,
+      },
+    });
+  } else {
+    Object.defineProperty(globalThis, 'HTMLCanvasElement', {
+      configurable: true,
+      value: MockCanvas as unknown as typeof HTMLCanvasElement,
+      writable: true,
+    });
+  }
+}
+
+// axe asks for pseudo-element styles. jsdom does not implement that optional
+// branch and emits a console error before returning ordinary computed styles,
+// so retain its useful behavior without forwarding the unsupported argument.
+if (typeof globalThis.getComputedStyle === 'function') {
+  const nativeGetComputedStyle = globalThis.getComputedStyle.bind(globalThis);
+  Object.defineProperty(globalThis, 'getComputedStyle', {
     configurable: true,
-    value: MockCanvas as unknown as typeof HTMLCanvasElement,
+    value: (element: Element): CSSStyleDeclaration => nativeGetComputedStyle(element),
     writable: true,
   });
 }

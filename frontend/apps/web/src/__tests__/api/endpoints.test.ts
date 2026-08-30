@@ -7,6 +7,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../../api/endpoints';
 import { mockItems, mockLinks, mockProjects } from '../mocks/data';
 
+const setFetchImpl = (globalThis as typeof globalThis & {
+  __setFetchImpl__?: (implementation: typeof fetch) => void;
+}).__setFetchImpl__;
+
 // Simple console-based logger
 const logger = {
   info: (msg: string) => {
@@ -98,7 +102,10 @@ describe('API Endpoints', () => {
 
       // Items - GET list
       if (urlNormalized === '/api/v1/items' && method === 'GET') {
-        return createMockApiResponse(mockItems);
+        const projectId = new URL(urlStr, 'http://localhost:4000').searchParams.get('project_id');
+        return createMockApiResponse(
+          projectId === null ? mockItems : mockItems.filter((item) => item.project_id === projectId),
+        );
       }
 
       // Items - GET by ID
@@ -176,8 +183,9 @@ describe('API Endpoints', () => {
       return createMockApiResponse({ error: 'Not mocked' }, 404);
     };
 
-    // Replace global fetch with our mock
-    globalThis.fetch = vi.fn(fetchImpl) as typeof fetch;
+    // The shared setup owns a stable fetch spy so openapi-fetch keeps the same
+    // reference; replace its delegated implementation for this suite.
+    setFetchImpl?.(fetchImpl as typeof fetch);
   });
   describe('projectsApi', () => {
     it('should list projects', async () => {

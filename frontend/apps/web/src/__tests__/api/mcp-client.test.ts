@@ -271,20 +271,25 @@ describe('MCPClient', () => {
     it('should handle network timeout', async () => {
       vi.useFakeTimers();
 
-      const fetchPromise = new Promise(() => {
-        // Never resolves
-      });
+      try {
+        (globalThis.fetch as any).mockImplementationOnce(
+          (_url: string, options: RequestInit) =>
+            new Promise((_resolve, reject) => {
+              options.signal?.addEventListener('abort', () => {
+                reject(new DOMException('The operation was aborted', 'AbortError'));
+              });
+            }),
+        );
 
-      (globalThis.fetch as any).mockReturnValueOnce(fetchPromise);
+        const callPromise = client.listTools();
+        const expectation = expect(callPromise).rejects.toThrow('Request timeout');
 
-      const callPromise = client.listTools();
-      const expectation = expect(callPromise).rejects.toThrow();
-
-      // Fast-forward past timeout
-      await vi.advanceTimersByTimeAsync(6000);
-      await expectation;
-
-      vi.useRealTimers();
+        // Fast-forward past timeout and let the mocked fetch observe abort.
+        await vi.advanceTimersByTimeAsync(6000);
+        await expectation;
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 

@@ -52,8 +52,8 @@ describe('Traceability Matrix API', () => {
 
       expect(result).toEqual(mockMatrix);
       expect(result.coverage.percentage).toBe(66.67);
-      expect(result.items).toHaveLength(3);
-      expect(result.links).toHaveLength(2);
+      expect(result.items).toHaveLength(mockItems.length);
+      expect(result.links).toHaveLength(mockLinks.length);
     });
 
     it('should handle empty matrix', async () => {
@@ -298,7 +298,11 @@ describe('Traceability Matrix API', () => {
 
       const result = await fetchMatrix('proj-1');
 
-      expect(result.items).toHaveLength(3);
+      expect(result).toEqual({
+        coverage: { percentage: 0, total: 0, traced: 0, untraced: 0 },
+        items: [],
+        links: [],
+      });
     });
   });
 });

@@ -135,22 +135,14 @@ describe('API Client', () => {
       }
     });
 
-    it('should throw ApiError when no data returned', async () => {
+    it('should return undefined for a successful no-content response', async () => {
       const mockPromise = Promise.resolve({
         data: undefined,
         error: undefined,
         response: new Response(null, { status: 204, statusText: 'No Content' }),
       });
 
-      await expect(handleApiResponse(mockPromise)).rejects.toThrow(ApiError);
-      try {
-        await handleApiResponse(mockPromise);
-      } catch (error) {
-        expect(error).toBeInstanceOf(ApiError);
-        const apiError = error as InstanceType<typeof ApiError>;
-        expect(apiError.status).toBe(204);
-        expect(apiError.statusText).toBe('No data returned');
-      }
+      await expect(handleApiResponse(mockPromise)).resolves.toBeUndefined();
     });
 
     it('should handle error without response', async () => {

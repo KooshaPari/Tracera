@@ -146,7 +146,17 @@ function MockAccessibleForm({
     setErrors(validationErrors);
     setAllTouched();
 
-    if (Object.keys(validationErrors).length === 0) {
+    if (Object.keys(validationErrors).length > 0) {
+      const firstInvalidField = [FormField.Name, FormField.Email, FormField.Message].find(
+        (field) => validationErrors[field] !== undefined,
+      );
+      if (firstInvalidField !== undefined) {
+        const field = form.elements.namedItem(firstInvalidField);
+        if (field instanceof HTMLElement) {
+          field.focus();
+        }
+      }
+    } else {
       await Promise.resolve();
       onSubmit(data);
       setErrors({});
@@ -349,8 +359,9 @@ describe('Form Validation - Field-Level Errors', () => {
     }
 
     await waitFor(() => {
-      const error = screen.getByText('Please enter a valid email address');
+      const error = document.querySelector('#email-error');
       expect(error).toBeInTheDocument();
+      expect(error).toHaveTextContent('Please enter a valid email address');
     });
   });
 
@@ -361,8 +372,10 @@ describe('Form Validation - Field-Level Errors', () => {
     await user.click(submitBtn);
 
     await waitFor(() => {
-      expect(screen.getByText('Email is required')).toBeInTheDocument();
-      expect(screen.getByText('Name must be at least 2 characters')).toBeInTheDocument();
+      expect(document.querySelector('#email-error')).toHaveTextContent('Email is required');
+      expect(document.querySelector('#name-error')).toHaveTextContent(
+        'Name must be at least 2 characters',
+      );
     });
   });
 
@@ -391,7 +404,9 @@ describe('Form Validation - Error Announcements', () => {
     await user.click(submitBtn);
 
     await waitFor(() => {
-      const errorSummary = screen.getByRole('alert');
+      const errorSummary = screen
+        .getByRole('heading', { name: 'Please fix the following errors:' })
+        .closest('[role="alert"]');
       expect(errorSummary).toBeInTheDocument();
       expect(errorSummary).toHaveTextContent('Please fix the following errors');
     });
@@ -405,12 +420,11 @@ describe('Form Validation - Focus Management', () => {
   it('should allow error navigation with keyboard', async () => {
     render(<MockAccessibleForm />);
 
-    const emailInput = screen.getByPlaceholderText('your@email.com');
+    const nameInput = screen.getByPlaceholderText('Your name');
     const submitBtn = screen.getByRole('button', { name: 'Send Message' });
 
     await user.click(submitBtn);
-    await user.tab();
 
-    expect(emailInput).toHaveFocus();
+    expect(nameInput).toHaveFocus();
   });
 });

@@ -83,7 +83,7 @@ describe('Items API', () => {
       vi.mocked(itemsApi.list).mockResolvedValue(fewItems);
 
       const result = await fetchRecentItems();
-      expect(result).toHaveLength(3);
+      expect(result).toHaveLength(fewItems.length);
       expect(result).toEqual(fewItems);
     });
   });

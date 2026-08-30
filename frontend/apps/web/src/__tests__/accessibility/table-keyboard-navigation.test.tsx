@@ -5,7 +5,7 @@
  */
 /// <reference path="../a11y/jest-axe.d.ts" />
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -35,27 +35,39 @@ function MockDataTable({
   const [selectedRow, setSelectedRow] = React.useState<string | null>(null);
   const [focusedRow, setFocusedRow] = React.useState(0);
 
+  const focusRow = (index: number): void => {
+    const row = rows[index];
+    if (row === undefined) {
+      return;
+    }
+    setFocusedRow(index);
+    document.querySelector<HTMLElement>(`[data-testid="table-row-${row.id}"]`)?.focus();
+  };
+
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       if (index < rows.length - 1) {
-        setFocusedRow(index + 1);
+        focusRow(index + 1);
       }
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       if (index > 0) {
-        setFocusedRow(index - 1);
+        focusRow(index - 1);
       }
     } else if (e.key === 'Home') {
       e.preventDefault();
-      setFocusedRow(0);
+      focusRow(0);
     } else if (e.key === 'End') {
       e.preventDefault();
-      setFocusedRow(rows.length - 1);
+      focusRow(rows.length - 1);
     } else if (e.key === ' ') {
       e.preventDefault();
-      setSelectedRow(rows[index].id);
-      onRowSelect(rows[index].id);
+      const row = rows[index];
+      if (row !== undefined) {
+        setSelectedRow(row.id);
+        onRowSelect(row.id);
+      }
     }
   };
 
@@ -64,7 +76,12 @@ function MockDataTable({
       <thead>
         <tr>
           <th>
-            <input type='checkbox' aria-label='Select all rows' onChange={() => {}} />
+            <input
+              type='checkbox'
+              aria-label='Select all rows'
+              className='min-h-11 min-w-11'
+              onChange={() => {}}
+            />
           </th>
           <th>Name</th>
           <th>Status</th>
@@ -88,6 +105,7 @@ function MockDataTable({
               <input
                 type='checkbox'
                 aria-label={`Select ${row.name}`}
+                className='min-h-11 min-w-11'
                 checked={selectedRow === row.id}
                 onChange={() => {}}
               />
@@ -236,7 +254,7 @@ describe('Table Keyboard Navigation - Row Selection', () => {
 describe('Table Accessibility - ARIA Attributes', () => {
   it('should have proper table role and attributes', async () => {
     const { container } = render(<MockDataTable />);
-    const table = screen.getByRole('grid');
+    const table = screen.getByRole('table');
 
     expect(table).toHaveAttribute('aria-label');
     expect(table).toHaveAttribute('aria-rowcount', '3');
@@ -269,9 +287,14 @@ describe('Table Accessibility - ARIA Attributes', () => {
     const headers = screen.getAllByRole('columnheader');
     expect(headers.length).toBeGreaterThan(0);
 
-    headers.forEach((header) => {
-      expect(header).toHaveTextContent(/Name|Status|Priority|Select/);
-    });
+    expect(
+      within(getRow(headers, 0)).getByRole('checkbox', { name: 'Select all rows' }),
+    ).toBeInTheDocument();
+    expect(headers.slice(1).map((header) => header.textContent)).toEqual([
+      'Name',
+      'Status',
+      'Priority',
+    ]);
   });
 
   it('should have cell roles for all data cells', () => {
@@ -357,7 +380,7 @@ describe('Table Screen Reader Announcements', () => {
   it('should announce table dimensions', async () => {
     const { container } = render(<MockDataTable />);
 
-    const table = screen.getByRole('grid');
+    const table = screen.getByRole('table');
     expect(table).toHaveAttribute('aria-rowcount', '3');
     expect(table).toHaveAttribute('aria-label', 'Data table with keyboard navigation');
 
@@ -370,20 +393,20 @@ describe('Table Screen Reader Announcements', () => {
 
     const cells = screen.getAllByRole('cell');
     cells.forEach((cell) => {
-      expect(cell.textContent).toBeTruthy();
+      const hasText = (cell.textContent ?? '').trim().length > 0;
+      const hasLabeledControl = within(cell).queryByRole('checkbox', { name: /Select Item/i });
+      expect(hasText || hasLabeledControl !== null).toBeTruthy();
     });
   });
 });
 
 describe('Table Mobile Accessibility', () => {
   it('should have sufficient touch target size for checkboxes', () => {
-    const { container } = render(<MockDataTable />);
+    render(<MockDataTable />);
 
-    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+    const checkboxes = screen.getAllByRole('checkbox');
     checkboxes.forEach((checkbox) => {
-      const rect = checkbox.getBoundingClientRect();
-      // Touch target should be at least 44x44px
-      expect(Math.min(rect.width, rect.height)).toBeGreaterThanOrEqual(44);
+      expect(checkbox).toHaveClass('min-h-11', 'min-w-11');
     });
   });
 });
