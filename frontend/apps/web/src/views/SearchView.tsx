@@ -1,6 +1,5 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowRight, Box, Command, Layers, Search as SearchIcon } from 'lucide-react';
-import { useState } from 'react';
 
 import type { Item } from '@tracertm/types';
 
@@ -20,14 +19,7 @@ import { Skeleton } from '@tracertm/ui/components/Skeleton';
 import { useSearch } from '../hooks/useSearch';
 
 export function SearchView() {
-  const [query, setQuery] = useState('');
-  const [filters, setFilters] = useState({
-    project: '',
-    status: '',
-    type: '',
-  });
-
-  const { results, isLoading } = useSearch({ q: query, ...filters });
+  const { results, isLoading, query, setSearchText, updateQuery } = useSearch();
 
   return (
     <div className='animate-in-fade-up mx-auto max-w-5xl space-y-8 p-6'>
@@ -53,9 +45,9 @@ export function SearchView() {
             <Input
               type='search'
               placeholder='Type anything to search...'
-              value={query}
+              value={query.q}
               onChange={(e) => {
-                setQuery(e.target.value);
+                setSearchText(e.target.value);
               }}
               className='h-14 border-none bg-transparent pl-14 text-lg font-medium focus-visible:ring-0'
             />
@@ -63,12 +55,15 @@ export function SearchView() {
           <div className='flex w-full items-center gap-2 px-2 md:w-auto'>
             <Separator orientation='vertical' className='hidden h-8 md:block' />
             <Select
-              value={filters.type || 'all'}
+              value={query.types?.[0] ?? 'all'}
               onValueChange={(v) => {
-                setFilters({ ...filters, type: v === 'all' ? '' : v });
+                updateQuery({ types: v === 'all' ? [] : [v] });
               }}
             >
-              <SelectTrigger className='bg-muted/50 h-10 rounded-2xl border-none md:w-32'>
+              <SelectTrigger
+                aria-label='Search result type'
+                className='bg-muted/50 h-10 rounded-2xl border-none md:w-32'
+              >
                 <SelectValue placeholder='All Types' />
               </SelectTrigger>
               <SelectContent>
@@ -164,7 +159,7 @@ export function SearchView() {
               })}
             </div>
           </div>
-        ) : query ? (
+        ) : query.q ? (
           <div className='flex flex-col items-center justify-center py-32 text-center'>
             <div className='bg-muted mb-6 flex h-20 w-20 items-center justify-center rounded-full'>
               <SearchIcon className='h-10 w-10 opacity-10' />

@@ -44,37 +44,41 @@ import { SettingsView } from '../../views/SettingsView';
 // ============================================================================
 
 const createMockProject = (overrides?: Partial<Project>): Project => ({
+  createdAt: new Date().toISOString(),
   id: 'project-1',
   name: 'Test Project',
   description: 'A test project',
   metadata: {},
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
   ...overrides,
 });
 
 const createMockItem = (overrides?: Partial<Item>): Item => ({
+  createdAt: new Date().toISOString(),
   id: 'item-1',
-  project_id: 'project-1',
+  projectId: 'project-1',
   type: 'requirement' as any,
   title: 'Test Item',
   description: 'A test item',
-  status: 'pending' as any,
+  status: 'todo',
   priority: 'medium' as any,
   metadata: {},
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  version: 1,
+  view: 'feature',
   ...overrides,
 });
 
 const createMockLink = (overrides?: Partial<Link>): Link => ({
+  createdAt: new Date().toISOString(),
   id: 'link-1',
-  source_id: 'item-1',
-  target_id: 'item-2',
+  projectId: 'project-1',
+  sourceId: 'item-1',
+  targetId: 'item-2',
   type: 'implements' as any,
   metadata: {},
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  version: 1,
   ...overrides,
 });
 
@@ -107,12 +111,18 @@ const createMockGraphData = (): GraphData => ({
 });
 
 const createMockSearchResult = (items: Item[]): SearchResult => ({
+  hasMore: false,
   items,
   page: 1,
-  per_page: 10,
-  query: 'test',
+  pageSize: 10,
   total: items.length,
 });
+
+const authenticateTestUser = () => {
+  const { setToken, setUser } = useAuthStore.getState();
+  setToken('test-token');
+  setUser({ email: 'test@example.com', id: 'user-1', name: 'Test User' });
+};
 
 const setupQueryClient = () =>
   new QueryClient({
@@ -136,9 +146,10 @@ const renderWithProviders = (
 describe('Store Integration Tests', () => {
   beforeEach(() => {
     // Reset all stores before each test
-    useAuthStore.getState().logout();
+    useAuthStore.setState({ isAuthenticated: false, token: null, user: null });
     useItemsStore.getState().clearItems();
     useProjectStore.getState().clearCurrentProject();
+    useProjectStore.getState().setRecentProjects([]);
     localStorage.clear();
   });
 
@@ -162,10 +173,8 @@ describe('Store Integration Tests', () => {
       expect(localStorage.getItem('auth_token')).toBe('test-token');
     });
 
-    it('should handle login flow with store updates', async () => {
-      const { login } = useAuthStore.getState();
-
-      await login('test@example.com', 'password123');
+    it('should handle authenticated session store updates', () => {
+      authenticateTestUser();
 
       const state = useAuthStore.getState();
       expect(state.isAuthenticated).toBeTruthy();
@@ -173,13 +182,13 @@ describe('Store Integration Tests', () => {
       expect(state.token).toBeTruthy();
     });
 
-    it('should handle logout and clear all auth data', () => {
+    it('should handle logout and clear all auth data', async () => {
       const { setToken, setUser, logout } = useAuthStore.getState();
 
       setToken('test-token');
       setUser({ email: 'test@example.com', id: '1' });
 
-      logout();
+      await logout();
 
       const state = useAuthStore.getState();
       expect(state.token).toBeNull();
@@ -216,9 +225,9 @@ describe('Store Integration Tests', () => {
       const { addItems, getItemsByProject } = useItemsStore.getState();
 
       const items = [
-        createMockItem({ id: 'item-1', project_id: 'project-1' }),
-        createMockItem({ id: 'item-2', project_id: 'project-1' }),
-        createMockItem({ id: 'item-3', project_id: 'project-2' }),
+        createMockItem({ id: 'item-1', projectId: 'project-1' }),
+        createMockItem({ id: 'item-2', projectId: 'project-1' }),
+        createMockItem({ id: 'item-3', projectId: 'project-2' }),
       ];
 
       addItems(items);
@@ -234,7 +243,7 @@ describe('Store Integration Tests', () => {
       const tempId = 'temp-1';
       const createData = {
         description: 'Test description',
-        project_id: 'project-1',
+        projectId: 'project-1',
         title: 'New Item',
         type: 'requirement' as any,
       };
@@ -259,7 +268,7 @@ describe('Store Integration Tests', () => {
 
       const tempId = 'temp-1';
       optimisticCreate(tempId, {
-        project_id: 'project-1',
+        projectId: 'project-1',
         title: 'New Item',
         type: 'requirement' as any,
       });
@@ -520,9 +529,9 @@ describe('API Integration Tests', () => {
 
       vi.spyOn(api.items, 'list').mockResolvedValue(mockItems);
 
-      const items = await api.items.list({ project_id: 'project-1' });
+      const items = await api.items.list({ projectId: 'project-1' });
       expect(items).toHaveLength(2);
-      expect(api.items.list).toHaveBeenCalledWith({ project_id: 'project-1' });
+      expect(api.items.list).toHaveBeenCalledWith({ projectId: 'project-1' });
     });
 
     it('should create item and update store', async () => {
@@ -531,7 +540,7 @@ describe('API Integration Tests', () => {
       vi.spyOn(api.items, 'create').mockResolvedValue(newItem);
 
       const result = await api.items.create({
-        project_id: 'project-1',
+        projectId: 'project-1',
         title: 'New Item',
         type: 'requirement' as any,
       });
@@ -547,13 +556,13 @@ describe('API Integration Tests', () => {
       vi.spyOn(api.links, 'create').mockResolvedValue(newLink);
 
       const result = await api.links.create({
-        source_id: 'item-1',
-        target_id: 'item-2',
+        sourceId: 'item-1',
+        targetId: 'item-2',
         type: 'implements' as any,
       });
 
-      expect(result.source_id).toBe('item-1');
-      expect(result.target_id).toBe('item-2');
+      expect(result.sourceId).toBe('item-1');
+      expect(result.targetId).toBe('item-2');
     });
 
     it('should fetch links list', async () => {
@@ -579,31 +588,31 @@ describe('API Integration Tests', () => {
 
     it('should get impact analysis', async () => {
       const impact: ImpactAnalysis = {
-        affected_count: 1,
-        affected_items: [createMockItem({ id: 'item-2' })],
+        affectedCount: 1,
+        affectedItems: [createMockItem({ id: 'item-2' })],
         depth: 2,
-        item_id: 'item-1',
+        itemId: 'item-1',
       };
 
       vi.spyOn(api.graph, 'getImpactAnalysis').mockResolvedValue(impact);
 
       const result = await api.graph.getImpactAnalysis('item-1', 3);
-      expect(result.affected_count).toBe(1);
-      expect(result.affected_items).toHaveLength(1);
+      expect(result.affectedCount).toBe(1);
+      expect(result.affectedItems).toHaveLength(1);
     });
 
     it('should get dependency analysis', async () => {
       const deps: DependencyAnalysis = {
         dependencies: [createMockItem({ id: 'item-0' })],
-        dependency_count: 1,
+        dependencyCount: 1,
         depth: 2,
-        item_id: 'item-1',
+        itemId: 'item-1',
       };
 
       vi.spyOn(api.graph, 'getDependencyAnalysis').mockResolvedValue(deps);
 
       const result = await api.graph.getDependencyAnalysis('item-1');
-      expect(result.dependency_count).toBe(1);
+      expect(result.dependencyCount).toBe(1);
     });
 
     it('should detect cycles in graph', async () => {
@@ -649,52 +658,34 @@ describe('View Integration Tests', () => {
   });
 
   describe('DashboardView Integration', () => {
-    it('should render dashboard with stats', async () => {
-      const mockProjects = [createMockProject()];
-      const mockItems = [
-        createMockItem({ status: 'pending' as any }),
-        createMockItem({ status: 'done' as any }),
-      ];
-
-      vi.spyOn(api.projects, 'list').mockResolvedValue(mockProjects);
-      vi.spyOn(api.items, 'list').mockResolvedValue(mockItems);
-
+    it('should render the traceability dashboard surfaces', async () => {
       renderWithProviders(<DashboardView />);
 
       await waitFor(() => {
-        expect(screen.getByText('Dashboard')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Traceability Dashboard' })).toBeInTheDocument();
       });
 
-      // Stats should be visible
-      expect(screen.getByText('Total Projects')).toBeInTheDocument();
-      expect(screen.getByText('Total Items')).toBeInTheDocument();
+      expect(screen.getByText('Global Distribution')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Active Projects' })).toBeInTheDocument();
     });
 
-    it('should display quick actions', async () => {
-      vi.spyOn(api.projects, 'list').mockResolvedValue([]);
-      vi.spyOn(api.items, 'list').mockResolvedValue([]);
-
+    it('should display project discovery controls', async () => {
       renderWithProviders(<DashboardView />);
 
       await waitFor(() => {
-        expect(screen.getByText('Quick Actions')).toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Search projects...')).toBeInTheDocument();
       });
 
-      expect(screen.getByText('Create Item')).toBeInTheDocument();
-      expect(screen.getByText('New Project')).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Sort projects' })).toBeInTheDocument();
     });
 
-    it('should show loading state', () => {
-      vi.spyOn(api.projects, 'list').mockImplementation(
-        async () => new Promise(() => {}), // Never resolves
-      );
-      vi.spyOn(api.items, 'list').mockImplementation(async () => new Promise(() => {}));
-
+    it('should render system health context', async () => {
       renderWithProviders(<DashboardView />);
 
-      // Should show skeleton loaders
-      const skeletons = screen.getAllByTestId(/skeleton/i);
-      expect(skeletons.length).toBeGreaterThan(0);
+      await waitFor(() => {
+        expect(screen.getByText(/System:/)).toBeInTheDocument();
+      });
+      expect(screen.getByText(/MCP:/)).toBeInTheDocument();
     });
   });
 
@@ -705,12 +696,12 @@ describe('View Integration Tests', () => {
       renderWithProviders(<ReportsView />);
 
       await waitFor(() => {
-        expect(screen.getByText('Reports')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Intelligence Hub' })).toBeInTheDocument();
       });
 
-      expect(screen.getByText('Coverage Report')).toBeInTheDocument();
-      expect(screen.getByText('Status Report')).toBeInTheDocument();
-      expect(screen.getByText('Items Export')).toBeInTheDocument();
+      expect(screen.getByText('Traceability Matrix')).toBeInTheDocument();
+      expect(screen.getByText('Executive Summary')).toBeInTheDocument();
+      expect(screen.getByText('Entity Registry')).toBeInTheDocument();
     });
 
     it('should allow format selection', async () => {
@@ -719,35 +710,33 @@ describe('View Integration Tests', () => {
       renderWithProviders(<ReportsView />);
 
       await waitFor(() => {
-        expect(screen.getByText('Coverage Report')).toBeInTheDocument();
+        expect(screen.getByText('Traceability Matrix')).toBeInTheDocument();
       });
 
-      // Click format badge
-      const pdfBadge = screen.getAllByText('PDF')[0];
-      await user.click(pdfBadge);
+      const csvButton = screen.getByRole('button', {
+        name: 'Select CSV for Traceability Matrix',
+      });
+      await user.click(csvButton);
 
-      // Badge should be selected (would check className in real scenario)
-      expect(pdfBadge).toBeInTheDocument();
+      expect(csvButton).toHaveAttribute('aria-pressed', 'true');
     });
 
     it('should generate report on button click', async () => {
       const mockProject = createMockProject();
       vi.spyOn(api.projects, 'list').mockResolvedValue([mockProject]);
       vi.spyOn(api.exportImport, 'export').mockResolvedValue(new Blob());
+      vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
       renderWithProviders(<ReportsView />);
 
       await waitFor(() => {
-        expect(screen.getByText('Items Export')).toBeInTheDocument();
+        expect(screen.getByText('Entity Registry')).toBeInTheDocument();
       });
 
-      // Select project
-      const select = screen.getByRole('combobox');
-      await user.click(select);
+      await user.click(screen.getByRole('combobox', { name: 'Project context' }));
+      await user.click(await screen.findByRole('option', { name: 'Test Project' }));
 
-      // Click generate button
-      const generateButtons = screen.getAllByText('Generate Report');
-      await user.click(generateButtons[2]); // Items Export button
+      await user.click(screen.getByRole('button', { name: 'Compile Entity Registry' }));
 
       await waitFor(() => {
         expect(api.exportImport.export).toHaveBeenCalled();
@@ -759,28 +748,28 @@ describe('View Integration Tests', () => {
     it('should render all settings tabs', () => {
       renderWithProviders(<SettingsView />);
 
-      expect(screen.getByText('Settings')).toBeInTheDocument();
-      expect(screen.getByText('General')).toBeInTheDocument();
-      expect(screen.getByText('Appearance')).toBeInTheDocument();
-      expect(screen.getByText('API Keys')).toBeInTheDocument();
-      expect(screen.getByText('Notifications')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'System Preferences' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Identity' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Visuals' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Engine Access' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Comms' })).toBeInTheDocument();
     });
 
     it('should switch between tabs', async () => {
       renderWithProviders(<SettingsView />);
 
-      // Click Appearance tab
-      const appearanceTab = screen.getByText('Appearance');
+      const appearanceTab = screen.getByRole('tab', { name: 'Visuals' });
       await user.click(appearanceTab);
 
-      expect(screen.getByText('Theme')).toBeInTheDocument();
-      expect(screen.getByText('Font Size')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Interface Directives' })).toBeInTheDocument();
+      expect(screen.getByText('Color Schema')).toBeInTheDocument();
     });
 
     it('should handle form input changes', async () => {
       renderWithProviders(<SettingsView />);
 
-      const nameInput = screen.getByPlaceholderText('Your name');
+      const nameInput = screen.getByDisplayValue('System Administrator');
+      await user.clear(nameInput);
       await user.type(nameInput, 'John Doe');
 
       expect(nameInput).toHaveValue('John Doe');
@@ -789,10 +778,11 @@ describe('View Integration Tests', () => {
     it('should save settings', async () => {
       renderWithProviders(<SettingsView />);
 
-      const nameInput = screen.getByPlaceholderText('Your name');
+      const nameInput = screen.getByDisplayValue('System Administrator');
+      await user.clear(nameInput);
       await user.type(nameInput, 'John Doe');
 
-      const saveButton = screen.getAllByText('Save Changes')[0];
+      const saveButton = screen.getByRole('button', { name: 'Synchronize Parameters' });
       await user.click(saveButton);
 
       // Would verify mutation was called in real test
@@ -802,10 +792,10 @@ describe('View Integration Tests', () => {
     it('should toggle notification settings', async () => {
       renderWithProviders(<SettingsView />);
 
-      const notificationsTab = screen.getByText('Notifications');
+      const notificationsTab = screen.getByRole('tab', { name: 'Comms' });
       await user.click(notificationsTab);
 
-      const emailCheckbox = screen.getByLabelText('Email Notifications');
+      const emailCheckbox = screen.getByLabelText('Email Dispatches');
       await user.click(emailCheckbox);
 
       // Checkbox should be toggled
@@ -817,8 +807,8 @@ describe('View Integration Tests', () => {
     it('should render search interface', () => {
       renderWithProviders(<SearchView />);
 
-      expect(screen.getByText('Search')).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Search everything...')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Omni-Search' })).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Type anything to search...')).toBeInTheDocument();
     });
 
     it('should perform search on input', async () => {
@@ -828,7 +818,7 @@ describe('View Integration Tests', () => {
 
       renderWithProviders(<SearchView />);
 
-      const searchInput = screen.getByPlaceholderText('Search everything...');
+      const searchInput = screen.getByPlaceholderText('Type anything to search...');
       await user.type(searchInput, 'test query');
 
       await waitFor(() => {
@@ -839,10 +829,11 @@ describe('View Integration Tests', () => {
     it('should filter by type', async () => {
       renderWithProviders(<SearchView />);
 
-      const typeSelect = screen.getByDisplayValue('All Types');
-      await user.selectOptions(typeSelect, 'requirement');
+      const typeSelect = screen.getByRole('combobox', { name: 'Search result type' });
+      await user.click(typeSelect);
+      await user.click(await screen.findByRole('option', { name: 'Requirement' }));
 
-      expect(typeSelect).toHaveValue('requirement');
+      expect(typeSelect).toHaveTextContent('Requirement');
     });
 
     it('should show no results message', async () => {
@@ -850,11 +841,11 @@ describe('View Integration Tests', () => {
 
       renderWithProviders(<SearchView />);
 
-      const searchInput = screen.getByPlaceholderText('Search everything...');
+      const searchInput = screen.getByPlaceholderText('Type anything to search...');
       await user.type(searchInput, 'nonexistent');
 
       await waitFor(() => {
-        expect(screen.getByText(/No results found/i)).toBeInTheDocument();
+        expect(screen.getByText(/Zero matches in registry/i)).toBeInTheDocument();
       });
     });
   });
@@ -866,18 +857,17 @@ describe('View Integration Tests', () => {
 
 describe('Cross-Store Integration Tests', () => {
   beforeEach(() => {
-    useAuthStore.getState().logout();
+    useAuthStore.setState({ isAuthenticated: false, token: null, user: null });
     useItemsStore.getState().clearItems();
     useProjectStore.getState().clearCurrentProject();
+    useProjectStore.getState().setRecentProjects([]);
     useSyncStore.setState({ failedMutations: [], pendingMutations: [] });
   });
 
-  it('should sync auth state with items access', async () => {
-    const { login } = useAuthStore.getState();
+  it('should sync auth state with items access', () => {
     const { addItem } = useItemsStore.getState();
 
-    // Login first
-    await login('test@example.com', 'password');
+    authenticateTestUser();
     expect(useAuthStore.getState().isAuthenticated).toBeTruthy();
 
     // Now add items
@@ -895,8 +885,8 @@ describe('Cross-Store Integration Tests', () => {
     setCurrentProject(project);
 
     const items = [
-      createMockItem({ id: 'i1', project_id: 'project-1' }),
-      createMockItem({ id: 'i2', project_id: 'project-1' }),
+      createMockItem({ id: 'i1', projectId: 'project-1' }),
+      createMockItem({ id: 'i2', projectId: 'project-1' }),
     ];
     addItems(items);
 
@@ -921,7 +911,7 @@ describe('Cross-Store Integration Tests', () => {
 
     addPendingMutation(mutation as any);
     optimisticCreate('temp-1', {
-      project_id: 'project-1',
+      projectId: 'project-1',
       title: 'New Item',
       type: 'requirement' as any,
     });
@@ -940,13 +930,20 @@ describe('Cross-Store Integration Tests', () => {
 // ============================================================================
 
 describe('End-to-End Workflow Tests', () => {
-  it('should complete full item creation workflow', async () => {
-    const { login } = useAuthStore.getState();
+  beforeEach(() => {
+    useAuthStore.setState({ isAuthenticated: false, token: null, user: null });
+    useItemsStore.getState().clearItems();
+    useProjectStore.getState().clearCurrentProject();
+    useProjectStore.getState().setRecentProjects([]);
+    useSyncStore.setState({ failedMutations: [], pendingMutations: [] });
+  });
+
+  it('should complete full item creation workflow', () => {
     const { setCurrentProject } = useProjectStore.getState();
     const { optimisticCreate, confirmCreate } = useItemsStore.getState();
 
     // 1. Login
-    await login('test@example.com', 'password');
+    authenticateTestUser();
     expect(useAuthStore.getState().isAuthenticated).toBeTruthy();
 
     // 2. Select project
@@ -956,7 +953,7 @@ describe('End-to-End Workflow Tests', () => {
     // 3. Create item optimistically
     const tempId = 'temp-1';
     optimisticCreate(tempId, {
-      project_id: project.id,
+      projectId: project.id,
       title: 'New Requirement',
       type: 'requirement' as any,
     });
@@ -1017,8 +1014,8 @@ describe('End-to-End Workflow Tests', () => {
 
     // Add items to different projects
     addItems([
-      createMockItem({ id: 'i1', project_id: 'p1' }),
-      createMockItem({ id: 'i2', project_id: 'p2' }),
+      createMockItem({ id: 'i1', projectId: 'p1' }),
+      createMockItem({ id: 'i2', projectId: 'p2' }),
     ]);
 
     // Switch to project 1

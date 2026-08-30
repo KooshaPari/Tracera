@@ -490,7 +490,10 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
               />
             </div>
             <Select value={sortBy} onValueChange={handleSortByChange}>
-              <SelectTrigger className='bg-muted/50 h-9 w-[130px] border-none'>
+              <SelectTrigger
+                aria-label='Sort projects'
+                className='bg-muted/50 h-9 w-[130px] border-none'
+              >
                 <SelectValue placeholder='Sort by' />
               </SelectTrigger>
               <SelectContent>

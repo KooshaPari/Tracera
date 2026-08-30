@@ -151,6 +151,7 @@ const NotificationToggle = ({ checked, label, onChange, subtitle }: Notification
       <p className='text-muted-foreground text-[10px] font-medium uppercase'>{subtitle}</p>
     </div>
     <Checkbox
+      aria-label={label}
       checked={checked}
       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
         onChange(e.target.checked);
