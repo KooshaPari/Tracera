@@ -35,6 +35,14 @@ const DEFAULT_SETTINGS: Settings = {
   },
 };
 
+const isSettings = (value: unknown): value is Settings => {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const candidate = value as { general?: unknown };
+  return typeof candidate.general === 'object' && candidate.general !== null;
+};
+
 const isTheme = (value: unknown): value is 'light' | 'dark' | 'system' =>
   value === 'light' || value === 'dark' || value === 'system';
 
@@ -124,7 +132,7 @@ const fetchSettings = async (): Promise<Settings> => {
   try {
     const response = QueryClient.api.get<Settings>('/api/v1/settings', {});
     const data = await QueryClient.handleApiResponse<Settings>(response);
-    return data;
+    return isSettings(data) ? data : DEFAULT_SETTINGS;
   } catch {
     return DEFAULT_SETTINGS;
   }
@@ -136,7 +144,7 @@ const updateSettings = async (settings: Partial<Settings>): Promise<Settings> =>
       body: settings,
     });
     const data = await QueryClient.handleApiResponse<Settings>(response);
-    return data;
+    return isSettings(data) ? data : mergeSettings(DEFAULT_SETTINGS, settings);
   } catch {
     return mergeSettings(DEFAULT_SETTINGS, settings);
   }

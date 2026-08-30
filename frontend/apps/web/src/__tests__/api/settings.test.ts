@@ -8,20 +8,29 @@ import type { Settings } from '@/api/settings';
 
 import { fetchSettings, updateSettings } from '@/api/settings';
 
-// Mock the API client
-vi.mock('@/api/client', () => ({
-  client: {
-    apiClient: {
-      GET: vi.fn(),
-      PUT: vi.fn(),
-    },
-    safeApiCall: vi.fn((promise) => promise),
+// Mock the adapter actually consumed by settings.ts. Keep legacy local aliases
+// below so the behavioral fixtures remain compact and readable.
+vi.mock('@/api/query-client', () => ({
+  api: {
+    get: vi.fn(),
+    put: vi.fn(),
   },
+  handleApiResponse: vi.fn(async (promise: Promise<{ data?: unknown; error?: unknown }>) => {
+    const result = await promise;
+    if (result.error !== undefined) {
+      throw result.error;
+    }
+    return result.data;
+  }),
 }));
 
-import { client } from '@/api/client';
+import * as QueryClient from '@/api/query-client';
 
-const { apiClient, safeApiCall } = client;
+const apiClient = {
+  GET: QueryClient.api.get,
+  PUT: QueryClient.api.put,
+};
+const safeApiCall = QueryClient.api.get;
 
 describe('Settings API', () => {
   beforeEach(() => {
