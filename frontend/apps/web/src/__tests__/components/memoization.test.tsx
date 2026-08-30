@@ -332,13 +332,15 @@ describe('React Memoization Optimizations', () => {
         );
       }
 
+      const onDelete = vi.fn();
+      const onNavigate = vi.fn();
       const { rerender } = render(
         <table>
           <tbody>
             <TestTableRow
               item={{ id: '1', title: 'Task' }}
-              onDelete={vi.fn()}
-              onNavigate={vi.fn()}
+              onDelete={onDelete}
+              onNavigate={onNavigate}
             />
           </tbody>
         </table>,
@@ -352,8 +354,8 @@ describe('React Memoization Optimizations', () => {
           <tbody>
             <TestTableRow
               item={{ id: '1', title: 'Task' }}
-              onDelete={vi.fn()}
-              onNavigate={vi.fn()}
+              onDelete={onDelete}
+              onNavigate={onNavigate}
             />
           </tbody>
         </table>,

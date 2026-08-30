@@ -146,7 +146,7 @@ describe('Grouping Algorithms', () => {
       const isolatedItem = createItem('item6', 'Isolated', 'Component');
       const testItems = [...items, isolatedItem];
 
-      const groups = groupByPaths(testItems, links);
+      const groups = groupByPaths(testItems, links, 1);
       const groupWithIsolated = groups.find((g) => g.itemIds.includes('item6'));
 
       // Isolated item should either be alone or with other isolated items

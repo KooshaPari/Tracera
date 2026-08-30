@@ -47,13 +47,11 @@ describe(MobileMenu, () => {
 
     const button = screen.getByLabelText('Open menu');
 
-    // Menu should be closed initially
-    let menuPanel = document.querySelector('#mobile-menu');
-    expect(menuPanel).toHaveClass('-translate-x-full');
+    expect(document.querySelector('#mobile-menu')).not.toBeInTheDocument();
 
     // Click to open
     fireEvent.click(button);
-    menuPanel = document.querySelector('#mobile-menu');
+    const menuPanel = document.querySelector('#mobile-menu');
     expect(menuPanel).toHaveClass('translate-x-0');
   });
 
@@ -73,13 +71,9 @@ describe(MobileMenu, () => {
     const button = screen.getByLabelText('Open menu');
     fireEvent.click(button);
 
-    const backdrop = container.querySelector('.bg-black/50');
-    if (backdrop) {
-      fireEvent.click(backdrop);
-    }
+    fireEvent.click(screen.getByTestId('mobile-menu-backdrop'));
 
-    const menuPanel = document.querySelector('#mobile-menu');
-    expect(menuPanel).toHaveClass('-translate-x-full');
+    expect(container.querySelector('#mobile-menu')).not.toBeInTheDocument();
   });
 
   it('closes menu when escape key is pressed', () => {
@@ -90,8 +84,7 @@ describe(MobileMenu, () => {
 
     fireEvent.keyDown(globalThis, { key: 'Escape' });
 
-    const menuPanel = document.querySelector('#mobile-menu');
-    expect(menuPanel).toHaveClass('-translate-x-full');
+    expect(document.querySelector('#mobile-menu')).not.toBeInTheDocument();
   });
 
   it('has minimum 52px height for menu items', () => {

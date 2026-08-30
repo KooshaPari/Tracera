@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { ChevronRight, FolderOpen, Home, LogIn, LogOut, Menu, Settings, X } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { User } from '@/stores/authStore';
 
@@ -97,6 +97,7 @@ const MenuPanel = function MenuPanel({
   return (
     <>
       <div
+        data-testid='mobile-menu-backdrop'
         className='fixed inset-0 z-40 bg-black/50 md:hidden'
         onClick={onClose}
         aria-hidden='true'
@@ -191,6 +192,22 @@ export const MobileMenu = function MobileMenu({ className }: MobileMenuProps) {
   const handleToggleOpen = useCallback(() => {
     setIsOpen((prev) => !prev);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handleClose();
+      }
+    };
+    globalThis.addEventListener('keydown', handleEscape);
+    return () => {
+      globalThis.removeEventListener('keydown', handleEscape);
+    };
+  }, [handleClose, isOpen]);
 
   const handleMenuClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {

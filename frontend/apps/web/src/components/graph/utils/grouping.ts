@@ -401,21 +401,18 @@ export function calculateGroupCohesion(groupItemIds: Set<string>, links: Link[])
   }
 
   let internalLinks = 0;
-  let totalLinks = 0;
 
   for (const link of links) {
     const sourceInGroup = groupItemIds.has(link.sourceId);
     const targetInGroup = groupItemIds.has(link.targetId);
 
-    if (sourceInGroup || targetInGroup) {
-      totalLinks += 1;
-      if (sourceInGroup && targetInGroup) {
-        internalLinks += 1;
-      }
+    if (sourceInGroup && targetInGroup) {
+      internalLinks += 1;
     }
   }
 
-  return totalLinks === 0 ? 0 : internalLinks / totalLinks;
+  const maxPossibleInternalLinks = (groupItemIds.size * (groupItemIds.size - 1)) / 2;
+  return Math.min(1, internalLinks / maxPossibleInternalLinks);
 }
 
 /**

@@ -97,7 +97,7 @@ describe(useProjects, () => {
 describe(useProject, () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuthStore.setState({ token: null });
+    useAuthStore.setState({ token: 'gateway-contract-token' });
   });
 
   it('should fetch a single project', async () => {
@@ -124,9 +124,10 @@ describe(useProject, () => {
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining('/api/v1/projects/1'),
       expect.objectContaining({
-        headers: {
+        headers: expect.objectContaining({
+          Authorization: 'Bearer gateway-contract-token',
           'X-Bulk-Operation': 'true',
-        },
+        }),
       }),
     );
   });
