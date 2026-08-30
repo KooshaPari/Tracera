@@ -7,6 +7,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { api } from '../../api/endpoints';
 
+const mockFetch = vi.fn<typeof fetch>();
+const setFetchImpl = (globalThis as typeof globalThis & {
+  __setFetchImpl__?: (implementation: typeof fetch) => void;
+}).__setFetchImpl__;
+
 // Mock data generators
 const mockProject = {
   created_at: '2024-01-01T00:00:00Z',
@@ -45,6 +50,8 @@ async function createMockResponse(data: unknown, status = 200) {
 describe('API Endpoints - P1 Coverage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockFetch.mockReset();
+    setFetchImpl?.(mockFetch as typeof fetch);
   });
 
   // ============================================================================
@@ -54,8 +61,9 @@ describe('API Endpoints - P1 Coverage', () => {
   describe('projectsApi', () => {
     describe('list', () => {
       it('should return array of projects', async () => {
-        const mockFetch = vi.fn(async () => createMockResponse({ projects: [mockProject] }));
-        global.fetch = mockFetch as unknown as typeof fetch;
+        mockFetch.mockImplementation(async () =>
+          createMockResponse({ projects: [mockProject] }),
+        );
 
         const result = await api.projects.list();
         expect(Array.isArray(result)).toBeTruthy();
@@ -63,7 +71,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
       it('should handle response with projects array', async () => {
         const projects = [mockProject, { ...mockProject, id: 'proj-2', name: 'Project 2' }];
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse({ projects }));
+        mockFetch.mockResolvedValueOnce(createMockResponse({ projects }));
 
         const result = await api.projects.list();
         // Result extraction logic: projects array or full response
@@ -71,14 +79,14 @@ describe('API Endpoints - P1 Coverage', () => {
       });
 
       it('should handle array response format', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse([mockProject]));
+        mockFetch.mockResolvedValueOnce(createMockResponse([mockProject]));
 
         const result = await api.projects.list();
         expect(Array.isArray(result)).toBeTruthy();
       });
 
       it('should accept pagination parameters', async () => {
-        (global.fetch as any).mockResolvedValueOnce(
+        mockFetch.mockResolvedValueOnce(
           createMockResponse({ projects: [mockProject] }),
         );
 
@@ -87,7 +95,7 @@ describe('API Endpoints - P1 Coverage', () => {
       });
 
       it('should return empty array on empty response', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse({ projects: [] }));
+        mockFetch.mockResolvedValueOnce(createMockResponse({ projects: [] }));
 
         const result = await api.projects.list();
         expect(Array.isArray(result)).toBeTruthy();
@@ -96,14 +104,14 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('get', () => {
       it('should fetch project by ID', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockProject));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockProject));
 
         const result = await api.projects.get('proj-1');
         expect(result).toBeDefined();
       });
 
       it('should throw on 404', async () => {
-        (global.fetch as any).mockResolvedValueOnce(
+        mockFetch.mockResolvedValueOnce(
           createMockResponse({ error: 'Not found' }, 404),
         );
 
@@ -111,17 +119,17 @@ describe('API Endpoints - P1 Coverage', () => {
       });
 
       it('should include correct path parameter', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockProject));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockProject));
 
         await api.projects.get('proj-123');
         // Verify the fetch was called (actual URL verification depends on client internals)
-        expect(global.fetch as any).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalled();
       });
     });
 
     describe('create', () => {
       it('should create project with valid input', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockProject, 201));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockProject, 201));
 
         const result = await api.projects.create({
           name: 'Test Project',
@@ -132,21 +140,21 @@ describe('API Endpoints - P1 Coverage', () => {
       });
 
       it('should handle required fields', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockProject, 201));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockProject, 201));
 
         const result = await api.projects.create({ name: 'Minimal Project' });
         expect(result).toBeDefined();
       });
 
       it('should send POST request', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockProject, 201));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockProject, 201));
 
         await api.projects.create({ name: 'Test' });
-        expect(global.fetch as any).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalled();
       });
 
       it('should throw on validation error', async () => {
-        (global.fetch as any).mockResolvedValueOnce(
+        mockFetch.mockResolvedValueOnce(
           createMockResponse({ error: 'Invalid input' }, 400),
         );
 
@@ -157,21 +165,21 @@ describe('API Endpoints - P1 Coverage', () => {
     describe('update', () => {
       it('should update project', async () => {
         const updated = { ...mockProject, name: 'Updated' };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(updated));
+        mockFetch.mockResolvedValueOnce(createMockResponse(updated));
 
         const result = await api.projects.update('proj-1', { name: 'Updated' });
         expect(result).toBeDefined();
       });
 
       it('should handle partial updates', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockProject));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockProject));
 
         await api.projects.update('proj-1', { description: 'New description' });
-        expect(global.fetch as any).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalled();
       });
 
       it('should throw on not found', async () => {
-        (global.fetch as any).mockResolvedValueOnce(
+        mockFetch.mockResolvedValueOnce(
           createMockResponse({ error: 'Not found' }, 404),
         );
 
@@ -181,20 +189,20 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('delete', () => {
       it('should delete project', async () => {
-        (global.fetch as any).mockResolvedValueOnce(new Response(null, { status: 204 }));
+        mockFetch.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
         await expect(api.projects.delete('proj-1')).resolves.toBeUndefined();
       });
 
       it('should handle 204 no content', async () => {
-        (global.fetch as any).mockResolvedValueOnce(new Response(null, { status: 204 }));
+        mockFetch.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
         await api.projects.delete('proj-1');
-        expect(global.fetch as any).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalled();
       });
 
       it('should throw on not found', async () => {
-        (global.fetch as any).mockResolvedValueOnce(
+        mockFetch.mockResolvedValueOnce(
           createMockResponse({ error: 'Not found' }, 404),
         );
 
@@ -210,14 +218,14 @@ describe('API Endpoints - P1 Coverage', () => {
   describe('itemsApi', () => {
     describe('list', () => {
       it('should return items array', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse({ items: [mockItem] }));
+        mockFetch.mockResolvedValueOnce(createMockResponse({ items: [mockItem] }));
 
         const result = await api.items.list();
         expect(result).toBeDefined();
       });
 
       it('should handle array response format', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse([mockItem]));
+        mockFetch.mockResolvedValueOnce(createMockResponse([mockItem]));
 
         const result = await api.items.list();
         expect(result).toBeDefined();
@@ -229,7 +237,7 @@ describe('API Endpoints - P1 Coverage', () => {
           has_more: true,
           next_cursor: 'cursor-123',
         };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(cursorResponse));
+        mockFetch.mockResolvedValueOnce(createMockResponse(cursorResponse));
 
         const result = await api.items.list();
         expect(result).toBeDefined();
@@ -240,35 +248,35 @@ describe('API Endpoints - P1 Coverage', () => {
           items: [mockItem],
           total: 100,
         };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(legacyResponse));
+        mockFetch.mockResolvedValueOnce(createMockResponse(legacyResponse));
 
         const result = await api.items.list();
         expect(Array.isArray(result) || result).toBeDefined();
       });
 
       it('should filter by project_id', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse({ items: [mockItem] }));
+        mockFetch.mockResolvedValueOnce(createMockResponse({ items: [mockItem] }));
 
         const result = await api.items.list({ project_id: 'proj-1' });
         expect(result).toBeDefined();
       });
 
       it('should filter by status', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse({ items: [mockItem] }));
+        mockFetch.mockResolvedValueOnce(createMockResponse({ items: [mockItem] }));
 
         const result = await api.items.list({ project_id: 'proj-1' });
         expect(result).toBeDefined();
       });
 
       it('should filter by view type', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse({ items: [mockItem] }));
+        mockFetch.mockResolvedValueOnce(createMockResponse({ items: [mockItem] }));
 
         const result = await api.items.list({ project_id: 'proj-1' });
         expect(result).toBeDefined();
       });
 
       it('should handle empty response', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse({ items: [] }));
+        mockFetch.mockResolvedValueOnce(createMockResponse({ items: [] }));
 
         const result = await api.items.list();
         expect(result).toBeDefined();
@@ -277,14 +285,14 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('get', () => {
       it('should fetch item by ID', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockItem));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockItem));
 
         const result = await api.items.get('item-1');
         expect(result).toBeDefined();
       });
 
       it('should throw on 404', async () => {
-        (global.fetch as any).mockResolvedValueOnce(
+        mockFetch.mockResolvedValueOnce(
           createMockResponse({ error: 'Not found' }, 404),
         );
 
@@ -294,7 +302,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('create', () => {
       it('should create item', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockItem, 201));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockItem, 201));
 
         const result = await api.items.create({
           projectId: 'proj-1',
@@ -306,7 +314,7 @@ describe('API Endpoints - P1 Coverage', () => {
       });
 
       it('should handle optional fields', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockItem, 201));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockItem, 201));
 
         const result = await api.items.create({
           description: 'Description',
@@ -322,7 +330,7 @@ describe('API Endpoints - P1 Coverage', () => {
     describe('update', () => {
       it('should update item', async () => {
         const updated = { ...mockItem, title: 'Updated' };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(updated));
+        mockFetch.mockResolvedValueOnce(createMockResponse(updated));
 
         const result = await api.items.update('item-1', { title: 'Updated' });
         expect(result).toBeDefined();
@@ -331,7 +339,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('delete', () => {
       it('should delete item', async () => {
-        (global.fetch as any).mockResolvedValueOnce(new Response(null, { status: 204 }));
+        mockFetch.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
         await expect(api.items.delete('item-1')).resolves.toBeUndefined();
       });
@@ -345,14 +353,14 @@ describe('API Endpoints - P1 Coverage', () => {
   describe('linksApi', () => {
     describe('list', () => {
       it('should return links array', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse([mockLink]));
+        mockFetch.mockResolvedValueOnce(createMockResponse([mockLink]));
 
         const result = await api.links.list();
         expect(result).toBeDefined();
       });
 
       it('should accept pagination', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse([mockLink]));
+        mockFetch.mockResolvedValueOnce(createMockResponse([mockLink]));
 
         const result = await api.links.list({ limit: 10 });
         expect(result).toBeDefined();
@@ -361,7 +369,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('get', () => {
       it('should fetch link by ID', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockLink));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockLink));
 
         const result = await api.links.get('link-1');
         expect(result).toBeDefined();
@@ -370,7 +378,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('create', () => {
       it('should create link', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockLink, 201));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockLink, 201));
 
         const result = await api.links.create({
           sourceId: 'item-1',
@@ -385,7 +393,7 @@ describe('API Endpoints - P1 Coverage', () => {
     describe('update', () => {
       it('should update link', async () => {
         const updated = { ...mockLink, type: 'blocks' };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(updated));
+        mockFetch.mockResolvedValueOnce(createMockResponse(updated));
 
         const result = await api.links.update('link-1', { type: 'blocks' });
         expect(result).toBeDefined();
@@ -394,7 +402,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('delete', () => {
       it('should delete link', async () => {
-        (global.fetch as any).mockResolvedValueOnce(new Response(null, { status: 204 }));
+        mockFetch.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
         await expect(api.links.delete('link-1')).resolves.toBeUndefined();
       });
@@ -408,14 +416,14 @@ describe('API Endpoints - P1 Coverage', () => {
   describe('graphApi', () => {
     describe('getAncestors', () => {
       it('should fetch ancestors', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockGraphData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
 
         const result = await api.graph.getAncestors('item-1');
         expect(result).toBeDefined();
       });
 
       it('should support depth parameter', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockGraphData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
 
         const result = await api.graph.getAncestors('item-1', 3);
         expect(result).toBeDefined();
@@ -424,14 +432,14 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('getDescendants', () => {
       it('should fetch descendants', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockGraphData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
 
         const result = await api.graph.getDescendants('item-1');
         expect(result).toBeDefined();
       });
 
       it('should support depth parameter', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockGraphData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
 
         const result = await api.graph.getDescendants('item-1', 2);
         expect(result).toBeDefined();
@@ -440,14 +448,14 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('findPath', () => {
       it('should find path between items', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse([mockItem]));
+        mockFetch.mockResolvedValueOnce(createMockResponse([mockItem]));
 
         const result = await api.graph.findPath('item-1', 'item-2');
         expect(result).toBeDefined();
       });
 
       it('should return empty array if no path exists', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse([]));
+        mockFetch.mockResolvedValueOnce(createMockResponse([]));
 
         const result = await api.graph.findPath('item-1', 'item-2');
         expect(Array.isArray(result)).toBeTruthy();
@@ -456,7 +464,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('findAllPaths', () => {
       it('should find all paths', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse([[mockItem]]));
+        mockFetch.mockResolvedValueOnce(createMockResponse([[mockItem]]));
 
         const result = await api.graph.findAllPaths('item-1', 'item-2');
         expect(Array.isArray(result)).toBeTruthy();
@@ -465,14 +473,14 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('getFullGraph', () => {
       it('should fetch full graph', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockGraphData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
 
         const result = await api.graph.getFullGraph();
         expect(result).toBeDefined();
       });
 
       it('should filter by project ID', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockGraphData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
 
         const result = await api.graph.getFullGraph('proj-1');
         expect(result).toBeDefined();
@@ -481,7 +489,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('get (alias)', () => {
       it('should be alias for getFullGraph', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockGraphData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
 
         const result = await api.graph.get();
         expect(result).toBeDefined();
@@ -490,14 +498,14 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('detectCycles', () => {
       it('should detect cycles', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse([['item-1', 'item-2']]));
+        mockFetch.mockResolvedValueOnce(createMockResponse([['item-1', 'item-2']]));
 
         const result = await api.graph.detectCycles();
         expect(Array.isArray(result)).toBeTruthy();
       });
 
       it('should return empty array if no cycles', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse([]));
+        mockFetch.mockResolvedValueOnce(createMockResponse([]));
 
         const result = await api.graph.detectCycles();
         expect(Array.isArray(result)).toBeTruthy();
@@ -506,7 +514,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('topologicalSort', () => {
       it('should perform topological sort', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse([mockItem]));
+        mockFetch.mockResolvedValueOnce(createMockResponse([mockItem]));
 
         const result = await api.graph.topologicalSort();
         expect(Array.isArray(result)).toBeTruthy();
@@ -520,7 +528,7 @@ describe('API Endpoints - P1 Coverage', () => {
           indirect: [],
           risk_level: 'low',
         };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(impactData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(impactData));
 
         const result = await api.graph.getImpactAnalysis('item-1');
         expect(result).toBeDefined();
@@ -528,7 +536,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
       it('should support depth parameter', async () => {
         const impactData = { direct: [], indirect: [], risk_level: 'low' };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(impactData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(impactData));
 
         const result = await api.graph.getImpactAnalysis('item-1', 2);
         expect(result).toBeDefined();
@@ -542,7 +550,7 @@ describe('API Endpoints - P1 Coverage', () => {
           dependents: [],
           critical: [],
         };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(depData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(depData));
 
         const result = await api.graph.getDependencyAnalysis('item-1');
         expect(result).toBeDefined();
@@ -551,7 +559,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('getOrphanItems', () => {
       it('should find orphan items', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse([mockItem]));
+        mockFetch.mockResolvedValueOnce(createMockResponse([mockItem]));
 
         const result = await api.graph.getOrphanItems();
         expect(Array.isArray(result)).toBeTruthy();
@@ -560,28 +568,28 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('traverse', () => {
       it('should traverse up', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockGraphData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
 
         const result = await api.graph.traverse('item-1', 'up');
         expect(result).toBeDefined();
       });
 
       it('should traverse down', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockGraphData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
 
         const result = await api.graph.traverse('item-1', 'down');
         expect(result).toBeDefined();
       });
 
       it('should traverse both directions', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockGraphData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
 
         const result = await api.graph.traverse('item-1', 'both');
         expect(result).toBeDefined();
       });
 
       it('should support depth parameter', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockGraphData));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
 
         const result = await api.graph.traverse('item-1', 'up', 3);
         expect(result).toBeDefined();
@@ -602,14 +610,14 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('export', () => {
       it('should export as JSON', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(canonicalExport));
+        mockFetch.mockResolvedValueOnce(createMockResponse(canonicalExport));
 
         const result = await api.exportImport.export('proj-1', 'json');
         expect(result).toBeDefined();
       });
 
       it('should export as CSV', async () => {
-        (global.fetch as any).mockResolvedValueOnce(
+        mockFetch.mockResolvedValueOnce(
           createMockResponse({ content: 'id,title\nitem-1,Test' }),
         );
 
@@ -618,7 +626,7 @@ describe('API Endpoints - P1 Coverage', () => {
       });
 
       it('should export as markdown', async () => {
-        (global.fetch as any).mockResolvedValueOnce(
+        mockFetch.mockResolvedValueOnce(
           createMockResponse({ content: '# Test Project' }),
         );
 
@@ -627,14 +635,14 @@ describe('API Endpoints - P1 Coverage', () => {
       });
 
       it('should export as full format', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(canonicalExport));
+        mockFetch.mockResolvedValueOnce(createMockResponse(canonicalExport));
 
         const result = await api.exportImport.export('proj-1', 'full');
         expect(result).toBeDefined();
       });
 
       it('should default to JSON format', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(canonicalExport));
+        mockFetch.mockResolvedValueOnce(createMockResponse(canonicalExport));
 
         const result = await api.exportImport.export('proj-1');
         expect(result).toBeDefined();
@@ -643,14 +651,14 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('exportFull', () => {
       it('should export full canonical format', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(canonicalExport));
+        mockFetch.mockResolvedValueOnce(createMockResponse(canonicalExport));
 
         const result = await api.exportImport.exportFull('proj-1');
         expect(result).toBeDefined();
       });
 
       it('should throw if response is not canonical format', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse({ error: 'Invalid' }));
+        mockFetch.mockResolvedValueOnce(createMockResponse({ error: 'Invalid' }));
 
         await expect(api.exportImport.exportFull('proj-1')).rejects.toThrow();
       });
@@ -664,7 +672,7 @@ describe('API Endpoints - P1 Coverage', () => {
           imported_count: 5,
           success: true,
         };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(importResult));
+        mockFetch.mockResolvedValueOnce(createMockResponse(importResult));
 
         const result = await api.exportImport.import('proj-1', 'json', '{}');
         expect(result).toBeDefined();
@@ -677,7 +685,7 @@ describe('API Endpoints - P1 Coverage', () => {
           imported_count: 10,
           success: true,
         };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(importResult));
+        mockFetch.mockResolvedValueOnce(createMockResponse(importResult));
 
         const result = await api.exportImport.import('proj-1', 'csv', 'id,title\n1,Test');
         expect(result).toBeDefined();
@@ -690,7 +698,7 @@ describe('API Endpoints - P1 Coverage', () => {
           imported_count: 3,
           success: true,
         };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(importResult));
+        mockFetch.mockResolvedValueOnce(createMockResponse(importResult));
 
         const result = await api.exportImport.import('proj-1', 'json', '{}');
         expect(result.error_count).toBeGreaterThan(0);
@@ -704,7 +712,7 @@ describe('API Endpoints - P1 Coverage', () => {
           links_imported: 3,
           project_id: 'new-proj-1',
         };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(importResult));
+        mockFetch.mockResolvedValueOnce(createMockResponse(importResult));
 
         const result = await api.exportImport.importFull(canonicalExport);
         expect(result).toBeDefined();
@@ -713,16 +721,19 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('exportProject (alias)', () => {
       it('should export as Blob', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse({ content: 'export data' }));
+        mockFetch.mockResolvedValueOnce(createMockResponse({ content: 'export data' }));
 
         const result = await api.exportImport.exportProject('proj-1', 'json');
         expect(result instanceof Blob || result).toBeDefined();
       });
 
-      it('should throw if response is not Blob', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(canonicalExport));
+      it('should serialize an object response as a Blob', async () => {
+        mockFetch.mockResolvedValueOnce(createMockResponse(canonicalExport));
 
-        await expect(api.exportImport.exportProject('proj-1', 'json')).rejects.toThrow();
+        const result = await api.exportImport.exportProject('proj-1', 'json');
+
+        expect(result).toBeInstanceOf(Blob);
+        expect(result.type).toBe('application/json');
       });
     });
 
@@ -734,7 +745,7 @@ describe('API Endpoints - P1 Coverage', () => {
           imported_count: 5,
           success: true,
         };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(importResult));
+        mockFetch.mockResolvedValueOnce(createMockResponse(importResult));
 
         const result = await api.exportImport.importProject('proj-1', 'json', '{}');
         expect(result).toBeDefined();
@@ -754,7 +765,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('search', () => {
       it('should search via POST', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockSearchResult));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockSearchResult));
 
         const result = await api.search.search({
           q: 'test',
@@ -764,7 +775,7 @@ describe('API Endpoints - P1 Coverage', () => {
       });
 
       it('should search with filters', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockSearchResult));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockSearchResult));
 
         const result = await api.search.search({
           q: 'test',
@@ -776,7 +787,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('searchGet', () => {
       it('should search via GET', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockSearchResult));
+        mockFetch.mockResolvedValueOnce(createMockResponse(mockSearchResult));
 
         const result = await api.search.searchGet({
           q: 'test',
@@ -788,7 +799,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('suggest', () => {
       it('should get search suggestions', async () => {
-        (global.fetch as any).mockResolvedValueOnce(
+        mockFetch.mockResolvedValueOnce(
           createMockResponse(['suggestion1', 'suggestion2']),
         );
 
@@ -797,7 +808,7 @@ describe('API Endpoints - P1 Coverage', () => {
       });
 
       it('should support limit parameter', async () => {
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(['suggestion1']));
+        mockFetch.mockResolvedValueOnce(createMockResponse(['suggestion1']));
 
         const result = await api.search.suggest('test', 5);
         expect(Array.isArray(result)).toBeTruthy();
@@ -806,7 +817,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('indexItem', () => {
       it('should index item', async () => {
-        (global.fetch as any).mockResolvedValueOnce(new Response(null, { status: 204 }));
+        mockFetch.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
         await expect(api.search.indexItem('item-1')).resolves.toBeUndefined();
       });
@@ -814,13 +825,13 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('batchIndex', () => {
       it('should batch index items', async () => {
-        (global.fetch as any).mockResolvedValueOnce(new Response(null, { status: 204 }));
+        mockFetch.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
         await expect(api.search.batchIndex(['item-1', 'item-2'])).resolves.toBeUndefined();
       });
 
       it('should handle empty array', async () => {
-        (global.fetch as any).mockResolvedValueOnce(new Response(null, { status: 204 }));
+        mockFetch.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
         await expect(api.search.batchIndex([])).resolves.toBeUndefined();
       });
@@ -828,7 +839,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('reindexAll', () => {
       it('should reindex all items', async () => {
-        (global.fetch as any).mockResolvedValueOnce(new Response(null, { status: 204 }));
+        mockFetch.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
         await expect(api.search.reindexAll()).resolves.toBeUndefined();
       });
@@ -840,7 +851,7 @@ describe('API Endpoints - P1 Coverage', () => {
           indexed_count: 100,
           total_items: 150,
         };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(stats));
+        mockFetch.mockResolvedValueOnce(createMockResponse(stats));
 
         const result = await api.search.getStats();
         expect(result).toBeDefined();
@@ -853,7 +864,7 @@ describe('API Endpoints - P1 Coverage', () => {
           healthy: true,
           status: 'ok',
         };
-        (global.fetch as any).mockResolvedValueOnce(createMockResponse(health));
+        mockFetch.mockResolvedValueOnce(createMockResponse(health));
 
         const result = await api.search.getHealth();
         expect(result).toBeDefined();
@@ -862,7 +873,7 @@ describe('API Endpoints - P1 Coverage', () => {
 
     describe('deleteIndex', () => {
       it('should delete index for item', async () => {
-        (global.fetch as any).mockResolvedValueOnce(new Response(null, { status: 204 }));
+        mockFetch.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
         await expect(api.search.deleteIndex('item-1')).resolves.toBeUndefined();
       });
@@ -879,7 +890,7 @@ describe('API Endpoints - P1 Coverage', () => {
         service: 'api',
         status: 'healthy',
       };
-      (global.fetch as any).mockResolvedValueOnce(createMockResponse(healthResult));
+      mockFetch.mockResolvedValueOnce(createMockResponse(healthResult));
 
       const result = await api.healthCheck();
       expect(result).toBeDefined();
@@ -890,7 +901,7 @@ describe('API Endpoints - P1 Coverage', () => {
         service: 'api',
         status: 'unhealthy',
       };
-      (global.fetch as any).mockResolvedValueOnce(createMockResponse(healthResult));
+      mockFetch.mockResolvedValueOnce(createMockResponse(healthResult));
 
       const result = await api.healthCheck();
       expect(result).toBeDefined();

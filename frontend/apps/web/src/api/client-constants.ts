@@ -12,6 +12,7 @@ const apiConstants = {
   secondsPerMinute: 60,
   settingsPath: '/settings',
   statusForbidden: 403,
+  statusNoContent: 204,
   statusNotFound: 404,
   statusRateLimited: 429,
   statusServerError: 500,

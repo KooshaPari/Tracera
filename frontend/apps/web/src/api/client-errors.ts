@@ -49,6 +49,10 @@ const handleApiResponse = async <TData>(
     return data;
   }
 
+  if (status === apiConstants.statusNoContent) {
+    return undefined as TData;
+  }
+
   throw new ApiError(status, 'No data returned');
 };
 

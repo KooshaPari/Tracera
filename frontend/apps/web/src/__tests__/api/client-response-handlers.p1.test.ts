@@ -7,6 +7,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { responseHandlers } from '../../api/client-response-handlers';
 
+const { setLost } = vi.hoisted(() => ({ setLost: vi.fn() }));
+
 // Mock CSRF handling
 vi.mock('../../lib/csrf', () => ({
   extractCSRFTokenFromResponse: vi.fn(),
@@ -17,7 +19,7 @@ vi.mock('../../lib/csrf', () => ({
 vi.mock('../../stores/connection-status-store', () => ({
   useConnectionStatusStore: {
     getState: () => ({
-      setLost: vi.fn(),
+      setLost,
     }),
   },
 }));
@@ -157,7 +159,9 @@ describe('Client Response Handlers - P1 Coverage', () => {
       const response = new Response(JSON.stringify({ error: 'Bad credentials' }), {
         headers: { 'Content-Type': 'application/json' },
         status: 401,
-        url: 'http://localhost:4000/auth/login',
+      });
+      Object.defineProperty(response, 'url', {
+        value: 'http://localhost:4000/auth/login',
       });
 
       await responseHandlers.handleResponse(response, mockLogout);
@@ -284,7 +288,10 @@ describe('Client Response Handlers - P1 Coverage', () => {
       await responseHandlers.handleResponse(response, mockLogout);
 
       const { toast } = await import('sonner');
-      expect(toast.error).toHaveBeenCalledWith('Rate limited', expect.stringContaining('30'));
+      expect(toast.error).toHaveBeenCalledWith(
+        'Rate limited',
+        expect.objectContaining({ description: expect.stringContaining('30') }),
+      );
     });
 
     it('should parse retry_after from body', async () => {
@@ -293,7 +300,10 @@ describe('Client Response Handlers - P1 Coverage', () => {
       await responseHandlers.handleResponse(response, mockLogout);
 
       const { toast } = await import('sonner');
-      expect(toast.error).toHaveBeenCalledWith('Rate limited', expect.stringContaining('2'));
+      expect(toast.error).toHaveBeenCalledWith(
+        'Rate limited',
+        expect.objectContaining({ description: expect.stringContaining('2') }),
+      );
     });
 
     it('should use default retry time if not provided', async () => {
@@ -389,10 +399,7 @@ describe('Client Response Handlers - P1 Coverage', () => {
 
       await responseHandlers.handleResponse(response, mockLogout);
 
-      const { useConnectionStatusStore } = await import('../../stores/connection-status-store');
-      const store = useConnectionStatusStore.getState();
-
-      expect(store.setLost).toHaveBeenCalled();
+      expect(setLost).toHaveBeenCalled();
     });
 
     it('should not treat 4xx as server error', async () => {
@@ -400,10 +407,7 @@ describe('Client Response Handlers - P1 Coverage', () => {
 
       await responseHandlers.handleResponse(response, mockLogout);
 
-      const { useConnectionStatusStore } = await import('../../stores/connection-status-store');
-      const store = useConnectionStatusStore.getState();
-
-      expect(store.setLost).not.toHaveBeenCalled();
+      expect(setLost).not.toHaveBeenCalled();
     });
   });
 
@@ -584,7 +588,7 @@ describe('Client Response Handlers - P1 Coverage', () => {
       const response = createMockResponse(401);
 
       // Should not throw even with null logout
-      const noOpLogout = () => {};
+      const noOpLogout = vi.fn();
       await responseHandlers.handleResponse(response, noOpLogout);
 
       expect(noOpLogout).toHaveBeenCalled();
