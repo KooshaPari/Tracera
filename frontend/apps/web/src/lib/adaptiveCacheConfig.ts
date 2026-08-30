@@ -353,6 +353,7 @@ export const logAdaptiveCacheDecision = (
     const accessCategory = getAccessFrequencyCategory(metrics.accessFrequency);
 
     logger.debug('[AdaptiveCache]', {
+      accessCategory,
       accessFrequency: `${metrics.accessFrequency}/hour`,
       dataSize: `${(metrics.dataSize / KILOBYTE).toFixed(1)}KB`,
       gcTime: `${(config.gcTime / MINUTE_IN_MS).toFixed(1)}m`,

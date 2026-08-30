@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExportView } from '../../views/ExportView';
 
@@ -9,7 +9,7 @@ import { ExportView } from '../../views/ExportView';
 vi.mock('../../api/endpoints', () => ({
   api: {
     exportImport: {
-      export: vi.fn(),
+      exportProject: vi.fn(),
     },
     projects: {
       list: vi.fn().mockResolvedValue([]),
@@ -30,6 +30,10 @@ describe(ExportView, () => {
       },
     });
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('renders export interface', () => {
@@ -120,7 +124,7 @@ describe(ExportView, () => {
   it('triggers download on export', async () => {
     const { api } = await import('../../api/endpoints');
     const mockBlob = new Blob(['test data'], { type: 'application/json' });
-    (api.exportImport.export as any).mockResolvedValue(mockBlob);
+    (api.exportImport.exportProject as any).mockResolvedValue(mockBlob);
     (api.projects.list as any).mockResolvedValue([{ id: 'proj-1', name: 'Test Project' }]);
 
     // Render first, then set up spies
@@ -139,6 +143,7 @@ describe(ExportView, () => {
     const mockUrl = 'blob:test-url';
     vi.spyOn(globalThis.URL, 'createObjectURL').mockReturnValue(mockUrl);
     vi.spyOn(globalThis.URL, 'revokeObjectURL').mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
     // Select a project
     const projectSelect = screen.getByRole('combobox', { name: /Project/i });
@@ -162,7 +167,7 @@ describe(ExportView, () => {
 
     // Verify export was called
     await waitFor(() => {
-      expect(api.exportImport.export).toHaveBeenCalledWith('proj-1', 'json');
+      expect(api.exportImport.exportProject).toHaveBeenCalledWith('proj-1', 'json');
     });
   });
 });

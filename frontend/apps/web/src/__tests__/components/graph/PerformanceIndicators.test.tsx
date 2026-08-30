@@ -47,7 +47,7 @@ describe(PerformanceStats, () => {
   });
 
   it('applies correct FPS color classes', () => {
-    render(
+    const { rerender } = render(
       <PerformanceStats
         fps={60}
         nodeCount={100}
@@ -150,7 +150,7 @@ describe(PerformanceOverlay, () => {
   });
 
   it('renders at specified position', () => {
-    render(
+    const { container, rerender } = render(
       <PerformanceOverlay
         nodeCount={1000}
         edgeCount={2000}
@@ -178,7 +178,7 @@ describe(PerformanceOverlay, () => {
   });
 
   it('forwards variant to PerformanceStats', () => {
-    render(
+    const { rerender } = render(
       <PerformanceOverlay
         nodeCount={1000}
         edgeCount={2000}
@@ -205,12 +205,11 @@ describe(PerformanceOverlay, () => {
 });
 
 describe(PerformanceChart, () => {
-  let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
+  let canvasPrototype: object;
+  let getContextDescriptor: PropertyDescriptor | undefined;
 
   beforeEach(() => {
-    // Mock canvas and context
-    canvas = document.createElement('canvas');
     ctx = {
       beginPath: vi.fn(),
       clearRect: vi.fn(),
@@ -220,12 +219,22 @@ describe(PerformanceChart, () => {
       stroke: vi.fn(),
     } as any;
 
-    canvas.getContext = vi.fn(() => ctx);
-    vi.spyOn(document, 'createElement').mockReturnValue(canvas);
+    canvasPrototype = Object.getPrototypeOf(document.createElement('canvas')) as object;
+    getContextDescriptor = Object.getOwnPropertyDescriptor(canvasPrototype, 'getContext');
+    Object.defineProperty(canvasPrototype, 'getContext', {
+      configurable: true,
+      value: vi.fn(() => ctx),
+    });
+  });
+
+  afterEach(() => {
+    if (getContextDescriptor) {
+      Object.defineProperty(canvasPrototype, 'getContext', getContextDescriptor);
+    }
   });
 
   it('renders canvas with correct dimensions', () => {
-    render(<PerformanceChart fps={60} width={300} height={80} />);
+    const { container } = render(<PerformanceChart fps={60} width={300} height={80} />);
 
     const canvasElement = container.querySelector('canvas');
     expect(canvasElement).toBeInTheDocument();
@@ -244,7 +253,7 @@ describe(PerformanceChart, () => {
   });
 
   it('uses correct color based on FPS', () => {
-    render(<PerformanceChart fps={60} />);
+    const { rerender } = render(<PerformanceChart fps={60} />);
 
     // Green for >= 55
     expect(ctx.strokeStyle).toBe('#10b981');
@@ -259,7 +268,7 @@ describe(PerformanceChart, () => {
   });
 
   it('maintains FPS history', () => {
-    render(<PerformanceChart fps={60} />);
+    const { rerender } = render(<PerformanceChart fps={60} />);
 
     rerender(<PerformanceChart fps={55} />);
     rerender(<PerformanceChart fps={50} />);
@@ -277,6 +286,7 @@ describe(useFPSMonitor, () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.useRealTimers();
+    Reflect.deleteProperty(performance, 'memory');
   });
 
   it('starts with default stats', () => {
@@ -365,6 +375,14 @@ describe(useMemoryMonitor, () => {
   });
 
   it('uses custom interval', () => {
+    Object.defineProperty(performance, 'memory', {
+      configurable: true,
+      value: {
+        jsHeapSizeLimit: 200 * 1024 * 1024,
+        totalJSHeapSize: 100 * 1024 * 1024,
+        usedJSHeapSize: 50 * 1024 * 1024,
+      },
+    });
     const setIntervalSpy = vi.spyOn(globalThis, 'setInterval');
 
     renderHook(() => useMemoryMonitor(true, 2000));
@@ -373,6 +391,14 @@ describe(useMemoryMonitor, () => {
   });
 
   it('clears interval on unmount', () => {
+    Object.defineProperty(performance, 'memory', {
+      configurable: true,
+      value: {
+        jsHeapSizeLimit: 200 * 1024 * 1024,
+        totalJSHeapSize: 100 * 1024 * 1024,
+        usedJSHeapSize: 50 * 1024 * 1024,
+      },
+    });
     const clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
 
     const { unmount } = renderHook(() => useMemoryMonitor(true));
@@ -400,7 +426,7 @@ describe('Integration Tests', () => {
   });
 
   it('handles rapid updates without errors', () => {
-    render(
+    const { rerender } = render(
       <PerformanceStats
         fps={60}
         nodeCount={1000}

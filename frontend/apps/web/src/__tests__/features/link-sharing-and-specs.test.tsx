@@ -690,14 +690,15 @@ describe('Contract and Compliance Features', () => {
   }
 
   it('should track compliance items', async () => {
-    render(<MockComplianceChecklist />);
+    const onCheck = vi.fn();
+    render(<MockComplianceChecklist onCheck={onCheck} />);
 
     const user = setupUser();
     const checkboxes = screen.getAllByRole('checkbox');
     expect(checkboxes).toHaveLength(3);
 
     await user.click(checkboxes[0]);
-    expect(checkboxes[0]).toBeChecked();
+    expect(onCheck).toHaveBeenCalledWith('1', true);
   });
 
   it('should calculate completion percentage', () => {

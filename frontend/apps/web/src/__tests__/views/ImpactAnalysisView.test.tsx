@@ -33,14 +33,14 @@ describe(ImpactAnalysisView, () => {
 
   it('renders impact analysis interface', () => {
     vi.mocked(useItems).mockReturnValue({
-      data: [],
+      data: { items: [] },
       error: null,
       isError: false,
       isLoading: false,
     } as any);
 
     vi.mocked(useLinks).mockReturnValue({
-      data: [],
+      data: { links: [] },
       error: null,
       isError: false,
       isLoading: false,
@@ -52,7 +52,7 @@ describe(ImpactAnalysisView, () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByText('Impact Analysis')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Impact Intelligence' })).toBeInTheDocument();
   });
 
   it('displays impact analysis results', async () => {
@@ -88,14 +88,14 @@ describe(ImpactAnalysisView, () => {
     ];
 
     vi.mocked(useItems).mockReturnValue({
-      data: items,
+      data: { items },
       error: null,
       isError: false,
       isLoading: false,
     } as any);
 
     vi.mocked(useLinks).mockReturnValue({
-      data: links,
+      data: { links },
       error: null,
       isError: false,
       isLoading: false,
@@ -108,7 +108,7 @@ describe(ImpactAnalysisView, () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Impact Analysis')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Impact Intelligence' })).toBeInTheDocument();
     });
   });
 });

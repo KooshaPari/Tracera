@@ -220,7 +220,7 @@ describe('Adaptive Cache Configuration', () => {
 
   describe('logAdaptiveCacheDecision', () => {
     beforeEach(() => {
-      vi.spyOn(console, 'debug').mockImplementation(() => {});
+      vi.spyOn(logger, 'debug').mockImplementation(() => {});
     });
 
     afterEach(() => {
@@ -244,7 +244,7 @@ describe('Adaptive Cache Configuration', () => {
       };
 
       logAdaptiveCacheDecision(metrics, config, 'test');
-      expect(console.debug).not.toHaveBeenCalled();
+      expect(logger.debug).not.toHaveBeenCalled();
 
       process.env.NODE_ENV = originalEnv;
     });
@@ -266,7 +266,7 @@ describe('Adaptive Cache Configuration', () => {
       };
 
       logAdaptiveCacheDecision(metrics, config, 'test reason');
-      expect(console.debug).toHaveBeenCalledWith(
+      expect(logger.debug).toHaveBeenCalledWith(
         '[AdaptiveCache]',
         expect.objectContaining({
           reason: 'test reason',
