@@ -55,7 +55,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </div>
 
               <div className='space-y-1'>
-                <h2 className='text-xl font-bold tracking-tight'>Component Failure</h2>
+                <h2 className='text-xl font-bold tracking-tight'>Something went wrong</h2>
                 <p className='text-muted-foreground text-sm'>
                   A sub-system encountered an unrecoverable state.
                 </p>
@@ -72,7 +72,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <div className='flex gap-3'>
               <Button onClick={this.reset} className='flex-1 gap-2' size='sm'>
                 <RefreshCcw className='h-3.5 w-3.5' />
-                Try Reset
+                Try again
               </Button>
               <Button
                 onClick={this.reloadPage}
@@ -81,7 +81,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 size='sm'
               >
                 <RotateCw className='h-3.5 w-3.5' />
-                Hard Reload
+                Reload page
               </Button>
             </div>
           </div>

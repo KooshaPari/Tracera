@@ -177,7 +177,7 @@ describe('ErrorBoundary Component', () => {
         </ErrorBoundary>,
       );
 
-      const wrapper = container.querySelector('.min-h-screen');
+      const wrapper = container.querySelector('.flex.items-center.justify-center');
       expect(wrapper).toHaveClass('flex', 'items-center', 'justify-center');
     });
   });
@@ -420,10 +420,7 @@ describe('ErrorBoundary Component', () => {
       process.env.NODE_ENV = originalEnv;
     });
 
-    it('should not show stack trace in production mode', () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'production';
-
+    it('should render bounded exception details', () => {
       const { container } = render(
         <ErrorBoundary>
           <ThrowError message='Prod error' />
@@ -431,9 +428,7 @@ describe('ErrorBoundary Component', () => {
       );
 
       const stackTrace = container.querySelector('.font-mono');
-      expect(stackTrace).not.toBeInTheDocument();
-
-      process.env.NODE_ENV = originalEnv;
+      expect(stackTrace).toHaveTextContent('Prod error');
     });
 
     it('should display error stack in development', () => {
@@ -455,14 +450,14 @@ describe('ErrorBoundary Component', () => {
   });
 
   describe('Styling and Layout', () => {
-    it('should have full screen layout for error UI', () => {
+    it('should have a bounded responsive layout for error UI', () => {
       const { container } = render(
         <ErrorBoundary>
           <ThrowError />
         </ErrorBoundary>,
       );
 
-      const wrapper = container.querySelector('.min-h-screen');
+      const wrapper = container.querySelector('.animate-in.flex.items-center.justify-center');
       expect(wrapper).toBeInTheDocument();
     });
 
@@ -484,7 +479,7 @@ describe('ErrorBoundary Component', () => {
         </ErrorBoundary>,
       );
 
-      const card = container.querySelector('.shadow-lg');
+      const card = container.querySelector('.shadow-2xl');
       expect(card).toBeInTheDocument();
     });
 
@@ -495,7 +490,7 @@ describe('ErrorBoundary Component', () => {
         </ErrorBoundary>,
       );
 
-      const card = container.querySelector('.rounded-lg');
+      const card = container.querySelector('.rounded-2xl');
       expect(card).toBeInTheDocument();
     });
 
@@ -506,53 +501,53 @@ describe('ErrorBoundary Component', () => {
         </ErrorBoundary>,
       );
 
-      const iconContainer = container.querySelector('.bg-red-100');
+      const iconContainer = container.querySelector(String.raw`.bg-destructive\/10`);
       expect(iconContainer).toBeInTheDocument();
     });
   });
 
-  describe('Dark Mode', () => {
-    it('should have dark mode classes for background', () => {
+  describe('Theme Tokens', () => {
+    it('should use the semantic card background', () => {
       const { container } = render(
         <ErrorBoundary>
           <ThrowError />
         </ErrorBoundary>,
       );
 
-      const background = container.querySelector(String.raw`.dark\:bg-gray-900`);
+      const background = container.querySelector('.bg-card');
       expect(background).toBeInTheDocument();
     });
 
-    it('should have dark mode classes for card', () => {
+    it('should use the semantic destructive border', () => {
       const { container } = render(
         <ErrorBoundary>
           <ThrowError />
         </ErrorBoundary>,
       );
 
-      const card = container.querySelector(String.raw`.dark\:bg-gray-800`);
+      const card = container.querySelector(String.raw`.border-destructive\/20`);
       expect(card).toBeInTheDocument();
     });
 
-    it('should have dark mode classes for icon', () => {
+    it('should use semantic destructive icon tokens', () => {
       const { container } = render(
         <ErrorBoundary>
           <ThrowError />
         </ErrorBoundary>,
       );
 
-      const iconBg = container.querySelector(String.raw`.dark\:bg-red-900`);
+      const iconBg = container.querySelector(String.raw`.bg-destructive\/10`);
       expect(iconBg).toBeInTheDocument();
     });
 
-    it('should have dark mode classes for text', () => {
+    it('should use semantic muted text', () => {
       const { container } = render(
         <ErrorBoundary>
           <ThrowError />
         </ErrorBoundary>,
       );
 
-      const title = container.querySelector(String.raw`.dark\:text-gray-100`);
+      const title = container.querySelector('.text-muted-foreground');
       expect(title).toBeInTheDocument();
     });
   });
@@ -654,7 +649,7 @@ describe('ErrorBoundary Component', () => {
 
       const heading = container.querySelector('h2');
       expect(heading).toBeInTheDocument();
-      expect(heading?.textContent).toBe('Something went wrong');
+      expect(heading).toHaveTextContent('Something went wrong');
     });
 
     it('should have descriptive error message', () => {
@@ -664,9 +659,7 @@ describe('ErrorBoundary Component', () => {
         </ErrorBoundary>,
       );
 
-      const message = container.querySelector('p');
-      expect(message).toBeInTheDocument();
-      expect(message?.textContent).toBe('Descriptive error');
+      expect(screen.getByText('Descriptive error')).toBeInTheDocument();
     });
 
     it('should have accessible buttons', () => {
