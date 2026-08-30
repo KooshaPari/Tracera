@@ -65,7 +65,7 @@ describe(ItemsTreeView, () => {
     ];
 
     vi.mocked(useItems).mockReturnValue({
-      data: mockItems,
+      data: { items: mockItems },
       error: null,
       isError: false,
       isLoading: false,
@@ -123,7 +123,7 @@ describe(ItemsTreeView, () => {
     ];
 
     vi.mocked(useItems).mockReturnValue({
-      data: mockItems,
+      data: { items: mockItems },
       error: null,
       isError: false,
       isLoading: false,
@@ -142,14 +142,10 @@ describe(ItemsTreeView, () => {
       </QueryClientProvider>,
     );
 
-    // Find expand button
-    const expandButtons = screen.getAllByText('▶');
-    if (expandButtons.length > 0) {
-      await user.click(expandButtons[0]);
-      await waitFor(() => {
-        expect(screen.getByText('Child Item')).toBeInTheDocument();
-      });
-    }
+    await user.click(screen.getByRole('button', { name: 'Expand Parent Item' }));
+    await waitFor(() => {
+      expect(screen.getByText('Child Item')).toBeInTheDocument();
+    });
   });
 
   it('displays search functionality', async () => {

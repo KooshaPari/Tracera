@@ -228,15 +228,19 @@ function getTreeDepthEstimate(items: Item[]): number {
 
 const TreeExpandButton = memo(function TreeExpandButton({
   isExpanded,
+  itemTitle,
   onClick,
 }: {
   isExpanded: boolean;
+  itemTitle: string;
   onClick: () => void;
 }): React.JSX.Element {
   return (
     <button
       type='button'
       onClick={onClick}
+      aria-expanded={isExpanded}
+      aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${itemTitle}`}
       className='hover:bg-muted text-muted-foreground flex h-6 w-6 items-center justify-center rounded-lg transition-colors'
     >
       {isExpanded ? <ChevronDown className='h-4 w-4' /> : <ChevronRight className='h-4 w-4' />}
@@ -361,7 +365,11 @@ const TreeItem = memo(
           style={getIndentStyle(level)}
         >
           {hasChildren ? (
-            <TreeExpandButton isExpanded={isExpanded} onClick={handleToggle} />
+            <TreeExpandButton
+              isExpanded={isExpanded}
+              itemTitle={item.title}
+              onClick={handleToggle}
+            />
           ) : (
             <div className='flex h-6 w-6 items-center justify-center'>
               <div className='bg-muted-foreground/30 h-1 w-1 rounded-full' />

@@ -12,7 +12,7 @@ describe(CreateProjectForm, () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
-    render(<CreateProjectForm onSubmit={onSubmit} onCancel={onCancel} />);
+    const { container } = render(<CreateProjectForm onSubmit={onSubmit} onCancel={onCancel} />);
 
     // Verify form exists
     expect(container.querySelector('form')).toBeInTheDocument();
@@ -51,27 +51,16 @@ describe(CreateProjectForm, () => {
 
     render(<CreateProjectForm onSubmit={onSubmit} onCancel={onCancel} />);
 
-    // Find name input
-    const nameInput =
-      container.querySelector('input[type="text"]') ?? screen.queryByLabelText(/name/i);
-    if (nameInput instanceof HTMLInputElement) {
-      await user.type(nameInput, 'Test Project');
-    }
+    await user.type(screen.getByLabelText(/project name/i), 'Test Project');
 
-    // Find and click submit button
-    const submitButton = screen.queryByRole('button', {
-      name: /create project/i,
+    await user.click(screen.getByRole('button', { name: /create project/i }));
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Test Project' }),
+        expect.anything(),
+      );
     });
-    if (submitButton && !submitButton.hasAttribute('disabled')) {
-      await user.click(submitButton);
-      // Verify form was submitted
-      if (onSubmit.mock.calls.length === 0) {
-        // If not called immediately, wait a bit longer
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      }
-      // Just verify we attempted to submit (even if validation failed)
-      expect(submitButton).toBeInTheDocument();
-    }
   });
 
   it('should disable submit button when loading', () => {
