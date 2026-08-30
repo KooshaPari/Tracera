@@ -345,6 +345,14 @@ if (typeof globalThis.getComputedStyle === 'function') {
   });
 }
 
+// Radix uses scrollTo while positioning dialogs; jsdom exposes only a noisy
+// not-implemented stub, so provide the browser side-effect boundary explicitly.
+Object.defineProperty(globalThis, 'scrollTo', {
+  configurable: true,
+  value: vi.fn(),
+  writable: true,
+});
+
 // Mock fetch globally for API tests
 // Use a delegating mock so tests can override it in beforeEach
 let globalFetchImpl: typeof fetch = async (url) => {

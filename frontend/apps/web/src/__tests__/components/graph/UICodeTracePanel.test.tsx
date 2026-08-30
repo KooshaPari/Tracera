@@ -141,7 +141,7 @@ describe(UICodeTracePanel, () => {
     });
 
     it('should render trace chain header with name and confidence', () => {
-      render(<UICodeTracePanel traceChain={mockTraceChain} />);
+      const { container } = render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
       const text = container.textContent ?? '';
       expect(text).toContain(mockTraceChain.name);
@@ -164,7 +164,7 @@ describe(UICodeTracePanel, () => {
     });
 
     it('should render canonical concept card', () => {
-      render(<UICodeTracePanel traceChain={mockTraceChain} />);
+      const { container } = render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
       const text = container.textContent ?? '';
       expect(text).toContain('Canonical Concept');
@@ -191,7 +191,7 @@ describe(UICodeTracePanel, () => {
     });
 
     it('should render code level with file and line information', () => {
-      render(<UICodeTracePanel traceChain={mockTraceChain} />);
+      const { container } = render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
       const text = container.textContent ?? '';
       expect(text).toContain('src/components/LoginForm.tsx');
@@ -213,7 +213,7 @@ describe(UICodeTracePanel, () => {
     });
 
     it('should display perspective badges for each level', () => {
-      render(<UICodeTracePanel traceChain={mockTraceChain} />);
+      const { container } = render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
       const text = container.textContent ?? '';
       expect(text).toContain('ui');
@@ -235,7 +235,7 @@ describe(UICodeTracePanel, () => {
     });
 
     it('should display overall confidence in header', () => {
-      render(<UICodeTracePanel traceChain={mockTraceChain} />);
+      const { container } = render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
       // The overall confidence should appear somewhere in the document
       const text = container.textContent ?? '';
@@ -366,7 +366,7 @@ describe(UICodeTracePanel, () => {
         overallConfidence: 0.5,
       };
 
-      render(<UICodeTracePanel traceChain={chainWithMinimal} />);
+      const { container } = render(<UICodeTracePanel traceChain={chainWithMinimal} />);
 
       expect(screen.getByText('Minimal Code Level')).toBeInTheDocument();
       // Check that 50% appears in the document (may appear multiple times)
@@ -431,7 +431,7 @@ describe(UICodeTracePanel, () => {
         overallConfidence: 0.9,
       };
 
-      render(<UICodeTracePanel traceChain={chainWithLongPath} />);
+      const { container } = render(<UICodeTracePanel traceChain={chainWithLongPath} />);
 
       // Path should be present (even if truncated)
       expect(container.textContent).toContain('components/LoginForm.tsx');
@@ -516,7 +516,7 @@ describe(UICodeTracePanel, () => {
 
   describe('scrolling behavior', () => {
     it('should have scroll area for trace levels', () => {
-      render(<UICodeTracePanel traceChain={mockTraceChain} />);
+      const { container } = render(<UICodeTracePanel traceChain={mockTraceChain} />);
 
       // Check for scroll container
       const _scrollArea = container.querySelector("[class*='scroll']");

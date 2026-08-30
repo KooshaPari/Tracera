@@ -535,7 +535,7 @@ describe('EquivalencePanel Component', () => {
       );
 
       const collapseButton = screen.getByRole('button', {
-        name: '',
+        name: 'Collapse equivalences',
       });
       await user.click(collapseButton);
 
@@ -554,14 +554,14 @@ describe('EquivalencePanel Component', () => {
         />,
       );
 
-      const collapseButton = screen.getByRole('button');
+      const collapseButton = screen.getByRole('button', { name: 'Collapse equivalences' });
       await user.click(collapseButton);
 
       await waitFor(() => {
         expect(screen.queryByText('Authentication API')).not.toBeInTheDocument();
       });
 
-      const expandButton = screen.getByRole('button');
+      const expandButton = screen.getByRole('button', { name: 'Expand equivalences' });
       await user.click(expandButton);
 
       await waitFor(() => {
@@ -613,7 +613,7 @@ describe('EquivalencePanel Component', () => {
       );
 
       // Component should render gracefully
-      expect(screen.getByText(/Equivalences/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Equivalences/i).length).toBeGreaterThan(0);
     });
   });
 

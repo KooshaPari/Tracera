@@ -158,6 +158,7 @@ function EquivalencePanelComponent({
                 variant='ghost'
                 size='sm'
                 className='h-6 w-6 p-0'
+                aria-label={isExpanded ? 'Collapse equivalences' : 'Expand equivalences'}
                 onClick={() => {
                   setIsExpanded(!isExpanded);
                 }}

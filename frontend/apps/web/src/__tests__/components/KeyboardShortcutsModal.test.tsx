@@ -39,7 +39,9 @@ describe(KeyboardShortcutsModal, () => {
   });
 
   it('does not render when closed', () => {
-    render(<KeyboardShortcutsModal isOpen={false} onClose={mockOnClose} shortcuts={shortcuts} />);
+    const { container } = render(
+      <KeyboardShortcutsModal isOpen={false} onClose={mockOnClose} shortcuts={shortcuts} />,
+    );
 
     expect(container.firstChild).toBeNull();
   });

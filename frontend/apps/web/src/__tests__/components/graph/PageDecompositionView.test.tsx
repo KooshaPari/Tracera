@@ -336,7 +336,7 @@ describe('PageDecompositionView Component', () => {
       await user.type(searchInput, 'product');
 
       await waitFor(() => {
-        expect(screen.getByText(/Product/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Product/i).length).toBeGreaterThan(0);
       });
     });
 
@@ -354,7 +354,7 @@ describe('PageDecompositionView Component', () => {
       await user.type(searchInput, 'PRODUCT');
 
       await waitFor(() => {
-        expect(screen.getByText(/Product/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Product/i).length).toBeGreaterThan(0);
       });
     });
 
@@ -372,7 +372,7 @@ describe('PageDecompositionView Component', () => {
       await user.type(searchInput, 'product');
 
       await waitFor(() => {
-        expect(screen.getByText(/Product/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Product/i).length).toBeGreaterThan(0);
       });
 
       await user.clear(searchInput);
