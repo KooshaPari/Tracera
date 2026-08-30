@@ -149,7 +149,9 @@ function ComponentLibraryExplorerComponent({
 }: ComponentLibraryExplorerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'components' | 'tokens'>('components');
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    () => new Set(components.map((component) => component.category)),
+  );
   const [filterStatus, setFilterStatus] = useState<LibraryComponent['status'] | 'all'>('all');
 
   // Current library
@@ -267,6 +269,7 @@ function ComponentLibraryExplorerComponent({
             {/* Library selector (if multiple) */}
             {libraries.length > 1 && (
               <select
+                aria-label='Component library'
                 className='bg-background rounded border px-2 py-1 text-xs'
                 value={currentLibrary?.id ?? ''}
                 onChange={(e) => onSelectLibrary?.(e.target.value)}
@@ -282,40 +285,48 @@ function ComponentLibraryExplorerComponent({
 
           {/* Library info */}
           {currentLibrary && (
-            <div className='text-muted-foreground mt-2 flex items-center gap-3 text-xs'>
-              <span className='flex items-center gap-1'>
-                <Package className='h-3 w-3' />v{currentLibrary.version}
-              </span>
-              <span className='flex items-center gap-1'>
-                <Component className='h-3 w-3' />
-                {stats.total} components
-              </span>
-              {currentLibrary.sourceUrl && (
-                <a
-                  href={currentLibrary.sourceUrl}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='hover:text-foreground flex items-center gap-1'
-                >
-                  <BookOpen className='h-3 w-3' />
-                  Storybook
-                  <ExternalLink className='h-2.5 w-2.5' />
-                </a>
+            <div className='mt-2'>
+              <p className='text-xs font-medium'>{currentLibrary.name}</p>
+              {currentLibrary.description && (
+                <p className='text-muted-foreground mt-0.5 text-xs'>
+                  {currentLibrary.description}
+                </p>
               )}
-              {onSyncLibrary && (
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  className='h-5 gap-1 px-1.5 text-xs'
-                  onClick={() => {
-                    onSyncLibrary(currentLibrary.id);
-                  }}
-                  disabled={isLoading}
-                >
-                  <RefreshCw className={`h-3 w-3 ${isLoading ? 'animate-spin' : ''}`} />
-                  Sync
-                </Button>
-              )}
+              <div className='text-muted-foreground mt-1 flex items-center gap-3 text-xs'>
+                <span className='flex items-center gap-1'>
+                  <Package className='h-3 w-3' />v{currentLibrary.version}
+                </span>
+                <span className='flex items-center gap-1'>
+                  <Component className='h-3 w-3' />
+                  {stats.total} components
+                </span>
+                {currentLibrary.sourceUrl && (
+                  <a
+                    href={currentLibrary.sourceUrl}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='hover:text-foreground flex items-center gap-1'
+                  >
+                    <BookOpen className='h-3 w-3' />
+                    Storybook
+                    <ExternalLink className='h-2.5 w-2.5' />
+                  </a>
+                )}
+                {onSyncLibrary && (
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    className='h-5 gap-1 px-1.5 text-xs'
+                    onClick={() => {
+                      onSyncLibrary(currentLibrary.id);
+                    }}
+                    disabled={isLoading}
+                  >
+                    <RefreshCw className={`h-3 w-3 ${isLoading ? 'animate-spin' : ''}`} />
+                    Sync
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </CardHeader>

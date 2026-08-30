@@ -22,99 +22,124 @@ import { ComponentLibraryExplorer } from '@/components/graph/ComponentLibraryExp
 
 const mockDesignTokens: DesignToken[] = [
   {
-    category: 'color',
+    createdAt: '2024-01-15T00:00:00Z',
     id: 'color-primary',
+    libraryId: 'lib-ui',
     name: 'Primary Color',
+    path: ['color', 'primary'],
+    projectId: 'project-ui',
+    type: 'color',
+    updatedAt: '2024-01-15T00:00:00Z',
+    usageCount: 1,
     value: '#3b82f6',
-  } as any,
+  },
   {
-    category: 'spacing',
+    createdAt: '2024-01-15T00:00:00Z',
     id: 'spacing-md',
+    libraryId: 'lib-ui',
     name: 'Medium Spacing',
+    path: ['spacing', 'md'],
+    projectId: 'project-ui',
+    type: 'spacing',
+    updatedAt: '2024-01-15T00:00:00Z',
+    usageCount: 1,
     value: '16px',
-  } as any,
+  },
 ];
 
 const mockComponentVariants: ComponentVariant[] = [
   {
     description: 'Primary button style',
-    id: 'variant-primary',
     name: 'Primary',
     props: { size: 'md', variant: 'primary' },
-  } as any,
+  },
   {
     description: 'Secondary button style',
-    id: 'variant-secondary',
     name: 'Secondary',
     props: { size: 'md', variant: 'secondary' },
-  } as any,
+  },
 ];
 
 const mockComponentProps: ComponentProp[] = [
   {
     description: 'Button text',
-    id: 'prop-label',
     name: 'label',
     required: true,
     type: 'string',
-  } as any,
+  },
   {
     description: 'Click handler',
-    id: 'prop-onClick',
     name: 'onClick',
     required: false,
     type: 'function',
-  } as any,
+  },
 ];
 
 const mockButton: LibraryComponent = {
   category: 'atom',
+  createdAt: '2024-01-15T00:00:00Z',
   description: 'Reusable button component',
-  figma_url: 'http://figma.local/button',
+  displayName: 'Button',
+  figmaUrl: 'http://figma.local/button',
   id: 'component-button',
-  last_updated: '2024-01-15T00:00:00Z',
   libraryId: 'lib-ui',
   name: 'Button',
+  projectId: 'project-ui',
   props: mockComponentProps,
-  source_code_url: 'http://github.local/button',
-  storybook_url: 'http://storybook.local/button',
-  usage_count: 24,
+  status: 'stable',
+  storybookUrl: 'http://storybook.local/button',
+  updatedAt: '2024-01-15T00:00:00Z',
+  usageCount: 24,
   variants: mockComponentVariants,
-} as any;
+};
 
 const mockCard: LibraryComponent = {
   category: 'molecule',
+  createdAt: '2024-01-15T00:00:00Z',
   description: 'Container component',
+  displayName: 'Card',
   id: 'component-card',
-  last_updated: '2024-01-15T00:00:00Z',
   libraryId: 'lib-ui',
   name: 'Card',
+  projectId: 'project-ui',
   props: [],
-  usage_count: 12,
+  status: 'stable',
+  updatedAt: '2024-01-15T00:00:00Z',
+  usageCount: 12,
   variants: [],
-} as any;
+};
 
 const mockUILibrary: ComponentLibrary = {
-  component_count: 2,
+  componentCount: 2,
+  createdAt: '2024-01-15T00:00:00Z',
   description: 'Core UI component library',
   id: 'lib-ui',
-  last_updated: '2024-01-15T00:00:00Z',
   name: 'UI Components',
-  organization: 'Design Team',
-  repository_url: 'http://github.local/ui',
-  status: 'active',
-} as any;
+  projectId: 'project-ui',
+  slug: 'ui-components',
+  source: 'storybook',
+  sourceUrl: 'http://github.local/ui',
+  syncStatus: 'synced',
+  tokenCount: 2,
+  updatedAt: '2024-01-15T00:00:00Z',
+  version: '1.0.0',
+};
 
 const mockIconsLibrary: ComponentLibrary = {
-  component_count: 150,
+  componentCount: 150,
+  createdAt: '2024-01-15T00:00:00Z',
   description: 'SVG icon library',
   id: 'lib-icons',
-  last_updated: '2024-01-15T00:00:00Z',
   name: 'Icon Library',
-  organization: 'Design Team',
-  repository_url: 'http://github.local/icons',
-  status: 'active',
-} as any;
+  projectId: 'project-ui',
+  slug: 'icon-library',
+  source: 'storybook',
+  sourceUrl: 'http://github.local/icons',
+  syncStatus: 'synced',
+  tokenCount: 0,
+  updatedAt: '2024-01-15T00:00:00Z',
+  version: '1.0.0',
+};
 
 // =============================================================================
 // COMPONENT TESTS
@@ -148,7 +173,7 @@ describe('ComponentLibraryExplorer Component', () => {
         />,
       );
 
-      expect(screen.getByText(/library/i)).toBeInTheDocument();
+      expect(screen.getByText('Component Library')).toBeInTheDocument();
     });
 
     it('displays library list', () => {
@@ -160,8 +185,8 @@ describe('ComponentLibraryExplorer Component', () => {
         />,
       );
 
-      expect(screen.getByText('UI Components')).toBeInTheDocument();
-      expect(screen.getByText('Icon Library')).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'UI Components' })).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'Icon Library' })).toBeInTheDocument();
     });
 
     it('displays components list', () => {
@@ -229,11 +254,13 @@ describe('ComponentLibraryExplorer Component', () => {
         />,
       );
 
-      const uiLibrary = screen.getByText('UI Components');
-      await user.click(uiLibrary);
+      await user.selectOptions(
+        screen.getByRole('combobox', { name: 'Component library' }),
+        'lib-icons',
+      );
 
       await waitFor(() => {
-        expect(onSelectLibrary).toHaveBeenCalled();
+        expect(onSelectLibrary).toHaveBeenCalledWith('lib-icons');
       });
     });
 
@@ -247,7 +274,7 @@ describe('ComponentLibraryExplorer Component', () => {
         />,
       );
 
-      expect(screen.getByText('UI Components')).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Component library' })).toHaveValue('lib-ui');
     });
 
     it('filters components by selected library', () => {
@@ -695,7 +722,7 @@ describe('ComponentLibraryExplorer Component', () => {
       );
 
       // Should render gracefully
-      expect(screen.getByText(/library|component/i)).toBeTruthy();
+      expect(screen.getByText('No component libraries')).toBeInTheDocument();
     });
 
     it('handles no components in library', () => {
@@ -765,9 +792,9 @@ describe('ComponentLibraryExplorer Component', () => {
   });
 
   describe('Sorting and Filtering', () => {
-    it('sorts components by usage count', () => {
-      const highUsageComponent = { ...mockButton, usage_count: 100 };
-      const lowUsageComponent = { ...mockCard, usage_count: 5 };
+    it('renders components with different usage counts', () => {
+      const highUsageComponent = { ...mockButton, usageCount: 100 };
+      const lowUsageComponent = { ...mockCard, usageCount: 5 };
 
       render(
         <ComponentLibraryExplorer
@@ -781,14 +808,14 @@ describe('ComponentLibraryExplorer Component', () => {
       expect(screen.getByText('Card')).toBeInTheDocument();
     });
 
-    it('sorts by last updated date', () => {
+    it('renders components updated at different times', () => {
       const recentComponent = {
         ...mockButton,
-        last_updated: '2024-01-20T00:00:00Z',
+        updatedAt: '2024-01-20T00:00:00Z',
       };
       const oldComponent = {
         ...mockCard,
-        last_updated: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
       };
 
       render(
