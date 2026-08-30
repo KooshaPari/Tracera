@@ -209,7 +209,11 @@ export function usePredictivePrefetch({
 
         // Trigger prefetch
         try {
-          undefined;
+          void Promise.resolve(loadViewport(predictedViewport)).catch((error: unknown) => {
+            if (process.env.NODE_ENV === 'development') {
+              logger.warn('[usePredictivePrefetch] Prefetch failed:', error);
+            }
+          });
         } catch (error) {
           if (process.env.NODE_ENV === 'development') {
             logger.warn('[usePredictivePrefetch] Prefetch failed:', error);

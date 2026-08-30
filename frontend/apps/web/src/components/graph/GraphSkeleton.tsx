@@ -18,6 +18,7 @@ export const GraphSkeleton = memo(function GraphSkeleton({
       {Array.from({ length: nodeCount }).map((_, i) => (
         <div
           key={`node-${i}`}
+          data-testid='graph-skeleton-node'
           className='bg-card absolute rounded-lg border'
           style={{
             height: '60px',

@@ -2,14 +2,18 @@
  * Tests for CommunityControls component
  */
 
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { CommunityResult } from '../../../lib/graph/clustering';
 
 import { CommunityControls } from '../../../components/graph/CommunityControls';
 
 describe(CommunityControls, () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   const mockResult: CommunityResult = {
     colors: new Map([
       ['0', '#3B82F6'],
@@ -57,7 +61,7 @@ describe(CommunityControls, () => {
     render(<CommunityControls enabled={false} onToggle={onToggle} />);
 
     const toggle = screen.getByRole('switch');
-    toggle.click();
+    fireEvent.click(toggle);
 
     expect(onToggle).toHaveBeenCalledWith(true);
   });
@@ -93,7 +97,7 @@ describe(CommunityControls, () => {
     render(<CommunityControls enabled onToggle={onToggle} result={mockResult} />);
 
     // Should show communities section
-    expect(screen.getByText(/Communities/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Communities' })).toBeInTheDocument();
 
     // Should show community items
     expect(screen.getByText('Community 0')).toBeInTheDocument();
@@ -116,6 +120,7 @@ describe(CommunityControls, () => {
 
   it('should trigger JSON export when button is clicked', async () => {
     const onToggle = vi.fn();
+    render(<CommunityControls enabled onToggle={onToggle} result={mockResult} />);
 
     // Mock URL.createObjectURL and createElement
     const mockCreateObjectURL = vi.fn(() => 'blob:mock-url');
@@ -134,10 +139,8 @@ describe(CommunityControls, () => {
     vi.spyOn(document.body, 'appendChild').mockImplementation(mockAppendChild);
     vi.spyOn(document.body, 'removeChild').mockImplementation(mockRemoveChild);
 
-    render(<CommunityControls enabled onToggle={onToggle} result={mockResult} />);
-
     const jsonButton = screen.getByLabelText('Export communities as JSON');
-    jsonButton.click();
+    fireEvent.click(jsonButton);
 
     expect(mockCreateObjectURL).toHaveBeenCalled();
     expect(mockLink.click).toHaveBeenCalled();
@@ -146,6 +149,7 @@ describe(CommunityControls, () => {
 
   it('should trigger CSV export when button is clicked', async () => {
     const onToggle = vi.fn();
+    render(<CommunityControls enabled onToggle={onToggle} result={mockResult} />);
 
     // Mock URL.createObjectURL and createElement
     const mockCreateObjectURL = vi.fn(() => 'blob:mock-url');
@@ -164,10 +168,8 @@ describe(CommunityControls, () => {
     vi.spyOn(document.body, 'appendChild').mockImplementation(mockAppendChild);
     vi.spyOn(document.body, 'removeChild').mockImplementation(mockRemoveChild);
 
-    render(<CommunityControls enabled onToggle={onToggle} result={mockResult} />);
-
     const csvButton = screen.getByLabelText('Export communities as CSV');
-    csvButton.click();
+    fireEvent.click(csvButton);
 
     expect(mockCreateObjectURL).toHaveBeenCalled();
     expect(mockLink.click).toHaveBeenCalled();
@@ -181,7 +183,7 @@ describe(CommunityControls, () => {
     render(<CommunityControls enabled={false} onToggle={onToggle} onClose={onClose} />);
 
     const closeButton = screen.getByLabelText('Close community controls');
-    closeButton.click();
+    fireEvent.click(closeButton);
 
     expect(onClose).toHaveBeenCalled();
   });

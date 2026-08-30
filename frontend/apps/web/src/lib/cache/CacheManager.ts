@@ -118,7 +118,11 @@ export class CacheManager {
       }
     }
 
-    if (this.config.enableIndexedDB && typeof window !== 'undefined') {
+    if (
+      this.config.enableIndexedDB &&
+      typeof window !== 'undefined' &&
+      typeof globalThis.indexedDB !== 'undefined'
+    ) {
       try {
         this.indexedDBCache = createIndexedDBCache({
           maxEntries: this.config.indexedDBMaxEntries,
@@ -134,7 +138,11 @@ export class CacheManager {
       }
     }
 
-    if (this.config.enableServiceWorker && typeof window !== 'undefined') {
+    if (
+      this.config.enableServiceWorker &&
+      typeof window !== 'undefined' &&
+      typeof globalThis.caches !== 'undefined'
+    ) {
       try {
         this.serviceWorkerCache = createServiceWorkerCache({
           defaultTTL: this.config.defaultTTL,

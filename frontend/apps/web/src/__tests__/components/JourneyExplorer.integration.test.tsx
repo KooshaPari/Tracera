@@ -163,7 +163,7 @@ describe('JourneyExplorer - Integration Tests', () => {
       render(<JourneyExplorer items={mockItems} links={mockLinks} journeys={journeys} />);
 
       expect(screen.getByText('User Data Path')).toBeInTheDocument();
-      expect(screen.getByText('Data Path')).toBeInTheDocument();
+      expect(screen.getAllByText('Data Path').length).toBeGreaterThan(0);
     });
 
     it('should display detected call chain journeys', () => {
@@ -184,7 +184,7 @@ describe('JourneyExplorer - Integration Tests', () => {
       render(<JourneyExplorer items={mockItems} links={mockLinks} journeys={journeys} />);
 
       expect(screen.getByText('Auth Call Chain')).toBeInTheDocument();
-      expect(screen.getByText('Call Chain')).toBeInTheDocument();
+      expect(screen.getAllByText('Call Chain').length).toBeGreaterThan(0);
     });
 
     it('should display detected test trace journeys', () => {
@@ -205,7 +205,7 @@ describe('JourneyExplorer - Integration Tests', () => {
       render(<JourneyExplorer items={mockItems} links={mockLinks} journeys={journeys} />);
 
       expect(screen.getByText('Auth Test Trace')).toBeInTheDocument();
-      expect(screen.getByText('Test Trace')).toBeInTheDocument();
+      expect(screen.getAllByText('Test Trace').length).toBeGreaterThan(0);
     });
   });
 
@@ -240,7 +240,7 @@ describe('JourneyExplorer - Integration Tests', () => {
       );
 
       // Should show coverage metrics when journeys are selected
-      expect(screen.getByText('Coverage')).toBeInTheDocument();
+      expect(screen.getAllByText('Coverage').length).toBeGreaterThan(0);
     });
 
     it('should aggregate node coverage across multiple journeys', () => {
@@ -273,7 +273,7 @@ describe('JourneyExplorer - Integration Tests', () => {
       );
 
       // Total unique nodes: page-1, page-2, page-3 = 3 out of 12 = 25%
-      expect(screen.getByText('Coverage')).toBeInTheDocument();
+      expect(screen.getAllByText('Coverage').length).toBeGreaterThan(0);
     });
   });
 

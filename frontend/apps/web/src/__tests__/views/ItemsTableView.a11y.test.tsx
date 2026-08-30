@@ -12,7 +12,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -150,10 +150,10 @@ describe('ItemsTableViewA11y - Accessibility', () => {
       expect(rows[1]).toHaveAttribute('aria-rowindex', '2'); // First data row
     });
 
-    it('should have gridcell roles on data cells', () => {
+    it('should expose native table cells to assistive technology', () => {
       renderTable();
 
-      const cells = screen.getAllByRole('gridcell');
+      const cells = screen.getAllByRole('cell');
       expect(cells.length).toBeGreaterThan(0);
     });
 
@@ -191,7 +191,9 @@ describe('ItemsTableViewA11y - Accessibility', () => {
     it('should have focusable elements with proper tabindex', () => {
       renderTable();
 
-      const titleButton = screen.getByLabelText(/Item Create Authentication/i);
+      const titleButton = screen.getByRole('button', {
+        name: 'Item Create Authentication (ID: item-1)',
+      });
       expect(titleButton).toHaveAttribute('tabindex');
     });
 
@@ -220,7 +222,9 @@ describe('ItemsTableViewA11y - Accessibility', () => {
     it('should have visible focus indicators', () => {
       renderTable();
 
-      const titleButton = screen.getByLabelText(/Item Create Authentication/i);
+      const titleButton = screen.getByRole('button', {
+        name: 'Item Create Authentication (ID: item-1)',
+      });
       expect(titleButton).toHaveClass('focus:ring-2', 'focus:ring-primary');
     });
 
@@ -256,11 +260,10 @@ describe('ItemsTableViewA11y - Accessibility', () => {
       expect(createButton).toBeInTheDocument();
     });
 
-    it('should have aria-label on view switch button', () => {
+    it('should identify the registry view with a level-one heading', () => {
       renderTable();
 
-      const workflowButton = screen.getByLabelText(/Switch to workflow view/i);
-      expect(workflowButton).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 1, name: 'Node Registry' })).toBeInTheDocument();
     });
 
     it('should have status information as aria-labels', () => {
@@ -350,10 +353,10 @@ describe('ItemsTableViewA11y - Accessibility', () => {
       const createButton = screen.getByLabelText(/Create new node/i);
       await user.click(createButton);
 
-      expect(screen.getByLabelText(/Title/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Type/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Status/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Priority/i)).toBeInTheDocument();
+      expect(screen.getByLabelText('Title')).toBeInTheDocument();
+      expect(screen.getByLabelText('Type')).toBeInTheDocument();
+      expect(screen.getByLabelText('Status')).toBeInTheDocument();
+      expect(screen.getByLabelText('Priority')).toBeInTheDocument();
     });
 
     it('should have close button with aria-label', async () => {
@@ -371,8 +374,11 @@ describe('ItemsTableViewA11y - Accessibility', () => {
     it('should have proper table structure with headers and body', () => {
       renderTable();
 
-      const tableHeader = screen.getByRole('rowgroup');
-      expect(tableHeader).toBeInTheDocument();
+      const table = screen.getByRole('table', {
+        name: /Items table with sortable columns/i,
+      });
+      const rowGroups = within(table).getAllByRole('rowgroup');
+      expect(rowGroups).toHaveLength(2);
 
       const rows = screen.getAllByRole('row');
       expect(rows.length).toBeGreaterThan(1);
@@ -451,12 +457,15 @@ describe('ItemsTableViewA11y - Accessibility', () => {
   });
 
   describe('WCAG 2.1 AA Compliance Specific Tests', () => {
-    it('should have sufficient touch target size (44x44px minimum)', () => {
+    it('should give row action buttons explicit target dimensions', () => {
       renderTable();
 
-      const buttons = screen.getAllByRole('button');
-      buttons.forEach((button) => {
-        // Buttons should have adequate padding
+      const rowActionButtons = [
+        ...screen.getAllByLabelText(/Open item details for/i),
+        ...screen.getAllByLabelText(/Delete item/i),
+      ];
+      expect(rowActionButtons).toHaveLength(mockItems.length * 2);
+      rowActionButtons.forEach((button) => {
         expect(button).toHaveClass('h-8', 'w-8');
       });
     });

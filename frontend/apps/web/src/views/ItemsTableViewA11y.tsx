@@ -65,6 +65,7 @@ const DEFAULT_PRIORITY: Priority = 'medium';
 const DEFAULT_STATUS: ItemStatus = 'todo';
 const ROW_HEIGHT = 68;
 const VIRTUAL_OVERSCAN = 10;
+const TABLE_MAX_INLINE = 50;
 const SKELETON_ROWS = 6;
 const STATUS_OPTIONS: ItemStatus[] = ['todo', 'in_progress', 'done', 'blocked', 'cancelled'];
 const PRIORITY_OPTIONS: Priority[] = ['low', 'medium', 'high', 'critical'];
@@ -546,6 +547,8 @@ export function ItemsTableViewA11y({
     }),
     [rowVirtualizer],
   );
+  const showInlineTable =
+    filteredAndSortedItems.length > 0 && filteredAndSortedItems.length <= TABLE_MAX_INLINE;
 
   const handleDelete = useCallback(
     async (id: string) => {
@@ -632,6 +635,41 @@ export function ItemsTableViewA11y({
       setNewPriority(value);
     }
   }, []);
+
+  const tableHeader = (
+    <TableHeader>
+      <TableRow className='border-border/50 border-b hover:bg-transparent'>
+        <TableHead
+          className='bg-card/50 sticky top-0 z-10 h-14 w-[400px] px-6 text-[10px] font-black tracking-widest uppercase'
+          colIndex={1}
+          isSortable
+          sortDirection={getTitleSortDirection(isTitleSorted, sortOrder)}
+        >
+          <button
+            type='button'
+            onClick={handleTitleSortToggle}
+            className='focus:ring-primary flex items-center gap-2 rounded px-2 py-1 focus:ring-2 focus:ring-offset-2 focus:outline-none'
+            aria-label={`Node Identifier, ${getTitleSortLabel(isTitleSorted, sortOrder)}`}
+          >
+            Node Identifier
+            {isTitleSorted &&
+              (sortOrder === 'asc' ? (
+                <ArrowUp className='h-3 w-3' aria-hidden='true' />
+              ) : (
+                <ArrowDown className='h-3 w-3' aria-hidden='true' />
+              ))}
+          </button>
+        </TableHead>
+        <TableHead colIndex={2}>Type</TableHead>
+        <TableHead colIndex={3}>Status</TableHead>
+        <TableHead colIndex={4}>Priority</TableHead>
+        <TableHead colIndex={5}>Owner</TableHead>
+        <TableHead colIndex={6} className='px-6 text-right'>
+          Actions
+        </TableHead>
+      </TableRow>
+    </TableHeader>
+  );
 
   if (isLoading) {
     return (
@@ -734,83 +772,78 @@ export function ItemsTableViewA11y({
             items.
           </div>
 
-          {/* Table Header */}
-          <div className='custom-scrollbar overflow-x-auto'>
-            <Table role='table' ariaLabel='Items table with sortable columns'>
-              <TableHeader>
-                <TableRow className='border-border/50 border-b hover:bg-transparent'>
-                  <TableHead
-                    className='bg-card/50 sticky top-0 z-10 h-14 w-[400px] px-6 text-[10px] font-black tracking-widest uppercase'
-                    colIndex={1}
-                    isSortable
-                    sortDirection={getTitleSortDirection(isTitleSorted, sortOrder)}
-                  >
-                    <button
-                      type='button'
-                      onClick={handleTitleSortToggle}
-                      className='focus:ring-primary flex items-center gap-2 rounded px-2 py-1 focus:ring-2 focus:ring-offset-2 focus:outline-none'
-                      aria-label={`Node Identifier, ${getTitleSortLabel(isTitleSorted, sortOrder)}`}
-                    >
-                      Node Identifier
-                      {isTitleSorted &&
-                        (sortOrder === 'asc' ? (
-                          <ArrowUp className='h-3 w-3' aria-hidden='true' />
-                        ) : (
-                          <ArrowDown className='h-3 w-3' aria-hidden='true' />
-                        ))}
-                    </button>
-                  </TableHead>
-                  <TableHead colIndex={2}>Type</TableHead>
-                  <TableHead colIndex={3}>Status</TableHead>
-                  <TableHead colIndex={4}>Priority</TableHead>
-                  <TableHead colIndex={5}>Owner</TableHead>
-                  <TableHead colIndex={6} className='px-6 text-right'>
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-            </Table>
-          </div>
+          {/* Virtualized tables keep a fixed header; small tables keep one semantic table. */}
+          {!showInlineTable && (
+            <div className='custom-scrollbar overflow-x-auto'>
+              <Table role='table' ariaLabel='Items table with sortable columns'>
+                {tableHeader}
+              </Table>
+            </div>
+          )}
 
           {/* Virtual Scrolling Container */}
           <div
             ref={parentRef}
             className='custom-scrollbar h-[600px] flex-1 overflow-x-hidden overflow-y-auto'
             role='region'
-            aria-label='Items table body with virtual scrolling'
+            aria-label={
+              showInlineTable
+                ? 'Items table body'
+                : 'Items table body with virtual scrolling'
+            }
           >
             {filteredAndSortedItems.length > 0 ? (
-              <div style={virtualContainerStyle}>
-                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                  const item = filteredAndSortedItems[virtualRow.index];
-                  if (!item) {
-                    return null;
-                  }
+              showInlineTable ? (
+                <div className='custom-scrollbar overflow-x-auto'>
+                  <Table role='table' ariaLabel='Items table with sortable columns'>
+                    {tableHeader}
+                    <TableBody>
+                      {filteredAndSortedItems.map((item, rowIndex) => (
+                        <VirtualTableRow
+                          key={item.id}
+                          item={item}
+                          rowIndex={rowIndex}
+                          onDelete={handleDeleteRow}
+                          onNavigate={handleItemNavigate}
+                          isKeyboardFocused={keyboardFocusedCell?.row === rowIndex}
+                        />
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div style={virtualContainerStyle}>
+                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const item = filteredAndSortedItems[virtualRow.index];
+                    if (!item) {
+                      return null;
+                    }
 
-                  const isFocused = keyboardFocusedCell?.row === virtualRow.index;
+                    const isFocused = keyboardFocusedCell?.row === virtualRow.index;
 
-                  return (
-                    <div
-                      key={item.id}
-                      style={getVirtualRowStyle(virtualRow.size, virtualRow.start)}
-                    >
-                      <div className='custom-scrollbar overflow-x-auto'>
-                        <Table>
-                          <TableBody>
-                            <VirtualTableRow
-                              item={item}
-                              rowIndex={virtualRow.index}
-                              onDelete={handleDeleteRow}
-                              onNavigate={handleItemNavigate}
-                              isKeyboardFocused={isFocused}
-                            />
-                          </TableBody>
-                        </Table>
+                    return (
+                      <div
+                        key={item.id}
+                        style={getVirtualRowStyle(virtualRow.size, virtualRow.start)}
+                      >
+                        <div className='custom-scrollbar overflow-x-auto'>
+                          <Table>
+                            <TableBody>
+                              <VirtualTableRow
+                                item={item}
+                                rowIndex={virtualRow.index}
+                                onDelete={handleDeleteRow}
+                                onNavigate={handleItemNavigate}
+                                isKeyboardFocused={isFocused}
+                              />
+                            </TableBody>
+                          </Table>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )
             ) : (
               <div className='flex h-[600px] items-center justify-center'>
                 <div className='text-muted-foreground/30 flex flex-col items-center justify-center'>

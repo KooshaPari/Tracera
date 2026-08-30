@@ -162,6 +162,7 @@ describe('Route Guards', () => {
       expect(result).toEqual({
         account: null,
         isAuthenticated: false,
+        token: null,
         user: null,
       });
     });
@@ -178,6 +179,7 @@ describe('Route Guards', () => {
       useAuthStore.setState({
         account: mockAccount,
         isAuthenticated: true,
+        token: 'token',
         user: mockUser,
       });
 
@@ -185,6 +187,7 @@ describe('Route Guards', () => {
       expect(result).toEqual({
         account: mockAccount,
         isAuthenticated: true,
+        token: 'token',
         user: mockUser,
       });
     });
