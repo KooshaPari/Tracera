@@ -180,7 +180,7 @@ describe(TemporalNavigator, () => {
     expect(screen.getByText(/Select branch/)).toBeInTheDocument();
   });
 
-  it('shows version status badge', () => {
+  it('shows the selected draft version', () => {
     render(
       <TemporalNavigator
         projectId='proj-1'
@@ -193,6 +193,6 @@ describe(TemporalNavigator, () => {
       />,
     );
 
-    expect(screen.getByText('draft')).toBeInTheDocument();
+    expect(screen.getByText('Dev Build')).toBeInTheDocument();
   });
 });

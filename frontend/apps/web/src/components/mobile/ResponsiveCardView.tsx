@@ -107,9 +107,14 @@ const CardItemComponent = function CardItemComponent({
     e.stopPropagation();
   }, []);
 
+  const CardElement = item.actions ? 'div' : 'button';
+  const cardElementProps = item.actions
+    ? { role: 'button' as const, tabIndex: 0 }
+    : { type: 'button' as const };
+
   return (
-    <button
-      type='button'
+    <CardElement
+      {...cardElementProps}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       className={cn(
@@ -168,6 +173,6 @@ const CardItemComponent = function CardItemComponent({
           {item.actions}
         </div>
       )}
-    </button>
+    </CardElement>
   );
 };

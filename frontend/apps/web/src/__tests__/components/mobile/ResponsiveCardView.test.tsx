@@ -109,14 +109,16 @@ describe(ResponsiveCardView, () => {
   it('renders action buttons', () => {
     const items: CardItem[] = [
       {
-        actions: <button>Action</button>,
+        actions: <button type='button'>Action</button>,
         id: '1',
+        onClick: vi.fn(),
         title: 'Item with actions',
       },
     ];
 
-    render(<ResponsiveCardView items={items} />);
+    const { container } = render(<ResponsiveCardView items={items} />);
 
     expect(screen.getByText('Action')).toBeInTheDocument();
+    expect(container.querySelector('button button')).not.toBeInTheDocument();
   });
 });

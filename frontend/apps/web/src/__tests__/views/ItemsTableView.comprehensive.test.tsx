@@ -3,11 +3,11 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useDeleteItem, useItems, useUpdateItem } from '../../hooks/useItems';
+import { useCreateItem, useDeleteItem, useItems, useUpdateItem } from '../../hooks/useItems';
 import { useProjects } from '../../hooks/useProjects';
 import { ItemsTableView } from '../../views/ItemsTableView';
 
@@ -25,6 +25,7 @@ vi.mock('@tanstack/react-router', async () => {
 });
 
 vi.mock('../../hooks/useItems', () => ({
+  useCreateItem: vi.fn(),
   useDeleteItem: vi.fn(),
   useItems: vi.fn(),
   useUpdateItem: vi.fn(),
@@ -36,9 +37,10 @@ vi.mock('../../hooks/useProjects', () => ({
 
 describe(ItemsTableView, () => {
   let queryClient: QueryClient;
-  const user = userEvent.setup();
+  let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    user = userEvent.setup();
     queryClient = new QueryClient({
       defaultOptions: {
         mutations: { retry: false },
@@ -46,6 +48,7 @@ describe(ItemsTableView, () => {
       },
     });
     vi.clearAllMocks();
+    vi.mocked(useCreateItem).mockReturnValue({ isPending: false, mutate: vi.fn() } as any);
   });
 
   it('renders table with items', () => {
@@ -89,7 +92,7 @@ describe(ItemsTableView, () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByText('Item 1')).toBeInTheDocument();
+    expect(screen.getByTestId('item-title')).toHaveTextContent('Item 1');
   });
 
   it('displays loading state', () => {
@@ -157,16 +160,21 @@ describe(ItemsTableView, () => {
     );
 
     // Both items should be visible initially
-    expect(screen.getByText('Item A')).toBeInTheDocument();
-    expect(screen.getByText('Item B')).toBeInTheDocument();
+    expect(screen.getAllByTestId('item-title').map((title) => title.textContent)).toEqual([
+      'Item A',
+      'Item B',
+    ]);
 
     // Click on sortable column header
     const titleHeader = screen.getByText('Title');
     await user.click(titleHeader);
+    await user.click(titleHeader);
 
     // Items should still be visible after sort (sorting is handled by table component)
-    expect(screen.getByText('Item A')).toBeInTheDocument();
-    expect(screen.getByText('Item B')).toBeInTheDocument();
+    expect(screen.getAllByTestId('item-title').map((title) => title.textContent)).toEqual([
+      'Item B',
+      'Item A',
+    ]);
   });
 
   it('handles filtering', async () => {
@@ -220,17 +228,22 @@ describe(ItemsTableView, () => {
     expect(filterInput).toBeInTheDocument();
 
     // Both items visible initially
-    expect(screen.getByText('Item 1')).toBeInTheDocument();
-    expect(screen.getByText('Item 2')).toBeInTheDocument();
+    expect(screen.getAllByTestId('item-title').map((title) => title.textContent)).toEqual([
+      'Item 1',
+      'Item 2',
+    ]);
 
-    // Type in filter (filtering is client-side, so both items still visible)
+    // Type in the client-side filter.
     await user.type(filterInput, 'Item 1');
 
-    // Items are filtered client-side - Item 1 should still be visible
-    expect(screen.getByText('Item 1')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getAllByTestId('item-title').map((title) => title.textContent)).toEqual([
+        'Item 1',
+      ]);
+    });
   });
 
-  it('handles bulk selection', async () => {
+  it('exposes item actions', () => {
     const mockItems = [
       {
         id: 'item-1',
@@ -267,12 +280,7 @@ describe(ItemsTableView, () => {
       </QueryClientProvider>,
     );
 
-    // Select all checkbox should be present
-    const checkboxes = screen.getAllByRole('checkbox');
-    const firstCheckbox = checkboxes[0];
-    if (firstCheckbox) {
-      await user.click(firstCheckbox);
-      // Bulk actions should appear
-    }
+    expect(screen.getAllByRole('button', { name: /Open item Item [12]/ })).toHaveLength(4);
+    expect(screen.getAllByRole('button', { name: /Delete item Item [12]/ })).toHaveLength(4);
   });
 });
