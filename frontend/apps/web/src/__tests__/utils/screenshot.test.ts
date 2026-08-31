@@ -22,12 +22,13 @@ import {
 globalThis.fetch = vi.fn() as unknown as typeof fetch;
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
+  globalThis.fetch = vi.fn() as unknown as typeof fetch;
   clearScreenshotCache();
 });
 
 afterEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
   clearScreenshotCache();
 });
 

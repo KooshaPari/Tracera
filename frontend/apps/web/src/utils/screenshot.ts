@@ -8,6 +8,7 @@ import { client } from '@/api/client';
 import { logger } from '@/lib/logger';
 
 const { getAuthHeaders } = client;
+const IMAGE_LOAD_TIMEOUT_MS = 5000;
 
 /**
  * Screenshot metadata including versions and timestamps
@@ -144,10 +145,15 @@ const loadImage = async function loadImage(
 ): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
+    const timeout = setTimeout(() => {
+      reject(createUploadError('Image loading timed out', 'INVALID_FILE'));
+    }, IMAGE_LOAD_TIMEOUT_MS);
     image.onload = () => {
+      clearTimeout(timeout);
       resolve(image);
     };
     image.onerror = () => {
+      clearTimeout(timeout);
       reject(createUploadError('Failed to load image', 'INVALID_FILE'));
     };
     if (crossOrigin) {
