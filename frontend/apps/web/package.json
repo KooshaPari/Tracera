@@ -143,7 +143,7 @@
     "recharts": "^2.13.3",
     "redoc": "^2.5.2",
     "sigma": "^3.0.2",
-    "sonner": "^2.0.7",
+    "sonner": "^2.0.8",
     "swagger-ui-react": "^5.30.3",
     "tailwind-merge": "^3.4.0",
     "use-sync-external-store": "^1.6.0",
