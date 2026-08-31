@@ -31,7 +31,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
 tower-http = { version = "0.7", features = ["fs", "limit", "set-header", "cors"] }
 tracing = { workspace = true }
 metrics = "0.24"
-metrics-exporter-prometheus = "0.16"
+metrics-exporter-prometheus = "0.18"
 tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
 uuid = { workspace = true }
 
