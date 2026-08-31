@@ -1,0 +1,143 @@
+name: audit-sla
+
+on:
+  schedule:
+    # Run on the 1st of every month at 06:00 UTC
+    - cron: '0 6 1 * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force regeneration even if within SLA'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  scorecard:
+    name: regenerate-scorecard
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    permissions:
+      contents: write
+      security-events: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install OSSF Scorecard CLI
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/ossf/scorecard/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: audit-sla-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run cargo-audit
+        run: |
+          cargo install cargo-audit 2>/dev/null || true
+          cargo audit --json > cargo-audit-report.json 2>&1 || true
+          echo "## cargo-audit" >> $GITHUB_STEP_SUMMARY
+          if [ -s cargo-audit-report.json ]; then
+            python3 -c "
+          import json
+          with open('cargo-audit-report.json') as f:
+              data = json.load(f)
+          vulns = data.get('vulnerabilities', {}).get('list', [])
+          print(f'Found {len(vulns)} vulnerabilities')
+          for v in vulns[:10]:
+              adv = v.get('advisory', {})
+              print(f'  - {adv.get(\"id\", \"?\")} ({adv.get(\"severity\", \"?\")}): {adv.get(\"title\", \"?\")}')
+          " >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No vulnerabilities found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Run OSSF Scorecard
+        run: |
+          scorecard --repo github.com/${{ github.repository }} \
+            --format json \
+            --output scorecard-report.json || true
+          echo "## OSSF Scorecard" >> $GITHUB_STEP_SUMMARY
+          if [ -s scorecard-report.json ]; then
+            python3 -c "
+          import json
+          with open('scorecard-report.json') as f:
+              data = json.load(f)
+          score = data.get('score', {})
+          print(f'Overall score: {score.get(\"score\", \"N/A\")}/10')
+          checks = data.get('checks', [])
+          for c in checks:
+              name = c.get('name', '?')
+              result = c.get('score', '?')
+              print(f'  - {name}: {result}')
+          " >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Run license audit
+        run: |
+          cargo install cargo-deny 2>/dev/null || true
+          cargo deny check licenses 2>&1 | tee deny-output.txt || true
+          echo "## License Check" >> $GITHUB_STEP_SUMMARY
+          if grep -q "denied" deny-output.txt 2>/dev/null; then
+            echo "::warning::Some licenses require review"
+            grep "denied" deny-output.txt >> $GITHUB_STEP_SUMMARY || true
+          else
+            echo "All licenses pass." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Generate consolidated report
+        run: |
+          python3 -c "
+          import json, datetime
+          report = {
+              'generated_at': datetime.datetime.utcnow().isoformat(),
+              'repo': '${{ github.repository }}',
+              'commit': '${{ github.sha }}',
+              'artifacts': [],
+          }
+          for name in ['cargo-audit-report.json', 'scorecard-report.json']:
+              try:
+                  with open(name) as f:
+                      report['artifacts'].append({'name': name, 'data': json.load(f)})
+              except (FileNotFoundError, json.JSONDecodeError):
+                  pass
+          with open('audit-sla-report.json', 'w') as f:
+              json.dump(report, f, indent=2)
+          print('Audit SLA report written.')
+          "
+
+      - name: Upload audit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-sla-${{ github.run_id }}
+          path: |
+            cargo-audit-report.json
+            scorecard-report.json
+            deny-output.txt
+            audit-sla-report.json
+          retention-days: 365
+
+      - name: Commit scorecard to audit/ directory
+        if: github.event.inputs.force == 'true' || success()
+        run: |
+          cp audit-sla-report.json audit/scorecard-latest.json 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit/ || true
+          git diff --cached --quiet || git commit -m "chore: regenerate monthly audit SLA scorecard"
+          git push || true

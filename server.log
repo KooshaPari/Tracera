@@ -1,0 +1,6 @@
+[2m2026-08-31T08:05:37.453570Z[0m [32m INFO[0m [2mtracera_server[0m[2m:[0m Backend: SQLite (on-device tier)
+FATAL: Cannot open SQLite database at the provided DATABASE_URL.
+Error: error returned from database: (code: 14) unable to open database file
+Use DATABASE_URL=sqlite:///path/to/file.db or DATABASE_URL=sqlite::memory:
+
+C:\Users\koosh\Tracera>

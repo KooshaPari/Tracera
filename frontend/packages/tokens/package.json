@@ -1,0 +1,20 @@
+{
+  "name": "@tracera/tokens",
+  "version": "1.0.0",
+  "description": "Tracera design tokens - WCAG 2.2 AA compliant",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "node generate.mjs",
+    "test": "node --test tests/",
+    "lint": "tsc --noEmit"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

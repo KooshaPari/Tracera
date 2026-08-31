@@ -1,0 +1,104 @@
+name: cargo-mutants
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run weekly on Sundays at 02:00 UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: 'Use baseline mode (only test changed files)'
+        required: false
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  mutants:
+    name: mutation-testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry & build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: mutants-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: mutants-${{ runner.os }}-
+
+      - name: Install cargo-mutants
+        run: cargo install cargo-mutants
+
+      - name: Run mutants (baseline — changed files only)
+        if: github.event.inputs.baseline != 'false'
+        run: |
+          cargo mutants --baseline \
+            --timeout 120 \
+            --test-timeout 60 \
+            --jobs 2 \
+            --output mutants-report.json \
+            --no-shuffle 2>&1 | tee mutants.log
+
+      - name: Run mutants (full sweep)
+        if: github.event.inputs.baseline == 'false'
+        run: |
+          cargo mutants \
+            --timeout 120 \
+            --test-timeout 60 \
+            --jobs 2 \
+            --output mutants-report.json \
+            --no-shuffle 2>&1 | tee mutants.log
+
+      - name: Summarise results
+        if: always()
+        run: |
+          if [ -f mutants-report.json ]; then
+            echo "## Mutation Testing Results" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            python3 -c "
+          import json, sys
+          with open('mutants-report.json') as f:
+              data = json.load(f)
+          total = data.get('total', 0)
+          caught = data.get('caught', 0)
+          unviable = data.get('unviable', 0)
+          missed = total - caught - unviable
+          print(f'Total mutants: {total}')
+          print(f'Caught:         {caught}')
+          print(f'Unviable:       {unviable}')
+          print(f'Missed:         {missed}')
+          if total - unviable > 0:
+              rate = caught / (total - unviable) * 100
+              print(f'Score:          {rate:.1f}%')
+          " >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload mutants report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutants-report
+          path: |
+            mutants-report.json
+            mutants.log
+          retention-days: 30

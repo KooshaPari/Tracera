@@ -1,0 +1,179 @@
+name: release-desktop
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v1.2.3)'
+        required: true
+        type: string
+
+env:
+  ELECTRON_VERSION: '31.0.0'
+  APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+jobs:
+  build-and-sign:
+    name: ${{ matrix.os }}-build
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_suffix: mac-arm64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_suffix: mac-x64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_suffix: win-x64
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_suffix: linux-x64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: desktop-${{ matrix.artifact_suffix }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build desktop binary
+        run: |
+          cargo build --release --target ${{ matrix.target }} --bin tracera-desktop
+
+      # ── macOS code signing ──────────────────────────────────────────
+      - name: Import Apple certificate
+        if: runner.os == 'macOS'
+        env:
+          APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # Create temporary keychain
+          KEYCHAIN_PATH=$RUNNER_TEMP/signing.keychain-db
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Import certificate
+          CERT_PATH=$RUNNER_TEMP/certificate.p12
+          echo "$APPLE_CERTIFICATE_BASE64" | base64 --decode > "$CERT_PATH"
+          security import "$CERT_PATH" \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -A -t cert -f pkcs12 \
+            -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+
+      - name: Sign macOS binary
+        if: runner.os == 'macOS'
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+        run: |
+          BINARY="target/${{ matrix.target }}/release/tracera-desktop"
+          codesign --sign "Developer ID Application: ${{ secrets.APPLE_DEVELOPER_ID }}" \
+            --options runtime \
+            --timestamp \
+            --force \
+            "$BINARY"
+          codesign --verify --verbose=2 "$BINARY"
+
+      - name: Notarize macOS binary
+        if: runner.os == 'macOS'
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+        run: |
+          BINARY="target/${{ matrix.target }}/release/tracera-desktop"
+          ditto -c -k --keepParent "$BINARY" "$BINARY.zip"
+          xcrun notarytool submit "$BINARY.zip" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_ID_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+
+      # ── Windows code signing ────────────────────────────────────────
+      - name: Sign Windows binary
+        if: runner.os == 'Windows'
+        env:
+          AZURE_KEY_VAULT_URL: ${{ secrets.AZURE_KEY_VAULT_URL }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          CERTIFICATE_NAME: ${{ secrets.AZURE_CERTIFICATE_NAME }}
+        run: |
+          dotnet tool install --global AzureSignTool
+          AzureSignTool sign \
+            --azure-key-vault-url "$AZURE_KEY_VAULT_URL" \
+            --azure-key-vault-tenant-id "$AZURE_TENANT_ID" \
+            --azure-key-vault-client-id "$AZURE_CLIENT_ID" \
+            --azure-key-vault-client-secret "$AZURE_CLIENT_SECRET" \
+            --azure-key-vault-certificate "$CERTIFICATE_NAME" \
+            --timestamp-url "http://timestamp.digicert.com" \
+            "target/${{ matrix.target }}/release/tracera-desktop.exe"
+
+      # ── Linux — no signing needed ───────────────────────────────────
+
+      - name: Package artifact
+        run: |
+          BINARY="target/${{ matrix.target }}/release/tracera-desktop"
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            BINARY="${BINARY}.exe"
+            7z a "tracera-desktop-${{ matrix.artifact_suffix }}.zip" "$BINARY"
+          elif [ "${{ runner.os }}" == "macOS" ]; then
+            ditto -c -k --keepParent "$BINARY" "tracera-desktop-${{ matrix.artifact_suffix }}.zip"
+          else
+            tar czf "tracera-desktop-${{ matrix.artifact_suffix }}.tar.gz" -C "$(dirname $BINARY)" "$(basename $BINARY)"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tracera-desktop-${{ matrix.artifact_suffix }}
+          path: tracera-desktop-${{ matrix.artifact_suffix }}.*
+          retention-days: 90
+
+  publish-release:
+    name: publish-github-release
+    needs: build-and-sign
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: "Tracera Desktop ${{ github.event.inputs.tag || github.ref_name }}"
+          draft: true
+          generate_release_notes: true
+          files: artifacts/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,29 @@
+# Tracera CODEOWNERS
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+*                           @KooshaPari
+
+# Rust crates
+crates/                     @KooshaPari
+
+# Frontend (Electrobun desktop, web, design tokens)
+frontend/                   @KooshaPari
+
+# CI / GitHub configuration
+.github/                    @KooshaPari
+
+# Database migrations
+migrations/                 @KooshaPari
+
+# Documentation
+docs/                       @KooshaPari
+
+# Audit tooling and reports
+audit/                      @KooshaPari
+
+# Load / performance tests
+loadtest/                   @KooshaPari
+
+# Fuzz targets
+fuzz/                       @KooshaPari

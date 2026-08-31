@@ -1,0 +1,20 @@
+name: spec-check
+endpoint: /api/v1/governance/spec-check
+base_url: http://127.0.0.1:8080
+tests:
+  happy_path:
+    method: POST
+    body: {"artifact_id": "test_artifact"}
+    expect:
+      status: 200
+      has_body: true
+  empty_input:
+    method: POST
+    body: {}
+    expect:
+      status: 400
+  malformed_json:
+    method: POST
+    body: 'not json'
+    expect:
+      status: 400
