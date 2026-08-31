@@ -14,7 +14,9 @@ import type { ExportImportWorkerAPI } from '../../workers/export-import.worker';
 import type { GraphLayoutWorkerAPI } from '../../workers/graph-layout.worker';
 import type { SearchIndexWorkerAPI } from '../../workers/search-index.worker';
 
-describe('Graph Layout Worker Integration', () => {
+const describeWorker = typeof Worker === 'undefined' ? describe.skip : describe;
+
+describeWorker('Graph Layout Worker Integration', () => {
   let worker: Worker;
   let api: Remote<GraphLayoutWorkerAPI>;
 
@@ -99,7 +101,7 @@ describe('Graph Layout Worker Integration', () => {
   });
 });
 
-describe('Data Transform Worker Integration', () => {
+describeWorker('Data Transform Worker Integration', () => {
   let worker: Worker;
   let api: Remote<DataTransformWorkerAPI>;
 
@@ -184,7 +186,7 @@ describe('Data Transform Worker Integration', () => {
   });
 });
 
-describe('Export/Import Worker Integration', () => {
+describeWorker('Export/Import Worker Integration', () => {
   let worker: Worker;
   let api: Remote<ExportImportWorkerAPI>;
 
@@ -271,7 +273,7 @@ describe('Export/Import Worker Integration', () => {
   });
 });
 
-describe('Search Index Worker Integration', () => {
+describeWorker('Search Index Worker Integration', () => {
   let worker: Worker;
   let api: Remote<SearchIndexWorkerAPI>;
 
@@ -402,7 +404,7 @@ describe('Search Index Worker Integration', () => {
   });
 });
 
-describe('Performance Benchmarks', () => {
+describeWorker('Performance Benchmarks', () => {
   it('should process 10k items faster in worker than main thread', async () => {
     const data = Array.from({ length: 10_000 }, (_, i) => ({
       id: i,
