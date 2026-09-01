@@ -13,6 +13,7 @@
 ### Task 1: Freeze the collection-failure inventory
 
 **Files:**
+
 - Create: `docs/superpowers/plans/2026-08-29-frontend-test-collection-repair.md`
 - Reference: `frontend/apps/web/vitest.config.ts`
 
@@ -47,6 +48,7 @@ git commit -m "docs(tracera): plan frontend collection repair"
 ### Task 2: Repair static collection contracts
 
 **Files:**
+
 - Modify: `frontend/apps/web/src/__tests__/api/mcp-client.test.ts:7-14`
 - Modify: `frontend/apps/web/src/__tests__/accessibility/form-validation-accessibility.test.tsx:11-12`
 - Modify: `frontend/apps/web/src/__tests__/stores/syncStore.test.ts:9`
@@ -103,6 +105,7 @@ git commit -m "test(frontend): repair static test collection"
 ### Task 3: Restore the visual-regression utility contract
 
 **Files:**
+
 - Create: `frontend/apps/web/src/components/graph/__stories__/visual-regression-automation.ts`
 - Test: `frontend/apps/web/src/__tests__/visual/visual-regression.test.ts`
 
@@ -133,6 +136,7 @@ git commit -m "test(frontend): restore visual regression helpers"
 ### Task 4: Bound the WebGL environment contract
 
 **Files:**
+
 - Modify: `frontend/apps/web/src/__tests__/setup.ts:22-45`
 - Test: `frontend/apps/web/src/__tests__/e2e/hybrid-graph.e2e.test.tsx`
 
@@ -163,6 +167,7 @@ git commit -m "test(frontend): provide bounded WebGL globals"
 ### Task 5: Stop WebSocket suites from replacing jsdom
 
 **Files:**
+
 - Modify: `frontend/apps/web/src/__tests__/api/websocket.test.ts`
 - Modify: `frontend/apps/web/src/__tests__/api/websocket.comprehensive.test.ts`
 - Reference: `frontend/apps/web/src/api/websocket.ts`
@@ -196,6 +201,7 @@ git commit -m "test(frontend): isolate websocket browser harness"
 ### Task 6: Prove complete collection before assertion churn
 
 **Files:**
+
 - Modify only if required by a newly exposed collection error.
 
 **Step 1: Verify discovery count**

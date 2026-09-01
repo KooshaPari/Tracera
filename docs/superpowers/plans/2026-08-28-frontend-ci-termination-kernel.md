@@ -30,25 +30,32 @@
 - [ ] Add a red runner-contract test that imports `../../../vitest.config` and reads `../../../package.json`:
 
 ```ts
-import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
 
-import config from '../../../vitest.config';
+import config from "../../../vitest.config";
 
-describe('Vitest execution profile', () => {
-  it('uses a bounded non-interactive default profile', () => {
-    const resolved = typeof config === 'function' ? config({ command: 'serve', mode: 'test' }) : config;
-    expect(resolved.test?.reporters).toEqual(['dot']);
+describe("Vitest execution profile", () => {
+  it("uses a bounded non-interactive default profile", () => {
+    const resolved =
+      typeof config === "function"
+        ? config({ command: "serve", mode: "test" })
+        : config;
+    expect(resolved.test?.reporters).toEqual(["dot"]);
     expect(resolved.test?.ui).toBe(false);
   });
 
-  it('separates CI, watch, and UI commands', () => {
+  it("separates CI, watch, and UI commands", () => {
     const packageJson = JSON.parse(
-      readFileSync(new URL('../../../package.json', import.meta.url), 'utf8'),
+      readFileSync(new URL("../../../package.json", import.meta.url), "utf8"),
     );
-    expect(packageJson.scripts.test).toBe('vitest run --reporter=dot --no-ui');
-    expect(packageJson.scripts['test:watch']).toBe('vitest --reporter=dot --no-ui');
-    expect(packageJson.scripts['test:ui']).toBe('vitest --ui --reporter=verbose');
+    expect(packageJson.scripts.test).toBe("vitest run --reporter=dot --no-ui");
+    expect(packageJson.scripts["test:watch"]).toBe(
+      "vitest --reporter=dot --no-ui",
+    );
+    expect(packageJson.scripts["test:ui"]).toBe(
+      "vitest --ui --reporter=verbose",
+    );
   });
 });
 ```
@@ -168,16 +175,21 @@ git commit -m "fix(frontend): settle active worker tasks"
 - [ ] Add a timeout/replacement test using a nonresponding worker and fake timers:
 
 ```ts
-it('replaces a timed-out worker without duplicating the pool entry', async () => {
+it("replaces a timed-out worker without duplicating the pool entry", async () => {
   vi.useFakeTimers();
   const workerFactory = vi.fn(() => {
     const worker = new EventDrivenMockWorker();
     worker.postMessage = () => {};
     return worker as unknown as Worker;
   });
-  pool = new WorkerPool({ maxWorkers: 1, minWorkers: 1, taskTimeout: 25, workerFactory });
-  const pending = pool.executeTask('blocked', {});
-  const rejection = expect(pending).rejects.toThrow('Task timeout after 25ms');
+  pool = new WorkerPool({
+    maxWorkers: 1,
+    minWorkers: 1,
+    taskTimeout: 25,
+    workerFactory,
+  });
+  const pending = pool.executeTask("blocked", {});
+  const rejection = expect(pending).rejects.toThrow("Task timeout after 25ms");
   await vi.advanceTimersByTimeAsync(25);
   await rejection;
   expect(workerFactory).toHaveBeenCalledTimes(2);
@@ -188,7 +200,7 @@ it('replaces a timed-out worker without duplicating the pool entry', async () =>
 - [ ] Add a termination test that proves an active promise rejects and all owned timers are cleared:
 
 ```ts
-it('rejects active work and clears owned timers on terminate', async () => {
+it("rejects active work and clears owned timers on terminate", async () => {
   vi.useFakeTimers();
   pool = new WorkerPool({
     maxWorkers: 1,
@@ -199,9 +211,9 @@ it('rejects active work and clears owned timers on terminate', async () => {
       return worker as unknown as Worker;
     },
   });
-  const pending = pool.executeTask('blocked', {});
+  const pending = pool.executeTask("blocked", {});
   pool.terminate();
-  await expect(pending).rejects.toThrow('Worker pool terminated');
+  await expect(pending).rejects.toThrow("Worker pool terminated");
   expect(vi.getTimerCount()).toBe(0);
 });
 ```
@@ -230,8 +242,8 @@ git commit -m "fix(frontend): bound worker restart and shutdown"
 - [ ] Add `act` and `afterEach` imports and unconditional timer restoration:
 
 ```ts
-import { act, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { act, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 afterEach(() => {
   vi.useRealTimers();
@@ -242,11 +254,11 @@ afterEach(() => {
 
 ```ts
 const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-await user.click(screen.getByRole('button', { name: 'Copy link' }));
+await user.click(screen.getByRole("button", { name: "Copy link" }));
 await act(async () => {
   await vi.advanceTimersByTimeAsync(2000);
 });
-expect(screen.getByRole('button', { name: 'Copy link' })).toBeInTheDocument();
+expect(screen.getByRole("button", { name: "Copy link" })).toBeInTheDocument();
 ```
 
 - [ ] First run the focused test before the edit with `--testTimeout=10000` and verify the existing await times out; then run after the edit and require green.

@@ -72,7 +72,6 @@ ignore-regions:
 
 # Freeze animated GIFs
 freeze-animated-image: false
-
 # Freeze animated image by selector
 # freeze-animated-selectors:
 #   - '.loading-spinner'

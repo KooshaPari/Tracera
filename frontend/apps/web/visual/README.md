@@ -222,14 +222,19 @@ test("my component visual test", async ({ page }) => {
 
 ```typescript
 import { test, expect } from "@playwright/test";
-import { setupVisualTest, setTheme, testAllThemes } from "./helpers/visual-test-helpers";
+import {
+  setupVisualTest,
+  setTheme,
+  testAllThemes,
+} from "./helpers/visual-test-helpers";
 
 test("component in both themes", async ({ page }) => {
   await setupVisualTest(page);
 
   await testAllThemes(page, async (theme) => {
     await page.evaluate(() => {
-      document.getElementById("root")!.innerHTML = `<div class="bg-background p-8">Content</div>`;
+      document.getElementById("root")!.innerHTML =
+        `<div class="bg-background p-8">Content</div>`;
     });
 
     await expect(page).toHaveScreenshot(`component-${theme}.png`);
