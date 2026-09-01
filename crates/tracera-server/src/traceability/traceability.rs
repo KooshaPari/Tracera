@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! User-story traceability matrix.
 //!
 //! This module builds and queries a traceability matrix that links

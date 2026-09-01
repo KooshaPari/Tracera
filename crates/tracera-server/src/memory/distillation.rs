@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(clippy::type_complexity)]
+#![allow(clippy::unnecessary_map_or)]
 //! Memory distillation from SWEE graph patterns.
 //!
 //! This module provides mechanisms for distilling recurring graph patterns
