@@ -160,7 +160,9 @@ export class WorkerPool {
     for (const worker of workerObjects) {
       try {
         worker.terminate();
-      } catch {}
+      } catch {
+        // Best-effort; worker may have already terminated
+      }
     }
 
     this.workers = [];
@@ -220,7 +222,9 @@ export class WorkerPool {
         this.detachWorkerListeners(worker);
         try {
           worker.worker.terminate();
-        } catch {}
+        } catch {
+          // Best-effort; worker may have already terminated
+        }
         this.workers.splice(workerIndex, 1);
       }
     }
@@ -373,7 +377,9 @@ export class WorkerPool {
 
     try {
       workerInstance.worker.terminate();
-    } catch {}
+    } catch {
+      // Best-effort; worker may have already terminated
+    }
 
     this.workers[workerIndex] = this.buildWorker();
     this.processQueue();

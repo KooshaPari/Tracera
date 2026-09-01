@@ -145,8 +145,10 @@ push.
 
 - No included test is deleted, excluded, or weakened to manufacture green.
 - Focused WorkerPool and timer regressions pass with zero async leaks.
-- All 230 included files collect and execute without import failures or empty
-  suites.
+- All 229 included files collect and execute without import failures or empty
+  suites. (228 genuine tests plus the newly added config contract, after
+  reclassifying two non-test files: the AuthToken marker and the production
+  route collision.)
 - All 16 shards pass and terminate.
 - Full `test:unit`, parity, accessibility, typecheck, and build gates pass.
 - Both hosted Frontend contract checks pass on the same immutable SHA.
