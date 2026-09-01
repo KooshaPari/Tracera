@@ -372,17 +372,17 @@ Memories with `confidence < 0.1` after 90 days are archived. Re-scored nightly.
 
 ## 10. Acceptance Criteria
 
-| #     | Criterion                                                          |
-| ----- | ------------------------------------------------------------------ |
-| AC-01 | All 30 node types defined with required properties                 |
-| AC-02 | All 35 edge types defined with source/target constraints           |
-| AC-03 | SQLite schema compiles and passes all migration tests              |
-| AC-04 | PostgreSQL schema compiles with enums, partitions, GIN indexes     |
-| AC-05 | Cypher queries compile to valid SQL for all clause types           |
-| AC-06 | Single-hop lookup < 0.5 ms p99 on reference dataset                |
-| AC-07 | Memory distillation produces valid MemoryNode instances            |
-| AC-08 | Confidence scoring formula implemented and unit-tested             |
-| AC-09 | Bitemporal queries return correct historical snapshots             |
+| #     | Criterion                                                           |
+| ----- | ------------------------------------------------------------------- |
+| AC-01 | All 30 node types defined with required properties                  |
+| AC-02 | All 35 edge types defined with source/target constraints            |
+| AC-03 | SQLite schema compiles and passes all migration tests               |
+| AC-04 | PostgreSQL schema compiles with enums, partitions, GIN indexes      |
+| AC-05 | Cypher queries compile to valid SQL for all clause types            |
+| AC-06 | Single-hop lookup < 0.5 ms p99 on reference dataset                 |
+| AC-07 | Memory distillation produces valid MemoryNode instances             |
+| AC-08 | Confidence scoring formula implemented and unit-tested              |
+| AC-09 | Bitemporal queries return correct historical snapshots              |
 | AC-10 | Dual-storage parity verified (SQLite ↔ PostgreSQL semantics match) |
 
 ---

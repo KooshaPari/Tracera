@@ -50,7 +50,9 @@ POST /api/v1/ingest/agileplus
       "type": "spec",
       "agileplus_id": "AP-SPEC-0042",
       "title": "Token Refresh Policy",
-      "body": {/* full spec JSON from AgilePlus */},
+      "body": {
+        /* full spec JSON from AgilePlus */
+      },
       "metadata": {
         "created_at": "2026-08-30T10:00:00Z",
         "updated_at": "2026-08-30T14:30:00Z",
