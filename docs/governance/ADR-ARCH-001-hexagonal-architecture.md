@@ -2,7 +2,7 @@
 
 **Status:** Accepted  
 **Date:** 2026-08-30  
-**Deciders:** Tracera Architecture Team  
+**Deciders:** Tracera Architecture Team
 
 ## Context
 
@@ -23,26 +23,26 @@ We will adopt **Hexagonal Architecture (Ports and Adapters)** for the `tracera-s
 
 Ports will be defined as traits in the `domain` and `ports` modules, representing the system's boundaries.
 
-*   **Driving Ports (Primary):**
-    *   `TraceIngestionPort`: Interface for receiving trace data (REST, CLI, gRPC).
-    *   `GovernancePort`: Interface for spec-checks and compliance validation.
-*   **Driven Ports (Secondary):**
-    *   `TraceStorePort`: Interface for persisting/retrieving `TraceLink`, `Evidence`, and `Project` entities.
-    *   `QueuePort`: Interface for dispatching asynchronous jobs.
-    *   `ExternalIssuePort`: Interface for fetching/enriching data from external systems (GitHub, Jira).
+- **Driving Ports (Primary):**
+  - `TraceIngestionPort`: Interface for receiving trace data (REST, CLI, gRPC).
+  - `GovernancePort`: Interface for spec-checks and compliance validation.
+- **Driven Ports (Secondary):**
+  - `TraceStorePort`: Interface for persisting/retrieving `TraceLink`, `Evidence`, and `Project` entities.
+  - `QueuePort`: Interface for dispatching asynchronous jobs.
+  - `ExternalIssuePort`: Interface for fetching/enriching data from external systems (GitHub, Jira).
 
 ### 2. Adapters (Implementations)
 
 Adapters will provide concrete implementations of these ports, isolated from the core domain.
 
-*   **Driving Adapters:**
-    *   `AxumHttpAdapter`: Translates HTTP requests into domain use-cases.
-    *   `CLIAdapter`: Handles local CLI interactions.
-*   **Driven Adapters:**
-    *   `PostgresTraceStoreAdapter`: Implements `TraceStorePort` using `sqlx`.
-    *   `SqliteTraceStoreAdapter`: Implements `TraceStorePort` for local/desktop mode.
-    *   `GitHubAdapter`: Implements `ExternalIssuePort` for GitHub issues.
-    *   `PgQueueAdapter`: Implements `QueuePort` using the `phenodag-queue`.
+- **Driving Adapters:**
+  - `AxumHttpAdapter`: Translates HTTP requests into domain use-cases.
+  - `CLIAdapter`: Handles local CLI interactions.
+- **Driven Adapters:**
+  - `PostgresTraceStoreAdapter`: Implements `TraceStorePort` using `sqlx`.
+  - `SqliteTraceStoreAdapter`: Implements `TraceStorePort` for local/desktop mode.
+  - `GitHubAdapter`: Implements `ExternalIssuePort` for GitHub issues.
+  - `PgQueueAdapter`: Implements `QueuePort` using the `phenodag-queue`.
 
 ### 3. Proposed Directory Structure
 
@@ -83,20 +83,24 @@ crates/tracera-server/src/
 ## Consequences
 
 ### Positive
-*   **Isolatable Business Logic**: Core logic in `domain/` and `ports/` can be unit-tested with simple mocks/fakes, no database required.
-*   **Pluggable Infrastructure**: We can swap `PostgresTraceStoreAdapter` for an `InMemoryStoreAdapter` (for tests) or a `S3StoreAdapter` (for archival) without touching business logic.
-*   **Clear Boundaries**: New developers can easily identify what is "logic" vs "plumbing".
-*   **Parallel Development**: Multiple developers can work on different adapters (e.g., a new GitLab adapter) without merge conflicts in core domain files.
+
+- **Isolatable Business Logic**: Core logic in `domain/` and `ports/` can be unit-tested with simple mocks/fakes, no database required.
+- **Pluggable Infrastructure**: We can swap `PostgresTraceStoreAdapter` for an `InMemoryStoreAdapter` (for tests) or a `S3StoreAdapter` (for archival) without touching business logic.
+- **Clear Boundaries**: New developers can easily identify what is "logic" vs "plumbing".
+- **Parallel Development**: Multiple developers can work on different adapters (e.g., a new GitLab adapter) without merge conflicts in core domain files.
 
 ### Negative
-*   **Initial Refactoring Effort**: Moving existing logic into the new modules will require a significant one-time refactor.
-*   **Increased Indirection**: More traits and modules mean more mental overhead when navigating the codebase (mitigated by the `Composition Root` in `main.rs`).
+
+- **Initial Refactoring Effort**: Moving existing logic into the new modules will require a significant one-time refactor.
+- **Increased Indirection**: More traits and modules mean more mental overhead when navigating the codebase (mitigated by the `Composition Root` in `main.rs`).
 
 ### Migration Path
+
 1.  Create `domain` and `ports` modules.
 2.  Extract `Store` trait from `store.rs` into `ports/store.rs`.
 3.  Move `main.rs` routing logic into `adapters/http/`.
 4.  Move `pg_store.rs` and `sqlite_store.rs` into `adapters/persistence/`.
 
 ---
-*This ADR updates the "Architecture Principles" section in the project's `ARCHITECTURE.md`.*
+
+_This ADR updates the "Architecture Principles" section in the project's `ARCHITECTURE.md`._

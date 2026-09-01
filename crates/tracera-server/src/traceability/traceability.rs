@@ -108,6 +108,13 @@ pub struct TraceabilityGap {
     pub suggestion: String,
 }
 
+/// Accessor for the missing link types.
+impl TraceabilityGap {
+    pub fn missing_link_types(&self) -> &[LinkType] {
+        &self.missing_link_types
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Builder
 // ---------------------------------------------------------------------------
@@ -360,6 +367,21 @@ mod tests {
         // possible with build_matrix — artifacts only enter columns via links).
         let orphan_gaps: Vec<_> = gaps.iter().filter(|g| g.artifact_id.is_some()).collect();
         assert_eq!(orphan_gaps.len(), 0, "no orphan artifacts expected");
+    }
+
+    #[test]
+    fn test_matrix_with_orphan_detects_no_orphans() {
+        let links = matrix_with_orphan();
+        let matrix = build_matrix(&links);
+        // The orphan artifact enters the columns set via the link, so
+        // no gaps should appear for it.
+        assert!(matrix.columns.contains("orphan.rs"));
+        let gaps = find_gaps(&matrix);
+        let orphan_gaps: Vec<_> = gaps
+            .iter()
+            .filter(|g| g.artifact_id.as_deref() == Some("orphan.rs"))
+            .collect();
+        assert_eq!(orphan_gaps.len(), 0);
     }
 
     #[test]

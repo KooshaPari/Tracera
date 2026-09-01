@@ -9,6 +9,7 @@
 The organization currently suffers from significant governance sprawl. Regulatory compliance, architectural standards, and quality gates are fragmented across multiple tools and repositories. This lack of centralization has resulted in multiple 'sources of truth' that often conflict with one another.
 
 ### Definitions
+
 - **Governance Sprawl**: The uncontrolled growth of governance rules across disparate systems, leading to duplication and inconsistency.
 - **SSOT (Single Source of Truth)**: A principle that every data element is mastered in only one place and is referenced by other systems.
 
@@ -18,21 +19,23 @@ The organization currently suffers from significant governance sprawl. Regulator
 4.  **External Dashboards**: Manual spreadsheets and dashboards tracking compliance status, often out of sync with actual repository state. These are updated sporadically and lack automation.
 
 This fragmentation leads to:
+
 - **Inconsistency**: Different branches enforce different rules. A PR might pass CI on a feature branch but fail on `main` due to different workflow triggers.
 - **Drift**: Manual updates to documentation often lag behind code changes. It is common for a "required" step to be documented but not enforced.
 - **Opacity**: It is difficult for new contributors or auditors to understand the "source of truth" for governance. There is no single place to look for "how we do things here."
 - **Duplication**: The same quality gate is often defined in three different places (CI, docs, and scripts), leading to maintenance nightmares.
 - **Audit Risk**: During compliance reviews, the lack of a single authoritative source makes it difficult to prove that all required controls are in place and active.
 
-AgilePlus has emerged as the primary orchestration layer for CI/CD and quality gates, yet it is not currently recognized as the *authoritative* source of governance. This lack of formal authority creates confusion regarding which tool is the final arbiter of governance rules.
+AgilePlus has emerged as the primary orchestration layer for CI/CD and quality gates, yet it is not currently recognized as the _authoritative_ source of governance. This lack of formal authority creates confusion regarding which tool is the final arbiter of governance rules.
 
 ## Decision
 
 We will establish **AgilePlus** as the **Single Source of Truth (SSOT)** for all governance-related definitions, including quality gates, compliance requirements, and architectural standards.
 
-All other tools (GitHub Actions, local scripts, documentation) will either be deprecated or refactored to *consume* governance definitions from AgilePlus rather than defining their own. 
+All other tools (GitHub Actions, local scripts, documentation) will either be deprecated or refactored to _consume_ governance definitions from AgilePlus rather than defining their own.
 
 AgilePlus is the system of record for:
+
 - Quality Gate Definitions (e.g., test coverage thresholds, linting rules)
 - Compliance Checks (e.g., dependency audits, license scanning)
 - Architectural Constraints (e.g., allowed crate dependencies, module boundaries)

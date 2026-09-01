@@ -1,11 +1,11 @@
 # ADR-DATA-001: Dual-Store Strategy (PostgreSQL for Production, SQLite for Development/Testing)
 
-| Field        | Value                                      |
-|--------------|--------------------------------------------|
-| **Status**   | Accepted                                   |
-| **Date**     | 2026-08-30                                 |
-| **Authors**  | Tracera Data Engineering                   |
-| **Reviewers**| Platform Team, SRE                         |
+| Field         | Value                    |
+| ------------- | ------------------------ |
+| **Status**    | Accepted                 |
+| **Date**      | 2026-08-30               |
+| **Authors**   | Tracera Data Engineering |
+| **Reviewers** | Platform Team, SRE       |
 
 ## Context
 
@@ -86,12 +86,12 @@ transaction isolation levels are tuned independently per backend.
 
 ## Alternatives Considered
 
-| Alternative                       | Rejection Reason                                                        |
-|-----------------------------------|-------------------------------------------------------------------------|
-| PostgreSQL everywhere             | CI wall-clock time too high; local setup too heavy for new contributors.|
+| Alternative                       | Rejection Reason                                                         |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| PostgreSQL everywhere             | CI wall-clock time too high; local setup too heavy for new contributors. |
 | SQLite everywhere                 | Cannot meet production concurrency, replication, or backup requirements. |
-| Docker Compose with Postgres only | Flake rates from container orchestration in CI; slow cold starts.       |
-| In-memory database (e.g., r2d2)   | No persistence across test runs; diverges from production storage.      |
+| Docker Compose with Postgres only | Flake rates from container orchestration in CI; slow cold starts.        |
+| In-memory database (e.g., r2d2)   | No persistence across test runs; diverges from production storage.       |
 
 ## Consequences
 
@@ -122,11 +122,11 @@ transaction isolation levels are tuned independently per backend.
 
 ### Risks and Mitigations
 
-| Risk                                    | Mitigation                                                 |
-|-----------------------------------------|------------------------------------------------------------|
-| SQLite silently allows invalid syntax   | SQLx compile-time checks enforce both backends in CI.      |
-| Postgres-only features creep into prod  | Feature-gate macro flags non-portable queries at review.   |
-| Developer SQLite file conflicts         | `.gitignore` excludes `*.db`; `cargo test` uses temp files.|
+| Risk                                   | Mitigation                                                  |
+| -------------------------------------- | ----------------------------------------------------------- |
+| SQLite silently allows invalid syntax  | SQLx compile-time checks enforce both backends in CI.       |
+| Postgres-only features creep into prod | Feature-gate macro flags non-portable queries at review.    |
+| Developer SQLite file conflicts        | `.gitignore` excludes `*.db`; `cargo test` uses temp files. |
 
 ## References
 

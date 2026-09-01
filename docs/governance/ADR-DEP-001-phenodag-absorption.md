@@ -1,10 +1,10 @@
 # ADR-DEP-001: Phenodag Queue Absorption
 
-| Field       | Value              |
-|-------------|--------------------|
-| **Status**  | Accepted           |
-| **Date**    | 2026-08-30         |
-| **Deciders**| Tracera Core Team  |
+| Field        | Value             |
+| ------------ | ----------------- |
+| **Status**   | Accepted          |
+| **Date**     | 2026-08-30        |
+| **Deciders** | Tracera Core Team |
 
 ## Context
 
@@ -51,13 +51,14 @@ We will **absorb the Phenodag queue directly into the Tracera ingestion pipeline
 
 ## Alternatives Considered
 
-* **Keeping Separate Queues**: Rejected due to the increasing operational costs, latency issues, and growing maintenance debt.
-* **Polling/Bridge Upgrade**: Replacing the current bridge with a high-speed "pull" model was considered, but it does not solve the underlying problem of architectural fragmentation or the risk of message drift.
-* **Event Sourcing / Replay**: While a replay mechanism was considered for historical data migration, it was deemed out of scope for this specific architectural consolidation.
+- **Keeping Separate Queues**: Rejected due to the increasing operational costs, latency issues, and growing maintenance debt.
+- **Polling/Bridge Upgrade**: Replacing the current bridge with a high-speed "pull" model was considered, but it does not solve the underlying problem of architectural fragmentation or the risk of message drift.
+- **Event Sourcing / Replay**: While a replay mechanism was considered for historical data migration, it was deemed out of scope for this specific architectural consolidation.
 
 ## Rollback Plan
 
 If the absorption causes critical instability, we will revert the producer changes to the legacy bridge endpoint and re-enable the Phenodag broker instances. This rollback will be executed within 30 minutes of a critical alert and involves the following steps:
+
 1. Re-deploy legacy Phenodag producers.
 2. Restore the bridge component's configuration.
 3. Verify data flow to the separate Phenodag broker.

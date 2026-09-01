@@ -588,8 +588,7 @@ mod tests {
         assert_eq!(added2, 0);
 
         // Prune should not crash.
-        let pruned = distiller.prune();
-        assert!(pruned >= 0);
+        let _pruned = distiller.prune();
 
         // High confidence query.
         let hc = distiller.high_confidence(0.9);
