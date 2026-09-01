@@ -310,12 +310,26 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       expect(errorLog).toHaveLength(3);
     });
 
-    it('should measure error recovery time', async () => {
-      const errorTime = Date.now();
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      const recoveryTime = Date.now() - errorTime;
+    it('should respect the error recovery delay', async () => {
+      vi.useFakeTimers();
+      let recovered = false;
+      const recovery = new Promise<void>((resolve) => {
+        setTimeout(() => {
+          recovered = true;
+          resolve();
+        }, 100);
+      });
 
-      expect(recoveryTime).toBeGreaterThanOrEqual(100);
+      try {
+        await vi.advanceTimersByTimeAsync(99);
+        expect(recovered).toBe(false);
+
+        await vi.advanceTimersByTimeAsync(1);
+        await expect(recovery).resolves.toBeUndefined();
+        expect(recovered).toBe(true);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 
