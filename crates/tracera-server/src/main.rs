@@ -2,11 +2,13 @@ mod auth;
 mod db;
 mod health;
 mod ingest;
+mod memory;
 mod pg_store;
 #[cfg(feature = "phenodag-queue")]
 mod queue;
 mod sqlite_store;
 mod store;
+mod traceability;
 mod validation;
 
 use axum::{

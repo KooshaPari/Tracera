@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 from uuid import NAMESPACE_DNS, UUID, uuid5
 
-from tracertm.models.trace_link import ArtifactKind, Requirement, TraceLink, TraceLinkType
+from tracertm.models.trace_link import (
+    ArtifactKind,
+    Requirement,
+    TraceLink,
+    TraceLinkType,
+)
+
 from tracertm.services.github_import_service import BulkIngestionResult
 
 

@@ -4,13 +4,12 @@ Centralized request-time checks for auth headers and optional scope requirements
 """
 from __future__ import annotations
 
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import JSONResponse
-from starlette.requests import Request
 from fastapi import HTTPException, status
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 from tracertm.api.deps import auth_guard, extract_scopes
-
 
 PUBLIC_PREFIXES = (
     "/health",
@@ -69,7 +68,7 @@ class ApiAuthzMiddleware(BaseHTTPMiddleware):
                 detail="Query string too long",
             )
 
-        for idx, char in enumerate((path + "?" + query)):
+        for idx, char in enumerate(path + "?" + query):
             if ord(char) < 32:
                 return HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,

@@ -1,0 +1,32 @@
+[packages]
+# Exclude test binaries and build artifacts
+exclude_globs = ["target/**", "fuzz/target/**"]
+
+[operators]
+# Enable all mutation operators
+arithmetic = true
+boolean = true
+comparison = true
+conditional = true
+constant = true
+function = true
+scalar = true
+
+[files]
+# Only mutate Rust source files
+include_globs = ["crates/**/src/**/*.rs"]
+
+[exclusions]
+# Exclude common boilerplate
+exclusion_globs = [
+    "crates/**/src/lib.rs",
+    "crates/**/tests/**/*.rs"
+]
+
+[timeout]
+# 60 seconds per test
+per_test = 60
+
+[build]
+# Use cargo nextest for running tests
+test_tool = "cargo-nextest"

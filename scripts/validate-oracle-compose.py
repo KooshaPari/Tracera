@@ -82,7 +82,7 @@ def validate_checkout(
         if not context_path.is_dir():
             errors.append(f"missing build context: {context} ({context_path})")
     build_contexts_checked = 0
-    for service, block in SERVICE_BLOCK_RE.findall(text):
+    for _service, block in SERVICE_BLOCK_RE.findall(text):
         context_match = BUILD_CONTEXT_RE.search(block)
         if not context_match:
             continue

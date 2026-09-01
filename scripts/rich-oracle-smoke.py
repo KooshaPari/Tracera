@@ -10,9 +10,9 @@ than turning an unstarted oracle into a false failure.
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import json
 import sys
-import ipaddress
 from dataclasses import asdict, dataclass
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit

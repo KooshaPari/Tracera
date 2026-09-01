@@ -6,7 +6,6 @@ import uuid
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from tracertm.models.item import Item
 
 

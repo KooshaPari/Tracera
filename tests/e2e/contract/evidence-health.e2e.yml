@@ -1,0 +1,13 @@
+name: evidence-health
+endpoint: /evidence/health
+base_url: http://127.0.0.1:8080
+tests:
+  happy_path:
+    method: GET
+    expect:
+      status: 200
+      has_body: true
+  empty_input:
+    method: GET
+    expect:
+      status: 200

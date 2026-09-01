@@ -8,21 +8,22 @@ import sys
 from logging.config import fileConfig
 from pathlib import Path
 
-from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
+
+from alembic import context
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from tracertm.models.base import Base
 import tracertm.models.item  # noqa: F401
 import tracertm.models.link  # noqa: F401
 import tracertm.models.project  # noqa: F401
 import tracertm.models.workflow  # noqa: F401
+from tracertm.models.base import Base
 
 config = context.config
 if config.config_file_name is not None:

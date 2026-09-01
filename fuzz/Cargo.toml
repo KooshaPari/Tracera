@@ -1,0 +1,48 @@
+[package]
+name = "tracera-fuzz"
+version = "0.0.0"
+authors = ["Automatically generated"]
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[[bin]]
+name = "fuzz_parse_otel_payload"
+path = "fuzz_targets/fuzz_parse_otel_payload.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_coverage_matrix"
+path = "fuzz_targets/fuzz_coverage_matrix.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_trace_link"
+path = "fuzz_targets/fuzz_trace_link.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_list_params"
+path = "fuzz_targets/fuzz_list_params.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_cli_args"
+path = "fuzz_targets/fuzz_cli_args.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_provider_config"
+path = "fuzz_targets/fuzz_provider_config.rs"
+test = false
+doc = false

@@ -1,0 +1,95 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-08-31T00:00:00Z",
+  "baselines": {
+    "/healthz": {
+      "p50_ms": 2,
+      "p95_ms": 10,
+      "p99_ms": 25,
+      "rps_limit": 10000,
+      "status": "stable"
+    },
+    "/readyz": {
+      "p50_ms": 2,
+      "p95_ms": 10,
+      "p99_ms": 25,
+      "rps_limit": 10000,
+      "status": "stable"
+    },
+    "/metrics": {
+      "p50_ms": 15,
+      "p95_ms": 50,
+      "p99_ms": 100,
+      "rps_limit": 2000,
+      "status": "stable"
+    },
+    "/evidence": {
+      "p50_ms": 45,
+      "p95_ms": 120,
+      "p99_ms": 250,
+      "rps_limit": 500,
+      "status": "stable"
+    },
+    "/sdlc-pm/sprints": {
+      "p50_ms": 30,
+      "p95_ms": 80,
+      "p99_ms": 150,
+      "rps_limit": 1000,
+      "status": "stable"
+    },
+    "/sdlc-pm/stories": {
+      "p50_ms": 35,
+      "p95_ms": 90,
+      "p99_ms": 180,
+      "rps_limit": 800,
+      "status": "stable"
+    },
+    "/problems": {
+      "p50_ms": 40,
+      "p95_ms": 100,
+      "p99_ms": 200,
+      "rps_limit": 600,
+      "status": "stable"
+    },
+    "/org-intel/teams": {
+      "p50_ms": 25,
+      "p95_ms": 70,
+      "p99_ms": 120,
+      "rps_limit": 1200,
+      "status": "stable"
+    },
+    "/api/v1/coverage-matrix": {
+      "p50_ms": 80,
+      "p95_ms": 200,
+      "p99_ms": 500,
+      "rps_limit": 200,
+      "status": "degraded_under_load"
+    },
+    "/api/v1/impact": {
+      "p50_ms": 60,
+      "p95_ms": 150,
+      "p99_ms": 350,
+      "rps_limit": 300,
+      "status": "stable"
+    },
+    "/api/v1/confidence": {
+      "p50_ms": 55,
+      "p95_ms": 140,
+      "p99_ms": 300,
+      "rps_limit": 350,
+      "status": "stable"
+    },
+    "/api/v1/blast-radius": {
+      "p50_ms": 70,
+      "p95_ms": 180,
+      "p99_ms": 400,
+      "rps_limit": 250,
+      "status": "stable"
+    }
+  },
+  "global": {
+    "total_rps": 5000,
+    "avg_latency_ms": 45,
+    "error_rate_percent": 0.1
+  }
+}

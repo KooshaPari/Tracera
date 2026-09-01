@@ -16,13 +16,13 @@ something useful together.
 
 ### Prerequisites
 
-| Tool | Version | Notes |
-|---|---|---|
-| **Rust** | stable (MSRV 1.82) | Install via [rustup](https://rustup.rs) |
-| **Bun** | latest | For the frontend (`frontend/`) |
-| **Python** | 3.11+ with `uv` | For Python tooling and tests |
-| **Go** | 1.22+ | For Go modules |
-| **Trunk.io** | 1.22+ | Unified linting — see `trunk.yaml` |
+| Tool         | Version            | Notes                                   |
+| ------------ | ------------------ | --------------------------------------- |
+| **Rust**     | stable (MSRV 1.82) | Install via [rustup](https://rustup.rs) |
+| **Bun**      | latest             | For the frontend (`frontend/`)          |
+| **Python**   | 3.11+ with `uv`    | For Python tooling and tests            |
+| **Go**       | 1.22+              | For Go modules                          |
+| **Trunk.io** | 1.22+              | Unified linting — see `trunk.yaml`      |
 
 The project pins the stable Rust toolchain with `rust-toolchain.toml` (includes
 the `wasm32-unknown-unknown` target for edge builds).
@@ -136,18 +136,18 @@ trunk fmt
 
 All of these must pass in CI before a PR can merge:
 
-| Gate | Command |
-|---|---|
-| Rust formatting | `cargo fmt --all -- --check` |
-| Rust lints | `cargo clippy --all-targets --all-features -- -D warnings` |
-| Rust tests | `cargo test --all --workspace --verbose` |
-| Python lint | `ruff check` + `ruff format --check` |
-| Python tests | `pytest --cov` |
-| Go lint | `golangci-lint run` |
-| Go tests | `go test -v -race ./...` |
-| TypeScript lint | `biome lint` + `biome format --check` |
-| Trunk.io | `trunk check` |
-| Dependency audit | `cargo deny check` |
+| Gate             | Command                                                    |
+| ---------------- | ---------------------------------------------------------- |
+| Rust formatting  | `cargo fmt --all -- --check`                               |
+| Rust lints       | `cargo clippy --all-targets --all-features -- -D warnings` |
+| Rust tests       | `cargo test --all --workspace --verbose`                   |
+| Python lint      | `ruff check` + `ruff format --check`                       |
+| Python tests     | `pytest --cov`                                             |
+| Go lint          | `golangci-lint run`                                        |
+| Go tests         | `go test -v -race ./...`                                   |
+| TypeScript lint  | `biome lint` + `biome format --check`                      |
+| Trunk.io         | `trunk check`                                              |
+| Dependency audit | `cargo deny check`                                         |
 
 ---
 
@@ -173,8 +173,8 @@ and confirm no advisories or license violations are introduced.
 
 1. **Keep PRs focused.** One logical change per PR makes review faster and
    bisection easier.
-2. **Write a clear PR description.** Explain *what* changed, *why*, and
-   *how to test it*.
+2. **Write a clear PR description.** Explain _what_ changed, _why_, and
+   _how to test it_.
 3. **Link related issues** if applicable.
 4. **Ensure CI is green.** PRs with failing checks will not be merged.
 5. **Respond to review feedback promptly.** Push follow-up commits to the same

@@ -2,9 +2,7 @@
   "version": 2,
   "buildCommand": "cd frontend && bun install --frozen-lockfile && bun run build",
   "outputDirectory": "frontend/dist",
-  "regions": [
-    "iad1"
-  ],
+  "regions": ["iad1"],
   "headers": [
     {
       "source": "/(.*)",

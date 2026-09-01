@@ -164,7 +164,7 @@ def main() -> int:
         "oracle_only": sorted(set(oracle_normalized) - set(rich_normalized)),
         "gateway_routes": len(gateway),
         "gateway_normalized_matches": len(
-            set(normalize(route) for route in rich) & {normalize(route) for route in gateway}
+            {normalize(route) for route in rich} & {normalize(route) for route in gateway}
         ),
         "gateway_method_inventory": {
             route: sorted(methods) for route, methods in sorted(gateway_methods.items())
