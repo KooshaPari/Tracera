@@ -4,7 +4,7 @@ base_url: http://127.0.0.1:8080
 tests:
   happy_path:
     method: POST
-    body: {"scope": "default"}
+    body: { "scope": "default" }
     expect:
       status: 200
       has_body: true
@@ -15,6 +15,6 @@ tests:
       status: 200
   malformed_json:
     method: POST
-    body: 'not json'
+    body: "not json"
     expect:
       status: 400

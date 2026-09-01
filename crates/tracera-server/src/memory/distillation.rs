@@ -76,9 +76,7 @@ impl GraphSnapshot {
     pub fn build_adjacency(&mut self) {
         let mut adj: HashMap<u64, Vec<u64>> = HashMap::new();
         for edge in &self.edges {
-            adj.entry(edge.source_id)
-                .or_default()
-                .push(edge.target_id);
+            adj.entry(edge.source_id).or_default().push(edge.target_id);
         }
         self.adjacency = adj;
     }
@@ -183,9 +181,10 @@ pub fn extract_paths(snapshot: &GraphSnapshot, start_id: u64, depth: usize) -> V
                     continue; // avoid cycles
                 }
                 let neighbor_node = snapshot.nodes.iter().find(|n| n.id == neighbor);
-                let edge = snapshot.edges.iter().find(|e| {
-                    e.source_id == current && e.target_id == neighbor
-                });
+                let edge = snapshot
+                    .edges
+                    .iter()
+                    .find(|e| e.source_id == current && e.target_id == neighbor);
                 if let (Some(nn), Some(e)) = (neighbor_node, edge) {
                     let mut nt = node_types.clone();
                     let mut et = edge_types.clone();
@@ -275,7 +274,11 @@ pub fn distill_patterns(snapshot: &GraphSnapshot, config: &DistillationConfig) -
     }
 
     // Sort by confidence descending, then truncate to max size.
-    entries.sort_by(|a, b| b.confidence.partial_cmp(&a.confidence).unwrap_or(std::cmp::Ordering::Equal));
+    entries.sort_by(|a, b| {
+        b.confidence
+            .partial_cmp(&a.confidence)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     entries.truncate(config.max_memory_size);
     entries
 }
@@ -362,7 +365,8 @@ impl MemoryDistiller {
             mem.decay(self.config.decay_factor);
         }
 
-        self.memories.retain(|m| m.confidence >= self.config.confidence_threshold);
+        self.memories
+            .retain(|m| m.confidence >= self.config.confidence_threshold);
         before - self.memories.len()
     }
 
@@ -408,20 +412,69 @@ mod tests {
 
     fn make_snapshot() -> GraphSnapshot {
         let nodes = vec![
-            GraphNode { id: 1, node_type: "Query".into(), label: "select".into() },
-            GraphNode { id: 2, node_type: "Filter".into(), label: "where".into() },
-            GraphNode { id: 3, node_type: "Join".into(), label: "inner".into() },
-            GraphNode { id: 4, node_type: "Aggregate".into(), label: "group_by".into() },
-            GraphNode { id: 5, node_type: "Sort".into(), label: "order".into() },
+            GraphNode {
+                id: 1,
+                node_type: "Query".into(),
+                label: "select".into(),
+            },
+            GraphNode {
+                id: 2,
+                node_type: "Filter".into(),
+                label: "where".into(),
+            },
+            GraphNode {
+                id: 3,
+                node_type: "Join".into(),
+                label: "inner".into(),
+            },
+            GraphNode {
+                id: 4,
+                node_type: "Aggregate".into(),
+                label: "group_by".into(),
+            },
+            GraphNode {
+                id: 5,
+                node_type: "Sort".into(),
+                label: "order".into(),
+            },
         ];
         let edges = vec![
-            GraphEdge { source_id: 1, target_id: 2, edge_type: "flow".into(), weight: 1.0 },
-            GraphEdge { source_id: 2, target_id: 3, edge_type: "flow".into(), weight: 1.0 },
-            GraphEdge { source_id: 3, target_id: 4, edge_type: "flow".into(), weight: 1.0 },
-            GraphEdge { source_id: 4, target_id: 5, edge_type: "flow".into(), weight: 1.0 },
-            GraphEdge { source_id: 1, target_id: 3, edge_type: "skip".into(), weight: 0.5 },
+            GraphEdge {
+                source_id: 1,
+                target_id: 2,
+                edge_type: "flow".into(),
+                weight: 1.0,
+            },
+            GraphEdge {
+                source_id: 2,
+                target_id: 3,
+                edge_type: "flow".into(),
+                weight: 1.0,
+            },
+            GraphEdge {
+                source_id: 3,
+                target_id: 4,
+                edge_type: "flow".into(),
+                weight: 1.0,
+            },
+            GraphEdge {
+                source_id: 4,
+                target_id: 5,
+                edge_type: "flow".into(),
+                weight: 1.0,
+            },
+            GraphEdge {
+                source_id: 1,
+                target_id: 3,
+                edge_type: "skip".into(),
+                weight: 0.5,
+            },
         ];
-        let mut snap = GraphSnapshot { nodes, edges, adjacency: HashMap::new() };
+        let mut snap = GraphSnapshot {
+            nodes,
+            edges,
+            adjacency: HashMap::new(),
+        };
         snap.build_adjacency();
         snap
     }
@@ -436,11 +489,7 @@ mod tests {
 
     #[test]
     fn test_count_patterns() {
-        let fps = vec![
-            "A->e1->B".into(),
-            "A->e1->B".into(),
-            "B->e2->C".into(),
-        ];
+        let fps = vec!["A->e1->B".into(), "A->e1->B".into(), "B->e2->C".into()];
         let counts = count_patterns(&fps);
         assert_eq!(counts.get("A->e1->B"), Some(&2));
         assert_eq!(counts.get("B->e2->C"), Some(&1));
@@ -483,7 +532,10 @@ mod tests {
             ..Default::default()
         };
         let entries = distill_patterns(&snap, &config);
-        assert!(!entries.is_empty(), "should produce at least one memory entry");
+        assert!(
+            !entries.is_empty(),
+            "should produce at least one memory entry"
+        );
         for e in &entries {
             assert!(e.confidence >= 0.0 && e.confidence <= 1.0);
         }

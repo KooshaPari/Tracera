@@ -5,15 +5,39 @@
     "metrics": { "method": "GET", "path": "/metrics", "weight": 10 },
     "evidence-list": { "method": "GET", "path": "/evidence", "weight": 15 },
     "evidence-create": { "method": "POST", "path": "/evidence", "weight": 10 },
-    "sprints-list": { "method": "GET", "path": "/sdlc-pm/sprints", "weight": 10 },
-    "stories-list": { "method": "GET", "path": "/sdlc-pm/stories", "weight": 10 },
-    "projects-list": { "method": "GET", "path": "/sdlc-pm/projects", "weight": 5 },
+    "sprints-list": {
+      "method": "GET",
+      "path": "/sdlc-pm/sprints",
+      "weight": 10
+    },
+    "stories-list": {
+      "method": "GET",
+      "path": "/sdlc-pm/stories",
+      "weight": 10
+    },
+    "projects-list": {
+      "method": "GET",
+      "path": "/sdlc-pm/projects",
+      "weight": 5
+    },
     "problems-list": { "method": "GET", "path": "/problems", "weight": 5 },
     "teams-list": { "method": "GET", "path": "/org-intel/teams", "weight": 5 },
-    "coverage-matrix": { "method": "POST", "path": "/api/v1/coverage-matrix", "weight": 5 },
+    "coverage-matrix": {
+      "method": "POST",
+      "path": "/api/v1/coverage-matrix",
+      "weight": 5
+    },
     "impact": { "method": "POST", "path": "/api/v1/impact", "weight": 5 },
-    "confidence": { "method": "POST", "path": "/api/v1/confidence", "weight": 5 },
-    "blast-radius": { "method": "POST", "path": "/api/v1/blast-radius", "weight": 5 }
+    "confidence": {
+      "method": "POST",
+      "path": "/api/v1/confidence",
+      "weight": 5
+    },
+    "blast-radius": {
+      "method": "POST",
+      "path": "/api/v1/blast-radius",
+      "weight": 5
+    }
   },
   "ramp_stages": [
     { "duration": "30s", "vus": 10 },

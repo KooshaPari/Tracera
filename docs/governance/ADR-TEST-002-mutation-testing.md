@@ -1,11 +1,11 @@
 # ADR-TEST-002: Adopt cargo-mutants for Mutation Testing
 
-| Field       | Value                          |
-|-------------|--------------------------------|
-| Status      | Proposed                       |
-| Date        | 2026-08-30                     |
-| Author(s)   | Tracera Core Team              |
-| Deciders    | Engineering Leads              |
+| Field     | Value             |
+| --------- | ----------------- |
+| Status    | Proposed          |
+| Date      | 2026-08-30        |
+| Author(s) | Tracera Core Team |
+| Deciders  | Engineering Leads |
 
 ## Context
 
@@ -25,12 +25,12 @@ We adopt **cargo-mutants** as the standard mutation testing tool for the Tracera
 
 ### Targets
 
-| Metric                | Target                                        |
-|-----------------------|-----------------------------------------------|
-| Kill rate (workspace) | **≥ 80%** across all crates                   |
-| Per-crate threshold   | **≥ 70%** for any single crate                |
-| Baseline enforcement  | New crates must meet threshold before merge   |
-| Regression guard      | Kill rate must not decrease on main            |
+| Metric                | Target                                      |
+| --------------------- | ------------------------------------------- |
+| Kill rate (workspace) | **≥ 80%** across all crates                 |
+| Per-crate threshold   | **≥ 70%** for any single crate              |
+| Baseline enforcement  | New crates must meet threshold before merge |
+| Regression guard      | Kill rate must not decrease on main         |
 
 ### Execution Cadence
 
@@ -101,9 +101,9 @@ Thresholds may differ per crate during the adoption phase but must converge towa
 
 ### Risks and Mitigations
 
-| Risk                                        | Mitigation                                        |
-|---------------------------------------------|---------------------------------------------------|
-| CI runner cost spike during weekly runs      | Use shallow mode for PRs; full scan weekly only   |
-| Developer friction from blocking checks     | 8-week informational phase before hard gate       |
-| Equivalent mutants inflating survivor count | Maintain an `equivalents.txt` manifest            |
-| Stale thresholds after refactoring          | Quarterly review of `mutants.toml` values          |
+| Risk                                        | Mitigation                                      |
+| ------------------------------------------- | ----------------------------------------------- |
+| CI runner cost spike during weekly runs     | Use shallow mode for PRs; full scan weekly only |
+| Developer friction from blocking checks     | 8-week informational phase before hard gate     |
+| Equivalent mutants inflating survivor count | Maintain an `equivalents.txt` manifest          |
+| Stale thresholds after refactoring          | Quarterly review of `mutants.toml` values       |

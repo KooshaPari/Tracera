@@ -150,9 +150,9 @@ pub fn verify_coverage(matrix: &TraceabilityMatrix) -> CoverageReport {
 
     for (story_id, row) in &matrix.rows {
         let has_important = row.artifacts.values().any(|infos| {
-            infos.iter().any(|i| {
-                i.link_type == LinkType::Implements || i.link_type == LinkType::Tests
-            })
+            infos
+                .iter()
+                .any(|i| i.link_type == LinkType::Implements || i.link_type == LinkType::Tests)
         });
         if !has_important {
             uncovered.push(story_id.clone());
@@ -247,27 +247,16 @@ pub fn average_confidence(matrix: &TraceabilityMatrix) -> f64 {
 }
 
 /// Return all artefact IDs linked to a given story.
-pub fn artifacts_for_story<'a>(
-    matrix: &'a TraceabilityMatrix,
-    story_id: &str,
-) -> Vec<&'a str> {
+pub fn artifacts_for_story<'a>(matrix: &'a TraceabilityMatrix, story_id: &str) -> Vec<&'a str> {
     matrix
         .rows
         .get(story_id)
-        .map(|row| {
-            row.artifacts
-                .keys()
-                .map(|s| s.as_str())
-                .collect()
-        })
+        .map(|row| row.artifacts.keys().map(|s| s.as_str()).collect())
         .unwrap_or_default()
 }
 
 /// Return all story IDs linked to a given artefact.
-pub fn stories_for_artifact<'a>(
-    matrix: &'a TraceabilityMatrix,
-    artifact_id: &str,
-) -> Vec<&'a str> {
+pub fn stories_for_artifact<'a>(matrix: &'a TraceabilityMatrix, artifact_id: &str) -> Vec<&'a str> {
     matrix
         .rows
         .iter()
@@ -289,8 +278,18 @@ mod tests {
             StoryTraceLink::new("S1".into(), "auth.rs".into(), LinkType::Implements, 0.95),
             StoryTraceLink::new("S1".into(), "auth_test.rs".into(), LinkType::Tests, 0.90),
             StoryTraceLink::new("S1".into(), "auth.md".into(), LinkType::Documents, 0.80),
-            StoryTraceLink::new("S2".into(), "migrate_v2.sql".into(), LinkType::Migrates, 0.85),
-            StoryTraceLink::new("S3".into(), "dashboard.tsx".into(), LinkType::Implements, 0.70),
+            StoryTraceLink::new(
+                "S2".into(),
+                "migrate_v2.sql".into(),
+                LinkType::Migrates,
+                0.85,
+            ),
+            StoryTraceLink::new(
+                "S3".into(),
+                "dashboard.tsx".into(),
+                LinkType::Implements,
+                0.70,
+            ),
             StoryTraceLink::new("S3".into(), "unused.rs".into(), LinkType::Related, 0.30),
         ]
     }
@@ -298,7 +297,12 @@ mod tests {
     fn matrix_with_orphan() -> Vec<StoryTraceLink> {
         let mut links = sample_links();
         // Add an orphan artifact not linked to any story
-        links.push(StoryTraceLink::new("S1".into(), "orphan.rs".into(), LinkType::Related, 0.10));
+        links.push(StoryTraceLink::new(
+            "S1".into(),
+            "orphan.rs".into(),
+            LinkType::Related,
+            0.10,
+        ));
         links
     }
 
@@ -345,25 +349,16 @@ mod tests {
         let gaps = find_gaps(&matrix);
 
         // S2 is missing implements, tests, documents.
-        let s2_gaps: Vec<_> = gaps
-            .iter()
-            .filter(|g| g.story_id == "S2")
-            .collect();
+        let s2_gaps: Vec<_> = gaps.iter().filter(|g| g.story_id == "S2").collect();
         assert!(s2_gaps.len() >= 2, "S2 should have at least 2 gaps");
 
         // S1 is missing nothing important (has implements, tests, documents).
-        let s1_gaps: Vec<_> = gaps
-            .iter()
-            .filter(|g| g.story_id == "S1")
-            .collect();
+        let s1_gaps: Vec<_> = gaps.iter().filter(|g| g.story_id == "S1").collect();
         assert_eq!(s1_gaps.len(), 0, "S1 should have no gaps");
 
         // All artifacts in columns are linked to at least one story (no orphan detection
         // possible with build_matrix — artifacts only enter columns via links).
-        let orphan_gaps: Vec<_> = gaps
-            .iter()
-            .filter(|g| g.artifact_id.is_some())
-            .collect();
+        let orphan_gaps: Vec<_> = gaps.iter().filter(|g| g.artifact_id.is_some()).collect();
         assert_eq!(orphan_gaps.len(), 0, "no orphan artifacts expected");
     }
 

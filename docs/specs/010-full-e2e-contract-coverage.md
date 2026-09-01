@@ -1,15 +1,15 @@
 # Spec 010: Full End-to-End Contract Coverage
 
-| Field | Value |
-|-------|-------|
-| **Spec ID** | TRACERA-SPEC-010 |
-| **Title** | YAML Contract Testing for All Active Endpoints |
-| **Status** | Draft |
-| **Version** | 2.0 |
-| **Author** | Tracera Core Team |
-| **Date** | 2026-08-30 |
-| **Supersedes** | 1.0 |
-| **Depends on** | SPEC-009 (API Schema Definitions) |
+| Field          | Value                                          |
+| -------------- | ---------------------------------------------- |
+| **Spec ID**    | TRACERA-SPEC-010                               |
+| **Title**      | YAML Contract Testing for All Active Endpoints |
+| **Status**     | Draft                                          |
+| **Version**    | 2.0                                            |
+| **Author**     | Tracera Core Team                              |
+| **Date**       | 2026-08-30                                     |
+| **Supersedes** | 1.0                                            |
+| **Depends on** | SPEC-009 (API Schema Definitions)              |
 
 ---
 
@@ -37,50 +37,50 @@ Tracera exposes **27 active HTTP endpoints** across server, ingestion, desktop/t
 
 ### 2.1 Server Endpoints (16)
 
-| # | Method | Path | Auth | Description |
-|---|--------|------|------|-------------|
-| 01 | POST | `/api/v1/auth/login` | No | User authentication |
-| 02 | POST | `/api/v1/auth/refresh` | Yes | Token refresh |
-| 03 | GET | `/api/v1/graph/nodes` | Yes | List graph nodes |
-| 04 | POST | `/api/v1/graph/nodes` | Yes | Create graph node |
-| 05 | GET | `/api/v1/graph/nodes/:id` | Yes | Get node by ID |
-| 06 | PATCH | `/api/v1/graph/nodes/:id` | Yes | Update node |
-| 07 | DELETE | `/api/v1/graph/nodes/:id` | Yes | Delete node |
-| 08 | GET | `/api/v1/graph/edges` | Yes | List graph edges |
-| 09 | POST | `/api/v1/graph/edges` | Yes | Create graph edge |
-| 10 | GET | `/api/v1/graph/query` | Yes | Graph query |
-| 11 | GET | `/api/v1/coverage/summary` | Yes | Coverage summary |
-| 12 | GET | `/api/v1/coverage/detail` | Yes | Coverage detail |
-| 13 | POST | `/api/v1/coverage/enrich` | Yes | Trigger enrichment |
-| 14 | GET | `/api/v1/distillation/patterns` | Yes | List patterns |
-| 15 | POST | `/api/v1/distillation/run` | Yes | Trigger distillation |
-| 16 | GET | `/api/v1/health` | No | Health check |
+| #   | Method | Path                            | Auth | Description          |
+| --- | ------ | ------------------------------- | ---- | -------------------- |
+| 01  | POST   | `/api/v1/auth/login`            | No   | User authentication  |
+| 02  | POST   | `/api/v1/auth/refresh`          | Yes  | Token refresh        |
+| 03  | GET    | `/api/v1/graph/nodes`           | Yes  | List graph nodes     |
+| 04  | POST   | `/api/v1/graph/nodes`           | Yes  | Create graph node    |
+| 05  | GET    | `/api/v1/graph/nodes/:id`       | Yes  | Get node by ID       |
+| 06  | PATCH  | `/api/v1/graph/nodes/:id`       | Yes  | Update node          |
+| 07  | DELETE | `/api/v1/graph/nodes/:id`       | Yes  | Delete node          |
+| 08  | GET    | `/api/v1/graph/edges`           | Yes  | List graph edges     |
+| 09  | POST   | `/api/v1/graph/edges`           | Yes  | Create graph edge    |
+| 10  | GET    | `/api/v1/graph/query`           | Yes  | Graph query          |
+| 11  | GET    | `/api/v1/coverage/summary`      | Yes  | Coverage summary     |
+| 12  | GET    | `/api/v1/coverage/detail`       | Yes  | Coverage detail      |
+| 13  | POST   | `/api/v1/coverage/enrich`       | Yes  | Trigger enrichment   |
+| 14  | GET    | `/api/v1/distillation/patterns` | Yes  | List patterns        |
+| 15  | POST   | `/api/v1/distillation/run`      | Yes  | Trigger distillation |
+| 16  | GET    | `/api/v1/health`                | No   | Health check         |
 
 ### 2.2 Ingestion Endpoints (3)
 
-| # | Method | Path | Auth | Description |
-|---|--------|------|------|-------------|
-| 17 | POST | `/api/v1/ingest/agileplus` | Yes | AgilePlus ingestion |
-| 18 | POST | `/api/v1/ingest/github` | Signature | GitHub webhook |
-| 19 | POST | `/api/v1/ingest/jira` | Yes | Jira webhook |
+| #   | Method | Path                       | Auth      | Description         |
+| --- | ------ | -------------------------- | --------- | ------------------- |
+| 17  | POST   | `/api/v1/ingest/agileplus` | Yes       | AgilePlus ingestion |
+| 18  | POST   | `/api/v1/ingest/github`    | Signature | GitHub webhook      |
+| 19  | POST   | `/api/v1/ingest/jira`      | Yes       | Jira webhook        |
 
 ### 2.3 Desktop/Tray Endpoints (4)
 
-| # | Method | Path | Auth | Description |
-|---|--------|------|------|-------------|
-| 20 | GET | `/tray/status` | No | Tray app status |
-| 21 | POST | `/tray/action` | Yes | Execute tray action |
-| 22 | GET | `/tray/notifications` | Yes | Pending notifications |
-| 23 | POST | `/tray/notifications/ack` | Yes | Acknowledge notification |
+| #   | Method | Path                      | Auth | Description              |
+| --- | ------ | ------------------------- | ---- | ------------------------ |
+| 20  | GET    | `/tray/status`            | No   | Tray app status          |
+| 21  | POST   | `/tray/action`            | Yes  | Execute tray action      |
+| 22  | GET    | `/tray/notifications`     | Yes  | Pending notifications    |
+| 23  | POST   | `/tray/notifications/ack` | Yes  | Acknowledge notification |
 
 ### 2.4 Dashboard Endpoints (4)
 
-| # | Method | Path | Auth | Description |
-|---|--------|------|------|-------------|
-| 24 | GET | `/api/v1/dashboard/panels` | Yes | Panel configuration |
-| 25 | POST | `/api/v1/dashboard/query` | Yes | Data query |
-| 26 | GET | `/api/v1/dashboard/realtime` | Yes | WebSocket live data |
-| 27 | GET | `/api/v1/dashboard/export` | Yes | Export PDF/CSV |
+| #   | Method | Path                         | Auth | Description         |
+| --- | ------ | ---------------------------- | ---- | ------------------- |
+| 24  | GET    | `/api/v1/dashboard/panels`   | Yes  | Panel configuration |
+| 25  | POST   | `/api/v1/dashboard/query`    | Yes  | Data query          |
+| 26  | GET    | `/api/v1/dashboard/realtime` | Yes  | WebSocket live data |
+| 27  | GET    | `/api/v1/dashboard/export`   | Yes  | Export PDF/CSV      |
 
 ---
 
@@ -199,15 +199,15 @@ contract:
 
 ## 4. Test Case Definitions (7 Per Endpoint)
 
-| # | Test Case | Purpose | Key Validation |
-|---|-----------|---------|----------------|
-| 1 | `happy_path` | Valid input succeeds | Schema validation, 200/201 |
-| 2 | `empty_input` | Missing fields rejected | 400/422, error schema |
-| 3 | `malformed_json` | Parse error handling | 400, no stack trace |
-| 4 | `unauthorized` | Auth enforcement | 401, error schema |
-| 5 | `rate_limit` | Throttling behavior | 429, retry-after headers |
-| 6 | `timeout` | Slow request handling | 408/504, graceful degradation |
-| 7 | `idempotency` | Request deduplication | Cached responses, idempotency keys |
+| #   | Test Case        | Purpose                 | Key Validation                     |
+| --- | ---------------- | ----------------------- | ---------------------------------- |
+| 1   | `happy_path`     | Valid input succeeds    | Schema validation, 200/201         |
+| 2   | `empty_input`    | Missing fields rejected | 400/422, error schema              |
+| 3   | `malformed_json` | Parse error handling    | 400, no stack trace                |
+| 4   | `unauthorized`   | Auth enforcement        | 401, error schema                  |
+| 5   | `rate_limit`     | Throttling behavior     | 429, retry-after headers           |
+| 6   | `timeout`        | Slow request handling   | 408/504, graceful degradation      |
+| 7   | `idempotency`    | Request deduplication   | Cached responses, idempotency keys |
 
 ### 4.1 Happy Path
 
@@ -289,7 +289,7 @@ name: Contract Tests
 on:
   pull_request: { branches: [main, develop] }
   push: { branches: [main] }
-  schedule: [{ cron: '0 2 * * *' }]
+  schedule: [{ cron: "0 2 * * *" }]
 
 jobs:
   contract-tests:
@@ -321,13 +321,13 @@ jobs:
 
 ## 7. Traceability Matrix
 
-| Domain | Endpoints | Tests Each | Total Tests |
-|--------|-----------|------------|-------------|
-| Server | 16 | 7 | 112 |
-| Ingestion | 3 | 7 | 21 |
-| Desktop/Tray | 4 | 7 | 28 |
-| Dashboard | 4 | 7 | 28 |
-| **Total** | **27** | **7** | **189** |
+| Domain       | Endpoints | Tests Each | Total Tests |
+| ------------ | --------- | ---------- | ----------- |
+| Server       | 16        | 7          | 112         |
+| Ingestion    | 3         | 7          | 21          |
+| Desktop/Tray | 4         | 7          | 28          |
+| Dashboard    | 4         | 7          | 28          |
+| **Total**    | **27**    | **7**      | **189**     |
 
 ---
 
@@ -344,52 +344,52 @@ jobs:
 
 ## 9. Performance Requirements
 
-| Metric | Target |
-|--------|--------|
-| Total suite execution | < 30 seconds |
-| Per-endpoint test (non-timeout) | < 2 seconds |
-| Schema validation overhead | < 50ms per response |
-| Memory usage | < 512MB |
-| Concurrent workers | 4 (configurable) |
+| Metric                          | Target              |
+| ------------------------------- | ------------------- |
+| Total suite execution           | < 30 seconds        |
+| Per-endpoint test (non-timeout) | < 2 seconds         |
+| Schema validation overhead      | < 50ms per response |
+| Memory usage                    | < 512MB             |
+| Concurrent workers              | 4 (configurable)    |
 
 ---
 
 ## 10. Acceptance Criteria
 
-| # | Criterion |
-|---|-----------|
-| AC-01 | All 27 endpoints have YAML contract files |
-| AC-02 | Each endpoint has exactly 7 test cases |
-| AC-03 | Happy path returns 200/201 for every endpoint |
+| #     | Criterion                                            |
+| ----- | ---------------------------------------------------- |
+| AC-01 | All 27 endpoints have YAML contract files            |
+| AC-02 | Each endpoint has exactly 7 test cases               |
+| AC-03 | Happy path returns 200/201 for every endpoint        |
 | AC-04 | Empty input returns 400/422 for POST/PATCH endpoints |
-| AC-05 | Malformed JSON returns 400 with error schema |
-| AC-06 | Unauthorized returns 401 for protected endpoints |
-| AC-07 | Rate limit returns 429 after threshold exceeded |
-| AC-08 | Timeout returns 408/504 for slow requests |
-| AC-09 | Idempotency key produces identical cached responses |
-| AC-10 | Total suite execution < 30 seconds |
-| AC-11 | Shared schemas use `$ref`, not duplication |
-| AC-12 | CI fails on any contract test failure |
-| AC-13 | JSON and SARIF reports generated |
-| AC-14 | Coverage shows 100% endpoint coverage |
-| AC-15 | Schema drift detected against OpenAPI |
-| AC-16 | WebSocket contract validated for realtime endpoint |
-| AC-17 | Export format contracts produce valid PDF/CSV |
-| AC-18 | Tests run locally without external dependencies |
-| AC-19 | `--filter` flag enables selective execution |
-| AC-20 | Mutation kill rate > 90% on test assertions |
+| AC-05 | Malformed JSON returns 400 with error schema         |
+| AC-06 | Unauthorized returns 401 for protected endpoints     |
+| AC-07 | Rate limit returns 429 after threshold exceeded      |
+| AC-08 | Timeout returns 408/504 for slow requests            |
+| AC-09 | Idempotency key produces identical cached responses  |
+| AC-10 | Total suite execution < 30 seconds                   |
+| AC-11 | Shared schemas use `$ref`, not duplication           |
+| AC-12 | CI fails on any contract test failure                |
+| AC-13 | JSON and SARIF reports generated                     |
+| AC-14 | Coverage shows 100% endpoint coverage                |
+| AC-15 | Schema drift detected against OpenAPI                |
+| AC-16 | WebSocket contract validated for realtime endpoint   |
+| AC-17 | Export format contracts produce valid PDF/CSV        |
+| AC-18 | Tests run locally without external dependencies      |
+| AC-19 | `--filter` flag enables selective execution          |
+| AC-20 | Mutation kill rate > 90% on test assertions          |
 
 ---
 
 ## 11. Rollout Plan (5 Phases)
 
-| Phase | Deliverables | Duration |
-|-------|-------------|----------|
-| 1 | Core runner, shared schemas, 5 core contracts | Weeks 1-2 |
-| 2 | Remaining 11 server contracts, `$ref` validation | Weeks 3-4 |
-| 3 | Desktop/Tray + Dashboard contracts, WebSocket validation | Weeks 5-6 |
-| 4 | CI integration, SARIF, coverage badge | Week 7 |
-| 5 | Mutation testing, drift detection, docs | Week 8 |
+| Phase | Deliverables                                             | Duration  |
+| ----- | -------------------------------------------------------- | --------- |
+| 1     | Core runner, shared schemas, 5 core contracts            | Weeks 1-2 |
+| 2     | Remaining 11 server contracts, `$ref` validation         | Weeks 3-4 |
+| 3     | Desktop/Tray + Dashboard contracts, WebSocket validation | Weeks 5-6 |
+| 4     | CI integration, SARIF, coverage badge                    | Week 7    |
+| 5     | Mutation testing, drift detection, docs                  | Week 8    |
 
 ---
 
@@ -421,4 +421,4 @@ contracts/
 
 ---
 
-*End of Spec 010 — TRACERA-SPEC-010 v2.0*
+_End of Spec 010 — TRACERA-SPEC-010 v2.0_

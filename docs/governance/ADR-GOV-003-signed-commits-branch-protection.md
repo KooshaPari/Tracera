@@ -30,15 +30,15 @@ can verify. Unsigned or unverified signatures will be rejected.
 
 ### 2. Protect the `main` branch
 
-| Rule | Setting |
-|------|---------|
-| Require pull request before merging | Enabled (min 1 approval) |
-| Required status checks | `ci / build-and-test`, `ci / clippy`, `ci / fmt-check` |
-| Require conversation resolution | Enabled |
-| Require linear history | Enabled (squash merge only) |
-| Include administrators | Enabled (no bypass) |
-| Allow force pushes | Disabled |
-| Allow deletions | Disabled |
+| Rule                                | Setting                                                |
+| ----------------------------------- | ------------------------------------------------------ |
+| Require pull request before merging | Enabled (min 1 approval)                               |
+| Required status checks              | `ci / build-and-test`, `ci / clippy`, `ci / fmt-check` |
+| Require conversation resolution     | Enabled                                                |
+| Require linear history              | Enabled (squash merge only)                            |
+| Include administrators              | Enabled (no bypass)                                    |
+| Allow force pushes                  | Disabled                                               |
+| Allow deletions                     | Disabled                                               |
 
 ### 3. Require pull request reviews
 
@@ -75,11 +75,11 @@ thresholds) may be added as the pipeline matures.
 
 1. **Generate and register signing keys** — each contributor generates a
    GPG or SSH key pair and uploads the public key to GitHub under
-   *Settings → SSH and GPG keys*.
+   _Settings → SSH and GPG keys_.
 2. **Configure local Git** — set `commit.gpgSign = true` and specify
    `user.signingKey` in the global or local config.
 3. **Enable branch protection on `main`** — apply the rules in section 2
-   via *Settings → Branches → Add rule*.
+   via _Settings → Branches → Add rule_.
 4. **Verify required status checks** — confirm the CI workflow produces
    check runs named `ci / build-and-test`, `ci / clippy`, and
    `ci / fmt-check`, and add them to the required checks list.
