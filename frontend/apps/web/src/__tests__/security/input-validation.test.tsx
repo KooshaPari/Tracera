@@ -261,21 +261,29 @@ describe("Input Validation Security Tests", () => {
 
   describe("Regex Denial of Service (ReDoS) Prevention", () => {
     it("should use safe regex patterns", () => {
-      // Dangerous: catastrophic backtracking
-      const _dangerousRegex = /^(a+)+$/;
+      // Dangerous: catastrophic backtracking (nested quantifiers)
+      const dangerousRegex = /^(a+)+$/;
 
       // Safe: no backtracking
       const safeRegex = /^[a-zA-Z0-9]+$/;
 
-      const _shortInput = "aaa";
-      const longInput = "a".repeat(1000);
+      const longInput = "a".repeat(30);
+
+      // Dangerous regex should exhibit exponential behavior on repeated-char input
+      const dangerousStart = performance.now();
+      dangerousRegex.test(longInput);
+      const dangerousElapsed = performance.now() - dangerousStart;
 
       // Safe regex should handle long input quickly
-      const startTime = performance.now();
+      const safeStart = performance.now();
       safeRegex.test(longInput);
-      const elapsed = performance.now() - startTime;
+      const safeElapsed = performance.now() - safeStart;
 
-      expect(elapsed).toBeLessThan(100); // Should be very fast
+      // Safe regex must be orders of magnitude faster
+      expect(safeElapsed).toBeLessThan(10);
+      // Dangerous regex with nested quantifiers is intentionally slow here
+      // (we only test 30 chars to avoid actual DoS; real validation uses safe patterns)
+      expect(dangerousElapsed).toBeGreaterThan(safeElapsed);
     });
 
     it("should limit input length before regex validation", () => {
