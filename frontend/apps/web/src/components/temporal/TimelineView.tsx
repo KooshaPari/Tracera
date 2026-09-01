@@ -219,7 +219,8 @@ export const TimelineView = ({
           return (
             <div className='flex items-center justify-between border-t border-gray-200 pt-2 text-xs text-gray-600 dark:border-gray-800 dark:text-gray-400'>
               <span>
-                {first?.timestamp.toLocaleDateString()} -{last?.timestamp.toLocaleDateString()}
+                {first?.timestamp.toLocaleDateString(undefined, { timeZone: 'UTC' })} -
+                {last?.timestamp.toLocaleDateString(undefined, { timeZone: 'UTC' })}
               </span>
               <span>
                 {sortedVersions.length} version

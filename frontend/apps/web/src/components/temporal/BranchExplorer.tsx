@@ -46,7 +46,9 @@ export function BranchExplorer({
   onMergeRequest,
   onBranchCreate,
 }: BranchExplorerProps) {
-  const [expandedBranches, setExpandedBranches] = useState<Set<string>>(new Set([currentBranchId]));
+  const [expandedBranches, setExpandedBranches] = useState<Set<string>>(
+    () => new Set(branches.map((branch) => branch.id)),
+  );
   const [mergeSource, setMergeSource] = useState<string | null>(null);
 
   const branchTree = useMemo(() => {

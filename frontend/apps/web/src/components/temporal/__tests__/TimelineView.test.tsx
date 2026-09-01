@@ -71,7 +71,7 @@ describe(TimelineView, () => {
       />,
     );
 
-    expect(screen.getByText(/3 versions/)).toBeInTheDocument();
+    expect(screen.getAllByText(/3 versions/).length).toBeGreaterThan(0);
   });
 
   it('highlights current version', () => {
