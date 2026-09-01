@@ -11,4 +11,4 @@ export {
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuTrigger,
-} from '@tracertm/ui';
+} from "@tracertm/ui";

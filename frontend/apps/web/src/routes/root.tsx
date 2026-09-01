@@ -1,7 +1,7 @@
-import { createFileRoute, Navigate } from '@tanstack/react-router';
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 
-const IndexRoute = () => <Navigate to='/landing' />;
+const IndexRoute = () => <Navigate to="/landing" />;
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   component: IndexRoute,
 });

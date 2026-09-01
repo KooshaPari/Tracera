@@ -1,18 +1,18 @@
-import type { ItemStatus, Priority } from '@tracertm/types';
+import type { ItemStatus, Priority } from "@tracertm/types";
 
-const STATUS_VALUES: ItemStatus[] = ['todo', 'in_progress', 'done', 'blocked', 'cancelled'];
-const PRIORITY_VALUES: Priority[] = ['low', 'medium', 'high', 'critical'];
+const STATUS_VALUES: ItemStatus[] = ["todo", "in_progress", "done", "blocked", "cancelled"];
+const PRIORITY_VALUES: Priority[] = ["low", "medium", "high", "critical"];
 
-const DEFAULT_VIEW = 'feature';
-const DEFAULT_PRIORITY: Priority = 'medium';
-const DEFAULT_STATUS: ItemStatus = 'todo';
+const DEFAULT_VIEW = "feature";
+const DEFAULT_PRIORITY: Priority = "medium";
+const DEFAULT_STATUS: ItemStatus = "todo";
 
-const DEFAULT_TITLE = 'Item Registry';
-const DEFAULT_EMPTY_TITLE = 'No items yet';
-const DEFAULT_EMPTY_DESCRIPTION = 'Create your first item to get started.';
-const DEFAULT_DESCRIPTION = 'Manage project items and artifacts in a unified registry.';
-const DEFAULT_CREATE_LABEL = 'Create Item';
-const DEFAULT_NEW_LABEL = 'New Item';
+const DEFAULT_TITLE = "Item Registry";
+const DEFAULT_EMPTY_TITLE = "No items yet";
+const DEFAULT_EMPTY_DESCRIPTION = "Create your first item to get started.";
+const DEFAULT_DESCRIPTION = "Manage project items and artifacts in a unified registry.";
+const DEFAULT_CREATE_LABEL = "Create Item";
+const DEFAULT_NEW_LABEL = "New Item";
 
 const ITEM_ID_PREFIX_LENGTH = 12;
 const ROW_INDEX_OFFSET = 1;
@@ -29,14 +29,14 @@ const SEARCH_INPUT_MIN_WIDTH = 250;
 const TABLE_HEADER_WIDTH = 400;
 const LOADING_ROW_COUNT = 6;
 
-const EMPTY_STRING = '';
-const FILTER_ALL = 'all';
-const SEARCH_PARAM_PROJECT = 'project';
-const SEARCH_PARAM_TYPE = 'type';
-const SEARCH_PARAM_ACTION = 'action';
-const ACTION_CREATE = 'create';
+const EMPTY_STRING = "";
+const FILTER_ALL = "all";
+const SEARCH_PARAM_PROJECT = "project";
+const SEARCH_PARAM_TYPE = "type";
+const SEARCH_PARAM_ACTION = "action";
+const ACTION_CREATE = "create";
 
-const VIEW_TYPE_OPTIONS: string[] = ['requirement', 'feature', 'test', 'bug', 'task'];
+const VIEW_TYPE_OPTIONS: string[] = ["requirement", "feature", "test", "bug", "task"];
 
 const itemsTableConstants = {
   ACTION_CREATE,

@@ -1,16 +1,16 @@
-import type { GraphCacheTypes } from './graph-cache-types';
+import type { GraphCacheTypes } from "./graph-cache-types";
 
-import { graphCacheConstants } from './graph-cache-constants';
+import { graphCacheConstants } from "./graph-cache-constants";
 
-type CacheStatistics = GraphCacheTypes['CacheStatistics'];
-type GroupingData = GraphCacheTypes['GroupingData'];
-type LayoutData = GraphCacheTypes['LayoutData'];
-type SearchResult = GraphCacheTypes['SearchResult'];
+type CacheStatistics = GraphCacheTypes["CacheStatistics"];
+type GroupingData = GraphCacheTypes["GroupingData"];
+type LayoutData = GraphCacheTypes["LayoutData"];
+type SearchResult = GraphCacheTypes["SearchResult"];
 
 interface GraphCacheStatsState {
   cacheStats: CacheStatistics;
   groupings: Map<string, GroupingData>;
-  invalidationPatterns: GraphCacheTypes['InvalidationPattern'][];
+  invalidationPatterns: GraphCacheTypes["InvalidationPattern"][];
   layouts: Map<string, LayoutData>;
   searchResults: Map<string, SearchResult[]>;
 }
@@ -115,7 +115,7 @@ const createStatsActions = (set: StoreSetter, get: StoreGetter): StatsActions =>
       draft.invalidationPatterns.push({
         description,
         pattern,
-        priority: 'medium',
+        priority: "medium",
         timestamp: Date.now(),
       });
 

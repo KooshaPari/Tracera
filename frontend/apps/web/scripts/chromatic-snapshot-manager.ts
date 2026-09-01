@@ -10,9 +10,9 @@
  *   bun scripts/chromatic-snapshot-manager.ts --accept-all
  */
 
-import { execSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
-import path from 'node:path';
+import { execSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 
 interface SnapshotConfig {
   projectToken: string;
@@ -28,13 +28,13 @@ interface SnapshotConfig {
  * Load snapshot configuration
  */
 function loadConfig(): SnapshotConfig {
-  const configPath = path.join(process.cwd(), 'chromatic.config.json');
+  const configPath = path.join(process.cwd(), "chromatic.config.json");
 
   if (!existsSync(configPath)) {
     process.exit(1);
   }
 
-  return JSON.parse(readFileSync(configPath, 'utf8'));
+  return JSON.parse(readFileSync(configPath, "utf8"));
 }
 
 /**
@@ -43,7 +43,7 @@ function loadConfig(): SnapshotConfig {
 function listChangedSnapshots(): void {
   try {
     const output = execSync("chromatic --list-changes 2>&1 || echo ''", {
-      encoding: 'utf8',
+      encoding: "utf8",
     });
 
     if (!output.trim()) {
@@ -57,9 +57,9 @@ function listChangedSnapshots(): void {
  */
 function acceptAllChanges(): void {
   try {
-    execSync('chromatic --auto-accept-changes', {
-      encoding: 'utf8',
-      stdio: 'inherit',
+    execSync("chromatic --auto-accept-changes", {
+      encoding: "utf8",
+      stdio: "inherit",
     });
   } catch {
     process.exit(1);
@@ -71,9 +71,9 @@ function acceptAllChanges(): void {
  */
 function rejectAllChanges(): void {
   try {
-    execSync('chromatic --exit-once-uploaded', {
-      encoding: 'utf8',
-      stdio: 'inherit',
+    execSync("chromatic --exit-once-uploaded", {
+      encoding: "utf8",
+      stdio: "inherit",
     });
   } catch {
     process.exit(1);
@@ -109,7 +109,7 @@ function validateConfig(): void {
   }
 
   config.components.forEach((comp) => {
-    if (!comp.name || comp.name.trim() === '') {
+    if (!comp.name || comp.name.trim() === "") {
       process.exit(1);
     }
 
@@ -134,20 +134,20 @@ function printHelp(): void {}
 function main(): void {
   const args = process.argv.slice(2);
 
-  if (args.length === 0 || args.includes('--help')) {
+  if (args.length === 0 || args.includes("--help")) {
     printHelp();
     return;
   }
 
-  if (args.includes('--list-changed')) {
+  if (args.includes("--list-changed")) {
     listChangedSnapshots();
-  } else if (args.includes('--accept-all')) {
+  } else if (args.includes("--accept-all")) {
     acceptAllChanges();
-  } else if (args.includes('--reject-all')) {
+  } else if (args.includes("--reject-all")) {
     rejectAllChanges();
-  } else if (args.includes('--summary')) {
+  } else if (args.includes("--summary")) {
     generateSummary();
-  } else if (args.includes('--validate')) {
+  } else if (args.includes("--validate")) {
     validateConfig();
   } else {
     process.exit(1);

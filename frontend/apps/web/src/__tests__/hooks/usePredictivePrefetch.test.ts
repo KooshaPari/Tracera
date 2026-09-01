@@ -2,16 +2,16 @@
  * Tests for usePredictivePrefetch hook
  */
 
-import { renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { PredictedViewport, Viewport } from '@/hooks/usePredictivePrefetch';
+import type { PredictedViewport, Viewport } from "@/hooks/usePredictivePrefetch";
 
 import {
   isNodeInPredictedViewport,
   usePredictivePrefetch,
   viewportToCacheKey,
-} from '@/hooks/usePredictivePrefetch';
+} from "@/hooks/usePredictivePrefetch";
 
 describe(usePredictivePrefetch, () => {
   const mockLoadViewport = vi.fn();
@@ -28,7 +28,7 @@ describe(usePredictivePrefetch, () => {
     vi.clearAllMocks();
   });
 
-  it('should initialize with zero velocity', () => {
+  it("should initialize with zero velocity", () => {
     const { result } = renderHook(() =>
       usePredictivePrefetch({
         loadViewport: mockLoadViewport,
@@ -42,7 +42,7 @@ describe(usePredictivePrefetch, () => {
     expect(result.current.predictedViewport).toBeNull();
   });
 
-  it('should not predict when disabled', async () => {
+  it("should not predict when disabled", async () => {
     const { rerender } = renderHook(
       ({ viewport }) =>
         usePredictivePrefetch({
@@ -64,7 +64,7 @@ describe(usePredictivePrefetch, () => {
     });
   });
 
-  it('should calculate velocity from viewport changes', async () => {
+  it("should calculate velocity from viewport changes", async () => {
     const { result, rerender } = renderHook(
       ({ viewport }) =>
         usePredictivePrefetch({
@@ -93,7 +93,7 @@ describe(usePredictivePrefetch, () => {
     expect(result.current.speed).toBeGreaterThan(0);
   });
 
-  it('should smooth velocity with exponential moving average', async () => {
+  it("should smooth velocity with exponential moving average", async () => {
     const { result, rerender } = renderHook(
       ({ viewport }) =>
         usePredictivePrefetch({
@@ -128,7 +128,7 @@ describe(usePredictivePrefetch, () => {
     expect(Math.abs(speed1 - speed2)).toBeGreaterThan(0);
   });
 
-  it('should calculate speed as velocity magnitude', async () => {
+  it("should calculate speed as velocity magnitude", async () => {
     const { result, rerender } = renderHook(
       ({ viewport }) =>
         usePredictivePrefetch({
@@ -154,7 +154,7 @@ describe(usePredictivePrefetch, () => {
     expect(result.current.speed).toBeGreaterThan(20);
   });
 
-  it('should trigger prefetch when speed exceeds threshold', async () => {
+  it("should trigger prefetch when speed exceeds threshold", async () => {
     const { rerender } = renderHook(
       ({ viewport }) =>
         usePredictivePrefetch({
@@ -180,7 +180,7 @@ describe(usePredictivePrefetch, () => {
     );
   });
 
-  it('should not trigger prefetch when speed below threshold', async () => {
+  it("should not trigger prefetch when speed below threshold", async () => {
     const { rerender } = renderHook(
       ({ viewport }) =>
         usePredictivePrefetch({
@@ -202,7 +202,7 @@ describe(usePredictivePrefetch, () => {
     expect(mockLoadViewport).not.toHaveBeenCalled();
   });
 
-  it('should debounce prefetch calls', async () => {
+  it("should debounce prefetch calls", async () => {
     const { rerender } = renderHook(
       ({ viewport }) =>
         usePredictivePrefetch({
@@ -231,7 +231,7 @@ describe(usePredictivePrefetch, () => {
     );
   });
 
-  it('should calculate predicted viewport correctly', async () => {
+  it("should calculate predicted viewport correctly", async () => {
     const { rerender } = renderHook(
       ({ viewport }) =>
         usePredictivePrefetch({
@@ -269,7 +269,7 @@ describe(usePredictivePrefetch, () => {
     expect(predictedViewport.zoom).toBe(1);
   });
 
-  it('should account for zoom in predicted viewport bounds', async () => {
+  it("should account for zoom in predicted viewport bounds", async () => {
     const zoomedViewport: Viewport = {
       height: 800,
       width: 1000,
@@ -313,7 +313,7 @@ describe(usePredictivePrefetch, () => {
     expect(predictedViewport.maxY - predictedViewport.minY).toBeCloseTo(expectedHeight, -1);
   });
 
-  it('should cleanup debounce timer on unmount', () => {
+  it("should cleanup debounce timer on unmount", () => {
     const { unmount } = renderHook(() =>
       usePredictivePrefetch({
         loadViewport: mockLoadViewport,
@@ -325,7 +325,7 @@ describe(usePredictivePrefetch, () => {
     // No errors should occur
   });
 
-  it('should provide isPredicting flag correctly', async () => {
+  it("should provide isPredicting flag correctly", async () => {
     const { result, rerender } = renderHook(
       ({ viewport }) =>
         usePredictivePrefetch({
@@ -361,7 +361,7 @@ describe(usePredictivePrefetch, () => {
 });
 
 describe(viewportToCacheKey, () => {
-  it('should generate consistent cache keys', () => {
+  it("should generate consistent cache keys", () => {
     const viewport: PredictedViewport = {
       maxX: 1100,
       maxY: 1000,
@@ -376,7 +376,7 @@ describe(viewportToCacheKey, () => {
     expect(key1).toBe(key2);
   });
 
-  it('should round coordinates to reduce key variations', () => {
+  it("should round coordinates to reduce key variations", () => {
     const viewport1: PredictedViewport = {
       maxX: 1103,
       maxY: 1004,
@@ -400,7 +400,7 @@ describe(viewportToCacheKey, () => {
     expect(key1).toBe(key2);
   });
 
-  it('should include all viewport bounds in key', () => {
+  it("should include all viewport bounds in key", () => {
     const viewport: PredictedViewport = {
       maxX: 1100,
       maxY: 1000,
@@ -411,11 +411,11 @@ describe(viewportToCacheKey, () => {
 
     const key = viewportToCacheKey(viewport);
 
-    expect(key).toContain('100');
-    expect(key).toContain('200');
-    expect(key).toContain('1100');
-    expect(key).toContain('1000');
-    expect(key).toContain('1.5');
+    expect(key).toContain("100");
+    expect(key).toContain("200");
+    expect(key).toContain("1100");
+    expect(key).toContain("1000");
+    expect(key).toContain("1.5");
   });
 });
 
@@ -428,22 +428,22 @@ describe(isNodeInPredictedViewport, () => {
     zoom: 1,
   };
 
-  it('should return true for node fully inside viewport', () => {
+  it("should return true for node fully inside viewport", () => {
     const node = { height: 50, width: 50, x: 100, y: 100 };
     expect(isNodeInPredictedViewport(node, viewport)).toBeTruthy();
   });
 
-  it('should return true for node partially inside viewport', () => {
+  it("should return true for node partially inside viewport", () => {
     const node = { height: 50, width: 50, x: -25, y: 100 };
     expect(isNodeInPredictedViewport(node, viewport)).toBeTruthy();
   });
 
-  it('should return false for node completely outside viewport', () => {
+  it("should return false for node completely outside viewport", () => {
     const node = { height: 50, width: 50, x: 1100, y: 100 };
     expect(isNodeInPredictedViewport(node, viewport)).toBeFalsy();
   });
 
-  it('should handle edge cases correctly', () => {
+  it("should handle edge cases correctly", () => {
     // Node touching left edge
     const node1 = { height: 50, width: 50, x: -50, y: 100 };
     expect(isNodeInPredictedViewport(node1, viewport)).toBeFalsy();
@@ -457,13 +457,13 @@ describe(isNodeInPredictedViewport, () => {
     expect(isNodeInPredictedViewport(node3, viewport)).toBeTruthy();
   });
 
-  it('should handle zero-size nodes', () => {
+  it("should handle zero-size nodes", () => {
     const node = { height: 0, width: 0, x: 500, y: 400 };
     // Zero-size nodes at a point inside the viewport are considered visible
     expect(isNodeInPredictedViewport(node, viewport)).toBeTruthy();
   });
 
-  it('should handle nodes larger than viewport', () => {
+  it("should handle nodes larger than viewport", () => {
     const node = { height: 1200, width: 1500, x: -100, y: -100 };
     expect(isNodeInPredictedViewport(node, viewport)).toBeTruthy();
   });

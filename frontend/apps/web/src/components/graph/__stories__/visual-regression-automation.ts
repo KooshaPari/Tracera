@@ -1,6 +1,6 @@
 type StoryArgs = Record<string, unknown>;
-type Viewport = 'desktop' | 'laptop' | 'mobile' | 'tablet';
-type Theme = 'dark' | 'light';
+type Viewport = "desktop" | "laptop" | "mobile" | "tablet";
+type Theme = "dark" | "light";
 
 type VisualStory<TArgs extends StoryArgs> = {
   args: TArgs;
@@ -9,16 +9,16 @@ type VisualStory<TArgs extends StoryArgs> = {
 };
 
 const VIEWPORTS: Record<Viewport, { height: string; width: string }> = {
-  desktop: { height: '900px', width: '1440px' },
-  laptop: { height: '768px', width: '1024px' },
-  mobile: { height: '844px', width: '390px' },
-  tablet: { height: '1024px', width: '768px' },
+  desktop: { height: "900px", width: "1440px" },
+  laptop: { height: "768px", width: "1024px" },
+  mobile: { height: "844px", width: "390px" },
+  tablet: { height: "1024px", width: "768px" },
 };
 
 const VISUAL_COMPONENTS: Record<string, { themes: Theme[]; viewports: Viewport[] }> = {
   UnifiedGraphView: {
-    themes: ['light', 'dark'],
-    viewports: ['desktop', 'laptop', 'tablet', 'mobile'],
+    themes: ["light", "dark"],
+    viewports: ["desktop", "laptop", "tablet", "mobile"],
   },
 };
 
@@ -26,8 +26,8 @@ function normalizeName(value: string) {
   return value
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 function titleCase(value: string) {
@@ -44,7 +44,7 @@ export function generateSnapshotName(
   return [component, variant, viewport, theme, state]
     .filter((part): part is string => Boolean(part))
     .map(normalizeName)
-    .join('-');
+    .join("-");
 }
 
 export function generateVisualTestParameters(
@@ -52,8 +52,8 @@ export function generateVisualTestParameters(
   options: { delay?: number; themes?: Theme[]; viewports?: Viewport[] } = {},
 ) {
   const configuration = VISUAL_COMPONENTS[component];
-  const themes = options.themes ?? configuration?.themes ?? ['light', 'dark'];
-  const viewports = options.viewports ?? configuration?.viewports ?? ['desktop'];
+  const themes = options.themes ?? configuration?.themes ?? ["light", "dark"];
+  const viewports = options.viewports ?? configuration?.viewports ?? ["desktop"];
 
   return {
     chromatic: {
@@ -74,7 +74,7 @@ export function generateVisualTestParameters(
 export function createViewportStories<TArgs extends StoryArgs>(
   _component: string,
   args: TArgs,
-  viewports: Viewport[] = ['desktop', 'laptop', 'tablet', 'mobile'],
+  viewports: Viewport[] = ["desktop", "laptop", "tablet", "mobile"],
 ) {
   return Object.fromEntries(
     viewports.map((viewport) => [
@@ -89,7 +89,7 @@ export function createViewportStories<TArgs extends StoryArgs>(
 
 export function createThemeStories<TArgs extends StoryArgs>(
   args: TArgs,
-  themes: Theme[] = ['light', 'dark'],
+  themes: Theme[] = ["light", "dark"],
 ) {
   return Object.fromEntries(
     themes.map((theme) => [
@@ -112,10 +112,10 @@ export function createInteractionStories<TArgs extends StoryArgs>(
   });
 
   return {
-    Active: interactionStory('active'),
+    Active: interactionStory("active"),
     Disabled: { args: { ...args, disabled: true } },
-    Focused: interactionStory('focus'),
-    Hovered: interactionStory('hover'),
+    Focused: interactionStory("focus"),
+    Hovered: interactionStory("hover"),
   } as Record<string, VisualStory<TArgs>>;
 }
 
@@ -151,8 +151,7 @@ export class VisualTestMetrics {
 
   getMetrics() {
     return {
-      averageSnapshotsPerComponent:
-        this.components === 0 ? 0 : this.snapshots / this.components,
+      averageSnapshotsPerComponent: this.components === 0 ? 0 : this.snapshots / this.components,
       components: this.components,
       duration: Math.max(0, performance.now() - this.startedAt),
       snapshots: this.snapshots,

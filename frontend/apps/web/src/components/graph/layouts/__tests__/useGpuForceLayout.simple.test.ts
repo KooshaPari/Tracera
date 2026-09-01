@@ -2,18 +2,18 @@
  * Simplified Tests for GPU Force Layout Hook Logic
  */
 
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from "vitest";
 
-import { disposeGPUForceLayout, getGPUForceLayout } from '../gpuForceLayout';
+import { disposeGPUForceLayout, getGPUForceLayout } from "../gpuForceLayout";
 
 function createNodes(count: number): Node[] {
   return Array.from({ length: count }, (_, i) => ({
     data: {},
     id: `node-${i}`,
     position: { x: 0, y: 0 },
-    type: 'default',
+    type: "default",
   }));
 }
 
@@ -25,13 +25,13 @@ function createEdges(count: number): Edge[] {
   }));
 }
 
-describe('GPU Force Layout Hook Logic', () => {
+describe("GPU Force Layout Hook Logic", () => {
   afterEach(() => {
     disposeGPUForceLayout();
   });
 
-  describe('Manual layout calculation', () => {
-    it('should calculate layout for small graphs', async () => {
+  describe("Manual layout calculation", () => {
+    it("should calculate layout for small graphs", async () => {
       const nodes = createNodes(5);
       const edges = createEdges(5);
 
@@ -45,31 +45,31 @@ describe('GPU Force Layout Hook Logic', () => {
       expect(result[0].position.x).not.toBe(0);
     });
 
-    it('should handle empty nodes', async () => {
+    it("should handle empty nodes", async () => {
       const layout = getGPUForceLayout();
       const result = await layout.simulate([], []);
 
       expect(result).toEqual([]);
     });
 
-    it('should preserve node data', async () => {
+    it("should preserve node data", async () => {
       const nodes: Node[] = [
         {
-          data: { label: 'Test' },
-          id: '1',
+          data: { label: "Test" },
+          id: "1",
           position: { x: 0, y: 0 },
-          type: 'custom',
+          type: "custom",
         },
       ];
 
       const layout = getGPUForceLayout();
       const result = await layout.simulate(nodes, []);
 
-      expect(result[0].data).toEqual({ label: 'Test' });
-      expect(result[0].type).toBe('custom');
+      expect(result[0].data).toEqual({ label: "Test" });
+      expect(result[0].type).toBe("custom");
     });
 
-    it('should accept custom configuration', async () => {
+    it("should accept custom configuration", async () => {
       const nodes = createNodes(10);
       const edges = createEdges(10);
 
@@ -84,8 +84,8 @@ describe('GPU Force Layout Hook Logic', () => {
     });
   });
 
-  describe('Performance characteristics', () => {
-    it('should complete small graphs quickly', async () => {
+  describe("Performance characteristics", () => {
+    it("should complete small graphs quickly", async () => {
       const nodes = createNodes(50);
       const edges = createEdges(50);
 
@@ -99,7 +99,7 @@ describe('GPU Force Layout Hook Logic', () => {
       expect(duration).toBeLessThan(5000);
     });
 
-    it('should handle different graph sizes', async () => {
+    it("should handle different graph sizes", async () => {
       const sizes = [5, 10, 20];
 
       for (const size of sizes) {
@@ -116,8 +116,8 @@ describe('GPU Force Layout Hook Logic', () => {
     });
   });
 
-  describe('Error handling', () => {
-    it('should handle disconnected nodes', async () => {
+  describe("Error handling", () => {
+    it("should handle disconnected nodes", async () => {
       const nodes = createNodes(3);
       const edges: Edge[] = []; // No edges
 
@@ -129,9 +129,9 @@ describe('GPU Force Layout Hook Logic', () => {
       expect(result[0].position.x).toBeGreaterThanOrEqual(0);
     });
 
-    it('should handle self-loops', async () => {
-      const nodes: Node[] = [{ data: {}, id: '1', position: { x: 0, y: 0 }, type: 'default' }];
-      const edges: Edge[] = [{ id: 'e1', source: '1', target: '1' }];
+    it("should handle self-loops", async () => {
+      const nodes: Node[] = [{ data: {}, id: "1", position: { x: 0, y: 0 }, type: "default" }];
+      const edges: Edge[] = [{ id: "e1", source: "1", target: "1" }];
 
       const layout = getGPUForceLayout();
       const result = await layout.simulate(nodes, edges);
@@ -140,8 +140,8 @@ describe('GPU Force Layout Hook Logic', () => {
     });
   });
 
-  describe('Configuration options', () => {
-    it('should respect low iteration count', async () => {
+  describe("Configuration options", () => {
+    it("should respect low iteration count", async () => {
       const nodes = createNodes(10);
       const edges = createEdges(10);
 
@@ -156,7 +156,7 @@ describe('GPU Force Layout Hook Logic', () => {
       expect(duration).toBeLessThan(1000);
     });
 
-    it('should respect high repulsion', async () => {
+    it("should respect high repulsion", async () => {
       const nodes = createNodes(5);
       const edges: Edge[] = [];
 

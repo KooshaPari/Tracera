@@ -7,7 +7,7 @@ import type {
   ProcessStatus,
   ProcessSwimlane,
   ProcessTrigger,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
 interface ProcessFilters {
   projectId: string;

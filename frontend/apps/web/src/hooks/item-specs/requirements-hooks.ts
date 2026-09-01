@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type {
   RequirementSpecCreate,
@@ -6,9 +6,9 @@ import type {
   RequirementType,
   RiskLevel,
   VerificationStatus,
-} from './types';
+} from "./types";
 
-import { itemSpecKeys } from './keys';
+import { itemSpecKeys } from "./keys";
 import {
   analyzeRequirementImpact,
   analyzeRequirementQuality,
@@ -21,7 +21,7 @@ import {
   fetchUnverifiedRequirements,
   updateRequirementSpec,
   verifyRequirement,
-} from './requirements-api';
+} from "./requirements-api";
 
 function useRequirementSpecs(
   projectId: string,
@@ -96,7 +96,7 @@ function useCreateRequirementSpec(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.requirement(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.requirement(projectId, data["id"]), data);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.requirements(projectId) }),
         queryClient.invalidateQueries({
@@ -118,7 +118,7 @@ function useUpdateRequirementSpec(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.requirement(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.requirement(projectId, data["id"]), data);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.requirements(projectId) }),
         queryClient.invalidateQueries({
@@ -160,7 +160,7 @@ function useAnalyzeRequirementQuality(projectId: string) {
       return result;
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(itemSpecKeys.requirement(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.requirement(projectId, data["id"]), data);
     },
   });
 }
@@ -174,7 +174,7 @@ function useAnalyzeRequirementImpact(projectId: string) {
       return result;
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(itemSpecKeys.requirement(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.requirement(projectId, data["id"]), data);
     },
   });
 }
@@ -204,7 +204,7 @@ function useVerifyRequirement(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.requirement(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.requirement(projectId, data["id"]), data);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.requirements(projectId) }),
         queryClient.invalidateQueries({

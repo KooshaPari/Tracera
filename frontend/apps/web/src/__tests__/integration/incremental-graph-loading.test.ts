@@ -4,45 +4,45 @@
  * Tests the full flow from API request to graph rendering
  */
 
-import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { StreamChunk } from '../../lib/graph/IncrementalGraphBuilder';
+import type { StreamChunk } from "../../lib/graph/IncrementalGraphBuilder";
 
-import { useIncrementalGraph } from '../../hooks/useIncrementalGraph';
-import { IncrementalGraphBuilder } from '../../lib/graph/IncrementalGraphBuilder';
+import { useIncrementalGraph } from "../../hooks/useIncrementalGraph";
+import { IncrementalGraphBuilder } from "../../lib/graph/IncrementalGraphBuilder";
 
 describe(IncrementalGraphBuilder, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('NDJSON parsing', () => {
-    it('parses stream chunks correctly', async () => {
+  describe("NDJSON parsing", () => {
+    it("parses stream chunks correctly", async () => {
       const builder = new IncrementalGraphBuilder();
 
       const chunks: StreamChunk[] = [
         {
           data: { totalEdges: 1, totalNodes: 2 },
           timestamp: Date.now(),
-          type: 'metadata',
+          type: "metadata",
         },
         {
-          data: { id: 'n1', label: 'Node 1', position: { x: 0, y: 0 } },
+          data: { id: "n1", label: "Node 1", position: { x: 0, y: 0 } },
           timestamp: Date.now(),
-          type: 'node',
+          type: "node",
         },
         {
-          data: { id: 'n2', label: 'Node 2', position: { x: 100, y: 100 } },
+          data: { id: "n2", label: "Node 2", position: { x: 100, y: 100 } },
           timestamp: Date.now(),
-          type: 'node',
+          type: "node",
         },
         {
-          data: { id: 'e1', sourceId: 'n1', targetId: 'n2' },
+          data: { id: "e1", sourceId: "n1", targetId: "n2" },
           timestamp: Date.now(),
-          type: 'edge',
+          type: "edge",
         },
-        { data: {}, timestamp: Date.now(), type: 'complete' },
+        { data: {}, timestamp: Date.now(), type: "complete" },
       ];
 
       // Process chunks
@@ -58,31 +58,31 @@ describe(IncrementalGraphBuilder, () => {
       expect(result.metadata?.totalEdges).toBe(1);
     });
 
-    it('handles progress updates', async () => {
+    it("handles progress updates", async () => {
       const onProgress = vi.fn();
       const builder = new IncrementalGraphBuilder({ onProgress });
 
       builder.processChunk({
-        data: { id: 'n1', label: 'Node 1', position: { x: 0, y: 0 } },
+        data: { id: "n1", label: "Node 1", position: { x: 0, y: 0 } },
         progress: {
           current: 1,
           percentage: 10,
-          stage: 'nodes',
+          stage: "nodes",
           total: 10,
         },
         timestamp: Date.now(),
-        type: 'node',
+        type: "node",
       });
 
       expect(onProgress).toHaveBeenCalledWith({
         current: 1,
         percentage: 10,
-        stage: 'nodes',
+        stage: "nodes",
         total: 10,
       });
     });
 
-    it('batches node additions', async () => {
+    it("batches node additions", async () => {
       const onNode = vi.fn();
       const builder = new IncrementalGraphBuilder({
         batchDelay: 10,
@@ -97,7 +97,7 @@ describe(IncrementalGraphBuilder, () => {
           id: `n${i}`,
           label: `Node ${i}`,
           position: { x: i * 100, y: i * 100 },
-          type: 'test',
+          type: "test",
         });
       }
 
@@ -108,36 +108,36 @@ describe(IncrementalGraphBuilder, () => {
     });
   });
 
-  describe('Stream loading', () => {
-    it('loads graph from mock stream', async () => {
+  describe("Stream loading", () => {
+    it("loads graph from mock stream", async () => {
       const mockStreamData = [
-        { data: { totalNodes: 2 }, timestamp: Date.now(), type: 'metadata' },
+        { data: { totalNodes: 2 }, timestamp: Date.now(), type: "metadata" },
         {
           data: {
             data: {},
-            id: 'n1',
-            label: 'Node 1',
+            id: "n1",
+            label: "Node 1",
             position: { x: 0, y: 0 },
-            type: 'test',
+            type: "test",
           },
           timestamp: Date.now(),
-          type: 'node',
+          type: "node",
         },
         {
           data: {
             data: {},
-            id: 'n2',
-            label: 'Node 2',
+            id: "n2",
+            label: "Node 2",
             position: { x: 100, y: 100 },
-            type: 'test',
+            type: "test",
           },
           timestamp: Date.now(),
-          type: 'node',
+          type: "node",
         },
-        { data: {}, timestamp: Date.now(), type: 'complete' },
+        { data: {}, timestamp: Date.now(), type: "complete" },
       ];
 
-      const ndjsonData = mockStreamData.map((chunk) => JSON.stringify(chunk)).join('\n');
+      const ndjsonData = mockStreamData.map((chunk) => JSON.stringify(chunk)).join("\n");
 
       // Mock fetch
       globalThis.fetch = vi.fn().mockResolvedValue({
@@ -151,7 +151,7 @@ describe(IncrementalGraphBuilder, () => {
       });
 
       const builder = new IncrementalGraphBuilder();
-      const result = await builder.loadFromStream('/api/v1/projects/test/graph/stream', {
+      const result = await builder.loadFromStream("/api/v1/projects/test/graph/stream", {
         viewport: { maxX: 1000, maxY: 1000, minX: 0, minY: 0 },
       });
 
@@ -159,33 +159,34 @@ describe(IncrementalGraphBuilder, () => {
       expect(result.metadata?.totalNodes).toBe(2);
     });
 
-    it('handles stream errors', async () => {
+    it("handles stream errors", async () => {
       globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 500,
-        statusText: 'Internal Server Error',
+        statusText: "Internal Server Error",
       });
 
       const builder = new IncrementalGraphBuilder();
 
       await expect(
-        builder.loadFromStream('/api/v1/projects/test/graph/stream', {}),
-      ).rejects.toThrow('HTTP 500: Internal Server Error');
+        builder.loadFromStream("/api/v1/projects/test/graph/stream", {}),
+      ).rejects.toThrow("HTTP 500: Internal Server Error");
     });
 
-    it('supports cancellation', async () => {
+    it("supports cancellation", async () => {
       const builder = new IncrementalGraphBuilder();
 
       // Model the fetch contract: aborting its signal rejects with AbortError.
-      globalThis.fetch = vi.fn((_url, init) =>
-        new Promise<Response>((_resolve, reject) => {
-          init?.signal?.addEventListener('abort', () => {
-            reject(new DOMException('The operation was aborted', 'AbortError'));
-          });
-        }),
+      globalThis.fetch = vi.fn(
+        (_url, init) =>
+          new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener("abort", () => {
+              reject(new DOMException("The operation was aborted", "AbortError"));
+            });
+          }),
       );
 
-      const promise = builder.loadFromStream('/api/v1/projects/test/graph/stream', {});
+      const promise = builder.loadFromStream("/api/v1/projects/test/graph/stream", {});
 
       // Abort after 100ms
       setTimeout(() => {
@@ -196,30 +197,30 @@ describe(IncrementalGraphBuilder, () => {
     });
   });
 
-  describe('State management', () => {
-    it('tracks node and edge counts', () => {
+  describe("State management", () => {
+    it("tracks node and edge counts", () => {
       const builder = new IncrementalGraphBuilder();
 
       builder.addNode({
         data: {},
-        id: 'n1',
-        label: 'N1',
+        id: "n1",
+        label: "N1",
         position: { x: 0, y: 0 },
-        type: 'test',
+        type: "test",
       });
       builder.addNode({
         data: {},
-        id: 'n2',
-        label: 'N2',
+        id: "n2",
+        label: "N2",
         position: { x: 0, y: 0 },
-        type: 'test',
+        type: "test",
       });
       builder.addEdge({
-        id: 'e1',
-        label: 'Link',
-        sourceId: 'n1',
-        targetId: 'n2',
-        type: 'link',
+        id: "e1",
+        label: "Link",
+        sourceId: "n1",
+        targetId: "n2",
+        type: "link",
       });
 
       const stats = builder.getStats();
@@ -229,15 +230,15 @@ describe(IncrementalGraphBuilder, () => {
       expect(stats.isComplete).toBeFalsy();
     });
 
-    it('resets state correctly', () => {
+    it("resets state correctly", () => {
       const builder = new IncrementalGraphBuilder();
 
       builder.addNode({
         data: {},
-        id: 'n1',
-        label: 'N1',
+        id: "n1",
+        label: "N1",
         position: { x: 0, y: 0 },
-        type: 'test',
+        type: "test",
       });
       builder.reset();
 
@@ -247,35 +248,35 @@ describe(IncrementalGraphBuilder, () => {
       expect(stats.edgeCount).toBe(0);
     });
 
-    it('checks node existence', () => {
+    it("checks node existence", () => {
       const builder = new IncrementalGraphBuilder();
 
       builder.addNode({
         data: {},
-        id: 'n1',
-        label: 'N1',
+        id: "n1",
+        label: "N1",
         position: { x: 0, y: 0 },
-        type: 'test',
+        type: "test",
       });
 
-      expect(builder.hasNode('n1')).toBeTruthy();
-      expect(builder.hasNode('n2')).toBeFalsy();
+      expect(builder.hasNode("n1")).toBeTruthy();
+      expect(builder.hasNode("n2")).toBeFalsy();
     });
 
-    it('retrieves nodes by ID', () => {
+    it("retrieves nodes by ID", () => {
       const builder = new IncrementalGraphBuilder();
 
       const node = {
         data: {},
-        id: 'n1',
-        label: 'N1',
+        id: "n1",
+        label: "N1",
         position: { x: 0, y: 0 },
-        type: 'test',
+        type: "test",
       };
       builder.addNode(node);
 
-      expect(builder.getNode('n1')).toEqual(node);
-      expect(builder.getNode('n2')).toBeUndefined();
+      expect(builder.getNode("n1")).toEqual(node);
+      expect(builder.getNode("n2")).toBeUndefined();
     });
   });
 });
@@ -285,10 +286,10 @@ describe(useIncrementalGraph, () => {
     vi.clearAllMocks();
   });
 
-  it('initializes with correct state', () => {
+  it("initializes with correct state", () => {
     const { result } = renderHook(() =>
       useIncrementalGraph({
-        projectId: 'test-project',
+        projectId: "test-project",
         viewport: { maxX: 1000, maxY: 1000, minX: 0, minY: 0 },
       }),
     );
@@ -298,26 +299,26 @@ describe(useIncrementalGraph, () => {
     expect(result.current.state.isLoading).toBeFalsy();
   });
 
-  it('loads graph data', async () => {
+  it("loads graph data", async () => {
     const mockStreamData = [
       {
         data: {
           data: {},
-          id: 'n1',
-          label: 'Node 1',
+          id: "n1",
+          label: "Node 1",
           position: { x: 0, y: 0 },
-          type: 'test',
+          type: "test",
         },
         timestamp: Date.now(),
-        type: 'node',
+        type: "node",
       },
-      { data: {}, timestamp: Date.now(), type: 'complete' },
+      { data: {}, timestamp: Date.now(), type: "complete" },
     ];
 
     globalThis.fetch = vi.fn().mockResolvedValue({
       body: new ReadableStream({
         start(controller) {
-          const ndjson = mockStreamData.map((c) => JSON.stringify(c)).join('\n');
+          const ndjson = mockStreamData.map((c) => JSON.stringify(c)).join("\n");
           controller.enqueue(new TextEncoder().encode(ndjson));
           controller.close();
         },
@@ -327,7 +328,7 @@ describe(useIncrementalGraph, () => {
 
     const { result } = renderHook(() =>
       useIncrementalGraph({
-        projectId: 'test-project',
+        projectId: "test-project",
         viewport: { maxX: 1000, maxY: 1000, minX: 0, minY: 0 },
       }),
     );
@@ -342,16 +343,16 @@ describe(useIncrementalGraph, () => {
     });
   });
 
-  it('handles errors', async () => {
+  it("handles errors", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 500,
-      statusText: 'Server Error',
+      statusText: "Server Error",
     });
 
     const { result } = renderHook(() =>
       useIncrementalGraph({
-        projectId: 'test-project',
+        projectId: "test-project",
         viewport: { maxX: 1000, maxY: 1000, minX: 0, minY: 0 },
       }),
     );
@@ -365,18 +366,19 @@ describe(useIncrementalGraph, () => {
     });
   });
 
-  it('supports cancellation', async () => {
-    globalThis.fetch = vi.fn((_url, init) =>
-      new Promise<Response>((_resolve, reject) => {
-        init?.signal?.addEventListener('abort', () => {
-          reject(new DOMException('The operation was aborted', 'AbortError'));
-        });
-      }),
+  it("supports cancellation", async () => {
+    globalThis.fetch = vi.fn(
+      (_url, init) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () => {
+            reject(new DOMException("The operation was aborted", "AbortError"));
+          });
+        }),
     );
 
     const { result } = renderHook(() =>
       useIncrementalGraph({
-        projectId: 'test-project',
+        projectId: "test-project",
         viewport: { maxX: 1000, maxY: 1000, minX: 0, minY: 0 },
       }),
     );
@@ -404,9 +406,9 @@ describe(useIncrementalGraph, () => {
   });
 });
 
-describe('Prefetch functionality', () => {
-  it('calculates pan direction correctly', async () => {
-    const { calculatePanDirection } = await import('../../hooks/useIncrementalGraph');
+describe("Prefetch functionality", () => {
+  it("calculates pan direction correctly", async () => {
+    const { calculatePanDirection } = await import("../../hooks/useIncrementalGraph");
 
     const oldViewport = { maxX: 1000, maxY: 1000, minX: 0, minY: 0 };
 
@@ -418,7 +420,7 @@ describe('Prefetch functionality', () => {
         minX: 100,
         minY: 0,
       }),
-    ).toBe('east');
+    ).toBe("east");
 
     // West
     expect(
@@ -428,7 +430,7 @@ describe('Prefetch functionality', () => {
         minX: -100,
         minY: 0,
       }),
-    ).toBe('west');
+    ).toBe("west");
 
     // North
     expect(
@@ -438,7 +440,7 @@ describe('Prefetch functionality', () => {
         minX: 0,
         minY: -100,
       }),
-    ).toBe('north');
+    ).toBe("north");
 
     // South
     expect(
@@ -448,11 +450,11 @@ describe('Prefetch functionality', () => {
         minX: 0,
         minY: 100,
       }),
-    ).toBe('south');
+    ).toBe("south");
   });
 
-  it('calculates pan velocity', async () => {
-    const { calculatePanVelocity } = await import('../../hooks/useIncrementalGraph');
+  it("calculates pan velocity", async () => {
+    const { calculatePanVelocity } = await import("../../hooks/useIncrementalGraph");
 
     const oldViewport = { maxX: 1000, maxY: 1000, minX: 0, minY: 0 };
     const newViewport = { maxX: 1100, maxY: 1000, minX: 100, minY: 0 };
@@ -464,14 +466,14 @@ describe('Prefetch functionality', () => {
   });
 });
 
-describe('Edge cases', () => {
-  it('handles empty graph', async () => {
+describe("Edge cases", () => {
+  it("handles empty graph", async () => {
     const builder = new IncrementalGraphBuilder();
 
     builder.processChunk({
       data: { totalEdges: 0, totalNodes: 0 },
       timestamp: Date.now(),
-      type: 'complete',
+      type: "complete",
     });
 
     const result = builder.getResult();
@@ -480,7 +482,7 @@ describe('Edge cases', () => {
     expect(result.edges.size).toBe(0);
   });
 
-  it('handles malformed chunks gracefully', () => {
+  it("handles malformed chunks gracefully", () => {
     const builder = new IncrementalGraphBuilder();
 
     // Should not throw
@@ -488,20 +490,20 @@ describe('Edge cases', () => {
       builder.processChunk({
         data: null,
         timestamp: Date.now(),
-        type: 'invalid',
+        type: "invalid",
       } as any);
     }).not.toThrow();
   });
 
-  it('handles duplicate nodes', () => {
+  it("handles duplicate nodes", () => {
     const builder = new IncrementalGraphBuilder();
 
     const node = {
       data: {},
-      id: 'n1',
-      label: 'Node 1',
+      id: "n1",
+      label: "Node 1",
       position: { x: 0, y: 0 },
-      type: 'test',
+      type: "test",
     };
 
     builder.addNode(node);

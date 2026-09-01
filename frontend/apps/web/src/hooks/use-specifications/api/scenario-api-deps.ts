@@ -13,7 +13,7 @@ import {
   asString,
   toApiRecord,
   asRunResult,
-} from './decoders';
+} from "./decoders";
 
 const scenarioApiDecoders = {
   asBoolean,

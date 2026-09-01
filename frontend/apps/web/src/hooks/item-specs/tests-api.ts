@@ -1,4 +1,4 @@
-import type { TestResultStatus, TestSpec, TestSpecCreate, TestSpecUpdate, TestType } from './types';
+import type { TestResultStatus, TestSpec, TestSpecCreate, TestSpecUpdate, TestType } from "./types";
 
 import {
   API_URL,
@@ -10,7 +10,7 @@ import {
   getBulkHeaders,
   getJsonAuthHeaders,
   readJson,
-} from './constants';
+} from "./constants";
 
 interface TestRunPayload {
   status: TestResultStatus;
@@ -29,10 +29,10 @@ async function fetchTestSpecs(
   },
 ): Promise<{ specs: TestSpec[]; total: number }> {
   const params = new URLSearchParams();
-  appendParam(params, 'test_type', options?.testType);
-  appendParam(params, 'is_quarantined', options?.isQuarantined);
-  appendParam(params, 'limit', options?.limit);
-  appendParam(params, 'offset', options?.offset);
+  appendParam(params, "test_type", options?.testType);
+  appendParam(params, "is_quarantined", options?.isQuarantined);
+  appendParam(params, "limit", options?.limit);
+  appendParam(params, "offset", options?.offset);
 
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/tests?${params}`, {
     headers: getBulkHeaders(),
@@ -49,7 +49,7 @@ async function fetchTestSpec(projectId: string, specId: string): Promise<TestSpe
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch test spec');
+    throw new Error("Failed to fetch test spec");
   }
   return readJson<TestSpec>(res);
 }
@@ -60,7 +60,7 @@ async function fetchTestSpecByItem(projectId: string, itemId: string): Promise<T
     { headers: getAuthHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch test spec by item');
+    throw new Error("Failed to fetch test spec by item");
   }
   return readJson<TestSpec>(res);
 }
@@ -75,7 +75,7 @@ async function fetchFlakyTests(
     { headers: getBulkHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch flaky tests');
+    throw new Error("Failed to fetch flaky tests");
   }
   return readJson<{ specs: TestSpec[]; total: number }>(res);
 }
@@ -89,7 +89,7 @@ async function fetchQuarantinedTests(
     { headers: getBulkHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch quarantined tests');
+    throw new Error("Failed to fetch quarantined tests");
   }
   return readJson<{ specs: TestSpec[]; total: number }>(res);
 }
@@ -108,7 +108,7 @@ async function fetchTestHealthReport(projectId: string): Promise<{
     { headers: getAuthHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch test health report');
+    throw new Error("Failed to fetch test health report");
   }
   return readJson<{
     total_tests: number;
@@ -125,10 +125,10 @@ async function createTestSpec(projectId: string, data: TestSpecCreate): Promise<
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/tests`, {
     body: JSON.stringify(data),
     headers: getJsonAuthHeaders(),
-    method: 'POST',
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to create test spec');
+    throw new Error("Failed to create test spec");
   }
   return readJson<TestSpec>(res);
 }
@@ -141,10 +141,10 @@ async function updateTestSpec(
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}`, {
     body: JSON.stringify(data),
     headers: getJsonAuthHeaders(),
-    method: 'PATCH',
+    method: "PATCH",
   });
   if (!res.ok) {
-    throw new Error('Failed to update test spec');
+    throw new Error("Failed to update test spec");
   }
   return readJson<TestSpec>(res);
 }
@@ -152,10 +152,10 @@ async function updateTestSpec(
 async function deleteTestSpec(projectId: string, specId: string): Promise<void> {
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}`, {
     headers: getAuthHeaders(),
-    method: 'DELETE',
+    method: "DELETE",
   });
   if (!res.ok) {
-    throw new Error('Failed to delete test spec');
+    throw new Error("Failed to delete test spec");
   }
 }
 
@@ -168,19 +168,19 @@ async function recordTestRun(
     duration_ms: String(payload.durationMs),
     status: payload.status,
   });
-  if (typeof payload.errorMessage === 'string' && payload.errorMessage.length > 0) {
-    params.append('error_message', payload.errorMessage);
+  if (typeof payload.errorMessage === "string" && payload.errorMessage.length > 0) {
+    params.append("error_message", payload.errorMessage);
   }
-  if (typeof payload.environment === 'string' && payload.environment.length > 0) {
-    params.append('environment', payload.environment);
+  if (typeof payload.environment === "string" && payload.environment.length > 0) {
+    params.append("environment", payload.environment);
   }
 
   const res = await fetch(
     `${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}/record-run?${params}`,
-    { headers: getAuthHeaders(), method: 'POST' },
+    { headers: getAuthHeaders(), method: "POST" },
   );
   if (!res.ok) {
-    throw new Error('Failed to record test run');
+    throw new Error("Failed to record test run");
   }
   return readJson<TestSpec>(res);
 }
@@ -192,10 +192,10 @@ async function quarantineTest(
 ): Promise<TestSpec> {
   const res = await fetch(
     `${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}/quarantine?reason=${encodeURIComponent(reason)}`,
-    { headers: getAuthHeaders(), method: 'POST' },
+    { headers: getAuthHeaders(), method: "POST" },
   );
   if (!res.ok) {
-    throw new Error('Failed to quarantine test');
+    throw new Error("Failed to quarantine test");
   }
   return readJson<TestSpec>(res);
 }
@@ -203,10 +203,10 @@ async function quarantineTest(
 async function unquarantineTest(projectId: string, specId: string): Promise<TestSpec> {
   const res = await fetch(
     `${API_URL}/api/v1/projects/${projectId}/item-specs/tests/${specId}/unquarantine`,
-    { headers: getAuthHeaders(), method: 'POST' },
+    { headers: getAuthHeaders(), method: "POST" },
   );
   if (!res.ok) {
-    throw new Error('Failed to unquarantine test');
+    throw new Error("Failed to unquarantine test");
   }
   return readJson<TestSpec>(res);
 }

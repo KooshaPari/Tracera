@@ -1,4 +1,4 @@
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 /**
  * OpenAPI Utilities
  * Helper functions for working with OpenAPI specifications
@@ -47,7 +47,7 @@ export interface OpenAPISpec {
 
 export interface SwaggerConfig {
   apiUrl: string;
-  authType: 'bearer' | 'apiKey' | 'none';
+  authType: "bearer" | "apiKey" | "none";
   persistAuth: boolean;
   tryItOut: boolean;
 }
@@ -67,7 +67,7 @@ export async function fetchOpenAPISpec(url: string): Promise<OpenAPISpec> {
  * Validate OpenAPI specification structure
  */
 export function validateOpenAPISpec(spec: unknown): spec is OpenAPISpec {
-  if (!spec || typeof spec !== 'object') {
+  if (!spec || typeof spec !== "object") {
     return false;
   }
 
@@ -79,8 +79,8 @@ export function validateOpenAPISpec(spec: unknown): spec is OpenAPISpec {
   }
 
   // Check OpenAPI version
-  if (typeof candidate.openapi === 'string' && !candidate.openapi.startsWith('3.')) {
-    logger.warn('Only OpenAPI 3.x is fully supported');
+  if (typeof candidate.openapi === "string" && !candidate.openapi.startsWith("3.")) {
+    logger.warn("Only OpenAPI 3.x is fully supported");
   }
 
   return true;
@@ -93,7 +93,7 @@ export function getHttpMethods(spec: OpenAPISpec): string[] {
   const methods = new Set<string>();
   Object.values(spec.paths).forEach((path) => {
     Object.keys(path).forEach((method) => {
-      if (['get', 'post', 'put', 'patch', 'delete', 'options', 'head'].includes(method)) {
+      if (["get", "post", "put", "patch", "delete", "options", "head"].includes(method)) {
         methods.add(method.toUpperCase());
       }
     });
@@ -110,12 +110,12 @@ export function getTags(spec: OpenAPISpec): string[] {
     Object.values(path).forEach((operation) => {
       if (
         operation &&
-        typeof operation === 'object' &&
-        'tags' in operation &&
+        typeof operation === "object" &&
+        "tags" in operation &&
         Array.isArray(operation.tags)
       ) {
         operation.tags.forEach((tag) => {
-          if (typeof tag === 'string') {
+          if (typeof tag === "string") {
             tags.add(tag);
           }
         });
@@ -145,24 +145,24 @@ export function requiresAuth(spec: OpenAPISpec): boolean {
  */
 export function getSupportedAuthTypes(
   spec: OpenAPISpec,
-): Array<'bearer' | 'apiKey' | 'oauth2' | 'basic'> {
+): Array<"bearer" | "apiKey" | "oauth2" | "basic"> {
   const securitySchemes = getSecuritySchemes(spec);
   if (!securitySchemes) return [];
 
-  const authTypes: Array<'bearer' | 'apiKey' | 'oauth2' | 'basic'> = [];
+  const authTypes: Array<"bearer" | "apiKey" | "oauth2" | "basic"> = [];
 
   Object.values(securitySchemes).forEach((scheme) => {
-    if (!scheme || typeof scheme !== 'object') return;
+    if (!scheme || typeof scheme !== "object") return;
 
     const schemeObj = scheme as Record<string, unknown>;
-    if (schemeObj.type === 'http' && schemeObj.scheme === 'bearer') {
-      authTypes.push('bearer');
-    } else if (schemeObj.type === 'http' && schemeObj.scheme === 'basic') {
-      authTypes.push('basic');
-    } else if (schemeObj.type === 'apiKey') {
-      authTypes.push('apiKey');
-    } else if (schemeObj.type === 'oauth2') {
-      authTypes.push('oauth2');
+    if (schemeObj.type === "http" && schemeObj.scheme === "bearer") {
+      authTypes.push("bearer");
+    } else if (schemeObj.type === "http" && schemeObj.scheme === "basic") {
+      authTypes.push("basic");
+    } else if (schemeObj.type === "apiKey") {
+      authTypes.push("apiKey");
+    } else if (schemeObj.type === "oauth2") {
+      authTypes.push("oauth2");
     }
   });
 
@@ -174,7 +174,7 @@ export function getSupportedAuthTypes(
  */
 export function getServerUrls(spec: OpenAPISpec): string[] {
   if (!spec.servers || spec.servers.length === 0) {
-    return [''];
+    return [""];
   }
   return spec.servers.map((server) => server.url);
 }
@@ -221,7 +221,7 @@ function generateCurlExample(method: string, url: string, authToken?: string): s
   example += ` \
   -H "Content-Type: application/json"`;
 
-  if (['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
+  if (["POST", "PUT", "PATCH"].includes(method.toUpperCase())) {
     example += ` \
   -d '{}'`;
   }
@@ -231,7 +231,7 @@ function generateCurlExample(method: string, url: string, authToken?: string): s
 
 function generateJavaScriptExample(method: string, url: string, authToken?: string): string {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
 
   if (authToken) {
@@ -242,7 +242,7 @@ function generateJavaScriptExample(method: string, url: string, authToken?: stri
   method: '${method.toUpperCase()}',
   headers: ${JSON.stringify(headers, null, 2)}`;
 
-  if (['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
+  if (["POST", "PUT", "PATCH"].includes(method.toUpperCase())) {
     example += `,
   body: JSON.stringify({})`;
   }
@@ -278,7 +278,7 @@ function generatePythonExample(method: string, url: string, authToken?: string):
 
   const methodLower = method.toLowerCase();
 
-  if (['post', 'put', 'patch'].includes(methodLower)) {
+  if (["post", "put", "patch"].includes(methodLower)) {
     example += `data = {}
 
 `;
@@ -295,7 +295,7 @@ print(response.json())`;
 
 function generateTypeScriptExample(method: string, url: string, authToken?: string): string {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
 
   if (authToken) {
@@ -312,7 +312,7 @@ function generateTypeScriptExample(method: string, url: string, authToken?: stri
   method: '${method.toUpperCase()}',
   headers: ${JSON.stringify(headers, null, 2)}`;
 
-  if (['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
+  if (["POST", "PUT", "PATCH"].includes(method.toUpperCase())) {
     example += `,
   body: JSON.stringify({})`;
   }
@@ -330,12 +330,12 @@ logger.info(data);`;
 /**
  * Download OpenAPI spec as JSON file
  */
-export function downloadSpec(spec: OpenAPISpec, filename = 'openapi.json') {
+export function downloadSpec(spec: OpenAPISpec, filename = "openapi.json") {
   const blob = new Blob([JSON.stringify(spec, null, 2)], {
-    type: 'application/json',
+    type: "application/json",
   });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
@@ -354,9 +354,9 @@ export function getEndpointByOperationId(
   for (const [path, pathItem] of Object.entries(spec.paths)) {
     for (const [method, operation] of Object.entries(pathItem)) {
       if (
-        typeof operation === 'object' &&
+        typeof operation === "object" &&
         operation !== null &&
-        'operationId' in operation &&
+        "operationId" in operation &&
         (operation as Record<string, unknown>).operationId === operationId
       ) {
         return { path, method, operation };
@@ -399,27 +399,27 @@ export function getResponseExamples(operation: unknown): ResponseExamples {
 
   if (
     !operation ||
-    typeof operation !== 'object' ||
-    !('responses' in operation) ||
+    typeof operation !== "object" ||
+    !("responses" in operation) ||
     !operation.responses ||
-    typeof operation.responses !== 'object'
+    typeof operation.responses !== "object"
   ) {
     return examples;
   }
 
   Object.entries(operation.responses).forEach(([status, response]) => {
-    if (!response || typeof response !== 'object') return;
+    if (!response || typeof response !== "object") return;
 
     const responseObj = response as Record<string, unknown>;
     const content = responseObj.content as Record<string, unknown> | undefined;
     if (!content) return;
 
-    const jsonContent = content['application/json'] as Record<string, unknown> | undefined;
+    const jsonContent = content["application/json"] as Record<string, unknown> | undefined;
     if (!jsonContent) return;
 
     if (jsonContent.example) {
       examples[status] = jsonContent.example;
-    } else if (jsonContent.examples && typeof jsonContent.examples === 'object') {
+    } else if (jsonContent.examples && typeof jsonContent.examples === "object") {
       const examplesObj = jsonContent.examples as Record<string, unknown>;
       const firstExample = Object.values(examplesObj)[0];
       if (firstExample) {
@@ -433,7 +433,7 @@ export function getResponseExamples(operation: unknown): ResponseExamples {
 
 // SSR-safe localStorage check
 const isLocalStorageAvailable = () => {
-  return typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function';
+  return typeof localStorage !== "undefined" && typeof localStorage.getItem === "function";
 };
 
 /**
@@ -442,36 +442,36 @@ const isLocalStorageAvailable = () => {
 export const authStorage = {
   setToken: (token: string) => {
     if (isLocalStorageAvailable()) {
-      localStorage.setItem('api_token', token);
+      localStorage.setItem("api_token", token);
     }
   },
   getToken: () => {
     if (!isLocalStorageAvailable()) return null;
-    return localStorage.getItem('api_token');
+    return localStorage.getItem("api_token");
   },
   removeToken: () => {
     if (isLocalStorageAvailable()) {
-      localStorage.removeItem('api_token');
+      localStorage.removeItem("api_token");
     }
   },
   setApiKey: (key: string) => {
     if (isLocalStorageAvailable()) {
-      localStorage.setItem('api_key', key);
+      localStorage.setItem("api_key", key);
     }
   },
   getApiKey: () => {
     if (!isLocalStorageAvailable()) return null;
-    return localStorage.getItem('api_key');
+    return localStorage.getItem("api_key");
   },
   removeApiKey: () => {
     if (isLocalStorageAvailable()) {
-      localStorage.removeItem('api_key');
+      localStorage.removeItem("api_key");
     }
   },
   clearAll: () => {
     if (isLocalStorageAvailable()) {
-      localStorage.removeItem('api_token');
-      localStorage.removeItem('api_key');
+      localStorage.removeItem("api_token");
+      localStorage.removeItem("api_key");
     }
   },
 };

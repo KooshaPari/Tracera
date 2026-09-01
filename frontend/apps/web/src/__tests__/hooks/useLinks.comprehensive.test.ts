@@ -3,13 +3,13 @@
  * Target: 55.26% → 95% coverage
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
-import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useCreateLink, useDeleteLink, useLinks, useTraceabilityGraph } from '../../hooks/useLinks';
-import { useAuthStore } from '../../stores/authStore';
+import { useCreateLink, useDeleteLink, useLinks, useTraceabilityGraph } from "../../hooks/useLinks";
+import { useAuthStore } from "../../stores/authStore";
 
 // Mock fetch
 const mockFetch = vi.fn();
@@ -27,21 +27,21 @@ const createWrapper = () => {
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 };
 
-describe('useLinks - Comprehensive Coverage', () => {
+describe("useLinks - Comprehensive Coverage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuthStore.setState({ token: 'link-contract-token' });
+    useAuthStore.setState({ token: "link-contract-token" });
   });
 
   describe(useLinks, () => {
-    it('should fetch links with all filters', async () => {
+    it("should fetch links with all filters", async () => {
       const mockLinks = [
         {
-          id: '1',
-          projectId: 'proj-1',
-          sourceId: 'item-1',
-          targetId: 'item-2',
-          type: 'depends_on',
+          id: "1",
+          projectId: "proj-1",
+          sourceId: "item-1",
+          targetId: "item-2",
+          type: "depends_on",
         },
       ];
 
@@ -53,10 +53,10 @@ describe('useLinks - Comprehensive Coverage', () => {
       const { result } = renderHook(
         () =>
           useLinks({
-            projectId: 'proj-1',
-            sourceId: 'item-1',
-            targetId: 'item-2',
-            type: 'depends_on',
+            projectId: "proj-1",
+            sourceId: "item-1",
+            targetId: "item-2",
+            type: "depends_on",
           }),
         {
           wrapper: createWrapper(),
@@ -69,48 +69,48 @@ describe('useLinks - Comprehensive Coverage', () => {
 
       expect(result.current.data).toEqual({ links: mockLinks, total: 1 });
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('project_id=proj-1'),
+        expect.stringContaining("project_id=proj-1"),
         expect.objectContaining({
           headers: expect.objectContaining({
-            'X-Bulk-Operation': 'true',
+            "X-Bulk-Operation": "true",
           }),
         }),
       );
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('source_id=item-1'),
+        expect.stringContaining("source_id=item-1"),
         expect.objectContaining({
           headers: expect.objectContaining({
-            'X-Bulk-Operation': 'true',
+            "X-Bulk-Operation": "true",
           }),
         }),
       );
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('target_id=item-2'),
+        expect.stringContaining("target_id=item-2"),
         expect.objectContaining({
           headers: expect.objectContaining({
-            'X-Bulk-Operation': 'true',
+            "X-Bulk-Operation": "true",
           }),
         }),
       );
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('type=depends_on'),
+        expect.stringContaining("type=depends_on"),
         expect.objectContaining({
           headers: expect.objectContaining({
-            'X-Bulk-Operation': 'true',
+            "X-Bulk-Operation": "true",
           }),
         }),
       );
     });
 
-    it('should fetch links with project filter only', async () => {
-      const mockLinks = [{ id: '1', projectId: 'proj-1' }];
+    it("should fetch links with project filter only", async () => {
+      const mockLinks = [{ id: "1", projectId: "proj-1" }];
 
       mockFetch.mockResolvedValueOnce({
         json: async () => ({ links: mockLinks, total: 1 }),
         ok: true,
       });
 
-      const { result } = renderHook(() => useLinks({ projectId: 'proj-1' }), {
+      const { result } = renderHook(() => useLinks({ projectId: "proj-1" }), {
         wrapper: createWrapper(),
       });
 
@@ -119,24 +119,24 @@ describe('useLinks - Comprehensive Coverage', () => {
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('project_id=proj-1'),
+        expect.stringContaining("project_id=proj-1"),
         expect.objectContaining({
           headers: expect.objectContaining({
-            'X-Bulk-Operation': 'true',
+            "X-Bulk-Operation": "true",
           }),
         }),
       );
     });
 
-    it('should fetch links with type filter', async () => {
-      const mockLinks = [{ id: '1', type: 'implements' }];
+    it("should fetch links with type filter", async () => {
+      const mockLinks = [{ id: "1", type: "implements" }];
 
       mockFetch.mockResolvedValueOnce({
         json: async () => ({ links: mockLinks, total: 1 }),
         ok: true,
       });
 
-      const { result } = renderHook(() => useLinks({ type: 'implements' }), {
+      const { result } = renderHook(() => useLinks({ type: "implements" }), {
         wrapper: createWrapper(),
       });
 
@@ -145,10 +145,10 @@ describe('useLinks - Comprehensive Coverage', () => {
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('type=implements'),
+        expect.stringContaining("type=implements"),
         expect.objectContaining({
           headers: expect.objectContaining({
-            'X-Bulk-Operation': 'true',
+            "X-Bulk-Operation": "true",
           }),
         }),
       );
@@ -156,16 +156,16 @@ describe('useLinks - Comprehensive Coverage', () => {
   });
 
   describe(useCreateLink, () => {
-    it('should create link with description', async () => {
+    it("should create link with description", async () => {
       const newLink = {
-        description: 'Test description',
-        projectId: 'proj-1',
-        sourceId: 'item-1',
-        targetId: 'item-2',
-        type: 'depends_on' as const,
+        description: "Test description",
+        projectId: "proj-1",
+        sourceId: "item-1",
+        targetId: "item-2",
+        type: "depends_on" as const,
       };
 
-      const createdLink = { id: '1', ...newLink };
+      const createdLink = { id: "1", ...newLink };
 
       mockFetch.mockResolvedValueOnce({
         json: async () => createdLink,
@@ -184,27 +184,27 @@ describe('useLinks - Comprehensive Coverage', () => {
 
       expect(result.current.data).toEqual(createdLink);
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/links'),
+        expect.stringContaining("/api/v1/links"),
         expect.objectContaining({
-          body: expect.stringContaining('description'),
+          body: expect.stringContaining("description"),
           headers: expect.objectContaining({
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           }),
-          method: 'POST',
+          method: "POST",
         }),
       );
     });
 
-    it('should invalidate queries on success', async () => {
+    it("should invalidate queries on success", async () => {
       const newLink = {
-        projectId: 'proj-1',
-        sourceId: 'item-1',
-        targetId: 'item-2',
-        type: 'depends_on' as const,
+        projectId: "proj-1",
+        sourceId: "item-1",
+        targetId: "item-2",
+        type: "depends_on" as const,
       };
 
       mockFetch.mockResolvedValueOnce({
-        json: async () => ({ id: '1', ...newLink }),
+        json: async () => ({ id: "1", ...newLink }),
         ok: true,
       });
 
@@ -221,7 +221,7 @@ describe('useLinks - Comprehensive Coverage', () => {
   });
 
   describe(useDeleteLink, () => {
-    it('should delete a link', async () => {
+    it("should delete a link", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
       });
@@ -230,21 +230,21 @@ describe('useLinks - Comprehensive Coverage', () => {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate('link-1');
+      result.current.mutate("link-1");
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBeTruthy();
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/links/link-1'),
+        expect.stringContaining("/api/v1/links/link-1"),
         expect.objectContaining({
-          method: 'DELETE',
+          method: "DELETE",
         }),
       );
     });
 
-    it('should handle delete error', async () => {
+    it("should handle delete error", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
@@ -254,14 +254,14 @@ describe('useLinks - Comprehensive Coverage', () => {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate('link-1');
+      result.current.mutate("link-1");
 
       await waitFor(() => {
         expect(result.current.isError).toBeTruthy();
       });
     });
 
-    it('should invalidate queries on success', async () => {
+    it("should invalidate queries on success", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
       });
@@ -270,7 +270,7 @@ describe('useLinks - Comprehensive Coverage', () => {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate('link-1');
+      result.current.mutate("link-1");
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBeTruthy();
@@ -279,28 +279,28 @@ describe('useLinks - Comprehensive Coverage', () => {
   });
 
   describe(useTraceabilityGraph, () => {
-    it('should build graph from items and links', async () => {
+    it("should build graph from items and links", async () => {
       const mockItems = [
         {
-          id: 'item-1',
-          status: 'in_progress',
-          title: 'Item 1',
-          view: 'feature',
+          id: "item-1",
+          status: "in_progress",
+          title: "Item 1",
+          view: "feature",
         },
         {
-          id: 'item-2',
-          status: 'pending',
-          title: 'Item 2',
-          view: 'test',
+          id: "item-2",
+          status: "pending",
+          title: "Item 2",
+          view: "test",
         },
       ];
 
       const mockLinks = [
         {
-          id: 'link-1',
-          sourceId: 'item-1',
-          targetId: 'item-2',
-          type: 'depends_on',
+          id: "link-1",
+          sourceId: "item-1",
+          targetId: "item-2",
+          type: "depends_on",
         },
       ];
 
@@ -316,7 +316,7 @@ describe('useLinks - Comprehensive Coverage', () => {
         ok: true,
       });
 
-      const { result } = renderHook(() => useTraceabilityGraph('proj-1'), {
+      const { result } = renderHook(() => useTraceabilityGraph("proj-1"), {
         wrapper: createWrapper(),
       });
 
@@ -331,12 +331,12 @@ describe('useLinks - Comprehensive Coverage', () => {
 
       expect(result.current.nodes).toHaveLength(2);
       expect(result.current.edges).toHaveLength(1);
-      expect(result.current.nodes[0]?.data?.id).toBe('item-1');
-      expect(result.current.edges[0]?.data?.source).toBe('item-1');
+      expect(result.current.nodes[0]?.data?.id).toBe("item-1");
+      expect(result.current.edges[0]?.data?.source).toBe("item-1");
       expect(result.current.isLoading).toBeFalsy();
     });
 
-    it('should show loading state when data is missing', () => {
+    it("should show loading state when data is missing", () => {
       mockFetch.mockResolvedValueOnce({
         json: async () => [],
         ok: true,
@@ -347,7 +347,7 @@ describe('useLinks - Comprehensive Coverage', () => {
         ok: true,
       });
 
-      const { result } = renderHook(() => useTraceabilityGraph('proj-1'), {
+      const { result } = renderHook(() => useTraceabilityGraph("proj-1"), {
         wrapper: createWrapper(),
       });
 
@@ -355,8 +355,8 @@ describe('useLinks - Comprehensive Coverage', () => {
       expect(result.current.isLoading).toBeTruthy();
     });
 
-    it('should not fetch when projectId is empty', () => {
-      const { result } = renderHook(() => useTraceabilityGraph(''), {
+    it("should not fetch when projectId is empty", () => {
+      const { result } = renderHook(() => useTraceabilityGraph(""), {
         wrapper: createWrapper(),
       });
 
@@ -364,7 +364,7 @@ describe('useLinks - Comprehensive Coverage', () => {
       expect(result.current.isLoading).toBeTruthy();
     });
 
-    it('should handle empty items and links', async () => {
+    it("should handle empty items and links", async () => {
       mockFetch.mockResolvedValueOnce({
         json: async () => [],
         ok: true,
@@ -375,7 +375,7 @@ describe('useLinks - Comprehensive Coverage', () => {
         ok: true,
       });
 
-      const { result } = renderHook(() => useTraceabilityGraph('proj-1'), {
+      const { result } = renderHook(() => useTraceabilityGraph("proj-1"), {
         wrapper: createWrapper(),
       });
 

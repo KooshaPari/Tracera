@@ -1,4 +1,4 @@
-import EventSourcePolyfill from 'event-source-polyfill';
+import EventSourcePolyfill from "event-source-polyfill";
 
 import type {
   JsonRpcRequest,
@@ -9,10 +9,10 @@ import type {
   MCPResource,
   MCPTool,
   ProgressNotification,
-} from './mcp-client-types';
-import type { MCPClientState, ProgressCallbacks } from './mcp-client-utils';
+} from "./mcp-client-types";
+import type { MCPClientState, ProgressCallbacks } from "./mcp-client-utils";
 
-import { mcpClientUtils } from './mcp-client-utils';
+import { mcpClientUtils } from "./mcp-client-utils";
 
 interface InitializeResponse {
   capabilities: Record<string, unknown>;
@@ -60,14 +60,14 @@ class MCPClient {
       const response = await fetch(`${this.state.baseUrl}/mcp/rpc`, {
         body: JSON.stringify(request),
         headers: mcpClientUtils.createHeaders(this.state.token),
-        method: 'POST',
+        method: "POST",
         signal: controller.signal,
       });
 
       return mcpClientUtils.parseResponse<TResult>(response);
     } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        throw new Error('Request timeout', { cause: error });
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw new Error("Request timeout", { cause: error });
       }
       throw error;
     } finally {
@@ -76,41 +76,41 @@ class MCPClient {
   }
 
   async initialize(params?: InitializeParams): Promise<InitializeResponse> {
-    return this.sendRequest('initialize', params as Record<string, unknown> | undefined);
+    return this.sendRequest("initialize", params as Record<string, unknown> | undefined);
   }
 
   async listTools(): Promise<{ tools: MCPTool[] }> {
-    return this.sendRequest('tools/list');
+    return this.sendRequest("tools/list");
   }
 
   async callTool<TResult = unknown>(
     name: string,
     args?: Record<string, unknown>,
   ): Promise<TResult> {
-    return this.sendRequest('tools/call', { arguments: args, name });
+    return this.sendRequest("tools/call", { arguments: args, name });
   }
 
   async listResources(): Promise<{ resources: MCPResource[] }> {
-    return this.sendRequest('resources/list');
+    return this.sendRequest("resources/list");
   }
 
   async readResource(uri: string): Promise<{ contents: unknown }> {
-    return this.sendRequest('resources/read', { uri });
+    return this.sendRequest("resources/read", { uri });
   }
 
   async listPrompts(): Promise<{ prompts: MCPPrompt[] }> {
-    return this.sendRequest('prompts/list');
+    return this.sendRequest("prompts/list");
   }
 
   async getPrompt(name: string, args?: Record<string, unknown>): Promise<{ messages: unknown[] }> {
-    return this.sendRequest('prompts/get', { arguments: args, name });
+    return this.sendRequest("prompts/get", { arguments: args, name });
   }
 
   subscribeToProgress(callbacks: ProgressCallbacks): () => void {
     const headers: Record<string, string> = {};
 
     if (mcpClientUtils.isNonEmptyString(this.state.token)) {
-      headers['Authorization'] = `Bearer ${this.state.token}`;
+      headers["Authorization"] = `Bearer ${this.state.token}`;
     }
 
     const eventSource: MCPEventSource = new EventSourcePolyfill(
@@ -124,7 +124,7 @@ class MCPClient {
         const notification = mcpClientUtils.parseProgressNotification(parsed);
 
         if (!notification) {
-          mcpClientUtils.handleProgressError(callbacks, new Error('Invalid progress payload'));
+          mcpClientUtils.handleProgressError(callbacks, new Error("Invalid progress payload"));
           return;
         }
 
@@ -136,7 +136,7 @@ class MCPClient {
 
     eventSource.onerror = (_error: Event): void => {
       if (callbacks.onError !== undefined) {
-        callbacks.onError(new Error('SSE connection error'));
+        callbacks.onError(new Error("SSE connection error"));
       }
     };
 
@@ -149,12 +149,12 @@ class MCPClient {
     try {
       await fetch(`${this.state.baseUrl}/mcp/rpc`, {
         body: JSON.stringify({
-          jsonrpc: '2.0',
-          method: 'notifications/cancelled',
+          jsonrpc: "2.0",
+          method: "notifications/cancelled",
           params: {},
         }),
         headers: mcpClientUtils.createHeaders(this.state.token),
-        method: 'POST',
+        method: "POST",
       });
     } catch {
       return;

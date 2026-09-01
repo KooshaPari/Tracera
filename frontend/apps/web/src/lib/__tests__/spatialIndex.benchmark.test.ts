@@ -6,7 +6,7 @@
  * Run with: bun test spatialIndex.benchmark.test.ts
  */
 
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from "bun:test";
 
 import {
   RBushSpatialIndex,
@@ -15,7 +15,7 @@ import {
   type Edge,
   type NodePosition,
   type ViewportBounds,
-} from '../spatialIndex';
+} from "../spatialIndex";
 
 /**
  * Generate synthetic graph data for benchmarking
@@ -89,8 +89,8 @@ function linearSearchViewport(
   });
 }
 
-describe('R-tree Spatial Index Benchmarks', () => {
-  test('Small graph (1k edges) - baseline performance', () => {
+describe("R-tree Spatial Index Benchmarks", () => {
+  test("Small graph (1k edges) - baseline performance", () => {
     const { edges, nodePositions } = generateGraphData(1000);
     const viewport: ViewportBounds = {
       minX: 0,
@@ -101,7 +101,7 @@ describe('R-tree Spatial Index Benchmarks', () => {
 
     const result = benchmarkSpatialIndex(edges, nodePositions, viewport);
 
-    logger.info('\n📊 1k edges:');
+    logger.info("\n📊 1k edges:");
     logger.info(`  Linear:  ${result.linearSearchMs.toFixed(3)}ms`);
     logger.info(
       `  R-tree:  ${result.rtreeSearchMs.toFixed(3)}ms (build: ${result.rtreeBuildMs.toFixed(3)}ms)`,
@@ -112,7 +112,7 @@ describe('R-tree Spatial Index Benchmarks', () => {
     expect(result.speedup).toBeGreaterThan(1);
   });
 
-  test('Medium graph (10k edges) - noticeable speedup', () => {
+  test("Medium graph (10k edges) - noticeable speedup", () => {
     const { edges, nodePositions } = generateGraphData(10000);
     const viewport: ViewportBounds = {
       minX: 0,
@@ -123,7 +123,7 @@ describe('R-tree Spatial Index Benchmarks', () => {
 
     const result = benchmarkSpatialIndex(edges, nodePositions, viewport);
 
-    logger.info('\n📊 10k edges:');
+    logger.info("\n📊 10k edges:");
     logger.info(`  Linear:  ${result.linearSearchMs.toFixed(3)}ms`);
     logger.info(
       `  R-tree:  ${result.rtreeSearchMs.toFixed(3)}ms (build: ${result.rtreeBuildMs.toFixed(3)}ms)`,
@@ -134,7 +134,7 @@ describe('R-tree Spatial Index Benchmarks', () => {
     expect(result.speedup).toBeGreaterThan(2); // Should be >2x faster
   });
 
-  test('Large graph (100k edges) - significant speedup', () => {
+  test("Large graph (100k edges) - significant speedup", () => {
     const { edges, nodePositions } = generateGraphData(100000);
     const viewport: ViewportBounds = {
       minX: 0,
@@ -145,7 +145,7 @@ describe('R-tree Spatial Index Benchmarks', () => {
 
     const result = benchmarkSpatialIndex(edges, nodePositions, viewport);
 
-    logger.info('\n📊 100k edges:');
+    logger.info("\n📊 100k edges:");
     logger.info(`  Linear:  ${result.linearSearchMs.toFixed(3)}ms`);
     logger.info(
       `  R-tree:  ${result.rtreeSearchMs.toFixed(3)}ms (build: ${result.rtreeBuildMs.toFixed(3)}ms)`,
@@ -157,7 +157,7 @@ describe('R-tree Spatial Index Benchmarks', () => {
     expect(result.rtreeSearchMs).toBeLessThan(1); // Target: <1ms
   });
 
-  test('Bulk loading vs incremental insertion', () => {
+  test("Bulk loading vs incremental insertion", () => {
     const { edges, nodePositions } = generateGraphData(10000);
 
     // Bulk loading
@@ -176,7 +176,7 @@ describe('R-tree Spatial Index Benchmarks', () => {
 
     const speedup = incrementalMs / bulkLoadMs;
 
-    logger.info('\n📊 Bulk vs Incremental (10k edges):');
+    logger.info("\n📊 Bulk vs Incremental (10k edges):");
     logger.info(`  Bulk:        ${bulkLoadMs.toFixed(3)}ms`);
     logger.info(`  Incremental: ${incrementalMs.toFixed(3)}ms`);
     logger.info(`  Speedup:     ${speedup.toFixed(2)}x`);
@@ -184,10 +184,10 @@ describe('R-tree Spatial Index Benchmarks', () => {
     expect(speedup).toBeGreaterThan(3); // Bulk should be >3x faster
   });
 
-  test('Memory usage scaling', () => {
+  test("Memory usage scaling", () => {
     const testSizes = [1000, 10000, 50000, 100000];
 
-    logger.info('\n📊 Memory Usage Scaling:');
+    logger.info("\n📊 Memory Usage Scaling:");
     for (const size of testSizes) {
       const { edges, nodePositions } = generateGraphData(size);
       const index = createSpatialIndex(edges, nodePositions);
@@ -200,7 +200,7 @@ describe('R-tree Spatial Index Benchmarks', () => {
       // Verify memory estimate is reasonable
       // ~24 bytes per edge * 1.3 overhead
       const expectedBytes = size * 24 * 1.3;
-      const actualBytes = stats.memoryEstimate.includes('KB')
+      const actualBytes = stats.memoryEstimate.includes("KB")
         ? Number.parseFloat(stats.memoryEstimate) * 1024
         : Number.parseFloat(stats.memoryEstimate) * 1024 * 1024;
 
@@ -209,7 +209,7 @@ describe('R-tree Spatial Index Benchmarks', () => {
     }
   });
 
-  test('Query performance consistency', () => {
+  test("Query performance consistency", () => {
     const { edges, nodePositions } = generateGraphData(100000);
     const index = createSpatialIndex(edges, nodePositions);
 
@@ -219,7 +219,7 @@ describe('R-tree Spatial Index Benchmarks', () => {
       { minX: 5000, minY: 5000, maxX: 5500, maxY: 5500 },
     ];
 
-    logger.info('\n📊 Query Performance (100k edges):');
+    logger.info("\n📊 Query Performance (100k edges):");
     for (let i = 0; i < viewports.length; i++) {
       const start = performance.now();
       const results = index.searchViewport(viewports[i], 100);
@@ -232,7 +232,7 @@ describe('R-tree Spatial Index Benchmarks', () => {
     }
   });
 
-  test('Correctness: R-tree matches linear search', () => {
+  test("Correctness: R-tree matches linear search", () => {
     const { edges, nodePositions } = generateGraphData(10000);
     const viewport: ViewportBounds = {
       minX: 0,
@@ -263,22 +263,22 @@ describe('R-tree Spatial Index Benchmarks', () => {
     logger.info(`\n✅ Correctness verified: ${linearIds.size} edges matched`);
   });
 
-  test('Incremental updates maintain correctness', () => {
+  test("Incremental updates maintain correctness", () => {
     const { edges, nodePositions } = generateGraphData(1000);
     const index = createSpatialIndex(edges, nodePositions);
 
     // Add new edge
     const newEdge: Edge = {
-      id: 'new-edge',
-      source: 'node-0-0',
-      target: 'node-1-1',
+      id: "new-edge",
+      source: "node-0-0",
+      target: "node-1-1",
     };
     const inserted = index.insertEdge(newEdge, nodePositions);
     expect(inserted).toBe(true);
     expect(index.size()).toBe(edges.length + 1);
 
     // Remove edge
-    const removed = index.removeEdge('edge-0');
+    const removed = index.removeEdge("edge-0");
     expect(removed).toBe(true);
     expect(index.size()).toBe(edges.length);
 
@@ -292,6 +292,6 @@ describe('R-tree Spatial Index Benchmarks', () => {
     const results = index.searchViewport(viewport, 100);
     expect(results.length).toBeGreaterThan(0);
 
-    logger.info('\n✅ Incremental updates verified');
+    logger.info("\n✅ Incremental updates verified");
   });
 });

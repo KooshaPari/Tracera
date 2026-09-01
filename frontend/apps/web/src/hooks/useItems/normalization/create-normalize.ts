@@ -1,7 +1,7 @@
-import type { CreateItemData, CreateItemWithSpecData } from './types';
+import type { CreateItemData, CreateItemWithSpecData } from "./types";
 
-import { normalizePriority, normalizeStatus } from './normalize-item';
-import { readNonEmptyString } from './readers';
+import { normalizePriority, normalizeStatus } from "./normalize-item";
+import { readNonEmptyString } from "./readers";
 
 function normalizeCreateItemData(data: CreateItemData): CreateItemData {
   return {

@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
 import {
   Select,
@@ -8,10 +8,10 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@tracertm/ui/components/Select';
+} from "@tracertm/ui/components/Select";
 
-import { UnifiedGraphView } from '../components/graph/UnifiedGraphView';
-import { useGraphProjection, useGraphs } from '../hooks/useGraphs';
+import { UnifiedGraphView } from "../components/graph/UnifiedGraphView";
+import { useGraphProjection, useGraphs } from "../hooks/useGraphs";
 
 interface GraphViewProps {
   projectId: string;
@@ -39,82 +39,82 @@ interface NormalizedLink extends SafeRecord {
   type: string;
 }
 
-const DEFAULT_ITEM_VIEW: Item['view'] = 'feature';
-const DEFAULT_ITEM_TYPE = 'item';
-const DEFAULT_ITEM_TITLE = 'Untitled';
-const DEFAULT_ITEM_STATUS: Item['status'] = 'todo';
-const DEFAULT_ITEM_PRIORITY: Item['priority'] = 'medium';
-const DEFAULT_LINK_TYPE: Link['type'] = 'related_to';
+const DEFAULT_ITEM_VIEW: Item["view"] = "feature";
+const DEFAULT_ITEM_TYPE = "item";
+const DEFAULT_ITEM_TITLE = "Untitled";
+const DEFAULT_ITEM_STATUS: Item["status"] = "todo";
+const DEFAULT_ITEM_PRIORITY: Item["priority"] = "medium";
+const DEFAULT_LINK_TYPE: Link["type"] = "related_to";
 const DEFAULT_VERSION = 1;
-const DEFAULT_TIMESTAMP = '1970-01-01T00:00:00.000Z';
+const DEFAULT_TIMESTAMP = "1970-01-01T00:00:00.000Z";
 
-const VIEW_TYPES = new Set<Item['view']>([
-  'FEATURE',
-  'feature',
-  'CODE',
-  'code',
-  'TEST',
-  'test',
-  'API',
-  'api',
-  'DATABASE',
-  'database',
-  'WIREFRAME',
-  'wireframe',
-  'DOCUMENTATION',
-  'documentation',
-  'DEPLOYMENT',
-  'deployment',
-  'architecture',
-  'configuration',
-  'dataflow',
-  'dependency',
-  'domain',
-  'infrastructure',
-  'journey',
-  'monitoring',
-  'performance',
-  'security',
+const VIEW_TYPES = new Set<Item["view"]>([
+  "FEATURE",
+  "feature",
+  "CODE",
+  "code",
+  "TEST",
+  "test",
+  "API",
+  "api",
+  "DATABASE",
+  "database",
+  "WIREFRAME",
+  "wireframe",
+  "DOCUMENTATION",
+  "documentation",
+  "DEPLOYMENT",
+  "deployment",
+  "architecture",
+  "configuration",
+  "dataflow",
+  "dependency",
+  "domain",
+  "infrastructure",
+  "journey",
+  "monitoring",
+  "performance",
+  "security",
 ]);
 
-const LINK_TYPES = new Set<Link['type']>([
-  'implements',
-  'tests',
-  'depends_on',
-  'related_to',
-  'blocks',
-  'parent_of',
-  'same_as',
-  'represents',
-  'manifests_as',
-  'documents',
-  'mentions',
-  'calls',
-  'imports',
-  'derives_from',
-  'alternative_to',
-  'conflicts_with',
-  'supersedes',
-  'validates',
-  'traces_to',
+const LINK_TYPES = new Set<Link["type"]>([
+  "implements",
+  "tests",
+  "depends_on",
+  "related_to",
+  "blocks",
+  "parent_of",
+  "same_as",
+  "represents",
+  "manifests_as",
+  "documents",
+  "mentions",
+  "calls",
+  "imports",
+  "derives_from",
+  "alternative_to",
+  "conflicts_with",
+  "supersedes",
+  "validates",
+  "traces_to",
 ]);
 
 const isSafeRecord = (value: unknown): value is SafeRecord =>
-  typeof value === 'object' && value !== null;
+  typeof value === "object" && value !== null;
 
 const asSafeRecordArray = (value: unknown): SafeRecord[] =>
   Array.isArray(value) ? value.filter((entry) => isSafeRecord(entry)) : [];
 
 const asOptionalString = (value: unknown): string | undefined =>
-  typeof value === 'string' ? value : undefined;
+  typeof value === "string" ? value : undefined;
 
-const asString = (value: unknown, fallback = ''): string => asOptionalString(value) ?? fallback;
+const asString = (value: unknown, fallback = ""): string => asOptionalString(value) ?? fallback;
 
-const toViewType = (value: string): Item['view'] =>
-  VIEW_TYPES.has(value as Item['view']) ? (value as Item['view']) : DEFAULT_ITEM_VIEW;
+const toViewType = (value: string): Item["view"] =>
+  VIEW_TYPES.has(value as Item["view"]) ? (value as Item["view"]) : DEFAULT_ITEM_VIEW;
 
-const toLinkType = (value: string): Link['type'] =>
-  LINK_TYPES.has(value as Link['type']) ? (value as Link['type']) : DEFAULT_LINK_TYPE;
+const toLinkType = (value: string): Link["type"] =>
+  LINK_TYPES.has(value as Link["type"]) ? (value as Link["type"]) : DEFAULT_LINK_TYPE;
 
 const normalizeGraph = (graph: SafeRecord): GraphOption => ({
   ...graph,
@@ -189,8 +189,8 @@ const handleNavigateToItem = (_itemId: string): void => {};
 export function GraphView({ projectId }: GraphViewProps): JSX.Element {
   const { data: graphsData } = useGraphs(projectId);
   const [selectedGraphId, setSelectedGraphId] = useState<string | undefined>();
-  const [overlayMode, setOverlayMode] = useState('off');
-  const overlayMapping = overlayMode === 'on';
+  const [overlayMode, setOverlayMode] = useState("off");
+  const overlayMapping = overlayMode === "on";
 
   const graphs = useMemo(
     () => asSafeRecordArray(graphsData).map((graph) => normalizeGraph(graph)),
@@ -213,7 +213,7 @@ export function GraphView({ projectId }: GraphViewProps): JSX.Element {
   );
 
   const mappingGraph = useMemo(
-    () => graphs.find((graph) => graph.graphType === 'mapping'),
+    () => graphs.find((graph) => graph.graphType === "mapping"),
     [graphs],
   );
 
@@ -251,12 +251,12 @@ export function GraphView({ projectId }: GraphViewProps): JSX.Element {
   const canLoadMore = false;
 
   return (
-    <div className='animate-in-fade-up space-y-4'>
-      <div className='flex flex-wrap items-center gap-4'>
-        <div className='min-w-[220px]'>
-          <Select value={selectedGraph?.id ?? ''} onValueChange={setSelectedGraphId}>
+    <div className="animate-in-fade-up space-y-4">
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="min-w-[220px]">
+          <Select value={selectedGraph?.id ?? ""} onValueChange={setSelectedGraphId}>
             <SelectTrigger>
-              <SelectValue placeholder='Select graph' />
+              <SelectValue placeholder="Select graph" />
             </SelectTrigger>
             <SelectContent>
               {graphs.map((graph) => (
@@ -267,14 +267,14 @@ export function GraphView({ projectId }: GraphViewProps): JSX.Element {
             </SelectContent>
           </Select>
         </div>
-        <div className='min-w-[220px]'>
+        <div className="min-w-[220px]">
           <Select value={overlayMode} onValueChange={setOverlayMode}>
             <SelectTrigger>
-              <SelectValue placeholder='Mapping overlay' />
+              <SelectValue placeholder="Mapping overlay" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='off'>Mapping overlay: Off</SelectItem>
-              <SelectItem value='on'>Mapping overlay: On</SelectItem>
+              <SelectItem value="off">Mapping overlay: Off</SelectItem>
+              <SelectItem value="on">Mapping overlay: On</SelectItem>
             </SelectContent>
           </Select>
         </div>

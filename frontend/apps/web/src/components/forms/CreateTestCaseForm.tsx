@@ -1,19 +1,19 @@
-import type { JSX, SyntheticEvent } from 'react';
-import type { Resolver, SubmitHandler } from 'react-hook-form';
+import type { JSX, SyntheticEvent } from "react";
+import type { Resolver, SubmitHandler } from "react-hook-form";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { X } from 'lucide-react';
-import { useCallback } from 'react';
-import { useForm } from 'react-hook-form';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { X } from "lucide-react";
+import { useCallback } from "react";
+import { useForm } from "react-hook-form";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import type { TestCaseFormData, TestCaseFormInput } from './CreateTestCaseForm.constants';
+import type { TestCaseFormData, TestCaseFormInput } from "./CreateTestCaseForm.constants";
 
-import { useCreateTestCase } from '../../hooks/useTestCases';
-import { testCaseSchema } from './CreateTestCaseForm.constants';
-import { buildCreateTestCasePayload } from './CreateTestCaseForm.payload';
-import { TestCaseFormSections } from './CreateTestCaseForm.sections';
+import { useCreateTestCase } from "../../hooks/useTestCases";
+import { testCaseSchema } from "./CreateTestCaseForm.constants";
+import { buildCreateTestCasePayload } from "./CreateTestCaseForm.payload";
+import { TestCaseFormSections } from "./CreateTestCaseForm.sections";
 
 interface CreateTestCaseFormProps {
   projectId: string;
@@ -28,9 +28,9 @@ interface CancelButtonProps {
 function ModalOverlay({ onCancel }: CancelButtonProps): JSX.Element {
   return (
     <button
-      type='button'
-      className='fixed inset-0 bg-black/50 backdrop-blur-sm'
-      aria-label='Close dialog'
+      type="button"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+      aria-label="Close dialog"
       onClick={onCancel}
     />
   );
@@ -38,17 +38,17 @@ function ModalOverlay({ onCancel }: CancelButtonProps): JSX.Element {
 
 function ModalHeader({ onCancel }: CancelButtonProps): JSX.Element {
   return (
-    <div className='flex items-center justify-between'>
-      <h2 id='create-test-case-title' className='text-lg font-semibold'>
+    <div className="flex items-center justify-between">
+      <h2 id="create-test-case-title" className="text-lg font-semibold">
         Create Test Case
       </h2>
       <button
-        type='button'
+        type="button"
         onClick={onCancel}
-        aria-label='Close dialog'
-        className='hover:bg-accent rounded-lg p-1'
+        aria-label="Close dialog"
+        className="hover:bg-accent rounded-lg p-1"
       >
-        <X className='h-5 w-5' />
+        <X className="h-5 w-5" />
       </button>
     </div>
   );
@@ -70,10 +70,10 @@ function CreateTestCaseForm({
     formState: { errors },
   } = useForm<TestCaseFormInput, unknown, TestCaseFormData>({
     defaultValues: {
-      automationStatus: 'not_automated',
-      priority: 'medium',
+      automationStatus: "not_automated",
+      priority: "medium",
       testSteps: [],
-      testType: 'functional',
+      testType: "functional",
     },
     resolver,
   });
@@ -84,7 +84,7 @@ function CreateTestCaseForm({
       await createTestCase.mutateAsync(payload);
       onSuccess();
     } catch (error) {
-      logger.error('Failed to create test case:', error);
+      logger.error("Failed to create test case:", error);
     }
   };
 
@@ -99,16 +99,16 @@ function CreateTestCaseForm({
   const errorMessage = getErrorMessage(createTestCase);
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center'>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       <ModalOverlay onCancel={onCancel} />
       <div
-        className='bg-background relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border p-6 shadow-2xl'
-        role='dialog'
-        aria-modal='true'
-        aria-labelledby='create-test-case-title'
+        className="bg-background relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border p-6 shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-test-case-title"
       >
         <ModalHeader onCancel={onCancel} />
-        <form onSubmit={handleFormSubmit} className='mt-6 space-y-4'>
+        <form onSubmit={handleFormSubmit} className="mt-6 space-y-4">
           <TestCaseFormSections
             register={register}
             errors={errors}
@@ -132,7 +132,7 @@ function getErrorMessage(createTestCase: ReturnType<typeof useCreateTestCase>): 
   if (error instanceof Error) {
     return error.message;
   }
-  return 'Failed to create test case';
+  return "Failed to create test case";
 }
 
 export { CreateTestCaseForm };

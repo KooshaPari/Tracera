@@ -2,23 +2,23 @@
  * GitHub App installation component.
  */
 
-import { Github, Trash2 } from 'lucide-react';
-import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
+import { Github, Trash2 } from "lucide-react";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
-import type { GitHubAppInstallation, GitHubRepo } from '@/api/github';
+import type { GitHubAppInstallation, GitHubRepo } from "@/api/github";
 
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { Button } from '@/components/ui/enterprise-button';
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { Button } from "@/components/ui/enterprise-button";
 import {
   useDeleteGitHubAppInstallation,
   useGitHubAppInstallUrl,
   useGitHubAppInstallations,
-} from '@/hooks/useGitHub';
-import { Badge, Card } from '@tracertm/ui';
+} from "@/hooks/useGitHub";
+import { Badge, Card } from "@tracertm/ui";
 
-import { CreateRepoModal } from './CreateRepoModal';
-import { RepoSearchCombobox } from './RepoSearchCombobox';
+import { CreateRepoModal } from "./CreateRepoModal";
+import { RepoSearchCombobox } from "./RepoSearchCombobox";
 
 export interface GitHubAppInstallProps {
   accountId: string;
@@ -32,13 +32,13 @@ function getUninstallErrorMessage(error: unknown): string {
   }
   if (
     error &&
-    typeof error === 'object' &&
-    'message' in error &&
-    typeof (error as { message?: string }).message === 'string'
+    typeof error === "object" &&
+    "message" in error &&
+    typeof (error as { message?: string }).message === "string"
   ) {
     return (error as { message: string }).message;
   }
-  return 'Failed to remove installation';
+  return "Failed to remove installation";
 }
 
 export const GitHubAppInstall = function GitHubAppInstall({
@@ -73,7 +73,7 @@ export const GitHubAppInstall = function GitHubAppInstall({
     }
     try {
       await deleteInstallation.mutateAsync(uninstallConfirmId);
-      toast.success('GitHub App installation removed');
+      toast.success("GitHub App installation removed");
       setUninstallConfirmId(null);
     } catch (error) {
       toast.error(getUninstallErrorMessage(error));
@@ -103,7 +103,7 @@ export const GitHubAppInstall = function GitHubAppInstall({
 
   const handleUninstallClickFromEvent = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      const id = (e.currentTarget as HTMLButtonElement).dataset['installationId'];
+      const id = (e.currentTarget as HTMLButtonElement).dataset["installationId"];
       if (id) {
         handleUninstallClick(id);
       }
@@ -124,49 +124,49 @@ export const GitHubAppInstall = function GitHubAppInstall({
   }, [activeInstallation, handleCreateRepoOpen]);
 
   return (
-    <div className='space-y-4'>
+    <div className="space-y-4">
       {installations.length === 0 ? (
-        <Card className='p-6'>
-          <div className='flex items-center justify-between'>
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className='mb-2 text-lg font-semibold'>GitHub App Installation</h3>
-              <p className='text-muted-foreground mb-4 text-sm'>
+              <h3 className="mb-2 text-lg font-semibold">GitHub App Installation</h3>
+              <p className="text-muted-foreground mb-4 text-sm">
                 Install the GitHub App to access repositories and create new ones.
               </p>
             </div>
-            <Button onClick={handleInstall} disabled={installUrlLoading} className='gap-2'>
-              <Github className='h-4 w-4' />
-              {installUrlLoading ? 'Loading...' : 'Install GitHub App'}
+            <Button onClick={handleInstall} disabled={installUrlLoading} className="gap-2">
+              <Github className="h-4 w-4" />
+              {installUrlLoading ? "Loading..." : "Install GitHub App"}
             </Button>
           </div>
         </Card>
       ) : (
-        <div className='space-y-4'>
+        <div className="space-y-4">
           {installations.map((installation: GitHubAppInstallation) => (
-            <Card key={installation.id} className='p-4'>
-              <div className='flex items-start justify-between'>
-                <div className='flex-1'>
-                  <div className='mb-2 flex items-center gap-2'>
-                    <Github className='h-5 w-5' />
-                    <h3 className='font-semibold'>{installation.account_login}</h3>
-                    <Badge variant={installation.suspended_at ? 'destructive' : 'default'}>
-                      {installation.suspended_at ? 'Suspended' : 'Active'}
+            <Card key={installation.id} className="p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Github className="h-5 w-5" />
+                    <h3 className="font-semibold">{installation.account_login}</h3>
+                    <Badge variant={installation.suspended_at ? "destructive" : "default"}>
+                      {installation.suspended_at ? "Suspended" : "Active"}
                     </Badge>
-                    <Badge variant='outline'>{installation.target_type}</Badge>
+                    <Badge variant="outline">{installation.target_type}</Badge>
                   </div>
-                  <p className='text-muted-foreground text-sm'>
+                  <p className="text-muted-foreground text-sm">
                     Repository selection: {installation.repository_selection}
                   </p>
                 </div>
-                <div className='flex items-center gap-2'>
+                <div className="flex items-center gap-2">
                   <Button
-                    variant='ghost'
-                    size='sm'
+                    variant="ghost"
+                    size="sm"
                     data-installation-id={installation.id}
                     onClick={handleUninstallClickFromEvent}
                     disabled={deleteInstallation.isPending}
                   >
-                    <Trash2 className='h-4 w-4' />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -174,15 +174,15 @@ export const GitHubAppInstall = function GitHubAppInstall({
           ))}
 
           {activeInstallation && (
-            <Card className='p-4'>
-              <h3 className='mb-4 font-semibold'>Select Repository</h3>
+            <Card className="p-4">
+              <h3 className="mb-4 font-semibold">Select Repository</h3>
               <RepoSearchCombobox
                 accountId={accountId}
                 installationId={activeInstallation.id}
                 value={selectedRepo ?? null}
                 {...(onRepoSelect ? { onSelect: onRepoSelect } : {})}
                 onCreateRepo={handleOpenCreateRepo}
-                placeholder='Search or select a repository...'
+                placeholder="Search or select a repository..."
               />
             </Card>
           )}
@@ -202,11 +202,11 @@ export const GitHubAppInstall = function GitHubAppInstall({
       <ConfirmationDialog
         open={uninstallConfirmId !== null}
         onOpenChange={handleConfirmOpenChange}
-        title='Uninstall GitHub App?'
-        description='Are you sure you want to uninstall this GitHub App installation? You can reinstall it later.'
+        title="Uninstall GitHub App?"
+        description="Are you sure you want to uninstall this GitHub App installation? You can reinstall it later."
         onConfirm={handleUninstallConfirm}
         onCancel={handleUninstallCancel}
-        confirmText='Uninstall'
+        confirmText="Uninstall"
         isLoading={deleteInstallation.isPending}
       />
     </div>

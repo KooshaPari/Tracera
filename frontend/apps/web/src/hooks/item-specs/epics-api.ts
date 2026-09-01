@@ -1,4 +1,4 @@
-import type { EpicSpec, EpicSpecCreate, EpicSpecUpdate, EpicStatus } from './types';
+import type { EpicSpec, EpicSpecCreate, EpicSpecUpdate, EpicStatus } from "./types";
 
 import {
   API_URL,
@@ -7,7 +7,7 @@ import {
   getBulkHeaders,
   getJsonAuthHeaders,
   readJson,
-} from './constants';
+} from "./constants";
 
 async function fetchEpicSpecs(
   projectId: string,
@@ -18,9 +18,9 @@ async function fetchEpicSpecs(
   },
 ): Promise<{ specs: EpicSpec[]; total: number }> {
   const params = new URLSearchParams();
-  appendParam(params, 'status', options?.status);
-  appendParam(params, 'limit', options?.limit);
-  appendParam(params, 'offset', options?.offset);
+  appendParam(params, "status", options?.status);
+  appendParam(params, "limit", options?.limit);
+  appendParam(params, "offset", options?.offset);
 
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/epics?${params}`, {
     headers: getBulkHeaders(),
@@ -37,7 +37,7 @@ async function fetchEpicSpec(projectId: string, specId: string): Promise<EpicSpe
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch epic spec');
+    throw new Error("Failed to fetch epic spec");
   }
   return readJson<EpicSpec>(res);
 }
@@ -48,7 +48,7 @@ async function fetchEpicSpecByItem(projectId: string, itemId: string): Promise<E
     { headers: getAuthHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch epic spec by item');
+    throw new Error("Failed to fetch epic spec by item");
   }
   return readJson<EpicSpec>(res);
 }
@@ -57,10 +57,10 @@ async function createEpicSpec(projectId: string, data: EpicSpecCreate): Promise<
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/epics`, {
     body: JSON.stringify(data),
     headers: getJsonAuthHeaders(),
-    method: 'POST',
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to create epic spec');
+    throw new Error("Failed to create epic spec");
   }
   return readJson<EpicSpec>(res);
 }
@@ -73,10 +73,10 @@ async function updateEpicSpec(
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/epics/${specId}`, {
     body: JSON.stringify(data),
     headers: getJsonAuthHeaders(),
-    method: 'PATCH',
+    method: "PATCH",
   });
   if (!res.ok) {
-    throw new Error('Failed to update epic spec');
+    throw new Error("Failed to update epic spec");
   }
   return readJson<EpicSpec>(res);
 }
@@ -84,10 +84,10 @@ async function updateEpicSpec(
 async function deleteEpicSpec(projectId: string, specId: string): Promise<void> {
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/epics/${specId}`, {
     headers: getAuthHeaders(),
-    method: 'DELETE',
+    method: "DELETE",
   });
   if (!res.ok) {
-    throw new Error('Failed to delete epic spec');
+    throw new Error("Failed to delete epic spec");
   }
 }
 

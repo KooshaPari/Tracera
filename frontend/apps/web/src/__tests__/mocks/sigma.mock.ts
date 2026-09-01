@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock Sigma.js to avoid WebGL dependencies in tests
 export default class MockSigma {
@@ -12,4 +12,4 @@ export default class MockSigma {
 }
 
 // Export types that might be used
-export type { NodeDisplayData, EdgeDisplayData } from 'sigma/types';
+export type { NodeDisplayData, EdgeDisplayData } from "sigma/types";

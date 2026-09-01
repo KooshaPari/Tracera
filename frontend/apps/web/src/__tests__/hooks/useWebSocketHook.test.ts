@@ -2,19 +2,19 @@
  * Tests for useWebSocketHook - Real-time WebSocket connection management
  */
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from "vitest";
 
-import type { RealtimeEvent } from '../../api/websocket';
+import type { RealtimeEvent } from "../../api/websocket";
 
-import { useWebSocketStore } from '../../stores/websocket-store';
+import { useWebSocketStore } from "../../stores/websocket-store";
 
-describe('WebSocket Hooks and Store', () => {
+describe("WebSocket Hooks and Store", () => {
   const mockRealtimeEvent: RealtimeEvent = {
-    record: { id: '1', title: 'Test Item' },
-    schema: 'public',
-    table: 'items',
+    record: { id: "1", title: "Test Item" },
+    schema: "public",
+    table: "items",
     timestamp: Date.now(),
-    type: 'created',
+    type: "created",
   };
 
   beforeEach(() => {
@@ -22,31 +22,31 @@ describe('WebSocket Hooks and Store', () => {
     useWebSocketStore.getState().clearEvents();
   });
 
-  describe('useWebSocketStore - connection management', () => {
-    it('should initialize with disconnected state', () => {
+  describe("useWebSocketStore - connection management", () => {
+    it("should initialize with disconnected state", () => {
       const state = useWebSocketStore.getState();
-      expect(typeof state.isConnected).toBe('boolean');
+      expect(typeof state.isConnected).toBe("boolean");
       expect(state.reconnectAttempts).toBe(0);
     });
 
-    it('should have connect method', () => {
+    it("should have connect method", () => {
       const state = useWebSocketStore.getState();
-      expect(typeof state.connect).toBe('function');
+      expect(typeof state.connect).toBe("function");
     });
 
-    it('should have disconnect method', () => {
+    it("should have disconnect method", () => {
       const state = useWebSocketStore.getState();
-      expect(typeof state.disconnect).toBe('function');
+      expect(typeof state.disconnect).toBe("function");
     });
 
-    it('should have subscribe method available', () => {
+    it("should have subscribe method available", () => {
       const state = useWebSocketStore.getState();
-      expect(typeof state.subscribe).toBe('function');
+      expect(typeof state.subscribe).toBe("function");
     });
   });
 
-  describe('useWebSocketStore - event management', () => {
-    it('should add events to store', () => {
+  describe("useWebSocketStore - event management", () => {
+    it("should add events to store", () => {
       const state = useWebSocketStore.getState();
       state.addEvent(mockRealtimeEvent);
 
@@ -55,14 +55,14 @@ describe('WebSocket Hooks and Store', () => {
       expect(updated.lastEvent).toEqual(mockRealtimeEvent);
     });
 
-    it('should maintain event order (newest first)', () => {
+    it("should maintain event order (newest first)", () => {
       const event1: RealtimeEvent = {
         ...mockRealtimeEvent,
-        record: { id: '1' },
+        record: { id: "1" },
       };
       const event2: RealtimeEvent = {
         ...mockRealtimeEvent,
-        record: { id: '2' },
+        record: { id: "2" },
         timestamp: Date.now() + 1000,
       };
 
@@ -75,7 +75,7 @@ describe('WebSocket Hooks and Store', () => {
       expect(updated.events[1]).toEqual(event1);
     });
 
-    it('should limit events to last 100', () => {
+    it("should limit events to last 100", () => {
       const state = useWebSocketStore.getState();
 
       for (let i = 0; i < 150; i++) {
@@ -90,7 +90,7 @@ describe('WebSocket Hooks and Store', () => {
       expect(updated.events).toHaveLength(100);
     });
 
-    it('should clear events', () => {
+    it("should clear events", () => {
       const state = useWebSocketStore.getState();
       state.addEvent(mockRealtimeEvent);
       expect(useWebSocketStore.getState().events).toHaveLength(1);
@@ -103,16 +103,16 @@ describe('WebSocket Hooks and Store', () => {
     });
   });
 
-  describe('useWebSocketStore - channel subscriptions', () => {
-    it('should initialize with empty active channels', () => {
+  describe("useWebSocketStore - channel subscriptions", () => {
+    it("should initialize with empty active channels", () => {
       const state = useWebSocketStore.getState();
       expect(state.activeChannels instanceof Set).toBeTruthy();
       expect(state.activeChannels.size).toBe(0);
     });
   });
 
-  describe('useWebSocketStore - connection status', () => {
-    it('should set connection status', () => {
+  describe("useWebSocketStore - connection status", () => {
+    it("should set connection status", () => {
       const state = useWebSocketStore.getState();
       state.setConnectionStatus(true);
 
@@ -122,7 +122,7 @@ describe('WebSocket Hooks and Store', () => {
       expect(useWebSocketStore.getState().isConnected).toBeFalsy();
     });
 
-    it('should handle multiple status transitions', () => {
+    it("should handle multiple status transitions", () => {
       const state = useWebSocketStore.getState();
 
       state.setConnectionStatus(true);
@@ -136,8 +136,8 @@ describe('WebSocket Hooks and Store', () => {
     });
   });
 
-  describe('useWebSocketStore - integration scenarios', () => {
-    it('should maintain event state with connection transitions', () => {
+  describe("useWebSocketStore - integration scenarios", () => {
+    it("should maintain event state with connection transitions", () => {
       const state = useWebSocketStore.getState();
 
       state.setConnectionStatus(true);
@@ -154,14 +154,14 @@ describe('WebSocket Hooks and Store', () => {
       expect(current.events).toHaveLength(1); // Events persist
     });
 
-    it('should handle reconnection and event accumulation', () => {
+    it("should handle reconnection and event accumulation", () => {
       const event1: RealtimeEvent = {
         ...mockRealtimeEvent,
-        record: { id: '1' },
+        record: { id: "1" },
       };
       const event2: RealtimeEvent = {
         ...mockRealtimeEvent,
-        record: { id: '2' },
+        record: { id: "2" },
         timestamp: Date.now() + 1000,
       };
 

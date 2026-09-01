@@ -5,23 +5,23 @@
  * `./graph-performance-monitor/` to satisfy per-file oxlint constraints.
  */
 
-import type { ProfilerOnRenderCallback } from 'react';
+import type { ProfilerOnRenderCallback } from "react";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 import type {
   GraphPerformanceMonitor,
   LODDistribution,
   PerformanceMetrics,
   UseGraphPerformanceMonitorConfig,
-} from './graph-performance-monitor/types';
+} from "./graph-performance-monitor/types";
 
-import { DURATION_DECIMALS } from './graph-performance-monitor/constants';
+import { DURATION_DECIMALS } from "./graph-performance-monitor/constants";
 import {
   appendProfilerEntryToStorage,
   isDevelopmentEnv,
-} from './graph-performance-monitor/storage';
-import { useGraphPerformanceMonitorImpl } from './graph-performance-monitor/use-graph-performance-monitor-impl';
+} from "./graph-performance-monitor/storage";
+import { useGraphPerformanceMonitorImpl } from "./graph-performance-monitor/use-graph-performance-monitor-impl";
 
 /**
  * Graph Performance Monitor Hook
@@ -51,7 +51,7 @@ function createProfilerCallback(
   return (...args: Parameters<ProfilerOnRenderCallback>): void => {
     const [id, phase, actualDuration, baseDuration, startTime, commitTime] = args;
     if (logToConsole) {
-      logger.info(`%c[Profiler: ${monitorId}]`, 'color: #8b5cf6; font-weight: bold', {
+      logger.info(`%c[Profiler: ${monitorId}]`, "color: #8b5cf6; font-weight: bold", {
         actualDuration: `${actualDuration.toFixed(DURATION_DECIMALS)}ms`,
         baseDuration: `${baseDuration.toFixed(DURATION_DECIMALS)}ms`,
         commitTime,
@@ -94,7 +94,7 @@ const perfMark = {
         if (measure !== undefined) {
           logger.info(
             `%c[Performance] ${name}:`,
-            'color: #06b6d4',
+            "color: #06b6d4",
             `${measure.duration.toFixed(DURATION_DECIMALS)}ms`,
           );
         }

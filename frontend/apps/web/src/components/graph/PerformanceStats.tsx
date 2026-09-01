@@ -1,11 +1,11 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-import { Activity, Cpu, Database, Zap } from 'lucide-react';
-import { memo } from 'react';
+import { Activity, Cpu, Database, Zap } from "lucide-react";
+import { memo } from "react";
 
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 
 const FPS_GOOD_THRESHOLD = 55;
 const FPS_WARN_THRESHOLD = 30;
@@ -20,7 +20,7 @@ interface PerformanceStatsProps {
   visibleEdgeCount: number;
   memoryUsage?: number | undefined; // MB | undefined;
   renderTime?: number | undefined; // Ms | undefined;
-  variant?: 'compact' | 'detailed' | undefined;
+  variant?: "compact" | "detailed" | undefined;
 }
 
 interface StatRowProps {
@@ -30,22 +30,22 @@ interface StatRowProps {
 }
 
 const StatRow = ({ label, value, valueClassName }: StatRowProps) => (
-  <div className='flex justify-between text-xs'>
-    <span className='text-muted-foreground flex items-center gap-1'>{label}</span>
-    <span className={valueClassName ?? 'font-medium'}>{value}</span>
+  <div className="flex justify-between text-xs">
+    <span className="text-muted-foreground flex items-center gap-1">{label}</span>
+    <span className={valueClassName ?? "font-medium"}>{value}</span>
   </div>
 );
 
 const getFpsColorClass = (fps: number): string => {
   if (fps >= FPS_GOOD_THRESHOLD) {
-    return 'text-green-600';
+    return "text-green-600";
   }
 
   if (fps >= FPS_WARN_THRESHOLD) {
-    return 'text-yellow-600';
+    return "text-yellow-600";
   }
 
-  return 'text-red-600';
+  return "text-red-600";
 };
 
 interface ProgressSectionProps {
@@ -56,9 +56,9 @@ interface ProgressSectionProps {
 }
 
 const ProgressSection = ({ label, value, progressValue, valueClassName }: ProgressSectionProps) => (
-  <div className='space-y-1'>
+  <div className="space-y-1">
     <StatRow label={label} value={value} valueClassName={valueClassName} />
-    <Progress value={progressValue} className='h-1' />
+    <Progress value={progressValue} className="h-1" />
   </div>
 );
 
@@ -77,14 +77,14 @@ const CompactStats = ({
   nodeCount,
   visibleNodeCount,
 }: CompactStatsProps) => (
-  <div className='flex items-center gap-2 text-xs'>
-    <Badge variant='outline' className={fpsClassName}>
+  <div className="flex items-center gap-2 text-xs">
+    <Badge variant="outline" className={fpsClassName}>
       {Math.round(fps)} FPS
     </Badge>
-    <span className='text-muted-foreground'>
+    <span className="text-muted-foreground">
       {visibleNodeCount}/{nodeCount} nodes
     </span>
-    {cullPercentage > 0 && <span className='text-green-600'>{cullPercentage}% culled</span>}
+    {cullPercentage > 0 && <span className="text-green-600">{cullPercentage}% culled</span>}
   </div>
 );
 
@@ -111,16 +111,16 @@ const DetailedStats = ({
   visibleEdgeCount,
   visibleNodeCount,
 }: DetailedStatsProps) => (
-  <Card className='w-64'>
-    <CardHeader className='pb-3'>
-      <CardTitle className='flex items-center gap-2 text-sm'>
-        <Activity className='h-4 w-4' />
+  <Card className="w-64">
+    <CardHeader className="pb-3">
+      <CardTitle className="flex items-center gap-2 text-sm">
+        <Activity className="h-4 w-4" />
         Performance
       </CardTitle>
     </CardHeader>
-    <CardContent className='space-y-3'>
+    <CardContent className="space-y-3">
       <ProgressSection
-        label='Frame Rate'
+        label="Frame Rate"
         value={`${Math.round(fps)} FPS`}
         valueClassName={`font-medium ${fpsClassName}`}
         progressValue={(fps / FPS_MAX) * PERCENT_MULTIPLIER}
@@ -128,7 +128,7 @@ const DetailedStats = ({
       <ProgressSection
         label={
           <>
-            <Database className='h-3 w-3' />
+            <Database className="h-3 w-3" />
             Nodes
           </>
         }
@@ -136,7 +136,7 @@ const DetailedStats = ({
         progressValue={(visibleNodeCount / nodeCount) * PERCENT_MULTIPLIER}
       />
       <ProgressSection
-        label='Edges'
+        label="Edges"
         value={`${visibleEdgeCount}/${edgeCount}`}
         progressValue={(visibleEdgeCount / edgeCount) * PERCENT_MULTIPLIER}
       />
@@ -144,26 +144,26 @@ const DetailedStats = ({
         <StatRow
           label={
             <>
-              <Zap className='h-3 w-3' />
+              <Zap className="h-3 w-3" />
               Culling
             </>
           }
           value={`${cullPercentage}%`}
-          valueClassName='font-medium text-green-600'
+          valueClassName="font-medium text-green-600"
         />
       )}
       {memoryUsage !== undefined && (
         <StatRow
           label={
             <>
-              <Cpu className='h-3 w-3' />
+              <Cpu className="h-3 w-3" />
               Memory
             </>
           }
           value={`${memoryUsage.toFixed(1)} MB`}
         />
       )}
-      {renderTime !== undefined && <StatRow label='Render' value={`${renderTime.toFixed(1)} ms`} />}
+      {renderTime !== undefined && <StatRow label="Render" value={`${renderTime.toFixed(1)} ms`} />}
     </CardContent>
   </Card>
 );
@@ -185,12 +185,12 @@ const PerformanceStats = memo(
     visibleEdgeCount,
     memoryUsage,
     renderTime,
-    variant = 'compact',
+    variant = "compact",
   }: PerformanceStatsProps) => {
     const cullPercentage = getCullPercentage(nodeCount, visibleNodeCount);
     const fpsClassName = getFpsColorClass(fps);
 
-    if (variant === 'compact') {
+    if (variant === "compact") {
       return (
         <CompactStats
           cullPercentage={cullPercentage}

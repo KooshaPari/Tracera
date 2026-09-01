@@ -5,4 +5,4 @@ export {
   setOptionalParam,
   setOptionalStringParam,
   withFallback,
-} from './base';
+} from "./base";

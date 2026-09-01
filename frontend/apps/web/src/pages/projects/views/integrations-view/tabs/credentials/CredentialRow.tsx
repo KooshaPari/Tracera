@@ -1,20 +1,20 @@
-import type { ReactElement } from 'react';
+import type { ReactElement } from "react";
 
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
-import type { IntegrationCredential } from '@tracertm/types';
+import type { IntegrationCredential } from "@tracertm/types";
 
-import ProviderIcon from '@/pages/projects/views/integrations-view/components/ProviderIcon';
-import StatusBadge from '@/pages/projects/views/integrations-view/components/StatusBadge';
+import ProviderIcon from "@/pages/projects/views/integrations-view/components/ProviderIcon";
+import StatusBadge from "@/pages/projects/views/integrations-view/components/StatusBadge";
 
 function credentialScopesText(scopes: string[] | undefined): string {
   if (scopes === undefined) {
-    return 'none';
+    return "none";
   }
   if (scopes.length === 0) {
-    return 'none';
+    return "none";
   }
-  return scopes.join(', ');
+  return scopes.join(", ");
 }
 
 function lastValidatedText(lastValidatedAt: string | undefined): string | undefined {
@@ -37,18 +37,18 @@ function renderDeleteActions({
 }): ReactElement {
   if (isConfirmingDelete) {
     return (
-      <div className='flex items-center space-x-2'>
+      <div className="flex items-center space-x-2">
         <button
-          type='button'
+          type="button"
           onClick={onConfirmDelete}
-          className='rounded bg-red-100 px-3 py-1 text-sm text-red-700 hover:bg-red-200'
+          className="rounded bg-red-100 px-3 py-1 text-sm text-red-700 hover:bg-red-200"
         >
           Confirm
         </button>
         <button
-          type='button'
+          type="button"
           onClick={onCancelDelete}
-          className='rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200'
+          className="rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200"
         >
           Cancel
         </button>
@@ -58,9 +58,9 @@ function renderDeleteActions({
 
   return (
     <button
-      type='button'
+      type="button"
       onClick={onDelete}
-      className='rounded bg-red-100 px-3 py-1 text-sm text-red-700 hover:bg-red-200'
+      className="rounded bg-red-100 px-3 py-1 text-sm text-red-700 hover:bg-red-200"
     >
       Delete
     </button>
@@ -102,27 +102,27 @@ export default function CredentialRow({
   }, [credential.id, onConfirmDelete]);
 
   return (
-    <div className='rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800'>
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center space-x-4'>
+    <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
           <ProviderIcon provider={credential.provider} />
           <div>
-            <div className='font-medium capitalize'>{credential.provider.replace('_', ' ')}</div>
-            <div className='text-sm text-gray-500'>
+            <div className="font-medium capitalize">{credential.provider.replace("_", " ")}</div>
+            <div className="text-sm text-gray-500">
               Type: {credential.credentialType} | Scopes: {scopesText}
             </div>
             {validatedText !== undefined && (
-              <div className='text-xs text-gray-400'>{validatedText}</div>
+              <div className="text-xs text-gray-400">{validatedText}</div>
             )}
           </div>
         </div>
-        <div className='flex items-center space-x-2'>
+        <div className="flex items-center space-x-2">
           <StatusBadge status={credential.status} />
           <button
-            type='button'
+            type="button"
             onClick={handleValidateClick}
             disabled={isValidating}
-            className='rounded bg-blue-100 px-3 py-1 text-sm text-blue-700 hover:bg-blue-200'
+            className="rounded bg-blue-100 px-3 py-1 text-sm text-blue-700 hover:bg-blue-200"
           >
             Validate
           </button>

@@ -3,14 +3,14 @@ import type {
   UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
-} from '@tanstack/react-query';
+} from "@tanstack/react-query";
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { PaginatedResponse, Project } from '@tracertm/types';
+import type { PaginatedResponse, Project } from "@tracertm/types";
 
-import { queryKeys } from './queries-keys';
-import { api, handleApiResponse } from './query-client';
+import { queryKeys } from "./queries-keys";
+import { api, handleApiResponse } from "./query-client";
 
 type ProjectListResponse = PaginatedResponse<Project>;
 
@@ -28,7 +28,7 @@ const useProjects = (
   options?: UseQueryOptions<ProjectListResponse>,
 ): UseQueryResult<ProjectListResponse> => {
   const baseOptions: UseQueryOptions<ProjectListResponse> = {
-    queryFn: async () => handleApiResponse(api.get<ProjectListResponse>('/api/v1/projects', {})),
+    queryFn: async () => handleApiResponse(api.get<ProjectListResponse>("/api/v1/projects", {})),
     queryKey: queryKeys.projects,
   };
 
@@ -43,7 +43,7 @@ const useProject = (
     enabled: Boolean(projectId),
     queryFn: async () =>
       handleApiResponse(
-        api.get<Project>('/api/v1/projects/{projectId}', {
+        api.get<Project>("/api/v1/projects/{projectId}", {
           params: { path: { projectId } },
         }),
       ),
@@ -59,7 +59,7 @@ const useCreateProject = (
   const queryClient = useQueryClient();
   const baseOptions: UseMutationOptions<Project, Error, CreateProjectInput> = {
     mutationFn: async (data: CreateProjectInput) =>
-      handleApiResponse(api.post<Project>('/api/v1/projects', { body: data })),
+      handleApiResponse(api.post<Project>("/api/v1/projects", { body: data })),
     onSuccess: async (): Promise<void> => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.projects });
     },
@@ -75,7 +75,7 @@ const useUpdateProject = (
   const baseOptions: UseMutationOptions<Project, Error, UpdateProjectInput> = {
     mutationFn: async (input: UpdateProjectInput) =>
       handleApiResponse(
-        api.put<Project>('/api/v1/projects/{projectId}', {
+        api.put<Project>("/api/v1/projects/{projectId}", {
           body: input.data,
           params: { path: { projectId: input.projectId } },
         }),
@@ -98,7 +98,7 @@ const useDeleteProject = (
   const baseOptions: UseMutationOptions<void, Error, string> = {
     mutationFn: async (projectId: string) => {
       await handleApiResponse(
-        api.del<void>('/api/v1/projects/{projectId}', {
+        api.del<void>("/api/v1/projects/{projectId}", {
           params: { path: { projectId } },
         }),
       );

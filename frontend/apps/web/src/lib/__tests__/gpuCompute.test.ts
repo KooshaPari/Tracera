@@ -5,9 +5,9 @@
  * Verifies correct force calculations and performance targets
  */
 
-import * as Vitest from 'vitest';
+import * as Vitest from "vitest";
 
-import { logger } from '../logger';
+import { logger } from "../logger";
 
 const { afterEach, beforeEach, describe, expect, it } = Vitest;
 
@@ -47,7 +47,7 @@ const mockGPUAdapter = {
       onSubmittedWorkDone: Vitest.vi.fn(async () => {}),
     },
     destroy: Vitest.vi.fn(),
-    lost: Promise.resolve({ message: 'test', reason: 'destroyed' }),
+    lost: Promise.resolve({ message: "test", reason: "destroyed" }),
   })),
 };
 
@@ -118,10 +118,10 @@ function generateTestEdges(nodeCount: number, density = 0.1): Uint32Array {
 // TESTS
 // ============================================================================
 
-Vitest.describe('GPU Compute Infrastructure', () => {
+Vitest.describe("GPU Compute Infrastructure", () => {
   Vitest.beforeEach(() => {
     // Mock navigator.gpu
-    Object.defineProperty(globalThis.navigator, 'gpu', {
+    Object.defineProperty(globalThis.navigator, "gpu", {
       value: mockNavigator.gpu,
       writable: true,
       configurable: true,
@@ -132,20 +132,20 @@ Vitest.describe('GPU Compute Infrastructure', () => {
     Vitest.vi.clearAllMocks();
   });
 
-  Vitest.describe('WebGPU Device Initialization', () => {
-    Vitest.it('should detect WebGPU support', () => {
+  Vitest.describe("WebGPU Device Initialization", () => {
+    Vitest.it("should detect WebGPU support", () => {
       Vitest.expect(globalThis.navigator.gpu).toBeDefined();
     });
 
-    Vitest.it('should request adapter with high-performance preference', async () => {
-      await mockNavigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
+    Vitest.it("should request adapter with high-performance preference", async () => {
+      await mockNavigator.gpu.requestAdapter({ powerPreference: "high-performance" });
 
       Vitest.expect(mockNavigator.gpu.requestAdapter).toHaveBeenCalledWith({
-        powerPreference: 'high-performance',
+        powerPreference: "high-performance",
       });
     });
 
-    Vitest.it('should handle adapter request failure', async () => {
+    Vitest.it("should handle adapter request failure", async () => {
       const originalRequestAdapter = mockNavigator.gpu.requestAdapter;
       mockNavigator.gpu.requestAdapter = Vitest.vi.fn(async () => null);
 
@@ -156,8 +156,8 @@ Vitest.describe('GPU Compute Infrastructure', () => {
     });
   });
 
-  Vitest.describe('Buffer Management', () => {
-    Vitest.it('should create storage buffers with correct size', async () => {
+  Vitest.describe("Buffer Management", () => {
+    Vitest.it("should create storage buffers with correct size", async () => {
       const device = await requestMockDevice();
 
       const nodeCount = 1000;
@@ -175,7 +175,7 @@ Vitest.describe('GPU Compute Infrastructure', () => {
       );
     });
 
-    Vitest.it('should write data to buffers', async () => {
+    Vitest.it("should write data to buffers", async () => {
       const device = await requestMockDevice();
 
       const testData = new Float32Array([1, 2, 3, 4]);
@@ -187,42 +187,42 @@ Vitest.describe('GPU Compute Infrastructure', () => {
     });
   });
 
-  Vitest.describe('Compute Pipeline', () => {
-    Vitest.it('should create shader module from WGSL code', async () => {
+  Vitest.describe("Compute Pipeline", () => {
+    Vitest.it("should create shader module from WGSL code", async () => {
       const device = await requestMockDevice();
 
-      const shaderCode = '@compute @workgroup_size(64) fn main() {}';
+      const shaderCode = "@compute @workgroup_size(64) fn main() {}";
       device.createShaderModule({ code: shaderCode });
 
       Vitest.expect(device.createShaderModule).toHaveBeenCalledWith({ code: shaderCode });
     });
 
-    Vitest.it('should create compute pipeline with entry point', async () => {
+    Vitest.it("should create compute pipeline with entry point", async () => {
       const device = await requestMockDevice();
 
-      const shaderModule = device.createShaderModule({ code: '' });
+      const shaderModule = device.createShaderModule({ code: "" });
       const layout = device.createPipelineLayout({ bindGroupLayouts: [] });
 
       device.createComputePipeline({
         layout,
         compute: {
           module: shaderModule,
-          entryPoint: 'main',
+          entryPoint: "main",
         },
       });
 
       Vitest.expect(device.createComputePipeline).toHaveBeenCalledWith(
         Vitest.expect.objectContaining({
           compute: Vitest.expect.objectContaining({
-            entryPoint: 'main',
+            entryPoint: "main",
           }),
         }),
       );
     });
   });
 
-  Vitest.describe('Force Calculation Logic', () => {
-    Vitest.it('should calculate repulsion force correctly', () => {
+  Vitest.describe("Force Calculation Logic", () => {
+    Vitest.it("should calculate repulsion force correctly", () => {
       // Test the math for repulsion force
       // F = k / r² where k = repulsionStrength
 
@@ -240,7 +240,7 @@ Vitest.describe('GPU Compute Infrastructure', () => {
       Vitest.expect(expectedForceX).toBeCloseTo(-0.5, 1);
     });
 
-    Vitest.it('should calculate attraction force correctly', () => {
+    Vitest.it("should calculate attraction force correctly", () => {
       // Test the math for attraction force
       // F = k * d where k = attractionStrength
 
@@ -258,8 +258,8 @@ Vitest.describe('GPU Compute Infrastructure', () => {
     });
   });
 
-  describe('Workgroup Dispatch', () => {
-    it('should calculate correct workgroup count for node count', async () => {
+  describe("Workgroup Dispatch", () => {
+    it("should calculate correct workgroup count for node count", async () => {
       const device = await requestMockDevice();
 
       const nodeCount = 10_000;
@@ -276,7 +276,7 @@ Vitest.describe('GPU Compute Infrastructure', () => {
       expect(pass.dispatchWorkgroups).toHaveBeenCalledWith(workgroupCount);
     });
 
-    it('should handle edge cases for workgroup calculation', () => {
+    it("should handle edge cases for workgroup calculation", () => {
       const testCases = [
         { nodes: 1, expected: 1 },
         { nodes: 64, expected: 1 },
@@ -292,8 +292,8 @@ Vitest.describe('GPU Compute Infrastructure', () => {
     });
   });
 
-  describe('Performance Metrics', () => {
-    it('should measure iteration time', async () => {
+  describe("Performance Metrics", () => {
+    it("should measure iteration time", async () => {
       const startTime = globalThis.performance.now();
 
       // Simulate some work
@@ -303,7 +303,7 @@ Vitest.describe('GPU Compute Infrastructure', () => {
       expect(duration).toBeGreaterThanOrEqual(10);
     });
 
-    it('should verify speedup target for 10k nodes', () => {
+    it("should verify speedup target for 10k nodes", () => {
       // Target: <100ms per iteration on GPU vs ~30s CPU
       // This is ~300x speedup minimum
 
@@ -321,44 +321,44 @@ Vitest.describe('GPU Compute Infrastructure', () => {
 // ============================================================================
 
 // Skip WebGL tests in jsdom (need real browser context)
-describe.skip('WebGL Compute Fallback', () => {
+describe.skip("WebGL Compute Fallback", () => {
   let canvas: HTMLCanvasElement;
   let gl: WebGL2RenderingContext | null;
 
   beforeEach(() => {
-    canvas = globalThis.document.createElement('canvas');
+    canvas = globalThis.document.createElement("canvas");
     canvas.width = 512;
     canvas.height = 512;
-    gl = canvas.getContext('webgl2');
+    gl = canvas.getContext("webgl2");
   });
 
   afterEach(() => {
     if (gl) {
-      const loseExt = gl.getExtension('WEBGL_lose_context');
+      const loseExt = gl.getExtension("WEBGL_lose_context");
       if (loseExt) {
         loseExt.loseContext();
       }
     }
   });
 
-  describe('WebGL2 Context', () => {
-    it('should create WebGL2 context', () => {
+  describe("WebGL2 Context", () => {
+    it("should create WebGL2 context", () => {
       expect(gl).toBeTruthy();
     });
 
-    it('should check for float texture support', () => {
+    it("should check for float texture support", () => {
       if (!gl) {
         return;
       }
 
-      const floatExt = gl.getExtension('EXT_color_buffer_float');
+      const floatExt = gl.getExtension("EXT_color_buffer_float");
       // In jsdom, this will be null, but in real browser it should exist.
       expect(floatExt).toBeDefined();
     });
   });
 
-  describe('Texture Creation', () => {
-    it('should create float textures for data', () => {
+  describe("Texture Creation", () => {
+    it("should create float textures for data", () => {
       if (!gl) {
         return;
       }
@@ -385,8 +385,8 @@ describe.skip('WebGL Compute Fallback', () => {
     });
   });
 
-  describe('Shader Compilation', () => {
-    it('should compile vertex shader', () => {
+  describe("Shader Compilation", () => {
+    it("should compile vertex shader", () => {
       if (!gl) {
         return;
       }
@@ -412,7 +412,7 @@ describe.skip('WebGL Compute Fallback', () => {
       }
     });
 
-    it('should compile fragment shader', () => {
+    it("should compile fragment shader", () => {
       if (!gl) {
         return;
       }
@@ -440,8 +440,8 @@ describe.skip('WebGL Compute Fallback', () => {
 // INTEGRATION TESTS
 // ============================================================================
 
-describe('GPU Compute Integration', () => {
-  it('should generate valid test data', () => {
+describe("GPU Compute Integration", () => {
+  it("should generate valid test data", () => {
     const { positions, velocities, forces } = generateTestGraph(100);
 
     expect(positions).toHaveLength(200); // 100 nodes * 2 (x,y)
@@ -452,7 +452,7 @@ describe('GPU Compute Integration', () => {
     expect(velocities.every((velocity) => velocity === 0)).toBeTruthy();
   });
 
-  it('should generate valid edge data', () => {
+  it("should generate valid edge data", () => {
     const edges = generateTestEdges(100, 0.1);
 
     expect(edges).toBeInstanceOf(Uint32Array);
@@ -465,7 +465,7 @@ describe('GPU Compute Integration', () => {
     }
   });
 
-  it('should verify data alignment for GPU buffers', () => {
+  it("should verify data alignment for GPU buffers", () => {
     const nodeCount = 1000;
     const positions = new Float32Array(nodeCount * 2);
 
@@ -478,4 +478,4 @@ describe('GPU Compute Integration', () => {
   });
 });
 
-logger.info('GPU compute tests loaded');
+logger.info("GPU compute tests loaded");

@@ -1,13 +1,13 @@
-import type { Node, Edge } from '@xyflow/react';
+import type { Node, Edge } from "@xyflow/react";
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 
-import { createGraphologyAdapter } from '@/lib/graphology/adapter';
-import { createClustering } from '@/lib/graphology/clustering';
-import { logger } from '@/lib/logger';
+import { createGraphologyAdapter } from "@/lib/graphology/adapter";
+import { createClustering } from "@/lib/graphology/clustering";
+import { logger } from "@/lib/logger";
 
-describe('Graphology Integration: Adapter + Clustering', () => {
-  it('should cluster React Flow graph and reduce edges', () => {
+describe("Graphology Integration: Adapter + Clustering", () => {
+  it("should cluster React Flow graph and reduce edges", () => {
     // Create React Flow data
     const nodes: Node[] = [];
     const edges: Edge[] = [];
@@ -18,7 +18,7 @@ describe('Graphology Integration: Adapter + Clustering', () => {
         const nodeId = `node-${cluster}-${i}`;
         nodes.push({
           id: nodeId,
-          type: 'default',
+          type: "default",
           position: { x: cluster * 200 + i * 20, y: cluster * 200 + i * 20 },
           data: { label: `Node ${cluster}-${i}` },
         });
@@ -36,17 +36,17 @@ describe('Graphology Integration: Adapter + Clustering', () => {
 
     // Add inter-cluster edges
     edges.push({
-      id: 'inter-0-1',
-      source: 'node-0-0',
-      target: 'node-1-0',
+      id: "inter-0-1",
+      source: "node-0-0",
+      target: "node-1-0",
     });
     edges.push({
-      id: 'inter-1-2',
-      source: 'node-1-0',
-      target: 'node-2-0',
+      id: "inter-1-2",
+      source: "node-1-0",
+      target: "node-2-0",
     });
 
-    logger.info('Original graph:', nodes.length, 'nodes,', edges.length, 'edges');
+    logger.info("Original graph:", nodes.length, "nodes,", edges.length, "edges");
 
     // Step 1: Sync to Graphology
     const adapter = createGraphologyAdapter();
@@ -66,13 +66,13 @@ describe('Graphology Integration: Adapter + Clustering', () => {
     const result = clustering.createClusterGraph(graph, communities);
 
     logger.info(
-      'Clustered graph:',
+      "Clustered graph:",
       result.communityCount,
-      'clusters,',
+      "clusters,",
       result.edges.length,
-      'edges',
+      "edges",
     );
-    logger.info('Reduction ratio:', result.reductionRatio.toFixed(1), '%');
+    logger.info("Reduction ratio:", result.reductionRatio.toFixed(1), "%");
 
     // Should detect communities (may not match human intuition due to modularity optimization)
     expect(result.communityCount).toBeGreaterThanOrEqual(2);
@@ -85,7 +85,7 @@ describe('Graphology Integration: Adapter + Clustering', () => {
     // Step 4: Convert back to React Flow
     const clusterNodes = result.nodes.map((cluster) => ({
       id: cluster.id,
-      type: 'cluster',
+      type: "cluster",
       position: { x: cluster.x, y: cluster.y },
       data: {
         label: cluster.label,
@@ -106,7 +106,7 @@ describe('Graphology Integration: Adapter + Clustering', () => {
     expect(clusterEdges.length).toBe(result.edges.length);
   });
 
-  it('should handle large graph clustering performance', () => {
+  it("should handle large graph clustering performance", () => {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
 
@@ -114,7 +114,7 @@ describe('Graphology Integration: Adapter + Clustering', () => {
     for (let i = 0; i < 500; i++) {
       nodes.push({
         id: `node-${i}`,
-        type: 'default',
+        type: "default",
         position: { x: Math.random() * 5000, y: Math.random() * 5000 },
         data: { label: `Node ${i}` },
       });
@@ -145,11 +145,11 @@ describe('Graphology Integration: Adapter + Clustering', () => {
     const result = clustering.createClusterGraph(graph, communities);
     const duration = performance.now() - startTime;
 
-    logger.info('Performance test:');
-    logger.info('- Graph size:', graph.order, 'nodes,', graph.size, 'edges');
-    logger.info('- Processing time:', duration.toFixed(0), 'ms');
-    logger.info('- Clusters:', result.communityCount);
-    logger.info('- Reduction:', result.reductionRatio.toFixed(1), '%');
+    logger.info("Performance test:");
+    logger.info("- Graph size:", graph.order, "nodes,", graph.size, "edges");
+    logger.info("- Processing time:", duration.toFixed(0), "ms");
+    logger.info("- Clusters:", result.communityCount);
+    logger.info("- Reduction:", result.reductionRatio.toFixed(1), "%");
 
     // Should complete in reasonable time
     expect(duration).toBeLessThan(2000); // < 2 seconds for 500 nodes
@@ -158,16 +158,16 @@ describe('Graphology Integration: Adapter + Clustering', () => {
     expect(result.reductionRatio).toBeGreaterThan(70);
   });
 
-  it('should expand cluster back to nodes', () => {
+  it("should expand cluster back to nodes", () => {
     const nodes: Node[] = [
-      { id: 'a1', type: 'default', position: { x: 0, y: 0 }, data: {} },
-      { id: 'a2', type: 'default', position: { x: 10, y: 10 }, data: {} },
-      { id: 'b1', type: 'default', position: { x: 100, y: 100 }, data: {} },
+      { id: "a1", type: "default", position: { x: 0, y: 0 }, data: {} },
+      { id: "a2", type: "default", position: { x: 10, y: 10 }, data: {} },
+      { id: "b1", type: "default", position: { x: 100, y: 100 }, data: {} },
     ];
 
     const edges: Edge[] = [
-      { id: 'e1', source: 'a1', target: 'a2' },
-      { id: 'e2', source: 'a2', target: 'b1' },
+      { id: "e1", source: "a1", target: "a2" },
+      { id: "e2", source: "a2", target: "b1" },
     ];
 
     const adapter = createGraphologyAdapter();

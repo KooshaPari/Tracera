@@ -1,17 +1,17 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from "@storybook/react";
 
-import { EditAffordances } from '../EditAffordances';
+import { EditAffordances } from "../EditAffordances";
 
 const meta: Meta<typeof EditAffordances> = {
   argTypes: {
-    compact: { control: 'boolean' },
+    compact: { control: "boolean" },
     editType: {
-      control: 'select',
-      options: ['instant', 'agent_required', 'manual'],
+      control: "select",
+      options: ["instant", "agent_required", "manual"],
     },
-    isEditing: { control: 'boolean' },
-    onEdit: { action: 'edit clicked' },
-    showLabel: { control: 'boolean' },
+    isEditing: { control: "boolean" },
+    onEdit: { action: "edit clicked" },
+    showLabel: { control: "boolean" },
   },
   component: EditAffordances,
   parameters: {
@@ -22,10 +22,10 @@ const meta: Meta<typeof EditAffordances> = {
         light: { query: "[data-theme='light']" },
       },
     },
-    layout: 'fullscreen',
+    layout: "fullscreen",
   },
-  tags: ['autodocs', 'skip-tests'],
-  title: 'Components/Graph/EditAffordances',
+  tags: ["autodocs", "skip-tests"],
+  title: "Components/Graph/EditAffordances",
 };
 
 export default meta;
@@ -36,7 +36,7 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
   args: {
-    editType: 'instant',
+    editType: "instant",
     isEditing: false,
   },
 };
@@ -46,7 +46,7 @@ export const Default: Story = {
  */
 export const AgentRequired: Story = {
   args: {
-    editType: 'agent_required',
+    editType: "agent_required",
     isEditing: false,
   },
 };
@@ -56,12 +56,12 @@ export const AgentRequired: Story = {
  */
 export const Tablet: Story = {
   args: {
-    editType: 'instant',
+    editType: "instant",
     isEditing: false,
   },
   parameters: {
     viewport: {
-      defaultViewport: 'tablet',
+      defaultViewport: "tablet",
     },
   },
 };
@@ -71,12 +71,12 @@ export const Tablet: Story = {
  */
 export const Mobile: Story = {
   args: {
-    editType: 'instant',
+    editType: "instant",
     isEditing: false,
   },
   parameters: {
     viewport: {
-      defaultViewport: 'mobile',
+      defaultViewport: "mobile",
     },
   },
 };
@@ -86,12 +86,12 @@ export const Mobile: Story = {
  */
 export const DarkMode: Story = {
   args: {
-    editType: 'instant',
+    editType: "instant",
     isEditing: false,
   },
   decorators: [
     (Story) => (
-      <div className='dark' data-theme='dark' style={{ padding: '20px' }}>
+      <div className="dark" data-theme="dark" style={{ padding: "20px" }}>
         <Story />
       </div>
     ),
@@ -110,13 +110,13 @@ export const DarkMode: Story = {
  */
 export const Hovered: Story = {
   args: {
-    editType: 'instant',
+    editType: "instant",
     isEditing: false,
   },
   play: async ({ canvasElement }) => {
     const element = canvasElement.querySelector("[role='group']");
     if (element) {
-      element.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      element.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
     }
   },
 };

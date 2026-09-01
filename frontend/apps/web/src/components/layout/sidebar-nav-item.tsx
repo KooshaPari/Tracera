@@ -1,10 +1,10 @@
-import { Link } from '@tanstack/react-router';
-import React from 'react';
+import { Link } from "@tanstack/react-router";
+import React from "react";
 
-import { cn } from '@/lib/utils';
-import * as UI from '@tracertm/ui';
+import { cn } from "@/lib/utils";
+import * as UI from "@tracertm/ui";
 
-import type { SidebarNavItem as SidebarItem } from './sidebar-nav';
+import type { SidebarNavItem as SidebarItem } from "./sidebar-nav";
 
 interface NavItemProps {
   item: SidebarItem;
@@ -13,7 +13,7 @@ interface NavItemProps {
   renderTitle: (title: string) => (string | JSX.Element)[];
 }
 
-const SPACE_KEY = ' ';
+const SPACE_KEY = " ";
 
 export const SidebarNavItem = React.forwardRef<HTMLAnchorElement, NavItemProps>(
   ({ item, isActive, isCollapsed, renderTitle }, ref) => {
@@ -27,23 +27,23 @@ export const SidebarNavItem = React.forwardRef<HTMLAnchorElement, NavItemProps>(
     }, []);
 
     let linkClassName =
-      'group flex items-center gap-2 rounded-lg px-3 py-2 transition-all duration-200 ease-out cursor-pointer relative z-10 min-w-0 w-full max-w-full overflow-hidden box-border isolate';
+      "group flex items-center gap-2 rounded-lg px-3 py-2 transition-all duration-200 ease-out cursor-pointer relative z-10 min-w-0 w-full max-w-full overflow-hidden box-border isolate";
     linkClassName +=
-      ' hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary';
+      " hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary";
     if (isActive) {
       linkClassName +=
-        ' bg-primary text-primary-foreground border border-primary/50 ring-2 ring-primary/30 shadow-md shadow-primary/20';
+        " bg-primary text-primary-foreground border border-primary/50 ring-2 ring-primary/30 shadow-md shadow-primary/20";
     } else {
       linkClassName +=
-        ' text-muted-foreground border border-transparent bg-background/10 hover:bg-background/20 hover:text-foreground';
+        " text-muted-foreground border border-transparent bg-background/10 hover:bg-background/20 hover:text-foreground";
     }
 
-    const iconClassNameParts = ['h-5 w-5 shrink-0 transition-all duration-150'];
+    const iconClassNameParts = ["h-5 w-5 shrink-0 transition-all duration-150"];
     if (!isActive) {
-      iconClassNameParts.push('group-hover:text-primary group-hover:scale-110');
+      iconClassNameParts.push("group-hover:text-primary group-hover:scale-110");
     }
 
-    const ariaCurrent = isActive ? 'page' : undefined;
+    const ariaCurrent = isActive ? "page" : undefined;
     const ariaLabel = isCollapsed ? item.title : undefined;
 
     const linkContent = (
@@ -58,19 +58,19 @@ export const SidebarNavItem = React.forwardRef<HTMLAnchorElement, NavItemProps>(
         <Icon className={cn(...iconClassNameParts)} />
         {isCollapsed ? undefined : (
           <>
-            <span className='min-w-0 flex-1 truncate overflow-hidden text-sm font-bold tracking-tight'>
+            <span className="min-w-0 flex-1 truncate overflow-hidden text-sm font-bold tracking-tight">
               {renderTitle(item.title)}
             </span>
-            {typeof item.badge === 'number' ? (
+            {typeof item.badge === "number" ? (
               <UI.Badge
-                variant='secondary'
-                className='flex h-5 min-w-[1.25rem] shrink-0 items-center justify-center px-1.5 text-[10px] font-bold'
+                variant="secondary"
+                className="flex h-5 min-w-[1.25rem] shrink-0 items-center justify-center px-1.5 text-[10px] font-bold"
               >
                 {item.badge}
               </UI.Badge>
             ) : undefined}
             {isActive ? (
-              <div className='bg-primary-foreground absolute top-1/2 left-0 h-6 w-1 -translate-y-1/2 animate-pulse rounded-r-full' />
+              <div className="bg-primary-foreground absolute top-1/2 left-0 h-6 w-1 -translate-y-1/2 animate-pulse rounded-r-full" />
             ) : undefined}
           </>
         )}
@@ -92,4 +92,4 @@ export const SidebarNavItem = React.forwardRef<HTMLAnchorElement, NavItemProps>(
   },
 );
 
-SidebarNavItem.displayName = 'SidebarNavItem';
+SidebarNavItem.displayName = "SidebarNavItem";

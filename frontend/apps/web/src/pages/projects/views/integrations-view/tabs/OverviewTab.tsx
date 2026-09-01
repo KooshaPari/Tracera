@@ -1,16 +1,16 @@
-import type { MouseEvent, ReactElement } from 'react';
+import type { MouseEvent, ReactElement } from "react";
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from "react";
 
-import type { IntegrationsMode } from '@/pages/projects/views/integrations-view/types';
-import type { CredentialStatus, IntegrationProvider, IntegrationStats } from '@tracertm/types';
+import type { IntegrationsMode } from "@/pages/projects/views/integrations-view/types";
+import type { CredentialStatus, IntegrationProvider, IntegrationStats } from "@tracertm/types";
 
-import { LoadingSpinner } from '@/components/layout/LoadingSpinner';
-import { useStartOAuth } from '@/hooks/useIntegrations';
-import { logger } from '@/lib/logger';
-import ProviderIcon from '@/pages/projects/views/integrations-view/components/ProviderIcon';
-import StatCard from '@/pages/projects/views/integrations-view/components/StatCard';
-import StatusBadge from '@/pages/projects/views/integrations-view/components/StatusBadge';
+import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
+import { useStartOAuth } from "@/hooks/useIntegrations";
+import { logger } from "@/lib/logger";
+import ProviderIcon from "@/pages/projects/views/integrations-view/components/ProviderIcon";
+import StatCard from "@/pages/projects/views/integrations-view/components/StatCard";
+import StatusBadge from "@/pages/projects/views/integrations-view/components/StatusBadge";
 
 interface OverviewTabProps {
   stats: IntegrationStats | undefined;
@@ -19,26 +19,26 @@ interface OverviewTabProps {
   mode: IntegrationsMode;
 }
 
-const EMPTY_PROVIDERS: NonNullable<IntegrationStats['providers']> = [];
+const EMPTY_PROVIDERS: NonNullable<IntegrationStats["providers"]> = [];
 
 const CONNECT_PROVIDER_CARDS: readonly {
   providerId: IntegrationProvider;
   name: string;
   description: string;
 }[] = [
-  { providerId: 'github', name: 'GitHub', description: 'Sync issues, PRs, and repositories' },
+  { providerId: "github", name: "GitHub", description: "Sync issues, PRs, and repositories" },
   {
-    providerId: 'github_projects',
-    name: 'GitHub Projects',
-    description: 'Sync project boards and cards',
+    providerId: "github_projects",
+    name: "GitHub Projects",
+    description: "Sync project boards and cards",
   },
-  { providerId: 'linear', name: 'Linear', description: 'Sync issues, projects, and teams' },
+  { providerId: "linear", name: "Linear", description: "Sync issues, projects, and teams" },
 ];
 
-const PROVIDER_DATA_ATTR = 'data-provider';
+const PROVIDER_DATA_ATTR = "data-provider";
 
 function parseIntegrationProvider(value: string | undefined): IntegrationProvider | undefined {
-  if (value === 'github' || value === 'github_projects' || value === 'linear') {
+  if (value === "github" || value === "github_projects" || value === "linear") {
     return value;
   }
   return undefined;
@@ -53,9 +53,9 @@ function readNumber(value: number | undefined): number {
 
 function renderAccountConnectionsNotice(): ReactElement {
   return (
-    <div className='rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800'>
-      <h2 className='mb-2 text-lg font-semibold'>Account connections moved</h2>
-      <p className='text-sm text-gray-500'>
+    <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+      <h2 className="mb-2 text-lg font-semibold">Account connections moved</h2>
+      <p className="text-sm text-gray-500">
         Link external accounts in Settings. Project mappings and sync controls live here.
       </p>
     </div>
@@ -100,26 +100,26 @@ function buildStatsCardValues(stats: IntegrationStats | undefined): StatsCardVal
 
 function renderStatsCards(values: StatsCardValues): ReactElement {
   return (
-    <div className='grid grid-cols-1 gap-4 md:grid-cols-4'>
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
       <StatCard
-        title='Connected Providers'
+        title="Connected Providers"
         value={values.connectedProviders}
-        subtitle='integrations active'
+        subtitle="integrations active"
       />
       <StatCard
-        title='Active Mappings'
+        title="Active Mappings"
         value={values.mappingsActive}
         subtitle={`of ${values.mappingsTotal} total`}
       />
       <StatCard
-        title='Sync Success Rate'
+        title="Sync Success Rate"
         value={`${values.syncSuccessRate}%`}
         subtitle={`${values.recentSyncs} recent syncs`}
       />
       <StatCard
-        title='Pending Conflicts'
+        title="Pending Conflicts"
         value={values.pendingConflicts}
-        subtitle='need resolution'
+        subtitle="need resolution"
         warning={values.showWarning}
       />
     </div>
@@ -141,21 +141,21 @@ function renderProviderStatusList(
   }
 
   return (
-    <div className='rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800'>
-      <h2 className='mb-4 text-lg font-semibold'>Connected Providers</h2>
-      <div className='space-y-3'>
+    <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+      <h2 className="mb-4 text-lg font-semibold">Connected Providers</h2>
+      <div className="space-y-3">
         {providerList.map((providerInfo) => (
           <div
-            key={`${providerInfo.provider}-${providerInfo.credentialType ?? 'default'}`}
-            className='flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-700'
+            key={`${providerInfo.provider}-${providerInfo.credentialType ?? "default"}`}
+            className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-700"
           >
-            <div className='flex items-center space-x-3'>
+            <div className="flex items-center space-x-3">
               <ProviderIcon provider={providerInfo.provider} />
               <div>
-                <div className='font-medium capitalize'>
-                  {providerInfo.provider.replace('_', ' ')}
+                <div className="font-medium capitalize">
+                  {providerInfo.provider.replace("_", " ")}
                 </div>
-                <div className='text-sm text-gray-500'>{providerInfo.credentialType}</div>
+                <div className="text-sm text-gray-500">{providerInfo.credentialType}</div>
               </div>
             </div>
             <StatusBadge status={providerInfo.status} />
@@ -174,23 +174,23 @@ function renderConnectProviderGrid({
   onConnectButtonClick: (event: MouseEvent<HTMLButtonElement>) => void;
 }): ReactElement {
   return (
-    <div className='rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800'>
-      <h2 className='mb-4 text-lg font-semibold'>Connect New Provider</h2>
-      <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
+    <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+      <h2 className="mb-4 text-lg font-semibold">Connect New Provider</h2>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {CONNECT_PROVIDER_CARDS.map((card) => {
           const isConnected = connectedProviders.has(card.providerId);
           if (isConnected) {
             return (
               <div
                 key={card.providerId}
-                className='rounded-lg border border-gray-200 p-4 dark:border-gray-700'
+                className="rounded-lg border border-gray-200 p-4 dark:border-gray-700"
               >
-                <div className='mb-2 flex items-center space-x-3'>
+                <div className="mb-2 flex items-center space-x-3">
                   <ProviderIcon provider={card.providerId} />
-                  <div className='font-medium'>{card.name}</div>
+                  <div className="font-medium">{card.name}</div>
                 </div>
-                <p className='mb-4 text-sm text-gray-500'>{card.description}</p>
-                <span className='inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm text-green-700'>
+                <p className="mb-4 text-sm text-gray-500">{card.description}</p>
+                <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">
                   Connected
                 </span>
               </div>
@@ -200,18 +200,18 @@ function renderConnectProviderGrid({
           return (
             <div
               key={card.providerId}
-              className='rounded-lg border border-gray-200 p-4 dark:border-gray-700'
+              className="rounded-lg border border-gray-200 p-4 dark:border-gray-700"
             >
-              <div className='mb-2 flex items-center space-x-3'>
+              <div className="mb-2 flex items-center space-x-3">
                 <ProviderIcon provider={card.providerId} />
-                <div className='font-medium'>{card.name}</div>
+                <div className="font-medium">{card.name}</div>
               </div>
-              <p className='mb-4 text-sm text-gray-500'>{card.description}</p>
+              <p className="mb-4 text-sm text-gray-500">{card.description}</p>
               <button
-                type='button'
+                type="button"
                 data-provider={card.providerId}
                 onClick={onConnectButtonClick}
-                className='rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700'
+                className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
               >
                 Connect
               </button>
@@ -247,9 +247,9 @@ export default function OverviewTab({
       }
 
       const redirectUri = `${globalThis.location.origin}/integrations/callback`;
-      let credentialScope: 'user' | 'project' = 'project';
-      if (mode === 'account') {
-        credentialScope = 'user';
+      let credentialScope: "user" | "project" = "project";
+      if (mode === "account") {
+        credentialScope = "user";
       }
 
       startOAuth.mutate(
@@ -264,7 +264,7 @@ export default function OverviewTab({
             globalThis.location.href = result.auth_url;
           },
           onError: (error: unknown) => {
-            logger.error('Failed to start OAuth:', error);
+            logger.error("Failed to start OAuth:", error);
           },
         },
       );
@@ -274,15 +274,15 @@ export default function OverviewTab({
 
   if (isLoading) {
     return (
-      <div className='flex justify-center py-8'>
-        <LoadingSpinner text='Loading stats...' />
+      <div className="flex justify-center py-8">
+        <LoadingSpinner text="Loading stats..." />
       </div>
     );
   }
 
-  if (mode !== 'account') {
+  if (mode !== "account") {
     return (
-      <div className='space-y-6'>
+      <div className="space-y-6">
         {renderStatsCards(statsValues)}
         {renderAccountConnectionsNotice()}
         {renderProviderStatusList(providers)}
@@ -291,7 +291,7 @@ export default function OverviewTab({
   }
 
   return (
-    <div className='space-y-6'>
+    <div className="space-y-6">
       {renderStatsCards(statsValues)}
       {renderConnectProviderGrid({
         connectedProviders,

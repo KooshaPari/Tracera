@@ -3,10 +3,10 @@
  *
  * Wrapper functions for axe-core accessibility testing
  */
-import type { Page } from '@playwright/test';
-import type { AxeResults, Result } from 'axe-core';
+import type { Page } from "@playwright/test";
+import type { AxeResults, Result } from "axe-core";
 
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from "@axe-core/playwright";
 
 /**
  * Run a comprehensive accessibility scan on the page
@@ -14,7 +14,7 @@ import AxeBuilder from '@axe-core/playwright';
 export async function runAccessibilityScan(
   page: Page,
   options?: {
-    wcagLevel?: 'A' | 'AA' | 'AAA';
+    wcagLevel?: "A" | "AA" | "AAA";
     tags?: string[];
     rules?: string[];
     excludeRules?: string[];
@@ -27,10 +27,10 @@ export async function runAccessibilityScan(
   // Set WCAG level
   if (options?.wcagLevel) {
     const tags = [
-      'wcag2a',
-      'wcag21a',
-      ...(options.wcagLevel === 'AA' || options.wcagLevel === 'AAA' ? ['wcag2aa', 'wcag21aa'] : []),
-      ...(options.wcagLevel === 'AAA' ? ['wcag2aaa', 'wcag21aaa'] : []),
+      "wcag2a",
+      "wcag21a",
+      ...(options.wcagLevel === "AA" || options.wcagLevel === "AAA" ? ["wcag2aa", "wcag21aa"] : []),
+      ...(options.wcagLevel === "AAA" ? ["wcag2aaa", "wcag21aaa"] : []),
     ];
     builder = builder.withTags(tags);
   }
@@ -70,7 +70,7 @@ export async function runAccessibilityScan(
  * Check if page has any critical accessibility violations
  */
 export function hasCriticalViolations(results: AxeResults): boolean {
-  return results.violations.some((v) => v.impact === 'critical');
+  return results.violations.some((v) => v.impact === "critical");
 }
 
 /**
@@ -87,13 +87,13 @@ export function getViolationSummary(results: AxeResults) {
 
   for (const violation of results.violations) {
     summary.total++;
-    if (violation.impact === 'critical') {
+    if (violation.impact === "critical") {
       summary.critical++;
-    } else if (violation.impact === 'serious') {
+    } else if (violation.impact === "serious") {
       summary.serious++;
-    } else if (violation.impact === 'moderate') {
+    } else if (violation.impact === "moderate") {
       summary.moderate++;
-    } else if (violation.impact === 'minor') {
+    } else if (violation.impact === "minor") {
       summary.minor++;
     }
   }
@@ -106,15 +106,15 @@ export function getViolationSummary(results: AxeResults) {
  */
 export function formatViolationReport(results: AxeResults): string {
   if (results.violations.length === 0) {
-    return '✅ No accessibility violations found!';
+    return "✅ No accessibility violations found!";
   }
 
-  const lines: string[] = ['❌ Accessibility Violations Found:\n'];
+  const lines: string[] = ["❌ Accessibility Violations Found:\n"];
 
   for (const violation of results.violations) {
     lines.push(`\n[${violation.impact?.toUpperCase()}] ${violation.help}`);
     lines.push(`  Rule: ${violation.id}`);
-    lines.push(`  WCAG: ${violation.tags.filter((t) => t.startsWith('wcag')).join(', ')}`);
+    lines.push(`  WCAG: ${violation.tags.filter((t) => t.startsWith("wcag")).join(", ")}`);
     lines.push(`  Affected elements: ${violation.nodes.length}`);
 
     for (const node of violation.nodes.slice(0, 3)) {
@@ -130,7 +130,7 @@ export function formatViolationReport(results: AxeResults): string {
     }
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -144,24 +144,24 @@ export async function testKeyboardNavigation(page: Page): Promise<{
   // Get all focusable elements
   const focusableElements = await page.evaluate(() => {
     const selectors = [
-      'a[href]:not([disabled])',
-      'button:not([disabled])',
-      'input:not([disabled])',
-      'select:not([disabled])',
-      'textarea:not([disabled])',
+      "a[href]:not([disabled])",
+      "button:not([disabled])",
+      "input:not([disabled])",
+      "select:not([disabled])",
+      "textarea:not([disabled])",
       '[tabindex]:not([tabindex="-1"])',
     ];
 
-    const elements = document.querySelectorAll(selectors.join(','));
+    const elements = document.querySelectorAll(selectors.join(","));
     return elements.length;
   });
 
   // Try to tab through elements
   let canTabThrough = false;
   try {
-    await page.keyboard.press('Tab');
+    await page.keyboard.press("Tab");
     const activeElement = await page.evaluate(() => document.activeElement?.tagName);
-    canTabThrough = activeElement !== 'BODY';
+    canTabThrough = activeElement !== "BODY";
   } catch {
     canTabThrough = false;
   }
@@ -212,7 +212,7 @@ export async function checkLandmarks(page: Page) {
  * Check color contrast ratios
  */
 export async function checkColorContrast(page: Page): Promise<AxeResults> {
-  return new AxeBuilder({ page }).withRules(['color-contrast']).analyze();
+  return new AxeBuilder({ page }).withRules(["color-contrast"]).analyze();
 }
 
 /**
@@ -220,11 +220,11 @@ export async function checkColorContrast(page: Page): Promise<AxeResults> {
  */
 export async function checkFormAccessibility(
   page: Page,
-  formSelector = 'form',
+  formSelector = "form",
 ): Promise<AxeResults> {
   return new AxeBuilder({ page })
     .include(formSelector)
-    .withRules(['label', 'label-content-name-mismatch', 'input-button-name'])
+    .withRules(["label", "label-content-name-mismatch", "input-button-name"])
     .analyze();
 }
 
@@ -233,13 +233,13 @@ export async function checkFormAccessibility(
  */
 export async function checkLiveRegions(page: Page) {
   return page.evaluate(() => {
-    const liveRegions = document.querySelectorAll('[aria-live]');
+    const liveRegions = document.querySelectorAll("[aria-live]");
     return {
       count: liveRegions.length,
       regions: [...liveRegions].map((region) => ({
-        atomic: region.getAttribute('aria-atomic'),
-        politeness: region.getAttribute('aria-live'),
-        relevant: region.getAttribute('aria-relevant'),
+        atomic: region.getAttribute("aria-atomic"),
+        politeness: region.getAttribute("aria-live"),
+        relevant: region.getAttribute("aria-relevant"),
       })),
     };
   });

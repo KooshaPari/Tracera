@@ -1,11 +1,11 @@
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-import type { LayoutType, SyncLayoutResult } from './types';
+import type { LayoutType, SyncLayoutResult } from "./types";
 
-import { applyCircularLayout } from './circular-layout';
-import { applyForceLayout } from './force-layout';
-import { applyGridLayout } from './grid-layout';
-import { applyRadialLayout } from './radial-layout';
+import { applyCircularLayout } from "./circular-layout";
+import { applyForceLayout } from "./force-layout";
+import { applyGridLayout } from "./grid-layout";
+import { applyRadialLayout } from "./radial-layout";
 
 export interface SyncLayoutParams<NodeData extends Record<string, unknown>> {
   centerX: number;
@@ -24,23 +24,23 @@ export function resolveSyncLayout<NodeData extends Record<string, unknown>>(
   const { inputNodes, inputEdges, layout, nodeHeight, nodeSep, nodeWidth, centerX, centerY } =
     params;
 
-  if (layout === 'organic-network') {
+  if (layout === "organic-network") {
     return {
-      kind: 'sync',
+      kind: "sync",
       nodes: applyForceLayout(inputNodes, inputEdges, { nodeHeight, nodeWidth, padding: nodeSep }),
     };
   }
 
-  if (layout === 'mind-map') {
+  if (layout === "mind-map") {
     return {
-      kind: 'sync',
+      kind: "sync",
       nodes: applyRadialLayout(inputNodes, inputEdges, { centerX, centerY, nodeHeight, nodeWidth }),
     };
   }
 
-  if (layout === 'gallery') {
+  if (layout === "gallery") {
     return {
-      kind: 'sync',
+      kind: "sync",
       nodes: applyGridLayout(inputNodes, {
         compact: false,
         nodeHeight,
@@ -50,9 +50,9 @@ export function resolveSyncLayout<NodeData extends Record<string, unknown>>(
     };
   }
 
-  if (layout === 'compact') {
+  if (layout === "compact") {
     return {
-      kind: 'sync',
+      kind: "sync",
       nodes: applyGridLayout(inputNodes, {
         compact: true,
         nodeHeight,
@@ -62,12 +62,12 @@ export function resolveSyncLayout<NodeData extends Record<string, unknown>>(
     };
   }
 
-  if (layout === 'wheel') {
+  if (layout === "wheel") {
     return {
-      kind: 'sync',
+      kind: "sync",
       nodes: applyCircularLayout(inputNodes, { centerX, centerY, nodeHeight, nodeWidth }),
     };
   }
 
-  return { kind: 'async' };
+  return { kind: "async" };
 }

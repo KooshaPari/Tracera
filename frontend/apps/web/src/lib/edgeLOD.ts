@@ -1,9 +1,9 @@
-export type EdgeLODLevel = 'detailed' | 'medium' | 'simple' | 'hidden';
+export type EdgeLODLevel = "detailed" | "medium" | "simple" | "hidden";
 
 export interface EdgeLODTier {
   level: EdgeLODLevel;
   distanceThreshold: number;
-  pathType: 'bezier' | 'straight';
+  pathType: "bezier" | "straight";
   strokeWidth: number;
   showLabel: boolean;
   showArrow: boolean;
@@ -12,36 +12,36 @@ export interface EdgeLODTier {
 
 export const EDGE_LOD_TIERS: EdgeLODTier[] = [
   {
-    level: 'detailed',
+    level: "detailed",
     distanceThreshold: 0,
-    pathType: 'bezier',
+    pathType: "bezier",
     strokeWidth: 2,
     showLabel: true,
     showArrow: true,
     opacity: 1.0,
   },
   {
-    level: 'medium',
+    level: "medium",
     distanceThreshold: 300,
-    pathType: 'bezier',
+    pathType: "bezier",
     strokeWidth: 1.5,
     showLabel: false,
     showArrow: true,
     opacity: 0.8,
   },
   {
-    level: 'simple',
+    level: "simple",
     distanceThreshold: 600,
-    pathType: 'straight',
+    pathType: "straight",
     strokeWidth: 1,
     showLabel: false,
     showArrow: false,
     opacity: 0.5,
   },
   {
-    level: 'hidden',
+    level: "hidden",
     distanceThreshold: 1200,
-    pathType: 'straight',
+    pathType: "straight",
     strokeWidth: 0,
     showLabel: false,
     showArrow: false,
@@ -88,7 +88,7 @@ export function applyEdgeLOD(baseStyle: any, lodTier: EdgeLODTier): any {
     ...baseStyle,
     strokeWidth: lodTier.strokeWidth,
     opacity: lodTier.opacity,
-    ...(lodTier.pathType === 'straight' && { type: 'default' }),
-    ...(lodTier.pathType === 'bezier' && { type: 'smoothstep' }),
+    ...(lodTier.pathType === "straight" && { type: "default" }),
+    ...(lodTier.pathType === "bezier" && { type: "smoothstep" }),
   };
 }

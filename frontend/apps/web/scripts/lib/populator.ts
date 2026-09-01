@@ -2,10 +2,10 @@
  * Project population logic
  */
 
-import type { ProjectConfig } from './types';
+import type { ProjectConfig } from "./types";
 
-import { checkProjectItems } from './api';
-import { createItemsByType, createTraceabilityLinks } from './generator';
+import { checkProjectItems } from "./api";
+import { createItemsByType, createTraceabilityLinks } from "./generator";
 
 export async function populateProject(
   projectId: string,
@@ -33,7 +33,7 @@ export async function populateProject(
   );
 
   // Create traceability links
-  console.log('  Creating realistic traceability links...');
+  console.log("  Creating realistic traceability links...");
   const linkCount = await createTraceabilityLinks(projectId, allItemsByType);
 
   const totalItems = Object.values(allItemsByType).reduce((a, b) => a + b.length, 0);

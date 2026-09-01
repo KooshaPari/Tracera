@@ -10,7 +10,7 @@
  * - 100k nodes: 60 FPS, < 5000ms initial render
  */
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
 /** Chrome non-standard performance.memory (optional) */
 interface PerformanceMemory {
@@ -19,16 +19,16 @@ interface PerformanceMemory {
   jsHeapSizeLimit: number;
 }
 
-test.describe('Sigma.js WebGL Performance', () => {
+test.describe("Sigma.js WebGL Performance", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to graph view
-    await page.goto('/projects/test-project/graph');
+    await page.goto("/projects/test-project/graph");
 
     // Wait for page to be ready
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should render 10k nodes at 60 FPS', async ({ page }) => {
+  test("should render 10k nodes at 60 FPS", async ({ page }) => {
     // Generate 10k nodes via API or mock
     await page.evaluate(() => {
       interface NodeItem {
@@ -49,14 +49,14 @@ test.describe('Sigma.js WebGL Performance', () => {
         nodes.push({
           data: {
             label: `Node ${i}`,
-            type: 'requirement',
+            type: "requirement",
           },
           id: `node-${i}`,
           position: {
             x: Math.random() * 10_000,
             y: Math.random() * 10_000,
           },
-          type: 'requirement',
+          type: "requirement",
         });
       }
 
@@ -79,7 +79,7 @@ test.describe('Sigma.js WebGL Performance', () => {
     });
 
     // Wait for WebGL mode indicator
-    await expect(page.getByText('WebGL Mode')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("WebGL Mode")).toBeVisible({ timeout: 5000 });
 
     // Measure initial render time
     const startTime = Date.now();
@@ -119,7 +119,7 @@ test.describe('Sigma.js WebGL Performance', () => {
     expect(fps).toBeGreaterThanOrEqual(55);
   });
 
-  test('should handle zoom interactions smoothly', async ({ page }) => {
+  test("should handle zoom interactions smoothly", async ({ page }) => {
     // Wait for graph to load
     await page.waitForSelector('[data-testid="sigma-container"]', {
       timeout: 10_000,
@@ -140,7 +140,7 @@ test.describe('Sigma.js WebGL Performance', () => {
 
             if (elapsed < duration) {
               // Trigger zoom event
-              window.dispatchEvent(new WheelEvent('wheel', { deltaY: -100 }));
+              window.dispatchEvent(new WheelEvent("wheel", { deltaY: -100 }));
               requestAnimationFrame(measureFPS);
             } else {
               const fps = Math.round((frameCount * 1000) / elapsed);
@@ -156,7 +156,7 @@ test.describe('Sigma.js WebGL Performance', () => {
     expect(zoomFPS).toBeGreaterThanOrEqual(55);
   });
 
-  test('should handle pan interactions smoothly', async ({ page }) => {
+  test("should handle pan interactions smoothly", async ({ page }) => {
     // Wait for graph to load
     await page.waitForSelector('[data-testid="sigma-container"]', {
       timeout: 10_000,
@@ -190,7 +190,7 @@ test.describe('Sigma.js WebGL Performance', () => {
     expect(panFPS).toBeGreaterThanOrEqual(55);
   });
 
-  test('should handle node selection efficiently', async ({ page }) => {
+  test("should handle node selection efficiently", async ({ page }) => {
     // Wait for graph to load
     await page.waitForSelector('[data-testid="sigma-container"]', {
       timeout: 10_000,
@@ -201,7 +201,7 @@ test.describe('Sigma.js WebGL Performance', () => {
       const start = performance.now();
 
       // Simulate node selection
-      const event = new MouseEvent('click', {
+      const event = new MouseEvent("click", {
         bubbles: true,
         cancelable: true,
       });
@@ -215,7 +215,7 @@ test.describe('Sigma.js WebGL Performance', () => {
     expect(selectionTime).toBeLessThan(16);
   });
 
-  test('should highlight selected node and neighbors', async ({ page }) => {
+  test("should highlight selected node and neighbors", async ({ page }) => {
     // Wait for graph to load
     await page.waitForSelector('[data-testid="sigma-container"]', {
       timeout: 10_000,
@@ -224,21 +224,21 @@ test.describe('Sigma.js WebGL Performance', () => {
     // Click on a node (simulated)
     await page.evaluate(() => {
       // Simulate clicking on node-0
-      const clickEvent = new CustomEvent('clickNode', {
-        detail: { node: 'node-0' },
+      const clickEvent = new CustomEvent("clickNode", {
+        detail: { node: "node-0" },
       });
       globalThis.dispatchEvent(clickEvent);
     });
 
     // Verify detail panel appears (WebGL mode)
-    await expect(page.getByText('Node 0')).toBeVisible({ timeout: 1000 });
+    await expect(page.getByText("Node 0")).toBeVisible({ timeout: 1000 });
 
     // Measure highlight update time
     const highlightTime = await page.evaluate(() => {
       const start = performance.now();
 
       // Update highlights (simulated)
-      globalThis.dispatchEvent(new CustomEvent('updateHighlights'));
+      globalThis.dispatchEvent(new CustomEvent("updateHighlights"));
 
       return performance.now() - start;
     });
@@ -247,7 +247,7 @@ test.describe('Sigma.js WebGL Performance', () => {
     expect(highlightTime).toBeLessThan(16);
   });
 
-  test('should handle 50k nodes with performance mode', async ({ page }) => {
+  test("should handle 50k nodes with performance mode", async ({ page }) => {
     // Generate 50k nodes
     await page.evaluate(() => {
       interface NodeItem {
@@ -267,7 +267,7 @@ test.describe('Sigma.js WebGL Performance', () => {
             x: Math.random() * 20_000,
             y: Math.random() * 20_000,
           },
-          type: 'requirement',
+          type: "requirement",
         };
         nodes.push(node);
       }
@@ -284,7 +284,7 @@ test.describe('Sigma.js WebGL Performance', () => {
     });
 
     // Verify performance mode is active
-    await expect(page.getByText('Performance')).toBeVisible();
+    await expect(page.getByText("Performance")).toBeVisible();
 
     // Initial render should be < 2000ms
     const startTime = Date.now();
@@ -294,7 +294,7 @@ test.describe('Sigma.js WebGL Performance', () => {
     expect(renderTime).toBeLessThan(2000);
   });
 
-  test('should handle 100k nodes (stress test)', async ({ page }) => {
+  test("should handle 100k nodes (stress test)", async ({ page }) => {
     // Increase timeout for this heavy test
     test.slow();
 
@@ -317,7 +317,7 @@ test.describe('Sigma.js WebGL Performance', () => {
             x: Math.random() * 30_000,
             y: Math.random() * 30_000,
           },
-          type: 'requirement',
+          type: "requirement",
         };
         nodes.push(node);
       }
@@ -334,7 +334,7 @@ test.describe('Sigma.js WebGL Performance', () => {
     });
 
     // Verify performance mode is active
-    await expect(page.getByText('Performance')).toBeVisible();
+    await expect(page.getByText("Performance")).toBeVisible();
 
     // Initial render should be < 5000ms
     const startTime = Date.now();
@@ -371,7 +371,7 @@ test.describe('Sigma.js WebGL Performance', () => {
     expect(fps).toBeGreaterThanOrEqual(50);
   });
 
-  test('should show performance metrics', async ({ page }) => {
+  test("should show performance metrics", async ({ page }) => {
     // Wait for graph to load
     await page.waitForSelector('[data-testid="sigma-container"]', {
       timeout: 10_000,
@@ -384,7 +384,7 @@ test.describe('Sigma.js WebGL Performance', () => {
     // Performance overlay should show metrics
   });
 
-  test('should apply LOD (Level of Detail) based on zoom', async ({ page }) => {
+  test("should apply LOD (Level of Detail) based on zoom", async ({ page }) => {
     // Wait for graph to load
     await page.waitForSelector('[data-testid="sigma-container"]', {
       timeout: 10_000,
@@ -425,7 +425,7 @@ test.describe('Sigma.js WebGL Performance', () => {
     expect(zoomFPS).toBeGreaterThanOrEqual(55);
   });
 
-  test('should hide edges during pan/zoom for performance', async ({ page }) => {
+  test("should hide edges during pan/zoom for performance", async ({ page }) => {
     // Wait for graph to load
     await page.waitForSelector('[data-testid="sigma-container"]', {
       timeout: 10_000,
@@ -444,9 +444,9 @@ test.describe('Sigma.js WebGL Performance', () => {
   });
 });
 
-test.describe('Sigma.js Memory Performance', () => {
-  test('should not leak memory during graph updates', async ({ page }) => {
-    await page.goto('/projects/test-project/graph');
+test.describe("Sigma.js Memory Performance", () => {
+  test("should not leak memory during graph updates", async ({ page }) => {
+    await page.goto("/projects/test-project/graph");
 
     // Get initial memory usage (Chrome-only performance.memory)
     const initialMemory = await page.evaluate(() => {
@@ -461,7 +461,7 @@ test.describe('Sigma.js Memory Performance', () => {
     for (let i = 0; i < 10; i++) {
       await page.evaluate(() => {
         // Trigger graph update
-        globalThis.dispatchEvent(new CustomEvent('updateGraph'));
+        globalThis.dispatchEvent(new CustomEvent("updateGraph"));
       });
 
       await page.waitForTimeout(100);

@@ -1,10 +1,10 @@
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import type { PerformanceMetrics } from './types';
+import type { PerformanceMetrics } from "./types";
 
-import { BYTES_PER_MB, PERCENT_DECIMALS, PERCENT_SCALE, ZERO } from './constants';
-import { formatInteraction, getFpsColor } from './formatting';
-import { safeToLocaleTimeString } from './storage';
+import { BYTES_PER_MB, PERCENT_DECIMALS, PERCENT_SCALE, ZERO } from "./constants";
+import { formatInteraction, getFpsColor } from "./formatting";
+import { safeToLocaleTimeString } from "./storage";
 
 function logGraphPerformanceMetrics(metrics: PerformanceMetrics): void {
   const timeLabel = safeToLocaleTimeString(metrics.timestamp);

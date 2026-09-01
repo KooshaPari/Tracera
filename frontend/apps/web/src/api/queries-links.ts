@@ -3,14 +3,14 @@ import type {
   UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
-} from '@tanstack/react-query';
+} from "@tanstack/react-query";
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { Link } from '@tracertm/types';
+import type { Link } from "@tracertm/types";
 
-import { queryKeys } from './queries-keys';
-import { api, handleApiResponse } from './query-client';
+import { queryKeys } from "./queries-keys";
+import { api, handleApiResponse } from "./query-client";
 
 interface CreateLinkInput {
   data: Partial<Link>;
@@ -30,7 +30,7 @@ const useProjectLinks = (
     enabled: Boolean(projectId),
     queryFn: async () =>
       handleApiResponse(
-        api.get<Link[]>('/api/v1/projects/{projectId}/links', {
+        api.get<Link[]>("/api/v1/projects/{projectId}/links", {
           params: { path: { projectId } },
         }),
       ),
@@ -47,7 +47,7 @@ const useCreateLink = (
   const baseOptions: UseMutationOptions<Link, Error, CreateLinkInput> = {
     mutationFn: async (input: CreateLinkInput) =>
       handleApiResponse(
-        api.post<Link>('/api/v1/projects/{projectId}/links', {
+        api.post<Link>("/api/v1/projects/{projectId}/links", {
           body: input.data as Record<string, unknown>,
           params: { path: { projectId: input.projectId } },
         }),
@@ -69,7 +69,7 @@ const useDeleteLink = (
   const baseOptions: UseMutationOptions<void, Error, DeleteLinkInput> = {
     mutationFn: async (input: DeleteLinkInput) => {
       await handleApiResponse(
-        api.del<void>('/api/v1/links/{linkId}', {
+        api.del<void>("/api/v1/links/{linkId}", {
           params: { path: { linkId: input.linkId } },
         }),
       );

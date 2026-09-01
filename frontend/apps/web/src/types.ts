@@ -11,10 +11,10 @@ export type {
   Priority,
   Project,
   ViewType,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
 // Import for local use
-import type { Item, Link, ViewType } from '@tracertm/types';
+import type { Item, Link, ViewType } from "@tracertm/types";
 
 // Application-specific types
 
@@ -44,7 +44,7 @@ export interface CommandItem extends MenuItem {
 
 export interface Notification {
   id: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   title: string;
   message?: string;
   timestamp: Date;
@@ -64,7 +64,7 @@ export interface FilterOption {
 export interface SortOption {
   label: string;
   value: string;
-  order: 'asc' | 'desc';
+  order: "asc" | "desc";
 }
 
 export interface ViewConfig {
@@ -106,10 +106,10 @@ export interface KeyboardShortcut {
 }
 
 export interface UserPreferences {
-  theme: 'light' | 'dark' | 'system';
+  theme: "light" | "dark" | "system";
   language: string;
   dateFormat: string;
-  timeFormat: '12h' | '24h';
+  timeFormat: "12h" | "24h";
   notifications: {
     enabled: boolean;
     desktop: boolean;
@@ -151,7 +151,7 @@ export interface ValidationRule {
 export interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'date' | 'number' | 'email';
+  type: "text" | "textarea" | "select" | "checkbox" | "radio" | "date" | "number" | "email";
   placeholder?: string;
   required?: boolean;
   options?: { label: string; value: string }[];
@@ -176,7 +176,7 @@ export interface UploadFile {
   name: string;
   size: number;
   type: string;
-  status: 'pending' | 'uploading' | 'success' | 'error';
+  status: "pending" | "uploading" | "success" | "error";
   progress: number;
   error?: string;
   url?: string;
@@ -192,7 +192,7 @@ export interface ApiErrorResponse {
 }
 
 export interface ExportConfig {
-  format: 'json' | 'csv' | 'xlsx' | 'pdf';
+  format: "json" | "csv" | "xlsx" | "pdf";
   filename: string;
   includeMetadata?: boolean;
   filters?: ExportFilter;
@@ -246,7 +246,7 @@ export interface SearchParams {
   query: string;
   filters?: SearchFilter;
   sort?: string;
-  order?: 'asc' | 'desc';
+  order?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 }
@@ -254,7 +254,7 @@ export interface SearchParams {
 export type BulkOperationData = Record<string, string | number | boolean | null | undefined>;
 
 export interface BulkOperation {
-  operation: 'update' | 'delete';
+  operation: "update" | "delete";
   ids: string[];
   data?: BulkOperationData;
 }

@@ -2,19 +2,19 @@
  * Test setup and configuration
  */
 
-import { cleanup } from '@testing-library/react';
-import '@testing-library/jest-dom/vitest';
-import { toHaveNoViolations } from 'jest-axe';
-import { createRequire } from 'node:module';
-import React from 'react';
-import { afterEach, afterAll, beforeAll, expect, vi } from 'vitest';
+import { cleanup } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
+import { toHaveNoViolations } from "jest-axe";
+import { createRequire } from "node:module";
+import React from "react";
+import { afterEach, afterAll, beforeAll, expect, vi } from "vitest";
 
 // Keep the shared keyboard/mouse surface available to legacy a11y tests.  The
 // CJS entrypoint avoids Bun + ESM interop returning an object without setup().
 const require = createRequire(import.meta.url);
-const userEventModule = require('@testing-library/user-event') as {
-  default?: { setup: typeof import('@testing-library/user-event').default.setup };
-  setup?: typeof import('@testing-library/user-event').default.setup;
+const userEventModule = require("@testing-library/user-event") as {
+  default?: { setup: typeof import("@testing-library/user-event").default.setup };
+  setup?: typeof import("@testing-library/user-event").default.setup;
 };
 const userEvent = userEventModule.default ?? userEventModule;
 
@@ -32,7 +32,7 @@ type TestGlobals = typeof globalThis & {
 
 // Sigma reads WebGL constants while its module is loading. Keep this import-time
 // contract constructor-free: rendering behavior remains covered by graph mocks.
-if (typeof globalThis !== 'undefined') {
+if (typeof globalThis !== "undefined") {
   const WebGLRenderingContextMock = {
     BOOL: 35_670,
     BYTE: 5120,
@@ -44,12 +44,12 @@ if (typeof globalThis !== 'undefined') {
     UNSIGNED_INT: 5125,
     UNSIGNED_SHORT: 5123,
   };
-  Object.defineProperty(globalThis, 'WebGLRenderingContext', {
+  Object.defineProperty(globalThis, "WebGLRenderingContext", {
     configurable: true,
     value: WebGLRenderingContextMock as unknown as typeof WebGLRenderingContext,
     writable: true,
   });
-  Object.defineProperty(globalThis, 'WebGL2RenderingContext', {
+  Object.defineProperty(globalThis, "WebGL2RenderingContext", {
     configurable: true,
     value: WebGLRenderingContextMock as unknown as typeof WebGL2RenderingContext,
     writable: true,
@@ -57,8 +57,8 @@ if (typeof globalThis !== 'undefined') {
 }
 
 // Mock TanStack Router API routes (createAPIFileRoute is from TanStack Start but imported from react-router)
-vi.mock('@tanstack/react-router', async () => {
-  const actual = await vi.importActual('@tanstack/react-router');
+vi.mock("@tanstack/react-router", async () => {
+  const actual = await vi.importActual("@tanstack/react-router");
   return {
     ...actual,
     createAPIFileRoute: () => () => ({ GET: vi.fn(), POST: vi.fn() }),
@@ -66,13 +66,13 @@ vi.mock('@tanstack/react-router', async () => {
     useRouter: () => ({
       navigate: vi.fn(),
     }),
-    useLocation: () => ({ pathname: '/' }),
+    useLocation: () => ({ pathname: "/" }),
     useParams: () => ({}),
     Link: ({ children, to, ...props }: any) =>
       React.createElement(
-        'a',
+        "a",
         {
-          href: typeof to === 'string' ? to : to?.toString?.(),
+          href: typeof to === "string" ? to : to?.toString?.(),
           ...props,
         },
         children,
@@ -81,7 +81,7 @@ vi.mock('@tanstack/react-router', async () => {
 });
 
 // Mock elkjs to avoid worker initialization issues in tests
-vi.mock('elkjs', () => ({
+vi.mock("elkjs", () => ({
   default: class MockELK {
     async layout() {
       return { children: [], edges: [] };
@@ -92,7 +92,7 @@ vi.mock('elkjs', () => ({
 // Already defined at top of file
 
 // Mock sigma.js to avoid WebGL initialization issues
-vi.mock('sigma', () => ({
+vi.mock("sigma", () => ({
   default: class MockSigma {
     on = vi.fn();
     off = vi.fn();
@@ -130,7 +130,7 @@ const localStorageMock: Storage = (() => {
   };
 })();
 
-Object.defineProperty(globalThis, 'localStorage', {
+Object.defineProperty(globalThis, "localStorage", {
   configurable: true,
   value: localStorageMock,
   writable: true,
@@ -147,8 +147,8 @@ afterEach(() => {
 });
 
 // Mock window.matchMedia
-if (typeof globalThis.window !== 'undefined') {
-  Object.defineProperty(globalThis.window, 'matchMedia', {
+if (typeof globalThis.window !== "undefined") {
+  Object.defineProperty(globalThis.window, "matchMedia", {
     value: vi.fn().mockImplementation((query) => ({
       addEventListener: vi.fn(),
       addListener: vi.fn(),
@@ -164,11 +164,11 @@ if (typeof globalThis.window !== 'undefined') {
 }
 
 // Mock navigator.clipboard
-if (typeof navigator !== 'undefined') {
-  Object.defineProperty(navigator, 'clipboard', {
+if (typeof navigator !== "undefined") {
+  Object.defineProperty(navigator, "clipboard", {
     configurable: true,
     value: {
-      readText: vi.fn(async () => ''),
+      readText: vi.fn(async () => ""),
       writeText: vi.fn(async () => {}),
     },
     writable: true,
@@ -183,7 +183,7 @@ const IntersectionObserverMock = class {
   }
   unobserve() {}
 };
-Object.defineProperty(globalThis, 'IntersectionObserver', {
+Object.defineProperty(globalThis, "IntersectionObserver", {
   configurable: true,
   value: IntersectionObserverMock as unknown as typeof IntersectionObserver,
   writable: true,
@@ -195,21 +195,21 @@ const ResizeObserverMock = class {
   observe() {}
   unobserve() {}
 };
-Object.defineProperty(globalThis, 'ResizeObserver', {
+Object.defineProperty(globalThis, "ResizeObserver", {
   configurable: true,
   value: ResizeObserverMock as unknown as typeof ResizeObserver,
   writable: true,
 });
 
 // Mock pointer capture methods for Radix UI components
-if (typeof globalThis !== 'undefined' && typeof Element !== 'undefined') {
+if (typeof globalThis !== "undefined" && typeof Element !== "undefined") {
   Element.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
   Element.prototype.setPointerCapture = vi.fn();
   Element.prototype.releasePointerCapture = vi.fn();
 }
 
 // Mock scrollIntoView for Radix UI components
-if (typeof globalThis !== 'undefined' && typeof Element !== 'undefined') {
+if (typeof globalThis !== "undefined" && typeof Element !== "undefined") {
   Element.prototype.scrollIntoView = vi.fn();
 }
 
@@ -232,7 +232,7 @@ class MockWebSocket {
     setTimeout(() => {
       this.readyState = MockWebSocket.OPEN;
       if (this.onopen) {
-        this.onopen(new Event('open'));
+        this.onopen(new Event("open"));
       }
     }, 0);
   }
@@ -241,7 +241,7 @@ class MockWebSocket {
   close() {
     this.readyState = MockWebSocket.CLOSED;
     if (this.onclose) {
-      this.onclose(new CloseEvent('close'));
+      this.onclose(new CloseEvent("close"));
     }
   }
   addEventListener(_type: string, _listener: EventListener) {}
@@ -251,14 +251,14 @@ class MockWebSocket {
   }
 }
 
-Object.defineProperty(globalThis, 'WebSocket', {
+Object.defineProperty(globalThis, "WebSocket", {
   configurable: true,
   value: MockWebSocket as unknown as typeof WebSocket,
   writable: true,
 });
 
 // Mock HTMLCanvasElement for graph visualization
-if (typeof globalThis !== 'undefined') {
+if (typeof globalThis !== "undefined") {
   const MockCanvas = class {
     width = 300;
     height = 150;
@@ -295,7 +295,7 @@ if (typeof globalThis !== 'undefined') {
     }
 
     toDataURL() {
-      return 'data:image/png;base64,iVBORw0KGgo=';
+      return "data:image/png;base64,iVBORw0KGgo=";
     }
 
     toBlob(callback: BlobCallback) {
@@ -303,7 +303,7 @@ if (typeof globalThis !== 'undefined') {
     }
   };
   const nativeCanvas = globalThis.HTMLCanvasElement;
-  if (typeof nativeCanvas === 'function') {
+  if (typeof nativeCanvas === "function") {
     // document.createElement('canvas') uses jsdom's original realm constructor.
     // Patch that prototype instead of replacing the global constructor, which
     // would leave created canvases on the unimplemented jsdom prototype.
@@ -325,7 +325,7 @@ if (typeof globalThis !== 'undefined') {
       },
     });
   } else {
-    Object.defineProperty(globalThis, 'HTMLCanvasElement', {
+    Object.defineProperty(globalThis, "HTMLCanvasElement", {
       configurable: true,
       value: MockCanvas as unknown as typeof HTMLCanvasElement,
       writable: true,
@@ -336,9 +336,9 @@ if (typeof globalThis !== 'undefined') {
 // axe asks for pseudo-element styles. jsdom does not implement that optional
 // branch and emits a console error before returning ordinary computed styles,
 // so retain its useful behavior without forwarding the unsupported argument.
-if (typeof globalThis.getComputedStyle === 'function') {
+if (typeof globalThis.getComputedStyle === "function") {
   const nativeGetComputedStyle = globalThis.getComputedStyle.bind(globalThis);
-  Object.defineProperty(globalThis, 'getComputedStyle', {
+  Object.defineProperty(globalThis, "getComputedStyle", {
     configurable: true,
     value: (element: Element): CSSStyleDeclaration => nativeGetComputedStyle(element),
     writable: true,
@@ -347,7 +347,7 @@ if (typeof globalThis.getComputedStyle === 'function') {
 
 // Radix uses scrollTo while positioning dialogs; jsdom exposes only a noisy
 // not-implemented stub, so provide the browser side-effect boundary explicitly.
-Object.defineProperty(globalThis, 'scrollTo', {
+Object.defineProperty(globalThis, "scrollTo", {
   configurable: true,
   value: vi.fn(),
   writable: true,
@@ -358,9 +358,9 @@ Object.defineProperty(globalThis, 'scrollTo', {
 let globalFetchImpl: typeof fetch = async (url) => {
   console.warn(`[WARN] Unmocked fetch to ${url}`);
   return Response.json(
-    { error: 'Not mocked' },
+    { error: "Not mocked" },
     {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
       status: 404,
     },
   );
@@ -375,9 +375,9 @@ globalThis.fetch = vi.fn(async (url: string | URL | Request, options?: RequestIn
   globalFetchImpl = impl;
 };
 
-import type { RenderOptions } from '@testing-library/react';
+import type { RenderOptions } from "@testing-library/react";
 
-import { render as rtlRender } from '@testing-library/react';
+import { render as rtlRender } from "@testing-library/react";
 // Add React testing utilities wrapper for provider-based tests
 
 // Create test wrapper with all necessary providers
@@ -385,17 +385,17 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) =>
   React.createElement(React.Fragment, null, children);
 
 // Custom render function that wraps components with providers
-export const render = (ui: React.ReactElement, options?: Omit<RenderOptions, 'wrapper'>) =>
+export const render = (ui: React.ReactElement, options?: Omit<RenderOptions, "wrapper">) =>
   rtlRender(ui, { wrapper: AllTheProviders, ...options });
 
 // Re-export everything from testing library
-export * from '@testing-library/react';
+export * from "@testing-library/react";
 
 // ============================================================================
 // MSW Server Setup
 // ============================================================================
 
-import { waitFor } from '@testing-library/react';
+import { waitFor } from "@testing-library/react";
 // MSW TEMPORARILY DISABLED DUE TO GRAPHQL ESM/COMMONJS IMPORT ISSUE
 // See: CRITICAL_BLOCKER_MSW_GRAPHQL.md
 // TODO: Re-enable after fixing graphql import or replacing MSW
@@ -431,7 +431,7 @@ import { waitFor } from '@testing-library/react';
 // Async Test Helpers
 // ============================================================================
 
-import { getServer } from './mocks/server';
+import { getServer } from "./mocks/server";
 
 /**
  * Wait for loading state to appear and then disappear
@@ -443,7 +443,7 @@ export const waitForLoadingState = async (container: HTMLElement, timeout: numbe
     () => {
       const loader = container.querySelector('[data-testid="loading"]');
       if (!loader) {
-        throw new Error('Loading indicator not found');
+        throw new Error("Loading indicator not found");
       }
     },
     { timeout: 500 },
@@ -456,7 +456,7 @@ export const waitForLoadingState = async (container: HTMLElement, timeout: numbe
     () => {
       const loader = container.querySelector('[data-testid="loading"]');
       if (loader) {
-        throw new Error('Loading indicator still visible');
+        throw new Error("Loading indicator still visible");
       }
     },
     { timeout },
@@ -474,7 +474,7 @@ export const waitForElementWithText = async (
   let element: HTMLElement | null = null;
   await waitFor(
     () => {
-      element = [...container.querySelectorAll('*')].find((el) => el.textContent?.includes(text)) as
+      element = [...container.querySelectorAll("*")].find((el) => el.textContent?.includes(text)) as
         | HTMLElement
         | undefined;
       if (!element) {
@@ -492,18 +492,18 @@ export const waitForElementWithText = async (
  */
 export const clearAllStores = () => {
   // Clear localStorage
-  if (typeof localStorage !== 'undefined') {
+  if (typeof localStorage !== "undefined") {
     localStorage.clear();
   }
 
   // Clear React Query cache (if it exists in the test)
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     (window as any).__REACT_QUERY_CACHE__ = undefined;
   }
 
   // Clear any zustand stores by removing from localStorage
   Object.keys(localStorageMock).forEach((key) => {
-    if (key.includes('store') || key.includes('zustand')) {
+    if (key.includes("store") || key.includes("zustand")) {
       localStorageMock.removeItem(key);
     }
   });

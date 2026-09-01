@@ -2,12 +2,12 @@
  * Streaming API client for large data transfers using NDJSON
  */
 
-import type { NDJSONMetadata, StreamingStats } from '../lib/ndjson-parser';
-import type { Item } from './types';
+import type { NDJSONMetadata, StreamingStats } from "../lib/ndjson-parser";
+import type { Item } from "./types";
 
-import { createCancellableNDJSONStream, parseNDJSONWithProgress } from '../lib/ndjson-parser';
+import { createCancellableNDJSONStream, parseNDJSONWithProgress } from "../lib/ndjson-parser";
 
-const API_BASE = '/api/v1';
+const API_BASE = "/api/v1";
 const DEFAULT_BATCH_SIZE = 50;
 const PROGRESS_UPDATE_INTERVAL = 10;
 const ZERO = 0;
@@ -27,18 +27,18 @@ interface StreamGraphOptions {
 
 interface StreamExportOptions {
   projectId: string;
-  type: 'json' | 'csv';
+  type: "json" | "csv";
   onProgress?: (stats: StreamingStats) => void;
   onMetadata?: (metadata: NDJSONMetadata) => void;
 }
 
 interface GraphStreamNode {
-  type: 'node';
+  type: "node";
   data: unknown;
 }
 
 interface GraphStreamEdge {
-  type: 'edge';
+  type: "edge";
   data: unknown;
 }
 
@@ -58,13 +58,13 @@ const buildItemsQueryParams = (options: StreamItemsOptions): URLSearchParams => 
   const params = new URLSearchParams();
 
   if (options.projectId !== undefined) {
-    params.append('project_id', options.projectId);
+    params.append("project_id", options.projectId);
   }
   if (options.limit !== undefined) {
-    params.append('limit', options.limit.toString());
+    params.append("limit", options.limit.toString());
   }
   if (options.offset !== undefined) {
-    params.append('offset', options.offset.toString());
+    params.append("offset", options.offset.toString());
   }
 
   return params;
@@ -84,7 +84,7 @@ const buildExportStreamUrl = (options: StreamExportOptions): string => {
 const fetchNDJSONResponse = async (url: string): Promise<Response> => {
   const response = await fetch(url, {
     headers: {
-      Accept: 'application/x-ndjson',
+      Accept: "application/x-ndjson",
     },
   });
 
@@ -242,10 +242,10 @@ const loadGraphProgressive = async (
   const edges: unknown[] = [];
 
   for await (const item of streamGraph(graphId, options)) {
-    if (item.type === 'node') {
+    if (item.type === "node") {
       nodes.push(item.data);
       await maybeUpdateNodes(nodes, callbacks);
-    } else if (item.type === 'edge') {
+    } else if (item.type === "edge") {
       edges.push(item.data);
       await maybeUpdateEdges(edges, callbacks);
     }

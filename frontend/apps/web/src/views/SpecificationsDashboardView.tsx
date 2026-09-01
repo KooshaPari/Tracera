@@ -1,12 +1,12 @@
-import type { JSX } from 'react';
+import type { JSX } from "react";
 
-import { SpecificationDashboard } from '@/components/specifications/dashboard/SpecificationDashboard';
+import { SpecificationDashboard } from "@/components/specifications/dashboard/SpecificationDashboard";
 
-import { useSpecificationsDashboardViewModel } from './specifications-dashboard/useSpecificationsDashboardViewModel';
-import { SpecificationsDashboardHeader } from './SpecificationsDashboardHeader';
-import { SpecificationsDashboardLoadingSkeleton } from './SpecificationsDashboardLoadingSkeleton';
-import { SpecificationsDashboardQuickNavigationCards } from './SpecificationsDashboardQuickNavigationCards';
-import { SpecificationsDashboardTypeDistributionCard } from './SpecificationsDashboardTypeDistributionCard';
+import { useSpecificationsDashboardViewModel } from "./specifications-dashboard/useSpecificationsDashboardViewModel";
+import { SpecificationsDashboardHeader } from "./SpecificationsDashboardHeader";
+import { SpecificationsDashboardLoadingSkeleton } from "./SpecificationsDashboardLoadingSkeleton";
+import { SpecificationsDashboardQuickNavigationCards } from "./SpecificationsDashboardQuickNavigationCards";
+import { SpecificationsDashboardTypeDistributionCard } from "./SpecificationsDashboardTypeDistributionCard";
 
 interface SpecificationsDashboardViewProps {
   projectId: string;
@@ -34,7 +34,7 @@ export function SpecificationsDashboardView({
   }
 
   return (
-    <div className='animate-in fade-in mx-auto max-w-[1600px] space-y-8 p-6 pb-20 duration-500'>
+    <div className="animate-in fade-in mx-auto max-w-[1600px] space-y-8 p-6 pb-20 duration-500">
       <SpecificationsDashboardHeader
         onNavigateADRs={onNavigateADRs}
         onNavigateContracts={onNavigateContracts}

@@ -1,9 +1,9 @@
-import { useCallback } from 'react';
-import { toast } from 'sonner';
+import { useCallback } from "react";
+import { toast } from "sonner";
 
-import type { Item, ItemStatus, Priority } from '@tracertm/types';
+import type { Item, ItemStatus, Priority } from "@tracertm/types";
 
-import { useDeleteItem, useUpdateItem } from '@/hooks/useItems';
+import { useDeleteItem, useUpdateItem } from "@/hooks/useItems";
 
 interface SavePayload {
   id: string;
@@ -35,10 +35,10 @@ export function useItemMutations(item: Item | undefined): ItemMutations {
     (id: string, onSuccess: () => void): void => {
       deleteItemMutation.mutate(id, {
         onError: () => {
-          toast.error('Failed to delete item');
+          toast.error("Failed to delete item");
         },
         onSuccess: () => {
-          toast.success('Item deleted successfully');
+          toast.success("Item deleted successfully");
           onSuccess();
         },
       });
@@ -49,7 +49,7 @@ export function useItemMutations(item: Item | undefined): ItemMutations {
   const saveItem = useCallback(
     (payload: SavePayload, onSuccess: () => void): void => {
       if (!item) {
-        toast.error('Failed to update item');
+        toast.error("Failed to update item");
         return;
       }
 
@@ -66,10 +66,10 @@ export function useItemMutations(item: Item | undefined): ItemMutations {
         },
         {
           onError: () => {
-            toast.error('Failed to update item');
+            toast.error("Failed to update item");
           },
           onSuccess: () => {
-            toast.success('Item updated');
+            toast.success("Item updated");
             onSuccess();
           },
         },

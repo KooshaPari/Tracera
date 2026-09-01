@@ -5,9 +5,9 @@
  * error message wrapping for non-Error throws, and worker restart on error.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { TaskPriority, WorkerPool } from '../../workers/worker-pool';
+import { TaskPriority, WorkerPool } from "../../workers/worker-pool";
 
 // Minimal mock Worker using addEventListener (matching real Worker API)
 class EventDrivenMockWorker {
@@ -29,11 +29,11 @@ class EventDrivenMockWorker {
   postMessage(message: any, _transferables?: Transferable[]) {
     // Simulate async response with result
     setTimeout(() => {
-      this.emit('message', {
+      this.emit("message", {
         data: {
           data: { processed: true },
           id: message.id,
-          type: 'result',
+          type: "result",
         },
       });
     }, 5);
@@ -49,7 +49,7 @@ class EventDrivenMockWorker {
   }
 }
 
-describe('WorkerPool Edge Cases', () => {
+describe("WorkerPool Edge Cases", () => {
   let pool: WorkerPool;
 
   afterEach(() => {
@@ -57,42 +57,42 @@ describe('WorkerPool Edge Cases', () => {
     vi.useRealTimers();
   });
 
-  describe('postMessage failure', () => {
-    it('should reject task when postMessage throws an Error', async () => {
+  describe("postMessage failure", () => {
+    it("should reject task when postMessage throws an Error", async () => {
       pool = new WorkerPool({
         maxWorkers: 1,
         minWorkers: 1,
         workerFactory: () => {
           const worker = new EventDrivenMockWorker();
           worker.postMessage = () => {
-            throw new Error('DataCloneError: could not be cloned');
+            throw new Error("DataCloneError: could not be cloned");
           };
           return worker as unknown as Worker;
         },
       });
 
-      await expect(pool.executeTask('test', { data: 'bad' })).rejects.toThrow(
-        'DataCloneError: could not be cloned',
+      await expect(pool.executeTask("test", { data: "bad" })).rejects.toThrow(
+        "DataCloneError: could not be cloned",
       );
     });
 
-    it('should wrap non-Error throws from postMessage into Error', async () => {
+    it("should wrap non-Error throws from postMessage into Error", async () => {
       pool = new WorkerPool({
         maxWorkers: 1,
         minWorkers: 1,
         workerFactory: () => {
           const worker = new EventDrivenMockWorker();
           worker.postMessage = () => {
-            throw 'string error';
+            throw "string error";
           };
           return worker as unknown as Worker;
         },
       });
 
-      await expect(pool.executeTask('test', {})).rejects.toThrow('string error');
+      await expect(pool.executeTask("test", {})).rejects.toThrow("string error");
     });
 
-    it('should continue processing queue after postMessage failure', async () => {
+    it("should continue processing queue after postMessage failure", async () => {
       let callCount = 0;
       pool = new WorkerPool({
         maxWorkers: 1,
@@ -103,7 +103,7 @@ describe('WorkerPool Edge Cases', () => {
           worker.postMessage = (message: any, transferables?: Transferable[]) => {
             callCount += 1;
             if (callCount === 1) {
-              throw new Error('First call fails');
+              throw new Error("First call fails");
             }
             originalPostMessage(message, transferables);
           };
@@ -112,18 +112,18 @@ describe('WorkerPool Edge Cases', () => {
       });
 
       // First task should fail
-      const firstTask = pool.executeTask('test', { index: 0 });
-      await expect(firstTask).rejects.toThrow('First call fails');
+      const firstTask = pool.executeTask("test", { index: 0 });
+      await expect(firstTask).rejects.toThrow("First call fails");
 
       // Second task should succeed (worker restart + queue processing)
-      const secondResult = await pool.executeTask('test', { index: 1 });
+      const secondResult = await pool.executeTask("test", { index: 1 });
       expect(secondResult).toEqual({ processed: true });
       expect(pool.getStats()).toMatchObject({ busyWorkers: 0, queuedTasks: 0 });
     });
   });
 
-  describe('worker error event', () => {
-    it('should reject current task and restart worker on error event', async () => {
+  describe("worker error event", () => {
+    it("should reject current task and restart worker on error event", async () => {
       pool = new WorkerPool({
         maxWorkers: 2,
         minWorkers: 1,
@@ -131,18 +131,18 @@ describe('WorkerPool Edge Cases', () => {
           const worker = new EventDrivenMockWorker();
           worker.postMessage = function postMessage(this: EventDrivenMockWorker, _message: any) {
             setTimeout(() => {
-              this.emit('error', { message: 'Worker crashed' });
+              this.emit("error", { message: "Worker crashed" });
             }, 5);
           }.bind(worker);
           return worker as unknown as Worker;
         },
       });
 
-      await expect(pool.executeTask('test', {})).rejects.toThrow('Worker error: Worker crashed');
+      await expect(pool.executeTask("test", {})).rejects.toThrow("Worker error: Worker crashed");
       expect(pool.getStats()).toMatchObject({ busyWorkers: 0, queuedTasks: 0 });
     });
 
-    it('should handle error event when no task is associated', async () => {
+    it("should handle error event when no task is associated", async () => {
       const worker = new EventDrivenMockWorker();
       pool = new WorkerPool({
         maxWorkers: 1,
@@ -151,16 +151,16 @@ describe('WorkerPool Edge Cases', () => {
       });
 
       // Trigger error with no current task -- should not throw
-      worker.emit('error', { message: 'Spurious error' });
+      worker.emit("error", { message: "Spurious error" });
 
       // Pool should still function after spurious error
-      const result = await pool.executeTask('test', { data: 1 });
+      const result = await pool.executeTask("test", { data: 1 });
       expect(result).toEqual({ processed: true });
     });
   });
 
-  describe('worker lifecycle', () => {
-    it('should reject a timed-out task and replace its worker once', async () => {
+  describe("worker lifecycle", () => {
+    it("should reject a timed-out task and replace its worker once", async () => {
       vi.useFakeTimers();
       const workerFactory = vi.fn(() => {
         const worker = new EventDrivenMockWorker();
@@ -174,8 +174,8 @@ describe('WorkerPool Edge Cases', () => {
         workerFactory,
       });
 
-      const task = pool.executeTask('nonresponding', {});
-      const rejection = expect(task).rejects.toThrow('Task timeout after 25ms');
+      const task = pool.executeTask("nonresponding", {});
+      const rejection = expect(task).rejects.toThrow("Task timeout after 25ms");
 
       await vi.advanceTimersByTimeAsync(25);
       await rejection;
@@ -184,7 +184,7 @@ describe('WorkerPool Edge Cases', () => {
       expect(pool.getStats()).toMatchObject({ busyWorkers: 0, totalWorkers: 1 });
     });
 
-    it('should reject an active task and clear timers when terminated', async () => {
+    it("should reject an active task and clear timers when terminated", async () => {
       vi.useFakeTimers();
       pool = new WorkerPool({
         maxWorkers: 1,
@@ -196,8 +196,8 @@ describe('WorkerPool Edge Cases', () => {
         },
       });
 
-      const task = pool.executeTask('nonresponding', {});
-      const rejection = expect(task).rejects.toThrow('Worker pool terminated');
+      const task = pool.executeTask("nonresponding", {});
+      const rejection = expect(task).rejects.toThrow("Worker pool terminated");
 
       pool.terminate();
 
@@ -206,8 +206,8 @@ describe('WorkerPool Edge Cases', () => {
     });
   });
 
-  describe('progress messages', () => {
-    it('should forward progress updates to the onProgress callback', async () => {
+  describe("progress messages", () => {
+    it("should forward progress updates to the onProgress callback", async () => {
       pool = new WorkerPool({
         maxWorkers: 1,
         minWorkers: 1,
@@ -216,18 +216,18 @@ describe('WorkerPool Edge Cases', () => {
           worker.postMessage = function postMessage(this: EventDrivenMockWorker, message: any) {
             // Send progress, then result
             setTimeout(() => {
-              this.emit('message', {
-                data: { id: message.id, progress: 0.5, type: 'progress' },
+              this.emit("message", {
+                data: { id: message.id, progress: 0.5, type: "progress" },
               });
             }, 2);
             setTimeout(() => {
-              this.emit('message', {
-                data: { id: message.id, progress: 1, type: 'progress' },
+              this.emit("message", {
+                data: { id: message.id, progress: 1, type: "progress" },
               });
             }, 4);
             setTimeout(() => {
-              this.emit('message', {
-                data: { data: 'done', id: message.id, type: 'result' },
+              this.emit("message", {
+                data: { data: "done", id: message.id, type: "result" },
               });
             }, 6);
           }.bind(worker);
@@ -238,7 +238,7 @@ describe('WorkerPool Edge Cases', () => {
       const progressUpdates: number[] = [];
 
       const result = await pool.executeTask(
-        'compute',
+        "compute",
         {},
         {
           onProgress: (progress) => {
@@ -247,12 +247,12 @@ describe('WorkerPool Edge Cases', () => {
         },
       );
 
-      expect(result).toBe('done');
+      expect(result).toBe("done");
       expect(progressUpdates).toEqual([0.5, 1]);
       expect(pool.getStats()).toMatchObject({ busyWorkers: 0, queuedTasks: 0 });
     });
 
-    it('should ignore progress messages without numeric progress value', async () => {
+    it("should ignore progress messages without numeric progress value", async () => {
       pool = new WorkerPool({
         maxWorkers: 1,
         minWorkers: 1,
@@ -260,13 +260,13 @@ describe('WorkerPool Edge Cases', () => {
           const worker = new EventDrivenMockWorker();
           worker.postMessage = function postMessage(this: EventDrivenMockWorker, message: any) {
             setTimeout(() => {
-              this.emit('message', {
-                data: { id: message.id, type: 'progress' }, // No progress field
+              this.emit("message", {
+                data: { id: message.id, type: "progress" }, // No progress field
               });
             }, 2);
             setTimeout(() => {
-              this.emit('message', {
-                data: { data: 'done', id: message.id, type: 'result' },
+              this.emit("message", {
+                data: { data: "done", id: message.id, type: "result" },
               });
             }, 4);
           }.bind(worker);
@@ -277,7 +277,7 @@ describe('WorkerPool Edge Cases', () => {
       const progressUpdates: number[] = [];
 
       await pool.executeTask(
-        'test',
+        "test",
         {},
         {
           onProgress: (progress) => {
@@ -290,8 +290,8 @@ describe('WorkerPool Edge Cases', () => {
     });
   });
 
-  describe('worker error message type', () => {
-    it('should reject with error message when worker sends error type', async () => {
+  describe("worker error message type", () => {
+    it("should reject with error message when worker sends error type", async () => {
       pool = new WorkerPool({
         maxWorkers: 1,
         minWorkers: 1,
@@ -299,11 +299,11 @@ describe('WorkerPool Edge Cases', () => {
           const worker = new EventDrivenMockWorker();
           worker.postMessage = function postMessage(this: EventDrivenMockWorker, message: any) {
             setTimeout(() => {
-              this.emit('message', {
+              this.emit("message", {
                 data: {
-                  error: 'Computation failed',
+                  error: "Computation failed",
                   id: message.id,
-                  type: 'error',
+                  type: "error",
                 },
               });
             }, 5);
@@ -312,11 +312,11 @@ describe('WorkerPool Edge Cases', () => {
         },
       });
 
-      await expect(pool.executeTask('test', {})).rejects.toThrow('Computation failed');
+      await expect(pool.executeTask("test", {})).rejects.toThrow("Computation failed");
       expect(pool.getStats()).toMatchObject({ busyWorkers: 0, queuedTasks: 0 });
     });
 
-    it('should reject with default message when error type has no error field', async () => {
+    it("should reject with default message when error type has no error field", async () => {
       pool = new WorkerPool({
         maxWorkers: 1,
         minWorkers: 1,
@@ -324,10 +324,10 @@ describe('WorkerPool Edge Cases', () => {
           const worker = new EventDrivenMockWorker();
           worker.postMessage = function postMessage(this: EventDrivenMockWorker, message: any) {
             setTimeout(() => {
-              this.emit('message', {
+              this.emit("message", {
                 data: {
                   id: message.id,
-                  type: 'error',
+                  type: "error",
                 },
               });
             }, 5);
@@ -336,13 +336,13 @@ describe('WorkerPool Edge Cases', () => {
         },
       });
 
-      await expect(pool.executeTask('test', {})).rejects.toThrow('Worker task failed');
+      await expect(pool.executeTask("test", {})).rejects.toThrow("Worker task failed");
       expect(pool.getStats()).toMatchObject({ busyWorkers: 0, queuedTasks: 0 });
     });
   });
 
-  describe('priority queue sorting', () => {
-    it('should process CRITICAL tasks before NORMAL and LOW', async () => {
+  describe("priority queue sorting", () => {
+    it("should process CRITICAL tasks before NORMAL and LOW", async () => {
       const completionOrder: string[] = [];
 
       // Create a pool with only 1 worker but slow responses
@@ -353,8 +353,8 @@ describe('WorkerPool Edge Cases', () => {
           const worker = new EventDrivenMockWorker();
           worker.postMessage = function postMessage(this: EventDrivenMockWorker, message: any) {
             setTimeout(() => {
-              this.emit('message', {
-                data: { data: message.data, id: message.id, type: 'result' },
+              this.emit("message", {
+                data: { data: message.data, id: message.id, type: "result" },
               });
             }, 10);
           }.bind(worker);
@@ -363,38 +363,38 @@ describe('WorkerPool Edge Cases', () => {
       });
 
       // First task occupies the worker
-      const firstTask = pool.executeTask('test', { label: 'first' }).then(() => {
-        completionOrder.push('first');
+      const firstTask = pool.executeTask("test", { label: "first" }).then(() => {
+        completionOrder.push("first");
       });
 
       // Queue remaining while first is running
       const lowTask = pool
-        .executeTask('test', { label: 'low' }, { priority: TaskPriority.LOW })
+        .executeTask("test", { label: "low" }, { priority: TaskPriority.LOW })
         .then(() => {
-          completionOrder.push('low');
+          completionOrder.push("low");
         });
       const criticalTask = pool
-        .executeTask('test', { label: 'critical' }, { priority: TaskPriority.CRITICAL })
+        .executeTask("test", { label: "critical" }, { priority: TaskPriority.CRITICAL })
         .then(() => {
-          completionOrder.push('critical');
+          completionOrder.push("critical");
         });
       const normalTask = pool
-        .executeTask('test', { label: 'normal' }, { priority: TaskPriority.NORMAL })
+        .executeTask("test", { label: "normal" }, { priority: TaskPriority.NORMAL })
         .then(() => {
-          completionOrder.push('normal');
+          completionOrder.push("normal");
         });
 
       await Promise.all([firstTask, lowTask, criticalTask, normalTask]);
 
       // First always completes first (was already running)
-      expect(completionOrder[0]).toBe('first');
+      expect(completionOrder[0]).toBe("first");
       // Critical should come before normal and low
-      expect(completionOrder[1]).toBe('critical');
+      expect(completionOrder[1]).toBe("critical");
     });
   });
 
-  describe('idle worker cleanup', () => {
-    it('should clean up idle workers after timeout', async () => {
+  describe("idle worker cleanup", () => {
+    it("should clean up idle workers after timeout", async () => {
       vi.useFakeTimers();
 
       pool = new WorkerPool({
@@ -406,7 +406,7 @@ describe('WorkerPool Edge Cases', () => {
 
       // Execute several tasks to scale up workers
       const tasks = Array.from({ length: 4 }, async (_, i) =>
-        pool.executeTask('test', { index: i }),
+        pool.executeTask("test", { index: i }),
       );
 
       // Let tasks complete
@@ -425,8 +425,8 @@ describe('WorkerPool Edge Cases', () => {
     });
   });
 
-  describe('getStats accuracy', () => {
-    it('should report zero queued tasks when pool is idle', () => {
+  describe("getStats accuracy", () => {
+    it("should report zero queued tasks when pool is idle", () => {
       pool = new WorkerPool({
         maxWorkers: 2,
         minWorkers: 1,
@@ -441,31 +441,31 @@ describe('WorkerPool Edge Cases', () => {
       expect(stats.totalTasksProcessed).toBe(0);
     });
 
-    it('should track totalTasksProcessed correctly', async () => {
+    it("should track totalTasksProcessed correctly", async () => {
       pool = new WorkerPool({
         maxWorkers: 2,
         minWorkers: 1,
         workerFactory: () => new EventDrivenMockWorker() as unknown as Worker,
       });
 
-      await pool.executeTask('test', {});
-      await pool.executeTask('test', {});
-      await pool.executeTask('test', {});
+      await pool.executeTask("test", {});
+      await pool.executeTask("test", {});
+      await pool.executeTask("test", {});
 
       const stats = pool.getStats();
       expect(stats.totalTasksProcessed).toBe(3);
     });
   });
 
-  describe('TaskPriority export', () => {
-    it('should export correct priority values', () => {
+  describe("TaskPriority export", () => {
+    it("should export correct priority values", () => {
       expect(TaskPriority.CRITICAL).toBe(3);
       expect(TaskPriority.HIGH).toBe(2);
       expect(TaskPriority.NORMAL).toBe(1);
       expect(TaskPriority.LOW).toBe(0);
     });
 
-    it('should expose static TaskPriority on WorkerPool class', () => {
+    it("should expose static TaskPriority on WorkerPool class", () => {
       expect(WorkerPool.TaskPriority).toBeDefined();
       expect(WorkerPool.TaskPriority.CRITICAL).toBe(3);
     });

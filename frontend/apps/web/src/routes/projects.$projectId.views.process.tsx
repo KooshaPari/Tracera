@@ -1,17 +1,17 @@
-import type { ReactElement } from 'react';
+import type { ReactElement } from "react";
 
-import { createFileRoute, useParams } from '@tanstack/react-router';
+import { createFileRoute, useParams } from "@tanstack/react-router";
 
-import { ProcessView } from '@/pages/projects/views/ProcessView';
+import { ProcessView } from "@/pages/projects/views/ProcessView";
 
 export const ProcessViewRoute = (): ReactElement => {
-  const { projectId } = useParams({ from: '/projects/$projectId' });
+  const { projectId } = useParams({ from: "/projects/$projectId" });
   return <ProcessView projectId={projectId} />;
 };
 
 export const PROCESS_VIEW = ProcessViewRoute;
 
-export const Route = createFileRoute('/projects/$projectId/views/process')({
+export const Route = createFileRoute("/projects/$projectId/views/process")({
   component: ProcessViewRoute,
   loader: async () => ({}),
 });

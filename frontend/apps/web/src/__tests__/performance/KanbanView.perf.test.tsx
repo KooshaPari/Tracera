@@ -1,26 +1,26 @@
-import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import * as hooks from '../../hooks/useItems';
-import * as projectHooks from '../../hooks/useProjects';
-import { ItemsKanbanView } from '../../views/ItemsKanbanView';
+import * as hooks from "../../hooks/useItems";
+import * as projectHooks from "../../hooks/useProjects";
+import { ItemsKanbanView } from "../../views/ItemsKanbanView";
 
 // Mock react router
-vi.mock('@tanstack/react-router', () => ({
+vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, children }: any) => <a href={to}>{children}</a>,
   useNavigate: vi.fn(() => vi.fn()),
   useSearch: vi.fn(() => ({})),
 }));
 
 // Mock hooks
-vi.mock('../../hooks/useItems', () => ({
+vi.mock("../../hooks/useItems", () => ({
   useItems: vi.fn(),
   useUpdateItem: vi.fn(() => ({
     mutateAsync: vi.fn(),
   })),
 }));
 
-vi.mock('../../hooks/useProjects', () => ({
+vi.mock("../../hooks/useProjects", () => ({
   useProjects: vi.fn(),
 }));
 
@@ -30,31 +30,31 @@ const mockItems = Array.from({ length: 100 }, (_, i) => ({
   id: `item-${i}`,
   owner: i % 2 === 0 ? `User ${i % 5}` : null,
   parentId: null,
-  priority: ['critical', 'high', 'medium', 'low'][i % 4],
+  priority: ["critical", "high", "medium", "low"][i % 4],
   projectId: `project-${i % 3}`,
-  status: ['todo', 'in_progress', 'done', 'blocked'][i % 4],
+  status: ["todo", "in_progress", "done", "blocked"][i % 4],
   title: `Item ${i}`,
-  type: ['requirement', 'feature', 'test', 'bug', 'task'][i % 5],
+  type: ["requirement", "feature", "test", "bug", "task"][i % 5],
   updatedAt: new Date(),
 }));
 
-describe('ItemsKanbanView Performance', () => {
+describe("ItemsKanbanView Performance", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(hooks, 'useItems').mockReturnValue({
+    vi.spyOn(hooks, "useItems").mockReturnValue({
       data: { items: mockItems },
       isLoading: false,
     } as any);
-    vi.spyOn(projectHooks, 'useProjects').mockReturnValue({
+    vi.spyOn(projectHooks, "useProjects").mockReturnValue({
       data: [
-        { id: 'project-0', name: 'Project 0' },
-        { id: 'project-1', name: 'Project 1' },
-        { id: 'project-2', name: 'Project 2' },
+        { id: "project-0", name: "Project 0" },
+        { id: "project-1", name: "Project 1" },
+        { id: "project-2", name: "Project 2" },
       ],
     } as any);
   });
 
-  it('renders with 100+ items without excessive re-renders', () => {
+  it("renders with 100+ items without excessive re-renders", () => {
     const renderSpy = vi.fn();
     const OriginalItemsKanbanView = ItemsKanbanView;
 
@@ -74,7 +74,7 @@ describe('ItemsKanbanView Performance', () => {
     expect(renderSpy).toHaveBeenCalledTimes(2);
   });
 
-  it('memoizes ItemCard components effectively', () => {
+  it("memoizes ItemCard components effectively", () => {
     render(<ItemsKanbanView />);
 
     // Check that ItemCard elements are present
@@ -83,24 +83,24 @@ describe('ItemsKanbanView Performance', () => {
     expect(cards.length).toBeLessThanOrEqual(100);
   });
 
-  it('handles drag operations without performance degradation', async () => {
+  it("handles drag operations without performance degradation", async () => {
     render(<ItemsKanbanView />);
 
     const cards = screen
-      .getAllByRole('link')
-      .filter((link) => link.getAttribute('href')?.startsWith('/projects/'));
+      .getAllByRole("link")
+      .filter((link) => link.getAttribute("href")?.startsWith("/projects/"));
 
     if (cards.length > 0) {
       // Simulate drag start
-      const firstCard = cards[0].closest('[draggable]');
+      const firstCard = cards[0].closest("[draggable]");
       if (firstCard) {
-        await user.pointer({ keys: '[MouseLeft>]', target: firstCard });
-        expect(firstCard).toHaveAttribute('draggable', 'true');
+        await user.pointer({ keys: "[MouseLeft>]", target: firstCard });
+        expect(firstCard).toHaveAttribute("draggable", "true");
       }
     }
   });
 
-  it('filters items efficiently with memoization', async () => {
+  it("filters items efficiently with memoization", async () => {
     render(<ItemsKanbanView />);
 
     const searchInput = container.querySelector('input[placeholder="Filter items..."]');
@@ -108,7 +108,7 @@ describe('ItemsKanbanView Performance', () => {
 
     if (searchInput) {
       // Type to filter
-      await user.type(searchInput, 'Item 1');
+      await user.type(searchInput, "Item 1");
 
       // Should still render efficiently
       const cards = container.querySelectorAll('[draggable="true"]');
@@ -116,7 +116,7 @@ describe('ItemsKanbanView Performance', () => {
     }
   });
 
-  it('maintains performance with column re-arrangement', () => {
+  it("maintains performance with column re-arrangement", () => {
     render(<ItemsKanbanView />);
 
     // Get initial column count

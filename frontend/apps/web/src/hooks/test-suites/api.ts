@@ -4,21 +4,21 @@ import type {
   TestSuiteStats,
   TestSuiteStatus,
   TestSuiteTestCase,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
-import { client } from '@/api/client';
+import { client } from "@/api/client";
 
-import { asJsonObject, getOptionalArray, getOptionalNumber, getString } from './decoders';
+import { asJsonObject, getOptionalArray, getOptionalNumber, getString } from "./decoders";
 import {
   decodeTestSuite,
   decodeTestSuiteActivity,
   decodeTestSuiteStats,
   decodeTestSuiteTestCase,
-} from './normalize';
+} from "./normalize";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 interface TestSuiteFilters {
   projectId: string;
@@ -61,33 +61,33 @@ interface AddTestCaseToSuiteInput {
 }
 
 function hasNonEmptyString(value: string | undefined): value is string {
-  return value !== undefined && value !== '';
+  return value !== undefined && value !== "";
 }
 
 function buildTestSuiteQueryParams(filters: TestSuiteFilters): URLSearchParams {
   const params = new URLSearchParams();
-  params.set('project_id', filters.projectId);
+  params.set("project_id", filters.projectId);
 
   if (filters.status !== undefined) {
-    params.set('status', filters.status);
+    params.set("status", filters.status);
   }
   if (hasNonEmptyString(filters.category)) {
-    params.set('category', filters.category);
+    params.set("category", filters.category);
   }
   if (filters.parentId !== undefined) {
-    params.set('parent_id', filters.parentId);
+    params.set("parent_id", filters.parentId);
   }
   if (hasNonEmptyString(filters.owner)) {
-    params.set('owner', filters.owner);
+    params.set("owner", filters.owner);
   }
   if (hasNonEmptyString(filters.search)) {
-    params.set('search', filters.search);
+    params.set("search", filters.search);
   }
   if (filters.skip !== undefined) {
-    params.set('skip', String(filters.skip));
+    params.set("skip", String(filters.skip));
   }
   if (filters.limit !== undefined) {
-    params.set('limit', String(filters.limit));
+    params.set("limit", String(filters.limit));
   }
   return params;
 }
@@ -103,7 +103,7 @@ async function fetchTestSuites(
   const params = buildTestSuiteQueryParams(filters);
   const res = await fetch(`${API_URL}/api/v1/test-suites?${params}`, {
     headers: {
-      'X-Bulk-Operation': 'true',
+      "X-Bulk-Operation": "true",
       ...getAuthHeaders(),
     },
   });
@@ -114,9 +114,9 @@ async function fetchTestSuites(
   }
 
   const raw = await readJson(res);
-  const obj = asJsonObject(raw, 'TestSuitesResponse');
-  const suitesRaw = getOptionalArray(obj, 'test_suites') ?? [];
-  const total = getOptionalNumber(obj, 'total') ?? 0;
+  const obj = asJsonObject(raw, "TestSuitesResponse");
+  const suitesRaw = getOptionalArray(obj, "test_suites") ?? [];
+  const total = getOptionalNumber(obj, "total") ?? 0;
 
   return {
     testSuites: suitesRaw.map((value: unknown) => decodeTestSuite(value)),
@@ -129,7 +129,7 @@ async function fetchTestSuite(id: string): Promise<TestSuite> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch test suite');
+    throw new Error("Failed to fetch test suite");
   }
 
   const raw = await readJson(res);
@@ -158,18 +158,18 @@ async function createTestSuite(
       tags: data.tags,
       teardown_instructions: data.teardownInstructions,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to create test suite');
+    throw new Error("Failed to create test suite");
   }
 
   const raw = await readJson(res);
-  const obj = asJsonObject(raw, 'CreateTestSuiteResponse');
+  const obj = asJsonObject(raw, "CreateTestSuiteResponse");
   return {
-    id: getString(obj, 'id'),
-    suiteNumber: getString(obj, 'suite_number'),
+    id: getString(obj, "id"),
+    suiteNumber: getString(obj, "suite_number"),
   };
 }
 
@@ -196,18 +196,18 @@ async function updateTestSuite(
       tags: data.tags,
       teardown_instructions: data.teardownInstructions,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'PUT',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "PUT",
   });
   if (!res.ok) {
-    throw new Error('Failed to update test suite');
+    throw new Error("Failed to update test suite");
   }
 
   const raw = await readJson(res);
-  const obj = asJsonObject(raw, 'UpdateTestSuiteResponse');
+  const obj = asJsonObject(raw, "UpdateTestSuiteResponse");
   return {
-    id: getString(obj, 'id'),
-    version: getOptionalNumber(obj, 'version') ?? 0,
+    id: getString(obj, "id"),
+    version: getOptionalNumber(obj, "version") ?? 0,
   };
 }
 
@@ -221,8 +221,8 @@ async function transitionTestSuiteStatus(
       new_status: newStatus,
       reason,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
     const errorText = await res.text();
@@ -230,21 +230,21 @@ async function transitionTestSuiteStatus(
   }
 
   const raw = await readJson(res);
-  const obj = asJsonObject(raw, 'TransitionTestSuiteStatusResponse');
+  const obj = asJsonObject(raw, "TransitionTestSuiteStatusResponse");
   return {
-    id: getString(obj, 'id'),
-    status: getString(obj, 'status'),
-    version: getOptionalNumber(obj, 'version') ?? 0,
+    id: getString(obj, "id"),
+    status: getString(obj, "status"),
+    version: getOptionalNumber(obj, "version") ?? 0,
   };
 }
 
 async function deleteTestSuite(id: string): Promise<void> {
   const res = await fetch(`${API_URL}/api/v1/test-suites/${id}`, {
     headers: getAuthHeaders(),
-    method: 'DELETE',
+    method: "DELETE",
   });
   if (!res.ok) {
-    throw new Error('Failed to delete test suite');
+    throw new Error("Failed to delete test suite");
   }
 }
 
@@ -257,11 +257,11 @@ async function addTestCaseToSuite(input: AddTestCaseToSuiteInput): Promise<TestS
       skip_reason: input.skipReason,
       test_case_id: input.testCaseId,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to add test case to suite');
+    throw new Error("Failed to add test case to suite");
   }
 
   const raw = await readJson(res);
@@ -271,10 +271,10 @@ async function addTestCaseToSuite(input: AddTestCaseToSuiteInput): Promise<TestS
 async function removeTestCaseFromSuite(suiteId: string, testCaseId: string): Promise<void> {
   const res = await fetch(`${API_URL}/api/v1/test-suites/${suiteId}/test-cases/${testCaseId}`, {
     headers: getAuthHeaders(),
-    method: 'DELETE',
+    method: "DELETE",
   });
   if (!res.ok) {
-    throw new Error('Failed to remove test case from suite');
+    throw new Error("Failed to remove test case from suite");
   }
 }
 
@@ -283,12 +283,12 @@ async function fetchSuiteTestCases(suiteId: string): Promise<TestSuiteTestCase[]
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch suite test cases');
+    throw new Error("Failed to fetch suite test cases");
   }
 
   const raw = await readJson(res);
-  const obj = asJsonObject(raw, 'SuiteTestCasesResponse');
-  const testCasesRaw = getOptionalArray(obj, 'test_cases') ?? [];
+  const obj = asJsonObject(raw, "SuiteTestCasesResponse");
+  const testCasesRaw = getOptionalArray(obj, "test_cases") ?? [];
   return testCasesRaw.map((value: unknown) => decodeTestSuiteTestCase(value));
 }
 
@@ -297,11 +297,11 @@ async function reorderSuiteTestCases(suiteId: string, testCaseIds: string[]): Pr
     body: JSON.stringify({
       ordered_test_case_ids: testCaseIds,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to reorder test cases');
+    throw new Error("Failed to reorder test cases");
   }
 }
 
@@ -313,15 +313,15 @@ async function fetchTestSuiteActivities(
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch activities');
+    throw new Error("Failed to fetch activities");
   }
 
   const raw = await readJson(res);
-  const obj = asJsonObject(raw, 'TestSuiteActivitiesResponse');
-  const activitiesRaw = getOptionalArray(obj, 'activities') ?? [];
+  const obj = asJsonObject(raw, "TestSuiteActivitiesResponse");
+  const activitiesRaw = getOptionalArray(obj, "activities") ?? [];
   return {
     activities: activitiesRaw.map((value: unknown) => decodeTestSuiteActivity(value)),
-    suiteId: getString(obj, 'suite_id'),
+    suiteId: getString(obj, "suite_id"),
   };
 }
 
@@ -330,7 +330,7 @@ async function fetchTestSuiteStats(projectId: string): Promise<TestSuiteStats> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch test suite stats');
+    throw new Error("Failed to fetch test suite stats");
   }
 
   const raw = await readJson(res);

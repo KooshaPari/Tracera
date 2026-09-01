@@ -2,13 +2,13 @@
  * Tests for React Query Hooks
  */
 
-import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import type { UseMutationOptions, UseQueryOptions } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
-import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   queryKeys,
@@ -27,10 +27,10 @@ import {
   useProjects,
   useUpdateItem,
   useUpdateProject,
-} from '@/api/queries';
+} from "@/api/queries";
 
 // Mock the API client
-vi.mock('@/api/client', () => ({
+vi.mock("@/api/client", () => ({
   client: {
     apiClient: {
       DELETE: vi.fn(),
@@ -42,9 +42,9 @@ vi.mock('@/api/client', () => ({
   },
 }));
 
-import { client } from '@/api/client';
+import { client } from "@/api/client";
 
-import { mockItems, mockLinks, mockProjects } from '../mocks/data';
+import { mockItems, mockLinks, mockProjects } from "../mocks/data";
 
 const { handleApiResponse } = client;
 
@@ -61,66 +61,66 @@ function createWrapper() {
   };
 }
 
-describe('React Query Hooks', () => {
+describe("React Query Hooks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Query Keys', () => {
-    it('should define projects query key', () => {
+  describe("Query Keys", () => {
+    it("should define projects query key", () => {
       const key = queryKeys.projects;
-      expect(key).toEqual(['projects']);
+      expect(key).toEqual(["projects"]);
     });
 
-    it('should define project query key with ID', () => {
-      const key = queryKeys.project('proj-1');
-      expect(key).toEqual(['projects', 'proj-1']);
+    it("should define project query key with ID", () => {
+      const key = queryKeys.project("proj-1");
+      expect(key).toEqual(["projects", "proj-1"]);
     });
 
-    it('should define projectItems query key with ID', () => {
-      const key = queryKeys.projectItems('proj-1');
-      expect(key).toEqual(['projects', 'proj-1', 'items', undefined]);
+    it("should define projectItems query key with ID", () => {
+      const key = queryKeys.projectItems("proj-1");
+      expect(key).toEqual(["projects", "proj-1", "items", undefined]);
     });
 
-    it('should define projectItems query key with filters', () => {
-      const filters = { priority: 'high', status: 'completed' };
-      const key = queryKeys.projectItems('proj-1', filters);
-      expect(key).toContain('projects');
-      expect(key).toContain('proj-1');
-      expect(key).toContain('items');
+    it("should define projectItems query key with filters", () => {
+      const filters = { priority: "high", status: "completed" };
+      const key = queryKeys.projectItems("proj-1", filters);
+      expect(key).toContain("projects");
+      expect(key).toContain("proj-1");
+      expect(key).toContain("items");
     });
 
-    it('should define item query key', () => {
-      const key = queryKeys.item('item-1');
-      expect(key).toEqual(['items', 'item-1']);
+    it("should define item query key", () => {
+      const key = queryKeys.item("item-1");
+      expect(key).toEqual(["items", "item-1"]);
     });
 
-    it('should define projectLinks query key', () => {
-      const key = queryKeys.projectLinks('proj-1');
-      expect(key).toEqual(['projects', 'proj-1', 'links']);
+    it("should define projectLinks query key", () => {
+      const key = queryKeys.projectLinks("proj-1");
+      expect(key).toEqual(["projects", "proj-1", "links"]);
     });
 
-    it('should define mutations query key', () => {
+    it("should define mutations query key", () => {
       const key = queryKeys.mutations();
-      expect(key).toEqual(['mutations', undefined]);
+      expect(key).toEqual(["mutations", undefined]);
     });
 
-    it('should define mutations query key with filters', () => {
+    it("should define mutations query key with filters", () => {
       const filters = { synced: true };
       const key = queryKeys.mutations(filters);
-      expect(key).toContain('mutations');
+      expect(key).toContain("mutations");
     });
 
-    it('should create unique keys for different resources', () => {
-      const keys = [queryKeys.projects, queryKeys.project('proj-1'), queryKeys.item('item-1')];
+    it("should create unique keys for different resources", () => {
+      const keys = [queryKeys.projects, queryKeys.project("proj-1"), queryKeys.item("item-1")];
 
       const uniqueKeys = new Set(keys.map((k) => JSON.stringify(k)));
       expect(uniqueKeys.size).toBe(3);
     });
   });
 
-  describe('useProjects hook', () => {
-    it('should fetch all projects', async () => {
+  describe("useProjects hook", () => {
+    it("should fetch all projects", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue({
         items: mockProjects,
         page: 1,
@@ -139,7 +139,7 @@ describe('React Query Hooks', () => {
       expect(result.current.data?.items).toEqual(mockProjects);
     });
 
-    it('should support custom options', () => {
+    it("should support custom options", () => {
       vi.mocked(handleApiResponse).mockResolvedValue({
         items: [],
         page: 1,
@@ -156,11 +156,11 @@ describe('React Query Hooks', () => {
     });
   });
 
-  describe('useProject hook', () => {
-    it('should fetch a single project', async () => {
+  describe("useProject hook", () => {
+    it("should fetch a single project", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue(mockProjects[0]);
 
-      const { result } = renderHook(() => useProject('proj-1'), {
+      const { result } = renderHook(() => useProject("proj-1"), {
         wrapper: createWrapper(),
       });
 
@@ -168,23 +168,23 @@ describe('React Query Hooks', () => {
         expect(result.current.isSuccess).toBeTruthy();
       });
 
-      expect(result.current.data?.id).toBe('proj-1');
+      expect(result.current.data?.id).toBe("proj-1");
     });
 
-    it('should be disabled when project ID is empty', () => {
-      const { result } = renderHook(() => useProject(''), {
+    it("should be disabled when project ID is empty", () => {
+      const { result } = renderHook(() => useProject(""), {
         wrapper: createWrapper(),
       });
 
       // When disabled, the query should not fetch data
-      expect(result.current.status).toBe('pending');
+      expect(result.current.status).toBe("pending");
     });
 
-    it('should support custom options', () => {
+    it("should support custom options", () => {
       vi.mocked(handleApiResponse).mockResolvedValue(mockProjects[0]);
 
       const options: UseQueryOptions = { staleTime: 10_000 };
-      const { result } = renderHook(() => useProject('proj-1', options), {
+      const { result } = renderHook(() => useProject("proj-1", options), {
         wrapper: createWrapper(),
       });
 
@@ -192,12 +192,12 @@ describe('React Query Hooks', () => {
     });
   });
 
-  describe('useCreateProject mutation', () => {
-    it('should create a project', async () => {
-      const newProject = { description: 'Test', name: 'New Project' };
+  describe("useCreateProject mutation", () => {
+    it("should create a project", async () => {
+      const newProject = { description: "Test", name: "New Project" };
       vi.mocked(handleApiResponse).mockResolvedValue({
         ...newProject,
-        id: 'new-proj',
+        id: "new-proj",
       });
 
       const { result } = renderHook(() => useCreateProject(), {
@@ -211,7 +211,7 @@ describe('React Query Hooks', () => {
       });
     });
 
-    it('should support custom options', () => {
+    it("should support custom options", () => {
       const options: UseMutationOptions = { onSuccess: vi.fn() };
       const { result } = renderHook(() => useCreateProject(options), {
         wrapper: createWrapper(),
@@ -220,17 +220,17 @@ describe('React Query Hooks', () => {
       expect(result.current).toBeDefined();
     });
 
-    it('should invalidate projects query on success', async () => {
+    it("should invalidate projects query on success", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue({
-        id: 'new-proj',
-        name: 'New',
+        id: "new-proj",
+        name: "New",
       });
 
       const { result } = renderHook(() => useCreateProject(), {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate({ name: 'New' });
+      result.current.mutate({ name: "New" });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBeTruthy();
@@ -238,11 +238,11 @@ describe('React Query Hooks', () => {
     });
   });
 
-  describe('useUpdateProject mutation', () => {
-    it('should update a project', async () => {
+  describe("useUpdateProject mutation", () => {
+    it("should update a project", async () => {
       const updated = {
         ...mockProjects[0],
-        name: 'Updated Name',
+        name: "Updated Name",
       };
       vi.mocked(handleApiResponse).mockResolvedValue(updated);
 
@@ -251,8 +251,8 @@ describe('React Query Hooks', () => {
       });
 
       result.current.mutate({
-        data: { name: 'Updated Name' },
-        projectId: 'proj-1',
+        data: { name: "Updated Name" },
+        projectId: "proj-1",
       });
 
       await waitFor(() => {
@@ -260,7 +260,7 @@ describe('React Query Hooks', () => {
       });
     });
 
-    it('should invalidate related queries on success', async () => {
+    it("should invalidate related queries on success", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue(mockProjects[0]);
 
       const { result } = renderHook(() => useUpdateProject(), {
@@ -268,8 +268,8 @@ describe('React Query Hooks', () => {
       });
 
       result.current.mutate({
-        data: { name: 'Updated' },
-        projectId: 'proj-1',
+        data: { name: "Updated" },
+        projectId: "proj-1",
       });
 
       await waitFor(() => {
@@ -278,29 +278,29 @@ describe('React Query Hooks', () => {
     });
   });
 
-  describe('useDeleteProject mutation', () => {
-    it('should delete a project', async () => {
+  describe("useDeleteProject mutation", () => {
+    it("should delete a project", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue();
 
       const { result } = renderHook(() => useDeleteProject(), {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate('proj-1');
+      result.current.mutate("proj-1");
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBeTruthy();
       });
     });
 
-    it('should invalidate projects query on success', async () => {
+    it("should invalidate projects query on success", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue();
 
       const { result } = renderHook(() => useDeleteProject(), {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate('proj-1');
+      result.current.mutate("proj-1");
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBeTruthy();
@@ -308,8 +308,8 @@ describe('React Query Hooks', () => {
     });
   });
 
-  describe('useProjectItems hook', () => {
-    it('should fetch items for a project', async () => {
+  describe("useProjectItems hook", () => {
+    it("should fetch items for a project", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue({
         items: mockItems,
         page: 1,
@@ -317,7 +317,7 @@ describe('React Query Hooks', () => {
         total: 3,
       });
 
-      const { result } = renderHook(() => useProjectItems('proj-1'), {
+      const { result } = renderHook(() => useProjectItems("proj-1"), {
         wrapper: createWrapper(),
       });
 
@@ -328,7 +328,7 @@ describe('React Query Hooks', () => {
       expect(result.current.data?.items).toEqual(mockItems);
     });
 
-    it('should support filter parameters', async () => {
+    it("should support filter parameters", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue({
         items: [mockItems[0]],
         page: 1,
@@ -338,9 +338,9 @@ describe('React Query Hooks', () => {
 
       const { result } = renderHook(
         () =>
-          useProjectItems('proj-1', {
-            priority: 'high',
-            status: 'completed',
+          useProjectItems("proj-1", {
+            priority: "high",
+            status: "completed",
           }),
         { wrapper: createWrapper() },
       );
@@ -350,21 +350,21 @@ describe('React Query Hooks', () => {
       });
     });
 
-    it('should be disabled when project ID is empty', () => {
-      const { result } = renderHook(() => useProjectItems(''), {
+    it("should be disabled when project ID is empty", () => {
+      const { result } = renderHook(() => useProjectItems(""), {
         wrapper: createWrapper(),
       });
 
       // When disabled, the query should not fetch data
-      expect(result.current.status).toBe('pending');
+      expect(result.current.status).toBe("pending");
     });
   });
 
-  describe('useItem hook', () => {
-    it('should fetch a single item', async () => {
+  describe("useItem hook", () => {
+    it("should fetch a single item", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue(mockItems[0]);
 
-      const { result } = renderHook(() => useItem('item-1'), {
+      const { result } = renderHook(() => useItem("item-1"), {
         wrapper: createWrapper(),
       });
 
@@ -372,26 +372,26 @@ describe('React Query Hooks', () => {
         expect(result.current.isSuccess).toBeTruthy();
       });
 
-      expect(result.current.data?.id).toBe('item-1');
+      expect(result.current.data?.id).toBe("item-1");
     });
 
-    it('should be disabled when item ID is empty', () => {
-      const { result } = renderHook(() => useItem(''), {
+    it("should be disabled when item ID is empty", () => {
+      const { result } = renderHook(() => useItem(""), {
         wrapper: createWrapper(),
       });
 
       // When disabled, the query should not fetch data
-      expect(result.current.status).toBe('pending');
+      expect(result.current.status).toBe("pending");
     });
   });
 
-  describe('useCreateItem mutation', () => {
-    it('should create an item', async () => {
-      const newItem = { title: 'New Item', type: 'feature' };
+  describe("useCreateItem mutation", () => {
+    it("should create an item", async () => {
+      const newItem = { title: "New Item", type: "feature" };
       vi.mocked(handleApiResponse).mockResolvedValue({
         ...mockItems[0],
         ...newItem,
-        id: 'new-item',
+        id: "new-item",
       });
 
       const { result } = renderHook(() => useCreateItem(), {
@@ -400,7 +400,7 @@ describe('React Query Hooks', () => {
 
       result.current.mutate({
         data: newItem,
-        projectId: 'proj-1',
+        projectId: "proj-1",
       });
 
       await waitFor(() => {
@@ -408,10 +408,10 @@ describe('React Query Hooks', () => {
       });
     });
 
-    it('should invalidate project items on success', async () => {
+    it("should invalidate project items on success", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue({
         ...mockItems[0],
-        id: 'new-item',
+        id: "new-item",
       });
 
       const { result } = renderHook(() => useCreateItem(), {
@@ -419,8 +419,8 @@ describe('React Query Hooks', () => {
       });
 
       result.current.mutate({
-        data: { title: 'New' },
-        projectId: 'proj-1',
+        data: { title: "New" },
+        projectId: "proj-1",
       });
 
       await waitFor(() => {
@@ -429,9 +429,9 @@ describe('React Query Hooks', () => {
     });
   });
 
-  describe('useUpdateItem mutation', () => {
-    it('should update an item', async () => {
-      const updated = { ...mockItems[0], title: 'Updated' };
+  describe("useUpdateItem mutation", () => {
+    it("should update an item", async () => {
+      const updated = { ...mockItems[0], title: "Updated" };
       vi.mocked(handleApiResponse).mockResolvedValue(updated);
 
       const { result } = renderHook(() => useUpdateItem(), {
@@ -439,8 +439,8 @@ describe('React Query Hooks', () => {
       });
 
       result.current.mutate({
-        data: { title: 'Updated' },
-        itemId: 'item-1',
+        data: { title: "Updated" },
+        itemId: "item-1",
       });
 
       await waitFor(() => {
@@ -449,8 +449,8 @@ describe('React Query Hooks', () => {
     });
   });
 
-  describe('useDeleteItem mutation', () => {
-    it('should delete an item', async () => {
+  describe("useDeleteItem mutation", () => {
+    it("should delete an item", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue();
 
       const { result } = renderHook(() => useDeleteItem(), {
@@ -458,8 +458,8 @@ describe('React Query Hooks', () => {
       });
 
       result.current.mutate({
-        itemId: 'item-1',
-        projectId: 'proj-1',
+        itemId: "item-1",
+        projectId: "proj-1",
       });
 
       await waitFor(() => {
@@ -468,11 +468,11 @@ describe('React Query Hooks', () => {
     });
   });
 
-  describe('useProjectLinks hook', () => {
-    it('should fetch links for a project', async () => {
+  describe("useProjectLinks hook", () => {
+    it("should fetch links for a project", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue(mockLinks);
 
-      const { result } = renderHook(() => useProjectLinks('proj-1'), {
+      const { result } = renderHook(() => useProjectLinks("proj-1"), {
         wrapper: createWrapper(),
       });
 
@@ -483,27 +483,27 @@ describe('React Query Hooks', () => {
       expect(result.current.data).toEqual(mockLinks);
     });
 
-    it('should be disabled when project ID is empty', () => {
-      const { result } = renderHook(() => useProjectLinks(''), {
+    it("should be disabled when project ID is empty", () => {
+      const { result } = renderHook(() => useProjectLinks(""), {
         wrapper: createWrapper(),
       });
 
       // When disabled, the query should not fetch data
-      expect(result.current.status).toBe('pending');
+      expect(result.current.status).toBe("pending");
     });
   });
 
-  describe('useCreateLink mutation', () => {
-    it('should create a link', async () => {
+  describe("useCreateLink mutation", () => {
+    it("should create a link", async () => {
       const newLink = {
-        source_id: 'item-1',
-        target_id: 'item-2',
-        type: 'implements' as const,
+        source_id: "item-1",
+        target_id: "item-2",
+        type: "implements" as const,
       };
       vi.mocked(handleApiResponse).mockResolvedValue({
         ...mockLinks[0],
         ...newLink,
-        id: 'new-link',
+        id: "new-link",
       });
 
       const { result } = renderHook(() => useCreateLink(), {
@@ -512,7 +512,7 @@ describe('React Query Hooks', () => {
 
       result.current.mutate({
         data: newLink,
-        projectId: 'proj-1',
+        projectId: "proj-1",
       });
 
       await waitFor(() => {
@@ -520,7 +520,7 @@ describe('React Query Hooks', () => {
       });
     });
 
-    it('should invalidate project links on success', async () => {
+    it("should invalidate project links on success", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue(mockLinks[0]);
 
       const { result } = renderHook(() => useCreateLink(), {
@@ -529,7 +529,7 @@ describe('React Query Hooks', () => {
 
       result.current.mutate({
         data: mockLinks[0],
-        projectId: 'proj-1',
+        projectId: "proj-1",
       });
 
       await waitFor(() => {
@@ -538,8 +538,8 @@ describe('React Query Hooks', () => {
     });
   });
 
-  describe('useDeleteLink mutation', () => {
-    it('should delete a link', async () => {
+  describe("useDeleteLink mutation", () => {
+    it("should delete a link", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue();
 
       const { result } = renderHook(() => useDeleteLink(), {
@@ -547,8 +547,8 @@ describe('React Query Hooks', () => {
       });
 
       result.current.mutate({
-        linkId: 'link-1',
-        projectId: 'proj-1',
+        linkId: "link-1",
+        projectId: "proj-1",
       });
 
       await waitFor(() => {
@@ -557,11 +557,11 @@ describe('React Query Hooks', () => {
     });
   });
 
-  describe('useMutations hook', () => {
-    it('should fetch mutations', async () => {
+  describe("useMutations hook", () => {
+    it("should fetch mutations", async () => {
       const mockMutations = [
-        { id: 'mut-1', operation: 'create' },
-        { id: 'mut-2', operation: 'update' },
+        { id: "mut-1", operation: "create" },
+        { id: "mut-2", operation: "update" },
       ];
       vi.mocked(handleApiResponse).mockResolvedValue(mockMutations);
 
@@ -576,8 +576,8 @@ describe('React Query Hooks', () => {
       expect(result.current.data).toEqual(mockMutations);
     });
 
-    it('should support filter parameters', async () => {
-      const mockMutations = [{ id: 'mut-1', operation: 'create' }];
+    it("should support filter parameters", async () => {
+      const mockMutations = [{ id: "mut-1", operation: "create" }];
       vi.mocked(handleApiResponse).mockResolvedValue(mockMutations);
 
       const { result } = renderHook(
@@ -594,15 +594,15 @@ describe('React Query Hooks', () => {
     });
   });
 
-  describe('useCreateMutation mutation', () => {
-    it('should create a mutation', async () => {
+  describe("useCreateMutation mutation", () => {
+    it("should create a mutation", async () => {
       const newMutation = {
-        data: { field: 'value' },
-        itemId: 'item-1',
-        operation: 'create' as const,
+        data: { field: "value" },
+        itemId: "item-1",
+        operation: "create" as const,
       };
       vi.mocked(handleApiResponse).mockResolvedValue({
-        id: 'mut-1',
+        id: "mut-1",
         ...newMutation,
       });
 
@@ -617,9 +617,9 @@ describe('React Query Hooks', () => {
       });
     });
 
-    it('should invalidate mutations query on success', async () => {
+    it("should invalidate mutations query on success", async () => {
       vi.mocked(handleApiResponse).mockResolvedValue({
-        id: 'mut-1',
+        id: "mut-1",
       });
 
       const { result } = renderHook(() => useCreateMutation(), {
@@ -628,8 +628,8 @@ describe('React Query Hooks', () => {
 
       result.current.mutate({
         data: {},
-        itemId: 'item-1',
-        operation: 'create' as const,
+        itemId: "item-1",
+        operation: "create" as const,
       } as any);
 
       await waitFor(() => {
@@ -638,9 +638,9 @@ describe('React Query Hooks', () => {
     });
   });
 
-  describe('Query hook error handling', () => {
-    it('should handle fetch errors gracefully', async () => {
-      vi.mocked(handleApiResponse).mockRejectedValue(new Error('API error'));
+  describe("Query hook error handling", () => {
+    it("should handle fetch errors gracefully", async () => {
+      vi.mocked(handleApiResponse).mockRejectedValue(new Error("API error"));
 
       const { result } = renderHook(() => useProjects(), {
         wrapper: createWrapper(),
@@ -651,14 +651,14 @@ describe('React Query Hooks', () => {
       });
     });
 
-    it('should handle mutation errors gracefully', async () => {
-      vi.mocked(handleApiResponse).mockRejectedValue(new Error('Mutation failed'));
+    it("should handle mutation errors gracefully", async () => {
+      vi.mocked(handleApiResponse).mockRejectedValue(new Error("Mutation failed"));
 
       const { result } = renderHook(() => useCreateProject(), {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate({ name: 'Test' });
+      result.current.mutate({ name: "Test" });
 
       await waitFor(() => {
         expect(result.current.isError).toBeTruthy();
@@ -666,8 +666,8 @@ describe('React Query Hooks', () => {
     });
   });
 
-  describe('Query hook loading states', () => {
-    it('should indicate loading state during fetch', () => {
+  describe("Query hook loading states", () => {
+    it("should indicate loading state during fetch", () => {
       vi.mocked(handleApiResponse).mockImplementation(
         async () =>
           new Promise((resolve) =>

@@ -9,17 +9,17 @@
  * - Only processes ~100-500 visible nodes instead of all 100k
  */
 
-import type { Node } from '@xyflow/react';
+import type { Node } from "@xyflow/react";
 
-import { useReactFlow } from '@xyflow/react';
-import { useMemo } from 'react';
+import { useReactFlow } from "@xyflow/react";
+import { useMemo } from "react";
 
-import type { RichNodeData } from '@/components/graph/RichNodePill';
+import type { RichNodeData } from "@/components/graph/RichNodePill";
 
-import { getNodeType } from '@/components/graph/nodeRegistry';
-import { determineLODLevel } from '@/components/graph/utils/lod';
-import { useQuadTreeCulling } from '@/hooks/useQuadTreeCulling';
-import { logger } from '@/lib/logger';
+import { getNodeType } from "@/components/graph/nodeRegistry";
+import { determineLODLevel } from "@/components/graph/utils/lod";
+import { useQuadTreeCulling } from "@/hooks/useQuadTreeCulling";
+import { logger } from "@/lib/logger";
 
 interface QuadTreeCullingExampleProps {
   items: {
@@ -68,7 +68,7 @@ export function QuadTreeCullingExample({ items, selectedNodeId }: QuadTreeCullin
     viewport, // Only enable for large graphs
   });
 
-  logger.info('[QuadTree Stats]', {
+  logger.info("[QuadTree Stats]", {
     culled: stats.culledNodes,
     queryTime: `${stats.queryTimeMs.toFixed(3)}ms`,
     ratio: `${stats.cullingRatio.toFixed(1)}%`,
@@ -171,33 +171,33 @@ export function QuadTreeCullingExample({ items, selectedNodeId }: QuadTreeCullin
   }, [stats]);
 
   return (
-    <div className='rounded-lg bg-gray-100 p-4'>
-      <h3 className='mb-2 font-bold'>Quad-tree Culling Stats</h3>
-      <div className='grid grid-cols-2 gap-2 text-sm'>
+    <div className="rounded-lg bg-gray-100 p-4">
+      <h3 className="mb-2 font-bold">Quad-tree Culling Stats</h3>
+      <div className="grid grid-cols-2 gap-2 text-sm">
         <div>
-          <span className='font-semibold'>Total Nodes:</span> {stats.totalNodes}
+          <span className="font-semibold">Total Nodes:</span> {stats.totalNodes}
         </div>
         <div>
-          <span className='font-semibold'>Visible:</span> {stats.visibleNodes}
+          <span className="font-semibold">Visible:</span> {stats.visibleNodes}
         </div>
         <div>
-          <span className='font-semibold'>Culled:</span> {stats.culledNodes} (
+          <span className="font-semibold">Culled:</span> {stats.culledNodes} (
           {stats.cullingRatio.toFixed(1)}%)
         </div>
         <div>
-          <span className='font-semibold'>Query Time:</span> {stats.queryTimeMs.toFixed(3)}ms
+          <span className="font-semibold">Query Time:</span> {stats.queryTimeMs.toFixed(3)}ms
         </div>
         <div>
-          <span className='font-semibold'>Tree Depth:</span> {stats.indexDepth}
+          <span className="font-semibold">Tree Depth:</span> {stats.indexDepth}
         </div>
-        <div className='col-span-2'>
-          <span className='font-semibold'>Performance Gain:</span> {performanceGain.toFixed(1)}x
+        <div className="col-span-2">
+          <span className="font-semibold">Performance Gain:</span> {performanceGain.toFixed(1)}x
           faster
         </div>
       </div>
 
-      <div className='mt-4 rounded bg-green-100 p-2'>
-        <p className='text-xs text-green-800'>
+      <div className="mt-4 rounded bg-green-100 p-2">
+        <p className="text-xs text-green-800">
           ✅ Processing {stats.visibleNodes} nodes instead of {stats.totalNodes} (
           {((stats.visibleNodes / stats.totalNodes) * 100).toFixed(1)}%)
         </p>

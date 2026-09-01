@@ -2,7 +2,7 @@
 
 /* oxlint-disable import/no-named-export */
 
-import { client } from './client';
+import { client } from "./client";
 
 const { apiClient } = client;
 const { handleApiResponse } = client;
@@ -59,7 +59,7 @@ const codexApi = {
   getAuthStatus: async (projectId: string): Promise<CodexAuthStatus> =>
     handleApiResponse(
       safeApiCall(
-        get('/api/v1/projects/{project_id}/codex/auth-status', {
+        get("/api/v1/projects/{project_id}/codex/auth-status", {
           params: { path: { project_id: projectId } },
         }),
       ),
@@ -76,7 +76,7 @@ const codexApi = {
   ): Promise<{ tasks: CodexAgentTask[]; total: number }> =>
     handleApiResponse(
       safeApiCall(
-        get('/api/v1/projects/{project_id}/codex/interactions', {
+        get("/api/v1/projects/{project_id}/codex/interactions", {
           params: {
             path: { project_id: projectId },
             query: params,
@@ -88,7 +88,7 @@ const codexApi = {
   reviewImage: async (projectId: string, data: CodexReviewRequest): Promise<CodexAgentTask> =>
     handleApiResponse(
       safeApiCall(
-        post('/api/v1/projects/{project_id}/codex/review-image', {
+        post("/api/v1/projects/{project_id}/codex/review-image", {
           body: data,
           params: { path: { project_id: projectId } },
         }),
@@ -98,7 +98,7 @@ const codexApi = {
   reviewVideo: async (projectId: string, data: CodexReviewRequest): Promise<CodexAgentTask> =>
     handleApiResponse(
       safeApiCall(
-        post('/api/v1/projects/{project_id}/codex/review-video', {
+        post("/api/v1/projects/{project_id}/codex/review-video", {
           body: data,
           params: { path: { project_id: projectId } },
         }),

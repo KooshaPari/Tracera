@@ -1,6 +1,6 @@
-import type { Page } from '@playwright/test';
+import type { Page } from "@playwright/test";
 
-import { expect } from '@playwright/test';
+import { expect } from "@playwright/test";
 
 /**
  * Test Helper Functions
@@ -15,18 +15,18 @@ export class TestHelpers {
   /**
    * Authentication Helpers
    */
-  async login(email = 'test@example.com', password = 'password123') {
-    await this.page.goto('/auth/login');
+  async login(email = "test@example.com", password = "password123") {
+    await this.page.goto("/auth/login");
     await this.page.fill('input[name="email"]', email);
     await this.page.fill('input[name="password"]', password);
     await this.page.click('button[type="submit"]');
-    await this.page.waitForURL('/');
+    await this.page.waitForURL("/");
   }
 
   async logout() {
     await this.page.click('[data-testid="user-menu"]');
     await this.page.click('[data-testid="logout-button"]');
-    await this.page.waitForURL('/auth/login');
+    await this.page.waitForURL("/auth/login");
   }
 
   /**
@@ -34,22 +34,22 @@ export class TestHelpers {
    */
   async navigateTo(route: string) {
     await this.page.goto(route);
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
   }
 
   async navigateToItems() {
     await this.page.click('a[href="/items"]');
-    await this.page.waitForURL('/items');
+    await this.page.waitForURL("/items");
   }
 
   async navigateToProjects() {
     await this.page.click('a[href="/projects"]');
-    await this.page.waitForURL('/projects');
+    await this.page.waitForURL("/projects");
   }
 
   async navigateToAgents() {
     await this.page.click('a[href="/agents"]');
-    await this.page.waitForURL('/agents');
+    await this.page.waitForURL("/agents");
   }
 
   /**
@@ -73,7 +73,7 @@ export class TestHelpers {
     }
 
     await this.page.click('button:has-text("Save")');
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
   }
 
   async createProject(data: { name: string; description?: string }) {
@@ -86,7 +86,7 @@ export class TestHelpers {
     }
 
     await this.page.click('button:has-text("Create")');
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
   }
 
   async createAgent(data: { name: string; role?: string }) {
@@ -99,7 +99,7 @@ export class TestHelpers {
     }
 
     await this.page.click('button:has-text("Create")');
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
   }
 
   /**
@@ -111,7 +111,7 @@ export class TestHelpers {
   }
 
   async globalSearch(query: string) {
-    await this.page.keyboard.press('Meta+k');
+    await this.page.keyboard.press("Meta+k");
     await this.page.fill('[data-testid="search-input"]', query);
     await this.page.waitForTimeout(500);
   }
@@ -139,13 +139,13 @@ export class TestHelpers {
   async assertErrorMessage(message: string) {
     const error = this.page.locator('[role="alert"]');
     await expect(error).toBeVisible();
-    await expect(error).toContainText(new RegExp(message, 'i'));
+    await expect(error).toContainText(new RegExp(message, "i"));
   }
 
   async assertSuccessMessage(message: string) {
     const success = this.page.locator('[data-testid="success-message"]');
     await expect(success).toBeVisible();
-    await expect(success).toContainText(new RegExp(message, 'i'));
+    await expect(success).toContainText(new RegExp(message, "i"));
   }
 
   /**
@@ -158,7 +158,7 @@ export class TestHelpers {
   }
 
   async closeModal() {
-    await this.page.keyboard.press('Escape');
+    await this.page.keyboard.press("Escape");
     const dialog = this.page.locator('[role="dialog"]');
     await expect(dialog).not.toBeVisible();
   }
@@ -226,7 +226,7 @@ export class TestHelpers {
    */
   async navigateToGraph() {
     await this.page.click('a[href="/graph"]');
-    await this.page.waitForURL('/graph');
+    await this.page.waitForURL("/graph");
     await this.page.waitForSelector('[data-testid="graph-canvas"]');
   }
 
@@ -311,7 +311,7 @@ export class TestHelpers {
     });
   }
 
-  async mockApiError(url: string, status = 500, message = 'Internal Server Error') {
+  async mockApiError(url: string, status = 500, message = "Internal Server Error") {
     await this.page.route(`**${url}**`, (route) => {
       void route.fulfill({
         body: JSON.stringify({ error: message }),
@@ -352,7 +352,7 @@ export class TestHelpers {
    */
   async tabThrough(count: number) {
     for (let i = 0; i < count; i++) {
-      await this.page.keyboard.press('Tab');
+      await this.page.keyboard.press("Tab");
       await this.page.waitForTimeout(100);
     }
   }
@@ -363,7 +363,7 @@ export class TestHelpers {
       return {
         id: el?.id,
         tagName: el?.tagName,
-        testId: el?.getAttribute('data-testid'),
+        testId: el?.getAttribute("data-testid"),
         text: el?.textContent?.slice(0, 50),
       };
     });
@@ -375,21 +375,21 @@ export class TestHelpers {
   async measureLoadTime(): Promise<number> {
     return this.page.evaluate(() => {
       // Use PerformanceNavigationTiming instead of deprecated timing API
-      const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      const navEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
       return navEntry?.loadEventEnd || 0;
     });
   }
 
   async getPerformanceMetrics() {
     return this.page.evaluate(() => {
-      const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-      const paintEntries = performance.getEntriesByType('paint');
+      const navEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
+      const paintEntries = performance.getEntriesByType("paint");
 
       return {
         domContentLoaded: navEntry?.domContentLoadedEventEnd || 0,
-        firstContentfulPaint: paintEntries.find((e) => e.name === 'first-contentful-paint')
+        firstContentfulPaint: paintEntries.find((e) => e.name === "first-contentful-paint")
           ?.startTime,
-        firstPaint: paintEntries.find((e) => e.name === 'first-paint')?.startTime,
+        firstPaint: paintEntries.find((e) => e.name === "first-paint")?.startTime,
         loadTime: navEntry?.loadEventEnd || 0,
       };
     });
@@ -424,7 +424,7 @@ export class TestHelpers {
 
   async reload() {
     await this.page.reload();
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
   }
 }
 
@@ -444,9 +444,9 @@ export function randomEmail(): string {
 export function randomItem() {
   return {
     description: `Description for test item ${randomString()}`,
-    status: ['open', 'in-progress', 'done'][Math.floor(Math.random() * 3)],
+    status: ["open", "in-progress", "done"][Math.floor(Math.random() * 3)],
     title: `Test Item ${randomString()}`,
-    type: ['requirement', 'task', 'bug', 'feature'][Math.floor(Math.random() * 4)],
+    type: ["requirement", "task", "bug", "feature"][Math.floor(Math.random() * 4)],
   };
 }
 
@@ -460,7 +460,7 @@ export function randomProject() {
 export function randomAgent() {
   return {
     name: `Test Agent ${randomString()}`,
-    role: ['developer', 'designer', 'tester', 'manager'][Math.floor(Math.random() * 4)],
+    role: ["developer", "designer", "tester", "manager"][Math.floor(Math.random() * 4)],
   };
 }
 
@@ -491,7 +491,7 @@ export async function collectBrowserLogs(page: Page): Promise<BrowserLogs> {
     warnings: [],
   };
 
-  page.on('console', (msg) => {
+  page.on("console", (msg) => {
     logs.console.push({
       level: msg.type(),
       message: msg.text(),
@@ -499,7 +499,7 @@ export async function collectBrowserLogs(page: Page): Promise<BrowserLogs> {
     });
   });
 
-  page.on('pageerror', (error) => {
+  page.on("pageerror", (error) => {
     logs.errors.push({
       message: error.message,
       stack: error.stack,
@@ -513,7 +513,7 @@ export async function collectBrowserLogs(page: Page): Promise<BrowserLogs> {
 export async function collectNetworkLogs(page: Page): Promise<NetworkLog[]> {
   const networkLogs: NetworkLog[] = [];
 
-  page.on('response', (response) => {
+  page.on("response", (response) => {
     networkLogs.push({
       url: response.url(),
       status: response.status(),
@@ -535,7 +535,7 @@ export const customMatchers = {
     const viewport = await locator.page().viewportSize();
 
     if (!box || !viewport) {
-      return { message: () => 'Element not found or no viewport', pass: false };
+      return { message: () => "Element not found or no viewport", pass: false };
     }
 
     const isWithin =
@@ -546,7 +546,7 @@ export const customMatchers = {
 
     return {
       message: () =>
-        isWithin ? 'Element is within viewport' : 'Element is outside viewport boundaries',
+        isWithin ? "Element is within viewport" : "Element is outside viewport boundaries",
       pass: isWithin,
     };
   },

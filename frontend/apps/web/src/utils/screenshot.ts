@@ -2,10 +2,10 @@
 // Handles component screenshots, thumbnail generation, versioning, and S3 upload
 // Features: image compression, presigned URL upload, progress tracking, error handling
 
-import type { Item } from '@tracertm/types';
+import type { Item } from "@tracertm/types";
 
-import { client } from '@/api/client';
-import { logger } from '@/lib/logger';
+import { client } from "@/api/client";
+import { logger } from "@/lib/logger";
 
 const { getAuthHeaders } = client;
 const IMAGE_LOAD_TIMEOUT_MS = 5000;
@@ -21,7 +21,7 @@ export interface ScreenshotMetadata {
   width: number;
   height: number;
   version: string;
-  versionType: 'design' | 'draft' | 'review' | 'release';
+  versionType: "design" | "draft" | "review" | "release";
   createdAt: Date;
   updatedAt: Date;
   contentHash?: string | undefined;
@@ -43,7 +43,7 @@ export interface UploadOptions {
  * Upload error with detailed context
  */
 export interface UploadError extends Error {
-  code: 'NETWORK_ERROR' | 'UPLOAD_FAILED' | 'INVALID_FILE' | 'COMPRESSION_FAILED';
+  code: "NETWORK_ERROR" | "UPLOAD_FAILED" | "INVALID_FILE" | "COMPRESSION_FAILED";
   details?: string | undefined;
   statusCode?: number | undefined;
 }
@@ -51,7 +51,7 @@ export interface UploadError extends Error {
 /**
  * Thumbnail size configuration
  */
-export type ThumbnailSize = 'small' | 'medium' | 'large';
+export type ThumbnailSize = "small" | "medium" | "large";
 
 interface CompressOptions {
   maxHeight?: number | undefined;
@@ -71,7 +71,7 @@ interface CreateScreenshotParams {
   element: HTMLElement;
   options?: UploadOptions | undefined;
   version?: string | undefined;
-  versionType?: 'design' | 'draft' | 'review' | 'release' | undefined;
+  versionType?: "design" | "draft" | "review" | "release" | undefined;
 }
 
 interface ThumbnailDimensions {
@@ -80,45 +80,45 @@ interface ThumbnailDimensions {
 }
 
 const THUMBNAIL_SIZES: Record<ThumbnailSize, ThumbnailDimensions> = {
-  large: { height: Number('600'), width: Number('600') },
-  medium: { height: Number('300'), width: Number('300') },
-  small: { height: Number('150'), width: Number('150') },
+  large: { height: Number("600"), width: Number("600") },
+  medium: { height: Number("300"), width: Number("300") },
+  small: { height: Number("150"), width: Number("150") },
 };
 
 const screenshotCache = new Map<string, ScreenshotMetadata>();
 const thumbnailCache = new Map<string, string>();
 
-const DEFAULT_MAX_WIDTH = Number('1920');
-const DEFAULT_MAX_HEIGHT = Number('1080');
-const DEFAULT_QUALITY = Number('0.9');
+const DEFAULT_MAX_WIDTH = Number("1920");
+const DEFAULT_MAX_HEIGHT = Number("1080");
+const DEFAULT_QUALITY = Number("0.9");
 
-const CAPTURE_WIDTH = Number('1200');
-const CAPTURE_HEIGHT = Number('800');
-const CAPTURE_SCALE = Number('2');
+const CAPTURE_WIDTH = Number("1200");
+const CAPTURE_HEIGHT = Number("800");
+const CAPTURE_SCALE = Number("2");
 
-const BYTES_PER_KB = Number('1024');
+const BYTES_PER_KB = Number("1024");
 const BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB;
-const MAX_FILE_SIZE_MB = Number('10');
+const MAX_FILE_SIZE_MB = Number("10");
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * BYTES_PER_MB;
 
-const PROGRESS_COMPRESS_START = Number('5');
-const PROGRESS_COMPRESS_DONE = Number('15');
-const PROGRESS_PRESIGN_START = Number('20');
-const PROGRESS_PRESIGN_DONE = Number('30');
-const PROGRESS_UPLOAD_DONE = Number('95');
-const PROGRESS_COMPLETE = Number('100');
-const PROGRESS_UPLOAD_BASE = Number('30');
-const PROGRESS_UPLOAD_RANGE = Number('65');
+const PROGRESS_COMPRESS_START = Number("5");
+const PROGRESS_COMPRESS_DONE = Number("15");
+const PROGRESS_PRESIGN_START = Number("20");
+const PROGRESS_PRESIGN_DONE = Number("30");
+const PROGRESS_UPLOAD_DONE = Number("95");
+const PROGRESS_COMPLETE = Number("100");
+const PROGRESS_UPLOAD_BASE = Number("30");
+const PROGRESS_UPLOAD_RANGE = Number("65");
 
-const THUMBNAIL_QUALITY = Number('0.8');
-const HASH_SHIFT = Number('5');
-const PERCENT_BASE = Number('100');
-const ZERO = Number('0');
-const ONE = Number('1');
+const THUMBNAIL_QUALITY = Number("0.8");
+const HASH_SHIFT = Number("5");
+const PERCENT_BASE = Number("100");
+const ZERO = Number("0");
+const ONE = Number("1");
 
 const createUploadError = function createUploadError(
   message: string,
-  code: UploadError['code'],
+  code: UploadError["code"],
   details?: string,
   statusCode?: number,
 ): UploadError {
@@ -146,7 +146,7 @@ const loadImage = async function loadImage(
   return new Promise((resolve, reject) => {
     const image = new Image();
     const timeout = setTimeout(() => {
-      reject(createUploadError('Image loading timed out', 'INVALID_FILE'));
+      reject(createUploadError("Image loading timed out", "INVALID_FILE"));
     }, IMAGE_LOAD_TIMEOUT_MS);
     image.onload = () => {
       clearTimeout(timeout);
@@ -154,7 +154,7 @@ const loadImage = async function loadImage(
     };
     image.onerror = () => {
       clearTimeout(timeout);
-      reject(createUploadError('Failed to load image', 'INVALID_FILE'));
+      reject(createUploadError("Failed to load image", "INVALID_FILE"));
     };
     if (crossOrigin) {
       image.crossOrigin = crossOrigin;
@@ -191,7 +191,7 @@ const toCompressedDataUrl = function toCompressedDataUrl(
   image: HTMLImageElement,
   options: Required<CompressOptions>,
 ): string {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   const scaled = calculateScaledDimensions(
     image.width,
     image.height,
@@ -201,16 +201,16 @@ const toCompressedDataUrl = function toCompressedDataUrl(
   canvas.width = scaled.width;
   canvas.height = scaled.height;
 
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext("2d");
   if (!context) {
-    throw createUploadError('Failed to get canvas context', 'COMPRESSION_FAILED');
+    throw createUploadError("Failed to get canvas context", "COMPRESSION_FAILED");
   }
 
   context.drawImage(image, ZERO, ZERO, scaled.width, scaled.height);
   try {
-    return canvas.toDataURL('image/jpeg', options.quality);
+    return canvas.toDataURL("image/jpeg", options.quality);
   } catch (error) {
-    throw createUploadError('Failed to compress image', 'COMPRESSION_FAILED', String(error));
+    throw createUploadError("Failed to compress image", "COMPRESSION_FAILED", String(error));
   }
 };
 
@@ -233,13 +233,13 @@ const drawThumbnail = function drawThumbnail(
   image: HTMLImageElement,
   dimensions: ThumbnailDimensions,
 ): string {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = dimensions.width;
   canvas.height = dimensions.height;
 
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext("2d");
   if (!context) {
-    throw new Error('Failed to get canvas context');
+    throw new Error("Failed to get canvas context");
   }
 
   const imgAspect = image.width / image.height;
@@ -252,13 +252,13 @@ const drawThumbnail = function drawThumbnail(
 
   if (imgAspect > canvasAspect) {
     srcWidth = image.height * canvasAspect;
-    srcX = (image.width - srcWidth) / Number('2');
+    srcX = (image.width - srcWidth) / Number("2");
   } else {
     srcHeight = image.width / canvasAspect;
-    srcY = (image.height - srcHeight) / Number('2');
+    srcY = (image.height - srcHeight) / Number("2");
   }
 
-  context.fillStyle = '#f3f4f6';
+  context.fillStyle = "#f3f4f6";
   context.fillRect(ZERO, ZERO, dimensions.width, dimensions.height);
 
   context.drawImage(
@@ -273,7 +273,7 @@ const drawThumbnail = function drawThumbnail(
     dimensions.height,
   );
 
-  return canvas.toDataURL('image/jpeg', THUMBNAIL_QUALITY);
+  return canvas.toDataURL("image/jpeg", THUMBNAIL_QUALITY);
 };
 
 /**
@@ -291,7 +291,7 @@ const captureComponentScreenshot = async function captureComponentScreenshot(
       | undefined;
     try {
       // Any: external library with incomplete type definitions
-      html2canvas = (await import('html2canvas')).default as any;
+      html2canvas = (await import("html2canvas")).default as any;
     } catch {
       return `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==`;
     }
@@ -301,17 +301,17 @@ const captureComponentScreenshot = async function captureComponentScreenshot(
     }
 
     const canvas = await html2canvas(element, {
-      backgroundColor: '#ffffff',
+      backgroundColor: "#ffffff",
       height,
       logging: false,
       scale: CAPTURE_SCALE,
       width,
     });
 
-    return canvas.toDataURL('image/png');
+    return canvas.toDataURL("image/png");
   } catch (error) {
-    logger.error('Failed to capture screenshot:', error);
-    throw new Error('Screenshot capture failed', { cause: error });
+    logger.error("Failed to capture screenshot:", error);
+    throw new Error("Screenshot capture failed", { cause: error });
   }
 };
 
@@ -320,7 +320,7 @@ const captureComponentScreenshot = async function captureComponentScreenshot(
  */
 const generateThumbnail = async function generateThumbnail(
   screenshotUrl: string,
-  size: ThumbnailSize = 'medium',
+  size: ThumbnailSize = "medium",
 ): Promise<string> {
   const cacheKey = `${screenshotUrl}-${size}`;
   const cachedValue = thumbnailCache.get(cacheKey);
@@ -329,13 +329,13 @@ const generateThumbnail = async function generateThumbnail(
   }
 
   try {
-    const image = await loadImage(screenshotUrl, 'anonymous');
+    const image = await loadImage(screenshotUrl, "anonymous");
     const dimensions = getThumbnailDimensions(size);
     const dataUrl = drawThumbnail(image, dimensions);
     thumbnailCache.set(cacheKey, dataUrl);
     return dataUrl;
   } catch (error) {
-    logger.error('Failed to generate thumbnail:', error);
+    logger.error("Failed to generate thumbnail:", error);
     throw error;
   }
 };
@@ -344,9 +344,9 @@ const generateThumbnail = async function generateThumbnail(
  * Convert data URL to File object
  */
 const dataUrlToFile = function dataUrlToFile(dataUrl: string, filename: string): File {
-  const parts = dataUrl.split(',');
-  const mime = parts[0]?.match(/:(.*?);/)?.[1] ?? 'image/png';
-  const decoded = atob(parts[1] ?? '');
+  const parts = dataUrl.split(",");
+  const mime = parts[0]?.match(/:(.*?);/)?.[1] ?? "image/png";
+  const decoded = atob(parts[1] ?? "");
   const { length } = decoded;
   const bytes = new Uint8Array(length);
 
@@ -366,21 +366,21 @@ const getPresignedUploadUrl = async function getPresignedUploadUrl(
   contentType: string,
 ): Promise<{ key: string; uploadUrl: string }> {
   try {
-    const response = await fetch('/api/v1/storage/presigned-upload', {
+    const response = await fetch("/api/v1/storage/presigned-upload", {
       body: JSON.stringify({
         contentType,
         filename,
       }),
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-      method: 'POST',
+      credentials: "include",
+      headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+      method: "POST",
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw createUploadError(
-        'Failed to get upload URL',
-        'UPLOAD_FAILED',
+        "Failed to get upload URL",
+        "UPLOAD_FAILED",
         errorData.error ?? response.statusText,
         response.status,
       );
@@ -389,10 +389,10 @@ const getPresignedUploadUrl = async function getPresignedUploadUrl(
     const data = await response.json();
     return { key: data.key, uploadUrl: data.uploadUrl };
   } catch (error) {
-    if (error instanceof Error && 'code' in error) {
+    if (error instanceof Error && "code" in error) {
       throw error;
     }
-    throw createUploadError('Failed to get presigned upload URL', 'NETWORK_ERROR', String(error));
+    throw createUploadError("Failed to get presigned upload URL", "NETWORK_ERROR", String(error));
   }
 };
 
@@ -407,21 +407,21 @@ const uploadToS3 = async function uploadToS3(
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
-    xhr.upload.addEventListener('progress', (event) => {
+    xhr.upload.addEventListener("progress", (event) => {
       if (event.lengthComputable && onProgress) {
         const percentComplete = (event.loaded / event.total) * PERCENT_BASE;
         onProgress(percentComplete);
       }
     });
 
-    xhr.addEventListener('load', () => {
+    xhr.addEventListener("load", () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve();
       } else {
         reject(
           createUploadError(
             `S3 upload failed with status ${xhr.status}`,
-            'UPLOAD_FAILED',
+            "UPLOAD_FAILED",
             xhr.responseText,
             xhr.status,
           ),
@@ -429,16 +429,16 @@ const uploadToS3 = async function uploadToS3(
       }
     });
 
-    xhr.addEventListener('error', () => {
-      reject(createUploadError('Network error during upload', 'NETWORK_ERROR'));
+    xhr.addEventListener("error", () => {
+      reject(createUploadError("Network error during upload", "NETWORK_ERROR"));
     });
 
-    xhr.addEventListener('abort', () => {
-      reject(createUploadError('Upload cancelled', 'UPLOAD_FAILED'));
+    xhr.addEventListener("abort", () => {
+      reject(createUploadError("Upload cancelled", "UPLOAD_FAILED"));
     });
 
-    xhr.open('PUT', uploadUrl);
-    xhr.setRequestHeader('Content-Type', file.type);
+    xhr.open("PUT", uploadUrl);
+    xhr.setRequestHeader("Content-Type", file.type);
     xhr.send(file);
   });
 };
@@ -456,7 +456,7 @@ const mapUploadProgress = function mapUploadProgress(percent: number): number {
 
 const validateScreenshotInput = function validateScreenshotInput(screenshotData: string): void {
   if (!screenshotData) {
-    throw createUploadError('Screenshot data is empty', 'INVALID_FILE');
+    throw createUploadError("Screenshot data is empty", "INVALID_FILE");
   }
 };
 
@@ -464,7 +464,7 @@ const validateFileSize = function validateFileSize(file: File): void {
   if (file.size > MAX_FILE_SIZE) {
     throw createUploadError(
       `File size ${file.size} bytes exceeds maximum ${MAX_FILE_SIZE} bytes`,
-      'INVALID_FILE',
+      "INVALID_FILE",
     );
   }
 };
@@ -476,7 +476,7 @@ const uploadScreenshot = async function uploadScreenshot({
   componentId,
   options = {},
   screenshotData,
-  version = 'v1',
+  version = "v1",
 }: UploadScreenshotParams): Promise<{
   fileSize: number;
   key: string;
@@ -509,11 +509,11 @@ const uploadScreenshot = async function uploadScreenshot({
 
     return { fileSize: file.size, key, url };
   } catch (error) {
-    logger.error('Screenshot upload failed:', error);
-    if (error instanceof Error && 'code' in error) {
+    logger.error("Screenshot upload failed:", error);
+    if (error instanceof Error && "code" in error) {
       throw error as UploadError;
     }
-    throw createUploadError('Screenshot upload failed', 'UPLOAD_FAILED', String(error));
+    throw createUploadError("Screenshot upload failed", "UPLOAD_FAILED", String(error));
   }
 };
 
@@ -523,26 +523,26 @@ const uploadScreenshot = async function uploadScreenshot({
 const deleteScreenshot = async function deleteScreenshot(key: string): Promise<void> {
   try {
     const response = await fetch(`/api/v1/storage/${key}`, {
-      credentials: 'include',
+      credentials: "include",
       headers: getAuthHeaders(),
-      method: 'DELETE',
+      method: "DELETE",
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw createUploadError(
-        'Failed to delete screenshot',
-        'UPLOAD_FAILED',
+        "Failed to delete screenshot",
+        "UPLOAD_FAILED",
         errorData.error ?? response.statusText,
         response.status,
       );
     }
   } catch (error) {
-    logger.error('Failed to delete screenshot:', error);
-    if (error instanceof Error && 'code' in error) {
+    logger.error("Failed to delete screenshot:", error);
+    if (error instanceof Error && "code" in error) {
       throw error as UploadError;
     }
-    throw createUploadError('Failed to delete screenshot', 'NETWORK_ERROR', String(error));
+    throw createUploadError("Failed to delete screenshot", "NETWORK_ERROR", String(error));
   }
 };
 
@@ -602,7 +602,7 @@ const buildMetadata = function buildMetadata(
   componentId: string,
   uploadResult: { fileSize: number; key: string; url: string },
   version: string,
-  versionType: ScreenshotMetadata['versionType'],
+  versionType: ScreenshotMetadata["versionType"],
   screenshotData: string,
   thumbnailUrl: string | undefined,
 ): ScreenshotMetadata {
@@ -631,8 +631,8 @@ const createScreenshot = async function createScreenshot({
   componentId,
   element,
   options = {},
-  version = '1.0.0',
-  versionType = 'draft',
+  version = "1.0.0",
+  versionType = "draft",
 }: CreateScreenshotParams): Promise<ScreenshotMetadata> {
   reportProgress(options, PROGRESS_PRESIGN_START);
   const screenshotData = await captureComponentScreenshot(element);
@@ -646,9 +646,9 @@ const createScreenshot = async function createScreenshot({
 
   let thumbnailUrl: string | undefined;
   try {
-    thumbnailUrl = await generateThumbnail(uploadResult.url, 'medium');
+    thumbnailUrl = await generateThumbnail(uploadResult.url, "medium");
   } catch (error) {
-    logger.warn('Thumbnail generation failed:', error);
+    logger.warn("Thumbnail generation failed:", error);
   }
 
   const metadata = buildMetadata(
@@ -731,7 +731,7 @@ const batchCaptureScreenshots = async function batchCaptureScreenshots(
         element,
         options: { ...options, onProgress: elementProgress },
         version,
-        versionType: 'draft',
+        versionType: "draft",
       });
       results.push(screenshot);
     } catch (error) {

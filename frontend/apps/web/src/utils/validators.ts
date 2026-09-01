@@ -1,9 +1,9 @@
 // Validation utilities
 
-const MAX_ITEM_TITLE_LENGTH = Number('200');
-const MAX_PROJECT_NAME_LENGTH = Number('50');
-const MIN_PROJECT_NAME_LENGTH = Number('3');
-const MAX_DESCRIPTION_LENGTH = Number('500');
+const MAX_ITEM_TITLE_LENGTH = Number("200");
+const MAX_PROJECT_NAME_LENGTH = Number("50");
+const MIN_PROJECT_NAME_LENGTH = Number("3");
+const MAX_DESCRIPTION_LENGTH = Number("500");
 
 const isEmail = function isEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -64,7 +64,7 @@ const validateProject = function validateProject(data: {
   const errors: string[] = [];
 
   if (!data.name) {
-    errors.push('Project name is required');
+    errors.push("Project name is required");
   } else if (!isValidProjectName(data.name)) {
     errors.push(
       `Project name must be ${MIN_PROJECT_NAME_LENGTH}-${MAX_PROJECT_NAME_LENGTH} characters (letters, numbers, spaces, hyphens, underscores)`,
@@ -91,25 +91,25 @@ const validateItem = function validateItem(data: {
   const errors: string[] = [];
 
   if (!data.title) {
-    errors.push('Item title is required');
+    errors.push("Item title is required");
   } else if (!isValidItemTitle(data.title)) {
     errors.push(`Item title must be 1-${MAX_ITEM_TITLE_LENGTH} characters`);
   }
 
   if (!data.view) {
-    errors.push('View type is required');
+    errors.push("View type is required");
   }
 
   if (!data.type) {
-    errors.push('Item type is required');
+    errors.push("Item type is required");
   }
 
   if (!data.status) {
-    errors.push('Status is required');
+    errors.push("Status is required");
   }
 
   if (!data.priority) {
-    errors.push('Priority is required');
+    errors.push("Priority is required");
   }
 
   return {
@@ -126,19 +126,19 @@ const validateLink = function validateLink(data: {
   const errors: string[] = [];
 
   if (!data.sourceId) {
-    errors.push('Source item is required');
+    errors.push("Source item is required");
   }
 
   if (!data.targetId) {
-    errors.push('Target item is required');
+    errors.push("Target item is required");
   }
 
   if (data.sourceId === data.targetId) {
-    errors.push('Source and target cannot be the same item');
+    errors.push("Source and target cannot be the same item");
   }
 
   if (!data.type) {
-    errors.push('Link type is required');
+    errors.push("Link type is required");
   }
 
   return {

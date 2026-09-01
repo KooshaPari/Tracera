@@ -1,6 +1,6 @@
-import { render } from '@testing-library/react';
-import { memo, useCallback, useMemo } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { render } from "@testing-library/react";
+import { memo, useCallback, useMemo } from "react";
+import { describe, expect, it, vi } from "vitest";
 
 interface TestItem {
   id: string;
@@ -12,9 +12,9 @@ interface TestItem {
   owner?: string;
 }
 
-describe('React Memoization Optimizations', () => {
-  describe('ItemCard Memoization', () => {
-    it('should only re-render when relevant props change', () => {
+describe("React Memoization Optimizations", () => {
+  describe("ItemCard Memoization", () => {
+    it("should only re-render when relevant props change", () => {
       const renderSpy = vi.fn();
 
       const TestItemCard = memo(
@@ -40,12 +40,12 @@ describe('React Memoization Optimizations', () => {
       const { rerender } = render(
         <TestItemCard
           item={{
-            id: '1',
-            owner: 'John',
-            priority: 'medium',
-            status: 'todo',
-            title: 'Test',
-            type: 'feature',
+            id: "1",
+            owner: "John",
+            priority: "medium",
+            status: "todo",
+            title: "Test",
+            type: "feature",
           }}
           onDragStart={vi.fn()}
         />,
@@ -57,12 +57,12 @@ describe('React Memoization Optimizations', () => {
       rerender(
         <TestItemCard
           item={{
-            id: '1',
-            owner: 'John',
-            priority: 'medium',
-            status: 'todo',
-            title: 'Test',
-            type: 'feature',
+            id: "1",
+            owner: "John",
+            priority: "medium",
+            status: "todo",
+            title: "Test",
+            type: "feature",
           }}
           onDragStart={vi.fn()}
         />,
@@ -75,12 +75,12 @@ describe('React Memoization Optimizations', () => {
       rerender(
         <TestItemCard
           item={{
-            id: '1',
-            owner: 'John',
-            priority: 'medium',
-            status: 'todo',
-            title: 'Test Updated',
-            type: 'feature',
+            id: "1",
+            owner: "John",
+            priority: "medium",
+            status: "todo",
+            title: "Test Updated",
+            type: "feature",
           }}
           onDragStart={vi.fn()}
         />,
@@ -89,7 +89,7 @@ describe('React Memoization Optimizations', () => {
       expect(renderSpy).toHaveBeenCalledTimes(2);
     });
 
-    it('should use useCallback for drag handlers to maintain reference equality', async () => {
+    it("should use useCallback for drag handlers to maintain reference equality", async () => {
       const handleDragStartSpy = vi.fn();
       let callbackReference: ((item: TestItem) => void) | null = null;
 
@@ -104,7 +104,7 @@ describe('React Memoization Optimizations', () => {
         return (
           <button
             onClick={() => {
-              handleDragStart({ id: '1', title: 'Test' });
+              handleDragStart({ id: "1", title: "Test" });
             }}
           >
             Drag
@@ -123,8 +123,8 @@ describe('React Memoization Optimizations', () => {
     });
   });
 
-  describe('TreeItem Memoization', () => {
-    it('should skip re-render when only parent expandedIds Set reference changes but item stays same', () => {
+  describe("TreeItem Memoization", () => {
+    it("should skip re-render when only parent expandedIds Set reference changes but item stays same", () => {
       const renderSpy = vi.fn();
 
       const TestTreeItem = memo(
@@ -145,31 +145,31 @@ describe('React Memoization Optimizations', () => {
           prev.expandedIds.has(prev.nodeId) === next.expandedIds.has(next.nodeId),
       );
 
-      const expandedIds = new Set<string>(['1', '2']);
+      const expandedIds = new Set<string>(["1", "2"]);
 
       const { rerender } = render(
-        <TestTreeItem nodeId='1' expandedIds={expandedIds} onToggle={vi.fn()} />,
+        <TestTreeItem nodeId="1" expandedIds={expandedIds} onToggle={vi.fn()} />,
       );
 
       expect(renderSpy).toHaveBeenCalledTimes(1);
 
       // Re-render with same Set content but different reference
-      const newExpandedIds = new Set<string>(['1', '2']);
+      const newExpandedIds = new Set<string>(["1", "2"]);
 
-      rerender(<TestTreeItem nodeId='1' expandedIds={newExpandedIds} onToggle={vi.fn()} />);
+      rerender(<TestTreeItem nodeId="1" expandedIds={newExpandedIds} onToggle={vi.fn()} />);
 
       // Still 1 because custom comparison checks Set content, not reference
       expect(renderSpy).toHaveBeenCalledTimes(1);
 
       // Re-render where item is not in expanded set - should re-render
-      const changedExpandedIds = new Set<string>(['2', '3']);
+      const changedExpandedIds = new Set<string>(["2", "3"]);
 
-      rerender(<TestTreeItem nodeId='1' expandedIds={changedExpandedIds} onToggle={vi.fn()} />);
+      rerender(<TestTreeItem nodeId="1" expandedIds={changedExpandedIds} onToggle={vi.fn()} />);
 
       expect(renderSpy).toHaveBeenCalledTimes(2);
     });
 
-    it('should use useCallback for toggle handler', async () => {
+    it("should use useCallback for toggle handler", async () => {
       let lastCallbackRef: ((id: string) => void) | null = null;
 
       function TestComponent() {
@@ -181,7 +181,7 @@ describe('React Memoization Optimizations', () => {
         return (
           <button
             onClick={() => {
-              handleToggle('1');
+              handleToggle("1");
             }}
           >
             Toggle
@@ -200,8 +200,8 @@ describe('React Memoization Optimizations', () => {
     });
   });
 
-  describe('VirtualTableRow Memoization', () => {
-    it('should only re-render when item data or handlers change', () => {
+  describe("VirtualTableRow Memoization", () => {
+    it("should only re-render when item data or handlers change", () => {
       const renderSpy = vi.fn();
 
       const TestTableRow = memo(
@@ -235,12 +235,12 @@ describe('React Memoization Optimizations', () => {
           <tbody>
             <TestTableRow
               item={{
-                id: '1',
-                owner: 'Alice',
-                priority: 'high',
-                status: 'todo',
-                title: 'Task 1',
-                type: 'feature',
+                id: "1",
+                owner: "Alice",
+                priority: "high",
+                status: "todo",
+                title: "Task 1",
+                type: "feature",
               }}
               onDelete={vi.fn()}
               onNavigate={vi.fn()}
@@ -257,12 +257,12 @@ describe('React Memoization Optimizations', () => {
           <tbody>
             <TestTableRow
               item={{
-                id: '1',
-                owner: 'Alice',
-                priority: 'high',
-                status: 'todo',
-                title: 'Task 1',
-                type: 'feature',
+                id: "1",
+                owner: "Alice",
+                priority: "high",
+                status: "todo",
+                title: "Task 1",
+                type: "feature",
               }}
               onDelete={vi.fn()}
               onNavigate={vi.fn()}
@@ -279,12 +279,12 @@ describe('React Memoization Optimizations', () => {
           <tbody>
             <TestTableRow
               item={{
-                id: '1',
-                owner: 'Alice',
-                priority: 'high',
-                status: 'done',
-                title: 'Task 1 Updated',
-                type: 'feature',
+                id: "1",
+                owner: "Alice",
+                priority: "high",
+                status: "done",
+                title: "Task 1 Updated",
+                type: "feature",
               }}
               onDelete={vi.fn()}
               onNavigate={vi.fn()}
@@ -296,7 +296,7 @@ describe('React Memoization Optimizations', () => {
       expect(renderSpy).toHaveBeenCalledTimes(2);
     });
 
-    it('should use useCallback for click handlers in table row', async () => {
+    it("should use useCallback for click handlers in table row", async () => {
       let navCallbackRef: ((path: string) => void) | null = null;
       let deleteCallbackRef: ((id: string) => void) | null = null;
 
@@ -338,7 +338,7 @@ describe('React Memoization Optimizations', () => {
         <table>
           <tbody>
             <TestTableRow
-              item={{ id: '1', title: 'Task' }}
+              item={{ id: "1", title: "Task" }}
               onDelete={onDelete}
               onNavigate={onNavigate}
             />
@@ -353,7 +353,7 @@ describe('React Memoization Optimizations', () => {
         <table>
           <tbody>
             <TestTableRow
-              item={{ id: '1', title: 'Task' }}
+              item={{ id: "1", title: "Task" }}
               onDelete={onDelete}
               onNavigate={onNavigate}
             />
@@ -367,34 +367,34 @@ describe('React Memoization Optimizations', () => {
     });
   });
 
-  describe('useMemo for Computed Values', () => {
-    it('should only recompute filtered items when dependencies change', () => {
+  describe("useMemo for Computed Values", () => {
+    it("should only recompute filtered items when dependencies change", () => {
       const computeSpy = vi.fn();
 
       function TestComponent({ items, filter }: { items: TestItem[]; filter: string }) {
         const computed = useMemo(() => {
           computeSpy();
           return items.filter((item) =>
-            (item.title ?? item.name ?? '').toLowerCase().includes(filter.toLowerCase()),
+            (item.title ?? item.name ?? "").toLowerCase().includes(filter.toLowerCase()),
           );
         }, [items, filter]);
 
         return <div>{computed.length}</div>;
       }
 
-      const items: TestItem[] = [{ id: '1', title: 'Test' }];
-      const { rerender } = render(<TestComponent items={items} filter='test' />);
+      const items: TestItem[] = [{ id: "1", title: "Test" }];
+      const { rerender } = render(<TestComponent items={items} filter="test" />);
 
       expect(computeSpy).toHaveBeenCalledTimes(1);
 
       // Same items and filter - should not recompute
-      rerender(<TestComponent items={items} filter='test' />);
+      rerender(<TestComponent items={items} filter="test" />);
 
       // Still 1 because items reference is same and filter is same
       expect(computeSpy).toHaveBeenCalledTimes(1);
 
       // Different filter - should recompute
-      rerender(<TestComponent items={items} filter='other' />);
+      rerender(<TestComponent items={items} filter="other" />);
 
       expect(computeSpy).toHaveBeenCalledTimes(2);
     });

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export interface KeyboardShortcut {
   key: string;
@@ -7,7 +7,7 @@ export interface KeyboardShortcut {
   shift?: boolean | undefined;
   alt?: boolean | undefined;
   description: string;
-  category: 'navigation' | 'selection' | 'editing' | 'system';
+  category: "navigation" | "selection" | "editing" | "system";
   context?: string | undefined;
 }
 
@@ -100,7 +100,7 @@ export function useKeyboardShortcuts(
     const handler = (event: KeyboardEvent) => {
       // Check for shortcuts modal trigger (?)
       if (
-        event.key === '?' &&
+        event.key === "?" &&
         !event.ctrlKey &&
         !event.metaKey &&
         !event.shiftKey &&
@@ -136,9 +136,9 @@ export function useKeyboardShortcuts(
       }
     };
 
-    globalThis.addEventListener('keydown', handler);
+    globalThis.addEventListener("keydown", handler);
     return () => {
-      globalThis.removeEventListener('keydown', handler);
+      globalThis.removeEventListener("keydown", handler);
     };
   }, [enabled]);
 
@@ -172,41 +172,41 @@ export function formatKeyboardShortcut(shortcut: KeyboardShortcut): string {
   const parts: string[] = [];
 
   if (shortcut.meta) {
-    parts.push('⌘');
+    parts.push("⌘");
   }
   if (shortcut.ctrl) {
-    parts.push('Ctrl');
+    parts.push("Ctrl");
   }
   if (shortcut.alt) {
-    parts.push('Alt');
+    parts.push("Alt");
   }
   if (shortcut.shift) {
-    parts.push('Shift');
+    parts.push("Shift");
   }
 
   // Format key
   let displayKey = shortcut.key.toUpperCase();
   if (shortcut.key.length === 1) {
     displayKey = shortcut.key.toUpperCase();
-  } else if (shortcut.key === 'ArrowUp') {
-    displayKey = '↑';
-  } else if (shortcut.key === 'ArrowDown') {
-    displayKey = '↓';
-  } else if (shortcut.key === 'ArrowLeft') {
-    displayKey = '←';
-  } else if (shortcut.key === 'ArrowRight') {
-    displayKey = '→';
-  } else if (shortcut.key === 'Enter') {
-    displayKey = '↵';
-  } else if (shortcut.key === 'Escape') {
-    displayKey = 'Esc';
-  } else if (shortcut.key === 'Backspace') {
-    displayKey = '⌫';
-  } else if (shortcut.key === 'Delete') {
-    displayKey = 'Del';
+  } else if (shortcut.key === "ArrowUp") {
+    displayKey = "↑";
+  } else if (shortcut.key === "ArrowDown") {
+    displayKey = "↓";
+  } else if (shortcut.key === "ArrowLeft") {
+    displayKey = "←";
+  } else if (shortcut.key === "ArrowRight") {
+    displayKey = "→";
+  } else if (shortcut.key === "Enter") {
+    displayKey = "↵";
+  } else if (shortcut.key === "Escape") {
+    displayKey = "Esc";
+  } else if (shortcut.key === "Backspace") {
+    displayKey = "⌫";
+  } else if (shortcut.key === "Delete") {
+    displayKey = "Del";
   }
 
   parts.push(displayKey);
 
-  return parts.join('+');
+  return parts.join("+");
 }

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   clearCSRFToken,
@@ -10,12 +10,12 @@ import {
   initializeCSRF,
   refreshCSRFToken,
   setCSRFToken,
-} from './csrf';
+} from "./csrf";
 
 // Mock fetch globally
 global.fetch = vi.fn();
 
-describe('CSRF Token Management', () => {
+describe("CSRF Token Management", () => {
   beforeEach(() => {
     // Clear token before each test
     clearCSRFToken();
@@ -26,9 +26,9 @@ describe('CSRF Token Management', () => {
     vi.clearAllMocks();
   });
 
-  describe('fetchCSRFToken', () => {
-    it('should fetch and store CSRF token', async () => {
-      const mockToken = 'test-csrf-token-12345';
+  describe("fetchCSRFToken", () => {
+    it("should fetch and store CSRF token", async () => {
+      const mockToken = "test-csrf-token-12345";
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ token: mockToken, valid: true }),
@@ -39,16 +39,16 @@ describe('CSRF Token Management', () => {
       expect(token).toBe(mockToken);
       expect(getCSRFToken()).toBe(mockToken);
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/csrf-token'),
+        expect.stringContaining("/api/v1/csrf-token"),
         expect.objectContaining({
-          method: 'GET',
-          credentials: 'include',
+          method: "GET",
+          credentials: "include",
         }),
       );
     });
 
-    it('should reuse token if already fetched', async () => {
-      const mockToken = 'test-csrf-token-12345';
+    it("should reuse token if already fetched", async () => {
+      const mockToken = "test-csrf-token-12345";
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ token: mockToken, valid: true }),
@@ -61,56 +61,56 @@ describe('CSRF Token Management', () => {
       expect(global.fetch).toHaveBeenCalledTimes(1);
     });
 
-    it('should handle fetch errors gracefully', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+    it("should handle fetch errors gracefully", async () => {
+      (global.fetch as any).mockRejectedValueOnce(new Error("Network error"));
 
-      await expect(fetchCSRFToken()).rejects.toThrow('Network error');
+      await expect(fetchCSRFToken()).rejects.toThrow("Network error");
     });
 
-    it('should handle non-200 responses', async () => {
+    it("should handle non-200 responses", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         status: 500,
       });
 
-      await expect(fetchCSRFToken()).rejects.toThrow('Failed to fetch CSRF token');
+      await expect(fetchCSRFToken()).rejects.toThrow("Failed to fetch CSRF token");
     });
 
-    it('should handle missing token in response', async () => {
+    it("should handle missing token in response", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ token: null, valid: false }),
       });
 
-      await expect(fetchCSRFToken()).rejects.toThrow('No CSRF token');
+      await expect(fetchCSRFToken()).rejects.toThrow("No CSRF token");
     });
   });
 
-  describe('getCSRFToken', () => {
-    it('should return null when token not loaded', () => {
+  describe("getCSRFToken", () => {
+    it("should return null when token not loaded", () => {
       const token = getCSRFToken();
       expect(token).toBeNull();
     });
 
     it("should return token after it's set", () => {
-      const testToken = 'test-token';
+      const testToken = "test-token";
       setCSRFToken(testToken);
       expect(getCSRFToken()).toBe(testToken);
     });
   });
 
-  describe('setCSRFToken', () => {
-    it('should set token in memory', () => {
-      const testToken = 'new-token';
+  describe("setCSRFToken", () => {
+    it("should set token in memory", () => {
+      const testToken = "new-token";
       setCSRFToken(testToken);
       expect(getCSRFToken()).toBe(testToken);
     });
   });
 
-  describe('refreshCSRFToken', () => {
-    it('should clear and refetch token', async () => {
-      const oldToken = 'old-token';
-      const newToken = 'new-token';
+  describe("refreshCSRFToken", () => {
+    it("should clear and refetch token", async () => {
+      const oldToken = "old-token";
+      const newToken = "new-token";
 
       setCSRFToken(oldToken);
       expect(getCSRFToken()).toBe(oldToken);
@@ -127,9 +127,9 @@ describe('CSRF Token Management', () => {
     });
   });
 
-  describe('initializeCSRF', () => {
-    it('should fetch token on init', async () => {
-      const mockToken = 'init-token';
+  describe("initializeCSRF", () => {
+    it("should fetch token on init", async () => {
+      const mockToken = "init-token";
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ token: mockToken, valid: true }),
@@ -140,8 +140,8 @@ describe('CSRF Token Management', () => {
       expect(getCSRFToken()).toBe(mockToken);
     });
 
-    it('should handle init errors gracefully', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Init failed'));
+    it("should handle init errors gracefully", async () => {
+      (global.fetch as any).mockRejectedValueOnce(new Error("Init failed"));
 
       // initializeCSRF should NOT throw - it catches and logs errors
       // This allows app to continue even if CSRF init fails
@@ -149,60 +149,60 @@ describe('CSRF Token Management', () => {
     });
   });
 
-  describe('getCSRFHeaders', () => {
+  describe("getCSRFHeaders", () => {
     beforeEach(() => {
-      setCSRFToken('test-token');
+      setCSRFToken("test-token");
     });
 
-    it('should add header for POST requests', () => {
-      const headers = getCSRFHeaders('POST');
-      expect(headers['X-CSRF-Token']).toBe('test-token');
+    it("should add header for POST requests", () => {
+      const headers = getCSRFHeaders("POST");
+      expect(headers["X-CSRF-Token"]).toBe("test-token");
     });
 
-    it('should add header for PUT requests', () => {
-      const headers = getCSRFHeaders('PUT');
-      expect(headers['X-CSRF-Token']).toBe('test-token');
+    it("should add header for PUT requests", () => {
+      const headers = getCSRFHeaders("PUT");
+      expect(headers["X-CSRF-Token"]).toBe("test-token");
     });
 
-    it('should add header for PATCH requests', () => {
-      const headers = getCSRFHeaders('PATCH');
-      expect(headers['X-CSRF-Token']).toBe('test-token');
+    it("should add header for PATCH requests", () => {
+      const headers = getCSRFHeaders("PATCH");
+      expect(headers["X-CSRF-Token"]).toBe("test-token");
     });
 
-    it('should add header for DELETE requests', () => {
-      const headers = getCSRFHeaders('DELETE');
-      expect(headers['X-CSRF-Token']).toBe('test-token');
+    it("should add header for DELETE requests", () => {
+      const headers = getCSRFHeaders("DELETE");
+      expect(headers["X-CSRF-Token"]).toBe("test-token");
     });
 
-    it('should not add header for GET requests', () => {
-      const headers = getCSRFHeaders('GET');
-      expect(headers['X-CSRF-Token']).toBeUndefined();
+    it("should not add header for GET requests", () => {
+      const headers = getCSRFHeaders("GET");
+      expect(headers["X-CSRF-Token"]).toBeUndefined();
       expect(Object.keys(headers).length).toBe(0);
     });
 
-    it('should not add header for HEAD requests', () => {
-      const headers = getCSRFHeaders('HEAD');
+    it("should not add header for HEAD requests", () => {
+      const headers = getCSRFHeaders("HEAD");
       expect(Object.keys(headers).length).toBe(0);
     });
 
-    it('should not add header when token not available', () => {
+    it("should not add header when token not available", () => {
       clearCSRFToken();
-      const headers = getCSRFHeaders('POST');
-      expect(headers['X-CSRF-Token']).toBeUndefined();
+      const headers = getCSRFHeaders("POST");
+      expect(headers["X-CSRF-Token"]).toBeUndefined();
     });
 
-    it('should handle lowercase methods', () => {
-      const headers = getCSRFHeaders('post');
-      expect(headers['X-CSRF-Token']).toBe('test-token');
+    it("should handle lowercase methods", () => {
+      const headers = getCSRFHeaders("post");
+      expect(headers["X-CSRF-Token"]).toBe("test-token");
     });
   });
 
-  describe('extractCSRFTokenFromResponse', () => {
-    it('should extract token from response header', () => {
-      const newToken = 'new-response-token';
+  describe("extractCSRFTokenFromResponse", () => {
+    it("should extract token from response header", () => {
+      const newToken = "new-response-token";
       const response = new Response(null, {
         headers: {
-          'X-CSRF-Token': newToken,
+          "X-CSRF-Token": newToken,
         },
       });
 
@@ -212,17 +212,17 @@ describe('CSRF Token Management', () => {
       expect(getCSRFToken()).toBe(newToken);
     });
 
-    it('should handle missing token in response', () => {
+    it("should handle missing token in response", () => {
       const response = new Response(null);
       const extracted = extractCSRFTokenFromResponse(response);
 
       expect(extracted).toBeNull();
     });
 
-    it('should detect cookie-based tokens', () => {
+    it("should detect cookie-based tokens", () => {
       const response = new Response(null, {
         headers: {
-          'set-cookie': 'csrf_token=value; Path=/; HttpOnly',
+          "set-cookie": "csrf_token=value; Path=/; HttpOnly",
         },
       });
 
@@ -233,16 +233,16 @@ describe('CSRF Token Management', () => {
     });
   });
 
-  describe('handleCSRFError', () => {
-    it('should detect CSRF errors', async () => {
-      const response = new Response(JSON.stringify({ error: 'invalid CSRF token' }), {
+  describe("handleCSRFError", () => {
+    it("should detect CSRF errors", async () => {
+      const response = new Response(JSON.stringify({ error: "invalid CSRF token" }), {
         status: 403,
-        headers: { 'content-type': 'application/json' },
+        headers: { "content-type": "application/json" },
       });
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ token: 'new-token', valid: true }),
+        json: async () => ({ token: "new-token", valid: true }),
       });
 
       const handled = await handleCSRFError(response);
@@ -250,15 +250,15 @@ describe('CSRF Token Management', () => {
       expect(handled).toBe(true);
     });
 
-    it('should detect token-related errors', async () => {
-      const response = new Response(JSON.stringify({ error: 'missing token validation' }), {
+    it("should detect token-related errors", async () => {
+      const response = new Response(JSON.stringify({ error: "missing token validation" }), {
         status: 403,
-        headers: { 'content-type': 'application/json' },
+        headers: { "content-type": "application/json" },
       });
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ token: 'new-token', valid: true }),
+        json: async () => ({ token: "new-token", valid: true }),
       });
 
       const handled = await handleCSRFError(response);
@@ -266,10 +266,10 @@ describe('CSRF Token Management', () => {
       expect(handled).toBe(true);
     });
 
-    it('should not handle non-CSRF 403 errors', async () => {
-      const response = new Response(JSON.stringify({ error: 'forbidden' }), {
+    it("should not handle non-CSRF 403 errors", async () => {
+      const response = new Response(JSON.stringify({ error: "forbidden" }), {
         status: 403,
-        headers: { 'content-type': 'application/json' },
+        headers: { "content-type": "application/json" },
       });
 
       const handled = await handleCSRFError(response);
@@ -277,10 +277,10 @@ describe('CSRF Token Management', () => {
       expect(handled).toBe(false);
     });
 
-    it('should not handle non-403 responses', async () => {
-      const response = new Response(JSON.stringify({ error: 'error' }), {
+    it("should not handle non-403 responses", async () => {
+      const response = new Response(JSON.stringify({ error: "error" }), {
         status: 401,
-        headers: { 'content-type': 'application/json' },
+        headers: { "content-type": "application/json" },
       });
 
       const handled = await handleCSRFError(response);
@@ -288,10 +288,10 @@ describe('CSRF Token Management', () => {
       expect(handled).toBe(false);
     });
 
-    it('should handle malformed JSON gracefully', async () => {
-      const response = new Response('invalid json', {
+    it("should handle malformed JSON gracefully", async () => {
+      const response = new Response("invalid json", {
         status: 403,
-        headers: { 'content-type': 'application/json' },
+        headers: { "content-type": "application/json" },
       });
 
       const handled = await handleCSRFError(response);
@@ -299,28 +299,28 @@ describe('CSRF Token Management', () => {
       expect(handled).toBe(false);
     });
 
-    it('should refresh token on CSRF error', async () => {
-      const response = new Response(JSON.stringify({ error: 'invalid CSRF token' }), {
+    it("should refresh token on CSRF error", async () => {
+      const response = new Response(JSON.stringify({ error: "invalid CSRF token" }), {
         status: 403,
-        headers: { 'content-type': 'application/json' },
+        headers: { "content-type": "application/json" },
       });
 
-      setCSRFToken('old-token');
+      setCSRFToken("old-token");
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ token: 'new-token', valid: true }),
+        json: async () => ({ token: "new-token", valid: true }),
       });
 
       await handleCSRFError(response);
 
-      expect(getCSRFToken()).toBe('new-token');
+      expect(getCSRFToken()).toBe("new-token");
     });
   });
 
-  describe('clearCSRFToken', () => {
-    it('should clear token from memory', () => {
-      setCSRFToken('test-token');
+  describe("clearCSRFToken", () => {
+    it("should clear token from memory", () => {
+      setCSRFToken("test-token");
       expect(getCSRFToken()).not.toBeNull();
 
       clearCSRFToken();
@@ -329,10 +329,10 @@ describe('CSRF Token Management', () => {
     });
   });
 
-  describe('Integration scenarios', () => {
-    it('should handle complete token lifecycle', async () => {
+  describe("Integration scenarios", () => {
+    it("should handle complete token lifecycle", async () => {
       // 1. Initialize
-      const mockToken1 = 'token-1';
+      const mockToken1 = "token-1";
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ token: mockToken1, valid: true }),
@@ -342,32 +342,32 @@ describe('CSRF Token Management', () => {
       expect(getCSRFToken()).toBe(mockToken1);
 
       // 2. Get headers for request
-      const headers = getCSRFHeaders('POST');
-      expect(headers['X-CSRF-Token']).toBe(mockToken1);
+      const headers = getCSRFHeaders("POST");
+      expect(headers["X-CSRF-Token"]).toBe(mockToken1);
 
       // 3. Receive new token in response
-      const mockToken2 = 'token-2';
+      const mockToken2 = "token-2";
       const response = new Response(null, {
-        headers: { 'X-CSRF-Token': mockToken2 },
+        headers: { "X-CSRF-Token": mockToken2 },
       });
       extractCSRFTokenFromResponse(response);
       expect(getCSRFToken()).toBe(mockToken2);
 
       // 4. Use new token in next request
-      const newHeaders = getCSRFHeaders('PUT');
-      expect(newHeaders['X-CSRF-Token']).toBe(mockToken2);
+      const newHeaders = getCSRFHeaders("PUT");
+      expect(newHeaders["X-CSRF-Token"]).toBe(mockToken2);
     });
 
-    it('should handle CSRF error recovery', async () => {
-      const originalToken = 'original-token';
-      const refreshedToken = 'refreshed-token';
+    it("should handle CSRF error recovery", async () => {
+      const originalToken = "original-token";
+      const refreshedToken = "refreshed-token";
 
       setCSRFToken(originalToken);
 
       // Simulate CSRF error response
-      const errorResponse = new Response(JSON.stringify({ error: 'invalid CSRF token' }), {
+      const errorResponse = new Response(JSON.stringify({ error: "invalid CSRF token" }), {
         status: 403,
-        headers: { 'content-type': 'application/json' },
+        headers: { "content-type": "application/json" },
       });
 
       (global.fetch as any).mockResolvedValueOnce({
@@ -381,8 +381,8 @@ describe('CSRF Token Management', () => {
       expect(getCSRFToken()).toBe(refreshedToken);
 
       // Use new token
-      const headers = getCSRFHeaders('POST');
-      expect(headers['X-CSRF-Token']).toBe(refreshedToken);
+      const headers = getCSRFHeaders("POST");
+      expect(headers["X-CSRF-Token"]).toBe(refreshedToken);
     });
   });
 });

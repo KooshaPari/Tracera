@@ -1,9 +1,9 @@
-import type { Item, ItemStatus, Priority } from '@tracertm/types';
+import type { Item, ItemStatus, Priority } from "@tracertm/types";
 
-const EMPTY_STRING = '';
+const EMPTY_STRING = "";
 
-const STATUS_OPTIONS = ['todo', 'in_progress', 'blocked', 'done'] as const;
-const PRIORITY_OPTIONS = ['critical', 'high', 'medium', 'low'] as const;
+const STATUS_OPTIONS = ["todo", "in_progress", "blocked", "done"] as const;
+const PRIORITY_OPTIONS = ["critical", "high", "medium", "low"] as const;
 
 type StatusOption = (typeof STATUS_OPTIONS)[number];
 type PriorityOption = (typeof PRIORITY_OPTIONS)[number];
@@ -32,9 +32,9 @@ interface ItemLink {
 }
 
 type ItemQueryState =
-  | { kind: 'loading' }
-  | { kind: 'not_found'; message?: string }
-  | { kind: 'ready'; item: Item };
+  | { kind: "loading" }
+  | { kind: "not_found"; message?: string }
+  | { kind: "ready"; item: Item };
 
 export {
   EMPTY_STRING,

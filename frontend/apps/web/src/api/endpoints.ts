@@ -15,11 +15,11 @@ import type {
   UpdateItemInput,
   UpdateLinkInput,
   UpdateProjectInput,
-} from './types';
+} from "./types";
 
 // Complete API Client for TraceRTM Backend
 /* oxlint-disable import/no-named-export, import/group-exports, import/max-dependencies, eslint/arrow-body-style, eslint/require-await, eslint/new-cap, eslint/no-ternary, eslint/sort-keys, eslint/sort-imports, eslint/id-length, eslint/max-lines, typescript-eslint/array-type, typescript-eslint/explicit-function-return-type, typescript-eslint/explicit-module-boundary-types, oxc/no-async-await */
-import { client } from './client';
+import { client } from "./client";
 
 const { apiClient, handleApiResponse, safeApiCall } = client;
 
@@ -36,7 +36,7 @@ export const projectsApi = {
       projects: Project[];
     }>(
       safeApiCall(
-        apiClient.GET('/api/v1/projects', {
+        apiClient.GET("/api/v1/projects", {
           params: { query: params },
         }),
       ),
@@ -49,7 +49,7 @@ export const projectsApi = {
   get: async (id: string): Promise<Project> => {
     return handleApiResponse(
       safeApiCall(
-        apiClient.GET('/api/v1/projects/{id}', {
+        apiClient.GET("/api/v1/projects/{id}", {
           params: { path: { id } },
         }),
       ),
@@ -58,7 +58,7 @@ export const projectsApi = {
 
   create: async (data: CreateProjectInput): Promise<Project> => {
     return handleApiResponse(
-      apiClient.POST('/api/v1/projects', {
+      apiClient.POST("/api/v1/projects", {
         body: data,
       }),
     );
@@ -66,7 +66,7 @@ export const projectsApi = {
 
   update: async (id: string, data: UpdateProjectInput): Promise<Project> => {
     return handleApiResponse(
-      apiClient.PUT('/api/v1/projects/{id}', {
+      apiClient.PUT("/api/v1/projects/{id}", {
         params: { path: { id } },
         body: data,
       }),
@@ -75,7 +75,7 @@ export const projectsApi = {
 
   delete: async (id: string): Promise<void> => {
     await handleApiResponse(
-      apiClient.DELETE('/api/v1/projects/{id}', {
+      apiClient.DELETE("/api/v1/projects/{id}", {
         params: { path: { id } },
       }),
     );
@@ -93,7 +93,7 @@ export const itemsApi = {
     const response = await handleApiResponse<
       { total: number; items: Item[] } | CursorPaginationResponse<Item> | Item[]
     >(
-      apiClient.GET('/api/v1/items', {
+      apiClient.GET("/api/v1/items", {
         params: { query: params },
       }),
     );
@@ -104,7 +104,7 @@ export const itemsApi = {
     if (Array.isArray(response)) {
       return response;
     }
-    if ('next_cursor' in response || 'has_more' in response) {
+    if ("next_cursor" in response || "has_more" in response) {
       // Return full cursor pagination response
       return response;
     }
@@ -114,7 +114,7 @@ export const itemsApi = {
 
   get: async (id: string): Promise<Item> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/items/{id}', {
+      apiClient.GET("/api/v1/items/{id}", {
         params: { path: { id } },
       }),
     );
@@ -122,7 +122,7 @@ export const itemsApi = {
 
   create: async (data: CreateItemInput): Promise<Item> => {
     return handleApiResponse(
-      apiClient.POST('/api/v1/items', {
+      apiClient.POST("/api/v1/items", {
         body: data,
       }),
     );
@@ -130,7 +130,7 @@ export const itemsApi = {
 
   update: async (id: string, data: UpdateItemInput): Promise<Item> => {
     return handleApiResponse(
-      apiClient.PUT('/api/v1/items/{id}', {
+      apiClient.PUT("/api/v1/items/{id}", {
         params: { path: { id } },
         body: data,
       }),
@@ -139,7 +139,7 @@ export const itemsApi = {
 
   delete: async (id: string): Promise<void> => {
     await handleApiResponse(
-      apiClient.DELETE('/api/v1/items/{id}', {
+      apiClient.DELETE("/api/v1/items/{id}", {
         params: { path: { id } },
       }),
     );
@@ -153,7 +153,7 @@ export const itemsApi = {
 export const linksApi = {
   list: async (params?: PaginationParams): Promise<Link[]> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/links', {
+      apiClient.GET("/api/v1/links", {
         params: { query: params },
       }),
     );
@@ -161,7 +161,7 @@ export const linksApi = {
 
   get: async (id: string): Promise<Link> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/links/{id}', {
+      apiClient.GET("/api/v1/links/{id}", {
         params: { path: { id } },
       }),
     );
@@ -169,7 +169,7 @@ export const linksApi = {
 
   create: async (data: CreateLinkInput): Promise<Link> => {
     return handleApiResponse(
-      apiClient.POST('/api/v1/links', {
+      apiClient.POST("/api/v1/links", {
         body: data,
       }),
     );
@@ -177,7 +177,7 @@ export const linksApi = {
 
   update: async (id: string, data: UpdateLinkInput): Promise<Link> => {
     return handleApiResponse(
-      apiClient.PUT('/api/v1/links/{id}', {
+      apiClient.PUT("/api/v1/links/{id}", {
         params: { path: { id } },
         body: data,
       }),
@@ -186,7 +186,7 @@ export const linksApi = {
 
   delete: async (id: string): Promise<void> => {
     await handleApiResponse(
-      apiClient.DELETE('/api/v1/links/{id}', {
+      apiClient.DELETE("/api/v1/links/{id}", {
         params: { path: { id } },
       }),
     );
@@ -200,7 +200,7 @@ export const linksApi = {
 export const graphApi = {
   getAncestors: async (id: string, depth?: number): Promise<GraphData> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/graph/ancestors/{id}', {
+      apiClient.GET("/api/v1/graph/ancestors/{id}", {
         params: {
           path: { id },
           query: { depth },
@@ -211,7 +211,7 @@ export const graphApi = {
 
   getDescendants: async (id: string, depth?: number): Promise<GraphData> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/graph/descendants/{id}', {
+      apiClient.GET("/api/v1/graph/descendants/{id}", {
         params: {
           path: { id },
           query: { depth },
@@ -222,7 +222,7 @@ export const graphApi = {
 
   findPath: async (sourceId: string, targetId: string): Promise<Item[]> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/graph/path', {
+      apiClient.GET("/api/v1/graph/path", {
         params: {
           query: { source: sourceId, target: targetId },
         },
@@ -232,7 +232,7 @@ export const graphApi = {
 
   findAllPaths: async (sourceId: string, targetId: string): Promise<Item[][]> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/graph/paths', {
+      apiClient.GET("/api/v1/graph/paths", {
         params: {
           query: { source: sourceId, target: targetId },
         },
@@ -242,7 +242,7 @@ export const graphApi = {
 
   getFullGraph: async (projectId?: string): Promise<GraphData> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/graph/full', {
+      apiClient.GET("/api/v1/graph/full", {
         params: {
           query: { project_id: projectId },
         },
@@ -257,7 +257,7 @@ export const graphApi = {
 
   detectCycles: async (projectId?: string): Promise<string[][]> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/graph/cycles', {
+      apiClient.GET("/api/v1/graph/cycles", {
         params: {
           query: { project_id: projectId },
         },
@@ -267,7 +267,7 @@ export const graphApi = {
 
   topologicalSort: async (projectId?: string): Promise<Item[]> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/graph/topo-sort', {
+      apiClient.GET("/api/v1/graph/topo-sort", {
         params: {
           query: { project_id: projectId },
         },
@@ -277,7 +277,7 @@ export const graphApi = {
 
   getImpactAnalysis: async (id: string, depth?: number): Promise<ImpactAnalysis> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/graph/impact/{id}', {
+      apiClient.GET("/api/v1/graph/impact/{id}", {
         params: {
           path: { id },
           query: { depth },
@@ -288,7 +288,7 @@ export const graphApi = {
 
   getDependencyAnalysis: async (id: string, depth?: number): Promise<DependencyAnalysis> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/graph/dependencies/{id}', {
+      apiClient.GET("/api/v1/graph/dependencies/{id}", {
         params: {
           path: { id },
           query: { depth },
@@ -299,7 +299,7 @@ export const graphApi = {
 
   getOrphanItems: async (projectId?: string): Promise<Item[]> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/graph/orphans', {
+      apiClient.GET("/api/v1/graph/orphans", {
         params: {
           query: { project_id: projectId },
         },
@@ -309,11 +309,11 @@ export const graphApi = {
 
   traverse: async (
     id: string,
-    direction: 'up' | 'down' | 'both',
+    direction: "up" | "down" | "both",
     depth?: number,
   ): Promise<GraphData> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/graph/traverse/{id}', {
+      apiClient.GET("/api/v1/graph/traverse/{id}", {
         params: {
           path: { id },
           query: { direction, depth },
@@ -330,7 +330,7 @@ export const graphApi = {
 export const searchApi = {
   search: async (query: SearchQuery): Promise<SearchResult> => {
     return handleApiResponse(
-      apiClient.POST('/api/v1/search', {
+      apiClient.POST("/api/v1/search", {
         body: query,
       }),
     );
@@ -338,7 +338,7 @@ export const searchApi = {
 
   searchGet: async (params: SearchQuery): Promise<SearchResult> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/search', {
+      apiClient.GET("/api/v1/search", {
         params: { query: params },
       }),
     );
@@ -346,7 +346,7 @@ export const searchApi = {
 
   suggest: async (q: string, limit?: number): Promise<string[]> => {
     return handleApiResponse(
-      apiClient.GET('/api/v1/search/suggest', {
+      apiClient.GET("/api/v1/search/suggest", {
         params: {
           query: { q, limit },
         },
@@ -356,7 +356,7 @@ export const searchApi = {
 
   indexItem: async (id: string): Promise<void> => {
     await handleApiResponse(
-      apiClient.POST('/api/v1/search/index/{id}', {
+      apiClient.POST("/api/v1/search/index/{id}", {
         params: { path: { id } },
       }),
     );
@@ -364,27 +364,27 @@ export const searchApi = {
 
   batchIndex: async (ids: string[]): Promise<void> => {
     await handleApiResponse(
-      apiClient.POST('/api/v1/search/batch-index', {
+      apiClient.POST("/api/v1/search/batch-index", {
         body: { ids },
       }),
     );
   },
 
   reindexAll: async (): Promise<void> => {
-    await handleApiResponse(safeApiCall(apiClient.POST('/api/v1/search/reindex', {})));
+    await handleApiResponse(safeApiCall(apiClient.POST("/api/v1/search/reindex", {})));
   },
 
   getStats: async () => {
-    return handleApiResponse(apiClient.GET('/api/v1/search/stats', {}));
+    return handleApiResponse(apiClient.GET("/api/v1/search/stats", {}));
   },
 
   getHealth: async () => {
-    return handleApiResponse(apiClient.GET('/api/v1/search/health', {}));
+    return handleApiResponse(apiClient.GET("/api/v1/search/health", {}));
   },
 
   deleteIndex: async (id: string): Promise<void> => {
     await handleApiResponse(
-      apiClient.DELETE('/api/v1/search/index/{id}', {
+      apiClient.DELETE("/api/v1/search/index/{id}", {
         params: { path: { id } },
       }),
     );
@@ -399,7 +399,7 @@ export const healthCheck = async (): Promise<{
   status: string;
   service: string;
 }> => {
-  return handleApiResponse(apiClient.GET('/health', {}));
+  return handleApiResponse(apiClient.GET("/health", {}));
 };
 
 // ============================================================================
@@ -434,52 +434,52 @@ export interface ImportFullResult {
 }
 
 const isCanonicalExport = (value: unknown): value is CanonicalExport =>
-  typeof value === 'object' &&
+  typeof value === "object" &&
   value !== null &&
-  'project' in value &&
-  'items' in value &&
-  'links' in value;
+  "project" in value &&
+  "items" in value &&
+  "links" in value;
 
 const hasContentString = (value: unknown): value is { content: string } =>
-  typeof value === 'object' &&
+  typeof value === "object" &&
   value !== null &&
-  'content' in value &&
-  typeof (value as Record<string, unknown>)['content'] === 'string';
+  "content" in value &&
+  typeof (value as Record<string, unknown>)["content"] === "string";
 
 export const exportImportApi = {
   export: async (
     projectId: string,
-    format: 'json' | 'csv' | 'markdown' | 'full' = 'json',
+    format: "json" | "csv" | "markdown" | "full" = "json",
   ): Promise<Blob | CanonicalExport> => {
     const response = await handleApiResponse<Record<string, unknown>>(
-      apiClient.GET('/api/v1/projects/{project_id}/export', {
+      apiClient.GET("/api/v1/projects/{project_id}/export", {
         params: { path: { project_id: projectId }, query: { format } },
       }),
     );
-    if (format === 'full' && isCanonicalExport(response)) {
+    if (format === "full" && isCanonicalExport(response)) {
       return response;
     }
     // Backend returns object; build Blob for download (json/csv/markdown)
     if (hasContentString(response)) {
-      return new Blob([response['content']], {
-        type: format === 'csv' ? 'text/csv' : 'text/markdown',
+      return new Blob([response["content"]], {
+        type: format === "csv" ? "text/csv" : "text/markdown",
       });
     }
-    return new Blob([JSON.stringify(response)], { type: 'application/json' });
+    return new Blob([JSON.stringify(response)], { type: "application/json" });
   },
 
   /** Export one project as canonical JSON (project + items + links). */
   exportFull: async (projectId: string): Promise<CanonicalExport> => {
-    const out = await exportImportApi.export(projectId, 'full');
+    const out = await exportImportApi.export(projectId, "full");
     if (isCanonicalExport(out)) {
       return out;
     }
-    throw new Error('Expected canonical export format');
+    throw new Error("Expected canonical export format");
   },
 
   import: async (
     projectId: string,
-    format: 'json' | 'csv',
+    format: "json" | "csv",
     data: string,
   ): Promise<{
     success: boolean;
@@ -488,7 +488,7 @@ export const exportImportApi = {
     errors: string[];
   }> => {
     return handleApiResponse(
-      apiClient.POST('/api/v1/projects/{project_id}/import', {
+      apiClient.POST("/api/v1/projects/{project_id}/import", {
         params: { path: { project_id: projectId } },
         body: { format, data },
       }),
@@ -498,7 +498,7 @@ export const exportImportApi = {
   /** Import canonical JSON as a new project (POST /api/v1/import). */
   importFull: async (canonicalJson: CanonicalExport): Promise<ImportFullResult> => {
     return handleApiResponse(
-      apiClient.POST('/api/v1/import', {
+      apiClient.POST("/api/v1/import", {
         body: canonicalJson as unknown,
       }),
     );
@@ -507,18 +507,18 @@ export const exportImportApi = {
   // Aliases for compatibility
   exportProject: async (
     projectId: string,
-    format: 'json' | 'csv' | 'markdown' = 'json',
+    format: "json" | "csv" | "markdown" = "json",
   ): Promise<Blob> => {
     const out = await exportImportApi.export(projectId, format);
     if (out instanceof Blob) {
       return out;
     }
-    throw new Error('Expected Blob format');
+    throw new Error("Expected Blob format");
   },
 
   importProject: async (
     projectId: string,
-    format: 'json' | 'csv',
+    format: "json" | "csv",
     data: string,
   ): Promise<{
     success: boolean;

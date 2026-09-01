@@ -8,19 +8,19 @@
  * - Performance metrics
  */
 
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { ForceSimulationConfig } from './gpuForceLayout';
+import type { ForceSimulationConfig } from "./gpuForceLayout";
 import type {
   ForceLayoutError,
   ForceLayoutProgress,
   ForceLayoutRequest,
   ForceLayoutResponse,
-} from './gpuForceLayout.worker';
+} from "./gpuForceLayout.worker";
 
-import { getGPUForceLayout } from './gpuForceLayout';
+import { getGPUForceLayout } from "./gpuForceLayout";
 
 // ============================================================================
 // CONFIGURATION
@@ -88,7 +88,7 @@ export function useGpuForceLayout<T extends Record<string, unknown>>(
 
   const workerRef = useRef<Worker | null>(null);
   const animationFrameRef = useRef<number | null>(null);
-  const prevSignatureRef = useRef<string>('');
+  const prevSignatureRef = useRef<string>("");
 
   // Cleanup worker on unmount
   useEffect(
@@ -160,14 +160,14 @@ export function useGpuForceLayout<T extends Record<string, unknown>>(
   const runInWorker = useCallback(
     async (inputNodes: Node<T>[], inputEdges: Edge[]): Promise<Node<T>[]> =>
       new Promise((resolve, reject) => {
-        if (typeof Worker === 'undefined') {
-          reject(new Error('Web Workers not supported'));
+        if (typeof Worker === "undefined") {
+          reject(new Error("Web Workers not supported"));
           return;
         }
 
         // Create worker
-        const worker = new Worker(new URL('./gpuForceLayout.worker.ts', import.meta.url), {
-          type: 'module',
+        const worker = new Worker(new URL("./gpuForceLayout.worker.ts", import.meta.url), {
+          type: "module",
         });
 
         workerRef.current = worker;
@@ -178,7 +178,7 @@ export function useGpuForceLayout<T extends Record<string, unknown>>(
         ) => {
           const message = ev.data;
           switch (message.type) {
-            case 'result': {
+            case "result": {
               worker.terminate();
               workerRef.current = null;
 
@@ -201,14 +201,14 @@ export function useGpuForceLayout<T extends Record<string, unknown>>(
               resolve(result);
               break;
             }
-            case 'progress': {
+            case "progress": {
               setState((prev) => ({
                 ...prev,
                 progress: message.progress,
               }));
               break;
             }
-            case 'error': {
+            case "error": {
               worker.terminate();
               workerRef.current = null;
 
@@ -224,19 +224,19 @@ export function useGpuForceLayout<T extends Record<string, unknown>>(
           }
         };
 
-        worker.addEventListener('message', onMessage);
+        worker.addEventListener("message", onMessage);
 
-        worker.addEventListener('error', (err) => {
+        worker.addEventListener("error", (err) => {
           worker.terminate();
           workerRef.current = null;
 
           setState((prev) => ({
             ...prev,
-            error: err.message || 'Worker error',
+            error: err.message || "Worker error",
             isComputing: false,
           }));
 
-          reject(new Error(err.message || 'Worker error'));
+          reject(new Error(err.message || "Worker error"));
         });
 
         // Send request
@@ -248,7 +248,7 @@ export function useGpuForceLayout<T extends Record<string, unknown>>(
             target: e.target,
           })),
           nodes: inputNodes.map((n) => ({ id: n.id })),
-          type: 'simulate',
+          type: "simulate",
         };
 
         worker.postMessage(request);
@@ -304,7 +304,7 @@ export function useGpuForceLayout<T extends Record<string, unknown>>(
 
         return result;
       } catch (error) {
-        console.error('GPU force layout failed:', error);
+        console.error("GPU force layout failed:", error);
 
         setState((prev) => ({
           ...prev,
@@ -329,7 +329,7 @@ export function useGpuForceLayout<T extends Record<string, unknown>>(
     }
 
     // Create signature to detect changes
-    const signature = `${nodes.length}|${edges.length}|${nodes.map((n) => n.id).join(',')}`;
+    const signature = `${nodes.length}|${edges.length}|${nodes.map((n) => n.id).join(",")}`;
 
     if (signature === prevSignatureRef.current) {
       return;

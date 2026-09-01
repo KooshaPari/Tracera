@@ -1,4 +1,4 @@
-import type React from 'react';
+import type React from "react";
 
 const PERCENTAGE_EXCELLENT = 75;
 const PERCENTAGE_GOOD = 50;
@@ -8,7 +8,7 @@ export interface ProgressRingProps {
   percentage: number;
   radius?: number | undefined;
   strokeWidth?: number | undefined;
-  size?: 'sm' | 'md' | 'lg' | undefined;
+  size?: "sm" | "md" | "lg" | undefined;
   animated?: boolean | undefined;
   showLabel?: boolean | undefined;
   color?: string | undefined;
@@ -16,16 +16,16 @@ export interface ProgressRingProps {
 
 export const ProgressRing: React.FC<ProgressRingProps> = ({
   percentage,
-  size = 'md',
+  size = "md",
   animated = true,
   showLabel = true,
   color,
 }) => {
   // Adjust radius and stroke based on size
   const sizeMap = {
-    lg: { fontSize: '24px', radius: 60, strokeWidth: 5 },
-    md: { fontSize: '16px', radius: 45, strokeWidth: 4 },
-    sm: { fontSize: '12px', radius: 30, strokeWidth: 3 },
+    lg: { fontSize: "24px", radius: 60, strokeWidth: 5 },
+    md: { fontSize: "16px", radius: 45, strokeWidth: 4 },
+    sm: { fontSize: "12px", radius: 30, strokeWidth: 3 },
   };
 
   const config = sizeMap[size];
@@ -37,58 +37,58 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   let ringColor = color;
   if (!ringColor) {
     if (percentage >= PERCENTAGE_EXCELLENT) {
-      ringColor = '#22c55e'; // Green
+      ringColor = "#22c55e"; // Green
     } else if (percentage >= PERCENTAGE_GOOD) {
-      ringColor = '#3b82f6'; // Blue
+      ringColor = "#3b82f6"; // Blue
     } else if (percentage >= PERCENTAGE_FAIR) {
-      ringColor = '#eab308'; // Yellow
+      ringColor = "#eab308"; // Yellow
     } else {
-      ringColor = '#ef4444'; // Red
+      ringColor = "#ef4444"; // Red
     }
   }
 
   return (
-    <div className='flex items-center justify-center'>
-      <div className='relative inline-flex items-center justify-center'>
+    <div className="flex items-center justify-center">
+      <div className="relative inline-flex items-center justify-center">
         <svg
           height={normalizedRadius * 2 + 10}
           width={normalizedRadius * 2 + 10}
-          className='-rotate-90 transform'
+          className="-rotate-90 transform"
         >
           {/* Background circle */}
           <circle
-            stroke='#e5e7eb'
-            fill='none'
+            stroke="#e5e7eb"
+            fill="none"
             strokeWidth={config.strokeWidth}
             r={normalizedRadius}
             cx={normalizedRadius + 5}
             cy={normalizedRadius + 5}
-            className='dark:stroke-gray-700'
+            className="dark:stroke-gray-700"
           />
           {/* Progress circle */}
           <circle
             stroke={ringColor}
-            fill='none'
+            fill="none"
             strokeWidth={config.strokeWidth}
             strokeDasharray={`${circumference} ${circumference}`}
             strokeDashoffset={offset}
-            strokeLinecap='round'
+            strokeLinecap="round"
             r={normalizedRadius}
             cx={normalizedRadius + 5}
             cy={normalizedRadius + 5}
             style={{
-              filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))',
-              transition: animated ? 'stroke-dashoffset 0.5s ease' : 'none',
+              filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))",
+              transition: animated ? "stroke-dashoffset 0.5s ease" : "none",
             }}
           />
         </svg>
 
         {/* Center label */}
         {showLabel && (
-          <div className='absolute flex flex-col items-center justify-center'>
+          <div className="absolute flex flex-col items-center justify-center">
             <span
-              style={{ fontSize: config.fontSize, fontWeight: '600' }}
-              className='text-gray-900 dark:text-gray-100'
+              style={{ fontSize: config.fontSize, fontWeight: "600" }}
+              className="text-gray-900 dark:text-gray-100"
             >
               {Math.round(percentage)}%
             </span>
@@ -101,7 +101,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
 
 export interface ProgressBarProps {
   percentage: number;
-  height?: 'sm' | 'md' | 'lg' | undefined;
+  height?: "sm" | "md" | "lg" | undefined;
   showLabel?: boolean | undefined;
   color?: string | undefined;
   animated?: boolean | undefined;
@@ -110,50 +110,50 @@ export interface ProgressBarProps {
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
   percentage,
-  height = 'md',
+  height = "md",
   showLabel = true,
   color,
   animated = true,
-  className = '',
+  className = "",
 }) => {
   const normalizedPercentage = Math.min(Math.max(percentage, 0), 100);
   const heightMap = {
-    lg: 'h-3',
-    md: 'h-2',
-    sm: 'h-1',
+    lg: "h-3",
+    md: "h-2",
+    sm: "h-1",
   };
 
   // Determine color based on percentage
   let barColor = color;
   if (!barColor) {
     if (percentage >= PERCENTAGE_EXCELLENT) {
-      barColor = 'bg-green-500';
+      barColor = "bg-green-500";
     } else if (percentage >= PERCENTAGE_GOOD) {
-      barColor = 'bg-blue-500';
+      barColor = "bg-blue-500";
     } else if (percentage >= PERCENTAGE_FAIR) {
-      barColor = 'bg-yellow-500';
+      barColor = "bg-yellow-500";
     } else {
-      barColor = 'bg-red-500';
+      barColor = "bg-red-500";
     }
   }
 
   return (
     <div className={className}>
       <div
-        aria-label='Progress'
+        aria-label="Progress"
         aria-valuemax={100}
         aria-valuemin={0}
         aria-valuenow={normalizedPercentage}
         className={`w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 ${heightMap[height]}`}
-        role='progressbar'
+        role="progressbar"
       >
         <div
-          className={`${barColor} ${heightMap[height]} rounded-full ${animated ? 'transition-all duration-500' : ''}`}
+          className={`${barColor} ${heightMap[height]} rounded-full ${animated ? "transition-all duration-500" : ""}`}
           style={{ width: `${normalizedPercentage}%` }}
         />
       </div>
       {showLabel && (
-        <p className='mt-1 text-xs text-gray-600 dark:text-gray-400'>
+        <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
           {Math.round(normalizedPercentage)}%
         </p>
       )}
@@ -179,18 +179,18 @@ export const LinearProgress: React.FC<LinearProgressProps> = ({
   const percentage = (value / max) * 100;
 
   return (
-    <div className='space-y-2'>
+    <div className="space-y-2">
       {(label ?? showLabel) && (
-        <div className='flex items-center justify-between text-sm'>
-          {label && <span className='font-medium text-gray-700 dark:text-gray-300'>{label}</span>}
+        <div className="flex items-center justify-between text-sm">
+          {label && <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>}
           {showLabel && (
-            <span className='text-gray-600 dark:text-gray-400'>
+            <span className="text-gray-600 dark:text-gray-400">
               {value}/{max}
             </span>
           )}
         </div>
       )}
-      <ProgressBar percentage={percentage} height='md' showLabel={false} color={color} />
+      <ProgressBar percentage={percentage} height="md" showLabel={false} color={color} />
     </div>
   );
 };

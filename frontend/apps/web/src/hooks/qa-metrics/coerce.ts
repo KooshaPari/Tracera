@@ -1,7 +1,7 @@
-import type { CoverageMetrics } from './types';
+import type { CoverageMetrics } from "./types";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && Boolean(value) && !Array.isArray(value);
+  return typeof value === "object" && Boolean(value) && !Array.isArray(value);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -19,10 +19,10 @@ function asArray(value: unknown): unknown[] {
 }
 
 function asNumber(value: unknown, fallback: number): number {
-  if (typeof value === 'number' && Number.isFinite(value)) {
+  if (typeof value === "number" && Number.isFinite(value)) {
     return value;
   }
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const parsed = Number(value);
     if (Number.isFinite(parsed)) {
       return parsed;
@@ -32,21 +32,21 @@ function asNumber(value: unknown, fallback: number): number {
 }
 
 function asString(value: unknown, fallback: string): string {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   return fallback;
 }
 
 function asOptionalString(value: unknown): string | undefined {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   return undefined;
 }
 
 function asOptionalNumber(value: unknown): number | undefined {
-  if (typeof value === 'number' && Number.isFinite(value)) {
+  if (typeof value === "number" && Number.isFinite(value)) {
     return value;
   }
   return undefined;
@@ -64,15 +64,15 @@ function asRecordNumberMap(value: unknown): Record<string, number> {
   return out;
 }
 
-function asCoverageByView(value: unknown): CoverageMetrics['byView'] {
+function asCoverageByView(value: unknown): CoverageMetrics["byView"] {
   const rec = asRecord(value);
-  const out: CoverageMetrics['byView'] = {};
+  const out: CoverageMetrics["byView"] = {};
   for (const [key, entryValue] of Object.entries(rec)) {
     const entry = asRecord(entryValue);
     out[key] = {
-      covered: asNumber(entry['covered'], 0),
-      percentage: asNumber(entry['percentage'], 0),
-      total: asNumber(entry['total'], 0),
+      covered: asNumber(entry["covered"], 0),
+      percentage: asNumber(entry["percentage"], 0),
+      total: asNumber(entry["total"], 0),
     };
   }
   return out;

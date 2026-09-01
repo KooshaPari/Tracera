@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 const BYTES_PER_KB = 1024;
 const BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB;
@@ -19,7 +19,7 @@ export function useMemoryMonitor(enabled = true, interval = 1000): MemoryStats |
     }
 
     // Check if performance.memory is available (Chrome only)
-    if (!('memory' in performance)) {
+    if (!("memory" in performance)) {
       return;
     }
 

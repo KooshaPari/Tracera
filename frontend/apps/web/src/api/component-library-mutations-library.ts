@@ -1,10 +1,10 @@
-import type * as ReactQuery from '@tanstack/react-query';
+import type * as ReactQuery from "@tanstack/react-query";
 
-import type * as TracerTypes from '@tracertm/types';
+import type * as TracerTypes from "@tracertm/types";
 
-import * as QueryKeys from './component-library-keys';
-import * as QueryClient from './query-client';
-import * as ReactQueryHooks from './react-query-hooks';
+import * as QueryKeys from "./component-library-keys";
+import * as QueryClient from "./query-client";
+import * as ReactQueryHooks from "./react-query-hooks";
 
 interface CreateComponentLibraryInput {
   projectId: string;
@@ -57,7 +57,7 @@ const useCreateComponentLibrary = (
     mutationFn: async (input: CreateComponentLibraryInput): Promise<TracerTypes.ComponentLibrary> =>
       QueryClient.handleApiResponse(
         QueryClient.api.post<TracerTypes.ComponentLibrary>(
-          '/api/v1/projects/{projectId}/libraries',
+          "/api/v1/projects/{projectId}/libraries",
           {
             body: {
               description: input.description,
@@ -108,7 +108,7 @@ const useUpdateComponentLibrary = (
       data: UpdateComponentLibraryInput;
     }): Promise<TracerTypes.ComponentLibrary> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.put<TracerTypes.ComponentLibrary>('/api/v1/libraries/{libraryId}', {
+        QueryClient.api.put<TracerTypes.ComponentLibrary>("/api/v1/libraries/{libraryId}", {
           body: input.data,
           params: { path: { libraryId: input.libraryId } },
         }),
@@ -143,7 +143,7 @@ const useDeleteComponentLibrary = (
   const baseOptions: ReactQuery.UseMutationOptions<void, Error, string> = {
     mutationFn: async (libraryId: string): Promise<void> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.del<void>('/api/v1/libraries/{libraryId}', {
+        QueryClient.api.del<void>("/api/v1/libraries/{libraryId}", {
           params: { path: { libraryId } },
         }),
       ),
@@ -181,7 +181,7 @@ const useCreateLibraryComponent = (
     mutationFn: async (input: CreateLibraryComponentInput): Promise<TracerTypes.LibraryComponent> =>
       QueryClient.handleApiResponse(
         QueryClient.api.post<TracerTypes.LibraryComponent>(
-          '/api/v1/libraries/{libraryId}/components',
+          "/api/v1/libraries/{libraryId}/components",
           {
             body: {
               category: input.category,
@@ -234,7 +234,7 @@ const useUpdateLibraryComponent = (
       data: UpdateLibraryComponentInput;
     }): Promise<TracerTypes.LibraryComponent> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.put<TracerTypes.LibraryComponent>('/api/v1/components/{componentId}', {
+        QueryClient.api.put<TracerTypes.LibraryComponent>("/api/v1/components/{componentId}", {
           body: input.data,
           params: { path: { componentId: input.componentId } },
         }),
@@ -273,7 +273,7 @@ const useDeleteLibraryComponent = (
   > = {
     mutationFn: async (input: { componentId: string; libraryId: string }): Promise<void> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.del<void>('/api/v1/components/{componentId}', {
+        QueryClient.api.del<void>("/api/v1/components/{componentId}", {
           params: { path: { componentId: input.componentId } },
         }),
       ),

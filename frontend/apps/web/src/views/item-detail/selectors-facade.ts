@@ -13,7 +13,7 @@ import {
   shortId,
   splitMetadata,
   updatedAtLabel,
-} from './selectors';
+} from "./selectors";
 
 const itemDetailSelectors = {
   buildItemLink,

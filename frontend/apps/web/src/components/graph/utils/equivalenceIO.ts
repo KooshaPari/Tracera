@@ -1,7 +1,7 @@
 // EquivalenceIO.ts - Serialization, validation, and conversion utilities for equivalence data
 // Handles import/export of equivalence mappings and canonical concepts with format conversion
 
-import { z } from 'zod';
+import { z } from "zod";
 
 import type {
   CanonicalConcept,
@@ -9,9 +9,9 @@ import type {
   EquivalenceLink,
   EquivalenceLinkType,
   EquivalenceStrategy,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 // =============================================================================
 // VALIDATION SCHEMAS
@@ -26,15 +26,15 @@ const EquivalenceEvidenceSchema = z.object({
   detectedAt: z.string(),
   metadata: z.record(z.string(), z.unknown()).optional(),
   strategy: z.enum([
-    'explicit_annotation',
-    'manual_link',
-    'api_contract',
-    'shared_canonical',
-    'naming_pattern',
-    'semantic_similarity',
-    'structural',
-    'temporal',
-    'co_occurrence',
+    "explicit_annotation",
+    "manual_link",
+    "api_contract",
+    "shared_canonical",
+    "naming_pattern",
+    "semantic_similarity",
+    "structural",
+    "temporal",
+    "co_occurrence",
   ]) as z.ZodType<EquivalenceStrategy>,
 });
 
@@ -48,17 +48,17 @@ const EquivalenceLinkSchema = z.object({
   confirmedBy: z.string().optional(),
   createdAt: z.string(),
   equivalenceType: z.enum([
-    'same_as',
-    'represents',
-    'manifests_as',
-    'derived_from',
-    'alternative_to',
+    "same_as",
+    "represents",
+    "manifests_as",
+    "derived_from",
+    "alternative_to",
   ]) as z.ZodType<EquivalenceLinkType>,
   id: z.string(),
   projectId: z.string(),
   rejectedReason: z.string().optional(),
   sourceItemId: z.string(),
-  status: z.enum(['suggested', 'confirmed', 'rejected', 'auto_confirmed']),
+  status: z.enum(["suggested", "confirmed", "rejected", "auto_confirmed"]),
   strategies: z.array(EquivalenceEvidenceSchema),
   targetItemId: z.string(),
   updatedAt: z.string(),
@@ -86,7 +86,7 @@ const CanonicalConceptSchema = z.object({
   projectionIds: z.array(z.string()).optional(),
   relatedConceptIds: z.array(z.string()).optional(),
   slug: z.string().min(1).max(255),
-  source: z.enum(['manual', 'inferred', 'imported']),
+  source: z.enum(["manual", "inferred", "imported"]),
   tags: z.array(z.string()).optional(),
   updatedAt: z.string(),
   version: z.number().min(1),
@@ -109,15 +109,15 @@ const CanonicalProjectionSchema = z.object({
   perspective: z.string(),
   projectId: z.string(),
   strategy: z.enum([
-    'explicit_annotation',
-    'manual_link',
-    'api_contract',
-    'shared_canonical',
-    'naming_pattern',
-    'semantic_similarity',
-    'structural',
-    'temporal',
-    'co_occurrence',
+    "explicit_annotation",
+    "manual_link",
+    "api_contract",
+    "shared_canonical",
+    "naming_pattern",
+    "semantic_similarity",
+    "structural",
+    "temporal",
+    "co_occurrence",
   ]) as z.ZodType<EquivalenceStrategy>,
   updatedAt: z.string(),
 });
@@ -144,15 +144,15 @@ const EquivalenceExportPackageSchema = z.object({
     })
     .optional(),
   projectId: z.string(),
-  version: z.literal('1.0'),
+  version: z.literal("1.0"),
 });
 
 /**
  * Schema for import request with options
  */
 const EquivalenceImportOptionsSchema = z.object({
-  conflictResolution: z.enum(['skip', 'overwrite', 'merge_metadata']).default('skip'),
-  mode: z.enum(['replace', 'merge']).default('merge'),
+  conflictResolution: z.enum(["skip", "overwrite", "merge_metadata"]).default("skip"),
+  mode: z.enum(["replace", "merge"]).default("merge"),
   preserveTimestamps: z.boolean().default(false),
   targetProjectId: z.string().optional(),
   updateProjectId: z.boolean().default(true),
@@ -161,7 +161,7 @@ const EquivalenceImportOptionsSchema = z.object({
 
 export type EquivalenceImportOptions = z.infer<typeof EquivalenceImportOptionsSchema>;
 export interface EquivalenceExportPackage {
-  version: '1.0';
+  version: "1.0";
   exportedAt: string;
   projectId: string;
   exportedBy?: string | undefined;
@@ -227,14 +227,14 @@ export function serializeToCSV(data: EquivalenceExportPackage): {
  * Convert CSV string back to equivalence links
  */
 export function deserializeLinksFromCSV(csv: string): EquivalenceLink[] {
-  const lines = csv.trim().split('\n');
+  const lines = csv.trim().split("\n");
   if (lines.length < 2) {
     return [];
   }
 
   const headerLine = lines[0];
   if (!headerLine) return [];
-  const header = headerLine.split(',');
+  const header = headerLine.split(",");
   const links: EquivalenceLink[] = [];
 
   for (let i = 1; i < lines.length; i += 1) {
@@ -249,25 +249,25 @@ export function deserializeLinksFromCSV(csv: string): EquivalenceLink[] {
 
     const record: Record<string, string> = {};
     header.forEach((key, idx) => {
-      record[key] = values[idx] ?? '';
+      record[key] = values[idx] ?? "";
     });
 
     try {
       const link: EquivalenceLink = {
-        canonicalId: record['canonicalId'] ?? '',
-        confidence: Number.parseFloat(record['confidence'] ?? '0'),
-        confirmedAt: record['confirmedAt'] ?? '',
-        confirmedBy: record['confirmedBy'] ?? '',
-        createdAt: record['createdAt'] ?? '',
-        equivalenceType: record['equivalenceType'] as EquivalenceLinkType,
-        id: record['id'] ?? '',
-        projectId: record['projectId'] ?? '',
-        rejectedReason: record['rejectedReason'] ?? '',
-        sourceItemId: record['sourceItemId'] ?? '',
-        status: record['status'] as 'suggested' | 'confirmed' | 'rejected' | 'auto_confirmed',
-        strategies: JSON.parse(record['strategies'] ?? '[]'),
-        targetItemId: record['targetItemId'] ?? '',
-        updatedAt: record['updatedAt'] ?? '',
+        canonicalId: record["canonicalId"] ?? "",
+        confidence: Number.parseFloat(record["confidence"] ?? "0"),
+        confirmedAt: record["confirmedAt"] ?? "",
+        confirmedBy: record["confirmedBy"] ?? "",
+        createdAt: record["createdAt"] ?? "",
+        equivalenceType: record["equivalenceType"] as EquivalenceLinkType,
+        id: record["id"] ?? "",
+        projectId: record["projectId"] ?? "",
+        rejectedReason: record["rejectedReason"] ?? "",
+        sourceItemId: record["sourceItemId"] ?? "",
+        status: record["status"] as "suggested" | "confirmed" | "rejected" | "auto_confirmed",
+        strategies: JSON.parse(record["strategies"] ?? "[]"),
+        targetItemId: record["targetItemId"] ?? "",
+        updatedAt: record["updatedAt"] ?? "",
       };
       EquivalenceLinkSchema.parse(link);
       links.push(link);
@@ -283,14 +283,14 @@ export function deserializeLinksFromCSV(csv: string): EquivalenceLink[] {
  * Convert CSV string back to canonical concepts
  */
 export function deserializeConceptsFromCSV(csv: string): CanonicalConcept[] {
-  const lines = csv.trim().split('\n');
+  const lines = csv.trim().split("\n");
   if (lines.length < 2) {
     return [];
   }
 
   const headerLine = lines[0];
   if (!headerLine) return [];
-  const header = headerLine.split(',');
+  const header = headerLine.split(",");
   const concepts: CanonicalConcept[] = [];
 
   for (let i = 1; i < lines.length; i += 1) {
@@ -305,37 +305,37 @@ export function deserializeConceptsFromCSV(csv: string): CanonicalConcept[] {
 
     const record: Record<string, string> = {};
     header.forEach((key, idx) => {
-      record[key] = values[idx] ?? '';
+      record[key] = values[idx] ?? "";
     });
 
     try {
       const concept: CanonicalConcept = {
-        category: record['category'],
-        childConceptIds: record['childConceptIds']
-          ? record['childConceptIds'].split('|')
+        category: record["category"],
+        childConceptIds: record["childConceptIds"]
+          ? record["childConceptIds"].split("|")
           : undefined,
-        confidence: Number.parseFloat(record['confidence'] ?? '0'),
-        createdAt: record['createdAt'] ?? '',
-        createdBy: record['createdBy'],
-        description: record['description'],
-        domain: record['domain'] ?? '',
-        embedding: record['embedding'] ? JSON.parse(record['embedding']) : undefined,
-        embeddingModel: record['embeddingModel'],
-        embeddingUpdatedAt: record['embeddingUpdatedAt'],
-        id: record['id'] ?? '',
-        name: record['name'] ?? '',
-        parentConceptId: record['parentConceptId'],
-        projectId: record['projectId'] ?? '',
-        projectionCount: Number.parseInt(record['projectionCount'] ?? '0', 10),
-        projectionIds: record['projectionIds'] ? record['projectionIds'].split('|') : undefined,
-        relatedConceptIds: record['relatedConceptIds']
-          ? record['relatedConceptIds'].split('|')
+        confidence: Number.parseFloat(record["confidence"] ?? "0"),
+        createdAt: record["createdAt"] ?? "",
+        createdBy: record["createdBy"],
+        description: record["description"],
+        domain: record["domain"] ?? "",
+        embedding: record["embedding"] ? JSON.parse(record["embedding"]) : undefined,
+        embeddingModel: record["embeddingModel"],
+        embeddingUpdatedAt: record["embeddingUpdatedAt"],
+        id: record["id"] ?? "",
+        name: record["name"] ?? "",
+        parentConceptId: record["parentConceptId"],
+        projectId: record["projectId"] ?? "",
+        projectionCount: Number.parseInt(record["projectionCount"] ?? "0", 10),
+        projectionIds: record["projectionIds"] ? record["projectionIds"].split("|") : undefined,
+        relatedConceptIds: record["relatedConceptIds"]
+          ? record["relatedConceptIds"].split("|")
           : undefined,
-        slug: record['slug'] ?? '',
-        source: record['source'] as 'manual' | 'inferred' | 'imported',
-        tags: record['tags'] ? record['tags'].split('|') : undefined,
-        updatedAt: record['updatedAt'] ?? '',
-        version: Number.parseInt(record['version'] ?? '0', 10),
+        slug: record["slug"] ?? "",
+        source: record["source"] as "manual" | "inferred" | "imported",
+        tags: record["tags"] ? record["tags"].split("|") : undefined,
+        updatedAt: record["updatedAt"] ?? "",
+        version: Number.parseInt(record["version"] ?? "0", 10),
       };
       CanonicalConceptSchema.parse(concept);
       concepts.push(concept);
@@ -351,14 +351,14 @@ export function deserializeConceptsFromCSV(csv: string): CanonicalConcept[] {
  * Convert CSV string back to canonical projections
  */
 export function deserializeProjectionsFromCSV(csv: string): CanonicalProjection[] {
-  const lines = csv.trim().split('\n');
+  const lines = csv.trim().split("\n");
   if (lines.length < 2) {
     return [];
   }
 
   const headerLine = lines[0];
   if (!headerLine) return [];
-  const header = headerLine.split(',');
+  const header = headerLine.split(",");
   const projections: CanonicalProjection[] = [];
 
   for (let i = 1; i < lines.length; i += 1) {
@@ -373,25 +373,25 @@ export function deserializeProjectionsFromCSV(csv: string): CanonicalProjection[
 
     const record: Record<string, string> = {};
     header.forEach((key, idx) => {
-      record[key] = values[idx] ?? '';
+      record[key] = values[idx] ?? "";
     });
 
     try {
       const projection: CanonicalProjection = {
-        canonicalId: record['canonicalId'] ?? '',
-        confidence: Number.parseFloat(record['confidence'] ?? '0'),
-        confirmedAt: record['confirmedAt'],
-        confirmedBy: record['confirmedBy'],
-        createdAt: record['createdAt'] ?? '',
-        id: record['id'] ?? '',
-        isConfirmed: record['isConfirmed'] === 'true',
-        isRejected: record['isRejected'] === 'true',
-        itemId: record['itemId'] ?? '',
-        metadata: record['metadata'] ? JSON.parse(record['metadata']) : undefined,
-        perspective: record['perspective'] ?? '',
-        projectId: record['projectId'] ?? '',
-        strategy: record['strategy'] as EquivalenceStrategy,
-        updatedAt: record['updatedAt'] ?? '',
+        canonicalId: record["canonicalId"] ?? "",
+        confidence: Number.parseFloat(record["confidence"] ?? "0"),
+        confirmedAt: record["confirmedAt"],
+        confirmedBy: record["confirmedBy"],
+        createdAt: record["createdAt"] ?? "",
+        id: record["id"] ?? "",
+        isConfirmed: record["isConfirmed"] === "true",
+        isRejected: record["isRejected"] === "true",
+        itemId: record["itemId"] ?? "",
+        metadata: record["metadata"] ? JSON.parse(record["metadata"]) : undefined,
+        perspective: record["perspective"] ?? "",
+        projectId: record["projectId"] ?? "",
+        strategy: record["strategy"] as EquivalenceStrategy,
+        updatedAt: record["updatedAt"] ?? "",
       };
       CanonicalProjectionSchema.parse(projection);
       projections.push(projection);
@@ -412,20 +412,20 @@ export function deserializeProjectionsFromCSV(csv: string): CanonicalProjection[
  */
 function serializeLinksToCSV(links: EquivalenceLink[]): string {
   const headers = [
-    'id',
-    'projectId',
-    'sourceItemId',
-    'targetItemId',
-    'equivalenceType',
-    'confidence',
-    'strategies',
-    'canonicalId',
-    'status',
-    'confirmedBy',
-    'confirmedAt',
-    'rejectedReason',
-    'createdAt',
-    'updatedAt',
+    "id",
+    "projectId",
+    "sourceItemId",
+    "targetItemId",
+    "equivalenceType",
+    "confidence",
+    "strategies",
+    "canonicalId",
+    "status",
+    "confirmedBy",
+    "confirmedAt",
+    "rejectedReason",
+    "createdAt",
+    "updatedAt",
   ];
 
   const rows = links.map((link) => [
@@ -436,11 +436,11 @@ function serializeLinksToCSV(links: EquivalenceLink[]): string {
     link.equivalenceType,
     link.confidence.toString(),
     JSON.stringify(link.strategies),
-    link.canonicalId ?? '',
+    link.canonicalId ?? "",
     link.status,
-    link.confirmedBy ?? '',
-    link.confirmedAt ?? '',
-    link.rejectedReason ?? '',
+    link.confirmedBy ?? "",
+    link.confirmedAt ?? "",
+    link.rejectedReason ?? "",
     link.createdAt,
     link.updatedAt,
   ]);
@@ -453,28 +453,28 @@ function serializeLinksToCSV(links: EquivalenceLink[]): string {
  */
 function serializeConceptsToCSV(concepts: CanonicalConcept[]): string {
   const headers = [
-    'id',
-    'projectId',
-    'name',
-    'slug',
-    'description',
-    'domain',
-    'category',
-    'tags',
-    'embedding',
-    'embeddingModel',
-    'embeddingUpdatedAt',
-    'projectionCount',
-    'projectionIds',
-    'relatedConceptIds',
-    'parentConceptId',
-    'childConceptIds',
-    'confidence',
-    'source',
-    'createdBy',
-    'createdAt',
-    'updatedAt',
-    'version',
+    "id",
+    "projectId",
+    "name",
+    "slug",
+    "description",
+    "domain",
+    "category",
+    "tags",
+    "embedding",
+    "embeddingModel",
+    "embeddingUpdatedAt",
+    "projectionCount",
+    "projectionIds",
+    "relatedConceptIds",
+    "parentConceptId",
+    "childConceptIds",
+    "confidence",
+    "source",
+    "createdBy",
+    "createdAt",
+    "updatedAt",
+    "version",
   ];
 
   const rows = concepts.map((concept) => [
@@ -482,21 +482,21 @@ function serializeConceptsToCSV(concepts: CanonicalConcept[]): string {
     concept.projectId,
     concept.name,
     concept.slug,
-    concept.description ?? '',
+    concept.description ?? "",
     concept.domain,
-    concept.category ?? '',
-    concept.tags?.join('|') ?? '',
-    concept.embedding ? JSON.stringify(concept.embedding) : '',
-    concept.embeddingModel ?? '',
-    concept.embeddingUpdatedAt ?? '',
+    concept.category ?? "",
+    concept.tags?.join("|") ?? "",
+    concept.embedding ? JSON.stringify(concept.embedding) : "",
+    concept.embeddingModel ?? "",
+    concept.embeddingUpdatedAt ?? "",
     concept.projectionCount.toString(),
-    concept.projectionIds?.join('|') ?? '',
-    concept.relatedConceptIds?.join('|') ?? '',
-    concept.parentConceptId ?? '',
-    concept.childConceptIds?.join('|') ?? '',
+    concept.projectionIds?.join("|") ?? "",
+    concept.relatedConceptIds?.join("|") ?? "",
+    concept.parentConceptId ?? "",
+    concept.childConceptIds?.join("|") ?? "",
     concept.confidence.toString(),
     concept.source,
-    concept.createdBy ?? '',
+    concept.createdBy ?? "",
     concept.createdAt,
     concept.updatedAt,
     concept.version.toString(),
@@ -510,20 +510,20 @@ function serializeConceptsToCSV(concepts: CanonicalConcept[]): string {
  */
 function serializeProjectionsToCSV(projections: CanonicalProjection[]): string {
   const headers = [
-    'id',
-    'canonicalId',
-    'itemId',
-    'projectId',
-    'perspective',
-    'confidence',
-    'strategy',
-    'isConfirmed',
-    'isRejected',
-    'confirmedBy',
-    'confirmedAt',
-    'metadata',
-    'createdAt',
-    'updatedAt',
+    "id",
+    "canonicalId",
+    "itemId",
+    "projectId",
+    "perspective",
+    "confidence",
+    "strategy",
+    "isConfirmed",
+    "isRejected",
+    "confirmedBy",
+    "confirmedAt",
+    "metadata",
+    "createdAt",
+    "updatedAt",
   ];
 
   const rows = projections.map((proj) => [
@@ -536,9 +536,9 @@ function serializeProjectionsToCSV(projections: CanonicalProjection[]): string {
     proj.strategy,
     proj.isConfirmed.toString(),
     proj.isRejected.toString(),
-    proj.confirmedBy ?? '',
-    proj.confirmedAt ?? '',
-    proj.metadata ? JSON.stringify(proj.metadata) : '',
+    proj.confirmedBy ?? "",
+    proj.confirmedAt ?? "",
+    proj.metadata ? JSON.stringify(proj.metadata) : "",
     proj.createdAt,
     proj.updatedAt,
   ]);
@@ -550,8 +550,8 @@ function serializeProjectionsToCSV(projections: CanonicalProjection[]): string {
  * Format headers and rows as CSV string
  */
 function formatAsCSV(headers: string[], rows: string[][]): string {
-  const csvHeaders = headers.map(escapeCSVField).join(',');
-  const csvRows = rows.map((row) => row.map(escapeCSVField).join(',')).join('\n');
+  const csvHeaders = headers.map(escapeCSVField).join(",");
+  const csvRows = rows.map((row) => row.map(escapeCSVField).join(",")).join("\n");
   return `${csvHeaders}\n${csvRows}`;
 }
 
@@ -562,7 +562,7 @@ function escapeCSVField(field: string): string {
   if (!field) {
     return '""';
   }
-  if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+  if (field.includes(",") || field.includes('"') || field.includes("\n")) {
     return `"${field.replaceAll('"', '""')}"`;
   }
   return field;
@@ -573,7 +573,7 @@ function escapeCSVField(field: string): string {
  */
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
-  let current = '';
+  let current = "";
   let inQuotes = false;
 
   for (let i = 0; i < line.length; i += 1) {
@@ -587,9 +587,9 @@ function parseCSVLine(line: string): string[] {
       } else {
         inQuotes = !inQuotes;
       }
-    } else if (char === ',' && !inQuotes) {
+    } else if (char === "," && !inQuotes) {
       result.push(current);
-      current = '';
+      current = "";
     } else {
       current += char;
     }
@@ -617,12 +617,12 @@ export function validateExportPackage(data: unknown): {
     if (error instanceof z.ZodError) {
       return {
         errors: error.issues.map(
-          (issue: z.ZodIssue) => `${issue.path.join('.')}: ${issue.message}`,
+          (issue: z.ZodIssue) => `${issue.path.join(".")}: ${issue.message}`,
         ),
         valid: false,
       };
     }
-    return { errors: ['Unknown validation error'], valid: false };
+    return { errors: ["Unknown validation error"], valid: false };
   }
 }
 
@@ -640,12 +640,12 @@ export function validateImportOptions(options: unknown): {
     if (error instanceof z.ZodError) {
       return {
         errors: error.issues.map(
-          (issue: z.ZodIssue) => `${issue.path.join('.')}: ${issue.message}`,
+          (issue: z.ZodIssue) => `${issue.path.join(".")}: ${issue.message}`,
         ),
         valid: false,
       };
     }
-    return { errors: ['Unknown validation error'], valid: false };
+    return { errors: ["Unknown validation error"], valid: false };
   }
 }
 
@@ -659,7 +659,7 @@ export function mergeExportPackages(
 ): EquivalenceExportPackage {
   const merged = { ...existing };
 
-  if (options.mode === 'replace') {
+  if (options.mode === "replace") {
     merged.equivalenceLinks = incoming.equivalenceLinks;
     merged.canonicalConcepts = incoming.canonicalConcepts;
     merged.canonicalProjections = incoming.canonicalProjections;
@@ -672,7 +672,7 @@ export function mergeExportPackages(
     // Merge links
     for (const incomingLink of incoming.equivalenceLinks) {
       if (existingLinkIds.has(incomingLink.id)) {
-        if (options.conflictResolution === 'overwrite') {
+        if (options.conflictResolution === "overwrite") {
           const idx = merged.equivalenceLinks.findIndex((l) => l.id === incomingLink.id);
           if (idx !== -1) {
             merged.equivalenceLinks[idx] = incomingLink;
@@ -687,7 +687,7 @@ export function mergeExportPackages(
     // Merge concepts
     for (const incomingConcept of incoming.canonicalConcepts) {
       if (existingConceptIds.has(incomingConcept.id)) {
-        if (options.conflictResolution === 'overwrite') {
+        if (options.conflictResolution === "overwrite") {
           const idx = merged.canonicalConcepts.findIndex((c) => c.id === incomingConcept.id);
           if (idx !== -1) {
             merged.canonicalConcepts[idx] = incomingConcept;
@@ -702,7 +702,7 @@ export function mergeExportPackages(
     // Merge projections
     for (const incomingProjection of incoming.canonicalProjections) {
       if (existingProjectionIds.has(incomingProjection.id)) {
-        if (options.conflictResolution === 'overwrite') {
+        if (options.conflictResolution === "overwrite") {
           const idx = merged.canonicalProjections.findIndex((p) => p.id === incomingProjection.id);
           if (idx !== -1) {
             merged.canonicalProjections[idx] = incomingProjection;
@@ -754,10 +754,10 @@ export function createExportSummary(data: EquivalenceExportPackage): {
   const projections = data.canonicalProjections;
 
   const confirmedCount = links.filter(
-    (l) => l.status === 'confirmed' || l.status === 'auto_confirmed',
+    (l) => l.status === "confirmed" || l.status === "auto_confirmed",
   ).length;
-  const suggestedCount = links.filter((l) => l.status === 'suggested').length;
-  const rejectedCount = links.filter((l) => l.status === 'rejected').length;
+  const suggestedCount = links.filter((l) => l.status === "suggested").length;
+  const rejectedCount = links.filter((l) => l.status === "rejected").length;
 
   const confidences = links.map((l) => l.confidence);
   const domainBreakdown: Record<string, number> = {};

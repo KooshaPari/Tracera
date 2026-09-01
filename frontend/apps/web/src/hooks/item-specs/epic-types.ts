@@ -1,4 +1,4 @@
-import type { EpicStatus, RiskLevel } from './shared-types';
+import type { EpicStatus, RiskLevel } from "./shared-types";
 
 interface EpicSpec {
   id: string;

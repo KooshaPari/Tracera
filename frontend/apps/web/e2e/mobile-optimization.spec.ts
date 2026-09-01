@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
-test.describe('Mobile Optimization - Phase 12 & 13', () => {
+test.describe("Mobile Optimization - Phase 12 & 13", () => {
   // Set mobile viewport
   test.use({
     viewport: { height: 667, width: 375 }, // IPhone SE
@@ -8,27 +8,27 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     hasTouch: true,
   });
 
-  test('displays card view on mobile instead of table', async ({ page }) => {
-    await page.goto('/items');
+  test("displays card view on mobile instead of table", async ({ page }) => {
+    await page.goto("/items");
 
     // Wait for content to load
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     // On mobile, should show card grid, not table
-    const cardGrid = page.locator('.grid-cols-1');
+    const cardGrid = page.locator(".grid-cols-1");
     await expect(cardGrid.first()).toBeVisible({ timeout: 10_000 });
 
     // Table should be hidden
-    const table = page.locator('table');
+    const table = page.locator("table");
     await expect(table).not.toBeVisible({ timeout: 5000 });
   });
 
-  test('card items are responsive with proper touch targets', async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+  test("card items are responsive with proper touch targets", async ({ page }) => {
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Get first card
-    const firstCard = page.locator('button').first();
+    const firstCard = page.locator("button").first();
 
     // Check card has minimum height
     const boundingBox = await firstCard.boundingBox();
@@ -38,13 +38,13 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     await firstCard.focus();
     const hasFocusRing = await firstCard.evaluate((el) => {
       const styles = globalThis.getComputedStyle(el);
-      return styles.outline !== 'none' || styles.boxShadow.includes('rgb(');
+      return styles.outline !== "none" || styles.boxShadow.includes("rgb(");
     });
     expect(hasFocusRing).toBe(true);
   });
 
-  test('hamburger menu appears on mobile', async ({ page }) => {
-    await page.goto('/');
+  test("hamburger menu appears on mobile", async ({ page }) => {
+    await page.goto("/");
 
     // Hamburger menu button should be visible
     const menuButton = page.locator("button[aria-label='Open menu']");
@@ -56,11 +56,11 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     expect(boundingBox?.height).toBeGreaterThanOrEqual(44);
   });
 
-  test('hamburger menu opens and closes', async ({ page }) => {
-    await page.goto('/');
+  test("hamburger menu opens and closes", async ({ page }) => {
+    await page.goto("/");
 
     const menuButton = page.locator("button[aria-label='Open menu']");
-    const menuPanel = page.locator('#mobile-menu');
+    const menuPanel = page.locator("#mobile-menu");
 
     // Initially closed
     await expect(menuPanel).toHaveClass(/-translate-x-full/);
@@ -70,8 +70,8 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     await page.waitForTimeout(300); // Animation time
 
     // Should be open
-    const classList = await menuPanel.getAttribute('class');
-    expect(classList).toContain('translate-x-0');
+    const classList = await menuPanel.getAttribute("class");
+    expect(classList).toContain("translate-x-0");
 
     // Close via button
     const closeButton = page.locator("button[aria-label='Close']").first();
@@ -82,15 +82,15 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     await expect(menuPanel).toHaveClass(/-translate-x-full/);
   });
 
-  test('menu items have proper touch targets (52px minimum)', async ({ page }) => {
-    await page.goto('/');
+  test("menu items have proper touch targets (52px minimum)", async ({ page }) => {
+    await page.goto("/");
 
     const menuButton = page.locator("button[aria-label='Open menu']");
     await menuButton.click();
     await page.waitForTimeout(300);
 
     // Get menu items
-    const menuItems = page.locator('#mobile-menu button');
+    const menuItems = page.locator("#mobile-menu button");
     const count = await menuItems.count();
 
     for (let i = 0; i < Math.min(count, 3); i++) {
@@ -102,47 +102,47 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     }
   });
 
-  test('can close menu with escape key', async ({ page }) => {
-    await page.goto('/');
+  test("can close menu with escape key", async ({ page }) => {
+    await page.goto("/");
 
     const menuButton = page.locator("button[aria-label='Open menu']");
     await menuButton.click();
     await page.waitForTimeout(300);
 
     // Press escape
-    await page.keyboard.press('Escape');
+    await page.keyboard.press("Escape");
     await page.waitForTimeout(300);
 
-    const menuPanel = page.locator('#mobile-menu');
+    const menuPanel = page.locator("#mobile-menu");
     await expect(menuPanel).toHaveClass(/-translate-x-full/);
   });
 
-  test('navigates to dashboard from mobile menu', async ({ page }) => {
-    await page.goto('/');
+  test("navigates to dashboard from mobile menu", async ({ page }) => {
+    await page.goto("/");
 
     const menuButton = page.locator("button[aria-label='Open menu']");
     await menuButton.click();
     await page.waitForTimeout(300);
 
     // Click dashboard
-    const dashboardLink = page.locator('text=Dashboard').first();
+    const dashboardLink = page.locator("text=Dashboard").first();
     await dashboardLink.click();
 
     // Should navigate to home
     await expect(page).toHaveURL(/\/()?$/);
   });
 
-  test('form inputs have minimum 44px height on mobile', async ({ page }) => {
+  test("form inputs have minimum 44px height on mobile", async ({ page }) => {
     // Navigate to create item page
-    await page.goto('/items?action=create');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items?action=create");
+    await page.waitForLoadState("networkidle");
 
     // Check for dialog/modal
     const dialog = page.locator('[role="dialog"]');
     await expect(dialog).toBeVisible({ timeout: 10_000 });
 
     // Get input fields
-    const inputs = dialog.locator('input');
+    const inputs = dialog.locator("input");
     const count = await inputs.count();
 
     for (let i = 0; i < count; i++) {
@@ -154,15 +154,15 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     }
   });
 
-  test('card items are tappable without accidentally triggering adjacent items', async ({
+  test("card items are tappable without accidentally triggering adjacent items", async ({
     page,
   }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Get first two cards
-    const firstCard = page.locator('button').first();
-    const secondCard = page.locator('button').nth(1);
+    const firstCard = page.locator("button").first();
+    const secondCard = page.locator("button").nth(1);
 
     // Get their positions
     const firstBox = await firstCard.boundingBox();
@@ -177,11 +177,11 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     }
   });
 
-  test('can scroll cards smoothly', async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+  test("can scroll cards smoothly", async ({ page }) => {
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
-    const cardGrid = page.locator('.grid');
+    const cardGrid = page.locator(".grid");
 
     // Perform scroll
     await cardGrid.evaluate((el) => {
@@ -193,10 +193,10 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     expect(scrollTop).toBeGreaterThan(0);
   });
 
-  test('mobile header is compact and usable', async ({ page }) => {
-    await page.goto('/');
+  test("mobile header is compact and usable", async ({ page }) => {
+    await page.goto("/");
 
-    const header = page.locator('header');
+    const header = page.locator("header");
 
     // Should be visible
     await expect(header).toBeVisible({ timeout: 5000 });
@@ -206,19 +206,19 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     expect(boundingBox?.height).toBeGreaterThanOrEqual(64);
 
     // Text should be readable
-    const title = header.locator('h1, h2');
+    const title = header.locator("h1, h2");
     await expect(title).toBeVisible({ timeout: 5000 });
   });
 
-  test('can see and interact with card actions on mobile', async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+  test("can see and interact with card actions on mobile", async ({ page }) => {
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Get first card
-    const firstCard = page.locator('button').first();
+    const firstCard = page.locator("button").first();
 
     // Actions should be visible or accessible
-    const actions = firstCard.locator('button');
+    const actions = firstCard.locator("button");
     const actionCount = await actions.count();
 
     // Should have at least action buttons
@@ -232,11 +232,11 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     expect(hasFocus).toBe(true);
   });
 
-  test('touch events work on card items', async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+  test("touch events work on card items", async ({ page }) => {
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
-    const firstCard = page.locator('button').first();
+    const firstCard = page.locator("button").first();
 
     // Should be able to click (touch)
     await firstCard.tap();
@@ -246,35 +246,35 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     await page.waitForTimeout(500);
   });
 
-  test('responsive grid adjusts from 1 to 2 columns on larger mobile', async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+  test("responsive grid adjusts from 1 to 2 columns on larger mobile", async ({ page }) => {
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Set viewport to small tablet
     await page.setViewportSize({ height: 800, width: 640 });
 
     // Should still show cards
-    const cardGrid = page.locator('.grid');
+    const cardGrid = page.locator(".grid");
     await expect(cardGrid).toBeVisible({ timeout: 10_000 });
 
     // At 640px (sm breakpoint), should show 2 columns
     const hasSmClass = await cardGrid.evaluate(
-      (el) => window.getComputedStyle(el).gridTemplateColumns.split(' ').length,
+      (el) => window.getComputedStyle(el).gridTemplateColumns.split(" ").length,
     );
 
     // Should have columns (actual count may vary)
     expect(hasSmClass).toBeGreaterThan(0);
   });
 
-  test('focus is properly managed in mobile menu', async ({ page }) => {
-    await page.goto('/');
+  test("focus is properly managed in mobile menu", async ({ page }) => {
+    await page.goto("/");
 
     const menuButton = page.locator("button[aria-label='Open menu']");
     await menuButton.click();
     await page.waitForTimeout(300);
 
     // First menu item should be focusable
-    const firstMenuItem = page.locator('#mobile-menu button').first();
+    const firstMenuItem = page.locator("#mobile-menu button").first();
 
     await firstMenuItem.focus();
 
@@ -283,12 +283,12 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     expect(hasFocus).toBe(true);
   });
 
-  test('text is readable on mobile (sufficient size)', async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+  test("text is readable on mobile (sufficient size)", async ({ page }) => {
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Get card title
-    const cardTitle = page.locator('button').first().locator('h3, div');
+    const cardTitle = page.locator("button").first().locator("h3, div");
 
     const fontSize = await cardTitle.evaluate((el) => window.getComputedStyle(el).fontSize);
 
@@ -297,9 +297,9 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     expect(fontSizePx).toBeGreaterThanOrEqual(12);
   });
 
-  test('touch performance is good (no jank)', async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+  test("touch performance is good (no jank)", async ({ page }) => {
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Enable performance monitoring
     const metrics = await page.evaluate(
@@ -340,8 +340,8 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     expect(metrics.fps).toBeGreaterThan(30);
   });
 
-  test('back button in mobile menu works', async ({ page }) => {
-    await page.goto('/items');
+  test("back button in mobile menu works", async ({ page }) => {
+    await page.goto("/items");
 
     const menuButton = page.locator("button[aria-label='Open menu']");
     await menuButton.click();
@@ -351,7 +351,7 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
     const _backdrop = page.locator("#mobile-menu ~ div[aria-hidden='true']");
 
     // Try to close via backdrop
-    const menuPanel = page.locator('#mobile-menu');
+    const menuPanel = page.locator("#mobile-menu");
     await expect(menuPanel).toBeVisible({ timeout: 5000 });
 
     // Get close button
@@ -365,23 +365,23 @@ test.describe('Mobile Optimization - Phase 12 & 13', () => {
   });
 });
 
-test.describe('Mobile Performance Optimization - Phase 13', () => {
+test.describe("Mobile Performance Optimization - Phase 13", () => {
   test.use({
     hasTouch: true,
     isMobile: true,
     viewport: { height: 667, width: 375 },
   });
 
-  test('lazy loads images on mobile', async ({ page }) => {
-    await page.goto('/projects');
+  test("lazy loads images on mobile", async ({ page }) => {
+    await page.goto("/projects");
 
     // Check for lazy loading attribute
-    const images = page.locator('img');
+    const images = page.locator("img");
     const count = await images.count();
 
     if (count > 0) {
       const firstImg = images.first();
-      const loading = await firstImg.getAttribute('loading');
+      const loading = await firstImg.getAttribute("loading");
 
       // Should use lazy loading on mobile
       if (loading) {
@@ -390,15 +390,15 @@ test.describe('Mobile Performance Optimization - Phase 13', () => {
     }
   });
 
-  test('minimizes initial bundle on mobile', async ({ page }) => {
+  test("minimizes initial bundle on mobile", async ({ page }) => {
     // Measure bundle size
     const resourceTiming = await page.evaluate(() => {
-      const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+      const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
 
       return resources
-        .filter((r) => r.name.includes('.js') || r.name.includes('.css'))
+        .filter((r) => r.name.includes(".js") || r.name.includes(".css"))
         .map((r) => ({
-          name: r.name.split('/').pop(),
+          name: r.name.split("/").pop(),
           size: r.transferSize || 0,
         }))
         .slice(0, 5);
@@ -408,12 +408,12 @@ test.describe('Mobile Performance Optimization - Phase 13', () => {
     expect(resourceTiming.length).toBeGreaterThan(0);
   });
 
-  test('uses efficient rendering for lists', async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+  test("uses efficient rendering for lists", async ({ page }) => {
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Should use virtualization or pagination
-    const cards = page.locator('button');
+    const cards = page.locator("button");
     const count = await cards.count();
 
     // Even with many items, should only render visible ones

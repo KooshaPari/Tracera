@@ -5,7 +5,7 @@
  * Automatically clusters 100k+ nodes into manageable super-nodes.
  */
 
-import type { Edge, Node, NodeTypes } from '@xyflow/react';
+import type { Edge, Node, NodeTypes } from "@xyflow/react";
 
 import {
   Background,
@@ -17,7 +17,7 @@ import {
   useEdgesState,
   useNodesState,
   useReactFlow,
-} from '@xyflow/react';
+} from "@xyflow/react";
 import {
   Activity,
   Layers,
@@ -28,31 +28,31 @@ import {
   RotateCcw,
   ZoomIn,
   ZoomOut,
-} from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
 
-import '@xyflow/react/dist/style.css';
-import { Card } from '@tracertm/ui/components/Card';
-import { Separator } from '@tracertm/ui/components/Separator';
+import "@xyflow/react/dist/style.css";
+import { Card } from "@tracertm/ui/components/Card";
+import { Separator } from "@tracertm/ui/components/Separator";
 
-import type { ClusteringAlgorithm } from '../../hooks/useClustering';
-import type { ClusterNode as _ClusterNodeType } from '../../lib/graphClustering';
-import type { ClusterNodeData } from './ClusterNode';
-import type { LayoutType } from './layouts/useDagLayout';
-import type { RichNodeData } from './RichNodePill';
-import type { EnhancedNodeData } from './types';
+import type { ClusteringAlgorithm } from "../../hooks/useClustering";
+import type { ClusterNode as _ClusterNodeType } from "../../lib/graphClustering";
+import type { ClusterNodeData } from "./ClusterNode";
+import type { LayoutType } from "./layouts/useDagLayout";
+import type { RichNodeData } from "./RichNodePill";
+import type { EnhancedNodeData } from "./types";
 
-import { useClusterEdges, useClustering } from '../../hooks/useClustering';
-import { ClusterNode } from './ClusterNode';
-import { LayoutSelector } from './layouts/LayoutSelector';
-import { useDagLayout } from './layouts/useDagLayout';
-import { NodeDetailPanel } from './NodeDetailPanel';
-import { RichNodePill } from './RichNodePill';
+import { useClusterEdges, useClustering } from "../../hooks/useClustering";
+import { ClusterNode } from "./ClusterNode";
+import { LayoutSelector } from "./layouts/LayoutSelector";
+import { useDagLayout } from "./layouts/useDagLayout";
+import { NodeDetailPanel } from "./NodeDetailPanel";
+import { RichNodePill } from "./RichNodePill";
 
 const customNodeTypes = {
   clusterNode: ClusterNode,
@@ -78,10 +78,10 @@ export function ClusteredGraphView({
   onNavigateToItem,
   showControls = true,
   autoFit = true,
-  clusteringAlgorithm = 'adaptive',
+  clusteringAlgorithm = "adaptive",
   targetClusters = 500,
 }: ClusteredGraphViewProps) {
-  const [layout, setLayout] = useState<LayoutType>('flow-chart');
+  const [layout, setLayout] = useState<LayoutType>("flow-chart");
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [showDetailPanel, setShowDetailPanel] = useState(true);
 
@@ -131,7 +131,7 @@ export function ClusteredGraphView({
         } as unknown as Record<string, unknown>,
         id: cluster.id,
         position: { x: 0, y: 0 },
-        type: 'clusterNode',
+        type: "clusterNode",
       });
     }
 
@@ -141,14 +141,14 @@ export function ClusteredGraphView({
         data: {
           id: item.id,
           item,
-          label: item.title || 'Untitled',
+          label: item.title || "Untitled",
           onSelect: setSelectedNodeId,
           status: item.status,
-          type: item.type || 'item',
+          type: item.type || "item",
         } as RichNodeData,
         id: item.id,
         position: { x: 0, y: 0 },
-        type: 'richPill',
+        type: "richPill",
       });
     }
 
@@ -215,19 +215,19 @@ export function ClusteredGraphView({
             id: edge.id,
             label: `${clusterEdge.weight}`,
             labelBgPadding: [4, 2] as [number, number],
-            labelBgStyle: { fill: 'rgba(26, 26, 46, 0.9)' },
-            labelStyle: { fill: '#8b5cf6', fontSize: 10, fontWeight: 'bold' },
+            labelBgStyle: { fill: "rgba(26, 26, 46, 0.9)" },
+            labelStyle: { fill: "#8b5cf6", fontSize: 10, fontWeight: "bold" },
             markerEnd: {
-              color: '#8b5cf6',
+              color: "#8b5cf6",
               type: MarkerType.ArrowClosed,
             },
             source: edge.source,
             style: {
-              stroke: '#8b5cf6',
+              stroke: "#8b5cf6",
               strokeWidth: Math.min(clusterEdge.weight / 10, 5),
             },
             target: edge.target,
-            type: 'smoothstep',
+            type: "smoothstep",
           } as Edge;
         }
 
@@ -236,16 +236,16 @@ export function ClusteredGraphView({
           animated: false,
           id: edge.id,
           markerEnd: {
-            color: '#64748b',
+            color: "#64748b",
             type: MarkerType.ArrowClosed,
           },
           source: edge.source,
           style: {
-            stroke: '#64748b',
+            stroke: "#64748b",
             strokeWidth: 1,
           },
           target: edge.target,
-          type: 'smoothstep',
+          type: "smoothstep",
         } as Edge;
       }),
     [edgesForLayout, clusterEdges],
@@ -305,7 +305,7 @@ export function ClusteredGraphView({
   // Handlers
   const handleFit = () => {};
   const handleReset = () => {
-    setLayout('flow-chart');
+    setLayout("flow-chart");
     setSelectedNodeId(null);
     collapseAll();
   };
@@ -319,61 +319,61 @@ export function ClusteredGraphView({
   };
 
   return (
-    <div className='flex h-full flex-col'>
+    <div className="flex h-full flex-col">
       {/* Controls */}
       {showControls && (
-        <Card className='mb-3 p-2'>
-          <div className='flex items-center justify-between gap-3'>
-            <div className='flex items-center gap-2'>
+        <Card className="mb-3 p-2">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
               <LayoutSelector
                 value={layout}
                 onChange={setLayout}
-                variant='select'
-                className='h-8 w-[200px]'
+                variant="select"
+                className="h-8 w-[200px]"
               />
 
-              <Separator orientation='vertical' className='h-6' />
+              <Separator orientation="vertical" className="h-6" />
 
-              <Button variant='ghost' size='sm' onClick={expandAll} className='h-8 text-xs'>
-                <Maximize2 className='mr-1 h-3 w-3' />
+              <Button variant="ghost" size="sm" onClick={expandAll} className="h-8 text-xs">
+                <Maximize2 className="mr-1 h-3 w-3" />
                 Expand All
               </Button>
 
-              <Button variant='ghost' size='sm' onClick={collapseAll} className='h-8 text-xs'>
-                <Minimize2 className='mr-1 h-3 w-3' />
+              <Button variant="ghost" size="sm" onClick={collapseAll} className="h-8 text-xs">
+                <Minimize2 className="mr-1 h-3 w-3" />
                 Collapse All
               </Button>
 
-              <Separator orientation='vertical' className='h-6' />
+              <Separator orientation="vertical" className="h-6" />
 
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={() => {
                   setShowDetailPanel(!showDetailPanel);
                 }}
-                className='h-8'
+                className="h-8"
               >
                 {showDetailPanel ? (
-                  <PanelRightClose className='h-4 w-4' />
+                  <PanelRightClose className="h-4 w-4" />
                 ) : (
-                  <PanelRight className='h-4 w-4' />
+                  <PanelRight className="h-4 w-4" />
                 )}
               </Button>
             </div>
 
-            <div className='flex items-center gap-2'>
+            <div className="flex items-center gap-2">
               {/* Clustering metrics */}
               {clustering && (
-                <div className='text-muted-foreground flex items-center gap-3 text-xs'>
-                  <div className='flex items-center gap-1'>
-                    <Layers className='h-3 w-3' />
+                <div className="text-muted-foreground flex items-center gap-3 text-xs">
+                  <div className="flex items-center gap-1">
+                    <Layers className="h-3 w-3" />
                     <span>
                       {clusterCount} clusters ({compressionRatio.toFixed(1)}x compression)
                     </span>
                   </div>
                   {quality && (
-                    <Badge variant='outline' className='text-[10px]'>
+                    <Badge variant="outline" className="text-[10px]">
                       Q: {quality.modularity.toFixed(3)}
                     </Badge>
                   )}
@@ -381,36 +381,36 @@ export function ClusteredGraphView({
               )}
 
               {isProcessing && (
-                <div className='text-muted-foreground flex items-center gap-2 text-xs'>
-                  <Activity className='h-3 w-3 animate-spin' />
+                <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                  <Activity className="h-3 w-3 animate-spin" />
                   <span>Clustering...</span>
                 </div>
               )}
 
-              <Separator orientation='vertical' className='h-6' />
+              <Separator orientation="vertical" className="h-6" />
 
-              <div className='flex items-center gap-1 rounded-md border p-0.5'>
+              <div className="flex items-center gap-1 rounded-md border p-0.5">
                 <Button
-                  variant='ghost'
-                  size='sm'
+                  variant="ghost"
+                  size="sm"
                   onClick={async () => zoomIn()}
-                  className='h-7 w-7 p-0'
+                  className="h-7 w-7 p-0"
                 >
-                  <ZoomIn className='h-4 w-4' />
+                  <ZoomIn className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant='ghost'
-                  size='sm'
+                  variant="ghost"
+                  size="sm"
                   onClick={async () => zoomOut()}
-                  className='h-7 w-7 p-0'
+                  className="h-7 w-7 p-0"
                 >
-                  <ZoomOut className='h-4 w-4' />
+                  <ZoomOut className="h-4 w-4" />
                 </Button>
-                <Button variant='ghost' size='sm' onClick={handleFit} className='h-7 w-7 p-0'>
-                  <Maximize2 className='h-4 w-4' />
+                <Button variant="ghost" size="sm" onClick={handleFit} className="h-7 w-7 p-0">
+                  <Maximize2 className="h-4 w-4" />
                 </Button>
-                <Button variant='ghost' size='sm' onClick={handleReset} className='h-7 w-7 p-0'>
-                  <RotateCcw className='h-4 w-4' />
+                <Button variant="ghost" size="sm" onClick={handleReset} className="h-7 w-7 p-0">
+                  <RotateCcw className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -419,8 +419,8 @@ export function ClusteredGraphView({
       )}
 
       {/* Graph area */}
-      <div className='flex flex-1 gap-3'>
-        <Card className='flex-1 overflow-hidden p-0'>
+      <div className="flex flex-1 gap-3">
+        <Card className="flex-1 overflow-hidden p-0">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -431,12 +431,12 @@ export function ClusteredGraphView({
             minZoom={0.1}
             maxZoom={2}
             proOptions={{ hideAttribution: true }}
-            className='bg-background'
+            className="bg-background"
           >
-            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color='#374151' />
+            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#374151" />
             <Controls showInteractive={false} />
-            <Panel position='top-right' className='!m-2'>
-              <Badge variant='secondary' className='text-xs'>
+            <Panel position="top-right" className="!m-2">
+              <Badge variant="secondary" className="text-xs">
                 {items.length} total · {nodes.length} visible
               </Badge>
             </Panel>
@@ -458,10 +458,10 @@ export function ClusteredGraphView({
                 hasChildren: false,
                 id: selectedNode.id,
                 item: selectedNode,
-                label: selectedNode.title || 'Untitled',
+                label: selectedNode.title || "Untitled",
                 perspective: [],
                 status: selectedNode.status,
-                type: selectedNode.type || 'item',
+                type: selectedNode.type || "item",
               } as unknown as EnhancedNodeData
             }
             relatedItems={relatedItems}

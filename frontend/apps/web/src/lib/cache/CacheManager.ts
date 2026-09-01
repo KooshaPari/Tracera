@@ -11,7 +11,7 @@
  * - Session data → All layers with sync
  */
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 import type {
   ICache,
@@ -19,20 +19,20 @@ import type {
   InvalidateOptions,
   CacheStatistics,
   CacheEvent,
-} from './CacheInterface';
+} from "./CacheInterface";
 
-import { TTL, CacheKeys, CacheEventType } from './CacheInterface';
-import { IndexedDBCache, createIndexedDBCache } from './IndexedDBCache';
-import { MemoryCache, createMemoryCache } from './MemoryCache';
-import { ServiceWorkerCache, createServiceWorkerCache } from './ServiceWorkerCache';
+import { TTL, CacheKeys, CacheEventType } from "./CacheInterface";
+import { IndexedDBCache, createIndexedDBCache } from "./IndexedDBCache";
+import { MemoryCache, createMemoryCache } from "./MemoryCache";
+import { ServiceWorkerCache, createServiceWorkerCache } from "./ServiceWorkerCache";
 
 /**
  * Cache layer priorities
  */
 export enum CacheLayer {
-  MEMORY = 'memory',
-  INDEXEDDB = 'indexeddb',
-  SERVICE_WORKER = 'service-worker',
+  MEMORY = "memory",
+  INDEXEDDB = "indexeddb",
+  SERVICE_WORKER = "service-worker",
 }
 
 /**
@@ -110,18 +110,18 @@ export class CacheManager {
         maxMemory: this.config.memoryCacheSizeMB * 1024 * 1024,
         defaultTTL: this.config.defaultTTL,
         enableLogging: this.config.enableLogging,
-        name: 'MemoryCache',
+        name: "MemoryCache",
       });
 
       if (this.config.enableLogging) {
-        logger.debug('[CacheManager] Memory cache initialized');
+        logger.debug("[CacheManager] Memory cache initialized");
       }
     }
 
     if (
       this.config.enableIndexedDB &&
-      typeof window !== 'undefined' &&
-      typeof globalThis.indexedDB !== 'undefined'
+      typeof window !== "undefined" &&
+      typeof globalThis.indexedDB !== "undefined"
     ) {
       try {
         this.indexedDBCache = createIndexedDBCache({
@@ -131,17 +131,17 @@ export class CacheManager {
         });
 
         if (this.config.enableLogging) {
-          logger.debug('[CacheManager] IndexedDB cache initialized');
+          logger.debug("[CacheManager] IndexedDB cache initialized");
         }
       } catch (error) {
-        logger.warn('[CacheManager] IndexedDB cache initialization failed:', error);
+        logger.warn("[CacheManager] IndexedDB cache initialization failed:", error);
       }
     }
 
     if (
       this.config.enableServiceWorker &&
-      typeof window !== 'undefined' &&
-      typeof globalThis.caches !== 'undefined'
+      typeof window !== "undefined" &&
+      typeof globalThis.caches !== "undefined"
     ) {
       try {
         this.serviceWorkerCache = createServiceWorkerCache({
@@ -150,10 +150,10 @@ export class CacheManager {
         });
 
         if (this.config.enableLogging) {
-          logger.debug('[CacheManager] Service Worker cache initialized');
+          logger.debug("[CacheManager] Service Worker cache initialized");
         }
       } catch (error) {
-        logger.warn('[CacheManager] Service Worker cache initialization failed:', error);
+        logger.warn("[CacheManager] Service Worker cache initialization failed:", error);
       }
     }
 
@@ -194,7 +194,7 @@ export class CacheManager {
     }
 
     // Try Service Worker (API responses)
-    if (this.serviceWorkerCache && key.startsWith('http')) {
+    if (this.serviceWorkerCache && key.startsWith("http")) {
       const value = await this.serviceWorkerCache.get<T>(key);
       if (value !== null) {
         this.stats.serviceWorkerHits++;
@@ -227,7 +227,7 @@ export class CacheManager {
     if (
       layers.includes(CacheLayer.SERVICE_WORKER) &&
       this.serviceWorkerCache &&
-      key.startsWith('http')
+      key.startsWith("http")
     ) {
       promises.push(this.serviceWorkerCache.set(key, value, options));
     }
@@ -247,7 +247,7 @@ export class CacheManager {
     if (this.indexedDBCache && (await this.indexedDBCache.has(key))) return true;
     if (
       this.serviceWorkerCache &&
-      key.startsWith('http') &&
+      key.startsWith("http") &&
       (await this.serviceWorkerCache.has(key))
     )
       return true;
@@ -297,7 +297,7 @@ export class CacheManager {
     ]);
 
     if (this.config.enableLogging) {
-      logger.debug('[CacheManager] All caches cleared');
+      logger.debug("[CacheManager] All caches cleared");
     }
   }
 
@@ -401,7 +401,7 @@ export class CacheManager {
     }
 
     // Use Service Worker for HTTP requests
-    if (key.startsWith('http')) {
+    if (key.startsWith("http")) {
       layers.push(CacheLayer.SERVICE_WORKER);
     }
 
@@ -425,9 +425,9 @@ export class CacheManager {
    */
   private estimateSize(obj: unknown): number {
     if (obj === null || obj === undefined) return 8;
-    if (typeof obj === 'string') return obj.length * 2;
-    if (typeof obj === 'number') return 8;
-    if (typeof obj === 'boolean') return 4;
+    if (typeof obj === "string") return obj.length * 2;
+    if (typeof obj === "number") return 8;
+    if (typeof obj === "boolean") return 4;
 
     // Rough estimate for objects
     try {
@@ -446,7 +446,7 @@ export class CacheManager {
       this.memoryCache.on(CacheEventType.SET, (event: CacheEvent) => {
         // Could sync to other layers if needed
         if (this.config.enableLogging) {
-          logger.debug('[CacheManager] Memory cache SET:', event.key);
+          logger.debug("[CacheManager] Memory cache SET:", event.key);
         }
       });
     }
@@ -455,7 +455,7 @@ export class CacheManager {
     if (this.indexedDBCache) {
       this.indexedDBCache.on(CacheEventType.SET, (event: CacheEvent) => {
         if (this.config.enableLogging) {
-          logger.debug('[CacheManager] IndexedDB cache SET:', event.key);
+          logger.debug("[CacheManager] IndexedDB cache SET:", event.key);
         }
       });
     }

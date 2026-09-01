@@ -2,9 +2,9 @@
  * API utilities for mock data generation
  */
 
-import type { CreateItemInput, LinkType, Project } from './types';
+import type { CreateItemInput, LinkType, Project } from "./types";
 
-const API_URL = process.env.VITE_API_URL || 'http://127.0.0.1:18000';
+const API_URL = process.env.VITE_API_URL || "http://127.0.0.1:18000";
 
 export function getApiUrl(): string {
   return API_URL;
@@ -20,10 +20,10 @@ export async function createItemWithRetry(data: CreateItemInput, retries = 3): P
   for (let i = 0; i < retries; i++) {
     try {
       const res = await fetch(`${API_URL}/api/v1/items`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-Bulk-Operation': 'true',
+          "Content-Type": "application/json",
+          "X-Bulk-Operation": "true",
         },
         body: JSON.stringify(data),
       });
@@ -32,9 +32,9 @@ export async function createItemWithRetry(data: CreateItemInput, retries = 3): P
         const errorText = await res.text();
         const isRateLimited =
           res.status === 429 ||
-          errorText.includes('429') ||
-          errorText.includes('Rate limit') ||
-          errorText.includes('rate limit');
+          errorText.includes("429") ||
+          errorText.includes("Rate limit") ||
+          errorText.includes("rate limit");
 
         if (isRateLimited) {
           await sleep(2000 * (i + 1));
@@ -47,9 +47,9 @@ export async function createItemWithRetry(data: CreateItemInput, retries = 3): P
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       if (
-        errorMsg.includes('429') ||
-        errorMsg.includes('Rate limit') ||
-        errorMsg.includes('rate limit')
+        errorMsg.includes("429") ||
+        errorMsg.includes("Rate limit") ||
+        errorMsg.includes("rate limit")
       ) {
         if (i < retries - 1) {
           await sleep(2000 * (i + 1));
@@ -74,10 +74,10 @@ export async function createLinkWithRetry(
   for (let i = 0; i < retries; i++) {
     try {
       const res = await fetch(`${API_URL}/api/v1/links`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-Bulk-Operation': 'true',
+          "Content-Type": "application/json",
+          "X-Bulk-Operation": "true",
         },
         body: JSON.stringify({
           project_id: projectId,
@@ -91,9 +91,9 @@ export async function createLinkWithRetry(
         const errorText = await res.text();
         const isRateLimited =
           res.status === 429 ||
-          errorText.includes('429') ||
-          errorText.includes('Rate limit') ||
-          errorText.includes('rate limit');
+          errorText.includes("429") ||
+          errorText.includes("Rate limit") ||
+          errorText.includes("rate limit");
 
         if (isRateLimited) {
           await sleep(2000 * (i + 1));
@@ -106,9 +106,9 @@ export async function createLinkWithRetry(
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       if (
-        errorMsg.includes('429') ||
-        errorMsg.includes('Rate limit') ||
-        errorMsg.includes('rate limit')
+        errorMsg.includes("429") ||
+        errorMsg.includes("Rate limit") ||
+        errorMsg.includes("rate limit")
       ) {
         if (i < retries - 1) {
           await sleep(2000 * (i + 1));
@@ -134,15 +134,15 @@ export async function checkProjectItems(projectId: string): Promise<number> {
 
 export async function fetchProjects(): Promise<Project[]> {
   const res = await fetch(`${API_URL}/api/v1/projects`);
-  if (!res.ok) throw new Error('Failed to fetch projects');
+  if (!res.ok) throw new Error("Failed to fetch projects");
   const data = await res.json();
   return data.projects || data;
 }
 
 export async function createProject(name: string, description: string): Promise<Project> {
   const res = await fetch(`${API_URL}/api/v1/projects`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, description }),
   });
 

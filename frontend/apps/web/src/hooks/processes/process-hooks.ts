@@ -1,12 +1,12 @@
-import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { ExecutionStatus, Process, ProcessExecution } from '@tracertm/types';
+import type { ExecutionStatus, Process, ProcessExecution } from "@tracertm/types";
 
-import type { CreateExecutionData, CreateProcessData, ProcessFilters } from './process-types';
+import type { CreateExecutionData, CreateProcessData, ProcessFilters } from "./process-types";
 
-import { processApi } from './process-api';
+import { processApi } from "./process-api";
 
 type ProcessesResponse = Awaited<ReturnType<typeof processApi.fetchProcesses>>;
 type ExecutionsResponse = Awaited<ReturnType<typeof processApi.fetchExecutions>>;
@@ -18,7 +18,7 @@ function useProcesses(filters: ProcessFilters): UseQueryResult<ProcessesResponse
       const result = await processApi.fetchProcesses(filters);
       return result;
     },
-    queryKey: ['processes', JSON.stringify(filters)],
+    queryKey: ["processes", JSON.stringify(filters)],
   });
 }
 
@@ -29,7 +29,7 @@ function useProcess(id: string): UseQueryResult<Process> {
       const result = await processApi.fetchProcess(id);
       return result;
     },
-    queryKey: ['processes', id],
+    queryKey: ["processes", id],
   });
 }
 
@@ -45,7 +45,7 @@ function useCreateProcess(): UseMutationResult<
       return result;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['processes'] });
+      await queryClient.invalidateQueries({ queryKey: ["processes"] });
     },
   });
 }
@@ -53,20 +53,20 @@ function useCreateProcess(): UseMutationResult<
 function useUpdateProcess(): UseMutationResult<
   { id: string; version: number },
   unknown,
-  { id: string; data: Partial<Omit<CreateProcessData, 'projectId'>> }
+  { id: string; data: Partial<Omit<CreateProcessData, "projectId">> }
 > {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (vars: {
       id: string;
-      data: Partial<Omit<CreateProcessData, 'projectId'>>;
+      data: Partial<Omit<CreateProcessData, "projectId">>;
     }) => {
       const result = await processApi.updateProcess(vars.id, vars.data);
       return result;
     },
     onSuccess: async (_, vars) => {
-      await queryClient.invalidateQueries({ queryKey: ['processes'] });
-      await queryClient.invalidateQueries({ queryKey: ['processes', vars.id] });
+      await queryClient.invalidateQueries({ queryKey: ["processes"] });
+      await queryClient.invalidateQueries({ queryKey: ["processes", vars.id] });
     },
   });
 }
@@ -83,7 +83,7 @@ function useCreateProcessVersion(): UseMutationResult<
       return result;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['processes'] });
+      await queryClient.invalidateQueries({ queryKey: ["processes"] });
     },
   });
 }
@@ -100,8 +100,8 @@ function useActivateProcess(): UseMutationResult<
       return result;
     },
     onSuccess: async (_, processId) => {
-      await queryClient.invalidateQueries({ queryKey: ['processes', processId] });
-      await queryClient.invalidateQueries({ queryKey: ['processes'] });
+      await queryClient.invalidateQueries({ queryKey: ["processes", processId] });
+      await queryClient.invalidateQueries({ queryKey: ["processes"] });
     },
   });
 }
@@ -118,8 +118,8 @@ function useDeprecateProcess(): UseMutationResult<
       return result;
     },
     onSuccess: async (_, vars) => {
-      await queryClient.invalidateQueries({ queryKey: ['processes', vars.processId] });
-      await queryClient.invalidateQueries({ queryKey: ['processes'] });
+      await queryClient.invalidateQueries({ queryKey: ["processes", vars.processId] });
+      await queryClient.invalidateQueries({ queryKey: ["processes"] });
     },
   });
 }
@@ -131,7 +131,7 @@ function useDeleteProcess(): UseMutationResult<void, unknown, string> {
       await processApi.deleteProcess(id);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['processes'] });
+      await queryClient.invalidateQueries({ queryKey: ["processes"] });
     },
   });
 }
@@ -145,7 +145,7 @@ function useProcessStats(
       const result = await processApi.fetchProcessStats(projectId);
       return result;
     },
-    queryKey: ['processStats', projectId],
+    queryKey: ["processStats", projectId],
   });
 }
 
@@ -160,7 +160,7 @@ function useProcessExecutions(
       const result = await processApi.fetchExecutions({ limit, processId, status });
       return result;
     },
-    queryKey: ['processExecutions', processId, status, limit],
+    queryKey: ["processExecutions", processId, status, limit],
   });
 }
 
@@ -171,7 +171,7 @@ function useExecution(executionId: string): UseQueryResult<ProcessExecution> {
       const result = await processApi.fetchExecution(executionId);
       return result;
     },
-    queryKey: ['executions', executionId],
+    queryKey: ["executions", executionId],
   });
 }
 
@@ -187,7 +187,7 @@ function useCreateExecution(): UseMutationResult<
       return result;
     },
     onSuccess: async (_, vars) => {
-      await queryClient.invalidateQueries({ queryKey: ['processExecutions', vars.processId] });
+      await queryClient.invalidateQueries({ queryKey: ["processExecutions", vars.processId] });
     },
   });
 }
@@ -200,7 +200,7 @@ function useStartExecution(): UseMutationResult<{ id: string; status: string }, 
       return result;
     },
     onSuccess: async (_, executionId) => {
-      await queryClient.invalidateQueries({ queryKey: ['executions', executionId] });
+      await queryClient.invalidateQueries({ queryKey: ["executions", executionId] });
     },
   });
 }
@@ -217,7 +217,7 @@ function useAdvanceExecution(): UseMutationResult<
       return result;
     },
     onSuccess: async (_, vars) => {
-      await queryClient.invalidateQueries({ queryKey: ['executions', vars.executionId] });
+      await queryClient.invalidateQueries({ queryKey: ["executions", vars.executionId] });
     },
   });
 }
@@ -242,7 +242,7 @@ function useCompleteExecution(): UseMutationResult<
       return result;
     },
     onSuccess: async (_, vars) => {
-      await queryClient.invalidateQueries({ queryKey: ['executions', vars.executionId] });
+      await queryClient.invalidateQueries({ queryKey: ["executions", vars.executionId] });
     },
   });
 }

@@ -5,38 +5,38 @@
  * Optimized for large graphs (10k+ nodes) with caching and performance monitoring.
  */
 
-import Graph from 'graphology';
-import louvain from 'graphology-communities-louvain';
+import Graph from "graphology";
+import louvain from "graphology-communities-louvain";
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
 // Community color palette - visually distinct colors for up to 12 communities
 export const COMMUNITY_COLORS = [
-  '#3B82F6', // blue
-  '#10B981', // green
-  '#F59E0B', // amber
-  '#EF4444', // red
-  '#8B5CF6', // violet
-  '#EC4899', // pink
-  '#14B8A6', // teal
-  '#F97316', // orange
-  '#6366F1', // indigo
-  '#84CC16', // lime
-  '#06B6D4', // cyan
-  '#A855F7', // purple
+  "#3B82F6", // blue
+  "#10B981", // green
+  "#F59E0B", // amber
+  "#EF4444", // red
+  "#8B5CF6", // violet
+  "#EC4899", // pink
+  "#14B8A6", // teal
+  "#F97316", // orange
+  "#6366F1", // indigo
+  "#84CC16", // lime
+  "#06B6D4", // cyan
+  "#A855F7", // purple
 ] as const;
 
 // Additional colors for graphs with >12 communities
 export const EXTENDED_COMMUNITY_COLORS = [
   ...COMMUNITY_COLORS,
-  '#64748B', // slate
-  '#DC2626', // red-600
-  '#059669', // emerald-600
-  '#7C3AED', // violet-600
-  '#DB2777', // pink-600
-  '#0891B2', // cyan-600
-  '#EA580C', // orange-600
-  '#4F46E5', // indigo-600
+  "#64748B", // slate
+  "#DC2626", // red-600
+  "#059669", // emerald-600
+  "#7C3AED", // violet-600
+  "#DB2777", // pink-600
+  "#0891B2", // cyan-600
+  "#EA580C", // orange-600
+  "#4F46E5", // indigo-600
 ];
 
 export interface CommunityResult {
@@ -100,13 +100,13 @@ const MAX_CACHE_SIZE = 10;
  */
 function generateCacheKey(items: Item[], links: Link[], options: ClusteringOptions): string {
   const itemIds = items
-    .map((i) => i['id'])
+    .map((i) => i["id"])
     .sort()
-    .join(',');
+    .join(",");
   const linkIds = links
     .map((l) => `${l.sourceId}-${l.targetId}`)
     .sort()
-    .join(',');
+    .join(",");
   const opts = `${options.resolution || 1}-${options.minCommunitySize || 0}`;
   return `${itemIds}-${linkIds}-${opts}`;
 }
@@ -115,11 +115,11 @@ function generateCacheKey(items: Item[], links: Link[], options: ClusteringOptio
  * Build graphology Graph from items and links
  */
 function buildGraph(items: Item[], links: Link[]): Graph {
-  const graph = new Graph({ type: 'undirected' });
+  const graph = new Graph({ type: "undirected" });
 
   // Add nodes
   for (const item of items) {
-    graph.addNode(item['id'], {
+    graph.addNode(item["id"], {
       label: item.title,
       type: item.type,
     });
@@ -256,15 +256,15 @@ export async function detectCommunities(
 
   if (nodeCount === 1) {
     const singleNode = graph.nodes()[0]!;
-    const communities = new Map([[singleNode, '0']]);
-    const colors = new Map([['0', COMMUNITY_COLORS[0]!]]);
+    const communities = new Map([[singleNode, "0"]]);
+    const colors = new Map([["0", COMMUNITY_COLORS[0]!]]);
 
     return {
       communities,
       colors,
       stats: {
         communityCount: 1,
-        communitySizes: new Map([['0', 1]]),
+        communitySizes: new Map([["0", 1]]),
         maxCommunitySize: 1,
         minCommunitySize: 1,
         avgCommunitySize: 1,
@@ -289,7 +289,7 @@ export async function detectCommunities(
   // Extract community assignments
   const communities = new Map<string, string>();
   graph.forEachNode((node, attributes) => {
-    const communityId = String(attributes.community || '0');
+    const communityId = String(attributes.community || "0");
     communities.set(node, communityId);
   });
 
@@ -304,7 +304,7 @@ export async function detectCommunities(
     for (const [nodeId, communityId] of communities.entries()) {
       const size = communitySizes.get(communityId) || 0;
       if (size < options.minCommunitySize) {
-        communities.set(nodeId, '0');
+        communities.set(nodeId, "0");
       }
     }
   }
@@ -397,12 +397,12 @@ export function exportCommunitiesJSON(result: CommunityResult): string {
  * Export community data as CSV
  */
 export function exportCommunitiesCSV(result: CommunityResult): string {
-  const rows = [['Node ID', 'Community ID', 'Color']];
+  const rows = [["Node ID", "Community ID", "Color"]];
 
   for (const [nodeId, communityId] of result.communities.entries()) {
-    const color = result.colors.get(communityId) || '';
+    const color = result.colors.get(communityId) || "";
     rows.push([nodeId, communityId, color]);
   }
 
-  return rows.map((row) => row.join(',')).join('\n');
+  return rows.map((row) => row.join(",")).join("\n");
 }

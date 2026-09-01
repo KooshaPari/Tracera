@@ -3,15 +3,15 @@
  * Demonstrates how to integrate the UICodeTracePanel component with your application
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState } from "react";
 
-import type { CodeReference } from '@tracertm/types';
+import type { CodeReference } from "@tracertm/types";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import type { UICodeTraceChain } from './UICodeTracePanel';
+import type { UICodeTraceChain } from "./UICodeTracePanel";
 
-import { UICodeTracePanel } from './UICodeTracePanel';
+import { UICodeTracePanel } from "./UICodeTracePanel";
 
 // =============================================================================
 // EXAMPLE 1: Basic Integration with State Management
@@ -46,7 +46,7 @@ export function BasicUICodeTracePanelExample() {
   const handleOpenCode = useCallback((codeRef: CodeReference) => {
     // Option 1: VS Code Extension
     if (codeRef.filePath) {
-      const lineParam = codeRef.startLine ? `:${codeRef.startLine}` : '';
+      const lineParam = codeRef.startLine ? `:${codeRef.startLine}` : "";
       window.open(`vscode://open?${codeRef.filePath}${lineParam}`);
     }
   }, []);
@@ -111,7 +111,7 @@ export function TRPCIntegrationExample() {
 
   const handleOpenCode = useCallback((codeRef: CodeReference) => {
     // Open code in editor
-    logger.info('Open code:', codeRef);
+    logger.info("Open code:", codeRef);
   }, []);
 
   const handleRefresh = useCallback(async () => {
@@ -119,18 +119,18 @@ export function TRPCIntegrationExample() {
   }, []);
 
   return (
-    <div className='space-y-4'>
+    <div className="space-y-4">
       {/* Component selector */}
       <div>
-        <label className='mb-2 block text-sm font-medium'>Select Component:</label>
+        <label className="mb-2 block text-sm font-medium">Select Component:</label>
         <input
-          type='text'
-          placeholder='Enter component ID'
-          value={selectedComponentId ?? ''}
+          type="text"
+          placeholder="Enter component ID"
+          value={selectedComponentId ?? ""}
           onChange={(e) => {
             setSelectedComponentId(e.target.value);
           }}
-          className='w-full rounded border px-3 py-2'
+          className="w-full rounded border px-3 py-2"
         />
       </div>
 
@@ -208,18 +208,18 @@ export function SidePanelLayoutExample() {
   }, []);
 
   return (
-    <div className='flex h-screen gap-4'>
+    <div className="flex h-screen gap-4">
       {/* Main content area */}
-      <div className='flex-1 overflow-auto border-r p-4'>
-        <h2 className='mb-4 text-lg font-semibold'>Components</h2>
+      <div className="flex-1 overflow-auto border-r p-4">
+        <h2 className="mb-4 text-lg font-semibold">Components</h2>
         {/* List of components */}
-        <div className='space-y-2'>
-          {['LoginForm', 'NavBar', 'Dashboard'].map((name) => (
+        <div className="space-y-2">
+          {["LoginForm", "NavBar", "Dashboard"].map((name) => (
             <button
               key={name}
               onClick={async () => handleSelectItem(name)}
               className={`block w-full rounded px-4 py-2 text-left ${
-                selectedItemId === name ? 'bg-blue-100 text-blue-900' : 'hover:bg-gray-100'
+                selectedItemId === name ? "bg-blue-100 text-blue-900" : "hover:bg-gray-100"
               }`}
             >
               {name}
@@ -229,12 +229,12 @@ export function SidePanelLayoutExample() {
       </div>
 
       {/* Side panel with trace */}
-      <div className='w-96 overflow-auto border-l bg-gray-50 p-4'>
+      <div className="w-96 overflow-auto border-l bg-gray-50 p-4">
         <UICodeTracePanel
           traceChain={traceChain}
           isLoading={isLoading}
           onOpenCode={(codeRef) => {
-            logger.info('Open code:', codeRef);
+            logger.info("Open code:", codeRef);
           }}
           onRefreshTrace={async () => {
             if (traceChain) {
@@ -275,31 +275,31 @@ export function ModalDialogExample() {
     <div>
       {/* Open modal button */}
       <button
-        onClick={async () => handleOpenTraceModal('component-1')}
-        className='rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700'
+        onClick={async () => handleOpenTraceModal("component-1")}
+        className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
       >
         View Trace
       </button>
 
       {/* Modal dialog */}
       {isOpen && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
-          <div className='flex max-h-[90vh] w-full max-w-2xl flex-col rounded-lg bg-white shadow-xl'>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-lg bg-white shadow-xl">
             {/* Modal header */}
-            <div className='flex items-center justify-between border-b p-4'>
-              <h2 className='text-lg font-semibold'>Traceability Chain</h2>
+            <div className="flex items-center justify-between border-b p-4">
+              <h2 className="text-lg font-semibold">Traceability Chain</h2>
               <button
                 onClick={() => {
                   setIsOpen(false);
                 }}
-                className='text-gray-500 hover:text-gray-700'
+                className="text-gray-500 hover:text-gray-700"
               >
                 ✕
               </button>
             </div>
 
             {/* Modal content */}
-            <div className='flex-1 overflow-auto p-4'>
+            <div className="flex-1 overflow-auto p-4">
               <UICodeTracePanel
                 traceChain={traceChain}
                 onOpenCode={(codeRef) => {
@@ -309,12 +309,12 @@ export function ModalDialogExample() {
             </div>
 
             {/* Modal footer */}
-            <div className='flex justify-end gap-2 border-t p-4'>
+            <div className="flex justify-end gap-2 border-t p-4">
               <button
                 onClick={() => {
                   setIsOpen(false);
                 }}
-                className='rounded px-4 py-2 text-gray-600 hover:bg-gray-100'
+                className="rounded px-4 py-2 text-gray-600 hover:bg-gray-100"
               >
                 Close
               </button>
@@ -348,7 +348,7 @@ export function ErrorHandlingExample() {
       undefined;
       setTraceChain(null);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch trace chain';
+      const message = error instanceof Error ? error.message : "Failed to fetch trace chain";
       setError(message);
       setTraceChain(null);
     } finally {
@@ -357,15 +357,15 @@ export function ErrorHandlingExample() {
   }, []);
 
   return (
-    <div className='space-y-4'>
+    <div className="space-y-4">
       {/* Error message */}
       {error && (
-        <div className='rounded border border-red-200 bg-red-50 p-4 text-red-800'>
-          <p className='font-semibold'>Error</p>
-          <p className='mt-1 text-sm'>{error}</p>
+        <div className="rounded border border-red-200 bg-red-50 p-4 text-red-800">
+          <p className="font-semibold">Error</p>
+          <p className="mt-1 text-sm">{error}</p>
           <button
-            onClick={async () => handleFetchTrace('component-1')}
-            className='mt-2 text-sm text-red-700 underline hover:text-red-900'
+            onClick={async () => handleFetchTrace("component-1")}
+            className="mt-2 text-sm text-red-700 underline hover:text-red-900"
           >
             Try again
           </button>
@@ -392,7 +392,7 @@ export function URLSearchParamsExample() {
 
   // Get componentId from URL
   const searchParams = new URLSearchParams(globalThis.location.search);
-  const componentId = searchParams.get('component');
+  const componentId = searchParams.get("component");
 
   // Fetch trace when component changes
   const fetchTrace = useCallback(async () => {
@@ -432,10 +432,10 @@ export function BreadcrumbNavigationExample() {
   const selectedLevel = traceChain?.levels[selectedLevelIndex];
 
   return (
-    <div className='space-y-4'>
+    <div className="space-y-4">
       {/* Breadcrumb navigation */}
       {traceChain && (
-        <div className='flex items-center gap-2 text-sm text-gray-600'>
+        <div className="flex items-center gap-2 text-sm text-gray-600">
           {traceChain.levels.map((level, index) => (
             <React.Fragment key={level.id}>
               <button
@@ -443,7 +443,7 @@ export function BreadcrumbNavigationExample() {
                   setSelectedLevelIndex(index);
                 }}
                 className={`rounded px-2 py-1 ${
-                  index === selectedLevelIndex ? 'bg-blue-100 text-blue-900' : 'hover:bg-gray-100'
+                  index === selectedLevelIndex ? "bg-blue-100 text-blue-900" : "hover:bg-gray-100"
                 }`}
               >
                 {level.title}
@@ -458,15 +458,15 @@ export function BreadcrumbNavigationExample() {
       <UICodeTracePanel
         traceChain={traceChain}
         onOpenCode={(codeRef) => {
-          logger.info('Open code:', codeRef);
+          logger.info("Open code:", codeRef);
         }}
       />
 
       {/* Selected level details */}
       {selectedLevel && (
-        <div className='rounded border border-blue-200 bg-blue-50 p-4'>
-          <h3 className='font-semibold text-blue-900'>{selectedLevel.title}</h3>
-          <p className='mt-2 text-sm text-blue-800'>{selectedLevel.description}</p>
+        <div className="rounded border border-blue-200 bg-blue-50 p-4">
+          <h3 className="font-semibold text-blue-900">{selectedLevel.title}</h3>
+          <p className="mt-2 text-sm text-blue-800">{selectedLevel.description}</p>
         </div>
       )}
     </div>
@@ -485,19 +485,19 @@ export function AnalyticsIntegrationExample() {
 
   const trackEvent = (eventName: string, data: Record<string, unknown>) => {
     // Send to analytics service
-    logger.info('Analytics:', eventName, data);
+    logger.info("Analytics:", eventName, data);
     // In real app: analytics.track(eventName, data);
   };
 
   const handleOpenCode = (codeRef: CodeReference) => {
-    trackEvent('trace:open_code', {
+    trackEvent("trace:open_code", {
       filePath: codeRef.filePath,
       symbol: codeRef.symbolName,
     });
   };
 
   const handleOpenRequirement = (requirementId: string) => {
-    trackEvent('trace:open_requirement', {
+    trackEvent("trace:open_requirement", {
       requirementId,
     });
   };
@@ -508,7 +508,7 @@ export function AnalyticsIntegrationExample() {
       onOpenCode={handleOpenCode}
       onOpenRequirement={handleOpenRequirement}
       onRefreshTrace={() => {
-        trackEvent('trace:refresh', {
+        trackEvent("trace:refresh", {
           traceId: traceChain?.id,
         });
       }}
@@ -532,9 +532,9 @@ export function ExportShareExample() {
     }
 
     const json = JSON.stringify(traceChain, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
+    const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `trace-${traceChain.id}.json`;
     a.click();
@@ -543,21 +543,21 @@ export function ExportShareExample() {
   const handleCopyShareLink = () => {};
 
   return (
-    <div className='space-y-4'>
+    <div className="space-y-4">
       <UICodeTracePanel traceChain={traceChain} />
 
       {/* Export controls */}
       {traceChain && (
-        <div className='flex gap-2'>
+        <div className="flex gap-2">
           <button
             onClick={handleExportJSON}
-            className='rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700'
+            className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
           >
             Export JSON
           </button>
           <button
             onClick={handleCopyShareLink}
-            className='rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700'
+            className="rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
           >
             Copy Share Link
           </button>

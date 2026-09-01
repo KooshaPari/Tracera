@@ -3,11 +3,11 @@
  * Covers rendering optimization, memory management, and performance monitoring
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
-describe('Performance Utilities - Optimization & Monitoring', () => {
-  describe('Debouncing utilities', () => {
-    it('should debounce function calls', async () => {
+describe("Performance Utilities - Optimization & Monitoring", () => {
+  describe("Debouncing utilities", () => {
+    it("should debounce function calls", async () => {
       let callCount = 0;
       const fn = () => {
         callCount++;
@@ -25,7 +25,7 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       callCount = 0; // Reset for actual debounce test
     });
 
-    it('should handle debounce cancellation', () => {
+    it("should handle debounce cancellation", () => {
       let callCount = 0;
       const fn = () => {
         callCount++;
@@ -37,8 +37,8 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
     });
   });
 
-  describe('Throttling utilities', () => {
-    it('should throttle rapid function calls', async () => {
+  describe("Throttling utilities", () => {
+    it("should throttle rapid function calls", async () => {
       const throttledFn = vi.fn();
 
       // Simulate throttling by checking call frequency
@@ -49,7 +49,7 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       expect(throttledFn.mock.calls.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('should respect throttle interval', () => {
+    it("should respect throttle interval", () => {
       const fn = vi.fn();
       const interval = 100;
 
@@ -60,8 +60,8 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
     });
   });
 
-  describe('Memoization utilities', () => {
-    it('should memoize function results', () => {
+  describe("Memoization utilities", () => {
+    it("should memoize function results", () => {
       let callCount = 0;
       const expensiveFn = (x: number) => {
         callCount++;
@@ -76,7 +76,7 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       expect(callCount).toBe(1);
     });
 
-    it('should handle different input values', () => {
+    it("should handle different input values", () => {
       let callCount = 0;
       const fn = (x: number) => {
         callCount++;
@@ -90,12 +90,12 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
     });
   });
 
-  describe('Performance monitoring', () => {
-    it('should measure function execution time', async () => {
+  describe("Performance monitoring", () => {
+    it("should measure function execution time", async () => {
       vi.useFakeTimers();
       const fn = async () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
-        return 'done';
+        return "done";
       };
 
       try {
@@ -103,14 +103,14 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
         const result = fn();
         await vi.advanceTimersByTimeAsync(10);
 
-        await expect(result).resolves.toBe('done');
+        await expect(result).resolves.toBe("done");
         expect(performance.now() - startTime).toBe(10);
       } finally {
         vi.useRealTimers();
       }
     });
 
-    it('should track render performance', () => {
+    it("should track render performance", () => {
       // Simulating render performance tracking
       const renderTimes: number[] = [];
 
@@ -126,7 +126,7 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       expect(Math.max(...renderTimes)).toBe(8);
     });
 
-    it('should identify performance bottlenecks', () => {
+    it("should identify performance bottlenecks", () => {
       const metrics = {
         renderTime: 50,
         layoutTime: 30,
@@ -135,15 +135,15 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
 
       const bottleneck = Object.entries(metrics).reduce((a, b) => (b[1] > a[1] ? b : a));
 
-      expect(bottleneck[0]).toBe('scriptTime');
+      expect(bottleneck[0]).toBe("scriptTime");
       expect(bottleneck[1]).toBe(100);
     });
   });
 
-  describe('Memory utilities', () => {
-    it('should track memory usage', () => {
+  describe("Memory utilities", () => {
+    it("should track memory usage", () => {
       const getMemoryUsage = () => {
-        if (typeof process !== 'undefined' && process.memoryUsage) {
+        if (typeof process !== "undefined" && process.memoryUsage) {
           const usage = process.memoryUsage();
           return usage.heapUsed / 1024 / 1024; // MB
         }
@@ -151,11 +151,11 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       };
 
       const memory = getMemoryUsage();
-      expect(typeof memory).toBe('number');
+      expect(typeof memory).toBe("number");
       expect(memory).toBeGreaterThanOrEqual(0);
     });
 
-    it('should detect memory leaks', () => {
+    it("should detect memory leaks", () => {
       const memorySnapshots: number[] = [];
 
       // Simulate memory tracking over time
@@ -176,20 +176,20 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
     });
   });
 
-  describe('Viewport and rendering optimization', () => {
-    it('should track viewport intersection', () => {
-      const elements = ['elem1', 'elem2', 'elem3'];
-      const visibleElements = new Set(['elem1', 'elem2']);
+  describe("Viewport and rendering optimization", () => {
+    it("should track viewport intersection", () => {
+      const elements = ["elem1", "elem2", "elem3"];
+      const visibleElements = new Set(["elem1", "elem2"]);
 
       elements.forEach((elem) => {
         const isVisible = visibleElements.has(elem);
-        expect(typeof isVisible).toBe('boolean');
+        expect(typeof isVisible).toBe("boolean");
       });
 
       expect(visibleElements.size).toBe(2);
     });
 
-    it('should handle virtual scrolling calculations', () => {
+    it("should handle virtual scrolling calculations", () => {
       const totalItems = 10000;
       const itemHeight = 40;
       const containerHeight = 600;
@@ -202,7 +202,7 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       expect(startIndex).toBeGreaterThanOrEqual(0);
     });
 
-    it('should calculate buffer zone for virtual scrolling', () => {
+    it("should calculate buffer zone for virtual scrolling", () => {
       const visibleStart = 10;
       const visibleEnd = 20;
       const bufferSize = 5;
@@ -215,8 +215,8 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
     });
   });
 
-  describe('Animation and frame rate optimization', () => {
-    it('should track frame rate', () => {
+  describe("Animation and frame rate optimization", () => {
+    it("should track frame rate", () => {
       let frameCount = 0;
       const startTime = Date.now();
 
@@ -231,7 +231,7 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       expect(fps).toBeGreaterThan(0);
     });
 
-    it('should detect frame drops', () => {
+    it("should detect frame drops", () => {
       const frameTimes = [16, 16, 16, 33, 16, 16]; // One dropped frame (33ms)
       const targetFrameTime = 16; // 60 FPS
       const drops = frameTimes.filter((t) => t > targetFrameTime * 1.5).length;
@@ -239,7 +239,7 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       expect(drops).toBe(1);
     });
 
-    it('should calculate FPS from frame times', () => {
+    it("should calculate FPS from frame times", () => {
       const frameTime = 16; // milliseconds
       const fps = 1000 / frameTime;
 
@@ -247,30 +247,30 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
     });
   });
 
-  describe('Bundle and asset optimization', () => {
-    it('should track bundle size', () => {
+  describe("Bundle and asset optimization", () => {
+    it("should track bundle size", () => {
       const bundleSize = 256000; // bytes
       const bundleSizeKB = bundleSize / 1024;
 
       expect(bundleSizeKB).toBe(250);
     });
 
-    it('should identify large assets', () => {
+    it("should identify large assets", () => {
       const assets = [
-        { name: 'app.js', size: 50000 },
-        { name: 'vendor.js', size: 150000 },
-        { name: 'styles.css', size: 20000 },
+        { name: "app.js", size: 50000 },
+        { name: "vendor.js", size: 150000 },
+        { name: "styles.css", size: 20000 },
       ];
 
       const largestAsset = assets.reduce((a, b) => (b.size > a.size ? b : a));
 
-      expect(largestAsset.name).toBe('vendor.js');
+      expect(largestAsset.name).toBe("vendor.js");
       expect(largestAsset.size).toBe(150000);
     });
   });
 
-  describe('Network performance utilities', () => {
-    it('should measure API response time', async () => {
+  describe("Network performance utilities", () => {
+    it("should measure API response time", async () => {
       const startTime = performance.now();
 
       // Simulate API call
@@ -282,18 +282,18 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       expect(responseTime).toBeGreaterThanOrEqual(40);
     });
 
-    it('should track network requests', () => {
+    it("should track network requests", () => {
       const requests = [
-        { url: '/api/data', duration: 100 },
-        { url: '/api/items', duration: 150 },
-        { url: '/api/config', duration: 50 },
+        { url: "/api/data", duration: 100 },
+        { url: "/api/items", duration: 150 },
+        { url: "/api/config", duration: 50 },
       ];
 
       const slowRequests = requests.filter((r) => r.duration > 100);
       expect(slowRequests).toHaveLength(1);
     });
 
-    it('should calculate total network time', () => {
+    it("should calculate total network time", () => {
       const requests = [{ duration: 100 }, { duration: 150 }, { duration: 50 }];
 
       const totalTime = requests.reduce((sum, r) => sum + r.duration, 0);
@@ -304,13 +304,13 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
     });
   });
 
-  describe('Error tracking and performance impact', () => {
-    it('should track error frequency', () => {
-      const errorLog = ['Error 1', 'Error 2', 'Error 3'];
+  describe("Error tracking and performance impact", () => {
+    it("should track error frequency", () => {
+      const errorLog = ["Error 1", "Error 2", "Error 3"];
       expect(errorLog).toHaveLength(3);
     });
 
-    it('should respect the error recovery delay', async () => {
+    it("should respect the error recovery delay", async () => {
       vi.useFakeTimers();
       let recovered = false;
       const recovery = new Promise<void>((resolve) => {
@@ -333,8 +333,8 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
     });
   });
 
-  describe('Performance budgets', () => {
-    it('should check performance against budget', () => {
+  describe("Performance budgets", () => {
+    it("should check performance against budget", () => {
       const budget = {
         renderTime: 16, // ms
         bundleSize: 300000, // bytes
@@ -356,7 +356,7 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       expect(meetsPaintBudget).toBeTruthy();
     });
 
-    it('should identify budget violations', () => {
+    it("should identify budget violations", () => {
       const budget = {
         renderTime: 16,
         bundleSize: 250000,
@@ -370,20 +370,20 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       const violations: string[] = [];
 
       if (actual.renderTime > budget.renderTime) {
-        violations.push('renderTime');
+        violations.push("renderTime");
       }
       if (actual.bundleSize > budget.bundleSize) {
-        violations.push('bundleSize');
+        violations.push("bundleSize");
       }
 
-      expect(violations).toEqual(['renderTime', 'bundleSize']);
+      expect(violations).toEqual(["renderTime", "bundleSize"]);
     });
   });
 
-  describe('Profiling utilities', () => {
-    it('should profile function execution', () => {
+  describe("Profiling utilities", () => {
+    it("should profile function execution", () => {
       const profile = {
-        name: 'expensiveFunction',
+        name: "expensiveFunction",
         callCount: 0,
         totalTime: 0,
         minTime: Infinity,
@@ -403,7 +403,7 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       expect(profile.maxTime).toBe(8);
     });
 
-    it('should compare performance profiles', () => {
+    it("should compare performance profiles", () => {
       const profileA = { avg: 10, p95: 25, p99: 50 };
       const profileB = { avg: 12, p95: 28, p99: 45 };
 
@@ -415,8 +415,8 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
     });
   });
 
-  describe('Caching performance', () => {
-    it('should calculate cache hit ratio', () => {
+  describe("Caching performance", () => {
+    it("should calculate cache hit ratio", () => {
       const hits = 800;
       const misses = 200;
       const total = hits + misses;
@@ -425,7 +425,7 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       expect(hitRatio).toBe(0.8);
     });
 
-    it('should measure cache efficiency', () => {
+    it("should measure cache efficiency", () => {
       const cachedTime = 5; // ms
       const uncachedTime = 100; // ms
       const savings = ((uncachedTime - cachedTime) / uncachedTime) * 100;
@@ -434,8 +434,8 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
     });
   });
 
-  describe('Performance regression detection', () => {
-    it('should detect performance degradation', () => {
+  describe("Performance regression detection", () => {
+    it("should detect performance degradation", () => {
       const baseline = 10; // ms
       const current = 12; // ms
       const threshold = 0.1; // 10% threshold
@@ -448,7 +448,7 @@ describe('Performance Utilities - Optimization & Monitoring', () => {
       expect(hasRegression).toBeTruthy();
     });
 
-    it('should identify improvements', () => {
+    it("should identify improvements", () => {
       const baseline = 100; // ms
       const current = 80; // ms
       const improvement = ((baseline - current) / baseline) * 100;

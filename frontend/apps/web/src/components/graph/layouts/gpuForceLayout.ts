@@ -7,7 +7,7 @@
  * Performance target: <5s layout for 50k nodes
  */
 
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
 // ============================================================================
 // TYPES
@@ -282,8 +282,8 @@ export class GPUForceLayout {
   private initGPU(): void {
     // Try to initialize WebGL for GPU acceleration
     try {
-      this.canvas = document.createElement('canvas');
-      const gl = this.canvas.getContext('webgl', {
+      this.canvas = document.createElement("canvas");
+      const gl = this.canvas.getContext("webgl", {
         premultipliedAlpha: false,
         preserveDrawingBuffer: true,
       });
@@ -293,7 +293,7 @@ export class GPUForceLayout {
         this.useGPU = true;
       }
     } catch (error) {
-      console.warn('GPU acceleration not available, falling back to CPU:', error);
+      console.warn("GPU acceleration not available, falling back to CPU:", error);
       this.useGPU = false;
     }
   }
@@ -333,7 +333,7 @@ export class GPUForceLayout {
       try {
         return await this.simulateGPU(nodes, simNodes, edgeMap, config);
       } catch (error) {
-        console.warn('GPU simulation failed, falling back to CPU:', error);
+        console.warn("GPU simulation failed, falling back to CPU:", error);
       }
     }
 

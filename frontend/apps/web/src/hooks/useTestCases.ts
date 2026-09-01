@@ -1,15 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { TestCase, TestCaseStats, TestCaseStatus } from '@tracertm/types';
+import type { TestCase, TestCaseStats, TestCaseStatus } from "@tracertm/types";
 
 import type {
   CreateTestCaseData,
   TestCaseActivitiesResult,
   TestCaseFilters,
   TestCaseListResult,
-} from './testCasesApi';
+} from "./testCasesApi";
 
-import testCasesApi from './testCasesApi';
+import testCasesApi from "./testCasesApi";
 
 interface UseTestCaseStatusInput {
   id: string;
@@ -48,7 +48,7 @@ function useTestCases(
   return useQuery<TestCaseListResult>({
     enabled: hasProjectId,
     queryFn: async () => testCasesApi.fetchTestCases(filters),
-    queryKey: ['testCases', JSON.stringify(filters)],
+    queryKey: ["testCases", JSON.stringify(filters)],
   });
 }
 
@@ -57,7 +57,7 @@ function useTestCase(id: string): ReturnType<typeof useQuery<TestCase, Error>> {
   return useQuery<TestCase>({
     enabled: hasId,
     queryFn: async () => testCasesApi.fetchTestCase(id),
-    queryKey: ['testCases', id],
+    queryKey: ["testCases", id],
   });
 }
 
@@ -66,7 +66,7 @@ function useCreateTestCase() {
   return useMutation({
     mutationFn: async (data: CreateTestCaseData) => testCasesApi.createTestCase(data),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['testCases'] });
+      await queryClient.invalidateQueries({ queryKey: ["testCases"] });
     },
   });
 }
@@ -78,8 +78,8 @@ function useUpdateTestCase() {
       testCasesApi.updateTestCase(id, data),
     onSuccess: async (_, { id }) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['testCases'] }),
-        queryClient.invalidateQueries({ queryKey: ['testCases', id] }),
+        queryClient.invalidateQueries({ queryKey: ["testCases"] }),
+        queryClient.invalidateQueries({ queryKey: ["testCases", id] }),
       ]);
     },
   });
@@ -92,8 +92,8 @@ function useTransitionTestCaseStatus() {
       testCasesApi.transitionTestCaseStatus(id, newStatus, reason),
     onSuccess: async (_, { id }) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['testCases'] }),
-        queryClient.invalidateQueries({ queryKey: ['testCases', id] }),
+        queryClient.invalidateQueries({ queryKey: ["testCases"] }),
+        queryClient.invalidateQueries({ queryKey: ["testCases", id] }),
       ]);
     },
   });
@@ -106,8 +106,8 @@ function useSubmitTestCaseForReview() {
       testCasesApi.submitTestCaseForReview(id, reviewer, notes),
     onSuccess: async (_, { id }) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['testCases'] }),
-        queryClient.invalidateQueries({ queryKey: ['testCases', id] }),
+        queryClient.invalidateQueries({ queryKey: ["testCases"] }),
+        queryClient.invalidateQueries({ queryKey: ["testCases", id] }),
       ]);
     },
   });
@@ -120,8 +120,8 @@ function useApproveTestCase() {
       testCasesApi.approveTestCase(id, notes),
     onSuccess: async (_, { id }) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['testCases'] }),
-        queryClient.invalidateQueries({ queryKey: ['testCases', id] }),
+        queryClient.invalidateQueries({ queryKey: ["testCases"] }),
+        queryClient.invalidateQueries({ queryKey: ["testCases", id] }),
       ]);
     },
   });
@@ -134,8 +134,8 @@ function useDeprecateTestCase() {
       testCasesApi.deprecateTestCase(id, reason, replacementTestCaseId),
     onSuccess: async (_, { id }) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['testCases'] }),
-        queryClient.invalidateQueries({ queryKey: ['testCases', id] }),
+        queryClient.invalidateQueries({ queryKey: ["testCases"] }),
+        queryClient.invalidateQueries({ queryKey: ["testCases", id] }),
       ]);
     },
   });
@@ -146,7 +146,7 @@ function useDeleteTestCase() {
   return useMutation({
     mutationFn: async (id: string) => testCasesApi.deleteTestCase(id),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['testCases'] });
+      await queryClient.invalidateQueries({ queryKey: ["testCases"] });
     },
   });
 }
@@ -159,7 +159,7 @@ function useTestCaseActivities(
   return useQuery<TestCaseActivitiesResult>({
     enabled: hasTestCaseId,
     queryFn: async () => testCasesApi.fetchTestCaseActivities(testCaseId, limit),
-    queryKey: ['testCaseActivities', testCaseId, limit],
+    queryKey: ["testCaseActivities", testCaseId, limit],
   });
 }
 
@@ -168,7 +168,7 @@ function useTestCaseStats(projectId: string): ReturnType<typeof useQuery<TestCas
   return useQuery<TestCaseStats>({
     enabled: hasProjectId,
     queryFn: async () => testCasesApi.fetchTestCaseStats(projectId),
-    queryKey: ['testCaseStats', projectId],
+    queryKey: ["testCaseStats", projectId],
   });
 }
 

@@ -2,18 +2,18 @@
  * Tests for uiStore
  */
 
-import { act, renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { act, renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, it } from "vitest";
 
-import { useUIStore } from '../../stores/ui-store';
+import { useUIStore } from "../../stores/ui-store";
 
-describe('uiStore', () => {
+describe("uiStore", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  describe('sidebar', () => {
-    it('should toggle sidebar', () => {
+  describe("sidebar", () => {
+    it("should toggle sidebar", () => {
       const { result } = renderHook(() => useUIStore());
       const initialState = result.current.sidebarOpen;
 
@@ -24,7 +24,7 @@ describe('uiStore', () => {
       expect(result.current.sidebarOpen).toBe(!initialState);
     });
 
-    it('should set sidebar width', () => {
+    it("should set sidebar width", () => {
       const { result } = renderHook(() => useUIStore());
 
       act(() => {
@@ -35,8 +35,8 @@ describe('uiStore', () => {
     });
   });
 
-  describe('theme', () => {
-    it('should toggle dark mode', () => {
+  describe("theme", () => {
+    it("should toggle dark mode", () => {
       const { result } = renderHook(() => useUIStore());
       const initial = result.current.isDarkMode;
 
@@ -48,49 +48,49 @@ describe('uiStore', () => {
     });
   });
 
-  describe('view and selection', () => {
-    it('should set current view', () => {
+  describe("view and selection", () => {
+    it("should set current view", () => {
       const { result } = renderHook(() => useUIStore());
 
       act(() => {
-        result.current.setCurrentView('TEST');
+        result.current.setCurrentView("TEST");
       });
 
-      expect(result.current.currentView).toBe('TEST');
+      expect(result.current.currentView).toBe("TEST");
     });
 
-    it('should select item', () => {
+    it("should select item", () => {
       const { result } = renderHook(() => useUIStore());
 
       act(() => {
-        result.current.selectItem('item-1');
+        result.current.selectItem("item-1");
       });
 
-      expect(result.current.selectedItemId).toBe('item-1');
+      expect(result.current.selectedItemId).toBe("item-1");
     });
 
-    it('should toggle item selection', () => {
+    it("should toggle item selection", () => {
       const { result } = renderHook(() => useUIStore());
 
       act(() => {
-        result.current.toggleItemSelection('item-1');
+        result.current.toggleItemSelection("item-1");
       });
 
-      expect(result.current.selectedItemIds).toContain('item-1');
+      expect(result.current.selectedItemIds).toContain("item-1");
 
       act(() => {
-        result.current.toggleItemSelection('item-1');
+        result.current.toggleItemSelection("item-1");
       });
 
-      expect(result.current.selectedItemIds).not.toContain('item-1');
+      expect(result.current.selectedItemIds).not.toContain("item-1");
     });
 
-    it('should clear selection', () => {
+    it("should clear selection", () => {
       const { result } = renderHook(() => useUIStore());
 
       act(() => {
-        result.current.selectItem('item-1');
-        result.current.toggleItemSelection('item-2');
+        result.current.selectItem("item-1");
+        result.current.toggleItemSelection("item-2");
         result.current.clearSelection();
       });
 
@@ -99,8 +99,8 @@ describe('uiStore', () => {
     });
   });
 
-  describe('command palette', () => {
-    it('should toggle command palette', () => {
+  describe("command palette", () => {
+    it("should toggle command palette", () => {
       const { result } = renderHook(() => useUIStore());
 
       act(() => {
@@ -117,18 +117,18 @@ describe('uiStore', () => {
     });
   });
 
-  describe('search', () => {
-    it('should set search query', () => {
+  describe("search", () => {
+    it("should set search query", () => {
       const { result } = renderHook(() => useUIStore());
 
       act(() => {
-        result.current.setSearchQuery('test query');
+        result.current.setSearchQuery("test query");
       });
 
-      expect(result.current.searchQuery).toBe('test query');
+      expect(result.current.searchQuery).toBe("test query");
     });
 
-    it('should toggle search', () => {
+    it("should toggle search", () => {
       const { result } = renderHook(() => useUIStore());
 
       act(() => {
@@ -139,40 +139,40 @@ describe('uiStore', () => {
     });
   });
 
-  describe('filters', () => {
-    it('should set status filter', () => {
+  describe("filters", () => {
+    it("should set status filter", () => {
       const { result } = renderHook(() => useUIStore());
 
       act(() => {
-        result.current.setStatusFilter(['open', 'in_progress']);
+        result.current.setStatusFilter(["open", "in_progress"]);
       });
 
-      expect(result.current.statusFilter).toEqual(['open', 'in_progress']);
+      expect(result.current.statusFilter).toEqual(["open", "in_progress"]);
     });
 
-    it('should set priority filter', () => {
+    it("should set priority filter", () => {
       const { result } = renderHook(() => useUIStore());
 
       act(() => {
-        result.current.setPriorityFilter(['high', 'critical']);
+        result.current.setPriorityFilter(["high", "critical"]);
       });
 
-      expect(result.current.priorityFilter).toEqual(['high', 'critical']);
+      expect(result.current.priorityFilter).toEqual(["high", "critical"]);
     });
   });
 
-  describe('layout', () => {
-    it('should set layout mode', () => {
+  describe("layout", () => {
+    it("should set layout mode", () => {
       const { result } = renderHook(() => useUIStore());
 
       act(() => {
-        result.current.setLayoutMode('kanban');
+        result.current.setLayoutMode("kanban");
       });
 
-      expect(result.current.layoutMode).toBe('kanban');
+      expect(result.current.layoutMode).toBe("kanban");
     });
 
-    it('should set grid columns', () => {
+    it("should set grid columns", () => {
       const { result } = renderHook(() => useUIStore());
 
       act(() => {

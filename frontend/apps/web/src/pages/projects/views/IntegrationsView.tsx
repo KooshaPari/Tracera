@@ -1,6 +1,6 @@
-import type { ReactElement } from 'react';
+import type { ReactElement } from "react";
 
-import IntegrationsViewImpl from './integrations-view/IntegrationsView';
+import IntegrationsViewImpl from "./integrations-view/IntegrationsView";
 
 export { IntegrationsViewImpl as IntegrationsView };
 

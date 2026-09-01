@@ -1,13 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import * as specificationsApi from '@/hooks/useSpecifications.api';
-import * as queryUtils from './query-utils';
+import * as specificationsApi from "@/hooks/useSpecifications.api";
+import * as queryUtils from "./query-utils";
 
 type FetchScenarioActivitiesResult = Awaited<
   ReturnType<typeof specificationsApi.fetchScenarioActivities>
 >;
 
-type FetchProjectScenariosResult = Awaited<ReturnType<typeof specificationsApi.fetchProjectScenarios>>;
+type FetchProjectScenariosResult = Awaited<
+  ReturnType<typeof specificationsApi.fetchProjectScenarios>
+>;
 
 type FetchProjectScenarioActivitiesResult = Awaited<
   ReturnType<typeof specificationsApi.fetchProjectScenarioActivities>
@@ -33,7 +35,7 @@ const useScenarioActivities = (
       const response = await specificationsApi.fetchScenarioActivities(scenarioId, options);
       return response;
     },
-    queryKey: ['scenarioActivities', scenarioId, JSON.stringify(options)],
+    queryKey: ["scenarioActivities", scenarioId, JSON.stringify(options)],
   });
 
 const useProjectScenarios = (
@@ -46,7 +48,7 @@ const useProjectScenarios = (
       const response = await specificationsApi.fetchProjectScenarios(projectId, status);
       return response;
     },
-    queryKey: ['projectScenarios', projectId, status],
+    queryKey: ["projectScenarios", projectId, status],
   });
 
 const useProjectScenarioActivities = (
@@ -65,7 +67,7 @@ const useProjectScenarioActivities = (
       const response = await specificationsApi.fetchProjectScenarioActivities(projectId, options);
       return response;
     },
-    queryKey: ['projectScenarioActivities', projectId, JSON.stringify(options)],
+    queryKey: ["projectScenarioActivities", projectId, JSON.stringify(options)],
   });
 
 const useScenarios = (featureId: string): queryUtils.QueryResult<FetchScenariosResult> =>
@@ -75,7 +77,7 @@ const useScenarios = (featureId: string): queryUtils.QueryResult<FetchScenariosR
       const response = await specificationsApi.fetchScenarios(featureId);
       return response;
     },
-    queryKey: ['scenarios', featureId],
+    queryKey: ["scenarios", featureId],
   });
 
 const useScenario = (id: string): queryUtils.QueryResult<FetchScenarioResult> =>
@@ -85,7 +87,7 @@ const useScenario = (id: string): queryUtils.QueryResult<FetchScenarioResult> =>
       const response = await specificationsApi.fetchScenario(id);
       return response;
     },
-    queryKey: ['scenarios', id],
+    queryKey: ["scenarios", id],
   });
 
 const useCreateScenario = (): queryUtils.MutationResult<
@@ -101,10 +103,10 @@ const useCreateScenario = (): queryUtils.MutationResult<
     },
     onSuccess: async () => {
       await queryUtils.invalidateQueries(queryClient, [
-        ['scenarios'],
-        ['projectScenarios'],
-        ['featureStats'],
-        ['specificationSummary'],
+        ["scenarios"],
+        ["projectScenarios"],
+        ["featureStats"],
+        ["specificationSummary"],
       ]);
     },
   });
@@ -117,12 +119,22 @@ const useUpdateScenario = (): queryUtils.MutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: specificationsApi.UpdateScenarioData }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: specificationsApi.UpdateScenarioData;
+    }) => {
       const response = await specificationsApi.updateScenario(id, data);
       return response;
     },
     onSuccess: async (_, { id }) => {
-      await queryUtils.invalidateQueries(queryClient, [['scenarios', id], ['scenarios'], ['featureStats']]);
+      await queryUtils.invalidateQueries(queryClient, [
+        ["scenarios", id],
+        ["scenarios"],
+        ["featureStats"],
+      ]);
     },
   });
 };
@@ -136,10 +148,10 @@ const useDeleteScenario = (): queryUtils.MutationResult<void, string> => {
     },
     onSuccess: async () => {
       await queryUtils.invalidateQueries(queryClient, [
-        ['scenarios'],
-        ['projectScenarios'],
-        ['featureStats'],
-        ['specificationSummary'],
+        ["scenarios"],
+        ["projectScenarios"],
+        ["featureStats"],
+        ["specificationSummary"],
       ]);
     },
   });
@@ -154,8 +166,12 @@ const useRunScenario = (): queryUtils.MutationResult<RunScenarioResult, string> 
       return response;
     },
     onSuccess: async (_, id) => {
-      await queryUtils.invalidateQueries(queryClient, [['scenarios', id], ['scenarios'], ['featureStats']]);
-      await queryClient.invalidateQueries({ queryKey: ['specificationSummary'] });
+      await queryUtils.invalidateQueries(queryClient, [
+        ["scenarios", id],
+        ["scenarios"],
+        ["featureStats"],
+      ]);
+      await queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
     },
   });
 };

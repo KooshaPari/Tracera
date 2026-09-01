@@ -1,4 +1,4 @@
-import * as ReactQuery from '@tanstack/react-query';
+import * as ReactQuery from "@tanstack/react-query";
 
 import type {
   CreateItemInput,
@@ -6,22 +6,22 @@ import type {
   Item,
   PaginationParams,
   UpdateItemInput,
-} from '../api/types';
+} from "../api/types";
 
-import { api } from '../api/endpoints';
-import { useItemsStore } from '../stores/items-store';
+import { api } from "../api/endpoints";
+import { useItemsStore } from "../stores/items-store";
 
 type ItemListFilters = PaginationParams & { project_id?: string };
 type ItemListResponse = Item[] | CursorPaginationResponse<Item>;
 
 // Query keys
 export const itemKeys = {
-  all: ['items'] as const,
-  byProject: (projectId: string) => [...itemKeys.all, 'project', projectId] as const,
+  all: ["items"] as const,
+  byProject: (projectId: string) => [...itemKeys.all, "project", projectId] as const,
   detail: (id: string) => [...itemKeys.details(), id] as const,
-  details: () => [...itemKeys.all, 'detail'] as const,
+  details: () => [...itemKeys.all, "detail"] as const,
   list: (filters: ItemListFilters) => [...itemKeys.lists(), filters] as const,
-  lists: () => [...itemKeys.all, 'list'] as const,
+  lists: () => [...itemKeys.all, "list"] as const,
 };
 
 // Hooks
@@ -119,7 +119,7 @@ export function useDeleteItem(): ReactQuery.UseMutationResult<void, unknown, str
     mutationFn: async (id: string) => {
       const item = getItem(id);
       if (!item) {
-        throw new Error('Item not found');
+        throw new Error("Item not found");
       }
 
       optimisticDelete(id);

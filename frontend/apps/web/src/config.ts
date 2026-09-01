@@ -1,3 +1,3 @@
-import constants from './config/constants';
+import constants from "./config/constants";
 
 export { constants };

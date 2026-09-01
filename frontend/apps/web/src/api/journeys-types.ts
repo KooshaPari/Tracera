@@ -5,7 +5,7 @@ interface Journey {
   projectId: string;
   name: string;
   description?: string | undefined;
-  type: 'user' | 'system' | 'business' | 'technical';
+  type: "user" | "system" | "business" | "technical";
   itemIds: string[];
   sequence: number[];
   metadata?: JourneyMetadata | undefined;
@@ -25,7 +25,7 @@ interface CreateJourneyInput {
   projectId: string;
   name: string;
   description?: string | undefined;
-  type: 'user' | 'system' | 'business' | 'technical';
+  type: "user" | "system" | "business" | "technical";
   itemIds: string[];
   metadata?: JourneyMetadata | undefined;
 }
@@ -33,7 +33,7 @@ interface CreateJourneyInput {
 interface UpdateJourneyInput {
   name?: string | undefined;
   description?: string | undefined;
-  type?: 'user' | 'system' | 'business' | 'technical' | undefined;
+  type?: "user" | "system" | "business" | "technical" | undefined;
   itemIds?: string[] | undefined;
   metadata?: JourneyMetadata | undefined;
 }
@@ -42,7 +42,7 @@ interface DetectJourneysInput {
   projectId: string;
   minLength?: number | undefined;
   maxLength?: number | undefined;
-  types?: ('user' | 'system' | 'business' | 'technical')[] | undefined;
+  types?: ("user" | "system" | "business" | "technical")[] | undefined;
 }
 
 export type {

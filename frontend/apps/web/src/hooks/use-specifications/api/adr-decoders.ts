@@ -1,7 +1,7 @@
-import type { ADRStatus, ADROption } from '@tracertm/types';
+import type { ADRStatus, ADROption } from "@tracertm/types";
 
-import { asBoolean, asOptionalString, asOptionalStringArray, asString } from './primitive-decoders';
-import { isApiRecord } from './record-decoders';
+import { asBoolean, asOptionalString, asOptionalStringArray, asString } from "./primitive-decoders";
+import { isApiRecord } from "./record-decoders";
 
 const asADROptions = (value: unknown): ADROption[] | undefined => {
   if (!Array.isArray(value)) {
@@ -10,16 +10,16 @@ const asADROptions = (value: unknown): ADROption[] | undefined => {
   const options: ADROption[] = [];
   for (const entry of value) {
     if (isApiRecord(entry)) {
-      let chosenValue = entry['is_chosen'];
+      let chosenValue = entry["is_chosen"];
       if (chosenValue === undefined) {
-        chosenValue = entry['isChosen'];
+        chosenValue = entry["isChosen"];
       }
       options.push({
-        id: asString(entry['id']),
-        title: asString(entry['title']),
-        description: asString(entry['description']),
-        pros: asOptionalStringArray(entry['pros']),
-        cons: asOptionalStringArray(entry['cons']),
+        id: asString(entry["id"]),
+        title: asString(entry["title"]),
+        description: asString(entry["description"]),
+        pros: asOptionalStringArray(entry["pros"]),
+        cons: asOptionalStringArray(entry["cons"]),
         isChosen: asBoolean(chosenValue),
       });
     }
@@ -33,19 +33,19 @@ const asADRStatus = (value: unknown): ADRStatus | undefined => {
     return;
   }
   switch (text) {
-    case 'proposed': {
+    case "proposed": {
       return text;
     }
-    case 'accepted': {
+    case "accepted": {
       return text;
     }
-    case 'deprecated': {
+    case "deprecated": {
       return text;
     }
-    case 'superseded': {
+    case "superseded": {
       return text;
     }
-    case 'rejected': {
+    case "rejected": {
       return text;
     }
     default: {
@@ -59,7 +59,7 @@ const asADRStatusRequired = (value: unknown): ADRStatus => {
   if (status !== undefined) {
     return status;
   }
-  return 'proposed';
+  return "proposed";
 };
 
 export { asADROptions, asADRStatusRequired };

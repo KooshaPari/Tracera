@@ -1,10 +1,10 @@
-import type * as ReactQuery from '@tanstack/react-query';
+import type * as ReactQuery from "@tanstack/react-query";
 
-import type * as TracerTypes from '@tracertm/types';
+import type * as TracerTypes from "@tracertm/types";
 
-import * as QueryKeys from './component-library-keys';
-import * as QueryClient from './query-client';
-import * as ReactQueryHooks from './react-query-hooks';
+import * as QueryKeys from "./component-library-keys";
+import * as QueryClient from "./query-client";
+import * as ReactQueryHooks from "./react-query-hooks";
 
 const useComponentLibraries = (
   projectId: string,
@@ -15,7 +15,7 @@ const useComponentLibraries = (
     queryFn: async (): Promise<TracerTypes.ComponentLibrary[]> =>
       QueryClient.handleApiResponse(
         QueryClient.api.get<TracerTypes.ComponentLibrary[]>(
-          '/api/v1/projects/{projectId}/libraries',
+          "/api/v1/projects/{projectId}/libraries",
           {
             params: { path: { projectId } },
           },
@@ -40,7 +40,7 @@ const useComponentLibrary = (
     enabled: Boolean(libraryId),
     queryFn: async (): Promise<TracerTypes.ComponentLibrary> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.get<TracerTypes.ComponentLibrary>('/api/v1/libraries/{libraryId}', {
+        QueryClient.api.get<TracerTypes.ComponentLibrary>("/api/v1/libraries/{libraryId}", {
           params: { path: { libraryId } },
         }),
       ),
@@ -64,7 +64,7 @@ const useLibraryComponents = (
     queryFn: async (): Promise<TracerTypes.LibraryComponent[]> =>
       QueryClient.handleApiResponse(
         QueryClient.api.get<TracerTypes.LibraryComponent[]>(
-          '/api/v1/libraries/{libraryId}/components',
+          "/api/v1/libraries/{libraryId}/components",
           {
             params: { path: { libraryId } },
           },
@@ -89,7 +89,7 @@ const useLibraryComponent = (
     enabled: Boolean(componentId),
     queryFn: async (): Promise<TracerTypes.LibraryComponent> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.get<TracerTypes.LibraryComponent>('/api/v1/components/{componentId}', {
+        QueryClient.api.get<TracerTypes.LibraryComponent>("/api/v1/components/{componentId}", {
           params: { path: { componentId } },
         }),
       ),
@@ -113,7 +113,7 @@ const useComponentUsage = (
     queryFn: async (): Promise<TracerTypes.ComponentUsage[]> =>
       QueryClient.handleApiResponse(
         QueryClient.api.get<TracerTypes.ComponentUsage[]>(
-          '/api/v1/components/{componentId}/usage',
+          "/api/v1/components/{componentId}/usage",
           {
             params: { path: { componentId } },
           },
@@ -138,7 +138,7 @@ const useDesignTokens = (
     enabled: Boolean(libraryId),
     queryFn: async (): Promise<TracerTypes.DesignToken[]> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.get<TracerTypes.DesignToken[]>('/api/v1/libraries/{libraryId}/tokens', {
+        QueryClient.api.get<TracerTypes.DesignToken[]>("/api/v1/libraries/{libraryId}/tokens", {
           params: { path: { libraryId } },
         }),
       ),
@@ -162,4 +162,4 @@ export {
   useLibraryComponents,
 };
 
-export { componentLibraryQueryKeys } from './component-library-keys';
+export { componentLibraryQueryKeys } from "./component-library-keys";

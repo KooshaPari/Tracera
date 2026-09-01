@@ -1,4 +1,4 @@
-import { test } from './global-setup';
+import { test } from "./global-setup";
 
 /**
  * Equivalence Panel Tests
@@ -15,17 +15,17 @@ import { test } from './global-setup';
  * - Show equivalence relationships visually
  */
 
-test.describe('Equivalence Panel', () => {
+test.describe("Equivalence Panel", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/graph');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/graph");
+    await page.waitForLoadState("networkidle");
     await page.waitForTimeout(1000);
   });
 
-  test.describe('View Equivalence Panel', () => {
-    test('should display equivalence panel when node is selected', async ({ page }) => {
+  test.describe("View Equivalence Panel", () => {
+    test("should display equivalence panel when node is selected", async ({ page }) => {
       // Click on a node to select it
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -40,8 +40,8 @@ test.describe('Equivalence Panel', () => {
       await expect(equivalencePanel).toBeVisible({ timeout: 3000 });
     });
 
-    test('should show equivalence list for selected item', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+    test("should show equivalence list for selected item", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -49,7 +49,7 @@ test.describe('Equivalence Panel', () => {
 
       // Look for equivalence section or tab
       const equivalenceTab = page
-        .getByRole('tab', {
+        .getByRole("tab", {
           name: /equivalent|equivalence/i,
         })
         .first();
@@ -67,8 +67,8 @@ test.describe('Equivalence Panel', () => {
       await expect(equivalentList).toBeVisible({ timeout: 5000 });
     });
 
-    test('should display equivalence strength/confidence', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+    test("should display equivalence strength/confidence", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -85,8 +85,8 @@ test.describe('Equivalence Panel', () => {
       await expect(progressBars).toBeVisible();
     });
 
-    test('should show equivalence metadata', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+    test("should show equivalence metadata", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -98,9 +98,9 @@ test.describe('Equivalence Panel', () => {
     });
   });
 
-  test.describe('Suggested Equivalences', () => {
-    test('should display suggested equivalences', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+  test.describe("Suggested Equivalences", () => {
+    test("should display suggested equivalences", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -116,8 +116,8 @@ test.describe('Equivalence Panel', () => {
       await expect(suggestedItems).toBeVisible();
     });
 
-    test('should show confirmation actions for suggested equivalences', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+    test("should show confirmation actions for suggested equivalences", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -125,7 +125,7 @@ test.describe('Equivalence Panel', () => {
 
       // Look for confirm/approve buttons
       const confirmBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /confirm|approve|accept|yes/i })
         .first();
 
@@ -133,7 +133,7 @@ test.describe('Equivalence Panel', () => {
 
       // Look for reject/deny buttons
       const rejectBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /reject|deny|no|dismiss/i })
         .first();
 
@@ -141,9 +141,9 @@ test.describe('Equivalence Panel', () => {
     });
   });
 
-  test.describe('Confirm Equivalences', () => {
-    test('should confirm suggested equivalence', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+  test.describe("Confirm Equivalences", () => {
+    test("should confirm suggested equivalence", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -155,7 +155,7 @@ test.describe('Equivalence Panel', () => {
 
       // Look for confirm button within or near the item
       const confirmBtn = firstSuggested
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /confirm|approve|accept/i })
         .first();
 
@@ -168,8 +168,8 @@ test.describe('Equivalence Panel', () => {
       await expect(confirmedItems).toBeVisible();
     });
 
-    test('should confirm multiple equivalences', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+    test("should confirm multiple equivalences", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -182,7 +182,7 @@ test.describe('Equivalence Panel', () => {
       // Confirm first item
       const firstConfirmBtn = suggestedItems
         .nth(0)
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /confirm|approve|accept/i })
         .first();
 
@@ -193,7 +193,7 @@ test.describe('Equivalence Panel', () => {
       // Confirm second item
       const secondConfirmBtn = suggestedItems
         .nth(1)
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /confirm|approve|accept/i })
         .first();
 
@@ -202,8 +202,8 @@ test.describe('Equivalence Panel', () => {
       await page.waitForTimeout(500);
     });
 
-    test('should show confirmation feedback', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+    test("should show confirmation feedback", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -213,7 +213,7 @@ test.describe('Equivalence Panel', () => {
       await expect(firstSuggested).toBeVisible({ timeout: 2000 });
 
       const confirmBtn = firstSuggested
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /confirm|approve|accept/i })
         .first();
 
@@ -227,9 +227,9 @@ test.describe('Equivalence Panel', () => {
     });
   });
 
-  test.describe('Reject Equivalences', () => {
-    test('should reject suggested equivalence', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+  test.describe("Reject Equivalences", () => {
+    test("should reject suggested equivalence", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -239,7 +239,7 @@ test.describe('Equivalence Panel', () => {
       await expect(firstSuggested).toBeVisible();
 
       const rejectBtn = firstSuggested
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /reject|deny|no|dismiss/i })
         .first();
 
@@ -257,8 +257,8 @@ test.describe('Equivalence Panel', () => {
       expect(remainingCount).toBeLessThan(initialCount);
     });
 
-    test('should show rejection feedback', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+    test("should show rejection feedback", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -268,7 +268,7 @@ test.describe('Equivalence Panel', () => {
       await expect(firstSuggested).toBeVisible({ timeout: 2000 });
 
       const rejectBtn = firstSuggested
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /reject|deny|dismiss/i })
         .first();
 
@@ -282,9 +282,9 @@ test.describe('Equivalence Panel', () => {
     });
   });
 
-  test.describe('Navigate via Pivot Targets', () => {
-    test('should navigate to equivalent item', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+  test.describe("Navigate via Pivot Targets", () => {
+    test("should navigate to equivalent item", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -305,12 +305,12 @@ test.describe('Equivalence Panel', () => {
       await page.waitForTimeout(500);
 
       // Verify navigation occurred
-      const graphContainer = page.locator('.react-flow');
+      const graphContainer = page.locator(".react-flow");
       await expect(graphContainer).toBeVisible({ timeout: 5000 });
     });
 
-    test('should highlight selected equivalent in graph', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+    test("should highlight selected equivalent in graph", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -333,8 +333,8 @@ test.describe('Equivalence Panel', () => {
       await expect(highlightedNodes).toBeVisible();
     });
 
-    test('should show pivot path to equivalent', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+    test("should show pivot path to equivalent", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -349,8 +349,8 @@ test.describe('Equivalence Panel', () => {
       await expect(breadcrumb).toBeVisible({ timeout: 2000 });
     });
 
-    test('should navigate to pivot target and update panel', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+    test("should navigate to pivot target and update panel", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -377,9 +377,9 @@ test.describe('Equivalence Panel', () => {
     });
   });
 
-  test.describe('Equivalence Visual Relationships', () => {
-    test('should show equivalence edges in graph', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+  test.describe("Equivalence Visual Relationships", () => {
+    test("should show equivalence edges in graph", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();
@@ -392,8 +392,8 @@ test.describe('Equivalence Panel', () => {
       await expect(equivalenceEdges).toBeVisible();
     });
 
-    test('should highlight equivalence relationships when hovering', async ({ page }) => {
-      const firstNode = page.locator('.react-flow__nodes > div[data-id]').first();
+    test("should highlight equivalence relationships when hovering", async ({ page }) => {
+      const firstNode = page.locator(".react-flow__nodes > div[data-id]").first();
 
       await expect(firstNode).toBeVisible({ timeout: 2000 });
       await firstNode.click();

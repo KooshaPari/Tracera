@@ -8,7 +8,7 @@ import cytoscape, {
   EventObject,
   LayoutOptions,
   NodeSingular,
-} from 'cytoscape';
+} from "cytoscape";
 import {
   Download,
   Layers,
@@ -20,26 +20,26 @@ import {
   RotateCcw,
   ZoomIn,
   ZoomOut,
-} from 'lucide-react';
-import { CSSProperties, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+} from "lucide-react";
+import { CSSProperties, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { Item, LayoutType, Link, LinkType } from '@tracertm/types';
+import type { Item, LayoutType, Link, LinkType } from "@tracertm/types";
 
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
-import { Card } from '@tracertm/ui/components/Card';
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@tracertm/ui/components/Select';
-import { Separator } from '@tracertm/ui/components/Separator';
-import { Skeleton } from '@tracertm/ui/components/Skeleton';
+} from "@tracertm/ui/components/Select";
+import { Separator } from "@tracertm/ui/components/Separator";
+import { Skeleton } from "@tracertm/ui/components/Skeleton";
 
-import { NodeDetailPanel } from './NodeDetailPanel';
-import { PerspectiveSelector } from './PerspectiveSelector';
+import { NodeDetailPanel } from "./NodeDetailPanel";
+import { PerspectiveSelector } from "./PerspectiveSelector";
 import {
   ENHANCED_TYPE_COLORS,
   EnhancedNodeData,
@@ -49,8 +49,8 @@ import {
   PerspectiveConfig,
   STATUS_OPACITY,
   TYPE_TO_PERSPECTIVE,
-} from './types';
-import { UIComponentTree } from './UIComponentTree';
+} from "./types";
+import { UIComponentTree } from "./UIComponentTree";
 
 const MAX_PARENT_DEPTH = 10;
 const BREADTHFIRST_PADDING = 50;
@@ -67,9 +67,9 @@ const FIT_PADDING = 50;
 const ZOOM_STEP = 1.3;
 const FOCUS_ZOOM = 1.5;
 const BORDER_WIDTH_HIGHLIGHT = 3;
-const DEFAULT_NODE_COLOR = '#64748b';
-const DEFAULT_EDGE_COLOR = '#94a3b8';
-const GRAPH_CONTAINER_HEIGHT = 'calc(100vh - 340px)';
+const DEFAULT_NODE_COLOR = "#64748b";
+const DEFAULT_EDGE_COLOR = "#94a3b8";
+const GRAPH_CONTAINER_HEIGHT = "calc(100vh - 340px)";
 
 const NOOP_NAVIGATE_TO_ITEM = (_itemId: string): void => {};
 
@@ -93,12 +93,12 @@ interface CytoscapeEdgeData {
   label: string;
   lineColor: string;
   arrowColor: string;
-  arrowShape: 'triangle' | 'none';
-  lineStyle: 'dashed' | 'solid';
+  arrowShape: "triangle" | "none";
+  lineStyle: "dashed" | "solid";
 }
 
 function toNonEmptyString(value: unknown): string | undefined {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return undefined;
   }
   return value.length > 0 ? value : undefined;
@@ -123,7 +123,7 @@ function getPerspectiveConfig(activePerspective: GraphPerspective): PerspectiveC
 function getNodeDepth(item: Item, itemMap: Map<string, Item>): number {
   let depth = 0;
   let currentId: string | undefined = item.parentId;
-  while (typeof currentId === 'string' && currentId.length > 0 && depth < MAX_PARENT_DEPTH) {
+  while (typeof currentId === "string" && currentId.length > 0 && depth < MAX_PARENT_DEPTH) {
     depth += 1;
     const parent = itemMap.get(currentId);
     currentId = parent?.parentId;
@@ -131,15 +131,15 @@ function getNodeDepth(item: Item, itemMap: Map<string, Item>): number {
   return depth;
 }
 
-function buildNodeUIPreview(item: Item): EnhancedNodeData['uiPreview'] {
-  const screenshotUrl = toNonEmptyString(item.metadata?.['screenshotUrl']);
+function buildNodeUIPreview(item: Item): EnhancedNodeData["uiPreview"] {
+  const screenshotUrl = toNonEmptyString(item.metadata?.["screenshotUrl"]);
   if (screenshotUrl === undefined) {
     return;
   }
 
-  const componentCode = toNonEmptyString(item.metadata?.['code']);
-  const interactiveWidgetUrl = toNonEmptyString(item.metadata?.['interactiveUrl']);
-  const uiPreview: NonNullable<EnhancedNodeData['uiPreview']> = { screenshotUrl };
+  const componentCode = toNonEmptyString(item.metadata?.["code"]);
+  const interactiveWidgetUrl = toNonEmptyString(item.metadata?.["interactiveUrl"]);
+  const uiPreview: NonNullable<EnhancedNodeData["uiPreview"]> = { screenshotUrl };
 
   if (componentCode !== undefined) {
     uiPreview.componentCode = componentCode;
@@ -177,11 +177,11 @@ function createCytoscapeEdge(link: Link): { data: CytoscapeEdgeData } {
   return {
     data: {
       arrowColor: LINK_STYLES[link.type]?.color ?? DEFAULT_EDGE_COLOR,
-      arrowShape: LINK_STYLES[link.type]?.arrow === true ? 'triangle' : 'none',
+      arrowShape: LINK_STYLES[link.type]?.arrow === true ? "triangle" : "none",
       id: link.id,
-      label: link.type.replaceAll('_', ' '),
+      label: link.type.replaceAll("_", " "),
       lineColor: LINK_STYLES[link.type]?.color ?? DEFAULT_EDGE_COLOR,
-      lineStyle: LINK_STYLES[link.type]?.dashed === true ? 'dashed' : 'solid',
+      lineStyle: LINK_STYLES[link.type]?.dashed === true ? "dashed" : "solid",
       source: link.sourceId,
       target: link.targetId,
       type: link.type,
@@ -191,17 +191,17 @@ function createCytoscapeEdge(link: Link): { data: CytoscapeEdgeData } {
 
 function getGraphLayoutOptions(layout: LayoutType): LayoutOptions {
   return {
-    name: layout === 'elk' ? 'breadthfirst' : layout,
+    name: layout === "elk" ? "breadthfirst" : layout,
     animate: true,
     animationDuration: 500,
-    ...(layout === 'breadthfirst' || layout === 'elk'
+    ...(layout === "breadthfirst" || layout === "elk"
       ? {
           directed: true,
           padding: BREADTHFIRST_PADDING,
           spacingFactor: BREADTHFIRST_SPACING_FACTOR,
         }
       : {}),
-    ...(layout === 'cose'
+    ...(layout === "cose"
       ? {
           edgeElasticity: COSE_EDGE_ELASTICITY,
           gravity: COSE_GRAVITY,
@@ -212,94 +212,94 @@ function getGraphLayoutOptions(layout: LayoutType): LayoutOptions {
   };
 }
 
-function getGraphStyles(perspectiveColor: string | undefined): CytoscapeOptions['style'] {
+function getGraphStyles(perspectiveColor: string | undefined): CytoscapeOptions["style"] {
   return [
     {
-      selector: 'node',
+      selector: "node",
       style: {
-        shape: 'round-rectangle',
-        width: (node: NodeSingular): number => node.data('nodeWidth') as number,
+        shape: "round-rectangle",
+        width: (node: NodeSingular): number => node.data("nodeWidth") as number,
         height: 50,
-        'background-color': 'data(backgroundColor)',
-        'background-opacity': (node: NodeSingular): number =>
-          node.data('backgroundOpacity') as number,
-        label: 'data(label)',
-        color: '#fff',
-        'text-outline-color': 'data(borderColor)',
-        'text-outline-width': 2,
-        'font-size': 11,
-        'font-weight': 'bold',
-        'text-valign': 'center',
-        'text-halign': 'center',
-        'text-wrap': 'ellipsis',
-        'text-max-width': 140 as unknown as string,
-        'border-width': 2,
-        'border-color': 'data(borderColor)',
-        'border-opacity': 0.3,
+        "background-color": "data(backgroundColor)",
+        "background-opacity": (node: NodeSingular): number =>
+          node.data("backgroundOpacity") as number,
+        label: "data(label)",
+        color: "#fff",
+        "text-outline-color": "data(borderColor)",
+        "text-outline-width": 2,
+        "font-size": 11,
+        "font-weight": "bold",
+        "text-valign": "center",
+        "text-halign": "center",
+        "text-wrap": "ellipsis",
+        "text-max-width": 140 as unknown as string,
+        "border-width": 2,
+        "border-color": "data(borderColor)",
+        "border-opacity": 0.3,
       },
     },
     {
-      selector: 'edge',
+      selector: "edge",
       style: {
         width: 2,
-        'line-color': 'data(lineColor)',
-        'target-arrow-color': 'data(arrowColor)',
-        'target-arrow-shape': (edge: EdgeSingular): CytoscapeEdgeData['arrowShape'] =>
-          edge.data('arrowShape') as CytoscapeEdgeData['arrowShape'],
-        'line-style': (edge: EdgeSingular): CytoscapeEdgeData['lineStyle'] =>
-          edge.data('lineStyle') as CytoscapeEdgeData['lineStyle'],
-        'curve-style': 'bezier',
+        "line-color": "data(lineColor)",
+        "target-arrow-color": "data(arrowColor)",
+        "target-arrow-shape": (edge: EdgeSingular): CytoscapeEdgeData["arrowShape"] =>
+          edge.data("arrowShape") as CytoscapeEdgeData["arrowShape"],
+        "line-style": (edge: EdgeSingular): CytoscapeEdgeData["lineStyle"] =>
+          edge.data("lineStyle") as CytoscapeEdgeData["lineStyle"],
+        "curve-style": "bezier",
         opacity: 0.6,
-        label: 'data(label)',
-        'font-size': 9,
-        'text-rotation': 'autorotate',
-        'text-margin-y': -10,
-        color: '#94a3b8',
-        'text-background-color': '#1a1a2e',
-        'text-background-opacity': 0.8,
-        'text-background-padding': '2px',
+        label: "data(label)",
+        "font-size": 9,
+        "text-rotation": "autorotate",
+        "text-margin-y": -10,
+        color: "#94a3b8",
+        "text-background-color": "#1a1a2e",
+        "text-background-opacity": 0.8,
+        "text-background-padding": "2px",
       },
     },
     {
-      selector: 'node:selected',
+      selector: "node:selected",
       style: {
-        'border-color': '#fff',
-        'border-opacity': 1,
-        'border-width': 4,
-        'overlay-color': '#fff',
-        'overlay-opacity': 0.1,
+        "border-color": "#fff",
+        "border-opacity": 1,
+        "border-width": 4,
+        "overlay-color": "#fff",
+        "overlay-opacity": 0.1,
       },
     },
     {
-      selector: 'edge:selected',
+      selector: "edge:selected",
       style: {
         opacity: 1,
         width: 4,
       },
     },
     {
-      selector: 'node.highlighted',
+      selector: "node.highlighted",
       style: {
-        'border-color': perspectiveColor ?? '#fff',
-        'border-opacity': 1,
-        'border-width': BORDER_WIDTH_HIGHLIGHT,
+        "border-color": perspectiveColor ?? "#fff",
+        "border-opacity": 1,
+        "border-width": BORDER_WIDTH_HIGHLIGHT,
       },
     },
     {
-      selector: 'edge.highlighted',
+      selector: "edge.highlighted",
       style: {
         opacity: 1,
         width: 3,
       },
     },
     {
-      selector: 'node.faded',
+      selector: "node.faded",
       style: {
         opacity: 0.3,
       },
     },
     {
-      selector: 'edge.faded',
+      selector: "edge.faded",
       style: {
         opacity: 0.15,
       },
@@ -322,8 +322,8 @@ function EnhancedGraphViewComponent({
   onNavigateToItem,
 }: EnhancedGraphViewProps): JSX.Element {
   // State
-  const [perspective, setPerspective] = useState<GraphPerspective>('all');
-  const [layout, setLayout] = useState<LayoutType>('cose');
+  const [perspective, setPerspective] = useState<GraphPerspective>("all");
+  const [layout, setLayout] = useState<LayoutType>("cose");
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [showDetailPanel, setShowDetailPanel] = useState(true);
   const [showUITree, setShowUITree] = useState(false);
@@ -369,7 +369,7 @@ function EnhancedGraphViewComponent({
       const itemType = (
         toNonEmptyString(item.type) ??
         toNonEmptyString(item.view) ??
-        'item'
+        "item"
       ).toLowerCase();
       const incoming = incomingCount.get(item.id) ?? 0;
       const outgoing = outgoingCount.get(item.id) ?? 0;
@@ -386,9 +386,9 @@ function EnhancedGraphViewComponent({
         hasChildren: items.some((itemEntry) => itemEntry.parentId === item.id),
         id: item.id,
         item,
-        label: toNonEmptyString(item.title) ?? 'Untitled',
+        label: toNonEmptyString(item.title) ?? "Untitled",
         ...(item.parentId === undefined ? {} : { parentId: item.parentId }),
-        perspective: TYPE_TO_PERSPECTIVE[itemType] ?? ['all'],
+        perspective: TYPE_TO_PERSPECTIVE[itemType] ?? ["all"],
         status: item.status,
         type: itemType,
         ...(uiPreview === undefined ? {} : { uiPreview }),
@@ -398,7 +398,7 @@ function EnhancedGraphViewComponent({
 
   // Filter nodes by perspective
   const filteredNodes = useMemo((): EnhancedNodeData[] => {
-    if (perspective === 'all') {
+    if (perspective === "all") {
       return enhancedNodes;
     }
 
@@ -439,7 +439,7 @@ function EnhancedGraphViewComponent({
 
     for (const node of enhancedNodes) {
       for (const nodePerspective of node.perspective) {
-        if (nodePerspective !== 'all') {
+        if (nodePerspective !== "all") {
           counts[nodePerspective] = (counts[nodePerspective] ?? 0) + 1;
         }
       }
@@ -508,7 +508,7 @@ function EnhancedGraphViewComponent({
     cyRef.current = cyInstance;
 
     // Event handlers
-    cyInstance.on('tap', 'node', (event: EventObject): void => {
+    cyInstance.on("tap", "node", (event: EventObject): void => {
       const tappedNode = event.target as NodeSingular;
       const nodeId = tappedNode.id();
       setSelectedNodeId(nodeId);
@@ -516,15 +516,15 @@ function EnhancedGraphViewComponent({
 
       // Highlight connected nodes and edges
       const neighborhood = tappedNode.closedNeighborhood();
-      cyInstance.elements().addClass('faded');
-      neighborhood.removeClass('faded');
-      neighborhood.addClass('highlighted');
+      cyInstance.elements().addClass("faded");
+      neighborhood.removeClass("faded");
+      neighborhood.addClass("highlighted");
     });
 
-    cyInstance.on('tap', (event: EventObject): void => {
+    cyInstance.on("tap", (event: EventObject): void => {
       if (event.target === cyInstance) {
         setSelectedNodeId(null);
-        cyInstance.elements().removeClass('faded highlighted');
+        cyInstance.elements().removeClass("faded highlighted");
       }
     });
 
@@ -568,7 +568,7 @@ function EnhancedGraphViewComponent({
         .slice(0, 10)
         .map(([type, color]) => ({
           colorStyle: { backgroundColor: color } as CSSProperties,
-          displayType: type.replaceAll('_', ' '),
+          displayType: type.replaceAll("_", " "),
           type,
         })),
     [filteredNodes],
@@ -581,7 +581,7 @@ function EnhancedGraphViewComponent({
         .map(([type, style]) => ({
           lineStyle: {
             backgroundColor: style.color,
-            borderStyle: style.dashed ? 'dashed' : 'solid',
+            borderStyle: style.dashed ? "dashed" : "solid",
           } as CSSProperties,
           type,
         })),
@@ -606,7 +606,7 @@ function EnhancedGraphViewComponent({
     setSelectedNodeId(null);
 
     // Auto-show UI tree for UI perspective
-    setShowUITree(newPerspective === 'ui');
+    setShowUITree(newPerspective === "ui");
 
     // Update layout preference
     const config = getPerspectiveConfig(newPerspective);
@@ -633,17 +633,17 @@ function EnhancedGraphViewComponent({
   }, []);
 
   const clearHighlightState = useCallback((): void => {
-    cyRef.current?.elements().removeClass('faded highlighted');
+    cyRef.current?.elements().removeClass("faded highlighted");
   }, []);
 
   const handleFit = useCallback((): void => {
     cyRef.current?.fit(undefined, FIT_PADDING);
-    cyRef.current?.elements().removeClass('faded highlighted');
+    cyRef.current?.elements().removeClass("faded highlighted");
   }, []);
 
   const handleReset = useCallback((): void => {
-    setPerspective('all');
-    setLayout('cose');
+    setPerspective("all");
+    setLayout("cose");
     setSelectedNodeId(null);
     setShowUITree(false);
     clearHighlightState();
@@ -654,8 +654,8 @@ function EnhancedGraphViewComponent({
     if (cyRef.current === null) {
       return;
     }
-    const png = cyRef.current.png({ bg: '#1a1a2e', full: true, scale: 2 });
-    const link = document.createElement('a');
+    const png = cyRef.current.png({ bg: "#1a1a2e", full: true, scale: 2 });
+    const link = document.createElement("a");
     link.download = `graph-${perspective}-${new Date().toISOString()}.png`;
     link.href = png;
     link.click();
@@ -675,10 +675,10 @@ function EnhancedGraphViewComponent({
       });
 
       // Highlight
-      cyRef.current?.elements().addClass('faded');
+      cyRef.current?.elements().addClass("faded");
       const neighborhood = node.closedNeighborhood();
-      neighborhood.removeClass('faded');
-      neighborhood.addClass('highlighted');
+      neighborhood.removeClass("faded");
+      neighborhood.addClass("highlighted");
     }
   }, []);
 
@@ -698,10 +698,10 @@ function EnhancedGraphViewComponent({
   // Loading state
   if (isLoading) {
     return (
-      <div className='space-y-6'>
-        <Skeleton className='h-12 w-full' />
-        <Skeleton className='h-14 w-full' />
-        <Skeleton className='h-[calc(100vh-300px)]' />
+      <div className="space-y-6">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-[calc(100vh-300px)]" />
       </div>
     );
   }
@@ -709,18 +709,18 @@ function EnhancedGraphViewComponent({
   // Empty state
   if (items.length === 0) {
     return (
-      <div className='space-y-6'>
+      <div className="space-y-6">
         <div>
-          <h1 className='text-3xl font-bold tracking-tight'>Traceability Graph</h1>
-          <p className='text-muted-foreground mt-2'>
+          <h1 className="text-3xl font-bold tracking-tight">Traceability Graph</h1>
+          <p className="text-muted-foreground mt-2">
             Multi-perspective visualization of item relationships
           </p>
         </div>
-        <Card className='p-12'>
-          <div className='text-center'>
-            <Network className='text-muted-foreground mx-auto mb-4 h-16 w-16' />
-            <p className='text-muted-foreground'>No items to visualize</p>
-            <p className='text-muted-foreground mt-1 text-sm'>
+        <Card className="p-12">
+          <div className="text-center">
+            <Network className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
+            <p className="text-muted-foreground">No items to visualize</p>
+            <p className="text-muted-foreground mt-1 text-sm">
               Create items and links to see the traceability graph
             </p>
           </div>
@@ -730,23 +730,23 @@ function EnhancedGraphViewComponent({
   }
 
   return (
-    <div className='space-y-4'>
+    <div className="space-y-4">
       {/* Header */}
-      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className='flex items-center gap-2 text-3xl font-bold tracking-tight'>
-            <Network className='h-8 w-8' />
+          <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
+            <Network className="h-8 w-8" />
             Traceability Graph
           </h1>
-          <p className='text-muted-foreground mt-1'>
+          <p className="text-muted-foreground mt-1">
             {filteredNodes.length} items \u00b7 {filteredLinks.length} connections
           </p>
         </div>
 
         {/* Quick stats */}
-        <div className='flex items-center gap-3'>
-          {perspective !== 'all' && (
-            <Badge variant='outline' className='px-3 py-1' style={activePerspectiveBadgeStyle}>
+        <div className="flex items-center gap-3">
+          {perspective !== "all" && (
+            <Badge variant="outline" className="px-3 py-1" style={activePerspectiveBadgeStyle}>
               {activePerspectiveConfig?.label}
             </Badge>
           )}
@@ -761,65 +761,65 @@ function EnhancedGraphViewComponent({
       />
 
       {/* Controls */}
-      <Card className='p-3'>
-        <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-          <div className='flex flex-wrap items-center gap-2'>
+      <Card className="p-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Layout selector */}
             <Select value={layout} onValueChange={handleLayoutSelect}>
-              <SelectTrigger className='h-9 w-[160px]'>
-                <Layers className='mr-2 h-4 w-4' />
+              <SelectTrigger className="h-9 w-[160px]">
+                <Layers className="mr-2 h-4 w-4" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='cose'>Force-directed</SelectItem>
-                <SelectItem value='breadthfirst'>Hierarchical</SelectItem>
-                <SelectItem value='circle'>Circular</SelectItem>
-                <SelectItem value='elk'>Directed Graph</SelectItem>
+                <SelectItem value="cose">Force-directed</SelectItem>
+                <SelectItem value="breadthfirst">Hierarchical</SelectItem>
+                <SelectItem value="circle">Circular</SelectItem>
+                <SelectItem value="elk">Directed Graph</SelectItem>
               </SelectContent>
             </Select>
 
-            <Separator orientation='vertical' className='h-6' />
+            <Separator orientation="vertical" className="h-6" />
 
             {/* UI Tree toggle (for UI perspective) */}
             <Button
-              variant={showUITree ? 'default' : 'outline'}
-              size='sm'
+              variant={showUITree ? "default" : "outline"}
+              size="sm"
               onClick={handleToggleUITree}
-              className='h-9'
+              className="h-9"
             >
-              <LayoutGrid className='mr-2 h-4 w-4' />
+              <LayoutGrid className="mr-2 h-4 w-4" />
               UI Library
             </Button>
 
             {/* Detail panel toggle */}
-            <Button variant='ghost' size='sm' onClick={handleToggleDetailPanel} className='h-9'>
+            <Button variant="ghost" size="sm" onClick={handleToggleDetailPanel} className="h-9">
               {showDetailPanel ? (
-                <PanelRightClose className='h-4 w-4' />
+                <PanelRightClose className="h-4 w-4" />
               ) : (
-                <PanelRight className='h-4 w-4' />
+                <PanelRight className="h-4 w-4" />
               )}
             </Button>
           </div>
 
-          <div className='flex items-center gap-2'>
+          <div className="flex items-center gap-2">
             {/* Zoom controls */}
-            <div className='flex items-center gap-1 rounded-md border p-1'>
-              <Button variant='ghost' size='sm' onClick={handleZoomIn} className='h-7 w-7 p-0'>
-                <ZoomIn className='h-4 w-4' />
+            <div className="flex items-center gap-1 rounded-md border p-1">
+              <Button variant="ghost" size="sm" onClick={handleZoomIn} className="h-7 w-7 p-0">
+                <ZoomIn className="h-4 w-4" />
               </Button>
-              <Button variant='ghost' size='sm' onClick={handleZoomOut} className='h-7 w-7 p-0'>
-                <ZoomOut className='h-4 w-4' />
+              <Button variant="ghost" size="sm" onClick={handleZoomOut} className="h-7 w-7 p-0">
+                <ZoomOut className="h-4 w-4" />
               </Button>
-              <Button variant='ghost' size='sm' onClick={handleFit} className='h-7 w-7 p-0'>
-                <Maximize2 className='h-4 w-4' />
+              <Button variant="ghost" size="sm" onClick={handleFit} className="h-7 w-7 p-0">
+                <Maximize2 className="h-4 w-4" />
               </Button>
-              <Button variant='ghost' size='sm' onClick={handleReset} className='h-7 w-7 p-0'>
-                <RotateCcw className='h-4 w-4' />
+              <Button variant="ghost" size="sm" onClick={handleReset} className="h-7 w-7 p-0">
+                <RotateCcw className="h-4 w-4" />
               </Button>
             </div>
 
-            <Button variant='outline' size='sm' onClick={handleExport} className='h-9'>
-              <Download className='mr-2 h-4 w-4' />
+            <Button variant="outline" size="sm" onClick={handleExport} className="h-9">
+              <Download className="mr-2 h-4 w-4" />
               Export
             </Button>
           </div>
@@ -827,10 +827,10 @@ function EnhancedGraphViewComponent({
       </Card>
 
       {/* Main content area */}
-      <div className='flex gap-4' style={graphContainerStyle}>
+      <div className="flex gap-4" style={graphContainerStyle}>
         {/* UI Component Tree (left panel) */}
         {showUITree && (
-          <div className='w-80 shrink-0'>
+          <div className="w-80 shrink-0">
             <UIComponentTree
               items={items}
               links={links}
@@ -841,8 +841,8 @@ function EnhancedGraphViewComponent({
         )}
 
         {/* Graph Container (center) */}
-        <Card className='flex-1 overflow-hidden p-0'>
-          <div ref={containerRef} className='bg-background h-full w-full' />
+        <Card className="flex-1 overflow-hidden p-0">
+          <div ref={containerRef} className="bg-background h-full w-full" />
         </Card>
 
         {/* Node Detail Panel (right) */}
@@ -860,23 +860,23 @@ function EnhancedGraphViewComponent({
       </div>
 
       {/* Legend */}
-      <Card className='p-3'>
-        <div className='flex flex-wrap items-center gap-4 text-xs'>
-          <span className='text-muted-foreground font-medium'>Types:</span>
+      <Card className="p-3">
+        <div className="flex flex-wrap items-center gap-4 text-xs">
+          <span className="text-muted-foreground font-medium">Types:</span>
           {legendTypeItems.map((entry) => (
-            <div key={entry.type} className='flex items-center gap-1.5'>
-              <div className='h-3 w-6 rounded' style={entry.colorStyle} />
-              <span className='capitalize'>{entry.displayType}</span>
+            <div key={entry.type} className="flex items-center gap-1.5">
+              <div className="h-3 w-6 rounded" style={entry.colorStyle} />
+              <span className="capitalize">{entry.displayType}</span>
             </div>
           ))}
 
-          <Separator orientation='vertical' className='h-4' />
+          <Separator orientation="vertical" className="h-4" />
 
-          <span className='text-muted-foreground font-medium'>Links:</span>
+          <span className="text-muted-foreground font-medium">Links:</span>
           {legendLinkItems.map((entry) => (
-            <div key={entry.type} className='flex items-center gap-1.5'>
-              <div className='h-0.5 w-6' style={entry.lineStyle} />
-              <span>{entry.type.replaceAll('_', ' ')}</span>
+            <div key={entry.type} className="flex items-center gap-1.5">
+              <div className="h-0.5 w-6" style={entry.lineStyle} />
+              <span>{entry.type.replaceAll("_", " ")}</span>
             </div>
           ))}
         </div>

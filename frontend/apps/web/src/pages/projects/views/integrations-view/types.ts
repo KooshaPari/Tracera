@@ -5,11 +5,11 @@ import type {
   IntegrationStats,
   SyncConflict,
   SyncStatusSummary,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
-type IntegrationsMode = 'project' | 'account';
+type IntegrationsMode = "project" | "account";
 
-type TabId = 'overview' | 'credentials' | 'mappings' | 'sync' | 'conflicts';
+type TabId = "overview" | "credentials" | "mappings" | "sync" | "conflicts";
 
 interface TabConfig {
   id: TabId;

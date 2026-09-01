@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { EpicSpecCreate, EpicSpecUpdate, EpicStatus } from './types';
+import type { EpicSpecCreate, EpicSpecUpdate, EpicStatus } from "./types";
 
 import {
   createEpicSpec,
@@ -9,8 +9,8 @@ import {
   fetchEpicSpecByItem,
   fetchEpicSpecs,
   updateEpicSpec,
-} from './epics-api';
-import { itemSpecKeys } from './keys';
+} from "./epics-api";
+import { itemSpecKeys } from "./keys";
 
 function useEpicSpecs(
   projectId: string,
@@ -61,7 +61,7 @@ function useCreateEpicSpec(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.epic(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.epic(projectId, data["id"]), data);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.epics(projectId) }),
         queryClient.invalidateQueries({
@@ -82,7 +82,7 @@ function useUpdateEpicSpec(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.epic(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.epic(projectId, data["id"]), data);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.epics(projectId) }),
         queryClient.invalidateQueries({

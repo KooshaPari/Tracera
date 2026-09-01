@@ -1,19 +1,19 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from "@storybook/react";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-import { useFPSMonitor } from '@/hooks/useFPSMonitor';
+import { useFPSMonitor } from "@/hooks/useFPSMonitor";
 
-import { PerformanceChart } from '../PerformanceChart';
-import { PerformanceOverlay } from '../PerformanceOverlay';
-import { PerformanceStats } from '../PerformanceStats';
+import { PerformanceChart } from "../PerformanceChart";
+import { PerformanceOverlay } from "../PerformanceOverlay";
+import { PerformanceStats } from "../PerformanceStats";
 
 const meta = {
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs', 'skip-tests'],
-  title: 'Graph/Performance Indicators',
+  tags: ["autodocs", "skip-tests"],
+  title: "Graph/Performance Indicators",
 } satisfies Meta;
 
 export default meta;
@@ -27,7 +27,7 @@ export const CompactStats: StoryObj = {
       edgeCount={2000}
       visibleNodeCount={250}
       visibleEdgeCount={500}
-      variant='compact'
+      variant="compact"
     />
   ),
 };
@@ -42,7 +42,7 @@ export const DetailedStats: StoryObj = {
       visibleEdgeCount={500}
       memoryUsage={45.2}
       renderTime={12.5}
-      variant='detailed'
+      variant="detailed"
     />
   ),
 };
@@ -57,7 +57,7 @@ export const HighPerformance: StoryObj = {
       visibleEdgeCount={200}
       memoryUsage={25.5}
       renderTime={8.2}
-      variant='detailed'
+      variant="detailed"
     />
   ),
 };
@@ -72,7 +72,7 @@ export const MediumPerformance: StoryObj = {
       visibleEdgeCount={1600}
       memoryUsage={85.5}
       renderTime={22.5}
-      variant='detailed'
+      variant="detailed"
     />
   ),
 };
@@ -87,7 +87,7 @@ export const LowPerformance: StoryObj = {
       visibleEdgeCount={10_000}
       memoryUsage={150.2}
       renderTime={55.5}
-      variant='detailed'
+      variant="detailed"
     />
   ),
 };
@@ -100,7 +100,7 @@ export const NoCulling: StoryObj = {
       edgeCount={1000}
       visibleNodeCount={500}
       visibleEdgeCount={1000}
-      variant='compact'
+      variant="compact"
     />
   ),
 };
@@ -181,14 +181,14 @@ export const ChartRecovering: StoryObj = {
 // PerformanceOverlay Stories
 export const OverlayTopRight: StoryObj = {
   render: () => (
-    <div className='bg-muted relative h-[600px] w-[800px] rounded border'>
+    <div className="bg-muted relative h-[600px] w-[800px] rounded border">
       <PerformanceOverlay
         nodeCount={1000}
         edgeCount={2000}
         visibleNodeCount={250}
         visibleEdgeCount={500}
-        position='top-right'
-        variant='compact'
+        position="top-right"
+        variant="compact"
       />
     </div>
   ),
@@ -196,14 +196,14 @@ export const OverlayTopRight: StoryObj = {
 
 export const OverlayTopLeft: StoryObj = {
   render: () => (
-    <div className='bg-muted relative h-[600px] w-[800px] rounded border'>
+    <div className="bg-muted relative h-[600px] w-[800px] rounded border">
       <PerformanceOverlay
         nodeCount={1000}
         edgeCount={2000}
         visibleNodeCount={250}
         visibleEdgeCount={500}
-        position='top-left'
-        variant='detailed'
+        position="top-left"
+        variant="detailed"
       />
     </div>
   ),
@@ -211,14 +211,14 @@ export const OverlayTopLeft: StoryObj = {
 
 export const OverlayBottomRight: StoryObj = {
   render: () => (
-    <div className='bg-muted relative h-[600px] w-[800px] rounded border'>
+    <div className="bg-muted relative h-[600px] w-[800px] rounded border">
       <PerformanceOverlay
         nodeCount={1000}
         edgeCount={2000}
         visibleNodeCount={250}
         visibleEdgeCount={500}
-        position='bottom-right'
-        variant='detailed'
+        position="bottom-right"
+        variant="detailed"
       />
     </div>
   ),
@@ -226,14 +226,14 @@ export const OverlayBottomRight: StoryObj = {
 
 export const OverlayBottomLeft: StoryObj = {
   render: () => (
-    <div className='bg-muted relative h-[600px] w-[800px] rounded border'>
+    <div className="bg-muted relative h-[600px] w-[800px] rounded border">
       <PerformanceOverlay
         nodeCount={1000}
         edgeCount={2000}
         visibleNodeCount={250}
         visibleEdgeCount={500}
-        position='bottom-left'
-        variant='compact'
+        position="bottom-left"
+        variant="compact"
       />
     </div>
   ),
@@ -245,16 +245,16 @@ export const LiveFPSMonitor: StoryObj = {
     const fpsStats = useFPSMonitor(true);
 
     return (
-      <div className='space-y-4'>
+      <div className="space-y-4">
         <PerformanceStats
           fps={fpsStats.current}
           nodeCount={1000}
           edgeCount={2000}
           visibleNodeCount={250}
           visibleEdgeCount={500}
-          variant='detailed'
+          variant="detailed"
         />
-        <div className='text-muted-foreground text-sm'>
+        <div className="text-muted-foreground text-sm">
           <p>Average: {fpsStats.average.toFixed(1)} FPS</p>
           <p>Min: {fpsStats.min.toFixed(1)} FPS</p>
           <p>Max: {fpsStats.max.toFixed(1)} FPS</p>
@@ -269,9 +269,9 @@ export const LiveChart: StoryObj = {
     const fpsStats = useFPSMonitor(true);
 
     return (
-      <div className='space-y-2'>
+      <div className="space-y-2">
         <PerformanceChart fps={fpsStats.current} width={400} height={100} />
-        <div className='text-muted-foreground text-center text-xs'>
+        <div className="text-muted-foreground text-center text-xs">
           Current: {fpsStats.current.toFixed(1)} FPS | Average: {fpsStats.average.toFixed(1)} FPS
         </div>
       </div>
@@ -287,20 +287,20 @@ export const CompleteDashboard: StoryObj = {
     const [visibleCount] = useState(250);
 
     return (
-      <div className='bg-muted relative h-[600px] w-[1000px] rounded border p-4'>
-        <div className='absolute top-4 right-4 space-y-4'>
+      <div className="bg-muted relative h-[600px] w-[1000px] rounded border p-4">
+        <div className="absolute top-4 right-4 space-y-4">
           <PerformanceStats
             fps={fpsStats.current}
             nodeCount={nodeCount}
             edgeCount={nodeCount * 2}
             visibleNodeCount={visibleCount}
             visibleEdgeCount={visibleCount * 2}
-            variant='detailed'
+            variant="detailed"
           />
           <PerformanceChart fps={fpsStats.current} width={256} height={80} />
         </div>
 
-        <div className='text-muted-foreground absolute bottom-4 left-4 text-sm'>
+        <div className="text-muted-foreground absolute bottom-4 left-4 text-sm">
           <p>
             FPS Range: {fpsStats.min.toFixed(1)} - {fpsStats.max.toFixed(1)}
           </p>
@@ -322,7 +322,7 @@ export const StressTestSmall: StoryObj = {
       visibleEdgeCount={200}
       memoryUsage={15.5}
       renderTime={5.2}
-      variant='detailed'
+      variant="detailed"
     />
   ),
 };
@@ -337,7 +337,7 @@ export const StressTestMedium: StoryObj = {
       visibleEdgeCount={1000}
       memoryUsage={55.5}
       renderTime={18.2}
-      variant='detailed'
+      variant="detailed"
     />
   ),
 };
@@ -352,7 +352,7 @@ export const StressTestLarge: StoryObj = {
       visibleEdgeCount={5000}
       memoryUsage={125.5}
       renderTime={35.2}
-      variant='detailed'
+      variant="detailed"
     />
   ),
 };
@@ -367,7 +367,7 @@ export const StressTestExtraLarge: StoryObj = {
       visibleEdgeCount={16_000}
       memoryUsage={250.5}
       renderTime={65.2}
-      variant='detailed'
+      variant="detailed"
     />
   ),
 };
@@ -375,9 +375,9 @@ export const StressTestExtraLarge: StoryObj = {
 // Comparison View
 export const ComparisonView: StoryObj = {
   render: () => (
-    <div className='grid grid-cols-2 gap-4'>
+    <div className="grid grid-cols-2 gap-4">
       <div>
-        <h3 className='mb-2 text-sm font-medium'>Before Optimization</h3>
+        <h3 className="mb-2 text-sm font-medium">Before Optimization</h3>
         <PerformanceStats
           fps={25}
           nodeCount={5000}
@@ -386,11 +386,11 @@ export const ComparisonView: StoryObj = {
           visibleEdgeCount={10_000}
           memoryUsage={180.5}
           renderTime={40.2}
-          variant='detailed'
+          variant="detailed"
         />
       </div>
       <div>
-        <h3 className='mb-2 text-sm font-medium'>After Optimization</h3>
+        <h3 className="mb-2 text-sm font-medium">After Optimization</h3>
         <PerformanceStats
           fps={58}
           nodeCount={5000}
@@ -399,7 +399,7 @@ export const ComparisonView: StoryObj = {
           visibleEdgeCount={1000}
           memoryUsage={65.5}
           renderTime={17.2}
-          variant='detailed'
+          variant="detailed"
         />
       </div>
     </div>
@@ -409,15 +409,15 @@ export const ComparisonView: StoryObj = {
 // Interactive Toggle
 export const InteractiveToggle: StoryObj = {
   render: () => {
-    const [variant, setVariant] = useState<'compact' | 'detailed'>('compact');
+    const [variant, setVariant] = useState<"compact" | "detailed">("compact");
 
     return (
-      <div className='space-y-4'>
-        <div className='flex gap-2'>
+      <div className="space-y-4">
+        <div className="flex gap-2">
           <button
-            className='bg-primary text-primary-foreground rounded px-3 py-1 text-sm'
+            className="bg-primary text-primary-foreground rounded px-3 py-1 text-sm"
             onClick={() => {
-              setVariant(variant === 'compact' ? 'detailed' : 'compact');
+              setVariant(variant === "compact" ? "detailed" : "compact");
             }}
           >
             Toggle Variant

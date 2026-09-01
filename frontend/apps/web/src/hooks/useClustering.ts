@@ -5,11 +5,11 @@
  * Provides cluster expansion/collapse, incremental loading, and cache management.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
-import type { ClusterNode, ClusteringResult } from '../lib/graphClustering';
+import type { ClusterNode, ClusteringResult } from "../lib/graphClustering";
 
 import {
   adaptiveClustering,
@@ -18,12 +18,12 @@ import {
   extractClusterEdges,
   labelPropagationClustering,
   louvainClustering,
-} from '../lib/graphClustering';
+} from "../lib/graphClustering";
 
 /**
  * Clustering algorithm type
  */
-export type ClusteringAlgorithm = 'louvain' | 'labelProp' | 'adaptive';
+export type ClusteringAlgorithm = "louvain" | "labelProp" | "adaptive";
 
 /**
  * Clustering configuration
@@ -88,7 +88,7 @@ export interface UseClusteringResult {
  * Default clustering configuration
  */
 const DEFAULT_CONFIG: ClusteringConfig = {
-  algorithm: 'adaptive',
+  algorithm: "adaptive",
   enableCache: true,
   minClusterSize: 2,
   resolution: 1,
@@ -131,15 +131,15 @@ export function useClustering(
       let result: ClusteringResult;
 
       switch (config.algorithm) {
-        case 'louvain': {
+        case "louvain": {
           result = louvainClustering(items, links, config.resolution ?? 1);
           break;
         }
-        case 'labelProp': {
+        case "labelProp": {
           result = labelPropagationClustering(items, links, 100);
           break;
         }
-        case 'adaptive':
+        case "adaptive":
         default: {
           result = adaptiveClustering(items, links, config.targetClusters);
           break;
@@ -149,8 +149,8 @@ export function useClustering(
       setClustering(result);
 
       // Initialize active clusters at highest level
-      const highestLevel = result['maxLevel'];
-      const topLevelClusters = result['hierarchy'].get(highestLevel) ?? [];
+      const highestLevel = result["maxLevel"];
+      const topLevelClusters = result["hierarchy"].get(highestLevel) ?? [];
       setExpansionState({
         activeClusters: new Set(topLevelClusters.map((c) => c.id)),
         expandedClusters: new Set(),

@@ -20,7 +20,7 @@ export type RetryFetchOptions = {
   jitter?: boolean;
 };
 
-const DEFAULT_OPTIONS: Required<Omit<RetryFetchOptions, 'retryStatuses'>> & {
+const DEFAULT_OPTIONS: Required<Omit<RetryFetchOptions, "retryStatuses">> & {
   retryStatuses: number[];
 } = {
   maxRetries: 3,
@@ -73,7 +73,7 @@ export function createRetryFetch(
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       const controller = new AbortController();
       if (init?.signal) {
-        init.signal.addEventListener('abort', () => controller.abort());
+        init.signal.addEventListener("abort", () => controller.abort());
       }
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -101,13 +101,13 @@ export function createRetryFetch(
       } catch (e) {
         clearTimeout(timeoutId);
         lastError = e;
-        const isAbort = e instanceof DOMException && e.name === 'AbortError';
+        const isAbort = e instanceof DOMException && e.name === "AbortError";
         const isNetwork =
           e instanceof TypeError &&
-          (e.message === 'Failed to fetch' || e.message?.includes('network'));
+          (e.message === "Failed to fetch" || e.message?.includes("network"));
         if (
           attempt < maxRetries - 1 &&
-          (isAbort || isNetwork || (e instanceof Error && e.message?.includes('fetch')))
+          (isAbort || isNetwork || (e instanceof Error && e.message?.includes("fetch")))
         ) {
           const waitMs = Math.min(
             initialDelayMs * Math.pow(backoffMultiplier, attempt),
@@ -130,8 +130,8 @@ export function createRetryFetch(
  * a standalone retry fetch (e.g. in preflight before main client is loaded).
  */
 export function getFetchWithRetry(options?: RetryFetchOptions): typeof fetch {
-  if (typeof globalThis.fetch === 'undefined') {
-    throw new Error('fetch not available');
+  if (typeof globalThis.fetch === "undefined") {
+    throw new Error("fetch not available");
   }
   return createRetryFetch(globalThis.fetch, {
     maxRetries: 3,

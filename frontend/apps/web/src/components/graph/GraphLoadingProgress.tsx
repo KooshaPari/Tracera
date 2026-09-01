@@ -9,16 +9,16 @@
  * - Cancellable loading
  */
 
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-import { CheckCircle2, Database, Loader2, Network, XCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { CheckCircle2, Database, Loader2, Network, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import type { ProgressInfo, StreamMetadata } from '../../lib/graph/IncrementalGraphBuilder';
+import type { ProgressInfo, StreamMetadata } from "../../lib/graph/IncrementalGraphBuilder";
 
-import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Progress } from '../ui/progress';
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Progress } from "../ui/progress";
 
 const ELAPSED_TICK_MS = 100;
 const MS_IN_SECOND = 1000;
@@ -39,19 +39,19 @@ interface StageInfo {
 
 const getStageInfo = (stage: string): StageInfo => {
   switch (stage) {
-    case 'nodes': {
-      return { icon: <Database className='h-3 w-3' />, label: 'Loading Nodes' };
+    case "nodes": {
+      return { icon: <Database className="h-3 w-3" />, label: "Loading Nodes" };
     }
-    case 'edges': {
-      return { icon: <Network className='h-3 w-3' />, label: 'Loading Edges' };
+    case "edges": {
+      return { icon: <Network className="h-3 w-3" />, label: "Loading Edges" };
     }
-    case 'complete': {
-      return { icon: <CheckCircle2 className='h-3 w-3' />, label: 'Complete' };
+    case "complete": {
+      return { icon: <CheckCircle2 className="h-3 w-3" />, label: "Complete" };
     }
     default: {
       return {
-        icon: <Loader2 className='h-3 w-3 animate-spin' />,
-        label: 'Loading',
+        icon: <Loader2 className="h-3 w-3 animate-spin" />,
+        label: "Loading",
       };
     }
   }
@@ -59,7 +59,7 @@ const getStageInfo = (stage: string): StageInfo => {
 
 const formatTime = (ms: number): string => {
   if (ms < MS_IN_SECOND) {
-    return '<1s';
+    return "<1s";
   }
 
   const seconds = Math.ceil(ms / MS_IN_SECOND);
@@ -81,16 +81,16 @@ interface ProgressHeaderProps {
 }
 
 const ProgressHeader = ({ isLoading }: ProgressHeaderProps) => (
-  <CardHeader className='pb-3'>
-    <CardTitle className='flex items-center gap-2 text-sm font-medium'>
+  <CardHeader className="pb-3">
+    <CardTitle className="flex items-center gap-2 text-sm font-medium">
       {isLoading ? (
         <>
-          <Loader2 className='text-primary h-4 w-4 animate-spin' />
+          <Loader2 className="text-primary h-4 w-4 animate-spin" />
           Loading Graph
         </>
       ) : (
         <>
-          <CheckCircle2 className='h-4 w-4 text-green-500' />
+          <CheckCircle2 className="h-4 w-4 text-green-500" />
           Loaded
         </>
       )}
@@ -104,15 +104,15 @@ interface ProgressStageProps {
 }
 
 const ProgressStage = ({ percentage, stageInfo }: ProgressStageProps) => (
-  <div className='space-y-1'>
-    <div className='text-muted-foreground flex justify-between text-xs'>
-      <span className='flex items-center gap-1'>
+  <div className="space-y-1">
+    <div className="text-muted-foreground flex justify-between text-xs">
+      <span className="flex items-center gap-1">
         {stageInfo.icon}
         {stageInfo.label}
       </span>
-      <span className='font-mono'>{Math.round(percentage)}%</span>
+      <span className="font-mono">{Math.round(percentage)}%</span>
     </div>
-    <Progress value={percentage} className='h-2' />
+    <Progress value={percentage} className="h-2" />
   </div>
 );
 
@@ -128,17 +128,17 @@ const ProgressStats = ({ progress, estimatedTime, remainingTime }: ProgressStats
   }
 
   return (
-    <div className='grid grid-cols-2 gap-2 text-xs'>
-      <div className='text-muted-foreground flex items-center gap-1.5'>
-        <Database className='h-3.5 w-3.5' />
+    <div className="grid grid-cols-2 gap-2 text-xs">
+      <div className="text-muted-foreground flex items-center gap-1.5">
+        <Database className="h-3.5 w-3.5" />
         <span>
           {progress.current.toLocaleString()} / {progress.total.toLocaleString()}
         </span>
       </div>
 
       {estimatedTime > 0 && (
-        <div className='text-muted-foreground flex items-center gap-1.5'>
-          <Network className='h-3.5 w-3.5' />
+        <div className="text-muted-foreground flex items-center gap-1.5">
+          <Network className="h-3.5 w-3.5" />
           <span>{formatTime(remainingTime)} remaining</span>
         </div>
       )}
@@ -156,18 +156,18 @@ const MetadataSection = ({ metadata }: MetadataSectionProps) => {
   }
 
   return (
-    <div className='text-muted-foreground space-y-1 border-t pt-2 text-xs'>
-      <div className='flex justify-between'>
+    <div className="text-muted-foreground space-y-1 border-t pt-2 text-xs">
+      <div className="flex justify-between">
         <span>Total Nodes:</span>
-        <span className='font-mono'>{metadata.totalNodes.toLocaleString()}</span>
+        <span className="font-mono">{metadata.totalNodes.toLocaleString()}</span>
       </div>
-      <div className='flex justify-between'>
+      <div className="flex justify-between">
         <span>Total Edges:</span>
-        <span className='font-mono'>{metadata.totalEdges.toLocaleString()}</span>
+        <span className="font-mono">{metadata.totalEdges.toLocaleString()}</span>
       </div>
-      <div className='flex justify-between'>
+      <div className="flex justify-between">
         <span>Chunk Size:</span>
-        <span className='font-mono'>{metadata.chunkSize}</span>
+        <span className="font-mono">{metadata.chunkSize}</span>
       </div>
     </div>
   );
@@ -184,8 +184,8 @@ const CancelButton = ({ isLoading, onCancel }: CancelButtonProps) => {
   }
 
   return (
-    <Button variant='outline' size='sm' className='w-full' onClick={onCancel}>
-      <XCircle className='mr-1.5 h-3.5 w-3.5' />
+    <Button variant="outline" size="sm" className="w-full" onClick={onCancel}>
+      <XCircle className="mr-1.5 h-3.5 w-3.5" />
       Cancel Loading
     </Button>
   );
@@ -197,10 +197,10 @@ const LoadingDots = ({ isLoading }: { isLoading: boolean }) => {
   }
 
   return (
-    <div className='flex items-center justify-center gap-1 pt-2'>
-      <div className='bg-primary h-1 w-1 animate-pulse rounded-full [animation-delay:0ms]' />
-      <div className='bg-primary h-1 w-1 animate-pulse rounded-full [animation-delay:150ms]' />
-      <div className='bg-primary h-1 w-1 animate-pulse rounded-full [animation-delay:300ms]' />
+    <div className="flex items-center justify-center gap-1 pt-2">
+      <div className="bg-primary h-1 w-1 animate-pulse rounded-full [animation-delay:0ms]" />
+      <div className="bg-primary h-1 w-1 animate-pulse rounded-full [animation-delay:150ms]" />
+      <div className="bg-primary h-1 w-1 animate-pulse rounded-full [animation-delay:300ms]" />
     </div>
   );
 };
@@ -210,7 +210,7 @@ const GraphLoadingProgress = ({
   metadata,
   isLoading,
   onCancel,
-  className = '',
+  className = "",
 }: GraphLoadingProgressProps) => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [startTime] = useState(Date.now());
@@ -235,7 +235,7 @@ const GraphLoadingProgress = ({
   }
 
   const percentage = progress?.percentage ?? 0;
-  const stage = progress?.stage ?? 'nodes';
+  const stage = progress?.stage ?? "nodes";
   const estimatedTime = metadata?.estimatedTime ?? 0;
   const remainingTime = Math.max(0, estimatedTime - elapsedTime);
   const stageInfo = getStageInfo(stage);
@@ -243,7 +243,7 @@ const GraphLoadingProgress = ({
   return (
     <Card className={`${className} border-primary/20`}>
       <ProgressHeader isLoading={isLoading} />
-      <CardContent className='space-y-3'>
+      <CardContent className="space-y-3">
         <ProgressStage percentage={percentage} stageInfo={stageInfo} />
         <ProgressStats
           progress={progress}
@@ -264,14 +264,14 @@ const GraphLoadingProgressCompact = ({
   progress,
   isLoading,
   onCancel,
-  className = '',
+  className = "",
 }: CompactProps) => {
   if (!isLoading && !progress) {
     return null;
   }
 
   const percentage = progress?.percentage ?? 0;
-  const stage = progress?.stage ?? 'nodes';
+  const stage = progress?.stage ?? "nodes";
   const stageInfo = getStageInfo(stage);
 
   return (
@@ -279,34 +279,34 @@ const GraphLoadingProgressCompact = ({
       className={`${className} bg-card flex items-center gap-3 rounded-lg border p-3 text-sm shadow-sm`}
     >
       {isLoading ? (
-        <Loader2 className='text-primary h-4 w-4 flex-shrink-0 animate-spin' />
+        <Loader2 className="text-primary h-4 w-4 flex-shrink-0 animate-spin" />
       ) : (
-        <CheckCircle2 className='h-4 w-4 flex-shrink-0 text-green-500' />
+        <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-500" />
       )}
 
-      <div className='min-w-0 flex-1'>
-        <div className='mb-1 flex items-center gap-2'>
-          <span className='text-muted-foreground flex items-center gap-1 text-xs'>
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 flex items-center gap-2">
+          <span className="text-muted-foreground flex items-center gap-1 text-xs">
             {stageInfo.icon}
             {stageInfo.label}
           </span>
-          <span className='text-muted-foreground ml-auto font-mono text-xs'>
+          <span className="text-muted-foreground ml-auto font-mono text-xs">
             {Math.round(percentage)}%
           </span>
         </div>
-        <Progress value={percentage} className='h-1.5' />
+        <Progress value={percentage} className="h-1.5" />
       </div>
 
       {isLoading && onCancel && (
-        <Button variant='ghost' size='sm' className='h-8 w-8 flex-shrink-0 p-0' onClick={onCancel}>
-          <XCircle className='h-4 w-4' />
+        <Button variant="ghost" size="sm" className="h-8 w-8 flex-shrink-0 p-0" onClick={onCancel}>
+          <XCircle className="h-4 w-4" />
         </Button>
       )}
     </div>
   );
 };
 
-type InlineProps = Pick<GraphLoadingProgressProps, 'progress' | 'isLoading'>;
+type InlineProps = Pick<GraphLoadingProgressProps, "progress" | "isLoading">;
 
 const GraphLoadingProgressInline = ({ progress, isLoading }: InlineProps) => {
   if (!isLoading && !progress) {
@@ -316,14 +316,14 @@ const GraphLoadingProgressInline = ({ progress, isLoading }: InlineProps) => {
   const percentage = progress?.percentage ?? 0;
 
   return (
-    <div className='space-y-1'>
-      <Progress value={percentage} className='h-1' />
-      <div className='text-muted-foreground flex justify-between text-xs'>
-        <span className='inline-flex items-center gap-2'>
-          <Loader2 className='h-3 w-3 animate-spin' />
+    <div className="space-y-1">
+      <Progress value={percentage} className="h-1" />
+      <div className="text-muted-foreground flex justify-between text-xs">
+        <span className="inline-flex items-center gap-2">
+          <Loader2 className="h-3 w-3 animate-spin" />
           Loading graph...
         </span>
-        <span className='font-mono'>{Math.round(percentage)}%</span>
+        <span className="font-mono">{Math.round(percentage)}%</span>
       </div>
     </div>
   );

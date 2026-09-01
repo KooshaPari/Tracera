@@ -1,4 +1,4 @@
-import type { TestResultStatus, TestRunStatus, TestRunType } from '@tracertm/types';
+import type { TestResultStatus, TestRunStatus, TestRunType } from "@tracertm/types";
 
 interface TestRunFilters {
   projectId: string;

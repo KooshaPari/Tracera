@@ -1,18 +1,18 @@
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
-import type { Item } from '@tracertm/types';
+import type { Item } from "@tracertm/types";
 
-import type { DraftState } from './types';
+import type { DraftState } from "./types";
 
 import {
   reportAnalysisComplete,
   reportImpactComplete,
   reportNoImpact,
   reportNoRelationships,
-} from './actions';
-import { useItemMutations } from './item-mutations';
-import { itemDetailSelectors as selectors } from './selectors-facade';
-import { useSpecActions } from './spec-actions';
+} from "./actions";
+import { useItemMutations } from "./item-mutations";
+import { itemDetailSelectors as selectors } from "./selectors-facade";
+import { useSpecActions } from "./spec-actions";
 
 interface ViewModelActions {
   buildLinkToItem: (id: string) => string;

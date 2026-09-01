@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface KeyPressOptions {
   alt?: boolean;
@@ -36,16 +36,16 @@ export const useKeyPress = (targetKey: string, options: KeyPressOptions = {}): b
       }
     };
 
-    if (typeof globalThis.window === 'undefined') {
+    if (typeof globalThis.window === "undefined") {
       return;
     }
 
-    globalThis.addEventListener('keydown', downHandler);
-    globalThis.addEventListener('keyup', upHandler);
+    globalThis.addEventListener("keydown", downHandler);
+    globalThis.addEventListener("keyup", upHandler);
 
     return () => {
-      globalThis.removeEventListener('keydown', downHandler);
-      globalThis.removeEventListener('keyup', upHandler);
+      globalThis.removeEventListener("keydown", downHandler);
+      globalThis.removeEventListener("keyup", upHandler);
     };
   }, [targetKey, options]);
 
@@ -78,13 +78,13 @@ export const useKeyboardShortcut = (
       }
     };
 
-    if (typeof globalThis.window === 'undefined') {
+    if (typeof globalThis.window === "undefined") {
       return;
     }
 
-    globalThis.addEventListener('keydown', handler);
+    globalThis.addEventListener("keydown", handler);
     return () => {
-      globalThis.removeEventListener('keydown', handler);
+      globalThis.removeEventListener("keydown", handler);
     };
   }, [key, callback, options]);
 };

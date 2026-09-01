@@ -1,10 +1,10 @@
 // React hooks for Codex agent integration
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from "@tanstack/react-query";
 
-import type { CodexReviewRequest } from '../api/codex';
+import type { CodexReviewRequest } from "../api/codex";
 
-import { codexApi } from '../api/codex';
+import { codexApi } from "../api/codex";
 
 export function useCodexInteractions(
   projectId: string,
@@ -18,7 +18,7 @@ export function useCodexInteractions(
   return useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => codexApi.listInteractions(projectId, options),
-    queryKey: ['codex-interactions', projectId, options],
+    queryKey: ["codex-interactions", projectId, options],
   });
 }
 
@@ -26,7 +26,7 @@ export function useCodexAuthStatus(projectId: string) {
   return useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => codexApi.getAuthStatus(projectId),
-    queryKey: ['codex-auth-status', projectId],
+    queryKey: ["codex-auth-status", projectId],
     refetchInterval: 30_000, // Refresh every 30s
   });
 }

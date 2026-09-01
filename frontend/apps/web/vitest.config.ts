@@ -1,20 +1,20 @@
-import react from '@vitejs/plugin-react';
-import path from 'node:path';
-import { defineConfig } from 'vitest/config';
+import react from "@vitejs/plugin-react";
+import path from "node:path";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
   test: {
     coverage: {
-      exclude: ['src/**/*.{test,spec,stories}.{ts,tsx}', 'src/test/**'],
-      include: ['src/**/*.{ts,tsx}'],
-      provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      exclude: ["src/**/*.{test,spec,stories}.{ts,tsx}", "src/test/**"],
+      include: ["src/**/*.{ts,tsx}"],
+      provider: "v8",
+      reporter: ["text", "json", "html", "lcov"],
       thresholds: {
         branches: 90,
         functions: 90,
@@ -22,24 +22,24 @@ export default defineConfig({
         statements: 90,
       },
     },
-    environment: 'jsdom',
+    environment: "jsdom",
     exclude: [
-      'node_modules',
-      'dist',
-      '**/*.benchmark.test.ts',
-      '**/*.perf.test.tsx',
-      '**/performance/**',
+      "node_modules",
+      "dist",
+      "**/*.benchmark.test.ts",
+      "**/*.perf.test.tsx",
+      "**/performance/**",
       // This is a TanStack production route for `/views/test`, not a test file.
-      'src/routes/projects.$projectId.views.test.tsx',
-      'src/lib/graph/__tests__/**',
-      'src/lib/__tests__/gpuForceLayout.benchmark.test.ts',
-      'src/lib/__tests__/spatialIndex.benchmark.test.ts',
+      "src/routes/projects.$projectId.views.test.tsx",
+      "src/lib/graph/__tests__/**",
+      "src/lib/__tests__/gpuForceLayout.benchmark.test.ts",
+      "src/lib/__tests__/spatialIndex.benchmark.test.ts",
     ],
     globals: true,
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
-    pool: 'forks',
-    reporters: ['dot'],
-    setupFiles: ['./src/__tests__/setup.ts'],
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    pool: "forks",
+    reporters: ["dot"],
+    setupFiles: ["./src/__tests__/setup.ts"],
     testTimeout: 60_000,
     ui: false,
   },

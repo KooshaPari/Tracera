@@ -1,24 +1,24 @@
-import { createFileRoute, useParams } from '@tanstack/react-router';
-import { Suspense, lazy } from 'react';
+import { createFileRoute, useParams } from "@tanstack/react-router";
+import { Suspense, lazy } from "react";
 
-import { ChunkLoadingSkeleton } from '@/lib/lazy-loading';
+import { ChunkLoadingSkeleton } from "@/lib/lazy-loading";
 
 const TestCaseView = lazy(async () =>
-  import('@/pages/projects/views/TestCaseView').then((m) => ({
+  import("@/pages/projects/views/TestCaseView").then((m) => ({
     default: m.TestCaseView ?? m.default,
   })),
 );
 
 export function TestCaseViewRoute() {
-  const { projectId } = useParams({ from: '/projects/$projectId' });
+  const { projectId } = useParams({ from: "/projects/$projectId" });
   return (
-    <Suspense fallback={<ChunkLoadingSkeleton message='Loading test cases...' />}>
+    <Suspense fallback={<ChunkLoadingSkeleton message="Loading test cases..." />}>
       <TestCaseView projectId={projectId} />
     </Suspense>
   );
 }
 
-export const Route = createFileRoute('/projects/$projectId/views/test-cases')({
+export const Route = createFileRoute("/projects/$projectId/views/test-cases")({
   component: TestCaseViewRoute,
   loader: async () => ({}),
 });

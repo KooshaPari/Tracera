@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
-import type { RealtimeEvent } from '../api/websocket';
-import type { WebSocketState } from '../stores/websocket-store';
+import type { RealtimeEvent } from "../api/websocket";
+import type { WebSocketState } from "../stores/websocket-store";
 
-import { useWebSocketStore } from '../stores/websocket-store';
+import { useWebSocketStore } from "../stores/websocket-store";
 
 export function useWebSocket() {
   const { isConnected, connect, disconnect, subscribe } = useWebSocketStore();

@@ -1,11 +1,11 @@
-import * as ReactQuery from '@tanstack/react-query';
+import * as ReactQuery from "@tanstack/react-query";
 
-import { client } from '@/api/client';
-import { QUERY_CONFIGS, queryKeys } from '@/lib/queryConfig';
+import { client } from "@/api/client";
+import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
 
 const { getAuthHeaders } = client;
 
-import { API_ORIGIN } from '@/config/api-origin';
+import { API_ORIGIN } from "@/config/api-origin";
 
 const API_URL = API_ORIGIN;
 
@@ -32,10 +32,10 @@ interface GraphProjection {
 type UnknownRecord = Record<string, unknown>;
 
 const isRecord = (value: unknown): value is UnknownRecord =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
 const hasText = (value: string | undefined): value is string =>
-  typeof value === 'string' && value.length > 0;
+  typeof value === "string" && value.length > 0;
 
 const pickValue = (record: UnknownRecord, keys: readonly string[]): unknown => {
   for (const key of keys) {
@@ -47,9 +47,9 @@ const pickValue = (record: UnknownRecord, keys: readonly string[]): unknown => {
   return undefined;
 };
 
-const pickString = (record: UnknownRecord, keys: readonly string[], fallback = ''): string => {
+const pickString = (record: UnknownRecord, keys: readonly string[], fallback = ""): string => {
   const value = pickValue(record, keys);
-  return typeof value === 'string' ? value : fallback;
+  return typeof value === "string" ? value : fallback;
 };
 
 const pickNullableString = (
@@ -57,7 +57,7 @@ const pickNullableString = (
   keys: readonly string[],
 ): string | null | undefined => {
   const value = pickValue(record, keys);
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   if (value === null) {
@@ -68,7 +68,7 @@ const pickNullableString = (
 
 const pickNumber = (record: UnknownRecord, keys: readonly string[]): number | undefined => {
   const value = pickValue(record, keys);
-  return typeof value === 'number' ? value : undefined;
+  return typeof value === "number" ? value : undefined;
 };
 
 const pickRecord = (
@@ -80,14 +80,14 @@ const pickRecord = (
 };
 
 const normalizeGraphSummary = (record: UnknownRecord): GraphSummary => ({
-  description: pickNullableString(record, ['description']),
-  graphRules: pickRecord(record, ['graph_rules', 'graphRules']),
-  graphType: pickString(record, ['graph_type', 'graphType']),
-  graphVersion: pickNumber(record, ['graph_version', 'graphVersion']),
-  id: pickString(record, ['id']),
-  metadata: pickRecord(record, ['metadata', 'graph_metadata', 'graphMetadata']),
-  name: pickString(record, ['name']),
-  rootItemId: pickNullableString(record, ['root_item_id', 'rootItemId']),
+  description: pickNullableString(record, ["description"]),
+  graphRules: pickRecord(record, ["graph_rules", "graphRules"]),
+  graphType: pickString(record, ["graph_type", "graphType"]),
+  graphVersion: pickNumber(record, ["graph_version", "graphVersion"]),
+  id: pickString(record, ["id"]),
+  metadata: pickRecord(record, ["metadata", "graph_metadata", "graphMetadata"]),
+  name: pickString(record, ["name"]),
+  rootItemId: pickNullableString(record, ["root_item_id", "rootItemId"]),
 });
 
 const toRecordArray = (value: unknown): UnknownRecord[] => {
@@ -102,11 +102,11 @@ async function fetchGraphs(projectId: string): Promise<GraphSummary[]> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch graphs');
+    throw new Error("Failed to fetch graphs");
   }
   const payload: unknown = await res.json();
   const payloadRecord = isRecord(payload) ? payload : undefined;
-  const graphs = toRecordArray(payloadRecord?.['graphs']);
+  const graphs = toRecordArray(payloadRecord?.["graphs"]);
   return graphs.map((graph) => normalizeGraphSummary(graph));
 }
 
@@ -117,31 +117,31 @@ async function fetchGraphProjection(
 ): Promise<GraphProjection> {
   const params = new URLSearchParams();
   if (hasText(graphId)) {
-    params.set('graph_id', graphId);
+    params.set("graph_id", graphId);
   }
   if (hasText(graphType)) {
-    params.set('graph_type', graphType);
+    params.set("graph_type", graphType);
   }
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/graph?${params}`, {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch graph projection');
+    throw new Error("Failed to fetch graph projection");
   }
   const payload: unknown = await res.json();
   const payloadRecord = isRecord(payload) ? payload : undefined;
-  const graphRecord = isRecord(payloadRecord?.['graph']) ? payloadRecord['graph'] : undefined;
+  const graphRecord = isRecord(payloadRecord?.["graph"]) ? payloadRecord["graph"] : undefined;
   return {
     graph: graphRecord ? normalizeGraphSummary(graphRecord) : undefined,
-    links: toRecordArray(payloadRecord?.['links']),
-    nodes: toRecordArray(payloadRecord?.['nodes']),
+    links: toRecordArray(payloadRecord?.["links"]),
+    nodes: toRecordArray(payloadRecord?.["nodes"]),
   };
 }
 
 const useGraphs = (projectId?: string): ReactQuery.UseQueryResult<GraphSummary[]> =>
   ReactQuery.useQuery<GraphSummary[]>({
-    queryKey: hasText(projectId) ? queryKeys.graph.full(projectId) : ['graphs'],
-    queryFn: async () => fetchGraphs(projectId ?? ''),
+    queryKey: hasText(projectId) ? queryKeys.graph.full(projectId) : ["graphs"],
+    queryFn: async () => fetchGraphs(projectId ?? ""),
     enabled: hasText(projectId),
     ...QUERY_CONFIGS.graph, // Graph data is expensive, cache longer
   });
@@ -154,8 +154,8 @@ const useGraphProjection = (
   ReactQuery.useQuery<GraphProjection>({
     queryKey: hasText(projectId)
       ? [...queryKeys.graph.full(projectId), graphId, graphType]
-      : ['graph', graphId, graphType],
-    queryFn: async () => fetchGraphProjection(projectId ?? '', graphId, graphType),
+      : ["graph", graphId, graphType],
+    queryFn: async () => fetchGraphProjection(projectId ?? "", graphId, graphType),
     enabled: hasText(projectId) && (hasText(graphId) || hasText(graphType)),
     ...QUERY_CONFIGS.graph, // Graph projections are expensive, cache longer
   });

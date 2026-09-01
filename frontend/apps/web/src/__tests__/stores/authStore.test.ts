@@ -2,12 +2,12 @@
  * Tests for authStore
  */
 
-import { act, renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore } from "../../stores/authStore";
 
-describe('authStore', () => {
+describe("authStore", () => {
   beforeEach(() => {
     useAuthStore.getState().stopAutoRefresh();
     useAuthStore.setState({
@@ -23,8 +23,8 @@ describe('authStore', () => {
     vi.mocked(globalThis.fetch).mockReset();
   });
 
-  describe('initial state', () => {
-    it('should have correct initial values', () => {
+  describe("initial state", () => {
+    it("should have correct initial values", () => {
       const { result } = renderHook(() => useAuthStore());
 
       expect(result.current.user).toBeNull();
@@ -34,34 +34,34 @@ describe('authStore', () => {
     });
   });
 
-  describe('setUser', () => {
-    it('should set user and update authentication status', () => {
+  describe("setUser", () => {
+    it("should set user and update authentication status", () => {
       const { result } = renderHook(() => useAuthStore());
 
       act(() => {
         result.current.setUser({
-          email: 'test@example.com',
-          id: '1',
-          name: 'Test User',
+          email: "test@example.com",
+          id: "1",
+          name: "Test User",
         });
       });
 
       expect(result.current.user).toEqual({
-        email: 'test@example.com',
-        id: '1',
-        name: 'Test User',
+        email: "test@example.com",
+        id: "1",
+        name: "Test User",
       });
       expect(result.current.isAuthenticated).toBeTruthy();
     });
 
-    it('should clear authentication when user is null', () => {
+    it("should clear authentication when user is null", () => {
       const { result } = renderHook(() => useAuthStore());
 
       // First set a user
       act(() => {
         result.current.setUser({
-          email: 'test@example.com',
-          id: '1',
+          email: "test@example.com",
+          id: "1",
         });
       });
 
@@ -75,24 +75,24 @@ describe('authStore', () => {
     });
   });
 
-  describe('setToken', () => {
-    it('should store token in state and localStorage', () => {
+  describe("setToken", () => {
+    it("should store token in state and localStorage", () => {
       const { result } = renderHook(() => useAuthStore());
 
       act(() => {
-        result.current.setToken('test-token');
+        result.current.setToken("test-token");
       });
 
-      expect(result.current.token).toBe('test-token');
-      expect(localStorage.getItem('auth_token')).toBe('test-token');
+      expect(result.current.token).toBe("test-token");
+      expect(localStorage.getItem("auth_token")).toBe("test-token");
     });
 
-    it('should remove token from localStorage when null', () => {
+    it("should remove token from localStorage when null", () => {
       const { result } = renderHook(() => useAuthStore());
 
       // Set token first
       act(() => {
-        result.current.setToken('test-token');
+        result.current.setToken("test-token");
       });
 
       // Then remove it
@@ -101,35 +101,35 @@ describe('authStore', () => {
       });
 
       expect(result.current.token).toBeNull();
-      expect(localStorage.getItem('auth_token')).toBeNull();
+      expect(localStorage.getItem("auth_token")).toBeNull();
     });
   });
 
-  describe('loginWithCode', () => {
-    it('should complete an AuthKit callback', async () => {
+  describe("loginWithCode", () => {
+    it("should complete an AuthKit callback", async () => {
       const { result } = renderHook(() => useAuthStore());
       vi.mocked(globalThis.fetch).mockResolvedValueOnce(
         Response.json({
-          refresh_token: 'refresh-token',
-          token: 'mock-jwt-token',
-          user: { email: 'test@example.com', id: '1', name: 'test' },
+          refresh_token: "refresh-token",
+          token: "mock-jwt-token",
+          user: { email: "test@example.com", id: "1", name: "test" },
         }),
       );
 
       await act(async () => {
-        await result.current.loginWithCode('authorization-code', 'state-123');
+        await result.current.loginWithCode("authorization-code", "state-123");
       });
 
       expect(result.current.isAuthenticated).toBeTruthy();
       expect(result.current.user).toEqual({
-        email: 'test@example.com',
-        id: '1',
-        name: 'test',
+        email: "test@example.com",
+        id: "1",
+        name: "test",
       });
-      expect(result.current.token).toBe('mock-jwt-token');
+      expect(result.current.token).toBe("mock-jwt-token");
     });
 
-    it('should set loading state during AuthKit callback', async () => {
+    it("should set loading state during AuthKit callback", async () => {
       const { result } = renderHook(() => useAuthStore());
       let resolveFetch: ((response: Response) => void) | undefined;
       vi.mocked(globalThis.fetch).mockReturnValueOnce(
@@ -140,15 +140,15 @@ describe('authStore', () => {
 
       let loginPromise: Promise<void> | undefined;
       act(() => {
-        loginPromise = result.current.loginWithCode('authorization-code', 'state-123');
+        loginPromise = result.current.loginWithCode("authorization-code", "state-123");
       });
       expect(result.current.isLoading).toBeTruthy();
 
       await act(async () => {
         resolveFetch?.(
           Response.json({
-            token: 'mock-jwt-token',
-            user: { email: 'test@example.com', id: '1', name: 'test' },
+            token: "mock-jwt-token",
+            user: { email: "test@example.com", id: "1", name: "test" },
           }),
         );
         await loginPromise;
@@ -157,13 +157,13 @@ describe('authStore', () => {
     });
   });
 
-  describe('logout', () => {
-    it('should clear all auth data', async () => {
+  describe("logout", () => {
+    it("should clear all auth data", async () => {
       const { result } = renderHook(() => useAuthStore());
 
       act(() => {
-        result.current.setUser({ email: 'test@example.com', id: '1', name: 'test' });
-        result.current.setToken('mock-jwt-token');
+        result.current.setUser({ email: "test@example.com", id: "1", name: "test" });
+        result.current.setToken("mock-jwt-token");
       });
       vi.mocked(globalThis.fetch).mockResolvedValueOnce(Response.json({}));
 
@@ -175,40 +175,40 @@ describe('authStore', () => {
       expect(result.current.user).toBeNull();
       expect(result.current.token).toBeNull();
       expect(result.current.isAuthenticated).toBeFalsy();
-      expect(localStorage.getItem('auth_token')).toBeNull();
+      expect(localStorage.getItem("auth_token")).toBeNull();
     });
   });
 
-  describe('updateProfile', () => {
-    it('should update user profile', async () => {
+  describe("updateProfile", () => {
+    it("should update user profile", async () => {
       const { result } = renderHook(() => useAuthStore());
 
       act(() => {
-        result.current.setUser({ email: 'test@example.com', id: '1', name: 'test' });
+        result.current.setUser({ email: "test@example.com", id: "1", name: "test" });
       });
 
       // Update profile
       act(() => {
         result.current.updateProfile({
-          avatar: 'avatar.jpg',
-          name: 'Updated Name',
+          avatar: "avatar.jpg",
+          name: "Updated Name",
         });
       });
 
       expect(result.current.user).toEqual({
-        avatar: 'avatar.jpg',
-        email: 'test@example.com',
-        id: '1',
-        name: 'Updated Name',
+        avatar: "avatar.jpg",
+        email: "test@example.com",
+        id: "1",
+        name: "Updated Name",
       });
     });
 
-    it('should not update if no user is logged in', () => {
+    it("should not update if no user is logged in", () => {
       const { result } = renderHook(() => useAuthStore());
 
       act(() => {
         result.current.updateProfile({
-          name: 'Updated Name',
+          name: "Updated Name",
         });
       });
 
@@ -216,17 +216,17 @@ describe('authStore', () => {
     });
   });
 
-  describe('persistence', () => {
-    it('should persist auth state to localStorage', () => {
+  describe("persistence", () => {
+    it("should persist auth state to localStorage", () => {
       const { result } = renderHook(() => useAuthStore());
 
       act(() => {
-        result.current.setUser({ email: 'test@example.com', id: '1', name: 'test' });
-        result.current.setToken('mock-jwt-token');
+        result.current.setUser({ email: "test@example.com", id: "1", name: "test" });
+        result.current.setToken("mock-jwt-token");
       });
 
       // Check that state was persisted
-      const storedData = localStorage.getItem('tracertm-auth-store');
+      const storedData = localStorage.getItem("tracertm-auth-store");
       expect(storedData).toBeTruthy();
 
       if (storedData) {

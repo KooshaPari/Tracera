@@ -3,16 +3,16 @@
  * Tests mobile, tablet, and desktop viewport consistency
  */
 
-import { devices, expect, test } from '@playwright/test';
+import { devices, expect, test } from "@playwright/test";
 
-test.describe('Mobile Responsive Tests', () => {
-  test.use({ ...devices['iPhone 12'] });
+test.describe("Mobile Responsive Tests", () => {
+  test.use({ ...devices["iPhone 12"] });
 
-  test('mobile navigation and layout', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+  test("mobile navigation and layout", async ({ page }) => {
+    await page.goto("http://localhost:5173");
 
     await page.evaluate(() => {
-      const root = document.querySelector('#root')!;
+      const root = document.querySelector("#root")!;
       root.innerHTML = `
         <div class="min-h-screen bg-background">
           <!-- Mobile Header -->
@@ -138,17 +138,17 @@ test.describe('Mobile Responsive Tests', () => {
       `;
     });
 
-    await expect(page).toHaveScreenshot('mobile-layout.png', {
+    await expect(page).toHaveScreenshot("mobile-layout.png", {
       fullPage: true,
       maxDiffPixels: 200,
     });
   });
 
-  test('mobile form layout', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+  test("mobile form layout", async ({ page }) => {
+    await page.goto("http://localhost:5173");
 
     await page.evaluate(() => {
-      const root = document.querySelector('#root')!;
+      const root = document.querySelector("#root")!;
       root.innerHTML = `
         <div class="min-h-screen bg-background p-4">
           <div class="rounded-xl border bg-card p-4 space-y-4">
@@ -204,21 +204,21 @@ test.describe('Mobile Responsive Tests', () => {
       `;
     });
 
-    await expect(page).toHaveScreenshot('mobile-form.png', {
+    await expect(page).toHaveScreenshot("mobile-form.png", {
       fullPage: true,
       maxDiffPixels: 200,
     });
   });
 });
 
-test.describe('Tablet Responsive Tests', () => {
-  test.use({ ...devices['iPad Pro'] });
+test.describe("Tablet Responsive Tests", () => {
+  test.use({ ...devices["iPad Pro"] });
 
-  test('tablet layout', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+  test("tablet layout", async ({ page }) => {
+    await page.goto("http://localhost:5173");
 
     await page.evaluate(() => {
-      const root = document.querySelector('#root')!;
+      const root = document.querySelector("#root")!;
       root.innerHTML = `
         <div class="min-h-screen bg-background">
           <!-- Tablet Header -->
@@ -337,21 +337,21 @@ test.describe('Tablet Responsive Tests', () => {
       `;
     });
 
-    await expect(page).toHaveScreenshot('tablet-layout.png', {
+    await expect(page).toHaveScreenshot("tablet-layout.png", {
       fullPage: true,
       maxDiffPixels: 200,
     });
   });
 });
 
-test.describe('Desktop Responsive Tests', () => {
-  test.use({ ...devices['Desktop Chrome'] });
+test.describe("Desktop Responsive Tests", () => {
+  test.use({ ...devices["Desktop Chrome"] });
 
-  test('desktop layout with sidebar', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+  test("desktop layout with sidebar", async ({ page }) => {
+    await page.goto("http://localhost:5173");
 
     await page.evaluate(() => {
-      const root = document.querySelector('#root')!;
+      const root = document.querySelector("#root")!;
       root.innerHTML = `
         <div class="flex min-h-screen bg-background">
           <!-- Sidebar -->
@@ -505,20 +505,20 @@ test.describe('Desktop Responsive Tests', () => {
       `;
     });
 
-    await expect(page).toHaveScreenshot('desktop-layout.png', {
+    await expect(page).toHaveScreenshot("desktop-layout.png", {
       fullPage: true,
       maxDiffPixels: 200,
     });
   });
 });
 
-test.describe('Responsive Breakpoint Tests', () => {
+test.describe("Responsive Breakpoint Tests", () => {
   const viewports = [
-    { height: 667, name: 'mobile-sm', width: 375 },
-    { height: 926, name: 'mobile-lg', width: 428 },
-    { height: 1024, name: 'tablet', width: 768 },
-    { height: 800, name: 'desktop-sm', width: 1280 },
-    { height: 1080, name: 'desktop-lg', width: 1920 },
+    { height: 667, name: "mobile-sm", width: 375 },
+    { height: 926, name: "mobile-lg", width: 428 },
+    { height: 1024, name: "tablet", width: 768 },
+    { height: 800, name: "desktop-sm", width: 1280 },
+    { height: 1080, name: "desktop-lg", width: 1920 },
   ];
 
   for (const viewport of viewports) {
@@ -527,10 +527,10 @@ test.describe('Responsive Breakpoint Tests', () => {
         height: viewport.height,
         width: viewport.width,
       });
-      await page.goto('http://localhost:5173');
+      await page.goto("http://localhost:5173");
 
       await page.evaluate(() => {
-        const root = document.querySelector('#root')!;
+        const root = document.querySelector("#root")!;
         root.innerHTML = `
           <div class="p-4 md:p-6 lg:p-8 bg-background min-h-screen">
             <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold mb-6">Responsive Grid</h1>

@@ -1,8 +1,8 @@
-import { useMutation } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
-import { Copy, Edit, ExternalLink, MoreVertical, Trash2 } from 'lucide-react';
-import { memo, useCallback } from 'react';
-import { toast } from 'sonner';
+import { useMutation } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { Copy, Edit, ExternalLink, MoreVertical, Trash2 } from "lucide-react";
+import { memo, useCallback } from "react";
+import { toast } from "sonner";
 
 import {
   Button,
@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@tracertm/ui';
+} from "@tracertm/ui";
 
 interface ProjectCardMenuProps {
   projectId: string;
@@ -26,7 +26,7 @@ const stopPropagation: React.MouseEventHandler<HTMLElement> = (event): void => {
 const copyToClipboard = async (text: string): Promise<void> => {
   const clipboard = globalThis.navigator?.clipboard;
   if (clipboard === undefined) {
-    throw new Error('Clipboard unavailable');
+    throw new Error("Clipboard unavailable");
   }
   await clipboard.writeText(text);
 };
@@ -51,47 +51,47 @@ function renderProjectCardMenuView({
       <DropdownMenuTrigger asChild>
         <span>
           <Button
-            variant='ghost'
-            size='icon'
-            className='text-muted-foreground hover:text-foreground hover:bg-muted z-10 h-8 w-8 shrink-0 transition-colors'
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted z-10 h-8 w-8 shrink-0 transition-colors"
             onClick={onMenuButtonClick}
-            aria-label='Project options'
+            aria-label="Project options"
           >
-            <MoreVertical className='h-4 w-4' />
-            <span className='sr-only'>Open project menu</span>
+            <MoreVertical className="h-4 w-4" />
+            <span className="sr-only">Open project menu</span>
           </Button>
         </span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='w-48'>
+      <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuItem
           asChild
-          className='hover:bg-accent hover:text-accent-foreground cursor-pointer gap-2 transition-colors'
+          className="hover:bg-accent hover:text-accent-foreground cursor-pointer gap-2 transition-colors"
         >
           <Link to={`/projects/${projectId}`} onClick={stopPropagation}>
-            <ExternalLink className='h-4 w-4' />
+            <ExternalLink className="h-4 w-4" />
             Open Project
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={onEdit}
-          className='hover:bg-accent hover:text-accent-foreground cursor-pointer gap-2 transition-colors'
+          className="hover:bg-accent hover:text-accent-foreground cursor-pointer gap-2 transition-colors"
         >
-          <Edit className='h-4 w-4' />
+          <Edit className="h-4 w-4" />
           Edit
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={onCopyId}
-          className='hover:bg-accent hover:text-accent-foreground cursor-pointer gap-2 transition-colors'
+          className="hover:bg-accent hover:text-accent-foreground cursor-pointer gap-2 transition-colors"
         >
-          <Copy className='h-4 w-4' />
+          <Copy className="h-4 w-4" />
           Copy ID
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={onRequestDelete}
-          className='text-destructive focus:text-destructive focus:bg-destructive/10 hover:bg-destructive/10 hover:text-destructive cursor-pointer gap-2 transition-colors'
+          className="text-destructive focus:text-destructive focus:bg-destructive/10 hover:bg-destructive/10 hover:text-destructive cursor-pointer gap-2 transition-colors"
         >
-          <Trash2 className='h-4 w-4' />
+          <Trash2 className="h-4 w-4" />
           Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -107,7 +107,7 @@ export const ProjectCardMenu = memo(function ProjectCardMenu({
   const copyMutation = useMutation({
     mutationFn: copyToClipboard,
     onError: (error) => {
-      let message = 'Failed to copy project ID';
+      let message = "Failed to copy project ID";
       if (error instanceof Error) {
         const { message: errorMessage } = error;
         message = errorMessage;
@@ -115,7 +115,7 @@ export const ProjectCardMenu = memo(function ProjectCardMenu({
       toast.error(message);
     },
     onSuccess: () => {
-      toast.success('Project ID copied');
+      toast.success("Project ID copied");
     },
   });
 

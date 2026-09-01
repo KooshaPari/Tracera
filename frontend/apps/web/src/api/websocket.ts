@@ -1,8 +1,8 @@
 /* oxlint-disable import/no-named-export, promise/prefer-await-to-callbacks, promise/prefer-await-to-then, eslint/max-lines, eslint/no-undefined, oxc/no-async-await */
 // WebSocket Real-time Connection Manager
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import { clientCore } from './client-core';
+import { clientCore } from "./client-core";
 
 const { API_BASE_URL } = clientCore;
 
@@ -25,8 +25,8 @@ const ZERO = 0;
 type DatabaseRecord = Record<string, unknown>;
 
 interface RealtimeEvent {
-  type: 'created' | 'updated' | 'deleted';
-  table: 'projects' | 'items' | 'links';
+  type: "created" | "updated" | "deleted";
+  table: "projects" | "items" | "links";
   schema: string;
   record: DatabaseRecord;
   timestamp: number;
@@ -34,11 +34,11 @@ interface RealtimeEvent {
 
 interface AuthMessage {
   token: string;
-  type: 'auth';
+  type: "auth";
 }
 
 interface AuthResponse {
-  type: 'auth_success' | 'auth_failed';
+  type: "auth_success" | "auth_failed";
   message?: string;
 }
 
@@ -51,28 +51,28 @@ type TimeoutHandle = ReturnType<typeof globalThis.setTimeout>;
 type IntervalHandle = ReturnType<typeof globalThis.setInterval>;
 
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
-  Object.prototype.toString.call(value) === '[object Object]';
+  Object.prototype.toString.call(value) === "[object Object]";
 
 const isRealtimeEvent = (value: unknown): value is RealtimeEvent => {
   if (!isRecordObject(value)) {
     return false;
   }
 
-  const eventType = value['type'];
+  const eventType = value["type"];
   const { table } = value;
   const { schema } = value;
   const { record } = value;
   const { timestamp } = value;
 
-  if (eventType !== 'created' && eventType !== 'updated' && eventType !== 'deleted') {
+  if (eventType !== "created" && eventType !== "updated" && eventType !== "deleted") {
     return false;
   }
 
-  if (table !== 'projects' && table !== 'items' && table !== 'links') {
+  if (table !== "projects" && table !== "items" && table !== "links") {
     return false;
   }
 
-  return typeof schema === 'string' && isRecordObject(record) && typeof timestamp === 'number';
+  return typeof schema === "string" && isRecordObject(record) && typeof timestamp === "number";
 };
 
 class WebSocketManager {
@@ -94,16 +94,16 @@ class WebSocketManager {
 
   constructor(getToken?: TokenGetter) {
     if (globalThis.window === undefined) {
-      throw new TypeError('WebSocketManager requires a browser environment');
+      throw new TypeError("WebSocketManager requires a browser environment");
     }
     const wsProtocol = WebSocketManager.getWebSocketProtocol();
     const envWsUrl = import.meta.env?.VITE_WS_URL;
     const rawBaseUrl =
-      typeof envWsUrl === 'string' && envWsUrl.trim() !== '' ? envWsUrl.trim() : API_BASE_URL;
-    const wsBase = rawBaseUrl.replace(/^https?:/, wsProtocol).replace(/\/$/, '');
-    const wsPath = wsBase.includes('/api/v1/ws') ? wsBase : `${wsBase}/api/v1/ws`;
+      typeof envWsUrl === "string" && envWsUrl.trim() !== "" ? envWsUrl.trim() : API_BASE_URL;
+    const wsBase = rawBaseUrl.replace(/^https?:/, wsProtocol).replace(/\/$/, "");
+    const wsPath = wsBase.includes("/api/v1/ws") ? wsBase : `${wsBase}/api/v1/ws`;
     // Server requires project_id query parameter; use 'global' as default for app-level connections
-    this.baseUrl = wsPath.includes('?')
+    this.baseUrl = wsPath.includes("?")
       ? `${wsPath}&project_id=global`
       : `${wsPath}?project_id=global`;
     this.getToken = getToken;
@@ -154,12 +154,12 @@ class WebSocketManager {
 
   private static getWebSocketProtocol(): string {
     const windowRef = globalThis.window;
-    if (typeof windowRef !== 'undefined') {
-      if (windowRef.location.protocol === 'https:') {
-        return 'wss:';
+    if (typeof windowRef !== "undefined") {
+      if (windowRef.location.protocol === "https:") {
+        return "wss:";
       }
     }
-    return 'ws:';
+    return "ws:";
   }
 
   private beginConnect(): void {
@@ -168,13 +168,13 @@ class WebSocketManager {
   }
 
   private async resolveToken(): Promise<string | undefined> {
-    if (typeof this.getToken === 'undefined') {
+    if (typeof this.getToken === "undefined") {
       return undefined;
     }
 
     try {
       const tokenResult = await this.getToken();
-      if (typeof tokenResult === 'string' && tokenResult !== '') {
+      if (typeof tokenResult === "string" && tokenResult !== "") {
         return tokenResult;
       }
       return undefined;
@@ -182,12 +182,12 @@ class WebSocketManager {
       if (error instanceof Error) {
         throw error;
       }
-      throw new Error('Failed to resolve token', { cause: error });
+      throw new Error("Failed to resolve token", { cause: error });
     }
   }
 
   private handleResolvedToken(token: string | undefined): void {
-    if (typeof token === 'undefined' || token === '') {
+    if (typeof token === "undefined" || token === "") {
       this.handleMissingToken();
       return;
     }
@@ -197,7 +197,7 @@ class WebSocketManager {
   }
 
   private handleMissingToken(): void {
-    logger.error('[WebSocket] Authentication token required. Please authenticate first.');
+    logger.error("[WebSocket] Authentication token required. Please authenticate first.");
     this.isConnecting = false;
   }
 
@@ -230,7 +230,7 @@ class WebSocketManager {
   }
 
   private handleOpen(): void {
-    logger.info('[WebSocket] Connection established, waiting for authentication');
+    logger.info("[WebSocket] Connection established, waiting for authentication");
     this.isConnecting = false;
     this.reconnectAttempts = ZERO;
     this.sendAuthMessage();
@@ -255,7 +255,7 @@ class WebSocketManager {
   }
 
   private static parseMessage(data: unknown): ParsedMessage | undefined {
-    if (typeof data !== 'string') {
+    if (typeof data !== "string") {
       return undefined;
     }
 
@@ -265,7 +265,7 @@ class WebSocketManager {
         return parsed;
       }
     } catch (parseError: unknown) {
-      logger.error('[WebSocket] Failed to parse message:', parseError);
+      logger.error("[WebSocket] Failed to parse message:", parseError);
       return undefined;
     }
 
@@ -273,12 +273,12 @@ class WebSocketManager {
   }
 
   private handleAuthMessage(message: ParsedMessage): boolean {
-    const messageType = message['type'];
-    if (messageType === 'auth_success') {
+    const messageType = message["type"];
+    if (messageType === "auth_success") {
       this.handleAuthSuccess();
       return true;
     }
-    if (messageType === 'auth_failed') {
+    if (messageType === "auth_failed") {
       const authMessage = WebSocketManager.extractAuthFailureMessage(message);
       this.handleAuthFailure(authMessage);
       return true;
@@ -287,15 +287,15 @@ class WebSocketManager {
   }
 
   private static extractAuthFailureMessage(message: ParsedMessage): string | undefined {
-    const msg = message['message'];
-    if (typeof msg === 'string') {
+    const msg = message["message"];
+    if (typeof msg === "string") {
       return msg;
     }
     return undefined;
   }
 
   private handleAuthSuccess(): void {
-    logger.info('[WebSocket] Authentication successful');
+    logger.info("[WebSocket] Authentication successful");
     this.isAuthenticated = true;
     this.isConnected = true;
     this.clearAuthTimeout();
@@ -304,17 +304,17 @@ class WebSocketManager {
   }
 
   private handleAuthFailure(message: string | undefined): void {
-    logger.error('[WebSocket] Authentication failed:', message);
+    logger.error("[WebSocket] Authentication failed:", message);
     this.isAuthenticated = false;
     this.isConnected = false;
     this.clearAuthTimeout();
-    this.closeSocketWithAuthError('Authentication failed');
+    this.closeSocketWithAuthError("Authentication failed");
   }
 
   private handleBatchMessage(message: ParsedMessage): boolean {
-    const msgType = message['type'];
-    const msgList = message['messages'];
-    if (msgType !== 'batch' || !Array.isArray(msgList)) {
+    const msgType = message["type"];
+    const msgList = message["messages"];
+    if (msgType !== "batch" || !Array.isArray(msgList)) {
       return false;
     }
 
@@ -331,8 +331,8 @@ class WebSocketManager {
       return;
     }
 
-    const msgType = message['type'];
-    if (msgType === 'auth') {
+    const msgType = message["type"];
+    if (msgType === "auth") {
       return;
     }
 
@@ -342,13 +342,13 @@ class WebSocketManager {
   }
 
   private handleError(error: unknown): void {
-    logger.error('[WebSocket] Error:', error);
+    logger.error("[WebSocket] Error:", error);
     this.isConnected = false;
     this.isAuthenticated = false;
   }
 
   private handleClose(event: CloseEvent): void {
-    logger.info('[WebSocket] Disconnected', {
+    logger.info("[WebSocket] Disconnected", {
       code: event.code,
       reason: event.reason,
     });
@@ -359,7 +359,7 @@ class WebSocketManager {
     this.clearAuthTimeout();
 
     if (WebSocketManager.isAuthFailureClose(event)) {
-      logger.error('[WebSocket] Authentication failed. Please re-authenticate.');
+      logger.error("[WebSocket] Authentication failed. Please re-authenticate.");
       return;
     }
 
@@ -370,14 +370,14 @@ class WebSocketManager {
     if (event.code !== AUTH_CLOSE_CODE) {
       return false;
     }
-    if (event.reason === '') {
+    if (event.reason === "") {
       return false;
     }
-    return event.reason.includes('Authentication');
+    return event.reason.includes("Authentication");
   }
 
   private handleConnectionFailure(error: unknown): void {
-    logger.error('[WebSocket] Connection failed:', error);
+    logger.error("[WebSocket] Connection failed:", error);
     this.isConnecting = false;
     this.attemptReconnect();
   }
@@ -387,23 +387,23 @@ class WebSocketManager {
     if (
       !socket ||
       socket.readyState !== WebSocket.OPEN ||
-      typeof this.token === 'undefined' ||
-      this.token === ''
+      typeof this.token === "undefined" ||
+      this.token === ""
     ) {
-      logger.error('[WebSocket] Cannot send auth message: connection not ready');
+      logger.error("[WebSocket] Cannot send auth message: connection not ready");
       return;
     }
 
     const authMessage: AuthMessage = {
       token: this.token,
-      type: 'auth',
+      type: "auth",
     };
 
     try {
       socket.send(JSON.stringify(authMessage));
-      logger.info('[WebSocket] Auth message sent');
+      logger.info("[WebSocket] Auth message sent");
     } catch (sendError: unknown) {
-      logger.error('[WebSocket] Failed to send auth message:', sendError);
+      logger.error("[WebSocket] Failed to send auth message:", sendError);
     }
   }
 
@@ -426,8 +426,8 @@ class WebSocketManager {
   private startAuthTimeout(): void {
     this.clearAuthTimeout();
     this.authTimeout = globalThis.setTimeout((): void => {
-      logger.error('[WebSocket] Authentication timeout');
-      this.closeSocketWithAuthError('Authentication timeout');
+      logger.error("[WebSocket] Authentication timeout");
+      this.closeSocketWithAuthError("Authentication timeout");
     }, AUTH_TIMEOUT_MS);
   }
 
@@ -444,21 +444,21 @@ class WebSocketManager {
       this.subscriptions.set(channel, new Set());
     }
     const callbacks = this.subscriptions.get(channel);
-    if (typeof callbacks !== 'undefined') {
+    if (typeof callbacks !== "undefined") {
       callbacks.add(listener);
     }
   }
 
   private sendSubscription(channel: string): void {
-    if (!this.isAuthenticated || typeof this.ws === 'undefined') {
+    if (!this.isAuthenticated || typeof this.ws === "undefined") {
       return;
     }
-    this.send({ channel, type: 'subscribe' });
+    this.send({ channel, type: "subscribe" });
   }
 
   private removeSubscription(channel: string, listener: EventCallback): void {
     const callbacks = this.subscriptions.get(channel);
-    if (typeof callbacks === 'undefined') {
+    if (typeof callbacks === "undefined") {
       return;
     }
 
@@ -468,15 +468,15 @@ class WebSocketManager {
     }
 
     this.subscriptions.delete(channel);
-    if (this.isAuthenticated && typeof this.ws !== 'undefined') {
-      this.send({ channel, type: 'unsubscribe' });
+    if (this.isAuthenticated && typeof this.ws !== "undefined") {
+      this.send({ channel, type: "unsubscribe" });
     }
   }
 
   private handleEvent(event: RealtimeEvent): void {
     const channel = `${event.table}:${event.type}`;
     const allChannel = `${event.table}:*`;
-    const globalChannel = '*';
+    const globalChannel = "*";
     const channels = [channel, allChannel, globalChannel];
 
     for (const channelName of channels) {
@@ -514,7 +514,7 @@ class WebSocketManager {
     try {
       this.ws.send(JSON.stringify(data));
     } catch (error: unknown) {
-      logger.error('[WebSocket] Failed to send message:', error);
+      logger.error("[WebSocket] Failed to send message:", error);
       this.queueMessage(data);
     }
   }
@@ -526,7 +526,7 @@ class WebSocketManager {
     }
 
     this.messageQueue.shift();
-    logger.warn('[WebSocket] Message queue overflow, dropping oldest message');
+    logger.warn("[WebSocket] Message queue overflow, dropping oldest message");
   }
 
   private flushMessageQueue(): void {
@@ -551,7 +551,7 @@ class WebSocketManager {
 
     this.heartbeatInterval = globalThis.setInterval((): void => {
       if (this.isSocketOpen()) {
-        this.send({ type: 'ping' });
+        this.send({ type: "ping" });
       }
     }, DEFAULT_HEARTBEAT_INTERVAL_MS);
   }
@@ -566,7 +566,7 @@ class WebSocketManager {
 
   private attemptReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      logger.error('[WebSocket] Max reconnection attempts reached');
+      logger.error("[WebSocket] Max reconnection attempts reached");
       return;
     }
 
@@ -579,7 +579,7 @@ class WebSocketManager {
 
     globalThis.setTimeout((): void => {
       this.connect().catch((error: unknown) => {
-        logger.error('[WebSocket] Reconnection failed:', error);
+        logger.error("[WebSocket] Reconnection failed:", error);
       });
     }, delay);
   }
@@ -592,7 +592,7 @@ class WebSocketManager {
   }
 
   private isSocketOpen(): boolean {
-    return typeof this.ws !== 'undefined' && this.ws.readyState === WebSocket.OPEN;
+    return typeof this.ws !== "undefined" && this.ws.readyState === WebSocket.OPEN;
   }
 }
 

@@ -1,10 +1,10 @@
-import { motion } from 'framer-motion';
-import { Circle, Play } from 'lucide-react';
-import { useState } from 'react';
+import { motion } from "framer-motion";
+import { Circle, Play } from "lucide-react";
+import { useState } from "react";
 
-import type { ContractTransition } from '@tracertm/types';
+import type { ContractTransition } from "@tracertm/types";
 
-import { Card } from '@tracertm/ui';
+import { Card } from "@tracertm/ui";
 
 interface StateMachineViewerProps {
   states?: string[] | undefined;
@@ -46,7 +46,7 @@ export function StateMachineViewer({
   onStateSelect,
   onTransitionTrigger,
   isExecutable = false,
-  className = '',
+  className = "",
 }: StateMachineViewerProps) {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -56,9 +56,9 @@ export function StateMachineViewer({
   if (states.length === 0) {
     return (
       <Card className={`text-muted-foreground p-6 text-center ${className}`}>
-        <Circle className='mx-auto mb-2 h-8 w-8 opacity-50' />
-        <p className='text-sm'>No state machine defined.</p>
-        <p className='text-xs'>Define states and transitions to visualize the state machine.</p>
+        <Circle className="mx-auto mb-2 h-8 w-8 opacity-50" />
+        <p className="text-sm">No state machine defined.</p>
+        <p className="text-xs">Define states and transitions to visualize the state machine.</p>
       </Card>
     );
   }
@@ -92,22 +92,22 @@ export function StateMachineViewer({
 
   return (
     <div className={`space-y-4 ${className}`}>
-      <Card className='bg-muted/30 p-4'>
+      <Card className="bg-muted/30 p-4">
         <svg
           viewBox={`${minX} ${minY} ${width} ${height}`}
-          className='border-border bg-background h-auto w-full rounded-lg border'
-          style={{ minHeight: '400px' }}
+          className="border-border bg-background h-auto w-full rounded-lg border"
+          style={{ minHeight: "400px" }}
         >
           <defs>
             <marker
-              id='arrowhead'
-              markerWidth='10'
-              markerHeight='10'
-              refX='9'
-              refY='3'
-              orient='auto'
+              id="arrowhead"
+              markerWidth="10"
+              markerHeight="10"
+              refX="9"
+              refY="3"
+              orient="auto"
             >
-              <polygon points='0 0, 10 3, 0 6' fill='#888' />
+              <polygon points="0 0, 10 3, 0 6" fill="#888" />
             </marker>
           </defs>
 
@@ -135,17 +135,17 @@ export function StateMachineViewer({
                 <g key={`transition-${transition.id}`}>
                   <path
                     d={pathData}
-                    fill='none'
-                    stroke='#888'
-                    strokeWidth='2'
-                    markerEnd='url(#arrowhead)'
-                    className='opacity-60'
+                    fill="none"
+                    stroke="#888"
+                    strokeWidth="2"
+                    markerEnd="url(#arrowhead)"
+                    className="opacity-60"
                   />
                   <text
                     x={fromPos.x + 60}
                     y={fromPos.y - 60}
-                    className='fill-muted-foreground pointer-events-none font-mono text-xs'
-                    textAnchor='middle'
+                    className="fill-muted-foreground pointer-events-none font-mono text-xs"
+                    textAnchor="middle"
                   >
                     {transition.trigger}
                   </text>
@@ -168,22 +168,22 @@ export function StateMachineViewer({
               <g key={`transition-${transition.id}`}>
                 <path
                   d={pathData}
-                  fill='none'
-                  stroke='#888'
-                  strokeWidth='2'
-                  markerEnd='url(#arrowhead)'
-                  className='hover:stroke-primary opacity-60 transition-opacity hover:opacity-100'
-                  style={{ cursor: isExecutable ? 'pointer' : 'default' }}
+                  fill="none"
+                  stroke="#888"
+                  strokeWidth="2"
+                  markerEnd="url(#arrowhead)"
+                  className="hover:stroke-primary opacity-60 transition-opacity hover:opacity-100"
+                  style={{ cursor: isExecutable ? "pointer" : "default" }}
                   onClick={async () => handleTransitionClick(transition)}
                 />
                 <text
                   x={midX + offsetX + 5}
                   y={midY + offsetY - 5}
-                  className='fill-muted-foreground pointer-events-none font-mono text-xs'
-                  textAnchor='middle'
+                  className="fill-muted-foreground pointer-events-none font-mono text-xs"
+                  textAnchor="middle"
                   style={{
-                    background: 'white',
-                    padding: '0 4px',
+                    background: "white",
+                    padding: "0 4px",
                   }}
                 >
                   {transition.trigger}
@@ -207,10 +207,10 @@ export function StateMachineViewer({
                   r={40}
                   className={`cursor-pointer transition-all ${
                     isCurrent
-                      ? 'fill-primary stroke-primary'
+                      ? "fill-primary stroke-primary"
                       : isInitial
-                        ? 'fill-green-500/20 stroke-green-600'
-                        : 'fill-background stroke-border hover:fill-muted'
+                        ? "fill-green-500/20 stroke-green-600"
+                        : "fill-background stroke-border hover:fill-muted"
                   }`}
                   strokeWidth={isCurrent ? 3 : 2}
                   onClick={() => onStateSelect?.(pos.state)}
@@ -227,10 +227,10 @@ export function StateMachineViewer({
                     cx={pos.x}
                     cy={pos.y}
                     r={28}
-                    fill='none'
-                    stroke='#22c55e'
-                    strokeWidth='1'
-                    strokeDasharray='4,4'
+                    fill="none"
+                    stroke="#22c55e"
+                    strokeWidth="1"
+                    strokeDasharray="4,4"
                   />
                 )}
 
@@ -240,11 +240,11 @@ export function StateMachineViewer({
                     cx={pos.x}
                     cy={pos.y}
                     r={50}
-                    fill='none'
-                    stroke='#2563eb'
-                    strokeWidth='1'
-                    strokeDasharray='4,4'
-                    opacity='0.5'
+                    fill="none"
+                    stroke="#2563eb"
+                    strokeWidth="1"
+                    strokeDasharray="4,4"
+                    opacity="0.5"
                   />
                 )}
 
@@ -252,17 +252,17 @@ export function StateMachineViewer({
                 <text
                   x={pos.x}
                   y={pos.y}
-                  className='fill-foreground pointer-events-none text-xs font-semibold'
-                  textAnchor='middle'
-                  dominantBaseline='middle'
-                  style={{ maxWidth: '80px', wordWrap: 'break-word' }}
+                  className="fill-foreground pointer-events-none text-xs font-semibold"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  style={{ maxWidth: "80px", wordWrap: "break-word" }}
                 >
                   {pos.state}
                 </text>
 
                 {/* Available Transitions Indicator */}
                 {isExecutable && availableTransitions.length > 0 && (
-                  <circle cx={pos.x + 35} cy={pos.y - 35} r={4} fill='#f59e0b' opacity={0.8} />
+                  <circle cx={pos.x + 35} cy={pos.y - 35} r={4} fill="#f59e0b" opacity={0.8} />
                 )}
               </g>
             );
@@ -272,39 +272,39 @@ export function StateMachineViewer({
 
       {/* State Information */}
       {currentState && (
-        <div className='grid gap-2'>
-          <h4 className='text-sm font-semibold'>Current State Details</h4>
-          <Card className='space-y-2 p-3'>
+        <div className="grid gap-2">
+          <h4 className="text-sm font-semibold">Current State Details</h4>
+          <Card className="space-y-2 p-3">
             <div>
-              <p className='text-muted-foreground text-xs'>State</p>
-              <p className='font-mono font-semibold'>{currentState}</p>
+              <p className="text-muted-foreground text-xs">State</p>
+              <p className="font-mono font-semibold">{currentState}</p>
             </div>
 
             {/* Available Transitions from Current State */}
             {currentState && (transitionsBySource[currentState]?.length ?? 0) > 0 && (
               <div>
-                <p className='text-muted-foreground mb-2 text-xs'>Available Transitions</p>
-                <div className='space-y-1'>
+                <p className="text-muted-foreground mb-2 text-xs">Available Transitions</p>
+                <div className="space-y-1">
                   {(transitionsBySource[currentState] ?? []).map((transition) => (
                     <motion.div
                       key={transition.id}
-                      className='bg-muted flex items-center justify-between rounded p-2 text-xs'
-                      whileHover={{ backgroundColor: 'rgba(0,0,0,0.1)' }}
+                      className="bg-muted flex items-center justify-between rounded p-2 text-xs"
+                      whileHover={{ backgroundColor: "rgba(0,0,0,0.1)" }}
                     >
                       <div>
-                        <p className='font-mono font-semibold'>{transition.trigger}</p>
-                        <p className='text-muted-foreground'>→ {transition.toState}</p>
+                        <p className="font-mono font-semibold">{transition.trigger}</p>
+                        <p className="text-muted-foreground">→ {transition.toState}</p>
                       </div>
                       {isExecutable && (
                         <motion.button
-                          type='button'
+                          type="button"
                           onClick={async () => handleTransitionClick(transition)}
                           disabled={isTransitioning}
-                          className='hover:bg-primary/10 rounded p-1.5 transition-colors disabled:opacity-50'
+                          className="hover:bg-primary/10 rounded p-1.5 transition-colors disabled:opacity-50"
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.95 }}
                         >
-                          <Play className='h-3 w-3' />
+                          <Play className="h-3 w-3" />
                         </motion.button>
                       )}
                     </motion.div>
@@ -318,10 +318,10 @@ export function StateMachineViewer({
 
       {/* Initial State Info */}
       {initialState && (
-        <div className='text-muted-foreground flex items-center gap-2 text-xs'>
-          <Circle className='h-3 w-3 fill-green-600 text-green-600' />
+        <div className="text-muted-foreground flex items-center gap-2 text-xs">
+          <Circle className="h-3 w-3 fill-green-600 text-green-600" />
           <span>
-            Initial State: <span className='font-mono font-semibold'>{initialState}</span>
+            Initial State: <span className="font-mono font-semibold">{initialState}</span>
           </span>
         </div>
       )}

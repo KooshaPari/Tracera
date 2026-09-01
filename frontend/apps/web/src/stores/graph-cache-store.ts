@@ -1,17 +1,17 @@
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
 
-import type { GraphCacheTypes } from './graph-cache-types';
+import type { GraphCacheTypes } from "./graph-cache-types";
 
-import { createInvalidationActions } from './graph-cache-invalidation';
-import { graphCacheStats } from './graph-cache-stats';
+import { createInvalidationActions } from "./graph-cache-invalidation";
+import { graphCacheStats } from "./graph-cache-stats";
 
-type CacheStatistics = GraphCacheTypes['CacheStatistics'];
-type GroupingData = GraphCacheTypes['GroupingData'];
-type InvalidationPattern = GraphCacheTypes['InvalidationPattern'];
-type ItemDependencies = GraphCacheTypes['ItemDependencies'];
-type LayoutData = GraphCacheTypes['LayoutData'];
-type SearchResult = GraphCacheTypes['SearchResult'];
+type CacheStatistics = GraphCacheTypes["CacheStatistics"];
+type GroupingData = GraphCacheTypes["GroupingData"];
+type InvalidationPattern = GraphCacheTypes["InvalidationPattern"];
+type ItemDependencies = GraphCacheTypes["ItemDependencies"];
+type LayoutData = GraphCacheTypes["LayoutData"];
+type SearchResult = GraphCacheTypes["SearchResult"];
 
 interface GraphCacheBaseState {
   cacheStats: CacheStatistics;
@@ -26,7 +26,7 @@ interface GraphCacheStoreState extends GraphCacheBaseState {
   addInvalidationPattern: (
     pattern: string,
     description: string,
-    priority?: 'low' | 'medium' | 'high',
+    priority?: "low" | "medium" | "high",
   ) => void;
   clearAll: () => void;
   deleteGrouping: (key: string) => void;
@@ -88,7 +88,7 @@ interface PatternActions {
   addInvalidationPattern: (
     pattern: string,
     description: string,
-    priority?: 'low' | 'medium' | 'high',
+    priority?: "low" | "medium" | "high",
   ) => void;
   getInvalidationPatterns: () => InvalidationPattern[];
 }
@@ -187,7 +187,7 @@ const createPatternActions = (set: StoreSetter, get: StoreGetter): PatternAction
   addInvalidationPattern: (
     pattern: string,
     description: string,
-    priority: 'low' | 'medium' | 'high' = 'medium',
+    priority: "low" | "medium" | "high" = "medium",
   ): void => {
     set((draft) => {
       draft.invalidationPatterns.push({

@@ -8,9 +8,9 @@
  * - Data validation and transformation
  */
 
-import { expose } from 'comlink';
+import { expose } from "comlink";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 export type ProgressCallback = (progress: number) => void;
 
@@ -22,7 +22,7 @@ const PROGRESS_HEADER = 10;
 const PROGRESS_COMPLETE = 100;
 const PROGRESS_REMAINING = 90;
 const CHUNK_SIZE = 1000;
-const CSV_DEFAULT_DELIMITER = ',';
+const CSV_DEFAULT_DELIMITER = ",";
 
 const reportProgress = (callback: ProgressCallback | undefined, value: number): void => {
   if (callback) {
@@ -62,12 +62,12 @@ const safeJsonStringify = (value: unknown): string | undefined => {
   try {
     return JSON.stringify(value);
   } catch (error) {
-    logger.warn('[ExportImportWorker] Failed to stringify item:', error);
+    logger.warn("[ExportImportWorker] Failed to stringify item:", error);
     return undefined;
   }
 };
 
-const getTrimmedLine = (line: string | undefined): string => (line ? line.trim() : '');
+const getTrimmedLine = (line: string | undefined): string => (line ? line.trim() : "");
 
 /**
  * Parse NDJSON (newline-delimited JSON)
@@ -75,7 +75,7 @@ const getTrimmedLine = (line: string | undefined): string => (line ? line.trim()
 const parseNDJSON = <T = unknown>(ndjson: string, onProgress?: ProgressCallback): T[] => {
   reportProgress(onProgress, PROGRESS_START);
 
-  const lines = ndjson.split('\n');
+  const lines = ndjson.split("\n");
   const result: T[] = [];
 
   for (let startIndex = ZERO; startIndex < lines.length; startIndex += CHUNK_SIZE) {
@@ -121,7 +121,7 @@ const generateNDJSON = <T = unknown>(data: T[], onProgress?: ProgressCallback): 
   }
 
   reportProgress(onProgress, PROGRESS_COMPLETE);
-  return lines.join('\n');
+  return lines.join("\n");
 };
 
 /**
@@ -191,7 +191,7 @@ const buildRowWithHeaders = (headers: string[], values: string[]): Record<string
     if (!header) {
       continue;
     }
-    row[header] = values[headerIndex] ?? '';
+    row[header] = values[headerIndex] ?? "";
   }
   return row;
 };
@@ -199,7 +199,7 @@ const buildRowWithHeaders = (headers: string[], values: string[]): Record<string
 const buildRowWithoutHeaders = (values: string[]): Record<string, string> => {
   const row: Record<string, string> = {};
   for (let valueIndex = ZERO; valueIndex < values.length; valueIndex += ONE) {
-    row[`col${valueIndex}`] = values[valueIndex] ?? '';
+    row[`col${valueIndex}`] = values[valueIndex] ?? "";
   }
   return row;
 };
@@ -231,7 +231,7 @@ const parseCSV = (
   const hasHeader = options.hasHeader ?? true;
   const skipEmptyLines = options.skipEmptyLines ?? true;
 
-  const lines = csv.split('\n');
+  const lines = csv.split("\n");
   const result: Record<string, string>[] = [];
   const { headers, startIndex } = getCsvHeaders(lines, delimiter, hasHeader);
 
@@ -269,10 +269,10 @@ interface CsvGenerateOptions {
 
 const escapeCsvValue = (value: unknown, delimiter: string): string => {
   if (value === null || value === undefined) {
-    return '';
+    return "";
   }
   const str = String(value);
-  if (str.includes(delimiter) || str.includes('\n') || str.includes('"')) {
+  if (str.includes(delimiter) || str.includes("\n") || str.includes('"')) {
     return `"${str.replaceAll('"', '""')}"`;
   }
   return str;
@@ -290,7 +290,7 @@ const generateCSV = (
 
   if (data.length === ZERO) {
     reportProgress(onProgress, PROGRESS_COMPLETE);
-    return '';
+    return "";
   }
 
   const delimiter = options.delimiter ?? CSV_DEFAULT_DELIMITER;
@@ -318,17 +318,17 @@ const generateCSV = (
   }
 
   reportProgress(onProgress, PROGRESS_COMPLETE);
-  return lines.join('\n');
+  return lines.join("\n");
 };
 
 interface ValidationSchema {
   required?: string[];
-  types?: Record<string, 'string' | 'number' | 'boolean' | 'object' | 'array'>;
+  types?: Record<string, "string" | "number" | "boolean" | "object" | "array">;
   nullable?: string[];
 }
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
 const validateRequiredFields = (
   obj: Record<string, unknown>,
@@ -355,7 +355,7 @@ const validateRequiredFields = (
 
 const validateFieldTypes = (
   obj: Record<string, unknown>,
-  types: ValidationSchema['types'],
+  types: ValidationSchema["types"],
   nullable: string[] | undefined,
 ): string[] => {
   if (!types) {
@@ -373,7 +373,7 @@ const validateFieldTypes = (
       }
       continue;
     }
-    const actualType = Array.isArray(value) ? 'array' : typeof value;
+    const actualType = Array.isArray(value) ? "array" : typeof value;
     if (actualType !== expectedType) {
       errors.push(`Field ${field} has wrong type: expected ${expectedType}, got ${actualType}`);
     }
@@ -386,7 +386,7 @@ const validateItem = (
   schema: ValidationSchema,
 ): { errors: string[]; isValid: boolean; normalized?: Record<string, unknown> } => {
   if (!isPlainObject(item)) {
-    return { errors: ['Item must be an object'], isValid: false };
+    return { errors: ["Item must be an object"], isValid: false };
   }
 
   const requiredErrors = validateRequiredFields(item, schema.required, schema.nullable);
@@ -455,7 +455,7 @@ const transformData = <T = unknown, R = unknown>(
       const transformed: Record<string, unknown> = {};
 
       for (const [targetKey, sourceKeyOrFn] of Object.entries(mapping)) {
-        if (typeof sourceKeyOrFn === 'function') {
+        if (typeof sourceKeyOrFn === "function") {
           transformed[targetKey] = sourceKeyOrFn(item);
         } else {
           transformed[targetKey] = (item as Record<string, unknown>)[sourceKeyOrFn];

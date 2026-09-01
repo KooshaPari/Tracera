@@ -1,18 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { Suspense, lazy } from 'react';
+import { createFileRoute } from "@tanstack/react-router";
+import { Suspense, lazy } from "react";
 
-import { LoadingSpinner } from '@/components/layout/LoadingSpinner';
-import { logger } from '@/lib/logger';
-import { requireAuth } from '@/lib/route-guards';
+import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
+import { logger } from "@/lib/logger";
+import { requireAuth } from "@/lib/route-guards";
 
 const DashboardView = lazy(async () =>
-  import('@/views/DashboardView').then((m) => {
+  import("@/views/DashboardView").then((m) => {
     const Comp = m.DashboardView;
     if (Comp === null || Comp === undefined) {
-      logger.error('DashboardView module did not export a component', m);
+      logger.error("DashboardView module did not export a component", m);
       return {
         default: () => (
-          <div className='text-destructive p-6' role='alert'>
+          <div className="text-destructive p-6" role="alert">
             Failed to load dashboard.
           </div>
         ),
@@ -27,8 +27,8 @@ function DashboardComponent() {
   return (
     <Suspense
       fallback={
-        <div className='flex h-64 items-center justify-center'>
-          <LoadingSpinner text='Loading dashboard...' />
+        <div className="flex h-64 items-center justify-center">
+          <LoadingSpinner text="Loading dashboard..." />
         </div>
       }
     >
@@ -37,20 +37,20 @@ function DashboardComponent() {
   );
 }
 
-export const Route = createFileRoute('/home')({
+export const Route = createFileRoute("/home")({
   // Unauthenticated users should be sent back to the public landing page.
   beforeLoad: async () => {
-    await requireAuth({ includeReturnUrl: false, redirectTo: '/' });
+    await requireAuth({ includeReturnUrl: false, redirectTo: "/" });
   },
   component: DashboardComponent,
   loader: async () => {
     // Only fetch systemStatus here; projects are fetched by DashboardView's
     // UseProjects() hook (with staleTime caching) to avoid a double-fetch.
     try {
-      const { fetchSystemStatus } = await import('@/api/system');
+      const { fetchSystemStatus } = await import("@/api/system");
       const systemStatus = await fetchSystemStatus().catch(() => ({
         queuedJobs: 0,
-        status: 'healthy' as const,
+        status: "healthy" as const,
         uptime: 99.9,
       }));
 
@@ -59,7 +59,7 @@ export const Route = createFileRoute('/home')({
       return {
         systemStatus: {
           queuedJobs: 0,
-          status: 'healthy' as const,
+          status: "healthy" as const,
           uptime: 99.9,
         },
       };

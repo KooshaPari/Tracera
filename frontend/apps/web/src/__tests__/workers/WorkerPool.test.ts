@@ -2,9 +2,9 @@
  * WorkerPool Unit Tests
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { TaskPriority, WorkerPool } from '../../workers/worker-pool';
+import { TaskPriority, WorkerPool } from "../../workers/worker-pool";
 
 // Mock Worker
 class MockWorker {
@@ -12,10 +12,10 @@ class MockWorker {
   public onerror: ((event: ErrorEvent) => void) | null = null;
 
   addEventListener(type: string, listener: EventListener) {
-    if (type === 'message') {
+    if (type === "message") {
       this.onmessage = listener as (event: MessageEvent) => void;
     }
-    if (type === 'error') {
+    if (type === "error") {
       this.onerror = listener as (event: ErrorEvent) => void;
     }
   }
@@ -28,11 +28,11 @@ class MockWorker {
     setTimeout(() => {
       if (this.onmessage) {
         this.onmessage(
-          new MessageEvent('message', {
+          new MessageEvent("message", {
             data: {
-              data: { result: 'processed' },
+              data: { result: "processed" },
               id: message.id,
-              type: 'result',
+              type: "result",
             },
           }),
         );
@@ -45,10 +45,10 @@ class MockWorker {
   }
 
   removeEventListener(type: string, listener: EventListener) {
-    if (type === 'message' && this.onmessage === listener) {
+    if (type === "message" && this.onmessage === listener) {
       this.onmessage = null;
     }
-    if (type === 'error' && this.onerror === listener) {
+    if (type === "error" && this.onerror === listener) {
       this.onerror = null;
     }
   }
@@ -76,46 +76,46 @@ describe(WorkerPool, () => {
     }
   });
 
-  describe('Initialization', () => {
-    it('should create minimum workers on initialization', () => {
+  describe("Initialization", () => {
+    it("should create minimum workers on initialization", () => {
       const stats = pool.getStats();
       expect(stats.totalWorkers).toBeGreaterThanOrEqual(1);
     });
 
-    it('should start with empty queue', () => {
+    it("should start with empty queue", () => {
       const stats = pool.getStats();
       expect(stats.queuedTasks).toBe(0);
     });
   });
 
-  describe('Task Execution', () => {
-    it('should execute a simple task', async () => {
-      const result = await pool.executeTask('test', { data: 'test' });
+  describe("Task Execution", () => {
+    it("should execute a simple task", async () => {
+      const result = await pool.executeTask("test", { data: "test" });
       expect(result).toBeDefined();
     });
 
-    it('should execute multiple tasks concurrently', async () => {
-      const tasks = Array.from({ length: 5 }, (_, i) => pool.executeTask('test', { index: i }));
+    it("should execute multiple tasks concurrently", async () => {
+      const tasks = Array.from({ length: 5 }, (_, i) => pool.executeTask("test", { index: i }));
 
       const results = await Promise.all(tasks);
       expect(results).toHaveLength(5);
     });
 
-    it('should respect task priority', async () => {
+    it("should respect task priority", async () => {
       const priorityPool = new WorkerPool({
         maxWorkers: 1,
         minWorkers: 1,
         workerFactory: () => new MockWorker() as any,
       });
       const results: number[] = [];
-      const activeTask = priorityPool.executeTask('test', { index: -1 });
+      const activeTask = priorityPool.executeTask("test", { index: -1 });
 
       // Fill the only worker, then compare ordering within the pending queue.
       const lowPriorityTasks = Array.from({ length: 3 }, (_, i) =>
         priorityPool
           .executeTask(
-            'test',
-            { index: i, priority: 'low' },
+            "test",
+            { index: i, priority: "low" },
             {
               priority: TaskPriority.LOW,
             },
@@ -126,8 +126,8 @@ describe(WorkerPool, () => {
       // Queue high priority task
       const highPriorityTask = priorityPool
         .executeTask(
-          'test',
-          { priority: 'high' },
+          "test",
+          { priority: "high" },
           {
             priority: TaskPriority.HIGH,
           },
@@ -141,7 +141,7 @@ describe(WorkerPool, () => {
       priorityPool.terminate();
     });
 
-    it('should handle task timeout', async () => {
+    it("should handle task timeout", async () => {
       // Create a worker that never responds
       const slowPool = new WorkerPool({
         maxWorkers: 1,
@@ -153,16 +153,16 @@ describe(WorkerPool, () => {
         },
       });
 
-      await expect(slowPool.executeTask('test', {}, { timeout: 100 })).rejects.toThrow('timeout');
+      await expect(slowPool.executeTask("test", {}, { timeout: 100 })).rejects.toThrow("timeout");
 
       slowPool.terminate();
     });
 
-    it('should report progress for long-running tasks', async () => {
+    it("should report progress for long-running tasks", async () => {
       const progressUpdates: number[] = [];
 
       await pool.executeTask(
-        'test',
+        "test",
         {},
         {
           onProgress: (progress) => {
@@ -177,13 +177,13 @@ describe(WorkerPool, () => {
     });
   });
 
-  describe('Worker Management', () => {
-    it('should scale up workers when needed', async () => {
+  describe("Worker Management", () => {
+    it("should scale up workers when needed", async () => {
       const initialStats = pool.getStats();
       const initialWorkers = initialStats.totalWorkers;
 
       // Queue many tasks to force scaling
-      const tasks = Array.from({ length: 10 }, (_, i) => pool.executeTask('test', { index: i }));
+      const tasks = Array.from({ length: 10 }, (_, i) => pool.executeTask("test", { index: i }));
 
       // Check workers were created
       const duringStats = pool.getStats();
@@ -193,8 +193,8 @@ describe(WorkerPool, () => {
       await Promise.all(tasks);
     });
 
-    it('should report accurate statistics', async () => {
-      const task1 = pool.executeTask('test', {});
+    it("should report accurate statistics", async () => {
+      const task1 = pool.executeTask("test", {});
       const stats = pool.getStats();
 
       expect(stats.totalWorkers).toBeGreaterThan(0);
@@ -205,7 +205,7 @@ describe(WorkerPool, () => {
       await task1;
     });
 
-    it('should handle worker errors gracefully', async () => {
+    it("should handle worker errors gracefully", async () => {
       const errorPool = new WorkerPool({
         maxWorkers: 2,
         minWorkers: 1,
@@ -215,8 +215,8 @@ describe(WorkerPool, () => {
             setTimeout(() => {
               if (this.onerror) {
                 this.onerror(
-                  new ErrorEvent('error', {
-                    message: 'Worker error',
+                  new ErrorEvent("error", {
+                    message: "Worker error",
                   }),
                 );
               }
@@ -226,14 +226,14 @@ describe(WorkerPool, () => {
         },
       });
 
-      await expect(errorPool.executeTask('test', {})).rejects.toThrow();
+      await expect(errorPool.executeTask("test", {})).rejects.toThrow();
 
       errorPool.terminate();
     });
   });
 
-  describe('Cleanup', () => {
-    it('should terminate all workers on pool termination', () => {
+  describe("Cleanup", () => {
+    it("should terminate all workers on pool termination", () => {
       const stats = pool.getStats();
       const workerCount = stats.totalWorkers;
 
@@ -245,41 +245,65 @@ describe(WorkerPool, () => {
       expect(finalStats.totalWorkers).toBe(0);
     });
 
-    it('should reject queued tasks on termination', async () => {
-      const task = pool.executeTask('test', {});
+    it("should reject queued tasks on termination", async () => {
+      const task = pool.executeTask("test", {});
       pool.terminate();
 
-      await expect(task).rejects.toThrow('terminated');
+      await expect(task).rejects.toThrow("terminated");
     });
 
-    it('should prevent new tasks after termination', async () => {
+    it("should prevent new tasks after termination", async () => {
       pool.terminate();
 
-      await expect(pool.executeTask('test', {})).rejects.toThrow('shutting down');
+      await expect(pool.executeTask("test", {})).rejects.toThrow("shutting down");
     });
 
-    it('should release busy worker state during termination without error', async () => {
+    it("should release busy worker state during termination without error", async () => {
       // Start a task so a worker becomes busy, then terminate while it is active.
       // terminate() must call releaseWorkerTask() for each busy worker, which
       // resets busy=false and clears currentTaskId — observable by the call not
       // throwing and by the pool cleanly reaching the shutting-down state.
-      const task = pool.executeTask('test', {});
-      // Give the task a moment to be assigned to a busy worker
-      await new Promise((resolve) => setTimeout(resolve, 20));
+      vi.useFakeTimers();
+
+      // A mock that never responds — the task stays "active" so we can terminate mid-flight
+      class NeverRespondsWorker {
+        public onmessage: ((event: MessageEvent) => void) | null = null;
+        public onerror: ((event: ErrorEvent) => void) | null = null;
+        addEventListener(type: string, listener: EventListener) {
+          if (type === "message") this.onmessage = listener as (event: MessageEvent) => void;
+          if (type === "error") this.onerror = listener as (event: ErrorEvent) => void;
+        }
+        postMessage() {}
+        removeEventListener() {}
+        terminate() {}
+      }
+
+      const pool2 = new WorkerPool({
+        maxWorkers: 1,
+        minWorkers: 1,
+        workerFactory: () => new NeverRespondsWorker() as unknown as Worker,
+      });
+
+      const task = pool2.executeTask("test", {});
+      await vi.advanceTimersByTimeAsync(0);
+
+      // Verify worker is busy at termination time
+      expect(pool2.getStats().busyWorkers).toBe(1);
 
       // terminate() must not throw: releaseWorkerTask() handles the busy worker
-      // correctly and the pool reaches a clean shut-down state.
-      expect(() => pool.terminate()).not.toThrow();
-      await expect(task).rejects.toThrow('terminated');
+      expect(() => pool2.terminate()).not.toThrow();
+      await expect(task).rejects.toThrow("terminated");
+
+      vi.useRealTimers();
     });
   });
 
-  describe('Transferables', () => {
-    it('should support transferable objects', async () => {
+  describe("Transferables", () => {
+    it("should support transferable objects", async () => {
       const buffer = new ArrayBuffer(1024);
 
       await pool.executeTask(
-        'test',
+        "test",
         { buffer },
         {
           transferables: [buffer],
@@ -291,14 +315,14 @@ describe(WorkerPool, () => {
     });
   });
 
-  describe('Edge Cases', () => {
-    it('should handle empty task data', async () => {
-      const result = await pool.executeTask('test', null);
+  describe("Edge Cases", () => {
+    it("should handle empty task data", async () => {
+      const result = await pool.executeTask("test", null);
       expect(result).toBeDefined();
     });
 
-    it('should handle concurrent termination and execution', async () => {
-      const task = pool.executeTask('test', {});
+    it("should handle concurrent termination and execution", async () => {
+      const task = pool.executeTask("test", {});
 
       // Terminate while task is running
       setTimeout(() => pool.terminate(), 5);
@@ -306,8 +330,8 @@ describe(WorkerPool, () => {
       await expect(task).rejects.toThrow();
     });
 
-    it('should handle rapid task submission', async () => {
-      const tasks = Array.from({ length: 100 }, (_, i) => pool.executeTask('test', { index: i }));
+    it("should handle rapid task submission", async () => {
+      const tasks = Array.from({ length: 100 }, (_, i) => pool.executeTask("test", { index: i }));
 
       const results = await Promise.all(tasks);
       expect(results).toHaveLength(100);

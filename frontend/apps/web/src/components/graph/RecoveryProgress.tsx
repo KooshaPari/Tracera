@@ -1,8 +1,8 @@
-import { RefreshCw } from 'lucide-react';
-import { memo, useEffect, useState } from 'react';
+import { RefreshCw } from "lucide-react";
+import { memo, useEffect, useState } from "react";
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 
 interface RecoveryProgressProps {
   retryCount: number;
@@ -35,17 +35,17 @@ export const RecoveryProgress = memo(function RecoveryProgress({
 
   return (
     <Alert>
-      <RefreshCw className='h-4 w-4 animate-spin' />
+      <RefreshCw className="h-4 w-4 animate-spin" />
       <AlertTitle>Retrying connection...</AlertTitle>
       <AlertDescription>
-        <div className='mt-2 space-y-2'>
-          <div className='text-muted-foreground flex justify-between text-xs'>
+        <div className="mt-2 space-y-2">
+          <div className="text-muted-foreground flex justify-between text-xs">
             <span>
               Attempt {retryCount + 1} of {maxRetries}
             </span>
             <span>Next retry in {Math.ceil(countdown / MS_PER_SEC)}s</span>
           </div>
-          <Progress value={progress} className='h-1' />
+          <Progress value={progress} className="h-1" />
         </div>
       </AlertDescription>
     </Alert>

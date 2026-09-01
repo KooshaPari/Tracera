@@ -2,9 +2,9 @@
  * React Query hooks for GitHub API.
  */
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from "@tanstack/react-query";
 
-import type { CreateRepoRequest, GitHubRepo } from '../api/github';
+import type { CreateRepoRequest, GitHubRepo } from "../api/github";
 
 import {
   createGitHubRepo,
@@ -13,7 +13,7 @@ import {
   linkGitHubAppInstallation,
   listGitHubAppInstallations,
   listGitHubRepos,
-} from '../api/github';
+} from "../api/github";
 
 /**
  * Get GitHub App installation URL.
@@ -22,7 +22,7 @@ export function useGitHubAppInstallUrl(accountId: string | undefined) {
   return useQuery({
     enabled: Boolean(accountId),
     queryFn: async () => getGitHubAppInstallUrl(accountId!),
-    queryKey: ['github', 'app', 'install-url', accountId],
+    queryKey: ["github", "app", "install-url", accountId],
   });
 }
 
@@ -33,7 +33,7 @@ export function useGitHubAppInstallations(accountId: string | undefined) {
   return useQuery({
     enabled: Boolean(accountId),
     queryFn: async () => listGitHubAppInstallations(accountId!),
-    queryKey: ['github', 'app', 'installations', accountId],
+    queryKey: ["github", "app", "installations", accountId],
   });
 }
 
@@ -75,7 +75,7 @@ export function useGitHubRepos(params: {
   return useQuery({
     enabled: Boolean(params.installationId ?? params.credentialId),
     queryFn: async () => listGitHubRepos(params),
-    queryKey: ['github', 'repos', params],
+    queryKey: ["github", "repos", params],
   });
 }
 

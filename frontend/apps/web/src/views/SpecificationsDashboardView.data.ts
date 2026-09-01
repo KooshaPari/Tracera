@@ -1,4 +1,4 @@
-import type { ADR, Contract, Feature, SpecificationSummary, TypedItem } from '@tracertm/types';
+import type { ADR, Contract, Feature, SpecificationSummary, TypedItem } from "@tracertm/types";
 
 export interface TypeDistributionRow {
   type: string;
@@ -18,31 +18,31 @@ export interface CoverageDataItem {
 export interface GapItem {
   id: string;
   label: string;
-  priority: 'critical' | 'high' | 'medium' | 'low';
-  gapType: 'no_tests' | 'no_adr' | 'no_contract' | 'orphaned';
+  priority: "critical" | "high" | "medium" | "low";
+  gapType: "no_tests" | "no_adr" | "no_contract" | "orphaned";
   affectedItems?: number;
   impact?: string;
   suggestion?: string;
-  linkedResources?: { type: 'test_case' | 'adr' | 'contract'; id: string; label: string }[];
+  linkedResources?: { type: "test_case" | "adr" | "contract"; id: string; label: string }[];
 }
 
-const ONE_HUNDRED = Number('100');
-const TWO = Number('2');
-const PASS_RATE_GAP_THRESHOLD = Number('80');
-const MAX_GAP_ITEMS = Number('5');
-const MAX_TYPE_DISTRIBUTION_ROWS = Number('8');
-const MAX_ADR_COVERAGE_ITEMS = Number('5');
+const ONE_HUNDRED = Number("100");
+const TWO = Number("2");
+const PASS_RATE_GAP_THRESHOLD = Number("80");
+const MAX_GAP_ITEMS = Number("5");
+const MAX_TYPE_DISTRIBUTION_ROWS = Number("8");
+const MAX_ADR_COVERAGE_ITEMS = Number("5");
 
-const ADR_WEIGHT = Number('0.3');
-const CONTRACT_WEIGHT = Number('0.35');
-const FEATURE_WEIGHT = Number('0.35');
+const ADR_WEIGHT = Number("0.3");
+const CONTRACT_WEIGHT = Number("0.35");
+const FEATURE_WEIGHT = Number("0.35");
 
 function normalizeItemType(type: string): string {
   const normalized = type.trim().toLowerCase();
   if (normalized.length > 0) {
     return normalized;
   }
-  return 'unknown';
+  return "unknown";
 }
 
 function clampToPercentage(value: number): number {
@@ -83,17 +83,17 @@ export function buildTypeDistribution(items: TypedItem[]): TypeDistributionRow[]
   return rows.slice(0, MAX_TYPE_DISTRIBUTION_ROWS);
 }
 
-function buildAdrMetrics(adrs: ADR[]): SpecificationSummary['adrs'] {
+function buildAdrMetrics(adrs: ADR[]): SpecificationSummary["adrs"] {
   const total = adrs.length;
   let accepted = 0;
   let proposed = 0;
   let complianceSum = 0;
 
   for (const adr of adrs) {
-    if (adr.status === 'accepted') {
+    if (adr.status === "accepted") {
       accepted += 1;
     }
-    if (adr.status === 'proposed') {
+    if (adr.status === "proposed") {
       proposed += 1;
     }
     complianceSum += adr.complianceScore ?? 0;
@@ -107,20 +107,20 @@ function buildAdrMetrics(adrs: ADR[]): SpecificationSummary['adrs'] {
   return { accepted, averageCompliance, proposed, total };
 }
 
-function buildContractMetrics(contracts: Contract[]): SpecificationSummary['contracts'] {
+function buildContractMetrics(contracts: Contract[]): SpecificationSummary["contracts"] {
   const total = contracts.length;
   let active = 0;
   let verified = 0;
   let violated = 0;
 
   for (const contract of contracts) {
-    if (contract.status === 'active') {
+    if (contract.status === "active") {
       active += 1;
     }
-    if (contract.status === 'verified') {
+    if (contract.status === "verified") {
       verified += 1;
     }
-    if (contract.status === 'violated') {
+    if (contract.status === "violated") {
       violated += 1;
     }
   }
@@ -128,7 +128,7 @@ function buildContractMetrics(contracts: Contract[]): SpecificationSummary['cont
   return { active, total, verified, violated };
 }
 
-function buildFeatureMetrics(features: Feature[]): SpecificationSummary['features'] {
+function buildFeatureMetrics(features: Feature[]): SpecificationSummary["features"] {
   const total = features.length;
   let totalScenarios = 0;
   let passedScenarios = 0;
@@ -204,19 +204,19 @@ export function buildSpecificationSummary(params: {
 
   summary.healthScore = computeHealthScore(summary);
 
-  const healthDetails: SpecificationSummary['healthDetails'] = [];
+  const healthDetails: SpecificationSummary["healthDetails"] = [];
 
   // Architecture Decisions
   const adrIssues: string[] = [];
   if (adrMetrics.total === 0) {
-    adrIssues.push('No ADRs created yet');
+    adrIssues.push("No ADRs created yet");
   } else {
     if (adrMetrics.accepted < adrMetrics.total / TWO) {
-      adrIssues.push('Less than 50% ADRs accepted');
+      adrIssues.push("Less than 50% ADRs accepted");
     }
   }
   healthDetails.push({
-    category: 'Architecture Decisions',
+    category: "Architecture Decisions",
     issues: adrIssues,
     score: Math.round(adrMetrics.averageCompliance),
   });
@@ -224,7 +224,7 @@ export function buildSpecificationSummary(params: {
   // API Contracts
   const contractIssues: string[] = [];
   if (contractMetrics.total === 0) {
-    contractIssues.push('No contracts defined');
+    contractIssues.push("No contracts defined");
   } else {
     if (contractMetrics.verified < contractMetrics.active) {
       contractIssues.push(
@@ -241,7 +241,7 @@ export function buildSpecificationSummary(params: {
     }
   }
   healthDetails.push({
-    category: 'API Contracts',
+    category: "API Contracts",
     issues: contractIssues,
     score: contractScore,
   });
@@ -249,15 +249,15 @@ export function buildSpecificationSummary(params: {
   // Feature Testing
   const featureIssues: string[] = [];
   if (featureMetrics.total === 0) {
-    featureIssues.push('No features defined');
+    featureIssues.push("No features defined");
   } else {
     if (featureMetrics.passRate < PASS_RATE_GAP_THRESHOLD) {
-      featureIssues.push('Pass rate below 80%');
-      featureIssues.push('Pending scenarios detected');
+      featureIssues.push("Pass rate below 80%");
+      featureIssues.push("Pending scenarios detected");
     }
   }
   healthDetails.push({
-    category: 'Feature Testing',
+    category: "Feature Testing",
     issues: featureIssues,
     score: Math.round(featureMetrics.passRate),
   });
@@ -306,26 +306,26 @@ export function buildGapItems(features: Feature[], contracts: Contract[]): GapIt
     if (feature.scenarioCount > 0 && passRate < PASS_RATE_GAP_THRESHOLD) {
       gaps.push({
         affectedItems: 1,
-        gapType: 'no_tests',
+        gapType: "no_tests",
         id: `gap-${feature.id}`,
         impact: `${feature.failedScenarios} failing scenarios`,
         label: feature.name,
-        priority: 'high',
-        suggestion: 'Review and fix failing test scenarios',
+        priority: "high",
+        suggestion: "Review and fix failing test scenarios",
       });
     }
   }
 
   for (const contract of contracts) {
-    if (contract.status === 'violated') {
+    if (contract.status === "violated") {
       gaps.push({
         affectedItems: 1,
-        gapType: 'no_tests',
+        gapType: "no_tests",
         id: `gap-${contract.id}`,
-        impact: 'Contract verification failed',
+        impact: "Contract verification failed",
         label: contract.title,
-        priority: 'critical',
-        suggestion: 'Run tests and fix contract violations',
+        priority: "critical",
+        suggestion: "Run tests and fix contract violations",
       });
     }
   }

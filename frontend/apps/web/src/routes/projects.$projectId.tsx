@@ -1,20 +1,20 @@
-import { Outlet, createFileRoute, useLocation, useParams } from '@tanstack/react-router';
-import { useCallback, Suspense, lazy } from 'react';
+import { Outlet, createFileRoute, useLocation, useParams } from "@tanstack/react-router";
+import { useCallback, Suspense, lazy } from "react";
 
-import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
-import { FullScreenPage } from '@/components/layout/FullScreenPage';
-import { LoadingSpinner } from '@/components/layout/LoadingSpinner';
-import { logger } from '@/lib/logger';
-import { requireAuth } from '@/lib/route-guards';
+import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
+import { FullScreenPage } from "@/components/layout/FullScreenPage";
+import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
+import { logger } from "@/lib/logger";
+import { requireAuth } from "@/lib/route-guards";
 
 const ProjectDetailView = lazy(async () =>
-  import('@/views/ProjectDetailView').then((m) => {
+  import("@/views/ProjectDetailView").then((m) => {
     const Comp = m.ProjectDetailView;
     if (Comp === null || Comp === undefined) {
-      logger.error('ProjectDetailView module did not export a component', m);
+      logger.error("ProjectDetailView module did not export a component", m);
       return {
         default: () => (
-          <div className='text-destructive p-6' role='alert'>
+          <div className="text-destructive p-6" role="alert">
             Failed to load project.
           </div>
         ),
@@ -29,7 +29,7 @@ const ProjectDetailComponent = () => {
   const location = useLocation();
 
   // Check if we are deeper than the project root (i.e. showing a child route)
-  const currentPath = location.pathname.replace(/\/$/, '');
+  const currentPath = location.pathname.replace(/\/$/, "");
   const rootPath = `/projects/${params.projectId}`;
   const isChildRoute = currentPath !== rootPath;
 
@@ -40,8 +40,8 @@ const ProjectDetailComponent = () => {
       ) : (
         <Suspense
           fallback={
-            <div className='flex h-64 items-center justify-center'>
-              <LoadingSpinner text='Loading project...' />
+            <div className="flex h-64 items-center justify-center">
+              <LoadingSpinner text="Loading project..." />
             </div>
           }
         >
@@ -60,16 +60,16 @@ const ErrorComponent = ({ error }: { error?: Error }) => {
 
   return (
     <FullScreenPage>
-      <div className='bg-background text-foreground flex min-h-screen flex-col items-center justify-center'>
-        <h1 className='text-destructive mb-4 text-2xl font-bold'>Project Not Found</h1>
-        <p className='text-muted-foreground mb-6'>
+      <div className="bg-background text-foreground flex min-h-screen flex-col items-center justify-center">
+        <h1 className="text-destructive mb-4 text-2xl font-bold">Project Not Found</h1>
+        <p className="text-muted-foreground mb-6">
           The project you're looking for doesn't exist or you don't have access.
         </p>
-        {error && <p className='text-muted-foreground mb-4 text-sm'>Error: {error.message}</p>}
-        {projectId && <p className='text-muted-foreground mb-4 text-xs'>Project ID: {projectId}</p>}
+        {error && <p className="text-muted-foreground mb-4 text-sm">Error: {error.message}</p>}
+        {projectId && <p className="text-muted-foreground mb-4 text-xs">Project ID: {projectId}</p>}
         <button
           onClick={handleGoBack}
-          className='bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2'
+          className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2"
         >
           Go Back
         </button>
@@ -78,7 +78,7 @@ const ErrorComponent = ({ error }: { error?: Error }) => {
   );
 };
 
-export const Route = createFileRoute('/projects/$projectId')({
+export const Route = createFileRoute("/projects/$projectId")({
   beforeLoad: async () => {
     await requireAuth();
   },

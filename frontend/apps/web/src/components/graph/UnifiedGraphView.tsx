@@ -2,7 +2,7 @@
 // Supports multiple perspectives, dimension filtering, and equivalence display
 // Implements: Single, Split, Layered, Unified, and Pivot display modes
 
-import { ReactFlowProvider } from '@xyflow/react';
+import { ReactFlowProvider } from "@xyflow/react";
 import {
   ArrowLeftRight,
   Columns2,
@@ -15,8 +15,8 @@ import {
   Link2,
   Maximize2,
   Merge,
-} from 'lucide-react';
-import { memo, useCallback, useMemo, useState } from 'react';
+} from "lucide-react";
+import { memo, useCallback, useMemo, useState } from "react";
 
 import type {
   CanonicalConcept,
@@ -25,37 +25,37 @@ import type {
   Item,
   Link,
   DimensionFilter,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
-import { cn } from '@tracertm/ui';
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
-import { Card } from '@tracertm/ui/components/Card';
+import { cn } from "@tracertm/ui";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@tracertm/ui/components/Select';
+} from "@tracertm/ui/components/Select";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@tracertm/ui/components/Tooltip';
+} from "@tracertm/ui/components/Tooltip";
 
-import type { GraphViewMode } from './GraphViewConfig';
-import type { LayoutType } from './layouts/useDagLayout';
-import type { GraphPerspective } from './types';
+import type { GraphViewMode } from "./GraphViewConfig";
+import type { LayoutType } from "./layouts/useDagLayout";
+import type { GraphPerspective } from "./types";
 
-import { DimensionFilters, applyDimensionFilters } from './DimensionFilters';
-import { FlowGraphViewInner } from './FlowGraphViewInner';
-import { GraphViewContainer } from './GraphViewContainer';
-import { PageInteractionFlow } from './PageInteractionFlow';
-import { PivotNavigation, buildPivotTargets } from './PivotNavigation';
-import { PERSPECTIVE_CONFIGS, TYPE_TO_PERSPECTIVE } from './types';
-import { UIComponentTree } from './UIComponentTree';
+import { DimensionFilters, applyDimensionFilters } from "./DimensionFilters";
+import { FlowGraphViewInner } from "./FlowGraphViewInner";
+import { GraphViewContainer } from "./GraphViewContainer";
+import { PageInteractionFlow } from "./PageInteractionFlow";
+import { PivotNavigation, buildPivotTargets } from "./PivotNavigation";
+import { PERSPECTIVE_CONFIGS, TYPE_TO_PERSPECTIVE } from "./types";
+import { UIComponentTree } from "./UIComponentTree";
 
 // =============================================================================
 // TYPES
@@ -65,19 +65,19 @@ import { UIComponentTree } from './UIComponentTree';
  * Multi-perspective display modes
  */
 export type DisplayMode =
-  | 'single' // One perspective, cross-links hidden
-  | 'split' // Side-by-side perspectives, equivalences as bridges
-  | 'layered' // Perspectives as semi-transparent layers
-  | 'unified' // All perspectives merged, dimension-colored
-  | 'pivot'; // Focus on one node, show its projections in all perspectives
+  | "single" // One perspective, cross-links hidden
+  | "split" // Side-by-side perspectives, equivalences as bridges
+  | "layered" // Perspectives as semi-transparent layers
+  | "unified" // All perspectives merged, dimension-colored
+  | "pivot"; // Focus on one node, show its projections in all perspectives
 
 /**
  * Equivalence visualization modes
  */
 export type EquivalenceMode =
-  | 'hide' // Don't show equivalence links
-  | 'highlight' // Show equivalence links with special styling
-  | 'merge'; // Merge equivalent nodes into single composite node
+  | "hide" // Don't show equivalence links
+  | "highlight" // Show equivalence links with special styling
+  | "merge"; // Merge equivalent nodes into single composite node
 
 /**
  * Journey/trace overlay
@@ -85,7 +85,7 @@ export type EquivalenceMode =
 export interface DerivedJourney {
   id: string;
   name: string;
-  type: 'user_flow' | 'data_path' | 'call_chain' | 'test_trace';
+  type: "user_flow" | "data_path" | "call_chain" | "test_trace";
   nodeIds: string[];
   links: { sourceId: string; targetId: string; type: string }[];
   color?: string | undefined;
@@ -152,34 +152,34 @@ const DISPLAY_MODE_CONFIGS: {
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
   {
-    description: 'One perspective at a time',
+    description: "One perspective at a time",
     icon: Maximize2,
-    id: 'single',
-    label: 'Single',
+    id: "single",
+    label: "Single",
   },
   {
-    description: 'Side-by-side comparison',
+    description: "Side-by-side comparison",
     icon: Columns2,
-    id: 'split',
-    label: 'Split',
+    id: "split",
+    label: "Split",
   },
   {
-    description: 'Overlapping perspectives',
+    description: "Overlapping perspectives",
     icon: Layers2,
-    id: 'layered',
-    label: 'Layered',
+    id: "layered",
+    label: "Layered",
   },
   {
-    description: 'All merged with dimensions',
+    description: "All merged with dimensions",
     icon: Merge,
-    id: 'unified',
-    label: 'Unified',
+    id: "unified",
+    label: "Unified",
   },
   {
-    description: 'Focus on equivalences',
+    description: "Focus on equivalences",
     icon: Focus,
-    id: 'pivot',
-    label: 'Pivot',
+    id: "pivot",
+    label: "Pivot",
   },
 ];
 
@@ -188,9 +188,9 @@ const EQUIVALENCE_MODE_CONFIGS: {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
-  { icon: EyeOff, id: 'hide', label: 'Hide' },
-  { icon: Link2, id: 'highlight', label: 'Highlight' },
-  { icon: Merge, id: 'merge', label: 'Merge' },
+  { icon: EyeOff, id: "hide", label: "Hide" },
+  { icon: Link2, id: "highlight", label: "Highlight" },
+  { icon: Merge, id: "merge", label: "Merge" },
 ];
 
 // =============================================================================
@@ -205,13 +205,13 @@ function filterByPerspective(
   links: Link[],
   perspective: GraphPerspective | null,
 ): { filteredItems: Item[]; filteredLinks: Link[] } {
-  if (!perspective || perspective === 'all') {
+  if (!perspective || perspective === "all") {
     return { filteredItems: items, filteredLinks: links };
   }
 
   const filteredItems = items.filter((item) => {
-    const itemType = (item.type || item.view || 'item').toLowerCase();
-    const perspectives = TYPE_TO_PERSPECTIVE[itemType] ?? ['all'];
+    const itemType = (item.type || item.view || "item").toLowerCase();
+    const perspectives = TYPE_TO_PERSPECTIVE[itemType] ?? ["all"];
     return perspectives.includes(perspective);
   });
 
@@ -255,7 +255,7 @@ function addEquivalenceLinks(
   equivalenceLinks: EquivalenceLink[],
   mode: EquivalenceMode,
 ): Link[] {
-  if (mode === 'hide' || !equivalenceLinks || equivalenceLinks.length === 0) {
+  if (mode === "hide" || !equivalenceLinks || equivalenceLinks.length === 0) {
     return links;
   }
 
@@ -264,7 +264,7 @@ function addEquivalenceLinks(
     projectId: eq.projectId,
     sourceId: eq.sourceItemId,
     targetId: eq.targetItemId,
-    type: 'same_as' as const,
+    type: "same_as" as const,
     version: 1,
     createdAt: eq.createdAt,
     updatedAt: eq.updatedAt,
@@ -335,24 +335,24 @@ const DisplayModeSelector = memo(function DisplayModeSelector({
 }: DisplayModeSelectorProps) {
   return (
     <TooltipProvider>
-      <div className='bg-muted flex items-center gap-1 rounded-lg p-1'>
+      <div className="bg-muted flex items-center gap-1 rounded-lg p-1">
         {DISPLAY_MODE_CONFIGS.map((config) => (
           <Tooltip key={config.id} delayDuration={300}>
             <TooltipTrigger asChild>
               <Button
-                variant={mode === config.id ? 'secondary' : 'ghost'}
-                size='sm'
-                className={cn('h-8 w-8 p-0', mode === config.id && 'bg-background shadow-sm')}
+                variant={mode === config.id ? "secondary" : "ghost"}
+                size="sm"
+                className={cn("h-8 w-8 p-0", mode === config.id && "bg-background shadow-sm")}
                 onClick={() => {
                   onChange(config.id);
                 }}
               >
-                <config.icon className='h-4 w-4' />
+                <config.icon className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side='bottom'>
-              <p className='font-medium'>{config.label}</p>
-              <p className='text-muted-foreground text-xs'>{config.description}</p>
+            <TooltipContent side="bottom">
+              <p className="font-medium">{config.label}</p>
+              <p className="text-muted-foreground text-xs">{config.description}</p>
             </TooltipContent>
           </Tooltip>
         ))}
@@ -380,25 +380,25 @@ const EquivalenceModeSelector = memo(function EquivalenceModeSelector({
   }
 
   return (
-    <div className='flex items-center gap-2'>
-      <span className='text-muted-foreground text-xs'>Equivalences</span>
-      <div className='bg-muted flex items-center gap-0.5 rounded-md p-0.5'>
+    <div className="flex items-center gap-2">
+      <span className="text-muted-foreground text-xs">Equivalences</span>
+      <div className="bg-muted flex items-center gap-0.5 rounded-md p-0.5">
         {EQUIVALENCE_MODE_CONFIGS.map((config) => (
           <Button
             key={config.id}
-            variant={mode === config.id ? 'secondary' : 'ghost'}
-            size='sm'
-            className='h-6 px-2 text-xs'
+            variant={mode === config.id ? "secondary" : "ghost"}
+            size="sm"
+            className="h-6 px-2 text-xs"
             onClick={() => {
               onChange(config.id);
             }}
           >
-            <config.icon className='mr-1 h-3 w-3' />
+            <config.icon className="mr-1 h-3 w-3" />
             {config.label}
           </Button>
         ))}
       </div>
-      <Badge variant='secondary' className='text-xs'>
+      <Badge variant="secondary" className="text-xs">
         {equivalenceCount}
       </Badge>
     </div>
@@ -425,25 +425,25 @@ const JourneySelector = memo(function JourneySelector({
 
   return (
     <Select
-      value={activeJourney?.id ?? 'none'}
+      value={activeJourney?.id ?? "none"}
       onValueChange={(value) => {
-        if (value === 'none') {
+        if (value === "none") {
           onChange(undefined);
         } else {
           onChange(availableJourneys.find((j) => j.id === value));
         }
       }}
     >
-      <SelectTrigger className='h-8 w-[180px]'>
-        <SelectValue placeholder='Select journey' />
+      <SelectTrigger className="h-8 w-[180px]">
+        <SelectValue placeholder="Select journey" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value='none'>No journey overlay</SelectItem>
+        <SelectItem value="none">No journey overlay</SelectItem>
         {availableJourneys.map((journey) => (
           <SelectItem key={journey.id} value={journey.id}>
-            <div className='flex items-center gap-2'>
+            <div className="flex items-center gap-2">
               {journey.color && (
-                <div className='h-2 w-2 rounded-full' style={{ backgroundColor: journey.color }} />
+                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: journey.color }} />
               )}
               <span>{journey.name}</span>
             </div>
@@ -488,23 +488,23 @@ function SplitView({
   const rightConfig = PERSPECTIVE_CONFIGS.find((c) => c.id === rightPerspective);
 
   return (
-    <div className='flex h-full gap-2 p-2'>
+    <div className="flex h-full gap-2 p-2">
       {/* Left perspective */}
-      <div className='flex-1 overflow-hidden rounded-lg border'>
+      <div className="flex-1 overflow-hidden rounded-lg border">
         <div
-          className='flex items-center gap-2 border-b px-3 py-2 text-sm font-medium'
+          className="flex items-center gap-2 border-b px-3 py-2 text-sm font-medium"
           style={{
             backgroundColor: `${leftConfig?.color}10`,
             borderColor: leftConfig?.color,
           }}
         >
-          <div className='h-2 w-2 rounded-full' style={{ backgroundColor: leftConfig?.color }} />
+          <div className="h-2 w-2 rounded-full" style={{ backgroundColor: leftConfig?.color }} />
           {leftConfig?.label}
-          <Badge variant='secondary' className='ml-auto text-xs'>
+          <Badge variant="secondary" className="ml-auto text-xs">
             {leftData.filteredItems.length}
           </Badge>
         </div>
-        <div className='h-[calc(100%-44px)]'>
+        <div className="h-[calc(100%-44px)]">
           <ReactFlowProvider>
             <FlowGraphViewInner
               items={leftData.filteredItems}
@@ -517,11 +517,11 @@ function SplitView({
       </div>
 
       {/* Bridge links indicator */}
-      <div className='flex w-10 flex-col items-center justify-center'>
-        <div className='flex flex-col items-center gap-2'>
-          <ArrowLeftRight className='text-muted-foreground h-5 w-5' />
+      <div className="flex w-10 flex-col items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <ArrowLeftRight className="text-muted-foreground h-5 w-5" />
           {equivalenceLinks.length > 0 && (
-            <Badge variant='outline' className='text-[10px]'>
+            <Badge variant="outline" className="text-[10px]">
               {equivalenceLinks.length}
             </Badge>
           )}
@@ -529,21 +529,21 @@ function SplitView({
       </div>
 
       {/* Right perspective */}
-      <div className='flex-1 overflow-hidden rounded-lg border'>
+      <div className="flex-1 overflow-hidden rounded-lg border">
         <div
-          className='flex items-center gap-2 border-b px-3 py-2 text-sm font-medium'
+          className="flex items-center gap-2 border-b px-3 py-2 text-sm font-medium"
           style={{
             backgroundColor: `${rightConfig?.color}10`,
             borderColor: rightConfig?.color,
           }}
         >
-          <div className='h-2 w-2 rounded-full' style={{ backgroundColor: rightConfig?.color }} />
+          <div className="h-2 w-2 rounded-full" style={{ backgroundColor: rightConfig?.color }} />
           {rightConfig?.label}
-          <Badge variant='secondary' className='ml-auto text-xs'>
+          <Badge variant="secondary" className="ml-auto text-xs">
             {rightData.filteredItems.length}
           </Badge>
         </div>
-        <div className='h-[calc(100%-44px)]'>
+        <div className="h-[calc(100%-44px)]">
           <ReactFlowProvider>
             <FlowGraphViewInner
               items={rightData.filteredItems}
@@ -599,20 +599,20 @@ function PivotView({
 
   const currentPerspective = useMemo(() => {
     if (!focusedItem) {
-      return 'all' as GraphPerspective;
+      return "all" as GraphPerspective;
     }
-    const itemType = (focusedItem.type || focusedItem.view || 'item').toLowerCase();
-    const perspectives = TYPE_TO_PERSPECTIVE[itemType] ?? ['all'];
+    const itemType = (focusedItem.type || focusedItem.view || "item").toLowerCase();
+    const perspectives = TYPE_TO_PERSPECTIVE[itemType] ?? ["all"];
     return perspectives[0]!;
   }, [focusedItem]);
 
   if (!focusedItem) {
     return (
-      <div className='flex h-full items-center justify-center'>
-        <div className='p-8 text-center'>
-          <Focus className='text-muted-foreground mx-auto mb-4 h-12 w-12' />
-          <h3 className='mb-2 text-lg font-medium'>Pivot Mode</h3>
-          <p className='text-muted-foreground max-w-md text-sm'>
+      <div className="flex h-full items-center justify-center">
+        <div className="p-8 text-center">
+          <Focus className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+          <h3 className="mb-2 text-lg font-medium">Pivot Mode</h3>
+          <p className="text-muted-foreground max-w-md text-sm">
             Select an item in the graph to see its equivalences across all perspectives. This view
             helps you understand how concepts manifest in different views.
           </p>
@@ -622,29 +622,29 @@ function PivotView({
   }
 
   return (
-    <div className='flex h-full'>
+    <div className="flex h-full">
       {/* Main graph view */}
-      <div className='flex-1 p-4'>
+      <div className="flex-1 p-4">
         <ReactFlowProvider>
           <FlowGraphViewInner
             items={items}
             links={links}
-            perspective='all'
+            perspective="all"
             onNavigateToItem={onNavigateToItem}
           />
         </ReactFlowProvider>
       </div>
 
       {/* Pivot sidebar */}
-      <div className='bg-muted/30 w-80 overflow-y-auto border-l'>
-        <div className='border-b p-4'>
-          <h3 className='mb-1 font-semibold'>{focusedItem.title}</h3>
-          <p className='text-muted-foreground text-sm'>
+      <div className="bg-muted/30 w-80 overflow-y-auto border-l">
+        <div className="border-b p-4">
+          <h3 className="mb-1 font-semibold">{focusedItem.title}</h3>
+          <p className="text-muted-foreground text-sm">
             {focusedItem.type} in {currentPerspective} view
           </p>
         </div>
 
-        <div className='p-4'>
+        <div className="p-4">
           <PivotNavigation
             currentPerspective={currentPerspective}
             equivalentItems={pivotTargets}
@@ -654,31 +654,31 @@ function PivotView({
         </div>
 
         {pivotTargets.length > 0 && (
-          <div className='border-t p-4'>
-            <h4 className='mb-3 text-sm font-medium'>Equivalent Items</h4>
-            <div className='space-y-2'>
+          <div className="border-t p-4">
+            <h4 className="mb-3 text-sm font-medium">Equivalent Items</h4>
+            <div className="space-y-2">
               {pivotTargets.slice(0, 5).map((target) => {
                 const config = PERSPECTIVE_CONFIGS.find((c) => c.id === target.perspectiveId);
                 return (
                   <button
                     key={target.item.id}
-                    type='button'
-                    className='bg-background hover:bg-muted w-full rounded-lg border p-2 text-left transition-colors'
+                    type="button"
+                    className="bg-background hover:bg-muted w-full rounded-lg border p-2 text-left transition-colors"
                     onClick={() => {
                       onPivot(target.perspectiveId, target.item.id);
                     }}
                   >
-                    <div className='mb-1 flex items-center gap-2'>
+                    <div className="mb-1 flex items-center gap-2">
                       <div
-                        className='h-2 w-2 rounded-full'
+                        className="h-2 w-2 rounded-full"
                         style={{ backgroundColor: config?.color }}
                       />
-                      <span className='text-muted-foreground text-xs'>{config?.label}</span>
-                      <Badge variant='secondary' className='ml-auto text-[10px]'>
+                      <span className="text-muted-foreground text-xs">{config?.label}</span>
+                      <Badge variant="secondary" className="ml-auto text-[10px]">
                         {Math.round(target.confidence * 100)}%
                       </Badge>
                     </div>
-                    <p className='truncate text-sm font-medium'>{target.item.title}</p>
+                    <p className="truncate text-sm font-medium">{target.item.title}</p>
                   </button>
                 );
               })}
@@ -703,13 +703,13 @@ function ComponentLibraryView({
   onNavigateToItem?: ((itemId: string) => void) | undefined;
 }) {
   return (
-    <div className='h-full p-4'>
-      <Card className='h-full overflow-hidden'>
-        <div className='flex items-center gap-2 border-b p-4'>
-          <Component className='text-primary h-5 w-5' />
-          <h2 className='font-semibold'>UI Component Library</h2>
+    <div className="h-full p-4">
+      <Card className="h-full overflow-hidden">
+        <div className="flex items-center gap-2 border-b p-4">
+          <Component className="text-primary h-5 w-5" />
+          <h2 className="font-semibold">UI Component Library</h2>
         </div>
-        <div className='h-[calc(100%-60px)]'>
+        <div className="h-[calc(100%-60px)]">
           <UIComponentTree
             items={items}
             links={links}
@@ -757,7 +757,7 @@ function ViewRenderer({
   canonicalProjections,
   onNavigateToItem,
   onPivot,
-  splitPerspectives = ['product', 'technical'],
+  splitPerspectives = ["product", "technical"],
 }: ViewRendererProps) {
   // Apply perspective filtering
   const { filteredItems, filteredLinks } = useMemo(
@@ -778,7 +778,7 @@ function ViewRenderer({
   );
 
   // Handle special display modes
-  if (displayMode === 'split' && viewMode !== 'page-flow' && viewMode !== 'components') {
+  if (displayMode === "split" && viewMode !== "page-flow" && viewMode !== "components") {
     return (
       <SplitView
         items={items}
@@ -790,7 +790,7 @@ function ViewRenderer({
     );
   }
 
-  if (displayMode === 'pivot' && viewMode !== 'page-flow' && viewMode !== 'components') {
+  if (displayMode === "pivot" && viewMode !== "page-flow" && viewMode !== "components") {
     return (
       <PivotView
         items={items}
@@ -806,9 +806,9 @@ function ViewRenderer({
 
   // Render based on view mode
   switch (viewMode) {
-    case 'page-flow': {
+    case "page-flow": {
       return (
-        <div className='h-full p-4'>
+        <div className="h-full p-4">
           <PageInteractionFlow
             items={items}
             links={links}
@@ -819,19 +819,19 @@ function ViewRenderer({
       );
     }
 
-    case 'components': {
+    case "components": {
       return (
         <ComponentLibraryView items={items} links={links} onNavigateToItem={onNavigateToItem} />
       );
     }
     default: {
       return (
-        <div className='h-full p-4'>
+        <div className="h-full p-4">
           <ReactFlowProvider>
             <FlowGraphViewInner
               items={journeyItems}
               links={journeyLinks}
-              perspective={perspective ?? 'all'}
+              perspective={perspective ?? "all"}
               defaultLayout={layoutPreference}
               onNavigateToItem={onNavigateToItem}
             />
@@ -852,7 +852,7 @@ export function UnifiedGraphView({
   isLoading = false,
   projectId,
   onNavigateToItem,
-  defaultView = 'traceability',
+  defaultView = "traceability",
 
   // ✅ NEW: Progressive edge loading
   canLoadMore,
@@ -889,13 +889,13 @@ export function UnifiedGraphView({
   onFocusedItemChange,
 }: UnifiedGraphViewProps) {
   // Internal state (used if not controlled externally)
-  const [internalDisplayMode, setInternalDisplayMode] = useState<DisplayMode>('single');
-  const [internalEquivalenceMode, setInternalEquivalenceMode] = useState<EquivalenceMode>('hide');
+  const [internalDisplayMode, setInternalDisplayMode] = useState<DisplayMode>("single");
+  const [internalEquivalenceMode, setInternalEquivalenceMode] = useState<EquivalenceMode>("hide");
   const [internalFilters, setInternalFilters] = useState<DimensionFilter[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [splitPerspectives, setSplitPerspectives] = useState<[GraphPerspective, GraphPerspective]>([
-    'product',
-    'technical',
+    "product",
+    "technical",
   ]);
 
   // Use external or internal state
@@ -956,44 +956,44 @@ export function UnifiedGraphView({
   );
 
   return (
-    <div className='flex h-[calc(100vh-120px)] flex-col'>
+    <div className="flex h-[calc(100vh-120px)] flex-col">
       {/* Enhanced toolbar */}
-      <div className='bg-background flex items-center gap-4 border-b px-4 py-2'>
+      <div className="bg-background flex items-center gap-4 border-b px-4 py-2">
         {/* Display mode selector */}
         <DisplayModeSelector mode={displayMode} onChange={handleDisplayModeChange} />
 
         {/* Split perspective selectors (when in split mode) */}
-        {displayMode === 'split' && (
-          <div className='flex items-center gap-2'>
+        {displayMode === "split" && (
+          <div className="flex items-center gap-2">
             <Select
               value={splitPerspectives[0]}
               onValueChange={(v) => {
                 setSplitPerspectives([v, splitPerspectives[1]]);
               }}
             >
-              <SelectTrigger className='h-8 w-[140px]'>
+              <SelectTrigger className="h-8 w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {PERSPECTIVE_CONFIGS.filter((c) => c.id !== 'all').map((config) => (
+                {PERSPECTIVE_CONFIGS.filter((c) => c.id !== "all").map((config) => (
                   <SelectItem key={config.id} value={config.id}>
                     {config.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <span className='text-muted-foreground'>vs</span>
+            <span className="text-muted-foreground">vs</span>
             <Select
               value={splitPerspectives[1]}
               onValueChange={(v) => {
                 setSplitPerspectives([splitPerspectives[0], v]);
               }}
             >
-              <SelectTrigger className='h-8 w-[140px]'>
+              <SelectTrigger className="h-8 w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {PERSPECTIVE_CONFIGS.filter((c) => c.id !== 'all').map((config) => (
+                {PERSPECTIVE_CONFIGS.filter((c) => c.id !== "all").map((config) => (
                   <SelectItem key={config.id} value={config.id}>
                     {config.label}
                   </SelectItem>
@@ -1003,7 +1003,7 @@ export function UnifiedGraphView({
           </div>
         )}
 
-        <div className='flex-1' />
+        <div className="flex-1" />
 
         {/* Equivalence mode selector */}
         <EquivalenceModeSelector
@@ -1021,17 +1021,17 @@ export function UnifiedGraphView({
 
         {/* Dimension filters toggle */}
         <Button
-          variant={showFilters ? 'secondary' : 'ghost'}
-          size='sm'
-          className='h-8'
+          variant={showFilters ? "secondary" : "ghost"}
+          size="sm"
+          className="h-8"
           onClick={() => {
             setShowFilters(!showFilters);
           }}
         >
-          <Filter className='mr-2 h-4 w-4' />
+          <Filter className="mr-2 h-4 w-4" />
           Filters
           {dimensionFilters.length > 0 && (
-            <Badge variant='secondary' className='ml-2 text-xs'>
+            <Badge variant="secondary" className="ml-2 text-xs">
               {dimensionFilters.length}
             </Badge>
           )}
@@ -1040,12 +1040,12 @@ export function UnifiedGraphView({
         {/* Canonical layer toggle */}
         {canonicalConcepts.length > 0 && (
           <Button
-            variant={showCanonicalLayer ? 'secondary' : 'ghost'}
-            size='sm'
-            className='h-8'
+            variant={showCanonicalLayer ? "secondary" : "ghost"}
+            size="sm"
+            className="h-8"
             onClick={() => onShowCanonicalLayerChange?.(!showCanonicalLayer)}
           >
-            <Layers className='mr-2 h-4 w-4' />
+            <Layers className="mr-2 h-4 w-4" />
             Canonical
           </Button>
         )}
@@ -1053,11 +1053,11 @@ export function UnifiedGraphView({
 
       {/* Dimension filters panel */}
       {showFilters && (
-        <div className='border-b'>
+        <div className="border-b">
           <DimensionFilters
             activeFilters={dimensionFilters}
             onFiltersChange={handleFiltersChange}
-            displayMode='filter'
+            displayMode="filter"
             onDisplayModeChange={() => {}}
             compact
           />
@@ -1065,7 +1065,7 @@ export function UnifiedGraphView({
       )}
 
       {/* Main content */}
-      <div className='flex-1 overflow-hidden'>
+      <div className="flex-1 overflow-hidden">
         <GraphViewContainer
           items={filteredItems}
           links={filteredLinks}

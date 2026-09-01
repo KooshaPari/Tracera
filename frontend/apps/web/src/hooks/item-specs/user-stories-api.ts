@@ -3,7 +3,7 @@ import type {
   UserStorySpecCreate,
   UserStorySpecUpdate,
   UserStoryStatus,
-} from './types';
+} from "./types";
 
 import {
   API_URL,
@@ -12,7 +12,7 @@ import {
   getBulkHeaders,
   getJsonAuthHeaders,
   readJson,
-} from './constants';
+} from "./constants";
 
 async function fetchUserStorySpecs(
   projectId: string,
@@ -24,10 +24,10 @@ async function fetchUserStorySpecs(
   },
 ): Promise<{ specs: UserStorySpec[]; total: number }> {
   const params = new URLSearchParams();
-  appendParam(params, 'status', options?.status);
-  appendParam(params, 'epic_id', options?.epicId);
-  appendParam(params, 'limit', options?.limit);
-  appendParam(params, 'offset', options?.offset);
+  appendParam(params, "status", options?.status);
+  appendParam(params, "epic_id", options?.epicId);
+  appendParam(params, "limit", options?.limit);
+  appendParam(params, "offset", options?.offset);
 
   const res = await fetch(
     `${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories?${params}`,
@@ -46,7 +46,7 @@ async function fetchUserStorySpec(projectId: string, specId: string): Promise<Us
     { headers: getAuthHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch user story spec');
+    throw new Error("Failed to fetch user story spec");
   }
   return readJson<UserStorySpec>(res);
 }
@@ -57,7 +57,7 @@ async function fetchUserStorySpecByItem(projectId: string, itemId: string): Prom
     { headers: getAuthHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch user story spec by item');
+    throw new Error("Failed to fetch user story spec by item");
   }
   return readJson<UserStorySpec>(res);
 }
@@ -69,10 +69,10 @@ async function createUserStorySpec(
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories`, {
     body: JSON.stringify(data),
     headers: getJsonAuthHeaders(),
-    method: 'POST',
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to create user story spec');
+    throw new Error("Failed to create user story spec");
   }
   return readJson<UserStorySpec>(res);
 }
@@ -87,11 +87,11 @@ async function updateUserStorySpec(
     {
       body: JSON.stringify(data),
       headers: getJsonAuthHeaders(),
-      method: 'PATCH',
+      method: "PATCH",
     },
   );
   if (!res.ok) {
-    throw new Error('Failed to update user story spec');
+    throw new Error("Failed to update user story spec");
   }
   return readJson<UserStorySpec>(res);
 }
@@ -99,10 +99,10 @@ async function updateUserStorySpec(
 async function deleteUserStorySpec(projectId: string, specId: string): Promise<void> {
   const res = await fetch(
     `${API_URL}/api/v1/projects/${projectId}/item-specs/user-stories/${specId}`,
-    { headers: getAuthHeaders(), method: 'DELETE' },
+    { headers: getAuthHeaders(), method: "DELETE" },
   );
   if (!res.ok) {
-    throw new Error('Failed to delete user story spec');
+    throw new Error("Failed to delete user story spec");
   }
 }
 

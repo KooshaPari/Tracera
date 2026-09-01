@@ -1,9 +1,9 @@
 /**
  * Type definitions for jest-axe with Vitest
  */
-import 'vitest';
+import "vitest";
 
-declare module 'vitest' {
+declare module "vitest" {
   interface Assertion<T = unknown> {
     toHaveNoViolations(): T;
   }
@@ -12,7 +12,7 @@ declare module 'vitest' {
   }
 }
 
-declare module 'jest-axe' {
+declare module "jest-axe" {
   export function configureAxe(
     config?: Record<string, unknown>,
   ): (html: Element | Document | string, options?: Record<string, unknown>) => Promise<unknown>;

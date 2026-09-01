@@ -1,8 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CreateTestItemForm } from '../../components/forms/CreateTestItemForm';
+import { CreateTestItemForm } from "../../components/forms/CreateTestItemForm";
 
 let user: ReturnType<typeof userEvent.setup>;
 
@@ -10,18 +10,18 @@ describe(CreateTestItemForm, () => {
   beforeEach(() => {
     user = userEvent.setup();
   });
-  it('renders the form with all required fields', () => {
+  it("renders the form with all required fields", () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
     render(<CreateTestItemForm onSubmit={onSubmit} onCancel={onCancel} />);
 
     // Check for title
-    expect(screen.getByRole('heading', { name: 'Create Test Item' })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Create Test Item" })).toBeInTheDocument();
 
     // Check for required sections
-    expect(screen.getByText('Test Details')).toBeInTheDocument();
-    expect(screen.getByText('Test Specification')).toBeInTheDocument();
+    expect(screen.getByText("Test Details")).toBeInTheDocument();
+    expect(screen.getByText("Test Specification")).toBeInTheDocument();
 
     // Check for base fields
     expect(screen.getByLabelText(/title/i)).toBeInTheDocument();
@@ -38,29 +38,29 @@ describe(CreateTestItemForm, () => {
     expect(screen.getByLabelText(/critical path/i)).toBeInTheDocument();
 
     // Check for buttons
-    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /create test item/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /create test item/i })).toBeInTheDocument();
   });
 
-  it('calls onCancel when cancel button is clicked', async () => {
+  it("calls onCancel when cancel button is clicked", async () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
     render(<CreateTestItemForm onSubmit={onSubmit} onCancel={onCancel} />);
 
-    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    const cancelButton = screen.getByRole("button", { name: /cancel/i });
     await user.click(cancelButton);
 
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
-  it('validates required fields on submit', async () => {
+  it("validates required fields on submit", async () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
     render(<CreateTestItemForm onSubmit={onSubmit} onCancel={onCancel} />);
 
-    const submitButton = screen.getByRole('button', {
+    const submitButton = screen.getByRole("button", {
       name: /create test item/i,
     });
     await user.click(submitButton);
@@ -73,7 +73,7 @@ describe(CreateTestItemForm, () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it('submits form with valid data', async () => {
+  it("submits form with valid data", async () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
@@ -81,18 +81,18 @@ describe(CreateTestItemForm, () => {
 
     // Fill in title
     const titleInput = screen.getByLabelText(/title/i);
-    await user.type(titleInput, 'Test Login Validation');
+    await user.type(titleInput, "Test Login Validation");
 
     // Fill in description
     const descriptionInput = screen.getByLabelText(/description/i);
-    await user.type(descriptionInput, 'Verify login form validation');
+    await user.type(descriptionInput, "Verify login form validation");
 
     // Owner
     const ownerInput = screen.getByLabelText(/owner/i);
-    await user.type(ownerInput, 'test-engineer');
+    await user.type(ownerInput, "test-engineer");
 
     // Submit
-    const submitButton = screen.getByRole('button', {
+    const submitButton = screen.getByRole("button", {
       name: /create test item/i,
     });
     await user.click(submitButton);
@@ -104,16 +104,16 @@ describe(CreateTestItemForm, () => {
     // Verify submitted data structure
     const submittedData = onSubmit.mock.calls[0][0];
     expect(submittedData).toMatchObject({
-      description: 'Verify login form validation',
-      owner: 'test-engineer',
-      priority: 'medium',
-      status: 'todo',
-      test_type: 'unit',
-      title: 'Test Login Validation',
+      description: "Verify login form validation",
+      owner: "test-engineer",
+      priority: "medium",
+      status: "todo",
+      test_type: "unit",
+      title: "Test Login Validation",
     });
   });
 
-  it('allows selecting different test types', async () => {
+  it("allows selecting different test types", async () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
@@ -122,18 +122,18 @@ describe(CreateTestItemForm, () => {
     const testTypeSelect = screen.getByLabelText(/test type/i);
 
     // Check default value
-    expect(testTypeSelect).toHaveValue('unit');
+    expect(testTypeSelect).toHaveValue("unit");
 
     // Change to integration
-    await user.selectOptions(testTypeSelect, 'integration');
-    expect(testTypeSelect).toHaveValue('integration');
+    await user.selectOptions(testTypeSelect, "integration");
+    expect(testTypeSelect).toHaveValue("integration");
 
     // Change to e2e
-    await user.selectOptions(testTypeSelect, 'e2e');
-    expect(testTypeSelect).toHaveValue('e2e');
+    await user.selectOptions(testTypeSelect, "e2e");
+    expect(testTypeSelect).toHaveValue("e2e");
   });
 
-  it('allows toggling critical path checkbox', async () => {
+  it("allows toggling critical path checkbox", async () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
@@ -153,13 +153,13 @@ describe(CreateTestItemForm, () => {
     expect(criticalPathCheckbox).not.toBeChecked();
   });
 
-  it('displays loading state when isLoading is true', () => {
+  it("displays loading state when isLoading is true", () => {
     const onSubmit = vi.fn();
     const onCancel = vi.fn();
 
     render(<CreateTestItemForm onSubmit={onSubmit} onCancel={onCancel} isLoading />);
 
-    const submitButton = screen.getByRole('button', { name: /creating/i });
+    const submitButton = screen.getByRole("button", { name: /creating/i });
     expect(submitButton).toBeDisabled();
   });
 });

@@ -1,4 +1,4 @@
-import { Link, useSearch } from '@tanstack/react-router';
+import { Link, useSearch } from "@tanstack/react-router";
 import {
   ChevronDown,
   ChevronRight,
@@ -12,12 +12,12 @@ import {
   Plus,
   Search,
   Target,
-} from 'lucide-react';
-import { memo, useCallback, useMemo, useState } from 'react';
+} from "lucide-react";
+import { memo, useCallback, useMemo, useState } from "react";
 
-import type { Item } from '@tracertm/types';
+import type { Item } from "@tracertm/types";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 import {
   Badge,
   Button,
@@ -29,16 +29,16 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
-} from '@tracertm/ui';
+} from "@tracertm/ui";
 
-import { useItems } from '../hooks/useItems';
-import { useProjects } from '../hooks/useProjects';
+import { useItems } from "../hooks/useItems";
+import { useProjects } from "../hooks/useProjects";
 
-const ALL_PROJECTS_VALUE = 'all';
+const ALL_PROJECTS_VALUE = "all";
 const INDENT_SIZE_PX = 20;
 const EMPTY_DEPTH = 0;
 const HAS_PARENT_DEPTH = 1;
-const SKELETON_ROWS = ['row-1', 'row-2', 'row-3', 'row-4', 'row-5', 'row-6'] as const;
+const SKELETON_ROWS = ["row-1", "row-2", "row-3", "row-4", "row-5", "row-6"] as const;
 
 interface TreeNode {
   item: Item;
@@ -95,7 +95,7 @@ interface SummaryProps {
 }
 
 interface SummaryCard {
-  id: 'total' | 'root' | 'leaf' | 'depth';
+  id: "total" | "root" | "leaf" | "depth";
   icon: typeof Layers;
   label: string;
   value: number;
@@ -104,11 +104,11 @@ interface SummaryCard {
 const indentStyleCache = new Map<number, React.CSSProperties>();
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
+  return typeof value === "object" && value !== null;
 }
 
 function readOptionalString(value: unknown): string | undefined {
-  return typeof value === 'string' && value.trim().length > 0 ? value : undefined;
+  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 }
 
 function hasText(value: string | undefined): value is string {
@@ -121,10 +121,10 @@ function isItem(value: unknown): value is Item {
   }
 
   return (
-    typeof value.id === 'string' &&
-    typeof value.title === 'string' &&
-    typeof value.type === 'string' &&
-    typeof value.status === 'string'
+    typeof value.id === "string" &&
+    typeof value.title === "string" &&
+    typeof value.type === "string" &&
+    typeof value.status === "string"
   );
 }
 
@@ -141,7 +141,7 @@ function isProjectOption(value: unknown): value is ProjectOption {
     return false;
   }
 
-  return typeof value.id === 'string' && typeof value.name === 'string';
+  return typeof value.id === "string" && typeof value.name === "string";
 }
 
 function extractProjectOptions(data: unknown): ProjectOption[] {
@@ -237,13 +237,13 @@ const TreeExpandButton = memo(function TreeExpandButton({
 }): React.JSX.Element {
   return (
     <button
-      type='button'
+      type="button"
       onClick={onClick}
       aria-expanded={isExpanded}
-      aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${itemTitle}`}
-      className='hover:bg-muted text-muted-foreground flex h-6 w-6 items-center justify-center rounded-lg transition-colors'
+      aria-label={`${isExpanded ? "Collapse" : "Expand"} ${itemTitle}`}
+      className="hover:bg-muted text-muted-foreground flex h-6 w-6 items-center justify-center rounded-lg transition-colors"
     >
-      {isExpanded ? <ChevronDown className='h-4 w-4' /> : <ChevronRight className='h-4 w-4' />}
+      {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
     </button>
   );
 });
@@ -256,13 +256,13 @@ const TreeItemIcon = memo(function TreeItemIcon({
   return (
     <div
       className={cn(
-        'h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors',
+        "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
         isExpanded
-          ? 'bg-primary text-primary-foreground'
-          : 'bg-muted text-muted-foreground group-hover/link:bg-primary/10 group-hover/link:text-primary',
+          ? "bg-primary text-primary-foreground"
+          : "bg-muted text-muted-foreground group-hover/link:bg-primary/10 group-hover/link:text-primary",
       )}
     >
-      <FileText className='h-4 w-4' />
+      <FileText className="h-4 w-4" />
     </div>
   );
 });
@@ -283,45 +283,45 @@ const TreeItemContent = memo(
     const hasProjectFilter = hasText(projectFilter);
 
     return (
-      <div className='flex min-w-0 flex-1 items-center gap-4'>
+      <div className="flex min-w-0 flex-1 items-center gap-4">
         <Link
           to={
             hasProjectFilter
-              ? `/projects/${projectFilter}/views/${String(item.view ?? 'feature').toLowerCase()}/${item.id}`
-              : '/projects'
+              ? `/projects/${projectFilter}/views/${String(item.view ?? "feature").toLowerCase()}/${item.id}`
+              : "/projects"
           }
-          className='group/link flex min-w-0 flex-1 items-center gap-3'
+          className="group/link flex min-w-0 flex-1 items-center gap-3"
         >
           <TreeItemIcon isExpanded={isExpanded} />
-          <div className='flex min-w-0 flex-col'>
-            <span className='group-hover/link:text-primary truncate text-sm font-bold transition-colors'>
+          <div className="flex min-w-0 flex-col">
+            <span className="group-hover/link:text-primary truncate text-sm font-bold transition-colors">
               {item.title}
             </span>
-            <div className='mt-0.5 flex items-center gap-2'>
+            <div className="mt-0.5 flex items-center gap-2">
               <Badge
-                variant='outline'
-                className='h-3.5 px-1 text-[8px] font-black tracking-tighter uppercase'
+                variant="outline"
+                className="h-3.5 px-1 text-[8px] font-black tracking-tighter uppercase"
               >
                 {item.type}
               </Badge>
-              <span className='text-muted-foreground text-[9px] font-bold tracking-widest uppercase'>
+              <span className="text-muted-foreground text-[9px] font-bold tracking-widest uppercase">
                 {item.status}
               </span>
             </div>
           </div>
         </Link>
 
-        <div className='mr-4 hidden shrink-0 items-center gap-6 md:flex'>
+        <div className="mr-4 hidden shrink-0 items-center gap-6 md:flex">
           {hasText(owner) && (
-            <div className='flex items-center gap-1.5'>
-              <div className='bg-muted flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-black uppercase'>
+            <div className="flex items-center gap-1.5">
+              <div className="bg-muted flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-black uppercase">
                 {owner.charAt(0)}
               </div>
-              <span className='text-muted-foreground text-[10px] font-bold uppercase'>{owner}</span>
+              <span className="text-muted-foreground text-[10px] font-bold uppercase">{owner}</span>
             </div>
           )}
           {childCount > EMPTY_DEPTH && (
-            <Badge variant='secondary' className='h-4 rounded-full px-1.5 text-[9px] font-black'>
+            <Badge variant="secondary" className="h-4 rounded-full px-1.5 text-[9px] font-black">
               {childCount}
             </Badge>
           )}
@@ -356,11 +356,11 @@ const TreeItem = memo(
     }, [item.id, onToggleExpand]);
 
     return (
-      <div className='select-none'>
+      <div className="select-none">
         <div
           className={cn(
-            'group flex items-center gap-3 p-2 rounded-xl transition-all duration-200 border border-transparent',
-            isExpanded ? 'bg-primary/[0.03] border-primary/5' : 'hover:bg-muted/50',
+            "group flex items-center gap-3 p-2 rounded-xl transition-all duration-200 border border-transparent",
+            isExpanded ? "bg-primary/[0.03] border-primary/5" : "hover:bg-muted/50",
           )}
           style={getIndentStyle(level)}
         >
@@ -371,8 +371,8 @@ const TreeItem = memo(
               onClick={handleToggle}
             />
           ) : (
-            <div className='flex h-6 w-6 items-center justify-center'>
-              <div className='bg-muted-foreground/30 h-1 w-1 rounded-full' />
+            <div className="flex h-6 w-6 items-center justify-center">
+              <div className="bg-muted-foreground/30 h-1 w-1 rounded-full" />
             </div>
           )}
 
@@ -385,7 +385,7 @@ const TreeItem = memo(
         </div>
 
         {hasChildren && isExpanded && (
-          <div className='before:bg-border/50 relative mt-1 space-y-1 before:absolute before:top-0 before:bottom-0 before:left-[11px] before:w-px'>
+          <div className="before:bg-border/50 relative mt-1 space-y-1 before:absolute before:top-0 before:bottom-0 before:left-[11px] before:w-px">
             {children.map((childNode) => (
               <TreeItem
                 key={childNode.item.id}
@@ -419,16 +419,16 @@ const HeaderActions = memo(function HeaderActions({
   onNavigateToTable,
 }: HeaderActionsProps): React.JSX.Element {
   return (
-    <div className='flex items-center gap-2'>
-      <Button variant='outline' size='sm' onClick={onNavigateToTable} className='gap-2 rounded-xl'>
-        <List className='h-4 w-4' /> Table
+    <div className="flex items-center gap-2">
+      <Button variant="outline" size="sm" onClick={onNavigateToTable} className="gap-2 rounded-xl">
+        <List className="h-4 w-4" /> Table
       </Button>
       <Button
-        size='sm'
+        size="sm"
         onClick={onNavigateToCreate}
-        className='shadow-primary/20 gap-2 rounded-xl shadow-lg'
+        className="shadow-primary/20 gap-2 rounded-xl shadow-lg"
       >
-        <Plus className='h-4 w-4' /> New Node
+        <Plus className="h-4 w-4" /> New Node
       </Button>
     </div>
   );
@@ -444,22 +444,22 @@ const FiltersBar = memo(function FiltersBar({
   searchQuery,
 }: FiltersBarProps): React.JSX.Element {
   return (
-    <Card className='bg-muted/30 flex flex-wrap items-center gap-2 rounded-2xl border-none p-2'>
-      <div className='relative min-w-[200px] flex-1'>
-        <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
+    <Card className="bg-muted/30 flex flex-wrap items-center gap-2 rounded-2xl border-none p-2">
+      <div className="relative min-w-[200px] flex-1">
+        <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
         <Input
-          placeholder='Search hierarchy...'
-          className='h-10 border-none bg-transparent pl-10 focus-visible:ring-0'
+          placeholder="Search hierarchy..."
+          className="h-10 border-none bg-transparent pl-10 focus-visible:ring-0"
           value={searchQuery}
           onChange={onSearchQueryChange}
         />
       </div>
-      <div className='bg-border/50 mx-2 hidden h-6 w-px md:block' />
+      <div className="bg-border/50 mx-2 hidden h-6 w-px md:block" />
       <Select value={projectFilter ?? ALL_PROJECTS_VALUE} onValueChange={onProjectFilterChange}>
-        <SelectTrigger className='hover:bg-background/50 h-10 w-[180px] border-none bg-transparent transition-colors'>
-          <div className='flex items-center gap-2'>
-            <Filter className='text-muted-foreground h-3.5 w-3.5' />
-            <SelectValue placeholder='All Projects' />
+        <SelectTrigger className="hover:bg-background/50 h-10 w-[180px] border-none bg-transparent transition-colors">
+          <div className="flex items-center gap-2">
+            <Filter className="text-muted-foreground h-3.5 w-3.5" />
+            <SelectValue placeholder="All Projects" />
           </div>
         </SelectTrigger>
         <SelectContent>
@@ -471,24 +471,24 @@ const FiltersBar = memo(function FiltersBar({
           ))}
         </SelectContent>
       </Select>
-      <div className='ml-auto flex items-center gap-1 pr-2'>
+      <div className="ml-auto flex items-center gap-1 pr-2">
         <Button
-          variant='ghost'
-          size='icon'
+          variant="ghost"
+          size="icon"
           onClick={onExpandAll}
-          className='text-muted-foreground hover:text-primary h-8 w-8'
-          title='Expand All'
+          className="text-muted-foreground hover:text-primary h-8 w-8"
+          title="Expand All"
         >
-          <Maximize2 className='h-4 w-4' />
+          <Maximize2 className="h-4 w-4" />
         </Button>
         <Button
-          variant='ghost'
-          size='icon'
+          variant="ghost"
+          size="icon"
           onClick={onCollapseAll}
-          className='text-muted-foreground hover:text-primary h-8 w-8'
-          title='Collapse All'
+          className="text-muted-foreground hover:text-primary h-8 w-8"
+          title="Collapse All"
         >
-          <Minimize2 className='h-4 w-4' />
+          <Minimize2 className="h-4 w-4" />
         </Button>
       </div>
     </Card>
@@ -502,9 +502,9 @@ const TreeContent = memo(function TreeContent({
   treeNodes,
 }: TreeContentProps): React.JSX.Element {
   return (
-    <Card className='bg-card/50 min-h-[400px] rounded-2xl border-none p-4 shadow-sm'>
+    <Card className="bg-card/50 min-h-[400px] rounded-2xl border-none p-4 shadow-sm">
       {treeNodes.length > EMPTY_DEPTH ? (
-        <div className='space-y-1'>
+        <div className="space-y-1">
           {treeNodes.map((treeNode) => (
             <TreeItem
               key={treeNode.item.id}
@@ -516,9 +516,9 @@ const TreeContent = memo(function TreeContent({
           ))}
         </div>
       ) : (
-        <div className='text-muted-foreground/40 flex flex-col items-center justify-center py-20'>
-          <Network className='mb-4 h-16 w-16 opacity-10' />
-          <p className='text-xs font-black tracking-[0.2em] uppercase'>No structure defined</p>
+        <div className="text-muted-foreground/40 flex flex-col items-center justify-center py-20">
+          <Network className="mb-4 h-16 w-16 opacity-10" />
+          <p className="text-xs font-black tracking-[0.2em] uppercase">No structure defined</p>
         </div>
       )}
     </Card>
@@ -530,36 +530,36 @@ const Summary = memo(function Summary({
   treeNodes,
 }: SummaryProps): React.JSX.Element {
   const summaryCards: SummaryCard[] = [
-    { icon: Layers, id: 'total', label: 'Total Nodes', value: filteredItems.length },
-    { icon: Target, id: 'root', label: 'Root Items', value: treeNodes.length },
+    { icon: Layers, id: "total", label: "Total Nodes", value: filteredItems.length },
+    { icon: Target, id: "root", label: "Root Items", value: treeNodes.length },
     {
       icon: FileText,
-      id: 'leaf',
-      label: 'Leaf Items',
+      id: "leaf",
+      label: "Leaf Items",
       value: filteredItems.length - treeNodes.length,
     },
     {
       icon: Network,
-      id: 'depth',
-      label: 'Depth',
+      id: "depth",
+      label: "Depth",
       value: getTreeDepthEstimate(filteredItems),
     },
   ];
 
   return (
-    <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
       {summaryCards.map((summaryCard) => (
         <Card
           key={summaryCard.id}
-          className='bg-muted/30 flex items-center justify-between border-none p-4'
+          className="bg-muted/30 flex items-center justify-between border-none p-4"
         >
           <div>
-            <p className='text-muted-foreground text-[9px] font-black tracking-widest uppercase'>
+            <p className="text-muted-foreground text-[9px] font-black tracking-widest uppercase">
               {summaryCard.label}
             </p>
-            <p className='text-xl font-black'>{summaryCard.value}</p>
+            <p className="text-xl font-black">{summaryCard.value}</p>
           </div>
-          <summaryCard.icon className='text-primary h-5 w-5 opacity-20' />
+          <summaryCard.icon className="text-primary h-5 w-5 opacity-20" />
         </Card>
       ))}
     </div>
@@ -568,12 +568,12 @@ const Summary = memo(function Summary({
 
 const LoadingState = memo(function LoadingState(): React.JSX.Element {
   return (
-    <div className='animate-pulse space-y-8 p-6'>
-      <Skeleton className='h-10 w-48' />
-      <Skeleton className='h-12 w-full rounded-2xl' />
-      <div className='space-y-4'>
+    <div className="animate-pulse space-y-8 p-6">
+      <Skeleton className="h-10 w-48" />
+      <Skeleton className="h-12 w-full rounded-2xl" />
+      <div className="space-y-4">
         {SKELETON_ROWS.map((rowKey) => (
-          <Skeleton key={rowKey} className='h-12 w-full rounded-xl' />
+          <Skeleton key={rowKey} className="h-12 w-full rounded-xl" />
         ))}
       </div>
     </div>
@@ -597,7 +597,7 @@ export function ItemsTreeView(): React.JSX.Element {
   const items = useMemo(() => extractItems(itemsData as ItemsDataShape), [itemsData]);
   const projectOptions = useMemo(() => extractProjectOptions(projectsData), [projectsData]);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const filteredItems = useMemo(() => {
@@ -664,16 +664,16 @@ export function ItemsTreeView(): React.JSX.Element {
   }, []);
 
   const handleNavigateToTable = useCallback(() => {
-    globalThis.location.assign('/projects');
+    globalThis.location.assign("/projects");
   }, []);
 
   const handleNavigateToCreate = useCallback(() => {
-    globalThis.location.assign('/items/new');
+    globalThis.location.assign("/items/new");
   }, []);
 
   const handleProjectFilterChange = useCallback((nextProjectFilter: string) => {
     if (nextProjectFilter === ALL_PROJECTS_VALUE) {
-      globalThis.location.assign('/projects');
+      globalThis.location.assign("/projects");
       return;
     }
 
@@ -686,11 +686,11 @@ export function ItemsTreeView(): React.JSX.Element {
   }
 
   return (
-    <div className='animate-in fade-in mx-auto max-w-5xl space-y-8 p-6 duration-500'>
-      <div className='flex flex-col justify-between gap-4 md:flex-row md:items-center'>
+    <div className="animate-in fade-in mx-auto max-w-5xl space-y-8 p-6 duration-500">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className='text-2xl font-black tracking-tight uppercase'>Logical Hierarchy</h1>
-          <p className='text-muted-foreground text-sm font-medium'>
+          <h1 className="text-2xl font-black tracking-tight uppercase">Logical Hierarchy</h1>
+          <p className="text-muted-foreground text-sm font-medium">
             Decompose requirements and features into atomic nodes.
           </p>
         </div>

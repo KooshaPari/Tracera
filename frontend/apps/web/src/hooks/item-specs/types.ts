@@ -11,20 +11,20 @@ export type {
   DefectSeverity,
   DefectStatus,
   QualityIssue,
-} from './shared-types';
+} from "./shared-types";
 
 export type {
   RequirementSpec,
   RequirementSpecCreate,
   RequirementSpecUpdate,
-} from './requirement-types';
+} from "./requirement-types";
 
-export type { TestSpec, TestSpecCreate, TestSpecUpdate } from './test-types';
+export type { TestSpec, TestSpecCreate, TestSpecUpdate } from "./test-types";
 
-export type { EpicSpec, EpicSpecCreate, EpicSpecUpdate } from './epic-types';
+export type { EpicSpec, EpicSpecCreate, EpicSpecUpdate } from "./epic-types";
 
-export type { UserStorySpec, UserStorySpecCreate, UserStorySpecUpdate } from './user-story-types';
+export type { UserStorySpec, UserStorySpecCreate, UserStorySpecUpdate } from "./user-story-types";
 
-export type { TaskSpec, TaskSpecCreate, TaskSpecUpdate } from './task-types';
+export type { TaskSpec, TaskSpecCreate, TaskSpecUpdate } from "./task-types";
 
-export type { DefectSpec, DefectSpecCreate, DefectSpecUpdate } from './defect-types';
+export type { DefectSpec, DefectSpecCreate, DefectSpecUpdate } from "./defect-types";

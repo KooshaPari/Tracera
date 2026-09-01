@@ -3,9 +3,9 @@
  * Reach, Impact, Confidence, Effort scoring for product prioritization
  */
 
-import { useState } from 'react';
+import { useState } from "react";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface RICEScore {
   reach: number;
@@ -23,30 +23,30 @@ interface RICEScoreCardProps {
 }
 
 const impactLevels = [
-  { description: '3x improvement', label: 'Massive', value: 3 },
-  { description: '2x improvement', label: 'High', value: 2 },
-  { description: 'Notable improvement', label: 'Medium', value: 1 },
-  { description: 'Minor improvement', label: 'Low', value: 0.5 },
-  { description: 'Barely noticeable', label: 'Minimal', value: 0.25 },
+  { description: "3x improvement", label: "Massive", value: 3 },
+  { description: "2x improvement", label: "High", value: 2 },
+  { description: "Notable improvement", label: "Medium", value: 1 },
+  { description: "Minor improvement", label: "Low", value: 0.5 },
+  { description: "Barely noticeable", label: "Minimal", value: 0.25 },
 ];
 
 const confidenceLevels = [
-  { description: 'Strong evidence', label: 'High', value: 100 },
-  { description: 'Some evidence', label: 'Medium', value: 80 },
-  { description: 'Limited evidence', label: 'Low', value: 50 },
+  { description: "Strong evidence", label: "High", value: 100 },
+  { description: "Some evidence", label: "Medium", value: 80 },
+  { description: "Limited evidence", label: "Low", value: 50 },
 ];
 
 function getScoreColor(score: number): string {
   if (score >= 1000) {
-    return 'text-green-600';
+    return "text-green-600";
   }
   if (score >= 500) {
-    return 'text-blue-600';
+    return "text-blue-600";
   }
   if (score >= 100) {
-    return 'text-yellow-600';
+    return "text-yellow-600";
   }
-  return 'text-gray-600';
+  return "text-gray-600";
 }
 
 export function RICEScoreCard({
@@ -76,53 +76,53 @@ export function RICEScoreCard({
   };
 
   return (
-    <div className={cn('rounded-lg border p-4 space-y-4', className)}>
+    <div className={cn("rounded-lg border p-4 space-y-4", className)}>
       {/* Header */}
-      <div className='flex items-center justify-between'>
+      <div className="flex items-center justify-between">
         <div>
-          <h3 className='text-lg font-semibold'>RICE Score</h3>
-          <p className='text-muted-foreground text-sm'>Reach × Impact × Confidence ÷ Effort</p>
+          <h3 className="text-lg font-semibold">RICE Score</h3>
+          <p className="text-muted-foreground text-sm">Reach × Impact × Confidence ÷ Effort</p>
         </div>
-        <div className='text-right'>
-          <div className={cn('text-3xl font-bold', getScoreColor(riceScore))}>
+        <div className="text-right">
+          <div className={cn("text-3xl font-bold", getScoreColor(riceScore))}>
             {riceScore.toFixed(0)}
           </div>
-          <div className='text-muted-foreground text-sm'>RICE Score</div>
+          <div className="text-muted-foreground text-sm">RICE Score</div>
         </div>
       </div>
 
       {/* Formula Display */}
-      <div className='bg-muted rounded-lg p-3 text-sm'>
-        <div className='text-center font-mono'>
+      <div className="bg-muted rounded-lg p-3 text-sm">
+        <div className="text-center font-mono">
           ({reach} × {impact} × {confidence}%) ÷ {effort} = {riceScore.toFixed(0)}
         </div>
       </div>
 
       {/* Inputs */}
-      <div className='space-y-4'>
+      <div className="space-y-4">
         {/* Reach */}
-        <div className='space-y-1.5'>
-          <div className='flex justify-between text-sm'>
-            <span className='font-medium'>Reach</span>
-            <span className='font-mono'>{reach.toLocaleString()}</span>
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-sm">
+            <span className="font-medium">Reach</span>
+            <span className="font-mono">{reach.toLocaleString()}</span>
           </div>
-          <p className='text-muted-foreground text-xs'>
+          <p className="text-muted-foreground text-xs">
             Number of users/customers affected per time period
           </p>
           {!readOnly ? (
             <input
-              type='number'
+              type="number"
               value={reach}
               onChange={(e) => {
                 setReach(Math.max(0, Number.parseInt(e.target.value, 10) || 0));
               }}
-              className='w-full rounded-md border px-3 py-2 text-sm'
+              className="w-full rounded-md border px-3 py-2 text-sm"
               min={0}
             />
           ) : (
-            <div className='bg-muted h-2 overflow-hidden rounded-full'>
+            <div className="bg-muted h-2 overflow-hidden rounded-full">
               <div
-                className='h-full rounded-full bg-blue-500'
+                className="h-full rounded-full bg-blue-500"
                 style={{ width: `${Math.min((reach / 10_000) * 100, 100)}%` }}
               />
             </div>
@@ -130,14 +130,14 @@ export function RICEScoreCard({
         </div>
 
         {/* Impact */}
-        <div className='space-y-1.5'>
-          <div className='flex justify-between text-sm'>
-            <span className='font-medium'>Impact</span>
-            <span className='font-mono'>{impact}x</span>
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-sm">
+            <span className="font-medium">Impact</span>
+            <span className="font-mono">{impact}x</span>
           </div>
-          <p className='text-muted-foreground text-xs'>How much will this impact each user?</p>
+          <p className="text-muted-foreground text-xs">How much will this impact each user?</p>
           {!readOnly ? (
-            <div className='flex gap-1'>
+            <div className="flex gap-1">
               {impactLevels.map((level) => (
                 <button
                   key={level.value}
@@ -145,10 +145,10 @@ export function RICEScoreCard({
                     setImpact(level.value);
                   }}
                   className={cn(
-                    'flex-1 py-2 text-xs rounded border transition-colors',
+                    "flex-1 py-2 text-xs rounded border transition-colors",
                     impact === level.value
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-muted hover:bg-muted/80 border-transparent',
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-muted hover:bg-muted/80 border-transparent",
                   )}
                   title={level.description}
                 >
@@ -157,21 +157,21 @@ export function RICEScoreCard({
               ))}
             </div>
           ) : (
-            <div className='text-sm'>
+            <div className="text-sm">
               {impactLevels.find((l) => l.value === impact)?.label ?? impact}
             </div>
           )}
         </div>
 
         {/* Confidence */}
-        <div className='space-y-1.5'>
-          <div className='flex justify-between text-sm'>
-            <span className='font-medium'>Confidence</span>
-            <span className='font-mono'>{confidence}%</span>
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-sm">
+            <span className="font-medium">Confidence</span>
+            <span className="font-mono">{confidence}%</span>
           </div>
-          <p className='text-muted-foreground text-xs'>How confident are you in your estimates?</p>
+          <p className="text-muted-foreground text-xs">How confident are you in your estimates?</p>
           {!readOnly ? (
-            <div className='flex gap-1'>
+            <div className="flex gap-1">
               {confidenceLevels.map((level) => (
                 <button
                   key={level.value}
@@ -179,10 +179,10 @@ export function RICEScoreCard({
                     setConfidence(level.value);
                   }}
                   className={cn(
-                    'flex-1 py-2 text-xs rounded border transition-colors',
+                    "flex-1 py-2 text-xs rounded border transition-colors",
                     confidence === level.value
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-muted hover:bg-muted/80 border-transparent',
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-muted hover:bg-muted/80 border-transparent",
                   )}
                   title={level.description}
                 >
@@ -191,9 +191,9 @@ export function RICEScoreCard({
               ))}
             </div>
           ) : (
-            <div className='bg-muted h-2 overflow-hidden rounded-full'>
+            <div className="bg-muted h-2 overflow-hidden rounded-full">
               <div
-                className='h-full rounded-full bg-green-500'
+                className="h-full rounded-full bg-green-500"
                 style={{ width: `${confidence}%` }}
               />
             </div>
@@ -201,27 +201,27 @@ export function RICEScoreCard({
         </div>
 
         {/* Effort */}
-        <div className='space-y-1.5'>
-          <div className='flex justify-between text-sm'>
-            <span className='font-medium'>Effort</span>
-            <span className='font-mono'>{effort} person-weeks</span>
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-sm">
+            <span className="font-medium">Effort</span>
+            <span className="font-mono">{effort} person-weeks</span>
           </div>
-          <p className='text-muted-foreground text-xs'>Estimated effort in person-weeks</p>
+          <p className="text-muted-foreground text-xs">Estimated effort in person-weeks</p>
           {!readOnly ? (
             <input
-              type='number'
+              type="number"
               value={effort}
               onChange={(e) => {
                 setEffort(Math.max(0.1, Number.parseFloat(e.target.value) || 0.1));
               }}
-              className='w-full rounded-md border px-3 py-2 text-sm'
+              className="w-full rounded-md border px-3 py-2 text-sm"
               min={0.1}
               step={0.5}
             />
           ) : (
-            <div className='bg-muted h-2 overflow-hidden rounded-full'>
+            <div className="bg-muted h-2 overflow-hidden rounded-full">
               <div
-                className='h-full rounded-full bg-orange-500'
+                className="h-full rounded-full bg-orange-500"
                 style={{ width: `${Math.min((effort / 20) * 100, 100)}%` }}
               />
             </div>
@@ -233,7 +233,7 @@ export function RICEScoreCard({
       {!readOnly && onCalculate && (
         <button
           onClick={handleCalculate}
-          className='bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-md px-4 py-2 transition-colors'
+          className="bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-md px-4 py-2 transition-colors"
         >
           Save RICE Score
         </button>
@@ -244,30 +244,30 @@ export function RICEScoreCard({
 
 interface RICEScoreBadgeProps {
   score: number;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   className?: string;
 }
 
-export function RICEScoreBadge({ score, size = 'md', className }: RICEScoreBadgeProps) {
-  let color = 'bg-gray-100 text-gray-700 border-gray-300';
+export function RICEScoreBadge({ score, size = "md", className }: RICEScoreBadgeProps) {
+  let color = "bg-gray-100 text-gray-700 border-gray-300";
   if (score >= 1000) {
-    color = 'bg-green-100 text-green-700 border-green-300';
+    color = "bg-green-100 text-green-700 border-green-300";
   } else if (score >= 500) {
-    color = 'bg-blue-100 text-blue-700 border-blue-300';
+    color = "bg-blue-100 text-blue-700 border-blue-300";
   } else if (score >= 100) {
-    color = 'bg-yellow-100 text-yellow-700 border-yellow-300';
+    color = "bg-yellow-100 text-yellow-700 border-yellow-300";
   }
 
   const sizeClass = {
-    lg: 'text-base px-3 py-1.5',
-    md: 'text-sm px-2 py-1',
-    sm: 'text-xs px-1.5 py-0.5',
+    lg: "text-base px-3 py-1.5",
+    md: "text-sm px-2 py-1",
+    sm: "text-xs px-1.5 py-0.5",
   }[size];
 
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded border font-medium',
+        "inline-flex items-center gap-1 rounded border font-medium",
         color,
         sizeClass,
         className,
@@ -297,26 +297,26 @@ export function RICEBreakdown({
   const score = effort > 0 ? (reach * impact * (confidence / 100)) / effort : 0;
 
   return (
-    <div className={cn('grid grid-cols-5 gap-2 text-center text-sm', className)}>
-      <div className='rounded bg-blue-50 p-2'>
-        <div className='font-bold text-blue-700'>{reach.toLocaleString()}</div>
-        <div className='text-xs text-blue-600'>Reach</div>
+    <div className={cn("grid grid-cols-5 gap-2 text-center text-sm", className)}>
+      <div className="rounded bg-blue-50 p-2">
+        <div className="font-bold text-blue-700">{reach.toLocaleString()}</div>
+        <div className="text-xs text-blue-600">Reach</div>
       </div>
-      <div className='rounded bg-purple-50 p-2'>
-        <div className='font-bold text-purple-700'>{impact}x</div>
-        <div className='text-xs text-purple-600'>Impact</div>
+      <div className="rounded bg-purple-50 p-2">
+        <div className="font-bold text-purple-700">{impact}x</div>
+        <div className="text-xs text-purple-600">Impact</div>
       </div>
-      <div className='rounded bg-green-50 p-2'>
-        <div className='font-bold text-green-700'>{confidence}%</div>
-        <div className='text-xs text-green-600'>Confidence</div>
+      <div className="rounded bg-green-50 p-2">
+        <div className="font-bold text-green-700">{confidence}%</div>
+        <div className="text-xs text-green-600">Confidence</div>
       </div>
-      <div className='rounded bg-orange-50 p-2'>
-        <div className='font-bold text-orange-700'>{effort}w</div>
-        <div className='text-xs text-orange-600'>Effort</div>
+      <div className="rounded bg-orange-50 p-2">
+        <div className="font-bold text-orange-700">{effort}w</div>
+        <div className="text-xs text-orange-600">Effort</div>
       </div>
-      <div className='bg-primary/10 rounded p-2'>
-        <div className='text-primary font-bold'>{score.toFixed(0)}</div>
-        <div className='text-primary/80 text-xs'>Score</div>
+      <div className="bg-primary/10 rounded p-2">
+        <div className="text-primary font-bold">{score.toFixed(0)}</div>
+        <div className="text-primary/80 text-xs">Score</div>
       </div>
     </div>
   );

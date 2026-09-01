@@ -16,7 +16,7 @@
  * 5. Exports results to JSON/CSV
  */
 
-import { generateTestGraph } from '../src/lib/graphLayoutBenchmark';
+import { generateTestGraph } from "../src/lib/graphLayoutBenchmark";
 
 // ============================================================================
 // CONFIGURATION
@@ -32,7 +32,7 @@ const TEST_CASES = [
   { edgeDensity: 0.05, nodeCount: 100_000 },
 ];
 
-const ALGORITHMS = ['dagre', 'elk', 'grid', 'force'] as const;
+const ALGORITHMS = ["dagre", "elk", "grid", "force"] as const;
 
 // ============================================================================
 // MAIN
@@ -52,7 +52,7 @@ async function main() {
 
     for (const algorithm of ALGORITHMS) {
       // Skip force layout for very large graphs (too slow)
-      if (algorithm === 'force' && testCase.nodeCount > 5000) {
+      if (algorithm === "force" && testCase.nodeCount > 5000) {
         continue;
       }
 
@@ -87,7 +87,7 @@ async function main() {
   }
 
   // Export results
-  const outputPath = './graph-layout-benchmark-results.json';
+  const outputPath = "./graph-layout-benchmark-results.json";
   await Bun.write(
     outputPath,
     JSON.stringify(
@@ -113,22 +113,22 @@ async function simulateLayoutComputation(nodeCount: number, algorithm: string): 
   let baseTime = 0;
 
   switch (algorithm) {
-    case 'dagre': {
+    case "dagre": {
       // O(n log n) complexity
       baseTime = nodeCount * Math.log2(nodeCount) * 0.01;
       break;
     }
-    case 'elk': {
+    case "elk": {
       // O(n log n) complexity, slightly slower than dagre
       baseTime = nodeCount * Math.log2(nodeCount) * 0.015;
       break;
     }
-    case 'grid': {
+    case "grid": {
       // O(n) complexity
       baseTime = nodeCount * 0.002;
       break;
     }
-    case 'force': {
+    case "force": {
       // O(n²) complexity - very expensive
       baseTime = (nodeCount * nodeCount) / 10_000;
       break;

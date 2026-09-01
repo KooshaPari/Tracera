@@ -14,18 +14,18 @@
  * @module useGraphLayoutWorker
  */
 
-import * as Comlink from 'comlink';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import * as Comlink from "comlink";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { GraphLayoutWorkerAPI } from '@/workers/graphLayout.worker';
+import type { GraphLayoutWorkerAPI } from "@/workers/graphLayout.worker";
 import type {
   LayoutEdge,
   LayoutNode,
   LayoutOptions,
   LayoutResult,
-} from '@/workers/graphLayout.worker';
+} from "@/workers/graphLayout.worker";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // TYPES
@@ -139,7 +139,7 @@ export function useGraphLayoutWorker(
 
   // Initialize worker
   useEffect(() => {
-    if (!enabled || typeof globalThis.window === 'undefined') {
+    if (!enabled || typeof globalThis.window === "undefined") {
       return;
     }
 
@@ -148,8 +148,8 @@ export function useGraphLayoutWorker(
     async function initWorker() {
       try {
         // Create worker
-        const worker = new Worker(new URL('../workers/graphLayout.worker.ts', import.meta.url), {
-          type: 'module',
+        const worker = new Worker(new URL("../workers/graphLayout.worker.ts", import.meta.url), {
+          type: "module",
         });
 
         // Wrap with Comlink
@@ -165,7 +165,7 @@ export function useGraphLayoutWorker(
       } catch (caughtError) {
         const initError =
           caughtError instanceof Error ? caughtError : new Error(String(caughtError));
-        logger.error('[useGraphLayoutWorker] Failed to initialize worker:', initError);
+        logger.error("[useGraphLayoutWorker] Failed to initialize worker:", initError);
         if (mounted) {
           setError(initError);
           setIsReady(false);
@@ -202,7 +202,7 @@ export function useGraphLayoutWorker(
 
       // Guard: Worker not available - use fallback
       if (!isReady || !apiRef.current) {
-        logger.warn('[useGraphLayoutWorker] Worker not ready, using fallback layout');
+        logger.warn("[useGraphLayoutWorker] Worker not ready, using fallback layout");
         return fallbackGridLayout(nodes, layoutOptions);
       }
 
@@ -217,7 +217,7 @@ export function useGraphLayoutWorker(
         const shouldUseProgressive =
           progressive &&
           nodes.length > 500 &&
-          (layoutOptions.algorithm === 'grid' || layoutOptions.algorithm === 'circular');
+          (layoutOptions.algorithm === "grid" || layoutOptions.algorithm === "circular");
 
         if (shouldUseProgressive) {
           // Progressive layout with streaming results
@@ -235,10 +235,10 @@ export function useGraphLayoutWorker(
           const generator = await (generatorPromise as Promise<AsyncIterable<LayoutResult>>);
           for await (const result of generator) {
             finalResult = result;
-            setProgress(result['progress'] ?? 0);
+            setProgress(result["progress"] ?? 0);
 
             // Notify progress callback
-            if (onProgress && result['isPartial']) {
+            if (onProgress && result["isPartial"]) {
               onProgress(result);
             }
           }
@@ -248,7 +248,7 @@ export function useGraphLayoutWorker(
         // Standard single-shot layout
         const timeoutPromise = new Promise<never>((_, reject) => {
           setTimeout(() => {
-            reject(new Error('Layout computation timeout'));
+            reject(new Error("Layout computation timeout"));
           }, timeout);
         });
 
@@ -260,11 +260,11 @@ export function useGraphLayoutWorker(
       } catch (caughtError) {
         const layoutError =
           caughtError instanceof Error ? caughtError : new Error(String(caughtError));
-        logger.error('[useGraphLayoutWorker] Layout computation failed:', layoutError);
+        logger.error("[useGraphLayoutWorker] Layout computation failed:", layoutError);
         setError(layoutError);
 
         // Fallback to synchronous layout
-        logger.warn('[useGraphLayoutWorker] Falling back to synchronous layout');
+        logger.warn("[useGraphLayoutWorker] Falling back to synchronous layout");
         return fallbackGridLayout(nodes, layoutOptions);
       } finally {
         setIsComputing(false);
@@ -310,12 +310,12 @@ export function useGraphLayoutBenchmark() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (typeof globalThis.window === 'undefined') {
+    if (typeof globalThis.window === "undefined") {
       return;
     }
 
-    const worker = new Worker(new URL('../workers/graphLayout.worker.ts', import.meta.url), {
-      type: 'module',
+    const worker = new Worker(new URL("../workers/graphLayout.worker.ts", import.meta.url), {
+      type: "module",
     });
     const api = Comlink.wrap<GraphLayoutWorkerAPI>(worker);
 
@@ -333,11 +333,11 @@ export function useGraphLayoutBenchmark() {
     async (
       nodes: LayoutNode[],
       edges: LayoutEdge[],
-      algorithm: LayoutOptions['algorithm'],
+      algorithm: LayoutOptions["algorithm"],
       iterations = 5,
     ) => {
       if (!isReady || !apiRef.current) {
-        throw new Error('Worker not ready');
+        throw new Error("Worker not ready");
       }
 
       return apiRef.current.benchmarkLayout(nodes, edges, {

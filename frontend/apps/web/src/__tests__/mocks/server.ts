@@ -2,9 +2,9 @@
  * MSW server setup for tests
  */
 
-import { setupServer } from 'msw/node';
+import { setupServer } from "msw/node";
 
-import { handlers } from './handlers';
+import { handlers } from "./handlers";
 
 // Lazy initialization to allow localStorage mock to be set up first
 let _server: ReturnType<typeof setupServer> | null = null;

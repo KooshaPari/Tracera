@@ -1,4 +1,4 @@
-import type { Node } from '@xyflow/react';
+import type { Node } from "@xyflow/react";
 
 import {
   CIRCULAR_MIN_RADIUS,
@@ -6,7 +6,7 @@ import {
   FULL_CIRCLE_RADIANS,
   GRID_COMPACT_PADDING_DIVISOR,
   START_ANGLE_RADIANS,
-} from './constants';
+} from "./constants";
 
 export function applyCircularLayout<NodeData extends Record<string, unknown>>(
   nodes: Node<NodeData>[],

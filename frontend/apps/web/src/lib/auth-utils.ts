@@ -2,8 +2,8 @@
  * Authentication utility functions and helpers
  */
 
-import config from '@/config/constants';
-import { useAuthStore } from '@/stores/authStore';
+import config from "@/config/constants";
+import { useAuthStore } from "@/stores/authStore";
 
 /**
  * Check if a route path is a public auth route
@@ -25,10 +25,10 @@ function isAuthRoute(url: string): boolean {
   try {
     const urlObj = new URL(url, window.location.origin);
     const pathname = urlObj.pathname;
-    return pathname.startsWith('/auth/');
+    return pathname.startsWith("/auth/");
   } catch (error) {
     // If URL parsing fails, check if it starts with /auth/
-    return url.startsWith('/auth/');
+    return url.startsWith("/auth/");
   }
 }
 
@@ -37,7 +37,7 @@ function isAuthRoute(url: string): boolean {
  * Filters out auth routes and invalid URLs to prevent redirect loops
  */
 /** Default destination after login (dashboard). */
-export const DEFAULT_RETURN_TO = '/home';
+export const DEFAULT_RETURN_TO = "/home";
 
 export function getReturnTo(
   searchParams: URLSearchParams | Record<string, string> | string | undefined,
@@ -49,29 +49,29 @@ export function getReturnTo(
   let returnTo: string | null = null;
 
   if (searchParams instanceof URLSearchParams) {
-    returnTo = searchParams.get('returnTo');
-  } else if (typeof searchParams === 'string') {
+    returnTo = searchParams.get("returnTo");
+  } else if (typeof searchParams === "string") {
     // If it's a string, try to parse it as URLSearchParams
     try {
       const params = new URLSearchParams(searchParams);
-      returnTo = params.get('returnTo');
+      returnTo = params.get("returnTo");
     } catch (error) {
       return DEFAULT_RETURN_TO;
     }
-  } else if (typeof searchParams === 'object' && searchParams !== null) {
+  } else if (typeof searchParams === "object" && searchParams !== null) {
     const returnToValue = (searchParams as Record<string, unknown>).returnTo;
-    if (typeof returnToValue === 'string') {
+    if (typeof returnToValue === "string") {
       returnTo = returnToValue;
     }
   }
 
   // Validate returnTo
-  if (!returnTo || typeof returnTo !== 'string') {
+  if (!returnTo || typeof returnTo !== "string") {
     return DEFAULT_RETURN_TO;
   }
 
   // Filter out invalid values
-  if (returnTo.includes('[object Object]')) {
+  if (returnTo.includes("[object Object]")) {
     return DEFAULT_RETURN_TO;
   }
 
@@ -98,7 +98,7 @@ export function getReturnTo(
       return DEFAULT_RETURN_TO;
     }
     // Return as-is if it's a valid path
-    return returnTo.startsWith('/') ? returnTo : DEFAULT_RETURN_TO;
+    return returnTo.startsWith("/") ? returnTo : DEFAULT_RETURN_TO;
   }
 }
 

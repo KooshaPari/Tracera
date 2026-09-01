@@ -11,9 +11,9 @@
  * - Configurable resolution for cluster granularity
  */
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
-import { groupingCache } from './graphCache';
+import { groupingCache } from "./graphCache";
 
 /**
  * Cluster node representing aggregated items
@@ -367,7 +367,7 @@ function createClusterNodes(
 
     for (const nodeId of nodeIds) {
       const node = graph.nodes.get(nodeId)!;
-      const itemType = node.item.type || 'unknown';
+      const itemType = node.item.type || "unknown";
       typeDistribution[itemType] = (typeDistribution[itemType] || 0) + 1;
       totalDegree += node.degree;
 
@@ -385,7 +385,7 @@ function createClusterNodes(
     internalEdges /= 2;
 
     // Find dominant type
-    let dominantType = 'unknown';
+    let dominantType = "unknown";
     let maxCount = 0;
     for (const [type, count] of Object.entries(typeDistribution)) {
       if (count > maxCount) {

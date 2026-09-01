@@ -1,7 +1,7 @@
 // Aggregation system for grouping items by type and shared dependencies
 // Supports type-based grouping, dependency detection, and simplified Louvain community detection
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
 /**
  * Aggregated group of items
@@ -36,25 +36,25 @@ export interface AggregationConfig {
 }
 
 const DEFAULT_CONFIG: AggregationConfig = {
-  communityThreshold: Number('0.5'),
+  communityThreshold: Number("0.5"),
   enableCommunityDetection: true,
   groupByDependency: true,
   groupByType: true,
-  maxGroupSize: Number('50'),
-  minGroupSize: Number('3'),
+  maxGroupSize: Number("50"),
+  minGroupSize: Number("3"),
 };
 
-const MIN_COMMUNITY_SIZE = Number('2');
-const PERCENT_BASE = Number('100');
-const ZERO = Number('0');
-const ONE = Number('1');
+const MIN_COMMUNITY_SIZE = Number("2");
+const PERCENT_BASE = Number("100");
+const ZERO = Number("0");
+const ONE = Number("1");
 
 const createConfig = function createConfig(config: Partial<AggregationConfig>): AggregationConfig {
   return { ...DEFAULT_CONFIG, ...config };
 };
 
 const getGroupKey = function getGroupKey(item: Item): string {
-  return (item.type || item.view || 'unknown').toLowerCase();
+  return (item.type || item.view || "unknown").toLowerCase();
 };
 
 /**
@@ -267,7 +267,7 @@ const buildCommunityGroup = function buildCommunityGroup(
     itemCount: communityItemIds.length,
     itemIds: communityItemIds,
     label: `Community ${groupIndex + ONE} (${communityItemIds.length})`,
-    type: 'community',
+    type: "community",
   };
 };
 
@@ -320,14 +320,14 @@ const groupToAggregateItem = function groupToAggregateItem(
       itemCount: group.itemCount,
       itemIds: group.itemIds,
     },
-    priority: 'medium' as const,
-    projectId: baseItem.projectId ?? 'unknown',
-    status: 'done' as const,
+    priority: "medium" as const,
+    projectId: baseItem.projectId ?? "unknown",
+    status: "done" as const,
     title: group.label,
-    type: 'aggregate',
+    type: "aggregate",
     updatedAt: new Date().toISOString(),
     version: ONE,
-    view: baseItem.view ?? 'FEATURE',
+    view: baseItem.view ?? "FEATURE",
   };
 };
 

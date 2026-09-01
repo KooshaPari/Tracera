@@ -5,19 +5,19 @@
  * in a real-world graph view component with React Query.
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
-import { useAutoRecovery } from '@/hooks/useAutoRecovery';
-import { logger } from '@/lib/logger';
+import { useAutoRecovery } from "@/hooks/useAutoRecovery";
+import { logger } from "@/lib/logger";
 
-import { EnhancedErrorState } from './EnhancedErrorState';
-import { FlowGraphView } from './FlowGraphView';
-import { GraphErrorBoundary } from './GraphErrorBoundary';
-import { GraphSkeleton } from './GraphSkeleton';
-import { NetworkErrorState } from './NetworkErrorState';
-import { RecoveryProgress } from './RecoveryProgress';
-import { TimeoutErrorState } from './TimeoutErrorState';
+import { EnhancedErrorState } from "./EnhancedErrorState";
+import { FlowGraphView } from "./FlowGraphView";
+import { GraphErrorBoundary } from "./GraphErrorBoundary";
+import { GraphSkeleton } from "./GraphSkeleton";
+import { NetworkErrorState } from "./NetworkErrorState";
+import { RecoveryProgress } from "./RecoveryProgress";
+import { TimeoutErrorState } from "./TimeoutErrorState";
 
 // Example API function
 async function fetchGraphData(projectId: string) {
@@ -57,18 +57,18 @@ export function GraphViewWithErrorRecovery({ projectId }: GraphViewWithErrorReco
       setIsOffline(true);
     };
 
-    globalThis.addEventListener('online', handleOnline);
-    globalThis.addEventListener('offline', handleOffline);
+    globalThis.addEventListener("online", handleOnline);
+    globalThis.addEventListener("offline", handleOffline);
 
     return () => {
-      globalThis.removeEventListener('online', handleOnline);
-      globalThis.removeEventListener('offline', handleOffline);
+      globalThis.removeEventListener("online", handleOnline);
+      globalThis.removeEventListener("offline", handleOffline);
     };
   }, []);
 
   // Fetch graph data with React Query
   const { data, error, isLoading, refetch } = useQuery({
-    queryKey: ['graph', projectId],
+    queryKey: ["graph", projectId],
     queryFn: async () => fetchGraphData(projectId),
     retry: false, // We handle retries ourselves
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -79,7 +79,7 @@ export function GraphViewWithErrorRecovery({ projectId }: GraphViewWithErrorReco
     exponentialBackoff: true,
     maxRetries: 3,
     onMaxRetriesReached: () => {
-      logger.error('[GraphView] Max retries reached, showing error state');
+      logger.error("[GraphView] Max retries reached, showing error state");
     },
     onRetry: (attempt) => {
       logger.info(`[GraphView] Auto-retry attempt ${attempt}/${3}`);
@@ -89,8 +89,8 @@ export function GraphViewWithErrorRecovery({ projectId }: GraphViewWithErrorReco
 
   // Determine error type
   const isNetworkError =
-    error?.message?.includes('network') ?? error?.message?.includes('Failed to fetch');
-  const isTimeoutError = error?.message?.includes('timeout') ?? error?.message?.includes('aborted');
+    error?.message?.includes("network") ?? error?.message?.includes("Failed to fetch");
+  const isTimeoutError = error?.message?.includes("timeout") ?? error?.message?.includes("aborted");
 
   // Show loading skeleton
   if (isLoading && !data) {
@@ -100,7 +100,7 @@ export function GraphViewWithErrorRecovery({ projectId }: GraphViewWithErrorReco
   // Show recovery progress during auto-retry
   if (recovery.isRetrying && recovery.nextRetryIn) {
     return (
-      <div className='flex h-full items-center justify-center p-4'>
+      <div className="flex h-full items-center justify-center p-4">
         <RecoveryProgress
           retryCount={recovery.retryCount}
           maxRetries={3}
@@ -115,7 +115,7 @@ export function GraphViewWithErrorRecovery({ projectId }: GraphViewWithErrorReco
     // Offline error
     if (isOffline) {
       return (
-        <div className='flex h-full items-center justify-center p-4'>
+        <div className="flex h-full items-center justify-center p-4">
           <NetworkErrorState isOffline onRetry={async () => refetch()} />
         </div>
       );
@@ -124,7 +124,7 @@ export function GraphViewWithErrorRecovery({ projectId }: GraphViewWithErrorReco
     // Network error
     if (isNetworkError) {
       return (
-        <div className='flex h-full items-center justify-center p-4'>
+        <div className="flex h-full items-center justify-center p-4">
           <NetworkErrorState isOffline={false} onRetry={async () => refetch()} />
         </div>
       );
@@ -133,7 +133,7 @@ export function GraphViewWithErrorRecovery({ projectId }: GraphViewWithErrorReco
     // Timeout error
     if (isTimeoutError) {
       return (
-        <div className='flex h-full items-center justify-center p-4'>
+        <div className="flex h-full items-center justify-center p-4">
           <TimeoutErrorState timeout={30_000} onRetry={async () => refetch()} />
         </div>
       );
@@ -141,14 +141,14 @@ export function GraphViewWithErrorRecovery({ projectId }: GraphViewWithErrorReco
 
     // Generic error
     return (
-      <div className='flex h-full items-center justify-center p-4'>
+      <div className="flex h-full items-center justify-center p-4">
         <EnhancedErrorState
           error={error}
           onRetry={async () => refetch()}
           onReportBug={(errorDetails) => {
             // Send to error tracking service
-            logger.error('[Bug Report]', {
-              component: 'GraphView',
+            logger.error("[Bug Report]", {
+              component: "GraphView",
               error: errorDetails,
               projectId,
               timestamp: new Date().toISOString(),
@@ -159,7 +159,7 @@ export function GraphViewWithErrorRecovery({ projectId }: GraphViewWithErrorReco
             // Sentry.captureException(error, { extra: errorDetails });
           }}
           showDetails
-          variant='card'
+          variant="card"
         />
       </div>
     );
@@ -170,7 +170,7 @@ export function GraphViewWithErrorRecovery({ projectId }: GraphViewWithErrorReco
     <GraphErrorBoundary
       onError={(error, errorInfo) => {
         // Log to error tracking service
-        logger.error('[GraphView] Caught error:', error, errorInfo);
+        logger.error("[GraphView] Caught error:", error, errorInfo);
 
         // Send to Sentry/LogRocket
         // Sentry.captureException(error, {

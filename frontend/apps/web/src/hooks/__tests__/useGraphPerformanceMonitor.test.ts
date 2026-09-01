@@ -2,21 +2,21 @@
  * Tests for useGraphPerformanceMonitor hook
  */
 
-import { act, renderHook, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { CacheStatistics } from '../../lib/cache';
-import type { LODDistribution, PerformanceMetrics } from '../useGraphPerformanceMonitor';
+import type { CacheStatistics } from "../../lib/cache";
+import type { LODDistribution, PerformanceMetrics } from "../useGraphPerformanceMonitor";
 
 import {
   createProfilerCallback,
   perfMark,
   useGraphPerformanceMonitor,
-} from '../useGraphPerformanceMonitor';
+} from "../useGraphPerformanceMonitor";
 
 const { loggerInfo } = vi.hoisted(() => ({ loggerInfo: vi.fn() }));
 
-vi.mock('../../lib/logger', () => ({
+vi.mock("../../lib/logger", () => ({
   logger: {
     group: vi.fn(),
     groupEnd: vi.fn(),
@@ -29,14 +29,14 @@ vi.mock('../../lib/logger', () => ({
 const mockNodes = Array.from({ length: 100 }, (_, i) => ({
   id: `node-${i}`,
   title: `Node ${i}`,
-  type: 'requirement',
+  type: "requirement",
 }));
 
 const mockEdges = Array.from({ length: 150 }, (_, i) => ({
   id: `edge-${i}`,
   sourceId: `node-${i % 100}`,
   targetId: `node-${(i + 1) % 100}`,
-  type: 'depends_on' as const,
+  type: "depends_on" as const,
 }));
 
 const mockVisibleNodes = mockNodes.slice(0, 50);
@@ -55,7 +55,7 @@ const mockCacheStats: {
   search: CacheStatistics;
 } = {
   grouping: {
-    backendType: 'memory',
+    backendType: "memory",
     hitRatio: 0.8,
     maxEntries: 50,
     maxMemory: 26_214_400,
@@ -66,7 +66,7 @@ const mockCacheStats: {
     totalMisses: 10,
   },
   layout: {
-    backendType: 'memory',
+    backendType: "memory",
     hitRatio: 0.8,
     maxEntries: 100,
     maxMemory: 52_428_800,
@@ -77,7 +77,7 @@ const mockCacheStats: {
     totalMisses: 20,
   },
   search: {
-    backendType: 'memory',
+    backendType: "memory",
     hitRatio: 0.8,
     maxEntries: 100,
     maxMemory: 10_485_760,
@@ -97,7 +97,7 @@ describe(useGraphPerformanceMonitor, () => {
     originalEnv = process.env.NODE_ENV;
 
     // Set to development for testing
-    process.env.NODE_ENV = 'development';
+    process.env.NODE_ENV = "development";
 
     // Mock sessionStorage
     globalThis.sessionStorage = {
@@ -110,7 +110,7 @@ describe(useGraphPerformanceMonitor, () => {
     };
 
     // Mock performance.now
-    vi.spyOn(performance, 'now').mockReturnValue(1000);
+    vi.spyOn(performance, "now").mockReturnValue(1000);
 
     // Mock requestAnimationFrame
     globalThis.requestAnimationFrame = vi.fn((cb: FrameRequestCallback) => {
@@ -131,7 +131,7 @@ describe(useGraphPerformanceMonitor, () => {
     vi.restoreAllMocks();
   });
 
-  it('should initialize with null metrics', () => {
+  it("should initialize with null metrics", () => {
     const { result } = renderHook(() =>
       useGraphPerformanceMonitor({
         edges: mockEdges,
@@ -146,8 +146,8 @@ describe(useGraphPerformanceMonitor, () => {
     expect(result.current.history).toEqual([]);
   });
 
-  it('should be disabled in production mode', () => {
-    process.env.NODE_ENV = 'production';
+  it("should be disabled in production mode", () => {
+    process.env.NODE_ENV = "production";
 
     const { result } = renderHook(() =>
       useGraphPerformanceMonitor({
@@ -162,7 +162,7 @@ describe(useGraphPerformanceMonitor, () => {
     expect(result.current.currentMetrics).toBeUndefined();
   });
 
-  it('should collect performance metrics', async () => {
+  it("should collect performance metrics", async () => {
     const { result } = renderHook(() =>
       useGraphPerformanceMonitor({
         cacheStats: mockCacheStats,
@@ -208,7 +208,7 @@ describe(useGraphPerformanceMonitor, () => {
     expect(metrics.cache.combined.hitRatio).toBeGreaterThan(0);
   });
 
-  it('should track FPS metrics', async () => {
+  it("should track FPS metrics", async () => {
     const { result } = renderHook(() =>
       useGraphPerformanceMonitor({
         edges: mockEdges,
@@ -234,7 +234,7 @@ describe(useGraphPerformanceMonitor, () => {
     expect(metrics.fps.samples).toBeGreaterThanOrEqual(0);
   });
 
-  it('should calculate cache hit rates correctly', async () => {
+  it("should calculate cache hit rates correctly", async () => {
     const { result } = renderHook(() =>
       useGraphPerformanceMonitor({
         cacheStats: mockCacheStats,
@@ -267,7 +267,7 @@ describe(useGraphPerformanceMonitor, () => {
     expect(metrics.cache.combined.hitRatio).toBe(0.8);
   });
 
-  it('should maintain history of metrics', async () => {
+  it("should maintain history of metrics", async () => {
     const { result } = renderHook(() =>
       useGraphPerformanceMonitor({
         edges: mockEdges,
@@ -290,7 +290,7 @@ describe(useGraphPerformanceMonitor, () => {
     expect(result.current.history.length).toBeGreaterThan(0);
   });
 
-  it('should provide summary string', async () => {
+  it("should provide summary string", async () => {
     const { result } = renderHook(() =>
       useGraphPerformanceMonitor({
         cacheStats: mockCacheStats,
@@ -311,13 +311,13 @@ describe(useGraphPerformanceMonitor, () => {
     );
 
     const summary = result.current.getSummary();
-    expect(summary).toContain('FPS:');
-    expect(summary).toContain('Nodes:');
-    expect(summary).toContain('Edges:');
-    expect(summary).toContain('Cache Hit Rate:');
+    expect(summary).toContain("FPS:");
+    expect(summary).toContain("Nodes:");
+    expect(summary).toContain("Edges:");
+    expect(summary).toContain("Cache Hit Rate:");
   });
 
-  it('should reset metrics and history', async () => {
+  it("should reset metrics and history", async () => {
     const { result } = renderHook(() =>
       useGraphPerformanceMonitor({
         edges: mockEdges,
@@ -344,7 +344,7 @@ describe(useGraphPerformanceMonitor, () => {
     expect(result.current.history).toEqual([]);
   });
 
-  it('should call custom onMetricsUpdate handler', async () => {
+  it("should call custom onMetricsUpdate handler", async () => {
     const onMetricsUpdate = vi.fn();
 
     renderHook(() =>
@@ -370,8 +370,8 @@ describe(useGraphPerformanceMonitor, () => {
     expect(metrics.nodes.total).toBe(100);
   });
 
-  it('should persist metrics to sessionStorage', async () => {
-    const setItemSpy = vi.spyOn(sessionStorage, 'setItem');
+  it("should persist metrics to sessionStorage", async () => {
+    const setItemSpy = vi.spyOn(sessionStorage, "setItem");
 
     renderHook(() =>
       useGraphPerformanceMonitor({
@@ -388,7 +388,7 @@ describe(useGraphPerformanceMonitor, () => {
     await waitFor(
       () => {
         expect(setItemSpy).toHaveBeenCalledWith(
-          'trace_graph_performance_metrics',
+          "trace_graph_performance_metrics",
           expect.any(String),
         );
       },
@@ -399,7 +399,7 @@ describe(useGraphPerformanceMonitor, () => {
 
 describe(createProfilerCallback, () => {
   beforeEach(() => {
-    vi.stubEnv('NODE_ENV', 'development');
+    vi.stubEnv("NODE_ENV", "development");
   });
 
   afterEach(() => {
@@ -407,39 +407,38 @@ describe(createProfilerCallback, () => {
     vi.restoreAllMocks();
   });
 
-  it('should create profiler callback that logs to console', () => {
-    const callback = createProfilerCallback('TestComponent', true);
+  it("should create profiler callback that logs to console", () => {
+    const callback = createProfilerCallback("TestComponent", true);
 
-    callback('TestComponent', 'mount', 10, 8, 1000, 1010);
+    callback("TestComponent", "mount", 10, 8, 1000, 1010);
 
     expect(loggerInfo).toHaveBeenCalledWith(
-      expect.stringContaining('[Profiler: TestComponent]'),
+      expect.stringContaining("[Profiler: TestComponent]"),
       expect.any(String),
       expect.objectContaining({
-        id: 'TestComponent',
-        phase: 'mount',
+        id: "TestComponent",
+        phase: "mount",
       }),
     );
-
   });
 
-  it('should store profiler data in sessionStorage', () => {
-    const setItemSpy = vi.spyOn(sessionStorage, 'setItem');
+  it("should store profiler data in sessionStorage", () => {
+    const setItemSpy = vi.spyOn(sessionStorage, "setItem");
 
-    const callback = createProfilerCallback('TestComponent', false);
+    const callback = createProfilerCallback("TestComponent", false);
 
-    callback('TestComponent', 'update', 5, 8, 1000, 1005);
+    callback("TestComponent", "update", 5, 8, 1000, 1005);
 
-    expect(setItemSpy).toHaveBeenCalledWith('trace_profiler_TestComponent', expect.anything());
+    expect(setItemSpy).toHaveBeenCalledWith("trace_profiler_TestComponent", expect.anything());
   });
 });
 
 describe(perfMark, () => {
   beforeEach(() => {
-    vi.stubEnv('NODE_ENV', 'development');
-    vi.spyOn(performance, 'mark').mockImplementation(() => ({}) as any);
-    vi.spyOn(performance, 'measure').mockImplementation(() => ({}) as any);
-    vi.spyOn(performance, 'getEntriesByName').mockReturnValue([{ duration: 42 } as any]);
+    vi.stubEnv("NODE_ENV", "development");
+    vi.spyOn(performance, "mark").mockImplementation(() => ({}) as any);
+    vi.spyOn(performance, "measure").mockImplementation(() => ({}) as any);
+    vi.spyOn(performance, "getEntriesByName").mockReturnValue([{ duration: 42 } as any]);
   });
 
   afterEach(() => {
@@ -447,36 +446,36 @@ describe(perfMark, () => {
     vi.restoreAllMocks();
   });
 
-  it('should create performance marks', () => {
-    const markSpy = vi.spyOn(performance, 'mark');
+  it("should create performance marks", () => {
+    const markSpy = vi.spyOn(performance, "mark");
 
-    perfMark.start('test-operation');
-    perfMark.end('test-operation');
+    perfMark.start("test-operation");
+    perfMark.end("test-operation");
 
-    expect(markSpy).toHaveBeenCalledWith('test-operation-start');
-    expect(markSpy).toHaveBeenCalledWith('test-operation-end');
+    expect(markSpy).toHaveBeenCalledWith("test-operation-start");
+    expect(markSpy).toHaveBeenCalledWith("test-operation-end");
   });
 
-  it('should measure duration between marks', () => {
-    const measureSpy = vi.spyOn(performance, 'measure');
+  it("should measure duration between marks", () => {
+    const measureSpy = vi.spyOn(performance, "measure");
 
-    perfMark.start('test-operation');
-    perfMark.end('test-operation');
+    perfMark.start("test-operation");
+    perfMark.end("test-operation");
 
     expect(measureSpy).toHaveBeenCalledWith(
-      'test-operation',
-      'test-operation-start',
-      'test-operation-end',
+      "test-operation",
+      "test-operation-start",
+      "test-operation-end",
     );
   });
 
-  it('should not create marks in production', () => {
-    vi.stubEnv('NODE_ENV', 'production');
+  it("should not create marks in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
 
-    const markSpy = vi.spyOn(performance, 'mark');
+    const markSpy = vi.spyOn(performance, "mark");
 
-    perfMark.start('test-operation');
-    perfMark.end('test-operation');
+    perfMark.start("test-operation");
+    perfMark.end("test-operation");
 
     expect(markSpy).not.toHaveBeenCalled();
   });

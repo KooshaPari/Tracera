@@ -1,3 +1,3 @@
-import { ItemsTableView } from '@/views/items-table/ItemsTableViewImpl';
+import { ItemsTableView } from "@/views/items-table/ItemsTableViewImpl";
 
 export { ItemsTableView };

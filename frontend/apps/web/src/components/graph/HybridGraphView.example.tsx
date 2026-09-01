@@ -11,14 +11,14 @@
  * - Rich node detail panel in WebGL mode
  */
 
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-import { useState } from 'react';
+import { useState } from "react";
 
-import { Button } from '@/components/ui/button';
-import { logger } from '@/lib/logger';
+import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 
-import { HybridGraphView } from './HybridGraphView';
+import { HybridGraphView } from "./HybridGraphView";
 
 export function HybridGraphViewExample() {
   const [nodeCount, setNodeCount] = useState(5000);
@@ -28,11 +28,11 @@ export function HybridGraphViewExample() {
     data: {
       description: `Test node ${i}`,
       label: `Node ${i}`,
-      status: i % 3 === 0 ? 'active' : 'inactive',
+      status: i % 3 === 0 ? "active" : "inactive",
     },
     id: `node-${i}`,
     position: { x: Math.random() * 1000, y: Math.random() * 1000 },
-    type: 'default',
+    type: "default",
   }));
 
   const edges: Edge[] = Array.from({ length: Math.min(nodeCount * 2, 20_000) }, (_, i) => ({
@@ -42,13 +42,13 @@ export function HybridGraphViewExample() {
   }));
 
   return (
-    <div className='flex h-screen w-screen flex-col'>
+    <div className="flex h-screen w-screen flex-col">
       {/* Controls */}
-      <div className='bg-card flex items-center gap-4 border-b p-4'>
-        <div className='text-sm font-medium'>Test Hybrid Graph Switching:</div>
+      <div className="bg-card flex items-center gap-4 border-b p-4">
+        <div className="text-sm font-medium">Test Hybrid Graph Switching:</div>
         <Button
-          size='sm'
-          variant={nodeCount === 5000 ? 'default' : 'outline'}
+          size="sm"
+          variant={nodeCount === 5000 ? "default" : "outline"}
           onClick={() => {
             setNodeCount(5000);
           }}
@@ -56,8 +56,8 @@ export function HybridGraphViewExample() {
           5k nodes (ReactFlow)
         </Button>
         <Button
-          size='sm'
-          variant={nodeCount === 9500 ? 'default' : 'outline'}
+          size="sm"
+          variant={nodeCount === 9500 ? "default" : "outline"}
           onClick={() => {
             setNodeCount(9500);
           }}
@@ -65,8 +65,8 @@ export function HybridGraphViewExample() {
           9.5k nodes (Near threshold)
         </Button>
         <Button
-          size='sm'
-          variant={nodeCount === 15_000 ? 'default' : 'outline'}
+          size="sm"
+          variant={nodeCount === 15_000 ? "default" : "outline"}
           onClick={() => {
             setNodeCount(15_000);
           }}
@@ -74,8 +74,8 @@ export function HybridGraphViewExample() {
           15k nodes (WebGL)
         </Button>
         <Button
-          size='sm'
-          variant={nodeCount === 50_000 ? 'default' : 'outline'}
+          size="sm"
+          variant={nodeCount === 50_000 ? "default" : "outline"}
           onClick={() => {
             setNodeCount(50_000);
           }}
@@ -85,18 +85,18 @@ export function HybridGraphViewExample() {
       </div>
 
       {/* Hybrid Graph View */}
-      <div className='flex-1'>
+      <div className="flex-1">
         <HybridGraphView
           nodes={nodes}
           edges={edges}
           onNodeClick={(nodeId) => {
-            logger.info('Node clicked:', nodeId);
+            logger.info("Node clicked:", nodeId);
           }}
           onNodeExpand={(nodeId) => {
-            logger.info('Node expand:', nodeId);
+            logger.info("Node expand:", nodeId);
           }}
           onNodeNavigate={(nodeId) => {
-            logger.info('Node navigate:', nodeId);
+            logger.info("Node navigate:", nodeId);
           }}
         />
       </div>
@@ -110,56 +110,56 @@ export function HybridGraphViewExample() {
  * Demonstrates manual override of automatic switching
  */
 export function ForceOverrideExample() {
-  const [mode, setMode] = useState<'auto' | 'reactflow' | 'webgl'>('auto');
+  const [mode, setMode] = useState<"auto" | "reactflow" | "webgl">("auto");
   const nodeCount = 12_000; // Above threshold
 
   const nodes: Node[] = Array.from({ length: nodeCount }, (_, i) => ({
     data: { label: `Node ${i}` },
     id: `node-${i}`,
     position: { x: Math.random() * 1000, y: Math.random() * 1000 },
-    type: 'default',
+    type: "default",
   }));
 
   return (
-    <div className='flex h-screen w-screen flex-col'>
-      <div className='bg-card flex items-center gap-4 border-b p-4'>
-        <div className='text-sm font-medium'>Force Mode (12k nodes):</div>
+    <div className="flex h-screen w-screen flex-col">
+      <div className="bg-card flex items-center gap-4 border-b p-4">
+        <div className="text-sm font-medium">Force Mode (12k nodes):</div>
         <Button
-          size='sm'
-          variant={mode === 'auto' ? 'default' : 'outline'}
+          size="sm"
+          variant={mode === "auto" ? "default" : "outline"}
           onClick={() => {
-            setMode('auto');
+            setMode("auto");
           }}
         >
           Auto (WebGL)
         </Button>
         <Button
-          size='sm'
-          variant={mode === 'reactflow' ? 'default' : 'outline'}
+          size="sm"
+          variant={mode === "reactflow" ? "default" : "outline"}
           onClick={() => {
-            setMode('reactflow');
+            setMode("reactflow");
           }}
         >
           Force ReactFlow
         </Button>
         <Button
-          size='sm'
-          variant={mode === 'webgl' ? 'default' : 'outline'}
+          size="sm"
+          variant={mode === "webgl" ? "default" : "outline"}
           onClick={() => {
-            setMode('webgl');
+            setMode("webgl");
           }}
         >
           Force WebGL
         </Button>
       </div>
 
-      <div className='flex-1'>
+      <div className="flex-1">
         <HybridGraphView
           nodes={nodes}
           edges={[]}
           config={{
-            forceReactFlow: mode === 'reactflow',
-            forceWebGL: mode === 'webgl',
+            forceReactFlow: mode === "reactflow",
+            forceWebGL: mode === "webgl",
           }}
         />
       </div>
@@ -180,16 +180,16 @@ export function CustomThresholdExample() {
     data: { label: `Node ${i}` },
     id: `node-${i}`,
     position: { x: Math.random() * 1000, y: Math.random() * 1000 },
-    type: 'default',
+    type: "default",
   }));
 
   return (
-    <div className='flex h-screen w-screen flex-col'>
-      <div className='bg-card flex items-center gap-4 border-b p-4'>
-        <div className='text-sm font-medium'>Custom Threshold (7.5k nodes):</div>
+    <div className="flex h-screen w-screen flex-col">
+      <div className="bg-card flex items-center gap-4 border-b p-4">
+        <div className="text-sm font-medium">Custom Threshold (7.5k nodes):</div>
         <Button
-          size='sm'
-          variant={threshold === 5000 ? 'default' : 'outline'}
+          size="sm"
+          variant={threshold === 5000 ? "default" : "outline"}
           onClick={() => {
             setThreshold(5000);
           }}
@@ -197,8 +197,8 @@ export function CustomThresholdExample() {
           Threshold: 5k (→ WebGL)
         </Button>
         <Button
-          size='sm'
-          variant={threshold === 10_000 ? 'default' : 'outline'}
+          size="sm"
+          variant={threshold === 10_000 ? "default" : "outline"}
           onClick={() => {
             setThreshold(10_000);
           }}
@@ -206,8 +206,8 @@ export function CustomThresholdExample() {
           Threshold: 10k (→ ReactFlow)
         </Button>
         <Button
-          size='sm'
-          variant={threshold === 20_000 ? 'default' : 'outline'}
+          size="sm"
+          variant={threshold === 20_000 ? "default" : "outline"}
           onClick={() => {
             setThreshold(20_000);
           }}
@@ -216,7 +216,7 @@ export function CustomThresholdExample() {
         </Button>
       </div>
 
-      <div className='flex-1'>
+      <div className="flex-1">
         <HybridGraphView nodes={nodes} edges={[]} config={{ nodeThreshold: threshold }} />
       </div>
     </div>

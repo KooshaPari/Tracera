@@ -7,7 +7,7 @@
  * - ELK hierarchical layouts
  */
 
-import { expose } from 'comlink';
+import { expose } from "comlink";
 
 export interface LayoutNode {
   id: string;
@@ -24,8 +24,8 @@ export interface LayoutEdge {
 }
 
 export interface LayoutOptions {
-  type: 'dagre' | 'force' | 'elk' | 'hierarchical';
-  direction?: 'TB' | 'LR' | 'BT' | 'RL';
+  type: "dagre" | "force" | "elk" | "hierarchical";
+  direction?: "TB" | "LR" | "BT" | "RL";
   nodeSep?: number;
   rankSep?: number;
   marginX?: number;
@@ -296,9 +296,9 @@ const layoutDagre = (
   let maxWidth = ZERO;
   let maxHeight = ZERO;
 
-  const direction = options.direction ?? 'TB';
-  const isHorizontal = direction === 'LR' || direction === 'RL';
-  const isReverse = direction === 'BT' || direction === 'RL';
+  const direction = options.direction ?? "TB";
+  const isHorizontal = direction === "LR" || direction === "RL";
+  const isReverse = direction === "BT" || direction === "RL";
   const maxLevelWidth = calculateMaxLevelWidth(levelGroups, nodeMap, nodeSep);
 
   for (const [nodeLevel, nodeIds] of levelGroups) {
@@ -530,12 +530,12 @@ const computeLayout = (
   }
 
   switch (options.type) {
-    case 'dagre':
-    case 'hierarchical':
-    case 'elk': {
+    case "dagre":
+    case "hierarchical":
+    case "elk": {
       return layoutDagre(nodes, edges, options);
     }
-    case 'force': {
+    case "force": {
       return layoutForce(nodes, edges, options);
     }
     default: {

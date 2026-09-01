@@ -51,7 +51,7 @@ interface WorkerMessage<T = unknown> {
   error?: string | undefined;
   id: string;
   progress?: number | undefined;
-  type: 'result' | 'error' | 'progress';
+  type: "result" | "error" | "progress";
 }
 
 export class WorkerPool {
@@ -98,7 +98,7 @@ export class WorkerPool {
     } = {},
   ): Promise<R> {
     if (this.isShuttingDown) {
-      throw new Error('Worker pool is shutting down');
+      throw new Error("Worker pool is shutting down");
     }
 
     return new Promise<R>((resolve, reject) => {
@@ -132,7 +132,7 @@ export class WorkerPool {
       this.cleanupInterval = undefined;
     }
 
-    const terminationError = new Error('Worker pool terminated');
+    const terminationError = new Error("Worker pool terminated");
 
     for (const task of this.taskQueue) {
       task.reject(terminationError);
@@ -255,8 +255,8 @@ export class WorkerPool {
       this.handleWorkerError(instance, error);
     };
 
-    worker.addEventListener('message', instance.messageHandler);
-    worker.addEventListener('error', instance.errorHandler);
+    worker.addEventListener("message", instance.messageHandler);
+    worker.addEventListener("error", instance.errorHandler);
 
     return instance;
   }
@@ -268,8 +268,8 @@ export class WorkerPool {
   }
 
   private detachWorkerListeners(workerInstance: WorkerInstance): void {
-    workerInstance.worker.removeEventListener('message', workerInstance.messageHandler);
-    workerInstance.worker.removeEventListener('error', workerInstance.errorHandler);
+    workerInstance.worker.removeEventListener("message", workerInstance.messageHandler);
+    workerInstance.worker.removeEventListener("error", workerInstance.errorHandler);
   }
 
   private findTaskById(taskId: string): WorkerTask | void {
@@ -310,22 +310,22 @@ export class WorkerPool {
       return;
     }
 
-    if (message.type === 'result') {
+    if (message.type === "result") {
       this.releaseWorkerTask(workerInstance)?.resolve(message.data);
       this.processQueue();
       return;
     }
 
-    if (message.type === 'error') {
+    if (message.type === "error") {
       this.releaseWorkerTask(workerInstance)?.reject(
-        new Error(message.error ?? 'Worker task failed'),
+        new Error(message.error ?? "Worker task failed"),
       );
       this.processQueue();
       return;
     }
 
-    if (message.type === 'progress') {
-      if (task.onProgress && typeof message.progress === 'number') {
+    if (message.type === "progress") {
+      if (task.onProgress && typeof message.progress === "number") {
         task.onProgress(message.progress);
       }
     }

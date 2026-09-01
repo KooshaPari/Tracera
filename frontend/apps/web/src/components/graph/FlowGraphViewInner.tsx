@@ -14,7 +14,7 @@ import {
   useEdgesState,
   useNodesState,
   useReactFlow,
-} from '@xyflow/react';
+} from "@xyflow/react";
 import {
   Maximize,
   Maximize2,
@@ -24,27 +24,27 @@ import {
   RotateCcw,
   ZoomIn,
   ZoomOut,
-} from 'lucide-react';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+} from "lucide-react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { CacheStatistics } from '@/lib/cache';
-import type { Item, Link, LinkType } from '@tracertm/types';
+import type { CacheStatistics } from "@/lib/cache";
+import type { Item, Link, LinkType } from "@tracertm/types";
 
-import { useGraphPerformanceMonitor } from '@/hooks/useGraphPerformanceMonitor';
-import { calculateEdgeMidpoint, getEdgeLODTier } from '@/lib/edgeLOD';
-import { useGraphCache } from '@/lib/graphCache';
-import { buildGraphIndices, getRelatedItems } from '@/lib/graphIndexing';
-import { GraphSpatialIndex, type SpatialEdge, type SpatialNode } from '@/lib/spatialIndex';
-import { Button } from '@tracertm/ui/components/Button';
-import { Card } from '@tracertm/ui/components/Card';
-import { Separator } from '@tracertm/ui/components/Separator';
+import { useGraphPerformanceMonitor } from "@/hooks/useGraphPerformanceMonitor";
+import { calculateEdgeMidpoint, getEdgeLODTier } from "@/lib/edgeLOD";
+import { useGraphCache } from "@/lib/graphCache";
+import { buildGraphIndices, getRelatedItems } from "@/lib/graphIndexing";
+import { GraphSpatialIndex, type SpatialEdge, type SpatialNode } from "@/lib/spatialIndex";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
+import { Separator } from "@tracertm/ui/components/Separator";
 
-import type { RichNodeData } from './RichNodePill';
+import type { RichNodeData } from "./RichNodePill";
 
-import { LayoutSelector } from './layouts/LayoutSelector';
-import { useDagLayout, type LayoutType } from './layouts/useDagLayout';
-import { NodeDetailPanel } from './NodeDetailPanel';
-import { getNodeType, nodeTypes } from './nodeRegistry';
+import { LayoutSelector } from "./layouts/LayoutSelector";
+import { useDagLayout, type LayoutType } from "./layouts/useDagLayout";
+import { NodeDetailPanel } from "./NodeDetailPanel";
+import { getNodeType, nodeTypes } from "./nodeRegistry";
 import {
   ENHANCED_TYPE_COLORS,
   LINK_STYLES,
@@ -52,9 +52,9 @@ import {
   TYPE_TO_PERSPECTIVE,
   type EnhancedNodeData,
   type GraphPerspective,
-} from './types';
-import { LODLevel, determineLODLevel } from './utils/lod';
-import { itemToNodeData } from './utils/nodeDataTransformers';
+} from "./types";
+import { LODLevel, determineLODLevel } from "./utils/lod";
+import { itemToNodeData } from "./utils/nodeDataTransformers";
 
 /** Stable noop for optional callbacks (A1 perf). */
 const noop = (): void => {};
@@ -67,14 +67,14 @@ const AUTO_FIT_DELAY_MS = 100;
 const FPS_GOOD_THRESHOLD = 55;
 const FPS_WARN_THRESHOLD = 30;
 const CANVAS_LAYER_Z_INDEX = 5;
-const GRAPH_EMPTY_LABEL = 'Untitled';
+const GRAPH_EMPTY_LABEL = "Untitled";
 const MAX_ITEM_DEPTH = 10;
 const EMPTY_CONNECTIONS: Partial<Record<LinkType, number>> = {};
-const DEV_MODE = process.env['NODE_ENV'] === 'development';
+const DEV_MODE = process.env["NODE_ENV"] === "development";
 
 // OPTIMIZATION (Fix 1.6): Edge style caching to eliminate repeated object allocations
 // Provides 10-15% FPS improvement and 80% reduction in object allocations
-const EDGE_LABEL_BG_STYLE = { fill: 'rgba(26, 26, 46, 0.9)' };
+const EDGE_LABEL_BG_STYLE = { fill: "rgba(26, 26, 46, 0.9)" };
 
 interface EdgeStyleCacheEntry {
   style: object;
@@ -117,17 +117,17 @@ function getCachedEdgeStyle(linkType: LinkType): EdgeStyleCacheEntry {
   if (!edgeStyleCache.has(linkType)) {
     const linkStyle = LINK_STYLES[linkType] ?? {
       arrow: false,
-      color: '#64748b',
+      color: "#64748b",
       dashed: true,
     };
     edgeStyleCache.set(linkType, {
       style: {
         stroke: linkStyle.color,
         strokeWidth: 2,
-        ...(linkStyle.dashed && { strokeDasharray: '5,5' }),
+        ...(linkStyle.dashed && { strokeDasharray: "5,5" }),
       },
       labelStyle: { fill: linkStyle.color, fontSize: 10 },
-      label: linkType.replaceAll('_', ' '),
+      label: linkType.replaceAll("_", " "),
       ...(linkStyle.arrow && {
         markerEnd: { color: linkStyle.color, type: MarkerType.ArrowClosed },
       }),
@@ -163,7 +163,7 @@ function FlowGraphViewInnerComponent({
   autoFit = true,
 }: FlowGraphViewInnerProps): JSX.Element {
   // Use external perspective if provided, otherwise manage internally
-  const [internalPerspective, setInternalPerspective] = useState<GraphPerspective>('all');
+  const [internalPerspective, setInternalPerspective] = useState<GraphPerspective>("all");
   const perspective = externalPerspective ?? internalPerspective;
   const setPerspective = useCallback(
     (nextPerspective: GraphPerspective): void => {
@@ -174,7 +174,7 @@ function FlowGraphViewInnerComponent({
     [externalPerspective],
   );
 
-  const [layout, setLayout] = useState<LayoutType>(defaultLayout ?? 'flow-chart');
+  const [layout, setLayout] = useState<LayoutType>(defaultLayout ?? "flow-chart");
 
   // Sync layout when view type changes (e.g. user picks "Tree" or "Mind Map")
   useEffect((): (() => void) | void => {
@@ -233,7 +233,7 @@ function FlowGraphViewInnerComponent({
     const map = new Map<string, Set<string>>();
     items.forEach((item) => {
       const parentId = item.parentId;
-      if (typeof parentId === 'string' && parentId.length > 0) {
+      if (typeof parentId === "string" && parentId.length > 0) {
         if (!map.has(parentId)) {
           map.set(parentId, new Set());
         }
@@ -256,8 +256,8 @@ function FlowGraphViewInnerComponent({
       outgoingCount: Map<string, number>,
       connectionsByType: Map<string, Record<LinkType, number>>,
     ): EnhancedNodeData => {
-      const itemType = (item.type || item.view || 'item').toLowerCase();
-      const perspectives = TYPE_TO_PERSPECTIVE[itemType] ?? ['all'];
+      const itemType = (item.type || item.view || "item").toLowerCase();
+      const perspectives = TYPE_TO_PERSPECTIVE[itemType] ?? ["all"];
       const incoming = incomingCount.get(item.id) ?? 0;
       const outgoing = outgoingCount.get(item.id) ?? 0;
 
@@ -267,20 +267,20 @@ function FlowGraphViewInnerComponent({
       // OPTIMIZATION: Depth calculation using parent map
       let depth = 0;
       let currentId = item.parentId;
-      while (typeof currentId === 'string' && currentId.length > 0 && depth < MAX_ITEM_DEPTH) {
+      while (typeof currentId === "string" && currentId.length > 0 && depth < MAX_ITEM_DEPTH) {
         depth += 1;
         const parent = itemMap.get(currentId);
         currentId = parent?.parentId;
       }
 
-      const screenshotUrlRaw = item.metadata?.['screenshotUrl'];
+      const screenshotUrlRaw = item.metadata?.["screenshotUrl"];
       const screenshotUrl =
-        typeof screenshotUrlRaw === 'string' && screenshotUrlRaw.length > 0
+        typeof screenshotUrlRaw === "string" && screenshotUrlRaw.length > 0
           ? screenshotUrlRaw
           : undefined;
-      const codeRaw = item.metadata?.['code'];
-      const interactiveUrlRaw = item.metadata?.['interactiveUrl'];
-      const thumbnailUrlRaw = item.metadata?.['thumbnailUrl'];
+      const codeRaw = item.metadata?.["code"];
+      const interactiveUrlRaw = item.metadata?.["interactiveUrl"];
+      const thumbnailUrlRaw = item.metadata?.["thumbnailUrl"];
 
       return {
         connections: {
@@ -301,11 +301,11 @@ function FlowGraphViewInnerComponent({
         uiPreview:
           screenshotUrl !== undefined
             ? {
-                componentCode: typeof codeRaw === 'string' ? codeRaw : undefined,
+                componentCode: typeof codeRaw === "string" ? codeRaw : undefined,
                 interactiveWidgetUrl:
-                  typeof interactiveUrlRaw === 'string' ? interactiveUrlRaw : undefined,
+                  typeof interactiveUrlRaw === "string" ? interactiveUrlRaw : undefined,
                 screenshotUrl,
-                thumbnailUrl: typeof thumbnailUrlRaw === 'string' ? thumbnailUrlRaw : undefined,
+                thumbnailUrl: typeof thumbnailUrlRaw === "string" ? thumbnailUrlRaw : undefined,
               }
             : undefined,
       } as EnhancedNodeData;
@@ -353,7 +353,7 @@ function FlowGraphViewInnerComponent({
 
   // Filter nodes by perspective (only if using internal perspective)
   const filteredNodes = useMemo(() => {
-    if (perspective === 'all') {
+    if (perspective === "all") {
       return enhancedNodes;
     }
 
@@ -470,7 +470,7 @@ function FlowGraphViewInnerComponent({
         ...baseData,
         lodLevel,
         isExpanded: expandedNodes.has(node.id),
-        showPreview: perspective === 'ui' && lodNodeType !== 'simple' && lodNodeType !== 'skeleton',
+        showPreview: perspective === "ui" && lodNodeType !== "simple" && lodNodeType !== "skeleton",
         onSelect: setSelectedNodeId,
         onExpand: handleNodeExpand,
         onNavigate: onNavigateToItem ?? undefined,
@@ -621,7 +621,7 @@ function FlowGraphViewInnerComponent({
     const maxAnimatedEdges = atScale ? 0 : MAX_ANIMATED_EDGE_COUNT;
     const animatedEdgeIds = new Set(
       edgesForRendering
-        .filter((link) => link.type === 'depends_on' || link.type === 'blocks')
+        .filter((link) => link.type === "depends_on" || link.type === "blocks")
         .slice(0, maxAnimatedEdges)
         .map((link) => link.id),
     );
@@ -642,7 +642,7 @@ function FlowGraphViewInnerComponent({
 
         // Get LOD tier based on distance from viewport center
         const lodTier = getEdgeLODTier(edgeMidpoint, viewportCenter, viewport.zoom);
-        if (lodTier.level === 'hidden') {
+        if (lodTier.level === "hidden") {
           return null;
         }
 
@@ -652,8 +652,8 @@ function FlowGraphViewInnerComponent({
           id: link.id,
           source: link.sourceId,
           target: link.targetId,
-          type: lodTier.pathType === 'bezier' ? 'smoothstep' : 'default',
-          animated: lodTier.level === 'detailed' && animatedEdgeIds.has(link.id),
+          type: lodTier.pathType === "bezier" ? "smoothstep" : "default",
+          animated: lodTier.level === "detailed" && animatedEdgeIds.has(link.id),
           style: {
             ...cached.style,
             strokeWidth: lodTier.strokeWidth,
@@ -698,19 +698,19 @@ function FlowGraphViewInnerComponent({
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const layoutInputSignature = useMemo(() => {
-    const nodeIds = visibleNodes.map((node) => node.id).join('|');
-    const linkIds = visibleLinks.map((link) => link.id).join('|');
+    const nodeIds = visibleNodes.map((node) => node.id).join("|");
+    const linkIds = visibleLinks.map((link) => link.id).join("|");
     return `${layout}|${nodeIds}|${linkIds}`;
   }, [visibleNodes, visibleLinks, layout]);
   const edgesSignature = useMemo(
     () =>
       visibleLinks
         .map((edge) => `${edge.id}:${edge.sourceId}->${edge.targetId}:${edge.type}`)
-        .join('|'),
+        .join("|"),
     [visibleLinks],
   );
-  const prevNodesSignature = useRef<string>('');
-  const prevEdgesSignature = useRef<string>('');
+  const prevNodesSignature = useRef<string>("");
+  const prevEdgesSignature = useRef<string>("");
 
   // Update nodes when data or viewport window or canvas/dom split changes (D1, D3)
   const nodesForState = canvasNodes.length > 0 ? domNodes : nodesToRender;
@@ -780,7 +780,7 @@ function FlowGraphViewInnerComponent({
     }
     canvas.width = containerWidth;
     canvas.height = containerHeight;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) {
       return;
     }
@@ -792,7 +792,7 @@ function FlowGraphViewInnerComponent({
       const screenY = node.position.y * zoom + y;
       ctx.beginPath();
       ctx.arc(screenX, screenY, radius, 0, Math.PI * 2);
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = "#64748b";
       ctx.fill();
     });
   }, [canvasNodes, viewportBounds]);
@@ -844,9 +844,9 @@ function FlowGraphViewInnerComponent({
     const onFullscreenChange = (): void => {
       setIsFullscreen(Boolean(document.fullscreenElement));
     };
-    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener("fullscreenchange", onFullscreenChange);
     return (): void => {
-      document.removeEventListener('fullscreenchange', onFullscreenChange);
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
     };
   }, []);
 
@@ -875,8 +875,8 @@ function FlowGraphViewInnerComponent({
   }, [fitView]);
 
   const handleReset = useCallback((): void => {
-    setPerspective('all');
-    setLayout('flow-chart');
+    setPerspective("all");
+    setLayout("flow-chart");
     setSelectedNodeId(null);
     setExpandedNodes(new Set());
   }, [setPerspective]);
@@ -888,10 +888,10 @@ function FlowGraphViewInnerComponent({
   // Stable MiniMap nodeColor (avoids new function every render — A1 perf)
   const miniMapNodeColor = useCallback((node: Node): string => {
     const nodeType = (node.data as RichNodeData | undefined)?.type;
-    if (typeof nodeType === 'string' && nodeType.length > 0) {
-      return ENHANCED_TYPE_COLORS[nodeType] ?? '#64748b';
+    if (typeof nodeType === "string" && nodeType.length > 0) {
+      return ENHANCED_TYPE_COLORS[nodeType] ?? "#64748b";
     }
-    return '#64748b';
+    return "#64748b";
   }, []);
 
   // Stable ReactFlow options (A1 perf)
@@ -924,12 +924,12 @@ function FlowGraphViewInnerComponent({
   }, []);
   const getFpsClassName = useCallback((fps: number): string => {
     if (fps >= FPS_GOOD_THRESHOLD) {
-      return 'text-green-500';
+      return "text-green-500";
     }
     if (fps >= FPS_WARN_THRESHOLD) {
-      return 'text-yellow-500';
+      return "text-yellow-500";
     }
-    return 'text-red-500';
+    return "text-red-500";
   }, []);
 
   // OPTIMIZATION: Performance monitoring (dev mode only)
@@ -940,15 +940,15 @@ function FlowGraphViewInnerComponent({
       return {
         grouping: toPerformanceCacheStats(
           { count: stats.grouping.totalEntries, hitRate: stats.grouping.hitRatio },
-          'graph-groupings-store',
+          "graph-groupings-store",
         ),
         layout: toPerformanceCacheStats(
           { count: stats.layout.totalEntries, hitRate: stats.layout.hitRatio },
-          'graph-layouts-store',
+          "graph-layouts-store",
         ),
         search: toPerformanceCacheStats(
           { count: stats.search.totalEntries, hitRate: stats.search.hitRatio },
-          'graph-search-store',
+          "graph-search-store",
         ),
       };
     }, [getCacheStats]),
@@ -983,70 +983,70 @@ function FlowGraphViewInnerComponent({
   });
 
   return (
-    <div className='flex h-full flex-col'>
+    <div className="flex h-full flex-col">
       {/* Controls */}
       {showControls && (
-        <Card className='mb-2 p-1.5 sm:mb-3 sm:p-2'>
-          <div className='flex min-w-0 flex-wrap items-center justify-between gap-2 sm:gap-3'>
-            <div className='flex min-w-0 items-center gap-1.5 sm:gap-2'>
+        <Card className="mb-2 p-1.5 sm:mb-3 sm:p-2">
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 sm:gap-3">
+            <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
               {/* Layout selector */}
               <LayoutSelector
                 value={layout}
                 onChange={setLayout}
-                variant='select'
-                className='h-7 w-full max-w-[160px] min-w-0 text-xs sm:h-8 sm:max-w-[180px] sm:text-sm md:max-w-[200px]'
+                variant="select"
+                className="h-7 w-full max-w-[160px] min-w-0 text-xs sm:h-8 sm:max-w-[180px] sm:text-sm md:max-w-[200px]"
               />
 
-              <Separator orientation='vertical' className='hidden h-5 sm:block sm:h-6' />
+              <Separator orientation="vertical" className="hidden h-5 sm:block sm:h-6" />
 
               {/* Detail panel toggle */}
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={handleDetailPanelToggle}
-                className='h-7 w-7 shrink-0 p-0 sm:h-8 sm:w-8'
+                className="h-7 w-7 shrink-0 p-0 sm:h-8 sm:w-8"
               >
                 {showDetailPanel ? (
-                  <PanelRightClose className='h-4 w-4' />
+                  <PanelRightClose className="h-4 w-4" />
                 ) : (
-                  <PanelRight className='h-4 w-4' />
+                  <PanelRight className="h-4 w-4" />
                 )}
               </Button>
             </div>
 
-            <div className='flex items-center gap-1 rounded-md border p-0.5'>
-              <Button variant='ghost' size='sm' onClick={handleZoomIn} className='h-7 w-7 p-0'>
-                <ZoomIn className='h-4 w-4' />
+            <div className="flex items-center gap-1 rounded-md border p-0.5">
+              <Button variant="ghost" size="sm" onClick={handleZoomIn} className="h-7 w-7 p-0">
+                <ZoomIn className="h-4 w-4" />
               </Button>
-              <Button variant='ghost' size='sm' onClick={handleZoomOut} className='h-7 w-7 p-0'>
-                <ZoomOut className='h-4 w-4' />
+              <Button variant="ghost" size="sm" onClick={handleZoomOut} className="h-7 w-7 p-0">
+                <ZoomOut className="h-4 w-4" />
               </Button>
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={handleFit}
-                className='h-7 w-7 p-0'
-                title='Fit view'
+                className="h-7 w-7 p-0"
+                title="Fit view"
               >
-                <Maximize2 className='h-4 w-4' />
+                <Maximize2 className="h-4 w-4" />
               </Button>
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={handleFullscreenToggle}
-                className='h-7 w-7 p-0'
-                title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+                className="h-7 w-7 p-0"
+                title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
               >
-                {isFullscreen ? <Minimize className='h-4 w-4' /> : <Maximize className='h-4 w-4' />}
+                {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
               </Button>
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={handleReset}
-                className='h-7 w-7 p-0'
-                title='Reset view'
+                className="h-7 w-7 p-0"
+                title="Reset view"
               >
-                <RotateCcw className='h-4 w-4' />
+                <RotateCcw className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -1054,19 +1054,19 @@ function FlowGraphViewInnerComponent({
       )}
 
       {/* Graph area */}
-      <div className='flex min-w-0 flex-1 gap-2 sm:gap-3'>
+      <div className="flex min-w-0 flex-1 gap-2 sm:gap-3">
         {/* Graph - ref for fullscreen target; 3.1: empty state when no nodes */}
         <Card
           ref={graphContainerRef}
-          className='bg-card min-h-0 flex-1 overflow-hidden p-0 [&:fullscreen]:!rounded-none'
+          className="bg-card min-h-0 flex-1 overflow-hidden p-0 [&:fullscreen]:!rounded-none"
         >
           {items.length === 0 ? (
-            <div className='text-muted-foreground flex h-full min-h-[280px] flex-col items-center justify-center p-6 text-center'>
-              <p className='text-sm font-medium'>No nodes to display</p>
-              <p className='mt-1 text-xs'>Add items or links in this project to see the graph.</p>
+            <div className="text-muted-foreground flex h-full min-h-[280px] flex-col items-center justify-center p-6 text-center">
+              <p className="text-sm font-medium">No nodes to display</p>
+              <p className="mt-1 text-xs">Add items or links in this project to see the graph.</p>
             </div>
           ) : (
-            <div className='relative min-h-0 w-full flex-1'>
+            <div className="relative min-h-0 w-full flex-1">
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -1081,24 +1081,24 @@ function FlowGraphViewInnerComponent({
                 nodesConnectable={false}
                 elementsSelectable
                 proOptions={reactFlowProOptions}
-                className='bg-background'
+                className="bg-background"
               >
-                <Background variant={BackgroundVariant.Dots} gap={20} size={1} color='#374151' />
+                <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#374151" />
                 <Controls showInteractive={false} />
                 <MiniMap
                   nodeColor={miniMapNodeColor}
-                  maskColor='rgba(0, 0, 0, 0.7)'
-                  className='!bg-card !border-border'
+                  maskColor="rgba(0, 0, 0, 0.7)"
+                  className="!bg-card !border-border"
                 />
-                <Panel position='bottom-left' className='!m-1 sm:!m-2'>
-                  <div className='bg-card/90 flex max-w-[90vw] flex-wrap gap-1 rounded-md border p-1.5 text-[9px] backdrop-blur-sm sm:gap-2 sm:rounded-lg sm:p-2 sm:text-[10px]'>
+                <Panel position="bottom-left" className="!m-1 sm:!m-2">
+                  <div className="bg-card/90 flex max-w-[90vw] flex-wrap gap-1 rounded-md border p-1.5 text-[9px] backdrop-blur-sm sm:gap-2 sm:rounded-lg sm:p-2 sm:text-[10px]">
                     {visibleLegendEntries.map(([type]) => (
-                      <div key={type} className='flex min-w-0 items-center gap-0.5 sm:gap-1'>
+                      <div key={type} className="flex min-w-0 items-center gap-0.5 sm:gap-1">
                         <div
-                          className='h-2 w-4 shrink-0 rounded sm:h-2.5 sm:w-5'
+                          className="h-2 w-4 shrink-0 rounded sm:h-2.5 sm:w-5"
                           style={legendColorStyles.get(type)}
                         />
-                        <span className='truncate capitalize'>{type.replaceAll('_', ' ')}</span>
+                        <span className="truncate capitalize">{type.replaceAll("_", " ")}</span>
                       </div>
                     ))}
                   </div>
@@ -1106,44 +1106,44 @@ function FlowGraphViewInnerComponent({
 
                 {/* Performance Monitor Panel (dev mode only) */}
                 {DEV_MODE && performanceMonitor.currentMetrics && (
-                  <Panel position='top-right' className='!m-1 sm:!m-2'>
-                    <div className='bg-card/90 space-y-0.5 rounded-md border p-1.5 font-mono text-[9px] backdrop-blur-sm sm:rounded-lg sm:p-2 sm:text-[10px]'>
-                      <div className='flex items-center gap-1'>
-                        <span className='text-muted-foreground'>FPS:</span>
+                  <Panel position="top-right" className="!m-1 sm:!m-2">
+                    <div className="bg-card/90 space-y-0.5 rounded-md border p-1.5 font-mono text-[9px] backdrop-blur-sm sm:rounded-lg sm:p-2 sm:text-[10px]">
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground">FPS:</span>
                         <span
                           className={getFpsClassName(performanceMonitor.currentMetrics.fps.current)}
                         >
                           {performanceMonitor.currentMetrics.fps.current}
                         </span>
-                        <span className='text-muted-foreground text-[8px]'>
+                        <span className="text-muted-foreground text-[8px]">
                           (avg: {performanceMonitor.currentMetrics.fps.average})
                         </span>
                       </div>
-                      <div className='flex items-center gap-1'>
-                        <span className='text-muted-foreground'>Nodes:</span>
-                        <span className='text-primary'>
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground">Nodes:</span>
+                        <span className="text-primary">
                           {performanceMonitor.currentMetrics.nodes.rendered}/
                           {performanceMonitor.currentMetrics.nodes.total}
                         </span>
-                        <span className='text-muted-foreground text-[8px]'>
+                        <span className="text-muted-foreground text-[8px]">
                           ({performanceMonitor.currentMetrics.nodes.cullingRatio.toFixed(0)}%
                           culled)
                         </span>
                       </div>
-                      <div className='flex items-center gap-1'>
-                        <span className='text-muted-foreground'>Edges:</span>
-                        <span className='text-primary'>
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground">Edges:</span>
+                        <span className="text-primary">
                           {performanceMonitor.currentMetrics.edges.rendered}/
                           {performanceMonitor.currentMetrics.edges.total}
                         </span>
-                        <span className='text-muted-foreground text-[8px]'>
+                        <span className="text-muted-foreground text-[8px]">
                           ({performanceMonitor.currentMetrics.edges.cullingRatio.toFixed(0)}%
                           culled)
                         </span>
                       </div>
-                      <div className='flex items-center gap-1'>
-                        <span className='text-muted-foreground'>Cache:</span>
-                        <span className='text-primary'>
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground">Cache:</span>
+                        <span className="text-primary">
                           {(
                             performanceMonitor.currentMetrics.cache.combined.hitRatio * 100
                           ).toFixed(0)}
@@ -1158,7 +1158,7 @@ function FlowGraphViewInnerComponent({
               {canvasNodes.length > 0 && viewportBounds && (
                 <canvas
                   ref={canvasLayerRef}
-                  className='pointer-events-none absolute inset-0 h-full w-full'
+                  className="pointer-events-none absolute inset-0 h-full w-full"
                   style={canvasLayerStyle}
                   aria-hidden
                 />

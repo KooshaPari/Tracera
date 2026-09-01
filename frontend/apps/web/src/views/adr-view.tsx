@@ -1,25 +1,25 @@
-import { useParams } from '@tanstack/react-router';
-import React from 'react';
+import { useParams } from "@tanstack/react-router";
+import React from "react";
 
-import type { ADR } from '@tracertm/types';
+import type { ADR } from "@tracertm/types";
 
-import { useADRs, useCreateADR } from '@/hooks/useSpecifications';
+import { useADRs, useCreateADR } from "@/hooks/useSpecifications";
 
-import ADRViewContent from './adr-view-content';
-import ADRViewEditor from './adr-view-editor';
-import ADRViewHeader from './adr-view-header';
+import ADRViewContent from "./adr-view-content";
+import ADRViewEditor from "./adr-view-editor";
+import ADRViewHeader from "./adr-view-header";
 
 const EMPTY_ADRS: ADR[] = [];
 
 interface ADRViewState {
   isEditing: boolean;
-  viewMode: 'list' | 'timeline';
+  viewMode: "list" | "timeline";
 }
 
 interface ADRViewHandlers {
   handleCloseEditor: () => void;
   handleCreate: () => void;
-  handleViewChange: (nextView: 'list' | 'timeline') => void;
+  handleViewChange: (nextView: "list" | "timeline") => void;
 }
 
 const resolveAdrs = (adrsData: { adrs?: ADR[] } | undefined): ADR[] => {
@@ -45,7 +45,7 @@ const buildHandlers = (
       viewMode: prevState.viewMode,
     }));
   },
-  handleViewChange: (nextView: 'list' | 'timeline'): void => {
+  handleViewChange: (nextView: "list" | "timeline"): void => {
     setViewState(() => ({
       isEditing: false,
       viewMode: nextView,
@@ -55,7 +55,7 @@ const buildHandlers = (
 
 const ADRView = (): React.ReactNode => {
   const { projectId } = useParams({ strict: false });
-  const normalizedProjectId = projectId ?? '';
+  const normalizedProjectId = projectId ?? "";
   const { data: adrsData } = useADRs({
     projectId: normalizedProjectId,
   });
@@ -63,7 +63,7 @@ const ADRView = (): React.ReactNode => {
   const createADR = useCreateADR();
   const [viewState, setViewState] = React.useState<ADRViewState>(() => ({
     isEditing: false,
-    viewMode: 'list',
+    viewMode: "list",
   }));
   const handlers = React.useMemo(() => buildHandlers(setViewState), [setViewState]);
 
@@ -78,7 +78,7 @@ const ADRView = (): React.ReactNode => {
   }
 
   return (
-    <div className='space-y-6 p-6'>
+    <div className="space-y-6 p-6">
       <ADRViewHeader
         onCreate={handlers.handleCreate}
         onViewChange={handlers.handleViewChange}

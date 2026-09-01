@@ -28,9 +28,9 @@
  * ```
  */
 
-import { TTL, CacheKeys } from './cache/CacheInterface';
+import { TTL, CacheKeys } from "./cache/CacheInterface";
 // Core interfaces and types
-import { getCacheManager } from './cache/CacheManager';
+import { getCacheManager } from "./cache/CacheManager";
 
 export type {
   ICache,
@@ -43,7 +43,7 @@ export type {
   CacheEvent,
   CacheEventType,
   CacheEventListener,
-} from './cache/CacheInterface';
+} from "./cache/CacheInterface";
 
 export {
   TTL,
@@ -54,23 +54,23 @@ export {
   calculateExpiration,
   matchesPattern,
   estimateSize,
-} from './cache/CacheInterface';
+} from "./cache/CacheInterface";
 
 // Memory cache
-export { MemoryCache, createMemoryCache } from './cache/MemoryCache';
-export type { MemoryCacheConfig } from './cache/MemoryCache';
+export { MemoryCache, createMemoryCache } from "./cache/MemoryCache";
+export type { MemoryCacheConfig } from "./cache/MemoryCache";
 
 // IndexedDB cache
-export { IndexedDBCache, createIndexedDBCache } from './cache/IndexedDBCache';
-export type { IndexedDBCacheConfig } from './cache/IndexedDBCache';
+export { IndexedDBCache, createIndexedDBCache } from "./cache/IndexedDBCache";
+export type { IndexedDBCacheConfig } from "./cache/IndexedDBCache";
 
 // Service Worker cache
-export { ServiceWorkerCache, createServiceWorkerCache } from './cache/ServiceWorkerCache';
-export type { ServiceWorkerCacheConfig } from './cache/ServiceWorkerCache';
+export { ServiceWorkerCache, createServiceWorkerCache } from "./cache/ServiceWorkerCache";
+export type { ServiceWorkerCacheConfig } from "./cache/ServiceWorkerCache";
 
 // Unified cache manager
-export { CacheManager, getCacheManager, resetCacheManager, CacheLayer } from './cache/CacheManager';
-export type { CacheManagerConfig } from './cache/CacheManager';
+export { CacheManager, getCacheManager, resetCacheManager, CacheLayer } from "./cache/CacheManager";
+export type { CacheManagerConfig } from "./cache/CacheManager";
 
 /**
  * Quick start examples
@@ -85,7 +85,7 @@ export function initializeCache() {
     enableIndexedDB: true,
     enableServiceWorker: true,
     defaultTTL: 5 * 60 * 1000, // 5 minutes
-    enableLogging: process.env.NODE_ENV === 'development',
+    enableLogging: process.env.NODE_ENV === "development",
   });
 }
 
@@ -215,15 +215,15 @@ export async function getCacheHealth(): Promise<{
   const issues: string[] = [];
 
   if (stats.overall.hitRatio < 0.5) {
-    issues.push('Low cache hit ratio (<50%)');
+    issues.push("Low cache hit ratio (<50%)");
   }
 
   if (stats.memory && stats.memory.memoryUsagePercent > 90) {
-    issues.push('Memory cache near capacity (>90%)');
+    issues.push("Memory cache near capacity (>90%)");
   }
 
   if (stats.indexedDB && stats.indexedDB.memoryUsagePercent > 90) {
-    issues.push('IndexedDB cache near capacity (>90%)');
+    issues.push("IndexedDB cache near capacity (>90%)");
   }
 
   return {
@@ -244,7 +244,7 @@ export const dev = {
   async clearAll() {
     const cache = getCacheManager();
     await cache.clear();
-    console.log('[Cache] All caches cleared');
+    console.log("[Cache] All caches cleared");
   },
 
   /**
@@ -264,8 +264,8 @@ export const dev = {
     const memoryKeys = await cache.memoryCache?.keys(pattern);
     const indexedDBKeys = await cache.indexedDBCache?.keys(pattern);
 
-    console.log('Memory Cache Keys:', memoryKeys);
-    console.log('IndexedDB Cache Keys:', indexedDBKeys);
+    console.log("Memory Cache Keys:", memoryKeys);
+    console.log("IndexedDB Cache Keys:", indexedDBKeys);
   },
 
   /**
@@ -290,6 +290,6 @@ export const dev = {
     console.log(`[Cache] Average: ${(duration / count).toFixed(3)}ms per operation`);
 
     // Cleanup
-    await cache.invalidate({ pattern: 'test:*' });
+    await cache.invalidate({ pattern: "test:*" });
   },
 };

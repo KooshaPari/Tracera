@@ -3,7 +3,7 @@
  * Goal: Increase coverage from 17% to 95%
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   exportImportApi,
@@ -13,11 +13,11 @@ import {
   linksApi,
   projectsApi,
   searchApi,
-} from '../../api/endpoints';
-import { mockItems, mockLinks, mockProjects } from '../mocks/data';
+} from "../../api/endpoints";
+import { mockItems, mockLinks, mockProjects } from "../mocks/data";
 
 // Mock the client module - must use factory function for hoisting
-vi.mock('../../api/client', () => {
+vi.mock("../../api/client", () => {
   const mockApiClient = {
     DELETE: vi.fn(),
     GET: vi.fn(),
@@ -36,7 +36,7 @@ vi.mock('../../api/client', () => {
       public data?: unknown,
     ) {
       super(`API Error ${status}: ${statusText}`);
-      this.name = 'ApiError';
+      this.name = "ApiError";
     }
   }
 
@@ -50,17 +50,17 @@ vi.mock('../../api/client', () => {
   };
 });
 
-import { client } from '../../api/client';
+import { client } from "../../api/client";
 
 const { ApiError, apiClient, handleApiResponse, safeApiCall } = client;
 
-describe('API Endpoints - Comprehensive Tests', () => {
+describe("API Endpoints - Comprehensive Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default mock: successful response
     vi.mocked(handleApiResponse).mockImplementation(async (promise: Promise<Response>) => {
       if (!promise) {
-        throw new ApiError(500, 'Null promise');
+        throw new ApiError(500, "Null promise");
       }
       const result = (await promise) as unknown as {
         error?: unknown;
@@ -68,13 +68,13 @@ describe('API Endpoints - Comprehensive Tests', () => {
         data?: unknown;
       };
       if (result?.error) {
-        throw new ApiError(result.response?.status ?? 500, 'Error', result.error as string);
+        throw new ApiError(result.response?.status ?? 500, "Error", result.error as string);
       }
       return result?.data;
     });
     vi.mocked(safeApiCall).mockImplementation(async (promise: any) => {
       if (!promise) {
-        throw new ApiError(500, 'Null promise');
+        throw new ApiError(500, "Null promise");
       }
       return promise;
     });
@@ -85,8 +85,8 @@ describe('API Endpoints - Comprehensive Tests', () => {
   // ============================================================================
 
   describe(projectsApi, () => {
-    describe('list', () => {
-      it('should list projects without params', async () => {
+    describe("list", () => {
+      it("should list projects without params", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockProjects,
           error: undefined,
@@ -100,12 +100,12 @@ describe('API Endpoints - Comprehensive Tests', () => {
 
         const result = await projectsApi.list();
         expect(result).toEqual(mockProjects);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/projects', {
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/projects", {
           params: { query: undefined },
         });
       });
 
-      it('should normalize the Rust gateway count and items project envelope', async () => {
+      it("should normalize the Rust gateway count and items project envelope", async () => {
         const gatewayEnvelope = { count: 1, items: [mockProjects[0]] };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: gatewayEnvelope,
@@ -121,7 +121,7 @@ describe('API Endpoints - Comprehensive Tests', () => {
         await expect(projectsApi.list()).resolves.toEqual(gatewayEnvelope.items);
       });
 
-      it('should list projects with pagination params', async () => {
+      it("should list projects with pagination params", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockProjects,
           error: undefined,
@@ -135,20 +135,20 @@ describe('API Endpoints - Comprehensive Tests', () => {
 
         const result = await projectsApi.list({ limit: 10, offset: 0 });
         expect(result).toEqual(mockProjects);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/projects', {
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/projects", {
           params: { query: { limit: 10, offset: 0 } },
         });
       });
 
-      it('should handle errors', async () => {
+      it("should handle errors", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: undefined,
-          error: { message: 'Not found' },
+          error: { message: "Not found" },
           response: new Response(null, { status: 404 }),
         });
         vi.mocked(safeApiCall).mockResolvedValue({
           data: undefined,
-          error: { message: 'Not found' },
+          error: { message: "Not found" },
           response: new Response(null, { status: 404 }),
         });
 
@@ -156,8 +156,8 @@ describe('API Endpoints - Comprehensive Tests', () => {
       });
     });
 
-    describe('get', () => {
-      it('should get a project by id', async () => {
+    describe("get", () => {
+      it("should get a project by id", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockProjects[0],
           error: undefined,
@@ -169,33 +169,33 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await projectsApi.get('proj-1');
+        const result = await projectsApi.get("proj-1");
         expect(result).toEqual(mockProjects[0]);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/projects/{id}', {
-          params: { path: { id: 'proj-1' } },
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/projects/{id}", {
+          params: { path: { id: "proj-1" } },
         });
       });
 
-      it('should handle 404 errors', async () => {
+      it("should handle 404 errors", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: undefined,
-          error: { message: 'Not found' },
+          error: { message: "Not found" },
           response: new Response(null, { status: 404 }),
         });
         vi.mocked(safeApiCall).mockResolvedValue({
           data: undefined,
-          error: { message: 'Not found' },
+          error: { message: "Not found" },
           response: new Response(null, { status: 404 }),
         });
 
-        await expect(projectsApi.get('non-existent')).rejects.toThrow();
+        await expect(projectsApi.get("non-existent")).rejects.toThrow();
       });
     });
 
-    describe('create', () => {
-      it('should create a project', async () => {
-        const newProject = { description: 'Test', name: 'New Project' };
-        const created = { ...mockProjects[0], ...newProject, id: 'new-id' };
+    describe("create", () => {
+      it("should create a project", async () => {
+        const newProject = { description: "Test", name: "New Project" };
+        const created = { ...mockProjects[0], ...newProject, id: "new-id" };
 
         vi.mocked(apiClient.POST).mockResolvedValue({
           data: created,
@@ -205,25 +205,25 @@ describe('API Endpoints - Comprehensive Tests', () => {
 
         const result = await projectsApi.create(newProject);
         expect(result).toEqual(created);
-        expect(apiClient.POST).toHaveBeenCalledWith('/api/v1/projects', {
+        expect(apiClient.POST).toHaveBeenCalledWith("/api/v1/projects", {
           body: newProject,
         });
       });
 
-      it('should handle creation errors', async () => {
+      it("should handle creation errors", async () => {
         vi.mocked(apiClient.POST).mockResolvedValue({
           data: undefined,
-          error: { message: 'Validation failed' },
+          error: { message: "Validation failed" },
           response: new Response(null, { status: 400 }),
         });
 
-        await expect(projectsApi.create({ name: '' })).rejects.toThrow();
+        await expect(projectsApi.create({ name: "" })).rejects.toThrow();
       });
     });
 
-    describe('update', () => {
-      it('should update a project', async () => {
-        const updates = { name: 'Updated Project' };
+    describe("update", () => {
+      it("should update a project", async () => {
+        const updates = { name: "Updated Project" };
         const updated = { ...mockProjects[0], ...updates };
 
         vi.mocked(apiClient.PUT).mockResolvedValue({
@@ -232,26 +232,26 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await projectsApi.update('proj-1', updates);
+        const result = await projectsApi.update("proj-1", updates);
         expect(result).toEqual(updated);
-        expect(apiClient.PUT).toHaveBeenCalledWith('/api/v1/projects/{id}', {
+        expect(apiClient.PUT).toHaveBeenCalledWith("/api/v1/projects/{id}", {
           body: updates,
-          params: { path: { id: 'proj-1' } },
+          params: { path: { id: "proj-1" } },
         });
       });
     });
 
-    describe('delete', () => {
-      it('should delete a project', async () => {
+    describe("delete", () => {
+      it("should delete a project", async () => {
         vi.mocked(apiClient.DELETE).mockResolvedValue({
           data: undefined,
           error: undefined,
           response: new Response(),
         });
 
-        await expect(projectsApi.delete('proj-1')).resolves.toBeUndefined();
-        expect(apiClient.DELETE).toHaveBeenCalledWith('/api/v1/projects/{id}', {
-          params: { path: { id: 'proj-1' } },
+        await expect(projectsApi.delete("proj-1")).resolves.toBeUndefined();
+        expect(apiClient.DELETE).toHaveBeenCalledWith("/api/v1/projects/{id}", {
+          params: { path: { id: "proj-1" } },
         });
       });
     });
@@ -262,8 +262,8 @@ describe('API Endpoints - Comprehensive Tests', () => {
   // ============================================================================
 
   describe(itemsApi, () => {
-    describe('list', () => {
-      it('should list items without params', async () => {
+    describe("list", () => {
+      it("should list items without params", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockItems,
           error: undefined,
@@ -272,26 +272,26 @@ describe('API Endpoints - Comprehensive Tests', () => {
 
         const result = await itemsApi.list();
         expect(result).toEqual(mockItems);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/items', {
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/items", {
           params: { query: undefined },
         });
       });
 
-      it('should list items with project_id filter', async () => {
+      it("should list items with project_id filter", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockItems,
           error: undefined,
           response: new Response(),
         });
 
-        const result = await itemsApi.list({ project_id: 'proj-1' });
+        const result = await itemsApi.list({ project_id: "proj-1" });
         expect(result).toEqual(mockItems);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/items', {
-          params: { query: { project_id: 'proj-1' } },
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/items", {
+          params: { query: { project_id: "proj-1" } },
         });
       });
 
-      it('should list items with pagination and project_id', async () => {
+      it("should list items with pagination and project_id", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockItems,
           error: undefined,
@@ -301,40 +301,40 @@ describe('API Endpoints - Comprehensive Tests', () => {
         const result = await itemsApi.list({
           limit: 10,
           offset: 0,
-          project_id: 'proj-1',
+          project_id: "proj-1",
         });
         expect(result).toEqual(mockItems);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/items', {
-          params: { query: { limit: 10, offset: 0, project_id: 'proj-1' } },
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/items", {
+          params: { query: { limit: 10, offset: 0, project_id: "proj-1" } },
         });
       });
     });
 
-    describe('get', () => {
-      it('should get an item by id', async () => {
+    describe("get", () => {
+      it("should get an item by id", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockItems[0],
           error: undefined,
           response: new Response(),
         });
 
-        const result = await itemsApi.get('item-1');
+        const result = await itemsApi.get("item-1");
         expect(result).toEqual(mockItems[0]);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/items/{id}', {
-          params: { path: { id: 'item-1' } },
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/items/{id}", {
+          params: { path: { id: "item-1" } },
         });
       });
     });
 
-    describe('create', () => {
-      it('should create an item', async () => {
+    describe("create", () => {
+      it("should create an item", async () => {
         const newItem = {
-          project_id: 'proj-1',
-          status: 'pending' as const,
-          title: 'New Item',
-          type: 'feature' as const,
+          project_id: "proj-1",
+          status: "pending" as const,
+          title: "New Item",
+          type: "feature" as const,
         };
-        const created = { ...mockItems[0], ...newItem, id: 'new-id' };
+        const created = { ...mockItems[0], ...newItem, id: "new-id" };
 
         vi.mocked(apiClient.POST).mockResolvedValue({
           data: created,
@@ -344,15 +344,15 @@ describe('API Endpoints - Comprehensive Tests', () => {
 
         const result = await itemsApi.create(newItem);
         expect(result).toEqual(created);
-        expect(apiClient.POST).toHaveBeenCalledWith('/api/v1/items', {
+        expect(apiClient.POST).toHaveBeenCalledWith("/api/v1/items", {
           body: newItem,
         });
       });
     });
 
-    describe('update', () => {
-      it('should update an item', async () => {
-        const updates = { title: 'Updated Item' };
+    describe("update", () => {
+      it("should update an item", async () => {
+        const updates = { title: "Updated Item" };
         const updated = { ...mockItems[0], ...updates };
 
         vi.mocked(apiClient.PUT).mockResolvedValue({
@@ -361,20 +361,20 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await itemsApi.update('item-1', updates);
+        const result = await itemsApi.update("item-1", updates);
         expect(result).toEqual(updated);
       });
     });
 
-    describe('delete', () => {
-      it('should delete an item', async () => {
+    describe("delete", () => {
+      it("should delete an item", async () => {
         vi.mocked(apiClient.DELETE).mockResolvedValue({
           data: undefined,
           error: undefined,
           response: new Response(),
         });
 
-        await expect(itemsApi.delete('item-1')).resolves.toBeUndefined();
+        await expect(itemsApi.delete("item-1")).resolves.toBeUndefined();
       });
     });
   });
@@ -384,8 +384,8 @@ describe('API Endpoints - Comprehensive Tests', () => {
   // ============================================================================
 
   describe(linksApi, () => {
-    describe('list', () => {
-      it('should list links', async () => {
+    describe("list", () => {
+      it("should list links", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockLinks,
           error: undefined,
@@ -396,7 +396,7 @@ describe('API Endpoints - Comprehensive Tests', () => {
         expect(result).toEqual(mockLinks);
       });
 
-      it('should list links with pagination', async () => {
+      it("should list links with pagination", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockLinks,
           error: undefined,
@@ -405,33 +405,33 @@ describe('API Endpoints - Comprehensive Tests', () => {
 
         const result = await linksApi.list({ limit: 10, offset: 0 });
         expect(result).toEqual(mockLinks);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/links', {
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/links", {
           params: { query: { limit: 10, offset: 0 } },
         });
       });
     });
 
-    describe('get', () => {
-      it('should get a link by id', async () => {
+    describe("get", () => {
+      it("should get a link by id", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockLinks[0],
           error: undefined,
           response: new Response(),
         });
 
-        const result = await linksApi.get('link-1');
+        const result = await linksApi.get("link-1");
         expect(result).toEqual(mockLinks[0]);
       });
     });
 
-    describe('create', () => {
-      it('should create a link', async () => {
+    describe("create", () => {
+      it("should create a link", async () => {
         const newLink = {
-          source_id: 'item-1',
-          target_id: 'item-2',
-          type: 'implements' as const,
+          source_id: "item-1",
+          target_id: "item-2",
+          type: "implements" as const,
         };
-        const created = { ...mockLinks[0], ...newLink, id: 'new-link' };
+        const created = { ...mockLinks[0], ...newLink, id: "new-link" };
 
         vi.mocked(apiClient.POST).mockResolvedValue({
           data: created,
@@ -444,9 +444,9 @@ describe('API Endpoints - Comprehensive Tests', () => {
       });
     });
 
-    describe('update', () => {
-      it('should update a link', async () => {
-        const updates = { type: 'tests' as const };
+    describe("update", () => {
+      it("should update a link", async () => {
+        const updates = { type: "tests" as const };
         const updated = { ...mockLinks[0], ...updates };
 
         vi.mocked(apiClient.PUT).mockResolvedValue({
@@ -455,20 +455,20 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await linksApi.update('link-1', updates);
+        const result = await linksApi.update("link-1", updates);
         expect(result).toEqual(updated);
       });
     });
 
-    describe('delete', () => {
-      it('should delete a link', async () => {
+    describe("delete", () => {
+      it("should delete a link", async () => {
         vi.mocked(apiClient.DELETE).mockResolvedValue({
           data: undefined,
           error: undefined,
           response: new Response(),
         });
 
-        await expect(linksApi.delete('link-1')).resolves.toBeUndefined();
+        await expect(linksApi.delete("link-1")).resolves.toBeUndefined();
       });
     });
   });
@@ -478,8 +478,8 @@ describe('API Endpoints - Comprehensive Tests', () => {
   // ============================================================================
 
   describe(graphApi, () => {
-    describe('getAncestors', () => {
-      it('should get ancestors without depth', async () => {
+    describe("getAncestors", () => {
+      it("should get ancestors without depth", async () => {
         const mockGraph = { edges: [], nodes: [] };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockGraph,
@@ -487,14 +487,14 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await graphApi.getAncestors('item-1');
+        const result = await graphApi.getAncestors("item-1");
         expect(result).toEqual(mockGraph);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/graph/ancestors/{id}', {
-          params: { path: { id: 'item-1' }, query: { depth: undefined } },
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/graph/ancestors/{id}", {
+          params: { path: { id: "item-1" }, query: { depth: undefined } },
         });
       });
 
-      it('should get ancestors with depth', async () => {
+      it("should get ancestors with depth", async () => {
         const mockGraph = { edges: [], nodes: [] };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockGraph,
@@ -502,33 +502,33 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await graphApi.getAncestors('item-1', 5);
+        const result = await graphApi.getAncestors("item-1", 5);
         expect(result).toEqual(mockGraph);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/graph/ancestors/{id}', {
-          params: { path: { id: 'item-1' }, query: { depth: 5 } },
-        });
-      });
-    });
-
-    describe('getDescendants', () => {
-      it('should get descendants', async () => {
-        const mockGraph = { edges: [], nodes: [] };
-        vi.mocked(apiClient.GET).mockResolvedValue({
-          data: mockGraph,
-          error: undefined,
-          response: new Response(),
-        });
-
-        const result = await graphApi.getDescendants('item-1', 3);
-        expect(result).toEqual(mockGraph);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/graph/descendants/{id}', {
-          params: { path: { id: 'item-1' }, query: { depth: 3 } },
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/graph/ancestors/{id}", {
+          params: { path: { id: "item-1" }, query: { depth: 5 } },
         });
       });
     });
 
-    describe('findPath', () => {
-      it('should find path between items', async () => {
+    describe("getDescendants", () => {
+      it("should get descendants", async () => {
+        const mockGraph = { edges: [], nodes: [] };
+        vi.mocked(apiClient.GET).mockResolvedValue({
+          data: mockGraph,
+          error: undefined,
+          response: new Response(),
+        });
+
+        const result = await graphApi.getDescendants("item-1", 3);
+        expect(result).toEqual(mockGraph);
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/graph/descendants/{id}", {
+          params: { path: { id: "item-1" }, query: { depth: 3 } },
+        });
+      });
+    });
+
+    describe("findPath", () => {
+      it("should find path between items", async () => {
         const mockPath = [mockItems[0], mockItems[1]];
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockPath,
@@ -536,16 +536,16 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await graphApi.findPath('item-1', 'item-2');
+        const result = await graphApi.findPath("item-1", "item-2");
         expect(result).toEqual(mockPath);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/graph/path', {
-          params: { query: { source: 'item-1', target: 'item-2' } },
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/graph/path", {
+          params: { query: { source: "item-1", target: "item-2" } },
         });
       });
     });
 
-    describe('findAllPaths', () => {
-      it('should find all paths between items', async () => {
+    describe("findAllPaths", () => {
+      it("should find all paths between items", async () => {
         const mockPaths = [[mockItems[0], mockItems[1]]];
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockPaths,
@@ -553,13 +553,13 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await graphApi.findAllPaths('item-1', 'item-2');
+        const result = await graphApi.findAllPaths("item-1", "item-2");
         expect(result).toEqual(mockPaths);
       });
     });
 
-    describe('getFullGraph', () => {
-      it('should get full graph without projectId', async () => {
+    describe("getFullGraph", () => {
+      it("should get full graph without projectId", async () => {
         const mockGraph = { edges: [], nodes: [] };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockGraph,
@@ -569,12 +569,12 @@ describe('API Endpoints - Comprehensive Tests', () => {
 
         const result = await graphApi.getFullGraph();
         expect(result).toEqual(mockGraph);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/graph/full', {
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/graph/full", {
           params: { query: { project_id: undefined } },
         });
       });
 
-      it('should get full graph with projectId', async () => {
+      it("should get full graph with projectId", async () => {
         const mockGraph = { edges: [], nodes: [] };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockGraph,
@@ -582,16 +582,16 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await graphApi.getFullGraph('proj-1');
+        const result = await graphApi.getFullGraph("proj-1");
         expect(result).toEqual(mockGraph);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/graph/full', {
-          params: { query: { project_id: 'proj-1' } },
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/graph/full", {
+          params: { query: { project_id: "proj-1" } },
         });
       });
     });
 
-    describe('get (alias)', () => {
-      it('should call getFullGraph', async () => {
+    describe("get (alias)", () => {
+      it("should call getFullGraph", async () => {
         const mockGraph = { edges: [], nodes: [] };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockGraph,
@@ -600,51 +600,51 @@ describe('API Endpoints - Comprehensive Tests', () => {
         });
 
         // Mock getFullGraph to be callable
-        vi.spyOn(graphApi, 'getFullGraph').mockResolvedValue(mockGraph);
+        vi.spyOn(graphApi, "getFullGraph").mockResolvedValue(mockGraph);
 
-        const result = await graphApi.get('proj-1');
+        const result = await graphApi.get("proj-1");
         expect(result).toEqual(mockGraph);
-        expect(graphApi.getFullGraph).toHaveBeenCalledWith('proj-1');
+        expect(graphApi.getFullGraph).toHaveBeenCalledWith("proj-1");
       });
     });
 
-    describe('detectCycles', () => {
-      it('should detect cycles', async () => {
-        const mockCycles = [['item-1', 'item-2', 'item-1']];
+    describe("detectCycles", () => {
+      it("should detect cycles", async () => {
+        const mockCycles = [["item-1", "item-2", "item-1"]];
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockCycles,
           error: undefined,
           response: new Response(),
         });
 
-        const result = await graphApi.detectCycles('proj-1');
+        const result = await graphApi.detectCycles("proj-1");
         expect(result).toEqual(mockCycles);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/graph/cycles', {
-          params: { query: { project_id: 'proj-1' } },
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/graph/cycles", {
+          params: { query: { project_id: "proj-1" } },
         });
       });
     });
 
-    describe('topologicalSort', () => {
-      it('should perform topological sort', async () => {
+    describe("topologicalSort", () => {
+      it("should perform topological sort", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockItems,
           error: undefined,
           response: new Response(),
         });
 
-        const result = await graphApi.topologicalSort('proj-1');
+        const result = await graphApi.topologicalSort("proj-1");
         expect(result).toEqual(mockItems);
       });
     });
 
-    describe('getImpactAnalysis', () => {
-      it('should get impact analysis', async () => {
+    describe("getImpactAnalysis", () => {
+      it("should get impact analysis", async () => {
         const mockAnalysis = {
           affected_count: 0,
           affected_items: [],
           depth: 5,
-          item_id: 'item-1',
+          item_id: "item-1",
         };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockAnalysis,
@@ -652,21 +652,21 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await graphApi.getImpactAnalysis('item-1', 5);
+        const result = await graphApi.getImpactAnalysis("item-1", 5);
         expect(result).toEqual(mockAnalysis);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/graph/impact/{id}', {
-          params: { path: { id: 'item-1' }, query: { depth: 5 } },
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/graph/impact/{id}", {
+          params: { path: { id: "item-1" }, query: { depth: 5 } },
         });
       });
     });
 
-    describe('getDependencyAnalysis', () => {
-      it('should get dependency analysis', async () => {
+    describe("getDependencyAnalysis", () => {
+      it("should get dependency analysis", async () => {
         const mockAnalysis = {
           dependencies: [],
           dependency_count: 0,
           depth: 5,
-          item_id: 'item-1',
+          item_id: "item-1",
         };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockAnalysis,
@@ -674,26 +674,26 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await graphApi.getDependencyAnalysis('item-1', 5);
+        const result = await graphApi.getDependencyAnalysis("item-1", 5);
         expect(result).toEqual(mockAnalysis);
       });
     });
 
-    describe('getOrphanItems', () => {
-      it('should get orphan items', async () => {
+    describe("getOrphanItems", () => {
+      it("should get orphan items", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockItems,
           error: undefined,
           response: new Response(),
         });
 
-        const result = await graphApi.getOrphanItems('proj-1');
+        const result = await graphApi.getOrphanItems("proj-1");
         expect(result).toEqual(mockItems);
       });
     });
 
-    describe('traverse', () => {
-      it('should traverse up', async () => {
+    describe("traverse", () => {
+      it("should traverse up", async () => {
         const mockGraph = { edges: [], nodes: [] };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockGraph,
@@ -701,17 +701,17 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await graphApi.traverse('item-1', 'up', 3);
+        const result = await graphApi.traverse("item-1", "up", 3);
         expect(result).toEqual(mockGraph);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/graph/traverse/{id}', {
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/graph/traverse/{id}", {
           params: {
-            path: { id: 'item-1' },
-            query: { depth: 3, direction: 'up' },
+            path: { id: "item-1" },
+            query: { depth: 3, direction: "up" },
           },
         });
       });
 
-      it('should traverse down', async () => {
+      it("should traverse down", async () => {
         const mockGraph = { edges: [], nodes: [] };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockGraph,
@@ -719,11 +719,11 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await graphApi.traverse('item-1', 'down', 3);
+        const result = await graphApi.traverse("item-1", "down", 3);
         expect(result).toEqual(mockGraph);
       });
 
-      it('should traverse both directions', async () => {
+      it("should traverse both directions", async () => {
         const mockGraph = { edges: [], nodes: [] };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockGraph,
@@ -731,7 +731,7 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await graphApi.traverse('item-1', 'both', 3);
+        const result = await graphApi.traverse("item-1", "both", 3);
         expect(result).toEqual(mockGraph);
       });
     });
@@ -742,101 +742,101 @@ describe('API Endpoints - Comprehensive Tests', () => {
   // ============================================================================
 
   describe(searchApi, () => {
-    describe('search', () => {
-      it('should search with query', async () => {
-        const mockResult = { items: [], query: 'test', total: 0 };
+    describe("search", () => {
+      it("should search with query", async () => {
+        const mockResult = { items: [], query: "test", total: 0 };
         vi.mocked(apiClient.POST).mockResolvedValue({
           data: mockResult,
           error: undefined,
           response: new Response(),
         });
 
-        const result = await searchApi.search({ q: 'test' });
+        const result = await searchApi.search({ q: "test" });
         expect(result).toEqual(mockResult);
-        expect(apiClient.POST).toHaveBeenCalledWith('/api/v1/search', {
-          body: { q: 'test' },
+        expect(apiClient.POST).toHaveBeenCalledWith("/api/v1/search", {
+          body: { q: "test" },
         });
       });
     });
 
-    describe('searchGet', () => {
-      it('should search via GET', async () => {
-        const mockResult = { items: [], query: 'test', total: 0 };
+    describe("searchGet", () => {
+      it("should search via GET", async () => {
+        const mockResult = { items: [], query: "test", total: 0 };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockResult,
           error: undefined,
           response: new Response(),
         });
 
-        const result = await searchApi.searchGet({ q: 'test' });
+        const result = await searchApi.searchGet({ q: "test" });
         expect(result).toEqual(mockResult);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/search', {
-          params: { query: { q: 'test' } },
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/search", {
+          params: { query: { q: "test" } },
         });
       });
     });
 
-    describe('suggest', () => {
-      it('should get suggestions', async () => {
-        const mockSuggestions = ['test', 'testing', 'tested'];
+    describe("suggest", () => {
+      it("should get suggestions", async () => {
+        const mockSuggestions = ["test", "testing", "tested"];
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockSuggestions,
           error: undefined,
           response: new Response(),
         });
 
-        const result = await searchApi.suggest('test', 10);
+        const result = await searchApi.suggest("test", 10);
         expect(result).toEqual(mockSuggestions);
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/search/suggest', {
-          params: { query: { limit: 10, q: 'test' } },
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/search/suggest", {
+          params: { query: { limit: 10, q: "test" } },
         });
       });
 
-      it('should get suggestions without limit', async () => {
-        const mockSuggestions = ['test'];
+      it("should get suggestions without limit", async () => {
+        const mockSuggestions = ["test"];
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockSuggestions,
           error: undefined,
           response: new Response(),
         });
 
-        const result = await searchApi.suggest('test');
+        const result = await searchApi.suggest("test");
         expect(result).toEqual(mockSuggestions);
       });
     });
 
-    describe('indexItem', () => {
-      it('should index an item', async () => {
+    describe("indexItem", () => {
+      it("should index an item", async () => {
         vi.mocked(apiClient.POST).mockResolvedValue({
           data: undefined,
           error: undefined,
           response: new Response(),
         });
 
-        await expect(searchApi.indexItem('item-1')).resolves.toBeUndefined();
-        expect(apiClient.POST).toHaveBeenCalledWith('/api/v1/search/index/{id}', {
-          params: { path: { id: 'item-1' } },
+        await expect(searchApi.indexItem("item-1")).resolves.toBeUndefined();
+        expect(apiClient.POST).toHaveBeenCalledWith("/api/v1/search/index/{id}", {
+          params: { path: { id: "item-1" } },
         });
       });
     });
 
-    describe('batchIndex', () => {
-      it('should batch index items', async () => {
+    describe("batchIndex", () => {
+      it("should batch index items", async () => {
         vi.mocked(apiClient.POST).mockResolvedValue({
           data: undefined,
           error: undefined,
           response: new Response(),
         });
 
-        await expect(searchApi.batchIndex(['item-1', 'item-2'])).resolves.toBeUndefined();
-        expect(apiClient.POST).toHaveBeenCalledWith('/api/v1/search/batch-index', {
-          body: { ids: ['item-1', 'item-2'] },
+        await expect(searchApi.batchIndex(["item-1", "item-2"])).resolves.toBeUndefined();
+        expect(apiClient.POST).toHaveBeenCalledWith("/api/v1/search/batch-index", {
+          body: { ids: ["item-1", "item-2"] },
         });
       });
     });
 
-    describe('reindexAll', () => {
-      it('should reindex all', async () => {
+    describe("reindexAll", () => {
+      it("should reindex all", async () => {
         vi.mocked(apiClient.POST).mockResolvedValue({
           data: undefined,
           error: undefined,
@@ -849,12 +849,12 @@ describe('API Endpoints - Comprehensive Tests', () => {
         });
 
         await expect(searchApi.reindexAll()).resolves.toBeUndefined();
-        expect(apiClient.POST).toHaveBeenCalledWith('/api/v1/search/reindex', {});
+        expect(apiClient.POST).toHaveBeenCalledWith("/api/v1/search/reindex", {});
       });
     });
 
-    describe('getStats', () => {
-      it('should get search stats', async () => {
+    describe("getStats", () => {
+      it("should get search stats", async () => {
         const mockStats = { indexed: 95, total: 100 };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockStats,
@@ -867,9 +867,9 @@ describe('API Endpoints - Comprehensive Tests', () => {
       });
     });
 
-    describe('getHealth', () => {
-      it('should get search health', async () => {
-        const mockHealth = { status: 'healthy' };
+    describe("getHealth", () => {
+      it("should get search health", async () => {
+        const mockHealth = { status: "healthy" };
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: mockHealth,
           error: undefined,
@@ -881,15 +881,15 @@ describe('API Endpoints - Comprehensive Tests', () => {
       });
     });
 
-    describe('deleteIndex', () => {
-      it('should delete index', async () => {
+    describe("deleteIndex", () => {
+      it("should delete index", async () => {
         vi.mocked(apiClient.DELETE).mockResolvedValue({
           data: undefined,
           error: undefined,
           response: new Response(),
         });
 
-        await expect(searchApi.deleteIndex('item-1')).resolves.toBeUndefined();
+        await expect(searchApi.deleteIndex("item-1")).resolves.toBeUndefined();
       });
     });
   });
@@ -899,59 +899,59 @@ describe('API Endpoints - Comprehensive Tests', () => {
   // ============================================================================
 
   describe(exportImportApi, () => {
-    describe('export', () => {
-      it('should export project as JSON', async () => {
+    describe("export", () => {
+      it("should export project as JSON", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
-          data: { data: 'test' },
+          data: { data: "test" },
           error: undefined,
           response: new Response(),
         });
 
-        const result = await exportImportApi.export('proj-1', 'json');
+        const result = await exportImportApi.export("proj-1", "json");
         expect(result).toBeInstanceOf(Blob);
-        expect(result).toHaveProperty('type', 'application/json');
-        expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/projects/{project_id}/export', {
-          params: { path: { project_id: 'proj-1' }, query: { format: 'json' } },
+        expect(result).toHaveProperty("type", "application/json");
+        expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/projects/{project_id}/export", {
+          params: { path: { project_id: "proj-1" }, query: { format: "json" } },
         });
       });
 
-      it('should export project as CSV', async () => {
+      it("should export project as CSV", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
-          data: { content: 'id,name' },
+          data: { content: "id,name" },
           error: undefined,
           response: new Response(),
         });
 
-        const result = await exportImportApi.export('proj-1', 'csv');
+        const result = await exportImportApi.export("proj-1", "csv");
         expect(result).toBeInstanceOf(Blob);
-        expect(result).toHaveProperty('type', 'text/csv');
+        expect(result).toHaveProperty("type", "text/csv");
       });
 
-      it('should export project as markdown', async () => {
+      it("should export project as markdown", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
-          data: { content: '# Project' },
+          data: { content: "# Project" },
           error: undefined,
           response: new Response(),
         });
 
-        const result = await exportImportApi.export('proj-1', 'markdown');
+        const result = await exportImportApi.export("proj-1", "markdown");
         expect(result).toBeInstanceOf(Blob);
-        expect(result).toHaveProperty('type', 'text/markdown');
+        expect(result).toHaveProperty("type", "text/markdown");
       });
 
-      it('should handle export errors', async () => {
+      it("should handle export errors", async () => {
         vi.mocked(apiClient.GET).mockResolvedValue({
           data: undefined,
-          error: { message: 'Export failed' },
+          error: { message: "Export failed" },
           response: new Response(null, { status: 500 }),
         });
 
-        await expect(exportImportApi.export('proj-1', 'json')).rejects.toThrow();
+        await expect(exportImportApi.export("proj-1", "json")).rejects.toThrow();
       });
     });
 
-    describe('import', () => {
-      it('should import project data', async () => {
+    describe("import", () => {
+      it("should import project data", async () => {
         const mockResult = {
           error_count: 0,
           errors: [],
@@ -964,44 +964,44 @@ describe('API Endpoints - Comprehensive Tests', () => {
           response: new Response(),
         });
 
-        const result = await exportImportApi.import('proj-1', 'json', '{"data": "test"}');
+        const result = await exportImportApi.import("proj-1", "json", '{"data": "test"}');
         expect(result).toEqual(mockResult);
-        expect(apiClient.POST).toHaveBeenCalledWith('/api/v1/projects/{project_id}/import', {
-          body: { data: '{"data": "test"}', format: 'json' },
-          params: { path: { project_id: 'proj-1' } },
+        expect(apiClient.POST).toHaveBeenCalledWith("/api/v1/projects/{project_id}/import", {
+          body: { data: '{"data": "test"}', format: "json" },
+          params: { path: { project_id: "proj-1" } },
         });
       });
 
-      it('should handle import errors', async () => {
+      it("should handle import errors", async () => {
         vi.mocked(apiClient.POST).mockResolvedValue({
           data: undefined,
-          error: { message: 'Invalid format' },
+          error: { message: "Invalid format" },
           response: new Response(null, { status: 400 }),
         });
 
-        await expect(exportImportApi.import('proj-1', 'json', 'invalid')).rejects.toThrow();
+        await expect(exportImportApi.import("proj-1", "json", "invalid")).rejects.toThrow();
       });
     });
 
-    describe('exportProject (alias)', () => {
-      it('should call export', async () => {
-        const mockBlob = new Blob(['test'], { type: 'application/json' });
+    describe("exportProject (alias)", () => {
+      it("should call export", async () => {
+        const mockBlob = new Blob(["test"], { type: "application/json" });
         globalThis.fetch = vi.fn().mockResolvedValue({
           blob: async () => mockBlob,
           ok: true,
         }) as typeof fetch;
 
         // Mock export to be callable
-        vi.spyOn(exportImportApi, 'export').mockResolvedValue(mockBlob);
+        vi.spyOn(exportImportApi, "export").mockResolvedValue(mockBlob);
 
-        const result = await exportImportApi.exportProject('proj-1', 'json');
+        const result = await exportImportApi.exportProject("proj-1", "json");
         expect(result).toBeInstanceOf(Blob);
-        expect(exportImportApi.export).toHaveBeenCalledWith('proj-1', 'json');
+        expect(exportImportApi.export).toHaveBeenCalledWith("proj-1", "json");
       });
     });
 
-    describe('importProject (alias)', () => {
-      it('should call import', async () => {
+    describe("importProject (alias)", () => {
+      it("should call import", async () => {
         const mockResult = {
           error_count: 0,
           errors: [],
@@ -1015,11 +1015,11 @@ describe('API Endpoints - Comprehensive Tests', () => {
         });
 
         // Mock import to be callable
-        vi.spyOn(exportImportApi, 'import').mockResolvedValue(mockResult);
+        vi.spyOn(exportImportApi, "import").mockResolvedValue(mockResult);
 
-        const result = await exportImportApi.importProject('proj-1', 'json', '{"data": "test"}');
+        const result = await exportImportApi.importProject("proj-1", "json", '{"data": "test"}');
         expect(result).toEqual(mockResult);
-        expect(exportImportApi.import).toHaveBeenCalledWith('proj-1', 'json', '{"data": "test"}');
+        expect(exportImportApi.import).toHaveBeenCalledWith("proj-1", "json", '{"data": "test"}');
       });
     });
   });
@@ -1029,8 +1029,8 @@ describe('API Endpoints - Comprehensive Tests', () => {
   // ============================================================================
 
   describe(healthCheck, () => {
-    it('should perform health check', async () => {
-      const mockHealth = { service: 'api', status: 'ok' };
+    it("should perform health check", async () => {
+      const mockHealth = { service: "api", status: "ok" };
       vi.mocked(apiClient.GET).mockResolvedValue({
         data: mockHealth,
         error: undefined,
@@ -1039,13 +1039,13 @@ describe('API Endpoints - Comprehensive Tests', () => {
 
       const result = await healthCheck();
       expect(result).toEqual(mockHealth);
-      expect(apiClient.GET).toHaveBeenCalledWith('/health', {});
+      expect(apiClient.GET).toHaveBeenCalledWith("/health", {});
     });
 
-    it('should handle health check errors', async () => {
+    it("should handle health check errors", async () => {
       vi.mocked(apiClient.GET).mockResolvedValue({
         data: undefined,
-        error: { message: 'Service unavailable' },
+        error: { message: "Service unavailable" },
         response: new Response(null, { status: 503 }),
       });
 

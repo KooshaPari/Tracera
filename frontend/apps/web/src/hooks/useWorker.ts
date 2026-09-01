@@ -5,15 +5,15 @@
  * Provides type-safe worker communication with automatic cleanup
  */
 
-import type { Remote } from 'comlink';
+import type { Remote } from "comlink";
 
-import { proxy, wrap } from 'comlink';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { proxy, wrap } from "comlink";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { DataTransformWorkerAPI } from '../workers/data-transform.worker';
-import type { ExportImportWorkerAPI } from '../workers/export-import.worker';
-import type { GraphLayoutWorkerAPI } from '../workers/graph-layout.worker';
-import type { SearchIndexWorkerAPI } from '../workers/search-index.worker';
+import type { DataTransformWorkerAPI } from "../workers/data-transform.worker";
+import type { ExportImportWorkerAPI } from "../workers/export-import.worker";
+import type { GraphLayoutWorkerAPI } from "../workers/graph-layout.worker";
+import type { SearchIndexWorkerAPI } from "../workers/search-index.worker";
 
 export interface UseWorkerOptions {
   autoTerminate?: boolean;
@@ -193,7 +193,7 @@ export const useWorkerSupport = () => {
 
   useEffect(() => {
     const checkSupport = () => {
-      const hasWorker = typeof Worker !== 'undefined';
+      const hasWorker = typeof Worker !== "undefined";
       setSupported(hasWorker);
       setChecked(true);
     };
@@ -207,15 +207,15 @@ export const useWorkerSupport = () => {
 export const useGraphLayoutWorker = (options?: UseWorkerOptions) =>
   useWorkerWithProgress<GraphLayoutWorkerAPI>(
     () =>
-      new Worker(new URL('../workers/graph-layout.worker.ts', import.meta.url), { type: 'module' }),
+      new Worker(new URL("../workers/graph-layout.worker.ts", import.meta.url), { type: "module" }),
     options,
   );
 
 export const useDataTransformWorker = (options?: UseWorkerOptions) =>
   useWorkerWithProgress<DataTransformWorkerAPI>(
     () =>
-      new Worker(new URL('../workers/data-transform.worker.ts', import.meta.url), {
-        type: 'module',
+      new Worker(new URL("../workers/data-transform.worker.ts", import.meta.url), {
+        type: "module",
       }),
     options,
   );
@@ -223,8 +223,8 @@ export const useDataTransformWorker = (options?: UseWorkerOptions) =>
 export const useExportImportWorker = (options?: UseWorkerOptions) =>
   useWorkerWithProgress<ExportImportWorkerAPI>(
     () =>
-      new Worker(new URL('../workers/export-import.worker.ts', import.meta.url), {
-        type: 'module',
+      new Worker(new URL("../workers/export-import.worker.ts", import.meta.url), {
+        type: "module",
       }),
     options,
   );
@@ -232,6 +232,6 @@ export const useExportImportWorker = (options?: UseWorkerOptions) =>
 export const useSearchIndexWorker = (options?: UseWorkerOptions) =>
   useWorkerWithProgress<SearchIndexWorkerAPI>(
     () =>
-      new Worker(new URL('../workers/search-index.worker.ts', import.meta.url), { type: 'module' }),
+      new Worker(new URL("../workers/search-index.worker.ts", import.meta.url), { type: "module" }),
     options,
   );

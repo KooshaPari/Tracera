@@ -3,24 +3,24 @@
  * Sends Bearer token via getAuthHeaders() for backend auth.
  */
 
-import { client } from '@/api/client';
+import { client } from "@/api/client";
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 /**
  * Default fetch config for authenticated requests
  */
 const authHeaders = (): HeadersInit => ({
-  'Content-Type': 'application/json',
+  "Content-Type": "application/json",
   ...client.getAuthHeaders(),
 });
 
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
-  Object.prototype.toString.call(value) === '[object Object]';
+  Object.prototype.toString.call(value) === "[object Object]";
 
 const readStringField = (obj: Record<string, unknown>, key: string): string | undefined => {
   const value = obj[key];
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   return undefined;
@@ -28,7 +28,7 @@ const readStringField = (obj: Record<string, unknown>, key: string): string | un
 
 const readNumberField = (obj: Record<string, unknown>, key: string): number | undefined => {
   const value = obj[key];
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return value;
   }
   return undefined;
@@ -45,35 +45,35 @@ const isGitHubRepo = (value: unknown): value is GitHubRepo => {
   }
 
   return (
-    typeof value['id'] === 'number' &&
-    typeof value['name'] === 'string' &&
-    typeof value['full_name'] === 'string' &&
-    typeof value['html_url'] === 'string' &&
-    typeof value['private'] === 'boolean' &&
-    typeof value['default_branch'] === 'string' &&
-    typeof owner['login'] === 'string' &&
-    typeof owner['avatar_url'] === 'string'
+    typeof value["id"] === "number" &&
+    typeof value["name"] === "string" &&
+    typeof value["full_name"] === "string" &&
+    typeof value["html_url"] === "string" &&
+    typeof value["private"] === "boolean" &&
+    typeof value["default_branch"] === "string" &&
+    typeof owner["login"] === "string" &&
+    typeof owner["avatar_url"] === "string"
   );
 };
 
 const parseRepoListResponse = (data: unknown): GitHubRepoListResponse => {
   if (!isRecordObject(data)) {
-    throw new Error('Invalid GitHub repo list response');
+    throw new Error("Invalid GitHub repo list response");
   }
 
-  const reposValue = data['repos'];
+  const reposValue = data["repos"];
   if (!Array.isArray(reposValue)) {
-    throw new TypeError('Invalid GitHub repo list response');
+    throw new TypeError("Invalid GitHub repo list response");
   }
   const repos = reposValue.filter(isGitHubRepo);
   if (repos.length !== reposValue.length) {
-    throw new Error('Invalid GitHub repo list response');
+    throw new Error("Invalid GitHub repo list response");
   }
 
-  const page = readNumberField(data, 'page');
-  const perPage = readNumberField(data, 'per_page');
+  const page = readNumberField(data, "page");
+  const perPage = readNumberField(data, "per_page");
   if (page === undefined || perPage === undefined) {
-    throw new Error('Invalid GitHub repo list response');
+    throw new Error("Invalid GitHub repo list response");
   }
 
   return {
@@ -85,13 +85,13 @@ const parseRepoListResponse = (data: unknown): GitHubRepoListResponse => {
 
 const parseInstallUrlResponse = (data: unknown): { install_url: string; state: string } => {
   if (!isRecordObject(data)) {
-    throw new Error('Invalid GitHub install URL response');
+    throw new Error("Invalid GitHub install URL response");
   }
 
-  const installUrl = readStringField(data, 'install_url');
-  const state = readStringField(data, 'state');
+  const installUrl = readStringField(data, "install_url");
+  const state = readStringField(data, "state");
   if (!installUrl || !state) {
-    throw new Error('Invalid GitHub install URL response');
+    throw new Error("Invalid GitHub install URL response");
   }
 
   return {
@@ -102,30 +102,30 @@ const parseInstallUrlResponse = (data: unknown): { install_url: string; state: s
 
 const parseInstallationsResponse = (data: unknown): GitHubAppInstallationListResponse => {
   if (!isRecordObject(data)) {
-    throw new Error('Invalid GitHub installations response');
+    throw new Error("Invalid GitHub installations response");
   }
 
   const { installations } = data;
-  const total = readNumberField(data, 'total');
+  const total = readNumberField(data, "total");
 
   if (!Array.isArray(installations) || total === undefined) {
-    throw new Error('Invalid GitHub installations response');
+    throw new Error("Invalid GitHub installations response");
   }
 
   const filteredInstallations = installations.filter(
     (installation): installation is GitHubAppInstallation =>
       isRecordObject(installation) &&
-      typeof installation['id'] === 'string' &&
-      typeof installation['installation_id'] === 'number' &&
-      typeof installation['account_login'] === 'string' &&
-      typeof installation['target_type'] === 'string' &&
-      isRecordObject(installation['permissions']) &&
-      typeof installation['repository_selection'] === 'string' &&
-      typeof installation['created_at'] === 'string',
+      typeof installation["id"] === "string" &&
+      typeof installation["installation_id"] === "number" &&
+      typeof installation["account_login"] === "string" &&
+      typeof installation["target_type"] === "string" &&
+      isRecordObject(installation["permissions"]) &&
+      typeof installation["repository_selection"] === "string" &&
+      typeof installation["created_at"] === "string",
   );
 
   if (filteredInstallations.length !== installations.length) {
-    throw new Error('Invalid GitHub installations response');
+    throw new Error("Invalid GitHub installations response");
   }
 
   return {
@@ -138,15 +138,15 @@ const parseLinkResponse = (
   data: unknown,
 ): { account_id: string; installation_id: string; status: string } => {
   if (!isRecordObject(data)) {
-    throw new Error('Invalid GitHub installation link response');
+    throw new Error("Invalid GitHub installation link response");
   }
 
-  const accountId = readStringField(data, 'account_id');
-  const installationId = readStringField(data, 'installation_id');
-  const status = readStringField(data, 'status');
+  const accountId = readStringField(data, "account_id");
+  const installationId = readStringField(data, "installation_id");
+  const status = readStringField(data, "status");
 
   if (!accountId || !installationId || !status) {
-    throw new Error('Invalid GitHub installation link response');
+    throw new Error("Invalid GitHub installation link response");
   }
 
   return {
@@ -158,12 +158,12 @@ const parseLinkResponse = (
 
 const parseStatusResponse = (data: unknown): { status: string } => {
   if (!isRecordObject(data)) {
-    throw new Error('Invalid GitHub installation response');
+    throw new Error("Invalid GitHub installation response");
   }
 
-  const status = readStringField(data, 'status');
+  const status = readStringField(data, "status");
   if (!status) {
-    throw new Error('Invalid GitHub installation response');
+    throw new Error("Invalid GitHub installation response");
   }
 
   return { status };
@@ -171,7 +171,7 @@ const parseStatusResponse = (data: unknown): { status: string } => {
 
 const parseRepoResponse = (data: unknown): GitHubRepo => {
   if (!isGitHubRepo(data)) {
-    throw new Error('Invalid GitHub repo response');
+    throw new Error("Invalid GitHub repo response");
   }
   return data;
 };
@@ -230,11 +230,11 @@ export const getGitHubAppInstallUrl = async (
     `${API_URL}/api/v1/integrations/github/app/install-url?account_id=${accountId}`,
     {
       headers,
-      method: 'GET',
+      method: "GET",
     },
   );
   if (!res.ok) {
-    throw new Error('Failed to get installation URL');
+    throw new Error("Failed to get installation URL");
   }
   return parseInstallUrlResponse(await res.json());
 };
@@ -247,11 +247,11 @@ export const listGitHubAppInstallations = async (
     `${API_URL}/api/v1/integrations/github/app/installations?account_id=${accountId}`,
     {
       headers,
-      method: 'GET',
+      method: "GET",
     },
   );
   if (!res.ok) {
-    throw new Error('Failed to list installations');
+    throw new Error("Failed to list installations");
   }
   return parseInstallationsResponse(await res.json());
 };
@@ -266,11 +266,11 @@ export const linkGitHubAppInstallation = async (
     {
       body: JSON.stringify({ account_id: accountId }),
       headers,
-      method: 'POST',
+      method: "POST",
     },
   );
   if (!res.ok) {
-    throw new Error('Failed to link installation');
+    throw new Error("Failed to link installation");
   }
   return parseLinkResponse(await res.json());
 };
@@ -283,11 +283,11 @@ export const deleteGitHubAppInstallation = async (
     `${API_URL}/api/v1/integrations/github/app/installations/${installationId}`,
     {
       headers,
-      method: 'DELETE',
+      method: "DELETE",
     },
   );
   if (!res.ok) {
-    throw new Error('Failed to delete installation');
+    throw new Error("Failed to delete installation");
   }
   return parseStatusResponse(await res.json());
 };
@@ -302,20 +302,20 @@ export const listGitHubRepos = async (params: {
 }): Promise<GitHubRepoListResponse> => {
   const searchParams = new URLSearchParams();
   const entries: [string, string | number | undefined][] = [
-    ['account_id', params.accountId],
-    ['credential_id', params.credentialId],
-    ['installation_id', params.installationId],
-    ['page', params.page],
-    ['per_page', params.perPage],
-    ['search', params.search],
+    ["account_id", params.accountId],
+    ["credential_id", params.credentialId],
+    ["installation_id", params.installationId],
+    ["page", params.page],
+    ["per_page", params.perPage],
+    ["search", params.search],
   ];
 
   for (const [key, value] of entries) {
-    if (typeof value === 'string') {
-      if (value !== '') {
+    if (typeof value === "string") {
+      if (value !== "") {
         searchParams.set(key, value);
       }
-    } else if (typeof value !== 'undefined' && Number.isFinite(value)) {
+    } else if (typeof value !== "undefined" && Number.isFinite(value)) {
       searchParams.set(key, String(value));
     }
   }
@@ -325,11 +325,11 @@ export const listGitHubRepos = async (params: {
     `${API_URL}/api/v1/integrations/github/repos?${searchParams.toString()}`,
     {
       headers,
-      method: 'GET',
+      method: "GET",
     },
   );
   if (!res.ok) {
-    throw new Error('Failed to list repos');
+    throw new Error("Failed to list repos");
   }
   return parseRepoListResponse(await res.json());
 };
@@ -339,17 +339,17 @@ export const createGitHubRepo = async (data: CreateRepoRequest): Promise<GitHubR
   const res = await fetch(`${API_URL}/api/v1/integrations/github/repos`, {
     body: JSON.stringify(data),
     headers,
-    method: 'POST',
+    method: "POST",
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: 'Failed to create repo' }));
+    const error = await res.json().catch(() => ({ detail: "Failed to create repo" }));
     if (isRecordObject(error)) {
-      const detail = readStringField(error, 'detail');
+      const detail = readStringField(error, "detail");
       if (detail) {
         throw new Error(detail);
       }
     }
-    throw new Error('Failed to create repo');
+    throw new Error("Failed to create repo");
   }
   return parseRepoResponse(await res.json());
 };

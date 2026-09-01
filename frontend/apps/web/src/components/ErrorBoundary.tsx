@@ -1,12 +1,12 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-import { AlertCircle, Bug, RefreshCw } from 'lucide-react';
-import React from 'react';
+import { AlertCircle, Bug, RefreshCw } from "lucide-react";
+import React from "react";
 
-import { logger } from '@/lib/logger';
-import { captureException as sentryCaptureException } from '@/lib/sentry';
-import { Alert, AlertDescription, AlertTitle } from '@tracertm/ui/components/Alert';
-import { Button } from '@tracertm/ui/components/Button';
+import { logger } from "@/lib/logger";
+import { captureException as sentryCaptureException } from "@/lib/sentry";
+import { Alert, AlertDescription, AlertTitle } from "@tracertm/ui/components/Alert";
+import { Button } from "@tracertm/ui/components/Button";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -73,7 +73,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     const { name, onError } = this.props;
 
-    logger.error(`Error caught by ${name ?? 'ErrorBoundary'}:`, error, errorInfo);
+    logger.error(`Error caught by ${name ?? "ErrorBoundary"}:`, error, errorInfo);
 
     this.setState({ errorInfo });
 
@@ -81,18 +81,18 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       sentryCaptureException(error, {
         react: {
           componentStack: errorInfo.componentStack,
-          errorBoundary: name ?? 'UnnamedBoundary',
+          errorBoundary: name ?? "UnnamedBoundary",
         },
       });
     } catch (sentryError) {
-      logger.warn('Failed to report error to Sentry:', sentryError);
+      logger.warn("Failed to report error to Sentry:", sentryError);
     }
 
     if (onError) {
       try {
         onError(error, errorInfo);
       } catch (callbackError) {
-        logger.error('Error in onError callback:', callbackError);
+        logger.error("Error in onError callback:", callbackError);
       }
     }
   }
@@ -111,56 +111,56 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       const showDetails = isDevelopment || this.props.showDetails;
 
       return (
-        <Alert variant='destructive' className='m-4'>
-          <AlertCircle className='h-4 w-4' />
-          <AlertTitle className='flex items-center gap-2'>
+        <Alert variant="destructive" className="m-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle className="flex items-center gap-2">
             Something went wrong
             {this.props.name && (
-              <span className='bg-destructive/10 rounded px-2 py-1 font-mono text-xs'>
+              <span className="bg-destructive/10 rounded px-2 py-1 font-mono text-xs">
                 {this.props.name}
               </span>
             )}
           </AlertTitle>
-          <AlertDescription className='mt-2 space-y-3'>
-            <p className='text-sm'>{this.state.error.message}</p>
+          <AlertDescription className="mt-2 space-y-3">
+            <p className="text-sm">{this.state.error.message}</p>
 
             {showDetails && this.state.errorInfo?.componentStack && (
-              <details className='text-xs'>
-                <summary className='hover:text-destructive-foreground flex cursor-pointer items-center gap-1 font-medium'>
-                  <Bug className='h-3 w-3' />
+              <details className="text-xs">
+                <summary className="hover:text-destructive-foreground flex cursor-pointer items-center gap-1 font-medium">
+                  <Bug className="h-3 w-3" />
                   Component Stack
                 </summary>
-                <pre className='bg-muted/50 mt-2 max-h-32 overflow-x-auto rounded p-2 text-xs'>
+                <pre className="bg-muted/50 mt-2 max-h-32 overflow-x-auto rounded p-2 text-xs">
                   {this.state.errorInfo.componentStack}
                 </pre>
               </details>
             )}
 
             {showDetails && this.state.error.stack && (
-              <details className='text-xs'>
-                <summary className='hover:text-destructive-foreground flex cursor-pointer items-center gap-1 font-medium'>
-                  <Bug className='h-3 w-3' />
+              <details className="text-xs">
+                <summary className="hover:text-destructive-foreground flex cursor-pointer items-center gap-1 font-medium">
+                  <Bug className="h-3 w-3" />
                   Error Stack
                 </summary>
-                <pre className='bg-muted/50 mt-2 max-h-32 overflow-x-auto rounded p-2 text-xs'>
+                <pre className="bg-muted/50 mt-2 max-h-32 overflow-x-auto rounded p-2 text-xs">
                   {this.state.error.stack}
                 </pre>
               </details>
             )}
 
-            <div className='flex gap-2 pt-2'>
-              <Button variant='outline' size='sm' onClick={this.reset} className='gap-1'>
-                <RefreshCw className='h-3 w-3' />
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={this.reset} className="gap-1">
+                <RefreshCw className="h-3 w-3" />
                 Try again
               </Button>
 
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={() => {
                   globalThis.location.reload();
                 }}
-                className='gap-1'
+                className="gap-1"
               >
                 Reload page
               </Button>
@@ -184,7 +184,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
  */
 export const withErrorBoundary = <Props extends object>(
   Component: React.ComponentType<Props>,
-  options?: Omit<ErrorBoundaryProps, 'children'>,
+  options?: Omit<ErrorBoundaryProps, "children">,
 ) => {
   const WrappedComponent = (props: Props) => (
     <ErrorBoundary {...options}>
@@ -192,7 +192,7 @@ export const withErrorBoundary = <Props extends object>(
     </ErrorBoundary>
   );
 
-  WrappedComponent.displayName = `withErrorBoundary(${(Component.displayName ?? Component.name) || 'Component'})`;
+  WrappedComponent.displayName = `withErrorBoundary(${(Component.displayName ?? Component.name) || "Component"})`;
 
   return WrappedComponent;
 };

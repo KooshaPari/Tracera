@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
-import { useProjectStore } from '@/stores/project-store';
+import { useProjectStore } from "@/stores/project-store";
 
-import type { FilterOption, SidebarGroup, SortOption } from './sidebar-nav';
+import type { FilterOption, SidebarGroup, SortOption } from "./sidebar-nav";
 
-import { buildSidebarGroups, filterSidebarGroups } from './sidebar-nav';
+import { buildSidebarGroups, filterSidebarGroups } from "./sidebar-nav";
 
 const SIDEBAR_DEFAULT_WIDTH_PX = 320;
 const SIDEBAR_MIN_WIDTH_PX = 280;
@@ -23,17 +23,17 @@ interface RecentProject {
 }
 
 const isSortOption = (value: string): value is SortOption =>
-  value === 'recent' || value === 'alphabetical' || value === 'modified';
+  value === "recent" || value === "alphabetical" || value === "modified";
 
 const isFilterOption = (value: string): value is FilterOption =>
-  value === 'all' || value === 'active' || value === 'archived';
+  value === "all" || value === "active" || value === "archived";
 
 const isRecordOfBoolean = (value: unknown): value is Record<string, boolean> => {
-  if (!value || typeof value !== 'object') {
+  if (!value || typeof value !== "object") {
     return false;
   }
   return Object.values(value as Record<string, unknown>).every(
-    (entry) => typeof entry === 'boolean',
+    (entry) => typeof entry === "boolean",
   );
 };
 
@@ -53,23 +53,23 @@ const getActiveProjectId = (
   projectId: string | undefined,
   currentProjectId: string | number | undefined,
 ): string | undefined => {
-  if (typeof projectId === 'string' && projectId.length > 0) {
+  if (typeof projectId === "string" && projectId.length > 0) {
     return projectId;
   }
-  if (typeof currentProjectId === 'string' && currentProjectId.length > 0) {
+  if (typeof currentProjectId === "string" && currentProjectId.length > 0) {
     return currentProjectId;
   }
-  if (typeof currentProjectId === 'number') {
+  if (typeof currentProjectId === "number") {
     return String(currentProjectId);
   }
   return undefined;
 };
 
 const getProjectTimestamp = (project: RecentProject): number => {
-  if (typeof project.updatedAt === 'string' && project.updatedAt.length > 0) {
+  if (typeof project.updatedAt === "string" && project.updatedAt.length > 0) {
     return new Date(project.updatedAt).getTime();
   }
-  if (typeof project.createdAt === 'string' && project.createdAt.length > 0) {
+  if (typeof project.createdAt === "string" && project.createdAt.length > 0) {
     return new Date(project.createdAt).getTime();
   }
   return 0;
@@ -78,52 +78,52 @@ const getProjectTimestamp = (project: RecentProject): number => {
 export const useSidebarPreferences = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
-  const [recentSort, setRecentSort] = useState<SortOption>('recent');
-  const [recentFilter, setRecentFilter] = useState<FilterOption>('all');
+  const [recentSort, setRecentSort] = useState<SortOption>("recent");
+  const [recentFilter, setRecentFilter] = useState<FilterOption>("all");
   const [activeTab, setActiveTab] = useState<Record<string, string>>({
-    'Active Registry': 'overview',
-    Specifications: 'dashboard',
+    "Active Registry": "overview",
+    Specifications: "dashboard",
   });
 
   useEffect(() => {
-    const savedCollapsed = localStorage.getItem('sidebar-collapsed');
-    if (typeof savedCollapsed === 'string' && savedCollapsed.length > 0) {
-      setIsCollapsed(savedCollapsed === 'true');
+    const savedCollapsed = localStorage.getItem("sidebar-collapsed");
+    if (typeof savedCollapsed === "string" && savedCollapsed.length > 0) {
+      setIsCollapsed(savedCollapsed === "true");
     }
 
-    const savedGroups = localStorage.getItem('sidebar-collapsed-groups');
-    if (typeof savedGroups === 'string' && savedGroups.length > 0) {
+    const savedGroups = localStorage.getItem("sidebar-collapsed-groups");
+    if (typeof savedGroups === "string" && savedGroups.length > 0) {
       const parsedGroups = parseStoredCollapsedGroups(savedGroups);
       if (parsedGroups) {
         setCollapsedGroups(parsedGroups);
       }
     }
 
-    const savedSort = localStorage.getItem('sidebar-recent-sort');
-    if (typeof savedSort === 'string' && isSortOption(savedSort)) {
+    const savedSort = localStorage.getItem("sidebar-recent-sort");
+    if (typeof savedSort === "string" && isSortOption(savedSort)) {
       setRecentSort(savedSort);
     }
 
-    const savedFilter = localStorage.getItem('sidebar-recent-filter');
-    if (typeof savedFilter === 'string' && isFilterOption(savedFilter)) {
+    const savedFilter = localStorage.getItem("sidebar-recent-filter");
+    if (typeof savedFilter === "string" && isFilterOption(savedFilter)) {
       setRecentFilter(savedFilter);
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('sidebar-collapsed', String(isCollapsed));
+    localStorage.setItem("sidebar-collapsed", String(isCollapsed));
   }, [isCollapsed]);
 
   useEffect(() => {
-    localStorage.setItem('sidebar-collapsed-groups', JSON.stringify(collapsedGroups));
+    localStorage.setItem("sidebar-collapsed-groups", JSON.stringify(collapsedGroups));
   }, [collapsedGroups]);
 
   useEffect(() => {
-    localStorage.setItem('sidebar-recent-sort', recentSort);
+    localStorage.setItem("sidebar-recent-sort", recentSort);
   }, [recentSort]);
 
   useEffect(() => {
-    localStorage.setItem('sidebar-recent-filter', recentFilter);
+    localStorage.setItem("sidebar-recent-filter", recentFilter);
   }, [recentFilter]);
 
   return {
@@ -142,9 +142,9 @@ export const useSidebarPreferences = () => {
 
 export const useSidebarWidth = () => {
   const [sidebarWidth, setSidebarWidth] = useState(() => {
-    const saved = localStorage.getItem('sidebar-width');
+    const saved = localStorage.getItem("sidebar-width");
     let parsed = SIDEBAR_DEFAULT_WIDTH_PX;
-    if (typeof saved === 'string' && saved.length > 0) {
+    if (typeof saved === "string" && saved.length > 0) {
       parsed = Number.parseInt(saved, 10);
     }
     return Math.max(SIDEBAR_MIN_WIDTH_PX, parsed);
@@ -159,8 +159,8 @@ export const useSidebarWidth = () => {
       const startX = event.clientX;
       const startWidth = sidebarWidth;
 
-      document.body.style.userSelect = 'none';
-      document.body.style.cursor = 'ew-resize';
+      document.body.style.userSelect = "none";
+      document.body.style.cursor = "ew-resize";
 
       const handleMouseMove = (moveEvent: MouseEvent): void => {
         moveEvent.preventDefault();
@@ -170,19 +170,19 @@ export const useSidebarWidth = () => {
           Math.min(SIDEBAR_MAX_WIDTH_PX, startWidth + delta),
         );
         setSidebarWidth(newWidth);
-        localStorage.setItem('sidebar-width', newWidth.toString());
+        localStorage.setItem("sidebar-width", newWidth.toString());
       };
 
       const handleMouseUp = (): void => {
         setIsResizing(false);
-        document.body.style.userSelect = '';
-        document.body.style.cursor = '';
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
+        document.body.style.userSelect = "";
+        document.body.style.cursor = "";
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
       };
 
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
     },
     [sidebarWidth],
   );
@@ -205,7 +205,7 @@ export const useSidebarKeyboardNavigation = ({
 }) => {
   const handleSearchShortcut = useCallback(
     (event: KeyboardEvent): boolean => {
-      const isShortcut = (event.metaKey || event.ctrlKey) && event.key === 'f';
+      const isShortcut = (event.metaKey || event.ctrlKey) && event.key === "f";
       if (!isShortcut || isCollapsed) {
         return false;
       }
@@ -218,14 +218,14 @@ export const useSidebarKeyboardNavigation = ({
 
   const handleEscapeClear = useCallback(
     (event: KeyboardEvent): boolean => {
-      if (event.key !== 'Escape') {
+      if (event.key !== "Escape") {
         return false;
       }
       const { activeElement } = document;
       if (activeElement !== searchInputRef.current) {
         return false;
       }
-      setSearchQuery('');
+      setSearchQuery("");
       searchInputRef.current?.blur();
       return true;
     },
@@ -236,7 +236,7 @@ export const useSidebarKeyboardNavigation = ({
     (event: KeyboardEvent): void => {
       const { activeElement } = document;
       const isSidebarFocused =
-        Boolean(activeElement?.closest('aside')) || activeElement === searchInputRef.current;
+        Boolean(activeElement?.closest("aside")) || activeElement === searchInputRef.current;
       if (!isSidebarFocused || isCollapsed) {
         return;
       }
@@ -244,7 +244,7 @@ export const useSidebarKeyboardNavigation = ({
       const allNavItems = navItemsRef.current?.filter(Boolean) ?? [];
       const lastIndex = allNavItems.length - KEYBOARD_LAST_INDEX_OFFSET;
 
-      if (event.key === 'ArrowDown') {
+      if (event.key === "ArrowDown") {
         event.preventDefault();
         const nextIndex = lastIndex > KEYBOARD_HOME_INDEX ? KEYBOARD_HOME_INDEX + 1 : lastIndex;
         setFocusedIndex(nextIndex);
@@ -252,7 +252,7 @@ export const useSidebarKeyboardNavigation = ({
         return;
       }
 
-      if (event.key === 'ArrowUp') {
+      if (event.key === "ArrowUp") {
         event.preventDefault();
         const prevIndex = lastIndex > KEYBOARD_HOME_INDEX ? lastIndex - 1 : KEYBOARD_HOME_INDEX;
         setFocusedIndex(prevIndex);
@@ -260,14 +260,14 @@ export const useSidebarKeyboardNavigation = ({
         return;
       }
 
-      if (event.key === 'Home') {
+      if (event.key === "Home") {
         event.preventDefault();
         setFocusedIndex(KEYBOARD_HOME_INDEX);
         allNavItems[KEYBOARD_HOME_INDEX]?.focus();
         return;
       }
 
-      if (event.key === 'End') {
+      if (event.key === "End") {
         event.preventDefault();
         setFocusedIndex(lastIndex);
         allNavItems[lastIndex]?.focus();
@@ -287,9 +287,9 @@ export const useSidebarKeyboardNavigation = ({
       handleArrowNavigation(event);
     };
 
-    globalThis.addEventListener('keydown', handleKeyDown);
+    globalThis.addEventListener("keydown", handleKeyDown);
     return () => {
-      globalThis.removeEventListener('keydown', handleKeyDown);
+      globalThis.removeEventListener("keydown", handleKeyDown);
     };
   }, [handleArrowNavigation, handleEscapeClear, handleSearchShortcut]);
 };
@@ -321,10 +321,10 @@ export const useRecentProjects = ({
 
   const sortedRecentProjects = useMemo(() => {
     const sorted = [...recentProjectObjects].toSorted((firstProject, secondProject) => {
-      if (recentSort === 'alphabetical') {
+      if (recentSort === "alphabetical") {
         return firstProject.name.localeCompare(secondProject.name);
       }
-      if (recentSort === 'modified') {
+      if (recentSort === "modified") {
         const firstTime = getProjectTimestamp(firstProject);
         const secondTime = getProjectTimestamp(secondProject);
         return secondTime - firstTime;
@@ -380,7 +380,7 @@ export const useSidebarNavGroups = ({
 
 export const useSidebarRefs = () => {
   const initialSearchInput =
-    typeof document === 'undefined' ? undefined : document.createElement('input');
+    typeof document === "undefined" ? undefined : document.createElement("input");
   const searchInputRef = useRef<HTMLInputElement | undefined>(initialSearchInput);
   const navItemsRef = useRef<(HTMLAnchorElement | undefined)[]>([]);
   const nextNavItemIndexRef = useRef(0);
@@ -406,17 +406,17 @@ export const useSidebarRefs = () => {
 
 export const useProjectActionHandler = (recentProjects: string[]) =>
   useCallback(
-    (action: 'pin' | 'remove' | 'newtab', targetProjectId: string): void => {
-      if (action === 'newtab') {
-        window.open(`/projects/${targetProjectId}`, '_blank');
+    (action: "pin" | "remove" | "newtab", targetProjectId: string): void => {
+      if (action === "newtab") {
+        window.open(`/projects/${targetProjectId}`, "_blank");
         return;
       }
-      if (action === 'remove') {
+      if (action === "remove") {
         const updated = recentProjects.filter(
           (projectIdValue) => projectIdValue !== targetProjectId,
         );
         useProjectStore.getState().setRecentProjects(updated);
-        toast.success('Removed from recent');
+        toast.success("Removed from recent");
       }
     },
     [recentProjects],
@@ -490,7 +490,7 @@ export const useSidebarHandlers = ({
   );
 
   const handleSearchClear = useCallback((): void => {
-    setSearchQuery('');
+    setSearchQuery("");
     setFocusedIndex(NO_INDEX);
   }, [setFocusedIndex, setSearchQuery]);
 
@@ -535,7 +535,7 @@ export const useSidebarHandlers = ({
   const getActiveTabValue = useCallback(
     (label: string, fallback: string): string => {
       const activeValue = activeTab[label];
-      if (typeof activeValue === 'string' && activeValue.length > 0) {
+      if (typeof activeValue === "string" && activeValue.length > 0) {
         return activeValue;
       }
       return fallback;

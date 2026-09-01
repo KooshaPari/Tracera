@@ -9,7 +9,7 @@
  * - Automatic state management
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type {
   GraphEdge,
@@ -17,9 +17,9 @@ import type {
   ProgressInfo,
   StreamMetadata,
   ViewportBounds,
-} from '../lib/graph/IncrementalGraphBuilder';
+} from "../lib/graph/IncrementalGraphBuilder";
 
-import { IncrementalGraphBuilder } from '../lib/graph/IncrementalGraphBuilder';
+import { IncrementalGraphBuilder } from "../lib/graph/IncrementalGraphBuilder";
 
 export interface UseIncrementalGraphOptions {
   projectId: string;
@@ -34,14 +34,14 @@ export interface UseIncrementalGraphOptions {
 }
 
 export type PanDirection =
-  | 'north'
-  | 'south'
-  | 'east'
-  | 'west'
-  | 'northeast'
-  | 'northwest'
-  | 'southeast'
-  | 'southwest';
+  | "north"
+  | "south"
+  | "east"
+  | "west"
+  | "northeast"
+  | "northwest"
+  | "southeast"
+  | "southwest";
 
 export interface GraphState {
   nodes: GraphNode[];
@@ -82,7 +82,7 @@ export function useIncrementalGraph(
     enablePrefetch = true,
     prefetchDirection,
     prefetchVelocity = 0,
-    apiBaseUrl = '/api/v1',
+    apiBaseUrl = "/api/v1",
   } = options;
 
   const [state, setState] = useState<GraphState>({
@@ -106,10 +106,10 @@ export function useIncrementalGraph(
       onComplete: (result) => {
         setState((prev) => ({
           ...prev,
-          edges: [...result['edges'].values()],
+          edges: [...result["edges"].values()],
           isLoading: false,
-          metadata: result['metadata'],
-          nodes: [...result['nodes'].values()],
+          metadata: result["metadata"],
+          nodes: [...result["nodes"].values()],
           progress: undefined,
         }));
       },
@@ -173,7 +173,7 @@ export function useIncrementalGraph(
     try {
       await builderRef.current.loadFromStream(url, viewportRequest);
     } catch (_error) {
-      if (_error instanceof Error && _error.name !== 'AbortError') {
+      if (_error instanceof Error && _error.name !== "AbortError") {
         setState((prev) => ({
           ...prev,
           error: _error,
@@ -223,7 +223,7 @@ export function useIncrementalGraph(
       try {
         await builderRef.current.loadFromStream(url, viewportRequest);
       } catch (error) {
-        if (error instanceof Error && error.name !== 'AbortError') {
+        if (error instanceof Error && error.name !== "AbortError") {
           setState((prev) => ({
             ...prev,
             error: error,
@@ -261,8 +261,8 @@ export function useIncrementalGraph(
         // Cache the result
         const cacheKey = `${direction}-${velocity}`;
         prefetchCacheRef.current.set(cacheKey, {
-          edges: [...result['edges'].values()],
-          nodes: [...result['nodes'].values()],
+          edges: [...result["edges"].values()],
+          nodes: [...result["nodes"].values()],
         });
 
         // Limit cache size
@@ -363,22 +363,22 @@ export function calculatePanDirection(
 
   // Determine primary direction
   if (Math.abs(dx) > Math.abs(dy) * 2) {
-    return dx > 0 ? 'east' : 'west';
+    return dx > 0 ? "east" : "west";
   } else if (Math.abs(dy) > Math.abs(dx) * 2) {
-    return dy > 0 ? 'south' : 'north';
+    return dy > 0 ? "south" : "north";
   }
   // Diagonal
   if (dx > 0 && dy < 0) {
-    return 'northeast';
+    return "northeast";
   }
   if (dx < 0 && dy < 0) {
-    return 'northwest';
+    return "northwest";
   }
   if (dx > 0 && dy > 0) {
-    return 'southeast';
+    return "southeast";
   }
   if (dx < 0 && dy > 0) {
-    return 'southwest';
+    return "southwest";
   }
 
   return null;

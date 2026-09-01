@@ -1,15 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
-import type { Link, LinkType } from '@tracertm/types';
+import type { Link, LinkType } from "@tracertm/types";
 
-import { client } from '@/api/client';
-import { QUERY_CONFIGS, queryKeys } from '@/lib/queryConfig';
-import { useAuthStore } from '@/stores/authStore';
+import { client } from "@/api/client";
+import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
+import { useAuthStore } from "@/stores/authStore";
 
 const { getAuthHeaders } = client;
 
-import { API_ORIGIN } from '@/config/api-origin';
+import { API_ORIGIN } from "@/config/api-origin";
 
 const API_URL = API_ORIGIN;
 
@@ -26,41 +26,41 @@ interface LinkFilters {
 async function fetchLinks(filters: LinkFilters = {}): Promise<{ links: Link[]; total: number }> {
   const params = new URLSearchParams();
   if (filters.projectId) {
-    params.set('project_id', filters.projectId);
+    params.set("project_id", filters.projectId);
   }
   if (filters.sourceId) {
-    params.set('source_id', filters.sourceId);
+    params.set("source_id", filters.sourceId);
   }
   if (filters.targetId) {
-    params.set('target_id', filters.targetId);
+    params.set("target_id", filters.targetId);
   }
   if (filters.type) {
-    params.set('type', filters.type);
+    params.set("type", filters.type);
   }
   if (filters.limit) {
-    params.set('limit', String(filters.limit));
+    params.set("limit", String(filters.limit));
   }
   if (filters.offset) {
-    params.set('offset', String(filters.offset));
+    params.set("offset", String(filters.offset));
   }
 
   // ✅ NEW: Send excluded types to API for server-side filtering
   if (filters.excludeTypes?.length) {
-    params.set('exclude_types', filters.excludeTypes.join(','));
+    params.set("exclude_types", filters.excludeTypes.join(","));
   }
 
   const res = await fetch(`${API_URL}/api/v1/links?${params}`, {
     headers: {
-      'X-Bulk-Operation': 'true',
+      "X-Bulk-Operation": "true",
       ...getAuthHeaders(),
     },
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch links');
+    throw new Error("Failed to fetch links");
   }
   const data = await res.json();
   // API returns { total: number, links: Link[] } or array
-  const linksArray = Array.isArray(data) ? data : (data['links'] ?? []);
+  const linksArray = Array.isArray(data) ? data : (data["links"] ?? []);
   // Transform snake_case to camelCase for frontend compatibility
   const transformedLinks = linksArray.map((link: any) => ({
     ...link,
@@ -70,7 +70,7 @@ async function fetchLinks(filters: LinkFilters = {}): Promise<{ links: Link[]; t
   }));
   return {
     links: transformedLinks,
-    total: data['total'] ?? (Array.isArray(data) ? data.length : linksArray.length),
+    total: data["total"] ?? (Array.isArray(data) ? data.length : linksArray.length),
   };
 }
 
@@ -85,17 +85,17 @@ interface CreateLinkData {
 async function createLink(data: CreateLinkData): Promise<Link> {
   const res = await fetch(`${API_URL}/api/v1/links`, {
     body: JSON.stringify({
-      description: data['description'],
-      project_id: data['projectId'],
-      source_id: data['sourceId'],
-      target_id: data['targetId'],
+      description: data["description"],
+      project_id: data["projectId"],
+      source_id: data["sourceId"],
+      target_id: data["targetId"],
       type: data.type,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to create link');
+    throw new Error("Failed to create link");
   }
   return res.json() as Promise<Link>;
 }
@@ -103,10 +103,10 @@ async function createLink(data: CreateLinkData): Promise<Link> {
 async function deleteLink(id: string): Promise<void> {
   const res = await fetch(`${API_URL}/api/v1/links/${id}`, {
     headers: getAuthHeaders(),
-    method: 'DELETE',
+    method: "DELETE",
   });
   if (!res.ok) {
-    throw new Error('Failed to delete link');
+    throw new Error("Failed to delete link");
   }
 }
 
@@ -122,7 +122,7 @@ export function useLinks(filters: LinkFilters = {}) {
         filters.excludeTypes ?? null, // ✅ NEW: Include in cache key
       ]
     : [
-        'links',
+        "links",
         filters.sourceId ?? null,
         filters.targetId ?? null,
         filters.type ?? null,
@@ -142,7 +142,7 @@ export function useCreateLink() {
   return useMutation({
     mutationFn: createLink,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['links'] });
+      await queryClient.invalidateQueries({ queryKey: ["links"] });
     },
   });
 }
@@ -152,7 +152,7 @@ export function useDeleteLink() {
   return useMutation({
     mutationFn: deleteLink,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['links'] });
+      await queryClient.invalidateQueries({ queryKey: ["links"] });
     },
   });
 }
@@ -170,7 +170,7 @@ export function useTraceabilityGraph(projectId: string) {
         headers: getAuthHeaders(),
       });
       if (!res.ok) {
-        throw new Error('Failed to fetch items');
+        throw new Error("Failed to fetch items");
       }
       return res.json() as Promise<{ id: string; title: string; view: string; status: string }[]>;
     },
@@ -182,7 +182,7 @@ export function useTraceabilityGraph(projectId: string) {
   const { data: linksData } = useLinks({
     projectId,
     limit: 10_000, // ✅ NEW: API limit to prevent massive responses
-    excludeTypes: ['implements'], // ✅ NEW: Filter out 84% redundant links
+    excludeTypes: ["implements"], // ✅ NEW: Filter out 84% redundant links
   });
 
   const allLinks = linksData?.links ?? [];

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { Item, Link, ItemDimensions } from '@tracertm/types';
+import type { Item, Link, ItemDimensions } from "@tracertm/types";
 
 /**
  * Cross-perspective search result with equivalence information
@@ -8,7 +8,7 @@ import type { Item, Link, ItemDimensions } from '@tracertm/types';
 export interface CrossPerspectiveSearchResult {
   item: Item;
   perspective: string;
-  matchType: 'title' | 'description' | 'type' | 'dimension';
+  matchType: "title" | "description" | "type" | "dimension";
   score: number;
   matchedText?: string | undefined;
   equivalences: EquivalenceInfo[];
@@ -22,7 +22,7 @@ export interface EquivalenceInfo {
   equivalentPerspective: string;
   linkId?: string | undefined;
   confidence: number;
-  linkType: 'same_as' | 'represents' | 'manifests_as';
+  linkType: "same_as" | "represents" | "manifests_as";
 }
 
 /**
@@ -114,7 +114,7 @@ function calculateSearchScore(item: Item, query: string): number {
   // Dimension value match
   if (item.dimensions) {
     for (const [_key, value] of Object.entries(item.dimensions)) {
-      if (typeof value === 'string' && value.toLowerCase().includes(lowerQuery)) {
+      if (typeof value === "string" && value.toLowerCase().includes(lowerQuery)) {
         score += 15;
       }
     }
@@ -129,24 +129,24 @@ function calculateSearchScore(item: Item, query: string): number {
 function getMatchedText(
   item: Item,
   query: string,
-  matchType: 'title' | 'description' | 'type' | 'dimension',
+  matchType: "title" | "description" | "type" | "dimension",
 ): string | undefined {
   const lowerQuery = query.toLowerCase();
 
   switch (matchType) {
-    case 'title': {
+    case "title": {
       return item.title;
     }
-    case 'description': {
+    case "description": {
       return item.description;
     }
-    case 'type': {
+    case "type": {
       return item.type;
     }
-    case 'dimension': {
+    case "dimension": {
       if (item.dimensions) {
         for (const [_key, value] of Object.entries(item.dimensions)) {
-          if (typeof value === 'string' && value.toLowerCase().includes(lowerQuery)) {
+          if (typeof value === "string" && value.toLowerCase().includes(lowerQuery)) {
             return value;
           }
         }
@@ -165,19 +165,19 @@ function getMatchedText(
 function determineMatchType(
   item: Item,
   query: string,
-): 'title' | 'description' | 'type' | 'dimension' {
+): "title" | "description" | "type" | "dimension" {
   const lowerQuery = query.toLowerCase();
 
   if (item.title?.toLowerCase().includes(lowerQuery)) {
-    return 'title';
+    return "title";
   }
   if (item.description?.toLowerCase().includes(lowerQuery)) {
-    return 'description';
+    return "description";
   }
   if (item.type?.toLowerCase().includes(lowerQuery)) {
-    return 'type';
+    return "type";
   }
-  return 'dimension';
+  return "dimension";
 }
 
 /**
@@ -200,7 +200,7 @@ function getEquivalences(
           confidence: 1,
           equivalentItemId: equivalentId,
           equivalentPerspective: equivalentItem.perspective ?? equivalentItem.view,
-          linkType: 'same_as',
+          linkType: "same_as",
         });
       }
     }
@@ -210,7 +210,7 @@ function getEquivalences(
   for (const link of links) {
     if (
       (link.sourceId === item.id || link.targetId === item.id) &&
-      (link.type === 'same_as' || link.type === 'represents' || link.type === 'manifests_as')
+      (link.type === "same_as" || link.type === "represents" || link.type === "manifests_as")
     ) {
       const equivalentId = link.sourceId === item.id ? link.targetId : link.sourceId;
       const equivalentItem = allItems.get(equivalentId);
@@ -360,7 +360,7 @@ export function useCrossPerspectiveSearch() {
    * Generate cache key from search parameters
    */
   const getCacheKey = useCallback((query: string, filters?: SearchFilters) => {
-    const filterStr = filters ? JSON.stringify(filters) : '';
+    const filterStr = filters ? JSON.stringify(filters) : "";
     return `${query}:${filterStr}`;
   }, []);
 
@@ -578,9 +578,9 @@ export function useCrossPerspectiveSearch() {
    */
   const exportResults = useCallback((results: GroupedSearchResults[], filename?: string) => {
     const data = JSON.stringify(results, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
+    const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = filename ?? `search-results-${Date.now()}.json`;
     link.click();
@@ -591,7 +591,7 @@ export function useCrossPerspectiveSearch() {
    * Export search results as CSV
    */
   const exportResultsCSV = useCallback((results: GroupedSearchResults[], filename?: string) => {
-    const rows: string[] = ['ID,Title,Perspective,Type,Status,Match Type,Score'];
+    const rows: string[] = ["ID,Title,Perspective,Type,Status,Match Type,Score"];
 
     for (const group of results) {
       for (const result of group.results) {
@@ -599,19 +599,19 @@ export function useCrossPerspectiveSearch() {
           result.item.id,
           `"${result.item.title.replaceAll('"', '""')}"`,
           result.perspective,
-          result.item.type || '',
-          result.item.status || '',
+          result.item.type || "",
+          result.item.status || "",
           result.matchType,
           result.score,
-        ].join(',');
+        ].join(",");
         rows.push(row);
       }
     }
 
-    const csv = rows.join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const csv = rows.join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = filename ?? `search-results-${Date.now()}.csv`;
     link.click();

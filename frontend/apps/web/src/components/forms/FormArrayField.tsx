@@ -1,11 +1,11 @@
-import type * as React from 'react';
-import type { ArrayPath, Control, FieldValues } from 'react-hook-form';
+import type * as React from "react";
+import type { ArrayPath, Control, FieldValues } from "react-hook-form";
 
-import { Plus, Trash2 } from 'lucide-react';
-import { useFieldArray } from 'react-hook-form';
+import { Plus, Trash2 } from "lucide-react";
+import { useFieldArray } from "react-hook-form";
 
-import { cn } from '@/lib/utils';
-import { Button } from '@tracertm/ui';
+import { cn } from "@/lib/utils";
+import { Button } from "@tracertm/ui";
 
 export interface FormArrayFieldProps<T extends FieldValues> {
   control: Control<T>;
@@ -29,8 +29,8 @@ export function FormArrayField<T extends FieldValues>({
   helpText,
   renderField,
   defaultValue,
-  addButtonLabel = 'Add item',
-  removeButtonLabel = 'Remove',
+  addButtonLabel = "Add item",
+  removeButtonLabel = "Remove",
   minItems = 0,
   maxItems,
   className,
@@ -44,16 +44,16 @@ export function FormArrayField<T extends FieldValues>({
   const canRemove = fields.length > minItems;
 
   return (
-    <div className={cn('space-y-4', className)}>
-      <div className='flex items-center justify-between'>
+    <div className={cn("space-y-4", className)}>
+      <div className="flex items-center justify-between">
         <div>
-          <label className='text-foreground block text-sm font-medium'>{label}</label>
-          {helpText && <p className='text-muted-foreground mt-1 text-xs'>{helpText}</p>}
+          <label className="text-foreground block text-sm font-medium">{label}</label>
+          {helpText && <p className="text-muted-foreground mt-1 text-xs">{helpText}</p>}
         </div>
         <Button
-          type='button'
-          variant='outline'
-          size='sm'
+          type="button"
+          variant="outline"
+          size="sm"
           onClick={() => {
             if (defaultValue !== undefined) {
               append(defaultValue as never);
@@ -64,35 +64,35 @@ export function FormArrayField<T extends FieldValues>({
           disabled={!canAdd}
           aria-label={addButtonLabel}
         >
-          <Plus className='mr-1 h-4 w-4' aria-hidden='true' />
+          <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
           {addButtonLabel}
         </Button>
       </div>
 
-      <div className='space-y-3'>
+      <div className="space-y-3">
         {fields.length === 0 ? (
-          <p className='text-muted-foreground text-sm italic'>
+          <p className="text-muted-foreground text-sm italic">
             No items added yet. Click "{addButtonLabel}" to get started.
           </p>
         ) : (
           fields.map((field, index) => (
             <div
               key={field.id}
-              className='bg-muted/50 flex items-start gap-2 rounded-lg border p-3'
+              className="bg-muted/50 flex items-start gap-2 rounded-lg border p-3"
             >
-              <div className='flex-1'>{renderField(index)}</div>
+              <div className="flex-1">{renderField(index)}</div>
               <Button
-                type='button'
-                variant='ghost'
-                size='icon'
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => {
                   remove(index);
                 }}
                 disabled={!canRemove}
                 aria-label={`${removeButtonLabel} item ${index + 1}`}
-                className='mt-1 shrink-0'
+                className="mt-1 shrink-0"
               >
-                <Trash2 className='text-destructive h-4 w-4' aria-hidden='true' />
+                <Trash2 className="text-destructive h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
           ))
@@ -100,7 +100,7 @@ export function FormArrayField<T extends FieldValues>({
       </div>
 
       {maxItems && (
-        <p className='text-muted-foreground text-xs'>
+        <p className="text-muted-foreground text-xs">
           {fields.length} / {maxItems} items
         </p>
       )}
@@ -108,4 +108,4 @@ export function FormArrayField<T extends FieldValues>({
   );
 }
 
-FormArrayField.displayName = 'FormArrayField';
+FormArrayField.displayName = "FormArrayField";

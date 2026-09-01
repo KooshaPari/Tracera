@@ -3,27 +3,27 @@
  */
 
 export type ItemType =
-  | 'requirement'
-  | 'feature'
-  | 'code'
-  | 'test'
-  | 'api'
-  | 'database'
-  | 'wireframe'
-  | 'documentation'
-  | 'deployment';
+  | "requirement"
+  | "feature"
+  | "code"
+  | "test"
+  | "api"
+  | "database"
+  | "wireframe"
+  | "documentation"
+  | "deployment";
 
-export type ItemStatus = 'pending' | 'in_progress' | 'completed' | 'blocked';
-export type ItemPriority = 'low' | 'medium' | 'high' | 'critical';
-export type LinkType = 'implements' | 'tests' | 'depends_on' | 'relates_to';
+export type ItemStatus = "pending" | "in_progress" | "completed" | "blocked";
+export type ItemPriority = "low" | "medium" | "high" | "critical";
+export type LinkType = "implements" | "tests" | "depends_on" | "relates_to";
 export type ProjectDomain =
-  | 'backend'
-  | 'frontend'
-  | 'mobile'
-  | 'devops'
-  | 'data'
-  | 'ai'
-  | 'fullstack';
+  | "backend"
+  | "frontend"
+  | "mobile"
+  | "devops"
+  | "data"
+  | "ai"
+  | "fullstack";
 
 export interface CreateItemInput {
   project_id: string;

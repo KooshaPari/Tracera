@@ -1,141 +1,141 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook } from "@testing-library/react";
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
 import type {
   CrossPerspectiveSearchResult,
   SearchFilters,
-} from '../../components/graph/hooks/useCrossPerspectiveSearch';
+} from "../../components/graph/hooks/useCrossPerspectiveSearch";
 
 import {
   performCrossPerspectiveSearch,
   useCrossPerspectiveSearch,
-} from '../../components/graph/hooks/useCrossPerspectiveSearch';
+} from "../../components/graph/hooks/useCrossPerspectiveSearch";
 
 /**
  * Test suite for advanced search features
  */
-describe('useCrossPerspectiveSearch - Advanced Features', () => {
+describe("useCrossPerspectiveSearch - Advanced Features", () => {
   const mockItems: Item[] = [
     {
-      description: 'User login and session management',
-      id: '1',
-      perspective: 'feature',
-      priority: 'medium',
+      description: "User login and session management",
+      id: "1",
+      perspective: "feature",
+      priority: "medium",
       createdAt: new Date().toISOString(),
-      projectId: 'proj-1',
-      status: 'done',
-      title: 'Authentication System',
-      type: 'Feature',
+      projectId: "proj-1",
+      status: "done",
+      title: "Authentication System",
+      type: "Feature",
       updatedAt: new Date().toISOString(),
       version: 1,
-      view: 'feature',
+      view: "feature",
     },
     {
-      description: 'REST API for user authentication',
-      id: '2',
-      perspective: 'api',
-      priority: 'medium',
+      description: "REST API for user authentication",
+      id: "2",
+      perspective: "api",
+      priority: "medium",
       createdAt: new Date().toISOString(),
-      projectId: 'proj-1',
-      status: 'done',
-      title: 'Login API Endpoint',
-      type: 'API',
+      projectId: "proj-1",
+      status: "done",
+      title: "Login API Endpoint",
+      type: "API",
       updatedAt: new Date().toISOString(),
       version: 1,
-      view: 'api',
+      view: "api",
     },
     {
-      description: 'Business logic for user management',
-      id: '3',
-      perspective: 'code',
-      priority: 'medium',
+      description: "Business logic for user management",
+      id: "3",
+      perspective: "code",
+      priority: "medium",
       createdAt: new Date().toISOString(),
-      projectId: 'proj-1',
-      status: 'in_progress',
-      title: 'User Service',
-      type: 'Service',
+      projectId: "proj-1",
+      status: "in_progress",
+      title: "User Service",
+      type: "Service",
       updatedAt: new Date().toISOString(),
       version: 1,
-      view: 'code',
+      view: "code",
     },
     {
-      description: 'Unit tests for authentication',
-      id: '4',
-      perspective: 'test',
-      priority: 'medium',
+      description: "Unit tests for authentication",
+      id: "4",
+      perspective: "test",
+      priority: "medium",
       createdAt: new Date().toISOString(),
-      projectId: 'proj-1',
-      status: 'done',
-      title: 'Login Tests',
-      type: 'Test',
+      projectId: "proj-1",
+      status: "done",
+      title: "Login Tests",
+      type: "Test",
       updatedAt: new Date().toISOString(),
       version: 1,
-      view: 'test',
+      view: "test",
     },
     {
-      description: 'PostgreSQL table definitions',
-      id: '5',
-      perspective: 'database',
-      priority: 'medium',
+      description: "PostgreSQL table definitions",
+      id: "5",
+      perspective: "database",
+      priority: "medium",
       createdAt: new Date().toISOString(),
-      projectId: 'proj-1',
-      status: 'done',
-      title: 'User Database Schema',
-      type: 'Schema',
+      projectId: "proj-1",
+      status: "done",
+      title: "User Database Schema",
+      type: "Schema",
       updatedAt: new Date().toISOString(),
       version: 1,
-      view: 'database',
+      view: "database",
     },
   ];
   const baseItem = mockItems[0];
   if (!baseItem) {
-    throw new Error('Expected mock items to be defined');
+    throw new Error("Expected mock items to be defined");
   }
 
   const mockLinks: Link[] = [
     {
       confidence: 0.95,
       createdAt: new Date().toISOString(),
-      id: 'link-1',
-      projectId: 'proj-1',
-      sourceId: '1',
-      targetId: '2',
-      type: 'manifests_as',
+      id: "link-1",
+      projectId: "proj-1",
+      sourceId: "1",
+      targetId: "2",
+      type: "manifests_as",
       updatedAt: new Date().toISOString(),
       version: 1,
     },
     {
       confidence: 0.9,
       createdAt: new Date().toISOString(),
-      id: 'link-2',
-      projectId: 'proj-1',
-      sourceId: '2',
-      targetId: '3',
-      type: 'represents',
+      id: "link-2",
+      projectId: "proj-1",
+      sourceId: "2",
+      targetId: "3",
+      type: "represents",
       updatedAt: new Date().toISOString(),
       version: 1,
     },
     {
       confidence: 0.85,
       createdAt: new Date().toISOString(),
-      id: 'link-3',
-      projectId: 'proj-1',
-      sourceId: '1',
-      targetId: '4',
-      type: 'same_as',
+      id: "link-3",
+      projectId: "proj-1",
+      sourceId: "1",
+      targetId: "4",
+      type: "same_as",
       updatedAt: new Date().toISOString(),
       version: 1,
     },
   ];
 
-  describe('Search Results Caching', () => {
-    it('should cache search results and return from cache on repeated queries', () => {
+  describe("Search Results Caching", () => {
+    it("should cache search results and return from cache on repeated queries", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       // First search
       act(() => {
-        const res1 = result.current.performSearch(mockItems, mockLinks, 'authentication');
+        const res1 = result.current.performSearch(mockItems, mockLinks, "authentication");
         expect(res1.length).toBeGreaterThan(0);
       });
 
@@ -147,7 +147,7 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
 
       // Second search should be from cache
       act(() => {
-        const res2 = result.current.performSearch(mockItems, mockLinks, 'authentication');
+        const res2 = result.current.performSearch(mockItems, mockLinks, "authentication");
         expect(res2.length).toBeGreaterThan(0);
       });
 
@@ -163,7 +163,7 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
       });
     });
 
-    it('should evict least used entries when cache exceeds max size', () => {
+    it("should evict least used entries when cache exceeds max size", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       // Fill cache with many entries
@@ -180,12 +180,12 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
       });
     });
 
-    it('should clear cache on demand', () => {
+    it("should clear cache on demand", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       // Populate cache
       act(() => {
-        result.current.performSearch(mockItems, mockLinks, 'test');
+        result.current.performSearch(mockItems, mockLinks, "test");
       });
 
       // Verify cache has entries
@@ -207,17 +207,17 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
     });
   });
 
-  describe('Search History', () => {
-    it('should add searches to history with filters', () => {
+  describe("Search History", () => {
+    it("should add searches to history with filters", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       const filters: SearchFilters = {
-        status: 'done',
-        type: 'Feature',
+        status: "done",
+        type: "Feature",
       };
 
       act(() => {
-        result.current.addToHistory('authentication', filters);
+        result.current.addToHistory("authentication", filters);
       });
 
       act(() => {
@@ -228,28 +228,28 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
         if (!first) {
           return;
         }
-        expect(first.query).toBe('authentication');
+        expect(first.query).toBe("authentication");
         expect(first.filters).toEqual(filters);
       });
     });
 
-    it('should remove duplicate searches, keeping most recent', () => {
+    it("should remove duplicate searches, keeping most recent", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       act(() => {
-        result.current.addToHistory('test');
-        result.current.addToHistory('other');
-        result.current.addToHistory('test');
+        result.current.addToHistory("test");
+        result.current.addToHistory("other");
+        result.current.addToHistory("test");
       });
 
       act(() => {
         const history = result.current.getHistory();
-        expect(history).toEqual(['test', 'other']);
-        expect(history[0]).toBe('test'); // Most recent first
+        expect(history).toEqual(["test", "other"]);
+        expect(history[0]).toBe("test"); // Most recent first
       });
     });
 
-    it('should limit history to max entries', () => {
+    it("should limit history to max entries", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       act(() => {
@@ -264,12 +264,12 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
       });
     });
 
-    it('should clear history on demand', () => {
+    it("should clear history on demand", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       act(() => {
-        result.current.addToHistory('test1');
-        result.current.addToHistory('test2');
+        result.current.addToHistory("test1");
+        result.current.addToHistory("test2");
       });
 
       const historyBefore = result.current.getHistory();
@@ -284,40 +284,40 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
     });
   });
 
-  describe('Saved Searches', () => {
-    it('should save a search with results', () => {
+  describe("Saved Searches", () => {
+    it("should save a search with results", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       const searchResults: CrossPerspectiveSearchResult[] = [
         {
           equivalences: [],
           item: baseItem,
-          matchType: 'title',
-          perspective: 'feature',
+          matchType: "title",
+          perspective: "feature",
           score: 100,
         },
       ];
 
       let savedId: string;
       act(() => {
-        savedId = result.current.saveSearch('authentication', { type: 'Feature' }, searchResults);
+        savedId = result.current.saveSearch("authentication", { type: "Feature" }, searchResults);
       });
 
       act(() => {
         const saved = result.current.loadSavedSearch(savedId);
         expect(saved).toBeDefined();
-        expect(saved?.query).toBe('authentication');
-        expect(saved?.filters.type).toBe('Feature');
+        expect(saved?.query).toBe("authentication");
+        expect(saved?.filters.type).toBe("Feature");
         expect(saved?.results).toHaveLength(1);
       });
     });
 
-    it('should delete a saved search', () => {
+    it("should delete a saved search", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       let savedId: string;
       act(() => {
-        savedId = result.current.saveSearch('test', {}, []);
+        savedId = result.current.saveSearch("test", {}, []);
       });
 
       act(() => {
@@ -330,12 +330,12 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
       });
     });
 
-    it('should retrieve all saved searches', () => {
+    it("should retrieve all saved searches", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       act(() => {
-        result.current.saveSearch('search1', {}, []);
-        result.current.saveSearch('search2', {}, []);
+        result.current.saveSearch("search1", {}, []);
+        result.current.saveSearch("search2", {}, []);
       });
 
       act(() => {
@@ -344,7 +344,7 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
       });
     });
 
-    it('should limit saved searches to max entries', () => {
+    it("should limit saved searches to max entries", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       act(() => {
@@ -360,70 +360,70 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
     });
   });
 
-  describe('Search Suggestions', () => {
-    it('should generate suggestions from item titles', () => {
+  describe("Search Suggestions", () => {
+    it("should generate suggestions from item titles", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       act(() => {
-        const suggestions = result.current.getSuggestions(mockItems, 'auth');
-        expect(suggestions).toContain('Authentication System');
+        const suggestions = result.current.getSuggestions(mockItems, "auth");
+        expect(suggestions).toContain("Authentication System");
       });
     });
 
-    it('should generate suggestions from item types', () => {
+    it("should generate suggestions from item types", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       act(() => {
-        const suggestions = result.current.getSuggestions(mockItems, 'api');
-        expect(suggestions).toContain('API');
+        const suggestions = result.current.getSuggestions(mockItems, "api");
+        expect(suggestions).toContain("API");
       });
     });
 
-    it('should generate suggestions from search history', () => {
+    it("should generate suggestions from search history", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       act(() => {
-        result.current.addToHistory('historical search');
+        result.current.addToHistory("historical search");
       });
 
       act(() => {
-        const suggestions = result.current.getSuggestions(mockItems, 'historical');
-        expect(suggestions).toContain('historical search');
+        const suggestions = result.current.getSuggestions(mockItems, "historical");
+        expect(suggestions).toContain("historical search");
       });
     });
 
-    it('should limit suggestions to specified count', () => {
+    it("should limit suggestions to specified count", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       act(() => {
-        const suggestions = result.current.getSuggestions(mockItems, '', 3);
+        const suggestions = result.current.getSuggestions(mockItems, "", 3);
         expect(suggestions.length).toBeLessThanOrEqual(3);
       });
     });
 
-    it('should return empty suggestions for empty query', () => {
+    it("should return empty suggestions for empty query", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       act(() => {
-        const suggestions = result.current.getSuggestions(mockItems, '');
+        const suggestions = result.current.getSuggestions(mockItems, "");
         expect(suggestions).toHaveLength(0);
       });
     });
   });
 
-  describe('Search Performance', () => {
-    it('should complete search in under 300ms for 1000 items', () => {
+  describe("Search Performance", () => {
+    it("should complete search in under 300ms for 1000 items", () => {
       const largeItemSet = Array.from({ length: 1000 }, (_, i) => ({
         ...baseItem,
         id: `item-${i}`,
-        title: `Item ${i} ${i % 2 === 0 ? 'test' : 'other'}`,
+        title: `Item ${i} ${i % 2 === 0 ? "test" : "other"}`,
       }));
 
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       const startTime = performance.now();
       act(() => {
-        result.current.performSearch(largeItemSet, [], 'test');
+        result.current.performSearch(largeItemSet, [], "test");
       });
       const endTime = performance.now();
 
@@ -431,16 +431,16 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
       expect(duration).toBeLessThan(300);
     });
 
-    it('should use cache to improve repeated search performance', () => {
+    it("should use cache to improve repeated search performance", () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
       act(() => {
-        result.current.performSearch(mockItems, mockLinks, 'test');
+        result.current.performSearch(mockItems, mockLinks, "test");
       });
       const initialStats = result.current.getCacheStats();
 
       act(() => {
-        result.current.performSearch(mockItems, mockLinks, 'test');
+        result.current.performSearch(mockItems, mockLinks, "test");
       });
       const repeatedStats = result.current.getCacheStats();
 
@@ -450,20 +450,20 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
     });
   });
 
-  describe('Search Accuracy', () => {
-    it('should achieve 95%+ accuracy for exact title matches', () => {
-      const results = performCrossPerspectiveSearch(mockItems, mockLinks, 'authentication system');
+  describe("Search Accuracy", () => {
+    it("should achieve 95%+ accuracy for exact title matches", () => {
+      const results = performCrossPerspectiveSearch(mockItems, mockLinks, "authentication system");
 
       const exactMatch = results
         .flatMap((r) => r.results)
-        .find((r) => r.item.title === 'Authentication System');
+        .find((r) => r.item.title === "Authentication System");
 
       expect(exactMatch).toBeDefined();
       expect(exactMatch?.score).toBe(100);
     });
 
-    it('should rank results correctly by relevance', () => {
-      const results = performCrossPerspectiveSearch(mockItems, mockLinks, 'authentication');
+    it("should rank results correctly by relevance", () => {
+      const results = performCrossPerspectiveSearch(mockItems, mockLinks, "authentication");
 
       // Check that each group's results are sorted by score descending
       for (const group of results) {
@@ -478,25 +478,25 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
       }
     });
 
-    it('should correctly identify match types', () => {
-      const results = performCrossPerspectiveSearch(mockItems, mockLinks, 'login');
+    it("should correctly identify match types", () => {
+      const results = performCrossPerspectiveSearch(mockItems, mockLinks, "login");
 
       const results_arr = results.flatMap((r) => r.results);
       expect(results_arr.length).toBeGreaterThan(0);
 
       // Check that match types are correctly identified
       for (const result of results_arr) {
-        expect(['title', 'description', 'type', 'dimension']).toContain(result.matchType);
+        expect(["title", "description", "type", "dimension"]).toContain(result.matchType);
       }
     });
 
-    it('should achieve >95% accuracy with filters', () => {
+    it("should achieve >95% accuracy with filters", () => {
       const filters: SearchFilters = {
-        status: 'done',
-        type: 'Feature',
+        status: "done",
+        type: "Feature",
       };
 
-      const results = performCrossPerspectiveSearch(mockItems, mockLinks, 'auth', filters);
+      const results = performCrossPerspectiveSearch(mockItems, mockLinks, "auth", filters);
 
       const allResults = results.flatMap((r) => r.results);
 
@@ -515,22 +515,22 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
     });
   });
 
-  describe('Debounced Search', () => {
-    it('should debounce rapid search calls', async () => {
+  describe("Debounced Search", () => {
+    it("should debounce rapid search calls", async () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
       const mockCallback = vi.fn();
 
       // Rapid search calls
       act(() => {
-        result.current.debouncedSearch(mockItems, mockLinks, 'test1', undefined, mockCallback, 100);
+        result.current.debouncedSearch(mockItems, mockLinks, "test1", undefined, mockCallback, 100);
       });
 
       act(() => {
-        result.current.debouncedSearch(mockItems, mockLinks, 'test2', undefined, mockCallback, 100);
+        result.current.debouncedSearch(mockItems, mockLinks, "test2", undefined, mockCallback, 100);
       });
 
       act(() => {
-        result.current.debouncedSearch(mockItems, mockLinks, 'test3', undefined, mockCallback, 100);
+        result.current.debouncedSearch(mockItems, mockLinks, "test3", undefined, mockCallback, 100);
       });
 
       // Wait for debounce
@@ -541,53 +541,53 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
     });
   });
 
-  describe('Filter Application', () => {
-    it('should apply type filters correctly', () => {
-      const filters: SearchFilters = { type: 'Feature' };
-      const results = performCrossPerspectiveSearch(mockItems, mockLinks, '', filters);
+  describe("Filter Application", () => {
+    it("should apply type filters correctly", () => {
+      const filters: SearchFilters = { type: "Feature" };
+      const results = performCrossPerspectiveSearch(mockItems, mockLinks, "", filters);
 
       // With empty query, should return no results
       expect(results.length).toBe(0);
     });
 
-    it('should apply status filters correctly', () => {
-      const filters: SearchFilters = { status: 'done' };
-      const results = performCrossPerspectiveSearch(mockItems, mockLinks, 'auth', filters);
+    it("should apply status filters correctly", () => {
+      const filters: SearchFilters = { status: "done" };
+      const results = performCrossPerspectiveSearch(mockItems, mockLinks, "auth", filters);
 
       const allResults = results.flatMap((r) => r.results);
       for (const result of allResults) {
-        expect(result.item.status).toBe('done');
+        expect(result.item.status).toBe("done");
       }
     });
 
-    it('should apply perspective filters correctly', () => {
-      const filters: SearchFilters = { perspectives: ['feature', 'api'] };
-      const results = performCrossPerspectiveSearch(mockItems, mockLinks, 'auth', filters);
+    it("should apply perspective filters correctly", () => {
+      const filters: SearchFilters = { perspectives: ["feature", "api"] };
+      const results = performCrossPerspectiveSearch(mockItems, mockLinks, "auth", filters);
 
       expect(results.every((r) => filters.perspectives!.includes(r.perspective))).toBeTruthy();
     });
 
-    it('should apply multiple filters together', () => {
+    it("should apply multiple filters together", () => {
       const filters: SearchFilters = {
-        perspectives: ['feature'],
-        status: 'done',
-        type: 'Feature',
+        perspectives: ["feature"],
+        status: "done",
+        type: "Feature",
       };
 
-      const results = performCrossPerspectiveSearch(mockItems, mockLinks, 'auth', filters);
+      const results = performCrossPerspectiveSearch(mockItems, mockLinks, "auth", filters);
 
       const allResults = results.flatMap((r) => r.results);
       for (const result of allResults) {
-        expect(result.item.type).toBe('Feature');
-        expect(result.item.status).toBe('done');
-        expect(result.perspective).toBe('feature');
+        expect(result.item.type).toBe("Feature");
+        expect(result.item.status).toBe("done");
+        expect(result.perspective).toBe("feature");
       }
     });
   });
 
-  describe('Equivalence Handling', () => {
-    it('should detect equivalences from links', () => {
-      const results = performCrossPerspectiveSearch(mockItems, mockLinks, 'auth');
+  describe("Equivalence Handling", () => {
+    it("should detect equivalences from links", () => {
+      const results = performCrossPerspectiveSearch(mockItems, mockLinks, "auth");
 
       const itemWithEquivalences = results
         .flatMap((r) => r.results)
@@ -596,8 +596,8 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
       expect(itemWithEquivalences).toBeDefined();
     });
 
-    it('should rank equivalences by confidence', () => {
-      const results = performCrossPerspectiveSearch(mockItems, mockLinks, 'auth');
+    it("should rank equivalences by confidence", () => {
+      const results = performCrossPerspectiveSearch(mockItems, mockLinks, "auth");
 
       for (const group of results) {
         for (const result of group.results) {

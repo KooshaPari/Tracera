@@ -12,14 +12,14 @@ import type {
   TypedItem,
   UserStoryItem,
   ViewType,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
-import * as constants from './constants';
-import * as readers from './readers';
+import * as constants from "./constants";
+import * as readers from "./readers";
 
 type ApiItem = readers.ApiItem;
 
-type MutableItem = Item & { view: Item['view'] };
+type MutableItem = Item & { view: Item["view"] };
 
 type Normalizer = (base: MutableItem, item: ApiItem) => TypedItem;
 
@@ -50,10 +50,10 @@ function normalizeViewType(value: unknown): ViewType {
 function readCoverageMetrics(value: unknown): CoverageMetrics | undefined {
   const record = readers.readRecord(value);
   if (record !== undefined) {
-    const testCoverage = readers.readNumber(record['testCoverage']);
-    const docCoverage = readers.readNumber(record['docCoverage']);
-    const traceCoverage = readers.readNumber(record['traceCoverage']);
-    const overallCoverage = readers.readNumber(record['overallCoverage']);
+    const testCoverage = readers.readNumber(record["testCoverage"]);
+    const docCoverage = readers.readNumber(record["docCoverage"]);
+    const traceCoverage = readers.readNumber(record["traceCoverage"]);
+    const overallCoverage = readers.readNumber(record["overallCoverage"]);
     if (
       testCoverage !== undefined &&
       docCoverage !== undefined &&
@@ -81,7 +81,7 @@ function readCustomDimensionValues(
 
   const entries: [string, string | number | boolean][] = [];
   for (const [key, entry] of Object.entries(custom)) {
-    if (typeof entry === 'string' || typeof entry === 'number' || typeof entry === 'boolean') {
+    if (typeof entry === "string" || typeof entry === "number" || typeof entry === "boolean") {
       entries.push([key, entry]);
     }
   }
@@ -95,11 +95,11 @@ function readCustomDimensionValues(
 function readItemDimensions(value: unknown): ItemDimensions | undefined {
   const record = readers.readRecord(value);
   if (record !== undefined) {
-    const maturity = readers.readEnumValue(record['maturity'], constants.MATURITY_LEVELS);
-    const complexity = readers.readEnumValue(record['complexity'], constants.COMPLEXITY_LEVELS);
-    const risk = readers.readEnumValue(record['risk'], constants.RISK_LEVELS);
-    const coverage = readCoverageMetrics(record['coverage']);
-    const customValues = readCustomDimensionValues(record['custom']);
+    const maturity = readers.readEnumValue(record["maturity"], constants.MATURITY_LEVELS);
+    const complexity = readers.readEnumValue(record["complexity"], constants.COMPLEXITY_LEVELS);
+    const risk = readers.readEnumValue(record["risk"], constants.RISK_LEVELS);
+    const coverage = readCoverageMetrics(record["coverage"]);
+    const customValues = readCustomDimensionValues(record["custom"]);
 
     if (
       maturity !== undefined ||
@@ -123,11 +123,11 @@ function readItemDimensions(value: unknown): ItemDimensions | undefined {
 function readCodeReference(value: unknown): CodeReference | undefined {
   const record = readers.readRecord(value);
   if (record !== undefined) {
-    const id = readers.readString(record['id']);
-    const filePath = readers.readString(record['filePath']);
-    const symbolName = readers.readString(record['symbolName']);
-    const symbolType = readers.readEnumValue(record['symbolType'], constants.CODE_SYMBOL_TYPES);
-    const language = readers.readString(record['language']);
+    const id = readers.readString(record["id"]);
+    const filePath = readers.readString(record["filePath"]);
+    const symbolName = readers.readString(record["symbolName"]);
+    const symbolType = readers.readEnumValue(record["symbolType"], constants.CODE_SYMBOL_TYPES);
+    const language = readers.readString(record["language"]);
 
     if (
       id !== undefined &&
@@ -136,14 +136,14 @@ function readCodeReference(value: unknown): CodeReference | undefined {
       symbolType !== undefined &&
       language !== undefined
     ) {
-      const repositoryUrl = readers.readString(record['repositoryUrl']);
-      const startLine = readers.readNumber(record['startLine']);
-      const endLine = readers.readNumber(record['endLine']);
-      const signature = readers.readString(record['signature']);
-      const parentSymbol = readers.readString(record['parentSymbol']);
-      const embedding = readers.readNumberArray(record['embedding']);
-      const lastSyncedAt = readers.readString(record['lastSyncedAt']);
-      const commitSha = readers.readString(record['commitSha']);
+      const repositoryUrl = readers.readString(record["repositoryUrl"]);
+      const startLine = readers.readNumber(record["startLine"]);
+      const endLine = readers.readNumber(record["endLine"]);
+      const signature = readers.readString(record["signature"]);
+      const parentSymbol = readers.readString(record["parentSymbol"]);
+      const embedding = readers.readNumberArray(record["embedding"]);
+      const lastSyncedAt = readers.readString(record["lastSyncedAt"]);
+      const commitSha = readers.readString(record["commitSha"]);
 
       return {
         id,
@@ -168,10 +168,10 @@ function readCodeReference(value: unknown): CodeReference | undefined {
 function readDocReference(value: unknown): DocReference | undefined {
   const record = readers.readRecord(value);
   if (record !== undefined) {
-    const id = readers.readString(record['id']);
-    const documentPath = readers.readString(record['documentPath']);
-    const documentTitle = readers.readString(record['documentTitle']);
-    const contentType = readers.readEnumValue(record['contentType'], constants.DOC_CONTENT_TYPES);
+    const id = readers.readString(record["id"]);
+    const documentPath = readers.readString(record["documentPath"]);
+    const documentTitle = readers.readString(record["documentTitle"]);
+    const contentType = readers.readEnumValue(record["contentType"], constants.DOC_CONTENT_TYPES);
 
     if (
       id !== undefined &&
@@ -179,14 +179,14 @@ function readDocReference(value: unknown): DocReference | undefined {
       documentTitle !== undefined &&
       contentType !== undefined
     ) {
-      const sectionPath = readers.readStringArray(record['sectionPath']);
-      const sectionTitle = readers.readString(record['sectionTitle']);
-      const chunkIndex = readers.readNumber(record['chunkIndex']);
-      const contentPreview = readers.readString(record['contentPreview']);
-      const embedding = readers.readNumberArray(record['embedding']);
-      const codeReferences = readers.readStringArray(record['codeReferences']);
-      const itemReferences = readers.readStringArray(record['itemReferences']);
-      const lastSyncedAt = readers.readString(record['lastSyncedAt']);
+      const sectionPath = readers.readStringArray(record["sectionPath"]);
+      const sectionTitle = readers.readString(record["sectionTitle"]);
+      const chunkIndex = readers.readNumber(record["chunkIndex"]);
+      const contentPreview = readers.readString(record["contentPreview"]);
+      const embedding = readers.readNumberArray(record["embedding"]);
+      const codeReferences = readers.readStringArray(record["codeReferences"]);
+      const itemReferences = readers.readStringArray(record["itemReferences"]);
+      const lastSyncedAt = readers.readString(record["lastSyncedAt"]);
 
       return {
         id,
@@ -213,11 +213,11 @@ function readTestSteps(value: unknown): TestStep[] | undefined {
     for (const entry of value) {
       const record = readers.readRecord(entry);
       if (record !== undefined) {
-        const stepNumber = readers.readNumber(record['stepNumber']);
-        const action = readers.readString(record['action']);
+        const stepNumber = readers.readNumber(record["stepNumber"]);
+        const action = readers.readString(record["action"]);
         if (stepNumber !== undefined && action !== undefined && action.length > 0) {
-          const expectedResult = readers.readString(record['expectedResult']);
-          const testData = readers.readString(record['testData']);
+          const expectedResult = readers.readString(record["expectedResult"]);
+          const testData = readers.readString(record["testData"]);
           steps.push({
             stepNumber,
             action,
@@ -240,7 +240,7 @@ function extractItemsArray(data: unknown): ApiItem[] {
   }
   const record = readers.readRecord(data);
   if (record !== undefined) {
-    const itemsValue = record['items'];
+    const itemsValue = record["items"];
     if (Array.isArray(itemsValue)) {
       return itemsValue.filter((entry) => readers.isRecord(entry));
     }
@@ -251,7 +251,7 @@ function extractItemsArray(data: unknown): ApiItem[] {
 function extractTotalCount(data: unknown, itemsArray: ApiItem[]): number {
   const record = readers.readRecord(data);
   if (record !== undefined) {
-    const totalValue = readers.readNumber(record['total']);
+    const totalValue = readers.readNumber(record["total"]);
     if (totalValue !== undefined) {
       return totalValue;
     }
@@ -260,31 +260,31 @@ function extractTotalCount(data: unknown, itemsArray: ApiItem[]): number {
 }
 
 function normalizeBaseItem(item: ApiItem): MutableItem {
-  const createdAt = readers.readStringField(item, 'created_at', 'createdAt');
-  const updatedAt = readers.readStringField(item, 'updated_at', 'updatedAt');
-  const projectId = readers.readStringField(item, 'project_id', 'projectId');
-  const parentId = readers.readStringField(item, 'parent_id', 'parentId');
-  const description = readers.readString(item['description']);
-  const owner = readers.readString(item['owner']);
-  const metadata = readers.readRecord(item['metadata']);
-  const canonicalId = readers.readString(item['canonicalId']);
-  const dimensions = readItemDimensions(item['dimensions']);
-  const codeRef = readCodeReference(item['codeRef']);
-  const docRef = readDocReference(item['docRef']);
-  const perspective = readers.readString(item['perspective']);
-  const equivalentItemIds = readers.readStringArray(item['equivalentItemIds']);
+  const createdAt = readers.readStringField(item, "created_at", "createdAt");
+  const updatedAt = readers.readStringField(item, "updated_at", "updatedAt");
+  const projectId = readers.readStringField(item, "project_id", "projectId");
+  const parentId = readers.readStringField(item, "parent_id", "parentId");
+  const description = readers.readString(item["description"]);
+  const owner = readers.readString(item["owner"]);
+  const metadata = readers.readRecord(item["metadata"]);
+  const canonicalId = readers.readString(item["canonicalId"]);
+  const dimensions = readItemDimensions(item["dimensions"]);
+  const codeRef = readCodeReference(item["codeRef"]);
+  const docRef = readDocReference(item["docRef"]);
+  const perspective = readers.readString(item["perspective"]);
+  const equivalentItemIds = readers.readStringArray(item["equivalentItemIds"]);
 
   return {
-    id: readers.requireStringField(item, 'id'),
-    projectId: projectId ?? readers.requireStringField(item, 'projectId'),
-    view: normalizeViewType(item['view']),
-    type: readers.requireStringField(item, 'type'),
-    title: readers.requireStringField(item, 'title'),
-    status: normalizeStatus(item['status']),
-    priority: normalizePriority(item['priority']),
-    version: readers.readNumber(item['version']) ?? constants.DEFAULT_VERSION,
-    createdAt: createdAt ?? readers.requireStringField(item, 'createdAt'),
-    updatedAt: updatedAt ?? readers.requireStringField(item, 'updatedAt'),
+    id: readers.requireStringField(item, "id"),
+    projectId: projectId ?? readers.requireStringField(item, "projectId"),
+    view: normalizeViewType(item["view"]),
+    type: readers.requireStringField(item, "type"),
+    title: readers.requireStringField(item, "title"),
+    status: normalizeStatus(item["status"]),
+    priority: normalizePriority(item["priority"]),
+    version: readers.readNumber(item["version"]) ?? constants.DEFAULT_VERSION,
+    createdAt: createdAt ?? readers.requireStringField(item, "createdAt"),
+    updatedAt: updatedAt ?? readers.requireStringField(item, "updatedAt"),
     ...(description !== undefined ? { description } : {}),
     ...(parentId !== undefined ? { parentId } : {}),
     ...(owner !== undefined ? { owner } : {}),
@@ -300,10 +300,10 @@ function normalizeBaseItem(item: ApiItem): MutableItem {
 
 const SIMPLE_TYPE_NORMALIZERS: Record<string, Normalizer> = {
   [constants.ITEM_TYPE_REQUIREMENT]: (base, item) => {
-    const adrId = readers.readStringField(item, 'adr_id', 'adrId');
-    const contractId = readers.readStringField(item, 'contract_id', 'contractId');
+    const adrId = readers.readStringField(item, "adr_id", "adrId");
+    const contractId = readers.readStringField(item, "contract_id", "contractId");
     const qualityMetrics =
-      readers.readRecord(item['quality_metrics']) ?? readers.readRecord(item['qualityMetrics']);
+      readers.readRecord(item["quality_metrics"]) ?? readers.readRecord(item["qualityMetrics"]);
 
     return {
       ...base,
@@ -316,11 +316,11 @@ const SIMPLE_TYPE_NORMALIZERS: Record<string, Normalizer> = {
   [constants.ITEM_TYPE_EPIC]: (base, item) => {
     const acceptanceCriteria = readers.readStringArrayField(
       item,
-      'acceptance_criteria',
-      'acceptanceCriteria',
+      "acceptance_criteria",
+      "acceptanceCriteria",
     );
-    const businessValue = readers.readStringField(item, 'business_value', 'businessValue');
-    const targetRelease = readers.readStringField(item, 'target_release', 'targetRelease');
+    const businessValue = readers.readStringField(item, "business_value", "businessValue");
+    const targetRelease = readers.readStringField(item, "target_release", "targetRelease");
 
     return {
       ...base,
@@ -331,10 +331,10 @@ const SIMPLE_TYPE_NORMALIZERS: Record<string, Normalizer> = {
     };
   },
   [constants.ITEM_TYPE_TASK]: (base, item) => {
-    const estimatedHours = readers.readNumberField(item, 'estimated_hours', 'estimatedHours');
-    const actualHours = readers.readNumberField(item, 'actual_hours', 'actualHours');
-    const assignee = readers.readString(item['assignee']);
-    const dueDate = readers.readStringField(item, 'due_date', 'dueDate');
+    const estimatedHours = readers.readNumberField(item, "estimated_hours", "estimatedHours");
+    const actualHours = readers.readNumberField(item, "actual_hours", "actualHours");
+    const assignee = readers.readString(item["assignee"]);
+    const dueDate = readers.readStringField(item, "due_date", "dueDate");
 
     return {
       ...base,
@@ -347,21 +347,21 @@ const SIMPLE_TYPE_NORMALIZERS: Record<string, Normalizer> = {
   },
 };
 
-function normalizeTest(base: MutableItem, item: ApiItem, type: TestItem['type']): TypedItem {
+function normalizeTest(base: MutableItem, item: ApiItem, type: TestItem["type"]): TypedItem {
   const testType = readers.readEnumValue(
-    readers.readStringField(item, 'test_type', 'testType'),
+    readers.readStringField(item, "test_type", "testType"),
     constants.TEST_CASE_TYPES,
   );
   const automationStatus = readers.readEnumValue(
-    readers.readStringField(item, 'automation_status', 'automationStatus'),
+    readers.readStringField(item, "automation_status", "automationStatus"),
     constants.AUTOMATION_STATUS_VALUES,
   );
   const lastExecutionResult = readers.readEnumValue(
-    readers.readStringField(item, 'last_execution_result', 'lastExecutionResult'),
+    readers.readStringField(item, "last_execution_result", "lastExecutionResult"),
     constants.TEST_RESULT_STATUS_VALUES,
   );
-  const testSteps = readTestSteps(item['test_steps']) ?? readTestSteps(item['testSteps']);
-  const expectedResult = readers.readStringField(item, 'expected_result', 'expectedResult');
+  const testSteps = readTestSteps(item["test_steps"]) ?? readTestSteps(item["testSteps"]);
+  const expectedResult = readers.readStringField(item, "expected_result", "expectedResult");
 
   const result: TestItem = {
     ...base,
@@ -379,17 +379,17 @@ function normalizeTest(base: MutableItem, item: ApiItem, type: TestItem['type'])
 function normalizeUserStory(
   base: MutableItem,
   item: ApiItem,
-  type: UserStoryItem['type'],
+  type: UserStoryItem["type"],
 ): TypedItem {
-  const asA = readers.readStringField(item, 'as_a', 'asA');
-  const iWant = readers.readStringField(item, 'i_want', 'iWant');
-  const soThat = readers.readStringField(item, 'so_that', 'soThat');
+  const asA = readers.readStringField(item, "as_a", "asA");
+  const iWant = readers.readStringField(item, "i_want", "iWant");
+  const soThat = readers.readStringField(item, "so_that", "soThat");
   const acceptanceCriteria = readers.readStringArrayField(
     item,
-    'acceptance_criteria',
-    'acceptanceCriteria',
+    "acceptance_criteria",
+    "acceptanceCriteria",
   );
-  const storyPoints = readers.readNumberField(item, 'story_points', 'storyPoints');
+  const storyPoints = readers.readNumberField(item, "story_points", "storyPoints");
 
   const result: UserStoryItem = {
     ...base,
@@ -404,20 +404,20 @@ function normalizeUserStory(
   return result;
 }
 
-function normalizeDefect(base: MutableItem, item: ApiItem, type: DefectItem['type']): TypedItem {
+function normalizeDefect(base: MutableItem, item: ApiItem, type: DefectItem["type"]): TypedItem {
   const severity = readers.readEnumValue(
-    readers.readString(item['severity']),
+    readers.readString(item["severity"]),
     constants.DEFECT_SEVERITY_VALUES,
   );
-  const reproducible = readers.readBoolean(item['reproducible']);
+  const reproducible = readers.readBoolean(item["reproducible"]);
   const stepsToReproduce = readers.readStringArrayField(
     item,
-    'steps_to_reproduce',
-    'stepsToReproduce',
+    "steps_to_reproduce",
+    "stepsToReproduce",
   );
-  const environment = readers.readString(item['environment']);
-  const foundInVersion = readers.readStringField(item, 'found_in_version', 'foundInVersion');
-  const fixedInVersion = readers.readStringField(item, 'fixed_in_version', 'fixedInVersion');
+  const environment = readers.readString(item["environment"]);
+  const foundInVersion = readers.readStringField(item, "found_in_version", "foundInVersion");
+  const fixedInVersion = readers.readStringField(item, "fixed_in_version", "fixedInVersion");
 
   const result: DefectItem = {
     ...base,
@@ -433,7 +433,7 @@ function normalizeDefect(base: MutableItem, item: ApiItem, type: DefectItem['typ
   return result;
 }
 
-function isTestItemType(value: string): value is TestItem['type'] {
+function isTestItemType(value: string): value is TestItem["type"] {
   return (
     value === constants.ITEM_TYPE_TEST ||
     value === constants.ITEM_TYPE_TEST_CASE ||
@@ -441,11 +441,11 @@ function isTestItemType(value: string): value is TestItem['type'] {
   );
 }
 
-function isUserStoryItemType(value: string): value is UserStoryItem['type'] {
+function isUserStoryItemType(value: string): value is UserStoryItem["type"] {
   return value === constants.ITEM_TYPE_USER_STORY || value === constants.ITEM_TYPE_STORY;
 }
 
-function isDefectItemType(value: string): value is DefectItem['type'] {
+function isDefectItemType(value: string): value is DefectItem["type"] {
   return value === constants.ITEM_TYPE_BUG || value === constants.ITEM_TYPE_DEFECT;
 }
 

@@ -1,9 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { TestRunPayload } from './tests-api';
-import type { TestSpecCreate, TestSpecUpdate, TestType } from './types';
+import type { TestRunPayload } from "./tests-api";
+import type { TestSpecCreate, TestSpecUpdate, TestType } from "./types";
 
-import { itemSpecKeys } from './keys';
+import { itemSpecKeys } from "./keys";
 import {
   createTestSpec,
   deleteTestSpec,
@@ -17,7 +17,7 @@ import {
   recordTestRun,
   unquarantineTest,
   updateTestSpec,
-} from './tests-api';
+} from "./tests-api";
 
 function useTestSpecs(
   projectId: string,
@@ -102,7 +102,7 @@ function useCreateTestSpec(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.test(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.test(projectId, data["id"]), data);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.tests(projectId) }),
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.flakyTests(projectId) }),
@@ -123,7 +123,7 @@ function useUpdateTestSpec(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.test(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.test(projectId, data["id"]), data);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.tests(projectId) }),
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.flakyTests(projectId) }),
@@ -163,7 +163,7 @@ function useRecordTestRun(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.test(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.test(projectId, data["id"]), data);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.tests(projectId) }),
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.flakyTests(projectId) }),
@@ -184,7 +184,7 @@ function useQuarantineTest(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.test(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.test(projectId, data["id"]), data);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.tests(projectId) }),
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.flakyTests(projectId) }),
@@ -205,7 +205,7 @@ function useUnquarantineTest(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.test(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.test(projectId, data["id"]), data);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.tests(projectId) }),
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.flakyTests(projectId) }),

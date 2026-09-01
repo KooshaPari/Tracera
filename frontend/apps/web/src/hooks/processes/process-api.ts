@@ -1,20 +1,20 @@
-import type { Process, ProcessExecution } from '@tracertm/types';
+import type { Process, ProcessExecution } from "@tracertm/types";
 
-import { client } from '@/api/client';
+import { client } from "@/api/client";
 
 import type {
   CreateExecutionData,
   CreateProcessData,
   FetchExecutionsParams,
   ProcessFilters,
-} from './process-types';
+} from "./process-types";
 
-import { processGuards } from './process-guards';
-import { processParsers } from './process-parsers';
+import { processGuards } from "./process-guards";
+import { processParsers } from "./process-parsers";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 interface ProcessesResponse {
   processes: Process[];
@@ -38,25 +38,25 @@ async function fetchJson(url: string, init?: RequestInit): Promise<unknown> {
 
 function buildProcessesParams(filters: ProcessFilters): URLSearchParams {
   const params = new URLSearchParams();
-  params.set('project_id', filters.projectId);
+  params.set("project_id", filters.projectId);
 
   const { status } = filters;
   if (status !== undefined && status.length > 0) {
-    params.set('status', status);
+    params.set("status", status);
   }
 
   const { category } = filters;
   if (category !== undefined && category.length > 0) {
-    params.set('category', category);
+    params.set("category", category);
   }
 
   const { owner } = filters;
   if (owner !== undefined && owner.length > 0) {
-    params.set('owner', owner);
+    params.set("owner", owner);
   }
 
   if (filters.activeOnly === true) {
-    params.set('active_only', 'true');
+    params.set("active_only", "true");
   }
 
   return params;
@@ -66,13 +66,13 @@ async function fetchProcesses(filters: ProcessFilters): Promise<ProcessesRespons
   const params = buildProcessesParams(filters);
   const json = await fetchJson(`${API_URL}/api/v1/processes?${params.toString()}`, {
     headers: {
-      'X-Bulk-Operation': 'true',
+      "X-Bulk-Operation": "true",
       ...getAuthHeaders(),
     },
   });
-  const data = processGuards.asRecord(json, 'processes response');
-  const rawProcesses = processGuards.getOptionalArray(data, 'processes') ?? [];
-  const total = processGuards.getOptionalNumber(data, 'total') ?? 0;
+  const data = processGuards.asRecord(json, "processes response");
+  const rawProcesses = processGuards.getOptionalArray(data, "processes") ?? [];
+  const total = processGuards.getOptionalNumber(data, "total") ?? 0;
   return {
     processes: rawProcesses.map((item: unknown) => processParsers.parseProcess(item)),
     total,
@@ -110,15 +110,15 @@ async function createProcess(
       tags: data.tags,
       triggers: data.triggers,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   return processParsers.parseIdProcessNumber(json);
 }
 
 async function updateProcess(
   id: string,
-  data: Partial<Omit<CreateProcessData, 'projectId'>>,
+  data: Partial<Omit<CreateProcessData, "projectId">>,
 ): Promise<{ id: string; version: number }> {
   const json = await fetchJson(`${API_URL}/api/v1/processes/${id}`, {
     body: JSON.stringify({
@@ -141,8 +141,8 @@ async function updateProcess(
       tags: data.tags,
       triggers: data.triggers,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'PUT',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "PUT",
   });
   return processParsers.parseIdVersion(json);
 }
@@ -158,8 +158,8 @@ async function createProcessVersion(
 }> {
   const json = await fetchJson(`${API_URL}/api/v1/processes/${processId}/versions`, {
     body: JSON.stringify({ version_notes: versionNotes }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   return processParsers.parseProcessVersionResponse(json);
 }
@@ -169,8 +169,8 @@ async function activateProcess(
 ): Promise<{ id: string; status: string; isActiveVersion: boolean }> {
   const json = await fetchJson(`${API_URL}/api/v1/processes/${processId}/activate`, {
     body: JSON.stringify({}),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'PUT',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "PUT",
   });
   return processParsers.parseActivationResponse(json);
 }
@@ -181,8 +181,8 @@ async function deprecateProcess(
 ): Promise<{ id: string; status: string }> {
   const json = await fetchJson(`${API_URL}/api/v1/processes/${processId}/deprecate`, {
     body: JSON.stringify({ deprecation_reason: deprecationReason }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'PUT',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "PUT",
   });
   return processParsers.parseStatusResponse(json);
 }
@@ -190,7 +190,7 @@ async function deprecateProcess(
 async function deleteProcess(id: string): Promise<void> {
   await fetchJson(`${API_URL}/api/v1/processes/${id}`, {
     headers: getAuthHeaders(),
-    method: 'DELETE',
+    method: "DELETE",
   });
 }
 
@@ -215,8 +215,8 @@ async function createExecution(
       process_id: data.processId,
       trigger_item_id: data.triggerItemId,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   return processParsers.parseExecutionCreateResponse(json);
 }
@@ -225,9 +225,9 @@ function buildExecutionsParams(paramsIn: FetchExecutionsParams): URLSearchParams
   const params = new URLSearchParams();
   const { status } = paramsIn;
   if (status !== undefined && status.length > 0) {
-    params.set('status', status);
+    params.set("status", status);
   }
-  params.set('limit', String(paramsIn.limit));
+  params.set("limit", String(paramsIn.limit));
   return params;
 }
 
@@ -237,9 +237,9 @@ async function fetchExecutions(paramsIn: FetchExecutionsParams): Promise<Executi
     `${API_URL}/api/v1/processes/${paramsIn.processId}/executions?${params.toString()}`,
     { headers: getAuthHeaders() },
   );
-  const data = processGuards.asRecord(json, 'executions response');
-  const rawExecutions = processGuards.getOptionalArray(data, 'executions') ?? [];
-  const total = processGuards.getOptionalNumber(data, 'total') ?? 0;
+  const data = processGuards.asRecord(json, "executions response");
+  const rawExecutions = processGuards.getOptionalArray(data, "executions") ?? [];
+  const total = processGuards.getOptionalNumber(data, "total") ?? 0;
   return {
     executions: rawExecutions.map((item: unknown) => processParsers.parseExecution(item)),
     total,
@@ -256,7 +256,7 @@ async function fetchExecution(executionId: string): Promise<ProcessExecution> {
 async function startExecution(executionId: string): Promise<{ id: string; status: string }> {
   const json = await fetchJson(`${API_URL}/api/v1/executions/${executionId}/start`, {
     headers: getAuthHeaders(),
-    method: 'POST',
+    method: "POST",
   });
   return processParsers.parseStatusResponse(json);
 }
@@ -267,7 +267,7 @@ async function advanceExecution(
 ): Promise<{ id: string; currentStageId: string; completedStages: string[] }> {
   const json = await fetchJson(
     `${API_URL}/api/v1/executions/${executionId}/advance?stage_id=${stageId}`,
-    { headers: getAuthHeaders(), method: 'POST' },
+    { headers: getAuthHeaders(), method: "POST" },
   );
   return processParsers.parseAdvanceResponse(json);
 }
@@ -279,8 +279,8 @@ async function completeExecution(
 ): Promise<{ id: string; status: string }> {
   const json = await fetchJson(`${API_URL}/api/v1/executions/${executionId}/complete`, {
     body: JSON.stringify({ output_item_ids: outputItemIds, result_summary: resultSummary }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   return processParsers.parseStatusResponse(json);
 }

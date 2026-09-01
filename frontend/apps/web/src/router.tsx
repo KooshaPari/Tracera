@@ -1,6 +1,6 @@
-import { createRouter as createTanStackRouter } from '@tanstack/react-router';
+import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 
-import { routeTree } from './routeTree.gen';
+import { routeTree } from "./routeTree.gen";
 
 type RouterInstance = ReturnType<typeof createTanStackRouter>;
 
@@ -8,7 +8,7 @@ let routerInstance: RouterInstance | undefined;
 
 function createRouter(): RouterInstance {
   routerInstance ??= createTanStackRouter({
-    defaultPreload: 'intent',
+    defaultPreload: "intent",
     routeTree: routeTree as any,
   });
   return routerInstance;

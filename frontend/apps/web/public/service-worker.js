@@ -8,7 +8,7 @@
  */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/promise-function-async */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = "v1";
 const API_CACHE_NAME = `trace-api-cache-${CACHE_VERSION}`;
 const STATIC_CACHE_NAME = `trace-static-cache-${CACHE_VERSION}`;
 const MAX_CACHE_AGE = 5 * 60 * 1000; // 5 minutes
@@ -16,7 +16,7 @@ const MAX_CACHE_AGE = 5 * 60 * 1000; // 5 minutes
 /**
  * Install event - setup caches
  */
-self.addEventListener('install', (event) => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
     Promise.all([caches.open(API_CACHE_NAME), caches.open(STATIC_CACHE_NAME)]).then(() =>
       globalThis.skipWaiting(),
@@ -27,7 +27,7 @@ self.addEventListener('install', (event) => {
 /**
  * Activate event - cleanup old caches
  */
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
@@ -36,10 +36,10 @@ self.addEventListener('activate', (event) => {
           cacheNames.map((cacheName) => {
             // Delete old versions
             if (
-              (cacheName.startsWith('trace-api-cache-') && cacheName !== API_CACHE_NAME) ||
-              (cacheName.startsWith('trace-static-cache-') && cacheName !== STATIC_CACHE_NAME)
+              (cacheName.startsWith("trace-api-cache-") && cacheName !== API_CACHE_NAME) ||
+              (cacheName.startsWith("trace-static-cache-") && cacheName !== STATIC_CACHE_NAME)
             ) {
-              console.log('[ServiceWorker] Deleting old cache:', cacheName);
+              console.log("[ServiceWorker] Deleting old cache:", cacheName);
               return caches.delete(cacheName);
             }
           }),
@@ -52,17 +52,17 @@ self.addEventListener('activate', (event) => {
 /**
  * Fetch event - intercept network requests
  */
-self.addEventListener('fetch', (event) => {
+self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
   // Only handle GET requests
-  if (request.method !== 'GET') {
+  if (request.method !== "GET") {
     return;
   }
 
   // Skip chrome-extension and other non-http protocols
-  if (!url.protocol.startsWith('http')) {
+  if (!url.protocol.startsWith("http")) {
     return;
   }
 
@@ -83,7 +83,7 @@ self.addEventListener('fetch', (event) => {
  * Check if request is an API request
  */
 function isAPIRequest(url) {
-  return url.pathname.startsWith('/api/');
+  return url.pathname.startsWith("/api/");
 }
 
 /**
@@ -91,19 +91,19 @@ function isAPIRequest(url) {
  */
 function isStaticAsset(url) {
   const staticExtensions = [
-    '.js',
-    '.css',
-    '.png',
-    '.jpg',
-    '.jpeg',
-    '.gif',
-    '.svg',
-    '.woff',
-    '.woff2',
-    '.ttf',
-    '.eot',
-    '.webp',
-    '.ico',
+    ".js",
+    ".css",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".svg",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".eot",
+    ".webp",
+    ".ico",
   ];
 
   return staticExtensions.some((ext) => url.pathname.endsWith(ext));
@@ -127,8 +127,8 @@ async function networkFirstStrategy(request, cacheName) {
 
       // Add custom headers for cache metadata
       const headers = new Headers(responseToCache.headers);
-      headers.set('X-Cache-Timestamp', Date.now().toString());
-      headers.set('X-Cache-Strategy', 'network-first');
+      headers.set("X-Cache-Timestamp", Date.now().toString());
+      headers.set("X-Cache-Strategy", "network-first");
 
       const responseWithMetadata = new Response(responseToCache.body, {
         headers: headers,
@@ -147,13 +147,13 @@ async function networkFirstStrategy(request, cacheName) {
 
     if (cachedResponse) {
       // Check if cached response is expired
-      const timestamp = cachedResponse.headers.get('X-Cache-Timestamp');
+      const timestamp = cachedResponse.headers.get("X-Cache-Timestamp");
       if (timestamp) {
         const age = Date.now() - Number.parseInt(timestamp, 10);
         if (age > MAX_CACHE_AGE) {
           // Return cached response with warning header
           const headers = new Headers(cachedResponse.headers);
-          headers.set('X-Cache-Expired', 'true');
+          headers.set("X-Cache-Expired", "true");
           return new Response(cachedResponse.body, {
             headers: headers,
             status: cachedResponse.status,
@@ -168,13 +168,13 @@ async function networkFirstStrategy(request, cacheName) {
     // No cache available, return error response
     return Response.json(
       {
-        error: 'Network request failed and no cached response available',
+        error: "Network request failed and no cached response available",
         offline: true,
       },
       {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
         status: 503,
-        statusText: 'Service Unavailable',
+        statusText: "Service Unavailable",
       },
     );
   }
@@ -205,9 +205,9 @@ async function cacheFirstStrategy(request, cacheName) {
     return networkResponse;
   } catch {
     // Return fallback response
-    return new Response('Offline - resource not available', {
+    return new Response("Offline - resource not available", {
       status: 503,
-      statusText: 'Service Unavailable',
+      statusText: "Service Unavailable",
     });
   }
 }
@@ -215,25 +215,25 @@ async function cacheFirstStrategy(request, cacheName) {
 /**
  * Message handler for cache management
  */
-self.addEventListener('message', (event) => {
+self.addEventListener("message", (event) => {
   const { type, payload } = event.data;
 
   switch (type) {
-    case 'CLEAR_CACHE': {
+    case "CLEAR_CACHE": {
       void handleClearCache(payload).then(() => {
         event.ports[0].postMessage({ success: true }, self.location.origin);
       });
       break;
     }
 
-    case 'INVALIDATE_PATTERN': {
+    case "INVALIDATE_PATTERN": {
       void handleInvalidatePattern(payload).then((count) => {
         event.ports[0].postMessage({ count, success: true }, self.location.origin);
       });
       break;
     }
 
-    case 'GET_STATS': {
+    case "GET_STATS": {
       void handleGetStats().then((stats) => {
         event.ports[0].postMessage({ stats, success: true }, self.location.origin);
       });
@@ -241,7 +241,7 @@ self.addEventListener('message', (event) => {
     }
 
     default: {
-      console.warn('[ServiceWorker] Unknown message type:', type);
+      console.warn("[ServiceWorker] Unknown message type:", type);
     }
   }
 });
@@ -271,7 +271,7 @@ async function handleInvalidatePattern(payload) {
   const cache = await caches.open(targetCache);
   const requests = await cache.keys();
 
-  const regex = new RegExp(pattern.replaceAll('*', '.*').replaceAll('?', '.'));
+  const regex = new RegExp(pattern.replaceAll("*", ".*").replaceAll("?", "."));
   let count = 0;
 
   for (const request of requests) {

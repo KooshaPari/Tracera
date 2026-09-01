@@ -23,16 +23,16 @@
  * ```
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { CullingStats, Edge, ViewportBounds } from '@/lib/viewportCulling';
+import type { CullingStats, Edge, ViewportBounds } from "@/lib/viewportCulling";
 
 import {
   cullEdges,
   extractNodePositions,
   getCullingStats,
   getViewportBounds,
-} from '@/lib/viewportCulling';
+} from "@/lib/viewportCulling";
 
 interface UseViewportCullingProps {
   edges: Edge[];
@@ -92,14 +92,14 @@ export function useViewportCulling({
     const handleMove = () => {
       handleViewportChange();
     };
-    reactFlowInstance.addListener?.('move', handleMove);
+    reactFlowInstance.addListener?.("move", handleMove);
 
     // Also listen on window resize
-    window.addEventListener('resize', handleViewportChange);
+    window.addEventListener("resize", handleViewportChange);
 
     return () => {
-      reactFlowInstance.removeListener?.('move', handleMove);
-      window.removeEventListener('resize', handleViewportChange);
+      reactFlowInstance.removeListener?.("move", handleMove);
+      window.removeEventListener("resize", handleViewportChange);
     };
   }, [enabled, reactFlowInstance, handleViewportChange]);
 

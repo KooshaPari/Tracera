@@ -4,7 +4,7 @@
 
 Tracera PR #1000 is blocked at commit `8aa2eeb04c833d1901fcbb6cdf18b7d9d49b9157`.
 Both hosted Frontend contract checks reached the 15-minute job limit inside
-`npm run test:unit`. Local qualification collected 230 test files and exposed
+`npm run test:unit`. Local qualification collected 222 test files and exposed
 three execution failures before ordinary assertion repair can be trusted:
 
 - WorkerPool drops active-task messages and leaks task timers.
@@ -122,7 +122,7 @@ the process terminated without retained Vitest or worker processes.
    exit after repair.
 3. Add a runner-contract check that verifies CI mode disables UI and selects
    the compact reporter without weakening include/exclude rules.
-4. Repair collection blockers and verify `vitest list` returns 230 collectable
+4. Repair collection blockers and verify `vitest list` returns 222 collectable
    files with no import or zero-test failures during execution.
 5. Run deterministic 16-way shards and require all shards to exit normally.
 6. Run the full unit, parity, accessibility, typecheck, and build gates.
@@ -145,8 +145,8 @@ push.
 
 - No included test is deleted, excluded, or weakened to manufacture green.
 - Focused WorkerPool and timer regressions pass with zero async leaks.
-- All 229 included files collect and execute without import failures or empty
-  suites. (228 genuine tests plus the newly added config contract, after
+- All 222 included files collect and execute without import failures or empty
+  suites. (221 genuine tests plus the newly added config contract, after
   reclassifying two non-test files: the AuthToken marker and the production
   route collision.)
 - All 16 shards pass and terminate.

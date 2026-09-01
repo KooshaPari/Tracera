@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from "react";
 
 const FPS_GOOD = 55;
 const FPS_WARN = 30;
@@ -17,7 +17,7 @@ interface PerformanceChartProps {
 }
 
 const drawGridLines = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-  ctx.strokeStyle = '#333';
+  ctx.strokeStyle = "#333";
   ctx.lineWidth = LINE_WIDTH_THIN;
   for (let i = 0; i <= FPS_MAX; i += GRID_STEP) {
     const y = height - (i / FPS_MAX) * height;
@@ -35,7 +35,7 @@ const drawFpsLine = (
   height: number,
   fps: number,
 ) => {
-  ctx.strokeStyle = fps >= FPS_GOOD ? '#10b981' : fps >= FPS_WARN ? '#f59e0b' : '#ef4444';
+  ctx.strokeStyle = fps >= FPS_GOOD ? "#10b981" : fps >= FPS_WARN ? "#f59e0b" : "#ef4444";
   ctx.lineWidth = LINE_WIDTH_THICK;
   ctx.beginPath();
   history.forEach((value, index) => {
@@ -48,7 +48,7 @@ const drawFpsLine = (
     }
   });
   ctx.stroke();
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = "#fff";
   ctx.font = `${FONT_SIZE}px monospace`;
   ctx.fillText(`${Math.round(fps)} FPS`, TEXT_OFFSET_X, TEXT_OFFSET_Y);
 };
@@ -67,7 +67,7 @@ export const PerformanceChart = memo(function PerformanceChart({
       return;
     }
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) {
       return;
     }
@@ -87,7 +87,7 @@ export const PerformanceChart = memo(function PerformanceChart({
       ref={canvasRef}
       width={width}
       height={height}
-      className='bg-background/90 rounded border'
+      className="bg-background/90 rounded border"
     />
   );
 });

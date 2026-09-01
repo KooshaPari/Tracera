@@ -2,8 +2,8 @@
  * Chat Store - Zustand state management for AI chat assistant
  */
 
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 import type {
   AIModel,
@@ -12,16 +12,16 @@ import type {
   ChatMessage,
   ChatUIState,
   ToolCall,
-} from '@/lib/ai/types';
+} from "@/lib/ai/types";
 
-import { getDefaultModel } from '@/lib/ai/modelRegistry';
-import { generateId } from '@/lib/ai/types';
+import { getDefaultModel } from "@/lib/ai/modelRegistry";
+import { generateId } from "@/lib/ai/types";
 
 const DEFAULT_BUBBLE_POSITION = { x: -1, y: -1 };
-const DEFAULT_SIDEBAR_WIDTH = Number('400');
-const SIDEBAR_MIN_WIDTH = Number('300');
-const SIDEBAR_MAX_WIDTH = Number('800');
-const TITLE_MAX_LENGTH = Number('50');
+const DEFAULT_SIDEBAR_WIDTH = Number("400");
+const SIDEBAR_MIN_WIDTH = Number("300");
+const SIDEBAR_MAX_WIDTH = Number("800");
+const TITLE_MAX_LENGTH = Number("50");
 
 // SSR-safe storage
 const noopStorage = {
@@ -32,9 +32,9 @@ const noopStorage = {
 
 const getStorage = () => {
   if (
-    typeof globalThis.window === 'undefined' ||
-    typeof localStorage === 'undefined' ||
-    typeof localStorage.getItem !== 'function'
+    typeof globalThis.window === "undefined" ||
+    typeof localStorage === "undefined" ||
+    typeof localStorage.getItem !== "function"
   ) {
     return noopStorage;
   }
@@ -61,13 +61,13 @@ interface ChatState extends ChatUIState {
 
   // UI Actions
   setBubblePosition: (position: { x: number; y: number }) => void;
-  setMode: (mode: 'bubble' | 'sidebar') => void;
+  setMode: (mode: "bubble" | "sidebar") => void;
   setOpen: (open: boolean) => void;
   setSidebarWidth: (width: number) => void;
   toggleOpen: () => void;
 
   // Conversation Actions
-  addMessage: (conversationId: string, role: 'user' | 'assistant', content: string) => string;
+  addMessage: (conversationId: string, role: "user" | "assistant", content: string) => string;
   clearConversations: () => void;
   createConversation: (projectId?: string) => string;
   deleteConversation: (id: string) => void;
@@ -122,7 +122,7 @@ const createInitialState = (): ChatUIState & {
   conversations: [],
   isOpen: false,
   isStreaming: false,
-  mode: 'bubble',
+  mode: "bubble",
   selectedModel: getDefaultModel(),
   sidebarWidth: DEFAULT_SIDEBAR_WIDTH,
   systemPromptOverride: null,
@@ -196,7 +196,7 @@ const createUIActions = (
   set: StoreSetter,
 ): Pick<
   ChatState,
-  'setBubblePosition' | 'setMode' | 'setOpen' | 'setSidebarWidth' | 'toggleOpen'
+  "setBubblePosition" | "setMode" | "setOpen" | "setSidebarWidth" | "toggleOpen"
 > => ({
   setBubblePosition: (position) => {
     set({ bubblePosition: position });
@@ -218,7 +218,7 @@ const createUIActions = (
 const createConversationLifecycleActions = (
   set: StoreSetter,
   get: StoreGetter,
-): Pick<ChatState, 'clearConversations' | 'createConversation' | 'deleteConversation'> => ({
+): Pick<ChatState, "clearConversations" | "createConversation" | "deleteConversation"> => ({
   clearConversations: () => {
     set({
       activeConversationId: null,
@@ -234,7 +234,7 @@ const createConversationLifecycleActions = (
       messages: [],
       model: get().selectedModel,
       ...(projectId ? { projectId } : {}),
-      title: 'New Chat',
+      title: "New Chat",
       updatedAt: now,
     };
     set((state) => ({
@@ -261,10 +261,10 @@ const createConversationSelectionActions = (
   get: StoreGetter,
 ): Pick<
   ChatState,
-  | 'getActiveConversation'
-  | 'setActiveConversation'
-  | 'setConversationSessionId'
-  | 'updateConversationTitle'
+  | "getActiveConversation"
+  | "setActiveConversation"
+  | "setConversationSessionId"
+  | "updateConversationTitle"
 > => ({
   getActiveConversation: () => {
     const { activeConversationId, conversations } = get();
@@ -297,7 +297,7 @@ const createMessageActions = (
   set: StoreSetter,
 ): Pick<
   ChatState,
-  'addMessage' | 'setMessageStreaming' | 'updateMessage' | 'updateMessageToolCalls'
+  "addMessage" | "setMessageStreaming" | "updateMessage" | "updateMessageToolCalls"
 > => ({
   addMessage: (conversationId, role, content) => {
     const messageId = generateId();
@@ -307,13 +307,13 @@ const createMessageActions = (
       conversationId,
       createdAt: now,
       id: messageId,
-      isStreaming: role === 'assistant',
+      isStreaming: role === "assistant",
       role,
     };
 
     set((state) => ({
       conversations: updateConversationList(state.conversations, conversationId, (conversation) => {
-        const shouldSetTitle = role === 'user' && conversation.messages.length === 0;
+        const shouldSetTitle = role === "user" && conversation.messages.length === 0;
         const nextTitle = shouldSetTitle ? buildTitleFromMessage(content) : conversation.title;
         return {
           ...conversation,
@@ -360,7 +360,7 @@ const createMessageActions = (
 const createStreamingActions = (
   set: StoreSetter,
   get: StoreGetter,
-): Pick<ChatState, 'setAbortController' | 'setStreaming' | 'stopStreaming'> => ({
+): Pick<ChatState, "setAbortController" | "setStreaming" | "stopStreaming"> => ({
   setAbortController: (controller) => {
     set({ abortController: controller });
   },
@@ -378,7 +378,7 @@ const createStreamingActions = (
 
 const createModelActions = (
   set: StoreSetter,
-): Pick<ChatState, 'setSelectedModel' | 'setSystemPromptOverride'> => ({
+): Pick<ChatState, "setSelectedModel" | "setSystemPromptOverride"> => ({
   setSelectedModel: (model) => {
     set({ selectedModel: model });
   },
@@ -387,7 +387,7 @@ const createModelActions = (
   },
 });
 
-const createContextActions = (set: StoreSetter): Pick<ChatState, 'setContext'> => ({
+const createContextActions = (set: StoreSetter): Pick<ChatState, "setContext"> => ({
   setContext: (context) => {
     set({ context });
   },
@@ -406,7 +406,7 @@ const buildChatStore = (set: StoreSetter, get: StoreGetter): ChatState => ({
 
 export const useChatStore = create<ChatState>()(
   persist<ChatState>((set, get) => buildChatStore(set, get), {
-    name: 'tracertm-chat-store',
+    name: "tracertm-chat-store",
     partialize: (state: ChatState) =>
       ({
         activeConversationId: state.activeConversationId,

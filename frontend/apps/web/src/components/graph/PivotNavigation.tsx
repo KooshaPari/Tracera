@@ -11,24 +11,24 @@ import {
   Network,
   Shield,
   Users,
-} from 'lucide-react';
-import { memo, useMemo } from 'react';
+} from "lucide-react";
+import { memo, useMemo } from "react";
 
-import type { CanonicalProjection, EquivalenceLink, Item } from '@tracertm/types';
+import type { CanonicalProjection, EquivalenceLink, Item } from "@tracertm/types";
 
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
-import { Popover, PopoverContent, PopoverTrigger } from '@tracertm/ui/components/Popover';
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Popover, PopoverContent, PopoverTrigger } from "@tracertm/ui/components/Popover";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@tracertm/ui/components/Tooltip';
+} from "@tracertm/ui/components/Tooltip";
 
-import type { GraphPerspective } from './types';
+import type { GraphPerspective } from "./types";
 
-import { PERSPECTIVE_CONFIGS } from './types';
+import { PERSPECTIVE_CONFIGS } from "./types";
 
 // =============================================================================
 // TYPES
@@ -53,7 +53,7 @@ export interface PivotTarget {
   item: Item;
   perspectiveId: GraphPerspective;
   confidence: number;
-  source: 'equivalence' | 'canonical' | 'manual';
+  source: "equivalence" | "canonical" | "manual";
 }
 
 // =============================================================================
@@ -80,7 +80,7 @@ function PivotNavigationComponent({
   onPivot,
   compact = false,
   showEmpty = false,
-}: Omit<PivotNavigationProps, 'currentItem'>) {
+}: Omit<PivotNavigationProps, "currentItem">) {
   // Group equivalent items by perspective
   const itemsByPerspective = useMemo(() => {
     const grouped = new Map<GraphPerspective, PivotTarget[]>();
@@ -89,7 +89,7 @@ function PivotNavigationComponent({
       if (target.perspectiveId === currentPerspective) {
         continue;
       }
-      if (target.perspectiveId === 'all') {
+      if (target.perspectiveId === "all") {
         continue;
       }
 
@@ -105,7 +105,7 @@ function PivotNavigationComponent({
   const perspectivesWithItems = useMemo(
     () =>
       PERSPECTIVE_CONFIGS.filter((config) => {
-        if (config.id === 'all') {
+        if (config.id === "all") {
           return false;
         }
         if (config.id === currentPerspective) {
@@ -133,13 +133,13 @@ function PivotNavigationComponent({
 
   return (
     <TooltipProvider>
-      <div className='flex flex-col gap-2'>
-        <div className='text-muted-foreground flex items-center gap-2 text-xs'>
-          <ArrowRight className='h-3.5 w-3.5' />
+      <div className="flex flex-col gap-2">
+        <div className="text-muted-foreground flex items-center gap-2 text-xs">
+          <ArrowRight className="h-3.5 w-3.5" />
           <span>Pivot to perspective</span>
         </div>
 
-        <div className='flex flex-wrap gap-1.5'>
+        <div className="flex flex-wrap gap-1.5">
           {perspectivesWithItems.map((config) => {
             const items = itemsByPerspective.get(config.id) ?? [];
             const Icon = PERSPECTIVE_ICONS[config.id] ?? Network;
@@ -152,9 +152,9 @@ function PivotNavigationComponent({
                 <Tooltip key={config.id} delayDuration={200}>
                   <TooltipTrigger asChild>
                     <Button
-                      variant='outline'
-                      size='sm'
-                      className='h-7 gap-1.5 px-2'
+                      variant="outline"
+                      size="sm"
+                      className="h-7 gap-1.5 px-2"
                       style={{
                         borderColor: hasItems ? config.color : undefined,
                         color: hasItems ? config.color : undefined,
@@ -164,18 +164,18 @@ function PivotNavigationComponent({
                         onPivot(config.id, target.item.id);
                       }}
                     >
-                      <Icon className='h-3.5 w-3.5' />
-                      <span className='text-xs'>{config.label.replace(' View', '')}</span>
+                      <Icon className="h-3.5 w-3.5" />
+                      <span className="text-xs">{config.label.replace(" View", "")}</span>
                       <ConfidenceIndicator confidence={target.confidence} />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side='bottom' className='max-w-xs'>
-                    <div className='space-y-1'>
-                      <p className='font-medium'>{target.item.title}</p>
-                      <p className='text-muted-foreground text-xs'>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <div className="space-y-1">
+                      <p className="font-medium">{target.item.title}</p>
+                      <p className="text-muted-foreground text-xs">
                         {target.item.type} &bull; {Math.round(target.confidence * 100)}% confidence
                       </p>
-                      <p className='text-muted-foreground text-xs'>
+                      <p className="text-muted-foreground text-xs">
                         Click to view in {config.label}
                       </p>
                     </div>
@@ -190,43 +190,43 @@ function PivotNavigationComponent({
                 <Popover key={config.id}>
                   <PopoverTrigger asChild>
                     <Button
-                      variant='outline'
-                      size='sm'
-                      className='h-7 gap-1.5 px-2'
+                      variant="outline"
+                      size="sm"
+                      className="h-7 gap-1.5 px-2"
                       style={{
                         borderColor: config.color,
                         color: config.color,
                       }}
                     >
-                      <Icon className='h-3.5 w-3.5' />
-                      <span className='text-xs'>{config.label.replace(' View', '')}</span>
+                      <Icon className="h-3.5 w-3.5" />
+                      <span className="text-xs">{config.label.replace(" View", "")}</span>
                       <Badge
-                        variant='secondary'
-                        className='h-4 px-1 text-[10px]'
+                        variant="secondary"
+                        className="h-4 px-1 text-[10px]"
                         style={{ backgroundColor: `${config.color}20` }}
                       >
                         {items.length}
                       </Badge>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className='w-72 p-2' align='start'>
-                    <div className='space-y-1'>
-                      <p className='text-muted-foreground px-2 py-1 text-xs font-medium'>
+                  <PopoverContent className="w-72 p-2" align="start">
+                    <div className="space-y-1">
+                      <p className="text-muted-foreground px-2 py-1 text-xs font-medium">
                         Select equivalent in {config.label}
                       </p>
                       {items.map((target) => (
                         <Button
                           key={target.item.id}
-                          variant='ghost'
-                          size='sm'
-                          className='h-auto w-full justify-start gap-2 py-2'
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto w-full justify-start gap-2 py-2"
                           onClick={() => {
                             onPivot(config.id, target.item.id);
                           }}
                         >
-                          <div className='min-w-0 flex-1 text-left'>
-                            <p className='truncate text-sm font-medium'>{target.item.title}</p>
-                            <p className='text-muted-foreground text-xs'>{target.item.type}</p>
+                          <div className="min-w-0 flex-1 text-left">
+                            <p className="truncate text-sm font-medium">{target.item.title}</p>
+                            <p className="text-muted-foreground text-xs">{target.item.type}</p>
                           </div>
                           <ConfidenceIndicator confidence={target.confidence} />
                         </Button>
@@ -243,16 +243,16 @@ function PivotNavigationComponent({
                 <Tooltip key={config.id} delayDuration={200}>
                   <TooltipTrigger asChild>
                     <Button
-                      variant='ghost'
-                      size='sm'
-                      className='h-7 gap-1.5 px-2 opacity-50'
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 gap-1.5 px-2 opacity-50"
                       disabled
                     >
-                      <Icon className='h-3.5 w-3.5' />
-                      <span className='text-xs'>{config.label.replace(' View', '')}</span>
+                      <Icon className="h-3.5 w-3.5" />
+                      <span className="text-xs">{config.label.replace(" View", "")}</span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side='bottom'>No equivalents in {config.label}</TooltipContent>
+                  <TooltipContent side="bottom">No equivalents in {config.label}</TooltipContent>
                 </Tooltip>
               );
             }
@@ -295,18 +295,18 @@ function CompactPivotNavigation({
     <TooltipProvider>
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant='outline' size='sm' className='h-7 gap-1.5 px-2'>
-            <ArrowRight className='h-3.5 w-3.5' />
-            <span className='text-xs'>Pivot</span>
-            <Badge variant='secondary' className='h-4 px-1 text-[10px]'>
+          <Button variant="outline" size="sm" className="h-7 gap-1.5 px-2">
+            <ArrowRight className="h-3.5 w-3.5" />
+            <span className="text-xs">Pivot</span>
+            <Badge variant="secondary" className="h-4 px-1 text-[10px]">
               {totalEquivalents}
             </Badge>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className='w-80 p-3' align='end'>
-          <div className='space-y-3'>
-            <p className='text-sm font-medium'>Pivot to another perspective</p>
-            <div className='space-y-2'>
+        <PopoverContent className="w-80 p-3" align="end">
+          <div className="space-y-3">
+            <p className="text-sm font-medium">Pivot to another perspective</p>
+            <div className="space-y-2">
               {perspectivesWithItems.map((config) => {
                 const items = itemsByPerspective.get(config.id) ?? [];
                 if (items.length === 0) {
@@ -316,31 +316,31 @@ function CompactPivotNavigation({
                 // 								Const _Icon = PERSPECTIVE_ICONS[config.id] || Network;
 
                 return (
-                  <div key={config.id} className='space-y-1'>
-                    <div className='flex items-center gap-2 px-2'>
+                  <div key={config.id} className="space-y-1">
+                    <div className="flex items-center gap-2 px-2">
                       <div
-                        className='h-2 w-2 rounded-full'
+                        className="h-2 w-2 rounded-full"
                         style={{ backgroundColor: config.color }}
                       />
-                      <span className='text-xs font-medium'>{config.label}</span>
+                      <span className="text-xs font-medium">{config.label}</span>
                     </div>
                     {items.map((target) => (
                       <Button
                         key={target.item.id}
-                        variant='ghost'
-                        size='sm'
-                        className='h-auto w-full justify-between gap-2 py-2 pl-6'
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto w-full justify-between gap-2 py-2 pl-6"
                         onClick={() => {
                           onPivot(config.id, target.item.id);
                         }}
                       >
-                        <div className='min-w-0 flex-1 text-left'>
-                          <p className='truncate text-sm'>{target.item.title}</p>
-                          <p className='text-muted-foreground text-xs'>{target.item.type}</p>
+                        <div className="min-w-0 flex-1 text-left">
+                          <p className="truncate text-sm">{target.item.title}</p>
+                          <p className="text-muted-foreground text-xs">{target.item.type}</p>
                         </div>
-                        <div className='flex items-center gap-2'>
+                        <div className="flex items-center gap-2">
                           <ConfidenceIndicator confidence={target.confidence} />
-                          <ExternalLink className='h-3.5 w-3.5 opacity-50' />
+                          <ExternalLink className="h-3.5 w-3.5 opacity-50" />
                         </div>
                       </Button>
                     ))}
@@ -361,33 +361,33 @@ interface ConfidenceIndicatorProps {
 
 function getConfidenceColor(conf: number): string {
   if (conf >= 0.9) {
-    return 'bg-green-500';
+    return "bg-green-500";
   }
   if (conf >= 0.7) {
-    return 'bg-amber-500';
+    return "bg-amber-500";
   }
   if (conf >= 0.5) {
-    return 'bg-orange-500';
+    return "bg-orange-500";
   }
-  return 'bg-red-500';
+  return "bg-red-500";
 }
 
 function ConfidenceIndicator({ confidence }: ConfidenceIndicatorProps) {
   return (
     <Tooltip delayDuration={200}>
       <TooltipTrigger asChild>
-        <div className='flex items-center gap-0.5'>
+        <div className="flex items-center gap-0.5">
           {[0.25, 0.5, 0.75, 1].map((threshold) => (
             <div
               key={threshold}
               className={`h-2 w-1 rounded-sm ${
-                confidence >= threshold ? getConfidenceColor(confidence) : 'bg-muted-foreground/20'
+                confidence >= threshold ? getConfidenceColor(confidence) : "bg-muted-foreground/20"
               }`}
             />
           ))}
         </div>
       </TooltipTrigger>
-      <TooltipContent side='top' className='text-xs'>
+      <TooltipContent side="top" className="text-xs">
         {Math.round(confidence * 100)}% confidence
       </TooltipContent>
     </Tooltip>
@@ -428,7 +428,7 @@ export function buildPivotTargets(
       confidence: link.confidence,
       item,
       perspectiveId: getPerspectiveForItem(item),
-      source: 'equivalence',
+      source: "equivalence",
     });
   }
 
@@ -450,7 +450,7 @@ export function buildPivotTargets(
       confidence: projection.confidence,
       item,
       perspectiveId: projection.perspective || getPerspectiveForItem(item),
-      source: 'canonical',
+      source: "canonical",
     });
   }
 
@@ -464,26 +464,26 @@ function getPerspectiveForItem(item: Item): GraphPerspective {
 
   const itemType = item.type.toLowerCase();
 
-  if (['api', 'database', 'code', 'architecture', 'infrastructure'].includes(itemType)) {
-    return 'technical';
+  if (["api", "database", "code", "architecture", "infrastructure"].includes(itemType)) {
+    return "technical";
   }
-  if (['wireframe', 'ui_component', 'page', 'component', 'layout', 'section'].includes(itemType)) {
-    return 'ui';
+  if (["wireframe", "ui_component", "page", "component", "layout", "section"].includes(itemType)) {
+    return "ui";
   }
-  if (['requirement', 'feature', 'user_story', 'story', 'journey'].includes(itemType)) {
-    return 'product';
+  if (["requirement", "feature", "user_story", "story", "journey"].includes(itemType)) {
+    return "product";
   }
-  if (['epic', 'task', 'bug'].includes(itemType)) {
-    return 'business';
+  if (["epic", "task", "bug"].includes(itemType)) {
+    return "business";
   }
-  if (['security', 'vulnerability', 'audit'].includes(itemType)) {
-    return 'security';
+  if (["security", "vulnerability", "audit"].includes(itemType)) {
+    return "security";
   }
-  if (['performance', 'monitoring', 'metric'].includes(itemType)) {
-    return 'performance';
+  if (["performance", "monitoring", "metric"].includes(itemType)) {
+    return "performance";
   }
 
-  return 'all';
+  return "all";
 }
 
 // =============================================================================

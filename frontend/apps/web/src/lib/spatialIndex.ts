@@ -29,7 +29,7 @@
  * ```
  */
 
-import RBush from 'rbush';
+import RBush from "rbush";
 
 export interface ViewportBounds {
   minX: number;

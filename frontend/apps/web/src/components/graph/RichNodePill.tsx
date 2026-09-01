@@ -1,9 +1,9 @@
 // Rich Node Pill - Block pill with embedded UI preview and interactive widget
 // Uses React Flow for custom node rendering with rich content
 
-import type { Node, NodeProps } from '@xyflow/react';
+import type { Node, NodeProps } from "@xyflow/react";
 
-import { Handle, NodeResizer, NodeToolbar, Position } from '@xyflow/react';
+import { Handle, NodeResizer, NodeToolbar, Position } from "@xyflow/react";
 import {
   AlertCircle,
   CheckCircle2,
@@ -24,26 +24,26 @@ import {
   TestTube2,
   XCircle,
   Zap,
-} from 'lucide-react';
-import { memo, useCallback, useState } from 'react';
+} from "lucide-react";
+import { memo, useCallback, useState } from "react";
 
-import type { Item, LinkType } from '@tracertm/types';
+import type { Item, LinkType } from "@tracertm/types";
 
-import { logger } from '@/lib/logger';
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
-import { Card } from '@tracertm/ui/components/Card';
+import { logger } from "@/lib/logger";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@tracertm/ui/components/Tooltip';
+} from "@tracertm/ui/components/Tooltip";
 
-import { NodeActions } from './NodeActions';
-import { NodeContextMenu } from './NodeContextMenu';
-import { NodeQuickActions } from './NodeQuickActions';
-import { ENHANCED_TYPE_COLORS, STATUS_OPACITY } from './types';
+import { NodeActions } from "./NodeActions";
+import { NodeContextMenu } from "./NodeContextMenu";
+import { NodeQuickActions } from "./NodeQuickActions";
+import { ENHANCED_TYPE_COLORS, STATUS_OPACITY } from "./types";
 
 // Node data structure for React Flow
 export interface RichNodeData {
@@ -153,41 +153,41 @@ const RichNodePillPreviewBlock = memo(function RichNodePillPreviewBlock({
   return (
     <>
       {previewUrl && (
-        <div className='bg-muted/50 relative border-b'>
+        <div className="bg-muted/50 relative border-b">
           <img
             src={previewUrl}
             alt={`Preview of ${label}`}
-            className='h-24 w-full object-cover object-top'
-            loading='lazy'
+            className="h-24 w-full object-cover object-top"
+            loading="lazy"
           />
           {hasWidget && (
             <Button
-              variant='secondary'
-              size='sm'
-              className='bg-background/80 absolute right-2 bottom-2 h-6 px-2 text-[10px] backdrop-blur-sm'
+              variant="secondary"
+              size="sm"
+              className="bg-background/80 absolute right-2 bottom-2 h-6 px-2 text-[10px] backdrop-blur-sm"
               onClick={onToggleWidget}
             >
-              <Eye className='mr-1 h-3 w-3' />
+              <Eye className="mr-1 h-3 w-3" />
               Interactive
             </Button>
           )}
         </div>
       )}
       {showWidget && widgetUrl && (
-        <div className='relative border-b bg-white'>
+        <div className="relative border-b bg-white">
           <iframe
             src={widgetUrl}
             title={`Widget: ${label}`}
-            className='h-40 w-full border-0'
-            sandbox='allow-scripts allow-same-origin'
+            className="h-40 w-full border-0"
+            sandbox="allow-scripts allow-same-origin"
           />
           <Button
-            variant='ghost'
-            size='sm'
-            className='absolute top-1 right-1 h-5 w-5 p-0'
+            variant="ghost"
+            size="sm"
+            className="absolute top-1 right-1 h-5 w-5 p-0"
             onClick={onToggleWidget}
           >
-            <XCircle className='h-4 w-4' />
+            <XCircle className="h-4 w-4" />
           </Button>
         </div>
       )}
@@ -195,12 +195,12 @@ const RichNodePillPreviewBlock = memo(function RichNodePillPreviewBlock({
   );
 });
 
-function RichNodePillComponent({ data, selected }: NodeProps<Node<RichNodeData, 'richPill'>>) {
+function RichNodePillComponent({ data, selected }: NodeProps<Node<RichNodeData, "richPill">>) {
   const [isHovered, setIsHovered] = useState(false);
   const [showWidget, setShowWidget] = useState(false);
   const [showActions, setShowActions] = useState(false);
 
-  const bgColor = ENHANCED_TYPE_COLORS[data.type] ?? '#64748b';
+  const bgColor = ENHANCED_TYPE_COLORS[data.type] ?? "#64748b";
   const opacity = STATUS_OPACITY[data.status] ?? 1;
   const TypeIcon = TYPE_ICONS[data.type] ?? FileText;
   const StatusIcon = STATUS_ICONS[data.status] ?? Circle;
@@ -244,10 +244,10 @@ function RichNodePillComponent({ data, selected }: NodeProps<Node<RichNodeData, 
       nodeType={data.type}
       onCopyId={async (id) => navigator.clipboard.writeText(id)}
       onDuplicate={(id) => {
-        logger.info('Duplicate:', id);
+        logger.info("Duplicate:", id);
       }}
       onDelete={(id) => {
-        logger.info('Delete:', id);
+        logger.info("Delete:", id);
       }}
       onViewDetails={(id) => data.onNavigate?.(id)}
     >
@@ -263,21 +263,21 @@ function RichNodePillComponent({ data, selected }: NodeProps<Node<RichNodeData, 
 
         {/* Toolbar on selection */}
         <NodeToolbar isVisible={selected} position={Position.Top}>
-          <div className='bg-background flex gap-1 rounded-lg border p-1 shadow-lg'>
-            <Button variant='ghost' size='sm' className='h-7 px-2' onClick={handleNavigate}>
-              <ExternalLink className='mr-1 h-3.5 w-3.5' />
+          <div className="bg-background flex gap-1 rounded-lg border p-1 shadow-lg">
+            <Button variant="ghost" size="sm" className="h-7 px-2" onClick={handleNavigate}>
+              <ExternalLink className="mr-1 h-3.5 w-3.5" />
               Open
             </Button>
             {hasPreview && (
-              <Button variant='ghost' size='sm' className='h-7 px-2' onClick={handleExpand}>
-                <Maximize2 className='mr-1 h-3.5 w-3.5' />
+              <Button variant="ghost" size="sm" className="h-7 px-2" onClick={handleExpand}>
+                <Maximize2 className="mr-1 h-3.5 w-3.5" />
                 Expand
               </Button>
             )}
             {hasWidget && (
-              <Button variant='ghost' size='sm' className='h-7 px-2' onClick={toggleWidget}>
-                <Eye className='mr-1 h-3.5 w-3.5' />
-                {showWidget ? 'Hide' : 'Preview'}
+              <Button variant="ghost" size="sm" className="h-7 px-2" onClick={toggleWidget}>
+                <Eye className="mr-1 h-3.5 w-3.5" />
+                {showWidget ? "Hide" : "Preview"}
               </Button>
             )}
           </div>
@@ -285,15 +285,15 @@ function RichNodePillComponent({ data, selected }: NodeProps<Node<RichNodeData, 
 
         {/* Input handle */}
         <Handle
-          type='target'
+          type="target"
           position={Position.Left}
-          className='!bg-background !h-3 !w-3 !border-2'
+          className="!bg-background !h-3 !w-3 !border-2"
           style={{ borderColor: bgColor }}
         />
 
         {/* Main pill container */}
         <Card
-          className={`group relative cursor-pointer overflow-hidden transition-all duration-200 ${selected ? 'ring-offset-background ring-2 ring-white ring-offset-2' : ''} ${isHovered ? 'scale-[1.02] shadow-lg' : 'shadow-md'} `}
+          className={`group relative cursor-pointer overflow-hidden transition-all duration-200 ${selected ? "ring-offset-background ring-2 ring-white ring-offset-2" : ""} ${isHovered ? "scale-[1.02] shadow-lg" : "shadow-md"} `}
           style={{
             maxWidth: isExpanded ? 350 : 220,
             minWidth: 180,
@@ -310,11 +310,11 @@ function RichNodePillComponent({ data, selected }: NodeProps<Node<RichNodeData, 
           onClick={handleClick}
         >
           {/* Color accent bar */}
-          <div className='absolute top-0 right-0 left-0 h-1' style={{ backgroundColor: bgColor }} />
+          <div className="absolute top-0 right-0 left-0 h-1" style={{ backgroundColor: bgColor }} />
 
           {/* Action buttons on hover */}
           {showActions && (
-            <div className='bg-background/80 absolute top-2 right-2 z-10 rounded-md p-1 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100'>
+            <div className="bg-background/80 absolute top-2 right-2 z-10 rounded-md p-1 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
               <NodeActions
                 nodeId={data.id}
                 isExpanded={data.isExpanded ?? false}
@@ -342,40 +342,40 @@ function RichNodePillComponent({ data, selected }: NodeProps<Node<RichNodeData, 
           ) : null}
 
           {/* Content section */}
-          <div className='p-3 pt-3.5'>
+          <div className="p-3 pt-3.5">
             {/* Header: Icon + Type badge */}
-            <div className='mb-2 flex items-center gap-2'>
+            <div className="mb-2 flex items-center gap-2">
               <div
-                className='flex-shrink-0 rounded p-1.5'
+                className="flex-shrink-0 rounded p-1.5"
                 style={{ backgroundColor: `${bgColor}20` }}
               >
-                <TypeIcon className='h-4 w-4' style={{ color: bgColor }} />
+                <TypeIcon className="h-4 w-4" style={{ color: bgColor }} />
               </div>
 
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Badge
-                    variant='outline'
-                    className='h-5 px-1.5 text-[10px]'
+                    variant="outline"
+                    className="h-5 px-1.5 text-[10px]"
                     style={{
                       backgroundColor: `${bgColor}15`,
                       borderColor: `${bgColor}40`,
                       color: bgColor,
                     }}
                   >
-                    {data.type.replaceAll('_', ' ')}
+                    {data.type.replaceAll("_", " ")}
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{data.type.replaceAll('_', ' ')}</p>
+                  <p>{data.type.replaceAll("_", " ")}</p>
                 </TooltipContent>
               </Tooltip>
 
               {/* Status badge */}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Badge variant='secondary' className='ml-auto h-5 px-1 text-[10px]'>
-                    <StatusIcon className='mr-0.5 h-3 w-3' />
+                  <Badge variant="secondary" className="ml-auto h-5 px-1 text-[10px]">
+                    <StatusIcon className="mr-0.5 h-3 w-3" />
                     {data.status}
                   </Badge>
                 </TooltipTrigger>
@@ -386,19 +386,19 @@ function RichNodePillComponent({ data, selected }: NodeProps<Node<RichNodeData, 
             </div>
 
             {/* Title */}
-            <h4 className='mb-2 line-clamp-2 text-sm leading-tight font-semibold'>{data.label}</h4>
+            <h4 className="mb-2 line-clamp-2 text-sm leading-tight font-semibold">{data.label}</h4>
 
             {/* Description (if expanded) */}
             {isExpanded && data.description && (
-              <p className='text-muted-foreground mb-2 line-clamp-2 text-xs'>{data.description}</p>
+              <p className="text-muted-foreground mb-2 line-clamp-2 text-xs">{data.description}</p>
             )}
 
             {/* Footer: Connection counts */}
-            <div className='text-muted-foreground flex items-center gap-3 text-[10px]'>
+            <div className="text-muted-foreground flex items-center gap-3 text-[10px]">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className='flex items-center gap-0.5'>
-                    <Link2 className='h-3 w-3' />
+                  <span className="flex items-center gap-0.5">
+                    <Link2 className="h-3 w-3" />
                     {data.connections.total}
                   </span>
                 </TooltipTrigger>
@@ -410,15 +410,15 @@ function RichNodePillComponent({ data, selected }: NodeProps<Node<RichNodeData, 
               </Tooltip>
 
               {hasPreview && !isExpanded && (
-                <span className='flex items-center gap-0.5 text-pink-500'>
-                  <Image className='h-3 w-3' />
+                <span className="flex items-center gap-0.5 text-pink-500">
+                  <Image className="h-3 w-3" />
                   Preview
                 </span>
               )}
 
               {hasWidget && (
-                <span className='flex items-center gap-0.5 text-blue-500'>
-                  <Code className='h-3 w-3' />
+                <span className="flex items-center gap-0.5 text-blue-500">
+                  <Code className="h-3 w-3" />
                   Widget
                 </span>
               )}
@@ -426,17 +426,17 @@ function RichNodePillComponent({ data, selected }: NodeProps<Node<RichNodeData, 
 
             {/* Quick actions bar at bottom (shown on hover) */}
             {showActions && (
-              <div className='mt-2 border-t pt-2 opacity-0 transition-opacity group-hover:opacity-100'>
+              <div className="mt-2 border-t pt-2 opacity-0 transition-opacity group-hover:opacity-100">
                 <NodeQuickActions
                   nodeId={data.id}
                   onAddLink={(id, target) => {
-                    logger.info('Link:', id, target);
+                    logger.info("Link:", id, target);
                   }}
                   onAddTag={(id, tag) => {
-                    logger.info('Tag:', id, tag);
+                    logger.info("Tag:", id, tag);
                   }}
                   onEditNote={(id, note) => {
-                    logger.info('Note:', id, note);
+                    logger.info("Note:", id, note);
                   }}
                 />
               </div>
@@ -446,9 +446,9 @@ function RichNodePillComponent({ data, selected }: NodeProps<Node<RichNodeData, 
 
         {/* Output handle */}
         <Handle
-          type='source'
+          type="source"
           position={Position.Right}
-          className='!bg-background !h-3 !w-3 !border-2'
+          className="!bg-background !h-3 !w-3 !border-2"
           style={{ borderColor: bgColor }}
         />
       </TooltipProvider>

@@ -12,17 +12,17 @@ import type {
   UpdateUserProfileRequest,
   User,
   UserMetadata,
-} from './auth-types';
+} from "./auth-types";
 
-import { authApi } from './auth-api';
-import authConstants from './auth-constants';
+import { authApi } from "./auth-api";
+import authConstants from "./auth-constants";
 import {
   getLoginErrorMessage,
   loginWithCodeAndToast,
   redirectToAuthKitWithToast,
   shouldLogoutOnError,
-} from './auth-toast';
-import { AuthError } from './auth-types';
+} from "./auth-toast";
+import { AuthError } from "./auth-types";
 import {
   getAuthErrorMessage,
   getStoredToken,
@@ -31,7 +31,7 @@ import {
   isAuthError,
   normalizeToken,
   parseErrorData,
-} from './auth-utils';
+} from "./auth-utils";
 
 export {
   authApi,

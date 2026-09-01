@@ -5,16 +5,16 @@
  * large graphs from 1M edges to <100 visible clusters.
  */
 
-import Graph from 'graphology';
+import Graph from "graphology";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import { createClustering, type ClusteringResult } from './clustering';
+import { createClustering, type ClusteringResult } from "./clustering";
 
 // Example 1: Basic clustering workflow
 export function basicClusteringExample() {
   // Create a graph with 100 nodes
-  const graph = new Graph({ type: 'undirected' });
+  const graph = new Graph({ type: "undirected" });
 
   // Add nodes with positions
   for (let i = 0; i < 100; i++) {
@@ -35,8 +35,8 @@ export function basicClusteringExample() {
   }
 
   // Add some inter-cluster edges
-  graph.addEdge('node-0', 'node-10');
-  graph.addEdge('node-20', 'node-30');
+  graph.addEdge("node-0", "node-10");
+  graph.addEdge("node-20", "node-30");
 
   // Perform clustering
   const clustering = createClustering();
@@ -52,7 +52,7 @@ export function basicClusteringExample() {
 
 // Example 2: Filtering small clusters
 export function filterSmallClustersExample() {
-  const graph = new Graph({ type: 'undirected' });
+  const graph = new Graph({ type: "undirected" });
 
   // Create graph with mixed cluster sizes
   // Large cluster A: 50 nodes
@@ -68,7 +68,7 @@ export function filterSmallClustersExample() {
   }
 
   // Small clusters C, D, E: 2 nodes each
-  for (const cluster of ['c', 'd', 'e']) {
+  for (const cluster of ["c", "d", "e"]) {
     graph.addNode(`${cluster}0`, { x: 200, y: 0 });
     graph.addNode(`${cluster}1`, { x: 200, y: 0 });
     graph.addEdge(`${cluster}0`, `${cluster}1`);
@@ -78,14 +78,14 @@ export function filterSmallClustersExample() {
   const communities = clustering.detectCommunities(graph);
   const result = clustering.createClusterGraph(graph, communities);
 
-  logger.info('Before filtering:', result.nodes.length, 'clusters');
+  logger.info("Before filtering:", result.nodes.length, "clusters");
 
   // Filter out clusters with < 10 nodes
   const filtered = clustering.filterClustersBySize(result, 10);
 
-  logger.info('After filtering:', filtered.nodes.length, 'clusters');
+  logger.info("After filtering:", filtered.nodes.length, "clusters");
   logger.info(
-    'Clusters:',
+    "Clusters:",
     filtered.nodes.map((n) => `${n.label} (${n.size} nodes)`),
   );
 
@@ -94,7 +94,7 @@ export function filterSmallClustersExample() {
 
 // Example 3: Community statistics
 export function communityStatisticsExample() {
-  const graph = new Graph({ type: 'undirected' });
+  const graph = new Graph({ type: "undirected" });
 
   // Create graph with known community structure
   for (let i = 0; i < 100; i++) {
@@ -118,49 +118,49 @@ export function communityStatisticsExample() {
   const communities = clustering.detectCommunities(graph);
   const stats = clustering.getCommunityStatistics(communities);
 
-  logger.info('Community Statistics:');
-  logger.info('- Total communities:', stats.totalCommunities);
-  logger.info('- Largest community:', stats.largestCommunity, 'nodes');
-  logger.info('- Smallest community:', stats.smallestCommunity, 'nodes');
-  logger.info('- Average size:', stats.averageSize.toFixed(1), 'nodes');
-  logger.info('- Size distribution:', Array.from(stats.sizes.entries()));
+  logger.info("Community Statistics:");
+  logger.info("- Total communities:", stats.totalCommunities);
+  logger.info("- Largest community:", stats.largestCommunity, "nodes");
+  logger.info("- Smallest community:", stats.smallestCommunity, "nodes");
+  logger.info("- Average size:", stats.averageSize.toFixed(1), "nodes");
+  logger.info("- Size distribution:", Array.from(stats.sizes.entries()));
 
   return stats;
 }
 
 // Example 4: Expanding a cluster
 export function expandClusterExample() {
-  const graph = new Graph({ type: 'undirected' });
+  const graph = new Graph({ type: "undirected" });
 
   // Create simple graph with 2 clusters
-  graph.addNode('a1', { x: 0, y: 0 });
-  graph.addNode('a2', { x: 10, y: 10 });
-  graph.addNode('a3', { x: 20, y: 20 });
-  graph.addNode('b1', { x: 100, y: 100 });
-  graph.addNode('b2', { x: 110, y: 110 });
+  graph.addNode("a1", { x: 0, y: 0 });
+  graph.addNode("a2", { x: 10, y: 10 });
+  graph.addNode("a3", { x: 20, y: 20 });
+  graph.addNode("b1", { x: 100, y: 100 });
+  graph.addNode("b2", { x: 110, y: 110 });
 
-  graph.addEdge('a1', 'a2');
-  graph.addEdge('a2', 'a3');
-  graph.addEdge('b1', 'b2');
-  graph.addEdge('a3', 'b1'); // Inter-cluster edge
+  graph.addEdge("a1", "a2");
+  graph.addEdge("a2", "a3");
+  graph.addEdge("b1", "b2");
+  graph.addEdge("a3", "b1"); // Inter-cluster edge
 
   const clustering = createClustering();
   const communities = clustering.detectCommunities(graph);
 
   // Expand first cluster
-  const clusterId = 'cluster-0';
+  const clusterId = "cluster-0";
   const expanded = clustering.expandCluster(clusterId, graph, communities);
 
-  logger.info('Expanded cluster', clusterId);
-  logger.info('- Member nodes:', expanded.nodes);
-  logger.info('- Internal edges:', expanded.edges);
+  logger.info("Expanded cluster", clusterId);
+  logger.info("- Member nodes:", expanded.nodes);
+  logger.info("- Internal edges:", expanded.edges);
 
   return expanded;
 }
 
 // Example 5: React Flow integration
 export function reactFlowIntegrationExample() {
-  const graph = new Graph({ type: 'undirected' });
+  const graph = new Graph({ type: "undirected" });
 
   // Add sample nodes and edges
   for (let i = 0; i < 50; i++) {
@@ -168,7 +168,7 @@ export function reactFlowIntegrationExample() {
       label: `Node ${i}`,
       x: Math.random() * 1000,
       y: Math.random() * 1000,
-      type: i < 25 ? 'requirement' : 'test',
+      type: i < 25 ? "requirement" : "test",
     });
   }
 
@@ -185,7 +185,7 @@ export function reactFlowIntegrationExample() {
   // Convert to React Flow nodes
   const reactFlowNodes = result.nodes.map((cluster) => ({
     id: cluster.id,
-    type: 'cluster',
+    type: "cluster",
     position: { x: cluster.x, y: cluster.y },
     data: {
       label: cluster.label,
@@ -193,8 +193,8 @@ export function reactFlowIntegrationExample() {
       memberIds: cluster.memberIds,
       color: cluster.color,
       isExpanded: false,
-      onExpand: (id: string) => logger.info('Expand', id),
-      onCollapse: (id: string) => logger.info('Collapse', id),
+      onExpand: (id: string) => logger.info("Expand", id),
+      onCollapse: (id: string) => logger.info("Collapse", id),
     },
   }));
 
@@ -212,8 +212,8 @@ export function reactFlowIntegrationExample() {
 
 // Example 6: Performance benchmark for large graphs
 export function performanceBenchmarkExample() {
-  logger.info('Creating large graph...');
-  const graph = new Graph({ type: 'undirected' });
+  logger.info("Creating large graph...");
+  const graph = new Graph({ type: "undirected" });
 
   // Create 10,000 nodes
   for (let i = 0; i < 10000; i++) {
@@ -247,12 +247,12 @@ export function performanceBenchmarkExample() {
   const result = clustering.createClusterGraph(graph, communities);
   const clusterTime = performance.now() - startCluster;
 
-  logger.info('Performance:');
+  logger.info("Performance:");
   logger.info(`- Community detection: ${detectTime.toFixed(0)}ms`);
   logger.info(`- Cluster graph creation: ${clusterTime.toFixed(0)}ms`);
   logger.info(`- Total: ${(detectTime + clusterTime).toFixed(0)}ms`);
-  logger.info('');
-  logger.info('Results:');
+  logger.info("");
+  logger.info("Results:");
   logger.info(`- Communities detected: ${result.communityCount}`);
   logger.info(`- Edge reduction: ${result.reductionRatio.toFixed(1)}%`);
   logger.info(`- Original edges: ${graph.size}`);

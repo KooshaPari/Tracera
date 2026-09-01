@@ -1,4 +1,4 @@
-import { test } from './global-setup';
+import { test } from "./global-setup";
 
 /**
  * Component Library Tests
@@ -16,15 +16,15 @@ import { test } from './global-setup';
  * - Add components to graph
  */
 
-test.describe('Component Library', () => {
+test.describe("Component Library", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/graph');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/graph");
+    await page.waitForLoadState("networkidle");
     await page.waitForTimeout(1000);
   });
 
-  test.describe('Component Library Access', () => {
-    test('should display component library button/panel', async ({ page }) => {
+  test.describe("Component Library Access", () => {
+    test("should display component library button/panel", async ({ page }) => {
       // Look for component library access
       const libraryBtn = page
         .locator("button, [role='button']")
@@ -36,7 +36,7 @@ test.describe('Component Library', () => {
       await expect(libraryBtn).toBeVisible({ timeout: 2000 });
     });
 
-    test('should open component library panel', async ({ page }) => {
+    test("should open component library panel", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -56,7 +56,7 @@ test.describe('Component Library', () => {
       await expect(libraryPanel).toBeVisible({ timeout: 2000 });
     });
 
-    test('should display component categories', async ({ page }) => {
+    test("should display component categories", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -78,8 +78,8 @@ test.describe('Component Library', () => {
     });
   });
 
-  test.describe('Browse Components', () => {
-    test('should list components in library', async ({ page }) => {
+  test.describe("Browse Components", () => {
+    test("should list components in library", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -96,7 +96,7 @@ test.describe('Component Library', () => {
       await expect(componentItems.first()).toBeVisible();
     });
 
-    test('should display component names and types', async ({ page }) => {
+    test("should display component names and types", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -113,10 +113,10 @@ test.describe('Component Library', () => {
 
       await expect(componentItems).toBeVisible({ timeout: 2000 });
       const text = await componentItems.textContent();
-      expect(text).not.toBe('');
+      expect(text).not.toBe("");
     });
 
-    test('should allow browsing components by scrolling', async ({ page }) => {
+    test("should allow browsing components by scrolling", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -142,7 +142,7 @@ test.describe('Component Library', () => {
       await page.waitForTimeout(300);
     });
 
-    test('should show component count', async ({ page }) => {
+    test("should show component count", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -161,8 +161,8 @@ test.describe('Component Library', () => {
     });
   });
 
-  test.describe('Search Components', () => {
-    test('should display search input in component library', async ({ page }) => {
+  test.describe("Search Components", () => {
+    test("should display search input in component library", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -180,7 +180,7 @@ test.describe('Component Library', () => {
       await expect(searchInput).toBeVisible({ timeout: 2000 });
     });
 
-    test('should search components by name', async ({ page }) => {
+    test("should search components by name", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -196,7 +196,7 @@ test.describe('Component Library', () => {
 
       await expect(searchInput).toBeVisible({ timeout: 2000 });
       // Type search query
-      await searchInput.fill('authentication');
+      await searchInput.fill("authentication");
       await page.waitForTimeout(500);
 
       // Check if results are filtered
@@ -208,7 +208,7 @@ test.describe('Component Library', () => {
       await page.waitForTimeout(300);
     });
 
-    test('should search components by type', async ({ page }) => {
+    test("should search components by type", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -224,7 +224,7 @@ test.describe('Component Library', () => {
 
       await expect(searchInput).toBeVisible({ timeout: 2000 });
       // Search by type keyword
-      await searchInput.fill('test');
+      await searchInput.fill("test");
       await page.waitForTimeout(500);
 
       const resultItems = page.locator("[role='listitem'], li");
@@ -233,7 +233,7 @@ test.describe('Component Library', () => {
       await searchInput.clear();
     });
 
-    test('should show no results message when search returns nothing', async ({ page }) => {
+    test("should show no results message when search returns nothing", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -249,7 +249,7 @@ test.describe('Component Library', () => {
 
       await expect(searchInput).toBeVisible({ timeout: 2000 });
       // Search with unlikely term
-      await searchInput.fill('xyznotfound123');
+      await searchInput.fill("xyznotfound123");
       await page.waitForTimeout(500);
 
       const noResultsMsg = page.getByText(/no.*result|not.*found|no.*match/i);
@@ -260,8 +260,8 @@ test.describe('Component Library', () => {
     });
   });
 
-  test.describe('Filter Components', () => {
-    test('should filter components by category', async ({ page }) => {
+  test.describe("Filter Components", () => {
+    test("should filter components by category", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -282,7 +282,7 @@ test.describe('Component Library', () => {
       await page.waitForTimeout(500);
     });
 
-    test('should filter components by status', async ({ page }) => {
+    test("should filter components by status", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -296,7 +296,7 @@ test.describe('Component Library', () => {
 
       // Look for status filter
       const statusFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /status|state|active/i })
         .first();
 
@@ -315,8 +315,8 @@ test.describe('Component Library', () => {
     });
   });
 
-  test.describe('View Component Details', () => {
-    test('should click on component to view details', async ({ page }) => {
+  test.describe("View Component Details", () => {
+    test("should click on component to view details", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -341,7 +341,7 @@ test.describe('Component Library', () => {
       await expect(detailPanel).toBeVisible({ timeout: 2000 });
     });
 
-    test('should display component metadata', async ({ page }) => {
+    test("should display component metadata", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -364,7 +364,7 @@ test.describe('Component Library', () => {
       await expect(metadata.first()).toBeVisible();
     });
 
-    test('should show component description', async ({ page }) => {
+    test("should show component description", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -388,7 +388,7 @@ test.describe('Component Library', () => {
       await expect(description).toBeVisible({ timeout: 2000 });
     });
 
-    test('should show component relationships', async ({ page }) => {
+    test("should show component relationships", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -412,8 +412,8 @@ test.describe('Component Library', () => {
     });
   });
 
-  test.describe('Component Visualization', () => {
-    test('should visualize component in graph context', async ({ page }) => {
+  test.describe("Component Visualization", () => {
+    test("should visualize component in graph context", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -433,7 +433,7 @@ test.describe('Component Library', () => {
 
       // Look for visualization button
       const visualizeBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /visualize|show|view.*graph/i })
         .first();
 
@@ -442,11 +442,11 @@ test.describe('Component Library', () => {
       await page.waitForTimeout(1000);
 
       // Check if graph updated
-      const graphContainer = page.locator('.react-flow');
+      const graphContainer = page.locator(".react-flow");
       await expect(graphContainer).toBeVisible({ timeout: 2000 });
     });
 
-    test('should highlight component in graph when selected', async ({ page }) => {
+    test("should highlight component in graph when selected", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -472,8 +472,8 @@ test.describe('Component Library', () => {
     });
   });
 
-  test.describe('Add Component to Graph', () => {
-    test('should show add/import component button', async ({ page }) => {
+  test.describe("Add Component to Graph", () => {
+    test("should show add/import component button", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -486,14 +486,14 @@ test.describe('Component Library', () => {
       await page.waitForTimeout(500);
 
       const addBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /add|import|insert|use/i })
         .first();
 
       await expect(addBtn).toBeVisible({ timeout: 2000 });
     });
 
-    test('should add component to graph', async ({ page }) => {
+    test("should add component to graph", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -509,18 +509,18 @@ test.describe('Component Library', () => {
 
       await expect(componentItem).toBeVisible({ timeout: 2000 });
       // Look for add button in component item
-      const addBtn = componentItem.locator('button').filter({ hasText: /add|import|insert/i });
+      const addBtn = componentItem.locator("button").filter({ hasText: /add|import|insert/i });
 
       await expect(addBtn).toBeVisible({ timeout: 2000 });
       await addBtn.click();
       await page.waitForTimeout(1000);
 
       // Check if node count increased
-      const finalCount = await page.locator('.react-flow__nodes > div[data-id]').count();
+      const finalCount = await page.locator(".react-flow__nodes > div[data-id]").count();
       expect(finalCount).toBeGreaterThan(0);
     });
 
-    test('should show add confirmation feedback', async ({ page }) => {
+    test("should show add confirmation feedback", async ({ page }) => {
       const libraryBtn = page
         .locator("button, [role='button']")
         .filter({
@@ -535,7 +535,7 @@ test.describe('Component Library', () => {
       const componentItem = page.locator("[role='listitem'], li").first();
 
       await expect(componentItem).toBeVisible({ timeout: 2000 });
-      const addBtn = componentItem.locator('button').filter({ hasText: /add|import|insert/i });
+      const addBtn = componentItem.locator("button").filter({ hasText: /add|import|insert/i });
 
       await expect(addBtn).toBeVisible({ timeout: 2000 });
       await addBtn.click();

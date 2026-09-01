@@ -5,13 +5,13 @@
  * custom implementations with mature, battle-tested libraries
  */
 
-import { format, formatDistanceToNow, formatRelative } from 'date-fns';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useHotkeys } from 'react-hotkeys-hook';
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { format, formatDistanceToNow, formatRelative } from "date-fns";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 /**
  * Workflow context data structure
@@ -38,10 +38,10 @@ export interface ErrorContext {
 export const useEnterpriseHotkeys = () => {
   // Navigation shortcuts
   useHotkeys(
-    'mod+k',
+    "mod+k",
     () => {
       // Open command palette
-      document.getElementById('command-palette')?.focus();
+      document.getElementById("command-palette")?.focus();
     },
     {
       enableOnFormTags: true,
@@ -49,44 +49,44 @@ export const useEnterpriseHotkeys = () => {
   );
 
   // Quick navigation
-  useHotkeys('shift+p', () => {
+  useHotkeys("shift+p", () => {
     // Navigate to projects
-    window.location.href = '/projects';
+    window.location.href = "/projects";
   });
 
-  useHotkeys('shift+s', () => {
+  useHotkeys("shift+s", () => {
     // Navigate to projects
-    window.location.href = '/projects';
+    window.location.href = "/projects";
   });
 
-  useHotkeys('shift+g', () => {
+  useHotkeys("shift+g", () => {
     // Navigate to projects
-    window.location.href = '/projects';
+    window.location.href = "/projects";
   });
 
   // Table shortcuts
-  useHotkeys('mod+a', (e) => {
+  useHotkeys("mod+a", (e) => {
     // Select all in focused table
-    const focusedTable = document.querySelector('[data-table-focused]');
+    const focusedTable = document.querySelector("[data-table-focused]");
     if (focusedTable) {
       e.preventDefault();
       // Dispatch select all event
-      focusedTable.dispatchEvent(new CustomEvent('selectAll'));
+      focusedTable.dispatchEvent(new CustomEvent("selectAll"));
     }
   });
 
   // Export shortcuts
-  useHotkeys('mod+e', (e) => {
+  useHotkeys("mod+e", (e) => {
     // Export current view
     e.preventDefault();
-    const exportButton = document.querySelector('[data-export-button]');
-    exportButton?.dispatchEvent(new MouseEvent('click'));
+    const exportButton = document.querySelector("[data-export-button]");
+    exportButton?.dispatchEvent(new MouseEvent("click"));
   });
 
   // Help shortcut
-  useHotkeys('?', () => {
+  useHotkeys("?", () => {
     // Show keyboard shortcuts modal
-    document.getElementById('shortcuts-modal')?.classList.toggle('hidden');
+    document.getElementById("shortcuts-modal")?.classList.toggle("hidden");
   });
 };
 
@@ -99,7 +99,7 @@ export const useEnterpriseHotkeys = () => {
  * Replaces custom date formatting with standardized date-fns functions
  */
 export const dateUtils = {
-  format: (date: string | Date, formatStr = 'MMM d, yyyy') => {
+  format: (date: string | Date, formatStr = "MMM d, yyyy") => {
     return format(new Date(date), formatStr);
   },
 
@@ -112,15 +112,15 @@ export const dateUtils = {
   },
 
   formatDate: (date: string | Date) => {
-    return format(new Date(date), 'MMM d, yyyy');
+    return format(new Date(date), "MMM d, yyyy");
   },
 
   formatDateTime: (date: string | Date) => {
-    return format(new Date(date), 'MMM d, yyyy HH:mm');
+    return format(new Date(date), "MMM d, yyyy HH:mm");
   },
 
   formatTime: (date: string | Date) => {
-    return format(new Date(date), 'HH:mm');
+    return format(new Date(date), "HH:mm");
   },
 
   // Enterprise-specific formats
@@ -136,9 +136,9 @@ export const dateUtils = {
     if (diffInDays < 1) {
       return formatDistanceToNow(target);
     } else if (diffInDays < 7) {
-      return format(target, 'EEEE');
+      return format(target, "EEEE");
     } else {
-      return format(target, 'MMM d');
+      return format(target, "MMM d");
     }
   },
 };
@@ -154,7 +154,7 @@ export const dateUtils = {
 interface EnterpriseState {
   // User preferences
   preferences: {
-    theme: 'light' | 'dark' | 'system';
+    theme: "light" | "dark" | "system";
     compactMode: boolean;
     sidebarCollapsed: boolean;
     language: string;
@@ -165,7 +165,7 @@ interface EnterpriseState {
   // View settings
   viewSettings: {
     defaultPageSize: number;
-    defaultSort: Record<string, 'asc' | 'desc'>;
+    defaultSort: Record<string, "asc" | "desc">;
     columnWidths: Record<string, number>;
     hiddenColumns: Record<string, string[]>;
   };
@@ -187,7 +187,7 @@ interface EnterpriseState {
   // Notifications
   notifications: Array<{
     id: string;
-    type: 'info' | 'success' | 'warning' | 'error';
+    type: "info" | "success" | "warning" | "error";
     title: string;
     message: string;
     timestamp: string;
@@ -195,13 +195,13 @@ interface EnterpriseState {
   }>;
 
   // Actions
-  updatePreferences: (preferences: Partial<EnterpriseState['preferences']>) => void;
-  updateViewSettings: (settings: Partial<EnterpriseState['viewSettings']>) => void;
+  updatePreferences: (preferences: Partial<EnterpriseState["preferences"]>) => void;
+  updateViewSettings: (settings: Partial<EnterpriseState["viewSettings"]>) => void;
   addToRecentProjects: (project: { id: string; name: string }) => void;
   clearRecentProjects: () => void;
-  setWorkflowContext: (context: Partial<EnterpriseState['workflow']>) => void;
+  setWorkflowContext: (context: Partial<EnterpriseState["workflow"]>) => void;
   addNotification: (
-    notification: Omit<EnterpriseState['notifications'][0], 'id' | 'timestamp'>,
+    notification: Omit<EnterpriseState["notifications"][0], "id" | "timestamp">,
   ) => void;
   markNotificationRead: (id: string) => void;
   clearNotifications: () => void;
@@ -212,12 +212,12 @@ export const useEnterpriseStore = create<EnterpriseState>()(
     (set) => ({
       // Initial state
       preferences: {
-        theme: 'system',
+        theme: "system",
         compactMode: false,
         sidebarCollapsed: false,
-        language: 'en',
-        dateFormat: 'MMM d, yyyy',
-        timezone: 'UTC',
+        language: "en",
+        dateFormat: "MMM d, yyyy",
+        timezone: "UTC",
       },
 
       viewSettings: {
@@ -291,7 +291,7 @@ export const useEnterpriseStore = create<EnterpriseState>()(
       clearNotifications: () => set({ notifications: [] }),
     }),
     {
-      name: 'tracertm-enterprise-store',
+      name: "tracertm-enterprise-store",
       partialize: (state) => ({
         preferences: state.preferences,
         viewSettings: state.viewSettings,
@@ -413,11 +413,11 @@ export class EnterpriseError extends Error {
     public code: string,
     public originalError?: Error,
     public context?: ErrorContext,
-    public severity: 'low' | 'medium' | 'high' | 'critical' = 'medium',
+    public severity: "low" | "medium" | "high" | "critical" = "medium",
     public retryable: boolean = false,
   ) {
     super(message);
-    this.name = 'EnterpriseError';
+    this.name = "EnterpriseError";
   }
 }
 
@@ -428,7 +428,7 @@ export class EnterpriseError extends Error {
 export const useErrorReporter = () => {
   const reportError = useCallback((error: EnterpriseError) => {
     // Log to monitoring service
-    logger.error('Enterprise Error:', {
+    logger.error("Enterprise Error:", {
       message: error.message,
       code: error.code,
       severity: error.severity,
@@ -457,67 +457,67 @@ export const useErrorReporter = () => {
 export const MIGRATION_RECOMMENDATIONS = {
   // Data fetching: OpenAPI → TRPC
   apiMigration: {
-    from: 'Custom OpenAPI client with manual typing',
-    to: '@trpc/client and @trpc/react-query',
+    from: "Custom OpenAPI client with manual typing",
+    to: "@trpc/client and @trpc/react-query",
     benefits: [
-      'End-to-end type safety',
-      'Auto-completion for API methods',
-      'Built-in error handling',
-      'Real-time subscriptions',
-      'Smaller bundle sizes',
+      "End-to-end type safety",
+      "Auto-completion for API methods",
+      "Built-in error handling",
+      "Real-time subscriptions",
+      "Smaller bundle sizes",
     ],
-    effort: 'Medium (2-3 days)',
+    effort: "Medium (2-3 days)",
   },
 
   // WebSocket: Custom manager → TRPC subscriptions
   websocketMigration: {
-    from: 'Custom WebSocket manager with manual subscriptions',
-    to: 'TRPC subscriptions with automatic cleanup',
+    from: "Custom WebSocket manager with manual subscriptions",
+    to: "TRPC subscriptions with automatic cleanup",
     benefits: [
-      'Type-safe subscription events',
-      'Automatic reconnection',
-      'Integrated with React Query',
-      'Better error handling',
+      "Type-safe subscription events",
+      "Automatic reconnection",
+      "Integrated with React Query",
+      "Better error handling",
     ],
-    effort: 'Low (1 day)',
+    effort: "Low (1 day)",
   },
 
   // Date handling: Custom utils → date-fns
   dateMigration: {
-    from: 'Custom date formatting utilities',
-    to: 'date-fns for all date operations',
+    from: "Custom date formatting utilities",
+    to: "date-fns for all date operations",
     benefits: [
-      'Standardized date formatting',
-      'Better timezone support',
-      'Smaller bundle than moment.js',
-      'Extensive formatting options',
+      "Standardized date formatting",
+      "Better timezone support",
+      "Smaller bundle than moment.js",
+      "Extensive formatting options",
     ],
-    effort: 'Very Low (4 hours)',
+    effort: "Very Low (4 hours)",
   },
 
   // State management: Basic Zustand → Persisted Zustand
   stateMigration: {
-    from: 'Basic in-memory Zustand stores',
-    to: 'Persisted enterprise stores with middleware',
+    from: "Basic in-memory Zustand stores",
+    to: "Persisted enterprise stores with middleware",
     benefits: [
-      'Automatic persistence',
-      'Partial state persistence',
-      'Time-travel debugging',
-      'Developer tools integration',
+      "Automatic persistence",
+      "Partial state persistence",
+      "Time-travel debugging",
+      "Developer tools integration",
     ],
-    effort: 'Low (1 day)',
+    effort: "Low (1 day)",
   },
 
   // Keyboard shortcuts: Manual listeners → react-hotkeys-hook
   hotkeysMigration: {
-    from: 'Manual event listeners for keyboard shortcuts',
-    to: 'react-hotkeys-hook for declarative hotkeys',
+    from: "Manual event listeners for keyboard shortcuts",
+    to: "react-hotkeys-hook for declarative hotkeys",
     benefits: [
-      'Declarative shortcut definitions',
-      'Built-in conflict resolution',
-      'Easier testing',
-      'Browser compatibility',
+      "Declarative shortcut definitions",
+      "Built-in conflict resolution",
+      "Easier testing",
+      "Browser compatibility",
     ],
-    effort: 'Very Low (2 hours)',
+    effort: "Very Low (2 hours)",
   },
 };

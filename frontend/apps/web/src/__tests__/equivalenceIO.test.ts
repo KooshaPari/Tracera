@@ -1,13 +1,13 @@
 // EquivalenceIO.test.ts - Tests for equivalence import/export utilities
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 
-import type { CanonicalConcept, CanonicalProjection, EquivalenceLink } from '@tracertm/types';
+import type { CanonicalConcept, CanonicalProjection, EquivalenceLink } from "@tracertm/types";
 
 import type {
   EquivalenceExportPackage,
   EquivalenceImportOptions,
-} from '../components/graph/utils/equivalenceIO';
+} from "../components/graph/utils/equivalenceIO";
 
 import {
   createExportSummary,
@@ -20,74 +20,74 @@ import {
   serializeToJSON,
   validateExportPackage,
   validateImportOptions,
-} from '../components/graph/utils/equivalenceIO';
+} from "../components/graph/utils/equivalenceIO";
 
 // =============================================================================
 // TEST DATA
 // =============================================================================
 
 const mockEquivalenceLink: EquivalenceLink = {
-  canonicalId: 'canon-1',
+  canonicalId: "canon-1",
   confidence: 0.95,
-  confirmedAt: '2024-01-15T10:05:00Z',
-  confirmedBy: 'user-1',
-  createdAt: '2024-01-15T10:00:00Z',
-  equivalenceType: 'same_as',
-  id: 'link-1',
-  projectId: 'proj-1',
-  sourceItemId: 'item-1',
-  status: 'confirmed',
+  confirmedAt: "2024-01-15T10:05:00Z",
+  confirmedBy: "user-1",
+  createdAt: "2024-01-15T10:00:00Z",
+  equivalenceType: "same_as",
+  id: "link-1",
+  projectId: "proj-1",
+  sourceItemId: "item-1",
+  status: "confirmed",
   strategies: [
     {
       confidence: 0.95,
-      details: 'User confirmed equivalence',
-      detectedAt: '2024-01-15T10:00:00Z',
-      strategy: 'manual_link',
+      details: "User confirmed equivalence",
+      detectedAt: "2024-01-15T10:00:00Z",
+      strategy: "manual_link",
     },
   ],
-  targetItemId: 'item-2',
-  updatedAt: '2024-01-15T10:05:00Z',
+  targetItemId: "item-2",
+  updatedAt: "2024-01-15T10:05:00Z",
 };
 
 const mockCanonicalConcept: CanonicalConcept = {
-  category: 'identity',
+  category: "identity",
   confidence: 0.9,
-  createdAt: '2024-01-15T10:00:00Z',
-  description: 'The concept of authenticating users in the system',
-  domain: 'security',
-  id: 'canon-1',
-  name: 'User Authentication',
-  projectId: 'proj-1',
+  createdAt: "2024-01-15T10:00:00Z",
+  description: "The concept of authenticating users in the system",
+  domain: "security",
+  id: "canon-1",
+  name: "User Authentication",
+  projectId: "proj-1",
   projectionCount: 3,
-  slug: 'user-authentication',
-  source: 'manual',
-  tags: ['security', 'auth', 'identity'],
-  updatedAt: '2024-01-15T10:00:00Z',
+  slug: "user-authentication",
+  source: "manual",
+  tags: ["security", "auth", "identity"],
+  updatedAt: "2024-01-15T10:00:00Z",
   version: 1,
 };
 
 const mockCanonicalProjection: CanonicalProjection = {
-  canonicalId: 'canon-1',
+  canonicalId: "canon-1",
   confidence: 0.95,
-  confirmedAt: '2024-01-15T10:05:00Z',
-  confirmedBy: 'user-1',
-  createdAt: '2024-01-15T10:00:00Z',
-  id: 'proj-1',
+  confirmedAt: "2024-01-15T10:05:00Z",
+  confirmedBy: "user-1",
+  createdAt: "2024-01-15T10:00:00Z",
+  id: "proj-1",
   isConfirmed: true,
   isRejected: false,
-  itemId: 'item-1',
-  perspective: 'technical',
-  projectId: 'proj-1',
-  strategy: 'manual_link',
-  updatedAt: '2024-01-15T10:05:00Z',
+  itemId: "item-1",
+  perspective: "technical",
+  projectId: "proj-1",
+  strategy: "manual_link",
+  updatedAt: "2024-01-15T10:05:00Z",
 };
 
 const mockExportPackage: EquivalenceExportPackage = {
   canonicalConcepts: [mockCanonicalConcept],
   canonicalProjections: [mockCanonicalProjection],
   equivalenceLinks: [mockEquivalenceLink],
-  exportedAt: '2024-01-15T10:00:00Z',
-  exportedBy: 'user-1',
+  exportedAt: "2024-01-15T10:00:00Z",
+  exportedBy: "user-1",
   metadata: {
     confidence: {
       average: 0.925,
@@ -98,32 +98,32 @@ const mockExportPackage: EquivalenceExportPackage = {
     totalLinks: 1,
     totalProjections: 1,
   },
-  projectId: 'proj-1',
-  version: '1.0',
+  projectId: "proj-1",
+  version: "1.0",
 };
 
 // =============================================================================
 // SERIALIZATION TESTS
 // =============================================================================
 
-describe('equivalenceIO - Serialization', () => {
+describe("equivalenceIO - Serialization", () => {
   describe(serializeToJSON, () => {
-    it('should serialize package to JSON string', () => {
+    it("should serialize package to JSON string", () => {
       const json = serializeToJSON(mockExportPackage);
-      expect(typeof json).toBe('string');
+      expect(typeof json).toBe("string");
       expect(json).toContain('"version": "1.0"');
       expect(json).toContain('"User Authentication"');
     });
 
-    it('should produce valid JSON that can be parsed', () => {
+    it("should produce valid JSON that can be parsed", () => {
       const json = serializeToJSON(mockExportPackage);
       const parsed = JSON.parse(json);
-      expect(parsed.version).toBe('1.0');
-      expect(parsed.projectId).toBe('proj-1');
+      expect(parsed.version).toBe("1.0");
+      expect(parsed.projectId).toBe("proj-1");
       expect(parsed.equivalenceLinks).toHaveLength(1);
     });
 
-    it('should preserve nested structures', () => {
+    it("should preserve nested structures", () => {
       const json = serializeToJSON(mockExportPackage);
       const parsed = JSON.parse(json);
       expect(parsed.equivalenceLinks[0].strategies).toHaveLength(1);
@@ -132,17 +132,17 @@ describe('equivalenceIO - Serialization', () => {
   });
 
   describe(deserializeFromJSON, () => {
-    it('should deserialize valid JSON to package', () => {
+    it("should deserialize valid JSON to package", () => {
       const json = serializeToJSON(mockExportPackage);
       const deserialized = deserializeFromJSON(json);
-      expect(deserialized.version).toBe('1.0');
-      expect(deserialized.projectId).toBe('proj-1');
+      expect(deserialized.version).toBe("1.0");
+      expect(deserialized.projectId).toBe("proj-1");
     });
 
-    it('should validate schema during deserialization', () => {
+    it("should validate schema during deserialization", () => {
       const invalidJSON = JSON.stringify({
-        version: '1.0',
-        exportedAt: '2024-01-15T10:00:00Z',
+        version: "1.0",
+        exportedAt: "2024-01-15T10:00:00Z",
         // Missing required fields
         equivalenceLinks: [],
         canonicalConcepts: [],
@@ -152,23 +152,23 @@ describe('equivalenceIO - Serialization', () => {
       expect(() => deserializeFromJSON(invalidJSON)).toThrow();
     });
 
-    it('should preserve data integrity through serialize/deserialize cycle', () => {
+    it("should preserve data integrity through serialize/deserialize cycle", () => {
       const json = serializeToJSON(mockExportPackage);
       const deserialized = deserializeFromJSON(json);
       expect(deserialized.equivalenceLinks[0].confidence).toBe(0.95);
-      expect(deserialized.canonicalConcepts[0].name).toBe('User Authentication');
+      expect(deserialized.canonicalConcepts[0].name).toBe("User Authentication");
     });
   });
 
   describe(serializeToCSV, () => {
-    it('should serialize to CSV with proper headers', () => {
+    it("should serialize to CSV with proper headers", () => {
       const csv = serializeToCSV(mockExportPackage);
-      expect(csv.links).toContain('id,projectId,sourceItemId');
-      expect(csv.concepts).toContain('id,projectId,name,slug');
-      expect(csv.projections).toContain('id,canonicalId,itemId,projectId');
+      expect(csv.links).toContain("id,projectId,sourceItemId");
+      expect(csv.concepts).toContain("id,projectId,name,slug");
+      expect(csv.projections).toContain("id,canonicalId,itemId,projectId");
     });
 
-    it('should escape special characters in CSV', () => {
+    it("should escape special characters in CSV", () => {
       const packageWithSpecial: EquivalenceExportPackage = {
         ...mockExportPackage,
         canonicalConcepts: [
@@ -183,7 +183,7 @@ describe('equivalenceIO - Serialization', () => {
       expect(csv.concepts).toContain('"Contains ""quotes"" and, commas"');
     });
 
-    it('should handle empty arrays gracefully', () => {
+    it("should handle empty arrays gracefully", () => {
       const emptyPackage: EquivalenceExportPackage = {
         ...mockExportPackage,
         equivalenceLinks: [],
@@ -192,42 +192,42 @@ describe('equivalenceIO - Serialization', () => {
       };
 
       const csv = serializeToCSV(emptyPackage);
-      expect(csv.links).toContain('id,projectId');
-      expect(csv.concepts).toContain('id,projectId');
-      expect(csv.projections).toContain('id,canonicalId');
+      expect(csv.links).toContain("id,projectId");
+      expect(csv.concepts).toContain("id,projectId");
+      expect(csv.projections).toContain("id,canonicalId");
     });
   });
 
-  describe('CSV deserialization', () => {
-    it('should deserialize links from CSV', () => {
+  describe("CSV deserialization", () => {
+    it("should deserialize links from CSV", () => {
       const csv = serializeToCSV(mockExportPackage);
       const links = deserializeLinksFromCSV(csv.links);
       expect(links).toHaveLength(1);
-      expect(links[0].id).toBe('link-1');
+      expect(links[0].id).toBe("link-1");
       expect(links[0].confidence).toBe(0.95);
     });
 
-    it('should deserialize concepts from CSV', () => {
+    it("should deserialize concepts from CSV", () => {
       const csv = serializeToCSV(mockExportPackage);
       const concepts = deserializeConceptsFromCSV(csv.concepts);
       expect(concepts).toHaveLength(1);
-      expect(concepts[0].name).toBe('User Authentication');
-      expect(concepts[0].tags).toEqual(['security', 'auth', 'identity']);
+      expect(concepts[0].name).toBe("User Authentication");
+      expect(concepts[0].tags).toEqual(["security", "auth", "identity"]);
     });
 
-    it('should deserialize projections from CSV', () => {
+    it("should deserialize projections from CSV", () => {
       const csv = serializeToCSV(mockExportPackage);
       const projections = deserializeProjectionsFromCSV(csv.projections);
       expect(projections).toHaveLength(1);
-      expect(projections[0].itemId).toBe('item-1');
+      expect(projections[0].itemId).toBe("item-1");
       expect(projections[0].isConfirmed).toBeTruthy();
     });
 
-    it('should handle CSV with escaped values', () => {
+    it("should handle CSV with escaped values", () => {
       // Serialize then deserialize to ensure consistency
       const conceptWithSpecial: CanonicalConcept = {
         ...mockCanonicalConcept,
-        id: 'canon-2',
+        id: "canon-2",
         description: 'Test with "quotes"',
       };
 
@@ -239,7 +239,7 @@ describe('equivalenceIO - Serialization', () => {
       const csv = serializeToCSV(pkg);
       const concepts = deserializeConceptsFromCSV(csv.concepts);
       expect(concepts).toHaveLength(1);
-      expect(concepts[0].description).toContain('Test');
+      expect(concepts[0].description).toContain("Test");
     });
   });
 });
@@ -248,22 +248,22 @@ describe('equivalenceIO - Serialization', () => {
 // VALIDATION TESTS
 // =============================================================================
 
-describe('equivalenceIO - Validation', () => {
+describe("equivalenceIO - Validation", () => {
   describe(validateExportPackage, () => {
-    it('should validate correct package', () => {
+    it("should validate correct package", () => {
       const result = validateExportPackage(mockExportPackage);
       expect(result.valid).toBeTruthy();
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should reject invalid package with missing fields', () => {
-      const invalid = { version: '1.0' };
+    it("should reject invalid package with missing fields", () => {
+      const invalid = { version: "1.0" };
       const result = validateExportPackage(invalid);
       expect(result.valid).toBeFalsy();
       expect(result.errors.length).toBeGreaterThan(0);
     });
 
-    it('should reject invalid confidence values', () => {
+    it("should reject invalid confidence values", () => {
       const invalid: Record<string, unknown> = {
         ...mockExportPackage,
         equivalenceLinks: [
@@ -278,17 +278,17 @@ describe('equivalenceIO - Validation', () => {
       expect(result.valid).toBeFalsy();
     });
 
-    it('should validate arrays of items', () => {
+    it("should validate arrays of items", () => {
       const result = validateExportPackage(mockExportPackage);
       expect(result.valid).toBeTruthy();
     });
   });
 
   describe(validateImportOptions, () => {
-    it('should validate correct options', () => {
+    it("should validate correct options", () => {
       const options: EquivalenceImportOptions = {
-        conflictResolution: 'skip',
-        mode: 'merge',
+        conflictResolution: "skip",
+        mode: "merge",
         preserveTimestamps: false,
         updateProjectId: true,
         validateReferences: true,
@@ -298,14 +298,14 @@ describe('equivalenceIO - Validation', () => {
       expect(result.valid).toBeTruthy();
     });
 
-    it('should reject invalid mode', () => {
-      const options = { mode: 'invalid' };
+    it("should reject invalid mode", () => {
+      const options = { mode: "invalid" };
       const result = validateImportOptions(options);
       expect(result.valid).toBeFalsy();
     });
 
-    it('should apply default values', () => {
-      const options = { mode: 'replace' as const };
+    it("should apply default values", () => {
+      const options = { mode: "replace" as const };
       const result = validateImportOptions(options);
       expect(result.valid).toBeTruthy();
     });
@@ -316,15 +316,15 @@ describe('equivalenceIO - Validation', () => {
 // MERGE TESTS
 // =============================================================================
 
-describe('equivalenceIO - Merging', () => {
+describe("equivalenceIO - Merging", () => {
   describe(mergeExportPackages, () => {
-    it('should merge packages in merge mode', () => {
+    it("should merge packages in merge mode", () => {
       const existing: EquivalenceExportPackage = {
         ...mockExportPackage,
         equivalenceLinks: [
           {
             ...mockEquivalenceLink,
-            id: 'link-existing',
+            id: "link-existing",
           },
         ],
       };
@@ -334,14 +334,14 @@ describe('equivalenceIO - Merging', () => {
         equivalenceLinks: [
           {
             ...mockEquivalenceLink,
-            id: 'link-new',
+            id: "link-new",
           },
         ],
       };
 
       const options: EquivalenceImportOptions = {
-        conflictResolution: 'skip',
-        mode: 'merge',
+        conflictResolution: "skip",
+        mode: "merge",
         preserveTimestamps: false,
         updateProjectId: false,
         validateReferences: true,
@@ -351,7 +351,7 @@ describe('equivalenceIO - Merging', () => {
       expect(merged.equivalenceLinks).toHaveLength(2);
     });
 
-    it('should replace in replace mode', () => {
+    it("should replace in replace mode", () => {
       const existing: EquivalenceExportPackage = {
         ...mockExportPackage,
         equivalenceLinks: [mockEquivalenceLink],
@@ -362,14 +362,14 @@ describe('equivalenceIO - Merging', () => {
         equivalenceLinks: [
           {
             ...mockEquivalenceLink,
-            id: 'link-new',
+            id: "link-new",
           },
         ],
       };
 
       const options: EquivalenceImportOptions = {
-        conflictResolution: 'skip',
-        mode: 'replace',
+        conflictResolution: "skip",
+        mode: "replace",
         preserveTimestamps: false,
         updateProjectId: false,
         validateReferences: true,
@@ -377,10 +377,10 @@ describe('equivalenceIO - Merging', () => {
 
       const merged = mergeExportPackages(existing, incoming, options);
       expect(merged.equivalenceLinks).toHaveLength(1);
-      expect(merged.equivalenceLinks[0].id).toBe('link-new');
+      expect(merged.equivalenceLinks[0].id).toBe("link-new");
     });
 
-    it('should skip conflicts when configured', () => {
+    it("should skip conflicts when configured", () => {
       const existing: EquivalenceExportPackage = {
         ...mockExportPackage,
         equivalenceLinks: [mockEquivalenceLink],
@@ -397,8 +397,8 @@ describe('equivalenceIO - Merging', () => {
       };
 
       const options: EquivalenceImportOptions = {
-        conflictResolution: 'skip',
-        mode: 'merge',
+        conflictResolution: "skip",
+        mode: "merge",
         preserveTimestamps: false,
         updateProjectId: false,
         validateReferences: true,
@@ -408,7 +408,7 @@ describe('equivalenceIO - Merging', () => {
       expect(merged.equivalenceLinks[0].confidence).toBe(0.95); // Original value kept
     });
 
-    it('should overwrite conflicts when configured', () => {
+    it("should overwrite conflicts when configured", () => {
       const existing: EquivalenceExportPackage = {
         ...mockExportPackage,
         equivalenceLinks: [mockEquivalenceLink],
@@ -425,8 +425,8 @@ describe('equivalenceIO - Merging', () => {
       };
 
       const options: EquivalenceImportOptions = {
-        conflictResolution: 'overwrite',
-        mode: 'merge',
+        conflictResolution: "overwrite",
+        mode: "merge",
         preserveTimestamps: false,
         updateProjectId: false,
         validateReferences: true,
@@ -436,21 +436,21 @@ describe('equivalenceIO - Merging', () => {
       expect(merged.equivalenceLinks[0].confidence).toBe(0.85); // Updated value
     });
 
-    it('should update project IDs when configured', () => {
+    it("should update project IDs when configured", () => {
       const options: EquivalenceImportOptions = {
-        conflictResolution: 'skip',
-        mode: 'merge',
+        conflictResolution: "skip",
+        mode: "merge",
         preserveTimestamps: false,
-        targetProjectId: 'proj-new',
+        targetProjectId: "proj-new",
         updateProjectId: true,
         validateReferences: true,
       };
 
       const merged = mergeExportPackages(mockExportPackage, mockExportPackage, options);
 
-      expect(merged.equivalenceLinks[0].projectId).toBe('proj-new');
-      expect(merged.canonicalConcepts[0].projectId).toBe('proj-new');
-      expect(merged.canonicalProjections[0].projectId).toBe('proj-new');
+      expect(merged.equivalenceLinks[0].projectId).toBe("proj-new");
+      expect(merged.canonicalConcepts[0].projectId).toBe("proj-new");
+      expect(merged.canonicalProjections[0].projectId).toBe("proj-new");
     });
   });
 });
@@ -459,48 +459,48 @@ describe('equivalenceIO - Merging', () => {
 // SUMMARY TESTS
 // =============================================================================
 
-describe('equivalenceIO - Summary', () => {
+describe("equivalenceIO - Summary", () => {
   describe(createExportSummary, () => {
-    it('should create summary with correct counts', () => {
+    it("should create summary with correct counts", () => {
       const summary = createExportSummary(mockExportPackage);
       expect(summary.totalLinks).toBe(1);
       expect(summary.totalConcepts).toBe(1);
       expect(summary.totalProjections).toBe(1);
     });
 
-    it('should calculate confidence stats', () => {
+    it("should calculate confidence stats", () => {
       const summary = createExportSummary(mockExportPackage);
       expect(summary.confidenceStats.min).toBeLessThanOrEqual(summary.confidenceStats.average);
       expect(summary.confidenceStats.average).toBeLessThanOrEqual(summary.confidenceStats.max);
     });
 
-    it('should break down by domain', () => {
+    it("should break down by domain", () => {
       const summary = createExportSummary(mockExportPackage);
       expect(summary.domainBreakdown.security).toBe(1);
     });
 
-    it('should break down by strategy', () => {
+    it("should break down by strategy", () => {
       const summary = createExportSummary(mockExportPackage);
       expect(summary.strategyBreakdown.manual_link).toBe(1);
     });
 
-    it('should count link statuses', () => {
+    it("should count link statuses", () => {
       const summary = createExportSummary(mockExportPackage);
       expect(summary.confirmedCount).toBe(1);
       expect(summary.suggestedCount).toBe(0);
       expect(summary.rejectedCount).toBe(0);
     });
 
-    it('should handle multiple items with different statuses', () => {
+    it("should handle multiple items with different statuses", () => {
       const pkg: EquivalenceExportPackage = {
         ...mockExportPackage,
         equivalenceLinks: [
           mockEquivalenceLink,
-          { ...mockEquivalenceLink, id: 'link-2', status: 'suggested' },
+          { ...mockEquivalenceLink, id: "link-2", status: "suggested" },
           {
             ...mockEquivalenceLink,
-            id: 'link-3',
-            status: 'rejected',
+            id: "link-3",
+            status: "rejected",
           },
         ],
       };

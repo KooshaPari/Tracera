@@ -8,7 +8,7 @@
  * - Skips retries on client errors (4xx), auth errors (401/403), validation failures
  */
 
-import { ApiError } from '@/api/client-errors';
+import { ApiError } from "@/api/client-errors";
 
 export interface RetryOptions {
   maxAttempts?: number | undefined;
@@ -34,11 +34,11 @@ export function isRetryableError(error: unknown): boolean {
   if (error instanceof TypeError) {
     const message = error.message.toLowerCase();
     return (
-      message.includes('fetch') ||
-      message.includes('network') ||
-      message.includes('failed to fetch') ||
-      message.includes('connection refused') ||
-      message.includes('timeout')
+      message.includes("fetch") ||
+      message.includes("network") ||
+      message.includes("failed to fetch") ||
+      message.includes("connection refused") ||
+      message.includes("timeout")
     );
   }
 
@@ -165,10 +165,10 @@ export function isNetworkError(error: unknown): boolean {
   if (error instanceof TypeError) {
     const message = error.message.toLowerCase();
     return (
-      message.includes('fetch') ||
-      message.includes('network') ||
-      message.includes('failed to fetch') ||
-      message.includes('connection')
+      message.includes("fetch") ||
+      message.includes("network") ||
+      message.includes("failed to fetch") ||
+      message.includes("connection")
     );
   }
   return false;
@@ -179,7 +179,7 @@ export function isNetworkError(error: unknown): boolean {
  */
 export function isTimeoutError(error: unknown): boolean {
   if (error instanceof Error) {
-    return error.message.toLowerCase().includes('timeout');
+    return error.message.toLowerCase().includes("timeout");
   }
   return false;
 }
@@ -221,4 +221,4 @@ export {
   buildErrorMetadata,
   extractValidationErrors,
   formatValidationErrorMessage,
-} from '@/lib/api-error-handler';
+} from "@/lib/api-error-handler";

@@ -16,72 +16,72 @@
  * - Semantic similarity
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { client } from '@/api/client';
-import { logger } from '@/lib/logger';
+import { client } from "@/api/client";
+import { logger } from "@/lib/logger";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 // =============================================================================
 // Types
 // =============================================================================
 
-export type SpecType = 'requirements' | 'tests' | 'epics' | 'stories' | 'tasks' | 'defects';
+export type SpecType = "requirements" | "tests" | "epics" | "stories" | "tasks" | "defects";
 
 export type EARSPatternType =
-  | 'ubiquitous'
-  | 'event_driven'
-  | 'state_driven'
-  | 'optional'
-  | 'complex'
-  | 'unwanted';
+  | "ubiquitous"
+  | "event_driven"
+  | "state_driven"
+  | "optional"
+  | "complex"
+  | "unwanted";
 
 export type QualityDimension =
-  | 'unambiguity'
-  | 'completeness'
-  | 'verifiability'
-  | 'consistency'
-  | 'necessity'
-  | 'singularity'
-  | 'feasibility'
-  | 'traceability';
+  | "unambiguity"
+  | "completeness"
+  | "verifiability"
+  | "consistency"
+  | "necessity"
+  | "singularity"
+  | "feasibility"
+  | "traceability";
 
-export type QualityGrade = 'A' | 'B' | 'C' | 'D' | 'F';
+export type QualityGrade = "A" | "B" | "C" | "D" | "F";
 
 export type FlakinessPattern =
-  | 'timing'
-  | 'async'
-  | 'environment'
-  | 'network'
-  | 'resource'
-  | 'order_dependent'
-  | 'random';
+  | "timing"
+  | "async"
+  | "environment"
+  | "network"
+  | "resource"
+  | "order_dependent"
+  | "random";
 
 export type ODCDefectType =
-  | 'function'
-  | 'interface'
-  | 'checking'
-  | 'assignment'
-  | 'timing'
-  | 'build'
-  | 'documentation'
-  | 'algorithm';
+  | "function"
+  | "interface"
+  | "checking"
+  | "assignment"
+  | "timing"
+  | "build"
+  | "documentation"
+  | "algorithm";
 
 export type ODCTrigger =
-  | 'coverage'
-  | 'design_conformance'
-  | 'exception_handling'
-  | 'simple_path'
-  | 'complex_path'
-  | 'side_effects'
-  | 'rare_situation';
+  | "coverage"
+  | "design_conformance"
+  | "exception_handling"
+  | "simple_path"
+  | "complex_path"
+  | "side_effects"
+  | "rare_situation";
 
-export type CVSSSeverity = 'none' | 'low' | 'medium' | 'high' | 'critical';
+export type CVSSSeverity = "none" | "low" | "medium" | "high" | "critical";
 
-export type MoSCoWPriority = 'must' | 'should' | 'could' | 'wont';
+export type MoSCoWPriority = "must" | "should" | "could" | "wont";
 
 // =============================================================================
 // Response Types
@@ -110,7 +110,7 @@ export interface EARSAnalysisResponse {
 
 export interface AnalyticsQualityIssue {
   dimension: QualityDimension;
-  severity: 'error' | 'warning' | 'info';
+  severity: "error" | "warning" | "info";
   message: string;
   suggestion: string | null;
   line_reference: string | null;
@@ -247,8 +247,8 @@ export interface ImpactedItem {
   item_id: string;
   item_type: string;
   item_title: string;
-  impact_type: 'direct' | 'transitive';
-  impact_severity: 'high' | 'medium' | 'low';
+  impact_type: "direct" | "transitive";
+  impact_severity: "high" | "medium" | "low";
   distance: number;
 }
 
@@ -299,7 +299,7 @@ export interface PrioritizationResponse {
 export interface CoverageGap {
   requirement_id: string;
   requirement_title: string;
-  gap_type: 'no_tests' | 'partial_coverage' | 'stale_tests';
+  gap_type: "no_tests" | "partial_coverage" | "stale_tests";
   severity: string;
   recommendation: string;
 }
@@ -428,8 +428,8 @@ export interface AnalyzeSimilarityRequest {
 
 async function apiPost<T>(url: string, data?: unknown): Promise<T> {
   const requestInit: RequestInit = {
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   };
   if (data !== undefined) {
     requestInit.body = JSON.stringify(data);
@@ -456,33 +456,33 @@ async function apiGet<T>(url: string): Promise<T> {
 // =============================================================================
 
 export const specAnalyticsKeys = {
-  all: ['spec-analytics'] as const,
+  all: ["spec-analytics"] as const,
   contentAddress: (projectId: string, specType: SpecType, specId: string) =>
-    [...specAnalyticsKeys.all, 'content-address', projectId, specType, specId] as const,
+    [...specAnalyticsKeys.all, "content-address", projectId, specType, specId] as const,
   coverageGaps: (projectId: string) =>
-    [...specAnalyticsKeys.all, 'coverage-gaps', projectId] as const,
+    [...specAnalyticsKeys.all, "coverage-gaps", projectId] as const,
   cvss: (projectId: string, specId: string) =>
-    [...specAnalyticsKeys.all, 'cvss', projectId, specId] as const,
+    [...specAnalyticsKeys.all, "cvss", projectId, specId] as const,
   ears: (projectId: string, specId: string) =>
-    [...specAnalyticsKeys.all, 'ears', projectId, specId] as const,
+    [...specAnalyticsKeys.all, "ears", projectId, specId] as const,
   flakiness: (projectId: string, specId: string) =>
-    [...specAnalyticsKeys.all, 'flakiness', projectId, specId] as const,
+    [...specAnalyticsKeys.all, "flakiness", projectId, specId] as const,
   impact: (projectId: string, specType: SpecType, specId: string) =>
-    [...specAnalyticsKeys.all, 'impact', projectId, specType, specId] as const,
+    [...specAnalyticsKeys.all, "impact", projectId, specType, specId] as const,
   merkleProof: (projectId: string, specType: SpecType, specId: string) =>
-    [...specAnalyticsKeys.all, 'merkle-proof', projectId, specType, specId] as const,
+    [...specAnalyticsKeys.all, "merkle-proof", projectId, specType, specId] as const,
   odc: (projectId: string, specId: string) =>
-    [...specAnalyticsKeys.all, 'odc', projectId, specId] as const,
+    [...specAnalyticsKeys.all, "odc", projectId, specId] as const,
   prioritization: (projectId: string, specType: SpecType, specId: string) =>
-    [...specAnalyticsKeys.all, 'prioritization', projectId, specType, specId] as const,
+    [...specAnalyticsKeys.all, "prioritization", projectId, specType, specId] as const,
   quality: (projectId: string, specId: string) =>
-    [...specAnalyticsKeys.all, 'quality', projectId, specId] as const,
+    [...specAnalyticsKeys.all, "quality", projectId, specId] as const,
   similarity: (projectId: string, specType: SpecType, specId: string) =>
-    [...specAnalyticsKeys.all, 'similarity', projectId, specType, specId] as const,
+    [...specAnalyticsKeys.all, "similarity", projectId, specType, specId] as const,
   suspectLinks: (projectId: string) =>
-    [...specAnalyticsKeys.all, 'suspect-links', projectId] as const,
+    [...specAnalyticsKeys.all, "suspect-links", projectId] as const,
   versionChain: (projectId: string, specType: SpecType, specId: string) =>
-    [...specAnalyticsKeys.all, 'version-chain', projectId, specType, specId] as const,
+    [...specAnalyticsKeys.all, "version-chain", projectId, specType, specId] as const,
 };
 
 // =============================================================================
@@ -538,7 +538,7 @@ export function useVersionChain(
     queryFn: async () =>
       apiGet<VersionChainResponse>(
         `/api/v1/projects/${projectId}/item-specs/${specType}/${specId}/version-chain${
-          options?.limit ? `?limit=${options.limit}` : ''
+          options?.limit ? `?limit=${options.limit}` : ""
         }`,
       ),
     queryKey: specAnalyticsKeys.versionChain(projectId, specType, specId),
@@ -763,7 +763,7 @@ export function useInvalidateSpecAnalytics() {
           queryKey: [...specAnalyticsKeys.all, projectId],
         })
         .catch((error) => {
-          logger.error('Failed to invalidate all:', error);
+          logger.error("Failed to invalidate all:", error);
         });
     },
     invalidateContentAddress: (projectId: string, specType: SpecType, specId: string) => {
@@ -772,7 +772,7 @@ export function useInvalidateSpecAnalytics() {
           queryKey: specAnalyticsKeys.contentAddress(projectId, specType, specId),
         })
         .catch((error) => {
-          logger.error('Failed to invalidate content address:', error);
+          logger.error("Failed to invalidate content address:", error);
         });
     },
     invalidateVersionChain: (projectId: string, specType: SpecType, specId: string) => {
@@ -781,7 +781,7 @@ export function useInvalidateSpecAnalytics() {
           queryKey: specAnalyticsKeys.versionChain(projectId, specType, specId),
         })
         .catch((error) => {
-          logger.error('Failed to invalidate version chain:', error);
+          logger.error("Failed to invalidate version chain:", error);
         });
     },
   };

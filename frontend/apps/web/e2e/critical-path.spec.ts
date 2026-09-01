@@ -1,4 +1,4 @@
-import { expect, test } from './global-setup';
+import { expect, test } from "./global-setup";
 
 /**
  * Critical Path E2E Tests
@@ -13,18 +13,18 @@ import { expect, test } from './global-setup';
  * These tests represent the absolute core functionality that must work.
  */
 
-test.describe('CRITICAL PATH: Project Creation Flow', { tag: '@smoke' }, () => {
+test.describe("CRITICAL PATH: Project Creation Flow", { tag: "@smoke" }, () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/projects');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/projects");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should complete end-to-end project creation', async ({ page }) => {
+  test("should complete end-to-end project creation", async ({ page }) => {
     // 1. Navigate to projects page
-    await expect(page).toHaveURL('/projects');
+    await expect(page).toHaveURL("/projects");
 
     // 2. Find and click create button
-    const createBtn = page.getByRole('button', { name: /create|new|add.*project/i }).first();
+    const createBtn = page.getByRole("button", { name: /create|new|add.*project/i }).first();
 
     // Check if button is visible
     await expect(createBtn).toBeVisible({ timeout: 3000 });
@@ -49,28 +49,28 @@ test.describe('CRITICAL PATH: Project Creation Flow', { tag: '@smoke' }, () => {
     await nameInput.fill(projectName);
 
     await expect(descInput).toBeVisible({ timeout: 1000 });
-    await descInput.fill('Critical path test project created via E2E');
+    await descInput.fill("Critical path test project created via E2E");
 
     // 4. Submit form
-    const submitBtn = page.getByRole('button', {
+    const submitBtn = page.getByRole("button", {
       name: /create|save|submit/i,
     });
 
     await expect(submitBtn).toBeVisible({ timeout: 1000 });
     await submitBtn.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     // 5. Verify project was created
     const projectNameText = page.getByText(projectName);
     await expect(projectNameText).toBeVisible({ timeout: 5000 });
   });
 
-  test('should display list of existing projects', async ({ page }) => {
+  test("should display list of existing projects", async ({ page }) => {
     // Core requirement: projects should be displayable
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     // Look for any project name in the list
-    const projectItems = page.locator('text=/TraceRTM Core|Mobile App|project/i');
+    const projectItems = page.locator("text=/TraceRTM Core|Mobile App|project/i");
 
     const count = await projectItems.count();
     // Projects should be present
@@ -78,18 +78,18 @@ test.describe('CRITICAL PATH: Project Creation Flow', { tag: '@smoke' }, () => {
   });
 });
 
-test.describe('CRITICAL PATH: Item Creation and Management', { tag: '@smoke' }, () => {
+test.describe("CRITICAL PATH: Item Creation and Management", { tag: "@smoke" }, () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should create a new item', async ({ page }) => {
+  test("should create a new item", async ({ page }) => {
     // 1. Verify on items page
     await expect(page).toHaveURL(/\/items/);
 
     // 2. Find create button
-    const createBtn = page.getByRole('button', { name: /create|new|add.*item/i }).first();
+    const createBtn = page.getByRole("button", { name: /create|new|add.*item/i }).first();
 
     await expect(createBtn).toBeVisible({ timeout: 3000 });
 
@@ -113,7 +113,7 @@ test.describe('CRITICAL PATH: Item Creation and Management', { tag: '@smoke' }, 
       .first();
 
     await expect(descInput).toBeVisible({ timeout: 1000 });
-    await descInput.fill('Critical path test item - verifies item creation works');
+    await descInput.fill("Critical path test item - verifies item creation works");
 
     // Try to select type
     const typeSelect = page.getByLabel(/type/i).first();
@@ -126,26 +126,26 @@ test.describe('CRITICAL PATH: Item Creation and Management', { tag: '@smoke' }, 
     await requirementOption.click();
 
     // 4. Submit form
-    const submitBtn = page.getByRole('button', {
+    const submitBtn = page.getByRole("button", {
       name: /create|save|submit|add/i,
     });
 
     await expect(submitBtn).toBeVisible({ timeout: 1000 });
     await submitBtn.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     // 5. Verify item appears in list
     const itemText = page.getByText(itemTitle);
     await expect(itemText).toBeVisible({ timeout: 5000 });
   });
 
-  test('should update existing item status', async ({ page }) => {
+  test("should update existing item status", async ({ page }) => {
     // 1. Wait for items to load
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     // 2. Find an item (look for any visible item)
     const itemLink = page
-      .getByRole('link', {
+      .getByRole("link", {
         name: /authentication|dashboard|feature|requirement/i,
       })
       .first();
@@ -154,7 +154,7 @@ test.describe('CRITICAL PATH: Item Creation and Management', { tag: '@smoke' }, 
 
     // 3. Click to navigate to item detail
     await itemLink.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     // 4. Look for status selector
     const statusField = page
@@ -172,15 +172,15 @@ test.describe('CRITICAL PATH: Item Creation and Management', { tag: '@smoke' }, 
     await expect(completedOption).toBeVisible({ timeout: 1000 });
 
     await completedOption.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should display items in table format', async ({ page }) => {
+  test("should display items in table format", async ({ page }) => {
     // Core requirement: items should be displayable in a table
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     // Look for any table content
-    const rows = page.locator('tbody tr').or(page.locator("[role='row']"));
+    const rows = page.locator("tbody tr").or(page.locator("[role='row']"));
     const rowCount = await rows.count();
 
     expect(rowCount).toBeGreaterThan(0);
@@ -194,19 +194,19 @@ test.describe('CRITICAL PATH: Item Creation and Management', { tag: '@smoke' }, 
   });
 });
 
-test.describe('CRITICAL PATH: Link Creation Between Items', { tag: '@smoke' }, () => {
+test.describe("CRITICAL PATH: Link Creation Between Items", { tag: "@smoke" }, () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to an item that should have links capability
-    await page.goto('/items/item-1');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items/item-1");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should access item and show link section', async ({ page }) => {
+  test("should access item and show link section", async ({ page }) => {
     // 1. Verify on item detail page
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     // 2. Look for links section/button
-    const linkButton = page.getByRole('button', {
+    const linkButton = page.getByRole("button", {
       name: /add link|create link|new link|link to/i,
     });
 
@@ -222,14 +222,14 @@ test.describe('CRITICAL PATH: Link Creation Between Items', { tag: '@smoke' }, (
     await expect(targetSelect).toBeVisible({ timeout: 2000 });
   });
 
-  test('should navigate to graph view showing links', async ({ page }) => {
+  test("should navigate to graph view showing links", async ({ page }) => {
     // Navigate to graph view
-    const graphLink = page.getByRole('link', { name: /graph|visualization/i });
+    const graphLink = page.getByRole("link", { name: /graph|visualization/i });
 
     await expect(graphLink).toBeVisible({ timeout: 2000 });
 
     await graphLink.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     await expect(page).toHaveURL(/\/graph/);
 
@@ -239,30 +239,30 @@ test.describe('CRITICAL PATH: Link Creation Between Items', { tag: '@smoke' }, (
   });
 });
 
-test.describe('CRITICAL PATH: Navigation Between Views', { tag: '@smoke' }, () => {
-  test('should navigate to dashboard', async ({ page }) => {
-    await page.goto('/');
-    await expect(page).toHaveURL('/');
-    await page.waitForLoadState('networkidle');
+test.describe("CRITICAL PATH: Navigation Between Views", { tag: "@smoke" }, () => {
+  test("should navigate to dashboard", async ({ page }) => {
+    await page.goto("/");
+    await expect(page).toHaveURL("/");
+    await page.waitForLoadState("networkidle");
 
     // Verify page loaded - check for dashboard content
     // Use first() to handle multiple elements, and increase timeout
-    const main = page.locator('main').first();
-    const h1 = page.locator('h1').first();
+    const main = page.locator("main").first();
+    const h1 = page.locator("h1").first();
     const dashboardText = page.getByText(/dashboard/i).first();
 
     await expect(main.or(h1).or(dashboardText)).toBeVisible({ timeout: 5000 });
   });
 
-  test('should navigate from projects to items to detail', async ({ page }) => {
+  test("should navigate from projects to items to detail", async ({ page }) => {
     // 1. Start at projects
-    await page.goto('/projects');
-    await page.waitForLoadState('networkidle');
-    await expect(page).toHaveURL('/projects');
+    await page.goto("/projects");
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL("/projects");
 
     // 2. Navigate to items page directly (items page is not in sidebar navigation)
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/items/);
 
     // 3. Navigate to an item detail by clicking on an item
@@ -270,71 +270,71 @@ test.describe('CRITICAL PATH: Navigation Between Views', { tag: '@smoke' }, () =
 
     await expect(firstItem).toBeVisible({ timeout: 3000 });
     await firstItem.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     // Should be on detail page
     await expect(page).toHaveURL(/\/items\/[a-z0-9-]+/);
   });
 
-  test('should use browser back button to navigate', async ({ page }) => {
+  test("should use browser back button to navigate", async ({ page }) => {
     // 1. Navigate to multiple pages
-    await page.goto('/projects');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/projects");
+    await page.waitForLoadState("networkidle");
 
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // 2. Go back
     await page.goBack();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     // Should be back at projects
-    await expect(page).toHaveURL('/projects');
+    await expect(page).toHaveURL("/projects");
   });
 
-  test('should navigate to graph view', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    await expect(page).toHaveURL('/');
+  test("should navigate to graph view", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL("/");
 
-    const graphLink = page.getByRole('link', { name: /graph|visualization/i });
+    const graphLink = page.getByRole("link", { name: /graph|visualization/i });
 
     await expect(graphLink).toBeVisible({ timeout: 2000 });
     await graphLink.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/graph/);
   });
 
-  test('should navigate to settings', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+  test("should navigate to settings", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
-    const settingsLink = page.getByRole('link', { name: /settings|config/i });
+    const settingsLink = page.getByRole("link", { name: /settings|config/i });
 
     await expect(settingsLink).toBeVisible({ timeout: 2000 });
     await settingsLink.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(/\/settings/);
   });
 });
 
-test.describe('CRITICAL PATH: Search and Filter Functionality', { tag: '@smoke' }, () => {
+test.describe("CRITICAL PATH: Search and Filter Functionality", { tag: "@smoke" }, () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should search items by title', async ({ page }) => {
+  test("should search items by title", async ({ page }) => {
     // 1. Find search input
     const searchInput = page
-      .getByRole('searchbox')
+      .getByRole("searchbox")
       .or(page.getByPlaceholder(/search/i))
       .first();
 
     await expect(searchInput).toBeVisible({ timeout: 2000 });
 
     // 2. Perform search
-    await searchInput.fill('authentication');
+    await searchInput.fill("authentication");
     await page.waitForTimeout(500); // Wait for debounce
 
     // 3. Verify results updated
@@ -345,12 +345,12 @@ test.describe('CRITICAL PATH: Search and Filter Functionality', { tag: '@smoke' 
     expect(resultCount).toBeGreaterThanOrEqual(0);
   });
 
-  test('should filter items by type', async ({ page }) => {
+  test("should filter items by type", async ({ page }) => {
     // Look for type filter
     const typeFilter = page
       .getByLabel(/type|filter.*type/i)
       .first()
-      .or(page.locator('select').filter({ hasText: /type/i }).first());
+      .or(page.locator("select").filter({ hasText: /type/i }).first());
 
     await expect(typeFilter).toBeVisible({ timeout: 2000 });
 
@@ -364,17 +364,17 @@ test.describe('CRITICAL PATH: Search and Filter Functionality', { tag: '@smoke' 
     await typeOption.click();
     await page.waitForTimeout(500);
 
-    console.log('Type filter applied successfully');
+    console.log("Type filter applied successfully");
   });
 
-  test('should filter items by status', async ({ page }) => {
+  test("should filter items by status", async ({ page }) => {
     // Look for status filter
     const statusFilter = page
       .getByLabel(/status|filter.*status/i)
       .first()
       .or(
         page
-          .locator('select')
+          .locator("select")
           .filter({ hasText: /status/i })
           .first(),
       );
@@ -389,78 +389,78 @@ test.describe('CRITICAL PATH: Search and Filter Functionality', { tag: '@smoke' 
     await statusOption.click();
     await page.waitForTimeout(500);
 
-    console.log('Status filter applied successfully');
+    console.log("Status filter applied successfully");
   });
 
-  test('should clear search/filters', async ({ page }) => {
+  test("should clear search/filters", async ({ page }) => {
     // Fill search
     const searchInput = page
-      .getByRole('searchbox')
+      .getByRole("searchbox")
       .or(page.getByPlaceholder(/search/i))
       .first();
 
     await expect(searchInput).toBeVisible({ timeout: 2000 });
-    await searchInput.fill('test');
+    await searchInput.fill("test");
     await page.waitForTimeout(300);
 
     // Look for clear button
-    const clearBtn = page.getByRole('button', { name: /clear|reset|x/i }).first();
+    const clearBtn = page.getByRole("button", { name: /clear|reset|x/i }).first();
 
     await expect(clearBtn).toBeVisible({ timeout: 2000 });
     await clearBtn.click();
     await page.waitForTimeout(300);
 
     // Verify cleared
-    await expect(searchInput).toHaveValue('');
+    await expect(searchInput).toHaveValue("");
   });
 });
 
-test.describe('CRITICAL PATH: Core Data Integrity', { tag: '@smoke' }, () => {
-  test('should load and display initial data on dashboard', async ({ page }) => {
+test.describe("CRITICAL PATH: Core Data Integrity", { tag: "@smoke" }, () => {
+  test("should load and display initial data on dashboard", async ({ page }) => {
     // Critical: app should show data on initial load
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     // Wait a bit for any animations
     await page.waitForTimeout(1000);
 
     // Check for any content on the page
-    const mainLocator = page.locator('main').first();
+    const mainLocator = page.locator("main").first();
     const roleMainLocator = page.locator("[role='main']").first();
-    const bodyLocator = page.locator('body').first();
+    const bodyLocator = page.locator("body").first();
 
     await expect(mainLocator.or(roleMainLocator).or(bodyLocator)).toBeVisible({ timeout: 2000 });
   });
 
-  test('should handle navigation without losing state', async ({ page }) => {
+  test("should handle navigation without losing state", async ({ page }) => {
     // 1. Go to projects
-    await page.goto('/projects');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/projects");
+    await page.waitForLoadState("networkidle");
 
     // 2. Do a search
     const searchInput = page
-      .getByRole('searchbox')
+      .getByRole("searchbox")
       .or(page.getByPlaceholder(/search/i))
       .first();
 
     await expect(searchInput).toBeVisible({ timeout: 2000 });
-    await searchInput.fill('test');
+    await searchInput.fill("test");
 
     // 3. Navigate away and back
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     await page.goBack();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     // Should be back at projects
-    await expect(page).toHaveURL('/projects');
+    await expect(page).toHaveURL("/projects");
   });
 
-  test('should handle error states gracefully', async ({ page }) => {
+  test("should handle error states gracefully", async ({ page }) => {
     // Try to navigate to non-existent item
-    await page.goto('/items/non-existent-id-12345', {
-      waitUntil: 'networkidle',
+    await page.goto("/items/non-existent-id-12345", {
+      waitUntil: "networkidle",
     });
 
     // Page should either:

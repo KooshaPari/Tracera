@@ -4,20 +4,20 @@
  * @vitest-environment jsdom
  */
 
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-import { act, renderHook, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useGpuForceLayout } from '../useGpuForceLayout';
-import { disposeGPUForceLayout } from '../gpuForceLayout';
+import { useGpuForceLayout } from "../useGpuForceLayout";
+import { disposeGPUForceLayout } from "../gpuForceLayout";
 
 const createNodes = (count: number): Node[] =>
   Array.from({ length: count }, (_, i) => ({
     data: {},
     id: `node-${i}`,
     position: { x: 0, y: 0 },
-    type: 'default',
+    type: "default",
   }));
 
 const createEdges = (count: number): Edge[] =>
@@ -31,7 +31,7 @@ class MockLayoutWorker {
   private messageListeners: Array<(event: MessageEvent) => void> = [];
 
   addEventListener(type: string, listener: (event: MessageEvent) => void) {
-    if (type === 'message') {
+    if (type === "message") {
       this.messageListeners.push(listener);
     }
   }
@@ -46,7 +46,7 @@ class MockLayoutWorker {
             x: index + 1,
             y: index + 1,
           })),
-          type: 'result',
+          type: "result",
         },
       } as MessageEvent;
       this.messageListeners.forEach((listener) => listener(event));
@@ -60,8 +60,8 @@ const originalGetContext = HTMLCanvasElement.prototype.getContext;
 
 describe(useGpuForceLayout, () => {
   beforeEach(() => {
-    vi.stubGlobal('Worker', MockLayoutWorker);
-    Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+    vi.stubGlobal("Worker", MockLayoutWorker);
+    Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
       configurable: true,
       value: vi.fn(() => null),
     });
@@ -69,7 +69,7 @@ describe(useGpuForceLayout, () => {
   });
 
   afterEach(() => {
-    Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+    Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
       configurable: true,
       value: originalGetContext,
     });
@@ -77,8 +77,8 @@ describe(useGpuForceLayout, () => {
     vi.restoreAllMocks();
   });
 
-  describe('basic functionality', () => {
-    it('should initialize with empty nodes', () => {
+  describe("basic functionality", () => {
+    it("should initialize with empty nodes", () => {
       const { result } = renderHook(() => useGpuForceLayout([], []));
 
       expect(result.current.nodes).toEqual([]);
@@ -86,7 +86,7 @@ describe(useGpuForceLayout, () => {
       expect(result.current.progress).toBe(0);
     });
 
-    it('should layout small graph on main thread', async () => {
+    it("should layout small graph on main thread", async () => {
       const nodes = createNodes(10);
       const edges = createEdges(10);
 
@@ -107,7 +107,7 @@ describe(useGpuForceLayout, () => {
       expect(node0.position.x).not.toBe(0);
     });
 
-    it('should handle disabled option', () => {
+    it("should handle disabled option", () => {
       const nodes = createNodes(5);
       const edges = createEdges(5);
 
@@ -123,8 +123,8 @@ describe(useGpuForceLayout, () => {
     });
   });
 
-  describe('state management', () => {
-    it('should track computing state', async () => {
+  describe("state management", () => {
+    it("should track computing state", async () => {
       const nodes = createNodes(100);
       const edges = createEdges(100);
 
@@ -145,7 +145,7 @@ describe(useGpuForceLayout, () => {
       expect(result.current.duration).toBeGreaterThan(0);
     });
 
-    it('should provide progress updates for large graphs', async () => {
+    it("should provide progress updates for large graphs", async () => {
       const nodes = createNodes(1500); // Above worker threshold
       const edges = createEdges(1500);
 
@@ -166,8 +166,8 @@ describe(useGpuForceLayout, () => {
     });
   });
 
-  describe('configuration', () => {
-    it('should accept custom force config', async () => {
+  describe("configuration", () => {
+    it("should accept custom force config", async () => {
       const nodes = createNodes(20);
       const edges = createEdges(20);
 
@@ -192,7 +192,7 @@ describe(useGpuForceLayout, () => {
       expect(node0.position.x).not.toBe(0);
     });
 
-    it('should handle animation duration', async () => {
+    it("should handle animation duration", async () => {
       const nodes = createNodes(10);
       const edges = createEdges(10);
 
@@ -209,8 +209,8 @@ describe(useGpuForceLayout, () => {
     });
   });
 
-  describe('calculateLayout function', () => {
-    it('should allow manual layout calculation', async () => {
+  describe("calculateLayout function", () => {
+    it("should allow manual layout calculation", async () => {
       const nodes = createNodes(5);
       const edges = createEdges(5);
 
@@ -227,7 +227,7 @@ describe(useGpuForceLayout, () => {
       expect(firstNode.position.x).not.toBe(0);
     });
 
-    it('should return original nodes when disabled', async () => {
+    it("should return original nodes when disabled", async () => {
       const nodes = createNodes(5);
       const edges = createEdges(5);
 
@@ -239,21 +239,21 @@ describe(useGpuForceLayout, () => {
     });
   });
 
-  describe('error handling', () => {
-    it('should handle empty nodes gracefully', async () => {
+  describe("error handling", () => {
+    it("should handle empty nodes gracefully", async () => {
       const { result } = renderHook(() => useGpuForceLayout([], [], { animateTransitions: false }));
 
       expect(result.current.nodes).toEqual([]);
       expect(result.current.error).toBeNull();
     });
 
-    it('should preserve node data on error', async () => {
+    it("should preserve node data on error", async () => {
       const nodes: Node[] = [
         {
-          data: { label: 'Test' },
-          id: '1',
+          data: { label: "Test" },
+          id: "1",
           position: { x: 0, y: 0 },
-          type: 'custom',
+          type: "custom",
         },
       ];
 
@@ -267,12 +267,12 @@ describe(useGpuForceLayout, () => {
 
       const node0 = result.current.nodes[0];
       expect(node0).toBeDefined();
-      expect(node0.data).toEqual({ label: 'Test' });
+      expect(node0.data).toEqual({ label: "Test" });
     });
   });
 
-  describe('updates and re-renders', () => {
-    it('should recalculate when nodes change', async () => {
+  describe("updates and re-renders", () => {
+    it("should recalculate when nodes change", async () => {
       const { result, rerender } = renderHook(
         ({ nodes, edges }) => useGpuForceLayout(nodes, edges, { animateTransitions: false }),
         {
@@ -300,7 +300,7 @@ describe(useGpuForceLayout, () => {
       expect(result.current.nodes.length).toBe(10);
     });
 
-    it('should not recalculate when nodes are same', async () => {
+    it("should not recalculate when nodes are same", async () => {
       const nodes = createNodes(5);
       const edges = createEdges(5);
 
@@ -325,8 +325,8 @@ describe(useGpuForceLayout, () => {
     });
   });
 
-  describe('worker usage', () => {
-    it('should use worker for large graphs', async () => {
+  describe("worker usage", () => {
+    it("should use worker for large graphs", async () => {
       const nodes = createNodes(1500); // Above WORKER_THRESHOLD
       const edges = createEdges(1500);
 
@@ -347,7 +347,7 @@ describe(useGpuForceLayout, () => {
       expect(result.current.duration).toBeGreaterThan(0);
     });
 
-    it('should use main thread for small graphs', async () => {
+    it("should use main thread for small graphs", async () => {
       const nodes = createNodes(50); // Below WORKER_THRESHOLD
       const edges = createEdges(50);
 

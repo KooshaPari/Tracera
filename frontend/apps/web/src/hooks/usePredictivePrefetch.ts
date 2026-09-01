@@ -27,9 +27,9 @@
  * ```
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 /**
  * Viewport state including position, dimensions, and zoom
@@ -210,13 +210,13 @@ export function usePredictivePrefetch({
         // Trigger prefetch
         try {
           void Promise.resolve(loadViewport(predictedViewport)).catch((error: unknown) => {
-            if (process.env.NODE_ENV === 'development') {
-              logger.warn('[usePredictivePrefetch] Prefetch failed:', error);
+            if (process.env.NODE_ENV === "development") {
+              logger.warn("[usePredictivePrefetch] Prefetch failed:", error);
             }
           });
         } catch (error) {
-          if (process.env.NODE_ENV === 'development') {
-            logger.warn('[usePredictivePrefetch] Prefetch failed:', error);
+          if (process.env.NODE_ENV === "development") {
+            logger.warn("[usePredictivePrefetch] Prefetch failed:", error);
           }
         }
       }, debounceDelay);

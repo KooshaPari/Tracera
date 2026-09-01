@@ -1,41 +1,41 @@
-import type { Item } from '@tracertm/types';
+import type { Item } from "@tracertm/types";
 
-import type { DimensionEntry, ItemLink, TimelineEvent } from './types';
+import type { DimensionEntry, ItemLink, TimelineEvent } from "./types";
 
 type MetadataEntry = [string, unknown];
 
-const EM_DASH = '–';
-const UNKNOWN_LABEL = 'Unknown';
-const DEFAULT_VIEW_TYPE = 'feature';
+const EM_DASH = "–";
+const UNKNOWN_LABEL = "Unknown";
+const DEFAULT_VIEW_TYPE = "feature";
 
 const SHORT_ID_LENGTH = 8;
 const SORT_DESCENDING = -1;
 const SORT_ASCENDING = 1;
 
 const INTEGRATION_KEYS = new Set<string>([
-  'external_system',
-  'external_id',
-  'external_key',
-  'external_url',
-  'repo_full_name',
-  'issue_number',
-  'state',
-  'labels',
-  'projectId',
-  'team_id',
-  'identifier',
-  'url',
+  "external_system",
+  "external_id",
+  "external_key",
+  "external_url",
+  "repo_full_name",
+  "issue_number",
+  "state",
+  "labels",
+  "projectId",
+  "team_id",
+  "identifier",
+  "url",
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   if (value === null) {
     return false;
   }
-  return typeof value === 'object';
+  return typeof value === "object";
 }
 
 function readNonEmptyString(value: unknown): string | undefined {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return;
   }
   const trimmed = value.trim();
@@ -57,17 +57,17 @@ function objectToString(value: object): string {
 }
 
 function formatPrimitive(value: Exclude<unknown, object>): string {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
     return String(value);
   }
-  if (typeof value === 'symbol') {
+  if (typeof value === "symbol") {
     return value.description ?? value.toString();
   }
-  if (typeof value === 'function') {
-    return '[function]';
+  if (typeof value === "function") {
+    return "[function]";
   }
   return EM_DASH;
 }
@@ -85,9 +85,9 @@ function formatValue(value: unknown): string {
     return EM_DASH;
   }
   if (Array.isArray(value)) {
-    return value.join(', ');
+    return value.join(", ");
   }
-  if (typeof value === 'object') {
+  if (typeof value === "object") {
     return formatObjectValue(value);
   }
   return formatPrimitive(value);
@@ -98,7 +98,7 @@ function defaultViewTypeFromParams(viewTypeParam: string | undefined, itemView: 
   if (fromParam !== undefined) {
     return fromParam.toLowerCase();
   }
-  if (typeof itemView === 'string') {
+  if (typeof itemView === "string") {
     const normalized = readNonEmptyString(itemView);
     if (normalized !== undefined) {
       return normalized.toLowerCase();
@@ -109,7 +109,7 @@ function defaultViewTypeFromParams(viewTypeParam: string | undefined, itemView: 
 
 function buildItemLink(projectId: string | undefined, viewType: string, id: string): string {
   if (projectId === undefined) {
-    return '/projects';
+    return "/projects";
   }
   return `/projects/${projectId}/views/${viewType}/${id}`;
 }
@@ -172,10 +172,10 @@ function dimensionEntries(item: Item | undefined): DimensionEntry[] {
 
   const entries: DimensionEntry[] = [];
   const baseEntries: readonly [string, unknown][] = [
-    ['Maturity', dims.maturity],
-    ['Complexity', dims.complexity],
-    ['Risk', dims.risk],
-    ['Coverage', dims.coverage],
+    ["Maturity", dims.maturity],
+    ["Complexity", dims.complexity],
+    ["Risk", dims.risk],
+    ["Coverage", dims.coverage],
   ];
   for (const [label, value] of baseEntries) {
     if (value !== undefined) {
@@ -192,11 +192,11 @@ function dimensionEntries(item: Item | undefined): DimensionEntry[] {
 
 function buildCreatedEvent(item: Item, createdAt: string): TimelineEvent {
   let statusLabel = UNKNOWN_LABEL;
-  if (typeof item.status === 'string') {
+  if (typeof item.status === "string") {
     statusLabel = item.status;
   }
   return {
-    label: 'Item created',
+    label: "Item created",
     timestamp: createdAt,
     detail: `Status: ${statusLabel}`,
   };
@@ -204,7 +204,7 @@ function buildCreatedEvent(item: Item, createdAt: string): TimelineEvent {
 
 function buildUpdatedEvent(item: Item, updatedAt: string): TimelineEvent {
   return {
-    label: 'Item updated',
+    label: "Item updated",
     timestamp: updatedAt,
     detail: `v${String(item.version)}`,
   };
@@ -212,7 +212,7 @@ function buildUpdatedEvent(item: Item, updatedAt: string): TimelineEvent {
 
 function buildVersionBumpEvent(item: Item, updatedAt: string): TimelineEvent {
   return {
-    label: 'Version bump',
+    label: "Version bump",
     timestamp: updatedAt,
     detail: `Now at v${String(item.version)}`,
   };
@@ -225,20 +225,20 @@ function buildExternalSyncEvent(
   let foundSystemValue = false;
   let systemValue: unknown = undefined;
   for (const [key, value] of integrationEntriesList) {
-    if (key === 'external_system') {
+    if (key === "external_system") {
       systemValue = value;
       foundSystemValue = true;
       break;
     }
   }
 
-  let detail = 'Integration data attached';
+  let detail = "Integration data attached";
   if (foundSystemValue) {
     detail = `System: ${formatValue(systemValue)}`;
   }
 
   return {
-    label: 'External sync',
+    label: "External sync",
     timestamp: updatedAt,
     detail,
   };
@@ -263,7 +263,7 @@ function buildTimelineEvents(
     events.push(buildUpdatedEvent(item, updatedAt));
   }
 
-  if (typeof item.version === 'number' && item.version > 1 && updatedAt !== undefined) {
+  if (typeof item.version === "number" && item.version > 1 && updatedAt !== undefined) {
     events.push(buildVersionBumpEvent(item, updatedAt));
   }
 

@@ -8,9 +8,9 @@ import {
   normalizeCreateItemWithSpecData,
   normalizeItem,
   readNonEmptyString,
-} from '@/hooks/useItems/index';
+} from "@/hooks/useItems/index";
 
-export type { CreateItemData, CreateItemWithSpecData } from '@/hooks/useItems/index';
+export type { CreateItemData, CreateItemWithSpecData } from "@/hooks/useItems/index";
 
 const itemsUtils = {
   EMPTY_STRING,

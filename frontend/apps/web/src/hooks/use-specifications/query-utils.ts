@@ -3,7 +3,7 @@ import type {
   QueryKey,
   UseMutationResult,
   UseQueryResult,
-} from '@tanstack/react-query';
+} from "@tanstack/react-query";
 
 type QueryResult<TResult> = UseQueryResult<TResult>;
 

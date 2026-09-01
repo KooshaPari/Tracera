@@ -2,21 +2,21 @@
  * Custom test environment setup
  */
 
-import type { Environment, EnvironmentOptions } from 'vitest';
+import type { Environment, EnvironmentOptions } from "vitest";
 
-import { JSDOM } from 'jsdom';
-import { populateGlobal } from 'vitest/environments';
+import { JSDOM } from "jsdom";
+import { populateGlobal } from "vitest/environments";
 
 export default class CustomTestEnvironment implements Environment {
-  name = 'custom-test-env';
+  name = "custom-test-env";
   dom!: JSDOM;
-  transformMode = 'ssr' as const;
+  transformMode = "ssr" as const;
 
   async setup(global: typeof globalThis, { jsdom = {} }: EnvironmentOptions) {
-    this.dom = new JSDOM('<!DOCTYPE html>', {
+    this.dom = new JSDOM("<!DOCTYPE html>", {
       ...(jsdom as any),
       pretendToBeVisual: true,
-      url: 'http://localhost/',
+      url: "http://localhost/",
     });
 
     const { window } = this.dom;
@@ -50,13 +50,13 @@ export default class CustomTestEnvironment implements Environment {
       };
     })();
 
-    Object.defineProperty(global, 'localStorage', {
+    Object.defineProperty(global, "localStorage", {
       configurable: true,
       value: localStorageMock,
       writable: true,
     });
 
-    Object.defineProperty(global.window, 'localStorage', {
+    Object.defineProperty(global.window, "localStorage", {
       configurable: true,
       value: localStorageMock,
       writable: true,

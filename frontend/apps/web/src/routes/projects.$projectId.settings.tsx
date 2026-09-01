@@ -1,9 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from "@tanstack/react-router";
 
-import { requireAuth } from '@/lib/route-guards';
-import { ProjectSettingsView } from '@/views/ProjectSettingsView';
+import { requireAuth } from "@/lib/route-guards";
+import { ProjectSettingsView } from "@/views/ProjectSettingsView";
 
-export const Route = createFileRoute('/projects/$projectId/settings')({
+export const Route = createFileRoute("/projects/$projectId/settings")({
   beforeLoad: async () => {
     await requireAuth();
   },

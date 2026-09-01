@@ -1,22 +1,22 @@
-import type { Preview } from '@storybook/react';
+import type { Preview } from "@storybook/react";
 
-import '../src/index.css';
+import "../src/index.css";
 
 const preview: Preview = {
   decorators: [
     (Story) => (
-      <div className='min-h-screen bg-white dark:bg-slate-950'>
+      <div className="min-h-screen bg-white dark:bg-slate-950">
         <Story />
       </div>
     ),
   ],
   parameters: {
-    actions: { argTypesRegex: '^on[A-Z].*' },
+    actions: { argTypesRegex: "^on[A-Z].*" },
     a11y: {
       config: {
         rules: [
-          { enabled: true, id: 'color-contrast' },
-          { enabled: true, id: 'label' },
+          { enabled: true, id: "color-contrast" },
+          { enabled: true, id: "label" },
         ],
       },
     },
@@ -24,11 +24,11 @@ const preview: Preview = {
       delay: 300,
       modes: {
         dark: {
-          matcherUrl: '**/dark',
+          matcherUrl: "**/dark",
           query: "[data-theme='dark']",
         },
         light: {
-          matcherUrl: '**/light',
+          matcherUrl: "**/light",
           query: "[data-theme='light']",
         },
       },
@@ -40,35 +40,35 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
-    layout: 'fullscreen',
+    layout: "fullscreen",
     themes: {
-      default: 'light',
+      default: "light",
       list: [
-        { class: 'light', color: '#ffffff', name: 'Light' },
-        { class: 'dark', color: '#0f172a', name: 'Dark' },
+        { class: "light", color: "#ffffff", name: "Light" },
+        { class: "dark", color: "#0f172a", name: "Dark" },
       ],
     },
     viewport: {
       viewports: {
         desktop: {
-          name: 'Desktop',
+          name: "Desktop",
           styles: {
-            height: '900px',
-            width: '1440px',
+            height: "900px",
+            width: "1440px",
           },
         },
         mobile: {
-          name: 'Mobile',
+          name: "Mobile",
           styles: {
-            height: '667px',
-            width: '375px',
+            height: "667px",
+            width: "375px",
           },
         },
         tablet: {
-          name: 'Tablet',
+          name: "Tablet",
           styles: {
-            height: '1024px',
-            width: '768px',
+            height: "1024px",
+            width: "768px",
           },
         },
       },

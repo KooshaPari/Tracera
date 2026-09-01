@@ -12,8 +12,8 @@ import {
   Link2,
   Sparkles,
   X,
-} from 'lucide-react';
-import { memo, useState } from 'react';
+} from "lucide-react";
+import { memo, useState } from "react";
 
 import type {
   CanonicalConcept,
@@ -21,21 +21,21 @@ import type {
   EquivalenceLink,
   EquivalenceStrategy,
   Item,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@tracertm/ui/components/Card';
-import { ScrollArea } from '@tracertm/ui/components/ScrollArea';
-import { Separator } from '@tracertm/ui/components/Separator';
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@tracertm/ui/components/Card";
+import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
+import { Separator } from "@tracertm/ui/components/Separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@tracertm/ui/components/Tooltip';
+} from "@tracertm/ui/components/Tooltip";
 
-import { PERSPECTIVE_CONFIGS } from './types';
+import { PERSPECTIVE_CONFIGS } from "./types";
 
 // =============================================================================
 // TYPES
@@ -70,7 +70,7 @@ interface EquivalenceItemDisplay {
   projection?: CanonicalProjection | undefined;
   confidence: number;
   strategy?: EquivalenceStrategy | undefined;
-  status: 'confirmed' | 'suggested' | 'rejected' | 'auto_confirmed';
+  status: "confirmed" | "suggested" | "rejected" | "auto_confirmed";
   perspectiveId: string;
   perspectiveColor: string;
   perspectiveLabel: string;
@@ -81,15 +81,15 @@ interface EquivalenceItemDisplay {
 // =============================================================================
 
 const STRATEGY_LABELS: Record<EquivalenceStrategy, string> = {
-  api_contract: 'API Contract',
-  co_occurrence: 'Co-occurrence',
-  explicit_annotation: 'Explicit Annotation',
-  manual_link: 'Manual Link',
-  naming_pattern: 'Naming Pattern',
-  semantic_similarity: 'Semantic Similarity',
-  shared_canonical: 'Shared Concept',
-  structural: 'Structural',
-  temporal: 'Temporal',
+  api_contract: "API Contract",
+  co_occurrence: "Co-occurrence",
+  explicit_annotation: "Explicit Annotation",
+  manual_link: "Manual Link",
+  naming_pattern: "Naming Pattern",
+  semantic_similarity: "Semantic Similarity",
+  shared_canonical: "Shared Concept",
+  structural: "Structural",
+  temporal: "Temporal",
 };
 
 // Strategy icons mapping (available for future icon support)
@@ -133,16 +133,16 @@ function EquivalencePanelComponent({
   );
 
   const confirmedItems = equivalenceItems.filter(
-    (e) => e.status === 'confirmed' || e.status === 'auto_confirmed',
+    (e) => e.status === "confirmed" || e.status === "auto_confirmed",
   );
-  const suggestedItems = equivalenceItems.filter((e) => e.status === 'suggested');
+  const suggestedItems = equivalenceItems.filter((e) => e.status === "suggested");
 
   if (!selectedItem) {
     return (
-      <Card className='border-dashed'>
-        <CardContent className='text-muted-foreground py-8 text-center'>
-          <Link2 className='mx-auto mb-2 h-8 w-8 opacity-50' />
-          <p className='text-sm'>Select an item to view its equivalences</p>
+      <Card className="border-dashed">
+        <CardContent className="text-muted-foreground py-8 text-center">
+          <Link2 className="mx-auto mb-2 h-8 w-8 opacity-50" />
+          <p className="text-sm">Select an item to view its equivalences</p>
         </CardContent>
       </Card>
     );
@@ -151,28 +151,28 @@ function EquivalencePanelComponent({
   return (
     <TooltipProvider>
       <Card>
-        <CardHeader className='px-4 py-3'>
-          <div className='flex items-center justify-between'>
-            <div className='flex items-center gap-2'>
+        <CardHeader className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
               <Button
-                variant='ghost'
-                size='sm'
-                className='h-6 w-6 p-0'
-                aria-label={isExpanded ? 'Collapse equivalences' : 'Expand equivalences'}
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                aria-label={isExpanded ? "Collapse equivalences" : "Expand equivalences"}
                 onClick={() => {
                   setIsExpanded(!isExpanded);
                 }}
               >
                 {isExpanded ? (
-                  <ChevronDown className='h-4 w-4' />
+                  <ChevronDown className="h-4 w-4" />
                 ) : (
-                  <ChevronRight className='h-4 w-4' />
+                  <ChevronRight className="h-4 w-4" />
                 )}
               </Button>
-              <ArrowLeftRight className='text-muted-foreground h-4 w-4' />
-              <CardTitle className='text-sm font-medium'>Equivalences</CardTitle>
+              <ArrowLeftRight className="text-muted-foreground h-4 w-4" />
+              <CardTitle className="text-sm font-medium">Equivalences</CardTitle>
               {equivalenceItems.length > 0 && (
-                <Badge variant='secondary' className='text-xs'>
+                <Badge variant="secondary" className="text-xs">
                   {equivalenceItems.length}
                 </Badge>
               )}
@@ -180,16 +180,16 @@ function EquivalencePanelComponent({
             {canonicalConcept && (
               <Tooltip delayDuration={200}>
                 <TooltipTrigger>
-                  <Badge variant='outline' className='gap-1 text-xs'>
-                    <GitBranch className='h-3 w-3' />
+                  <Badge variant="outline" className="gap-1 text-xs">
+                    <GitBranch className="h-3 w-3" />
                     {canonicalConcept.name}
                   </Badge>
                 </TooltipTrigger>
-                <TooltipContent side='left' className='max-w-xs'>
-                  <p className='font-medium'>Canonical Concept</p>
-                  <p className='text-muted-foreground text-xs'>
+                <TooltipContent side="left" className="max-w-xs">
+                  <p className="font-medium">Canonical Concept</p>
+                  <p className="text-muted-foreground text-xs">
                     {canonicalConcept.description ??
-                      'This item is part of a canonical concept that spans multiple perspectives.'}
+                      "This item is part of a canonical concept that spans multiple perspectives."}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -198,27 +198,27 @@ function EquivalencePanelComponent({
         </CardHeader>
 
         {isExpanded && (
-          <CardContent className='px-4 pt-0 pb-4'>
+          <CardContent className="px-4 pt-0 pb-4">
             {isLoading ? (
-              <div className='flex items-center justify-center py-8'>
-                <div className='border-primary h-5 w-5 animate-spin rounded-full border-2 border-t-transparent' />
+              <div className="flex items-center justify-center py-8">
+                <div className="border-primary h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" />
               </div>
             ) : equivalenceItems.length === 0 ? (
-              <div className='text-muted-foreground py-6 text-center'>
-                <Link2 className='mx-auto mb-2 h-6 w-6 opacity-50' />
-                <p className='text-sm'>No equivalences found</p>
-                <p className='mt-1 text-xs'>
+              <div className="text-muted-foreground py-6 text-center">
+                <Link2 className="mx-auto mb-2 h-6 w-6 opacity-50" />
+                <p className="text-sm">No equivalences found</p>
+                <p className="mt-1 text-xs">
                   This item doesn&apos;t have known equivalents in other perspectives
                 </p>
               </div>
             ) : (
-              <ScrollArea className='max-h-[400px]'>
-                <div className='space-y-3'>
+              <ScrollArea className="max-h-[400px]">
+                <div className="space-y-3">
                   {/* Confirmed equivalences */}
                   {confirmedItems.length > 0 && (
-                    <div className='space-y-2'>
-                      <div className='text-muted-foreground flex items-center gap-2 text-xs'>
-                        <CheckCircle2 className='h-3.5 w-3.5 text-green-500' />
+                    <div className="space-y-2">
+                      <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
                         <span>Confirmed ({confirmedItems.length})</span>
                       </div>
                       {confirmedItems.map((eq) => (
@@ -235,28 +235,28 @@ function EquivalencePanelComponent({
                   {suggestedItems.length > 0 && (
                     <>
                       {confirmedItems.length > 0 && <Separator />}
-                      <div className='space-y-2'>
-                        <div className='flex items-center justify-between'>
-                          <div className='text-muted-foreground flex items-center gap-2 text-xs'>
-                            <Sparkles className='h-3.5 w-3.5 text-amber-500' />
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
                             <span>Suggested ({suggestedItems.length})</span>
                           </div>
                           <Button
-                            variant='ghost'
-                            size='sm'
-                            className='h-6 px-2 text-xs'
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs"
                             onClick={() => {
                               setShowSuggestions(!showSuggestions);
                             }}
                           >
                             {showSuggestions ? (
                               <>
-                                <Eye className='mr-1 h-3 w-3' />
+                                <Eye className="mr-1 h-3 w-3" />
                                 Hide
                               </>
                             ) : (
                               <>
-                                <Eye className='mr-1 h-3 w-3' />
+                                <Eye className="mr-1 h-3 w-3" />
                                 Show
                               </>
                             )}
@@ -321,26 +321,26 @@ function EquivalenceItemCard({
 
   return (
     <div
-      className='group bg-card hover:bg-accent/50 relative flex cursor-pointer items-start gap-3 rounded-lg border p-2.5 transition-colors'
+      className="group bg-card hover:bg-accent/50 relative flex cursor-pointer items-start gap-3 rounded-lg border p-2.5 transition-colors"
       onClick={() => {
         onViewItem(item.id);
       }}
     >
       {/* Perspective indicator */}
       <div
-        className='h-full min-h-[40px] w-1 shrink-0 rounded-full'
+        className="h-full min-h-[40px] w-1 shrink-0 rounded-full"
         style={{ backgroundColor: perspectiveColor }}
       />
 
       {/* Content */}
-      <div className='min-w-0 flex-1'>
-        <div className='flex items-start justify-between gap-2'>
-          <div className='min-w-0 flex-1'>
-            <p className='truncate text-sm font-medium'>{item.title}</p>
-            <div className='mt-0.5 flex items-center gap-2'>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{item.title}</p>
+            <div className="mt-0.5 flex items-center gap-2">
               <Badge
-                variant='outline'
-                className='px-1.5 py-0 text-[10px]'
+                variant="outline"
+                className="px-1.5 py-0 text-[10px]"
                 style={{
                   borderColor: perspectiveColor,
                   color: perspectiveColor,
@@ -348,7 +348,7 @@ function EquivalenceItemCard({
               >
                 {perspectiveLabel}
               </Badge>
-              <span className='text-muted-foreground text-xs capitalize'>{item.type}</span>
+              <span className="text-muted-foreground text-xs capitalize">{item.type}</span>
             </div>
           </div>
 
@@ -358,28 +358,28 @@ function EquivalenceItemCard({
 
         {/* Strategy explanation */}
         {strategy && (
-          <p className='text-muted-foreground mt-1.5 line-clamp-1 text-xs'>
+          <p className="text-muted-foreground mt-1.5 line-clamp-1 text-xs">
             Detected via {STRATEGY_LABELS[strategy].toLowerCase()}
           </p>
         )}
       </div>
 
       {/* Actions for suggested items */}
-      {showActions && status === 'suggested' && (
-        <div className='flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
+      {showActions && status === "suggested" && (
+        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           {onConfirm && (
             <Tooltip delayDuration={200}>
               <TooltipTrigger asChild>
                 <Button
-                  variant='ghost'
-                  size='sm'
-                  className='h-7 w-7 p-0 text-green-600 hover:bg-green-100 hover:text-green-700'
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-green-600 hover:bg-green-100 hover:text-green-700"
                   onClick={(e) => {
                     e.stopPropagation();
                     onConfirm();
                   }}
                 >
-                  <Check className='h-4 w-4' />
+                  <Check className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Confirm equivalence</TooltipContent>
@@ -389,15 +389,15 @@ function EquivalenceItemCard({
             <Tooltip delayDuration={200}>
               <TooltipTrigger asChild>
                 <Button
-                  variant='ghost'
-                  size='sm'
-                  className='h-7 w-7 p-0 text-red-600 hover:bg-red-100 hover:text-red-700'
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-red-600 hover:bg-red-100 hover:text-red-700"
                   onClick={(e) => {
                     e.stopPropagation();
                     onReject();
                   }}
                 >
-                  <X className='h-4 w-4' />
+                  <X className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Reject equivalence</TooltipContent>
@@ -416,28 +416,28 @@ interface ConfidenceBadgeProps {
 
 function getConfidenceColor(conf: number): string {
   if (conf >= 0.9) {
-    return 'text-green-600 bg-green-100';
+    return "text-green-600 bg-green-100";
   }
   if (conf >= 0.7) {
-    return 'text-amber-600 bg-amber-100';
+    return "text-amber-600 bg-amber-100";
   }
   if (conf >= 0.5) {
-    return 'text-orange-600 bg-orange-100';
+    return "text-orange-600 bg-orange-100";
   }
-  return 'text-red-600 bg-red-100';
+  return "text-red-600 bg-red-100";
 }
 
 function getConfidenceLabel(conf: number): string {
   if (conf >= 0.9) {
-    return 'High';
+    return "High";
   }
   if (conf >= 0.7) {
-    return 'Medium';
+    return "Medium";
   }
   if (conf >= 0.5) {
-    return 'Low';
+    return "Low";
   }
-  return 'Very Low';
+  return "Very Low";
 }
 
 function ConfidenceBadge({ confidence, strategy }: ConfidenceBadgeProps) {
@@ -445,17 +445,17 @@ function ConfidenceBadge({ confidence, strategy }: ConfidenceBadgeProps) {
     <Tooltip delayDuration={200}>
       <TooltipTrigger>
         <Badge
-          variant='secondary'
+          variant="secondary"
           className={`px-1.5 py-0 text-[10px] ${getConfidenceColor(confidence)}`}
         >
           {Math.round(confidence * 100)}%
         </Badge>
       </TooltipTrigger>
-      <TooltipContent side='left'>
-        <div className='space-y-1'>
-          <p className='font-medium'>{getConfidenceLabel(confidence)} Confidence</p>
+      <TooltipContent side="left">
+        <div className="space-y-1">
+          <p className="font-medium">{getConfidenceLabel(confidence)} Confidence</p>
           {strategy && (
-            <p className='text-muted-foreground text-xs'>
+            <p className="text-muted-foreground text-xs">
               Detected via: {STRATEGY_LABELS[strategy]}
             </p>
           )}
@@ -537,10 +537,10 @@ function buildEquivalenceItems(
       perspectiveLabel: perspective.label,
       projection,
       status: projection.isConfirmed
-        ? 'confirmed'
+        ? "confirmed"
         : projection.isRejected
-          ? 'rejected'
-          : 'suggested',
+          ? "rejected"
+          : "suggested",
       strategy: projection.strategy,
     });
   }
@@ -566,47 +566,47 @@ function getPerspectiveForItem(item: Item): {
   const itemType = item.type.toLowerCase();
 
   // Technical types
-  if (['api', 'database', 'code', 'architecture', 'infrastructure'].includes(itemType)) {
-    const config = PERSPECTIVE_CONFIGS.find((p) => p.id === 'technical');
+  if (["api", "database", "code", "architecture", "infrastructure"].includes(itemType)) {
+    const config = PERSPECTIVE_CONFIGS.find((p) => p.id === "technical");
     return config
       ? { color: config.color, id: config.id, label: config.label }
-      : { color: '#22c55e', id: 'technical', label: 'Technical' };
+      : { color: "#22c55e", id: "technical", label: "Technical" };
   }
 
   // UI types
-  if (['wireframe', 'ui_component', 'page', 'component', 'layout', 'section'].includes(itemType)) {
-    const config = PERSPECTIVE_CONFIGS.find((p) => p.id === 'ui');
+  if (["wireframe", "ui_component", "page", "component", "layout", "section"].includes(itemType)) {
+    const config = PERSPECTIVE_CONFIGS.find((p) => p.id === "ui");
     return config
       ? { color: config.color, id: config.id, label: config.label }
-      : { color: '#ec4899', id: 'ui', label: 'UI' };
+      : { color: "#ec4899", id: "ui", label: "UI" };
   }
 
   // Product types
-  if (['requirement', 'feature', 'user_story', 'story', 'journey'].includes(itemType)) {
-    const config = PERSPECTIVE_CONFIGS.find((p) => p.id === 'product');
+  if (["requirement", "feature", "user_story", "story", "journey"].includes(itemType)) {
+    const config = PERSPECTIVE_CONFIGS.find((p) => p.id === "product");
     return config
       ? { color: config.color, id: config.id, label: config.label }
-      : { color: '#9333ea', id: 'product', label: 'Product' };
+      : { color: "#9333ea", id: "product", label: "Product" };
   }
 
   // Business types
-  if (['epic', 'task', 'bug'].includes(itemType)) {
-    const config = PERSPECTIVE_CONFIGS.find((p) => p.id === 'business');
+  if (["epic", "task", "bug"].includes(itemType)) {
+    const config = PERSPECTIVE_CONFIGS.find((p) => p.id === "business");
     return config
       ? { color: config.color, id: config.id, label: config.label }
-      : { color: '#3b82f6', id: 'business', label: 'Business' };
+      : { color: "#3b82f6", id: "business", label: "Business" };
   }
 
   // Security types
-  if (['security', 'vulnerability', 'audit'].includes(itemType)) {
-    const config = PERSPECTIVE_CONFIGS.find((p) => p.id === 'security');
+  if (["security", "vulnerability", "audit"].includes(itemType)) {
+    const config = PERSPECTIVE_CONFIGS.find((p) => p.id === "security");
     return config
       ? { color: config.color, id: config.id, label: config.label }
-      : { color: '#ef4444', id: 'security', label: 'Security' };
+      : { color: "#ef4444", id: "security", label: "Security" };
   }
 
   // Default
-  return { color: '#64748b', id: 'all', label: 'All' };
+  return { color: "#64748b", id: "all", label: "All" };
 }
 
 // =============================================================================

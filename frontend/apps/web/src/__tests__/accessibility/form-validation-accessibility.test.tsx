@@ -3,12 +3,12 @@
  * Tests WCAG 2.1 AA compliance for form validation and error messaging
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from "@testing-library/react";
+import { userEvent } from "@testing-library/user-event";
+import { useState } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { axe } from '../a11y/setup';
+import { axe } from "../a11y/setup";
 
 let user = userEvent.setup();
 
@@ -17,9 +17,9 @@ beforeEach(() => {
 });
 
 enum FormField {
-  Email = 'email',
-  Message = 'message',
-  Name = 'name',
+  Email = "email",
+  Message = "message",
+  Name = "name",
 }
 
 interface FormDataMap {
@@ -50,10 +50,10 @@ const MIN_MESSAGE_LENGTH = 10;
 const DEFAULT_ON_SUBMIT = vi.fn();
 
 function normalizeInput(value: FormDataEntryValue | null): string {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
-  return '';
+  return "";
 }
 
 function buildFormValues(form: HTMLFormElement): FormDataMap {
@@ -67,22 +67,22 @@ function buildFormValues(form: HTMLFormElement): FormDataMap {
 
 function validateFormData(formData: FormDataMap): FormErrors {
   const newErrors: FormErrors = {};
-  const email = formData.email ?? '';
-  const name = formData.name ?? '';
-  const message = formData.message ?? '';
+  const email = formData.email ?? "";
+  const name = formData.name ?? "";
+  const message = formData.message ?? "";
 
   if (email.trim().length === 0) {
-    newErrors.email = 'Email is required';
+    newErrors.email = "Email is required";
   } else if (!EMAIL_REGEX.test(email)) {
-    newErrors.email = 'Please enter a valid email address';
+    newErrors.email = "Please enter a valid email address";
   }
 
   if (name.trim().length < MIN_NAME_LENGTH) {
-    newErrors.name = 'Name must be at least 2 characters';
+    newErrors.name = "Name must be at least 2 characters";
   }
 
   if (message.trim().length < MIN_MESSAGE_LENGTH) {
-    newErrors.message = 'Message must be at least 10 characters';
+    newErrors.message = "Message must be at least 10 characters";
   }
 
   return newErrors;
@@ -90,7 +90,7 @@ function validateFormData(formData: FormDataMap): FormErrors {
 
 function buildInputClass(hasError: boolean): string {
   let className =
-    'w-full rounded border px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-600';
+    "w-full rounded border px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-600";
   if (hasError) {
     className = `${className} border-red-600 bg-red-50`;
   } else {
@@ -113,9 +113,9 @@ function buildErrorSummary(errors: FormErrors, touched: FormTouched): JSX.Elemen
   }
 
   return (
-    <div role='alert' aria-live='polite' className='mt-4 border-l-4 border-red-600 bg-red-50 p-4'>
-      <h3 className='mb-2 font-semibold text-red-800'>Please fix the following errors:</h3>
-      <ul className='list-inside list-disc text-sm text-red-700'>
+    <div role="alert" aria-live="polite" className="mt-4 border-l-4 border-red-600 bg-red-50 p-4">
+      <h3 className="mb-2 font-semibold text-red-800">Please fix the following errors:</h3>
+      <ul className="list-inside list-disc text-sm text-red-700">
         {Object.entries(errors).map(([field, error]) => (
           <li key={field}>{error}</li>
         ))}
@@ -178,7 +178,7 @@ function MockAccessibleForm({
   const handleBlur = (fieldName: FormField): void => {
     setTouched((prev) => ({ ...prev, [fieldName]: true }));
 
-    const formElement = document.querySelector('form');
+    const formElement = document.querySelector("form");
     if (!formElement) {
       return;
     }
@@ -202,27 +202,27 @@ function MockAccessibleForm({
 
   let nameDescribedBy: string | undefined;
   if (errors.name) {
-    nameDescribedBy = 'name-error';
+    nameDescribedBy = "name-error";
   }
 
   let emailDescribedBy: string | undefined;
   if (errors.email) {
-    emailDescribedBy = 'email-error';
+    emailDescribedBy = "email-error";
   } else {
-    emailDescribedBy = 'email-hint';
+    emailDescribedBy = "email-hint";
   }
 
   let messageDescribedBy: string | undefined;
   if (errors.message) {
-    messageDescribedBy = 'message-error';
+    messageDescribedBy = "message-error";
   } else {
-    messageDescribedBy = 'message-help';
+    messageDescribedBy = "message-help";
   }
 
   let nameErrorNode: JSX.Element | undefined;
   if (nameHasError && errors.name) {
     nameErrorNode = (
-      <div id='name-error' role='alert' className='mt-2 text-sm text-red-600'>
+      <div id="name-error" role="alert" className="mt-2 text-sm text-red-600">
         {errors.name}
       </div>
     );
@@ -231,7 +231,7 @@ function MockAccessibleForm({
   let emailErrorNode: JSX.Element | undefined;
   if (emailHasError && errors.email) {
     emailErrorNode = (
-      <div id='email-error' role='alert' className='mt-2 text-sm text-red-600'>
+      <div id="email-error" role="alert" className="mt-2 text-sm text-red-600">
         {errors.email}
       </div>
     );
@@ -240,7 +240,7 @@ function MockAccessibleForm({
   let messageErrorNode: JSX.Element | undefined;
   if (messageHasError && errors.message) {
     messageErrorNode = (
-      <div id='message-error' role='alert' className='mt-2 text-sm text-red-600'>
+      <div id="message-error" role="alert" className="mt-2 text-sm text-red-600">
         {errors.message}
       </div>
     );
@@ -249,19 +249,19 @@ function MockAccessibleForm({
   const errorSummaryNode = buildErrorSummary(errors, touched);
 
   return (
-    <form onSubmit={handleSubmit} noValidate aria-label='Contact form'>
-      <div className='mb-6'>
-        <label htmlFor='name' className='mb-2 block text-sm font-medium'>
+    <form onSubmit={handleSubmit} noValidate aria-label="Contact form">
+      <div className="mb-6">
+        <label htmlFor="name" className="mb-2 block text-sm font-medium">
           Name
-          <span className='ml-1 text-red-600' aria-label='required'>
+          <span className="ml-1 text-red-600" aria-label="required">
             *
           </span>
         </label>
         <input
-          id='name'
-          name='name'
-          type='text'
-          placeholder='Your name'
+          id="name"
+          name="name"
+          type="text"
+          placeholder="Your name"
           onBlur={() => {
             handleBlur(FormField.Name);
           }}
@@ -273,18 +273,18 @@ function MockAccessibleForm({
         {nameErrorNode}
       </div>
 
-      <div className='mb-6'>
-        <label htmlFor='email' className='mb-2 block text-sm font-medium'>
+      <div className="mb-6">
+        <label htmlFor="email" className="mb-2 block text-sm font-medium">
           Email
-          <span className='ml-1 text-red-600' aria-label='required'>
+          <span className="ml-1 text-red-600" aria-label="required">
             *
           </span>
         </label>
         <input
-          id='email'
-          name='email'
-          type='email'
-          placeholder='your@email.com'
+          id="email"
+          name="email"
+          type="email"
+          placeholder="your@email.com"
           onBlur={() => {
             handleBlur(FormField.Email);
           }}
@@ -293,23 +293,23 @@ function MockAccessibleForm({
           className={buildInputClass(emailHasError)}
           required
         />
-        <span id='email-hint' className='sr-only'>
+        <span id="email-hint" className="sr-only">
           Email format: user@example.com
         </span>
         {emailErrorNode}
       </div>
 
-      <div className='mb-6'>
-        <label htmlFor='message' className='mb-2 block text-sm font-medium'>
+      <div className="mb-6">
+        <label htmlFor="message" className="mb-2 block text-sm font-medium">
           Message
-          <span className='ml-1 text-red-600' aria-label='required'>
+          <span className="ml-1 text-red-600" aria-label="required">
             *
           </span>
         </label>
         <textarea
-          id='message'
-          name='message'
-          placeholder='Your message here...'
+          id="message"
+          name="message"
+          placeholder="Your message here..."
           rows={4}
           onBlur={() => {
             handleBlur(FormField.Message);
@@ -319,24 +319,24 @@ function MockAccessibleForm({
           className={`resize-vertical ${buildInputClass(messageHasError)}`}
           required
         />
-        <span id='message-help' className='sr-only'>
+        <span id="message-help" className="sr-only">
           Message must be at least 10 characters long
         </span>
         {messageErrorNode}
       </div>
 
-      <div className='flex gap-3'>
+      <div className="flex gap-3">
         <button
-          type='submit'
+          type="submit"
           disabled={isSubmitting}
-          className='rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50'
+          className="rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50"
           aria-busy={isSubmitting}
         >
-          {isSubmitting ? 'Sending...' : 'Send Message'}
+          {isSubmitting ? "Sending..." : "Send Message"}
         </button>
         <button
-          type='reset'
-          className='rounded bg-gray-300 px-4 py-2 font-medium text-gray-800 hover:bg-gray-400'
+          type="reset"
+          className="rounded bg-gray-300 px-4 py-2 font-medium text-gray-800 hover:bg-gray-400"
         >
           Clear
         </button>
@@ -347,68 +347,68 @@ function MockAccessibleForm({
   );
 }
 
-describe('Form Validation - Field-Level Errors', () => {
-  it('should show error on invalid email', async () => {
+describe("Form Validation - Field-Level Errors", () => {
+  it("should show error on invalid email", async () => {
     const { container } = render(<MockAccessibleForm />);
 
-    const emailInput = screen.getByPlaceholderText('your@email.com');
-    await user.type(emailInput, 'invalid');
-    const focusAway = container.querySelector('button');
+    const emailInput = screen.getByPlaceholderText("your@email.com");
+    await user.type(emailInput, "invalid");
+    const focusAway = container.querySelector("button");
     if (focusAway) {
       await user.click(focusAway);
     }
 
     await waitFor(() => {
-      const error = document.querySelector('#email-error');
+      const error = document.querySelector("#email-error");
       expect(error).toBeInTheDocument();
-      expect(error).toHaveTextContent('Please enter a valid email address');
+      expect(error).toHaveTextContent("Please enter a valid email address");
     });
   });
 
-  it('should show error on missing required field', async () => {
+  it("should show error on missing required field", async () => {
     render(<MockAccessibleForm />);
 
-    const submitBtn = screen.getByRole('button', { name: 'Send Message' });
+    const submitBtn = screen.getByRole("button", { name: "Send Message" });
     await user.click(submitBtn);
 
     await waitFor(() => {
-      expect(document.querySelector('#email-error')).toHaveTextContent('Email is required');
-      expect(document.querySelector('#name-error')).toHaveTextContent(
-        'Name must be at least 2 characters',
+      expect(document.querySelector("#email-error")).toHaveTextContent("Email is required");
+      expect(document.querySelector("#name-error")).toHaveTextContent(
+        "Name must be at least 2 characters",
       );
     });
   });
 
-  it('should clear error when field becomes valid', async () => {
+  it("should clear error when field becomes valid", async () => {
     render(<MockAccessibleForm />);
 
-    const emailInput = screen.getByPlaceholderText('your@email.com');
-    const submitBtn = screen.getByRole('button', { name: 'Send Message' });
+    const emailInput = screen.getByPlaceholderText("your@email.com");
+    const submitBtn = screen.getByRole("button", { name: "Send Message" });
 
     await user.click(submitBtn);
     await user.clear(emailInput);
-    await user.type(emailInput, 'valid@email.com');
+    await user.type(emailInput, "valid@email.com");
     await user.click(submitBtn);
 
     await waitFor(() => {
-      expect(screen.queryByText('Please enter a valid email address')).not.toBeInTheDocument();
+      expect(screen.queryByText("Please enter a valid email address")).not.toBeInTheDocument();
     });
   });
 });
 
-describe('Form Validation - Error Announcements', () => {
-  it('should announce errors to screen readers', async () => {
+describe("Form Validation - Error Announcements", () => {
+  it("should announce errors to screen readers", async () => {
     const { container } = render(<MockAccessibleForm />);
 
-    const submitBtn = screen.getByRole('button', { name: 'Send Message' });
+    const submitBtn = screen.getByRole("button", { name: "Send Message" });
     await user.click(submitBtn);
 
     await waitFor(() => {
       const errorSummary = screen
-        .getByRole('heading', { name: 'Please fix the following errors:' })
+        .getByRole("heading", { name: "Please fix the following errors:" })
         .closest('[role="alert"]');
       expect(errorSummary).toBeInTheDocument();
-      expect(errorSummary).toHaveTextContent('Please fix the following errors');
+      expect(errorSummary).toHaveTextContent("Please fix the following errors");
     });
 
     const results = await axe(container);
@@ -416,12 +416,12 @@ describe('Form Validation - Error Announcements', () => {
   });
 });
 
-describe('Form Validation - Focus Management', () => {
-  it('should allow error navigation with keyboard', async () => {
+describe("Form Validation - Focus Management", () => {
+  it("should allow error navigation with keyboard", async () => {
     render(<MockAccessibleForm />);
 
-    const nameInput = screen.getByPlaceholderText('Your name');
-    const submitBtn = screen.getByRole('button', { name: 'Send Message' });
+    const nameInput = screen.getByPlaceholderText("Your name");
+    const submitBtn = screen.getByRole("button", { name: "Send Message" });
 
     await user.click(submitBtn);
 

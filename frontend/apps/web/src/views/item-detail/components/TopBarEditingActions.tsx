@@ -1,6 +1,6 @@
-import { ChevronRight, X } from 'lucide-react';
+import { ChevronRight, X } from "lucide-react";
 
-import { Button } from '@tracertm/ui';
+import { Button } from "@tracertm/ui";
 
 interface TopBarEditingActionsProps {
   onCancelEdit: () => void;
@@ -13,12 +13,12 @@ export function TopBarEditingActions({
 }: TopBarEditingActionsProps): JSX.Element {
   return (
     <>
-      <Button size='sm' className='gap-2 rounded-full' onClick={onSave}>
-        <ChevronRight className='h-4 w-4' />
+      <Button size="sm" className="gap-2 rounded-full" onClick={onSave}>
+        <ChevronRight className="h-4 w-4" />
         Save
       </Button>
-      <Button variant='outline' size='sm' className='gap-2 rounded-full' onClick={onCancelEdit}>
-        <X className='h-4 w-4' />
+      <Button variant="outline" size="sm" className="gap-2 rounded-full" onClick={onCancelEdit}>
+        <X className="h-4 w-4" />
         Cancel
       </Button>
     </>

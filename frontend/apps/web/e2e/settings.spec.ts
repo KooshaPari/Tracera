@@ -1,4 +1,4 @@
-import { expect, test } from './global-setup';
+import { expect, test } from "./global-setup";
 
 /**
  * User Settings E2E Tests
@@ -13,64 +13,64 @@ import { expect, test } from './global-setup';
  * - Error handling
  */
 
-test.describe('Settings Page Navigation', () => {
+test.describe("Settings Page Navigation", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should navigate to settings page', async ({ page }) => {
+  test("should navigate to settings page", async ({ page }) => {
     // Navigate to settings
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
 
     // Verify URL
-    await expect(page).toHaveURL('/settings');
+    await expect(page).toHaveURL("/settings");
 
     // Verify page title
-    const heading = page.getByRole('heading', { name: /settings/i });
+    const heading = page.getByRole("heading", { name: /settings/i });
     await expect(heading).toBeVisible();
   });
 
-  test('should display settings header and description', async ({ page }) => {
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+  test("should display settings header and description", async ({ page }) => {
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
 
     // Check for main heading
-    const mainHeading = page.getByRole('heading', { level: 1 });
-    await expect(mainHeading).toContainText('Settings');
+    const mainHeading = page.getByRole("heading", { level: 1 });
+    await expect(mainHeading).toContainText("Settings");
 
     // Check for description text
     const description = page.getByText(/Manage your preferences and configuration/i);
     await expect(description).toBeVisible();
   });
 
-  test('should display all settings tabs', async ({ page }) => {
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+  test("should display all settings tabs", async ({ page }) => {
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
 
     // Check for all tab triggers
-    await expect(page.getByRole('tab', { name: /general/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /appearance/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /api/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /notifications/i })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /general/i })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /appearance/i })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /api/i })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /notifications/i })).toBeVisible();
   });
 });
 
-test.describe('General Settings Tab', () => {
+test.describe("General Settings Tab", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
 
     // General tab should be selected by default
-    const generalTab = page.getByRole('tab', { name: /general/i });
-    if (!(await generalTab.evaluate((el) => el.getAttribute('aria-selected')))) {
+    const generalTab = page.getByRole("tab", { name: /general/i });
+    if (!(await generalTab.evaluate((el) => el.getAttribute("aria-selected")))) {
       await generalTab.click();
     }
-    await expect(generalTab).toHaveAttribute('aria-selected', 'true');
+    await expect(generalTab).toHaveAttribute("aria-selected", "true");
   });
 
-  test('should display general settings form fields', async ({ page }) => {
+  test("should display general settings form fields", async ({ page }) => {
     // Display Name field
     const displayNameLabel = page.getByLabel(/display name/i);
     await expect(displayNameLabel).toBeVisible();
@@ -84,21 +84,21 @@ test.describe('General Settings Tab', () => {
     await expect(timezoneLabel).toBeVisible();
 
     // Save button
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
     await expect(saveButton).toBeVisible();
   });
 
-  test('should update display name', async ({ page }) => {
+  test("should update display name", async ({ page }) => {
     const displayNameInput = page.getByLabel(/display name/i);
-    await displayNameInput.fill('John Doe');
+    await displayNameInput.fill("John Doe");
 
     // Verify value is set
-    await expect(displayNameInput).toHaveValue('John Doe');
+    await expect(displayNameInput).toHaveValue("John Doe");
 
     // Save changes
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
     await saveButton.click();
@@ -108,15 +108,15 @@ test.describe('General Settings Tab', () => {
     await expect(successMessage).toBeVisible({ timeout: 10_000 });
   });
 
-  test('should update email address', async ({ page }) => {
+  test("should update email address", async ({ page }) => {
     const emailInput = page.getByLabel(/email/i);
-    await emailInput.fill('john@example.com');
+    await emailInput.fill("john@example.com");
 
     // Verify value is set
-    await expect(emailInput).toHaveValue('john@example.com');
+    await expect(emailInput).toHaveValue("john@example.com");
 
     // Save changes
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
     await saveButton.click();
@@ -125,30 +125,30 @@ test.describe('General Settings Tab', () => {
     await page.waitForTimeout(500);
   });
 
-  test('should validate email format', async ({ page }) => {
+  test("should validate email format", async ({ page }) => {
     const emailInput = page.getByLabel(/email/i);
 
     // Try invalid email
-    await emailInput.fill('invalid-email');
+    await emailInput.fill("invalid-email");
 
     // Email input type="email" will have validation
     const isValid = await emailInput.evaluate((el: HTMLInputElement) => el.validity.valid);
     expect(isValid).toBe(false);
   });
 
-  test('should change timezone', async ({ page }) => {
+  test("should change timezone", async ({ page }) => {
     // Open timezone select
     const timezoneSelect = page.getByLabel(/timezone/i);
     await timezoneSelect.click();
 
     // Select Pacific Time
-    await page.getByText('Pacific Time').click();
+    await page.getByText("Pacific Time").click();
 
     // Wait for selection
     await page.waitForTimeout(300);
 
     // Save changes
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
     await saveButton.click();
@@ -157,11 +157,11 @@ test.describe('General Settings Tab', () => {
     await page.waitForTimeout(500);
   });
 
-  test('should handle save with loading state', async ({ page }) => {
+  test("should handle save with loading state", async ({ page }) => {
     const displayNameInput = page.getByLabel(/display name/i);
-    await displayNameInput.fill('Test User');
+    await displayNameInput.fill("Test User");
 
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
 
@@ -173,18 +173,18 @@ test.describe('General Settings Tab', () => {
   });
 });
 
-test.describe('Appearance Settings Tab', () => {
+test.describe("Appearance Settings Tab", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
 
     // Click on Appearance tab
-    const appearanceTab = page.getByRole('tab', { name: /appearance/i });
+    const appearanceTab = page.getByRole("tab", { name: /appearance/i });
     await appearanceTab.click();
     await page.waitForTimeout(300);
   });
 
-  test('should display appearance settings form fields', async ({ page }) => {
+  test("should display appearance settings form fields", async ({ page }) => {
     // Theme select
     const themeLabel = page.getByLabel(/theme/i);
     await expect(themeLabel).toBeVisible();
@@ -198,13 +198,13 @@ test.describe('Appearance Settings Tab', () => {
     await expect(compactCheckbox).toBeVisible();
 
     // Save button
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
     await expect(saveButton).toBeVisible();
   });
 
-  test('should change theme to dark', async ({ page }) => {
+  test("should change theme to dark", async ({ page }) => {
     // Open theme select
     const themeSelect = page.getByLabel(/theme/i);
     await themeSelect.click();
@@ -216,7 +216,7 @@ test.describe('Appearance Settings Tab', () => {
     await page.waitForTimeout(300);
 
     // Save changes
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
     await saveButton.click();
@@ -225,7 +225,7 @@ test.describe('Appearance Settings Tab', () => {
     await page.waitForTimeout(500);
   });
 
-  test('should change theme to light', async ({ page }) => {
+  test("should change theme to light", async ({ page }) => {
     // Open theme select
     const themeSelect = page.getByLabel(/theme/i);
     await themeSelect.click();
@@ -237,7 +237,7 @@ test.describe('Appearance Settings Tab', () => {
     await page.waitForTimeout(300);
 
     // Save changes
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
     await saveButton.click();
@@ -246,7 +246,7 @@ test.describe('Appearance Settings Tab', () => {
     await page.waitForTimeout(500);
   });
 
-  test('should change theme to system', async ({ page }) => {
+  test("should change theme to system", async ({ page }) => {
     // Open theme select
     const themeSelect = page.getByLabel(/theme/i);
     await themeSelect.click();
@@ -258,7 +258,7 @@ test.describe('Appearance Settings Tab', () => {
     await page.waitForTimeout(300);
 
     // Save changes
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
     await saveButton.click();
@@ -267,19 +267,19 @@ test.describe('Appearance Settings Tab', () => {
     await page.waitForTimeout(500);
   });
 
-  test('should change font size', async ({ page }) => {
+  test("should change font size", async ({ page }) => {
     // Open font size select
     const fontSizeSelect = page.getByLabel(/font size/i);
     await fontSizeSelect.click();
 
     // Select Large font size
-    await page.getByText('Large').click();
+    await page.getByText("Large").click();
 
     // Wait for selection
     await page.waitForTimeout(300);
 
     // Save changes
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
     await saveButton.click();
@@ -288,7 +288,7 @@ test.describe('Appearance Settings Tab', () => {
     await page.waitForTimeout(500);
   });
 
-  test('should toggle compact mode', async ({ page }) => {
+  test("should toggle compact mode", async ({ page }) => {
     const compactCheckbox = page.getByLabel(/compact layout/i);
 
     // Check initial state
@@ -302,7 +302,7 @@ test.describe('Appearance Settings Tab', () => {
     expect(newChecked).toBe(!initialChecked);
 
     // Save changes
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
     await saveButton.click();
@@ -312,20 +312,20 @@ test.describe('Appearance Settings Tab', () => {
   });
 });
 
-test.describe('Notifications Settings Tab', () => {
+test.describe("Notifications Settings Tab", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
 
     // Click on Notifications tab
-    const notificationsTab = page.getByRole('tab', {
+    const notificationsTab = page.getByRole("tab", {
       name: /notifications/i,
     });
     await notificationsTab.click();
     await page.waitForTimeout(300);
   });
 
-  test('should display notification settings checkboxes', async ({ page }) => {
+  test("should display notification settings checkboxes", async ({ page }) => {
     // Email Notifications
     const emailNotifCheckbox = page.getByLabel(/email notifications/i);
     await expect(emailNotifCheckbox).toBeVisible();
@@ -343,13 +343,13 @@ test.describe('Notifications Settings Tab', () => {
     await expect(itemUpdatesCheckbox).toBeVisible();
 
     // Save button
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save preferences/i,
     });
     await expect(saveButton).toBeVisible();
   });
 
-  test('should display notification descriptions', async ({ page }) => {
+  test("should display notification descriptions", async ({ page }) => {
     // Check for descriptions
     await expect(page.getByText(/Receive email updates/i)).toBeVisible();
     await expect(page.getByText(/Browser push notifications/i)).toBeVisible();
@@ -357,7 +357,7 @@ test.describe('Notifications Settings Tab', () => {
     await expect(page.getByText(/Notify when items change/i)).toBeVisible();
   });
 
-  test('should toggle email notifications', async ({ page }) => {
+  test("should toggle email notifications", async ({ page }) => {
     const emailNotifCheckbox = page.getByLabel(/email notifications/i);
 
     // Get initial state
@@ -371,7 +371,7 @@ test.describe('Notifications Settings Tab', () => {
     expect(newChecked).toBe(!initialChecked);
 
     // Save preferences
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save preferences/i,
     });
     await saveButton.click();
@@ -380,7 +380,7 @@ test.describe('Notifications Settings Tab', () => {
     await page.waitForTimeout(500);
   });
 
-  test('should toggle desktop notifications', async ({ page }) => {
+  test("should toggle desktop notifications", async ({ page }) => {
     const desktopNotifCheckbox = page.getByLabel(/desktop notifications/i);
 
     // Get initial state
@@ -394,7 +394,7 @@ test.describe('Notifications Settings Tab', () => {
     expect(newChecked).toBe(!initialChecked);
 
     // Save preferences
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save preferences/i,
     });
     await saveButton.click();
@@ -403,7 +403,7 @@ test.describe('Notifications Settings Tab', () => {
     await page.waitForTimeout(500);
   });
 
-  test('should toggle weekly summary', async ({ page }) => {
+  test("should toggle weekly summary", async ({ page }) => {
     const weeklySummaryCheckbox = page.getByLabel(/weekly summary/i);
 
     // Get initial state
@@ -417,7 +417,7 @@ test.describe('Notifications Settings Tab', () => {
     expect(newChecked).toBe(!initialChecked);
 
     // Save preferences
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save preferences/i,
     });
     await saveButton.click();
@@ -426,7 +426,7 @@ test.describe('Notifications Settings Tab', () => {
     await page.waitForTimeout(500);
   });
 
-  test('should toggle item updates notification', async ({ page }) => {
+  test("should toggle item updates notification", async ({ page }) => {
     const itemUpdatesCheckbox = page.getByLabel(/item updates/i);
 
     // Get initial state
@@ -440,7 +440,7 @@ test.describe('Notifications Settings Tab', () => {
     expect(newChecked).toBe(!initialChecked);
 
     // Save preferences
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save preferences/i,
     });
     await saveButton.click();
@@ -449,7 +449,7 @@ test.describe('Notifications Settings Tab', () => {
     await page.waitForTimeout(500);
   });
 
-  test('should save multiple notification preferences at once', async ({ page }) => {
+  test("should save multiple notification preferences at once", async ({ page }) => {
     // Toggle multiple checkboxes
     const emailNotifCheckbox = page.getByLabel(/email notifications/i);
     const desktopNotifCheckbox = page.getByLabel(/desktop notifications/i);
@@ -460,7 +460,7 @@ test.describe('Notifications Settings Tab', () => {
     await weeklySummaryCheckbox.click();
 
     // Save all changes at once
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save preferences/i,
     });
     await saveButton.click();
@@ -470,18 +470,18 @@ test.describe('Notifications Settings Tab', () => {
   });
 });
 
-test.describe('API Keys Tab', () => {
+test.describe("API Keys Tab", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
 
     // Click on API tab
-    const apiTab = page.getByRole('tab', { name: /api/i });
+    const apiTab = page.getByRole("tab", { name: /api/i });
     await apiTab.click();
     await page.waitForTimeout(300);
   });
 
-  test('should display API key section', async ({ page }) => {
+  test("should display API key section", async ({ page }) => {
     // API Key field
     const apiKeyLabel = page.getByLabel(/api key/i);
     await expect(apiKeyLabel).toBeVisible();
@@ -491,52 +491,52 @@ test.describe('API Keys Tab', () => {
     await expect(description).toBeVisible();
 
     // Buttons
-    const generateButton = page.getByRole('button', {
+    const generateButton = page.getByRole("button", {
       name: /generate new key/i,
     });
     await expect(generateButton).toBeVisible();
 
-    const revokeButton = page.getByRole('button', { name: /revoke key/i });
+    const revokeButton = page.getByRole("button", { name: /revoke key/i });
     await expect(revokeButton).toBeVisible();
   });
 
-  test('should have password-type API key input', async ({ page }) => {
+  test("should have password-type API key input", async ({ page }) => {
     const apiKeyInput = page.getByLabel(/api key/i);
 
     // Verify input type is password
     const inputType = await apiKeyInput.evaluate((el: HTMLInputElement) => el.type);
-    expect(inputType).toBe('password');
+    expect(inputType).toBe("password");
   });
 
-  test('should allow entering API key', async ({ page }) => {
+  test("should allow entering API key", async ({ page }) => {
     const apiKeyInput = page.getByLabel(/api key/i);
-    await apiKeyInput.fill('test-api-key-123');
+    await apiKeyInput.fill("test-api-key-123");
 
     // Verify value is set
     const inputValue = await apiKeyInput.evaluate((el: HTMLInputElement) => el.value);
-    expect(inputValue).toBe('test-api-key-123');
+    expect(inputValue).toBe("test-api-key-123");
   });
 });
 
-test.describe('Settings Form Validation', () => {
+test.describe("Settings Form Validation", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should validate email field with HTML5 validation', async ({ page }) => {
+  test("should validate email field with HTML5 validation", async ({ page }) => {
     // Go to general tab
-    const generalTab = page.getByRole('tab', { name: /general/i });
+    const generalTab = page.getByRole("tab", { name: /general/i });
     await generalTab.click();
 
     const emailInput = page.getByLabel(/email/i);
 
     // Test various invalid formats
     const testCases = [
-      { input: 'not-an-email', valid: false },
-      { input: 'missing@domain', valid: false },
-      { input: '@nodomain.com', valid: false },
-      { input: 'valid@example.com', valid: true },
+      { input: "not-an-email", valid: false },
+      { input: "missing@domain", valid: false },
+      { input: "@nodomain.com", valid: false },
+      { input: "valid@example.com", valid: true },
     ];
 
     for (const testCase of testCases) {
@@ -547,20 +547,20 @@ test.describe('Settings Form Validation', () => {
     }
   });
 
-  test('should handle empty form submission gracefully', async ({ page }) => {
+  test("should handle empty form submission gracefully", async ({ page }) => {
     // Go to general tab
-    const generalTab = page.getByRole('tab', { name: /general/i });
+    const generalTab = page.getByRole("tab", { name: /general/i });
     await generalTab.click();
 
     // Clear all fields
     const displayNameInput = page.getByLabel(/display name/i);
     const emailInput = page.getByLabel(/email/i);
 
-    await displayNameInput.fill('');
-    await emailInput.fill('');
+    await displayNameInput.fill("");
+    await emailInput.fill("");
 
     // Try to save
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
     await saveButton.click();
@@ -570,56 +570,56 @@ test.describe('Settings Form Validation', () => {
   });
 });
 
-test.describe('Settings Tab Navigation', () => {
+test.describe("Settings Tab Navigation", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should switch between tabs', async ({ page }) => {
+  test("should switch between tabs", async ({ page }) => {
     // Start on General tab
-    let generalTab = page.getByRole('tab', { name: /general/i });
-    let isSelected = await generalTab.evaluate((el) => el.getAttribute('aria-selected'));
-    expect(isSelected).toBe('true');
+    let generalTab = page.getByRole("tab", { name: /general/i });
+    let isSelected = await generalTab.evaluate((el) => el.getAttribute("aria-selected"));
+    expect(isSelected).toBe("true");
 
     // Switch to Appearance
-    const appearanceTab = page.getByRole('tab', { name: /appearance/i });
+    const appearanceTab = page.getByRole("tab", { name: /appearance/i });
     await appearanceTab.click();
     await page.waitForTimeout(300);
 
-    isSelected = await appearanceTab.evaluate((el) => el.getAttribute('aria-selected'));
-    expect(isSelected).toBe('true');
+    isSelected = await appearanceTab.evaluate((el) => el.getAttribute("aria-selected"));
+    expect(isSelected).toBe("true");
 
     // Switch to Notifications
-    const notificationsTab = page.getByRole('tab', {
+    const notificationsTab = page.getByRole("tab", {
       name: /notifications/i,
     });
     await notificationsTab.click();
     await page.waitForTimeout(300);
 
-    isSelected = await notificationsTab.evaluate((el) => el.getAttribute('aria-selected'));
-    expect(isSelected).toBe('true');
+    isSelected = await notificationsTab.evaluate((el) => el.getAttribute("aria-selected"));
+    expect(isSelected).toBe("true");
 
     // Switch back to General
-    generalTab = page.getByRole('tab', { name: /general/i });
+    generalTab = page.getByRole("tab", { name: /general/i });
     await generalTab.click();
     await page.waitForTimeout(300);
 
-    isSelected = await generalTab.evaluate((el) => el.getAttribute('aria-selected'));
-    expect(isSelected).toBe('true');
+    isSelected = await generalTab.evaluate((el) => el.getAttribute("aria-selected"));
+    expect(isSelected).toBe("true");
   });
 
-  test('should maintain tab content when switching', async ({ page }) => {
+  test("should maintain tab content when switching", async ({ page }) => {
     // Go to General tab
-    const generalTab = page.getByRole('tab', { name: /general/i });
+    const generalTab = page.getByRole("tab", { name: /general/i });
     await generalTab.click();
 
     // Set a value
     const displayNameInput = page.getByLabel(/display name/i);
-    await displayNameInput.fill('Test User');
+    await displayNameInput.fill("Test User");
 
     // Switch to another tab
-    const appearanceTab = page.getByRole('tab', { name: /appearance/i });
+    const appearanceTab = page.getByRole("tab", { name: /appearance/i });
     await appearanceTab.click();
     await page.waitForTimeout(300);
 
@@ -628,43 +628,43 @@ test.describe('Settings Tab Navigation', () => {
     await page.waitForTimeout(300);
 
     // Value should still be there
-    await expect(displayNameInput).toHaveValue('Test User');
+    await expect(displayNameInput).toHaveValue("Test User");
   });
 
-  test('should be accessible via keyboard', async ({ page }) => {
+  test("should be accessible via keyboard", async ({ page }) => {
     // Focus on first tab
-    await page.keyboard.press('Tab');
+    await page.keyboard.press("Tab");
 
     // Navigate between tabs with arrow keys
-    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(300);
 
-    const appearanceTab = page.getByRole('tab', { name: /appearance/i });
-    const isSelected = await appearanceTab.evaluate((el) => el.getAttribute('aria-selected'));
-    expect(isSelected).toBe('true');
+    const appearanceTab = page.getByRole("tab", { name: /appearance/i });
+    const isSelected = await appearanceTab.evaluate((el) => el.getAttribute("aria-selected"));
+    expect(isSelected).toBe("true");
 
     // Navigate with arrow key again
-    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(300);
   });
 });
 
-test.describe('Settings Error Handling', () => {
+test.describe("Settings Error Handling", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should handle invalid email gracefully', async ({ page }) => {
+  test("should handle invalid email gracefully", async ({ page }) => {
     // Go to general tab
-    const generalTab = page.getByRole('tab', { name: /general/i });
+    const generalTab = page.getByRole("tab", { name: /general/i });
     await generalTab.click();
 
     const emailInput = page.getByLabel(/email/i);
-    await emailInput.fill('invalid');
+    await emailInput.fill("invalid");
 
     // Try to save - browser will prevent submission
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
     await saveButton.click();
@@ -674,15 +674,15 @@ test.describe('Settings Error Handling', () => {
     await expect(page).toHaveURL(/settings/);
   });
 
-  test('should display save button in loading state', async ({ page }) => {
+  test("should display save button in loading state", async ({ page }) => {
     // Go to general tab
-    const generalTab = page.getByRole('tab', { name: /general/i });
+    const generalTab = page.getByRole("tab", { name: /general/i });
     await generalTab.click();
 
     const displayNameInput = page.getByLabel(/display name/i);
-    await displayNameInput.fill('Test User');
+    await displayNameInput.fill("Test User");
 
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
 
@@ -700,14 +700,14 @@ test.describe('Settings Error Handling', () => {
     await page.waitForTimeout(500);
   });
 
-  test('should handle page reload in settings', async ({ page }) => {
+  test("should handle page reload in settings", async ({ page }) => {
     // Go to a tab
-    const appearanceTab = page.getByRole('tab', { name: /appearance/i });
+    const appearanceTab = page.getByRole("tab", { name: /appearance/i });
     await appearanceTab.click();
 
     // Reload page
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     // Settings page should still be accessible
     await expect(page).toHaveURL(/settings/);
@@ -718,15 +718,15 @@ test.describe('Settings Error Handling', () => {
   });
 });
 
-test.describe('Settings Accessibility', () => {
+test.describe("Settings Accessibility", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should have proper form labels', async ({ page }) => {
+  test("should have proper form labels", async ({ page }) => {
     // Go to general tab
-    const generalTab = page.getByRole('tab', { name: /general/i });
+    const generalTab = page.getByRole("tab", { name: /general/i });
     await generalTab.click();
 
     // All inputs should have associated labels
@@ -739,24 +739,24 @@ test.describe('Settings Accessibility', () => {
     await expect(timezoneInput).toBeVisible();
   });
 
-  test('should have accessible tabs with ARIA roles', async ({ page }) => {
+  test("should have accessible tabs with ARIA roles", async ({ page }) => {
     // Check tab roles
-    const tablist = page.getByRole('tablist');
+    const tablist = page.getByRole("tablist");
     await expect(tablist).toBeVisible();
 
     // All tabs should have tab role
-    const tabs = page.getByRole('tab');
+    const tabs = page.getByRole("tab");
     const count = await tabs.count();
     expect(count).toBeGreaterThanOrEqual(4);
   });
 
-  test('should support keyboard navigation', async ({ page }) => {
+  test("should support keyboard navigation", async ({ page }) => {
     // Focus should be manageable with Tab key
     const initialFocus = await page.evaluate(() => document.activeElement);
 
     // Tab through elements
     for (let i = 0; i < 3; i++) {
-      await page.keyboard.press('Tab');
+      await page.keyboard.press("Tab");
       await page.waitForTimeout(100);
     }
 
@@ -765,13 +765,13 @@ test.describe('Settings Accessibility', () => {
     expect(initialFocus).not.toEqual(currentFocus);
   });
 
-  test('should have descriptive button labels', async ({ page }) => {
+  test("should have descriptive button labels", async ({ page }) => {
     // Go to general tab
-    const generalTab = page.getByRole('tab', { name: /general/i });
+    const generalTab = page.getByRole("tab", { name: /general/i });
     await generalTab.click();
 
     // Save button should have descriptive text
-    const saveButton = page.getByRole('button', {
+    const saveButton = page.getByRole("button", {
       name: /save changes/i,
     });
     await expect(saveButton).toBeVisible();
@@ -781,57 +781,57 @@ test.describe('Settings Accessibility', () => {
   });
 });
 
-test.describe('Settings Integration', () => {
+test.describe("Settings Integration", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should navigate to settings from dashboard', async ({ page }) => {
+  test("should navigate to settings from dashboard", async ({ page }) => {
     // First go to dashboard
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     // Navigate to settings
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
 
     // Should be on settings page
-    await expect(page).toHaveURL('/settings');
-    await expect(page.getByRole('heading', { name: /settings/i })).toBeVisible();
+    await expect(page).toHaveURL("/settings");
+    await expect(page.getByRole("heading", { name: /settings/i })).toBeVisible();
   });
 
-  test('should persist to settings page after navigation', async ({ page }) => {
+  test("should persist to settings page after navigation", async ({ page }) => {
     // Navigate to settings
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
 
     // Verify we're on settings
-    await expect(page).toHaveURL('/settings');
+    await expect(page).toHaveURL("/settings");
 
     // Navigate to another page
-    await page.goto('/projects');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/projects");
+    await page.waitForLoadState("networkidle");
 
     // Navigate back to settings
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
 
     // Should still be able to access settings
-    await expect(page).toHaveURL('/settings');
+    await expect(page).toHaveURL("/settings");
   });
 
-  test('should handle settings page load errors gracefully', async ({ page }) => {
+  test("should handle settings page load errors gracefully", async ({ page }) => {
     // Go to settings
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/settings");
+    await page.waitForLoadState("networkidle");
 
     // Even if API fails, page should be usable
-    const heading = page.getByRole('heading', { name: /settings/i });
+    const heading = page.getByRole("heading", { name: /settings/i });
     await expect(heading).toBeVisible();
 
     // Tabs should still be interactive
-    const tabs = page.getByRole('tab');
+    const tabs = page.getByRole("tab");
     expect(await tabs.count()).toBeGreaterThan(0);
   });
 });

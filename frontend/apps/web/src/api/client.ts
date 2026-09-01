@@ -1,7 +1,7 @@
-import type { ClientCore } from './client-core';
+import type { ClientCore } from "./client-core";
 
-import { clientCore } from './client-core';
-import { ApiError, handleApiResponse, safeApiCall } from './client-errors';
+import { clientCore } from "./client-core";
+import { ApiError, handleApiResponse, safeApiCall } from "./client-errors";
 
 const core: ClientCore = clientCore;
 

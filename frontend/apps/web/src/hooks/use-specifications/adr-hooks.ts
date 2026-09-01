@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import * as specificationsApi from '@/hooks/useSpecifications.api';
-import * as queryUtils from './query-utils';
+import * as specificationsApi from "@/hooks/useSpecifications.api";
+import * as queryUtils from "./query-utils";
 
 type FetchADRsResult = Awaited<ReturnType<typeof specificationsApi.fetchADRs>>;
 
@@ -17,16 +17,14 @@ type FetchADRActivitiesResult = Awaited<ReturnType<typeof specificationsApi.fetc
 
 type FetchADRStatsResult = Awaited<ReturnType<typeof specificationsApi.fetchADRStats>>;
 
-const useADRs = (
-  filters: specificationsApi.ADRFilters,
-): queryUtils.QueryResult<FetchADRsResult> =>
+const useADRs = (filters: specificationsApi.ADRFilters): queryUtils.QueryResult<FetchADRsResult> =>
   useQuery({
     enabled: Boolean(filters.projectId),
     queryFn: async () => {
       const response = await specificationsApi.fetchADRs(filters);
       return response;
     },
-    queryKey: ['adrs', JSON.stringify(filters)],
+    queryKey: ["adrs", JSON.stringify(filters)],
   });
 
 const useADR = (id: string): queryUtils.QueryResult<FetchADRResult> =>
@@ -36,10 +34,13 @@ const useADR = (id: string): queryUtils.QueryResult<FetchADRResult> =>
       const response = await specificationsApi.fetchADR(id);
       return response;
     },
-    queryKey: ['adrs', id],
+    queryKey: ["adrs", id],
   });
 
-const useCreateADR = (): queryUtils.MutationResult<CreateADRResult, specificationsApi.CreateADRData> => {
+const useCreateADR = (): queryUtils.MutationResult<
+  CreateADRResult,
+  specificationsApi.CreateADRData
+> => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -48,9 +49,9 @@ const useCreateADR = (): queryUtils.MutationResult<CreateADRResult, specificatio
       return response;
     },
     onSuccess: async (_, variables) => {
-      await queryUtils.invalidateQueries(queryClient, [['adrs'], ['adrStats']]);
+      await queryUtils.invalidateQueries(queryClient, [["adrs"], ["adrStats"]]);
       await queryClient.invalidateQueries({
-        queryKey: ['specificationSummary', variables.projectId],
+        queryKey: ["specificationSummary", variables.projectId],
       });
     },
   });
@@ -68,7 +69,7 @@ const useUpdateADR = (): queryUtils.MutationResult<
       return response;
     },
     onSuccess: async (_, { id }) => {
-      await queryUtils.invalidateQueries(queryClient, [['adrs', id], ['adrs'], ['adrStats']]);
+      await queryUtils.invalidateQueries(queryClient, [["adrs", id], ["adrs"], ["adrStats"]]);
     },
   });
 };
@@ -81,12 +82,19 @@ const useDeleteADR = (): queryUtils.MutationResult<void, string> => {
       await specificationsApi.deleteADR(id);
     },
     onSuccess: async () => {
-      await queryUtils.invalidateQueries(queryClient, [['adrs'], ['adrStats'], ['specificationSummary']]);
+      await queryUtils.invalidateQueries(queryClient, [
+        ["adrs"],
+        ["adrStats"],
+        ["specificationSummary"],
+      ]);
     },
   });
 };
 
-const useVerifyADR = (): queryUtils.MutationResult<VerifyADRResult, { id: string; notes: string }> => {
+const useVerifyADR = (): queryUtils.MutationResult<
+  VerifyADRResult,
+  { id: string; notes: string }
+> => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -95,8 +103,8 @@ const useVerifyADR = (): queryUtils.MutationResult<VerifyADRResult, { id: string
       return response;
     },
     onSuccess: async (_, { id }) => {
-      await queryUtils.invalidateQueries(queryClient, [['adrs', id], ['adrs'], ['adrStats']]);
-      await queryClient.invalidateQueries({ queryKey: ['specificationSummary'] });
+      await queryUtils.invalidateQueries(queryClient, [["adrs", id], ["adrs"], ["adrStats"]]);
+      await queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
     },
   });
 };
@@ -108,7 +116,7 @@ const useADRActivities = (adrId: string): queryUtils.QueryResult<FetchADRActivit
       const response = await specificationsApi.fetchADRActivities(adrId);
       return response;
     },
-    queryKey: ['adrActivities', adrId],
+    queryKey: ["adrActivities", adrId],
   });
 
 const useADRStats = (projectId: string): queryUtils.QueryResult<FetchADRStatsResult> =>
@@ -118,7 +126,7 @@ const useADRStats = (projectId: string): queryUtils.QueryResult<FetchADRStatsRes
       const response = await specificationsApi.fetchADRStats(projectId);
       return response;
     },
-    queryKey: ['adrStats', projectId],
+    queryKey: ["adrStats", projectId],
   });
 
 export {

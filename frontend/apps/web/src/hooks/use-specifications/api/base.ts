@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 const setOptionalParam = (
   params: URLSearchParams,
@@ -38,13 +38,13 @@ function assignDefined(body: ApiRecord, entries: [string, unknown | undefined][]
 }
 
 function getAuthHeaders(): Record<string, string> {
-  if (typeof localStorage === 'undefined') {
+  if (typeof localStorage === "undefined") {
     return {};
   }
-  const token = withFallback(localStorage.getItem('auth_token'), '');
+  const token = withFallback(localStorage.getItem("auth_token"), "");
   const headers: Record<string, string> = {};
   if (token.length > 0) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
   return headers;
 }

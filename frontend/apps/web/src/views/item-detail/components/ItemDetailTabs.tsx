@@ -1,10 +1,10 @@
-import type { ItemLink } from '@/views/item-detail/types';
+import type { ItemLink } from "@/views/item-detail/types";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tracertm/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tracertm/ui";
 
-import { LinksPanel } from './LinksPanel';
-import { MetadataPanel } from './MetadataPanel';
-import { SpecificationsPanel } from './SpecificationsPanel';
+import { LinksPanel } from "./LinksPanel";
+import { MetadataPanel } from "./MetadataPanel";
+import { SpecificationsPanel } from "./SpecificationsPanel";
 
 type MetadataEntry = readonly [key: string, value: unknown];
 
@@ -40,20 +40,20 @@ export function ItemDetailTabs(props: ItemDetailTabsProps): JSX.Element {
   } = props;
 
   return (
-    <Tabs defaultValue='specs' className='w-full'>
-      <TabsList className='bg-muted/60 rounded-xl p-1'>
-        <TabsTrigger value='specs' className='rounded-lg'>
+    <Tabs defaultValue="specs" className="w-full">
+      <TabsList className="bg-muted/60 rounded-xl p-1">
+        <TabsTrigger value="specs" className="rounded-lg">
           Specifications
         </TabsTrigger>
-        <TabsTrigger value='links' className='rounded-lg'>
+        <TabsTrigger value="links" className="rounded-lg">
           Relationships
         </TabsTrigger>
-        <TabsTrigger value='metadata' className='rounded-lg'>
+        <TabsTrigger value="metadata" className="rounded-lg">
           Metadata
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value='specs' className='space-y-4 pt-6'>
+      <TabsContent value="specs" className="space-y-4 pt-6">
         <SpecificationsPanel
           projectId={projectId}
           itemId={itemId}
@@ -62,7 +62,7 @@ export function ItemDetailTabs(props: ItemDetailTabsProps): JSX.Element {
         />
       </TabsContent>
 
-      <TabsContent value='links' className='space-y-6 pt-6'>
+      <TabsContent value="links" className="space-y-6 pt-6">
         <LinksPanel
           targetLinks={targetLinks}
           sourceLinks={sourceLinks}
@@ -70,7 +70,7 @@ export function ItemDetailTabs(props: ItemDetailTabsProps): JSX.Element {
         />
       </TabsContent>
 
-      <TabsContent value='metadata' className='space-y-6 pt-6'>
+      <TabsContent value="metadata" className="space-y-6 pt-6">
         <MetadataPanel
           metadataSearch={metadataSearch}
           setMetadataSearch={setMetadataSearch}

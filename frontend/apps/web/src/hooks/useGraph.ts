@@ -1,20 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
-import { api } from '../api/endpoints';
+import { api } from "../api/endpoints";
 
 export const graphKeys = {
-  all: ['graph'] as const,
-  ancestors: (id: string, depth?: number) => [...graphKeys.all, 'ancestors', id, depth] as const,
-  cycles: (projectId?: string) => [...graphKeys.all, 'cycles', projectId] as const,
+  all: ["graph"] as const,
+  ancestors: (id: string, depth?: number) => [...graphKeys.all, "ancestors", id, depth] as const,
+  cycles: (projectId?: string) => [...graphKeys.all, "cycles", projectId] as const,
   dependencies: (id: string, depth?: number) =>
-    [...graphKeys.all, 'dependencies', id, depth] as const,
+    [...graphKeys.all, "dependencies", id, depth] as const,
   descendants: (id: string, depth?: number) =>
-    [...graphKeys.all, 'descendants', id, depth] as const,
-  full: (projectId?: string) => [...graphKeys.all, 'full', projectId] as const,
-  impact: (id: string, depth?: number) => [...graphKeys.all, 'impact', id, depth] as const,
-  orphans: (projectId?: string) => [...graphKeys.all, 'orphans', projectId] as const,
+    [...graphKeys.all, "descendants", id, depth] as const,
+  full: (projectId?: string) => [...graphKeys.all, "full", projectId] as const,
+  impact: (id: string, depth?: number) => [...graphKeys.all, "impact", id, depth] as const,
+  orphans: (projectId?: string) => [...graphKeys.all, "orphans", projectId] as const,
   path: (sourceId: string, targetId: string) =>
-    [...graphKeys.all, 'path', sourceId, targetId] as const,
+    [...graphKeys.all, "path", sourceId, targetId] as const,
 };
 
 export function useFullGraph(projectId?: string) {

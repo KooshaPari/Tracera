@@ -16,30 +16,30 @@
  * conditionally renders either the type selector dialog or delegates to the form.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState } from "react";
 
-import type { CreateItemInput } from '@/lib/validation/schemas';
-import type { ViewType } from '@/types';
+import type { CreateItemInput } from "@/lib/validation/schemas";
+import type { ViewType } from "@/types";
 
-import { createItem } from '@/api/items';
-import { toast } from '@/components/ui/toaster';
+import { createItem } from "@/api/items";
+import { toast } from "@/components/ui/toaster";
 import {
   buildErrorMetadata,
   extractValidationErrors,
   formatValidationErrorMessage,
-} from '@/lib/api-error-handler';
-import { isAuthError } from '@/lib/api-error-handler';
-import { logger } from '@/lib/logger';
-import { queueMutation, removeMutationFromQueue, updateMutationError } from '@/lib/mutation-queue';
-import { withRetry } from '@/lib/retry';
+} from "@/lib/api-error-handler";
+import { isAuthError } from "@/lib/api-error-handler";
+import { logger } from "@/lib/logger";
+import { queueMutation, removeMutationFromQueue, updateMutationError } from "@/lib/mutation-queue";
+import { withRetry } from "@/lib/retry";
 
-import { CreateDefectItemForm } from './CreateDefectItemForm';
-import { CreateEpicItemForm } from './CreateEpicItemForm';
-import { CreateRequirementItemForm } from './CreateRequirementItemForm';
-import { CreateTaskItemForm } from './CreateTaskItemForm';
-import { CreateTestItemForm } from './CreateTestItemForm';
-import { CreateUserStoryItemForm } from './CreateUserStoryItemForm';
-import { ItemTypeSelector } from './ItemTypeSelector';
+import { CreateDefectItemForm } from "./CreateDefectItemForm";
+import { CreateEpicItemForm } from "./CreateEpicItemForm";
+import { CreateRequirementItemForm } from "./CreateRequirementItemForm";
+import { CreateTaskItemForm } from "./CreateTaskItemForm";
+import { CreateTestItemForm } from "./CreateTestItemForm";
+import { CreateUserStoryItemForm } from "./CreateUserStoryItemForm";
+import { ItemTypeSelector } from "./ItemTypeSelector";
 
 interface CreateItemDialogProps {
   open: boolean;
@@ -55,7 +55,7 @@ export function CreateItemDialog({
   onOpenChange,
   projectId,
   defaultView,
-  title: titleProp = 'Create New Item',
+  title: titleProp = "Create New Item",
 }: CreateItemDialogProps) {
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,8 +83,8 @@ export function CreateItemDialog({
 
       try {
         // Validate form data
-        if (!data || typeof data !== 'object') {
-          toast.error('Invalid form data', { id: toastId });
+        if (!data || typeof data !== "object") {
+          toast.error("Invalid form data", { id: toastId });
           setIsSubmitting(false);
           return;
         }
@@ -93,12 +93,12 @@ export function CreateItemDialog({
 
         // Build CreateItemInput with required fields
         const itemInput = {
-          description: (formData.description as string | undefined) ?? '',
-          priority: (formData.priority as string) ?? 'medium',
+          description: (formData.description as string | undefined) ?? "",
+          priority: (formData.priority as string) ?? "medium",
           projectId,
-          status: (formData.status as string) ?? 'draft',
+          status: (formData.status as string) ?? "draft",
           title: (formData.name ?? formData.title) as string,
-          type: (selectedType ?? 'item') as CreateItemInput['type'],
+          type: (selectedType ?? "item") as CreateItemInput["type"],
           view: (formData.view as string) ?? defaultView,
           ...formData,
         } as CreateItemInput;
@@ -121,14 +121,14 @@ export function CreateItemDialog({
         if (!result.success) {
           // Handle failed creation after all retries
           const errorMetadata = buildErrorMetadata(result.error);
-          logger.error('Failed to create item after retries:', {
+          logger.error("Failed to create item after retries:", {
             ...errorMetadata,
             attempts: result.attempts,
           });
 
           // Special handling for auth errors
           if (isAuthError(result.error)) {
-            toast.error('Your session has expired. Please log in again.', {
+            toast.error("Your session has expired. Please log in again.", {
               id: toastId,
             });
             // Redirect to login would happen via auth store
@@ -141,7 +141,7 @@ export function CreateItemDialog({
           if (validationErrors) {
             const errorMessage = formatValidationErrorMessage(validationErrors);
             toast.error(errorMessage, {
-              description: 'Please fix the errors and try again.',
+              description: "Please fix the errors and try again.",
               id: toastId,
             });
             setIsSubmitting(false);
@@ -155,18 +155,18 @@ export function CreateItemDialog({
               data: itemInput,
               failedAttempts: result.attempts,
               lastError: result.error?.message,
-              type: 'create_item',
+              type: "create_item",
             });
 
             toast.error(errorMetadata.userMessage, {
               action: {
-                label: 'Undo',
+                label: "Undo",
                 onClick: () => {
                   removeMutationFromQueue(mutationId);
-                  toast.success('Operation cancelled', { id: toastId });
+                  toast.success("Operation cancelled", { id: toastId });
                 },
               },
-              description: 'Your operation has been queued and will retry when you reconnect.',
+              description: "Your operation has been queued and will retry when you reconnect.",
               id: toastId,
             });
 
@@ -178,7 +178,7 @@ export function CreateItemDialog({
 
           // Unknown error
           toast.error(errorMetadata.userMessage, {
-            description: 'Please try again or contact support if the problem persists.',
+            description: "Please try again or contact support if the problem persists.",
             id: toastId,
           });
           setIsSubmitting(false);
@@ -186,22 +186,22 @@ export function CreateItemDialog({
         }
 
         // Success!
-        logger.info('Item created successfully:', {
+        logger.info("Item created successfully:", {
           itemId: (result.data as { id?: string }).id,
           type: selectedType,
         });
 
-        toast.success('Item created successfully', { id: toastId });
+        toast.success("Item created successfully", { id: toastId });
 
         // Close dialog and reset
         handleOpenChange(false);
       } catch (error) {
         // Catch any unexpected errors not caught by retry logic
         const errorMetadata = buildErrorMetadata(error);
-        logger.error('Unexpected error creating item:', errorMetadata);
+        logger.error("Unexpected error creating item:", errorMetadata);
 
         toast.error(errorMetadata.userMessage, {
-          description: 'An unexpected error occurred. Please try again.',
+          description: "An unexpected error occurred. Please try again.",
           id: toastId,
         });
       } finally {
@@ -235,37 +235,37 @@ export function CreateItemDialog({
     };
 
     switch (selectedType) {
-      case 'test': {
+      case "test": {
         return <CreateTestItemForm {...formProps} />;
       }
-      case 'requirement': {
+      case "requirement": {
         return <CreateRequirementItemForm {...formProps} />;
       }
-      case 'epic': {
+      case "epic": {
         return <CreateEpicItemForm {...formProps} />;
       }
-      case 'user_story':
-      case 'story': {
+      case "user_story":
+      case "story": {
         return <CreateUserStoryItemForm {...formProps} />;
       }
-      case 'task': {
+      case "task": {
         return <CreateTaskItemForm {...formProps} />;
       }
-      case 'bug':
-      case 'defect': {
+      case "bug":
+      case "defect": {
         return <CreateDefectItemForm {...formProps} />;
       }
       default: {
         // Fallback for unknown types
         return (
-          <div className='p-4 text-center'>
-            <p className='text-muted-foreground'>
+          <div className="p-4 text-center">
+            <p className="text-muted-foreground">
               Form for type "{selectedType}" not yet implemented.
             </p>
             <button
-              type='button'
+              type="button"
               onClick={handleCancel}
-              className='hover:bg-accent mt-4 rounded-lg border px-4 py-2'
+              className="hover:bg-accent mt-4 rounded-lg border px-4 py-2"
             >
               Back to Type Selection
             </button>
@@ -287,31 +287,31 @@ export function CreateItemDialog({
   }
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center'>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className='fixed inset-0 bg-black/50 backdrop-blur-sm'
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={handleCancel}
-        aria-hidden='true'
+        aria-hidden="true"
       />
 
       {/* Dialog */}
       <div
-        role='dialog'
-        aria-modal='true'
-        aria-labelledby='dialog-title'
-        className='bg-background relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border p-6 shadow-2xl'
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-title"
+        className="bg-background relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border p-6 shadow-2xl"
       >
-        <div className='mb-6'>
-          <h2 id='dialog-title' className='text-lg font-semibold'>
+        <div className="mb-6">
+          <h2 id="dialog-title" className="text-lg font-semibold">
             {titleProp}
           </h2>
-          <p className='text-muted-foreground mt-1 text-sm'>
+          <p className="text-muted-foreground mt-1 text-sm">
             Select the type of item you want to create
           </p>
         </div>
 
-        <div className='mt-6'>
+        <div className="mt-6">
           <ItemTypeSelector
             view={defaultView}
             selectedType={selectedType ?? undefined}
@@ -320,11 +320,11 @@ export function CreateItemDialog({
         </div>
 
         {/* Cancel button */}
-        <div className='mt-6 flex justify-end border-t pt-4'>
+        <div className="mt-6 flex justify-end border-t pt-4">
           <button
-            type='button'
+            type="button"
             onClick={handleCancel}
-            className='hover:bg-accent focus-visible:ring-primary rounded-lg border px-4 py-2 focus:outline-none focus-visible:ring-2'
+            className="hover:bg-accent focus-visible:ring-primary rounded-lg border px-4 py-2 focus:outline-none focus-visible:ring-2"
           >
             Cancel
           </button>

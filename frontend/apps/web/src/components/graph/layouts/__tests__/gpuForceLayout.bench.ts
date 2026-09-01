@@ -4,11 +4,11 @@
  * Target: <5s layout calculation for 50k nodes
  */
 
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from "vitest";
 
-import { GPUForceLayout } from '../gpuForceLayout';
+import { GPUForceLayout } from "../gpuForceLayout";
 
 // ============================================================================
 // TEST DATA GENERATION
@@ -21,7 +21,7 @@ function generateNodes(count: number): Node[] {
       data: {},
       id: `node-${i}`,
       position: { x: 0, y: 0 },
-      type: 'default',
+      type: "default",
     });
   }
   return nodes;
@@ -56,14 +56,14 @@ function generateEdges(nodeCount: number, edgesPerNode: number): Edge[] {
 // BENCHMARK TESTS
 // ============================================================================
 
-describe('GPU Force Layout Performance', () => {
+describe("GPU Force Layout Performance", () => {
   let layout: GPUForceLayout;
 
   beforeAll(() => {
     layout = new GPUForceLayout();
   });
 
-  it('should layout 100 nodes efficiently', async () => {
+  it("should layout 100 nodes efficiently", async () => {
     const nodes = generateNodes(100);
     const edges = generateEdges(100, 2);
 
@@ -79,7 +79,7 @@ describe('GPU Force Layout Performance', () => {
     expect(duration).toBeLessThan(1000);
   });
 
-  it('should layout 1,000 nodes efficiently', async () => {
+  it("should layout 1,000 nodes efficiently", async () => {
     const nodes = generateNodes(1000);
     const edges = generateEdges(1000, 2);
 
@@ -95,7 +95,7 @@ describe('GPU Force Layout Performance', () => {
     expect(duration).toBeLessThan(15_000);
   });
 
-  it('should demonstrate O(n log n) scaling with Barnes-Hut', async () => {
+  it("should demonstrate O(n log n) scaling with Barnes-Hut", async () => {
     // Test that Barnes-Hut achieves O(n log n) complexity
     const sizes = [100, 200, 400];
     const times: number[] = [];
@@ -130,7 +130,7 @@ describe('GPU Force Layout Performance', () => {
     expect(ratio2).toBeLessThan(5);
   }, 30_000);
 
-  it('Barnes-Hut should be faster than naive approach', async () => {
+  it("Barnes-Hut should be faster than naive approach", async () => {
     const nodes = generateNodes(500);
     const edges = generateEdges(500, 2);
 
@@ -158,7 +158,7 @@ describe('GPU Force Layout Performance', () => {
     expect(bhDuration).toBeLessThan(naiveDuration * 1.2); // Allow 20% margin
   }, 30_000); // 30s timeout
 
-  it('should handle dense graphs efficiently', async () => {
+  it("should handle dense graphs efficiently", async () => {
     const nodes = generateNodes(500);
     const edges = generateEdges(500, 5); // 5 edges per node = dense
 
@@ -174,7 +174,7 @@ describe('GPU Force Layout Performance', () => {
     expect(duration).toBeLessThan(10_000);
   });
 
-  it('should handle sparse graphs efficiently', async () => {
+  it("should handle sparse graphs efficiently", async () => {
     const nodes = generateNodes(1000);
     const edges = generateEdges(1000, 1); // 1 edge per node = sparse
 
@@ -195,14 +195,14 @@ describe('GPU Force Layout Performance', () => {
 // COMPLEXITY ANALYSIS
 // ============================================================================
 
-describe('Algorithm Complexity Analysis', () => {
+describe("Algorithm Complexity Analysis", () => {
   let layout: GPUForceLayout;
 
   beforeAll(() => {
     layout = new GPUForceLayout();
   });
 
-  it('should scale O(n log n) with Barnes-Hut', async () => {
+  it("should scale O(n log n) with Barnes-Hut", async () => {
     const sizes = [500, 1000, 2000, 4000];
     const durations: number[] = [];
 
@@ -240,14 +240,14 @@ describe('Algorithm Complexity Analysis', () => {
 // QUALITY METRICS
 // ============================================================================
 
-describe('Layout Quality Metrics', () => {
+describe("Layout Quality Metrics", () => {
   let layout: GPUForceLayout;
 
   beforeAll(() => {
     layout = new GPUForceLayout();
   });
 
-  it('should produce non-overlapping nodes', async () => {
+  it("should produce non-overlapping nodes", async () => {
     const nodes = generateNodes(100);
     const edges = generateEdges(100, 2);
 
@@ -278,7 +278,7 @@ describe('Layout Quality Metrics', () => {
     expect(overlapRate).toBeLessThan(0.05); // Less than 5% overlap
   });
 
-  it('should cluster connected nodes', async () => {
+  it("should cluster connected nodes", async () => {
     const nodes = generateNodes(50);
 
     // Create two distinct clusters

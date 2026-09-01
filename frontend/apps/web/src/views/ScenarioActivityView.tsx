@@ -1,15 +1,15 @@
-import { useNavigate, useParams } from '@tanstack/react-router';
-import { format } from 'date-fns';
-import { useMemo, useState } from 'react';
+import { useNavigate, useParams } from "@tanstack/react-router";
+import { format } from "date-fns";
+import { useMemo, useState } from "react";
 
-import type { Scenario, ScenarioActivity } from '@tracertm/types';
+import type { Scenario, ScenarioActivity } from "@tracertm/types";
 
 import {
   useFeatures,
   useProjectScenarioActivities,
   useProjectScenarios,
   useScenarioActivities,
-} from '@/hooks/useSpecifications';
+} from "@/hooks/useSpecifications";
 import {
   Card,
   Input,
@@ -18,38 +18,38 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@tracertm/ui';
+} from "@tracertm/ui";
 
 export function ScenarioActivityView() {
   const params = useParams({ strict: false });
   const _navigate = useNavigate();
-  const projectId = params.projectId ?? '';
-  const [statusFilter, setStatusFilter] = useState('all');
+  const projectId = params.projectId ?? "";
+  const [statusFilter, setStatusFilter] = useState("all");
   const { data: scenariosData } = useProjectScenarios(
     projectId,
-    statusFilter === 'all' ? undefined : statusFilter,
+    statusFilter === "all" ? undefined : statusFilter,
   );
   const { data: featuresData } = useFeatures({ projectId });
   const scenarios = scenariosData?.scenarios ?? [];
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedScenarioId, setSelectedScenarioId] = useState('');
-  const [sortOrder, setSortOrder] = useState<'recent' | 'oldest'>('recent');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedScenarioId, setSelectedScenarioId] = useState("");
+  const [sortOrder, setSortOrder] = useState<"recent" | "oldest">("recent");
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set());
   const [page, setPage] = useState(1);
   const pageSize = 10;
   const { data: activities } = useScenarioActivities(selectedScenarioId);
   const [streamPage, setStreamPage] = useState(1);
-  const [streamEventType, setStreamEventType] = useState('all');
-  const [streamRange, setStreamRange] = useState('30d');
+  const [streamEventType, setStreamEventType] = useState("all");
+  const [streamRange, setStreamRange] = useState("30d");
   const streamPageSize = 12;
 
   const streamSince = useMemo(() => {
-    if (streamRange === 'all') {
+    if (streamRange === "all") {
       return;
     }
     const now = new Date();
     const days =
-      streamRange === '24h' ? 1 : streamRange === '7d' ? 7 : streamRange === '30d' ? 30 : 90;
+      streamRange === "24h" ? 1 : streamRange === "7d" ? 7 : streamRange === "30d" ? 30 : 90;
     const since = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
     return since.toISOString();
   }, [streamRange]);
@@ -57,7 +57,7 @@ export function ScenarioActivityView() {
   const { data: projectActivityData } = useProjectScenarioActivities(projectId, {
     limit: streamPageSize,
     offset: (streamPage - 1) * streamPageSize,
-    ...(streamEventType !== 'all' ? { eventType: streamEventType } : {}),
+    ...(streamEventType !== "all" ? { eventType: streamEventType } : {}),
     ...(streamSince ? { since: streamSince } : {}),
   });
   const projectActivities = Array.isArray(projectActivityData) ? projectActivityData : [];
@@ -82,7 +82,7 @@ export function ScenarioActivityView() {
   const groupedScenarios = useMemo(() => {
     const groups = new Map<string, Scenario[]>();
     for (const scenario of filteredScenarios) {
-      const key = scenario.featureId || 'unknown';
+      const key = scenario.featureId || "unknown";
       const list = groups.get(key) ?? [];
       list.push(scenario);
       groups.set(key, list);
@@ -102,7 +102,7 @@ export function ScenarioActivityView() {
     const sorted = [...activitiesList].toSorted((a, b) => {
       const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return sortOrder === 'recent' ? bTime - aTime : aTime - bTime;
+      return sortOrder === "recent" ? bTime - aTime : aTime - bTime;
     });
     return sorted;
   }, [activitiesList, sortOrder]);
@@ -111,23 +111,23 @@ export function ScenarioActivityView() {
   const pagedActivities = sortedActivities.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div className='space-y-6 p-6'>
+    <div className="space-y-6 p-6">
       <div>
-        <h1 className='text-2xl font-bold'>Scenario Activity</h1>
-        <p className='text-muted-foreground'>
+        <h1 className="text-2xl font-bold">Scenario Activity</h1>
+        <p className="text-muted-foreground">
           Review scenario execution and update history across this project.
         </p>
       </div>
 
-      <Card className='bg-card/50 space-y-4 border-none p-4'>
-        <div className='flex flex-col gap-3 md:flex-row'>
+      <Card className="bg-card/50 space-y-4 border-none p-4">
+        <div className="flex flex-col gap-3 md:flex-row">
           <Input
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
             }}
-            placeholder='Search scenarios…'
-            className='md:w-80'
+            placeholder="Search scenarios…"
+            className="md:w-80"
           />
           <Select
             value={selectedScenarioId}
@@ -135,8 +135,8 @@ export function ScenarioActivityView() {
               setSelectedScenarioId(value);
             }}
           >
-            <SelectTrigger className='md:w-[360px]'>
-              <SelectValue placeholder='Select a scenario' />
+            <SelectTrigger className="md:w-[360px]">
+              <SelectValue placeholder="Select a scenario" />
             </SelectTrigger>
             <SelectContent>
               {filteredScenarios.map((scenario) => (
@@ -152,20 +152,20 @@ export function ScenarioActivityView() {
               setStatusFilter(value);
             }}
           >
-            <SelectTrigger className='md:w-[160px]'>
-              <SelectValue placeholder='Status' />
+            <SelectTrigger className="md:w-[160px]">
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='all'>All status</SelectItem>
-              <SelectItem value='draft'>Draft</SelectItem>
-              <SelectItem value='review'>Review</SelectItem>
-              <SelectItem value='approved'>Approved</SelectItem>
-              <SelectItem value='automated'>Automated</SelectItem>
-              <SelectItem value='deprecated'>Deprecated</SelectItem>
-              <SelectItem value='pending'>Pending</SelectItem>
-              <SelectItem value='passing'>Passing</SelectItem>
-              <SelectItem value='failing'>Failing</SelectItem>
-              <SelectItem value='skipped'>Skipped</SelectItem>
+              <SelectItem value="all">All status</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="review">Review</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="automated">Automated</SelectItem>
+              <SelectItem value="deprecated">Deprecated</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="passing">Passing</SelectItem>
+              <SelectItem value="failing">Failing</SelectItem>
+              <SelectItem value="skipped">Skipped</SelectItem>
             </SelectContent>
           </Select>
           <Select
@@ -174,27 +174,27 @@ export function ScenarioActivityView() {
               setSortOrder(v as any);
             }}
           >
-            <SelectTrigger className='md:w-[160px]'>
-              <SelectValue placeholder='Sort' />
+            <SelectTrigger className="md:w-[160px]">
+              <SelectValue placeholder="Sort" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='recent'>Most recent</SelectItem>
-              <SelectItem value='oldest'>Oldest first</SelectItem>
+              <SelectItem value="recent">Most recent</SelectItem>
+              <SelectItem value="oldest">Oldest first</SelectItem>
             </SelectContent>
           </Select>
           {selectedScenarioId && (
-            <button className='text-primary text-sm' onClick={() => {}}>
+            <button className="text-primary text-sm" onClick={() => {}}>
               Open scenario
             </button>
           )}
         </div>
 
         {groupedScenarios.length > 0 && (
-          <div className='space-y-4'>
+          <div className="space-y-4">
             {groupedScenarios.map(([featureId, group]) => (
-              <div key={featureId} className='space-y-2'>
+              <div key={featureId} className="space-y-2">
                 <button
-                  className='text-muted-foreground flex items-center gap-2 text-left text-xs font-semibold tracking-wide uppercase'
+                  className="text-muted-foreground flex items-center gap-2 text-left text-xs font-semibold tracking-wide uppercase"
                   onClick={() => {
                     setCollapsedGroups((prev) => {
                       const next = new Set(prev);
@@ -208,28 +208,28 @@ export function ScenarioActivityView() {
                   }}
                 >
                   <span>{featureMap.get(featureId) ?? `Feature ${featureId}`}</span>
-                  <span className='text-[10px]'>
-                    {collapsedGroups.has(featureId) ? 'Show' : 'Hide'}
+                  <span className="text-[10px]">
+                    {collapsedGroups.has(featureId) ? "Show" : "Hide"}
                   </span>
                 </button>
                 {!collapsedGroups.has(featureId) && (
-                  <div className='grid gap-2 md:grid-cols-2'>
+                  <div className="grid gap-2 md:grid-cols-2">
                     {group.slice(0, 6).map((scenario) => (
                       <button
                         key={scenario.id}
                         className={`rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
                           selectedScenarioId === scenario.id
-                            ? 'border-primary/50 bg-primary/5'
-                            : 'border-border/50 hover:bg-muted/40'
+                            ? "border-primary/50 bg-primary/5"
+                            : "border-border/50 hover:bg-muted/40"
                         }`}
                         onClick={() => {
                           setSelectedScenarioId(scenario.id);
                         }}
                       >
-                        <div className='text-foreground font-medium'>
+                        <div className="text-foreground font-medium">
                           {scenario.scenarioNumber} · {scenario.title}
                         </div>
-                        <div className='text-muted-foreground text-xs'>{scenario.status}</div>
+                        <div className="text-muted-foreground text-xs">{scenario.status}</div>
                       </button>
                     ))}
                   </div>
@@ -239,23 +239,23 @@ export function ScenarioActivityView() {
           </div>
         )}
 
-        <div className='text-muted-foreground space-y-3 text-sm'>
+        <div className="text-muted-foreground space-y-3 text-sm">
           {pagedActivities.length > 0 ? (
             pagedActivities.map((activity) => (
               <div
                 key={activity.id}
-                className='border-border/50 flex items-center justify-between border-b pb-2 last:border-0'
+                className="border-border/50 flex items-center justify-between border-b pb-2 last:border-0"
               >
                 <div>
-                  <div className='text-foreground font-medium'>{activity.activityType}</div>
-                  <div className='text-muted-foreground text-xs'>
-                    {activity.description ?? 'Scenario updated'}
+                  <div className="text-foreground font-medium">{activity.activityType}</div>
+                  <div className="text-muted-foreground text-xs">
+                    {activity.description ?? "Scenario updated"}
                   </div>
                 </div>
-                <div className='text-muted-foreground text-xs'>
+                <div className="text-muted-foreground text-xs">
                   {activity.createdAt
-                    ? format(new Date(activity.createdAt), 'MMM d, yyyy HH:mm')
-                    : '—'}
+                    ? format(new Date(activity.createdAt), "MMM d, yyyy HH:mm")
+                    : "—"}
                 </div>
               </div>
             ))
@@ -264,9 +264,9 @@ export function ScenarioActivityView() {
           )}
         </div>
 
-        <div className='text-muted-foreground space-y-3 text-sm'>
-          <h2 className='text-foreground text-base font-semibold'>Project Activity Stream</h2>
-          <div className='flex flex-wrap gap-2'>
+        <div className="text-muted-foreground space-y-3 text-sm">
+          <h2 className="text-foreground text-base font-semibold">Project Activity Stream</h2>
+          <div className="flex flex-wrap gap-2">
             <Select
               value={streamEventType}
               onValueChange={(value) => {
@@ -274,16 +274,16 @@ export function ScenarioActivityView() {
                 setStreamPage(1);
               }}
             >
-              <SelectTrigger className='w-[160px]'>
-                <SelectValue placeholder='Event type' />
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Event type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='all'>All types</SelectItem>
-                <SelectItem value='created'>Created</SelectItem>
-                <SelectItem value='updated'>Updated</SelectItem>
-                <SelectItem value='deleted'>Deleted</SelectItem>
-                <SelectItem value='executed'>Executed</SelectItem>
-                <SelectItem value='verified'>Verified</SelectItem>
+                <SelectItem value="all">All types</SelectItem>
+                <SelectItem value="created">Created</SelectItem>
+                <SelectItem value="updated">Updated</SelectItem>
+                <SelectItem value="deleted">Deleted</SelectItem>
+                <SelectItem value="executed">Executed</SelectItem>
+                <SelectItem value="verified">Verified</SelectItem>
               </SelectContent>
             </Select>
             <Select
@@ -293,15 +293,15 @@ export function ScenarioActivityView() {
                 setStreamPage(1);
               }}
             >
-              <SelectTrigger className='w-[160px]'>
-                <SelectValue placeholder='Range' />
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Range" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='24h'>Last 24h</SelectItem>
-                <SelectItem value='7d'>Last 7 days</SelectItem>
-                <SelectItem value='30d'>Last 30 days</SelectItem>
-                <SelectItem value='90d'>Last 90 days</SelectItem>
-                <SelectItem value='all'>All time</SelectItem>
+                <SelectItem value="24h">Last 24h</SelectItem>
+                <SelectItem value="7d">Last 7 days</SelectItem>
+                <SelectItem value="30d">Last 30 days</SelectItem>
+                <SelectItem value="90d">Last 90 days</SelectItem>
+                <SelectItem value="all">All time</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -309,27 +309,27 @@ export function ScenarioActivityView() {
             projectActivities.map((activity: ScenarioActivity) => (
               <div
                 key={`stream-${activity.id}`}
-                className='border-border/50 flex items-center justify-between border-b pb-2 last:border-0'
+                className="border-border/50 flex items-center justify-between border-b pb-2 last:border-0"
               >
                 <div>
-                  <div className='text-foreground font-medium'>{activity.activityType}</div>
-                  <div className='text-muted-foreground text-xs'>
-                    {activity.description ?? 'Scenario updated'}
+                  <div className="text-foreground font-medium">{activity.activityType}</div>
+                  <div className="text-muted-foreground text-xs">
+                    {activity.description ?? "Scenario updated"}
                   </div>
                 </div>
-                <div className='text-muted-foreground text-xs'>
+                <div className="text-muted-foreground text-xs">
                   {activity.createdAt
-                    ? format(new Date(activity.createdAt), 'MMM d, yyyy HH:mm')
-                    : '—'}
+                    ? format(new Date(activity.createdAt), "MMM d, yyyy HH:mm")
+                    : "—"}
                 </div>
               </div>
             ))
           ) : (
             <div>No activity stream yet.</div>
           )}
-          <div className='text-muted-foreground flex items-center justify-between text-xs'>
+          <div className="text-muted-foreground flex items-center justify-between text-xs">
             <button
-              className='border-border/50 rounded border px-2 py-1 disabled:opacity-50'
+              className="border-border/50 rounded border px-2 py-1 disabled:opacity-50"
               disabled={streamPage === 1}
               onClick={() => {
                 setStreamPage((p) => Math.max(1, p - 1));
@@ -341,7 +341,7 @@ export function ScenarioActivityView() {
               Page {streamPage} of {Math.max(1, Math.ceil(projectActivityTotal / streamPageSize))}
             </span>
             <button
-              className='border-border/50 rounded border px-2 py-1 disabled:opacity-50'
+              className="border-border/50 rounded border px-2 py-1 disabled:opacity-50"
               disabled={streamPage >= Math.max(1, Math.ceil(projectActivityTotal / streamPageSize))}
               onClick={() => {
                 setStreamPage((p) => p + 1);
@@ -353,9 +353,9 @@ export function ScenarioActivityView() {
         </div>
 
         {sortedActivities.length > pageSize && (
-          <div className='text-muted-foreground flex items-center justify-between text-xs'>
+          <div className="text-muted-foreground flex items-center justify-between text-xs">
             <button
-              className='border-border/50 rounded border px-2 py-1 disabled:opacity-50'
+              className="border-border/50 rounded border px-2 py-1 disabled:opacity-50"
               disabled={page === 1}
               onClick={() => {
                 setPage((p) => Math.max(1, p - 1));
@@ -367,7 +367,7 @@ export function ScenarioActivityView() {
               Page {page} of {totalPages}
             </span>
             <button
-              className='border-border/50 rounded border px-2 py-1 disabled:opacity-50'
+              className="border-border/50 rounded border px-2 py-1 disabled:opacity-50"
               disabled={page === totalPages}
               onClick={() => {
                 setPage((p) => Math.min(totalPages, p + 1));

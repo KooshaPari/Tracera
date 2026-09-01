@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { DefectSeverity, DefectSpecCreate, DefectSpecUpdate, DefectStatus } from './types';
+import type { DefectSeverity, DefectSpecCreate, DefectSpecUpdate, DefectStatus } from "./types";
 
 import {
   createDefectSpec,
@@ -9,8 +9,8 @@ import {
   fetchDefectSpecByItem,
   fetchDefectSpecs,
   updateDefectSpec,
-} from './defects-api';
-import { itemSpecKeys } from './keys';
+} from "./defects-api";
+import { itemSpecKeys } from "./keys";
 
 function useDefectSpecs(
   projectId: string,
@@ -62,7 +62,7 @@ function useCreateDefectSpec(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.defect(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.defect(projectId, data["id"]), data);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.defects(projectId) }),
         queryClient.invalidateQueries({
@@ -86,7 +86,7 @@ function useUpdateDefectSpec(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.defect(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.defect(projectId, data["id"]), data);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.defects(projectId) }),
         queryClient.invalidateQueries({

@@ -10,11 +10,11 @@
  * Total Tests: 60+ integration scenarios
  */
 
-import type React from 'react';
+import type React from "react";
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
   DependencyAnalysis,
@@ -24,20 +24,20 @@ import type {
   Link,
   Project,
   SearchResult,
-} from '../../api/types';
+} from "../../api/types";
 
 // API
-import { api } from '../../api/endpoints';
-import { useAuthStore } from '../../stores/auth-store.ts';
-import { useItemsStore } from '../../stores/items-store.ts';
-import { useProjectStore } from '../../stores/project-store.ts';
+import { api } from "../../api/endpoints";
+import { useAuthStore } from "../../stores/auth-store.ts";
+import { useItemsStore } from "../../stores/items-store.ts";
+import { useProjectStore } from "../../stores/project-store.ts";
 // Stores
-import { useSyncStore } from '../../stores/sync-store.ts';
+import { useSyncStore } from "../../stores/sync-store.ts";
 // Views
-import { DashboardView } from '../../views/DashboardView';
-import { ReportsView } from '../../views/ReportsView';
-import { SearchView } from '../../views/SearchView';
-import { SettingsView } from '../../views/SettingsView';
+import { DashboardView } from "../../views/DashboardView";
+import { ReportsView } from "../../views/ReportsView";
+import { SearchView } from "../../views/SearchView";
+import { SettingsView } from "../../views/SettingsView";
 
 // ============================================================================
 // TEST HELPERS & MOCKS
@@ -45,9 +45,9 @@ import { SettingsView } from '../../views/SettingsView';
 
 const createMockProject = (overrides?: Partial<Project>): Project => ({
   createdAt: new Date().toISOString(),
-  id: 'project-1',
-  name: 'Test Project',
-  description: 'A test project',
+  id: "project-1",
+  name: "Test Project",
+  description: "A test project",
   metadata: {},
   updatedAt: new Date().toISOString(),
   ...overrides,
@@ -55,27 +55,27 @@ const createMockProject = (overrides?: Partial<Project>): Project => ({
 
 const createMockItem = (overrides?: Partial<Item>): Item => ({
   createdAt: new Date().toISOString(),
-  id: 'item-1',
-  projectId: 'project-1',
-  type: 'requirement' as any,
-  title: 'Test Item',
-  description: 'A test item',
-  status: 'todo',
-  priority: 'medium' as any,
+  id: "item-1",
+  projectId: "project-1",
+  type: "requirement" as any,
+  title: "Test Item",
+  description: "A test item",
+  status: "todo",
+  priority: "medium" as any,
   metadata: {},
   updatedAt: new Date().toISOString(),
   version: 1,
-  view: 'feature',
+  view: "feature",
   ...overrides,
 });
 
 const createMockLink = (overrides?: Partial<Link>): Link => ({
   createdAt: new Date().toISOString(),
-  id: 'link-1',
-  projectId: 'project-1',
-  sourceId: 'item-1',
-  targetId: 'item-2',
-  type: 'implements' as any,
+  id: "link-1",
+  projectId: "project-1",
+  sourceId: "item-1",
+  targetId: "item-2",
+  type: "implements" as any,
   metadata: {},
   updatedAt: new Date().toISOString(),
   version: 1,
@@ -85,27 +85,27 @@ const createMockLink = (overrides?: Partial<Link>): Link => ({
 const createMockGraphData = (): GraphData => ({
   edges: [
     {
-      id: 'link-1',
+      id: "link-1",
       metadata: {},
-      source: 'item-1',
-      target: 'item-2',
-      type: 'implements' as any,
+      source: "item-1",
+      target: "item-2",
+      type: "implements" as any,
     },
   ],
   nodes: [
     {
-      id: 'item-1',
+      id: "item-1",
       metadata: {},
-      status: 'pending' as any,
-      title: 'Requirement 1',
-      type: 'requirement' as any,
+      status: "pending" as any,
+      title: "Requirement 1",
+      type: "requirement" as any,
     },
     {
-      id: 'item-2',
+      id: "item-2",
       metadata: {},
-      status: 'in_progress' as any,
-      title: 'Feature 1',
-      type: 'feature' as any,
+      status: "in_progress" as any,
+      title: "Feature 1",
+      type: "feature" as any,
     },
   ],
 });
@@ -120,8 +120,8 @@ const createMockSearchResult = (items: Item[]): SearchResult => ({
 
 const authenticateTestUser = () => {
   const { setToken, setUser } = useAuthStore.getState();
-  setToken('test-token');
-  setUser({ email: 'test@example.com', id: 'user-1', name: 'Test User' });
+  setToken("test-token");
+  setUser({ email: "test@example.com", id: "user-1", name: "Test User" });
 };
 
 const setupQueryClient = () =>
@@ -136,14 +136,14 @@ const setupQueryClient = () =>
 
 const renderWithProviders = (
   ui: React.ReactElement,
-  { queryClient = setupQueryClient(), route: _route = '/' } = {},
+  { queryClient = setupQueryClient(), route: _route = "/" } = {},
 ) => render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 
 // ============================================================================
 // STORE INTEGRATION TESTS
 // ============================================================================
 
-describe('Store Integration Tests', () => {
+describe("Store Integration Tests", () => {
   beforeEach(() => {
     // Reset all stores before each test
     useAuthStore.setState({ isAuthenticated: false, token: null, user: null });
@@ -153,40 +153,40 @@ describe('Store Integration Tests', () => {
     localStorage.clear();
   });
 
-  describe('AuthStore Integration', () => {
-    it('should persist auth state to localStorage', async () => {
+  describe("AuthStore Integration", () => {
+    it("should persist auth state to localStorage", async () => {
       const { setToken, setUser } = useAuthStore.getState();
 
       const mockUser = {
-        email: 'test@example.com',
-        id: 'user-1',
-        name: 'Test User',
+        email: "test@example.com",
+        id: "user-1",
+        name: "Test User",
       };
 
-      setToken('test-token');
+      setToken("test-token");
       setUser(mockUser);
 
       const state = useAuthStore.getState();
-      expect(state.token).toBe('test-token');
+      expect(state.token).toBe("test-token");
       expect(state.user).toEqual(mockUser);
       expect(state.isAuthenticated).toBeTruthy();
-      expect(localStorage.getItem('auth_token')).toBe('test-token');
+      expect(localStorage.getItem("auth_token")).toBe("test-token");
     });
 
-    it('should handle authenticated session store updates', () => {
+    it("should handle authenticated session store updates", () => {
       authenticateTestUser();
 
       const state = useAuthStore.getState();
       expect(state.isAuthenticated).toBeTruthy();
-      expect(state.user?.email).toBe('test@example.com');
+      expect(state.user?.email).toBe("test@example.com");
       expect(state.token).toBeTruthy();
     });
 
-    it('should handle logout and clear all auth data', async () => {
+    it("should handle logout and clear all auth data", async () => {
       const { setToken, setUser, logout } = useAuthStore.getState();
 
-      setToken('test-token');
-      setUser({ email: 'test@example.com', id: '1' });
+      setToken("test-token");
+      setUser({ email: "test@example.com", id: "1" });
 
       await logout();
 
@@ -194,24 +194,24 @@ describe('Store Integration Tests', () => {
       expect(state.token).toBeNull();
       expect(state.user).toBeNull();
       expect(state.isAuthenticated).toBeFalsy();
-      expect(localStorage.getItem('auth_token')).toBeNull();
+      expect(localStorage.getItem("auth_token")).toBeNull();
     });
 
-    it('should handle profile updates', () => {
+    it("should handle profile updates", () => {
       const { setUser, updateProfile } = useAuthStore.getState();
 
-      setUser({ email: 'test@example.com', id: '1', name: 'Old Name' });
-      updateProfile({ avatar: 'avatar.png', name: 'New Name' });
+      setUser({ email: "test@example.com", id: "1", name: "Old Name" });
+      updateProfile({ avatar: "avatar.png", name: "New Name" });
 
       const state = useAuthStore.getState();
-      expect(state.user?.name).toBe('New Name');
-      expect(state.user?.avatar).toBe('avatar.png');
-      expect(state.user?.email).toBe('test@example.com');
+      expect(state.user?.name).toBe("New Name");
+      expect(state.user?.avatar).toBe("avatar.png");
+      expect(state.user?.email).toBe("test@example.com");
     });
   });
 
-  describe('ItemsStore Integration', () => {
-    it('should add and retrieve items', () => {
+  describe("ItemsStore Integration", () => {
+    it("should add and retrieve items", () => {
       const { addItem, getItem } = useItemsStore.getState();
       const item = createMockItem();
 
@@ -221,31 +221,31 @@ describe('Store Integration Tests', () => {
       expect(retrieved).toEqual(item);
     });
 
-    it('should organize items by project', () => {
+    it("should organize items by project", () => {
       const { addItems, getItemsByProject } = useItemsStore.getState();
 
       const items = [
-        createMockItem({ id: 'item-1', projectId: 'project-1' }),
-        createMockItem({ id: 'item-2', projectId: 'project-1' }),
-        createMockItem({ id: 'item-3', projectId: 'project-2' }),
+        createMockItem({ id: "item-1", projectId: "project-1" }),
+        createMockItem({ id: "item-2", projectId: "project-1" }),
+        createMockItem({ id: "item-3", projectId: "project-2" }),
       ];
 
       addItems(items);
 
-      const project1Items = getItemsByProject('project-1');
+      const project1Items = getItemsByProject("project-1");
       expect(project1Items).toHaveLength(2);
-      expect(project1Items.map((i) => i.id)).toEqual(['item-1', 'item-2']);
+      expect(project1Items.map((i) => i.id)).toEqual(["item-1", "item-2"]);
     });
 
-    it('should handle optimistic create operations', () => {
+    it("should handle optimistic create operations", () => {
       const { optimisticCreate, confirmCreate } = useItemsStore.getState();
 
-      const tempId = 'temp-1';
+      const tempId = "temp-1";
       const createData = {
-        description: 'Test description',
-        projectId: 'project-1',
-        title: 'New Item',
-        type: 'requirement' as any,
+        description: "Test description",
+        projectId: "project-1",
+        title: "New Item",
+        type: "requirement" as any,
       };
 
       optimisticCreate(tempId, createData);
@@ -254,23 +254,23 @@ describe('Store Integration Tests', () => {
       expect(state.items.get(tempId)).toBeDefined();
       expect(state.pendingCreates.has(tempId)).toBeTruthy();
 
-      const serverItem = createMockItem({ id: 'real-1', title: 'New Item' });
+      const serverItem = createMockItem({ id: "real-1", title: "New Item" });
       confirmCreate(tempId, serverItem);
 
       state = useItemsStore.getState();
       expect(state.items.get(tempId)).toBeUndefined();
-      expect(state.items.get('real-1')).toEqual(serverItem);
+      expect(state.items.get("real-1")).toEqual(serverItem);
       expect(state.pendingCreates.has(tempId)).toBeFalsy();
     });
 
-    it('should rollback failed optimistic creates', () => {
+    it("should rollback failed optimistic creates", () => {
       const { optimisticCreate, rollbackCreate } = useItemsStore.getState();
 
-      const tempId = 'temp-1';
+      const tempId = "temp-1";
       optimisticCreate(tempId, {
-        projectId: 'project-1',
-        title: 'New Item',
-        type: 'requirement' as any,
+        projectId: "project-1",
+        title: "New Item",
+        type: "requirement" as any,
       });
 
       expect(useItemsStore.getState().items.get(tempId)).toBeDefined();
@@ -282,27 +282,27 @@ describe('Store Integration Tests', () => {
       expect(state.pendingCreates.has(tempId)).toBeFalsy();
     });
 
-    it('should handle optimistic updates', () => {
+    it("should handle optimistic updates", () => {
       const { addItem, optimisticUpdate, confirmUpdate } = useItemsStore.getState();
       const item = createMockItem();
 
       addItem(item);
 
-      optimisticUpdate(item.id, { title: 'Updated Title' });
+      optimisticUpdate(item.id, { title: "Updated Title" });
 
       let state = useItemsStore.getState();
-      expect(state.items.get(item.id)?.title).toBe('Updated Title');
+      expect(state.items.get(item.id)?.title).toBe("Updated Title");
       expect(state.pendingUpdates.has(item.id)).toBeTruthy();
 
-      const updatedItem = { ...item, title: 'Server Updated Title' };
+      const updatedItem = { ...item, title: "Server Updated Title" };
       confirmUpdate(item.id, updatedItem);
 
       state = useItemsStore.getState();
-      expect(state.items.get(item.id)?.title).toBe('Server Updated Title');
+      expect(state.items.get(item.id)?.title).toBe("Server Updated Title");
       expect(state.pendingUpdates.has(item.id)).toBeFalsy();
     });
 
-    it('should handle optimistic deletes', () => {
+    it("should handle optimistic deletes", () => {
       const { addItem, optimisticDelete, confirmDelete } = useItemsStore.getState();
       const item = createMockItem();
 
@@ -319,7 +319,7 @@ describe('Store Integration Tests', () => {
       expect(state.pendingDeletes.has(item.id)).toBeFalsy();
     });
 
-    it('should rollback failed deletes', () => {
+    it("should rollback failed deletes", () => {
       const { addItem, optimisticDelete, rollbackDelete } = useItemsStore.getState();
       const item = createMockItem();
 
@@ -336,8 +336,8 @@ describe('Store Integration Tests', () => {
     });
   });
 
-  describe('ProjectStore Integration', () => {
-    it('should track current project', () => {
+  describe("ProjectStore Integration", () => {
+    it("should track current project", () => {
       const { setCurrentProject } = useProjectStore.getState();
       const project = createMockProject();
 
@@ -348,52 +348,52 @@ describe('Store Integration Tests', () => {
       expect(state.currentProjectId).toBe(project.id);
     });
 
-    it('should maintain recent projects list', () => {
+    it("should maintain recent projects list", () => {
       const { setCurrentProject } = useProjectStore.getState();
 
-      const project1 = createMockProject({ id: 'p1', name: 'Project 1' });
-      const project2 = createMockProject({ id: 'p2', name: 'Project 2' });
-      const project3 = createMockProject({ id: 'p3', name: 'Project 3' });
+      const project1 = createMockProject({ id: "p1", name: "Project 1" });
+      const project2 = createMockProject({ id: "p2", name: "Project 2" });
+      const project3 = createMockProject({ id: "p3", name: "Project 3" });
 
       setCurrentProject(project1);
       setCurrentProject(project2);
       setCurrentProject(project3);
 
       const state = useProjectStore.getState();
-      expect(state.recentProjects).toEqual(['p3', 'p2', 'p1']);
+      expect(state.recentProjects).toEqual(["p3", "p2", "p1"]);
     });
 
-    it('should handle project settings', () => {
+    it("should handle project settings", () => {
       const { updateProjectSettings, getProjectSettings } = useProjectStore.getState();
 
-      updateProjectSettings('project-1', {
-        defaultView: 'kanban',
-        pinnedItems: ['item-1'],
+      updateProjectSettings("project-1", {
+        defaultView: "kanban",
+        pinnedItems: ["item-1"],
       });
 
-      const settings = getProjectSettings('project-1');
-      expect(settings.defaultView).toBe('kanban');
-      expect(settings.pinnedItems).toEqual(['item-1']);
+      const settings = getProjectSettings("project-1");
+      expect(settings.defaultView).toBe("kanban");
+      expect(settings.pinnedItems).toEqual(["item-1"]);
     });
 
-    it('should pin and unpin items', () => {
+    it("should pin and unpin items", () => {
       const { pinItem, unpinItem, getProjectSettings } = useProjectStore.getState();
 
-      pinItem('project-1', 'item-1');
-      pinItem('project-1', 'item-2');
+      pinItem("project-1", "item-1");
+      pinItem("project-1", "item-2");
 
-      let settings = getProjectSettings('project-1');
-      expect(settings.pinnedItems).toEqual(['item-1', 'item-2']);
+      let settings = getProjectSettings("project-1");
+      expect(settings.pinnedItems).toEqual(["item-1", "item-2"]);
 
-      unpinItem('project-1', 'item-1');
+      unpinItem("project-1", "item-1");
 
-      settings = getProjectSettings('project-1');
-      expect(settings.pinnedItems).toEqual(['item-2']);
+      settings = getProjectSettings("project-1");
+      expect(settings.pinnedItems).toEqual(["item-2"]);
     });
   });
 
-  describe('SyncStore Integration', () => {
-    it('should track online/offline status', () => {
+  describe("SyncStore Integration", () => {
+    it("should track online/offline status", () => {
       const { setOnline } = useSyncStore.getState();
 
       setOnline(false);
@@ -403,15 +403,15 @@ describe('Store Integration Tests', () => {
       expect(useSyncStore.getState().isOnline).toBeTruthy();
     });
 
-    it('should manage pending mutations queue', () => {
+    it("should manage pending mutations queue", () => {
       const { addPendingMutation, removePendingMutation } = useSyncStore.getState();
 
       const mutation = {
         data: {},
-        entity: 'item',
-        id: 'mut-1',
+        entity: "item",
+        id: "mut-1",
         timestamp: Date.now(),
-        type: 'create',
+        type: "create",
       };
 
       addPendingMutation(mutation as any);
@@ -419,33 +419,33 @@ describe('Store Integration Tests', () => {
       let state = useSyncStore.getState();
       expect(state.pendingMutations).toHaveLength(1);
 
-      removePendingMutation('mut-1');
+      removePendingMutation("mut-1");
 
       state = useSyncStore.getState();
       expect(state.pendingMutations).toHaveLength(0);
     });
 
-    it('should handle failed mutations', () => {
+    it("should handle failed mutations", () => {
       const { addPendingMutation, moveMutationToFailed } = useSyncStore.getState();
 
       const mutation = {
         data: {},
-        entity: 'item',
-        id: 'mut-1',
+        entity: "item",
+        id: "mut-1",
         timestamp: Date.now(),
-        type: 'create',
+        type: "create",
       };
 
       addPendingMutation(mutation as any);
-      moveMutationToFailed('mut-1');
+      moveMutationToFailed("mut-1");
 
       const state = useSyncStore.getState();
       expect(state.pendingMutations).toHaveLength(0);
       expect(state.failedMutations).toHaveLength(1);
-      expect(state.failedMutations[0].id).toBe('mut-1');
+      expect(state.failedMutations[0].id).toBe("mut-1");
     });
 
-    it('should track sync status', () => {
+    it("should track sync status", () => {
       const { startSync, finishSync } = useSyncStore.getState();
 
       startSync();
@@ -463,186 +463,186 @@ describe('Store Integration Tests', () => {
 // API INTEGRATION TESTS
 // ============================================================================
 
-describe('API Integration Tests', () => {
+describe("API Integration Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Projects API Integration', () => {
-    it('should fetch projects list', async () => {
+  describe("Projects API Integration", () => {
+    it("should fetch projects list", async () => {
       const mockProjects = [
-        createMockProject({ id: 'p1', name: 'Project 1' }),
-        createMockProject({ id: 'p2', name: 'Project 2' }),
+        createMockProject({ id: "p1", name: "Project 1" }),
+        createMockProject({ id: "p2", name: "Project 2" }),
       ];
 
-      vi.spyOn(api.projects, 'list').mockResolvedValue(mockProjects);
+      vi.spyOn(api.projects, "list").mockResolvedValue(mockProjects);
 
       const projects = await api.projects.list();
       expect(projects).toHaveLength(2);
-      expect(projects[0].name).toBe('Project 1');
+      expect(projects[0].name).toBe("Project 1");
     });
 
-    it('should create new project', async () => {
-      const newProject = createMockProject({ name: 'New Project' });
+    it("should create new project", async () => {
+      const newProject = createMockProject({ name: "New Project" });
 
-      vi.spyOn(api.projects, 'create').mockResolvedValue(newProject);
+      vi.spyOn(api.projects, "create").mockResolvedValue(newProject);
 
       const result = await api.projects.create({
-        description: 'Test description',
-        name: 'New Project',
+        description: "Test description",
+        name: "New Project",
       });
 
-      expect(result.name).toBe('New Project');
+      expect(result.name).toBe("New Project");
       expect(api.projects.create).toHaveBeenCalledWith({
-        description: 'Test description',
-        name: 'New Project',
+        description: "Test description",
+        name: "New Project",
       });
     });
 
-    it('should update project', async () => {
-      const updatedProject = createMockProject({ name: 'Updated Project' });
+    it("should update project", async () => {
+      const updatedProject = createMockProject({ name: "Updated Project" });
 
-      vi.spyOn(api.projects, 'update').mockResolvedValue(updatedProject);
+      vi.spyOn(api.projects, "update").mockResolvedValue(updatedProject);
 
-      const result = await api.projects.update('project-1', {
-        name: 'Updated Project',
+      const result = await api.projects.update("project-1", {
+        name: "Updated Project",
       });
 
-      expect(result.name).toBe('Updated Project');
+      expect(result.name).toBe("Updated Project");
     });
 
-    it('should delete project', async () => {
-      vi.spyOn(api.projects, 'delete').mockResolvedValue();
+    it("should delete project", async () => {
+      vi.spyOn(api.projects, "delete").mockResolvedValue();
 
-      await api.projects.delete('project-1');
+      await api.projects.delete("project-1");
 
-      expect(api.projects.delete).toHaveBeenCalledWith('project-1');
+      expect(api.projects.delete).toHaveBeenCalledWith("project-1");
     });
   });
 
-  describe('Items API Integration', () => {
-    it('should fetch items with filters', async () => {
+  describe("Items API Integration", () => {
+    it("should fetch items with filters", async () => {
       const mockItems = [
-        createMockItem({ id: 'i1', type: 'requirement' as any }),
-        createMockItem({ id: 'i2', type: 'feature' as any }),
+        createMockItem({ id: "i1", type: "requirement" as any }),
+        createMockItem({ id: "i2", type: "feature" as any }),
       ];
 
-      vi.spyOn(api.items, 'list').mockResolvedValue(mockItems);
+      vi.spyOn(api.items, "list").mockResolvedValue(mockItems);
 
-      const items = await api.items.list({ projectId: 'project-1' });
+      const items = await api.items.list({ projectId: "project-1" });
       expect(items).toHaveLength(2);
-      expect(api.items.list).toHaveBeenCalledWith({ projectId: 'project-1' });
+      expect(api.items.list).toHaveBeenCalledWith({ projectId: "project-1" });
     });
 
-    it('should create item and update store', async () => {
-      const newItem = createMockItem({ title: 'New Item' });
+    it("should create item and update store", async () => {
+      const newItem = createMockItem({ title: "New Item" });
 
-      vi.spyOn(api.items, 'create').mockResolvedValue(newItem);
+      vi.spyOn(api.items, "create").mockResolvedValue(newItem);
 
       const result = await api.items.create({
-        projectId: 'project-1',
-        title: 'New Item',
-        type: 'requirement' as any,
+        projectId: "project-1",
+        title: "New Item",
+        type: "requirement" as any,
       });
 
-      expect(result.title).toBe('New Item');
+      expect(result.title).toBe("New Item");
     });
   });
 
-  describe('Links API Integration', () => {
-    it('should create link between items', async () => {
+  describe("Links API Integration", () => {
+    it("should create link between items", async () => {
       const newLink = createMockLink();
 
-      vi.spyOn(api.links, 'create').mockResolvedValue(newLink);
+      vi.spyOn(api.links, "create").mockResolvedValue(newLink);
 
       const result = await api.links.create({
-        sourceId: 'item-1',
-        targetId: 'item-2',
-        type: 'implements' as any,
+        sourceId: "item-1",
+        targetId: "item-2",
+        type: "implements" as any,
       });
 
-      expect(result.sourceId).toBe('item-1');
-      expect(result.targetId).toBe('item-2');
+      expect(result.sourceId).toBe("item-1");
+      expect(result.targetId).toBe("item-2");
     });
 
-    it('should fetch links list', async () => {
-      const mockLinks = [createMockLink({ id: 'l1' }), createMockLink({ id: 'l2' })];
+    it("should fetch links list", async () => {
+      const mockLinks = [createMockLink({ id: "l1" }), createMockLink({ id: "l2" })];
 
-      vi.spyOn(api.links, 'list').mockResolvedValue(mockLinks);
+      vi.spyOn(api.links, "list").mockResolvedValue(mockLinks);
 
       const links = await api.links.list();
       expect(links).toHaveLength(2);
     });
   });
 
-  describe('Graph API Integration', () => {
-    it('should fetch full graph data', async () => {
+  describe("Graph API Integration", () => {
+    it("should fetch full graph data", async () => {
       const graphData = createMockGraphData();
 
-      vi.spyOn(api.graph, 'getFullGraph').mockResolvedValue(graphData);
+      vi.spyOn(api.graph, "getFullGraph").mockResolvedValue(graphData);
 
-      const result = await api.graph.getFullGraph('project-1');
+      const result = await api.graph.getFullGraph("project-1");
       expect(result.nodes).toHaveLength(2);
       expect(result.edges).toHaveLength(1);
     });
 
-    it('should get impact analysis', async () => {
+    it("should get impact analysis", async () => {
       const impact: ImpactAnalysis = {
         affectedCount: 1,
-        affectedItems: [createMockItem({ id: 'item-2' })],
+        affectedItems: [createMockItem({ id: "item-2" })],
         depth: 2,
-        itemId: 'item-1',
+        itemId: "item-1",
       };
 
-      vi.spyOn(api.graph, 'getImpactAnalysis').mockResolvedValue(impact);
+      vi.spyOn(api.graph, "getImpactAnalysis").mockResolvedValue(impact);
 
-      const result = await api.graph.getImpactAnalysis('item-1', 3);
+      const result = await api.graph.getImpactAnalysis("item-1", 3);
       expect(result.affectedCount).toBe(1);
       expect(result.affectedItems).toHaveLength(1);
     });
 
-    it('should get dependency analysis', async () => {
+    it("should get dependency analysis", async () => {
       const deps: DependencyAnalysis = {
-        dependencies: [createMockItem({ id: 'item-0' })],
+        dependencies: [createMockItem({ id: "item-0" })],
         dependencyCount: 1,
         depth: 2,
-        itemId: 'item-1',
+        itemId: "item-1",
       };
 
-      vi.spyOn(api.graph, 'getDependencyAnalysis').mockResolvedValue(deps);
+      vi.spyOn(api.graph, "getDependencyAnalysis").mockResolvedValue(deps);
 
-      const result = await api.graph.getDependencyAnalysis('item-1');
+      const result = await api.graph.getDependencyAnalysis("item-1");
       expect(result.dependencyCount).toBe(1);
     });
 
-    it('should detect cycles in graph', async () => {
-      const cycles = [['item-1', 'item-2', 'item-1']];
+    it("should detect cycles in graph", async () => {
+      const cycles = [["item-1", "item-2", "item-1"]];
 
-      vi.spyOn(api.graph, 'detectCycles').mockResolvedValue(cycles);
+      vi.spyOn(api.graph, "detectCycles").mockResolvedValue(cycles);
 
-      const result = await api.graph.detectCycles('project-1');
+      const result = await api.graph.detectCycles("project-1");
       expect(result).toHaveLength(1);
-      expect(result[0]).toEqual(['item-1', 'item-2', 'item-1']);
+      expect(result[0]).toEqual(["item-1", "item-2", "item-1"]);
     });
   });
 
-  describe('Search API Integration', () => {
-    it('should perform search query', async () => {
+  describe("Search API Integration", () => {
+    it("should perform search query", async () => {
       const searchResult = createMockSearchResult([
-        createMockItem({ id: 'i1', title: 'Test Result' }),
+        createMockItem({ id: "i1", title: "Test Result" }),
       ]);
 
-      vi.spyOn(api.search, 'search').mockResolvedValue(searchResult);
+      vi.spyOn(api.search, "search").mockResolvedValue(searchResult);
 
-      const result = await api.search.search({ q: 'test' });
+      const result = await api.search.search({ q: "test" });
       expect(result.items).toHaveLength(1);
       expect(result.total).toBe(1);
     });
 
-    it('should get search suggestions', async () => {
-      vi.spyOn(api.search, 'suggest').mockResolvedValue(['suggestion1', 'suggestion2']);
+    it("should get search suggestions", async () => {
+      vi.spyOn(api.search, "suggest").mockResolvedValue(["suggestion1", "suggestion2"]);
 
-      const suggestions = await api.search.suggest('test', 5);
+      const suggestions = await api.search.suggest("test", 5);
       expect(suggestions).toHaveLength(2);
     });
   });
@@ -652,34 +652,34 @@ describe('API Integration Tests', () => {
 // VIEW INTEGRATION TESTS
 // ============================================================================
 
-describe('View Integration Tests', () => {
+describe("View Integration Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('DashboardView Integration', () => {
-    it('should render the traceability dashboard surfaces', async () => {
+  describe("DashboardView Integration", () => {
+    it("should render the traceability dashboard surfaces", async () => {
       renderWithProviders(<DashboardView />);
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: 'Traceability Dashboard' })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Traceability Dashboard" })).toBeInTheDocument();
       });
 
-      expect(screen.getByText('Global Distribution')).toBeInTheDocument();
-      expect(screen.getByRole('heading', { name: 'Active Projects' })).toBeInTheDocument();
+      expect(screen.getByText("Global Distribution")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Active Projects" })).toBeInTheDocument();
     });
 
-    it('should display project discovery controls', async () => {
+    it("should display project discovery controls", async () => {
       renderWithProviders(<DashboardView />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText('Search projects...')).toBeInTheDocument();
+        expect(screen.getByPlaceholderText("Search projects...")).toBeInTheDocument();
       });
 
-      expect(screen.getByRole('combobox', { name: 'Sort projects' })).toBeInTheDocument();
+      expect(screen.getByRole("combobox", { name: "Sort projects" })).toBeInTheDocument();
     });
 
-    it('should render system health context', async () => {
+    it("should render system health context", async () => {
       renderWithProviders(<DashboardView />);
 
       await waitFor(() => {
@@ -689,54 +689,54 @@ describe('View Integration Tests', () => {
     });
   });
 
-  describe('ReportsView Integration', () => {
-    it('should render reports templates', async () => {
-      vi.spyOn(api.projects, 'list').mockResolvedValue([createMockProject()]);
+  describe("ReportsView Integration", () => {
+    it("should render reports templates", async () => {
+      vi.spyOn(api.projects, "list").mockResolvedValue([createMockProject()]);
 
       renderWithProviders(<ReportsView />);
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: 'Intelligence Hub' })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Intelligence Hub" })).toBeInTheDocument();
       });
 
-      expect(screen.getByText('Traceability Matrix')).toBeInTheDocument();
-      expect(screen.getByText('Executive Summary')).toBeInTheDocument();
-      expect(screen.getByText('Entity Registry')).toBeInTheDocument();
+      expect(screen.getByText("Traceability Matrix")).toBeInTheDocument();
+      expect(screen.getByText("Executive Summary")).toBeInTheDocument();
+      expect(screen.getByText("Entity Registry")).toBeInTheDocument();
     });
 
-    it('should allow format selection', async () => {
-      vi.spyOn(api.projects, 'list').mockResolvedValue([]);
+    it("should allow format selection", async () => {
+      vi.spyOn(api.projects, "list").mockResolvedValue([]);
 
       renderWithProviders(<ReportsView />);
 
       await waitFor(() => {
-        expect(screen.getByText('Traceability Matrix')).toBeInTheDocument();
+        expect(screen.getByText("Traceability Matrix")).toBeInTheDocument();
       });
 
-      const csvButton = screen.getByRole('button', {
-        name: 'Select CSV for Traceability Matrix',
+      const csvButton = screen.getByRole("button", {
+        name: "Select CSV for Traceability Matrix",
       });
       await user.click(csvButton);
 
-      expect(csvButton).toHaveAttribute('aria-pressed', 'true');
+      expect(csvButton).toHaveAttribute("aria-pressed", "true");
     });
 
-    it('should generate report on button click', async () => {
+    it("should generate report on button click", async () => {
       const mockProject = createMockProject();
-      vi.spyOn(api.projects, 'list').mockResolvedValue([mockProject]);
-      vi.spyOn(api.exportImport, 'export').mockResolvedValue(new Blob());
-      vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+      vi.spyOn(api.projects, "list").mockResolvedValue([mockProject]);
+      vi.spyOn(api.exportImport, "export").mockResolvedValue(new Blob());
+      vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
 
       renderWithProviders(<ReportsView />);
 
       await waitFor(() => {
-        expect(screen.getByText('Entity Registry')).toBeInTheDocument();
+        expect(screen.getByText("Entity Registry")).toBeInTheDocument();
       });
 
-      await user.click(screen.getByRole('combobox', { name: 'Project context' }));
-      await user.click(await screen.findByRole('option', { name: 'Test Project' }));
+      await user.click(screen.getByRole("combobox", { name: "Project context" }));
+      await user.click(await screen.findByRole("option", { name: "Test Project" }));
 
-      await user.click(screen.getByRole('button', { name: 'Compile Entity Registry' }));
+      await user.click(screen.getByRole("button", { name: "Compile Entity Registry" }));
 
       await waitFor(() => {
         expect(api.exportImport.export).toHaveBeenCalled();
@@ -744,58 +744,58 @@ describe('View Integration Tests', () => {
     });
   });
 
-  describe('SettingsView Integration', () => {
-    it('should render all settings tabs', () => {
+  describe("SettingsView Integration", () => {
+    it("should render all settings tabs", () => {
       renderWithProviders(<SettingsView />);
 
-      expect(screen.getByRole('heading', { name: 'System Preferences' })).toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: 'Identity' })).toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: 'Visuals' })).toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: 'Engine Access' })).toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: 'Comms' })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "System Preferences" })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: "Identity" })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: "Visuals" })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: "Engine Access" })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: "Comms" })).toBeInTheDocument();
     });
 
-    it('should switch between tabs', async () => {
+    it("should switch between tabs", async () => {
       renderWithProviders(<SettingsView />);
 
-      const appearanceTab = screen.getByRole('tab', { name: 'Visuals' });
+      const appearanceTab = screen.getByRole("tab", { name: "Visuals" });
       await user.click(appearanceTab);
 
-      expect(screen.getByRole('heading', { name: 'Interface Directives' })).toBeInTheDocument();
-      expect(screen.getByText('Color Schema')).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Interface Directives" })).toBeInTheDocument();
+      expect(screen.getByText("Color Schema")).toBeInTheDocument();
     });
 
-    it('should handle form input changes', async () => {
+    it("should handle form input changes", async () => {
       renderWithProviders(<SettingsView />);
 
-      const nameInput = screen.getByDisplayValue('System Administrator');
+      const nameInput = screen.getByDisplayValue("System Administrator");
       await user.clear(nameInput);
-      await user.type(nameInput, 'John Doe');
+      await user.type(nameInput, "John Doe");
 
-      expect(nameInput).toHaveValue('John Doe');
+      expect(nameInput).toHaveValue("John Doe");
     });
 
-    it('should save settings', async () => {
+    it("should save settings", async () => {
       renderWithProviders(<SettingsView />);
 
-      const nameInput = screen.getByDisplayValue('System Administrator');
+      const nameInput = screen.getByDisplayValue("System Administrator");
       await user.clear(nameInput);
-      await user.type(nameInput, 'John Doe');
+      await user.type(nameInput, "John Doe");
 
-      const saveButton = screen.getByRole('button', { name: 'Synchronize Parameters' });
+      const saveButton = screen.getByRole("button", { name: "Synchronize Parameters" });
       await user.click(saveButton);
 
       // Would verify mutation was called in real test
       expect(saveButton).toBeInTheDocument();
     });
 
-    it('should toggle notification settings', async () => {
+    it("should toggle notification settings", async () => {
       renderWithProviders(<SettingsView />);
 
-      const notificationsTab = screen.getByRole('tab', { name: 'Comms' });
+      const notificationsTab = screen.getByRole("tab", { name: "Comms" });
       await user.click(notificationsTab);
 
-      const emailCheckbox = screen.getByLabelText('Email Dispatches');
+      const emailCheckbox = screen.getByLabelText("Email Dispatches");
       await user.click(emailCheckbox);
 
       // Checkbox should be toggled
@@ -803,46 +803,46 @@ describe('View Integration Tests', () => {
     });
   });
 
-  describe('SearchView Integration', () => {
-    it('should render search interface', () => {
+  describe("SearchView Integration", () => {
+    it("should render search interface", () => {
       renderWithProviders(<SearchView />);
 
-      expect(screen.getByRole('heading', { name: 'Omni-Search' })).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Type anything to search...')).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Omni-Search" })).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Type anything to search...")).toBeInTheDocument();
     });
 
-    it('should perform search on input', async () => {
-      const mockResults = createMockSearchResult([createMockItem({ title: 'Found Item' })]);
+    it("should perform search on input", async () => {
+      const mockResults = createMockSearchResult([createMockItem({ title: "Found Item" })]);
 
-      vi.spyOn(api.search, 'search').mockResolvedValue(mockResults);
+      vi.spyOn(api.search, "search").mockResolvedValue(mockResults);
 
       renderWithProviders(<SearchView />);
 
-      const searchInput = screen.getByPlaceholderText('Type anything to search...');
-      await user.type(searchInput, 'test query');
+      const searchInput = screen.getByPlaceholderText("Type anything to search...");
+      await user.type(searchInput, "test query");
 
       await waitFor(() => {
-        expect(screen.getByText('Found Item')).toBeInTheDocument();
+        expect(screen.getByText("Found Item")).toBeInTheDocument();
       });
     });
 
-    it('should filter by type', async () => {
+    it("should filter by type", async () => {
       renderWithProviders(<SearchView />);
 
-      const typeSelect = screen.getByRole('combobox', { name: 'Search result type' });
+      const typeSelect = screen.getByRole("combobox", { name: "Search result type" });
       await user.click(typeSelect);
-      await user.click(await screen.findByRole('option', { name: 'Requirement' }));
+      await user.click(await screen.findByRole("option", { name: "Requirement" }));
 
-      expect(typeSelect).toHaveTextContent('Requirement');
+      expect(typeSelect).toHaveTextContent("Requirement");
     });
 
-    it('should show no results message', async () => {
-      vi.spyOn(api.search, 'search').mockResolvedValue(createMockSearchResult([]));
+    it("should show no results message", async () => {
+      vi.spyOn(api.search, "search").mockResolvedValue(createMockSearchResult([]));
 
       renderWithProviders(<SearchView />);
 
-      const searchInput = screen.getByPlaceholderText('Type anything to search...');
-      await user.type(searchInput, 'nonexistent');
+      const searchInput = screen.getByPlaceholderText("Type anything to search...");
+      await user.type(searchInput, "nonexistent");
 
       await waitFor(() => {
         expect(screen.getByText(/Zero matches in registry/i)).toBeInTheDocument();
@@ -855,7 +855,7 @@ describe('View Integration Tests', () => {
 // CROSS-STORE INTEGRATION TESTS
 // ============================================================================
 
-describe('Cross-Store Integration Tests', () => {
+describe("Cross-Store Integration Tests", () => {
   beforeEach(() => {
     useAuthStore.setState({ isAuthenticated: false, token: null, user: null });
     useItemsStore.getState().clearItems();
@@ -864,7 +864,7 @@ describe('Cross-Store Integration Tests', () => {
     useSyncStore.setState({ failedMutations: [], pendingMutations: [] });
   });
 
-  it('should sync auth state with items access', () => {
+  it("should sync auth state with items access", () => {
     const { addItem } = useItemsStore.getState();
 
     authenticateTestUser();
@@ -877,43 +877,43 @@ describe('Cross-Store Integration Tests', () => {
     expect(useItemsStore.getState().items.get(item.id)).toBeDefined();
   });
 
-  it('should track project context across stores', () => {
+  it("should track project context across stores", () => {
     const { setCurrentProject } = useProjectStore.getState();
     const { addItems, getItemsByProject } = useItemsStore.getState();
 
-    const project = createMockProject({ id: 'project-1' });
+    const project = createMockProject({ id: "project-1" });
     setCurrentProject(project);
 
     const items = [
-      createMockItem({ id: 'i1', projectId: 'project-1' }),
-      createMockItem({ id: 'i2', projectId: 'project-1' }),
+      createMockItem({ id: "i1", projectId: "project-1" }),
+      createMockItem({ id: "i2", projectId: "project-1" }),
     ];
     addItems(items);
 
-    const projectItems = getItemsByProject('project-1');
+    const projectItems = getItemsByProject("project-1");
     expect(projectItems).toHaveLength(2);
-    expect(useProjectStore.getState().currentProjectId).toBe('project-1');
+    expect(useProjectStore.getState().currentProjectId).toBe("project-1");
   });
 
-  it('should queue offline mutations in sync store', () => {
+  it("should queue offline mutations in sync store", () => {
     const { setOnline, addPendingMutation } = useSyncStore.getState();
     const { optimisticCreate } = useItemsStore.getState();
 
     setOnline(false);
 
     const mutation = {
-      data: { title: 'New Item' },
-      entity: 'item',
-      id: 'mut-1',
+      data: { title: "New Item" },
+      entity: "item",
+      id: "mut-1",
       timestamp: Date.now(),
-      type: 'create',
+      type: "create",
     };
 
     addPendingMutation(mutation as any);
-    optimisticCreate('temp-1', {
-      projectId: 'project-1',
-      title: 'New Item',
-      type: 'requirement' as any,
+    optimisticCreate("temp-1", {
+      projectId: "project-1",
+      title: "New Item",
+      type: "requirement" as any,
     });
 
     const syncState = useSyncStore.getState();
@@ -921,7 +921,7 @@ describe('Cross-Store Integration Tests', () => {
 
     expect(syncState.isOnline).toBeFalsy();
     expect(syncState.pendingMutations).toHaveLength(1);
-    expect(itemsState.items.get('temp-1')).toBeDefined();
+    expect(itemsState.items.get("temp-1")).toBeDefined();
   });
 });
 
@@ -929,7 +929,7 @@ describe('Cross-Store Integration Tests', () => {
 // END-TO-END WORKFLOW TESTS
 // ============================================================================
 
-describe('End-to-End Workflow Tests', () => {
+describe("End-to-End Workflow Tests", () => {
   beforeEach(() => {
     useAuthStore.setState({ isAuthenticated: false, token: null, user: null });
     useItemsStore.getState().clearItems();
@@ -938,7 +938,7 @@ describe('End-to-End Workflow Tests', () => {
     useSyncStore.setState({ failedMutations: [], pendingMutations: [] });
   });
 
-  it('should complete full item creation workflow', () => {
+  it("should complete full item creation workflow", () => {
     const { setCurrentProject } = useProjectStore.getState();
     const { optimisticCreate, confirmCreate } = useItemsStore.getState();
 
@@ -951,28 +951,28 @@ describe('End-to-End Workflow Tests', () => {
     setCurrentProject(project);
 
     // 3. Create item optimistically
-    const tempId = 'temp-1';
+    const tempId = "temp-1";
     optimisticCreate(tempId, {
       projectId: project.id,
-      title: 'New Requirement',
-      type: 'requirement' as any,
+      title: "New Requirement",
+      type: "requirement" as any,
     });
 
     expect(useItemsStore.getState().items.get(tempId)).toBeDefined();
 
     // 4. Confirm creation from server
     const serverItem = createMockItem({
-      id: 'real-1',
-      title: 'New Requirement',
+      id: "real-1",
+      title: "New Requirement",
     });
     confirmCreate(tempId, serverItem);
 
     const state = useItemsStore.getState();
-    expect(state.items.get('real-1')).toBeDefined();
+    expect(state.items.get("real-1")).toBeDefined();
     expect(state.items.get(tempId)).toBeUndefined();
   });
 
-  it('should handle offline-to-online sync workflow', async () => {
+  it("should handle offline-to-online sync workflow", async () => {
     const { setOnline, addPendingMutation, startSync, finishSync, removePendingMutation } =
       useSyncStore.getState();
 
@@ -982,10 +982,10 @@ describe('End-to-End Workflow Tests', () => {
     // Queue mutations
     addPendingMutation({
       data: {},
-      entity: 'item',
-      id: 'mut-1',
+      entity: "item",
+      id: "mut-1",
       timestamp: Date.now(),
-      type: 'create',
+      type: "create",
     } as any);
 
     expect(useSyncStore.getState().pendingMutations).toHaveLength(1);
@@ -995,7 +995,7 @@ describe('End-to-End Workflow Tests', () => {
     startSync();
 
     // Process mutations
-    removePendingMutation('mut-1');
+    removePendingMutation("mut-1");
 
     finishSync();
 
@@ -1005,32 +1005,32 @@ describe('End-to-End Workflow Tests', () => {
     expect(state.lastSyncedAt).toBeDefined();
   });
 
-  it('should handle project switching workflow', () => {
+  it("should handle project switching workflow", () => {
     const { setCurrentProject, addRecentProject: _addRecentProject } = useProjectStore.getState();
     const { addItems, getItemsByProject } = useItemsStore.getState();
 
-    const project1 = createMockProject({ id: 'p1', name: 'Project 1' });
-    const project2 = createMockProject({ id: 'p2', name: 'Project 2' });
+    const project1 = createMockProject({ id: "p1", name: "Project 1" });
+    const project2 = createMockProject({ id: "p2", name: "Project 2" });
 
     // Add items to different projects
     addItems([
-      createMockItem({ id: 'i1', projectId: 'p1' }),
-      createMockItem({ id: 'i2', projectId: 'p2' }),
+      createMockItem({ id: "i1", projectId: "p1" }),
+      createMockItem({ id: "i2", projectId: "p2" }),
     ]);
 
     // Switch to project 1
     setCurrentProject(project1);
-    let items = getItemsByProject('p1');
+    let items = getItemsByProject("p1");
     expect(items).toHaveLength(1);
 
     // Switch to project 2
     setCurrentProject(project2);
-    items = getItemsByProject('p2');
+    items = getItemsByProject("p2");
     expect(items).toHaveLength(1);
 
     // Recent projects should be tracked
     const state = useProjectStore.getState();
-    expect(state.recentProjects).toContain('p1');
-    expect(state.recentProjects).toContain('p2');
+    expect(state.recentProjects).toContain("p1");
+    expect(state.recentProjects).toContain("p2");
   });
 });

@@ -9,23 +9,23 @@
  * - Real-time synchronization
  */
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
 // ============================================================================
 // Test Configuration
 // ============================================================================
 
-const MCP_BASE_URL = process.env.MCP_BASE_URL ?? 'http://localhost:4000';
-const TEST_TOKEN = process.env.TEST_TOKEN ?? 'test-e2e-key';
+const MCP_BASE_URL = process.env.MCP_BASE_URL ?? "http://localhost:4000";
+const TEST_TOKEN = process.env.TEST_TOKEN ?? "test-e2e-key";
 
 // ============================================================================
 // Test MCP Client Authentication
 // ============================================================================
 
-test.describe('MCP Authentication Flow', () => {
-  test('should authenticate with valid token', async ({ page }) => {
+test.describe("MCP Authentication Flow", () => {
+  test("should authenticate with valid token", async ({ page }) => {
     // Navigate to app
-    await page.goto('/');
+    await page.goto("/");
 
     // Check for authentication prompt or auto-login
     // This depends on your app's authentication flow
@@ -46,11 +46,11 @@ test.describe('MCP Authentication Flow', () => {
     });
   });
 
-  test('should reject invalid token', async ({ page }) => {
-    await page.goto('/auth/login');
+  test("should reject invalid token", async ({ page }) => {
+    await page.goto("/auth/login");
 
     // Try to authenticate with invalid token
-    await page.fill('[data-testid="token-input"]', 'invalid-token');
+    await page.fill('[data-testid="token-input"]', "invalid-token");
     await page.click('[data-testid="login-button"]');
 
     // Verify error message
@@ -62,10 +62,10 @@ test.describe('MCP Authentication Flow', () => {
     );
   });
 
-  test('should handle token expiration', async ({ page }) => {
+  test("should handle token expiration", async ({ page }) => {
     // This would test token expiration and refresh
     // For now, just verify the concept exists
-    await page.goto('/');
+    await page.goto("/");
 
     // Would simulate token expiration and verify refresh flow
     expect(true).toBe(true);
@@ -76,70 +76,70 @@ test.describe('MCP Authentication Flow', () => {
 // Test MCP Client Operations
 // ============================================================================
 
-test.describe('MCP Client Operations', () => {
+test.describe("MCP Client Operations", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto("/");
     // Ensure authenticated
     await page.waitForSelector('[data-testid="user-menu"]', { timeout: 5000 });
   });
 
-  test('should list available MCP tools', async ({ page: _page, request }) => {
+  test("should list available MCP tools", async ({ page: _page, request }) => {
     // Make direct API request to test MCP tools/list
     const response = await request.post(`${MCP_BASE_URL}/messages`, {
       data: {
         id: 1,
-        jsonrpc: '2.0',
-        method: 'tools/list',
+        jsonrpc: "2.0",
+        method: "tools/list",
         params: {},
       },
       headers: {
         Authorization: `Bearer ${TEST_TOKEN}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
     expect(response.ok()).toBeTruthy();
     const data = (await response.json()) as { result?: unknown };
-    expect(data).toHaveProperty('result');
+    expect(data).toHaveProperty("result");
   });
 
-  test('should create project via MCP', async ({ page }) => {
+  test("should create project via MCP", async ({ page }) => {
     // Navigate to projects page
-    await page.goto('/projects');
+    await page.goto("/projects");
 
     // Create new project
     await page.click('[data-testid="create-project-button"]');
-    await page.fill('[data-testid="project-name-input"]', 'E2E Test Project');
-    await page.fill('[data-testid="project-description-input"]', 'Created via E2E test');
+    await page.fill('[data-testid="project-name-input"]', "E2E Test Project");
+    await page.fill('[data-testid="project-description-input"]', "Created via E2E test");
     await page.click('[data-testid="submit-project-button"]');
 
     // Verify project created
-    await expect(page.locator('text=E2E Test Project')).toBeVisible({
+    await expect(page.locator("text=E2E Test Project")).toBeVisible({
       timeout: 5000,
     });
   });
 
-  test('should create item via MCP', async ({ page }) => {
+  test("should create item via MCP", async ({ page }) => {
     // Navigate to items page
-    await page.goto('/projects/test-project/items');
+    await page.goto("/projects/test-project/items");
 
     // Create new item
     await page.click('[data-testid="create-item-button"]');
-    await page.fill('[data-testid="item-title-input"]', 'E2E Test Item');
-    await page.selectOption('[data-testid="item-type-select"]', 'feature');
+    await page.fill('[data-testid="item-title-input"]', "E2E Test Item");
+    await page.selectOption('[data-testid="item-type-select"]', "feature");
     await page.click('[data-testid="submit-item-button"]');
 
     // Verify item created
-    await expect(page.locator('text=E2E Test Item')).toBeVisible({
+    await expect(page.locator("text=E2E Test Item")).toBeVisible({
       timeout: 5000,
     });
   });
 
-  test('should query items via MCP', async ({ page }) => {
-    await page.goto('/projects/test-project/items');
+  test("should query items via MCP", async ({ page }) => {
+    await page.goto("/projects/test-project/items");
 
     // Apply filter
-    await page.selectOption('[data-testid="item-type-filter"]', 'feature');
+    await page.selectOption('[data-testid="item-type-filter"]', "feature");
 
     // Verify filtered results
     await expect(page.locator('[data-testid="items-table"]')).toBeVisible();
@@ -154,13 +154,13 @@ test.describe('MCP Client Operations', () => {
 // Test SSE Progress Updates
 // ============================================================================
 
-test.describe('SSE Progress Updates', () => {
-  test('should display progress during long operations', async ({ page }) => {
-    await page.goto('/projects/test-project');
+test.describe("SSE Progress Updates", () => {
+  test("should display progress during long operations", async ({ page }) => {
+    await page.goto("/projects/test-project");
 
     // Trigger a long-running operation (e.g., import)
     await page.click('[data-testid="import-button"]');
-    await page.setInputFiles('[data-testid="file-input"]', 'test-data.json');
+    await page.setInputFiles('[data-testid="file-input"]', "test-data.json");
     await page.click('[data-testid="start-import-button"]');
 
     // Verify progress bar appears
@@ -178,8 +178,8 @@ test.describe('SSE Progress Updates', () => {
     });
   });
 
-  test('should handle SSE connection errors', async ({ page }) => {
-    await page.goto('/projects/test-project');
+  test("should handle SSE connection errors", async ({ page }) => {
+    await page.goto("/projects/test-project");
 
     // Simulate SSE connection failure
     // This would require mocking or network interception
@@ -188,8 +188,8 @@ test.describe('SSE Progress Updates', () => {
     expect(true).toBe(true);
   });
 
-  test('should reconnect SSE on disconnect', async ({ page }) => {
-    await page.goto('/projects/test-project');
+  test("should reconnect SSE on disconnect", async ({ page }) => {
+    await page.goto("/projects/test-project");
 
     // Start a streaming operation
     await page.click('[data-testid="analyze-button"]');
@@ -208,9 +208,9 @@ test.describe('SSE Progress Updates', () => {
 // Test Error Handling
 // ============================================================================
 
-test.describe('Error Handling', () => {
-  test('should display user-friendly error messages', async ({ page }) => {
-    await page.goto('/projects/test-project');
+test.describe("Error Handling", () => {
+  test("should display user-friendly error messages", async ({ page }) => {
+    await page.goto("/projects/test-project");
 
     // Trigger an error (e.g., create item with invalid data)
     await page.click('[data-testid="create-item-button"]');
@@ -223,15 +223,15 @@ test.describe('Error Handling', () => {
     });
   });
 
-  test('should handle network errors gracefully', async ({ page, context }) => {
-    await page.goto('/projects/test-project');
+  test("should handle network errors gracefully", async ({ page, context }) => {
+    await page.goto("/projects/test-project");
 
     // Simulate network error
     await context.setOffline(true);
 
     // Try to create item
     await page.click('[data-testid="create-item-button"]');
-    await page.fill('[data-testid="item-title-input"]', 'Test Item');
+    await page.fill('[data-testid="item-title-input"]', "Test Item");
     await page.click('[data-testid="submit-item-button"]');
 
     // Verify error handling
@@ -243,8 +243,8 @@ test.describe('Error Handling', () => {
     await context.setOffline(false);
   });
 
-  test('should retry failed requests', async ({ page }) => {
-    await page.goto('/projects/test-project');
+  test("should retry failed requests", async ({ page }) => {
+    await page.goto("/projects/test-project");
 
     // This would test automatic retry logic
     // For now, verify the concept
@@ -256,38 +256,38 @@ test.describe('Error Handling', () => {
 // Test Real-time Synchronization
 // ============================================================================
 
-test.describe('Real-time Synchronization', () => {
-  test('should sync changes across tabs', async ({ browser }) => {
+test.describe("Real-time Synchronization", () => {
+  test("should sync changes across tabs", async ({ browser }) => {
     // Open two tabs
     const context = await browser.newContext();
     const page1 = await context.newPage();
     const page2 = await context.newPage();
 
     // Navigate both to same project
-    await page1.goto('/projects/test-project/items');
-    await page2.goto('/projects/test-project/items');
+    await page1.goto("/projects/test-project/items");
+    await page2.goto("/projects/test-project/items");
 
     // Create item in first tab
     await page1.click('[data-testid="create-item-button"]');
-    await page1.fill('[data-testid="item-title-input"]', 'Synced Item');
+    await page1.fill('[data-testid="item-title-input"]', "Synced Item");
     await page1.click('[data-testid="submit-item-button"]');
 
     // Verify item appears in second tab
-    await expect(page2.locator('text=Synced Item')).toBeVisible({
+    await expect(page2.locator("text=Synced Item")).toBeVisible({
       timeout: 5000,
     });
 
     await context.close();
   });
 
-  test('should handle concurrent modifications', async ({ browser }) => {
+  test("should handle concurrent modifications", async ({ browser }) => {
     // Test conflict resolution
     const context = await browser.newContext();
     const page1 = await context.newPage();
     const page2 = await context.newPage();
 
-    await page1.goto('/projects/test-project/items/test-item-id');
-    await page2.goto('/projects/test-project/items/test-item-id');
+    await page1.goto("/projects/test-project/items/test-item-id");
+    await page2.goto("/projects/test-project/items/test-item-id");
 
     // Both tabs modify the same item
     // This would test conflict resolution logic
@@ -301,9 +301,9 @@ test.describe('Real-time Synchronization', () => {
 // Test Performance
 // ============================================================================
 
-test.describe('Performance', () => {
-  test('should load items quickly', async ({ page }) => {
-    await page.goto('/projects/test-project/items');
+test.describe("Performance", () => {
+  test("should load items quickly", async ({ page }) => {
+    await page.goto("/projects/test-project/items");
 
     // Measure load time
     const startTime = Date.now();
@@ -314,8 +314,8 @@ test.describe('Performance', () => {
     expect(loadTime).toBeLessThan(2000);
   });
 
-  test('should handle large datasets', async ({ page }) => {
-    await page.goto('/projects/large-project/items');
+  test("should handle large datasets", async ({ page }) => {
+    await page.goto("/projects/large-project/items");
 
     // Verify virtual scrolling works
     await expect(page.locator('[data-testid="items-table"]')).toBeVisible();
@@ -329,13 +329,13 @@ test.describe('Performance', () => {
     expect(true).toBe(true);
   });
 
-  test('should optimize API requests', async ({ page }) => {
-    await page.goto('/projects/test-project');
+  test("should optimize API requests", async ({ page }) => {
+    await page.goto("/projects/test-project");
 
     // Monitor network requests
     const requests: string[] = [];
-    page.on('request', (request) => {
-      if (request.url().includes('/messages')) {
+    page.on("request", (request) => {
+      if (request.url().includes("/messages")) {
         requests.push(request.url());
       }
     });
@@ -354,16 +354,16 @@ test.describe('Performance', () => {
 // Test Offline Support
 // ============================================================================
 
-test.describe('Offline Support', () => {
-  test('should queue operations while offline', async ({ page, context }) => {
-    await page.goto('/projects/test-project/items');
+test.describe("Offline Support", () => {
+  test("should queue operations while offline", async ({ page, context }) => {
+    await page.goto("/projects/test-project/items");
 
     // Go offline
     await context.setOffline(true);
 
     // Try to create item
     await page.click('[data-testid="create-item-button"]');
-    await page.fill('[data-testid="item-title-input"]', 'Offline Item');
+    await page.fill('[data-testid="item-title-input"]', "Offline Item");
     await page.click('[data-testid="submit-item-button"]');
 
     // Verify queued message
@@ -373,13 +373,13 @@ test.describe('Offline Support', () => {
     await context.setOffline(false);
 
     // Verify operation completes
-    await expect(page.locator('text=Offline Item')).toBeVisible({
+    await expect(page.locator("text=Offline Item")).toBeVisible({
       timeout: 5000,
     });
   });
 
-  test('should sync on reconnection', async ({ page, context }) => {
-    await page.goto('/projects/test-project');
+  test("should sync on reconnection", async ({ page, context }) => {
+    await page.goto("/projects/test-project");
 
     // Simulate offline/online cycle
     await context.setOffline(true);
@@ -397,36 +397,36 @@ test.describe('Offline Support', () => {
 // Test Accessibility
 // ============================================================================
 
-test.describe('Accessibility', () => {
-  test('should be keyboard navigable', async ({ page }) => {
-    await page.goto('/projects/test-project/items');
+test.describe("Accessibility", () => {
+  test("should be keyboard navigable", async ({ page }) => {
+    await page.goto("/projects/test-project/items");
 
     // Navigate using keyboard
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Enter');
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Enter");
 
     // Verify keyboard navigation works
     expect(true).toBe(true);
   });
 
-  test('should have proper ARIA labels', async ({ page }) => {
-    await page.goto('/projects/test-project/items');
+  test("should have proper ARIA labels", async ({ page }) => {
+    await page.goto("/projects/test-project/items");
 
     // Verify ARIA labels exist
     const createButton = page.locator('[data-testid="create-item-button"]');
-    const ariaLabel = await createButton.getAttribute('aria-label');
+    const ariaLabel = await createButton.getAttribute("aria-label");
 
     expect(ariaLabel).toBeTruthy();
   });
 
-  test('should support screen readers', async ({ page }) => {
-    await page.goto('/projects/test-project/items');
+  test("should support screen readers", async ({ page }) => {
+    await page.goto("/projects/test-project/items");
 
     // Verify semantic HTML and ARIA
     const table = page.locator('[data-testid="items-table"]');
-    const role = await table.getAttribute('role');
+    const role = await table.getAttribute("role");
 
-    expect(role).toBe('table');
+    expect(role).toBe("table");
   });
 });

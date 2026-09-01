@@ -1,45 +1,45 @@
-import { useSearch } from '@tanstack/react-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useSearch } from "@tanstack/react-router";
+import { useCallback, useMemo, useState } from "react";
 
 import type {
   ProjectsListSortBy,
   ProjectsListSortOrder,
-} from '@/views/projects-list/ProjectsListFiltersBar';
-import type { Project } from '@tracertm/types';
+} from "@/views/projects-list/ProjectsListFiltersBar";
+import type { Project } from "@tracertm/types";
 
-import { useProjects } from '@/hooks/useProjects';
-import { CreateProjectDialog } from '@/views/projects-list/CreateProjectDialog';
-import { EditProjectDialog } from '@/views/projects-list/EditProjectDialog';
-import { ExportDialog } from '@/views/projects-list/ExportDialog';
-import { ImportDialog } from '@/views/projects-list/ImportDialog';
-import { ProjectCard } from '@/views/projects-list/ProjectCard';
-import { ProjectsListEmptyState } from '@/views/projects-list/ProjectsListEmptyState';
-import { ProjectsListFiltersBar } from '@/views/projects-list/ProjectsListFiltersBar';
-import { ProjectsListHeader } from '@/views/projects-list/ProjectsListHeader';
-import { ProjectsListLoadingState } from '@/views/projects-list/ProjectsListLoadingState';
+import { useProjects } from "@/hooks/useProjects";
+import { CreateProjectDialog } from "@/views/projects-list/CreateProjectDialog";
+import { EditProjectDialog } from "@/views/projects-list/EditProjectDialog";
+import { ExportDialog } from "@/views/projects-list/ExportDialog";
+import { ImportDialog } from "@/views/projects-list/ImportDialog";
+import { ProjectCard } from "@/views/projects-list/ProjectCard";
+import { ProjectsListEmptyState } from "@/views/projects-list/ProjectsListEmptyState";
+import { ProjectsListFiltersBar } from "@/views/projects-list/ProjectsListFiltersBar";
+import { ProjectsListHeader } from "@/views/projects-list/ProjectsListHeader";
+import { ProjectsListLoadingState } from "@/views/projects-list/ProjectsListLoadingState";
 
 interface ProjectsListEntry {
   itemCount: number;
   project: Project;
 }
 
-const EMPTY_STRING = '';
-const SEARCH_ACTION_KEY = 'action';
-const SEARCH_ACTION_CREATE = 'create';
+const EMPTY_STRING = "";
+const SEARCH_ACTION_KEY = "action";
+const SEARCH_ACTION_CREATE = "create";
 const DEFAULT_ITEM_COUNT = 0;
 const SORT_MULTIPLIER_ASC = 1;
 const SORT_MULTIPLIER_DESC = -1;
 const EPOCH_TIME = 0;
 
 const isSearchParams = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
+  typeof value === "object" && value !== null;
 
 const getSearchAction = (search: unknown): string | undefined => {
   if (!isSearchParams(search)) {
     return undefined;
   }
   const value = search[SEARCH_ACTION_KEY];
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   return undefined;
@@ -49,7 +49,7 @@ const getInitialShowCreateDialog = (action: string | undefined): boolean =>
   action === SEARCH_ACTION_CREATE;
 
 const getProjectCreatedAtTime = (createdAt: string | undefined): number => {
-  if (typeof createdAt !== 'string' || createdAt.length === 0) {
+  if (typeof createdAt !== "string" || createdAt.length === 0) {
     return EPOCH_TIME;
   }
   return new Date(createdAt).getTime();
@@ -65,11 +65,11 @@ const compareEntries = (
   sortOrder: ProjectsListSortOrder,
 ): number => {
   let comp = 0;
-  if (sortBy === 'name') {
+  if (sortBy === "name") {
     const firstName = first.project.name ?? EMPTY_STRING;
     const secondName = second.project.name ?? EMPTY_STRING;
     comp = firstName.localeCompare(secondName);
-  } else if (sortBy === 'date') {
+  } else if (sortBy === "date") {
     comp =
       getProjectCreatedAtTime(first.project.createdAt) -
       getProjectCreatedAtTime(second.project.createdAt);
@@ -77,17 +77,17 @@ const compareEntries = (
     comp = first.itemCount - second.itemCount;
   }
 
-  if (sortOrder === 'asc') {
+  if (sortOrder === "asc") {
     return comp * SORT_MULTIPLIER_ASC;
   }
   return comp * SORT_MULTIPLIER_DESC;
 };
 
 const toggleSortOrder = (value: ProjectsListSortOrder): ProjectsListSortOrder => {
-  if (value === 'asc') {
-    return 'desc';
+  if (value === "asc") {
+    return "desc";
   }
-  return 'asc';
+  return "asc";
 };
 
 interface ProjectsListData {
@@ -173,8 +173,8 @@ function useProjectsListViewModel(): ProjectsListViewModel {
   const { projectsArray, projectsLoading } = useProjectsListData();
 
   const [searchQuery, setSearchQuery] = useState(EMPTY_STRING);
-  const [sortBy, setSortBy] = useState<ProjectsListSortBy>('date');
-  const [sortOrder, setSortOrder] = useState<ProjectsListSortOrder>('desc');
+  const [sortBy, setSortBy] = useState<ProjectsListSortBy>("date");
+  const [sortOrder, setSortOrder] = useState<ProjectsListSortOrder>("desc");
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState<boolean>(initialShowCreateDialog);
@@ -273,14 +273,14 @@ function renderProjectsListContent({
   searchQuery,
 }: Pick<
   ProjectsListViewModel,
-  'filteredAndSorted' | 'handleClearSearch' | 'handleEditProject' | 'searchQuery'
+  "filteredAndSorted" | "handleClearSearch" | "handleEditProject" | "searchQuery"
 >): JSX.Element {
   if (filteredAndSorted.length === 0) {
     return <ProjectsListEmptyState searchQuery={searchQuery} onClearSearch={handleClearSearch} />;
   }
 
   return (
-    <div className='stagger-children grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+    <div className="stagger-children grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {filteredAndSorted.map(({ project, itemCount }) => (
         <ProjectCard
           key={project.id}
@@ -331,7 +331,7 @@ function renderProjectsListView(model: ProjectsListViewModel): JSX.Element {
   });
 
   return (
-    <div className='animate-in-fade-up mx-auto max-w-[1600px] space-y-8 p-6'>
+    <div className="animate-in-fade-up mx-auto max-w-[1600px] space-y-8 p-6">
       <ProjectsListHeader
         onCreate={openCreateDialog}
         onExport={openExportDialog}

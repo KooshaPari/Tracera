@@ -1,4 +1,4 @@
-import { itemsApi } from './endpoints';
+import { itemsApi } from "./endpoints";
 
 const RECENT_ITEMS_LIMIT = 10;
 const START_INDEX = 0;

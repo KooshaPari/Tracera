@@ -3,10 +3,10 @@
  * Target: 52.94% → 95% coverage
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
-import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   useCreateProject,
@@ -14,8 +14,8 @@ import {
   useProject,
   useProjects,
   useUpdateProject,
-} from '../../hooks/useProjects';
-import { useAuthStore } from '../../stores/authStore';
+} from "../../hooks/useProjects";
+import { useAuthStore } from "../../stores/authStore";
 
 // Mock fetch (vi.fn() compatible with fetch at runtime)
 const mockFetch = vi.fn();
@@ -33,14 +33,14 @@ const createWrapper = () => {
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 };
 
-describe('useProjects - Comprehensive Coverage', () => {
+describe("useProjects - Comprehensive Coverage", () => {
   beforeEach(() => {
     mockFetch.mockReset();
-    useAuthStore.setState({ token: 'test-token' });
+    useAuthStore.setState({ token: "test-token" });
   });
 
   describe(useProjects, () => {
-    it('should fetch empty projects list', async () => {
+    it("should fetch empty projects list", async () => {
       mockFetch.mockResolvedValueOnce({
         json: async () => [],
         ok: true,
@@ -57,8 +57,8 @@ describe('useProjects - Comprehensive Coverage', () => {
       expect(result.current.data).toEqual([]);
     });
 
-    it('should handle network errors', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+    it("should handle network errors", async () => {
+      mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
       const { result } = renderHook(() => useProjects(), {
         wrapper: createWrapper(),
@@ -73,20 +73,20 @@ describe('useProjects - Comprehensive Coverage', () => {
   });
 
   describe(useProject, () => {
-    it('should handle fetch errors', async () => {
+    it("should handle fetch errors", async () => {
       // Mock for initial attempt and one retry (retry: 1)
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        text: async () => 'Not found',
+        text: async () => "Not found",
       });
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        text: async () => 'Not found',
+        text: async () => "Not found",
       });
 
-      const { result } = renderHook(() => useProject('proj-1'), {
+      const { result } = renderHook(() => useProject("proj-1"), {
         wrapper: createWrapper(),
       });
 
@@ -100,12 +100,12 @@ describe('useProjects - Comprehensive Coverage', () => {
       );
     });
 
-    it('should handle network errors', async () => {
+    it("should handle network errors", async () => {
       // Mock for initial attempt and one retry (retry: 1)
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
-      const { result } = renderHook(() => useProject('proj-1'), {
+      const { result } = renderHook(() => useProject("proj-1"), {
         wrapper: createWrapper(),
       });
 
@@ -121,13 +121,13 @@ describe('useProjects - Comprehensive Coverage', () => {
   });
 
   describe(useCreateProject, () => {
-    it('should create project without description', async () => {
+    it("should create project without description", async () => {
       const newProject = {
-        name: 'New Project',
+        name: "New Project",
       };
 
       const createdProject = {
-        id: '1',
+        id: "1",
         ...newProject,
         description: undefined,
       };
@@ -150,7 +150,7 @@ describe('useProjects - Comprehensive Coverage', () => {
       expect(result.current.data).toEqual(createdProject);
     });
 
-    it('should handle validation errors', async () => {
+    it("should handle validation errors", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
@@ -161,8 +161,8 @@ describe('useProjects - Comprehensive Coverage', () => {
       });
 
       result.current.mutate({
-        description: 'Invalid',
-        name: '',
+        description: "Invalid",
+        name: "",
       });
 
       await waitFor(() => {
@@ -172,12 +172,12 @@ describe('useProjects - Comprehensive Coverage', () => {
   });
 
   describe(useUpdateProject, () => {
-    it('should update project', async () => {
-      const updates = { name: 'Updated Name' };
+    it("should update project", async () => {
+      const updates = { name: "Updated Name" };
       const updatedProject = {
-        description: 'Original Description',
-        id: 'proj-1',
-        name: 'Updated Name',
+        description: "Original Description",
+        id: "proj-1",
+        name: "Updated Name",
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -189,7 +189,7 @@ describe('useProjects - Comprehensive Coverage', () => {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate({ data: updates, id: 'proj-1' });
+      result.current.mutate({ data: updates, id: "proj-1" });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBeTruthy();
@@ -197,23 +197,23 @@ describe('useProjects - Comprehensive Coverage', () => {
 
       expect(result.current.data).toEqual(updatedProject);
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/projects/proj-1'),
+        expect.stringContaining("/api/v1/projects/proj-1"),
         expect.objectContaining({
           body: JSON.stringify(updates),
           headers: expect.objectContaining({
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           }),
-          method: 'PATCH',
+          method: "PATCH",
         }),
       );
     });
 
-    it('should invalidate both list and single project queries', async () => {
-      const updates = { description: 'New Description' };
+    it("should invalidate both list and single project queries", async () => {
+      const updates = { description: "New Description" };
       const updatedProject = {
-        description: 'New Description',
-        id: 'proj-1',
-        name: 'Project 1',
+        description: "New Description",
+        id: "proj-1",
+        name: "Project 1",
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -225,14 +225,14 @@ describe('useProjects - Comprehensive Coverage', () => {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate({ data: updates, id: 'proj-1' });
+      result.current.mutate({ data: updates, id: "proj-1" });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBeTruthy();
       });
     });
 
-    it('should handle update errors', async () => {
+    it("should handle update errors", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
@@ -243,8 +243,8 @@ describe('useProjects - Comprehensive Coverage', () => {
       });
 
       result.current.mutate({
-        data: { name: 'Updated' },
-        id: 'proj-1',
+        data: { name: "Updated" },
+        id: "proj-1",
       });
 
       await waitFor(() => {
@@ -254,7 +254,7 @@ describe('useProjects - Comprehensive Coverage', () => {
   });
 
   describe(useDeleteProject, () => {
-    it('should delete project', async () => {
+    it("should delete project", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
       });
@@ -263,21 +263,21 @@ describe('useProjects - Comprehensive Coverage', () => {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate('proj-1');
+      result.current.mutate("proj-1");
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBeTruthy();
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/projects/proj-1'),
+        expect.stringContaining("/api/v1/projects/proj-1"),
         expect.objectContaining({
-          method: 'DELETE',
+          method: "DELETE",
         }),
       );
     });
 
-    it('should invalidate queries on success', async () => {
+    it("should invalidate queries on success", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
       });
@@ -286,14 +286,14 @@ describe('useProjects - Comprehensive Coverage', () => {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate('proj-1');
+      result.current.mutate("proj-1");
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBeTruthy();
       });
     });
 
-    it('should handle delete errors', async () => {
+    it("should handle delete errors", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
@@ -303,7 +303,7 @@ describe('useProjects - Comprehensive Coverage', () => {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate('proj-1');
+      result.current.mutate("proj-1");
 
       await waitFor(() => {
         expect(result.current.isError).toBeTruthy();

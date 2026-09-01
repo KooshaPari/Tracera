@@ -1,5 +1,5 @@
 // Re-export links API from endpoints
-import { linksApi } from './endpoints';
+import { linksApi } from "./endpoints";
 
 const fetchLinks = linksApi.list;
 const fetchLink = linksApi.get;

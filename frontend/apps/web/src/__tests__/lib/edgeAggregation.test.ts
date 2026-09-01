@@ -3,9 +3,9 @@
  * Validates edge reduction strategies for large graphs
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 
-import type { LinkType } from '@tracertm/types';
+import type { LinkType } from "@tracertm/types";
 
 import {
   aggregateParallelEdges,
@@ -20,14 +20,14 @@ import {
   sampleEdgesStatistically,
   type EdgeBase,
   type Node,
-} from '@/lib/edgeAggregation';
+} from "@/lib/edgeAggregation";
 
 // Helper to create test edges
 function createEdge(
   id: string,
   source: string,
   target: string,
-  type: LinkType = 'implements',
+  type: LinkType = "implements",
 ): EdgeBase {
   return { id, source, target, type };
 }
@@ -40,14 +40,14 @@ function createNode(id: string, x: number, y: number): Node {
   };
 }
 
-describe('Edge Aggregation', () => {
-  describe('aggregateParallelEdges', () => {
-    it('should aggregate parallel edges (same source→target)', () => {
+describe("Edge Aggregation", () => {
+  describe("aggregateParallelEdges", () => {
+    it("should aggregate parallel edges (same source→target)", () => {
       const edges = [
-        createEdge('e1', 'A', 'B', 'implements'),
-        createEdge('e2', 'A', 'B', 'tests'),
-        createEdge('e3', 'A', 'B', 'depends_on'),
-        createEdge('e4', 'C', 'D', 'implements'),
+        createEdge("e1", "A", "B", "implements"),
+        createEdge("e2", "A", "B", "tests"),
+        createEdge("e3", "A", "B", "depends_on"),
+        createEdge("e4", "C", "D", "implements"),
       ];
 
       const result = aggregateParallelEdges(edges, 2);
@@ -59,16 +59,16 @@ describe('Edge Aggregation', () => {
       const aggEdge = result.find((e) => e._isAggregated);
       expect(aggEdge).toBeDefined();
       expect(aggEdge?._aggregatedCount).toBe(3);
-      expect(aggEdge?.source).toBe('A');
-      expect(aggEdge?.target).toBe('B');
+      expect(aggEdge?.source).toBe("A");
+      expect(aggEdge?.target).toBe("B");
 
       const normalEdge = result.find((e) => !e._isAggregated);
       expect(normalEdge).toBeDefined();
-      expect(normalEdge?.source).toBe('C');
+      expect(normalEdge?.source).toBe("C");
     });
 
-    it('should not aggregate below threshold', () => {
-      const edges = [createEdge('e1', 'A', 'B', 'implements'), createEdge('e2', 'C', 'D', 'tests')];
+    it("should not aggregate below threshold", () => {
+      const edges = [createEdge("e1", "A", "B", "implements"), createEdge("e2", "C", "D", "tests")];
 
       const result = aggregateParallelEdges(edges, 2);
 
@@ -76,9 +76,9 @@ describe('Edge Aggregation', () => {
       expect(result.every((e) => !e._isAggregated)).toBe(true);
     });
 
-    it('should set correct stroke width for aggregated edges', () => {
+    it("should set correct stroke width for aggregated edges", () => {
       const edges = Array.from({ length: 10 }, (_, i) =>
-        createEdge(`e${i}`, 'A', 'B', 'implements'),
+        createEdge(`e${i}`, "A", "B", "implements"),
       );
 
       const result = aggregateParallelEdges(edges, 2);
@@ -89,13 +89,13 @@ describe('Edge Aggregation', () => {
     });
   });
 
-  describe('detectEdgeClusters', () => {
-    it('should detect dense spatial clusters', () => {
-      const nodes = [createNode('A', 0, 0), createNode('B', 10, 10), createNode('C', 20, 20)];
+  describe("detectEdgeClusters", () => {
+    it("should detect dense spatial clusters", () => {
+      const nodes = [createNode("A", 0, 0), createNode("B", 10, 10), createNode("C", 20, 20)];
 
       // Create 15 edges in same area (should exceed threshold of 10)
       const edges = Array.from({ length: 15 }, (_, i) =>
-        createEdge(`e${i}`, 'A', 'B', 'implements'),
+        createEdge(`e${i}`, "A", "B", "implements"),
       );
 
       const clusters = detectEdgeClusters(edges, nodes, 10);
@@ -104,10 +104,10 @@ describe('Edge Aggregation', () => {
       expect(clusters[0].totalCount).toBeGreaterThanOrEqual(10);
     });
 
-    it('should not detect clusters below threshold', () => {
-      const nodes = [createNode('A', 0, 0), createNode('B', 10, 10)];
+    it("should not detect clusters below threshold", () => {
+      const nodes = [createNode("A", 0, 0), createNode("B", 10, 10)];
 
-      const edges = [createEdge('e1', 'A', 'B', 'implements')];
+      const edges = [createEdge("e1", "A", "B", "implements")];
 
       const clusters = detectEdgeClusters(edges, nodes, 10);
 
@@ -115,10 +115,10 @@ describe('Edge Aggregation', () => {
     });
   });
 
-  describe('sampleEdgesStatistically', () => {
-    it('should sample edges at specified ratio', () => {
+  describe("sampleEdgesStatistically", () => {
+    it("should sample edges at specified ratio", () => {
       const edges = Array.from({ length: 1000 }, (_, i) =>
-        createEdge(`e${i}`, 'A', 'B', 'implements'),
+        createEdge(`e${i}`, "A", "B", "implements"),
       );
 
       const result = sampleEdgesStatistically(edges, 0.1);
@@ -128,9 +128,9 @@ describe('Edge Aggregation', () => {
       expect(result.length).toBeLessThan(140);
     });
 
-    it('should be deterministic (same results each call)', () => {
+    it("should be deterministic (same results each call)", () => {
       const edges = Array.from({ length: 100 }, (_, i) =>
-        createEdge(`e${i}`, 'A', 'B', 'implements'),
+        createEdge(`e${i}`, "A", "B", "implements"),
       );
 
       const result1 = sampleEdgesStatistically(edges, 0.1);
@@ -141,43 +141,43 @@ describe('Edge Aggregation', () => {
     });
   });
 
-  describe('sampleEdgesByImportance', () => {
-    it('should prioritize important edge types', () => {
+  describe("sampleEdgesByImportance", () => {
+    it("should prioritize important edge types", () => {
       const edges = [
-        ...Array.from({ length: 50 }, (_, i) => createEdge(`priority${i}`, 'A', 'B', 'implements')),
-        ...Array.from({ length: 50 }, (_, i) => createEdge(`normal${i}`, 'A', 'B', 'related_to')),
+        ...Array.from({ length: 50 }, (_, i) => createEdge(`priority${i}`, "A", "B", "implements")),
+        ...Array.from({ length: 50 }, (_, i) => createEdge(`normal${i}`, "A", "B", "related_to")),
       ];
 
-      const result = sampleEdgesByImportance(edges, 60, ['implements']);
+      const result = sampleEdgesByImportance(edges, 60, ["implements"]);
 
       // Should include more priority edges
-      const priorityCount = result.filter((e) => e.type === 'implements').length;
-      const normalCount = result.filter((e) => e.type === 'related_to').length;
+      const priorityCount = result.filter((e) => e.type === "implements").length;
+      const normalCount = result.filter((e) => e.type === "related_to").length;
 
       expect(priorityCount).toBeGreaterThan(normalCount);
     });
 
-    it('should respect max edge limit', () => {
+    it("should respect max edge limit", () => {
       const edges = Array.from({ length: 1000 }, (_, i) =>
-        createEdge(`e${i}`, 'A', 'B', 'implements'),
+        createEdge(`e${i}`, "A", "B", "implements"),
       );
 
-      const result = sampleEdgesByImportance(edges, 100, ['implements']);
+      const result = sampleEdgesByImportance(edges, 100, ["implements"]);
 
       expect(result.length).toBeLessThanOrEqual(100);
     });
   });
 
-  describe('filterEdgesByType', () => {
-    it('should filter edges by enabled types', () => {
+  describe("filterEdgesByType", () => {
+    it("should filter edges by enabled types", () => {
       const edges = [
-        createEdge('e1', 'A', 'B', 'implements'),
-        createEdge('e2', 'A', 'B', 'tests'),
-        createEdge('e3', 'A', 'B', 'depends_on'),
+        createEdge("e1", "A", "B", "implements"),
+        createEdge("e2", "A", "B", "tests"),
+        createEdge("e3", "A", "B", "depends_on"),
       ];
 
       const config = {
-        enabledTypes: new Set<LinkType>(['implements', 'tests']),
+        enabledTypes: new Set<LinkType>(["implements", "tests"]),
         showRelatedForSelection: true,
         maxRelatedEdges: 100,
       };
@@ -185,11 +185,11 @@ describe('Edge Aggregation', () => {
       const result = filterEdgesByType(edges, config);
 
       expect(result).toHaveLength(2);
-      expect(result.every((e) => ['implements', 'tests'].includes(e.type))).toBe(true);
+      expect(result.every((e) => ["implements", "tests"].includes(e.type))).toBe(true);
     });
 
-    it('should return all edges when no filter', () => {
-      const edges = [createEdge('e1', 'A', 'B', 'implements'), createEdge('e2', 'A', 'B', 'tests')];
+    it("should return all edges when no filter", () => {
+      const edges = [createEdge("e1", "A", "B", "implements"), createEdge("e2", "A", "B", "tests")];
 
       const config = {
         enabledTypes: new Set<LinkType>(),
@@ -203,42 +203,42 @@ describe('Edge Aggregation', () => {
     });
   });
 
-  describe('getRelatedEdges', () => {
-    it('should return edges connected to selected nodes', () => {
+  describe("getRelatedEdges", () => {
+    it("should return edges connected to selected nodes", () => {
       const edges = [
-        createEdge('e1', 'A', 'B', 'implements'),
-        createEdge('e2', 'B', 'C', 'tests'),
-        createEdge('e3', 'C', 'D', 'depends_on'),
+        createEdge("e1", "A", "B", "implements"),
+        createEdge("e2", "B", "C", "tests"),
+        createEdge("e3", "C", "D", "depends_on"),
       ];
 
-      const selectedNodes = new Set(['B']);
+      const selectedNodes = new Set(["B"]);
       const result = getRelatedEdges(edges, selectedNodes, 100);
 
       // Should include e1 (A→B) and e2 (B→C)
       expect(result).toHaveLength(2);
-      expect(result.some((e) => e.id === 'e1')).toBe(true);
-      expect(result.some((e) => e.id === 'e2')).toBe(true);
+      expect(result.some((e) => e.id === "e1")).toBe(true);
+      expect(result.some((e) => e.id === "e2")).toBe(true);
     });
 
-    it('should respect max edge limit', () => {
+    it("should respect max edge limit", () => {
       const edges = Array.from({ length: 200 }, (_, i) =>
-        createEdge(`e${i}`, 'A', 'B', 'implements'),
+        createEdge(`e${i}`, "A", "B", "implements"),
       );
 
-      const selectedNodes = new Set(['A']);
+      const selectedNodes = new Set(["A"]);
       const result = getRelatedEdges(edges, selectedNodes, 50);
 
       expect(result.length).toBeLessThanOrEqual(50);
     });
   });
 
-  describe('detectCanvasFallbackAreas', () => {
-    it('should detect ultra-dense areas', () => {
-      const nodes = [createNode('A', 0, 0), createNode('B', 10, 10)];
+  describe("detectCanvasFallbackAreas", () => {
+    it("should detect ultra-dense areas", () => {
+      const nodes = [createNode("A", 0, 0), createNode("B", 10, 10)];
 
       // Create 1000 edges in small area to ensure high density
       const edges = Array.from({ length: 1000 }, (_, i) =>
-        createEdge(`e${i}`, 'A', 'B', 'implements'),
+        createEdge(`e${i}`, "A", "B", "implements"),
       );
 
       const clusters = detectCanvasFallbackAreas(edges, nodes, 50);
@@ -247,10 +247,10 @@ describe('Edge Aggregation', () => {
       expect(clusters[0].useCanvasRendering).toBe(true);
     });
 
-    it('should not flag low-density areas', () => {
-      const nodes = [createNode('A', 0, 0), createNode('B', 1000, 1000)];
+    it("should not flag low-density areas", () => {
+      const nodes = [createNode("A", 0, 0), createNode("B", 1000, 1000)];
 
-      const edges = [createEdge('e1', 'A', 'B', 'implements')];
+      const edges = [createEdge("e1", "A", "B", "implements")];
 
       const clusters = detectCanvasFallbackAreas(edges, nodes, 50);
 
@@ -258,14 +258,14 @@ describe('Edge Aggregation', () => {
     });
   });
 
-  describe('applyLazyEdgeRendering', () => {
-    it('should reduce 10K edges to <300 visible edges', () => {
+  describe("applyLazyEdgeRendering", () => {
+    it("should reduce 10K edges to <300 visible edges", () => {
       const nodes = Array.from({ length: 100 }, (_, i) => createNode(`n${i}`, i * 100, i * 100));
 
       const edges = Array.from({ length: 10000 }, (_, i) => {
         const source = Math.floor(Math.random() * 100);
         const target = Math.floor(Math.random() * 100);
-        return createEdge(`e${i}`, `n${source}`, `n${target}`, 'implements');
+        return createEdge(`e${i}`, `n${source}`, `n${target}`, "implements");
       });
 
       const config = createDefaultSamplingConfig(edges.length);
@@ -277,7 +277,7 @@ describe('Edge Aggregation', () => {
       expect(result.stats.renderRatio).toBeLessThan(5);
     });
 
-    it('should handle 1M edge target', () => {
+    it("should handle 1M edge target", () => {
       const nodes = Array.from({ length: 1000 }, (_, i) => createNode(`n${i}`, i * 100, i * 100));
 
       // Create subset of 1000 edges to avoid test timeout
@@ -285,7 +285,7 @@ describe('Edge Aggregation', () => {
       const edges = Array.from({ length: 1000 }, (_, i) => {
         const source = Math.floor(Math.random() * 1000);
         const target = Math.floor(Math.random() * 1000);
-        return createEdge(`e${i}`, `n${source}`, `n${target}`, 'implements');
+        return createEdge(`e${i}`, `n${source}`, `n${target}`, "implements");
       });
 
       const config = createDefaultSamplingConfig(1000000); // Configure for 1M
@@ -298,10 +298,10 @@ describe('Edge Aggregation', () => {
       expect(result.visibleEdges.length).toBeLessThanOrEqual(100);
     });
 
-    it('should provide stats about reduction', () => {
-      const nodes = [createNode('A', 0, 0), createNode('B', 100, 100)];
+    it("should provide stats about reduction", () => {
+      const nodes = [createNode("A", 0, 0), createNode("B", 100, 100)];
       const edges = Array.from({ length: 100 }, (_, i) =>
-        createEdge(`e${i}`, 'A', 'B', 'implements'),
+        createEdge(`e${i}`, "A", "B", "implements"),
       );
 
       const config = createDefaultSamplingConfig(edges.length);
@@ -314,22 +314,22 @@ describe('Edge Aggregation', () => {
     });
   });
 
-  describe('createDefaultSamplingConfig', () => {
-    it('should auto-tune for small graphs', () => {
+  describe("createDefaultSamplingConfig", () => {
+    it("should auto-tune for small graphs", () => {
       const config = createDefaultSamplingConfig(500);
 
       expect(config.maxVisibleEdges).toBe(500);
-      expect(config.samplingStrategy).toBe('importance');
+      expect(config.samplingStrategy).toBe("importance");
     });
 
-    it('should auto-tune for large graphs', () => {
+    it("should auto-tune for large graphs", () => {
       const config = createDefaultSamplingConfig(1000000);
 
       expect(config.maxVisibleEdges).toBe(100);
-      expect(config.samplingStrategy).toBe('statistical');
+      expect(config.samplingStrategy).toBe("statistical");
     });
 
-    it('should provide reasonable defaults', () => {
+    it("should provide reasonable defaults", () => {
       const config = createDefaultSamplingConfig(10000);
 
       expect(config.maxVisibleEdges).toBeGreaterThan(0);

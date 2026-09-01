@@ -1,15 +1,15 @@
-import { useNavigate, useParams } from '@tanstack/react-router';
-import { format } from 'date-fns';
-import { ArrowLeft } from 'lucide-react';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useNavigate, useParams } from "@tanstack/react-router";
+import { format } from "date-fns";
+import { ArrowLeft } from "lucide-react";
+import React, { useCallback, useMemo, useState } from "react";
 
-import { GherkinViewer } from '@/components/specifications/bdd/GherkinViewer';
-import { ScenarioCard } from '@/components/specifications/bdd/ScenarioCard';
-import { useScenario, useScenarioActivities } from '@/hooks/useSpecifications';
-import { Button, Card } from '@tracertm/ui';
-import type { ScenarioActivity } from '@tracertm/types';
+import { GherkinViewer } from "@/components/specifications/bdd/GherkinViewer";
+import { ScenarioCard } from "@/components/specifications/bdd/ScenarioCard";
+import { useScenario, useScenarioActivities } from "@/hooks/useSpecifications";
+import { Button, Card } from "@tracertm/ui";
+import type { ScenarioActivity } from "@tracertm/types";
 
-const ROWS_SELECT_ID = 'scenario-activity-rows';
+const ROWS_SELECT_ID = "scenario-activity-rows";
 
 function ScenarioActivityCard({
   activities,
@@ -57,23 +57,25 @@ function ScenarioActivityCard({
   }, [setPage, totalPages]);
 
   return (
-    <Card className='bg-card/50 border-none p-6'>
-      <h2 className='mb-4 text-base font-semibold'>Scenario Activity</h2>
-      <div className='text-muted-foreground space-y-3 text-sm'>
+    <Card className="bg-card/50 border-none p-6">
+      <h2 className="mb-4 text-base font-semibold">Scenario Activity</h2>
+      <div className="text-muted-foreground space-y-3 text-sm">
         {activities.length > 0 ? (
           activities.map((activity) => (
             <div
               key={activity.id}
-              className='border-border/50 flex items-center justify-between border-b pb-2 last:border-0'
+              className="border-border/50 flex items-center justify-between border-b pb-2 last:border-0"
             >
               <div>
-                <div className='text-foreground font-medium'>{activity.activityType}</div>
-                <div className='text-muted-foreground text-xs'>
-                  {activity.description ?? 'Scenario updated'}
+                <div className="text-foreground font-medium">{activity.activityType}</div>
+                <div className="text-muted-foreground text-xs">
+                  {activity.description ?? "Scenario updated"}
                 </div>
               </div>
-              <div className='text-muted-foreground text-xs'>
-                {activity.createdAt ? format(new Date(activity.createdAt), 'MMM d, yyyy HH:mm') : '—'}
+              <div className="text-muted-foreground text-xs">
+                {activity.createdAt
+                  ? format(new Date(activity.createdAt), "MMM d, yyyy HH:mm")
+                  : "—"}
               </div>
             </div>
           ))
@@ -81,34 +83,34 @@ function ScenarioActivityCard({
           <div>No activity yet.</div>
         )}
         {totalActivities > activities.length && (
-          <div className='text-muted-foreground text-xs'>
+          <div className="text-muted-foreground text-xs">
             Showing {activities.length} of {totalActivities} activities.
           </div>
         )}
       </div>
-      <div className='text-muted-foreground mt-4 flex items-center justify-between text-xs'>
+      <div className="text-muted-foreground mt-4 flex items-center justify-between text-xs">
         <button
-          className='border-border/50 rounded border px-2 py-1'
+          className="border-border/50 rounded border px-2 py-1"
           disabled={totalActivities <= pageSize}
           onClick={handleShowAll}
-          type='button'
+          type="button"
         >
           Show all
         </button>
         <span>or</span>
         <button
-          className='border-border/50 rounded border px-2 py-1'
+          className="border-border/50 rounded border px-2 py-1"
           disabled={pageSize === 10}
           onClick={handleCompact}
-          type='button'
+          type="button"
         >
           Compact
         </button>
       </div>
-      <div className='text-muted-foreground mt-4 flex items-center gap-2 text-xs'>
+      <div className="text-muted-foreground mt-4 flex items-center gap-2 text-xs">
         <label htmlFor={ROWS_SELECT_ID}>Rows</label>
         <select
-          className='border-border/50 rounded border bg-transparent px-2 py-1'
+          className="border-border/50 rounded border bg-transparent px-2 py-1"
           id={ROWS_SELECT_ID}
           value={pageSize}
           onChange={handleRowsChange}
@@ -119,12 +121,12 @@ function ScenarioActivityCard({
         </select>
       </div>
       {totalActivities > pageSize && (
-        <div className='text-muted-foreground mt-4 flex items-center justify-between text-xs'>
+        <div className="text-muted-foreground mt-4 flex items-center justify-between text-xs">
           <button
-            className='border-border/50 rounded border px-2 py-1 disabled:opacity-50'
+            className="border-border/50 rounded border px-2 py-1 disabled:opacity-50"
             disabled={page === 1}
             onClick={handlePreviousPage}
-            type='button'
+            type="button"
           >
             Prev
           </button>
@@ -132,19 +134,19 @@ function ScenarioActivityCard({
             Page {page} of {totalPages}
           </span>
           <button
-            className='border-border/50 rounded border px-2 py-1 disabled:opacity-50'
+            className="border-border/50 rounded border px-2 py-1 disabled:opacity-50"
             disabled={page >= totalPages}
             onClick={handleNextPage}
-            type='button'
+            type="button"
           >
             Next
           </button>
         </div>
       )}
       {totalActivities > pageSize && (
-        <div className='mt-4'>
-          <div className='bg-muted/40 h-1.5 overflow-hidden rounded-full' aria-hidden>
-            <div className='bg-primary/70 h-full' style={progressStyle} />
+        <div className="mt-4">
+          <div className="bg-muted/40 h-1.5 overflow-hidden rounded-full" aria-hidden>
+            <div className="bg-primary/70 h-full" style={progressStyle} />
           </div>
         </div>
       )}
@@ -155,7 +157,7 @@ function ScenarioActivityCard({
 export function ScenarioDetailView(): React.JSX.Element {
   const params = useParams({ strict: false });
   const navigate = useNavigate();
-  const scenarioId = params.scenarioId ?? '';
+  const scenarioId = params.scenarioId ?? "";
   const { data: scenario, isLoading } = useScenario(scenarioId);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -163,10 +165,7 @@ export function ScenarioDetailView(): React.JSX.Element {
     limit: pageSize,
     offset: (page - 1) * pageSize,
   });
-  const activities = useMemo(
-    () => activityData?.activities ?? [],
-    [activityData?.activities],
-  );
+  const activities = useMemo(() => activityData?.activities ?? [], [activityData?.activities]);
   const totalActivities = activityData?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalActivities / pageSize));
   const progressStyle = useMemo<React.CSSProperties>(
@@ -178,40 +177,40 @@ export function ScenarioDetailView(): React.JSX.Element {
 
   const handleBackToSpecifications = useCallback(async (): Promise<void> => {
     await navigate({
-      params: { projectId: params.projectId ?? '' },
-      search: { tab: 'features' },
-      to: '/projects/$projectId/specifications',
+      params: { projectId: params.projectId ?? "" },
+      search: { tab: "features" },
+      to: "/projects/$projectId/specifications",
     });
   }, [navigate, params.projectId]);
 
   const handleBackToFeature = useCallback(async (): Promise<void> => {
     await navigate({
       params: {
-        featureId: params.featureId ?? '',
-        projectId: params.projectId ?? '',
+        featureId: params.featureId ?? "",
+        projectId: params.projectId ?? "",
       },
-      to: '/projects/$projectId/features/$featureId',
+      to: "/projects/$projectId/features/$featureId",
     });
   }, [navigate, params.featureId, params.projectId]);
 
   if (isLoading) {
     return (
-      <div className='space-y-6 p-6'>
-        <div className='bg-muted/40 h-8 w-40 rounded' />
-        <div className='bg-muted/30 h-32 rounded-xl' />
-        <div className='bg-muted/20 h-64 rounded-xl' />
+      <div className="space-y-6 p-6">
+        <div className="bg-muted/40 h-8 w-40 rounded" />
+        <div className="bg-muted/30 h-32 rounded-xl" />
+        <div className="bg-muted/20 h-64 rounded-xl" />
       </div>
     );
   }
 
   if (!scenario) {
     return (
-      <div className='space-y-4 p-6'>
-        <Button variant='ghost' onClick={handleBackToSpecifications} type='button'>
-          <ArrowLeft className='mr-2 h-4 w-4' />
+      <div className="space-y-4 p-6">
+        <Button variant="ghost" onClick={handleBackToSpecifications} type="button">
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Features
         </Button>
-        <Card className='bg-muted/20 text-muted-foreground border-none p-6 text-sm'>
+        <Card className="bg-muted/20 text-muted-foreground border-none p-6 text-sm">
           Scenario not found.
         </Card>
       </div>
@@ -219,14 +218,14 @@ export function ScenarioDetailView(): React.JSX.Element {
   }
 
   return (
-    <div className='space-y-6 p-6'>
-      <Button variant='ghost' onClick={handleBackToFeature} type='button'>
-        <ArrowLeft className='mr-2 h-4 w-4' />
+    <div className="space-y-6 p-6">
+      <Button variant="ghost" onClick={handleBackToFeature} type="button">
+        <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Feature
       </Button>
 
       <ScenarioCard scenario={scenario} />
-      <GherkinViewer content={scenario.gherkinText} height='220px' />
+      <GherkinViewer content={scenario.gherkinText} height="220px" />
 
       <ScenarioActivityCard
         activities={activities}

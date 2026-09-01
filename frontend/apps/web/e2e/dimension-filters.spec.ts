@@ -1,4 +1,4 @@
-import { expect, test } from './global-setup';
+import { expect, test } from "./global-setup";
 
 /**
  * Dimension Filters Tests
@@ -18,15 +18,15 @@ import { expect, test } from './global-setup';
  * - Size: Node size represents dimension value
  */
 
-test.describe('Dimension Filters', () => {
+test.describe("Dimension Filters", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/graph');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/graph");
+    await page.waitForLoadState("networkidle");
     await page.waitForTimeout(1000); // Allow graph to render
   });
 
-  test.describe('Maturity Filters', () => {
-    test('should display maturity filter control', async ({ page }) => {
+  test.describe("Maturity Filters", () => {
+    test("should display maturity filter control", async ({ page }) => {
       // Look for maturity filter control
       const maturityFilter = page
         .locator("button, select, [role='combobox']")
@@ -36,9 +36,9 @@ test.describe('Dimension Filters', () => {
       await expect(maturityFilter).toBeVisible({ timeout: 2000 });
     });
 
-    test('should apply maturity filter - Draft', async ({ page }) => {
+    test("should apply maturity filter - Draft", async ({ page }) => {
       const maturityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /maturity/i })
         .first();
 
@@ -52,13 +52,13 @@ test.describe('Dimension Filters', () => {
       await page.waitForTimeout(1000);
 
       // Verify filter applied
-      const graphContainer = page.locator('.react-flow');
+      const graphContainer = page.locator(".react-flow");
       await expect(graphContainer).toBeVisible();
     });
 
-    test('should apply maturity filter - Approved', async ({ page }) => {
+    test("should apply maturity filter - Approved", async ({ page }) => {
       const maturityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /maturity/i })
         .first();
 
@@ -71,13 +71,13 @@ test.describe('Dimension Filters', () => {
       await approvedOption.first().click();
       await page.waitForTimeout(1000);
 
-      const graphContainer = page.locator('.react-flow');
+      const graphContainer = page.locator(".react-flow");
       await expect(graphContainer).toBeVisible();
     });
 
-    test('should apply multiple maturity filters', async ({ page }) => {
+    test("should apply multiple maturity filters", async ({ page }) => {
       const maturityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /maturity/i })
         .first();
 
@@ -93,10 +93,10 @@ test.describe('Dimension Filters', () => {
     });
   });
 
-  test.describe('Complexity Filters', () => {
-    test('should apply complexity filter - High', async ({ page }) => {
+  test.describe("Complexity Filters", () => {
+    test("should apply complexity filter - High", async ({ page }) => {
       const complexityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /complexity|complex/i })
         .first();
 
@@ -110,9 +110,9 @@ test.describe('Dimension Filters', () => {
       await page.waitForTimeout(1000);
     });
 
-    test('should apply complexity filter - Low', async ({ page }) => {
+    test("should apply complexity filter - Low", async ({ page }) => {
       const complexityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /complexity|complex/i })
         .first();
 
@@ -125,13 +125,13 @@ test.describe('Dimension Filters', () => {
       await lowOption.click();
       await page.waitForTimeout(1000);
 
-      const graphContainer = page.locator('.react-flow');
+      const graphContainer = page.locator(".react-flow");
       await expect(graphContainer).toBeVisible();
     });
 
-    test('should apply complexity filter - Critical', async ({ page }) => {
+    test("should apply complexity filter - Critical", async ({ page }) => {
       const complexityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /complexity|complex/i })
         .first();
 
@@ -146,10 +146,10 @@ test.describe('Dimension Filters', () => {
     });
   });
 
-  test.describe('Coverage Filters', () => {
-    test('should apply coverage filter - Complete', async ({ page }) => {
+  test.describe("Coverage Filters", () => {
+    test("should apply coverage filter - Complete", async ({ page }) => {
       const coverageFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /coverage|cover/i })
         .first();
 
@@ -163,9 +163,9 @@ test.describe('Dimension Filters', () => {
       await page.waitForTimeout(1000);
     });
 
-    test('should apply coverage filter - Partial', async ({ page }) => {
+    test("should apply coverage filter - Partial", async ({ page }) => {
       const coverageFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /coverage|cover/i })
         .first();
 
@@ -178,13 +178,13 @@ test.describe('Dimension Filters', () => {
       await partialOption.click();
       await page.waitForTimeout(1000);
 
-      const graphContainer = page.locator('.react-flow');
+      const graphContainer = page.locator(".react-flow");
       await expect(graphContainer).toBeVisible();
     });
 
-    test('should apply coverage filter - Not Covered', async ({ page }) => {
+    test("should apply coverage filter - Not Covered", async ({ page }) => {
       const coverageFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /coverage|cover/i })
         .first();
 
@@ -199,9 +199,9 @@ test.describe('Dimension Filters', () => {
     });
   });
 
-  test.describe('Risk Filters', () => {
-    test('should apply risk filter - High', async ({ page }) => {
-      const riskFilter = page.locator('button, select').filter({ hasText: /risk/i }).first();
+  test.describe("Risk Filters", () => {
+    test("should apply risk filter - High", async ({ page }) => {
+      const riskFilter = page.locator("button, select").filter({ hasText: /risk/i }).first();
 
       await expect(riskFilter).toBeVisible({ timeout: 2000 });
       await riskFilter.click();
@@ -213,8 +213,8 @@ test.describe('Dimension Filters', () => {
       await page.waitForTimeout(1000);
     });
 
-    test('should apply risk filter - Critical', async ({ page }) => {
-      const riskFilter = page.locator('button, select').filter({ hasText: /risk/i }).first();
+    test("should apply risk filter - Critical", async ({ page }) => {
+      const riskFilter = page.locator("button, select").filter({ hasText: /risk/i }).first();
 
       await expect(riskFilter).toBeVisible({ timeout: 2000 });
       await riskFilter.click();
@@ -225,12 +225,12 @@ test.describe('Dimension Filters', () => {
       await criticalOption.click();
       await page.waitForTimeout(1000);
 
-      const graphContainer = page.locator('.react-flow');
+      const graphContainer = page.locator(".react-flow");
       await expect(graphContainer).toBeVisible();
     });
 
-    test('should apply risk filter - Low', async ({ page }) => {
-      const riskFilter = page.locator('button, select').filter({ hasText: /risk/i }).first();
+    test("should apply risk filter - Low", async ({ page }) => {
+      const riskFilter = page.locator("button, select").filter({ hasText: /risk/i }).first();
 
       await expect(riskFilter).toBeVisible({ timeout: 2000 });
       await riskFilter.click();
@@ -243,11 +243,11 @@ test.describe('Dimension Filters', () => {
     });
   });
 
-  test.describe('Filter Display Modes', () => {
-    test('should switch to filter display mode - Hide non-matching', async ({ page }) => {
+  test.describe("Filter Display Modes", () => {
+    test("should switch to filter display mode - Hide non-matching", async ({ page }) => {
       // Apply a dimension filter first
       const maturityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /maturity/i })
         .first();
 
@@ -262,7 +262,7 @@ test.describe('Dimension Filters', () => {
 
       // Now look for filter display mode selector
       const displayModeSelector = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /display|mode|filter|highlight|color|size/i })
         .first();
 
@@ -276,9 +276,9 @@ test.describe('Dimension Filters', () => {
       await page.waitForTimeout(1000);
     });
 
-    test('should switch to highlight display mode', async ({ page }) => {
+    test("should switch to highlight display mode", async ({ page }) => {
       const maturityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /maturity/i })
         .first();
 
@@ -293,7 +293,7 @@ test.describe('Dimension Filters', () => {
 
       // Look for highlight mode selector
       const displayModeSelector = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /display|mode|highlight/i })
         .first();
 
@@ -307,9 +307,9 @@ test.describe('Dimension Filters', () => {
       await page.waitForTimeout(1000);
     });
 
-    test('should switch to color display mode', async ({ page }) => {
+    test("should switch to color display mode", async ({ page }) => {
       const maturityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /maturity/i })
         .first();
 
@@ -323,7 +323,7 @@ test.describe('Dimension Filters', () => {
       await page.waitForTimeout(500);
 
       const displayModeSelector = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /display|mode|color/i })
         .first();
 
@@ -337,9 +337,9 @@ test.describe('Dimension Filters', () => {
       await page.waitForTimeout(1000);
     });
 
-    test('should switch to size display mode', async ({ page }) => {
+    test("should switch to size display mode", async ({ page }) => {
       const maturityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /maturity|complexity|risk|coverage/i })
         .first();
 
@@ -357,7 +357,7 @@ test.describe('Dimension Filters', () => {
       await page.waitForTimeout(500);
 
       const displayModeSelector = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /display|mode|size/i })
         .first();
 
@@ -372,11 +372,11 @@ test.describe('Dimension Filters', () => {
     });
   });
 
-  test.describe('Clear and Reset Filters', () => {
-    test('should clear all filters', async ({ page }) => {
+  test.describe("Clear and Reset Filters", () => {
+    test("should clear all filters", async ({ page }) => {
       // Apply a filter first
       const maturityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /maturity/i })
         .first();
 
@@ -391,7 +391,7 @@ test.describe('Dimension Filters', () => {
 
       // Look for clear/reset button
       const clearBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /clear|reset|all|none/i })
         .first();
 
@@ -400,9 +400,9 @@ test.describe('Dimension Filters', () => {
       await page.waitForTimeout(1000);
     });
 
-    test('should reset individual filter', async ({ page }) => {
+    test("should reset individual filter", async ({ page }) => {
       const maturityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /maturity/i })
         .first();
 
@@ -423,16 +423,16 @@ test.describe('Dimension Filters', () => {
 
       await expect(filterChip).toBeVisible({ timeout: 2000 });
       // Find close button within the chip
-      const closeBtn = filterChip.locator('button, svg').first();
+      const closeBtn = filterChip.locator("button, svg").first();
       await expect(closeBtn).toBeVisible({ timeout: 1000 });
       await closeBtn.click();
       await page.waitForTimeout(500);
     });
 
-    test('should combine multiple filters', async ({ page }) => {
+    test("should combine multiple filters", async ({ page }) => {
       // Apply maturity filter
       const maturityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /maturity/i })
         .first();
 
@@ -447,7 +447,7 @@ test.describe('Dimension Filters', () => {
 
       // Apply complexity filter
       const complexityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /complexity/i })
         .first();
 
@@ -462,11 +462,11 @@ test.describe('Dimension Filters', () => {
     });
   });
 
-  test.describe('Filter Persistence', () => {
-    test('should preserve filters across graph interactions', async ({ page }) => {
+  test.describe("Filter Persistence", () => {
+    test("should preserve filters across graph interactions", async ({ page }) => {
       // Apply filter
       const maturityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /maturity/i })
         .first();
 
@@ -480,7 +480,7 @@ test.describe('Dimension Filters', () => {
       await page.waitForTimeout(500);
 
       // Perform graph interaction - zoom in
-      const zoomInBtn = page.locator('.react-flow__controls button').nth(0);
+      const zoomInBtn = page.locator(".react-flow__controls button").nth(0);
       await expect(zoomInBtn).toBeVisible({ timeout: 2000 });
       await zoomInBtn.click();
       await page.waitForTimeout(500);

@@ -1,17 +1,17 @@
 // Graph View Container - Project views in sidebar; graph type (mind map, flow chart, etc.) in combobox
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState } from "react";
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
-import type { GraphViewMode } from './GraphViewConfig';
-import type { LayoutType } from './layouts/useDagLayout';
-import type { GraphPerspective } from './types';
+import type { GraphViewMode } from "./GraphViewConfig";
+import type { LayoutType } from "./layouts/useDagLayout";
+import type { GraphPerspective } from "./types";
 
-import { GraphViewLoadingState } from './GraphViewLoadingState';
-import { GraphViewSidebar } from './GraphViewSidebar';
-import { GraphViewTopBar } from './GraphViewTopBar';
-import { useGraphViewState } from './useGraphViewState';
+import { GraphViewLoadingState } from "./GraphViewLoadingState";
+import { GraphViewSidebar } from "./GraphViewSidebar";
+import { GraphViewTopBar } from "./GraphViewTopBar";
+import { useGraphViewState } from "./useGraphViewState";
 
 interface GraphViewContainerProps {
   items: Item[];
@@ -48,7 +48,7 @@ const GraphViewContainer = ({
   projectId,
   isLoading = false,
   onNavigateToItem,
-  defaultView = 'traceability',
+  defaultView = "traceability",
   canLoadMore: _canLoadMore = false,
   visibleEdges: _visibleEdges,
   totalEdges: _totalEdges,
@@ -84,7 +84,7 @@ const GraphViewContainer = ({
   }
 
   return (
-    <div className='flex h-full'>
+    <div className="flex h-full">
       {/* Sidebar */}
       <GraphViewSidebar
         collapsed={sidebarCollapsed}
@@ -95,7 +95,7 @@ const GraphViewContainer = ({
       />
 
       {/* Main content area */}
-      <div className='flex flex-1 flex-col overflow-hidden'>
+      <div className="flex flex-1 flex-col overflow-hidden">
         <GraphViewTopBar
           viewMode={viewMode}
           viewTypeSearch={viewTypeSearch}
@@ -110,7 +110,7 @@ const GraphViewContainer = ({
         />
 
         {/* View content */}
-        <div className='relative flex-1 overflow-hidden'>
+        <div className="relative flex-1 overflow-hidden">
           {children({
             items,
             layoutPreference: currentConfig?.layoutPreference,

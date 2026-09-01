@@ -3,10 +3,10 @@
  * Tests complex workflows combining multiple features
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 let user: ReturnType<typeof userEvent.setup>;
 
@@ -49,12 +49,12 @@ class MockApiClient {
 
   async searchItems(query: string) {
     await new Promise((resolve) => setTimeout(resolve, this.delay));
-    if (query === 'nonexistent') {
+    if (query === "nonexistent") {
       return [];
     }
     return [
-      { id: '1', name: `Result matching "${query}"` },
-      { id: '2', name: `Another result for "${query}"` },
+      { id: "1", name: `Result matching "${query}"` },
+      { id: "2", name: `Another result for "${query}"` },
     ];
   }
 }
@@ -95,7 +95,7 @@ function MockProjectWorkflow({
   const handleCompleteWorkflow = async () => {
     setIsLoading(true);
     try {
-      const report = await api.generateReport(project.id, 'coverage', 'pdf');
+      const report = await api.generateReport(project.id, "coverage", "pdf");
       onWorkflowComplete({ items, project, report });
       setStep(3);
     } finally {
@@ -104,39 +104,39 @@ function MockProjectWorkflow({
   };
 
   return (
-    <div className='rounded border p-4'>
-      <h2 className='mb-4 text-xl font-bold'>Project Setup Workflow</h2>
+    <div className="rounded border p-4">
+      <h2 className="mb-4 text-xl font-bold">Project Setup Workflow</h2>
 
       {step === 1 && (
         <div>
-          <h3 className='mb-3 font-semibold'>Step 1: Create Project</h3>
+          <h3 className="mb-3 font-semibold">Step 1: Create Project</h3>
           <form
             onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
-              const name = formData.get('name');
-              const description = formData.get('description');
+              const name = formData.get("name");
+              const description = formData.get("description");
               void handleCreateProject(
-                typeof name === 'string' ? name : '',
-                typeof description === 'string' ? description : '',
+                typeof name === "string" ? name : "",
+                typeof description === "string" ? description : "",
               );
             }}
           >
             <input
-              name='name'
-              placeholder='Project name'
-              className='mb-3 w-full rounded border px-3 py-2'
+              name="name"
+              placeholder="Project name"
+              className="mb-3 w-full rounded border px-3 py-2"
               required
             />
             <textarea
-              name='description'
-              placeholder='Description'
-              className='mb-3 w-full rounded border px-3 py-2'
+              name="description"
+              placeholder="Description"
+              className="mb-3 w-full rounded border px-3 py-2"
             />
             <button
-              type='submit'
+              type="submit"
               disabled={isLoading}
-              className='rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50'
+              className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
             >
               Create Project
             </button>
@@ -146,8 +146,8 @@ function MockProjectWorkflow({
 
       {step === 2 && project && (
         <div>
-          <h3 className='mb-3 font-semibold'>Step 2: Add Items</h3>
-          <p className='mb-4'>Project: {project.name}</p>
+          <h3 className="mb-3 font-semibold">Step 2: Add Items</h3>
+          <p className="mb-4">Project: {project.name}</p>
 
           <form
             onSubmit={(e) => {
@@ -155,29 +155,29 @@ function MockProjectWorkflow({
               const input = e.currentTarget.querySelector("input[name='item-name']");
               if (input instanceof HTMLInputElement) {
                 void handleCreateItem(input.value);
-                input.value = '';
+                input.value = "";
               }
             }}
           >
             <input
-              name='item-name'
-              placeholder='Item name'
-              className='mb-3 w-full rounded border px-3 py-2'
+              name="item-name"
+              placeholder="Item name"
+              className="mb-3 w-full rounded border px-3 py-2"
               required
             />
             <button
-              type='submit'
+              type="submit"
               disabled={isLoading}
-              className='rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50'
+              className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
             >
               Add Item
             </button>
           </form>
 
-          <div className='mt-4'>
-            <h4 className='mb-2 font-semibold'>Items: ({items.length})</h4>
+          <div className="mt-4">
+            <h4 className="mb-2 font-semibold">Items: ({items.length})</h4>
             {items.map((item) => (
-              <div key={item.id} className='mb-2 rounded bg-gray-100 p-2'>
+              <div key={item.id} className="mb-2 rounded bg-gray-100 p-2">
                 {item.name}
               </div>
             ))}
@@ -187,7 +187,7 @@ function MockProjectWorkflow({
             <button
               onClick={handleCompleteWorkflow}
               disabled={isLoading}
-              className='mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50'
+              className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
             >
               Complete Setup
             </button>
@@ -197,7 +197,7 @@ function MockProjectWorkflow({
 
       {step === 3 && (
         <div>
-          <h3 className='mb-3 font-semibold text-green-600'>Workflow Complete!</h3>
+          <h3 className="mb-3 font-semibold text-green-600">Workflow Complete!</h3>
           <p>Project setup finished successfully.</p>
         </div>
       )}
@@ -207,7 +207,7 @@ function MockProjectWorkflow({
 
 // Mock Search and Filter Workflow
 function MockSearchWorkflow({ onSearch = vi.fn() }: { onSearch?: (results: unknown[]) => void }) {
-  const [query, setQuery] = React.useState('');
+  const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<any[]>([]);
   const [isSearching, setIsSearching] = React.useState(false);
   const [api] = React.useState(() => new MockApiClient());
@@ -226,25 +226,25 @@ function MockSearchWorkflow({ onSearch = vi.fn() }: { onSearch?: (results: unkno
   };
 
   return (
-    <div className='rounded border p-4'>
-      <h2 className='mb-4 text-xl font-bold'>Search Items</h2>
+    <div className="rounded border p-4">
+      <h2 className="mb-4 text-xl font-bold">Search Items</h2>
 
-      <form onSubmit={handleSearch} className='mb-4'>
-        <div className='flex gap-2'>
+      <form onSubmit={handleSearch} className="mb-4">
+        <div className="flex gap-2">
           <input
-            type='search'
+            type="search"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
             }}
-            placeholder='Search items...'
-            className='flex-1 rounded border px-3 py-2'
+            placeholder="Search items..."
+            className="flex-1 rounded border px-3 py-2"
             required
           />
           <button
-            type='submit'
+            type="submit"
             disabled={isSearching || !query}
-            className='rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50'
+            className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
           >
             Search
           </button>
@@ -255,9 +255,9 @@ function MockSearchWorkflow({ onSearch = vi.fn() }: { onSearch?: (results: unkno
 
       {results.length > 0 && (
         <div>
-          <h3 className='mb-2 font-semibold'>Results ({results.length})</h3>
+          <h3 className="mb-2 font-semibold">Results ({results.length})</h3>
           {results.map((result) => (
-            <div key={result.id} className='mb-2 rounded bg-blue-50 p-3'>
+            <div key={result.id} className="mb-2 rounded bg-blue-50 p-3">
               {result.name}
             </div>
           ))}
@@ -265,7 +265,7 @@ function MockSearchWorkflow({ onSearch = vi.fn() }: { onSearch?: (results: unkno
       )}
 
       {results.length === 0 && query && !isSearching && (
-        <p className='text-gray-600'>No results found for "{query}"</p>
+        <p className="text-gray-600">No results found for "{query}"</p>
       )}
     </div>
   );
@@ -277,9 +277,9 @@ function MockLinkCreationWorkflow({
 }: {
   onLinkCreate?: (link: unknown) => void;
 }) {
-  const [sourceId, setSourceId] = React.useState('');
-  const [targetId, setTargetId] = React.useState('');
-  const [linkType, setLinkType] = React.useState('traces');
+  const [sourceId, setSourceId] = React.useState("");
+  const [targetId, setTargetId] = React.useState("");
+  const [linkType, setLinkType] = React.useState("traces");
   const [links, setLinks] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [api] = React.useState(() => new MockApiClient());
@@ -292,66 +292,66 @@ function MockLinkCreationWorkflow({
       const newLink = await api.createLink(sourceId, targetId, linkType);
       setLinks([...links, newLink]);
       onLinkCreate(newLink);
-      setSourceId('');
-      setTargetId('');
+      setSourceId("");
+      setTargetId("");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className='rounded border p-4'>
-      <h2 className='mb-4 text-xl font-bold'>Create Traceability Links</h2>
+    <div className="rounded border p-4">
+      <h2 className="mb-4 text-xl font-bold">Create Traceability Links</h2>
 
-      <form onSubmit={handleCreateLink} className='mb-4'>
-        <div className='mb-3'>
-          <label className='mb-1 block text-sm font-medium'>Source Item ID</label>
+      <form onSubmit={handleCreateLink} className="mb-4">
+        <div className="mb-3">
+          <label className="mb-1 block text-sm font-medium">Source Item ID</label>
           <input
-            type='text'
+            type="text"
             value={sourceId}
             onChange={(e) => {
               setSourceId(e.target.value);
             }}
-            placeholder='e.g., REQ-001'
-            className='w-full rounded border px-3 py-2'
+            placeholder="e.g., REQ-001"
+            className="w-full rounded border px-3 py-2"
             required
           />
         </div>
 
-        <div className='mb-3'>
-          <label className='mb-1 block text-sm font-medium'>Target Item ID</label>
+        <div className="mb-3">
+          <label className="mb-1 block text-sm font-medium">Target Item ID</label>
           <input
-            type='text'
+            type="text"
             value={targetId}
             onChange={(e) => {
               setTargetId(e.target.value);
             }}
-            placeholder='e.g., TEST-001'
-            className='w-full rounded border px-3 py-2'
+            placeholder="e.g., TEST-001"
+            className="w-full rounded border px-3 py-2"
             required
           />
         </div>
 
-        <div className='mb-3'>
-          <label className='mb-1 block text-sm font-medium'>Link Type</label>
+        <div className="mb-3">
+          <label className="mb-1 block text-sm font-medium">Link Type</label>
           <select
             value={linkType}
             onChange={(e) => {
               setLinkType(e.target.value);
             }}
-            className='w-full rounded border px-3 py-2'
+            className="w-full rounded border px-3 py-2"
           >
-            <option value='traces'>Traces</option>
-            <option value='implements'>Implements</option>
-            <option value='verifies'>Verifies</option>
-            <option value='depends_on'>Depends On</option>
+            <option value="traces">Traces</option>
+            <option value="implements">Implements</option>
+            <option value="verifies">Verifies</option>
+            <option value="depends_on">Depends On</option>
           </select>
         </div>
 
         <button
-          type='submit'
+          type="submit"
           disabled={isLoading}
-          className='w-full rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50'
+          className="w-full rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
         >
           Create Link
         </button>
@@ -359,9 +359,9 @@ function MockLinkCreationWorkflow({
 
       {links.length > 0 && (
         <div>
-          <h3 className='mb-2 font-semibold'>Links ({links.length})</h3>
+          <h3 className="mb-2 font-semibold">Links ({links.length})</h3>
           {links.map((link) => (
-            <div key={link.id} className='mb-2 rounded bg-green-50 p-2'>
+            <div key={link.id} className="mb-2 rounded bg-green-50 p-2">
               {link.sourceId} → {link.targetId} ({link.type})
             </div>
           ))}
@@ -371,98 +371,98 @@ function MockLinkCreationWorkflow({
   );
 }
 
-describe('Project Creation Workflow - End-to-End', () => {
+describe("Project Creation Workflow - End-to-End", () => {
   beforeEach(() => {
     user = userEvent.setup();
   });
 
-  it('should complete multi-step project setup', async () => {
+  it("should complete multi-step project setup", async () => {
     const handleComplete = vi.fn();
 
     render(<MockProjectWorkflow onWorkflowComplete={handleComplete} />);
 
     // Step 1: Create project
-    const nameInput = screen.getByPlaceholderText('Project name');
-    const descInput = screen.getByPlaceholderText('Description');
+    const nameInput = screen.getByPlaceholderText("Project name");
+    const descInput = screen.getByPlaceholderText("Description");
 
-    await user.type(nameInput, 'E2E Test Project');
-    await user.type(descInput, 'Testing workflow');
+    await user.type(nameInput, "E2E Test Project");
+    await user.type(descInput, "Testing workflow");
 
-    const createBtn = screen.getByRole('button', { name: 'Create Project' });
+    const createBtn = screen.getByRole("button", { name: "Create Project" });
     await user.click(createBtn);
 
     // Wait for project creation
     await waitFor(() => {
-      expect(screen.getByText('Step 2: Add Items')).toBeInTheDocument();
+      expect(screen.getByText("Step 2: Add Items")).toBeInTheDocument();
     });
 
     // Step 2: Add items
-    const itemInput = screen.getByPlaceholderText('Item name');
-    await user.type(itemInput, 'Requirement 1');
-    const addBtn = screen.getByRole('button', { name: 'Add Item' });
+    const itemInput = screen.getByPlaceholderText("Item name");
+    await user.type(itemInput, "Requirement 1");
+    const addBtn = screen.getByRole("button", { name: "Add Item" });
     await user.click(addBtn);
 
     await waitFor(() => {
-      expect(screen.getByText('Requirement 1')).toBeInTheDocument();
+      expect(screen.getByText("Requirement 1")).toBeInTheDocument();
     });
 
     // Add another item
-    await user.type(itemInput, 'Requirement 2');
+    await user.type(itemInput, "Requirement 2");
     await user.click(addBtn);
 
     await waitFor(() => {
-      expect(screen.getByText('Items: (2)')).toBeInTheDocument();
+      expect(screen.getByText("Items: (2)")).toBeInTheDocument();
     });
 
     // Complete workflow
-    const completeBtn = screen.getByRole('button', {
-      name: 'Complete Setup',
+    const completeBtn = screen.getByRole("button", {
+      name: "Complete Setup",
     });
     await user.click(completeBtn);
 
     await waitFor(() => {
       expect(handleComplete).toHaveBeenCalled();
-      expect(screen.getByText('Workflow Complete!')).toBeInTheDocument();
+      expect(screen.getByText("Workflow Complete!")).toBeInTheDocument();
     });
   });
 
-  it('should prevent incomplete workflow progression', async () => {
+  it("should prevent incomplete workflow progression", async () => {
     render(<MockProjectWorkflow />);
 
     // Create project
-    const nameInput = screen.getByPlaceholderText('Project name');
-    await user.type(nameInput, 'Test');
+    const nameInput = screen.getByPlaceholderText("Project name");
+    await user.type(nameInput, "Test");
 
-    const createBtn = screen.getByRole('button', { name: 'Create Project' });
+    const createBtn = screen.getByRole("button", { name: "Create Project" });
     await user.click(createBtn);
 
     // Should now be on step 2
     await waitFor(() => {
-      expect(screen.getByPlaceholderText('Item name')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Item name")).toBeInTheDocument();
     });
 
     // Complete button should not be visible yet (no items)
-    const completeBtn = screen.queryByRole('button', {
-      name: 'Complete Setup',
+    const completeBtn = screen.queryByRole("button", {
+      name: "Complete Setup",
     });
     expect(completeBtn).not.toBeInTheDocument();
   });
 });
 
-describe('Search and Filter Integration', () => {
+describe("Search and Filter Integration", () => {
   beforeEach(() => {
     user = userEvent.setup();
   });
 
-  it('should perform search and return results', async () => {
+  it("should perform search and return results", async () => {
     const handleSearch = vi.fn();
 
     render(<MockSearchWorkflow onSearch={handleSearch} />);
 
-    const searchInput = screen.getByPlaceholderText('Search items...');
-    const searchBtn = screen.getByRole('button', { name: 'Search' });
+    const searchInput = screen.getByPlaceholderText("Search items...");
+    const searchBtn = screen.getByRole("button", { name: "Search" });
 
-    await user.type(searchInput, 'requirement');
+    await user.type(searchInput, "requirement");
     await user.click(searchBtn);
 
     await waitFor(() => {
@@ -471,13 +471,13 @@ describe('Search and Filter Integration', () => {
     });
   });
 
-  it('should display no results message when search returns empty', async () => {
+  it("should display no results message when search returns empty", async () => {
     render(<MockSearchWorkflow />);
 
-    const searchInput = screen.getByPlaceholderText('Search items...');
-    const searchBtn = screen.getByRole('button', { name: 'Search' });
+    const searchInput = screen.getByPlaceholderText("Search items...");
+    const searchBtn = screen.getByRole("button", { name: "Search" });
 
-    await user.type(searchInput, 'nonexistent');
+    await user.type(searchInput, "nonexistent");
     await user.click(searchBtn);
 
     await waitFor(() => {
@@ -485,41 +485,41 @@ describe('Search and Filter Integration', () => {
     });
   });
 
-  it('should disable search button when query is empty', () => {
+  it("should disable search button when query is empty", () => {
     render(<MockSearchWorkflow />);
 
-    const searchBtn = screen.getByRole('button', { name: 'Search' });
+    const searchBtn = screen.getByRole("button", { name: "Search" });
     expect(searchBtn).toBeDisabled();
   });
 
-  it('should enable search button when query is entered', async () => {
+  it("should enable search button when query is entered", async () => {
     render(<MockSearchWorkflow />);
 
-    const searchInput = screen.getByPlaceholderText('Search items...');
-    const searchBtn = screen.getByRole('button', { name: 'Search' });
+    const searchInput = screen.getByPlaceholderText("Search items...");
+    const searchBtn = screen.getByRole("button", { name: "Search" });
 
-    await user.type(searchInput, 'test');
+    await user.type(searchInput, "test");
 
     expect(searchBtn).not.toBeDisabled();
   });
 });
 
-describe('Link Creation Workflow', () => {
+describe("Link Creation Workflow", () => {
   beforeEach(() => {
     user = userEvent.setup();
   });
 
-  it('should create traceability links', async () => {
+  it("should create traceability links", async () => {
     const handleLinkCreate = vi.fn();
 
     render(<MockLinkCreationWorkflow onLinkCreate={handleLinkCreate} />);
 
-    const sourceInput = screen.getByPlaceholderText('e.g., REQ-001');
-    const targetInput = screen.getByPlaceholderText('e.g., TEST-001');
-    const submitBtn = screen.getByRole('button', { name: 'Create Link' });
+    const sourceInput = screen.getByPlaceholderText("e.g., REQ-001");
+    const targetInput = screen.getByPlaceholderText("e.g., TEST-001");
+    const submitBtn = screen.getByRole("button", { name: "Create Link" });
 
-    await user.type(sourceInput, 'REQ-001');
-    await user.type(targetInput, 'TEST-001');
+    await user.type(sourceInput, "REQ-001");
+    await user.type(targetInput, "TEST-001");
     await user.click(submitBtn);
 
     await waitFor(() => {
@@ -528,28 +528,28 @@ describe('Link Creation Workflow', () => {
     });
   });
 
-  it('should support different link types', async () => {
+  it("should support different link types", async () => {
     render(<MockLinkCreationWorkflow />);
 
-    const linkTypeSelect = screen.getByDisplayValue('Traces');
+    const linkTypeSelect = screen.getByDisplayValue("Traces");
 
     // Should have multiple options
     const options = linkTypeSelect instanceof HTMLSelectElement ? linkTypeSelect.options : [];
     expect(options).toHaveLength(4);
-    expect(options[1]).toHaveTextContent('Implements');
-    expect(options[2]).toHaveTextContent('Verifies');
+    expect(options[1]).toHaveTextContent("Implements");
+    expect(options[2]).toHaveTextContent("Verifies");
   });
 
-  it('should create multiple links in sequence', async () => {
+  it("should create multiple links in sequence", async () => {
     render(<MockLinkCreationWorkflow />);
 
-    const sourceInput = screen.getByPlaceholderText('e.g., REQ-001');
-    const targetInput = screen.getByPlaceholderText('e.g., TEST-001');
-    const submitBtn = screen.getByRole('button', { name: 'Create Link' });
+    const sourceInput = screen.getByPlaceholderText("e.g., REQ-001");
+    const targetInput = screen.getByPlaceholderText("e.g., TEST-001");
+    const submitBtn = screen.getByRole("button", { name: "Create Link" });
 
     // First link
-    await user.type(sourceInput, 'REQ-001');
-    await user.type(targetInput, 'TEST-001');
+    await user.type(sourceInput, "REQ-001");
+    await user.type(targetInput, "TEST-001");
     await user.click(submitBtn);
 
     await waitFor(() => {
@@ -557,8 +557,8 @@ describe('Link Creation Workflow', () => {
     });
 
     // Second link
-    await user.type(sourceInput, 'REQ-002');
-    await user.type(targetInput, 'TEST-002');
+    await user.type(sourceInput, "REQ-002");
+    await user.type(targetInput, "TEST-002");
     await user.click(submitBtn);
 
     await waitFor(() => {
@@ -568,7 +568,7 @@ describe('Link Creation Workflow', () => {
   });
 });
 
-describe('Cross-Feature Workflow Integration', () => {
+describe("Cross-Feature Workflow Integration", () => {
   function MockCompleteWorkflow({
     onWorkflowMetrics = vi.fn(),
   }: {
@@ -587,10 +587,10 @@ describe('Cross-Feature Workflow Integration', () => {
     }, [workflowState, onWorkflowMetrics]);
 
     return (
-      <div className='space-y-4 p-4'>
-        <div className='rounded bg-blue-50 p-3'>
+      <div className="space-y-4 p-4">
+        <div className="rounded bg-blue-50 p-3">
           <input
-            type='checkbox'
+            type="checkbox"
             checked={workflowState.projectCreated}
             onChange={(e) => {
               setWorkflowState({
@@ -602,9 +602,9 @@ describe('Cross-Feature Workflow Integration', () => {
           Project Created
         </div>
 
-        <div className='rounded bg-green-50 p-3'>
+        <div className="rounded bg-green-50 p-3">
           <input
-            type='number'
+            type="number"
             value={workflowState.itemsAdded}
             onChange={(e) => {
               setWorkflowState({
@@ -612,14 +612,14 @@ describe('Cross-Feature Workflow Integration', () => {
                 itemsAdded: Number.parseInt(e.target.value, 10) || 0,
               });
             }}
-            min='0'
+            min="0"
           />
           Items Added
         </div>
 
-        <div className='rounded bg-purple-50 p-3'>
+        <div className="rounded bg-purple-50 p-3">
           <input
-            type='number'
+            type="number"
             value={workflowState.linksCreated}
             onChange={(e) => {
               setWorkflowState({
@@ -627,14 +627,14 @@ describe('Cross-Feature Workflow Integration', () => {
                 linksCreated: Number.parseInt(e.target.value, 10) || 0,
               });
             }}
-            min='0'
+            min="0"
           />
           Links Created
         </div>
 
-        <div className='rounded bg-yellow-50 p-3'>
+        <div className="rounded bg-yellow-50 p-3">
           <input
-            type='checkbox'
+            type="checkbox"
             checked={workflowState.reportGenerated}
             onChange={(e) => {
               setWorkflowState({
@@ -646,18 +646,18 @@ describe('Cross-Feature Workflow Integration', () => {
           Report Generated
         </div>
 
-        <div className='rounded bg-indigo-50 p-3'>
+        <div className="rounded bg-indigo-50 p-3">
           <input
-            type='text'
-            value={workflowState.sharedLink ?? ''}
+            type="text"
+            value={workflowState.sharedLink ?? ""}
             onChange={(e) => {
               setWorkflowState({
                 ...workflowState,
                 sharedLink: e.target.value || null,
               });
             }}
-            placeholder='Share link'
-            className='w-full rounded border px-2 py-1'
+            placeholder="Share link"
+            className="w-full rounded border px-2 py-1"
           />
         </div>
       </div>
@@ -668,21 +668,21 @@ describe('Cross-Feature Workflow Integration', () => {
     user = userEvent.setup();
   });
 
-  it('should track cross-feature workflow metrics', async () => {
+  it("should track cross-feature workflow metrics", async () => {
     const handleMetrics = vi.fn();
 
     render(<MockCompleteWorkflow onWorkflowMetrics={handleMetrics} />);
 
     // Complete various workflow steps
-    const checkboxes = screen.getAllByRole('checkbox');
+    const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[0]); // Create project
 
-    const numberInputs = screen.getAllByRole('spinbutton');
+    const numberInputs = screen.getAllByRole("spinbutton");
     await user.clear(numberInputs[0]);
-    await user.type(numberInputs[0], '5'); // Add items
+    await user.type(numberInputs[0], "5"); // Add items
 
     await user.clear(numberInputs[1]);
-    await user.type(numberInputs[1], '3'); // Create links
+    await user.type(numberInputs[1], "3"); // Create links
 
     await user.click(checkboxes[1]); // Generate report
 
@@ -700,7 +700,7 @@ describe('Cross-Feature Workflow Integration', () => {
   });
 });
 
-describe('Error Recovery in Workflows', () => {
+describe("Error Recovery in Workflows", () => {
   function MockWorkflowWithErrorHandling({
     shouldFail = false,
     onError = vi.fn(),
@@ -713,30 +713,30 @@ describe('Error Recovery in Workflows', () => {
     const handleAction = async () => {
       try {
         if (shouldFail) {
-          throw new Error('Operation failed');
+          throw new Error("Operation failed");
         }
         setError(null);
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        const errorMsg = error instanceof Error ? error.message : "Unknown error";
         setError(errorMsg);
         onError(new Error(errorMsg));
       }
     };
 
     return (
-      <div className='p-4'>
-        <button onClick={handleAction} className='rounded bg-blue-600 px-4 py-2 text-white'>
+      <div className="p-4">
+        <button onClick={handleAction} className="rounded bg-blue-600 px-4 py-2 text-white">
           Perform Action
         </button>
 
         {error && (
-          <div role='alert' className='mt-4 border-l-4 border-red-600 bg-red-50 p-3 text-red-800'>
+          <div role="alert" className="mt-4 border-l-4 border-red-600 bg-red-50 p-3 text-red-800">
             Error: {error}
             <button
               onClick={() => {
                 setError(null);
               }}
-              className='ml-2 text-sm underline'
+              className="ml-2 text-sm underline"
             >
               Dismiss
             </button>
@@ -750,13 +750,13 @@ describe('Error Recovery in Workflows', () => {
     user = userEvent.setup();
   });
 
-  it('should handle workflow errors gracefully', async () => {
+  it("should handle workflow errors gracefully", async () => {
     const handleError = vi.fn();
 
     render(<MockWorkflowWithErrorHandling shouldFail onError={handleError} />);
 
-    const actionBtn = screen.getByRole('button', {
-      name: 'Perform Action',
+    const actionBtn = screen.getByRole("button", {
+      name: "Perform Action",
     });
     await user.click(actionBtn);
 
@@ -766,11 +766,11 @@ describe('Error Recovery in Workflows', () => {
     });
   });
 
-  it('should allow dismissing errors', async () => {
+  it("should allow dismissing errors", async () => {
     render(<MockWorkflowWithErrorHandling shouldFail />);
 
-    const actionBtn = screen.getByRole('button', {
-      name: 'Perform Action',
+    const actionBtn = screen.getByRole("button", {
+      name: "Perform Action",
     });
     await user.click(actionBtn);
 
@@ -778,7 +778,7 @@ describe('Error Recovery in Workflows', () => {
       expect(screen.getByText(/Error:/)).toBeInTheDocument();
     });
 
-    const dismissBtn = screen.getByRole('button', { name: 'Dismiss' });
+    const dismissBtn = screen.getByRole("button", { name: "Dismiss" });
     await user.click(dismissBtn);
 
     expect(screen.queryByText(/Error:/)).not.toBeInTheDocument();

@@ -1,13 +1,13 @@
-import type { Edge, Node } from '@xyflow/react';
-import type { RefObject } from 'react';
+import type { Edge, Node } from "@xyflow/react";
+import type { RefObject } from "react";
 
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import type { ElkOptions, SyncLayoutResult } from './types';
+import type { ElkOptions, SyncLayoutResult } from "./types";
 
-const ZERO = Number('0');
+const ZERO = Number("0");
 
 interface ApplyLayoutEffectParams<NodeData extends Record<string, unknown>> {
   applySyncLayout: (inputNodes: Node<NodeData>[], inputEdges: Edge[]) => SyncLayoutResult<NodeData>;
@@ -50,7 +50,7 @@ function useApplyLayoutEffect<NodeData extends Record<string, unknown>>({
     }
 
     const syncResult = applySyncLayout(nodes, edges);
-    if (syncResult.kind === 'sync' && syncResult.nodes) {
+    if (syncResult.kind === "sync" && syncResult.nodes) {
       setLayoutedNodes(syncResult.nodes);
       return undefined;
     }
@@ -69,7 +69,7 @@ function useApplyLayoutEffect<NodeData extends Record<string, unknown>>({
           setLayoutedNodes(result);
         }
       } catch (error: unknown) {
-        logger.error('ELK layout failed:', error);
+        logger.error("ELK layout failed:", error);
         if (!cancelled) {
           setLayoutedNodes(getGridFallback(nodes));
         }

@@ -1,14 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
-import type { CreateItemData, CreateItemWithSpecData } from '@/hooks/use-items/items-utils';
-import type { Item, TypedItem, ViewType, ItemStatus } from '@tracertm/types';
+import type { CreateItemData, CreateItemWithSpecData } from "@/hooks/use-items/items-utils";
+import type { Item, TypedItem, ViewType, ItemStatus } from "@tracertm/types";
 
-import itemsUtils from '@/hooks/use-items/items-utils';
-import { QUERY_CONFIGS, queryKeys } from '@/lib/queryConfig';
-import { useAuthStore } from '@/stores/authStore';
+import itemsUtils from "@/hooks/use-items/items-utils";
+import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
+import { useAuthStore } from "@/stores/authStore";
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 interface ItemFilters {
   projectId?: string | undefined;
@@ -27,7 +27,7 @@ function authHeaders(token: string | undefined): Record<string, string> {
   const headers: Record<string, string> = {};
   const trimmedToken = itemsUtils.readNonEmptyString(token);
   if (trimmedToken !== undefined) {
-    headers['Authorization'] = `Bearer ${trimmedToken.trim()}`;
+    headers["Authorization"] = `Bearer ${trimmedToken.trim()}`;
   }
   return headers;
 }
@@ -36,23 +36,23 @@ function buildQueryParams(filters: ItemFilters): URLSearchParams {
   const params = new URLSearchParams();
 
   if (itemsUtils.readNonEmptyString(filters.projectId) !== undefined) {
-    params.set('project_id', filters.projectId ?? itemsUtils.EMPTY_STRING);
+    params.set("project_id", filters.projectId ?? itemsUtils.EMPTY_STRING);
   }
 
   if (filters.view !== undefined) {
-    params.set('view', filters.view);
+    params.set("view", filters.view);
   }
   if (filters.status !== undefined) {
-    params.set('status', filters.status);
+    params.set("status", filters.status);
   }
   if (itemsUtils.readNonEmptyString(filters.parentId) !== undefined) {
-    params.set('parent_id', filters.parentId ?? itemsUtils.EMPTY_STRING);
+    params.set("parent_id", filters.parentId ?? itemsUtils.EMPTY_STRING);
   }
   if (filters.limit !== undefined) {
-    params.set('limit', String(filters.limit));
+    params.set("limit", String(filters.limit));
   }
 
-  params.set('include_specs', 'true');
+  params.set("include_specs", "true");
 
   return params;
 }
@@ -61,9 +61,9 @@ async function fetchItems(filters: ItemFilters = {}, token?: string): Promise<It
   const params = buildQueryParams(filters);
 
   const res = await fetch(`${API_URL}/api/v1/items?${params}`, {
-    credentials: 'include',
+    credentials: "include",
     headers: {
-      'X-Bulk-Operation': 'true',
+      "X-Bulk-Operation": "true",
       ...authHeaders(token),
     },
   });
@@ -82,7 +82,7 @@ async function fetchItems(filters: ItemFilters = {}, token?: string): Promise<It
 
 async function fetchItem(id: string, token: string | undefined): Promise<Item> {
   const res = await fetch(`${API_URL}/api/v1/items/${id}`, {
-    credentials: 'include',
+    credentials: "include",
     headers: authHeaders(token),
   });
   if (res.ok) {
@@ -90,36 +90,36 @@ async function fetchItem(id: string, token: string | undefined): Promise<Item> {
     if (itemsUtils.isRecord(data)) {
       return itemsUtils.normalizeBaseItem(data);
     }
-    throw new Error('Invalid item payload');
+    throw new Error("Invalid item payload");
   }
-  throw new Error('Failed to fetch item');
+  throw new Error("Failed to fetch item");
 }
 
 async function createItem(data: CreateItemData, token: string | undefined): Promise<Item> {
   const res = await fetch(`${API_URL}/api/v1/items`, {
     body: JSON.stringify({
-      description: data['description'],
-      owner: data['owner'],
-      parent_id: data['parentId'],
-      priority: data['priority'],
-      project_id: data['projectId'],
+      description: data["description"],
+      owner: data["owner"],
+      parent_id: data["parentId"],
+      priority: data["priority"],
+      project_id: data["projectId"],
       status: data.status,
-      title: data['title'],
+      title: data["title"],
       type: data.type,
-      view: data['view'],
+      view: data["view"],
     }),
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
-    method: 'POST',
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
+    method: "POST",
   });
   if (res.ok) {
     const responseData = (await res.json()) as unknown;
     if (itemsUtils.isRecord(responseData)) {
       return itemsUtils.normalizeBaseItem(responseData);
     }
-    throw new Error('Invalid item payload');
+    throw new Error("Invalid item payload");
   }
-  throw new Error('Failed to create item');
+  throw new Error("Failed to create item");
 }
 
 async function createItemWithSpec(
@@ -128,28 +128,28 @@ async function createItemWithSpec(
 ): Promise<TypedItem> {
   const res = await fetch(`${API_URL}/api/v1/items`, {
     body: JSON.stringify({
-      project_id: data['projectId'],
-      view: data['item'].view,
-      type: data['item'].type,
-      title: data['item'].title,
-      description: data['item'].description,
-      status: data['item'].status,
-      priority: data['item'].priority,
-      parent_id: data['item'].parentId,
-      owner: data['item'].owner,
-      metadata: data['item'].metadata,
-      ...data['spec'],
+      project_id: data["projectId"],
+      view: data["item"].view,
+      type: data["item"].type,
+      title: data["item"].title,
+      description: data["item"].description,
+      status: data["item"].status,
+      priority: data["item"].priority,
+      parent_id: data["item"].parentId,
+      owner: data["item"].owner,
+      metadata: data["item"].metadata,
+      ...data["spec"],
     }),
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
-    method: 'POST',
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
+    method: "POST",
   });
   if (res.ok) {
     const responseData = (await res.json()) as unknown;
     if (itemsUtils.isRecord(responseData)) {
       return itemsUtils.normalizeItem(responseData);
     }
-    throw new Error('Invalid item payload');
+    throw new Error("Invalid item payload");
   }
   const errorText = await res.text();
   throw new Error(`Failed to create item with spec: ${res.status} ${errorText}`);
@@ -162,30 +162,30 @@ async function updateItem(
 ): Promise<Item> {
   const res = await fetch(`${API_URL}/api/v1/items/${id}`, {
     body: JSON.stringify(data),
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
-    method: 'PATCH',
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
+    method: "PATCH",
   });
   if (res.ok) {
     const responseData = (await res.json()) as unknown;
     if (itemsUtils.isRecord(responseData)) {
       return itemsUtils.normalizeBaseItem(responseData);
     }
-    throw new Error('Invalid item payload');
+    throw new Error("Invalid item payload");
   }
-  throw new Error('Failed to update item');
+  throw new Error("Failed to update item");
 }
 
 async function deleteItem(id: string, token: string | undefined): Promise<void> {
   const res = await fetch(`${API_URL}/api/v1/items/${id}`, {
-    credentials: 'include',
+    credentials: "include",
     headers: authHeaders(token),
-    method: 'DELETE',
+    method: "DELETE",
   });
   if (res.ok) {
     return;
   }
-  throw new Error('Failed to delete item');
+  throw new Error("Failed to delete item");
 }
 
 function useAuthToken(): string | undefined {
@@ -195,7 +195,7 @@ function useAuthToken(): string | undefined {
     return trimmedStoreToken.trim();
   }
   if (globalThis.window !== undefined) {
-    const fromStorage = globalThis.localStorage?.getItem('auth_token');
+    const fromStorage = globalThis.localStorage?.getItem("auth_token");
     const trimmedStorageToken = itemsUtils.readNonEmptyString(fromStorage);
     if (trimmedStorageToken !== undefined) {
       return trimmedStorageToken.trim();
@@ -211,7 +211,7 @@ function buildItemsQueryKey(
   const key: unknown[] = [];
   const projectId = itemsUtils.readNonEmptyString(filters?.projectId);
   if (projectId === undefined) {
-    key.push('items');
+    key.push("items");
   } else {
     key.push(...queryKeys.items.list(projectId));
   }
@@ -311,14 +311,14 @@ function useCreateItemWithSpec(): ReturnType<
       return result;
     },
     onError: (error: Error): void => {
-      toast.error('Failed to create item', {
+      toast.error("Failed to create item", {
         description: error.message,
       });
     },
     onSuccess: async (data: TypedItem): Promise<void> => {
-      await queryClient.invalidateQueries({ queryKey: ['items'] });
-      toast.success('Item created successfully', {
-        description: `Created ${data.type}: ${data['title']}`,
+      await queryClient.invalidateQueries({ queryKey: ["items"] });
+      toast.success("Item created successfully", {
+        description: `Created ${data.type}: ${data["title"]}`,
       });
     },
   });

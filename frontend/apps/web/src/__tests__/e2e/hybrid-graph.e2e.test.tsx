@@ -10,24 +10,24 @@
  * - Error recovery flows
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
-import type { ReactNode } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { HybridGraphView } from '@/components/graph/HybridGraphView';
+import { HybridGraphView } from "@/components/graph/HybridGraphView";
 import {
   calculateGraphMetrics,
   generateMinimalGraph,
   generatePerformanceGraph,
   generateSyntheticGraph,
-} from '@/lib/test-utils/synthetic-graph';
+} from "@/lib/test-utils/synthetic-graph";
 
 const sigma = {
   off: vi.fn(),
   on: vi.fn(),
 };
 
-vi.mock('@react-sigma/core', () => ({
+vi.mock("@react-sigma/core", () => ({
   SigmaContainer: ({ children, className }: { children: ReactNode; className?: string }) => (
     <div className={className}>{children}</div>
   ),
@@ -52,11 +52,11 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('Hybrid Graph E2E Tests', () => {
-  describe('Threshold Switching', () => {
-    it('should use ReactFlow for <10k nodes', async () => {
+describe("Hybrid Graph E2E Tests", () => {
+  describe("Threshold Switching", () => {
+    it("should use ReactFlow for <10k nodes", async () => {
       const { nodes, edges } = generateSyntheticGraph(5000, 7500, {
-        distribution: 'clustered',
+        distribution: "clustered",
         seed: 12_345,
       });
 
@@ -72,12 +72,12 @@ describe('Hybrid Graph E2E Tests', () => {
       });
 
       // Should not have WebGL container
-      expect(container.querySelector('.sigma-container')).not.toBeInTheDocument();
+      expect(container.querySelector(".sigma-container")).not.toBeInTheDocument();
     });
 
-    it('should use WebGL for ≥10k nodes', async () => {
+    it("should use WebGL for ≥10k nodes", async () => {
       const { nodes, edges } = generateSyntheticGraph(15_000, 22_500, {
-        distribution: 'clustered',
+        distribution: "clustered",
         seed: 12_345,
       });
 
@@ -93,12 +93,12 @@ describe('Hybrid Graph E2E Tests', () => {
       });
 
       // Should have WebGL container
-      expect(container.querySelector('.sigma-container')).toBeInTheDocument();
+      expect(container.querySelector(".sigma-container")).toBeInTheDocument();
     });
 
-    it('should show threshold warning at 8k-9.9k nodes', async () => {
+    it("should show threshold warning at 8k-9.9k nodes", async () => {
       const { nodes, edges } = generateSyntheticGraph(9000, 13_500, {
-        distribution: 'random',
+        distribution: "random",
         seed: 54_321,
       });
 
@@ -110,7 +110,7 @@ describe('Hybrid Graph E2E Tests', () => {
       });
     });
 
-    it('should not show warning for <8k nodes', async () => {
+    it("should not show warning for <8k nodes", async () => {
       const { nodes, edges } = generateSyntheticGraph(5000, 7500);
 
       render(<HybridGraphView nodes={nodes} edges={edges} />);
@@ -123,7 +123,7 @@ describe('Hybrid Graph E2E Tests', () => {
       expect(screen.queryByText(/Approaching 10k node threshold/i)).not.toBeInTheDocument();
     });
 
-    it('should respect forceReactFlow config override', async () => {
+    it("should respect forceReactFlow config override", async () => {
       const { nodes, edges } = generateSyntheticGraph(15_000, 22_500);
 
       render(<HybridGraphView nodes={nodes} edges={edges} config={{ forceReactFlow: true }} />);
@@ -134,7 +134,7 @@ describe('Hybrid Graph E2E Tests', () => {
       });
     });
 
-    it('should respect forceWebGL config override', async () => {
+    it("should respect forceWebGL config override", async () => {
       const { nodes, edges } = generateSyntheticGraph(5000, 7500);
 
       render(<HybridGraphView nodes={nodes} edges={edges} config={{ forceWebGL: true }} />);
@@ -145,7 +145,7 @@ describe('Hybrid Graph E2E Tests', () => {
       });
     });
 
-    it('should handle exact threshold boundary (10k nodes)', async () => {
+    it("should handle exact threshold boundary (10k nodes)", async () => {
       const { nodes, edges } = generateSyntheticGraph(10_000, 15_000);
 
       render(<HybridGraphView nodes={nodes} edges={edges} />);
@@ -157,7 +157,7 @@ describe('Hybrid Graph E2E Tests', () => {
       });
     });
 
-    it('should switch modes when node count changes', async () => {
+    it("should switch modes when node count changes", async () => {
       const smallGraph = generateSyntheticGraph(5000, 7500);
 
       const { rerender } = render(
@@ -180,8 +180,8 @@ describe('Hybrid Graph E2E Tests', () => {
     });
   });
 
-  describe('Graph Rendering', () => {
-    it('should render minimal graph correctly', async () => {
+  describe("Graph Rendering", () => {
+    it("should render minimal graph correctly", async () => {
       const { nodes, edges } = generateMinimalGraph();
 
       render(<HybridGraphView nodes={nodes} edges={edges} />);
@@ -192,7 +192,7 @@ describe('Hybrid Graph E2E Tests', () => {
       });
     });
 
-    it('should handle empty graph gracefully', async () => {
+    it("should handle empty graph gracefully", async () => {
       render(<HybridGraphView nodes={[]} edges={[]} />);
 
       await waitFor(() => {
@@ -200,7 +200,7 @@ describe('Hybrid Graph E2E Tests', () => {
       });
     });
 
-    it('should handle nodes without edges', async () => {
+    it("should handle nodes without edges", async () => {
       const { nodes } = generateSyntheticGraph(100, 0);
 
       render(<HybridGraphView nodes={nodes} edges={[]} />);
@@ -210,7 +210,7 @@ describe('Hybrid Graph E2E Tests', () => {
       });
     });
 
-    it('should display correct node and edge counts', async () => {
+    it("should display correct node and edge counts", async () => {
       const { nodes, edges } = generateSyntheticGraph(1234, 2345);
 
       render(<HybridGraphView nodes={nodes} edges={edges} />);
@@ -225,8 +225,8 @@ describe('Hybrid Graph E2E Tests', () => {
     });
   });
 
-  describe('Node Interaction', () => {
-    it('should call onNodeClick when node is clicked', async () => {
+  describe("Node Interaction", () => {
+    it("should call onNodeClick when node is clicked", async () => {
       const { nodes, edges } = generateMinimalGraph();
       const handleNodeClick = vi.fn();
 
@@ -241,7 +241,7 @@ describe('Hybrid Graph E2E Tests', () => {
       expect(handleNodeClick).not.toHaveBeenCalled();
     });
 
-    it('should call onNodeExpand when configured', async () => {
+    it("should call onNodeExpand when configured", async () => {
       const { nodes, edges } = generateMinimalGraph();
       const handleNodeExpand = vi.fn();
 
@@ -254,7 +254,7 @@ describe('Hybrid Graph E2E Tests', () => {
       expect(handleNodeExpand).not.toHaveBeenCalled();
     });
 
-    it('should open detail panel in WebGL mode', async () => {
+    it("should open detail panel in WebGL mode", async () => {
       const { nodes, edges } = generateSyntheticGraph(15_000, 22_500);
 
       render(<HybridGraphView nodes={nodes} edges={edges} />);
@@ -268,11 +268,11 @@ describe('Hybrid Graph E2E Tests', () => {
     });
   });
 
-  describe('Performance - ReactFlow Mode', () => {
-    it('should handle 5k nodes efficiently', async () => {
+  describe("Performance - ReactFlow Mode", () => {
+    it("should handle 5k nodes efficiently", async () => {
       const startTime = performance.now();
 
-      const { nodes, edges } = generatePerformanceGraph('medium');
+      const { nodes, edges } = generatePerformanceGraph("medium");
 
       const { container } = render(<HybridGraphView nodes={nodes} edges={edges} />);
 
@@ -289,7 +289,7 @@ describe('Hybrid Graph E2E Tests', () => {
       expect(container).toBeInTheDocument();
     });
 
-    it('should handle near-threshold graphs (9k nodes)', async () => {
+    it("should handle near-threshold graphs (9k nodes)", async () => {
       const { nodes, edges } = generateSyntheticGraph(9000, 13_500);
 
       const startTime = performance.now();
@@ -306,8 +306,8 @@ describe('Hybrid Graph E2E Tests', () => {
     });
   });
 
-  describe('Performance - WebGL Mode', () => {
-    it('should handle 15k nodes', async () => {
+  describe("Performance - WebGL Mode", () => {
+    it("should handle 15k nodes", async () => {
       const { nodes, edges } = generateSyntheticGraph(15_000, 22_500);
 
       const startTime = performance.now();
@@ -323,8 +323,8 @@ describe('Hybrid Graph E2E Tests', () => {
       expect(renderTime).toBeLessThan(10_000); // 10 seconds
     });
 
-    it('should handle 50k nodes (stress test)', async () => {
-      const { nodes, edges } = generatePerformanceGraph('xlarge');
+    it("should handle 50k nodes (stress test)", async () => {
+      const { nodes, edges } = generatePerformanceGraph("xlarge");
 
       const startTime = performance.now();
 
@@ -343,11 +343,11 @@ describe('Hybrid Graph E2E Tests', () => {
     }, 35_000);
   });
 
-  describe('Graph Metrics', () => {
-    it('should calculate correct metrics for clustered graph', () => {
+  describe("Graph Metrics", () => {
+    it("should calculate correct metrics for clustered graph", () => {
       const { nodes, edges } = generateSyntheticGraph(1000, 1500, {
         clusterCount: 10,
-        distribution: 'clustered',
+        distribution: "clustered",
       });
 
       const metrics = calculateGraphMetrics(nodes, edges);
@@ -359,9 +359,9 @@ describe('Hybrid Graph E2E Tests', () => {
       expect(metrics.density).toBeLessThan(1);
     });
 
-    it('should calculate correct metrics for hierarchical graph', () => {
+    it("should calculate correct metrics for hierarchical graph", () => {
       const { nodes, edges } = generateSyntheticGraph(500, 750, {
-        distribution: 'hierarchical',
+        distribution: "hierarchical",
       });
 
       const metrics = calculateGraphMetrics(nodes, edges);
@@ -371,10 +371,10 @@ describe('Hybrid Graph E2E Tests', () => {
       expect(metrics.maxDegree).toBeGreaterThan(metrics.minDegree);
     });
 
-    it('should identify isolated nodes', () => {
+    it("should identify isolated nodes", () => {
       const { nodes, edges } = generateSyntheticGraph(100, 50, {
         density: 0.2,
-        distribution: 'random',
+        distribution: "random",
       });
 
       const metrics = calculateGraphMetrics(nodes, edges);
@@ -385,14 +385,14 @@ describe('Hybrid Graph E2E Tests', () => {
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle invalid node data gracefully', async () => {
+  describe("Error Handling", () => {
+    it("should handle invalid node data gracefully", async () => {
       const invalidNodes = [
         {
           data: null as any,
-          id: 'invalid-1',
+          id: "invalid-1",
           position: { x: 0, y: 0 },
-          type: 'default', // Invalid data
+          type: "default", // Invalid data
         },
       ];
 
@@ -403,15 +403,15 @@ describe('Hybrid Graph E2E Tests', () => {
       });
     });
 
-    it('should handle edges with missing nodes', async () => {
+    it("should handle edges with missing nodes", async () => {
       const { nodes } = generateMinimalGraph();
       const invalidEdges = [
         {
           data: {},
-          id: 'invalid-edge',
-          source: 'node-1',
-          target: 'non-existent-node',
-          type: 'default',
+          id: "invalid-edge",
+          source: "node-1",
+          target: "non-existent-node",
+          type: "default",
         },
       ];
 
@@ -424,7 +424,7 @@ describe('Hybrid Graph E2E Tests', () => {
       // Should render without crashing
     });
 
-    it('should handle rapid prop changes', async () => {
+    it("should handle rapid prop changes", async () => {
       const graph1 = generateSyntheticGraph(1000, 1500);
       const graph2 = generateSyntheticGraph(2000, 3000);
       const graph3 = generateSyntheticGraph(500, 750);
@@ -449,8 +449,8 @@ describe('Hybrid Graph E2E Tests', () => {
     });
   });
 
-  describe('Configuration', () => {
-    it('should accept custom node threshold', async () => {
+  describe("Configuration", () => {
+    it("should accept custom node threshold", async () => {
       const { nodes, edges } = generateSyntheticGraph(5000, 7500);
 
       render(<HybridGraphView nodes={nodes} edges={edges} config={{ nodeThreshold: 3000 }} />);
@@ -461,19 +461,19 @@ describe('Hybrid Graph E2E Tests', () => {
       });
     });
 
-    it('should apply custom className', async () => {
+    it("should apply custom className", async () => {
       const { nodes, edges } = generateMinimalGraph();
 
       const { container } = render(
-        <HybridGraphView nodes={nodes} edges={edges} className='custom-graph-class' />,
+        <HybridGraphView nodes={nodes} edges={edges} className="custom-graph-class" />,
       );
 
-      expect(container.querySelector('.custom-graph-class')).toBeInTheDocument();
+      expect(container.querySelector(".custom-graph-class")).toBeInTheDocument();
     });
   });
 
-  describe('Memory Management', () => {
-    it('should not leak memory on unmount', async () => {
+  describe("Memory Management", () => {
+    it("should not leak memory on unmount", async () => {
       const { nodes, edges } = generateSyntheticGraph(5000, 7500);
 
       const { unmount } = render(<HybridGraphView nodes={nodes} edges={edges} />);
@@ -489,7 +489,7 @@ describe('Hybrid Graph E2E Tests', () => {
       expect(true).toBeTruthy();
     });
 
-    it('should handle multiple mount/unmount cycles', async () => {
+    it("should handle multiple mount/unmount cycles", async () => {
       const { nodes, edges } = generateSyntheticGraph(1000, 1500);
 
       for (let i = 0; i < 3; i++) {
@@ -507,8 +507,8 @@ describe('Hybrid Graph E2E Tests', () => {
     });
   });
 
-  describe('Reproducibility', () => {
-    it('should generate identical graphs with same seed', () => {
+  describe("Reproducibility", () => {
+    it("should generate identical graphs with same seed", () => {
       const graph1 = generateSyntheticGraph(1000, 1500, { seed: 42 });
       const graph2 = generateSyntheticGraph(1000, 1500, { seed: 42 });
 
@@ -516,7 +516,7 @@ describe('Hybrid Graph E2E Tests', () => {
       expect(graph1.edges).toEqual(graph2.edges);
     });
 
-    it('should generate different graphs with different seeds', () => {
+    it("should generate different graphs with different seeds", () => {
       const graph1 = generateSyntheticGraph(1000, 1500, { seed: 42 });
       const graph2 = generateSyntheticGraph(1000, 1500, { seed: 43 });
 
@@ -525,11 +525,11 @@ describe('Hybrid Graph E2E Tests', () => {
     });
   });
 
-  describe('Distribution Types', () => {
-    it('should generate clustered distribution correctly', () => {
+  describe("Distribution Types", () => {
+    it("should generate clustered distribution correctly", () => {
       const { nodes } = generateSyntheticGraph(1000, 1500, {
         clusterCount: 5,
-        distribution: 'clustered',
+        distribution: "clustered",
       });
 
       // Verify nodes exist
@@ -540,9 +540,9 @@ describe('Hybrid Graph E2E Tests', () => {
       expect(positions.every((p) => p.x >= 0 && p.y >= 0)).toBeTruthy();
     });
 
-    it('should generate hierarchical distribution correctly', () => {
+    it("should generate hierarchical distribution correctly", () => {
       const { nodes } = generateSyntheticGraph(500, 750, {
-        distribution: 'hierarchical',
+        distribution: "hierarchical",
       });
 
       expect(nodes.length).toBe(500);
@@ -555,9 +555,9 @@ describe('Hybrid Graph E2E Tests', () => {
       expect(uniqueY.size).toBeGreaterThan(1);
     });
 
-    it('should generate random distribution correctly', () => {
+    it("should generate random distribution correctly", () => {
       const { nodes } = generateSyntheticGraph(1000, 1500, {
-        distribution: 'random',
+        distribution: "random",
       });
 
       expect(nodes.length).toBe(1000);

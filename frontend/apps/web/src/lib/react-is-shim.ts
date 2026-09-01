@@ -10,24 +10,24 @@
 //   - https://github.com/facebook/react/issues/20089#issuecomment-714713444
 
 // React 19 exposes the symbols on React itself.
-import * as React from 'react';
+import * as React from "react";
 
-const REACT_ELEMENT_TYPE = Symbol.for('react.element');
-const REACT_PORTAL_TYPE = Symbol.for('react.portal');
-const REACT_FRAGMENT_TYPE = Symbol.for('react.fragment');
-const REACT_STRICT_MODE_TYPE = Symbol.for('react.strict_mode');
-const REACT_PROFILER_TYPE = Symbol.for('react.profiler');
-const REACT_PROVIDER_TYPE = Symbol.for('react.provider');
-const REACT_CONTEXT_TYPE = Symbol.for('react.context');
-const REACT_CONCURRENT_MODE_TYPE = Symbol.for('react.concurrent_mode');
-const REACT_FORWARD_REF_TYPE = Symbol.for('react.forward_ref');
-const REACT_SUSPENSE_TYPE = Symbol.for('react.suspense');
-const REACT_SUSPENSE_LIST_TYPE = Symbol.for('react.suspense_list');
-const REACT_MEMO_TYPE = Symbol.for('react.memo');
-const REACT_LAZY_TYPE = Symbol.for('react.lazy');
-const REACT_SCOPE_TYPE = Symbol.for('react.scope');
-const REACT_OFFSCREEN_TYPE = Symbol.for('react.offscreen');
-const REACT_CACHE_TYPE = Symbol.for('react.cache');
+const REACT_ELEMENT_TYPE = Symbol.for("react.element");
+const REACT_PORTAL_TYPE = Symbol.for("react.portal");
+const REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
+const REACT_STRICT_MODE_TYPE = Symbol.for("react.strict_mode");
+const REACT_PROFILER_TYPE = Symbol.for("react.profiler");
+const REACT_PROVIDER_TYPE = Symbol.for("react.provider");
+const REACT_CONTEXT_TYPE = Symbol.for("react.context");
+const REACT_CONCURRENT_MODE_TYPE = Symbol.for("react.concurrent_mode");
+const REACT_FORWARD_REF_TYPE = Symbol.for("react.forward_ref");
+const REACT_SUSPENSE_TYPE = Symbol.for("react.suspense");
+const REACT_SUSPENSE_LIST_TYPE = Symbol.for("react.suspense_list");
+const REACT_MEMO_TYPE = Symbol.for("react.memo");
+const REACT_LAZY_TYPE = Symbol.for("react.lazy");
+const REACT_SCOPE_TYPE = Symbol.for("react.scope");
+const REACT_OFFSCREEN_TYPE = Symbol.for("react.offscreen");
+const REACT_CACHE_TYPE = Symbol.for("react.cache");
 
 const ContextConsumer = REACT_CONTEXT_TYPE;
 const ContextProvider = REACT_PROVIDER_TYPE;
@@ -47,64 +47,64 @@ const Cache = REACT_CACHE_TYPE;
 const AsyncMode = REACT_CONCURRENT_MODE_TYPE;
 
 function typeOf(node: unknown): string | null {
-  if (node === null || typeof node !== 'object') return null;
+  if (node === null || typeof node !== "object") return null;
   const t = (node as { $$typeof?: symbol }).$$typeof;
-  if (t === REACT_ELEMENT_TYPE) return 'Element';
-  if (t === REACT_PORTAL_TYPE) return 'Portal';
-  if (t === REACT_FRAGMENT_TYPE) return 'Fragment';
-  if (t === REACT_STRICT_MODE_TYPE) return 'StrictMode';
-  if (t === REACT_PROFILER_TYPE) return 'Profiler';
-  if (t === REACT_PROVIDER_TYPE) return 'ContextProvider';
-  if (t === REACT_CONTEXT_TYPE) return 'ContextConsumer';
-  if (t === REACT_CONCURRENT_MODE_TYPE) return 'AsyncMode';
-  if (t === REACT_FORWARD_REF_TYPE) return 'ForwardRef';
-  if (t === REACT_SUSPENSE_TYPE) return 'Suspense';
-  if (t === REACT_SUSPENSE_LIST_TYPE) return 'SuspenseList';
-  if (t === REACT_MEMO_TYPE) return 'Memo';
-  if (t === REACT_LAZY_TYPE) return 'Lazy';
-  if (t === REACT_SCOPE_TYPE) return 'Scope';
-  if (t === REACT_OFFSCREEN_TYPE) return 'Offscreen';
+  if (t === REACT_ELEMENT_TYPE) return "Element";
+  if (t === REACT_PORTAL_TYPE) return "Portal";
+  if (t === REACT_FRAGMENT_TYPE) return "Fragment";
+  if (t === REACT_STRICT_MODE_TYPE) return "StrictMode";
+  if (t === REACT_PROFILER_TYPE) return "Profiler";
+  if (t === REACT_PROVIDER_TYPE) return "ContextProvider";
+  if (t === REACT_CONTEXT_TYPE) return "ContextConsumer";
+  if (t === REACT_CONCURRENT_MODE_TYPE) return "AsyncMode";
+  if (t === REACT_FORWARD_REF_TYPE) return "ForwardRef";
+  if (t === REACT_SUSPENSE_TYPE) return "Suspense";
+  if (t === REACT_SUSPENSE_LIST_TYPE) return "SuspenseList";
+  if (t === REACT_MEMO_TYPE) return "Memo";
+  if (t === REACT_LAZY_TYPE) return "Lazy";
+  if (t === REACT_SCOPE_TYPE) return "Scope";
+  if (t === REACT_OFFSCREEN_TYPE) return "Offscreen";
   return null;
 }
 
 function isContextConsumer(value: unknown): boolean {
-  return typeOf(value) === 'ContextConsumer';
+  return typeOf(value) === "ContextConsumer";
 }
 function isContextProvider(value: unknown): boolean {
-  return typeOf(value) === 'ContextProvider';
+  return typeOf(value) === "ContextProvider";
 }
 function isElement(value: unknown): boolean {
-  return typeOf(value) === 'Element';
+  return typeOf(value) === "Element";
 }
 function isForwardRef(value: unknown): boolean {
-  return typeOf(value) === 'ForwardRef';
+  return typeOf(value) === "ForwardRef";
 }
 function isFragment(value: unknown): boolean {
-  return typeOf(value) === 'Fragment';
+  return typeOf(value) === "Fragment";
 }
 function isLazy(value: unknown): boolean {
-  return typeOf(value) === 'Lazy';
+  return typeOf(value) === "Lazy";
 }
 function isMemo(value: unknown): boolean {
-  return typeOf(value) === 'Memo';
+  return typeOf(value) === "Memo";
 }
 function isPortal(value: unknown): boolean {
-  return typeOf(value) === 'Portal';
+  return typeOf(value) === "Portal";
 }
 function isProfiler(value: unknown): boolean {
-  return typeOf(value) === 'Profiler';
+  return typeOf(value) === "Profiler";
 }
 function isStrictMode(value: unknown): boolean {
-  return typeOf(value) === 'StrictMode';
+  return typeOf(value) === "StrictMode";
 }
 function isSuspense(value: unknown): boolean {
-  return typeOf(value) === 'Suspense';
+  return typeOf(value) === "Suspense";
 }
 function isSuspenseList(value: unknown): boolean {
-  return typeOf(value) === 'SuspenseList';
+  return typeOf(value) === "SuspenseList";
 }
 function isAsyncMode(value: unknown): boolean {
-  return typeOf(value) === 'AsyncMode';
+  return typeOf(value) === "AsyncMode";
 }
 function isConcurrentMode(value: unknown): boolean {
   // React 19 retired the named "ConcurrentMode"; legacy "AsyncMode" is treated
@@ -112,13 +112,13 @@ function isConcurrentMode(value: unknown): boolean {
   return isAsyncMode(value);
 }
 function isValidElementType(value: unknown): boolean {
-  if (typeof value === 'string') return true;
-  if (typeof value === 'function') return true;
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value === "string") return true;
+  if (typeof value === "function") return true;
+  if (typeof value !== "object" || value === null) return false;
   const t = typeOf(value);
   if (t === null) return false;
   // Reject Symbol-only / cache entries; everything else is renderable.
-  return t !== 'Cache';
+  return t !== "Cache";
 }
 
 const ReactIs = {

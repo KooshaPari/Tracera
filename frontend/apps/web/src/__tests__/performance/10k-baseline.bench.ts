@@ -23,11 +23,11 @@
  * @module Performance/10kBaseline
  */
 
-import type { Page } from '@playwright/test';
+import type { Page } from "@playwright/test";
 
-import { expect, test } from '@playwright/test';
-import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
+import { expect, test } from "@playwright/test";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 
 const logger = {
   info: (msg: string) => {
@@ -96,7 +96,7 @@ interface BenchmarkResults {
   };
   summary: {
     overallScore: number;
-    performanceGrade: 'A' | 'B' | 'C' | 'D' | 'F';
+    performanceGrade: "A" | "B" | "C" | "D" | "F";
     readyForProduction: boolean;
     blockers: string[];
     recommendations: string[];
@@ -112,16 +112,16 @@ async function generate10kGraphData(page: Page): Promise<void> {
     const edges: any[] = [];
 
     const types = [
-      'requirement',
-      'epic',
-      'user_story',
-      'task',
-      'bug',
-      'test_case',
-      'code',
-      'ui_component',
+      "requirement",
+      "epic",
+      "user_story",
+      "task",
+      "bug",
+      "test_case",
+      "code",
+      "ui_component",
     ];
-    const statuses = ['todo', 'in_progress', 'done', 'blocked'];
+    const statuses = ["todo", "in_progress", "done", "blocked"];
 
     // Generate 10,000 nodes
     for (let i = 0; i < 10_000; i++) {
@@ -143,7 +143,7 @@ async function generate10kGraphData(page: Page): Promise<void> {
     }
 
     // Generate ~50,000 edges (5 edges per node on average)
-    const linkTypes = ['traces_to', 'depends_on', 'blocks', 'implements', 'tests'] as const;
+    const linkTypes = ["traces_to", "depends_on", "blocks", "implements", "tests"] as const;
 
     for (let i = 0; i < 50_000; i++) {
       const sourceIdx = Math.floor(Math.random() * nodes.length);
@@ -171,7 +171,7 @@ async function loadGraphData(page: Page): Promise<void> {
   // Inject data into the graph component
   await page.evaluate(() => {
     const data = (globalThis as any).__benchmarkGraphData;
-    const event = new CustomEvent('loadGraphData', { detail: data });
+    const event = new CustomEvent("loadGraphData", { detail: data });
     globalThis.dispatchEvent(event);
   });
 }
@@ -263,8 +263,8 @@ async function measureFrameRate(
  * Wait for graph to be fully rendered
  */
 async function waitForGraphReady(page: Page): Promise<void> {
-  await page.waitForSelector('.react-flow', { timeout: 30_000 });
-  await page.waitForSelector('.react-flow__node', { timeout: 30_000 });
+  await page.waitForSelector(".react-flow", { timeout: 30_000 });
+  await page.waitForSelector(".react-flow__node", { timeout: 30_000 });
   await page.waitForTimeout(2000); // Allow for layout stabilization
 }
 
@@ -278,15 +278,15 @@ async function getGraphMetrics(page: Page): Promise<{
   lodLevel: string;
 }> {
   return page.evaluate(() => {
-    const nodes = document.querySelectorAll('.react-flow__node');
-    const edges = document.querySelectorAll('.react-flow__edge');
+    const nodes = document.querySelectorAll(".react-flow__node");
+    const edges = document.querySelectorAll(".react-flow__edge");
 
     // Try to get metrics from the performance panel if available
     const metricsPanel = document.querySelector('[data-testid="graph-metrics"]');
-    let lodLevel = 'unknown';
+    let lodLevel = "unknown";
 
     if (metricsPanel) {
-      const lodText = metricsPanel.textContent || '';
+      const lodText = metricsPanel.textContent || "";
       const lodMatch = lodText.match(/LOD:\s*(\w+)/);
       if (lodMatch) {
         lodLevel = lodMatch[1];
@@ -302,7 +302,7 @@ async function getGraphMetrics(page: Page): Promise<{
   });
 }
 
-test.describe('10k Node Baseline Performance', () => {
+test.describe("10k Node Baseline Performance", () => {
   let benchmarkResults: BenchmarkResults;
 
   test.beforeAll(async () => {
@@ -311,13 +311,13 @@ test.describe('10k Node Baseline Performance', () => {
       summary: {
         blockers: [],
         overallScore: 0,
-        performanceGrade: 'F',
+        performanceGrade: "F",
         readyForProduction: false,
         recommendations: [],
       },
       testEnvironment: {
         devicePixelRatio: 1,
-        userAgent: '',
+        userAgent: "",
         viewport: { height: 1080, width: 1920 },
       },
       timestamp: new Date().toISOString(),
@@ -340,11 +340,11 @@ test.describe('10k Node Baseline Performance', () => {
     benchmarkResults.testEnvironment.devicePixelRatio = dpr;
   });
 
-  test('Scenario 1: Load 10k nodes with 50k edges', async ({ page }) => {
-    logger.info('📊 Scenario 1: Loading 10k node graph...');
+  test("Scenario 1: Load 10k nodes with 50k edges", async ({ page }) => {
+    logger.info("📊 Scenario 1: Loading 10k node graph...");
 
     // Navigate to graph page
-    await page.goto('/graph', { waitUntil: 'networkidle' });
+    await page.goto("/graph", { waitUntil: "networkidle" });
 
     // Generate test data
     await generate10kGraphData(page);
@@ -375,8 +375,8 @@ test.describe('10k Node Baseline Performance', () => {
 
     // Measure first paint
     const firstPaintTime = await page.evaluate(() => {
-      const paintEntries = performance.getEntriesByType('paint') as PerformanceEntry[];
-      const fcp = paintEntries.find((e) => e.name === 'first-contentful-paint');
+      const paintEntries = performance.getEntriesByType("paint") as PerformanceEntry[];
+      const fcp = paintEntries.find((e) => e.name === "first-contentful-paint");
       return fcp ? fcp.startTime : 0;
     });
 
@@ -422,15 +422,15 @@ test.describe('10k Node Baseline Performance', () => {
     expect(metrics.initialRenderTime).toBeLessThan(10_000); // Relaxed for baseline
   });
 
-  test('Scenario 2: Continuous panning performance', async ({ page }) => {
-    logger.info('📊 Scenario 2: Measuring continuous pan FPS...');
+  test("Scenario 2: Continuous panning performance", async ({ page }) => {
+    logger.info("📊 Scenario 2: Measuring continuous pan FPS...");
 
-    await page.goto('/graph', { waitUntil: 'networkidle' });
+    await page.goto("/graph", { waitUntil: "networkidle" });
     await generate10kGraphData(page);
     await loadGraphData(page);
     await waitForGraphReady(page);
 
-    const graphPane = page.locator('.react-flow__pane');
+    const graphPane = page.locator(".react-flow__pane");
 
     // Start frame rate measurement
     const metricsPromise = measureFrameRate(page, 3000);
@@ -474,15 +474,15 @@ test.describe('10k Node Baseline Performance', () => {
     expect(frameMetrics.fps).toBeGreaterThan(20); // Relaxed for baseline
   });
 
-  test('Scenario 3: Zoom performance (0.1x to 2x)', async ({ page }) => {
-    logger.info('📊 Scenario 3: Measuring zoom performance...');
+  test("Scenario 3: Zoom performance (0.1x to 2x)", async ({ page }) => {
+    logger.info("📊 Scenario 3: Measuring zoom performance...");
 
-    await page.goto('/graph', { waitUntil: 'networkidle' });
+    await page.goto("/graph", { waitUntil: "networkidle" });
     await generate10kGraphData(page);
     await loadGraphData(page);
     await waitForGraphReady(page);
 
-    const graphPane = page.locator('.react-flow__pane');
+    const graphPane = page.locator(".react-flow__pane");
     await graphPane.hover({ position: { x: 960, y: 540 } });
 
     // Start frame rate measurement
@@ -525,15 +525,15 @@ test.describe('10k Node Baseline Performance', () => {
     expect(frameMetrics.fps).toBeGreaterThan(20); // Relaxed for baseline
   });
 
-  test('Scenario 4: Node selection performance', async ({ page }) => {
-    logger.info('📊 Scenario 4: Measuring node selection time...');
+  test("Scenario 4: Node selection performance", async ({ page }) => {
+    logger.info("📊 Scenario 4: Measuring node selection time...");
 
-    await page.goto('/graph', { waitUntil: 'networkidle' });
+    await page.goto("/graph", { waitUntil: "networkidle" });
     await generate10kGraphData(page);
     await loadGraphData(page);
     await waitForGraphReady(page);
 
-    const nodes = page.locator('.react-flow__node');
+    const nodes = page.locator(".react-flow__node");
     const nodeCount = await nodes.count();
 
     const selectionTimes: number[] = [];
@@ -574,15 +574,15 @@ test.describe('10k Node Baseline Performance', () => {
     expect(avgSelectionTime).toBeLessThan(200); // Relaxed for baseline
   });
 
-  test('Scenario 5: LOD transition performance', async ({ page }) => {
-    logger.info('📊 Scenario 5: Measuring LOD transitions...');
+  test("Scenario 5: LOD transition performance", async ({ page }) => {
+    logger.info("📊 Scenario 5: Measuring LOD transitions...");
 
-    await page.goto('/graph', { waitUntil: 'networkidle' });
+    await page.goto("/graph", { waitUntil: "networkidle" });
     await generate10kGraphData(page);
     await loadGraphData(page);
     await waitForGraphReady(page);
 
-    const graphPane = page.locator('.react-flow__pane');
+    const graphPane = page.locator(".react-flow__pane");
     await graphPane.hover({ position: { x: 960, y: 540 } });
 
     // Measure LOD transition times
@@ -640,61 +640,61 @@ test.describe('10k Node Baseline Performance', () => {
 
     // Determine grade
     if (overallScore >= 90) {
-      benchmarkResults.summary.performanceGrade = 'A';
+      benchmarkResults.summary.performanceGrade = "A";
     } else if (overallScore >= 70) {
-      benchmarkResults.summary.performanceGrade = 'B';
+      benchmarkResults.summary.performanceGrade = "B";
     } else if (overallScore >= 50) {
-      benchmarkResults.summary.performanceGrade = 'C';
+      benchmarkResults.summary.performanceGrade = "C";
     } else if (overallScore >= 30) {
-      benchmarkResults.summary.performanceGrade = 'D';
+      benchmarkResults.summary.performanceGrade = "D";
     } else {
-      benchmarkResults.summary.performanceGrade = 'F';
+      benchmarkResults.summary.performanceGrade = "F";
     }
 
     // Blockers
     if (scenarios.load10kGraph.initialRenderTime > 10_000) {
-      benchmarkResults.summary.blockers.push('Initial render time exceeds 10 seconds');
+      benchmarkResults.summary.blockers.push("Initial render time exceeds 10 seconds");
     }
     if (scenarios.continuousPan.continuousPanFPS < 15) {
-      benchmarkResults.summary.blockers.push('Pan FPS below 15fps');
+      benchmarkResults.summary.blockers.push("Pan FPS below 15fps");
     }
     if (scenarios.load10kGraph.finalMemoryMB > 1000) {
-      benchmarkResults.summary.blockers.push('Memory usage exceeds 1GB');
+      benchmarkResults.summary.blockers.push("Memory usage exceeds 1GB");
     }
 
     // Recommendations
     if (scenarios.continuousPan.continuousPanFPS < 30) {
-      benchmarkResults.summary.recommendations.push('Optimize viewport culling and edge rendering');
+      benchmarkResults.summary.recommendations.push("Optimize viewport culling and edge rendering");
     }
     if (scenarios.nodeSelection.avgNodeSelectionTime > 100) {
       benchmarkResults.summary.recommendations.push(
-        'Improve node selection response time with better event handling',
+        "Improve node selection response time with better event handling",
       );
     }
     if (scenarios.load10kGraph.culledNodeCount < 8000) {
-      benchmarkResults.summary.recommendations.push('Increase viewport culling aggressiveness');
+      benchmarkResults.summary.recommendations.push("Increase viewport culling aggressiveness");
     }
 
     benchmarkResults.summary.readyForProduction =
       benchmarkResults.summary.blockers.length === 0 && overallScore >= 70;
 
     // Save results to file
-    const resultsDir = path.join(__dirname, '../../..', 'performance-results');
+    const resultsDir = path.join(__dirname, "../../..", "performance-results");
     await fs.mkdir(resultsDir, { recursive: true });
 
     const resultsFile = path.join(resultsDir, `10k-baseline-${Date.now()}.json`);
     await fs.writeFile(resultsFile, JSON.stringify(benchmarkResults, null, 2));
 
-    logger.info('\n' + '='.repeat(80));
-    logger.info('📊 10K NODE BASELINE BENCHMARK RESULTS');
-    logger.info('='.repeat(80));
+    logger.info("\n" + "=".repeat(80));
+    logger.info("📊 10K NODE BASELINE BENCHMARK RESULTS");
+    logger.info("=".repeat(80));
     logger.info(
       `Overall Score: ${overallScore}/100 (Grade: ${benchmarkResults.summary.performanceGrade})`,
     );
     logger.info(
-      `Production Ready: ${benchmarkResults.summary.readyForProduction ? '✅ YES' : '❌ NO'}`,
+      `Production Ready: ${benchmarkResults.summary.readyForProduction ? "✅ YES" : "❌ NO"}`,
     );
-    logger.info('\nScenario Results:');
+    logger.info("\nScenario Results:");
     logger.info(`  Load Time: ${scenarios.load10kGraph.initialRenderTime}ms (target: <3000ms)`);
     logger.info(
       `  Pan FPS: ${scenarios.continuousPan.continuousPanFPS.toFixed(2)} (target: >30fps)`,
@@ -709,20 +709,20 @@ test.describe('10k Node Baseline Performance', () => {
     logger.info(`  Memory: ${scenarios.load10kGraph.finalMemoryMB.toFixed(2)}MB (target: <500MB)`);
 
     if (benchmarkResults.summary.blockers.length > 0) {
-      logger.info('\n⚠️  Blockers:');
+      logger.info("\n⚠️  Blockers:");
       benchmarkResults.summary.blockers.forEach((b) => {
         logger.info(`    - ${b}`);
       });
     }
 
     if (benchmarkResults.summary.recommendations.length > 0) {
-      logger.info('\n💡 Recommendations:');
+      logger.info("\n💡 Recommendations:");
       benchmarkResults.summary.recommendations.forEach((r) => {
         logger.info(`    - ${r}`);
       });
     }
 
     logger.info(`\n📄 Results saved to: ${resultsFile}`);
-    logger.info('='.repeat(80) + '\n');
+    logger.info("=".repeat(80) + "\n");
   });
 });

@@ -1,23 +1,23 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { runFrontendPreflight } from './preflight';
+import { runFrontendPreflight } from "./preflight";
 
 const RUST_READY_RESPONSE = {
-  backend: 'sqlite',
-  service: 'tracera-server',
-  status: 'ready',
+  backend: "sqlite",
+  service: "tracera-server",
+  status: "ready",
   uptime_seconds: 1,
-  version: '0.1.3-test',
+  version: "0.1.3-test",
 };
 
-describe('frontend preflight', () => {
+describe("frontend preflight", () => {
   beforeEach(() => {
     document.body.innerHTML = '<div id="root"></div>';
-    Object.defineProperty(HTMLElement.prototype, 'animate', {
+    Object.defineProperty(HTMLElement.prototype, "animate", {
       configurable: true,
       value: vi.fn(),
     });
-    Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
+    Object.defineProperty(HTMLElement.prototype, "scrollTo", {
       configurable: true,
       value: vi.fn(),
     });
@@ -27,13 +27,13 @@ describe('frontend preflight', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders only the dependencies advertised by the Rust readiness contract', async () => {
+  it("renders only the dependencies advertised by the Rust readiness contract", async () => {
     vi.stubGlobal(
-      'fetch',
+      "fetch",
       vi.fn(
         () =>
           new Response(JSON.stringify(RUST_READY_RESPONSE), {
-            headers: { 'content-type': 'application/json' },
+            headers: { "content-type": "application/json" },
             status: 200,
           }),
       ),
@@ -41,27 +41,27 @@ describe('frontend preflight', () => {
 
     await expect(runFrontendPreflight()).resolves.toEqual({ errors: [], ok: true });
 
-    expect(document.querySelectorAll('[data-infra]')).toHaveLength(1);
+    expect(document.querySelectorAll("[data-infra]")).toHaveLength(1);
     expect(document.querySelector('[data-infra="database"]')).not.toBeNull();
-    expect(document.querySelector('[data-infra-list]')).not.toHaveTextContent('Checking');
+    expect(document.querySelector("[data-infra-list]")).not.toHaveTextContent("Checking");
   });
 
-  it('uses a failure color with WCAG AA contrast against the preflight card', async () => {
+  it("uses a failure color with WCAG AA contrast against the preflight card", async () => {
     vi.stubGlobal(
-      'fetch',
+      "fetch",
       vi.fn(() => {
-        throw new Error('offline');
+        throw new Error("offline");
       }),
     );
 
     await runFrontendPreflight();
 
-    const status = document.querySelector<HTMLElement>('[data-status-text]');
+    const status = document.querySelector<HTMLElement>("[data-status-text]");
     if (!status) {
-      throw new Error('Expected a preflight status element');
+      throw new Error("Expected a preflight status element");
     }
-    expect(status).toHaveTextContent('Down');
-    expect(contrastRatio(status.style.color, '#211b23')).toBeGreaterThanOrEqual(4.5);
+    expect(status).toHaveTextContent("Down");
+    expect(contrastRatio(status.style.color, "#211b23")).toBeGreaterThanOrEqual(4.5);
   });
 });
 
@@ -71,7 +71,7 @@ function contrastRatio(foreground: string, background: string): number {
     return normalized <= 0.039_28 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
   };
   const luminance = (value: string): number => {
-    const channels = value.startsWith('#')
+    const channels = value.startsWith("#")
       ? [0, 2, 4].map((offset) => Number.parseInt(value.slice(offset + 1, offset + 3), 16))
       : (value.match(/\d+/g) ?? []).slice(0, 3).map(Number);
     const [red, green, blue] = channels;

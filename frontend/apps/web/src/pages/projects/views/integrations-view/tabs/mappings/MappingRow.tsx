@@ -1,19 +1,19 @@
-import type { ReactElement } from 'react';
+import type { ReactElement } from "react";
 
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
-import type { IntegrationMapping } from '@tracertm/types';
+import type { IntegrationMapping } from "@tracertm/types";
 
-import { useTriggerSync } from '@/hooks/useIntegrations';
-import StatusBadge from '@/pages/projects/views/integrations-view/components/StatusBadge';
+import { useTriggerSync } from "@/hooks/useIntegrations";
+import StatusBadge from "@/pages/projects/views/integrations-view/components/StatusBadge";
 
 const ID_PREVIEW_LENGTH = 8;
 
 function directionSymbol(direction: string | undefined): string {
-  if (direction === 'bidirectional') {
-    return '<->';
+  if (direction === "bidirectional") {
+    return "<->";
   }
-  return '->';
+  return "->";
 }
 
 function externalLabel({
@@ -23,7 +23,7 @@ function externalLabel({
   externalId: string;
   externalKey: string | undefined;
 }): string {
-  if (externalKey !== undefined && externalKey !== '') {
+  if (externalKey !== undefined && externalKey !== "") {
     return externalKey;
   }
   return externalId;
@@ -49,43 +49,43 @@ export default function MappingRow({ mapping }: MappingRowProps): ReactElement {
   } = mapping;
 
   const handleSync = useCallback(() => {
-    triggerSync.mutate({ direction: 'pull', mappingId: id });
+    triggerSync.mutate({ direction: "pull", mappingId: id });
   }, [id, triggerSync]);
 
   const localIdPreview = `${localItemId.slice(0, ID_PREVIEW_LENGTH)}...`;
 
   return (
-    <div className='rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800'>
-      <div className='flex items-center justify-between'>
+    <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+      <div className="flex items-center justify-between">
         <div>
-          <div className='flex items-center space-x-2'>
-            <span className='font-medium'>{localItemType}</span>
-            <span className='text-gray-400'>{directionSymbol(direction)}</span>
-            <span className='font-medium capitalize'>
+          <div className="flex items-center space-x-2">
+            <span className="font-medium">{localItemType}</span>
+            <span className="text-gray-400">{directionSymbol(direction)}</span>
+            <span className="font-medium capitalize">
               {provider} {externalType}
             </span>
           </div>
-          <div className='mt-1 text-sm text-gray-500'>
+          <div className="mt-1 text-sm text-gray-500">
             Local: {localIdPreview} | External: {externalLabel({ externalId, externalKey })}
           </div>
-          {externalUrl !== undefined && externalUrl !== '' && (
+          {externalUrl !== undefined && externalUrl !== "" && (
             <a
               href={externalUrl}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-sm text-blue-500 hover:underline'
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-500 hover:underline"
             >
               View external
             </a>
           )}
         </div>
-        <div className='flex items-center space-x-2'>
+        <div className="flex items-center space-x-2">
           <StatusBadge status={status} />
           <button
-            type='button'
+            type="button"
             onClick={handleSync}
             disabled={triggerSync.isPending}
-            className='rounded bg-green-100 px-3 py-1 text-sm text-green-700 hover:bg-green-200'
+            className="rounded bg-green-100 px-3 py-1 text-sm text-green-700 hover:bg-green-200"
           >
             Sync
           </button>

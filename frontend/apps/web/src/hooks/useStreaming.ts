@@ -2,11 +2,11 @@
  * React hooks for NDJSON streaming with progress tracking
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { StreamExportOptions, StreamGraphOptions, StreamItemsOptions } from '../api/streaming';
-import type { Item } from '../api/types';
-import type { NDJSONMetadata, StreamingStats } from '../lib/ndjson-parser';
+import type { StreamExportOptions, StreamGraphOptions, StreamItemsOptions } from "../api/streaming";
+import type { Item } from "../api/types";
+import type { NDJSONMetadata, StreamingStats } from "../lib/ndjson-parser";
 
 import {
   createCancellableExportStream,
@@ -15,7 +15,7 @@ import {
   streamExport,
   streamGraph,
   streamItems,
-} from '../api/streaming';
+} from "../api/streaming";
 
 export interface StreamingState {
   isStreaming: boolean;
@@ -210,12 +210,12 @@ export function useStreamGraph(): UseStreamGraphResult {
           break;
         }
 
-        if (item.type === 'node') {
+        if (item.type === "node") {
           receivedNodes.push(item.data as Record<string, unknown>);
           if (receivedNodes.length % 10 === 0) {
             setNodes([...receivedNodes]);
           }
-        } else if (item.type === 'edge') {
+        } else if (item.type === "edge") {
           receivedEdges.push(item.data as Record<string, unknown>);
           if (receivedEdges.length % 10 === 0) {
             setEdges([...receivedEdges]);
@@ -370,10 +370,10 @@ export function useStreamExport(): UseStreamExportResult {
   const downloadAsFile = useCallback(
     (filename: string) => {
       const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: 'application/json',
+        type: "application/json",
       });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = filename;
       a.click();

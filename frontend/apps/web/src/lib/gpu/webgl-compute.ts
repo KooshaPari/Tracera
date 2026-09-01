@@ -7,7 +7,7 @@
  * Performance: ~30-50x speedup over CPU (vs 100x for WebGPU)
  */
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // TYPES
@@ -223,24 +223,24 @@ void main() {
  */
 export function initializeWebGLCompute(): WebGLComputeContext | null {
   try {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = 512;
     canvas.height = 512;
 
-    const gl = canvas.getContext('webgl2', {
+    const gl = canvas.getContext("webgl2", {
       premultipliedAlpha: false,
       preserveDrawingBuffer: true,
     });
 
     if (!gl) {
-      logger.warn('WebGL2 not supported');
+      logger.warn("WebGL2 not supported");
       return null;
     }
 
     // Enable float textures
-    const floatExt = gl.getExtension('EXT_color_buffer_float');
+    const floatExt = gl.getExtension("EXT_color_buffer_float");
     if (!floatExt) {
-      logger.warn('WebGL2 float textures not supported');
+      logger.warn("WebGL2 float textures not supported");
       return null;
     }
 
@@ -249,7 +249,7 @@ export function initializeWebGLCompute(): WebGLComputeContext | null {
     const integrateProgram = createProgram(gl, VERTEX_SHADER, INTEGRATE_FRAGMENT_SHADER);
 
     if (!forcesProgram || !integrateProgram) {
-      logger.error('Failed to create WebGL programs');
+      logger.error("Failed to create WebGL programs");
       return null;
     }
 
@@ -260,11 +260,11 @@ export function initializeWebGLCompute(): WebGLComputeContext | null {
     const edges = gl.createBuffer();
 
     if (!positions || !velocities || !forces || !edges) {
-      logger.error('Failed to create WebGL buffers');
+      logger.error("Failed to create WebGL buffers");
       return null;
     }
 
-    logger.info('WebGL2 compute context initialized');
+    logger.info("WebGL2 compute context initialized");
 
     return {
       buffers: { edges, forces, positions, velocities },
@@ -273,7 +273,7 @@ export function initializeWebGLCompute(): WebGLComputeContext | null {
       programs: { forces: forcesProgram, integrate: integrateProgram },
     };
   } catch (error) {
-    logger.error('Failed to initialize WebGL compute:', error);
+    logger.error("Failed to initialize WebGL compute:", error);
     return null;
   }
 }
@@ -303,7 +303,7 @@ function createProgram(
   gl.linkProgram(program);
 
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    logger.error('Shader link error:', gl.getProgramInfoLog(program));
+    logger.error("Shader link error:", gl.getProgramInfoLog(program));
     gl.deleteProgram(program);
     return null;
   }
@@ -328,7 +328,7 @@ function createShader(
   gl.compileShader(shader);
 
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    logger.error('Shader compile error:', gl.getShaderInfoLog(shader));
+    logger.error("Shader compile error:", gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
     return null;
   }
@@ -363,7 +363,7 @@ export function computeWebGL(
     const integrateFBO = gl.createFramebuffer();
 
     if (!forceFBO || !integrateFBO) {
-      throw new Error('Failed to create framebuffers');
+      throw new Error("Failed to create framebuffers");
     }
 
     // Run iterations
@@ -405,7 +405,7 @@ export function computeWebGL(
 
     return result;
   } catch (error) {
-    logger.error('WebGL compute failed:', error);
+    logger.error("WebGL compute failed:", error);
     return null;
   }
 }
@@ -462,7 +462,7 @@ function setUniforms(
     const location = gl.getUniformLocation(program, name);
     if (location === null) continue;
 
-    if (typeof value === 'number') {
+    if (typeof value === "number") {
       gl.uniform1f(location, value);
     } else if (value instanceof WebGLTexture) {
       // Bind texture (simplified)
@@ -511,10 +511,10 @@ export function cleanupWebGLCompute(ctx: WebGLComputeContext): void {
   gl.deleteBuffer(ctx.buffers.edges);
 
   // Lose context to free GPU resources
-  const loseExt = gl.getExtension('WEBGL_lose_context');
+  const loseExt = gl.getExtension("WEBGL_lose_context");
   if (loseExt) {
     loseExt.loseContext();
   }
 
-  logger.info('WebGL compute context cleaned up');
+  logger.info("WebGL compute context cleaned up");
 }

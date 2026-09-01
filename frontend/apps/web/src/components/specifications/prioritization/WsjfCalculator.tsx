@@ -3,9 +3,9 @@
  * Weighted Shortest Job First scoring for SAFe prioritization
  */
 
-import { useState } from 'react';
+import { useState } from "react";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface WSJFScore {
   business_value: number;
@@ -26,15 +26,15 @@ const fibonacciScale = [1, 2, 3, 5, 8, 13, 21];
 
 function getScoreColor(score: number): string {
   if (score >= 5) {
-    return 'text-green-600';
+    return "text-green-600";
   }
   if (score >= 3) {
-    return 'text-blue-600';
+    return "text-blue-600";
   }
   if (score >= 1) {
-    return 'text-yellow-600';
+    return "text-yellow-600";
   }
-  return 'text-gray-600';
+  return "text-gray-600";
 }
 
 export function WSJFCalculator({
@@ -65,39 +65,39 @@ export function WSJFCalculator({
   };
 
   return (
-    <div className={cn('rounded-lg border p-4 space-y-4', className)}>
+    <div className={cn("rounded-lg border p-4 space-y-4", className)}>
       {/* Header */}
-      <div className='flex items-center justify-between'>
+      <div className="flex items-center justify-between">
         <div>
-          <h3 className='text-lg font-semibold'>WSJF Score</h3>
-          <p className='text-muted-foreground text-sm'>Weighted Shortest Job First</p>
+          <h3 className="text-lg font-semibold">WSJF Score</h3>
+          <p className="text-muted-foreground text-sm">Weighted Shortest Job First</p>
         </div>
-        <div className='text-right'>
-          <div className={cn('text-3xl font-bold', getScoreColor(wsjfScore))}>
+        <div className="text-right">
+          <div className={cn("text-3xl font-bold", getScoreColor(wsjfScore))}>
             {wsjfScore.toFixed(2)}
           </div>
-          <div className='text-muted-foreground text-sm'>WSJF Score</div>
+          <div className="text-muted-foreground text-sm">WSJF Score</div>
         </div>
       </div>
 
       {/* Formula Display */}
-      <div className='bg-muted rounded-lg p-3 text-sm'>
-        <div className='text-center font-mono'>
+      <div className="bg-muted rounded-lg p-3 text-sm">
+        <div className="text-center font-mono">
           WSJF = Cost of Delay / Job Size = {costOfDelay} / {jobSize} = {wsjfScore.toFixed(2)}
         </div>
       </div>
 
       {/* Input Sliders */}
-      <div className='space-y-4'>
+      <div className="space-y-4">
         {/* Cost of Delay Components */}
-        <div className='space-y-3'>
-          <h4 className='text-muted-foreground text-sm font-medium'>
+        <div className="space-y-3">
+          <h4 className="text-muted-foreground text-sm font-medium">
             Cost of Delay (CoD = {costOfDelay})
           </h4>
 
           <SliderInput
-            label='Business Value'
-            description='Value delivered to customer/business'
+            label="Business Value"
+            description="Value delivered to customer/business"
             value={businessValue}
             onChange={setBusinessValue}
             readOnly={readOnly}
@@ -105,8 +105,8 @@ export function WSJFCalculator({
           />
 
           <SliderInput
-            label='Time Criticality'
-            description='How urgently is it needed?'
+            label="Time Criticality"
+            description="How urgently is it needed?"
             value={timeCriticality}
             onChange={setTimeCriticality}
             readOnly={readOnly}
@@ -114,8 +114,8 @@ export function WSJFCalculator({
           />
 
           <SliderInput
-            label='Risk Reduction / Opportunity Enablement'
-            description='Reduces risk or enables other work'
+            label="Risk Reduction / Opportunity Enablement"
+            description="Reduces risk or enables other work"
             value={riskReduction}
             onChange={setRiskReduction}
             readOnly={readOnly}
@@ -124,10 +124,10 @@ export function WSJFCalculator({
         </div>
 
         {/* Job Size */}
-        <div className='border-t pt-3'>
+        <div className="border-t pt-3">
           <SliderInput
-            label='Job Size'
-            description='Estimated effort (lower = smaller)'
+            label="Job Size"
+            description="Estimated effort (lower = smaller)"
             value={jobSize}
             onChange={setJobSize}
             readOnly={readOnly}
@@ -140,7 +140,7 @@ export function WSJFCalculator({
       {!readOnly && onCalculate && (
         <button
           onClick={handleCalculate}
-          className='bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-md px-4 py-2 transition-colors'
+          className="bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-md px-4 py-2 transition-colors"
         >
           Save WSJF Score
         </button>
@@ -160,21 +160,21 @@ interface SliderInputProps {
 
 function SliderInput({ label, description, value, onChange, readOnly, scale }: SliderInputProps) {
   return (
-    <div className='space-y-1.5'>
-      <div className='flex justify-between text-sm'>
-        <span className='font-medium'>{label}</span>
-        <span className='font-mono'>{value}</span>
+    <div className="space-y-1.5">
+      <div className="flex justify-between text-sm">
+        <span className="font-medium">{label}</span>
+        <span className="font-mono">{value}</span>
       </div>
-      <p className='text-muted-foreground text-xs'>{description}</p>
+      <p className="text-muted-foreground text-xs">{description}</p>
       {readOnly ? (
-        <div className='bg-muted h-2 overflow-hidden rounded-full'>
+        <div className="bg-muted h-2 overflow-hidden rounded-full">
           <div
-            className='bg-primary h-full rounded-full'
+            className="bg-primary h-full rounded-full"
             style={{ width: `${(value / Math.max(...scale)) * 100}%` }}
           />
         </div>
       ) : (
-        <div className='flex gap-1'>
+        <div className="flex gap-1">
           {scale.map((scaleValue) => (
             <button
               key={scaleValue}
@@ -182,10 +182,10 @@ function SliderInput({ label, description, value, onChange, readOnly, scale }: S
                 onChange(scaleValue);
               }}
               className={cn(
-                'flex-1 py-1 text-xs rounded border transition-colors',
+                "flex-1 py-1 text-xs rounded border transition-colors",
                 value === scaleValue
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-muted hover:bg-muted/80 border-transparent',
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-muted hover:bg-muted/80 border-transparent",
               )}
             >
               {scaleValue}
@@ -199,30 +199,30 @@ function SliderInput({ label, description, value, onChange, readOnly, scale }: S
 
 interface WSJFScoreBadgeProps {
   score: number;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   className?: string;
 }
 
-export function WSJFScoreBadge({ score, size = 'md', className }: WSJFScoreBadgeProps) {
-  let color = 'bg-gray-100 text-gray-700 border-gray-300';
+export function WSJFScoreBadge({ score, size = "md", className }: WSJFScoreBadgeProps) {
+  let color = "bg-gray-100 text-gray-700 border-gray-300";
   if (score >= 5) {
-    color = 'bg-green-100 text-green-700 border-green-300';
+    color = "bg-green-100 text-green-700 border-green-300";
   } else if (score >= 3) {
-    color = 'bg-blue-100 text-blue-700 border-blue-300';
+    color = "bg-blue-100 text-blue-700 border-blue-300";
   } else if (score >= 1) {
-    color = 'bg-yellow-100 text-yellow-700 border-yellow-300';
+    color = "bg-yellow-100 text-yellow-700 border-yellow-300";
   }
 
   const sizeClass = {
-    lg: 'text-base px-3 py-1.5',
-    md: 'text-sm px-2 py-1',
-    sm: 'text-xs px-1.5 py-0.5',
+    lg: "text-base px-3 py-1.5",
+    md: "text-sm px-2 py-1",
+    sm: "text-xs px-1.5 py-0.5",
   }[size];
 
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded border font-medium',
+        "inline-flex items-center gap-1 rounded border font-medium",
         color,
         sizeClass,
         className,

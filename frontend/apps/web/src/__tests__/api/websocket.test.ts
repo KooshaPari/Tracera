@@ -3,7 +3,7 @@
  * Goal: Increase coverage from 59% to 95%
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   WebSocketManager,
@@ -11,7 +11,7 @@ import {
   disconnectWebSocket,
   getWebSocketManager,
   subscribeToChannel,
-} from '@/api/websocket';
+} from "@/api/websocket";
 
 // Mock WebSocket (intentionally uses on* properties to mirror WebSocket API)
 class MockWebSocket {
@@ -33,16 +33,16 @@ class MockWebSocket {
     setTimeout(() => {
       this.readyState = MockWebSocket.OPEN;
       if (this.onopen) {
-        this.onopen(new Event('open'));
+        this.onopen(new Event("open"));
       }
     }, 0);
   }
 
   send(data: string) {
-    if (JSON.parse(data).type === 'auth') {
+    if (JSON.parse(data).type === "auth") {
       queueMicrotask(() => {
         this.onmessage?.(
-          new MessageEvent('message', { data: JSON.stringify({ type: 'auth_success' }) }),
+          new MessageEvent("message", { data: JSON.stringify({ type: "auth_success" }) }),
         );
       });
     }
@@ -53,31 +53,31 @@ class MockWebSocket {
   }
 
   addEventListener(event: string, handler: EventListener) {
-    if (event === 'open') {
+    if (event === "open") {
       this.onopen = handler;
     }
-    if (event === 'close') {
+    if (event === "close") {
       this.onclose = handler;
     }
-    if (event === 'error') {
+    if (event === "error") {
       this.onerror = handler;
     }
-    if (event === 'message') {
+    if (event === "message") {
       this.onmessage = handler;
     }
   }
 
   removeEventListener(event: string, handler: EventListener) {
-    if (event === 'open' && this.onopen === handler) {
+    if (event === "open" && this.onopen === handler) {
       this.onopen = null;
     }
-    if (event === 'close' && this.onclose === handler) {
+    if (event === "close" && this.onclose === handler) {
       this.onclose = null;
     }
-    if (event === 'error' && this.onerror === handler) {
+    if (event === "error" && this.onerror === handler) {
       this.onerror = null;
     }
-    if (event === 'message' && this.onmessage === handler) {
+    if (event === "message" && this.onmessage === handler) {
       this.onmessage = null;
     }
   }
@@ -87,17 +87,17 @@ class MockWebSocket {
 globalThis.WebSocket = MockWebSocket as any;
 
 // Mock API_BASE_URL
-vi.mock('@/api/client', () => ({
+vi.mock("@/api/client", () => ({
   client: {
-    API_BASE_URL: 'http://localhost:4000',
+    API_BASE_URL: "http://localhost:4000",
   },
 }));
 
-describe('WebSocket API', () => {
+describe("WebSocket API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     globalThis.WebSocket = MockWebSocket as any;
-    getWebSocketManager(() => 'test-token');
+    getWebSocketManager(() => "test-token");
   });
 
   afterEach(() => {
@@ -112,12 +112,12 @@ describe('WebSocket API', () => {
   });
 
   describe(WebSocketManager, () => {
-    it('should create a WebSocketManager instance', () => {
+    it("should create a WebSocketManager instance", () => {
       const manager = getWebSocketManager();
       expect(manager).toBeInstanceOf(WebSocketManager);
     });
 
-    it('should return same instance (singleton)', () => {
+    it("should return same instance (singleton)", () => {
       const manager1 = getWebSocketManager();
       const manager2 = getWebSocketManager();
       expect(manager1).toBe(manager2);
@@ -125,54 +125,54 @@ describe('WebSocket API', () => {
   });
 
   describe(connectWebSocket, () => {
-    it('should connect to WebSocket', () => {
+    it("should connect to WebSocket", () => {
       connectWebSocket();
       const manager = getWebSocketManager();
       expect(manager).toBeDefined();
     });
 
-    it('should handle connection errors gracefully', () => {
+    it("should handle connection errors gracefully", () => {
       // Connection errors are caught internally
       expect(() => connectWebSocket()).not.toThrow();
     });
   });
 
   describe(disconnectWebSocket, () => {
-    it('should disconnect WebSocket', () => {
+    it("should disconnect WebSocket", () => {
       connectWebSocket();
       expect(() => disconnectWebSocket()).not.toThrow();
     });
 
-    it('should handle disconnect when not connected', () => {
+    it("should handle disconnect when not connected", () => {
       expect(() => disconnectWebSocket()).not.toThrow();
     });
   });
 
   describe(subscribeToChannel, () => {
-    it('should subscribe to a channel', () => {
+    it("should subscribe to a channel", () => {
       connectWebSocket();
-      const unsubscribe = subscribeToChannel('test-channel', vi.fn());
+      const unsubscribe = subscribeToChannel("test-channel", vi.fn());
       expect(unsubscribe).toBeDefined();
-      expect(typeof unsubscribe).toBe('function');
+      expect(typeof unsubscribe).toBe("function");
     });
 
-    it('should call callback when message received', async () => {
+    it("should call callback when message received", async () => {
       connectWebSocket();
       await new Promise((resolve) => setTimeout(resolve, 10)); // Wait for connection
 
       const callback = vi.fn();
-      subscribeToChannel('items:created', callback);
+      subscribeToChannel("items:created", callback);
 
       // Simulate message
       const manager = getWebSocketManager();
       if ((manager as any).ws?.onmessage) {
-        const mockEvent = new MessageEvent('message', {
+        const mockEvent = new MessageEvent("message", {
           data: JSON.stringify({
-            record: { id: '1' },
-            schema: 'public',
-            table: 'items',
+            record: { id: "1" },
+            schema: "public",
+            table: "items",
             timestamp: Date.now(),
-            type: 'created',
+            type: "created",
           }),
         });
         (manager as any).ws.onmessage(mockEvent);
@@ -182,16 +182,16 @@ describe('WebSocket API', () => {
       expect(callback).toHaveBeenCalled();
     });
 
-    it('should unsubscribe from channel', () => {
+    it("should unsubscribe from channel", () => {
       connectWebSocket();
-      const unsubscribe = subscribeToChannel('test-channel', vi.fn());
+      const unsubscribe = subscribeToChannel("test-channel", vi.fn());
       expect(() => unsubscribe()).not.toThrow();
     });
 
-    it('should handle multiple subscriptions', () => {
+    it("should handle multiple subscriptions", () => {
       connectWebSocket();
-      const unsubscribe1 = subscribeToChannel('channel-1', vi.fn());
-      const unsubscribe2 = subscribeToChannel('channel-2', vi.fn());
+      const unsubscribe1 = subscribeToChannel("channel-1", vi.fn());
+      const unsubscribe2 = subscribeToChannel("channel-2", vi.fn());
 
       expect(unsubscribe1).toBeDefined();
       expect(unsubscribe2).toBeDefined();
@@ -201,46 +201,46 @@ describe('WebSocket API', () => {
     });
   });
 
-  describe('WebSocketManager methods', () => {
+  describe("WebSocketManager methods", () => {
     let manager: WebSocketManager;
 
     beforeEach(() => {
       manager = getWebSocketManager();
     });
 
-    it('should connect when connect is called', () => {
+    it("should connect when connect is called", () => {
       manager.connect();
       expect(manager).toBeDefined();
     });
 
-    it('should disconnect when disconnect is called', () => {
+    it("should disconnect when disconnect is called", () => {
       manager.connect();
       expect(() => manager.disconnect()).not.toThrow();
     });
 
-    it('should subscribe to channels', () => {
+    it("should subscribe to channels", () => {
       manager.connect();
-      const unsubscribe = manager.subscribe('test-channel', vi.fn());
+      const unsubscribe = manager.subscribe("test-channel", vi.fn());
       expect(unsubscribe).toBeDefined();
-      expect(typeof unsubscribe).toBe('function');
+      expect(typeof unsubscribe).toBe("function");
     });
 
-    it('should handle message routing to correct channel', async () => {
+    it("should handle message routing to correct channel", async () => {
       manager.connect();
       await new Promise((resolve) => setTimeout(resolve, 10)); // Wait for connection
 
       const callback = vi.fn();
-      manager.subscribe('items:created', callback);
+      manager.subscribe("items:created", callback);
 
       // Simulate message
       if ((manager as any).ws?.onmessage) {
-        const mockEvent = new MessageEvent('message', {
+        const mockEvent = new MessageEvent("message", {
           data: JSON.stringify({
-            record: { id: '1' },
-            schema: 'public',
-            table: 'items',
+            record: { id: "1" },
+            schema: "public",
+            table: "items",
             timestamp: Date.now(),
-            type: 'created',
+            type: "created",
           }),
         });
         (manager as any).ws.onmessage(mockEvent);
@@ -249,38 +249,38 @@ describe('WebSocket API', () => {
       expect(callback).toHaveBeenCalled();
     });
 
-    it('should handle connection errors', () => {
+    it("should handle connection errors", () => {
       manager.connect();
       if ((manager as any).ws?.onerror) {
-        const mockEvent = new Event('error');
+        const mockEvent = new Event("error");
         (manager as any).ws.onerror(mockEvent);
       }
       // Should not throw
       expect(manager).toBeDefined();
     });
 
-    it('should handle connection close', () => {
+    it("should handle connection close", () => {
       manager.connect();
       if ((manager as any).ws?.onclose) {
-        const mockEvent = new CloseEvent('close');
+        const mockEvent = new CloseEvent("close");
         (manager as any).ws.onclose(mockEvent);
       }
       // Should not throw
       expect(manager).toBeDefined();
     });
 
-    it('should handle reconnection logic', () => {
+    it("should handle reconnection logic", () => {
       manager.connect();
       manager.disconnect();
       manager.connect();
       expect(manager).toBeDefined();
     });
 
-    it('should handle multiple channel subscriptions', () => {
+    it("should handle multiple channel subscriptions", () => {
       manager.connect();
-      const unsub1 = manager.subscribe('channel-1', vi.fn());
-      const unsub2 = manager.subscribe('channel-2', vi.fn());
-      const unsub3 = manager.subscribe('channel-1', vi.fn()); // Same channel, different callback
+      const unsub1 = manager.subscribe("channel-1", vi.fn());
+      const unsub2 = manager.subscribe("channel-2", vi.fn());
+      const unsub3 = manager.subscribe("channel-1", vi.fn()); // Same channel, different callback
 
       expect(unsub1).toBeDefined();
       expect(unsub2).toBeDefined();
@@ -291,17 +291,17 @@ describe('WebSocket API', () => {
       unsub3();
     });
 
-    it('should handle unsubscribe correctly', () => {
+    it("should handle unsubscribe correctly", () => {
       manager.connect();
       const callback = vi.fn();
-      const unsubscribe = manager.subscribe('test-channel', callback);
+      const unsubscribe = manager.subscribe("test-channel", callback);
 
       unsubscribe();
 
       // Callback should not be called after unsubscribe
       if ((manager as any).ws?.onmessage) {
-        const mockEvent = new MessageEvent('message', {
-          data: JSON.stringify({ channel: 'test-channel', data: 'test' }),
+        const mockEvent = new MessageEvent("message", {
+          data: JSON.stringify({ channel: "test-channel", data: "test" }),
         });
         (manager as any).ws.onmessage(mockEvent);
       }
@@ -311,8 +311,8 @@ describe('WebSocket API', () => {
     });
   });
 
-  describe('edge cases', () => {
-    it('should handle WebSocket not available', () => {
+  describe("edge cases", () => {
+    it("should handle WebSocket not available", () => {
       const originalWebSocket = globalThis.WebSocket;
       delete (globalThis as any).WebSocket;
 
@@ -321,30 +321,30 @@ describe('WebSocket API', () => {
       globalThis.WebSocket = originalWebSocket;
     });
 
-    it('should handle connection when already connected', () => {
+    it("should handle connection when already connected", () => {
       const manager = getWebSocketManager();
       manager.connect();
       expect(() => manager.connect()).not.toThrow();
     });
 
-    it('should handle disconnect when not connected', () => {
+    it("should handle disconnect when not connected", () => {
       const manager = getWebSocketManager();
       expect(() => manager.disconnect()).not.toThrow();
     });
 
-    it('should handle messages for non-existent channels', async () => {
+    it("should handle messages for non-existent channels", async () => {
       const manager = getWebSocketManager();
       manager.connect();
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       if ((manager as any).ws?.onmessage) {
-        const mockEvent = new MessageEvent('message', {
+        const mockEvent = new MessageEvent("message", {
           data: JSON.stringify({
-            record: { id: '1' },
-            schema: 'public',
-            table: 'items',
+            record: { id: "1" },
+            schema: "public",
+            table: "items",
             timestamp: Date.now(),
-            type: 'created',
+            type: "created",
           }),
         });
         expect(() => {
@@ -353,14 +353,14 @@ describe('WebSocket API', () => {
       }
     });
 
-    it('should handle malformed messages', async () => {
+    it("should handle malformed messages", async () => {
       const manager = getWebSocketManager();
       manager.connect();
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       if ((manager as any).ws?.onmessage) {
-        const mockEvent = new MessageEvent('message', {
-          data: 'invalid json',
+        const mockEvent = new MessageEvent("message", {
+          data: "invalid json",
         });
         expect(() => {
           (manager as any).ws.onmessage(mockEvent);
@@ -368,14 +368,14 @@ describe('WebSocket API', () => {
       }
     });
 
-    it('should handle messages with invalid structure', async () => {
+    it("should handle messages with invalid structure", async () => {
       const manager = getWebSocketManager();
       manager.connect();
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       if ((manager as any).ws?.onmessage) {
-        const mockEvent = new MessageEvent('message', {
-          data: JSON.stringify({ data: 'test' }), // Missing required fields
+        const mockEvent = new MessageEvent("message", {
+          data: JSON.stringify({ data: "test" }), // Missing required fields
         });
         expect(() => {
           (manager as any).ws.onmessage(mockEvent);

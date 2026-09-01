@@ -1,16 +1,16 @@
 // Grouping algorithms for graph visualization
 // Supports multiple grouping strategies for organizing items in the graph
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
 /**
  * Grouping strategy options
  */
 export type GroupingStrategy =
-  | 'link-targets' // Group items that share common targets
-  | 'dependencies' // Group items that depend on same things
-  | 'paths' // Group items on same journey/trace path
-  | 'semantic'; // Group by semantic similarity (if embeddings available)
+  | "link-targets" // Group items that share common targets
+  | "dependencies" // Group items that depend on same things
+  | "paths" // Group items on same journey/trace path
+  | "semantic"; // Group by semantic similarity (if embeddings available)
 
 /**
  * Result of grouping operation
@@ -60,7 +60,7 @@ export function groupByLinkTargets(items: Item[], links: Link[], minGroupSize = 
     }
 
     // Create a key from sorted targets
-    const targetKey = [...targets].toSorted().join('|');
+    const targetKey = [...targets].toSorted().join("|");
 
     if (!groupMap.has(targetKey)) {
       groupMap.set(targetKey, new Set());
@@ -72,7 +72,7 @@ export function groupByLinkTargets(items: Item[], links: Link[], minGroupSize = 
   const groups: GroupResult[] = [];
   for (const [targetKey, itemIds] of groupMap) {
     if (itemIds.size >= minGroupSize) {
-      const targets = targetKey.split('|').filter((t) => t.length > 0);
+      const targets = targetKey.split("|").filter((t) => t.length > 0);
       groups.push({
         groupId: `group-targets-${groupIndex++}`,
         itemCount: itemIds.size,
@@ -86,7 +86,7 @@ export function groupByLinkTargets(items: Item[], links: Link[], minGroupSize = 
           cohesion: Math.min(1, targets.length / 10),
           commonality: 1,
         },
-        strategy: 'link-targets',
+        strategy: "link-targets",
       });
     }
   }
@@ -126,7 +126,7 @@ export function groupByDependencies(items: Item[], links: Link[], minGroupSize =
       continue;
     }
 
-    const depKey = [...deps].toSorted().join('|');
+    const depKey = [...deps].toSorted().join("|");
 
     if (!groupMap.has(depKey)) {
       groupMap.set(depKey, new Set());
@@ -138,7 +138,7 @@ export function groupByDependencies(items: Item[], links: Link[], minGroupSize =
   const groups: GroupResult[] = [];
   for (const [depKey, itemIds] of groupMap) {
     if (itemIds.size >= minGroupSize) {
-      const deps = depKey.split('|').filter((d) => d.length > 0);
+      const deps = depKey.split("|").filter((d) => d.length > 0);
       groups.push({
         groupId: `group-deps-${groupIndex++}`,
         itemCount: itemIds.size,
@@ -152,7 +152,7 @@ export function groupByDependencies(items: Item[], links: Link[], minGroupSize =
           cohesion: Math.min(1, deps.length / 10),
           commonality: 1,
         },
-        strategy: 'dependencies',
+        strategy: "dependencies",
       });
     }
   }
@@ -231,7 +231,7 @@ export function groupByPaths(items: Item[], links: Link[], minGroupSize = 2): Gr
             cohesion: 1, // Connected components have perfect cohesion
             separation: 0.5,
           },
-          strategy: 'paths',
+          strategy: "paths",
         });
       }
     }
@@ -260,7 +260,7 @@ export function groupBySemantic(
   // Group by type first (semantic baseline)
   const typeGroups = new Map<string, Item[]>();
   for (const item of items) {
-    const type = (item.type || 'unknown').toLowerCase();
+    const type = (item.type || "unknown").toLowerCase();
     if (!typeGroups.has(type)) {
       typeGroups.set(type, []);
     }
@@ -288,7 +288,7 @@ export function groupBySemantic(
           commonality,
           separation: 0.6,
         },
-        strategy: 'semantic',
+        strategy: "semantic",
       });
     }
   }
@@ -379,7 +379,7 @@ export function intersectGroupResults(groupSets: GroupResult[][]): GroupResult[]
   // Convert back to GroupResult
   return current.map((itemSet, idx) => ({
     groupId: `group-intersection-${idx}`,
-    strategy: 'paths', // Default strategy for intersections
+    strategy: "paths", // Default strategy for intersections
     label: `Intersection group (${itemSet.size} items)`,
     itemIds: [...itemSet],
     itemCount: itemSet.size,

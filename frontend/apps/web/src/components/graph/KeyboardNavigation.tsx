@@ -9,12 +9,12 @@ import {
   ArrowUp,
   CornerDownLeft,
   HelpCircle,
-} from 'lucide-react';
-import { memo, useEffect, useState } from 'react';
+} from "lucide-react";
+import { memo, useEffect, useState } from "react";
 
-import { cn } from '@tracertm/ui';
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Card } from '@tracertm/ui/components/Card';
+import { cn } from "@tracertm/ui";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Card } from "@tracertm/ui/components/Card";
 
 /**
  * Keyboard shortcuts configuration
@@ -30,45 +30,45 @@ export interface KeyboardShortcut {
 
 const DEFAULT_SHORTCUTS: KeyboardShortcut[] = [
   {
-    action: 'navigate-parent',
-    description: 'Navigate to parent node',
-    key: 'ArrowUp',
+    action: "navigate-parent",
+    description: "Navigate to parent node",
+    key: "ArrowUp",
   },
   {
-    action: 'navigate-child',
-    description: 'Navigate to first child node',
-    key: 'ArrowDown',
+    action: "navigate-child",
+    description: "Navigate to first child node",
+    key: "ArrowDown",
   },
   {
-    action: 'collapse',
-    description: 'Collapse node',
-    key: 'ArrowLeft',
+    action: "collapse",
+    description: "Collapse node",
+    key: "ArrowLeft",
   },
   {
-    action: 'expand',
-    description: 'Expand node',
-    key: 'ArrowRight',
+    action: "expand",
+    description: "Expand node",
+    key: "ArrowRight",
   },
   {
-    action: 'toggle-expansion',
-    description: 'Toggle node expansion',
-    key: 'Enter',
+    action: "toggle-expansion",
+    description: "Toggle node expansion",
+    key: "Enter",
   },
   {
-    action: 'navigate-back',
-    description: 'Go back in navigation history',
-    key: 'Backspace',
+    action: "navigate-back",
+    description: "Go back in navigation history",
+    key: "Backspace",
   },
   {
-    action: 'close-panel',
-    description: 'Close current panel/deselect',
-    key: 'Escape',
+    action: "close-panel",
+    description: "Close current panel/deselect",
+    key: "Escape",
   },
   {
-    action: 'open-search',
+    action: "open-search",
     ctrl: true,
-    description: 'Open search',
-    key: 'f',
+    description: "Open search",
+    key: "f",
   },
 ];
 
@@ -86,34 +86,34 @@ function formatShortcut(shortcut: KeyboardShortcut): string {
   const parts: string[] = [];
 
   if (shortcut.ctrl) {
-    parts.push('Ctrl');
+    parts.push("Ctrl");
   }
   if (shortcut.shift) {
-    parts.push('Shift');
+    parts.push("Shift");
   }
   if (shortcut.alt) {
-    parts.push('Alt');
+    parts.push("Alt");
   }
 
   const keyLabel =
-    shortcut.key === 'ArrowUp'
-      ? '↑'
-      : shortcut.key === 'ArrowDown'
-        ? '↓'
-        : shortcut.key === 'ArrowLeft'
-          ? '←'
-          : shortcut.key === 'ArrowRight'
-            ? '→'
-            : shortcut.key === 'Enter'
-              ? 'Return'
-              : shortcut.key === 'Backspace'
-                ? 'Backspace'
-                : shortcut.key === 'Escape'
-                  ? 'Esc'
+    shortcut.key === "ArrowUp"
+      ? "↑"
+      : shortcut.key === "ArrowDown"
+        ? "↓"
+        : shortcut.key === "ArrowLeft"
+          ? "←"
+          : shortcut.key === "ArrowRight"
+            ? "→"
+            : shortcut.key === "Enter"
+              ? "Return"
+              : shortcut.key === "Backspace"
+                ? "Backspace"
+                : shortcut.key === "Escape"
+                  ? "Esc"
                   : shortcut.key.toUpperCase();
 
   parts.push(keyLabel);
-  return parts.join('+');
+  return parts.join("+");
 }
 
 /**
@@ -121,26 +121,26 @@ function formatShortcut(shortcut: KeyboardShortcut): string {
  */
 function getActionIcon(action: string) {
   switch (action) {
-    case 'navigate-parent': {
-      return <ArrowUp className='h-4 w-4' />;
+    case "navigate-parent": {
+      return <ArrowUp className="h-4 w-4" />;
     }
-    case 'navigate-child': {
-      return <ArrowDown className='h-4 w-4' />;
+    case "navigate-child": {
+      return <ArrowDown className="h-4 w-4" />;
     }
-    case 'collapse': {
-      return <ArrowLeft className='h-4 w-4' />;
+    case "collapse": {
+      return <ArrowLeft className="h-4 w-4" />;
     }
-    case 'expand': {
-      return <ArrowRight className='h-4 w-4' />;
+    case "expand": {
+      return <ArrowRight className="h-4 w-4" />;
     }
-    case 'toggle-expansion': {
-      return <CornerDownLeft className='h-4 w-4' />;
+    case "toggle-expansion": {
+      return <CornerDownLeft className="h-4 w-4" />;
     }
-    case 'navigate-back': {
-      return <ArrowLeft className='h-4 w-4' />;
+    case "navigate-back": {
+      return <ArrowLeft className="h-4 w-4" />;
     }
-    case 'close-panel': {
-      return <button className='text-base leading-none'>×</button>;
+    case "close-panel": {
+      return <button className="text-base leading-none">×</button>;
     }
     default: {
       return null;
@@ -166,13 +166,13 @@ function KeyboardNavigationComponent({
       for (const shortcut of shortcuts) {
         const keyMatch =
           event.key === shortcut.key ||
-          (event.key === 'Enter' && shortcut.key === 'Enter') ||
-          (event.key === 'Escape' && shortcut.key === 'Escape') ||
-          (event.key === 'Backspace' && shortcut.key === 'Backspace') ||
-          (event.key === 'ArrowUp' && shortcut.key === 'ArrowUp') ||
-          (event.key === 'ArrowDown' && shortcut.key === 'ArrowDown') ||
-          (event.key === 'ArrowLeft' && shortcut.key === 'ArrowLeft') ||
-          (event.key === 'ArrowRight' && shortcut.key === 'ArrowRight') ||
+          (event.key === "Enter" && shortcut.key === "Enter") ||
+          (event.key === "Escape" && shortcut.key === "Escape") ||
+          (event.key === "Backspace" && shortcut.key === "Backspace") ||
+          (event.key === "ArrowUp" && shortcut.key === "ArrowUp") ||
+          (event.key === "ArrowDown" && shortcut.key === "ArrowDown") ||
+          (event.key === "ArrowLeft" && shortcut.key === "ArrowLeft") ||
+          (event.key === "ArrowRight" && shortcut.key === "ArrowRight") ||
           event.key.toLowerCase() === shortcut.key.toLowerCase();
 
         const ctrlMatch = shortcut.ctrl
@@ -183,7 +183,7 @@ function KeyboardNavigationComponent({
 
         if (keyMatch && ctrlMatch && shiftMatch && altMatch) {
           // Special handling for help toggle
-          if (shortcut.action === 'open-search') {
+          if (shortcut.action === "open-search") {
             event.preventDefault();
             setShowHelpPanel(!showHelpPanel);
             return;
@@ -195,10 +195,10 @@ function KeyboardNavigationComponent({
       }
     };
 
-    globalThis.addEventListener('keydown', handleKeyDown);
+    globalThis.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      globalThis.removeEventListener('keydown', handleKeyDown);
+      globalThis.removeEventListener("keydown", handleKeyDown);
     };
   }, [onKeyPress, shortcuts, showHelpPanel]);
 
@@ -206,50 +206,50 @@ function KeyboardNavigationComponent({
     <>
       {/* Help panel */}
       {showHelpPanel && (
-        <Card className={cn('absolute bottom-4 right-4 w-80 p-4', className)}>
-          <div className='space-y-3'>
-            <div className='mb-4 flex items-center justify-between'>
-              <h3 className='flex items-center gap-2 font-semibold'>
-                <HelpCircle className='h-4 w-4' />
+        <Card className={cn("absolute bottom-4 right-4 w-80 p-4", className)}>
+          <div className="space-y-3">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="flex items-center gap-2 font-semibold">
+                <HelpCircle className="h-4 w-4" />
                 Keyboard Shortcuts
               </h3>
               <button
                 onClick={() => {
                   setShowHelpPanel(false);
                 }}
-                className='text-muted-foreground hover:text-foreground'
-                type='button'
+                className="text-muted-foreground hover:text-foreground"
+                type="button"
               >
                 ×
               </button>
             </div>
 
-            <div className='max-h-80 space-y-2 overflow-y-auto'>
+            <div className="max-h-80 space-y-2 overflow-y-auto">
               {shortcuts.map((shortcut) => (
                 <div
                   key={`${shortcut.key}-${shortcut.ctrl}-${shortcut.shift}-${shortcut.alt}`}
-                  className='hover:bg-muted/50 flex items-center justify-between gap-2 rounded-md p-2 transition-colors'
+                  className="hover:bg-muted/50 flex items-center justify-between gap-2 rounded-md p-2 transition-colors"
                 >
-                  <div className='flex min-w-0 flex-1 items-center gap-2'>
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
                     {getActionIcon(shortcut.action) && (
-                      <div className='text-muted-foreground shrink-0'>
+                      <div className="text-muted-foreground shrink-0">
                         {getActionIcon(shortcut.action)}
                       </div>
                     )}
-                    <span className='truncate text-sm'>{shortcut.description}</span>
+                    <span className="truncate text-sm">{shortcut.description}</span>
                   </div>
-                  <Badge variant='outline' className='shrink-0 font-mono text-xs'>
+                  <Badge variant="outline" className="shrink-0 font-mono text-xs">
                     {formatShortcut(shortcut)}
                   </Badge>
                 </div>
               ))}
             </div>
 
-            <div className='text-muted-foreground border-t pt-3 text-xs'>
-              Press{' '}
-              <Badge variant='secondary' className='text-[10px]'>
+            <div className="text-muted-foreground border-t pt-3 text-xs">
+              Press{" "}
+              <Badge variant="secondary" className="text-[10px]">
                 Ctrl+F
-              </Badge>{' '}
+              </Badge>{" "}
               to toggle this help panel
             </div>
           </div>
@@ -270,19 +270,19 @@ export function KeyboardShortcutCard({
   className?: string;
 }) {
   return (
-    <Card className={cn('p-4', className)}>
-      <h3 className='mb-4 flex items-center gap-2 font-semibold'>
-        <HelpCircle className='h-4 w-4' />
+    <Card className={cn("p-4", className)}>
+      <h3 className="mb-4 flex items-center gap-2 font-semibold">
+        <HelpCircle className="h-4 w-4" />
         Keyboard Shortcuts
       </h3>
 
-      <div className='grid grid-cols-2 gap-3'>
+      <div className="grid grid-cols-2 gap-3">
         {shortcuts.map((shortcut) => (
-          <div key={`${shortcut.key}-ref`} className='space-y-1'>
-            <Badge variant='outline' className='font-mono text-xs'>
+          <div key={`${shortcut.key}-ref`} className="space-y-1">
+            <Badge variant="outline" className="font-mono text-xs">
               {formatShortcut(shortcut)}
             </Badge>
-            <p className='text-muted-foreground text-xs'>{shortcut.description}</p>
+            <p className="text-muted-foreground text-xs">{shortcut.description}</p>
           </div>
         ))}
       </div>

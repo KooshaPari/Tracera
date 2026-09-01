@@ -22,24 +22,24 @@ import {
   Search,
   Square,
   SquareStack,
-} from 'lucide-react';
-import { memo, useCallback, useMemo, useState } from 'react';
+} from "lucide-react";
+import { memo, useCallback, useMemo, useState } from "react";
 
-import type { Item, Link, UIEntityType } from '@tracertm/types';
+import type { Item, Link, UIEntityType } from "@tracertm/types";
 
-import { ENTITY_DEPTH_LEVELS } from '@tracertm/types';
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
-import { Card, CardHeader, CardTitle } from '@tracertm/ui/components/Card';
-import { Input } from '@tracertm/ui/components/Input';
-import { ScrollArea } from '@tracertm/ui/components/ScrollArea';
-import { Separator } from '@tracertm/ui/components/Separator';
+import { ENTITY_DEPTH_LEVELS } from "@tracertm/types";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card, CardHeader, CardTitle } from "@tracertm/ui/components/Card";
+import { Input } from "@tracertm/ui/components/Input";
+import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
+import { Separator } from "@tracertm/ui/components/Separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@tracertm/ui/components/Tooltip';
+} from "@tracertm/ui/components/Tooltip";
 
 // =============================================================================
 // TYPES
@@ -111,34 +111,34 @@ const ENTITY_ICONS: Record<
 
 // Colors for entity types
 const ENTITY_COLORS: Record<UIEntityType, string> = {
-  component: '#22c55e',
-  drawer: '#0ea5e9',
-  element: '#64748b',
-  layout: '#ec4899',
-  modal: '#6366f1',
-  page: '#8b5cf6',
-  popup: '#a855f7',
-  section: '#f59e0b',
-  site: '#3b82f6',
-  subcomponent: '#10b981',
-  subsection: '#f97316',
-  toast: '#14b8a6',
+  component: "#22c55e",
+  drawer: "#0ea5e9",
+  element: "#64748b",
+  layout: "#ec4899",
+  modal: "#6366f1",
+  page: "#8b5cf6",
+  popup: "#a855f7",
+  section: "#f59e0b",
+  site: "#3b82f6",
+  subcomponent: "#10b981",
+  subsection: "#f97316",
+  toast: "#14b8a6",
 };
 
 // Label mapping
 const ENTITY_LABELS: Record<UIEntityType, string> = {
-  component: 'Component',
-  drawer: 'Drawer',
-  element: 'Element',
-  layout: 'Layout',
-  modal: 'Modal',
-  page: 'Page',
-  popup: 'Popup',
-  section: 'Section',
-  site: 'Site',
-  subcomponent: 'Sub-component',
-  subsection: 'Subsection',
-  toast: 'Toast',
+  component: "Component",
+  drawer: "Drawer",
+  element: "Element",
+  layout: "Layout",
+  modal: "Modal",
+  page: "Page",
+  popup: "Popup",
+  section: "Section",
+  site: "Site",
+  subcomponent: "Sub-component",
+  subsection: "Subsection",
+  toast: "Toast",
 };
 
 // =============================================================================
@@ -154,9 +154,9 @@ function PageDecompositionViewComponent({
   onViewInDesign,
   rootId,
 }: PageDecompositionViewProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [viewMode, setViewMode] = useState<'tree' | 'outline' | 'visual'>('tree');
+  const [viewMode, setViewMode] = useState<"tree" | "outline" | "visual">("tree");
   const [showDepthIndicator, setShowDepthIndicator] = useState(true);
 
   // Build decomposition tree
@@ -221,36 +221,36 @@ function PageDecompositionViewComponent({
 
   return (
     <TooltipProvider>
-      <Card className='flex h-full flex-col overflow-hidden'>
+      <Card className="flex h-full flex-col overflow-hidden">
         {/* Header */}
-        <CardHeader className='border-b px-4 py-3'>
-          <div className='flex items-center justify-between'>
-            <div className='flex items-center gap-2'>
-              <Layers className='h-5 w-5 text-pink-500' />
-              <CardTitle className='text-sm font-semibold'>Page Decomposition</CardTitle>
+        <CardHeader className="border-b px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Layers className="h-5 w-5 text-pink-500" />
+              <CardTitle className="text-sm font-semibold">Page Decomposition</CardTitle>
             </div>
-            <div className='flex items-center gap-1'>
+            <div className="flex items-center gap-1">
               {/* View mode toggle */}
-              <div className='bg-muted flex items-center gap-0.5 rounded-md p-0.5'>
+              <div className="bg-muted flex items-center gap-0.5 rounded-md p-0.5">
                 <Button
-                  variant={viewMode === 'tree' ? 'default' : 'ghost'}
-                  size='sm'
-                  className='h-6 w-6 p-0'
+                  variant={viewMode === "tree" ? "default" : "ghost"}
+                  size="sm"
+                  className="h-6 w-6 p-0"
                   onClick={() => {
-                    setViewMode('tree');
+                    setViewMode("tree");
                   }}
                 >
-                  <FolderOpen className='h-3.5 w-3.5' />
+                  <FolderOpen className="h-3.5 w-3.5" />
                 </Button>
                 <Button
-                  variant={viewMode === 'outline' ? 'default' : 'ghost'}
-                  size='sm'
-                  className='h-6 w-6 p-0'
+                  variant={viewMode === "outline" ? "default" : "ghost"}
+                  size="sm"
+                  className="h-6 w-6 p-0"
                   onClick={() => {
-                    setViewMode('outline');
+                    setViewMode("outline");
                   }}
                 >
-                  <LayoutGrid className='h-3.5 w-3.5' />
+                  <LayoutGrid className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </div>
@@ -258,68 +258,68 @@ function PageDecompositionViewComponent({
         </CardHeader>
 
         {/* Stats Row */}
-        <div className='bg-muted/30 border-b px-4 py-2'>
-          <div className='flex flex-wrap gap-x-4 gap-y-1 text-xs'>
-            <StatBadge icon={Globe} count={stats.sites} label='Sites' color={ENTITY_COLORS.site} />
+        <div className="bg-muted/30 border-b px-4 py-2">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+            <StatBadge icon={Globe} count={stats.sites} label="Sites" color={ENTITY_COLORS.site} />
             <StatBadge
               icon={Monitor}
               count={stats.pages}
-              label='Pages'
+              label="Pages"
               color={ENTITY_COLORS.page}
             />
             <StatBadge
               icon={LayoutPanelLeft}
               count={stats.layouts}
-              label='Layouts'
+              label="Layouts"
               color={ENTITY_COLORS.layout}
             />
             <StatBadge
               icon={Grid3x3}
               count={stats.sections}
-              label='Sections'
+              label="Sections"
               color={ENTITY_COLORS.section}
             />
             <StatBadge
               icon={Component}
               count={stats.components}
-              label='Components'
+              label="Components"
               color={ENTITY_COLORS.component}
             />
             <StatBadge
               icon={Square}
               count={stats.elements}
-              label='Elements'
+              label="Elements"
               color={ENTITY_COLORS.element}
             />
           </div>
         </div>
 
         {/* Search & Controls */}
-        <div className='space-y-2 border-b px-4 py-2'>
-          <div className='relative'>
-            <Search className='text-muted-foreground absolute top-2 left-2.5 h-4 w-4' />
+        <div className="space-y-2 border-b px-4 py-2">
+          <div className="relative">
+            <Search className="text-muted-foreground absolute top-2 left-2.5 h-4 w-4" />
             <Input
-              placeholder='Search pages, components...'
+              placeholder="Search pages, components..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
               }}
-              className='h-8 pl-8 text-sm'
+              className="h-8 pl-8 text-sm"
             />
           </div>
-          <div className='flex items-center justify-between'>
-            <div className='flex gap-1'>
-              <Button variant='ghost' size='sm' className='h-6 px-2 text-xs' onClick={expandAll}>
+          <div className="flex items-center justify-between">
+            <div className="flex gap-1">
+              <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={expandAll}>
                 Expand All
               </Button>
-              <Button variant='ghost' size='sm' className='h-6 px-2 text-xs' onClick={collapseAll}>
+              <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={collapseAll}>
                 Collapse All
               </Button>
-              <Separator orientation='vertical' className='mx-1 h-4' />
+              <Separator orientation="vertical" className="mx-1 h-4" />
               <Button
-                variant='ghost'
-                size='sm'
-                className='h-6 px-2 text-xs'
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
                 onClick={() => {
                   expandToDepth(2);
                 }}
@@ -327,9 +327,9 @@ function PageDecompositionViewComponent({
                 Pages
               </Button>
               <Button
-                variant='ghost'
-                size='sm'
-                className='h-6 px-2 text-xs'
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
                 onClick={() => {
                   expandToDepth(4);
                 }}
@@ -338,9 +338,9 @@ function PageDecompositionViewComponent({
               </Button>
             </div>
             <Button
-              variant='ghost'
-              size='sm'
-              className={`h-6 px-2 text-xs ${showDepthIndicator ? 'bg-muted' : ''}`}
+              variant="ghost"
+              size="sm"
+              className={`h-6 px-2 text-xs ${showDepthIndicator ? "bg-muted" : ""}`}
               onClick={() => {
                 setShowDepthIndicator(!showDepthIndicator);
               }}
@@ -351,8 +351,8 @@ function PageDecompositionViewComponent({
         </div>
 
         {/* Tree Content */}
-        <ScrollArea className='flex-1'>
-          <div className='p-2'>
+        <ScrollArea className="flex-1">
+          <div className="p-2">
             {filteredTree.length > 0 ? (
               filteredTree.map((node) => (
                 <DecompositionTreeItem
@@ -394,10 +394,10 @@ function StatBadge({ icon: Icon, count, label, color }: StatBadgeProps) {
     return null;
   }
   return (
-    <div className='flex items-center gap-1'>
-      <Icon className='h-3 w-3' style={{ color }} />
-      <span className='font-medium'>{count}</span>
-      <span className='text-muted-foreground'>{label}</span>
+    <div className="flex items-center gap-1">
+      <Icon className="h-3 w-3" style={{ color }} />
+      <span className="font-medium">{count}</span>
+      <span className="text-muted-foreground">{label}</span>
     </div>
   );
 }
@@ -411,7 +411,7 @@ interface DecompositionTreeItemProps {
   onViewInCode?: ((itemId: string) => void) | undefined;
   onViewInDesign?: ((itemId: string) => void) | undefined;
   showDepthIndicator: boolean;
-  viewMode: 'tree' | 'outline' | 'visual';
+  viewMode: "tree" | "outline" | "visual";
 }
 
 function DecompositionTreeItem({
@@ -430,15 +430,15 @@ function DecompositionTreeItem({
   const hasChildren = node.children.length > 0;
 
   const Icon = ENTITY_ICONS[node.entityType] || Box;
-  const color = ENTITY_COLORS[node.entityType] || '#64748b';
+  const color = ENTITY_COLORS[node.entityType] || "#64748b";
   const label = ENTITY_LABELS[node.entityType] || node.entityType;
 
-  const indentPx = viewMode === 'outline' ? node.depth * 24 + 8 : node.depth * 16 + 8;
+  const indentPx = viewMode === "outline" ? node.depth * 24 + 8 : node.depth * 16 + 8;
 
   return (
     <div>
       <div
-        className={`group flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 transition-colors ${isSelected ? 'bg-primary/10 ring-primary/30 ring-1' : 'hover:bg-muted'} `}
+        className={`group flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 transition-colors ${isSelected ? "bg-primary/10 ring-primary/30 ring-1" : "hover:bg-muted"} `}
         style={{ paddingLeft: `${indentPx}px` }}
         onClick={() => {
           onSelect(node.id);
@@ -446,11 +446,11 @@ function DecompositionTreeItem({
       >
         {/* Depth indicator */}
         {showDepthIndicator && (
-          <div className='mr-1 flex items-center gap-0.5'>
+          <div className="mr-1 flex items-center gap-0.5">
             {Array.from({ length: Math.min(node.depth, 5) }).map((_, i) => (
               <div
                 key={i}
-                className='h-3 w-0.5 rounded-full opacity-30'
+                className="h-3 w-0.5 rounded-full opacity-30"
                 style={{ backgroundColor: color }}
               />
             ))}
@@ -464,32 +464,32 @@ function DecompositionTreeItem({
               e.stopPropagation();
               onToggle(node.id);
             }}
-            className='hover:bg-muted-foreground/20 shrink-0 rounded p-0.5'
+            className="hover:bg-muted-foreground/20 shrink-0 rounded p-0.5"
           >
             {isExpanded ? (
-              <ChevronDown className='text-muted-foreground h-3.5 w-3.5' />
+              <ChevronDown className="text-muted-foreground h-3.5 w-3.5" />
             ) : (
-              <ChevronRight className='text-muted-foreground h-3.5 w-3.5' />
+              <ChevronRight className="text-muted-foreground h-3.5 w-3.5" />
             )}
           </button>
         ) : (
-          <span className='w-4.5 shrink-0' />
+          <span className="w-4.5 shrink-0" />
         )}
 
         {/* Icon */}
-        <div className='shrink-0 rounded p-1' style={{ backgroundColor: `${color}20` }}>
-          <Icon className='h-3.5 w-3.5' style={{ color }} />
+        <div className="shrink-0 rounded p-1" style={{ backgroundColor: `${color}20` }}>
+          <Icon className="h-3.5 w-3.5" style={{ color }} />
         </div>
 
         {/* Content */}
-        <div className='flex min-w-0 flex-1 items-center gap-2'>
-          <span className='truncate text-sm font-medium'>{node.item.title || 'Untitled'}</span>
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <span className="truncate text-sm font-medium">{node.item.title || "Untitled"}</span>
 
           {/* Entity type badge */}
-          {viewMode === 'outline' && (
+          {viewMode === "outline" && (
             <Badge
-              variant='outline'
-              className='shrink-0 px-1.5 py-0 text-[10px]'
+              variant="outline"
+              className="shrink-0 px-1.5 py-0 text-[10px]"
               style={{ borderColor: `${color}50`, color }}
             >
               {label}
@@ -500,8 +500,8 @@ function DecompositionTreeItem({
           {node.route && (
             <Tooltip delayDuration={200}>
               <TooltipTrigger asChild>
-                <Badge variant='secondary' className='shrink-0 px-1.5 py-0 text-[10px]'>
-                  <Route className='mr-0.5 h-2.5 w-2.5' />
+                <Badge variant="secondary" className="shrink-0 px-1.5 py-0 text-[10px]">
+                  <Route className="mr-0.5 h-2.5 w-2.5" />
                   {node.route}
                 </Badge>
               </TooltipTrigger>
@@ -511,11 +511,11 @@ function DecompositionTreeItem({
         </div>
 
         {/* Indicators */}
-        <div className='flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
+        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           {node.hasScreenshot && (
             <Tooltip delayDuration={200}>
               <TooltipTrigger asChild>
-                <Image className='text-muted-foreground h-3 w-3' />
+                <Image className="text-muted-foreground h-3 w-3" />
               </TooltipTrigger>
               <TooltipContent>Has screenshot</TooltipContent>
             </Tooltip>
@@ -523,9 +523,9 @@ function DecompositionTreeItem({
           {node.interactionCount > 0 && (
             <Tooltip delayDuration={200}>
               <TooltipTrigger asChild>
-                <div className='flex items-center gap-0.5'>
-                  <MousePointer2 className='text-muted-foreground h-3 w-3' />
-                  <span className='text-muted-foreground text-[10px]'>{node.interactionCount}</span>
+                <div className="flex items-center gap-0.5">
+                  <MousePointer2 className="text-muted-foreground h-3 w-3" />
+                  <span className="text-muted-foreground text-[10px]">{node.interactionCount}</span>
                 </div>
               </TooltipTrigger>
               <TooltipContent>{node.interactionCount} interactions</TooltipContent>
@@ -535,15 +535,15 @@ function DecompositionTreeItem({
             <Tooltip delayDuration={200}>
               <TooltipTrigger asChild>
                 <Button
-                  variant='ghost'
-                  size='sm'
-                  className='h-5 w-5 p-0'
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 w-5 p-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     onViewInCode(node.id);
                   }}
                 >
-                  <Code className='h-3 w-3' />
+                  <Code className="h-3 w-3" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>View in code</TooltipContent>
@@ -553,7 +553,7 @@ function DecompositionTreeItem({
 
         {/* Child count */}
         {hasChildren && (
-          <Badge variant='secondary' className='h-4 shrink-0 px-1.5 text-[10px]'>
+          <Badge variant="secondary" className="h-4 shrink-0 px-1.5 text-[10px]">
             {node.childCount}
           </Badge>
         )}
@@ -587,17 +587,17 @@ interface EmptyStateProps {
 
 function EmptyState({ searchQuery }: EmptyStateProps) {
   return (
-    <div className='text-muted-foreground py-12 text-center'>
-      <Layers className='mx-auto mb-3 h-12 w-12 opacity-50' />
+    <div className="text-muted-foreground py-12 text-center">
+      <Layers className="mx-auto mb-3 h-12 w-12 opacity-50" />
       {searchQuery ? (
         <>
-          <p className='text-sm font-medium'>No matching items</p>
-          <p className='mt-1 text-xs'>Try a different search term</p>
+          <p className="text-sm font-medium">No matching items</p>
+          <p className="mt-1 text-xs">Try a different search term</p>
         </>
       ) : (
         <>
-          <p className='text-sm font-medium'>No UI structure found</p>
-          <p className='mx-auto mt-1 max-w-xs text-xs'>
+          <p className="text-sm font-medium">No UI structure found</p>
+          <p className="mx-auto mt-1 max-w-xs text-xs">
             Add pages, layouts, sections, and components to see the decomposition hierarchy
           </p>
         </>
@@ -634,17 +634,17 @@ function buildDecompositionTree(
 
   // Filter to UI items and infer entity type
   const uiItems = items.filter((item) => {
-    const type = item.type?.toLowerCase() || '';
+    const type = item.type?.toLowerCase() || "";
     return (
       isValidUIType(type) ||
-      item.view?.toLowerCase().includes('ui') ||
-      item.view?.toLowerCase().includes('wireframe')
+      item.view?.toLowerCase().includes("ui") ||
+      item.view?.toLowerCase().includes("wireframe")
     );
   });
 
   // Build parent-child map
   for (const item of uiItems) {
-    const parentId = item.parentId ?? 'root';
+    const parentId = item.parentId ?? "root";
     if (!childrenMap.has(parentId)) {
       childrenMap.set(parentId, []);
     }
@@ -653,7 +653,7 @@ function buildDecompositionTree(
 
   // Build interaction counts (include UI interaction link types; LinkType union may not include these in all packages)
   const interactionCounts = new Map<string, number>();
-  const interactionTypes = new Set(['navigates_to', 'opens', 'triggers']);
+  const interactionTypes = new Set(["navigates_to", "opens", "triggers"]);
   for (const link of links) {
     if (interactionTypes.has(link.type as string)) {
       interactionCounts.set(link.sourceId, (interactionCounts.get(link.sourceId) ?? 0) + 1);
@@ -671,7 +671,7 @@ function buildDecompositionTree(
         if (depthA !== depthB) {
           return depthA - depthB;
         }
-        return (a.title || '').localeCompare(b.title || '');
+        return (a.title || "").localeCompare(b.title || "");
       })
       .map((child) => buildNode(child, depth + 1));
 
@@ -685,14 +685,14 @@ function buildDecompositionTree(
     return {
       childCount: countAllChildren(children),
       children,
-      componentPath: (metadata?.['componentPath'] as string) || undefined,
+      componentPath: (metadata?.["componentPath"] as string) || undefined,
       depth,
       entityType,
-      hasScreenshot: Boolean(metadata?.['screenshotUrl'] ?? metadata?.['thumbnailUrl']),
+      hasScreenshot: Boolean(metadata?.["screenshotUrl"] ?? metadata?.["thumbnailUrl"]),
       id: item.id,
       interactionCount: interactionCounts.get(item.id) ?? 0,
       item,
-      route: (metadata?.['route'] as string) || undefined,
+      route: (metadata?.["route"] as string) || undefined,
     };
   }
 
@@ -702,18 +702,18 @@ function buildDecompositionTree(
     const root = itemMap.get(rootId);
     rootItems = root ? [root] : [];
   } else {
-    rootItems = childrenMap.get('root') ?? uiItems.filter((i) => !i.parentId);
+    rootItems = childrenMap.get("root") ?? uiItems.filter((i) => !i.parentId);
   }
 
   // Group and sort root items
   const sortedRoots = rootItems.toSorted((a, b) => {
-    const typeOrder = ['site', 'page', 'screen', 'layout', 'wireframe'];
-    const aOrder = typeOrder.indexOf(a.type?.toLowerCase() || '');
-    const bOrder = typeOrder.indexOf(b.type?.toLowerCase() || '');
+    const typeOrder = ["site", "page", "screen", "layout", "wireframe"];
+    const aOrder = typeOrder.indexOf(a.type?.toLowerCase() || "");
+    const bOrder = typeOrder.indexOf(b.type?.toLowerCase() || "");
     if (aOrder !== bOrder) {
       return aOrder - bOrder;
     }
-    return (a.title || '').localeCompare(b.title || '');
+    return (a.title || "").localeCompare(b.title || "");
   });
 
   const tree = sortedRoots.map((item) => buildNode(item, 0));
@@ -722,116 +722,116 @@ function buildDecompositionTree(
 }
 
 function inferEntityType(item: Item): UIEntityType {
-  const type = item.type?.toLowerCase() || '';
+  const type = item.type?.toLowerCase() || "";
 
   // Direct mappings
   const typeMap: Record<string, UIEntityType> = {
-    app: 'site',
-    application: 'site',
-    area: 'section',
-    atom: 'element',
-    block: 'component',
-    component: 'component',
-    dialog: 'modal',
-    drawer: 'drawer',
-    element: 'element',
-    frame: 'layout',
-    layout: 'layout',
-    modal: 'modal',
-    notification: 'toast',
-    page: 'page',
-    panel: 'drawer',
-    popover: 'popup',
-    popup: 'popup',
-    primitive: 'element',
-    region: 'section',
-    route: 'page',
-    screen: 'page',
-    section: 'section',
-    sidebar: 'drawer',
-    site: 'site',
-    subcomponent: 'subcomponent',
-    subsection: 'subsection',
-    template: 'layout',
-    toast: 'toast',
-    ui_component: 'component',
-    view: 'page',
-    widget: 'component',
+    app: "site",
+    application: "site",
+    area: "section",
+    atom: "element",
+    block: "component",
+    component: "component",
+    dialog: "modal",
+    drawer: "drawer",
+    element: "element",
+    frame: "layout",
+    layout: "layout",
+    modal: "modal",
+    notification: "toast",
+    page: "page",
+    panel: "drawer",
+    popover: "popup",
+    popup: "popup",
+    primitive: "element",
+    region: "section",
+    route: "page",
+    screen: "page",
+    section: "section",
+    sidebar: "drawer",
+    site: "site",
+    subcomponent: "subcomponent",
+    subsection: "subsection",
+    template: "layout",
+    toast: "toast",
+    ui_component: "component",
+    view: "page",
+    widget: "component",
   };
 
-  return typeMap[type] ?? 'component';
+  return typeMap[type] ?? "component";
 }
 
 function isValidUIType(type: string): boolean {
   const validTypes = [
-    'site',
-    'application',
-    'app',
-    'page',
-    'screen',
-    'view',
-    'route',
-    'layout',
-    'template',
-    'frame',
-    'section',
-    'region',
-    'area',
-    'subsection',
-    'component',
-    'widget',
-    'block',
-    'ui_component',
-    'subcomponent',
-    'element',
-    'atom',
-    'primitive',
-    'modal',
-    'dialog',
-    'popup',
-    'popover',
-    'toast',
-    'notification',
-    'drawer',
-    'sidebar',
-    'panel',
-    'wireframe',
+    "site",
+    "application",
+    "app",
+    "page",
+    "screen",
+    "view",
+    "route",
+    "layout",
+    "template",
+    "frame",
+    "section",
+    "region",
+    "area",
+    "subsection",
+    "component",
+    "widget",
+    "block",
+    "ui_component",
+    "subcomponent",
+    "element",
+    "atom",
+    "primitive",
+    "modal",
+    "dialog",
+    "popup",
+    "popover",
+    "toast",
+    "notification",
+    "drawer",
+    "sidebar",
+    "panel",
+    "wireframe",
   ];
   return validTypes.includes(type);
 }
 
 function updateStats(entityType: UIEntityType, stats: DecompositionStats) {
   switch (entityType) {
-    case 'site': {
+    case "site": {
       stats.sites++;
       break;
     }
-    case 'page': {
+    case "page": {
       stats.pages++;
       break;
     }
-    case 'layout': {
+    case "layout": {
       stats.layouts++;
       break;
     }
-    case 'section':
-    case 'subsection': {
+    case "section":
+    case "subsection": {
       stats.sections++;
       break;
     }
-    case 'component':
-    case 'subcomponent': {
+    case "component":
+    case "subcomponent": {
       stats.components++;
       break;
     }
-    case 'element': {
+    case "element": {
       stats.elements++;
       break;
     }
-    case 'modal':
-    case 'popup':
-    case 'drawer':
-    case 'toast': {
+    case "modal":
+    case "popup":
+    case "drawer":
+    case "toast": {
       stats.modals++;
       break;
     }
@@ -848,9 +848,9 @@ function countAllChildren(children: DecompositionNode[]): number {
 
 function filterTree(tree: DecompositionNode[], query: string): DecompositionNode[] {
   function filterNode(node: DecompositionNode): DecompositionNode | null {
-    const matchesTitle = (node.item.title || '').toLowerCase().includes(query);
+    const matchesTitle = (node.item.title || "").toLowerCase().includes(query);
     const matchesType = node.entityType.toLowerCase().includes(query);
-    const matchesRoute = (node.route ?? '').toLowerCase().includes(query);
+    const matchesRoute = (node.route ?? "").toLowerCase().includes(query);
 
     const filteredChildren = node.children
       .map(filterNode)

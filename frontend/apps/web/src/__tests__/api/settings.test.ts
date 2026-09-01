@@ -2,15 +2,15 @@
  * Tests for Settings API
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { Settings } from '@/api/settings';
+import type { Settings } from "@/api/settings";
 
-import { fetchSettings, updateSettings } from '@/api/settings';
+import { fetchSettings, updateSettings } from "@/api/settings";
 
 // Mock the adapter actually consumed by settings.ts. Keep legacy local aliases
 // below so the behavioral fixtures remain compact and readable.
-vi.mock('@/api/query-client', () => ({
+vi.mock("@/api/query-client", () => ({
   api: {
     get: vi.fn(),
     put: vi.fn(),
@@ -24,7 +24,7 @@ vi.mock('@/api/query-client', () => ({
   }),
 }));
 
-import * as QueryClient from '@/api/query-client';
+import * as QueryClient from "@/api/query-client";
 
 const apiClient = {
   GET: QueryClient.api.get,
@@ -32,18 +32,18 @@ const apiClient = {
 };
 const safeApiCall = QueryClient.api.get;
 
-describe('Settings API', () => {
+describe("Settings API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe(fetchSettings, () => {
-    it('should fetch settings from API', async () => {
+    it("should fetch settings from API", async () => {
       const mockSettings: Settings = {
         general: {
-          language: 'en',
-          theme: 'dark',
-          timezone: 'UTC',
+          language: "en",
+          theme: "dark",
+          timezone: "UTC",
         },
         notifications: {
           email: true,
@@ -65,19 +65,19 @@ describe('Settings API', () => {
       const result = await fetchSettings();
 
       expect(result).toEqual(mockSettings);
-      expect(result.general.theme).toBe('dark');
+      expect(result.general.theme).toBe("dark");
       expect(result.security.twoFactor).toBeTruthy();
     });
 
-    it('should return default settings if API fails', async () => {
-      vi.mocked(safeApiCall).mockRejectedValue(new Error('API failed'));
+    it("should return default settings if API fails", async () => {
+      vi.mocked(safeApiCall).mockRejectedValue(new Error("API failed"));
 
       const result = await fetchSettings();
 
       expect(result).toEqual({
         general: {
-          language: 'en',
-          theme: 'system',
+          language: "en",
+          theme: "system",
         },
         notifications: {
           email: true,
@@ -91,7 +91,7 @@ describe('Settings API', () => {
       });
     });
 
-    it('should return default settings if API returns null', async () => {
+    it("should return default settings if API returns null", async () => {
       vi.mocked(safeApiCall).mockResolvedValue({
         data: null,
         error: undefined,
@@ -100,16 +100,16 @@ describe('Settings API', () => {
 
       const result = await fetchSettings();
 
-      expect(result.general.theme).toBe('system');
+      expect(result.general.theme).toBe("system");
       expect(result.notifications.email).toBeTruthy();
     });
 
-    it('should include general settings', async () => {
+    it("should include general settings", async () => {
       const mockSettings: Settings = {
         general: {
-          language: 'es',
-          theme: 'light',
-          timezone: 'EST',
+          language: "es",
+          theme: "light",
+          timezone: "EST",
         },
       };
 
@@ -121,12 +121,12 @@ describe('Settings API', () => {
 
       const result = await fetchSettings();
 
-      expect(result.general).toHaveProperty('theme');
-      expect(result.general).toHaveProperty('language');
-      expect(result.general).toHaveProperty('timezone');
+      expect(result.general).toHaveProperty("theme");
+      expect(result.general).toHaveProperty("language");
+      expect(result.general).toHaveProperty("timezone");
     });
 
-    it('should include notification settings', async () => {
+    it("should include notification settings", async () => {
       const mockSettings: Settings = {
         general: {},
         notifications: {
@@ -149,7 +149,7 @@ describe('Settings API', () => {
       expect(result.notifications?.inApp).toBeFalsy();
     });
 
-    it('should include security settings', async () => {
+    it("should include security settings", async () => {
       const mockSettings: Settings = {
         general: {},
         security: {
@@ -170,7 +170,7 @@ describe('Settings API', () => {
       expect(result.security?.sessionTimeout).toBe(120);
     });
 
-    it('should call API with correct endpoint', async () => {
+    it("should call API with correct endpoint", async () => {
       vi.mocked(safeApiCall).mockResolvedValue({
         data: undefined,
         error: undefined,
@@ -179,11 +179,11 @@ describe('Settings API', () => {
 
       await fetchSettings();
 
-      expect(apiClient.GET).toHaveBeenCalledWith('/api/v1/settings', expect.any(Object));
+      expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/settings", expect.any(Object));
     });
 
-    it('should support all theme options', async () => {
-      const themes: ('light' | 'dark' | 'system')[] = ['light', 'dark', 'system'];
+    it("should support all theme options", async () => {
+      const themes: ("light" | "dark" | "system")[] = ["light", "dark", "system"];
 
       for (const theme of themes) {
         vi.mocked(safeApiCall).mockResolvedValue({
@@ -199,7 +199,7 @@ describe('Settings API', () => {
       }
     });
 
-    it('should handle missing optional fields', async () => {
+    it("should handle missing optional fields", async () => {
       const minimalSettings: Settings = {
         general: {},
       };
@@ -217,11 +217,11 @@ describe('Settings API', () => {
   });
 
   describe(updateSettings, () => {
-    it('should update general settings', async () => {
+    it("should update general settings", async () => {
       const updatedSettings: Settings = {
         general: {
-          language: 'fr',
-          theme: 'dark',
+          language: "fr",
+          theme: "dark",
         },
       };
 
@@ -232,14 +232,14 @@ describe('Settings API', () => {
       });
 
       const result = await updateSettings({
-        general: { language: 'fr', theme: 'dark' },
+        general: { language: "fr", theme: "dark" },
       });
 
-      expect(result.general.theme).toBe('dark');
-      expect(result.general.language).toBe('fr');
+      expect(result.general.theme).toBe("dark");
+      expect(result.general.language).toBe("fr");
     });
 
-    it('should update notification settings', async () => {
+    it("should update notification settings", async () => {
       const updatedSettings: Settings = {
         general: {},
         notifications: {
@@ -262,7 +262,7 @@ describe('Settings API', () => {
       expect(result.notifications?.email).toBeFalsy();
     });
 
-    it('should update security settings', async () => {
+    it("should update security settings", async () => {
       const updatedSettings: Settings = {
         general: {},
         security: {
@@ -285,9 +285,9 @@ describe('Settings API', () => {
       expect(result.security?.sessionTimeout).toBe(90);
     });
 
-    it('should handle API response with data', async () => {
+    it("should handle API response with data", async () => {
       const updatedSettings: Settings = {
-        general: { theme: 'dark' },
+        general: { theme: "dark" },
         notifications: { email: true },
       };
 
@@ -298,35 +298,35 @@ describe('Settings API', () => {
       });
 
       const result = await updateSettings({
-        general: { theme: 'dark' },
+        general: { theme: "dark" },
       });
 
       expect(result).toEqual(updatedSettings);
     });
 
-    it('should handle API errors gracefully', async () => {
-      vi.mocked(apiClient.PUT).mockRejectedValue(new Error('API failed'));
+    it("should handle API errors gracefully", async () => {
+      vi.mocked(apiClient.PUT).mockRejectedValue(new Error("API failed"));
 
       const result = await updateSettings({
-        general: { theme: 'dark' },
+        general: { theme: "dark" },
       });
 
-      expect(result).toHaveProperty('general');
+      expect(result).toHaveProperty("general");
     });
 
-    it('should merge partial settings with defaults', async () => {
-      vi.mocked(apiClient.PUT).mockRejectedValue(new Error('API failed'));
+    it("should merge partial settings with defaults", async () => {
+      vi.mocked(apiClient.PUT).mockRejectedValue(new Error("API failed"));
 
       const result = await updateSettings({
-        general: { theme: 'light' },
+        general: { theme: "light" },
       });
 
-      expect(result.general).toHaveProperty('theme');
+      expect(result.general).toHaveProperty("theme");
     });
 
-    it('should call API with correct endpoint', async () => {
+    it("should call API with correct endpoint", async () => {
       const updatedSettings: Settings = {
-        general: { theme: 'dark' },
+        general: { theme: "dark" },
       };
 
       vi.mocked(apiClient.PUT).mockResolvedValue({
@@ -335,19 +335,19 @@ describe('Settings API', () => {
         response: new Response(),
       });
 
-      await updateSettings({ general: { theme: 'dark' } });
+      await updateSettings({ general: { theme: "dark" } });
 
       expect(apiClient.PUT).toHaveBeenCalledWith(
-        '/api/v1/settings',
+        "/api/v1/settings",
         expect.objectContaining({
-          body: { general: { theme: 'dark' } },
+          body: { general: { theme: "dark" } },
         }),
       );
     });
 
-    it('should pass settings as request body', async () => {
+    it("should pass settings as request body", async () => {
       const settingsUpdate = {
-        general: { theme: 'dark' },
+        general: { theme: "dark" },
         notifications: { email: false },
       };
 
@@ -360,16 +360,16 @@ describe('Settings API', () => {
       await updateSettings(settingsUpdate);
 
       expect(apiClient.PUT).toHaveBeenCalledWith(
-        '/api/v1/settings',
+        "/api/v1/settings",
         expect.objectContaining({
           body: settingsUpdate,
         }),
       );
     });
 
-    it('should return response data when available', async () => {
+    it("should return response data when available", async () => {
       const updatedSettings: Settings = {
-        general: { theme: 'dark' },
+        general: { theme: "dark" },
         notifications: { email: false },
         security: { twoFactor: true },
       };
@@ -381,15 +381,15 @@ describe('Settings API', () => {
       });
 
       const result = await updateSettings({
-        general: { theme: 'dark' },
+        general: { theme: "dark" },
       });
 
       expect(result).toEqual(updatedSettings);
     });
 
-    it('should handle multiple setting updates', async () => {
+    it("should handle multiple setting updates", async () => {
       const updates = {
-        general: { language: 'es', theme: 'dark' },
+        general: { language: "es", theme: "dark" },
         notifications: { email: false },
         security: { twoFactor: true },
       };
@@ -402,14 +402,14 @@ describe('Settings API', () => {
 
       const result = await updateSettings(updates);
 
-      expect(result).toHaveProperty('general');
-      expect(result).toHaveProperty('notifications');
-      expect(result).toHaveProperty('security');
+      expect(result).toHaveProperty("general");
+      expect(result).toHaveProperty("notifications");
+      expect(result).toHaveProperty("security");
     });
 
-    it('should handle partial updates', async () => {
+    it("should handle partial updates", async () => {
       const partialUpdate = {
-        general: { theme: 'light' },
+        general: { theme: "light" },
       };
 
       vi.mocked(apiClient.PUT).mockResolvedValue({
@@ -423,9 +423,9 @@ describe('Settings API', () => {
       expect(result.general).toBeDefined();
     });
 
-    it('should preserve existing settings during update', async () => {
+    it("should preserve existing settings during update", async () => {
       const completeSettings: Settings = {
-        general: { language: 'en', theme: 'dark', timezone: 'UTC' },
+        general: { language: "en", theme: "dark", timezone: "UTC" },
         notifications: { email: true, inApp: true, push: false },
         security: { sessionTimeout: 30, twoFactor: false },
       };
@@ -437,33 +437,33 @@ describe('Settings API', () => {
       });
 
       const result = await updateSettings({
-        general: { theme: 'light' },
+        general: { theme: "light" },
       });
 
       expect(result).toBeDefined();
     });
   });
 
-  describe('Settings API error handling', () => {
-    it('should handle network errors in fetch', async () => {
-      vi.mocked(safeApiCall).mockRejectedValue(new Error('Network error'));
+  describe("Settings API error handling", () => {
+    it("should handle network errors in fetch", async () => {
+      vi.mocked(safeApiCall).mockRejectedValue(new Error("Network error"));
 
       const result = await fetchSettings();
 
-      expect(result.general.theme).toBe('system');
+      expect(result.general.theme).toBe("system");
     });
 
-    it('should handle network errors in update', async () => {
-      vi.mocked(apiClient.PUT).mockRejectedValue(new Error('Network error'));
+    it("should handle network errors in update", async () => {
+      vi.mocked(apiClient.PUT).mockRejectedValue(new Error("Network error"));
 
       const result = await updateSettings({
-        general: { theme: 'dark' },
+        general: { theme: "dark" },
       });
 
       expect(result).toBeDefined();
     });
 
-    it('should handle undefined response data', async () => {
+    it("should handle undefined response data", async () => {
       vi.mocked(safeApiCall).mockResolvedValue({
         data: undefined,
         error: undefined,
@@ -476,7 +476,7 @@ describe('Settings API', () => {
       expect(result.general).toBeDefined();
     });
 
-    it('should handle empty settings object', async () => {
+    it("should handle empty settings object", async () => {
       vi.mocked(safeApiCall).mockResolvedValue({
         data: {},
         error: undefined,
@@ -489,8 +489,8 @@ describe('Settings API', () => {
     });
   });
 
-  describe('Settings data validation', () => {
-    it('should handle large session timeout values', async () => {
+  describe("Settings data validation", () => {
+    it("should handle large session timeout values", async () => {
       const settings: Settings = {
         general: {},
         security: {
@@ -509,7 +509,7 @@ describe('Settings API', () => {
       expect(result.security?.sessionTimeout).toBe(10_080);
     });
 
-    it('should handle zero session timeout', async () => {
+    it("should handle zero session timeout", async () => {
       const settings: Settings = {
         general: {},
         security: {
@@ -528,8 +528,8 @@ describe('Settings API', () => {
       expect(result.security?.sessionTimeout).toBe(0);
     });
 
-    it('should support multiple languages', async () => {
-      const languages = ['en', 'es', 'fr', 'de', 'ja'];
+    it("should support multiple languages", async () => {
+      const languages = ["en", "es", "fr", "de", "ja"];
 
       for (const language of languages) {
         vi.mocked(safeApiCall).mockResolvedValue({
@@ -543,8 +543,8 @@ describe('Settings API', () => {
       }
     });
 
-    it('should support multiple timezones', async () => {
-      const timezones = ['UTC', 'EST', 'PST', 'IST'];
+    it("should support multiple timezones", async () => {
+      const timezones = ["UTC", "EST", "PST", "IST"];
 
       for (const timezone of timezones) {
         vi.mocked(safeApiCall).mockResolvedValue({

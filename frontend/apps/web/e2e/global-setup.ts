@@ -7,20 +7,20 @@
  * - Generating authentication tokens
  * - Setting test user environment variables
  */
-import { expect, test } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
 // Global setup runs once before all tests
 
 async function globalSetup(): Promise<void> {
-  console.log('🚀 Global setup starting...');
+  console.log("🚀 Global setup starting...");
 
   // Set test user environment variables
   // These will be available to all tests via process.env
   const testUser = {
-    email: process.env.TEST_USER_EMAIL ?? 'kooshapari@kooshapari.com',
-    password: process.env.TEST_USER_PASSWORD ?? 'testAdmin123',
-    firstName: 'Test',
-    lastName: 'Admin',
+    email: process.env.TEST_USER_EMAIL ?? "kooshapari@kooshapari.com",
+    password: process.env.TEST_USER_PASSWORD ?? "testAdmin123",
+    firstName: "Test",
+    lastName: "Admin",
   };
 
   // Store test user info in environment
@@ -42,7 +42,7 @@ async function globalSetup(): Promise<void> {
   // Const token = await generateTestToken(testUser.email);
   // Process.env.TEST_USER_TOKEN = token;
 
-  console.log('✅ Global setup complete');
+  console.log("✅ Global setup complete");
 }
 
 export default globalSetup;

@@ -15,35 +15,35 @@ import {
   Square,
   TrendingUp,
   Zap,
-} from 'lucide-react';
-import { memo, useMemo, useState } from 'react';
+} from "lucide-react";
+import { memo, useMemo, useState } from "react";
 
-import type { ComponentCategory, ComponentUsage, LibraryComponent } from '@tracertm/types';
+import type { ComponentCategory, ComponentUsage, LibraryComponent } from "@tracertm/types";
 
-import { LoadingSpinner } from '@/components/layout/LoadingSpinner';
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@tracertm/ui/components/Card';
+import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@tracertm/ui/components/Card";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@tracertm/ui/components/Collapsible';
-import { Input } from '@tracertm/ui/components/Input';
+} from "@tracertm/ui/components/Collapsible";
+import { Input } from "@tracertm/ui/components/Input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@tracertm/ui/components/Select';
-import { Separator } from '@tracertm/ui/components/Separator';
+} from "@tracertm/ui/components/Select";
+import { Separator } from "@tracertm/ui/components/Separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@tracertm/ui/components/Tooltip';
+} from "@tracertm/ui/components/Tooltip";
 
 // =============================================================================
 // TYPES
@@ -57,9 +57,9 @@ export interface ComponentUsageMatrixProps {
   /** List of page/view names where components are used */
   pages?: string[] | undefined;
   /** Currently selected component category filter */
-  selectedCategory?: ComponentCategory | 'all' | undefined;
+  selectedCategory?: ComponentCategory | "all" | undefined;
   /** Callback when category filter changes */
-  onCategoryChange?: ((category: ComponentCategory | 'all') => void) | undefined;
+  onCategoryChange?: ((category: ComponentCategory | "all") => void) | undefined;
   /** Callback when a component is selected */
   onSelectComponent?: ((componentId: string) => void) | undefined;
   /** Callback to view component in code */
@@ -84,8 +84,8 @@ export interface ComponentUsageMatrixProps {
 
 const CATEGORY_ICONS: Record<ComponentCategory, React.ComponentType<{ className?: string }>> = {
   atom: Square,
-  'data-display': BarChart3,
-  'data-entry': Component,
+  "data-display": BarChart3,
+  "data-entry": Component,
   feedback: AlertCircle,
   layout: Layers,
   molecule: Grid3x3,
@@ -99,33 +99,33 @@ const CATEGORY_ICONS: Record<ComponentCategory, React.ComponentType<{ className?
 };
 
 const CATEGORY_LABELS: Record<ComponentCategory, string> = {
-  atom: 'Atoms',
-  'data-display': 'Data Display',
-  'data-entry': 'Data Entry',
-  feedback: 'Feedback',
-  layout: 'Layout',
-  molecule: 'Molecules',
-  navigation: 'Navigation',
-  organism: 'Organisms',
-  other: 'Other',
-  overlay: 'Overlay',
-  page: 'Pages',
-  template: 'Templates',
-  utility: 'Utility',
+  atom: "Atoms",
+  "data-display": "Data Display",
+  "data-entry": "Data Entry",
+  feedback: "Feedback",
+  layout: "Layout",
+  molecule: "Molecules",
+  navigation: "Navigation",
+  organism: "Organisms",
+  other: "Other",
+  overlay: "Overlay",
+  page: "Pages",
+  template: "Templates",
+  utility: "Utility",
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  beta: 'bg-blue-100 text-blue-800 border-blue-200',
-  deprecated: 'bg-red-100 text-red-800 border-red-200',
-  experimental: 'bg-purple-100 text-purple-800 border-purple-200',
-  stable: 'bg-green-100 text-green-800 border-green-200',
+  beta: "bg-blue-100 text-blue-800 border-blue-200",
+  deprecated: "bg-red-100 text-red-800 border-red-200",
+  experimental: "bg-purple-100 text-purple-800 border-purple-200",
+  stable: "bg-green-100 text-green-800 border-green-200",
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  beta: 'Beta',
-  deprecated: 'Deprecated',
-  experimental: 'Experimental',
-  stable: 'Stable',
+  beta: "Beta",
+  deprecated: "Deprecated",
+  experimental: "Experimental",
+  stable: "Stable",
 };
 
 // =============================================================================
@@ -200,12 +200,12 @@ const MatrixRow = memo(function MatrixRow({
   const [expanded, setExpanded] = useState(false);
   const CategoryIcon = CATEGORY_ICONS[component.category];
   const isUnused = stats.totalUsage === 0;
-  const isDeprecated = component.status === 'deprecated';
+  const isDeprecated = component.status === "deprecated";
 
   return (
     <div>
       <div
-        className={`flex cursor-pointer items-center gap-3 border-b px-4 py-3 transition-colors hover:bg-slate-50 ${isSelected ? 'bg-blue-50' : ''} ${isUnused && highlightUnused ? 'bg-orange-50' : ''} ${isDeprecated && highlightUnused ? 'bg-red-50' : ''} `}
+        className={`flex cursor-pointer items-center gap-3 border-b px-4 py-3 transition-colors hover:bg-slate-50 ${isSelected ? "bg-blue-50" : ""} ${isUnused && highlightUnused ? "bg-orange-50" : ""} ${isDeprecated && highlightUnused ? "bg-red-50" : ""} `}
         onClick={onSelect}
       >
         {/* Expand button */}
@@ -215,69 +215,69 @@ const MatrixRow = memo(function MatrixRow({
               e.stopPropagation();
               setExpanded(!expanded);
             }}
-            className='rounded p-0.5 hover:bg-slate-200'
+            className="rounded p-0.5 hover:bg-slate-200"
           >
             <ChevronDown
-              className={`h-4 w-4 transition-transform ${expanded ? '' : '-rotate-90'}`}
+              className={`h-4 w-4 transition-transform ${expanded ? "" : "-rotate-90"}`}
             />
           </button>
         ) : (
-          <div className='w-6' />
+          <div className="w-6" />
         )}
 
         {/* Component name and category */}
-        <div className='min-w-0 flex-1'>
-          <div className='flex items-center gap-2'>
-            <CategoryIcon className='h-4 w-4 flex-shrink-0 text-slate-600' />
-            <span className='truncate text-sm font-medium'>{component.displayName}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <CategoryIcon className="h-4 w-4 flex-shrink-0 text-slate-600" />
+            <span className="truncate text-sm font-medium">{component.displayName}</span>
             {isDeprecated && highlightUnused && (
               <Badge
-                variant='outline'
-                className='flex-shrink-0 border-red-200 bg-red-50 text-xs text-red-700'
+                variant="outline"
+                className="flex-shrink-0 border-red-200 bg-red-50 text-xs text-red-700"
               >
                 Deprecated
               </Badge>
             )}
             {isUnused && highlightUnused && (
               <Badge
-                variant='outline'
-                className='flex-shrink-0 border-orange-200 bg-orange-50 text-xs text-orange-700'
+                variant="outline"
+                className="flex-shrink-0 border-orange-200 bg-orange-50 text-xs text-orange-700"
               >
                 Unused
               </Badge>
             )}
           </div>
-          <p className='truncate text-xs text-slate-500'>{component.name}</p>
+          <p className="truncate text-xs text-slate-500">{component.name}</p>
         </div>
 
         {/* Status badge */}
-        <div className='flex-shrink-0'>
-          <Badge variant='outline' className={`text-xs ${STATUS_COLORS[component.status]}`}>
+        <div className="flex-shrink-0">
+          <Badge variant="outline" className={`text-xs ${STATUS_COLORS[component.status]}`}>
             {STATUS_LABELS[component.status]}
           </Badge>
         </div>
 
         {/* Usage count */}
-        <div className='min-w-[60px] flex-shrink-0 text-right'>
-          <p className='text-sm font-semibold'>{stats.totalUsage}</p>
-          <p className='text-xs text-slate-500'>times used</p>
+        <div className="min-w-[60px] flex-shrink-0 text-right">
+          <p className="text-sm font-semibold">{stats.totalUsage}</p>
+          <p className="text-xs text-slate-500">times used</p>
         </div>
 
         {/* Actions */}
-        <div className='flex flex-shrink-0 gap-1'>
+        <div className="flex flex-shrink-0 gap-1">
           {onViewInCode && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant='ghost'
-                  size='sm'
+                  variant="ghost"
+                  size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     onViewInCode();
                   }}
-                  className='h-8 w-8 p-0'
+                  className="h-8 w-8 p-0"
                 >
-                  <Code2 className='h-4 w-4' />
+                  <Code2 className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>View in code</TooltipContent>
@@ -287,15 +287,15 @@ const MatrixRow = memo(function MatrixRow({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant='ghost'
-                  size='sm'
+                  variant="ghost"
+                  size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    window.open(component.storybookUrl, '_blank');
+                    window.open(component.storybookUrl, "_blank");
                   }}
-                  className='h-8 w-8 p-0'
+                  className="h-8 w-8 p-0"
                 >
-                  <ExternalLink className='h-4 w-4' />
+                  <ExternalLink className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>View in Storybook</TooltipContent>
@@ -306,16 +306,16 @@ const MatrixRow = memo(function MatrixRow({
 
       {/* Expanded details */}
       {expanded && (
-        <div className='border-b bg-slate-50 px-4 py-3 text-sm'>
+        <div className="border-b bg-slate-50 px-4 py-3 text-sm">
           {/* Props section */}
           {showProps && component.props && component.props.length > 0 && (
-            <div className='mb-4'>
-              <p className='mb-2 text-xs font-semibold text-slate-700 uppercase'>Props</p>
-              <div className='flex flex-wrap gap-1'>
+            <div className="mb-4">
+              <p className="mb-2 text-xs font-semibold text-slate-700 uppercase">Props</p>
+              <div className="flex flex-wrap gap-1">
                 {component.props.map((prop) => (
-                  <Badge key={prop.name} variant='secondary' className='text-xs'>
+                  <Badge key={prop.name} variant="secondary" className="text-xs">
                     {prop.name}
-                    {prop.required ? '*' : ''}
+                    {prop.required ? "*" : ""}
                   </Badge>
                 ))}
               </div>
@@ -324,13 +324,13 @@ const MatrixRow = memo(function MatrixRow({
 
           {/* Variants section */}
           {showVariants && component.variants && component.variants.length > 0 && (
-            <div className='mb-4'>
-              <p className='mb-2 text-xs font-semibold text-slate-700 uppercase'>Variants</p>
-              <div className='flex flex-wrap gap-1'>
+            <div className="mb-4">
+              <p className="mb-2 text-xs font-semibold text-slate-700 uppercase">Variants</p>
+              <div className="flex flex-wrap gap-1">
                 {component.variants.map((variant) => {
                   const variantCount = stats.variantUsage[variant.name] ?? 0;
                   return (
-                    <Badge key={variant.name} variant='outline' className='text-xs'>
+                    <Badge key={variant.name} variant="outline" className="text-xs">
                       {variant.name}
                       {variantCount > 0 && ` (${variantCount})`}
                     </Badge>
@@ -343,12 +343,12 @@ const MatrixRow = memo(function MatrixRow({
           {/* Page usage section */}
           {Object.keys(stats.pageUsage).length > 0 && (
             <div>
-              <p className='mb-2 text-xs font-semibold text-slate-700 uppercase'>Used in Pages</p>
-              <div className='text-xs text-slate-600'>
+              <p className="mb-2 text-xs font-semibold text-slate-700 uppercase">Used in Pages</p>
+              <div className="text-xs text-slate-600">
                 {Object.entries(stats.pageUsage).map(([page, count]) => (
-                  <div key={page} className='flex justify-between'>
+                  <div key={page} className="flex justify-between">
                     <span>{pageLabels?.[page] ?? page}</span>
-                    <span className='text-slate-500'>{count}x</span>
+                    <span className="text-slate-500">{count}x</span>
                   </div>
                 ))}
               </div>
@@ -357,14 +357,14 @@ const MatrixRow = memo(function MatrixRow({
 
           {/* Description */}
           {component.description && (
-            <div className='mt-4'>
-              <p className='text-xs text-slate-600 italic'>{component.description}</p>
+            <div className="mt-4">
+              <p className="text-xs text-slate-600 italic">{component.description}</p>
             </div>
           )}
 
           {/* Deprecation message */}
           {isDeprecated && component.deprecationMessage && (
-            <div className='mt-3 rounded border border-red-200 bg-red-50 p-2 text-xs text-red-700'>
+            <div className="mt-3 rounded border border-red-200 bg-red-50 p-2 text-xs text-red-700">
               {component.deprecationMessage}
             </div>
           )}
@@ -409,17 +409,17 @@ const CategorySection = memo(function CategorySection({
   const unusedCount = components.filter((comp) => (stats[comp.id]?.totalUsage ?? 0) === 0).length;
 
   return (
-    <Collapsible open={expanded} onOpenChange={setExpanded} className='border-b'>
-      <CollapsibleTrigger className='flex w-full items-center gap-3 px-4 py-3 hover:bg-slate-50'>
-        <CategoryIcon className='h-4 w-4 text-slate-600' />
-        <span className='text-sm font-semibold'>{CATEGORY_LABELS[category]}</span>
-        <div className='ml-auto flex gap-3 text-xs text-slate-500'>
+    <Collapsible open={expanded} onOpenChange={setExpanded} className="border-b">
+      <CollapsibleTrigger className="flex w-full items-center gap-3 px-4 py-3 hover:bg-slate-50">
+        <CategoryIcon className="h-4 w-4 text-slate-600" />
+        <span className="text-sm font-semibold">{CATEGORY_LABELS[category]}</span>
+        <div className="ml-auto flex gap-3 text-xs text-slate-500">
           <span>{components.length} components</span>
-          <span className='font-medium text-slate-600'>{totalUsage} total uses</span>
-          {unusedCount > 0 && <span className='text-orange-600'>{unusedCount} unused</span>}
+          <span className="font-medium text-slate-600">{totalUsage} total uses</span>
+          {unusedCount > 0 && <span className="text-orange-600">{unusedCount} unused</span>}
         </div>
       </CollapsibleTrigger>
-      <CollapsibleContent className='bg-white'>
+      <CollapsibleContent className="bg-white">
         {components.map((component) => (
           <MatrixRow
             key={component.id}
@@ -452,7 +452,7 @@ const CategorySection = memo(function CategorySection({
 export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
   components,
   usage,
-  selectedCategory = 'all',
+  selectedCategory = "all",
   onCategoryChange,
   onSelectComponent,
   onViewInCode,
@@ -463,7 +463,7 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
   showProps = true,
   pageLabels,
 }: ComponentUsageMatrixProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Compute usage stats for all components
   const usageStats = useMemo(() => {
@@ -477,7 +477,7 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
   // Filter components by category and search query
   const filteredByCategory = useMemo(
     () =>
-      selectedCategory === 'all'
+      selectedCategory === "all"
         ? components
         : components.filter((comp) => comp.category === selectedCategory),
     [components, selectedCategory],
@@ -500,8 +500,8 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
   const componentsByCategory = useMemo(() => {
     const grouped: Record<ComponentCategory, LibraryComponent[]> = {
       atom: [],
-      'data-display': [],
-      'data-entry': [],
+      "data-display": [],
+      "data-entry": [],
       feedback: [],
       layout: [],
       molecule: [],
@@ -527,7 +527,7 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
     const unused = filteredComponents.filter(
       (c) => (usageStats[c.id]?.totalUsage ?? 0) === 0,
     ).length;
-    const deprecated = filteredComponents.filter((c) => c.status === 'deprecated').length;
+    const deprecated = filteredComponents.filter((c) => c.status === "deprecated").length;
     const totalUses = filteredComponents.reduce(
       (sum, c) => sum + (usageStats[c.id]?.totalUsage ?? 0),
       0,
@@ -538,12 +538,12 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
 
   if (isLoading) {
     return (
-      <Card className='w-full'>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Component Usage Matrix</CardTitle>
         </CardHeader>
-        <CardContent className='flex items-center justify-center py-8'>
-          <LoadingSpinner size='sm' text='Loading components...' />
+        <CardContent className="flex items-center justify-center py-8">
+          <LoadingSpinner size="sm" text="Loading components..." />
         </CardContent>
       </Card>
     );
@@ -554,15 +554,15 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
     .map(([cat]) => cat as ComponentCategory);
 
   return (
-    <Card className='w-full'>
+    <Card className="w-full">
       <CardHeader>
-        <div className='flex items-center justify-between'>
+        <div className="flex items-center justify-between">
           <div>
-            <CardTitle className='flex items-center gap-2'>
-              <Grid3x3 className='h-5 w-5' />
+            <CardTitle className="flex items-center gap-2">
+              <Grid3x3 className="h-5 w-5" />
               Component Usage Matrix
             </CardTitle>
-            <p className='mt-1 text-sm text-slate-500'>
+            <p className="mt-1 text-sm text-slate-500">
               {stats.total} components • {stats.totalUses} total uses
               {stats.unused > 0 && ` • ${stats.unused} unused`}
               {stats.deprecated > 0 && ` • ${stats.deprecated} deprecated`}
@@ -570,22 +570,22 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
           </div>
         </div>
 
-        <Separator className='mt-4' />
+        <Separator className="mt-4" />
 
         {/* Controls */}
         {enableFiltering && (
-          <div className='mt-4 flex flex-col gap-3'>
-            <div className='flex gap-3'>
+          <div className="mt-4 flex flex-col gap-3">
+            <div className="flex gap-3">
               {/* Search */}
-              <div className='relative flex-1'>
-                <Search className='absolute top-2.5 left-3 h-4 w-4 text-slate-400' />
+              <div className="relative flex-1">
+                <Search className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
                 <Input
-                  placeholder='Search components...'
+                  placeholder="Search components..."
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
                   }}
-                  className='pl-9'
+                  className="pl-9"
                 />
               </div>
 
@@ -593,14 +593,14 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
               <Select
                 value={selectedCategory}
                 onValueChange={(value) =>
-                  onCategoryChange?.(value === 'all' ? 'all' : (value as ComponentCategory))
+                  onCategoryChange?.(value === "all" ? "all" : (value as ComponentCategory))
                 }
               >
-                <SelectTrigger className='w-[180px]'>
-                  <SelectValue placeholder='Select category' />
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='all'>All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
                     <SelectItem key={key} value={key}>
                       {label}
@@ -611,28 +611,28 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
             </div>
 
             {/* Active filters display */}
-            {(searchQuery || selectedCategory !== 'all') && (
-              <div className='flex items-center gap-2 text-xs'>
-                <span className='text-slate-600'>Filters:</span>
-                {selectedCategory !== 'all' && (
-                  <Badge variant='secondary'>{CATEGORY_LABELS[selectedCategory]}</Badge>
+            {(searchQuery || selectedCategory !== "all") && (
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-slate-600">Filters:</span>
+                {selectedCategory !== "all" && (
+                  <Badge variant="secondary">{CATEGORY_LABELS[selectedCategory]}</Badge>
                 )}
-                {searchQuery && <Badge variant='secondary'>"{searchQuery}"</Badge>}
+                {searchQuery && <Badge variant="secondary">"{searchQuery}"</Badge>}
               </div>
             )}
           </div>
         )}
       </CardHeader>
 
-      <CardContent className='p-0'>
+      <CardContent className="p-0">
         {filteredComponents.length === 0 ? (
-          <div className='flex items-center justify-center py-8 text-slate-500'>
-            <AlertCircle className='mr-2 h-5 w-5' />
+          <div className="flex items-center justify-center py-8 text-slate-500">
+            <AlertCircle className="mr-2 h-5 w-5" />
             No components found
           </div>
         ) : (
           <TooltipProvider>
-            <div className='overflow-hidden rounded-md border'>
+            <div className="overflow-hidden rounded-md border">
               {categories.map((category) => (
                 <CategorySection
                   key={category}
@@ -655,13 +655,13 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
 
       {/* Stats footer */}
       {filteredComponents.length > 0 && (
-        <div className='flex items-center justify-between border-t bg-slate-50 px-4 py-3 text-xs text-slate-600'>
+        <div className="flex items-center justify-between border-t bg-slate-50 px-4 py-3 text-xs text-slate-600">
           <div>
             Showing {filteredComponents.length} of {components.length} components
           </div>
-          <div className='flex gap-4'>
-            <div className='flex items-center gap-1'>
-              <TrendingUp className='h-4 w-4' />
+          <div className="flex gap-4">
+            <div className="flex items-center gap-1">
+              <TrendingUp className="h-4 w-4" />
               <span>
                 {getUsagePercentage(
                   stats.totalUses,
@@ -677,4 +677,4 @@ export const ComponentUsageMatrix = memo(function ComponentUsageMatrix({
   );
 });
 
-ComponentUsageMatrix.displayName = 'ComponentUsageMatrix';
+ComponentUsageMatrix.displayName = "ComponentUsageMatrix";

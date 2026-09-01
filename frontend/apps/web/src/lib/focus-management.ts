@@ -10,21 +10,21 @@
  */
 export function getFocusableElements(container: HTMLElement): HTMLElement[] {
   const focusableSelectors = [
-    'a[href]',
-    'button:not([disabled])',
-    'input:not([disabled])',
-    'select:not([disabled])',
-    'textarea:not([disabled])',
+    "a[href]",
+    "button:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
     '[tabindex]:not([tabindex="-1"])',
     '[contenteditable="true"]',
   ];
 
-  const elements = container.querySelectorAll<HTMLElement>(focusableSelectors.join(','));
+  const elements = container.querySelectorAll<HTMLElement>(focusableSelectors.join(","));
 
   return Array.from(elements).filter((el) => {
     // Check if visible
     const style = window.getComputedStyle(el);
-    return style.visibility !== 'hidden' && style.display !== 'none';
+    return style.visibility !== "hidden" && style.display !== "none";
   });
 }
 
@@ -35,14 +35,14 @@ export function getFocusableElements(container: HTMLElement): HTMLElement[] {
 export function createFocusTrap(container: HTMLElement, onEscape?: () => void): () => void {
   const handleKeyDown = (event: KeyboardEvent) => {
     // Handle Escape key
-    if (event.key === 'Escape' && onEscape) {
+    if (event.key === "Escape" && onEscape) {
       event.preventDefault();
       onEscape();
       return;
     }
 
     // Only trap Tab key
-    if (event.key !== 'Tab') return;
+    if (event.key !== "Tab") return;
 
     const focusableElements = getFocusableElements(container);
     if (focusableElements.length === 0) return;
@@ -67,11 +67,11 @@ export function createFocusTrap(container: HTMLElement, onEscape?: () => void): 
     }
   };
 
-  container.addEventListener('keydown', handleKeyDown);
+  container.addEventListener("keydown", handleKeyDown);
 
   // Return cleanup function
   return () => {
-    container.removeEventListener('keydown', handleKeyDown);
+    container.removeEventListener("keydown", handleKeyDown);
   };
 }
 
@@ -149,7 +149,7 @@ export function hasFocusIndicator(element: Element | null): boolean {
   const styles = window.getComputedStyle(element);
 
   // Check for outline or box-shadow (common focus indicators)
-  return styles.outline !== 'none' || styles.outlineWidth !== '0px' || styles.boxShadow !== 'none';
+  return styles.outline !== "none" || styles.outlineWidth !== "0px" || styles.boxShadow !== "none";
 }
 
 /**
@@ -159,10 +159,10 @@ export function isKeyboardAccessible(element: Element | null): boolean {
   if (!element) return false;
 
   const tagName = element.tagName.toLowerCase();
-  const tabIndex = element.getAttribute('tabindex');
+  const tabIndex = element.getAttribute("tabindex");
 
   // Naturally keyboard accessible elements
-  const interactiveElements = ['a', 'button', 'input', 'select', 'textarea'];
+  const interactiveElements = ["a", "button", "input", "select", "textarea"];
   if (interactiveElements.includes(tagName)) return true;
 
   // Check for explicit tabindex >= 0
@@ -174,25 +174,25 @@ export function isKeyboardAccessible(element: Element | null): boolean {
  */
 export function announceToScreenReader(
   message: string,
-  priority: 'polite' | 'assertive' = 'polite',
+  priority: "polite" | "assertive" = "polite",
 ): void {
   // Create or get announcement region
-  let announcer = document.getElementById('aria-announcer');
+  let announcer = document.getElementById("aria-announcer");
 
   if (!announcer) {
-    announcer = document.createElement('div');
-    announcer.id = 'aria-announcer';
-    announcer.setAttribute('aria-live', priority);
-    announcer.setAttribute('aria-atomic', 'true');
-    announcer.className = 'sr-only';
+    announcer = document.createElement("div");
+    announcer.id = "aria-announcer";
+    announcer.setAttribute("aria-live", priority);
+    announcer.setAttribute("aria-atomic", "true");
+    announcer.className = "sr-only";
     document.body.appendChild(announcer);
   }
 
   // Update priority if needed
-  announcer.setAttribute('aria-live', priority);
+  announcer.setAttribute("aria-live", priority);
 
   // Clear and set new message
-  announcer.textContent = '';
+  announcer.textContent = "";
   // Use setTimeout to ensure screen readers pick up the change
   setTimeout(() => {
     announcer!.textContent = message;

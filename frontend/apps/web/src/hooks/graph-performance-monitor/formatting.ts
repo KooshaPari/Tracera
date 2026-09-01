@@ -1,4 +1,4 @@
-import type { PerformanceMetrics } from './types';
+import type { PerformanceMetrics } from "./types";
 
 import {
   BYTES_PER_MB,
@@ -8,16 +8,16 @@ import {
   PERCENT_DECIMALS,
   PERCENT_SCALE,
   ZERO,
-} from './constants';
+} from "./constants";
 
 function getFpsColor(metrics: PerformanceMetrics): string {
   if (metrics.fps.current >= FPS_GOOD_THRESHOLD) {
-    return 'color: #10b981';
+    return "color: #10b981";
   }
   if (metrics.fps.current >= FPS_WARN_THRESHOLD) {
-    return 'color: #f59e0b';
+    return "color: #f59e0b";
   }
-  return 'color: #ef4444';
+  return "color: #ef4444";
 }
 
 function formatInteraction(metrics: PerformanceMetrics): string | undefined {
@@ -31,7 +31,7 @@ function formatInteraction(metrics: PerformanceMetrics): string | undefined {
   if (fragments.length <= ZERO) {
     return undefined;
   }
-  return `Interaction: ${metrics.interaction.lastInteractionType} (${fragments.join(' ')})`;
+  return `Interaction: ${metrics.interaction.lastInteractionType} (${fragments.join(" ")})`;
 }
 
 function formatSummary(metrics: PerformanceMetrics): string {
@@ -45,7 +45,7 @@ function formatSummary(metrics: PerformanceMetrics): string {
     const heapMB = (metrics.memory.usedJSHeapSize / BYTES_PER_MB).toFixed(PERCENT_DECIMALS);
     lines.push(`Memory: ${heapMB}MB`);
   }
-  return lines.join(' | ');
+  return lines.join(" | ");
 }
 
 export { formatInteraction, formatSummary, getFpsColor };

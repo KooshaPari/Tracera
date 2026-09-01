@@ -1,22 +1,22 @@
 // EquivalenceImport.tsx - Import component for equivalence mappings and canonical concepts
 // Supports JSON/CSV import with validation, preview, and merge/replace options
 
-import { AlertTriangle, ChevronDown, ChevronRight, Trash2, Upload } from 'lucide-react';
-import { memo, useCallback, useState } from 'react';
+import { AlertTriangle, ChevronDown, ChevronRight, Trash2, Upload } from "lucide-react";
+import { memo, useCallback, useState } from "react";
 
-import type { CanonicalConcept, CanonicalProjection, EquivalenceLink } from '@tracertm/types';
+import type { CanonicalConcept, CanonicalProjection, EquivalenceLink } from "@tracertm/types";
 
-import { Checkbox } from '@/components/ui/checkbox';
-import { Alert, AlertDescription, AlertTitle } from '@tracertm/ui/components/Alert';
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
+import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription, AlertTitle } from "@tracertm/ui/components/Alert";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@tracertm/ui/components/Card';
+} from "@tracertm/ui/components/Card";
 import {
   Dialog,
   DialogContent,
@@ -24,24 +24,24 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@tracertm/ui/components/Dialog';
-import { ScrollArea } from '@tracertm/ui/components/ScrollArea';
+} from "@tracertm/ui/components/Dialog";
+import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@tracertm/ui/components/Select';
-import { Separator } from '@tracertm/ui/components/Separator';
+} from "@tracertm/ui/components/Select";
+import { Separator } from "@tracertm/ui/components/Separator";
 
-import type { EquivalenceExportPackage, EquivalenceImportOptions } from './utils/equivalenceIO';
+import type { EquivalenceExportPackage, EquivalenceImportOptions } from "./utils/equivalenceIO";
 
 import {
   deserializeFromJSON,
   mergeExportPackages,
   validateExportPackage,
-} from './utils/equivalenceIO';
+} from "./utils/equivalenceIO";
 
 // =============================================================================
 // TYPES
@@ -68,7 +68,7 @@ export interface EquivalenceImportProps {
 
 interface ImportState {
   fileContent?: string | undefined;
-  fileType?: 'json' | 'csv' | undefined;
+  fileType?: "json" | "csv" | undefined;
   parsedData?: EquivalenceExportPackage | undefined;
   validationErrors: string[];
   conflicts: ConflictInfo[];
@@ -77,7 +77,7 @@ interface ImportState {
 }
 
 interface ConflictInfo {
-  type: 'link' | 'concept' | 'projection';
+  type: "link" | "concept" | "projection";
   existingId: string;
   incomingId: string;
   existingData: unknown;
@@ -89,8 +89,8 @@ interface ConflictInfo {
 // =============================================================================
 
 const DEFAULT_IMPORT_OPTIONS: EquivalenceImportOptions = {
-  conflictResolution: 'skip',
-  mode: 'merge',
+  conflictResolution: "skip",
+  mode: "merge",
   preserveTimestamps: false,
   targetProjectId: undefined,
   updateProjectId: true,
@@ -128,12 +128,12 @@ function EquivalenceImportComponent({
 
       try {
         const content = await file.text();
-        const fileType = file.name.endsWith('.json') ? 'json' : 'csv';
+        const fileType = file.name.endsWith(".json") ? "json" : "csv";
 
         let parsedData: EquivalenceExportPackage | null = null;
         let validationErrors: string[] = [];
 
-        if (fileType === 'json') {
+        if (fileType === "json") {
           try {
             parsedData = deserializeFromJSON(content);
             const validation = validateExportPackage(parsedData);
@@ -141,11 +141,11 @@ function EquivalenceImportComponent({
               validationErrors = validation.errors;
             }
           } catch (error) {
-            validationErrors = [error instanceof Error ? error.message : 'Failed to parse JSON'];
+            validationErrors = [error instanceof Error ? error.message : "Failed to parse JSON"];
           }
         } else {
           // CSV parsing - would need separate file handling
-          validationErrors = ['CSV import requires separate file selection'];
+          validationErrors = ["CSV import requires separate file selection"];
         }
 
         // Check for conflicts
@@ -168,7 +168,7 @@ function EquivalenceImportComponent({
       } catch (error) {
         setState({
           ...state,
-          validationErrors: [error instanceof Error ? error.message : 'Failed to read file'],
+          validationErrors: [error instanceof Error ? error.message : "Failed to read file"],
         });
       }
     },
@@ -191,7 +191,7 @@ function EquivalenceImportComponent({
       let finalConcepts = parsedData.canonicalConcepts;
       let finalProjections = parsedData.canonicalProjections;
 
-      if (state.options.mode === 'merge' && state.options.updateProjectId) {
+      if (state.options.mode === "merge" && state.options.updateProjectId) {
         const merged = mergeExportPackages(
           {
             canonicalConcepts: existingConcepts,
@@ -199,7 +199,7 @@ function EquivalenceImportComponent({
             equivalenceLinks: existingLinks,
             exportedAt: new Date().toISOString(),
             projectId: targetProjectId,
-            version: '1.0',
+            version: "1.0",
           },
           {
             canonicalConcepts: finalConcepts,
@@ -207,7 +207,7 @@ function EquivalenceImportComponent({
             equivalenceLinks: finalLinks,
             exportedAt: parsedData.exportedAt,
             projectId: targetProjectId,
-            version: '1.0',
+            version: "1.0",
           },
           state.options,
         );
@@ -246,7 +246,7 @@ function EquivalenceImportComponent({
     } catch (error) {
       setState({
         ...state,
-        validationErrors: [error instanceof Error ? error.message : 'Failed to apply import'],
+        validationErrors: [error instanceof Error ? error.message : "Failed to apply import"],
       });
     } finally {
       setIsApplying(false);
@@ -259,13 +259,13 @@ function EquivalenceImportComponent({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant='outline' size='sm' className='gap-2'>
-          <Upload className='h-4 w-4' />
+        <Button variant="outline" size="sm" className="gap-2">
+          <Upload className="h-4 w-4" />
           Import
         </Button>
       </DialogTrigger>
 
-      <DialogContent className='max-h-[80vh] max-w-2xl'>
+      <DialogContent className="max-h-[80vh] max-w-2xl">
         <DialogHeader>
           <DialogTitle>Import Equivalence Data</DialogTitle>
           <DialogDescription>
@@ -273,26 +273,26 @@ function EquivalenceImportComponent({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className='h-auto max-h-[calc(80vh-120px)]'>
-          <div className='space-y-6 pr-4'>
+        <ScrollArea className="h-auto max-h-[calc(80vh-120px)]">
+          <div className="space-y-6 pr-4">
             {/* File Selection */}
             {!state.fileContent ? (
               <Card>
                 <CardHeader>
-                  <CardTitle className='text-base'>Select File</CardTitle>
+                  <CardTitle className="text-base">Select File</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='flex w-full items-center justify-center'>
-                    <label className='border-muted-foreground hover:bg-accent flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed'>
-                      <div className='flex flex-col items-center justify-center pt-5 pb-6'>
-                        <Upload className='text-muted-foreground mb-2 h-10 w-10' />
-                        <p className='text-sm font-medium'>Click to select file or drag and drop</p>
-                        <p className='text-muted-foreground text-xs'>JSON or CSV files supported</p>
+                  <div className="flex w-full items-center justify-center">
+                    <label className="border-muted-foreground hover:bg-accent flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Upload className="text-muted-foreground mb-2 h-10 w-10" />
+                        <p className="text-sm font-medium">Click to select file or drag and drop</p>
+                        <p className="text-muted-foreground text-xs">JSON or CSV files supported</p>
                       </div>
                       <input
-                        type='file'
-                        className='hidden'
-                        accept='.json,.csv'
+                        type="file"
+                        className="hidden"
+                        accept=".json,.csv"
                         onChange={handleFileSelect}
                       />
                     </label>
@@ -304,13 +304,13 @@ function EquivalenceImportComponent({
                 {/* File Information */}
                 <Card>
                   <CardHeader>
-                    <div className='flex items-center justify-between'>
+                    <div className="flex items-center justify-between">
                       <div>
-                        <CardTitle className='text-base'>File Information</CardTitle>
+                        <CardTitle className="text-base">File Information</CardTitle>
                       </div>
                       <Button
-                        variant='ghost'
-                        size='sm'
+                        variant="ghost"
+                        size="sm"
                         onClick={() => {
                           setState({
                             ...state,
@@ -320,23 +320,23 @@ function EquivalenceImportComponent({
                           });
                         }}
                       >
-                        <Trash2 className='h-4 w-4' />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </CardHeader>
-                  <CardContent className='space-y-2 text-sm'>
-                    <div className='flex justify-between'>
-                      <span className='text-muted-foreground'>File Type:</span>
+                  <CardContent className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">File Type:</span>
                       <Badge>{state.fileType?.toUpperCase()}</Badge>
                     </div>
                     {state.parsedData && (
                       <>
-                        <div className='flex justify-between'>
-                          <span className='text-muted-foreground'>Exported:</span>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Exported:</span>
                           <span>{new Date(state.parsedData.exportedAt).toLocaleString()}</span>
                         </div>
-                        <div className='flex justify-between'>
-                          <span className='text-muted-foreground'>Source Project:</span>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Source Project:</span>
                           <span>{state.parsedData.projectId}</span>
                         </div>
                       </>
@@ -346,13 +346,13 @@ function EquivalenceImportComponent({
 
                 {/* Validation Errors */}
                 {state.validationErrors.length > 0 && (
-                  <Alert variant='destructive'>
-                    <AlertTriangle className='h-4 w-4' />
+                  <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
                     <AlertTitle>Validation Error</AlertTitle>
                     <AlertDescription>
-                      <ul className='mt-2 list-disc space-y-1 pl-5'>
+                      <ul className="mt-2 list-disc space-y-1 pl-5">
                         {state.validationErrors.map((error, idx) => (
-                          <li key={idx} className='text-xs'>
+                          <li key={idx} className="text-xs">
                             {error}
                           </li>
                         ))}
@@ -365,31 +365,31 @@ function EquivalenceImportComponent({
                 {state.conflicts.length > 0 && (
                   <Card>
                     <CardHeader>
-                      <CardTitle className='flex items-center gap-2 text-base'>
-                        <AlertTriangle className='h-4 w-4 text-amber-500' />
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
                         Conflicts Found ({state.conflicts.length})
                       </CardTitle>
                       <CardDescription>These items already exist in your project</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className='max-h-[200px] space-y-2 overflow-y-auto'>
+                      <div className="max-h-[200px] space-y-2 overflow-y-auto">
                         {state.conflicts.map((conflict, idx) => (
                           <div
                             key={idx}
-                            className='bg-accent flex items-start gap-2 rounded p-2 text-sm'
+                            className="bg-accent flex items-start gap-2 rounded p-2 text-sm"
                           >
-                            <AlertTriangle className='mt-0.5 h-4 w-4 shrink-0 text-amber-500' />
-                            <div className='flex-1'>
-                              <p className='font-medium'>
+                            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                            <div className="flex-1">
+                              <p className="font-medium">
                                 {conflict.type} ({conflict.existingId})
                               </p>
-                              <p className='text-muted-foreground text-xs'>
-                                Will be{' '}
-                                {state.options.conflictResolution === 'overwrite'
-                                  ? 'overwritten'
-                                  : state.options.conflictResolution === 'merge_metadata'
-                                    ? 'merged'
-                                    : 'skipped'}
+                              <p className="text-muted-foreground text-xs">
+                                Will be{" "}
+                                {state.options.conflictResolution === "overwrite"
+                                  ? "overwritten"
+                                  : state.options.conflictResolution === "merge_metadata"
+                                    ? "merged"
+                                    : "skipped"}
                               </p>
                             </div>
                           </div>
@@ -402,12 +402,12 @@ function EquivalenceImportComponent({
                 {/* Import Options */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className='text-base'>Import Options</CardTitle>
+                    <CardTitle className="text-base">Import Options</CardTitle>
                   </CardHeader>
-                  <CardContent className='space-y-4'>
+                  <CardContent className="space-y-4">
                     {/* Mode Selection */}
-                    <div className='space-y-2'>
-                      <label className='text-sm font-medium'>Import Mode</label>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Import Mode</label>
                       <Select
                         value={state.options.mode}
                         onValueChange={(mode) => {
@@ -415,7 +415,7 @@ function EquivalenceImportComponent({
                             ...state,
                             options: {
                               ...state.options,
-                              mode: mode as 'merge' | 'replace',
+                              mode: mode as "merge" | "replace",
                             },
                           });
                         }}
@@ -424,8 +424,8 @@ function EquivalenceImportComponent({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value='merge'>Merge (combine with existing)</SelectItem>
-                          <SelectItem value='replace'>Replace (overwrite all)</SelectItem>
+                          <SelectItem value="merge">Merge (combine with existing)</SelectItem>
+                          <SelectItem value="replace">Replace (overwrite all)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -433,9 +433,9 @@ function EquivalenceImportComponent({
                     <Separator />
 
                     {/* Conflict Resolution */}
-                    {state.options.mode === 'merge' && (
-                      <div className='space-y-2'>
-                        <label className='text-sm font-medium'>Conflict Resolution</label>
+                    {state.options.mode === "merge" && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Conflict Resolution</label>
                         <Select
                           value={state.options.conflictResolution}
                           onValueChange={(resolution) => {
@@ -444,9 +444,9 @@ function EquivalenceImportComponent({
                               options: {
                                 ...state.options,
                                 conflictResolution: resolution as
-                                  | 'skip'
-                                  | 'overwrite'
-                                  | 'merge_metadata',
+                                  | "skip"
+                                  | "overwrite"
+                                  | "merge_metadata",
                               },
                             });
                           }}
@@ -455,9 +455,9 @@ function EquivalenceImportComponent({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value='skip'>Skip existing items</SelectItem>
-                            <SelectItem value='overwrite'>Overwrite with imported data</SelectItem>
-                            <SelectItem value='merge_metadata'>Merge metadata only</SelectItem>
+                            <SelectItem value="skip">Skip existing items</SelectItem>
+                            <SelectItem value="overwrite">Overwrite with imported data</SelectItem>
+                            <SelectItem value="merge_metadata">Merge metadata only</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -466,10 +466,10 @@ function EquivalenceImportComponent({
                     <Separator />
 
                     {/* Other Options */}
-                    <div className='space-y-2'>
-                      <div className='flex items-center gap-2'>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
                         <Checkbox
-                          id='validate-refs'
+                          id="validate-refs"
                           checked={state.options.validateReferences}
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             setState({
@@ -482,16 +482,16 @@ function EquivalenceImportComponent({
                           }}
                         />
                         <label
-                          htmlFor='validate-refs'
-                          className='cursor-pointer text-sm font-medium'
+                          htmlFor="validate-refs"
+                          className="cursor-pointer text-sm font-medium"
                         >
                           Validate References
                         </label>
                       </div>
 
-                      <div className='flex items-center gap-2'>
+                      <div className="flex items-center gap-2">
                         <Checkbox
-                          id='preserve-timestamps'
+                          id="preserve-timestamps"
                           checked={state.options.preserveTimestamps}
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             setState({
@@ -504,16 +504,16 @@ function EquivalenceImportComponent({
                           }}
                         />
                         <label
-                          htmlFor='preserve-timestamps'
-                          className='cursor-pointer text-sm font-medium'
+                          htmlFor="preserve-timestamps"
+                          className="cursor-pointer text-sm font-medium"
                         >
                           Preserve Original Timestamps
                         </label>
                       </div>
 
-                      <div className='flex items-center gap-2'>
+                      <div className="flex items-center gap-2">
                         <Checkbox
-                          id='update-project'
+                          id="update-project"
                           checked={state.options.updateProjectId}
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             setState({
@@ -526,8 +526,8 @@ function EquivalenceImportComponent({
                           }}
                         />
                         <label
-                          htmlFor='update-project'
-                          className='cursor-pointer text-sm font-medium'
+                          htmlFor="update-project"
+                          className="cursor-pointer text-sm font-medium"
                         >
                           Update Project ID to Current
                         </label>
@@ -541,8 +541,8 @@ function EquivalenceImportComponent({
                   <Card>
                     <CardHeader>
                       <Button
-                        variant='ghost'
-                        className='h-auto w-full justify-between px-0 py-0'
+                        variant="ghost"
+                        className="h-auto w-full justify-between px-0 py-0"
                         onClick={() => {
                           setState({
                             ...state,
@@ -550,39 +550,39 @@ function EquivalenceImportComponent({
                           });
                         }}
                       >
-                        <span className='text-base font-semibold'>Import Preview</span>
+                        <span className="text-base font-semibold">Import Preview</span>
                         {state.showPreview ? (
-                          <ChevronDown className='h-4 w-4' />
+                          <ChevronDown className="h-4 w-4" />
                         ) : (
-                          <ChevronRight className='h-4 w-4' />
+                          <ChevronRight className="h-4 w-4" />
                         )}
                       </Button>
                     </CardHeader>
 
                     {state.showPreview && (
-                      <CardContent className='space-y-3 text-sm'>
-                        <div className='grid grid-cols-2 gap-4'>
+                      <CardContent className="space-y-3 text-sm">
+                        <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className='text-muted-foreground mb-1'>Equivalence Links</p>
-                            <p className='text-lg font-semibold'>
+                            <p className="text-muted-foreground mb-1">Equivalence Links</p>
+                            <p className="text-lg font-semibold">
                               {state.parsedData.equivalenceLinks.length}
                             </p>
                           </div>
                           <div>
-                            <p className='text-muted-foreground mb-1'>Canonical Concepts</p>
-                            <p className='text-lg font-semibold'>
+                            <p className="text-muted-foreground mb-1">Canonical Concepts</p>
+                            <p className="text-lg font-semibold">
                               {state.parsedData.canonicalConcepts.length}
                             </p>
                           </div>
                           <div>
-                            <p className='text-muted-foreground mb-1'>Projections</p>
-                            <p className='text-lg font-semibold'>
+                            <p className="text-muted-foreground mb-1">Projections</p>
+                            <p className="text-lg font-semibold">
                               {state.parsedData.canonicalProjections.length}
                             </p>
                           </div>
                           <div>
-                            <p className='text-muted-foreground mb-1'>Conflicts</p>
-                            <p className='text-lg font-semibold'>{state.conflicts.length}</p>
+                            <p className="text-muted-foreground mb-1">Conflicts</p>
+                            <p className="text-lg font-semibold">{state.conflicts.length}</p>
                           </div>
                         </div>
                       </CardContent>
@@ -595,12 +595,12 @@ function EquivalenceImportComponent({
         </ScrollArea>
 
         {/* Action Buttons */}
-        <div className='flex items-center justify-end gap-2 border-t pt-4'>
+        <div className="flex items-center justify-end gap-2 border-t pt-4">
           {state.fileContent && (
             <>
               <Button
-                variant='outline'
-                size='sm'
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   setState({
                     ...state,
@@ -613,16 +613,16 @@ function EquivalenceImportComponent({
                 Clear
               </Button>
               <Button
-                variant='default'
-                size='sm'
+                variant="default"
+                size="sm"
                 disabled={!isReady}
-                className='gap-2'
+                className="gap-2"
                 onClick={handleApplyImport}
               >
                 {isApplying && (
-                  <div className='h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                 )}
-                {isApplying ? 'Importing...' : 'Apply Import'}
+                {isApplying ? "Importing..." : "Apply Import"}
               </Button>
             </>
           )}
@@ -663,7 +663,7 @@ function findConflicts(
         existingId: link.id,
         incomingData: link,
         incomingId: link.id,
-        type: 'link',
+        type: "link",
       });
     }
   }
@@ -677,7 +677,7 @@ function findConflicts(
         existingId: concept.id,
         incomingData: concept,
         incomingId: concept.id,
-        type: 'concept',
+        type: "concept",
       });
     }
   }
@@ -691,7 +691,7 @@ function findConflicts(
         existingId: projection.id,
         incomingData: projection,
         incomingId: projection.id,
-        type: 'projection',
+        type: "projection",
       });
     }
   }

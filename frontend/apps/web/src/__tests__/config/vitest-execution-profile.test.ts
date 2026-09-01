@@ -39,7 +39,9 @@ describe("Vitest execution profile", () => {
 
     it("test_unit script in root delegates to bounded vitest run", () => {
       const testUnitScript = frontendPackageJson.scripts["test:unit"] as string;
-      expect(testUnitScript).toContain("vitest run");
+      // test:unit delegates to apps/web test, which uses "vitest run" (confirmed by
+      // "test script runs vitest in non-watch (run) mode" above). Verify the delegation.
+      expect(testUnitScript).toContain("npm --prefix apps/web test");
     });
   });
 
@@ -48,15 +50,14 @@ describe("Vitest execution profile", () => {
       const exclusions = vitestConfig.test?.exclude ?? [];
       const hasTestRouteExclusion = exclusions.some(
         (pattern) =>
-          typeof pattern === "string" &&
-          pattern.includes("projects.$projectId.views.test.tsx"),
+          typeof pattern === "string" && pattern.includes("projects.$projectId.views.test.tsx"),
       );
       expect(hasTestRouteExclusion).toBe(true);
     });
 
     it("excludes only one route pattern when filtering routes", () => {
-      const exclusions = (vitestConfig.test?.exclude ?? []).filter((pattern) =>
-        typeof pattern === "string" && pattern.includes("routes"),
+      const exclusions = (vitestConfig.test?.exclude ?? []).filter(
+        (pattern) => typeof pattern === "string" && pattern.includes("routes"),
       );
       expect(exclusions).toHaveLength(1);
       expect(exclusions[0]).toBe("src/routes/projects.$projectId.views.test.tsx");
@@ -72,8 +73,7 @@ describe("Vitest execution profile", () => {
       // It must be excluded so Vitest doesn't try to run it as a test suite
       const exclusions = vitestConfig.test?.exclude ?? [];
       const excludedRoute = exclusions.find(
-        (p) =>
-          typeof p === "string" && p === "src/routes/projects.$projectId.views.test.tsx",
+        (p) => typeof p === "string" && p === "src/routes/projects.$projectId.views.test.tsx",
       );
       expect(excludedRoute).toBeDefined();
     });

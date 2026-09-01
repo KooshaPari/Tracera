@@ -1,6 +1,6 @@
-import type { UseQueryResult } from '@tanstack/react-query';
+import type { UseQueryResult } from "@tanstack/react-query";
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
 import type {
   CoverageMetrics,
@@ -9,7 +9,7 @@ import type {
   FlakyTests,
   PassRateTrend,
   QAMetricsSummary,
-} from './types';
+} from "./types";
 
 import {
   fetchCoverageMetrics,
@@ -18,19 +18,19 @@ import {
   fetchFlakyTests,
   fetchPassRateTrend,
   fetchQAMetricsSummary,
-} from './api';
+} from "./api";
 
 function useQAMetricsSummary(projectId: string | undefined): UseQueryResult<QAMetricsSummary> {
   return useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) {
-        throw new Error('projectId is required');
+        throw new Error("projectId is required");
       }
       const result = await fetchQAMetricsSummary(projectId);
       return result;
     },
-    queryKey: ['qaMetrics', 'summary', projectId],
+    queryKey: ["qaMetrics", "summary", projectId],
   });
 }
 
@@ -39,12 +39,12 @@ function usePassRateTrend(projectId: string | undefined, days = 30): UseQueryRes
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) {
-        throw new Error('projectId is required');
+        throw new Error("projectId is required");
       }
       const result = await fetchPassRateTrend(projectId, days);
       return result;
     },
-    queryKey: ['qaMetrics', 'passRate', projectId, days],
+    queryKey: ["qaMetrics", "passRate", projectId, days],
   });
 }
 
@@ -53,12 +53,12 @@ function useCoverageMetrics(projectId: string | undefined): UseQueryResult<Cover
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) {
-        throw new Error('projectId is required');
+        throw new Error("projectId is required");
       }
       const result = await fetchCoverageMetrics(projectId);
       return result;
     },
-    queryKey: ['qaMetrics', 'coverage', projectId],
+    queryKey: ["qaMetrics", "coverage", projectId],
   });
 }
 
@@ -67,12 +67,12 @@ function useDefectDensity(projectId: string | undefined): UseQueryResult<DefectD
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) {
-        throw new Error('projectId is required');
+        throw new Error("projectId is required");
       }
       const result = await fetchDefectDensity(projectId);
       return result;
     },
-    queryKey: ['qaMetrics', 'defectDensity', projectId],
+    queryKey: ["qaMetrics", "defectDensity", projectId],
   });
 }
 
@@ -81,12 +81,12 @@ function useFlakyTests(projectId: string | undefined): UseQueryResult<FlakyTests
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) {
-        throw new Error('projectId is required');
+        throw new Error("projectId is required");
       }
       const result = await fetchFlakyTests(projectId);
       return result;
     },
-    queryKey: ['qaMetrics', 'flakyTests', projectId],
+    queryKey: ["qaMetrics", "flakyTests", projectId],
   });
 }
 
@@ -98,12 +98,12 @@ function useExecutionHistory(
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) {
-        throw new Error('projectId is required');
+        throw new Error("projectId is required");
       }
       const result = await fetchExecutionHistory(projectId, days);
       return result;
     },
-    queryKey: ['qaMetrics', 'executionHistory', projectId, days],
+    queryKey: ["qaMetrics", "executionHistory", projectId, days],
   });
 }
 

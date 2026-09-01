@@ -1,11 +1,11 @@
-import type { ChangeEvent, FC, ReactNode } from 'react';
+import type { ChangeEvent, FC, ReactNode } from "react";
 
-import { AlertCircle, AlertTriangle, CheckCircle2, FileText, Loader2, Upload } from 'lucide-react';
-import { useState } from 'react';
+import { AlertCircle, AlertTriangle, CheckCircle2, FileText, Loader2, Upload } from "lucide-react";
+import { useState } from "react";
 
-import { clientCore } from '@/api/client-core';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
+import { clientCore } from "@/api/client-core";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,17 +13,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const { getAuthHeaders } = clientCore;
 
 const BYTES_PER_KB = 1024;
 const SIZE_DECIMALS = 2;
 
-type ImportStep = 'upload' | 'validate' | 'conflicts' | 'confirm' | 'complete';
+type ImportStep = "upload" | "validate" | "conflicts" | "confirm" | "complete";
 
 export interface ImportWizardProps {
   projectId: string;
@@ -33,7 +33,7 @@ export interface ImportWizardProps {
   onImport?: ((file: File, strategy: ConflictStrategy) => Promise<void>) | undefined;
 }
 
-export type ConflictStrategy = 'skip' | 'replace' | 'merge';
+export type ConflictStrategy = "skip" | "replace" | "merge";
 
 interface ValidationError {
   field: string;
@@ -77,17 +77,17 @@ const buildValidationKey = (item: ValidationError, index: number): string =>
 
 const buildFormData = (file: File, strategy?: ConflictStrategy): FormData => {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append("file", file);
   if (strategy) {
-    formData.append('strategy', strategy);
+    formData.append("strategy", strategy);
   }
   return formData;
 };
 
 const parseErrorMessage = (data: unknown, fallback: string): string => {
-  if (data && typeof data === 'object' && 'error' in data) {
+  if (data && typeof data === "object" && "error" in data) {
     const errorValue = (data as { error?: unknown }).error;
-    if (typeof errorValue === 'string') {
+    if (typeof errorValue === "string") {
       return errorValue;
     }
   }
@@ -98,11 +98,11 @@ const validateImportFile = async (projectId: string, file: File): Promise<Valida
   const response = await fetch(`/api/v1/projects/${projectId}/equivalence/validate`, {
     body: buildFormData(file),
     headers: getAuthHeaders(),
-    method: 'POST',
+    method: "POST",
   });
   const data = (await response.json()) as ValidationResult & { error?: string };
   if (!response.ok) {
-    throw new Error(parseErrorMessage(data, 'Validation failed'));
+    throw new Error(parseErrorMessage(data, "Validation failed"));
   }
   return data;
 };
@@ -115,11 +115,11 @@ const runImport = async (
   const response = await fetch(`/api/v1/projects/${projectId}/equivalence/import`, {
     body: buildFormData(file, strategy),
     headers: getAuthHeaders(),
-    method: 'POST',
+    method: "POST",
   });
   const data = (await response.json()) as ImportResult & { error?: string };
   if (!response.ok) {
-    throw new Error(parseErrorMessage(data, 'Import failed'));
+    throw new Error(parseErrorMessage(data, "Import failed"));
   }
   return data;
 };
@@ -148,7 +148,7 @@ const createHandleValidate =
   }) =>
   async () => {
     if (!params.file) {
-      params.setError('Please select a file');
+      params.setError("Please select a file");
       return;
     }
     params.setIsLoading(true);
@@ -156,13 +156,13 @@ const createHandleValidate =
     try {
       const result = await validateImportFile(params.projectId, params.file);
       params.setValidation(result);
-      params.setStep('validate');
+      params.setStep("validate");
     } catch (validationError) {
       params.setError(
-        validationError instanceof Error ? validationError.message : 'Validation failed',
+        validationError instanceof Error ? validationError.message : "Validation failed",
       );
       params.setValidation(null);
-      params.setStep('upload');
+      params.setStep("upload");
     } finally {
       params.setIsLoading(false);
     }
@@ -171,9 +171,9 @@ const createHandleValidate =
 const createHandleProceedToConflicts =
   (validation: ValidationResult | null, setStep: SetStep) => () => {
     if (validation?.conflicts?.length) {
-      setStep('conflicts');
+      setStep("conflicts");
     } else {
-      setStep('confirm');
+      setStep("confirm");
     }
   };
 
@@ -200,10 +200,10 @@ const createHandleImport =
       } else {
         const result = await runImport(params.projectId, params.file, params.conflictStrategy);
         params.setImportResult(result);
-        params.setStep('complete');
+        params.setStep("complete");
       }
     } catch (importError) {
-      params.setError(importError instanceof Error ? importError.message : 'Import failed');
+      params.setError(importError instanceof Error ? importError.message : "Import failed");
     } finally {
       params.setIsLoading(false);
     }
@@ -219,7 +219,7 @@ const createHandleClose =
     setValidation: SetState<ValidationResult | null>;
   }) =>
   () => {
-    params.setStep('upload');
+    params.setStep("upload");
     params.setFile(null);
     params.setError(null);
     params.setValidation(null);
@@ -233,7 +233,7 @@ const createHandleStrategyChange =
   };
 
 const createHandleBackFromConflicts = (setStep: SetStep) => () => {
-  setStep((prevStep) => (prevStep === 'conflicts' ? 'validate' : 'conflicts'));
+  setStep((prevStep) => (prevStep === "conflicts" ? "validate" : "conflicts"));
 };
 
 const buildBodyProps = (params: {
@@ -317,7 +317,7 @@ interface ValidationTabsProps {
 
 interface ValidationListProps {
   items: ValidationError[];
-  variant: 'errors' | 'warnings';
+  variant: "errors" | "warnings";
 }
 
 interface OptionalTabsTriggerProps {
@@ -416,43 +416,43 @@ interface CompleteFooterProps {
 }
 
 const FileDropZone: FC<FileDropZoneProps> = ({ onFileSelect }) => (
-  <div className='rounded-lg border-2 border-dashed p-8 text-center transition hover:border-blue-400'>
-    <label htmlFor='file-input' className='cursor-pointer'>
-      <div className='flex flex-col items-center gap-2'>
-        <Upload className='h-8 w-8 text-gray-400' />
-        <span className='font-semibold'>Choose a file or drag and drop</span>
-        <span className='text-sm text-gray-500'>JSON or YAML format</span>
+  <div className="rounded-lg border-2 border-dashed p-8 text-center transition hover:border-blue-400">
+    <label htmlFor="file-input" className="cursor-pointer">
+      <div className="flex flex-col items-center gap-2">
+        <Upload className="h-8 w-8 text-gray-400" />
+        <span className="font-semibold">Choose a file or drag and drop</span>
+        <span className="text-sm text-gray-500">JSON or YAML format</span>
       </div>
       <input
-        id='file-input'
-        type='file'
-        accept='.json,.yaml,.yml'
+        id="file-input"
+        type="file"
+        accept=".json,.yaml,.yml"
         onChange={onFileSelect}
-        className='hidden'
+        className="hidden"
       />
     </label>
   </div>
 );
 
 const SelectedFile: FC<SelectedFileProps> = ({ file }) => (
-  <div className='flex items-center gap-2 rounded-lg bg-blue-50 p-3'>
-    <FileText className='h-5 w-5 text-blue-600' />
-    <div className='flex-1'>
-      <div className='text-sm font-medium'>{file.name}</div>
-      <div className='text-xs text-gray-600'>{formatFileSize(file.size)}</div>
+  <div className="flex items-center gap-2 rounded-lg bg-blue-50 p-3">
+    <FileText className="h-5 w-5 text-blue-600" />
+    <div className="flex-1">
+      <div className="text-sm font-medium">{file.name}</div>
+      <div className="text-xs text-gray-600">{formatFileSize(file.size)}</div>
     </div>
   </div>
 );
 
 const ErrorAlert: FC<ErrorAlertProps> = ({ message }) => (
-  <Alert variant='destructive'>
-    <AlertCircle className='h-4 w-4' />
+  <Alert variant="destructive">
+    <AlertCircle className="h-4 w-4" />
     <AlertDescription>{message}</AlertDescription>
   </Alert>
 );
 
 const UploadStep: FC<UploadStepProps> = ({ error, file, onFileSelect }) => (
-  <div className='space-y-4'>
+  <div className="space-y-4">
     <FileDropZone onFileSelect={onFileSelect} />
     {file && <SelectedFile file={file} />}
     {error && <ErrorAlert message={error} />}
@@ -461,47 +461,47 @@ const UploadStep: FC<UploadStepProps> = ({ error, file, onFileSelect }) => (
 
 const ValidationStatus: FC<ValidationStatusProps> = ({ validation }) =>
   validation?.valid ? (
-    <Alert className='border-green-200 bg-green-50'>
-      <CheckCircle2 className='h-4 w-4 text-green-600' />
-      <AlertDescription className='text-green-800'>File validation passed</AlertDescription>
+    <Alert className="border-green-200 bg-green-50">
+      <CheckCircle2 className="h-4 w-4 text-green-600" />
+      <AlertDescription className="text-green-800">File validation passed</AlertDescription>
     </Alert>
   ) : (
-    <Alert variant='destructive'>
-      <AlertCircle className='h-4 w-4' />
+    <Alert variant="destructive">
+      <AlertCircle className="h-4 w-4" />
       <AlertDescription>{validation?.errors.length ?? 0} validation errors found</AlertDescription>
     </Alert>
   );
 
 const ValidationSummary: FC<{ validation: ValidationResult | null }> = ({ validation }) => (
-  <div className='grid grid-cols-3 gap-4'>
-    <div className='rounded-lg bg-gray-50 p-3'>
-      <div className='text-lg font-semibold'>{validation?.summary.concepts}</div>
-      <div className='text-xs text-gray-600'>Concepts</div>
+  <div className="grid grid-cols-3 gap-4">
+    <div className="rounded-lg bg-gray-50 p-3">
+      <div className="text-lg font-semibold">{validation?.summary.concepts}</div>
+      <div className="text-xs text-gray-600">Concepts</div>
     </div>
-    <div className='rounded-lg bg-gray-50 p-3'>
-      <div className='text-lg font-semibold'>{validation?.summary.projections}</div>
-      <div className='text-xs text-gray-600'>Projections</div>
+    <div className="rounded-lg bg-gray-50 p-3">
+      <div className="text-lg font-semibold">{validation?.summary.projections}</div>
+      <div className="text-xs text-gray-600">Projections</div>
     </div>
-    <div className='rounded-lg bg-gray-50 p-3'>
-      <div className='text-lg font-semibold'>{validation?.summary.links}</div>
-      <div className='text-xs text-gray-600'>Links</div>
+    <div className="rounded-lg bg-gray-50 p-3">
+      <div className="text-lg font-semibold">{validation?.summary.links}</div>
+      <div className="text-xs text-gray-600">Links</div>
     </div>
   </div>
 );
 
 const ValidationList: FC<ValidationListProps> = ({ items, variant }) => (
-  <div className='max-h-64 space-y-2 overflow-y-auto'>
+  <div className="max-h-64 space-y-2 overflow-y-auto">
     {items.map((item, index) => (
       <div
         key={buildValidationKey(item, index)}
         className={`border-l-4 py-2 pl-3 text-sm ${
-          variant === 'errors' ? 'border-red-400' : 'border-yellow-400'
+          variant === "errors" ? "border-red-400" : "border-yellow-400"
         }`}
       >
-        <div className={`font-medium ${variant === 'errors' ? 'text-red-700' : 'text-yellow-700'}`}>
+        <div className={`font-medium ${variant === "errors" ? "text-red-700" : "text-yellow-700"}`}>
           {item.field}
         </div>
-        <div className='text-gray-600'>{item.message}</div>
+        <div className="text-gray-600">{item.message}</div>
       </div>
     ))}
   </div>
@@ -518,49 +518,49 @@ const OptionalTabsContent: FC<OptionalTabsContentProps> = ({ children, show, val
   show ? <TabsContent value={value}>{children}</TabsContent> : null;
 
 const ValidationTabs: FC<ValidationTabsProps> = ({ validation }) => (
-  <Tabs defaultValue='summary' className='w-full'>
+  <Tabs defaultValue="summary" className="w-full">
     <TabsList>
-      <TabsTrigger value='summary'>Summary</TabsTrigger>
+      <TabsTrigger value="summary">Summary</TabsTrigger>
       <OptionalTabsTrigger
         show={Boolean((validation?.errors?.length ?? 0) > 0)}
-        value='errors'
-        className='text-red-600'
+        value="errors"
+        className="text-red-600"
         label={`Errors (${validation?.errors.length ?? 0})`}
       />
       <OptionalTabsTrigger
         show={Boolean((validation?.warnings?.length ?? 0) > 0)}
-        value='warnings'
-        className='text-yellow-600'
+        value="warnings"
+        className="text-yellow-600"
         label={`Warnings (${validation?.warnings.length ?? 0})`}
       />
     </TabsList>
-    <TabsContent value='summary' className='space-y-3'>
+    <TabsContent value="summary" className="space-y-3">
       <ValidationSummary validation={validation} />
     </TabsContent>
-    <OptionalTabsContent show={Boolean((validation?.errors?.length ?? 0) > 0)} value='errors'>
-      <ValidationList items={validation?.errors ?? EMPTY_ERRORS} variant='errors' />
+    <OptionalTabsContent show={Boolean((validation?.errors?.length ?? 0) > 0)} value="errors">
+      <ValidationList items={validation?.errors ?? EMPTY_ERRORS} variant="errors" />
     </OptionalTabsContent>
-    <OptionalTabsContent show={Boolean((validation?.warnings?.length ?? 0) > 0)} value='warnings'>
-      <ValidationList items={validation?.warnings ?? EMPTY_WARNINGS} variant='warnings' />
+    <OptionalTabsContent show={Boolean((validation?.warnings?.length ?? 0) > 0)} value="warnings">
+      <ValidationList items={validation?.warnings ?? EMPTY_WARNINGS} variant="warnings" />
     </OptionalTabsContent>
   </Tabs>
 );
 
 const ValidateStep: FC<ValidationTabsProps> = ({ validation }) => (
-  <div className='space-y-4'>
+  <div className="space-y-4">
     <ValidationStatus validation={validation} />
     <ValidationTabs validation={validation} />
   </div>
 );
 
 const ConflictOption: FC<ConflictOptionProps> = ({ description, id, label, value }) => (
-  <div className='flex items-start space-x-2'>
-    <RadioGroupItem value={value} id={id} className='mt-1' />
-    <div className='flex-1'>
-      <Label htmlFor={id} className='cursor-pointer font-normal'>
+  <div className="flex items-start space-x-2">
+    <RadioGroupItem value={value} id={id} className="mt-1" />
+    <div className="flex-1">
+      <Label htmlFor={id} className="cursor-pointer font-normal">
         {label}
       </Label>
-      <div className='text-sm text-gray-600'>{description}</div>
+      <div className="text-sm text-gray-600">{description}</div>
     </div>
   </div>
 );
@@ -570,35 +570,35 @@ const ConflictStep: FC<ConflictStepProps> = ({
   conflictsCount,
   onStrategyChange,
 }) => (
-  <div className='space-y-4'>
-    <Alert className='border-yellow-200 bg-yellow-50'>
-      <AlertTriangle className='h-4 w-4 text-yellow-600' />
-      <AlertDescription className='text-yellow-800'>
+  <div className="space-y-4">
+    <Alert className="border-yellow-200 bg-yellow-50">
+      <AlertTriangle className="h-4 w-4 text-yellow-600" />
+      <AlertDescription className="text-yellow-800">
         {conflictsCount} conflicts detected with existing data
       </AlertDescription>
     </Alert>
 
     <div>
-      <Label className='mb-3 block text-base font-semibold'>Conflict Resolution Strategy</Label>
+      <Label className="mb-3 block text-base font-semibold">Conflict Resolution Strategy</Label>
       <RadioGroup value={conflictStrategy} onValueChange={onStrategyChange}>
-        <div className='space-y-3'>
+        <div className="space-y-3">
           <ConflictOption
-            id='skip'
-            value='skip'
-            label='Skip conflicting items'
+            id="skip"
+            value="skip"
+            label="Skip conflicting items"
             description="Keep existing data, don't import conflicts"
           />
           <ConflictOption
-            id='replace'
-            value='replace'
-            label='Replace existing data'
-            description='Overwrite with imported data'
+            id="replace"
+            value="replace"
+            label="Replace existing data"
+            description="Overwrite with imported data"
           />
           <ConflictOption
-            id='merge'
-            value='merge'
-            label='Merge intelligently'
-            description='Keep highest confidence, most recent data'
+            id="merge"
+            value="merge"
+            label="Merge intelligently"
+            description="Keep highest confidence, most recent data"
           />
         </div>
       </RadioGroup>
@@ -607,62 +607,62 @@ const ConflictStep: FC<ConflictStepProps> = ({
 );
 
 const ConfirmStep: FC<ConfirmStepProps> = ({ conflictStrategy, projectName, validation }) => (
-  <div className='space-y-4'>
+  <div className="space-y-4">
     <Alert>
-      <AlertCircle className='h-4 w-4' />
+      <AlertCircle className="h-4 w-4" />
       <AlertDescription>
-        Ready to import {validation?.summary.concepts} concepts, {validation?.summary.projections}{' '}
+        Ready to import {validation?.summary.concepts} concepts, {validation?.summary.projections}{" "}
         projections, and {validation?.summary.links} links.
       </AlertDescription>
     </Alert>
 
-    <div className='space-y-2 rounded-lg bg-gray-50 p-4 text-sm'>
+    <div className="space-y-2 rounded-lg bg-gray-50 p-4 text-sm">
       <div>
-        <span className='text-gray-600'>Strategy:</span>
-        <span className='ml-2 font-semibold'>{conflictStrategy}</span>
+        <span className="text-gray-600">Strategy:</span>
+        <span className="ml-2 font-semibold">{conflictStrategy}</span>
       </div>
       <div>
-        <span className='text-gray-600'>Target Project:</span>
-        <span className='ml-2 font-semibold'>{projectName}</span>
+        <span className="text-gray-600">Target Project:</span>
+        <span className="ml-2 font-semibold">{projectName}</span>
       </div>
     </div>
   </div>
 );
 
 const ResultStat: FC<ResultStatProps> = ({ label, value }) => (
-  <div className='rounded-lg bg-gray-50 p-3'>
-    <div className='text-lg font-semibold'>{value}</div>
-    <div className='text-gray-600'>{label}</div>
+  <div className="rounded-lg bg-gray-50 p-3">
+    <div className="text-lg font-semibold">{value}</div>
+    <div className="text-gray-600">{label}</div>
   </div>
 );
 
 const CompleteStep: FC<CompleteStepProps> = ({ result }) => (
-  <div className='space-y-4'>
-    {result?.status === 'success' ? (
-      <Alert className='border-green-200 bg-green-50'>
-        <CheckCircle2 className='h-4 w-4 text-green-600' />
-        <AlertDescription className='text-green-800'>
+  <div className="space-y-4">
+    {result?.status === "success" ? (
+      <Alert className="border-green-200 bg-green-50">
+        <CheckCircle2 className="h-4 w-4 text-green-600" />
+        <AlertDescription className="text-green-800">
           Import completed successfully
         </AlertDescription>
       </Alert>
     ) : (
-      <Alert className='border-yellow-200 bg-yellow-50'>
-        <AlertTriangle className='h-4 w-4 text-yellow-600' />
-        <AlertDescription className='text-yellow-800'>
+      <Alert className="border-yellow-200 bg-yellow-50">
+        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+        <AlertDescription className="text-yellow-800">
           Import completed with warnings
         </AlertDescription>
       </Alert>
     )}
 
-    <div className='grid grid-cols-2 gap-4 text-sm'>
-      <ResultStat label='Concepts imported' value={result?.concepts_imported} />
-      <ResultStat label='Projections imported' value={result?.projections_imported} />
-      <ResultStat label='Links imported' value={result?.links_imported} />
-      <ResultStat label='Errors' value={result?.errors?.length ?? 0} />
+    <div className="grid grid-cols-2 gap-4 text-sm">
+      <ResultStat label="Concepts imported" value={result?.concepts_imported} />
+      <ResultStat label="Projections imported" value={result?.projections_imported} />
+      <ResultStat label="Links imported" value={result?.links_imported} />
+      <ResultStat label="Errors" value={result?.errors?.length ?? 0} />
     </div>
 
     {result?.summary ? (
-      <div className='rounded-lg bg-gray-50 p-3 text-sm text-gray-600'>{result.summary}</div>
+      <div className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600">{result.summary}</div>
     ) : null}
   </div>
 );
@@ -675,16 +675,16 @@ const ImportWizardBody: FC<ImportWizardBodyProps> = ({
   confirmProps,
   completeProps,
 }) => {
-  if (step === 'upload') {
+  if (step === "upload") {
     return <UploadStep {...uploadProps} />;
   }
-  if (step === 'validate') {
+  if (step === "validate") {
     return <ValidateStep {...validationProps} />;
   }
-  if (step === 'conflicts') {
+  if (step === "conflicts") {
     return <ConflictStep {...conflictProps} />;
   }
-  if (step === 'confirm') {
+  if (step === "confirm") {
     return <ConfirmStep {...confirmProps} />;
   }
   return <CompleteStep {...completeProps} />;
@@ -692,17 +692,17 @@ const ImportWizardBody: FC<ImportWizardBodyProps> = ({
 
 const UploadFooter: FC<UploadFooterProps> = ({ isLoading, onCancel, onValidate }) => (
   <>
-    <Button variant='outline' onClick={onCancel}>
+    <Button variant="outline" onClick={onCancel}>
       Cancel
     </Button>
-    <Button onClick={onValidate} disabled={isLoading} className='gap-2'>
+    <Button onClick={onValidate} disabled={isLoading} className="gap-2">
       {isLoading ? (
         <>
-          <Loader2 className='h-4 w-4 animate-spin' />
+          <Loader2 className="h-4 w-4 animate-spin" />
           Validating...
         </>
       ) : (
-        'Validate'
+        "Validate"
       )}
     </Button>
   </>
@@ -710,7 +710,7 @@ const UploadFooter: FC<UploadFooterProps> = ({ isLoading, onCancel, onValidate }
 
 const ValidateFooter: FC<ValidateFooterProps> = ({ isValid, onBack, onNext }) => (
   <>
-    <Button variant='outline' onClick={onBack}>
+    <Button variant="outline" onClick={onBack}>
       Back
     </Button>
     <Button onClick={onNext} disabled={!isValid}>
@@ -726,13 +726,13 @@ const ConflictFooter: FC<ConflictFooterProps> = ({
   primaryLabel,
 }) => (
   <>
-    <Button variant='outline' onClick={onBack}>
+    <Button variant="outline" onClick={onBack}>
       Back
     </Button>
-    <Button onClick={onPrimary} disabled={isLoading} className='gap-2'>
+    <Button onClick={onPrimary} disabled={isLoading} className="gap-2">
       {isLoading ? (
         <>
-          <Loader2 className='h-4 w-4 animate-spin' />
+          <Loader2 className="h-4 w-4 animate-spin" />
           Importing...
         </>
       ) : (
@@ -766,7 +766,7 @@ const ImportFooter: FC<ImportFooterProps> = ({
         isLoading={isLoading}
         onBack={onBackFromConflicts}
         onPrimary={onImport}
-        primaryLabel='Import'
+        primaryLabel="Import"
       />
     ),
     conflicts: (
@@ -774,7 +774,7 @@ const ImportFooter: FC<ImportFooterProps> = ({
         isLoading={isLoading}
         onBack={onBackFromConflicts}
         onPrimary={onNextFromConflicts}
-        primaryLabel='Next'
+        primaryLabel="Next"
       />
     ),
     upload: <UploadFooter isLoading={isLoading} onCancel={onCancel} onValidate={onValidate} />,
@@ -794,12 +794,12 @@ const ImportWizardLayout: FC<ImportWizardLayoutProps> = ({
   projectName,
 }) => (
   <Dialog open={isOpen} onOpenChange={onClose}>
-    <DialogContent className='max-w-2xl'>
+    <DialogContent className="max-w-2xl">
       <DialogHeader>
         <DialogTitle>Import Equivalence Data</DialogTitle>
         <DialogDescription>Import equivalence data into {projectName}</DialogDescription>
       </DialogHeader>
-      <div className='min-h-64'>
+      <div className="min-h-64">
         <ImportWizardBody {...bodyProps} />
       </div>
       <ImportFooter {...footerProps} />
@@ -814,9 +814,9 @@ export const ImportWizard: FC<ImportWizardProps> = ({
   onClose,
   onImport,
 }) => {
-  const [step, setStep] = useState<ImportStep>('upload');
+  const [step, setStep] = useState<ImportStep>("upload");
   const [file, setFile] = useState<File | null>(null);
-  const [conflictStrategy, setConflictStrategy] = useState<ConflictStrategy>('skip');
+  const [conflictStrategy, setConflictStrategy] = useState<ConflictStrategy>("skip");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validation, setValidation] = useState<ValidationResult | null>(null);
@@ -851,11 +851,11 @@ export const ImportWizard: FC<ImportWizardProps> = ({
   });
   const handleStrategyChange = createHandleStrategyChange(setConflictStrategy);
   const handleBackFromValidate = () => {
-    setStep('upload');
+    setStep("upload");
   };
   const handleBackFromConflicts = createHandleBackFromConflicts(setStep);
   const handleNextFromConflicts = () => {
-    setStep('confirm');
+    setStep("confirm");
   };
   const bodyProps = buildBodyProps({
     conflictStrategy,

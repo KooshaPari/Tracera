@@ -3,7 +3,7 @@
  * Used by chat to run tools in a scoped filesystem per conversation.
  */
 
-import { client } from './client';
+import { client } from "./client";
 
 const API_URL = client.getBackendURL();
 
@@ -21,7 +21,7 @@ interface AgentSessionResponse {
 }
 
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
-  Object.prototype.toString.call(value) === '[object Object]';
+  Object.prototype.toString.call(value) === "[object Object]";
 
 const isAgentSessionResponse = (value: unknown): value is AgentSessionResponse => {
   if (!isRecordObject(value)) {
@@ -29,11 +29,11 @@ const isAgentSessionResponse = (value: unknown): value is AgentSessionResponse =
   }
 
   return (
-    typeof value['session_id'] === 'string' &&
-    typeof value['sandbox_root'] === 'string' &&
-    typeof value['created_at'] === 'string' &&
-    typeof value['updated_at'] === 'string' &&
-    (typeof value['project_id'] === 'string' || value['project_id'] === null)
+    typeof value["session_id"] === "string" &&
+    typeof value["sandbox_root"] === "string" &&
+    typeof value["created_at"] === "string" &&
+    typeof value["updated_at"] === "string" &&
+    (typeof value["project_id"] === "string" || value["project_id"] === null)
   );
 };
 
@@ -41,13 +41,13 @@ const createAgentSession = async (
   body: AgentSessionCreateRequest,
 ): Promise<AgentSessionResponse> => {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     ...client.getAuthHeaders(),
   };
   const response = await fetch(`${API_URL}/api/v1/agent/sessions`, {
     body: JSON.stringify(body),
     headers,
-    method: 'POST',
+    method: "POST",
   });
   if (!response.ok) {
     const errorText = await response.text();
@@ -55,7 +55,7 @@ const createAgentSession = async (
   }
   const data: unknown = await response.json();
   if (!isAgentSessionResponse(data)) {
-    throw new Error('Invalid agent session response');
+    throw new Error("Invalid agent session response");
   }
   return data;
 };

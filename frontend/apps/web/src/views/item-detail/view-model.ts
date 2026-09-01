@@ -1,18 +1,18 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { Item, ItemStatus, Priority } from '@tracertm/types';
+import type { Item, ItemStatus, Priority } from "@tracertm/types";
 
-import { useItem } from '@/hooks/useItems';
-import { useLinks } from '@/hooks/useLinks';
+import { useItem } from "@/hooks/useItems";
+import { useLinks } from "@/hooks/useLinks";
 
-import type { DraftState, ItemQueryState } from './types';
+import type { DraftState, ItemQueryState } from "./types";
 
-import { itemDetailSelectors as selectors } from './selectors-facade';
-import { EMPTY_STRING } from './types';
-import { useItemDetailViewModelActions } from './view-model-actions';
+import { itemDetailSelectors as selectors } from "./selectors-facade";
+import { EMPTY_STRING } from "./types";
+import { useItemDetailViewModelActions } from "./view-model-actions";
 
-const DEFAULT_STATUS: ItemStatus = 'todo';
-const DEFAULT_PRIORITY: Priority = 'medium';
+const DEFAULT_STATUS: ItemStatus = "todo";
+const DEFAULT_PRIORITY: Priority = "medium";
 
 interface Params {
   itemId: string | undefined;
@@ -46,8 +46,8 @@ interface ItemDetailViewModel {
   metadataSearch: string;
   setMetadataSearch: (value: string) => void;
   filteredMetadata: ReturnType<typeof selectors.filterMetadata>;
-  integrationMetadata: ReturnType<typeof selectors.splitMetadata>['integration'];
-  generalMetadata: ReturnType<typeof selectors.splitMetadata>['general'];
+  integrationMetadata: ReturnType<typeof selectors.splitMetadata>["integration"];
+  generalMetadata: ReturnType<typeof selectors.splitMetadata>["general"];
 
   dimensionEntries: ReturnType<typeof selectors.dimensionEntries>;
   timelineEvents: ReturnType<typeof selectors.buildTimelineEvents>;
@@ -89,18 +89,18 @@ function buildQueryState(
   error: unknown,
 ): ItemQueryState {
   if (itemId === undefined) {
-    return { kind: 'not_found', message: 'Item Not Found' };
+    return { kind: "not_found", message: "Item Not Found" };
   }
   if (isLoading) {
-    return { kind: 'loading' };
+    return { kind: "loading" };
   }
   if (error !== null && error !== undefined) {
-    return { kind: 'not_found', message: 'Item Not Found' };
+    return { kind: "not_found", message: "Item Not Found" };
   }
   if (!item) {
-    return { kind: 'not_found', message: 'Item Not Found' };
+    return { kind: "not_found", message: "Item Not Found" };
   }
-  return { kind: 'ready', item };
+  return { kind: "ready", item };
 }
 
 function buildDisplayStatus(
@@ -162,8 +162,8 @@ interface MetadataState {
   metadataSearch: string;
   setMetadataSearch: (value: string) => void;
   filteredMetadata: ReturnType<typeof selectors.filterMetadata>;
-  integrationMetadata: ReturnType<typeof selectors.splitMetadata>['integration'];
-  generalMetadata: ReturnType<typeof selectors.splitMetadata>['general'];
+  integrationMetadata: ReturnType<typeof selectors.splitMetadata>["integration"];
+  generalMetadata: ReturnType<typeof selectors.splitMetadata>["general"];
   metadataCount: number;
 }
 

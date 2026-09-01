@@ -1,5 +1,5 @@
 // MSW handlers for TraceRTM API mocking
-import { HttpResponse, http } from 'msw';
+import { HttpResponse, http } from "msw";
 
 import type {
   CreateItemInput,
@@ -14,7 +14,7 @@ import type {
   UpdateItemInput,
   UpdateLinkInput,
   UpdateProjectInput,
-} from '../api/types';
+} from "../api/types";
 
 import {
   filterItemsByProject,
@@ -29,15 +29,15 @@ import {
   mockItems as mockItemsBaseline,
   mockLinks as mockLinksBaseline,
   mockProjects,
-} from './data';
-import { enhancedItems, enhancedLinks } from './enhanced-data';
+} from "./data";
+import { enhancedItems, enhancedLinks } from "./enhanced-data";
 
 // Toggle between baseline and enhanced mock data
 const USE_ENHANCED_DATA = true;
 const mockItems = USE_ENHANCED_DATA ? enhancedItems : mockItemsBaseline;
 const mockLinks = USE_ENHANCED_DATA ? enhancedLinks : mockLinksBaseline;
 
-const API_BASE = 'http://localhost:4000';
+const API_BASE = "http://localhost:4000";
 
 // Helper to simulate delays
 const delay = async (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -49,16 +49,16 @@ export const handlers = [
   http.get(`${API_BASE}/health`, async () => {
     await delay();
     return HttpResponse.json({
-      service: 'tracertm-api',
-      status: 'ok',
+      service: "tracertm-api",
+      status: "ok",
     });
   }),
 
   http.get(`${API_BASE}/api/v1/health`, async () => {
     await delay();
     return HttpResponse.json({
-      service: 'tracertm-api',
-      status: 'ok',
+      service: "tracertm-api",
+      status: "ok",
     });
   }),
 
@@ -68,8 +68,8 @@ export const handlers = [
   http.get(`${API_BASE}/api/v1/projects`, async ({ request }) => {
     await delay();
     const url = new URL(request.url);
-    const limit = Number(url.searchParams.get('limit')) || mockProjects.length;
-    const offset = Number(url.searchParams.get('offset')) || 0;
+    const limit = Number(url.searchParams.get("limit")) || mockProjects.length;
+    const offset = Number(url.searchParams.get("offset")) || 0;
 
     const paginatedProjects = mockProjects.slice(offset, offset + limit);
     // API returns { total: number, projects: Project[] }
@@ -85,7 +85,7 @@ export const handlers = [
     const project = findProjectById(id as string);
 
     if (!project) {
-      return HttpResponse.json({ error: 'Project not found' }, { status: 404 });
+      return HttpResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
     return HttpResponse.json(project);
@@ -114,7 +114,7 @@ export const handlers = [
     const projectIndex = mockProjects.findIndex((p) => p.id === id);
 
     if (projectIndex === -1) {
-      return HttpResponse.json({ error: 'Project not found' }, { status: 404 });
+      return HttpResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
     const baseProject = mockProjects[projectIndex]!;
@@ -140,7 +140,7 @@ export const handlers = [
     const projectIndex = mockProjects.findIndex((p) => p.id === id);
 
     if (projectIndex === -1) {
-      return HttpResponse.json({ error: 'Project not found' }, { status: 404 });
+      return HttpResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
     mockProjects.splice(projectIndex, 1);
@@ -153,9 +153,9 @@ export const handlers = [
   http.get(`${API_BASE}/api/v1/items`, async ({ request }) => {
     await delay();
     const url = new URL(request.url);
-    const projectId = url.searchParams.get('project_id');
-    const limit = Number(url.searchParams.get('limit')) || mockItems.length;
-    const offset = Number(url.searchParams.get('offset')) || 0;
+    const projectId = url.searchParams.get("project_id");
+    const limit = Number(url.searchParams.get("limit")) || mockItems.length;
+    const offset = Number(url.searchParams.get("offset")) || 0;
 
     let items = projectId ? filterItemsByProject(projectId) : mockItems;
     const total = items.length;
@@ -171,7 +171,7 @@ export const handlers = [
     const item = findItemById(id as string);
 
     if (!item) {
-      return HttpResponse.json({ error: 'Item not found' }, { status: 404 });
+      return HttpResponse.json({ error: "Item not found" }, { status: 404 });
     }
 
     return HttpResponse.json(item);
@@ -187,9 +187,9 @@ export const handlers = [
       type: body.type,
       title: body.title,
       ...(body.description !== undefined && { description: body.description }),
-      status: body.status ?? ('todo' as const),
-      priority: body.priority ?? ('medium' as const),
-      view: 'FEATURE' as const,
+      status: body.status ?? ("todo" as const),
+      priority: body.priority ?? ("medium" as const),
+      view: "FEATURE" as const,
       version: 1,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -207,7 +207,7 @@ export const handlers = [
     const itemIndex = mockItems.findIndex((i) => i.id === id);
 
     if (itemIndex === -1) {
-      return HttpResponse.json({ error: 'Item not found' }, { status: 404 });
+      return HttpResponse.json({ error: "Item not found" }, { status: 404 });
     }
 
     const baseItem = mockItems[itemIndex]!;
@@ -240,7 +240,7 @@ export const handlers = [
     const itemIndex = mockItems.findIndex((i) => i.id === id);
 
     if (itemIndex === -1) {
-      return HttpResponse.json({ error: 'Item not found' }, { status: 404 });
+      return HttpResponse.json({ error: "Item not found" }, { status: 404 });
     }
 
     mockItems.splice(itemIndex, 1);
@@ -253,9 +253,9 @@ export const handlers = [
   http.get(`${API_BASE}/api/v1/links`, async ({ request }) => {
     await delay();
     const url = new URL(request.url);
-    const projectId = url.searchParams.get('project_id');
-    const limit = Number(url.searchParams.get('limit')) || mockLinks.length;
-    const offset = Number(url.searchParams.get('offset')) || 0;
+    const projectId = url.searchParams.get("project_id");
+    const limit = Number(url.searchParams.get("limit")) || mockLinks.length;
+    const offset = Number(url.searchParams.get("offset")) || 0;
 
     let links = mockLinks;
     if (projectId) {
@@ -278,7 +278,7 @@ export const handlers = [
     const link = findLinkById(id as string);
 
     if (!link) {
-      return HttpResponse.json({ error: 'Link not found' }, { status: 404 });
+      return HttpResponse.json({ error: "Link not found" }, { status: 404 });
     }
 
     return HttpResponse.json(link);
@@ -290,7 +290,7 @@ export const handlers = [
 
     // Get source item to determine projectId
     const sourceItem = findItemById(body.sourceId);
-    const projectId = sourceItem?.projectId ?? 'unknown';
+    const projectId = sourceItem?.projectId ?? "unknown";
 
     const now = new Date().toISOString();
     const newLink: Link = {
@@ -316,7 +316,7 @@ export const handlers = [
     const linkIndex = mockLinks.findIndex((l) => l.id === id);
 
     if (linkIndex === -1) {
-      return HttpResponse.json({ error: 'Link not found' }, { status: 404 });
+      return HttpResponse.json({ error: "Link not found" }, { status: 404 });
     }
 
     const baseLink = mockLinks[linkIndex]!;
@@ -342,7 +342,7 @@ export const handlers = [
     const linkIndex = mockLinks.findIndex((l) => l.id === id);
 
     if (linkIndex === -1) {
-      return HttpResponse.json({ error: 'Link not found' }, { status: 404 });
+      return HttpResponse.json({ error: "Link not found" }, { status: 404 });
     }
 
     mockLinks.splice(linkIndex, 1);
@@ -355,7 +355,7 @@ export const handlers = [
   http.get(`${API_BASE}/api/v1/graph/full`, async ({ request }) => {
     await delay();
     const url = new URL(request.url);
-    const projectId = url.searchParams.get('project_id');
+    const projectId = url.searchParams.get("project_id");
 
     const items = projectId ? filterItemsByProject(projectId) : mockItems;
     const nodes = items.map((item) => ({
@@ -383,7 +383,7 @@ export const handlers = [
     const item = findItemById(id as string);
 
     if (!item) {
-      return HttpResponse.json({ error: 'Item not found' }, { status: 404 });
+      return HttpResponse.json({ error: "Item not found" }, { status: 404 });
     }
 
     const affectedLinks = filterLinksByTarget(id as string);
@@ -407,7 +407,7 @@ export const handlers = [
     const item = findItemById(id as string);
 
     if (!item) {
-      return HttpResponse.json({ error: 'Item not found' }, { status: 404 });
+      return HttpResponse.json({ error: "Item not found" }, { status: 404 });
     }
 
     const dependencyLinks = filterLinksBySource(id as string);
@@ -433,7 +433,7 @@ export const handlers = [
     return HttpResponse.json({
       last_sync: new Date().toISOString(),
       pending_changes: 0,
-      status: 'synced',
+      status: "synced",
     });
   }),
 ];

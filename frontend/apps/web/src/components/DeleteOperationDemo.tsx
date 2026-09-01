@@ -7,20 +7,20 @@
  * Copy patterns from here to implement in your own views.
  */
 
-import { InboxIcon, Trash2 } from 'lucide-react';
-import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
+import { InboxIcon, Trash2 } from "lucide-react";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
-import { BulkConfirmationDialog, ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { BulkConfirmationDialog, ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
   EmptyState,
   FilteredEmptyState,
   NoItemsEmptyState,
   NoSearchResultsEmptyState,
-} from '@/components/ui/empty-state';
-import { useConfirmedBulkDelete, useConfirmedDelete } from '@/hooks/useConfirmedDelete';
-import { logger } from '@/lib/logger';
-import { Button } from '@tracertm/ui';
+} from "@/components/ui/empty-state";
+import { useConfirmedBulkDelete, useConfirmedDelete } from "@/hooks/useConfirmedDelete";
+import { logger } from "@/lib/logger";
+import { Button } from "@tracertm/ui";
 
 /**
  * PATTERN 1: Single Item Delete with Confirmation
@@ -39,12 +39,12 @@ export function SingleItemDeleteExample() {
 
   const handleDeleteClick = (itemId: string, itemName: string) => {
     requestDelete({
-      confirmText: 'Delete',
-      description: 'This action cannot be undone. The item will be permanently deleted.',
+      confirmText: "Delete",
+      description: "This action cannot be undone. The item will be permanently deleted.",
       errorMessage: `Failed to delete ${itemName}`,
       id: itemId,
       name: itemName,
-      severity: 'danger',
+      severity: "danger",
       successMessage: `${itemName} has been deleted`,
       title: `Delete "${itemName}"?`,
     });
@@ -57,15 +57,15 @@ export function SingleItemDeleteExample() {
   };
 
   return (
-    <div className='space-y-4 p-6'>
-      <div className='flex gap-2'>
+    <div className="space-y-4 p-6">
+      <div className="flex gap-2">
         <Button
-          variant='outline'
+          variant="outline"
           onClick={() => {
-            handleDeleteClick('item-123', 'Project Roadmap');
+            handleDeleteClick("item-123", "Project Roadmap");
           }}
         >
-          <Trash2 className='h-4 w-4' />
+          <Trash2 className="h-4 w-4" />
           Delete Item
         </Button>
       </div>
@@ -78,10 +78,10 @@ export function SingleItemDeleteExample() {
               cancelDelete();
             }
           }}
-          title={pendingDelete.title ?? 'Delete?'}
-          description={pendingDelete.description ?? ''}
-          confirmText={pendingDelete.confirmText ?? 'Delete'}
-          severity={pendingDelete.severity ?? 'danger'}
+          title={pendingDelete.title ?? "Delete?"}
+          description={pendingDelete.description ?? ""}
+          confirmText={pendingDelete.confirmText ?? "Delete"}
+          severity={pendingDelete.severity ?? "danger"}
           isLoading={isDeleting}
           onConfirm={async () => executeDelete(performDelete)}
           context={pendingDelete.name}
@@ -111,14 +111,14 @@ export function BulkDeleteExample() {
 
   const handleBulkDelete = () => {
     if (selectedItems.length === 0) {
-      toast.error('Select items to delete');
+      toast.error("Select items to delete");
       return;
     }
 
     requestDelete({
       count: selectedItems.length,
-      itemType: 'items',
-      severity: 'critical',
+      itemType: "items",
+      severity: "critical",
     });
   };
 
@@ -130,15 +130,15 @@ export function BulkDeleteExample() {
   };
 
   return (
-    <div className='space-y-4 p-6'>
-      <div className='flex items-center gap-2'>
-        <span className='text-muted-foreground text-sm'>{selectedItems.length} selected</span>
+    <div className="space-y-4 p-6">
+      <div className="flex items-center gap-2">
+        <span className="text-muted-foreground text-sm">{selectedItems.length} selected</span>
         <Button
-          variant='destructive'
+          variant="destructive"
           onClick={handleBulkDelete}
           disabled={selectedItems.length === 0}
         >
-          <Trash2 className='h-4 w-4' />
+          <Trash2 className="h-4 w-4" />
           Delete Selected
         </Button>
       </div>
@@ -150,7 +150,7 @@ export function BulkDeleteExample() {
             cancelDelete();
           }
         }}
-        actionType='delete'
+        actionType="delete"
         itemCount={pendingDelete?.count ?? 0}
         isLoading={isDeleting}
         onConfirm={async () => executeDelete(performBulkDelete)}
@@ -170,41 +170,41 @@ export function BulkDeleteExample() {
  */
 export function EmptyStateExample() {
   const [items, _setItems] = useState<{ id: string; name: string }[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<string[]>([]);
 
   // Show different empty states based on conditions
-  if (items.length === 0 && searchQuery === '' && filters.length === 0) {
+  if (items.length === 0 && searchQuery === "" && filters.length === 0) {
     return (
       <NoItemsEmptyState
-        itemType='requirements'
+        itemType="requirements"
         actions={[
           {
-            label: 'Create First Item',
+            label: "Create First Item",
             onClick: () => {
-              logger.info('Create clicked');
+              logger.info("Create clicked");
             },
           },
           {
-            label: 'View Documentation',
-            onClick: () => window.open('/docs', '_blank'),
-            variant: 'outline',
+            label: "View Documentation",
+            onClick: () => window.open("/docs", "_blank"),
+            variant: "outline",
           },
         ]}
-        helpText='Keyboard shortcut: Cmd+K to create'
+        helpText="Keyboard shortcut: Cmd+K to create"
       />
     );
   }
 
-  if (items.length === 0 && searchQuery !== '') {
+  if (items.length === 0 && searchQuery !== "") {
     return (
       <NoSearchResultsEmptyState
         query={searchQuery}
         actions={[
           {
-            label: 'Clear Search',
+            label: "Clear Search",
             onClick: () => {
-              setSearchQuery('');
+              setSearchQuery("");
             },
           },
         ]}
@@ -218,7 +218,7 @@ export function EmptyStateExample() {
         filters={filters}
         actions={[
           {
-            label: 'Clear Filters',
+            label: "Clear Filters",
             onClick: () => {
               setFilters([]);
             },
@@ -247,18 +247,18 @@ export function InlineDeleteExample() {
       logger.info(`Deleting: ${itemId}`);
 
       // Show success with undo option
-      toast.success('Item deleted', {
+      toast.success("Item deleted", {
         action: {
-          label: 'Undo',
+          label: "Undo",
           onClick: () => {
             // Await restoreItemAPI(itemId);
-            toast.success('Item restored');
+            toast.success("Item restored");
           },
         },
-        description: 'Item moved to trash',
+        description: "Item moved to trash",
       });
     } catch {
-      toast.error('Failed to delete item');
+      toast.error("Failed to delete item");
     } finally {
       setIsDeleting(false);
     }
@@ -266,12 +266,12 @@ export function InlineDeleteExample() {
 
   return (
     <Button
-      variant='ghost'
-      size='sm'
+      variant="ghost"
+      size="sm"
       disabled={isDeleting}
-      onClick={async () => handleQuickDelete('item-456')}
+      onClick={async () => handleQuickDelete("item-456")}
     >
-      <Trash2 className='h-4 w-4' />
+      <Trash2 className="h-4 w-4" />
     </Button>
   );
 }
@@ -310,11 +310,11 @@ export function CompleteListViewExample() {
   const handleDeleteItem = useCallback(
     (item: { id: string; name: string }) => {
       requestDelete({
-        confirmText: 'Delete',
-        description: 'This action cannot be undone.',
+        confirmText: "Delete",
+        description: "This action cannot be undone.",
         id: item.id,
         name: item.name,
-        severity: 'danger',
+        severity: "danger",
         title: `Delete "${item.name}"?`,
       });
     },
@@ -328,8 +328,8 @@ export function CompleteListViewExample() {
 
     requestBulkDelete({
       count: selectedItems.length,
-      itemType: 'items',
-      severity: 'critical',
+      itemType: "items",
+      severity: "critical",
     });
   }, [selectedItems, requestBulkDelete]);
 
@@ -350,13 +350,13 @@ export function CompleteListViewExample() {
     return (
       <EmptyState
         icon={InboxIcon}
-        title='No items yet'
-        description='Create your first item to get started'
+        title="No items yet"
+        description="Create your first item to get started"
         actions={[
           {
-            label: 'Create Item',
+            label: "Create Item",
             onClick: () => {
-              setItems([{ id: '1', name: 'Sample Item' }]);
+              setItems([{ id: "1", name: "Sample Item" }]);
             },
           },
         ]}
@@ -365,24 +365,24 @@ export function CompleteListViewExample() {
   }
 
   return (
-    <div className='space-y-4 p-6'>
+    <div className="space-y-4 p-6">
       {/* Bulk action toolbar */}
       {selectedItems.length > 0 && (
-        <div className='flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900/50 dark:bg-blue-950/20'>
-          <span className='text-sm font-medium'>{selectedItems.length} selected</span>
-          <Button variant='destructive' size='sm' onClick={handleBulkDelete}>
+        <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900/50 dark:bg-blue-950/20">
+          <span className="text-sm font-medium">{selectedItems.length} selected</span>
+          <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
             Delete Selected
           </Button>
         </div>
       )}
 
       {/* Item list */}
-      <div className='space-y-2'>
+      <div className="space-y-2">
         {items.map((item) => (
-          <div key={item.id} className='flex items-center justify-between rounded-lg border p-4'>
-            <div className='flex items-center gap-3'>
+          <div key={item.id} className="flex items-center justify-between rounded-lg border p-4">
+            <div className="flex items-center gap-3">
               <input
-                type='checkbox'
+                type="checkbox"
                 checked={selectedItems.includes(item.id)}
                 onChange={(e) => {
                   if (e.target.checked) {
@@ -395,13 +395,13 @@ export function CompleteListViewExample() {
               <span>{item.name}</span>
             </div>
             <Button
-              variant='ghost'
-              size='sm'
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 handleDeleteItem(item);
               }}
             >
-              <Trash2 className='h-4 w-4' />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         ))}
@@ -415,8 +415,8 @@ export function CompleteListViewExample() {
             cancelDelete();
           }
         }}
-        title={pendingDeleteItem?.title ?? 'Delete?'}
-        description={pendingDeleteItem?.description ?? ''}
+        title={pendingDeleteItem?.title ?? "Delete?"}
+        description={pendingDeleteItem?.description ?? ""}
         isLoading={isDeleting}
         onConfirm={async () => executeDelete(performDelete)}
       />
@@ -428,7 +428,7 @@ export function CompleteListViewExample() {
             cancelBulkDelete();
           }
         }}
-        actionType='delete'
+        actionType="delete"
         itemCount={pendingBulkDelete?.count ?? 0}
         isLoading={isBulkDeleting}
         onConfirm={async () => executeBulkDelete(performBulkDelete)}

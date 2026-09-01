@@ -1,15 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useRef } from 'react';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef } from "react";
 
-import type { SSEClient } from '@/lib/sse-client';
+import type { SSEClient } from "@/lib/sse-client";
 
-import { createNotificationSSEClient } from '@/lib/sse-client';
-import { useAuthStore } from '@/stores/authStore';
+import { createNotificationSSEClient } from "@/lib/sse-client";
+import { useAuthStore } from "@/stores/authStore";
 
 export interface Notification {
   id: string;
   user_id: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   title: string;
   message: string;
   link?: string;
@@ -18,7 +18,7 @@ export interface Notification {
 }
 
 export interface NotificationEvent {
-  type: 'notification' | 'read' | 'read_all' | 'delete';
+  type: "notification" | "read" | "read_all" | "delete";
   notification?: Notification;
   user_id: string;
   timestamp: number;
@@ -28,7 +28,7 @@ export function useNotifications() {
   const { token } = useAuthStore();
   const queryClient = useQueryClient();
   const sseClientRef = useRef<SSEClient | null>(null);
-  const API_URL = import.meta.env.VITE_API_URL || '';
+  const API_URL = import.meta.env.VITE_API_URL || "";
 
   // Fetch initial notifications
   const query = useQuery({
@@ -45,11 +45,11 @@ export function useNotifications() {
         return [];
       }
       if (!response.ok) {
-        throw new Error('Failed to fetch notifications');
+        throw new Error("Failed to fetch notifications");
       }
       return response.json() as Promise<Notification[]>;
     },
-    queryKey: ['notifications'],
+    queryKey: ["notifications"],
     // No refetchInterval - we use SSE for real-time updates
   });
 
@@ -58,13 +58,13 @@ export function useNotifications() {
     (data: unknown) => {
       const event = data as NotificationEvent;
 
-      queryClient.setQueryData<Notification[]>(['notifications'], (oldData) => {
+      queryClient.setQueryData<Notification[]>(["notifications"], (oldData) => {
         if (!oldData) {
           return oldData;
         }
 
         switch (event.type) {
-          case 'notification': {
+          case "notification": {
             // Add new notification to the list
             if (event.notification) {
               return [event.notification, ...oldData];
@@ -72,14 +72,14 @@ export function useNotifications() {
             return oldData;
           }
 
-          case 'read': {
+          case "read": {
             // Mark notification as read
             return oldData.map((n) =>
               n.id === event.notification?.id ? { ...n, read_at: new Date().toISOString() } : n,
             );
           }
 
-          case 'read_all': {
+          case "read_all": {
             // Mark all as read
             return oldData.map((n) => ({
               ...n,
@@ -87,7 +87,7 @@ export function useNotifications() {
             }));
           }
 
-          case 'delete': {
+          case "delete": {
             // Remove notification from list
             return oldData.filter((n) => n.id !== event.notification?.id);
           }
@@ -135,10 +135,10 @@ export function useNotifications() {
     mutationFn: async (id: string) => {
       const response = await fetch(`${API_URL}/api/v1/notifications/${id}/read`, {
         headers: { Authorization: `Bearer ${token}` },
-        method: 'POST',
+        method: "POST",
       });
       if (!response.ok) {
-        throw new Error('Failed to mark notification as read');
+        throw new Error("Failed to mark notification as read");
       }
     },
     onSuccess: () => {
@@ -151,10 +151,10 @@ export function useNotifications() {
     mutationFn: async () => {
       const response = await fetch(`${API_URL}/api/v1/notifications/read-all`, {
         headers: { Authorization: `Bearer ${token}` },
-        method: 'POST',
+        method: "POST",
       });
       if (!response.ok) {
-        throw new Error('Failed to mark all notifications as read');
+        throw new Error("Failed to mark all notifications as read");
       }
     },
     onSuccess: () => {
@@ -167,10 +167,10 @@ export function useNotifications() {
     mutationFn: async (id: string) => {
       const response = await fetch(`${API_URL}/api/v1/notifications/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
-        method: 'DELETE',
+        method: "DELETE",
       });
       if (!response.ok) {
-        throw new Error('Failed to delete notification');
+        throw new Error("Failed to delete notification");
       }
     },
     onSuccess: () => {

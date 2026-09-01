@@ -42,7 +42,7 @@ export class SSEClient {
       this.eventSource = new EventSource(url);
 
       this.eventSource.onopen = () => {
-        console.log('SSE connection established');
+        console.log("SSE connection established");
         this.reconnectAttempts = 0;
         this.currentDelay = this.options.initialReconnectDelay || 1000;
         this.options.onOpen?.();
@@ -53,7 +53,7 @@ export class SSEClient {
       };
 
       this.eventSource.onerror = (error: Event) => {
-        console.error('SSE connection error:', error);
+        console.error("SSE connection error:", error);
         this.options.onError?.(error);
 
         // EventSource will auto-reconnect for network errors, but we handle manual reconnection
@@ -62,31 +62,31 @@ export class SSEClient {
       };
 
       // Handle custom event types
-      this.eventSource.addEventListener('notification', (event: MessageEvent) => {
+      this.eventSource.addEventListener("notification", (event: MessageEvent) => {
         this.handleNotificationEvent(event);
       });
 
-      this.eventSource.addEventListener('read', (event: MessageEvent) => {
+      this.eventSource.addEventListener("read", (event: MessageEvent) => {
         this.handleNotificationEvent(event);
       });
 
-      this.eventSource.addEventListener('read_all', (event: MessageEvent) => {
+      this.eventSource.addEventListener("read_all", (event: MessageEvent) => {
         this.handleNotificationEvent(event);
       });
 
-      this.eventSource.addEventListener('delete', (event: MessageEvent) => {
+      this.eventSource.addEventListener("delete", (event: MessageEvent) => {
         this.handleNotificationEvent(event);
       });
 
-      this.eventSource.addEventListener('connected', (event: MessageEvent) => {
-        console.log('SSE connected:', event.data);
+      this.eventSource.addEventListener("connected", (event: MessageEvent) => {
+        console.log("SSE connected:", event.data);
       });
 
-      this.eventSource.addEventListener('ping', (_event: MessageEvent) => {
+      this.eventSource.addEventListener("ping", (_event: MessageEvent) => {
         // Keep-alive ping, no action needed
       });
     } catch (error) {
-      console.error('Failed to create EventSource:', error);
+      console.error("Failed to create EventSource:", error);
       this.scheduleReconnect();
     }
   }
@@ -108,8 +108,8 @@ export class SSEClient {
     }
 
     // Extract bearer token from Authorization header
-    const token = headers.Authorization.replace('Bearer ', '');
-    const separator = url.includes('?') ? '&' : '?';
+    const token = headers.Authorization.replace("Bearer ", "");
+    const separator = url.includes("?") ? "&" : "?";
     return `${url}${separator}token=${encodeURIComponent(token)}`;
   }
 
@@ -207,7 +207,7 @@ export function createNotificationSSEClient(
     return null;
   }
 
-  const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+  const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
   return new SSEClient({
     url: `${API_URL}/api/v1/notifications/stream`,
@@ -222,18 +222,18 @@ export function createNotificationSSEClient(
         const data = JSON.parse(event.data);
         onNotification(data);
       } catch (error) {
-        console.error('Failed to parse notification data:', error);
+        console.error("Failed to parse notification data:", error);
       }
     },
     onError: (error: Event) => {
-      console.error('Notification SSE error:', error);
+      console.error("Notification SSE error:", error);
       onError?.(error);
     },
     onOpen: () => {
-      console.log('Notification SSE connection opened');
+      console.log("Notification SSE connection opened");
     },
     onClose: () => {
-      console.log('Notification SSE connection closed');
+      console.log("Notification SSE connection closed");
     },
   });
 }

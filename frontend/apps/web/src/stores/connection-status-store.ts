@@ -1,6 +1,6 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
-type ConnectionStatus = 'connecting' | 'lost' | 'online' | 'reconnecting';
+type ConnectionStatus = "connecting" | "lost" | "online" | "reconnecting";
 
 export interface ConnectionStatusState {
   lastChecked: number;
@@ -14,39 +14,39 @@ export interface ConnectionStatusState {
 }
 
 const getInitialStatus = (): ConnectionStatus => {
-  if ('navigator' in globalThis && globalThis.navigator.webdriver) {
-    return 'online';
+  if ("navigator" in globalThis && globalThis.navigator.webdriver) {
+    return "online";
   }
 
-  return 'connecting';
+  return "connecting";
 };
 
 const useConnectionStatusStore = create<ConnectionStatusState>((set) => ({
   lastChecked: 0,
-  lastError: '',
+  lastError: "",
   setConnecting: (message?: string): void => {
     set({
-      lastError: message ?? 'Connecting…',
-      status: 'connecting',
+      lastError: message ?? "Connecting…",
+      status: "connecting",
     });
   },
   setLost: (message?: string): void => {
     set({
-      lastError: message ?? 'Connection lost',
-      status: 'lost',
+      lastError: message ?? "Connection lost",
+      status: "lost",
     });
   },
   setOnline: (): void => {
     set({
       lastChecked: Date.now(),
-      lastError: '',
-      status: 'online',
+      lastError: "",
+      status: "online",
     });
   },
   setReconnecting: (message?: string): void => {
     set({
-      lastError: message ?? 'Reconnecting…',
-      status: 'reconnecting',
+      lastError: message ?? "Reconnecting…",
+      status: "reconnecting",
     });
   },
   status: getInitialStatus(),

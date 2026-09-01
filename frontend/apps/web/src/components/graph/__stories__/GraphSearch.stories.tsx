@@ -1,12 +1,12 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from "@storybook/react";
 
-import { GraphSearch } from '../GraphSearch';
+import { GraphSearch } from "../GraphSearch";
 
 const meta: Meta<typeof GraphSearch> = {
   argTypes: {
-    compact: { control: 'boolean' },
-    onHighlight: { action: 'highlight' },
-    onSearch: { action: 'search performed' },
+    compact: { control: "boolean" },
+    onHighlight: { action: "highlight" },
+    onSearch: { action: "search performed" },
   },
   component: GraphSearch,
   parameters: {
@@ -18,8 +18,8 @@ const meta: Meta<typeof GraphSearch> = {
       },
     },
   },
-  tags: ['autodocs'],
-  title: 'Components/Graph/GraphSearch',
+  tags: ["autodocs"],
+  title: "Components/Graph/GraphSearch",
 };
 
 export default meta;
@@ -48,10 +48,10 @@ export const WithQuery: Story = {
     onSearch: () => {},
   },
   play: async ({ canvasElement }) => {
-    const input = canvasElement.querySelector('input');
+    const input = canvasElement.querySelector("input");
     if (input) {
-      input.value = 'button';
-      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.value = "button";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
     }
   },
 };
@@ -80,7 +80,7 @@ export const Tablet: Story = {
   },
   parameters: {
     viewport: {
-      defaultViewport: 'tablet',
+      defaultViewport: "tablet",
     },
   },
 };
@@ -97,7 +97,7 @@ export const Mobile: Story = {
   },
   parameters: {
     viewport: {
-      defaultViewport: 'mobile',
+      defaultViewport: "mobile",
     },
   },
 };
@@ -114,7 +114,7 @@ export const DarkMode: Story = {
   },
   decorators: [
     (Story) => (
-      <div className='dark' data-theme='dark' style={{ padding: '20px' }}>
+      <div className="dark" data-theme="dark" style={{ padding: "20px" }}>
         <Story />
       </div>
     ),
@@ -139,7 +139,7 @@ export const Focused: Story = {
     onSearch: () => {},
   },
   play: async ({ canvasElement }) => {
-    const input = canvasElement.querySelector('input');
+    const input = canvasElement.querySelector("input");
     if (input) {
       input.focus();
     }

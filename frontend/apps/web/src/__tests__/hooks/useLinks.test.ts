@@ -2,13 +2,13 @@
  * Tests for useLinks hook
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
-import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useCreateLink, useLinks } from '../../hooks/useLinks';
-import { useAuthStore } from '../../stores/authStore';
+import { useCreateLink, useLinks } from "../../hooks/useLinks";
+import { useAuthStore } from "../../stores/authStore";
 
 // Mock fetch at module level
 const mockFetch = vi.fn();
@@ -29,13 +29,13 @@ const createWrapper = () => {
 describe(useLinks, () => {
   beforeEach(() => {
     mockFetch.mockClear();
-    useAuthStore.setState({ token: 'link-contract-token' });
+    useAuthStore.setState({ token: "link-contract-token" });
   });
 
-  it('should fetch links', async () => {
+  it("should fetch links", async () => {
     const mockLinksArray = [
-      { id: '1', sourceId: 'item-1', targetId: 'item-2', type: 'depends_on' },
-      { id: '2', sourceId: 'item-2', targetId: 'item-3', type: 'implements' },
+      { id: "1", sourceId: "item-1", targetId: "item-2", type: "depends_on" },
+      { id: "2", sourceId: "item-2", targetId: "item-3", type: "implements" },
     ];
 
     const mockResponse = {
@@ -60,9 +60,9 @@ describe(useLinks, () => {
     expect(mockFetch).toHaveBeenCalledOnce();
   });
 
-  it('should fetch links with source filter', async () => {
+  it("should fetch links with source filter", async () => {
     const mockLinksArray = [
-      { id: '1', sourceId: 'item-1', targetId: 'item-2', type: 'depends_on' },
+      { id: "1", sourceId: "item-1", targetId: "item-2", type: "depends_on" },
     ];
 
     const mockResponse = {
@@ -75,7 +75,7 @@ describe(useLinks, () => {
       ok: true,
     });
 
-    const { result } = renderHook(() => useLinks({ sourceId: 'item-1' }), {
+    const { result } = renderHook(() => useLinks({ sourceId: "item-1" }), {
       wrapper: createWrapper(),
     });
 
@@ -85,14 +85,14 @@ describe(useLinks, () => {
 
     expect(result.current.data).toEqual(mockResponse);
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('source_id=item-1'),
+      expect.stringContaining("source_id=item-1"),
       expect.any(Object),
     );
   });
 
-  it('should fetch links with target filter', async () => {
+  it("should fetch links with target filter", async () => {
     const mockLinksArray = [
-      { id: '1', sourceId: 'item-1', targetId: 'item-2', type: 'depends_on' },
+      { id: "1", sourceId: "item-1", targetId: "item-2", type: "depends_on" },
     ];
 
     const mockResponse = {
@@ -105,7 +105,7 @@ describe(useLinks, () => {
       ok: true,
     });
 
-    const { result } = renderHook(() => useLinks({ targetId: 'item-2' }), {
+    const { result } = renderHook(() => useLinks({ targetId: "item-2" }), {
       wrapper: createWrapper(),
     });
 
@@ -114,12 +114,12 @@ describe(useLinks, () => {
     });
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('target_id=item-2'),
+      expect.stringContaining("target_id=item-2"),
       expect.any(Object),
     );
   });
 
-  it('should handle fetch error', async () => {
+  it("should handle fetch error", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 500,
@@ -140,19 +140,19 @@ describe(useLinks, () => {
 describe(useCreateLink, () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuthStore.setState({ token: 'link-contract-token' });
+    useAuthStore.setState({ token: "link-contract-token" });
   });
 
-  it('should create a link', async () => {
+  it("should create a link", async () => {
     const newLink = {
-      projectId: 'proj-1',
-      sourceId: 'item-1',
-      targetId: 'item-2',
-      type: 'depends_on' as const,
+      projectId: "proj-1",
+      sourceId: "item-1",
+      targetId: "item-2",
+      type: "depends_on" as const,
     };
 
     const createdLink = {
-      id: '1',
+      id: "1",
       ...newLink,
     };
 
@@ -173,14 +173,14 @@ describe(useCreateLink, () => {
 
     expect(result.current.data).toEqual(createdLink);
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/links'),
+      expect.stringContaining("/api/v1/links"),
       expect.objectContaining({
-        method: 'POST',
+        method: "POST",
       }),
     );
   });
 
-  it('should handle create error', async () => {
+  it("should handle create error", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 400,
@@ -191,10 +191,10 @@ describe(useCreateLink, () => {
     });
 
     result.current.mutate({
-      projectId: 'proj-1',
-      sourceId: 'item-1',
-      targetId: 'item-2',
-      type: 'depends_on' as const,
+      projectId: "proj-1",
+      sourceId: "item-1",
+      targetId: "item-2",
+      type: "depends_on" as const,
     });
 
     await waitFor(() => {

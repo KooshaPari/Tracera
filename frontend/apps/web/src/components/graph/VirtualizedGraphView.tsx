@@ -1,4 +1,4 @@
-import type { Edge, Node, NodeTypes } from '@xyflow/react';
+import type { Edge, Node, NodeTypes } from "@xyflow/react";
 
 import {
   Background,
@@ -10,7 +10,7 @@ import {
   useEdgesState,
   useNodesState,
   useReactFlow,
-} from '@xyflow/react';
+} from "@xyflow/react";
 import {
   Activity,
   Maximize2,
@@ -19,36 +19,36 @@ import {
   RotateCcw,
   ZoomIn,
   ZoomOut,
-} from 'lucide-react';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+} from "lucide-react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
-import type { Item, Link, LinkType } from '@tracertm/types';
+import type { Item, Link, LinkType } from "@tracertm/types";
 
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
 
-import '@xyflow/react/dist/style.css';
-import { Card } from '@tracertm/ui/components/Card';
-import { Separator } from '@tracertm/ui/components/Separator';
+import "@xyflow/react/dist/style.css";
+import { Card } from "@tracertm/ui/components/Card";
+import { Separator } from "@tracertm/ui/components/Separator";
 
-import type { NodePosition } from './hooks/useVirtualization';
-import type { LayoutType } from './layouts/useDagLayout';
-import type { RichNodeData } from './RichNodePill';
-import type { EnhancedNodeData, GraphPerspective } from './types';
+import type { NodePosition } from "./hooks/useVirtualization";
+import type { LayoutType } from "./layouts/useDagLayout";
+import type { RichNodeData } from "./RichNodePill";
+import type { EnhancedNodeData, GraphPerspective } from "./types";
 
-import { useGraphWorker } from './hooks/useGraphWorker';
-import { useVirtualization } from './hooks/useVirtualization';
-import { LayoutSelector } from './layouts/LayoutSelector';
-import { useDagLayout } from './layouts/useDagLayout';
-import { NodeDetailPanel } from './NodeDetailPanel';
-import { QAEnhancedNode } from './nodes/QAEnhancedNode';
-import { RichNodePill } from './RichNodePill';
+import { useGraphWorker } from "./hooks/useGraphWorker";
+import { useVirtualization } from "./hooks/useVirtualization";
+import { LayoutSelector } from "./layouts/LayoutSelector";
+import { useDagLayout } from "./layouts/useDagLayout";
+import { NodeDetailPanel } from "./NodeDetailPanel";
+import { QAEnhancedNode } from "./nodes/QAEnhancedNode";
+import { RichNodePill } from "./RichNodePill";
 import {
   ENHANCED_TYPE_COLORS,
   LINK_STYLES,
   PERSPECTIVE_CONFIGS,
   TYPE_TO_PERSPECTIVE,
-} from './types';
+} from "./types";
 
 const readString = (
   record: Record<string, unknown> | undefined,
@@ -58,15 +58,15 @@ const readString = (
     return undefined;
   }
   const value = record[key];
-  return typeof value === 'string' ? value : undefined;
+  return typeof value === "string" ? value : undefined;
 };
 
 // Simplified node component for LOD rendering
 function SimplifiedNodePill({ data }: { data: { id: string; type: string } }) {
-  const color = ENHANCED_TYPE_COLORS[data.type] ?? '#64748b';
+  const color = ENHANCED_TYPE_COLORS[data.type] ?? "#64748b";
   return (
     <div
-      className='flex items-center justify-center rounded-full border px-2 py-1 text-xs font-medium'
+      className="flex items-center justify-center rounded-full border px-2 py-1 text-xs font-medium"
       style={{
         backgroundColor: `${color}20`,
         borderColor: color,
@@ -82,10 +82,10 @@ function SimplifiedNodePill({ data }: { data: { id: string; type: string } }) {
 
 // Medium detail node component for LOD rendering
 function MediumNodePill({ data }: { data: { id: string; type: string; label?: string } }) {
-  const color = ENHANCED_TYPE_COLORS[data.type] ?? '#64748b';
+  const color = ENHANCED_TYPE_COLORS[data.type] ?? "#64748b";
   return (
     <div
-      className='flex flex-col items-center justify-center rounded-lg border px-3 py-2 text-xs font-medium'
+      className="flex flex-col items-center justify-center rounded-lg border px-3 py-2 text-xs font-medium"
       style={{
         backgroundColor: `${color}20`,
         borderColor: color,
@@ -94,9 +94,9 @@ function MediumNodePill({ data }: { data: { id: string; type: string; label?: st
         width: 120,
       }}
     >
-      <div className='font-bold'>{data.id.slice(0, 6)}</div>
+      <div className="font-bold">{data.id.slice(0, 6)}</div>
       {data.label && (
-        <div className='truncate text-[10px] opacity-75'>{data.label.slice(0, 12)}</div>
+        <div className="truncate text-[10px] opacity-75">{data.label.slice(0, 12)}</div>
       )}
     </div>
   );
@@ -133,11 +133,11 @@ function VirtualizedGraphViewComponent({
   enableVirtualization = true,
 }: VirtualizedGraphViewProps) {
   // Perspective management
-  const [internalPerspective, setInternalPerspective] = useState<GraphPerspective>('all');
+  const [internalPerspective, setInternalPerspective] = useState<GraphPerspective>("all");
   const perspective = externalPerspective ?? internalPerspective;
   const setPerspective = externalPerspective !== undefined ? () => {} : setInternalPerspective;
 
-  const [layout, setLayout] = useState<LayoutType>('flow-chart');
+  const [layout, setLayout] = useState<LayoutType>("flow-chart");
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [showDetailPanel, setShowDetailPanel] = useState(true);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
@@ -179,15 +179,15 @@ function VirtualizedGraphViewComponent({
     }
 
     return items.map((item) => {
-      const itemType = (item.type || item.view || 'item').toLowerCase();
-      const perspectives = TYPE_TO_PERSPECTIVE[itemType] ?? ['all'];
+      const itemType = (item.type || item.view || "item").toLowerCase();
+      const perspectives = TYPE_TO_PERSPECTIVE[itemType] ?? ["all"];
       const incoming = incomingCount.get(item.id) ?? 0;
       const outgoing = outgoingCount.get(item.id) ?? 0;
       const hasChildren = items.some((i) => i.parentId === item.id);
-      const screenshotUrl = readString(item.metadata, 'screenshotUrl');
-      const componentCode = readString(item.metadata, 'code');
-      const interactiveUrl = readString(item.metadata, 'interactiveUrl');
-      const thumbnailUrl = readString(item.metadata, 'thumbnailUrl');
+      const screenshotUrl = readString(item.metadata, "screenshotUrl");
+      const componentCode = readString(item.metadata, "code");
+      const interactiveUrl = readString(item.metadata, "interactiveUrl");
+      const thumbnailUrl = readString(item.metadata, "thumbnailUrl");
 
       let depth = 0;
       let currentId = item.parentId;
@@ -208,7 +208,7 @@ function VirtualizedGraphViewComponent({
         hasChildren,
         id: item.id,
         item,
-        label: item.title || 'Untitled',
+        label: item.title || "Untitled",
         parentId: item.parentId,
         perspective: perspectives,
         status: item.status,
@@ -227,7 +227,7 @@ function VirtualizedGraphViewComponent({
 
   // Filter nodes by perspective
   const filteredNodes = useMemo(() => {
-    if (perspective === 'all') {
+    if (perspective === "all") {
       return enhancedNodes;
     }
 
@@ -273,7 +273,7 @@ function VirtualizedGraphViewComponent({
       },
       onNavigate: onNavigateToItem ?? undefined,
       onSelect: setSelectedNodeId,
-      showPreview: perspective === 'ui',
+      showPreview: perspective === "ui",
       status: node.status,
       type: node.type,
       uiPreview: node.uiPreview ?? undefined,
@@ -288,7 +288,7 @@ function VirtualizedGraphViewComponent({
         data: createNodeData(node),
         id: node.id,
         position: { x: 0, y: 0 },
-        type: 'richPill',
+        type: "richPill",
       })),
     [filteredNodes, createNodeData],
   );
@@ -354,15 +354,15 @@ function VirtualizedGraphViewComponent({
 
   const initialEdges = useMemo((): Edge[] => {
     if (!enableVirtualization) {
-      const defaultStyle = { arrow: false, color: '#64748b', dashed: true };
+      const defaultStyle = { arrow: false, color: "#64748b", dashed: true };
       return filteredLinks.map((link) => {
         const linkStyle = LINK_STYLES[link.type] ?? defaultStyle;
         return {
-          animated: link.type === 'depends_on' || link.type === 'blocks',
+          animated: link.type === "depends_on" || link.type === "blocks",
           id: link.id,
-          label: link.type.replaceAll('_', ' '),
+          label: link.type.replaceAll("_", " "),
           labelBgPadding: [4, 2] as [number, number],
-          labelBgStyle: { fill: 'rgba(26, 26, 46, 0.9)' },
+          labelBgStyle: { fill: "rgba(26, 26, 46, 0.9)" },
           labelStyle: { fill: linkStyle.color, fontSize: 10 },
           markerEnd: linkStyle.arrow
             ? {
@@ -374,16 +374,16 @@ function VirtualizedGraphViewComponent({
           style: {
             stroke: linkStyle.color,
             strokeWidth: 2,
-            ...(linkStyle.dashed && { strokeDasharray: '5,5' }),
+            ...(linkStyle.dashed && { strokeDasharray: "5,5" }),
           },
           target: link.targetId,
-          type: 'smoothstep',
+          type: "smoothstep",
         } as Edge;
       });
     }
 
     // For virtualized view, only show edges between visible nodes
-    const defaultStyle = { arrow: false, color: '#64748b', dashed: true };
+    const defaultStyle = { arrow: false, color: "#64748b", dashed: true };
     return filteredLinks
       .filter((link) => visibleNodeIds.has(link.sourceId) && visibleNodeIds.has(link.targetId))
       .map((link) => {
@@ -392,12 +392,12 @@ function VirtualizedGraphViewComponent({
           id: link.id,
           source: link.sourceId,
           target: link.targetId,
-          type: 'smoothstep',
+          type: "smoothstep",
           animated: false, // Disable animation for large graphs
           style: {
             stroke: linkStyle.color,
             strokeWidth: 1,
-            ...(linkStyle.dashed && { strokeDasharray: '5,5' }),
+            ...(linkStyle.dashed && { strokeDasharray: "5,5" }),
           },
           markerEnd: linkStyle.arrow
             ? {
@@ -479,8 +479,8 @@ function VirtualizedGraphViewComponent({
     fitView();
   };
   const handleReset = () => {
-    setPerspective('all');
-    setLayout('flow-chart');
+    setPerspective("all");
+    setLayout("flow-chart");
     setSelectedNodeId(null);
     setExpandedNodes(new Set());
   };
@@ -494,72 +494,72 @@ function VirtualizedGraphViewComponent({
   };
 
   return (
-    <div className='flex h-full flex-col'>
+    <div className="flex h-full flex-col">
       {/* Controls */}
       {showControls && (
-        <Card className='mb-3 p-2'>
-          <div className='flex items-center justify-between gap-3'>
-            <div className='flex items-center gap-2'>
+        <Card className="mb-3 p-2">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
               <LayoutSelector
                 value={layout}
                 onChange={setLayout}
-                variant='select'
-                className='h-8 w-[200px]'
+                variant="select"
+                className="h-8 w-[200px]"
               />
 
-              <Separator orientation='vertical' className='h-6' />
+              <Separator orientation="vertical" className="h-6" />
 
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={() => {
                   setShowDetailPanel(!showDetailPanel);
                 }}
-                className='h-8'
+                className="h-8"
               >
                 {showDetailPanel ? (
-                  <PanelRightClose className='h-4 w-4' />
+                  <PanelRightClose className="h-4 w-4" />
                 ) : (
-                  <PanelRight className='h-4 w-4' />
+                  <PanelRight className="h-4 w-4" />
                 )}
               </Button>
             </div>
 
-            <div className='flex items-center gap-2'>
+            <div className="flex items-center gap-2">
               {/* Performance metrics */}
               {enableVirtualization && (
-                <div className='text-muted-foreground flex items-center gap-2 text-xs'>
-                  <Activity className='h-3 w-3' />
+                <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                  <Activity className="h-3 w-3" />
                   <span>
                     {metrics.visibleNodeCount}/{metrics.totalNodeCount} · LOD: {lodLevel}
                   </span>
                 </div>
               )}
 
-              <Separator orientation='vertical' className='h-6' />
+              <Separator orientation="vertical" className="h-6" />
 
-              <div className='flex items-center gap-1 rounded-md border p-0.5'>
+              <div className="flex items-center gap-1 rounded-md border p-0.5">
                 <Button
-                  variant='ghost'
-                  size='sm'
+                  variant="ghost"
+                  size="sm"
                   onClick={async () => zoomIn()}
-                  className='h-7 w-7 p-0'
+                  className="h-7 w-7 p-0"
                 >
-                  <ZoomIn className='h-4 w-4' />
+                  <ZoomIn className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant='ghost'
-                  size='sm'
+                  variant="ghost"
+                  size="sm"
                   onClick={async () => zoomOut()}
-                  className='h-7 w-7 p-0'
+                  className="h-7 w-7 p-0"
                 >
-                  <ZoomOut className='h-4 w-4' />
+                  <ZoomOut className="h-4 w-4" />
                 </Button>
-                <Button variant='ghost' size='sm' onClick={handleFit} className='h-7 w-7 p-0'>
-                  <Maximize2 className='h-4 w-4' />
+                <Button variant="ghost" size="sm" onClick={handleFit} className="h-7 w-7 p-0">
+                  <Maximize2 className="h-4 w-4" />
                 </Button>
-                <Button variant='ghost' size='sm' onClick={handleReset} className='h-7 w-7 p-0'>
-                  <RotateCcw className='h-4 w-4' />
+                <Button variant="ghost" size="sm" onClick={handleReset} className="h-7 w-7 p-0">
+                  <RotateCcw className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -568,8 +568,8 @@ function VirtualizedGraphViewComponent({
       )}
 
       {/* Graph area */}
-      <div className='flex flex-1 gap-3'>
-        <Card className='flex-1 overflow-hidden p-0'>
+      <div className="flex flex-1 gap-3">
+        <Card className="flex-1 overflow-hidden p-0">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -581,28 +581,28 @@ function VirtualizedGraphViewComponent({
             minZoom={0.1}
             maxZoom={2}
             proOptions={{ hideAttribution: true }}
-            className='bg-background'
+            className="bg-background"
           >
-            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color='#374151' />
+            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#374151" />
             <Controls showInteractive={false} />
-            <Panel position='bottom-left' className='!m-2'>
-              <div className='bg-card/90 flex flex-wrap gap-2 rounded-lg border p-2 text-[10px] backdrop-blur-sm'>
+            <Panel position="bottom-left" className="!m-2">
+              <div className="bg-card/90 flex flex-wrap gap-2 rounded-lg border p-2 text-[10px] backdrop-blur-sm">
                 {Object.entries(ENHANCED_TYPE_COLORS)
                   .filter(([type]) => filteredNodes.some((n) => n.type === type))
                   .slice(0, 8)
                   .map(([type, color]) => (
-                    <div key={type} className='flex items-center gap-1'>
-                      <div className='h-2.5 w-5 rounded' style={{ backgroundColor: color }} />
-                      <span className='capitalize'>{type.replaceAll('_', ' ')}</span>
+                    <div key={type} className="flex items-center gap-1">
+                      <div className="h-2.5 w-5 rounded" style={{ backgroundColor: color }} />
+                      <span className="capitalize">{type.replaceAll("_", " ")}</span>
                     </div>
                   ))}
               </div>
             </Panel>
-            <Panel position='top-right' className='!m-2'>
-              <Badge variant='secondary' className='text-xs'>
+            <Panel position="top-right" className="!m-2">
+              <Badge variant="secondary" className="text-xs">
                 {enableVirtualization
                   ? `${metrics.visibleNodeCount}/${metrics.totalNodeCount} nodes`
-                  : `${filteredNodes.length} nodes`}{' '}
+                  : `${filteredNodes.length} nodes`}{" "}
                 · {filteredLinks.length} edges
               </Badge>
             </Panel>

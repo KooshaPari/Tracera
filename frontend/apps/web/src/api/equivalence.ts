@@ -1,13 +1,13 @@
-import * as ReactQuery from '@tanstack/react-query';
+import * as ReactQuery from "@tanstack/react-query";
 
-import { client } from './client';
+import { client } from "./client";
 
 type ApiClient = typeof client.apiClient;
 
 const { apiClient } = client;
 const { handleApiResponse } = client;
-const get: ApiClient['GET'] = apiClient.GET.bind(apiClient);
-const post: ApiClient['POST'] = apiClient.POST.bind(apiClient);
+const get: ApiClient["GET"] = apiClient.GET.bind(apiClient);
+const post: ApiClient["POST"] = apiClient.POST.bind(apiClient);
 
 // Types for equivalence API
 interface EquivalenceLink {
@@ -18,7 +18,7 @@ interface EquivalenceLink {
   itemId1: string;
   itemId2: string;
   similarity: number;
-  status: 'pending' | 'confirmed' | 'rejected';
+  status: "pending" | "confirmed" | "rejected";
 }
 
 interface ConfirmEquivalenceInput {
@@ -38,12 +38,12 @@ interface RejectEquivalenceInput {
 
 // Query Keys
 const equivalenceQueryKeys = {
-  all: ['equivalences'] as const,
+  all: ["equivalences"] as const,
   detail: (id: string) => [...equivalenceQueryKeys.details(), id] as const,
-  details: () => [...equivalenceQueryKeys.all, 'detail'] as const,
+  details: () => [...equivalenceQueryKeys.all, "detail"] as const,
   list: (projectId: string, status?: string) =>
     [...equivalenceQueryKeys.lists(), projectId, status] as const,
-  lists: () => [...equivalenceQueryKeys.all, 'list'] as const,
+  lists: () => [...equivalenceQueryKeys.all, "list"] as const,
 };
 
 const useEquivalenceLinks = (
@@ -52,15 +52,15 @@ const useEquivalenceLinks = (
   options?: ReactQuery.UseQueryOptions<EquivalenceLink[]>,
 ): ReactQuery.UseQueryResult<EquivalenceLink[]> => {
   const query: Record<string, string> = {};
-  if (status && status !== '') {
-    query['status'] = status;
+  if (status && status !== "") {
+    query["status"] = status;
   }
 
   const baseOptions: ReactQuery.UseQueryOptions<EquivalenceLink[]> = {
     enabled: Boolean(projectId),
     queryFn: async (): Promise<EquivalenceLink[]> =>
       handleApiResponse(
-        get('/api/v1/projects/{projectId}/equivalences', {
+        get("/api/v1/projects/{projectId}/equivalences", {
           params: {
             path: { projectId },
             query,
@@ -81,7 +81,7 @@ const useEquivalenceLink = (
     enabled: Boolean(equivalenceId),
     queryFn: async (): Promise<EquivalenceLink> =>
       handleApiResponse(
-        get('/api/v1/equivalences/{equivalenceId}', {
+        get("/api/v1/equivalences/{equivalenceId}", {
           params: { path: { equivalenceId } },
         }),
       ),
@@ -103,7 +103,7 @@ const useDetectEquivalences = (
     mutationFn: async (input: DetectEquivalencesInput) => {
       const { projectId, threshold } = input;
       return handleApiResponse(
-        post('/api/v1/projects/{projectId}/equivalences/detect', {
+        post("/api/v1/projects/{projectId}/equivalences/detect", {
           body: { threshold },
           params: { path: { projectId } },
         }),
@@ -130,7 +130,7 @@ const useConfirmEquivalence = (
   > = {
     mutationFn: async (input: ConfirmEquivalenceInput) =>
       handleApiResponse(
-        post('/api/v1/equivalences/{equivalenceId}/confirm', {
+        post("/api/v1/equivalences/{equivalenceId}/confirm", {
           body: { comment: input.comment },
           params: { path: { equivalenceId: input.equivalenceId } },
         }),
@@ -155,7 +155,7 @@ const useRejectEquivalence = (
   const baseOptions: ReactQuery.UseMutationOptions<void, Error, RejectEquivalenceInput> = {
     mutationFn: async (input: RejectEquivalenceInput) =>
       handleApiResponse(
-        post('/api/v1/equivalences/{equivalenceId}/reject', {
+        post("/api/v1/equivalences/{equivalenceId}/reject", {
           body: { reason: input.reason },
           params: { path: { equivalenceId: input.equivalenceId } },
         }),
@@ -180,7 +180,7 @@ const useBatchConfirmEquivalences = (
   const baseOptions: ReactQuery.UseMutationOptions<EquivalenceLink[], Error, string[]> = {
     mutationFn: async (equivalenceIds: string[]) =>
       handleApiResponse(
-        post('/api/v1/equivalences/batch-confirm', {
+        post("/api/v1/equivalences/batch-confirm", {
           body: { equivalenceIds },
         }),
       ),
@@ -201,7 +201,7 @@ const useBatchRejectEquivalences = (
   const baseOptions: ReactQuery.UseMutationOptions<void, Error, string[]> = {
     mutationFn: async (equivalenceIds: string[]) =>
       handleApiResponse(
-        post('/api/v1/equivalences/batch-reject', {
+        post("/api/v1/equivalences/batch-reject", {
           body: { equivalenceIds },
         }),
       ),

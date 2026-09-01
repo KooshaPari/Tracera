@@ -1,4 +1,4 @@
-import type { TestResultStatus, TestType } from './shared-types';
+import type { TestResultStatus, TestType } from "./shared-types";
 
 interface TestSpec {
   id: string;

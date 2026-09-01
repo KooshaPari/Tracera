@@ -26,7 +26,6 @@
 - Modify: `frontend/apps/web/vitest.config.ts:39-46`
 - Modify: `frontend/apps/web/package.json` (`scripts.test` block)
 - Modify: `frontend/package.json` (`scripts.test:unit`)
-- Modify: `.github/workflows/frontend-contract-checks.yml:51-53`
 
 - [ ] Add a red runner-contract test that imports `../../../vitest.config` and reads `../../../package.json`:
 
@@ -97,7 +96,7 @@ through npm keeps Vitest on Node, matching the passing direct invocation.
 ```bash
 git add frontend/apps/web/src/__tests__/config/vitest-execution-profile.test.ts \
   frontend/apps/web/vitest.config.ts frontend/apps/web/package.json \
-  frontend/package.json .github/workflows/frontend-contract-checks.yml
+  frontend/package.json
 git commit -m "fix(frontend): bound vitest execution profile"
 ```
 

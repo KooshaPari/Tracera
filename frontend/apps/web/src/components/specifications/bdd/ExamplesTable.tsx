@@ -1,7 +1,7 @@
-import { Plus, Trash2, X } from 'lucide-react';
-import { useState } from 'react';
+import { Plus, Trash2, X } from "lucide-react";
+import { useState } from "react";
 
-import { Badge, Button, Card, cn } from '@tracertm/ui';
+import { Badge, Button, Card, cn } from "@tracertm/ui";
 
 export type TableExample = Record<string, string>;
 
@@ -22,13 +22,13 @@ export function ExamplesTable({
   onColumnsChange,
   editable = true,
   className,
-  title = 'Examples',
+  title = "Examples",
 }: ExamplesTableProps) {
   const [editingCell, setEditingCell] = useState<{
     rowIndex: number;
     colName: string;
   } | null>(null);
-  const [editValue, setEditValue] = useState('');
+  const [editValue, setEditValue] = useState("");
 
   const handleCellChange = (rowIndex: number, colName: string, value: string) => {
     const newData = [...data];
@@ -40,7 +40,7 @@ export function ExamplesTable({
   const handleAddRow = () => {
     const newRow: TableExample = {};
     columns.forEach((col) => {
-      newRow[col] = '';
+      newRow[col] = "";
     });
     onDataChange?.([...data, newRow]);
   };
@@ -57,7 +57,7 @@ export function ExamplesTable({
     // Add empty values to all rows
     const newData = data.map((row) => ({
       ...row,
-      [newColName]: '',
+      [newColName]: "",
     }));
     onDataChange?.(newData);
   };
@@ -87,50 +87,50 @@ export function ExamplesTable({
       const { [oldName]: value, ...rest } = row;
       return {
         ...rest,
-        [newName]: value ?? '',
+        [newName]: value ?? "",
       };
     });
     onDataChange?.(newData);
   };
 
   return (
-    <div className={cn('space-y-3', className)}>
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-2'>
-          <Badge variant='secondary' className='text-xs'>
-            <span className='font-semibold'>{data.length}</span>
-            <span className='ml-1'>examples</span>
+    <div className={cn("space-y-3", className)}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs">
+            <span className="font-semibold">{data.length}</span>
+            <span className="ml-1">examples</span>
           </Badge>
         </div>
-        {title && <h3 className='text-muted-foreground text-sm font-semibold'>{title}</h3>}
+        {title && <h3 className="text-muted-foreground text-sm font-semibold">{title}</h3>}
       </div>
 
-      <Card className='border-border/50 overflow-hidden border'>
-        <div className='overflow-x-auto'>
-          <table className='w-full text-sm'>
+      <Card className="border-border/50 overflow-hidden border">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
             {/* Header */}
-            <thead className='bg-muted/50 border-border/50 border-b'>
+            <thead className="bg-muted/50 border-border/50 border-b">
               <tr>
                 {editable && (
-                  <th className='text-muted-foreground w-10 px-3 py-2 text-center text-xs font-medium'>
+                  <th className="text-muted-foreground w-10 px-3 py-2 text-center text-xs font-medium">
                     #
                   </th>
                 )}
                 {columns.map((col) => (
                   <th
                     key={col}
-                    className='text-muted-foreground bg-muted/30 group relative px-3 py-2 text-left font-medium'
+                    className="text-muted-foreground bg-muted/30 group relative px-3 py-2 text-left font-medium"
                   >
-                    <div className='flex min-w-max items-center justify-between gap-2'>
+                    <div className="flex min-w-max items-center justify-between gap-2">
                       <input
-                        type='text'
+                        type="text"
                         value={col}
                         onChange={(e) => {
                           handleRenameColumn(col, e.target.value);
                         }}
                         className={cn(
-                          'text-xs font-semibold bg-transparent border-0 outline-none',
-                          editable ? 'cursor-text' : 'cursor-default',
+                          "text-xs font-semibold bg-transparent border-0 outline-none",
+                          editable ? "cursor-text" : "cursor-default",
                         )}
                         disabled={!editable}
                       />
@@ -139,23 +139,23 @@ export function ExamplesTable({
                           onClick={() => {
                             handleRemoveColumn(col);
                           }}
-                          className='hover:bg-destructive/10 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100'
-                          title='Remove column'
+                          className="hover:bg-destructive/10 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100"
+                          title="Remove column"
                         >
-                          <X className='text-destructive h-3 w-3' />
+                          <X className="text-destructive h-3 w-3" />
                         </button>
                       )}
                     </div>
                   </th>
                 ))}
                 {editable && (
-                  <th className='w-10 px-3 py-2 text-center'>
+                  <th className="w-10 px-3 py-2 text-center">
                     <button
                       onClick={handleAddColumn}
-                      className='hover:bg-muted rounded p-1 transition-colors'
-                      title='Add column'
+                      className="hover:bg-muted rounded p-1 transition-colors"
+                      title="Add column"
                     >
-                      <Plus className='text-muted-foreground h-3 w-3' />
+                      <Plus className="text-muted-foreground h-3 w-3" />
                     </button>
                   </th>
                 )}
@@ -167,21 +167,21 @@ export function ExamplesTable({
               {data.map((row, rowIndex) => (
                 <tr
                   key={rowIndex}
-                  className='border-border/50 hover:bg-muted/30 border-b transition-colors'
+                  className="border-border/50 hover:bg-muted/30 border-b transition-colors"
                 >
                   {editable && (
-                    <td className='text-muted-foreground px-3 py-2 text-center font-mono text-xs'>
+                    <td className="text-muted-foreground px-3 py-2 text-center font-mono text-xs">
                       {rowIndex + 1}
                     </td>
                   )}
                   {columns.map((col) => (
                     <td
                       key={`${rowIndex}-${col}`}
-                      className='border-border/25 border-r px-3 py-2 text-xs last:border-r-0'
+                      className="border-border/25 border-r px-3 py-2 text-xs last:border-r-0"
                     >
                       {editingCell?.rowIndex === rowIndex && editingCell?.colName === col ? (
                         <input
-                          type='text'
+                          type="text"
                           value={editValue}
                           onChange={(e) => {
                             setEditValue(e.target.value);
@@ -191,43 +191,43 @@ export function ExamplesTable({
                             setEditingCell(null);
                           }}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
+                            if (e.key === "Enter") {
                               handleCellChange(rowIndex, col, editValue);
                               setEditingCell(null);
-                            } else if (e.key === 'Escape') {
+                            } else if (e.key === "Escape") {
                               setEditingCell(null);
                             }
                           }}
-                          className='bg-primary/10 border-primary/30 w-full rounded border px-2 py-1 outline-none'
+                          className="bg-primary/10 border-primary/30 w-full rounded border px-2 py-1 outline-none"
                         />
                       ) : (
                         <div
                           onClick={() => {
                             if (editable) {
                               setEditingCell({ colName: col, rowIndex });
-                              setEditValue(row[col] ?? '');
+                              setEditValue(row[col] ?? "");
                             }
                           }}
                           className={cn(
-                            'px-2 py-1 rounded',
-                            editable ? 'cursor-text hover:bg-muted/50' : '',
+                            "px-2 py-1 rounded",
+                            editable ? "cursor-text hover:bg-muted/50" : "",
                           )}
                         >
-                          {row[col] ?? <span className='text-muted-foreground/50'>—</span>}
+                          {row[col] ?? <span className="text-muted-foreground/50">—</span>}
                         </div>
                       )}
                     </td>
                   ))}
                   {editable && (
-                    <td className='px-3 py-2 text-center'>
+                    <td className="px-3 py-2 text-center">
                       <button
                         onClick={() => {
                           handleRemoveRow(rowIndex);
                         }}
-                        className='hover:bg-destructive/10 rounded p-1 transition-colors'
-                        title='Remove row'
+                        className="hover:bg-destructive/10 rounded p-1 transition-colors"
+                        title="Remove row"
                       >
-                        <Trash2 className='text-destructive h-3 w-3' />
+                        <Trash2 className="text-destructive h-3 w-3" />
                       </button>
                     </td>
                   )}
@@ -239,14 +239,14 @@ export function ExamplesTable({
       </Card>
 
       {editable && data.length === 0 && (
-        <div className='text-muted-foreground py-6 text-center text-sm'>
+        <div className="text-muted-foreground py-6 text-center text-sm">
           <p>No examples yet</p>
         </div>
       )}
 
       {editable && (
-        <Button onClick={handleAddRow} variant='outline' size='sm' className='w-full gap-2'>
-          <Plus className='h-4 w-4' />
+        <Button onClick={handleAddRow} variant="outline" size="sm" className="w-full gap-2">
+          <Plus className="h-4 w-4" />
           Add Example
         </Button>
       )}

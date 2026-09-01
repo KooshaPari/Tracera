@@ -1,4 +1,4 @@
-import type { TaskStatus } from './shared-types';
+import type { TaskStatus } from "./shared-types";
 
 interface TaskSpec {
   id: string;

@@ -1,7 +1,7 @@
-import * as React from 'react';
+import * as React from "react";
 
-import { cn } from '@/lib/utils';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@tracertm/ui';
+import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tracertm/ui";
 
 export interface FormSelectOption {
   label: string;
@@ -18,9 +18,9 @@ export interface FormSelectProps {
   className?: string;
   name?: string;
   id?: string;
-  'aria-describedby'?: string;
-  'aria-invalid'?: boolean;
-  'aria-required'?: boolean;
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean;
+  "aria-required"?: boolean;
 }
 
 export const FormSelect = React.forwardRef<HTMLButtonElement, FormSelectProps>(
@@ -29,7 +29,7 @@ export const FormSelect = React.forwardRef<HTMLButtonElement, FormSelectProps>(
       value,
       onValueChange,
       options,
-      placeholder = 'Select an option',
+      placeholder = "Select an option",
       error,
       disabled,
       className,
@@ -57,7 +57,7 @@ export const FormSelect = React.forwardRef<HTMLButtonElement, FormSelectProps>(
       <Select {...selectProps}>
         <SelectTrigger
           ref={ref}
-          className={cn(error && 'border-red-500 focus:ring-red-500', className)}
+          className={cn(error && "border-red-500 focus:ring-red-500", className)}
           {...ariaProps}
         >
           <SelectValue placeholder={placeholder} />
@@ -74,4 +74,4 @@ export const FormSelect = React.forwardRef<HTMLButtonElement, FormSelectProps>(
   },
 );
 
-FormSelect.displayName = 'FormSelect';
+FormSelect.displayName = "FormSelect";

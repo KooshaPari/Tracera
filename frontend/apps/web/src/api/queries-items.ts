@@ -3,14 +3,14 @@ import type {
   UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
-} from '@tanstack/react-query';
+} from "@tanstack/react-query";
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { Item, PaginatedResponse } from '@tracertm/types';
+import type { Item, PaginatedResponse } from "@tracertm/types";
 
-import { queryKeys } from './queries-keys';
-import { api, handleApiResponse } from './query-client';
+import { queryKeys } from "./queries-keys";
+import { api, handleApiResponse } from "./query-client";
 
 type ItemListResponse = PaginatedResponse<Item>;
 
@@ -47,7 +47,7 @@ const useProjectItems = (
     enabled: Boolean(projectId),
     queryFn: async (): Promise<ItemListResponse> =>
       handleApiResponse(
-        api.get<ItemListResponse>('/api/v1/projects/{projectId}/items', {
+        api.get<ItemListResponse>("/api/v1/projects/{projectId}/items", {
           params: {
             path: { projectId },
             query: queryFilters,
@@ -65,7 +65,7 @@ const useItem = (itemId: string, options?: UseQueryOptions<Item>): UseQueryResul
     enabled: Boolean(itemId),
     queryFn: async (): Promise<Item> =>
       handleApiResponse(
-        api.get<Item>('/api/v1/items/{itemId}', {
+        api.get<Item>("/api/v1/items/{itemId}", {
           params: { path: { itemId } },
         }),
       ),
@@ -82,7 +82,7 @@ const useCreateItem = (
   const baseOptions: UseMutationOptions<Item, Error, CreateItemInput> = {
     mutationFn: async (input: CreateItemInput): Promise<Item> =>
       handleApiResponse(
-        api.post<Item>('/api/v1/projects/{projectId}/items', {
+        api.post<Item>("/api/v1/projects/{projectId}/items", {
           body: input.data as Record<string, unknown>,
           params: { path: { projectId: input.projectId } },
         }),
@@ -104,7 +104,7 @@ const useUpdateItem = (
   const baseOptions: UseMutationOptions<Item, Error, UpdateItemInput> = {
     mutationFn: async (input: UpdateItemInput): Promise<Item> =>
       handleApiResponse(
-        api.put<Item>('/api/v1/items/{itemId}', {
+        api.put<Item>("/api/v1/items/{itemId}", {
           body: input.data,
           params: { path: { itemId: input.itemId } },
         }),
@@ -129,7 +129,7 @@ const useDeleteItem = (
   const baseOptions: UseMutationOptions<void, Error, DeleteItemInput> = {
     mutationFn: async (input: DeleteItemInput): Promise<void> => {
       await handleApiResponse(
-        api.del<void>('/api/v1/items/{itemId}', {
+        api.del<void>("/api/v1/items/{itemId}", {
           params: { path: { itemId: input.itemId } },
         }),
       );

@@ -27,33 +27,33 @@ import {
   Settings,
   Square,
   Zap,
-} from 'lucide-react';
-import { memo, useCallback, useMemo, useState } from 'react';
+} from "lucide-react";
+import { memo, useCallback, useMemo, useState } from "react";
 
 import type {
   ComponentCategory,
   ComponentLibrary,
   DesignToken,
   LibraryComponent,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@tracertm/ui/components/Card';
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@tracertm/ui/components/Card";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@tracertm/ui/components/Collapsible';
-import { Input } from '@tracertm/ui/components/Input';
-import { ScrollArea } from '@tracertm/ui/components/ScrollArea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tracertm/ui/components/Tabs';
+} from "@tracertm/ui/components/Collapsible";
+import { Input } from "@tracertm/ui/components/Input";
+import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tracertm/ui/components/Tabs";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@tracertm/ui/components/Tooltip';
+} from "@tracertm/ui/components/Tooltip";
 
 // =============================================================================
 // TYPES
@@ -92,8 +92,8 @@ export interface ComponentLibraryExplorerProps {
 
 const CATEGORY_ICONS: Record<ComponentCategory, React.ComponentType<{ className?: string }>> = {
   atom: Square,
-  'data-display': Eye,
-  'data-entry': Box,
+  "data-display": Eye,
+  "data-entry": Box,
   feedback: AlertCircle,
   layout: LayoutGrid,
   molecule: Grid3x3,
@@ -107,26 +107,26 @@ const CATEGORY_ICONS: Record<ComponentCategory, React.ComponentType<{ className?
 };
 
 const CATEGORY_LABELS: Record<ComponentCategory, string> = {
-  atom: 'Atoms',
-  'data-display': 'Data Display',
-  'data-entry': 'Data Entry',
-  feedback: 'Feedback',
-  layout: 'Layout',
-  molecule: 'Molecules',
-  navigation: 'Navigation',
-  organism: 'Organisms',
-  other: 'Other',
-  overlay: 'Overlays',
-  page: 'Pages',
-  template: 'Templates',
-  utility: 'Utilities',
+  atom: "Atoms",
+  "data-display": "Data Display",
+  "data-entry": "Data Entry",
+  feedback: "Feedback",
+  layout: "Layout",
+  molecule: "Molecules",
+  navigation: "Navigation",
+  organism: "Organisms",
+  other: "Other",
+  overlay: "Overlays",
+  page: "Pages",
+  template: "Templates",
+  utility: "Utilities",
 };
 
 const STATUS_CONFIG = {
-  beta: { color: '#f59e0b', icon: Beaker, label: 'Beta' },
-  deprecated: { color: '#ef4444', icon: Archive, label: 'Deprecated' },
-  experimental: { color: '#8b5cf6', icon: Zap, label: 'Experimental' },
-  stable: { color: '#22c55e', icon: Check, label: 'Stable' },
+  beta: { color: "#f59e0b", icon: Beaker, label: "Beta" },
+  deprecated: { color: "#ef4444", icon: Archive, label: "Deprecated" },
+  experimental: { color: "#8b5cf6", icon: Zap, label: "Experimental" },
+  stable: { color: "#22c55e", icon: Check, label: "Stable" },
 };
 
 // =============================================================================
@@ -147,12 +147,12 @@ function ComponentLibraryExplorerComponent({
   onSyncLibrary,
   isLoading = false,
 }: ComponentLibraryExplorerProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'components' | 'tokens'>('components');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"components" | "tokens">("components");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     () => new Set(components.map((component) => component.category)),
   );
-  const [filterStatus, setFilterStatus] = useState<LibraryComponent['status'] | 'all'>('all');
+  const [filterStatus, setFilterStatus] = useState<LibraryComponent["status"] | "all">("all");
 
   // Current library
   const currentLibrary = useMemo(() => {
@@ -187,7 +187,7 @@ function ComponentLibraryExplorerComponent({
     }
 
     // Filter by status
-    if (filterStatus !== 'all') {
+    if (filterStatus !== "all") {
       filtered = filtered.filter((c) => c.status === filterStatus);
     }
 
@@ -208,9 +208,9 @@ function ComponentLibraryExplorerComponent({
 
     // Stats
     const stats = {
-      beta: libraryComponents.filter((c) => c.status === 'beta').length,
-      deprecated: libraryComponents.filter((c) => c.status === 'deprecated').length,
-      stable: libraryComponents.filter((c) => c.status === 'stable').length,
+      beta: libraryComponents.filter((c) => c.status === "beta").length,
+      deprecated: libraryComponents.filter((c) => c.status === "deprecated").length,
+      stable: libraryComponents.filter((c) => c.status === "stable").length,
       total: libraryComponents.length,
     };
 
@@ -241,12 +241,12 @@ function ComponentLibraryExplorerComponent({
 
   if (libraries.length === 0) {
     return (
-      <Card className='h-full'>
-        <CardContent className='flex h-full items-center justify-center'>
-          <div className='text-muted-foreground py-12 text-center'>
-            <Library className='mx-auto mb-3 h-12 w-12 opacity-50' />
-            <p className='text-sm font-medium'>No component libraries</p>
-            <p className='mx-auto mt-1 max-w-xs text-xs'>
+      <Card className="h-full">
+        <CardContent className="flex h-full items-center justify-center">
+          <div className="text-muted-foreground py-12 text-center">
+            <Library className="mx-auto mb-3 h-12 w-12 opacity-50" />
+            <p className="text-sm font-medium">No component libraries</p>
+            <p className="mx-auto mt-1 max-w-xs text-xs">
               Connect a Storybook or Figma to import your component library
             </p>
           </div>
@@ -257,21 +257,21 @@ function ComponentLibraryExplorerComponent({
 
   return (
     <TooltipProvider>
-      <Card className='flex h-full flex-col overflow-hidden'>
+      <Card className="flex h-full flex-col overflow-hidden">
         {/* Header */}
-        <CardHeader className='border-b px-4 py-3'>
-          <div className='flex items-center justify-between'>
-            <div className='flex items-center gap-2'>
-              <Library className='h-5 w-5 text-green-500' />
-              <CardTitle className='text-sm font-semibold'>Component Library</CardTitle>
+        <CardHeader className="border-b px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Library className="h-5 w-5 text-green-500" />
+              <CardTitle className="text-sm font-semibold">Component Library</CardTitle>
             </div>
 
             {/* Library selector (if multiple) */}
             {libraries.length > 1 && (
               <select
-                aria-label='Component library'
-                className='bg-background rounded border px-2 py-1 text-xs'
-                value={currentLibrary?.id ?? ''}
+                aria-label="Component library"
+                className="bg-background rounded border px-2 py-1 text-xs"
+                value={currentLibrary?.id ?? ""}
                 onChange={(e) => onSelectLibrary?.(e.target.value)}
               >
                 {libraries.map((lib) => (
@@ -285,44 +285,42 @@ function ComponentLibraryExplorerComponent({
 
           {/* Library info */}
           {currentLibrary && (
-            <div className='mt-2'>
-              <p className='text-xs font-medium'>{currentLibrary.name}</p>
+            <div className="mt-2">
+              <p className="text-xs font-medium">{currentLibrary.name}</p>
               {currentLibrary.description && (
-                <p className='text-muted-foreground mt-0.5 text-xs'>
-                  {currentLibrary.description}
-                </p>
+                <p className="text-muted-foreground mt-0.5 text-xs">{currentLibrary.description}</p>
               )}
-              <div className='text-muted-foreground mt-1 flex items-center gap-3 text-xs'>
-                <span className='flex items-center gap-1'>
-                  <Package className='h-3 w-3' />v{currentLibrary.version}
+              <div className="text-muted-foreground mt-1 flex items-center gap-3 text-xs">
+                <span className="flex items-center gap-1">
+                  <Package className="h-3 w-3" />v{currentLibrary.version}
                 </span>
-                <span className='flex items-center gap-1'>
-                  <Component className='h-3 w-3' />
+                <span className="flex items-center gap-1">
+                  <Component className="h-3 w-3" />
                   {stats.total} components
                 </span>
                 {currentLibrary.sourceUrl && (
                   <a
                     href={currentLibrary.sourceUrl}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='hover:text-foreground flex items-center gap-1'
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-foreground flex items-center gap-1"
                   >
-                    <BookOpen className='h-3 w-3' />
+                    <BookOpen className="h-3 w-3" />
                     Storybook
-                    <ExternalLink className='h-2.5 w-2.5' />
+                    <ExternalLink className="h-2.5 w-2.5" />
                   </a>
                 )}
                 {onSyncLibrary && (
                   <Button
-                    variant='ghost'
-                    size='sm'
-                    className='h-5 gap-1 px-1.5 text-xs'
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 gap-1 px-1.5 text-xs"
                     onClick={() => {
                       onSyncLibrary(currentLibrary.id);
                     }}
                     disabled={isLoading}
                   >
-                    <RefreshCw className={`h-3 w-3 ${isLoading ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`} />
                     Sync
                   </Button>
                 )}
@@ -332,65 +330,65 @@ function ComponentLibraryExplorerComponent({
         </CardHeader>
 
         {/* Stats Row */}
-        <div className='bg-muted/30 flex items-center gap-3 border-b px-4 py-2'>
+        <div className="bg-muted/30 flex items-center gap-3 border-b px-4 py-2">
           <Button
-            variant={filterStatus === 'all' ? 'default' : 'ghost'}
-            size='sm'
-            className='h-6 px-2 text-xs'
+            variant={filterStatus === "all" ? "default" : "ghost"}
+            size="sm"
+            className="h-6 px-2 text-xs"
             onClick={() => {
-              setFilterStatus('all');
+              setFilterStatus("all");
             }}
           >
             All ({stats.total})
           </Button>
           <Button
-            variant={filterStatus === 'stable' ? 'default' : 'ghost'}
-            size='sm'
-            className='h-6 gap-1 px-2 text-xs'
+            variant={filterStatus === "stable" ? "default" : "ghost"}
+            size="sm"
+            className="h-6 gap-1 px-2 text-xs"
             onClick={() => {
-              setFilterStatus('stable');
+              setFilterStatus("stable");
             }}
           >
-            <Check className='h-3 w-3 text-green-500' />
+            <Check className="h-3 w-3 text-green-500" />
             {stats.stable}
           </Button>
           <Button
-            variant={filterStatus === 'beta' ? 'default' : 'ghost'}
-            size='sm'
-            className='h-6 gap-1 px-2 text-xs'
+            variant={filterStatus === "beta" ? "default" : "ghost"}
+            size="sm"
+            className="h-6 gap-1 px-2 text-xs"
             onClick={() => {
-              setFilterStatus('beta');
+              setFilterStatus("beta");
             }}
           >
-            <Beaker className='h-3 w-3 text-amber-500' />
+            <Beaker className="h-3 w-3 text-amber-500" />
             {stats.beta}
           </Button>
           {stats.deprecated > 0 && (
             <Button
-              variant={filterStatus === 'deprecated' ? 'default' : 'ghost'}
-              size='sm'
-              className='h-6 gap-1 px-2 text-xs'
+              variant={filterStatus === "deprecated" ? "default" : "ghost"}
+              size="sm"
+              className="h-6 gap-1 px-2 text-xs"
               onClick={() => {
-                setFilterStatus('deprecated');
+                setFilterStatus("deprecated");
               }}
             >
-              <Archive className='h-3 w-3 text-red-500' />
+              <Archive className="h-3 w-3 text-red-500" />
               {stats.deprecated}
             </Button>
           )}
         </div>
 
         {/* Search */}
-        <div className='border-b px-4 py-2'>
-          <div className='relative'>
-            <Search className='text-muted-foreground absolute top-2 left-2.5 h-4 w-4' />
+        <div className="border-b px-4 py-2">
+          <div className="relative">
+            <Search className="text-muted-foreground absolute top-2 left-2.5 h-4 w-4" />
             <Input
-              placeholder='Search components...'
+              placeholder="Search components..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
               }}
-              className='h-8 pl-8 text-sm'
+              className="h-8 pl-8 text-sm"
             />
           </div>
         </div>
@@ -401,36 +399,36 @@ function ComponentLibraryExplorerComponent({
           onValueChange={(v) => {
             setActiveTab(v as typeof activeTab);
           }}
-          className='flex flex-1 flex-col overflow-hidden'
+          className="flex flex-1 flex-col overflow-hidden"
         >
-          <TabsList className='h-9 w-full justify-start rounded-none border-b bg-transparent px-4'>
-            <TabsTrigger value='components' className='text-xs'>
-              <Component className='mr-1 h-3.5 w-3.5' />
+          <TabsList className="h-9 w-full justify-start rounded-none border-b bg-transparent px-4">
+            <TabsTrigger value="components" className="text-xs">
+              <Component className="mr-1 h-3.5 w-3.5" />
               Components
             </TabsTrigger>
-            <TabsTrigger value='tokens' className='text-xs'>
-              <Palette className='mr-1 h-3.5 w-3.5' />
+            <TabsTrigger value="tokens" className="text-xs">
+              <Palette className="mr-1 h-3.5 w-3.5" />
               Tokens
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value='components' className='m-0 flex-1 overflow-hidden'>
-            <ScrollArea className='h-full'>
-              <div className='p-2'>
+          <TabsContent value="components" className="m-0 flex-1 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="p-2">
                 {/* Expand/Collapse controls */}
-                <div className='mb-2 flex gap-2 px-2'>
+                <div className="mb-2 flex gap-2 px-2">
                   <Button
-                    variant='ghost'
-                    size='sm'
-                    className='h-6 px-2 text-xs'
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
                     onClick={expandAllCategories}
                   >
                     Expand All
                   </Button>
                   <Button
-                    variant='ghost'
-                    size='sm'
-                    className='h-6 px-2 text-xs'
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
                     onClick={collapseAllCategories}
                   >
                     Collapse All
@@ -456,18 +454,18 @@ function ComponentLibraryExplorerComponent({
                     />
                   ))
                 ) : (
-                  <div className='text-muted-foreground py-8 text-center'>
-                    <Search className='mx-auto mb-2 h-8 w-8 opacity-50' />
-                    <p className='text-sm'>No components found</p>
-                    <p className='mt-1 text-xs'>Try a different search term</p>
+                  <div className="text-muted-foreground py-8 text-center">
+                    <Search className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                    <p className="text-sm">No components found</p>
+                    <p className="mt-1 text-xs">Try a different search term</p>
                   </div>
                 )}
               </div>
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value='tokens' className='m-0 flex-1 overflow-hidden'>
-            <ScrollArea className='h-full'>
+          <TabsContent value="tokens" className="m-0 flex-1 overflow-hidden">
+            <ScrollArea className="h-full">
               <TokensGrid tokens={tokens} libraryId={currentLibrary?.id} />
             </ScrollArea>
           </TabsContent>
@@ -509,20 +507,20 @@ function CategorySection({
 
   return (
     <Collapsible open={isExpanded} onOpenChange={onToggle}>
-      <CollapsibleTrigger className='mb-1 inline-flex h-8 w-full items-center justify-start gap-2 px-2'>
+      <CollapsibleTrigger className="mb-1 inline-flex h-8 w-full items-center justify-start gap-2 px-2">
         {isExpanded ? (
-          <ChevronDown className='h-3.5 w-3.5' />
+          <ChevronDown className="h-3.5 w-3.5" />
         ) : (
-          <ChevronRight className='h-3.5 w-3.5' />
+          <ChevronRight className="h-3.5 w-3.5" />
         )}
-        <Icon className='text-muted-foreground h-3.5 w-3.5' />
-        <span className='text-sm font-medium'>{label}</span>
-        <Badge variant='secondary' className='ml-auto text-xs'>
+        <Icon className="text-muted-foreground h-3.5 w-3.5" />
+        <span className="text-sm font-medium">{label}</span>
+        <Badge variant="secondary" className="ml-auto text-xs">
           {components.length}
         </Badge>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className='mb-2 space-y-0.5 pl-6'>
+        <div className="mb-2 space-y-0.5 pl-6">
           {components.map((component) => (
             <ComponentListItem
               key={component.id}
@@ -581,30 +579,30 @@ function ComponentListItem({
 
   return (
     <div
-      className={`group flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition-colors ${isSelected ? 'bg-primary/10 ring-primary/30 ring-1' : 'hover:bg-muted'} `}
+      className={`group flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition-colors ${isSelected ? "bg-primary/10 ring-primary/30 ring-1" : "hover:bg-muted"} `}
       onClick={onSelect}
     >
       {/* Thumbnail */}
       {component.thumbnailUrl ? (
         <img
           src={component.thumbnailUrl}
-          alt=''
-          className='h-8 w-8 shrink-0 rounded border object-cover'
+          alt=""
+          className="h-8 w-8 shrink-0 rounded border object-cover"
         />
       ) : (
-        <div className='bg-muted flex h-8 w-8 shrink-0 items-center justify-center rounded border'>
-          <Component className='text-muted-foreground h-4 w-4' />
+        <div className="bg-muted flex h-8 w-8 shrink-0 items-center justify-center rounded border">
+          <Component className="text-muted-foreground h-4 w-4" />
         </div>
       )}
 
       {/* Content */}
-      <div className='min-w-0 flex-1'>
-        <div className='flex items-center gap-1.5'>
-          <span className='truncate text-sm font-medium'>{component.displayName}</span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className="truncate text-sm font-medium">{component.displayName}</span>
           <Tooltip delayDuration={200}>
             <TooltipTrigger>
               <statusConfig.icon
-                className='h-3 w-3 shrink-0'
+                className="h-3 w-3 shrink-0"
                 style={{ color: statusConfig.color }}
               />
             </TooltipTrigger>
@@ -612,25 +610,25 @@ function ComponentListItem({
           </Tooltip>
         </div>
         {component.description && (
-          <p className='text-muted-foreground truncate text-xs'>{component.description}</p>
+          <p className="text-muted-foreground truncate text-xs">{component.description}</p>
         )}
       </div>
 
       {/* Actions */}
-      <div className='flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100'>
+      <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
         {component.storybookUrl && onViewInStorybook && (
           <Tooltip delayDuration={200}>
             <TooltipTrigger asChild>
               <Button
-                variant='ghost'
-                size='sm'
-                className='h-6 w-6 p-0'
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   onViewInStorybook();
                 }}
               >
-                <BookOpen className='h-3.5 w-3.5' />
+                <BookOpen className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>View in Storybook</TooltipContent>
@@ -640,15 +638,15 @@ function ComponentListItem({
           <Tooltip delayDuration={200}>
             <TooltipTrigger asChild>
               <Button
-                variant='ghost'
-                size='sm'
-                className='h-6 w-6 p-0'
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   onViewInFigma();
                 }}
               >
-                <Figma className='h-3.5 w-3.5' />
+                <Figma className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>View in Figma</TooltipContent>
@@ -658,15 +656,15 @@ function ComponentListItem({
           <Tooltip delayDuration={200}>
             <TooltipTrigger asChild>
               <Button
-                variant='ghost'
-                size='sm'
-                className='h-6 w-6 p-0'
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   onViewInCode();
                 }}
               >
-                <Code className='h-3.5 w-3.5' />
+                <Code className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>View source code</TooltipContent>
@@ -678,7 +676,7 @@ function ComponentListItem({
       {component.usageCount > 0 && (
         <Tooltip delayDuration={200}>
           <TooltipTrigger>
-            <Badge variant='secondary' className='shrink-0 px-1.5 text-[10px]'>
+            <Badge variant="secondary" className="shrink-0 px-1.5 text-[10px]">
               {component.usageCount}
             </Badge>
           </TooltipTrigger>
@@ -712,27 +710,27 @@ function TokensGrid({ tokens, libraryId }: TokensGridProps) {
 
   if (libraryTokens.length === 0) {
     return (
-      <div className='text-muted-foreground p-8 text-center'>
-        <Palette className='mx-auto mb-2 h-8 w-8 opacity-50' />
-        <p className='text-sm'>No design tokens found</p>
+      <div className="text-muted-foreground p-8 text-center">
+        <Palette className="mx-auto mb-2 h-8 w-8 opacity-50" />
+        <p className="text-sm">No design tokens found</p>
       </div>
     );
   }
 
   return (
-    <div className='space-y-4 p-4'>
+    <div className="space-y-4 p-4">
       {[...groupedTokens.entries()].map(([type, typeTokens]) => (
         <div key={type}>
-          <h4 className='text-muted-foreground mb-2 text-xs font-medium tracking-wider uppercase'>
+          <h4 className="text-muted-foreground mb-2 text-xs font-medium tracking-wider uppercase">
             {type}
           </h4>
-          <div className='grid grid-cols-2 gap-2'>
+          <div className="grid grid-cols-2 gap-2">
             {typeTokens.slice(0, 20).map((token) => (
               <TokenCard key={token.id} token={token} />
             ))}
           </div>
           {typeTokens.length > 20 && (
-            <p className='text-muted-foreground mt-2 text-xs'>+{typeTokens.length - 20} more</p>
+            <p className="text-muted-foreground mt-2 text-xs">+{typeTokens.length - 20} more</p>
           )}
         </div>
       ))}
@@ -745,19 +743,19 @@ interface TokenCardProps {
 }
 
 function TokenCard({ token }: TokenCardProps) {
-  const isColor = token.type === 'color';
+  const isColor = token.type === "color";
 
   return (
-    <div className='bg-card flex items-center gap-2 rounded-md border p-2'>
+    <div className="bg-card flex items-center gap-2 rounded-md border p-2">
       {isColor && (
         <div
-          className='h-6 w-6 shrink-0 rounded border'
+          className="h-6 w-6 shrink-0 rounded border"
           style={{ backgroundColor: token.resolvedValue ?? token.value }}
         />
       )}
-      <div className='min-w-0 flex-1'>
-        <p className='truncate text-xs font-medium'>{token.name}</p>
-        <p className='text-muted-foreground truncate text-[10px]'>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-xs font-medium">{token.name}</p>
+        <p className="text-muted-foreground truncate text-[10px]">
           {token.resolvedValue ?? token.value}
         </p>
       </div>

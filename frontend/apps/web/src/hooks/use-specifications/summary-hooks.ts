@@ -1,8 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
-import { fetchQualityReports, fetchSpecificationSummary } from '@/hooks/useSpecifications.api';
+import { fetchQualityReports, fetchSpecificationSummary } from "@/hooks/useSpecifications.api";
 
-import type { QueryResult } from './query-utils';
+import type { QueryResult } from "./query-utils";
 
 type FetchSpecificationSummaryResult = Awaited<ReturnType<typeof fetchSpecificationSummary>>;
 
@@ -15,7 +15,7 @@ const useSpecificationSummary = (projectId: string): QueryResult<FetchSpecificat
       const response = await fetchSpecificationSummary(projectId);
       return response;
     },
-    queryKey: ['specificationSummary', projectId],
+    queryKey: ["specificationSummary", projectId],
   });
 
 const useQualityReport = (projectId: string): QueryResult<FetchQualityReportsResult> =>
@@ -25,7 +25,7 @@ const useQualityReport = (projectId: string): QueryResult<FetchQualityReportsRes
       const response = await fetchQualityReports(projectId);
       return response;
     },
-    queryKey: ['qualityReports', projectId],
+    queryKey: ["qualityReports", projectId],
   });
 
 export {

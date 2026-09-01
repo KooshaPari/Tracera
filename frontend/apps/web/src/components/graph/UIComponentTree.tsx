@@ -11,18 +11,18 @@ import {
   LayoutGrid,
   Monitor,
   Search,
-} from 'lucide-react';
-import React, { memo, useCallback, useMemo, useState } from 'react';
+} from "lucide-react";
+import React, { memo, useCallback, useMemo, useState } from "react";
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
-import { Card } from '@tracertm/ui/components/Card';
-import { Input } from '@tracertm/ui/components/Input';
-import { ScrollArea } from '@tracertm/ui/components/ScrollArea';
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
+import { Input } from "@tracertm/ui/components/Input";
+import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
 
-import { ENHANCED_TYPE_COLORS } from './types';
+import { ENHANCED_TYPE_COLORS } from "./types";
 
 interface UIComponentTreeProps {
   items: Item[];
@@ -32,7 +32,7 @@ interface UIComponentTreeProps {
 }
 
 // UI-related item types
-const UI_TYPES = new Set(['wireframe', 'ui_component', 'page', 'component', 'screen', 'layout']);
+const UI_TYPES = new Set(["wireframe", "ui_component", "page", "component", "screen", "layout"]);
 
 // Tree node structure
 interface TreeNode {
@@ -47,9 +47,9 @@ interface TreeNode {
 function buildUITree(items: Item[], links: Link[]): TreeNode[] {
   // Filter to UI items only
   const uiItems = items.filter((item) => {
-    const type = item.type ? item.type.toLowerCase() : '';
-    const view = item.view ? item.view.toLowerCase() : '';
-    return UI_TYPES.has(type) || view.includes('ui') || view.includes('wireframe');
+    const type = item.type ? item.type.toLowerCase() : "";
+    const view = item.view ? item.view.toLowerCase() : "";
+    return UI_TYPES.has(type) || view.includes("ui") || view.includes("wireframe");
   });
 
   // Build parent-child relationships
@@ -58,7 +58,7 @@ function buildUITree(items: Item[], links: Link[]): TreeNode[] {
 
   // Group by parent
   for (const item of uiItems) {
-    const parentId = item.parentId ?? 'root';
+    const parentId = item.parentId ?? "root";
     if (!childrenMap.has(parentId)) {
       childrenMap.set(parentId, []);
     }
@@ -68,14 +68,14 @@ function buildUITree(items: Item[], links: Link[]): TreeNode[] {
   // Build interaction map (which pages link to which)
   const interactionMap = new Map<string, string[]>();
   for (const link of links) {
-    if (link.type === 'related_to' || link.type === 'depends_on') {
+    if (link.type === "related_to" || link.type === "depends_on") {
       const source = itemMap.get(link.sourceId);
       const target = itemMap.get(link.targetId);
       if (!source || !target) {
         continue;
       }
-      const srcType = source.type ? source.type.toLowerCase() : '';
-      const tgtType = target.type ? target.type.toLowerCase() : '';
+      const srcType = source.type ? source.type.toLowerCase() : "";
+      const tgtType = target.type ? target.type.toLowerCase() : "";
       if (source && target && UI_TYPES.has(srcType) && UI_TYPES.has(tgtType)) {
         if (!interactionMap.has(source.id)) {
           interactionMap.set(source.id, []);
@@ -92,7 +92,7 @@ function buildUITree(items: Item[], links: Link[]): TreeNode[] {
 
     return {
       children: children
-        .toSorted((a, b) => (a.title || '').localeCompare(b.title || ''))
+        .toSorted((a, b) => (a.title || "").localeCompare(b.title || ""))
         .map((child) => buildNode(child, depth + 1)),
       depth,
       hasInteraction: linkedPages.length > 0,
@@ -103,17 +103,17 @@ function buildUITree(items: Item[], links: Link[]): TreeNode[] {
   }
 
   // Build tree from root items
-  const rootItems = childrenMap.get('root') ?? uiItems.filter((i) => !i.parentId);
+  const rootItems = childrenMap.get("root") ?? uiItems.filter((i) => !i.parentId);
 
   // Group by type for better organization
-  const pages = rootItems.filter((i) => i.type === 'page' || i.type === 'screen');
-  const components = rootItems.filter((i) => i.type === 'component' || i.type === 'ui_component');
-  const wireframes = rootItems.filter((i) => i.type === 'wireframe');
-  const layouts = rootItems.filter((i) => i.type === 'layout');
+  const pages = rootItems.filter((i) => i.type === "page" || i.type === "screen");
+  const components = rootItems.filter((i) => i.type === "component" || i.type === "ui_component");
+  const wireframes = rootItems.filter((i) => i.type === "wireframe");
+  const layouts = rootItems.filter((i) => i.type === "layout");
   const other = rootItems.filter(
     (i) =>
-      !['page', 'screen', 'component', 'ui_component', 'wireframe', 'layout'].includes(
-        i.type || '',
+      !["page", "screen", "component", "ui_component", "wireframe", "layout"].includes(
+        i.type || "",
       ),
   );
 
@@ -141,11 +141,11 @@ interface TreeToolbarProps {
 
 function TreeToolbar({ onExpandAll, onCollapseAll }: TreeToolbarProps) {
   return (
-    <div className='mb-2 flex gap-2 px-2'>
-      <Button variant='ghost' size='sm' className='h-6 text-xs' onClick={onExpandAll}>
+    <div className="mb-2 flex gap-2 px-2">
+      <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={onExpandAll}>
         Expand All
       </Button>
-      <Button variant='ghost' size='sm' className='h-6 text-xs' onClick={onCollapseAll}>
+      <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={onCollapseAll}>
         Collapse All
       </Button>
     </div>
@@ -154,20 +154,20 @@ function TreeToolbar({ onExpandAll, onCollapseAll }: TreeToolbarProps) {
 
 function EmptyTreeState() {
   return (
-    <div className='text-muted-foreground py-8 text-center'>
-      <LayoutGrid className='mx-auto mb-2 h-12 w-12 opacity-50' />
-      <p className='text-sm'>No UI components found</p>
-      <p className='mt-1 text-xs'>Add wireframes, pages, or components to see them here</p>
+    <div className="text-muted-foreground py-8 text-center">
+      <LayoutGrid className="mx-auto mb-2 h-12 w-12 opacity-50" />
+      <p className="text-sm">No UI components found</p>
+      <p className="mt-1 text-xs">Add wireframes, pages, or components to see them here</p>
     </div>
   );
 }
 
 function EmptyInteractionsState() {
   return (
-    <div className='text-muted-foreground py-8 text-center'>
-      <ExternalLink className='mx-auto mb-2 h-12 w-12 opacity-50' />
-      <p className='text-sm'>No page interactions found</p>
-      <p className='mt-1 text-xs'>Link UI items with &quot;related_to&quot; to map interactions</p>
+    <div className="text-muted-foreground py-8 text-center">
+      <ExternalLink className="mx-auto mb-2 h-12 w-12 opacity-50" />
+      <p className="text-sm">No page interactions found</p>
+      <p className="mt-1 text-xs">Link UI items with &quot;related_to&quot; to map interactions</p>
     </div>
   );
 }
@@ -181,26 +181,26 @@ interface InteractionRowProps {
 
 function InteractionRow({ from, to, linkType, onSelectItem }: InteractionRowProps) {
   return (
-    <div className='bg-muted/50 flex items-center gap-2 rounded-lg p-2 text-sm'>
+    <div className="bg-muted/50 flex items-center gap-2 rounded-lg p-2 text-sm">
       <Button
-        variant='ghost'
-        size='sm'
-        className='h-6 px-2 text-xs'
+        variant="ghost"
+        size="sm"
+        className="h-6 px-2 text-xs"
         onClick={() => {
           onSelectItem(from.id);
         }}
       >
         {from.title}
       </Button>
-      <ChevronRight className='text-muted-foreground h-4 w-4' />
-      <Badge variant='outline' className='text-[10px]'>
-        {linkType.replaceAll('_', ' ')}
+      <ChevronRight className="text-muted-foreground h-4 w-4" />
+      <Badge variant="outline" className="text-[10px]">
+        {linkType.replaceAll("_", " ")}
       </Badge>
-      <ChevronRight className='text-muted-foreground h-4 w-4' />
+      <ChevronRight className="text-muted-foreground h-4 w-4" />
       <Button
-        variant='ghost'
-        size='sm'
-        className='h-6 px-2 text-xs'
+        variant="ghost"
+        size="sm"
+        className="h-6 px-2 text-xs"
         onClick={() => {
           onSelectItem(to.id);
         }}
@@ -215,7 +215,7 @@ function TreeItem({ node, selectedId, expandedIds, onToggle, onSelect }: TreeIte
   const isExpanded = expandedIds.has(node.id);
   const isSelected = selectedId === node.id;
   const hasChildren = node.children.length > 0;
-  const bgColor = ENHANCED_TYPE_COLORS[node.item.type || ''] ?? '#64748b';
+  const bgColor = ENHANCED_TYPE_COLORS[node.item.type || ""] ?? "#64748b";
 
   const typeIcon =
     {
@@ -225,7 +225,7 @@ function TreeItem({ node, selectedId, expandedIds, onToggle, onSelect }: TreeIte
       screen: Monitor,
       ui_component: Component,
       wireframe: LayoutGrid,
-    }[node.item.type || ''] ?? FileCode;
+    }[node.item.type || ""] ?? FileCode;
 
   const Icon = typeIcon;
 
@@ -233,7 +233,7 @@ function TreeItem({ node, selectedId, expandedIds, onToggle, onSelect }: TreeIte
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         onSelect(node.id);
       }
@@ -255,9 +255,9 @@ function TreeItem({ node, selectedId, expandedIds, onToggle, onSelect }: TreeIte
   return (
     <div>
       <div
-        role='button'
+        role="button"
         tabIndex={0}
-        className={`flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 transition-colors ${isSelected ? 'bg-primary/10 text-primary' : 'hover:bg-muted'} `}
+        className={`flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 transition-colors ${isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted"} `}
         style={paddingStyle}
         onClick={() => {
           onSelect(node.id);
@@ -267,36 +267,36 @@ function TreeItem({ node, selectedId, expandedIds, onToggle, onSelect }: TreeIte
         {/* Expand/Collapse */}
         {hasChildren ? (
           <button
-            type='button'
+            type="button"
             onClick={handleExpandClick}
-            className='hover:bg-muted-foreground/20 rounded p-0.5'
+            className="hover:bg-muted-foreground/20 rounded p-0.5"
           >
             {isExpanded ? (
-              <ChevronDown className='text-muted-foreground h-3.5 w-3.5' />
+              <ChevronDown className="text-muted-foreground h-3.5 w-3.5" />
             ) : (
-              <ChevronRight className='text-muted-foreground h-3.5 w-3.5' />
+              <ChevronRight className="text-muted-foreground h-3.5 w-3.5" />
             )}
           </button>
         ) : (
-          <span className='w-4.5' />
+          <span className="w-4.5" />
         )}
 
         {/* Icon */}
-        <div className='rounded p-1' style={iconBgStyle}>
-          <Icon className='h-3.5 w-3.5' style={iconColorStyle} />
+        <div className="rounded p-1" style={iconBgStyle}>
+          <Icon className="h-3.5 w-3.5" style={iconColorStyle} />
         </div>
 
         {/* Title */}
-        <span className='flex-1 truncate text-sm'>{node.item.title || 'Untitled'}</span>
+        <span className="flex-1 truncate text-sm">{node.item.title || "Untitled"}</span>
 
         {/* Indicators */}
         {node.hasInteraction && (
-          <span title='Has page interactions'>
-            <ExternalLink className='text-muted-foreground h-3 w-3' />
+          <span title="Has page interactions">
+            <ExternalLink className="text-muted-foreground h-3 w-3" />
           </span>
         )}
         {node.children.length > 0 && (
-          <Badge variant='secondary' className='h-4 px-1.5 text-[10px]'>
+          <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
             {node.children.length}
           </Badge>
         )}
@@ -327,9 +327,9 @@ function UIComponentTreeComponent({
   onSelectItem,
   selectedItemId,
 }: UIComponentTreeProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'tree' | 'interactions'>('tree');
+  const [activeTab, setActiveTab] = useState<"tree" | "interactions">("tree");
 
   const tree = useMemo(() => buildUITree(items, links), [items, links]);
   const itemMap = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
@@ -343,8 +343,8 @@ function UIComponentTreeComponent({
     const query = searchQuery.toLowerCase();
 
     function filterNode(node: TreeNode): TreeNode | undefined {
-      const matchesTitle = (node.item.title || '').toLowerCase().includes(query);
-      const matchesType = (node.item.type || '').toLowerCase().includes(query);
+      const matchesTitle = (node.item.title || "").toLowerCase().includes(query);
+      const matchesType = (node.item.type || "").toLowerCase().includes(query);
 
       const filteredChildren = node.children
         .map((child) => filterNode(child))
@@ -368,8 +368,8 @@ function UIComponentTreeComponent({
       const target = itemMap.get(link.targetId);
 
       if (source && target) {
-        const srcType = source.type ? source.type.toLowerCase() : '';
-        const tgtType = target.type ? target.type.toLowerCase() : '';
+        const srcType = source.type ? source.type.toLowerCase() : "";
+        const tgtType = target.type ? target.type.toLowerCase() : "";
         const sourceIsUI = UI_TYPES.has(srcType);
         const targetIsUI = UI_TYPES.has(tgtType);
 
@@ -419,11 +419,11 @@ function UIComponentTreeComponent({
     let wireframes = 0;
 
     function countNode(node: TreeNode) {
-      if (node.item.type === 'page' || node.item.type === 'screen') {
+      if (node.item.type === "page" || node.item.type === "screen") {
         pages += 1;
-      } else if (node.item.type === 'component' || node.item.type === 'ui_component') {
+      } else if (node.item.type === "component" || node.item.type === "ui_component") {
         components += 1;
-      } else if (node.item.type === 'wireframe') {
+      } else if (node.item.type === "wireframe") {
         wireframes += 1;
       }
       for (const child of node.children) {
@@ -443,80 +443,80 @@ function UIComponentTreeComponent({
   }, [tree, interactionMatrix]);
 
   return (
-    <Card className='flex h-full flex-col overflow-hidden'>
+    <Card className="flex h-full flex-col overflow-hidden">
       {/* Header */}
-      <div className='space-y-3 border-b p-4'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-2'>
-            <LayoutGrid className='h-5 w-5 text-pink-500' />
-            <h3 className='font-semibold'>UI Component Library</h3>
+      <div className="space-y-3 border-b p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <LayoutGrid className="h-5 w-5 text-pink-500" />
+            <h3 className="font-semibold">UI Component Library</h3>
           </div>
         </div>
 
         {/* Stats */}
-        <div className='flex gap-3 text-xs'>
-          <div className='flex items-center gap-1'>
-            <Monitor className='h-3 w-3 text-blue-500' />
+        <div className="flex gap-3 text-xs">
+          <div className="flex items-center gap-1">
+            <Monitor className="h-3 w-3 text-blue-500" />
             <span>{stats.pages} Pages</span>
           </div>
-          <div className='flex items-center gap-1'>
-            <Component className='h-3 w-3 text-green-500' />
+          <div className="flex items-center gap-1">
+            <Component className="h-3 w-3 text-green-500" />
             <span>{stats.components} Components</span>
           </div>
-          <div className='flex items-center gap-1'>
-            <LayoutGrid className='h-3 w-3 text-pink-500' />
+          <div className="flex items-center gap-1">
+            <LayoutGrid className="h-3 w-3 text-pink-500" />
             <span>{stats.wireframes} Wireframes</span>
           </div>
-          <div className='flex items-center gap-1'>
-            <ExternalLink className='h-3 w-3 text-orange-500' />
+          <div className="flex items-center gap-1">
+            <ExternalLink className="h-3 w-3 text-orange-500" />
             <span>{stats.interactions} Interactions</span>
           </div>
         </div>
 
         {/* Search */}
-        <div className='relative'>
-          <Search className='text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4' />
+        <div className="relative">
+          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
           <Input
-            placeholder='Search components...'
+            placeholder="Search components..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
             }}
-            className='h-9 pl-8'
+            className="h-9 pl-8"
           />
         </div>
 
         {/* Tab Toggle */}
-        <div className='bg-muted flex gap-1 rounded-lg p-1'>
+        <div className="bg-muted flex gap-1 rounded-lg p-1">
           <Button
-            variant={activeTab === 'tree' ? 'default' : 'ghost'}
-            size='sm'
-            className='h-7 flex-1 text-xs'
+            variant={activeTab === "tree" ? "default" : "ghost"}
+            size="sm"
+            className="h-7 flex-1 text-xs"
             onClick={() => {
-              setActiveTab('tree');
+              setActiveTab("tree");
             }}
           >
-            <FolderOpen className='mr-1 h-3.5 w-3.5' />
+            <FolderOpen className="mr-1 h-3.5 w-3.5" />
             Tree View
           </Button>
           <Button
-            variant={activeTab === 'interactions' ? 'default' : 'ghost'}
-            size='sm'
-            className='h-7 flex-1 text-xs'
+            variant={activeTab === "interactions" ? "default" : "ghost"}
+            size="sm"
+            className="h-7 flex-1 text-xs"
             onClick={() => {
-              setActiveTab('interactions');
+              setActiveTab("interactions");
             }}
           >
-            <ExternalLink className='mr-1 h-3.5 w-3.5' />
+            <ExternalLink className="mr-1 h-3.5 w-3.5" />
             Interactions
           </Button>
         </div>
       </div>
 
       {/* Content */}
-      <ScrollArea className='flex-1'>
-        {activeTab === 'tree' ? (
-          <div className='p-2'>
+      <ScrollArea className="flex-1">
+        {activeTab === "tree" ? (
+          <div className="p-2">
             <TreeToolbar onExpandAll={expandAll} onCollapseAll={collapseAll} />
 
             {/* Tree */}
@@ -536,11 +536,11 @@ function UIComponentTreeComponent({
             )}
           </div>
         ) : (
-          <div className='space-y-3 p-4'>
+          <div className="space-y-3 p-4">
             {/* Interaction Matrix */}
-            <h4 className='text-muted-foreground text-sm font-medium'>Page Interactions</h4>
+            <h4 className="text-muted-foreground text-sm font-medium">Page Interactions</h4>
             {interactionMatrix.length > 0 ? (
-              <div className='space-y-2'>
+              <div className="space-y-2">
                 {interactionMatrix.slice(0, 20).map((interaction) => (
                   <InteractionRow
                     key={`${interaction.from.id}-${interaction.to.id}-${interaction.linkType}`}
@@ -551,7 +551,7 @@ function UIComponentTreeComponent({
                   />
                 ))}
                 {interactionMatrix.length > 20 && (
-                  <p className='text-muted-foreground text-center text-xs'>
+                  <p className="text-muted-foreground text-center text-xs">
                     +{interactionMatrix.length - 20} more interactions
                   </p>
                 )}

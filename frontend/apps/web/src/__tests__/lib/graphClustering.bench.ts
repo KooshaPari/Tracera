@@ -5,9 +5,9 @@
  * Tests clustering quality, speed, and memory usage at various scales.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll } from "vitest";
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
 import {
   louvainClustering,
@@ -15,7 +15,7 @@ import {
   adaptiveClustering,
   calculateClusteringQuality,
   extractClusterEdges,
-} from '../../lib/graphClustering';
+} from "../../lib/graphClustering";
 
 /**
  * Generate synthetic scale-free graph (Barabási-Albert model)
@@ -31,21 +31,21 @@ function generateScaleFreeGraph(
   for (let i = 0; i < nodeCount; i++) {
     const type =
       i % 5 === 0
-        ? 'requirement'
+        ? "requirement"
         : i % 5 === 1
-          ? 'test'
+          ? "test"
           : i % 5 === 2
-            ? 'code'
+            ? "code"
             : i % 5 === 3
-              ? 'ui_component'
-              : 'task';
+              ? "ui_component"
+              : "task";
 
     items.push({
       id: `node-${i}`,
-      projectId: 'test-project',
+      projectId: "test-project",
       type,
       title: `Node ${i}`,
-      status: 'todo',
+      status: "todo",
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -80,10 +80,10 @@ function generateScaleFreeGraph(
     for (const target of targets) {
       links.push({
         id: `link-${i}-${target}`,
-        projectId: 'test-project',
+        projectId: "test-project",
         sourceId: `node-${i}`,
         targetId: `node-${target}`,
-        type: 'depends_on',
+        type: "depends_on",
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -123,8 +123,8 @@ function measureMemory<T>(fn: () => T): { result: T; memory: number } {
   return { result, memory };
 }
 
-describe('Graph Clustering Benchmarks', () => {
-  describe('Small Graph (1k nodes)', () => {
+describe("Graph Clustering Benchmarks", () => {
+  describe("Small Graph (1k nodes)", () => {
     let items: Item[];
     let links: Link[];
 
@@ -135,7 +135,7 @@ describe('Graph Clustering Benchmarks', () => {
       logger.info(`\n🔬 Small graph: ${items.length} nodes, ${links.length} edges`);
     });
 
-    it('Louvain clustering', () => {
+    it("Louvain clustering", () => {
       const { result, time } = measureTime(() => louvainClustering(items, links, 1.0));
 
       logger.info(`  ⏱️  Louvain: ${time.toFixed(2)}ms`);
@@ -149,7 +149,7 @@ describe('Graph Clustering Benchmarks', () => {
       expect(time).toBeLessThan(100); // Should be fast for small graphs
     });
 
-    it('Label Propagation clustering', () => {
+    it("Label Propagation clustering", () => {
       const { result, time } = measureTime(() => labelPropagationClustering(items, links, 100));
 
       logger.info(`  ⏱️  Label Prop: ${time.toFixed(2)}ms`);
@@ -161,7 +161,7 @@ describe('Graph Clustering Benchmarks', () => {
       expect(time).toBeLessThan(50); // Should be faster than Louvain
     });
 
-    it('Adaptive clustering', () => {
+    it("Adaptive clustering", () => {
       const { result, time } = measureTime(() => adaptiveClustering(items, links, 50));
 
       logger.info(`  ⏱️  Adaptive: ${time.toFixed(2)}ms`);
@@ -172,7 +172,7 @@ describe('Graph Clustering Benchmarks', () => {
     });
   });
 
-  describe('Medium Graph (10k nodes)', () => {
+  describe("Medium Graph (10k nodes)", () => {
     let items: Item[];
     let links: Link[];
 
@@ -183,7 +183,7 @@ describe('Graph Clustering Benchmarks', () => {
       logger.info(`\n🔬 Medium graph: ${items.length} nodes, ${links.length} edges`);
     });
 
-    it('Louvain clustering', () => {
+    it("Louvain clustering", () => {
       const { result, time } = measureTime(() => louvainClustering(items, links, 1.0));
 
       logger.info(`  ⏱️  Louvain: ${time.toFixed(2)}ms`);
@@ -196,7 +196,7 @@ describe('Graph Clustering Benchmarks', () => {
       expect(time).toBeLessThan(500);
     });
 
-    it('Label Propagation clustering', () => {
+    it("Label Propagation clustering", () => {
       const { result, time } = measureTime(() => labelPropagationClustering(items, links, 100));
 
       logger.info(`  ⏱️  Label Prop: ${time.toFixed(2)}ms`);
@@ -206,7 +206,7 @@ describe('Graph Clustering Benchmarks', () => {
       expect(time).toBeLessThan(200); // Should be much faster
     });
 
-    it('Quality metrics', () => {
+    it("Quality metrics", () => {
       const clustering = louvainClustering(items, links, 1.0);
       const quality = calculateClusteringQuality(clustering, links);
 
@@ -219,7 +219,7 @@ describe('Graph Clustering Benchmarks', () => {
       expect(quality.coverage).toBeGreaterThan(0.5);
     });
 
-    it('Cluster edges extraction', () => {
+    it("Cluster edges extraction", () => {
       const clustering = louvainClustering(items, links, 1.0);
       const { result, time } = measureTime(() => extractClusterEdges(clustering, links, 0));
 
@@ -232,11 +232,11 @@ describe('Graph Clustering Benchmarks', () => {
     });
   });
 
-  describe('Large Graph (100k nodes) - Optional', () => {
+  describe("Large Graph (100k nodes) - Optional", () => {
     // Skip by default to keep tests fast
     // Run with: npm test -- --grep "100k nodes"
 
-    it.skip('Louvain clustering', () => {
+    it.skip("Louvain clustering", () => {
       const { items, links } = generateScaleFreeGraph(100000, 3);
       logger.info(`\n🔬 Large graph: ${items.length} nodes, ${links.length} edges`);
 
@@ -253,7 +253,7 @@ describe('Graph Clustering Benchmarks', () => {
       expect(time).toBeLessThan(5000); // 5 seconds max
     });
 
-    it.skip('Label Propagation clustering', () => {
+    it.skip("Label Propagation clustering", () => {
       const { items, links } = generateScaleFreeGraph(100000, 3);
 
       const { result, time } = measureTime(() => labelPropagationClustering(items, links, 100));
@@ -266,7 +266,7 @@ describe('Graph Clustering Benchmarks', () => {
       expect(result.compressionRatio).toBeGreaterThan(100);
     });
 
-    it.skip('Adaptive clustering (chooses optimal algorithm)', () => {
+    it.skip("Adaptive clustering (chooses optimal algorithm)", () => {
       const { items, links } = generateScaleFreeGraph(100000, 3);
 
       const { result, time } = measureTime(() => adaptiveClustering(items, links, 500));
@@ -282,7 +282,7 @@ describe('Graph Clustering Benchmarks', () => {
       expect(result.totalClusters).toBeLessThan(600);
     });
 
-    it.skip('Memory usage estimate', () => {
+    it.skip("Memory usage estimate", () => {
       const { items, links } = generateScaleFreeGraph(100000, 3);
 
       const { result, memory } = measureMemory(() => adaptiveClustering(items, links, 500));
@@ -297,8 +297,8 @@ describe('Graph Clustering Benchmarks', () => {
     });
   });
 
-  describe('Compression Ratio Tests', () => {
-    it('achieves 100x+ compression on large graphs', () => {
+  describe("Compression Ratio Tests", () => {
+    it("achieves 100x+ compression on large graphs", () => {
       const { items, links } = generateScaleFreeGraph(10000, 3);
       const result = adaptiveClustering(items, links, 100);
 
@@ -311,7 +311,7 @@ describe('Graph Clustering Benchmarks', () => {
       expect(result.compressionRatio).toBeGreaterThan(50);
     });
 
-    it('respects target cluster count', () => {
+    it("respects target cluster count", () => {
       const { items, links } = generateScaleFreeGraph(5000, 3);
 
       const targets = [50, 100, 200];
@@ -329,8 +329,8 @@ describe('Graph Clustering Benchmarks', () => {
     });
   });
 
-  describe('Cache Performance', () => {
-    it('benefits from caching on repeated clustering', () => {
+  describe("Cache Performance", () => {
+    it("benefits from caching on repeated clustering", () => {
       const { items, links } = generateScaleFreeGraph(5000, 3);
 
       // First run (cold)
@@ -350,8 +350,8 @@ describe('Graph Clustering Benchmarks', () => {
   });
 });
 
-describe('Integration Tests', () => {
-  it('full clustering pipeline', () => {
+describe("Integration Tests", () => {
+  it("full clustering pipeline", () => {
     const { items, links } = generateScaleFreeGraph(1000, 3);
 
     logger.info(`\n🔄 Full pipeline test:`);

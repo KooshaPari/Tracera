@@ -1,117 +1,117 @@
-import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { EnhancedErrorState } from '@/components/graph/EnhancedErrorState';
-import { GraphErrorBoundary } from '@/components/graph/GraphErrorBoundary';
-import { NetworkErrorState } from '@/components/graph/NetworkErrorState';
-import { RecoveryProgress } from '@/components/graph/RecoveryProgress';
-import { TimeoutErrorState } from '@/components/graph/TimeoutErrorState';
-import { useAutoRecovery } from '@/hooks/useAutoRecovery';
-import { logger } from '@/lib/logger';
+import { EnhancedErrorState } from "@/components/graph/EnhancedErrorState";
+import { GraphErrorBoundary } from "@/components/graph/GraphErrorBoundary";
+import { NetworkErrorState } from "@/components/graph/NetworkErrorState";
+import { RecoveryProgress } from "@/components/graph/RecoveryProgress";
+import { TimeoutErrorState } from "@/components/graph/TimeoutErrorState";
+import { useAutoRecovery } from "@/hooks/useAutoRecovery";
+import { logger } from "@/lib/logger";
 
 describe(EnhancedErrorState, () => {
-  it('renders error message as string', () => {
-    render(<EnhancedErrorState error='Test error message' />);
-    expect(screen.getByText('Test error message')).toBeInTheDocument();
+  it("renders error message as string", () => {
+    render(<EnhancedErrorState error="Test error message" />);
+    expect(screen.getByText("Test error message")).toBeInTheDocument();
   });
 
-  it('renders error as Error object', () => {
-    const error = new Error('Test error');
+  it("renders error as Error object", () => {
+    const error = new Error("Test error");
     render(<EnhancedErrorState error={error} />);
-    expect(screen.getByText('Test error')).toBeInTheDocument();
+    expect(screen.getByText("Test error")).toBeInTheDocument();
   });
 
-  it('renders inline variant', () => {
-    render(<EnhancedErrorState error='Test error' variant='inline' />);
-    expect(screen.getByRole('alert')).toBeInTheDocument();
+  it("renders inline variant", () => {
+    render(<EnhancedErrorState error="Test error" variant="inline" />);
+    expect(screen.getByRole("alert")).toBeInTheDocument();
   });
 
-  it('shows retry button when onRetry provided', () => {
+  it("shows retry button when onRetry provided", () => {
     const onRetry = vi.fn();
-    render(<EnhancedErrorState error='Test error' onRetry={onRetry} />);
+    render(<EnhancedErrorState error="Test error" onRetry={onRetry} />);
 
-    const retryButton = screen.getByText('Retry');
+    const retryButton = screen.getByText("Retry");
     fireEvent.click(retryButton);
 
     expect(onRetry).toHaveBeenCalledOnce();
   });
 
-  it('copies error to clipboard', async () => {
+  it("copies error to clipboard", async () => {
     const writeText = vi.fn();
-    Object.defineProperty(navigator, 'clipboard', {
+    Object.defineProperty(navigator, "clipboard", {
       configurable: true,
       value: { writeText },
     });
 
-    const error = new Error('Test error');
+    const error = new Error("Test error");
     render(<EnhancedErrorState error={error} />);
 
-    const copyButton = screen.getByText('Copy error');
+    const copyButton = screen.getByText("Copy error");
     fireEvent.click(copyButton);
 
     await waitFor(() => {
-      expect(writeText).toHaveBeenCalledWith(expect.stringContaining('Test error'));
+      expect(writeText).toHaveBeenCalledWith(expect.stringContaining("Test error"));
     });
   });
 
-  it('shows bug report button when onReportBug provided', () => {
+  it("shows bug report button when onReportBug provided", () => {
     const onReportBug = vi.fn();
-    render(<EnhancedErrorState error='Test error' onReportBug={onReportBug} />);
+    render(<EnhancedErrorState error="Test error" onReportBug={onReportBug} />);
 
-    const reportButton = screen.getByText('Report bug');
+    const reportButton = screen.getByText("Report bug");
     fireEvent.click(reportButton);
 
     expect(onReportBug).toHaveBeenCalledWith({
-      message: 'Test error',
+      message: "Test error",
     });
   });
 
-  it('shows technical details when showDetails is true', () => {
-    const error = new Error('Test error');
-    error.stack = 'Stack trace here';
+  it("shows technical details when showDetails is true", () => {
+    const error = new Error("Test error");
+    error.stack = "Stack trace here";
 
     render(<EnhancedErrorState error={error} showDetails />);
 
-    const detailsButton = screen.getByText('Show technical details');
+    const detailsButton = screen.getByText("Show technical details");
     expect(detailsButton).toBeInTheDocument();
   });
 
-  it('hides technical details when showDetails is false', () => {
-    const error = new Error('Test error');
-    error.stack = 'Stack trace here';
+  it("hides technical details when showDetails is false", () => {
+    const error = new Error("Test error");
+    error.stack = "Stack trace here";
 
     render(<EnhancedErrorState error={error} showDetails={false} />);
 
-    expect(screen.queryByText('Show technical details')).not.toBeInTheDocument();
+    expect(screen.queryByText("Show technical details")).not.toBeInTheDocument();
   });
 });
 
 describe(GraphErrorBoundary, () => {
   const ErrorComponent = () => {
-    throw new Error('Test error');
+    throw new Error("Test error");
   };
 
   beforeEach(() => {
     // Suppress console errors in tests
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.spyOn(logger, 'error').mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(logger, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('catches errors and shows error state', () => {
+  it("catches errors and shows error state", () => {
     render(
       <GraphErrorBoundary>
         <ErrorComponent />
       </GraphErrorBoundary>,
     );
 
-    expect(screen.getByText('Unable to load graph')).toBeInTheDocument();
+    expect(screen.getByText("Unable to load graph")).toBeInTheDocument();
   });
 
-  it('calls onError callback when error occurs', () => {
+  it("calls onError callback when error occurs", () => {
     const onError = vi.fn();
 
     render(
@@ -123,7 +123,7 @@ describe(GraphErrorBoundary, () => {
     expect(onError).toHaveBeenCalledWith(expect.any(Error), expect.any(Object));
   });
 
-  it('uses custom fallback when provided', () => {
+  it("uses custom fallback when provided", () => {
     const fallback = (error: Error) => <div>Custom error: {error.message}</div>;
 
     render(
@@ -135,33 +135,33 @@ describe(GraphErrorBoundary, () => {
     expect(screen.getByText(/Custom error:/)).toBeInTheDocument();
   });
 
-  it('renders children when no error', () => {
+  it("renders children when no error", () => {
     render(
       <GraphErrorBoundary>
         <div>Normal content</div>
       </GraphErrorBoundary>,
     );
 
-    expect(screen.getByText('Normal content')).toBeInTheDocument();
+    expect(screen.getByText("Normal content")).toBeInTheDocument();
   });
 });
 
 describe(NetworkErrorState, () => {
-  it('renders offline message when isOffline is true', () => {
+  it("renders offline message when isOffline is true", () => {
     render(<NetworkErrorState isOffline />);
-    expect(screen.getByText('No internet connection')).toBeInTheDocument();
+    expect(screen.getByText("No internet connection")).toBeInTheDocument();
   });
 
-  it('renders network error message when isOffline is false', () => {
+  it("renders network error message when isOffline is false", () => {
     render(<NetworkErrorState isOffline={false} />);
-    expect(screen.getByText('Network error')).toBeInTheDocument();
+    expect(screen.getByText("Network error")).toBeInTheDocument();
   });
 
-  it('shows retry button when onRetry provided', () => {
+  it("shows retry button when onRetry provided", () => {
     const onRetry = vi.fn();
     render(<NetworkErrorState onRetry={onRetry} />);
 
-    const retryButton = screen.getByText('Retry');
+    const retryButton = screen.getByText("Retry");
     fireEvent.click(retryButton);
 
     expect(onRetry).toHaveBeenCalledOnce();
@@ -169,16 +169,16 @@ describe(NetworkErrorState, () => {
 });
 
 describe(TimeoutErrorState, () => {
-  it('renders timeout message with duration', () => {
+  it("renders timeout message with duration", () => {
     render(<TimeoutErrorState timeout={30_000} />);
     expect(screen.getByText(/30s/)).toBeInTheDocument();
   });
 
-  it('shows retry button when onRetry provided', () => {
+  it("shows retry button when onRetry provided", () => {
     const onRetry = vi.fn();
     render(<TimeoutErrorState onRetry={onRetry} />);
 
-    const retryButton = screen.getByText('Retry');
+    const retryButton = screen.getByText("Retry");
     fireEvent.click(retryButton);
 
     expect(onRetry).toHaveBeenCalledOnce();
@@ -195,20 +195,20 @@ describe(RecoveryProgress, () => {
     vi.restoreAllMocks();
   });
 
-  it('renders retry progress', () => {
+  it("renders retry progress", () => {
     render(<RecoveryProgress retryCount={1} maxRetries={3} nextRetryIn={5000} />);
 
-    expect(screen.getByText('Retrying connection...')).toBeInTheDocument();
+    expect(screen.getByText("Retrying connection...")).toBeInTheDocument();
     expect(screen.getByText(/Attempt 2 of 3/)).toBeInTheDocument();
   });
 
-  it('shows countdown timer', () => {
+  it("shows countdown timer", () => {
     render(<RecoveryProgress retryCount={0} maxRetries={3} nextRetryIn={5000} />);
 
     expect(screen.getByText(/Next retry in 5s/)).toBeInTheDocument();
   });
 
-  it('updates countdown over time', () => {
+  it("updates countdown over time", () => {
     const { rerender } = render(
       <RecoveryProgress retryCount={0} maxRetries={3} nextRetryIn={5000} />,
     );
@@ -233,7 +233,7 @@ describe(useAutoRecovery, () => {
     vi.restoreAllMocks();
   });
 
-  it('returns initial state when no error', () => {
+  it("returns initial state when no error", () => {
     const retry = vi.fn();
     const { result } = renderHook(() => useAutoRecovery(null, retry));
 
@@ -244,9 +244,9 @@ describe(useAutoRecovery, () => {
     });
   });
 
-  it('triggers retry after delay', () => {
+  it("triggers retry after delay", () => {
     const retry = vi.fn();
-    const error = new Error('Test error');
+    const error = new Error("Test error");
 
     const { result } = renderHook(() => useAutoRecovery(error, retry, { retryDelay: 1000 }));
 
@@ -259,9 +259,9 @@ describe(useAutoRecovery, () => {
     expect(retry).toHaveBeenCalledOnce();
   });
 
-  it('uses exponential backoff', () => {
+  it("uses exponential backoff", () => {
     const retry = vi.fn();
-    const error = new Error('Test error');
+    const error = new Error("Test error");
 
     const { rerender } = renderHook(() =>
       useAutoRecovery(error, retry, {
@@ -284,10 +284,10 @@ describe(useAutoRecovery, () => {
     expect(retry).toHaveBeenCalledTimes(2);
   });
 
-  it('stops retrying after max retries', () => {
+  it("stops retrying after max retries", () => {
     const retry = vi.fn();
     const onMaxRetriesReached = vi.fn();
-    const error = new Error('Test error');
+    const error = new Error("Test error");
 
     const { rerender } = renderHook(() =>
       useAutoRecovery(error, retry, {
@@ -320,10 +320,10 @@ describe(useAutoRecovery, () => {
     expect(onMaxRetriesReached).toHaveBeenCalledOnce();
   });
 
-  it('calls onRetry callback with attempt number', () => {
+  it("calls onRetry callback with attempt number", () => {
     const retry = vi.fn();
     const onRetry = vi.fn();
-    const error = new Error('Test error');
+    const error = new Error("Test error");
 
     renderHook(() =>
       useAutoRecovery(error, retry, {
@@ -339,9 +339,9 @@ describe(useAutoRecovery, () => {
     expect(onRetry).toHaveBeenCalledWith(1);
   });
 
-  it('resets state when error is cleared', () => {
+  it("resets state when error is cleared", () => {
     const retry = vi.fn();
-    let error: Error | null = new Error('Test error');
+    let error: Error | null = new Error("Test error");
 
     const { result, rerender } = renderHook(() => useAutoRecovery(error, retry));
 

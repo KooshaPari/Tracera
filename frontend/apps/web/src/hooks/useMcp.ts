@@ -8,9 +8,9 @@
  * - Resource and prompt management
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 import type {
   MCPClient,
@@ -19,9 +19,9 @@ import type {
   MCPResource,
   MCPTool,
   ProgressNotification,
-} from '../api/mcp-client';
+} from "../api/mcp-client";
 
-import { createMCPClient } from '../api/mcp-client';
+import { createMCPClient } from "../api/mcp-client";
 
 /**
  * MCP client hook state
@@ -89,10 +89,10 @@ export const useMCP = (config: MCPClientConfig): UseMCPState => {
             tools: true,
           },
           clientInfo: {
-            name: 'TraceRTM Web Client',
-            version: '1.0.0',
+            name: "TraceRTM Web Client",
+            version: "1.0.0",
           },
-          protocolVersion: '2024-11-05',
+          protocolVersion: "2024-11-05",
         });
 
         if (mounted) {
@@ -102,9 +102,9 @@ export const useMCP = (config: MCPClientConfig): UseMCPState => {
             isInitialized: true,
             isInitializing: false,
             serverInfo: {
-              name: response['serverInfo'].name,
-              protocolVersion: response['protocolVersion'],
-              version: response['serverInfo'].version,
+              name: response["serverInfo"].name,
+              protocolVersion: response["protocolVersion"],
+              version: response["serverInfo"].version,
             },
           });
         }
@@ -113,7 +113,7 @@ export const useMCP = (config: MCPClientConfig): UseMCPState => {
           setState((prev) => ({
             ...prev,
             isInitializing: false,
-            error: error instanceof Error ? error : new Error('Initialization failed'),
+            error: error instanceof Error ? error : new Error("Initialization failed"),
           }));
         }
       }
@@ -154,7 +154,7 @@ export const useTool = <T = unknown>(
   const execute = useCallback(
     async (args?: Record<string, unknown>): Promise<T | null> => {
       if (!client) {
-        const error = new Error('MCP client not initialized');
+        const error = new Error("MCP client not initialized");
         setState({ data: null, error, isLoading: false });
         return null;
       }
@@ -165,7 +165,7 @@ export const useTool = <T = unknown>(
         setState({ data: result, error: null, isLoading: false });
         return result;
       } catch (error) {
-        const err = error instanceof Error ? error : new Error('Tool execution failed');
+        const err = error instanceof Error ? error : new Error("Tool execution failed");
         setState({ data: null, error: err, isLoading: false });
         return null;
       }
@@ -196,7 +196,7 @@ export const useTools = (
 
   const refresh = useCallback(async () => {
     if (!client) {
-      setError(new Error('MCP client not initialized'));
+      setError(new Error("MCP client not initialized"));
       return;
     }
 
@@ -204,9 +204,9 @@ export const useTools = (
       setIsLoading(true);
       setError(null);
       const response = await client.listTools();
-      setTools(response['tools']);
+      setTools(response["tools"]);
     } catch (error) {
-      setError(error instanceof Error ? error : new Error('Failed to list tools'));
+      setError(error instanceof Error ? error : new Error("Failed to list tools"));
     } finally {
       setIsLoading(false);
     }
@@ -236,7 +236,7 @@ export const useResources = (
 
   const refresh = useCallback(async () => {
     if (!client) {
-      setError(new Error('MCP client not initialized'));
+      setError(new Error("MCP client not initialized"));
       return;
     }
 
@@ -244,9 +244,9 @@ export const useResources = (
       setIsLoading(true);
       setError(null);
       const response = await client.listResources();
-      setResources(response['resources']);
+      setResources(response["resources"]);
     } catch (error) {
-      setError(error instanceof Error ? error : new Error('Failed to list resources'));
+      setError(error instanceof Error ? error : new Error("Failed to list resources"));
     } finally {
       setIsLoading(false);
     }
@@ -276,7 +276,7 @@ export const usePrompts = (
 
   const refresh = useCallback(async () => {
     if (!client) {
-      setError(new Error('MCP client not initialized'));
+      setError(new Error("MCP client not initialized"));
       return;
     }
 
@@ -284,9 +284,9 @@ export const usePrompts = (
       setIsLoading(true);
       setError(null);
       const response = await client.listPrompts();
-      setPrompts(response['prompts']);
+      setPrompts(response["prompts"]);
     } catch (error) {
-      setError(error instanceof Error ? error : new Error('Failed to list prompts'));
+      setError(error instanceof Error ? error : new Error("Failed to list prompts"));
     } finally {
       setIsLoading(false);
     }
@@ -332,7 +332,7 @@ export const useProgress = (
         });
       },
       onError: (error: Error) => {
-        logger.error('Progress tracking error:', error);
+        logger.error("Progress tracking error:", error);
         setState((prev) => ({ ...prev, isTracking: false }));
       },
     });

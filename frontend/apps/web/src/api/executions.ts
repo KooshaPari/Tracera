@@ -1,6 +1,6 @@
 // Execution API endpoints for QA Integration
 
-import { client, handleApiResponse, safeApiCall } from './client';
+import { client, handleApiResponse, safeApiCall } from "./client";
 
 const { apiClient } = client;
 
@@ -29,10 +29,10 @@ export interface Execution {
   project_id: string;
   test_run_id?: string;
   item_id?: string;
-  execution_type: 'vhs' | 'playwright' | 'codex' | 'custom';
-  trigger_source: 'github_pr' | 'github_push' | 'webhook' | 'manual';
+  execution_type: "vhs" | "playwright" | "codex" | "custom";
+  trigger_source: "github_pr" | "github_push" | "webhook" | "manual";
   trigger_ref?: string;
-  status: 'pending' | 'running' | 'passed' | 'failed' | 'cancelled';
+  status: "pending" | "running" | "passed" | "failed" | "cancelled";
   container_id?: string;
   container_image?: string;
   config?: ExecutionConfig;
@@ -51,7 +51,7 @@ export interface ExecutionArtifact {
   id: string;
   execution_id: string;
   item_id?: string;
-  artifact_type: 'screenshot' | 'video' | 'gif' | 'log' | 'trace' | 'tape';
+  artifact_type: "screenshot" | "video" | "gif" | "log" | "trace" | "tape";
   file_path: string;
   thumbnail_path?: string;
   file_size?: number;
@@ -64,8 +64,8 @@ export interface ExecutionArtifact {
 }
 
 export interface ExecutionCreate {
-  execution_type: 'vhs' | 'playwright' | 'codex' | 'custom';
-  trigger_source?: 'github_pr' | 'github_push' | 'webhook' | 'manual';
+  execution_type: "vhs" | "playwright" | "codex" | "custom";
+  trigger_source?: "github_pr" | "github_push" | "webhook" | "manual";
   trigger_ref?: string;
   test_run_id?: string;
   item_id?: string;
@@ -78,7 +78,7 @@ export interface ExecutionComplete {
   error_message?: string;
   exit_code?: number;
   output_summary?: string;
-  status: 'passed' | 'failed' | 'cancelled';
+  status: "passed" | "failed" | "cancelled";
 }
 
 export interface ExecutionEnvironmentConfig {
@@ -123,14 +123,14 @@ export interface ExecutionEnvironmentConfigUpdate {
   auto_video?: boolean;
   codex_enabled?: boolean;
   codex_full_auto?: boolean;
-  codex_sandbox_mode?: 'read-only' | 'workspace-write' | 'danger-full-access';
+  codex_sandbox_mode?: "read-only" | "workspace-write" | "danger-full-access";
   codex_timeout?: number;
   docker_image?: string;
   execution_timeout?: number;
   max_artifact_size_mb?: number;
   max_concurrent_executions?: number;
-  network_mode?: 'bridge' | 'host' | 'none';
-  playwright_browser?: 'chromium' | 'firefox' | 'webkit';
+  network_mode?: "bridge" | "host" | "none";
+  playwright_browser?: "chromium" | "firefox" | "webkit";
   playwright_enabled?: boolean;
   playwright_headless?: boolean;
   playwright_video_size?: VideoSize;
@@ -167,7 +167,7 @@ const complete = async (
           completed: boolean;
           execution_id: string;
         }>
-      )('/api/v1/projects/{project_id}/executions/{execution_id}/complete', {
+      )("/api/v1/projects/{project_id}/executions/{execution_id}/complete", {
         body: data,
         params: {
           path: { execution_id: executionId, project_id: projectId },
@@ -179,7 +179,7 @@ const complete = async (
 const create = async (projectId: string, data: ExecutionCreate): Promise<Execution> =>
   handleApiResponse(
     safeApiCall(
-      (apiClient.POST as ApiMethod<Execution>)('/api/v1/projects/{project_id}/executions', {
+      (apiClient.POST as ApiMethod<Execution>)("/api/v1/projects/{project_id}/executions", {
         body: data,
         params: { path: { project_id: projectId } },
       }),
@@ -187,13 +187,13 @@ const create = async (projectId: string, data: ExecutionCreate): Promise<Executi
   );
 
 const downloadArtifact = (projectId: string, executionId: string, artifactId: string): string =>
-  `${import.meta.env.VITE_API_URL ?? ''}/api/v1/projects/${projectId}/executions/${executionId}/artifacts/${artifactId}/download`;
+  `${import.meta.env.VITE_API_URL ?? ""}/api/v1/projects/${projectId}/executions/${executionId}/artifacts/${artifactId}/download`;
 
 const get = async (projectId: string, executionId: string): Promise<Execution> =>
   handleApiResponse(
     safeApiCall(
       (apiClient.GET as ApiMethod<Execution>)(
-        '/api/v1/projects/{project_id}/executions/{execution_id}',
+        "/api/v1/projects/{project_id}/executions/{execution_id}",
         {
           params: {
             path: { execution_id: executionId, project_id: projectId },
@@ -207,7 +207,7 @@ const getConfig = async (projectId: string): Promise<ExecutionEnvironmentConfig>
   handleApiResponse(
     safeApiCall(
       (apiClient.GET as ApiMethod<ExecutionEnvironmentConfig>)(
-        '/api/v1/projects/{project_id}/execution-config',
+        "/api/v1/projects/{project_id}/execution-config",
         {
           params: { path: { project_id: projectId } },
         },
@@ -231,7 +231,7 @@ const list = async (
           executions: Execution[];
           total: number;
         }>
-      )('/api/v1/projects/{project_id}/executions', {
+      )("/api/v1/projects/{project_id}/executions", {
         params: { path: { project_id: projectId }, query: params },
       }),
     ),
@@ -249,7 +249,7 @@ const listArtifacts = async (
           artifacts: ExecutionArtifact[];
           total: number;
         }>
-      )('/api/v1/projects/{project_id}/executions/{execution_id}/artifacts', {
+      )("/api/v1/projects/{project_id}/executions/{execution_id}/artifacts", {
         params: {
           path: { execution_id: executionId, project_id: projectId },
           query: { artifact_type: artifactType },
@@ -269,7 +269,7 @@ const start = async (
           execution_id: string;
           started: boolean;
         }>
-      )('/api/v1/projects/{project_id}/executions/{execution_id}/start', {
+      )("/api/v1/projects/{project_id}/executions/{execution_id}/start", {
         params: {
           path: { execution_id: executionId, project_id: projectId },
         },
@@ -284,7 +284,7 @@ const updateConfig = async (
   handleApiResponse(
     safeApiCall(
       (apiClient.PUT as ApiMethod<ExecutionEnvironmentConfig>)(
-        '/api/v1/projects/{project_id}/execution-config',
+        "/api/v1/projects/{project_id}/execution-config",
         {
           body: data,
           params: { path: { project_id: projectId } },
