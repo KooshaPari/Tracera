@@ -6,6 +6,8 @@
 <p align="center"><em>Hexagonal trace-link matrix for Agentic + LLM observability — Rust core, web UI, Electrobun desktop.</em></p>
 <p align="center"><sub>Tracera (navy + teal + indigo) palette · <a href="assets/brand/favicon.svg">favicon</a> · <a href="docs/assets/identity/">visual identity demo</a></sub></p>
 
+[![AI slop inside](https://sladge.net/badge.svg)](https://sladge.net) [![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/KooshaPari/Tracera/total)](https://github.com/KooshaPari/Tracera/releases)
+
 ---
 
 Tracera is the Phenotype-org **trace + observability + audit ledger** for
