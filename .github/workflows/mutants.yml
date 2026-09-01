@@ -5,15 +5,15 @@ on:
     branches: [main]
   schedule:
     # Run weekly on Sundays at 02:00 UTC
-    - cron: '0 2 * * 0'
+    - cron: "0 2 * * 0"
   workflow_dispatch:
     inputs:
       baseline:
-        description: 'Use baseline mode (only test changed files)'
+        description: "Use baseline mode (only test changed files)"
         required: false
-        default: 'true'
+        default: "true"
         type: choice
-        options: ['true', 'false']
+        options: ["true", "false"]
 
 env:
   CARGO_TERM_COLOR: always

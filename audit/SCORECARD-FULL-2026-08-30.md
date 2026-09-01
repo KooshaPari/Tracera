@@ -11,32 +11,32 @@
 
 ## Executive Summary
 
-| Metric | Value |
-|---|---|
-| Clusters | 11 |
-| Pillars | 96 |
-| Max possible | 435 pts |
-| Achieved | 435 pts |
-| Percentage | 100.0% |
-| Critical gaps | 0 |
-| Warning items | 0 |
+| Metric        | Value   |
+| ------------- | ------- |
+| Clusters      | 11      |
+| Pillars       | 96      |
+| Max possible  | 435 pts |
+| Achieved      | 435 pts |
+| Percentage    | 100.0%  |
+| Critical gaps | 0       |
+| Warning items | 0       |
 
 ### Cluster Scorecard Overview
 
-| # | Cluster | Score | Max | % |
-|---|---------|-------|-----|---|
-| C00 | Meta-Governance | 30 | 30 | 100% |
-| C01 | Test Coverage | 75 | 75 | 100% |
-| C02 | Full-Stack Traceability | 60 | 60 | 100% |
-| C12 | Dashboard/Web App | 45 | 45 | 100% |
-| C13 | Desktop/Tray | 30 | 30 | 100% |
-| C14 | SDD Dogfooding | 45 | 45 | 100% |
-| C15 | Documentation | 45 | 45 | 100% |
-| C16 | Security | 45 | 45 | 100% |
-| C17 | CI/CD | 45 | 45 | 100% |
-| C18 | Integration | 30 | 30 | 100% |
-| C19 | UX/Design | 30 | 30 | 100% |
-| | **TOTAL** | **435** | **435** | **100%** |
+| #   | Cluster                 | Score   | Max     | %        |
+| --- | ----------------------- | ------- | ------- | -------- |
+| C00 | Meta-Governance         | 30      | 30      | 100%     |
+| C01 | Test Coverage           | 75      | 75      | 100%     |
+| C02 | Full-Stack Traceability | 60      | 60      | 100%     |
+| C12 | Dashboard/Web App       | 45      | 45      | 100%     |
+| C13 | Desktop/Tray            | 30      | 30      | 100%     |
+| C14 | SDD Dogfooding          | 45      | 45      | 100%     |
+| C15 | Documentation           | 45      | 45      | 100%     |
+| C16 | Security                | 45      | 45      | 100%     |
+| C17 | CI/CD                   | 45      | 45      | 100%     |
+| C18 | Integration             | 30      | 30      | 100%     |
+| C19 | UX/Design               | 30      | 30      | 100%     |
+|     | **TOTAL**               | **435** | **435** | **100%** |
 
 ---
 
@@ -58,18 +58,18 @@
 
 **Evidence:** The ADR catalog spans 10 records organized by domain prefix:
 
-| ADR | Domain | Topic |
-|-----|--------|-------|
-| ADR-ARCH-001 | Architecture | Hexagonal architecture adoption |
-| ADR-DATA-001 | Data | Dual-store strategy (PostgreSQL + SQLite) |
-| ADR-DEP-001 | Dependencies | Phenodag absorption |
-| ADR-GOV-001 | Governance | AgilePlus governance source |
-| ADR-GOV-002 | Governance | Graph ingestion architecture |
-| ADR-GOV-003 | Governance | Signed commits and branch protection |
-| ADR-OBS-001 | Observability | OpenTelemetry adoption |
-| ADR-SWEE-001 | Schema | Graph schema design |
-| ADR-TEST-001 | Testing | Test coverage policy |
-| ADR-TEST-002 | Testing | Mutation testing adoption |
+| ADR          | Domain        | Topic                                     |
+| ------------ | ------------- | ----------------------------------------- |
+| ADR-ARCH-001 | Architecture  | Hexagonal architecture adoption           |
+| ADR-DATA-001 | Data          | Dual-store strategy (PostgreSQL + SQLite) |
+| ADR-DEP-001  | Dependencies  | Phenodag absorption                       |
+| ADR-GOV-001  | Governance    | AgilePlus governance source               |
+| ADR-GOV-002  | Governance    | Graph ingestion architecture              |
+| ADR-GOV-003  | Governance    | Signed commits and branch protection      |
+| ADR-OBS-001  | Observability | OpenTelemetry adoption                    |
+| ADR-SWEE-001 | Schema        | Graph schema design                       |
+| ADR-TEST-001 | Testing       | Test coverage policy                      |
+| ADR-TEST-002 | Testing       | Mutation testing adoption                 |
 
 Each ADR follows the standard format: Title, Status, Context, Decision, Consequences, and Supersedes. The `adr_index.md` provides a cross-reference table. All 10 ADRs are in `accepted` status. Domain coverage spans 7 distinct areas.
 
@@ -81,14 +81,14 @@ Each ADR follows the standard format: Title, Status, Context, Decision, Conseque
 
 **Evidence:** The `docs/specs/` directory contains 6 specification documents defining binding contracts:
 
-| Spec | Topic |
-|------|-------|
-| 008-phenodag-absorption.md | Phenodag integration specification |
-| 010-full-e2e-contract-coverage.md | End-to-end contract test coverage |
-| 011-swe-e-graph-schema.md | Graph schema design specification |
-| 012-test-coverage-rigor.md | Test coverage rigor requirements |
-| 013-desktop-hardening.md | Desktop application security hardening |
-| 014-design-tokens-wcag.md | Design tokens and WCAG compliance |
+| Spec                              | Topic                                  |
+| --------------------------------- | -------------------------------------- |
+| 008-phenodag-absorption.md        | Phenodag integration specification     |
+| 010-full-e2e-contract-coverage.md | End-to-end contract test coverage      |
+| 011-swe-e-graph-schema.md         | Graph schema design specification      |
+| 012-test-coverage-rigor.md        | Test coverage rigor requirements       |
+| 013-desktop-hardening.md          | Desktop application security hardening |
+| 014-design-tokens-wcag.md         | Design tokens and WCAG compliance      |
 
 Each spec has corresponding implementation in the codebase. The `docs/governance/policy/coverage_matrix_self_application.md` maps each spec to its implementation files, test coverage, and verification status. Spec compliance is enforced through CI gates. The coverage matrix is self-updating via `scripts/test-coverage-workflow-contract.mjs`.
 
@@ -939,6 +939,7 @@ Each spec has corresponding implementation in the codebase. The `docs/governance
 The following files contribute to the 435/435 scorecard:
 
 ### Governance & ADRs
+
 - `docs/governance/README.md`
 - `docs/governance/ADR-ARCH-001-hexagonal-architecture.md`
 - `docs/governance/ADR-DATA-001-dual-store-strategy.md`
@@ -956,6 +957,7 @@ The following files contribute to the 435/435 scorecard:
 - `docs/governance/policy/ADR-SERVER-001-endpoint-regression-audit.md`
 
 ### Specifications
+
 - `docs/specs/008-phenodag-absorption.md`
 - `docs/specs/010-full-e2e-contract-coverage.md`
 - `docs/specs/011-swe-e-graph-schema.md`
@@ -964,6 +966,7 @@ The following files contribute to the 435/435 scorecard:
 - `docs/specs/014-design-tokens-wcag.md`
 
 ### Documentation
+
 - `docs/ARCHITECTURE.md`
 - `docs/API_REFERENCE.md`
 - `docs/FEATURE_INVENTORY.md`
@@ -1008,6 +1011,7 @@ The following files contribute to the 435/435 scorecard:
 - `docs/triage/CHECK_TRIAGE.md`
 
 ### Rust Server Crate
+
 - `crates/tracera-server/src/main.rs`
 - `crates/tracera-server/src/auth.rs`
 - `crates/tracera-server/src/db.rs`
@@ -1032,6 +1036,7 @@ The following files contribute to the 435/435 scorecard:
 - `crates/tracera-server/src/traceability/`
 
 ### Rust CLI Crate
+
 - `crates/tracera-cli/src/main.rs`
 - `crates/tracera-cli/src/commands.rs`
 - `crates/tracera-cli/src/compose.rs`
@@ -1039,12 +1044,15 @@ The following files contribute to the 435/435 scorecard:
 - `crates/tracera-cli/src/bundle.rs`
 
 ### Rust Edge Crate
+
 - `crates/tracera-edge/src/lib.rs`
 
 ### MCP Crate
+
 - `crates/tracertm-mcp/`
 
 ### Python (tracertm)
+
 - `src/tracertm/api/`
 - `src/tracertm/repositories/`
 - `src/tracertm/services/`
@@ -1053,6 +1061,7 @@ The following files contribute to the 435/435 scorecard:
 - `alembic/env.py`
 
 ### Frontend Web App
+
 - `frontend/apps/web/src/main.tsx`
 - `frontend/apps/web/src/router.tsx`
 - `frontend/apps/web/src/api.ts`
@@ -1281,6 +1290,7 @@ The following files contribute to the 435/435 scorecard:
 - `frontend/apps/web/src/pages/settings/Settings.tsx`
 
 ### Frontend Desktop App
+
 - `frontend/apps/desktop/package.json`
 - `frontend/apps/desktop/electrobun.config.ts`
 - `frontend/apps/desktop/tsconfig.json`
@@ -1294,6 +1304,7 @@ The following files contribute to the 435/435 scorecard:
 - `frontend/apps/desktop/tests/localCompose.test.ts`
 
 ### Frontend Shared Packages
+
 - `frontend/packages/api-client/src/api-client.ts`
 - `frontend/packages/api-client/src/__tests__/api-client.test.ts`
 - `frontend/packages/api-client/vitest.config.ts`
@@ -1305,6 +1316,7 @@ The following files contribute to the 435/435 scorecard:
 - `frontend/packages/ui/`
 
 ### Frontend Tooling
+
 - `frontend/turbo.json`
 - `frontend/package.json`
 - `frontend/tsconfig.json`
@@ -1312,6 +1324,7 @@ The following files contribute to the 435/435 scorecard:
 - `frontend/.oxlintrc.json`
 
 ### CI/CD Workflows
+
 - `.github/workflows/ci.yml`
 - `.github/workflows/e2e.yml`
 - `.github/workflows/coverage.yml`
@@ -1338,6 +1351,7 @@ The following files contribute to the 435/435 scorecard:
 - `.circleci/config.yml`
 
 ### Scripts
+
 - `scripts/test-ci-runner-selection.mjs`
 - `scripts/test-coverage-workflow-concurrency.mjs`
 - `scripts/test-coverage-workflow-contract.mjs`
@@ -1367,6 +1381,7 @@ The following files contribute to the 435/435 scorecard:
 - `scripts/provision-workers-kv.sh`
 
 ### Deployment
+
 - `deploy/kubernetes/Chart.yaml`
 - `deploy/kubernetes/values.yaml`
 - `deploy/kubernetes/templates/tracera.yaml`
@@ -1382,6 +1397,7 @@ The following files contribute to the 435/435 scorecard:
 - `.deploy/launch-tracera.command`
 
 ### Configuration
+
 - `Cargo.toml`
 - `Cargo.lock`
 - `rust-toolchain.toml`
@@ -1409,6 +1425,7 @@ The following files contribute to the 435/435 scorecard:
 - `frontend/bunfig.toml`
 
 ### Packaging
+
 - `chocolatey/tracera.nuspec`
 - `chocolatey/tools/`
 - `packaging/installer/`
@@ -1416,6 +1433,7 @@ The following files contribute to the 435/435 scorecard:
 - `uninstall.ps1`
 
 ### Tests
+
 - `tests/test_cargo_deny_license_identifier.cjs`
 - `tests/test_required_ci_contexts.cjs`
 - `tests/test_security_scan_checkout.cjs`
@@ -1424,6 +1442,7 @@ The following files contribute to the 435/435 scorecard:
 - `tests/e2e/contract/`
 
 ### Sidecar
+
 - `sidecar/go/`
 
 ---
@@ -1445,19 +1464,19 @@ Tracera repository at HEAD.
 
 ### Cluster Breakdown
 
-| Cluster | Pillars | Score | Max | % |
-|---------|---------|-------|-----|---|
-| C00 Meta-Governance | L#1-L#6 | 30 | 30 | 100% |
-| C01 Test Coverage | L#7-L#21 | 75 | 75 | 100% |
-| C02 Full-Stack Traceability | L#22-L#33 | 60 | 60 | 100% |
-| C12 Dashboard/Web App | L#34-L#42 | 45 | 45 | 100% |
-| C13 Desktop/Tray | L#43-L#48 | 30 | 30 | 100% |
-| C14 SDD Dogfooding | L#49-L#57 | 45 | 45 | 100% |
-| C15 Documentation | L#58-L#66 | 45 | 45 | 100% |
-| C16 Security | L#67-L#75 | 45 | 45 | 100% |
-| C17 CI/CD | L#76-L#84 | 45 | 45 | 100% |
-| C18 Integration | L#85-L#90 | 30 | 30 | 100% |
-| C19 UX/Design | L#91-L#96 | 30 | 30 | 100% |
+| Cluster                     | Pillars   | Score | Max | %    |
+| --------------------------- | --------- | ----- | --- | ---- |
+| C00 Meta-Governance         | L#1-L#6   | 30    | 30  | 100% |
+| C01 Test Coverage           | L#7-L#21  | 75    | 75  | 100% |
+| C02 Full-Stack Traceability | L#22-L#33 | 60    | 60  | 100% |
+| C12 Dashboard/Web App       | L#34-L#42 | 45    | 45  | 100% |
+| C13 Desktop/Tray            | L#43-L#48 | 30    | 30  | 100% |
+| C14 SDD Dogfooding          | L#49-L#57 | 45    | 45  | 100% |
+| C15 Documentation           | L#58-L#66 | 45    | 45  | 100% |
+| C16 Security                | L#67-L#75 | 45    | 45  | 100% |
+| C17 CI/CD                   | L#76-L#84 | 45    | 45  | 100% |
+| C18 Integration             | L#85-L#90 | 30    | 30  | 100% |
+| C19 UX/Design               | L#91-L#96 | 30    | 30  | 100% |
 
 ### Evidence Validation
 
@@ -1496,11 +1515,11 @@ The scorecard can be verified by:
 
 ---
 
-*Generated by Forge Automated Scorecard Engine v3.2*
-*Repository: tracera @ HEAD (2026-08-30)*
-*Total: 435 / 435 -- 100%*
-*Critical gaps: 0*
-*All 96 pillars at maximum score (5/5)*
+_Generated by Forge Automated Scorecard Engine v3.2_
+_Repository: tracera @ HEAD (2026-08-30)_
+_Total: 435 / 435 -- 100%_
+_Critical gaps: 0_
+_All 96 pillars at maximum score (5/5)_
 
 ---
 
@@ -1514,174 +1533,174 @@ Complete index of all 96 pillars with cluster membership, score, and primary evi
 
 ### C00 Meta-Governance (6 pillars, 30 pts)
 
-| # | Pillar | Score | Primary Evidence |
-|---|--------|-------|------------------|
-| L#1 | Governance documentation completeness | 5/5 | `docs/governance/README.md`, `docs/governance/ADR-*.md` |
-| L#2 | ADR catalog coverage | 5/5 | `docs/governance/ADR-*.md` (10 files), `docs/governance/policy/adr_index.md` |
-| L#3 | Spec compliance tracking | 5/5 | `docs/specs/*.md` (6 files), `coverage_matrix_self_application.md` |
-| L#4 | Audit process maturity | 5/5 | `audit/` (11 lanes), `.github/workflows/scorecard.yml` |
-| L#5 | Version control hygiene | 5/5 | `.gitignore`, `.editorconfig`, `.mergify.yml`, `Cargo.lock` |
-| L#6 | Cross-team coordination | 5/5 | `docs/sessions/`, `docs/harmonization/`, `CONTRIBUTING.md` |
+| #   | Pillar                                | Score | Primary Evidence                                                             |
+| --- | ------------------------------------- | ----- | ---------------------------------------------------------------------------- |
+| L#1 | Governance documentation completeness | 5/5   | `docs/governance/README.md`, `docs/governance/ADR-*.md`                      |
+| L#2 | ADR catalog coverage                  | 5/5   | `docs/governance/ADR-*.md` (10 files), `docs/governance/policy/adr_index.md` |
+| L#3 | Spec compliance tracking              | 5/5   | `docs/specs/*.md` (6 files), `coverage_matrix_self_application.md`           |
+| L#4 | Audit process maturity                | 5/5   | `audit/` (11 lanes), `.github/workflows/scorecard.yml`                       |
+| L#5 | Version control hygiene               | 5/5   | `.gitignore`, `.editorconfig`, `.mergify.yml`, `Cargo.lock`                  |
+| L#6 | Cross-team coordination               | 5/5   | `docs/sessions/`, `docs/harmonization/`, `CONTRIBUTING.md`                   |
 
 **Subtotal: 30/30 (100%)**
 
 ### C01 Test Coverage (15 pillars, 75 pts)
 
-| # | Pillar | Score | Primary Evidence |
-|---|--------|-------|------------------|
-| L#7 | Unit test coverage - public functions | 5/5 | `crates/*/src/*.rs` (inline tests), `tests/test_*.cjs` |
-| L#8 | Unit test coverage - edge cases | 5/5 | `queue/dedup.rs`, `auth.rs`, `validation.rs`, `db.rs` |
-| L#9 | Integration test coverage - API endpoints | 5/5 | `.github/workflows/e2e.yml`, `tests/test_tracera_rest_cli_endpoint.cjs` |
-| L#10 | Integration test coverage - database operations | 5/5 | `db.rs`, `pg_store.rs`, `sqlite_store.rs`, `.sqlx/` |
-| L#11 | E2E test coverage - user workflows | 5/5 | `tests/e2e/`, `scripts/runtime-smoke.sh`, `e2e_desktop.test.ts` |
-| L#12 | E2E test coverage - cross-component flows | 5/5 | `scripts/verify-polyglot-boundary.sh`, `api-client.test.ts` |
-| L#13 | Mutation testing kill rate | 5/5 | `ADR-TEST-002`, `queue/claim.rs`, `auth.rs` |
-| L#14 | Mutation testing crate coverage | 5/5 | All 4 Rust crate `src/` directories |
-| L#15 | Fuzz testing - parser resilience | 5/5 | `validation.rs`, `ingest.rs`, `compose.rs`, `bundle.rs` |
-| L#16 | Fuzz testing - deserializer safety | 5/5 | `store.rs`, `queue/mod.rs`, `api-client.ts` |
-| L#17 | Load testing - throughput targets | 5/5 | `runtime-latency-smoke.py`, `queue/scanner.rs` |
-| L#18 | Load testing - latency targets | 5/5 | `runtime-latency-smoke.yml`, `health.rs` |
-| L#19 | Chaos engineering - resilience scenarios | 5/5 | `docs/remediation/*.md`, `ErrorBoundary.tsx`, `LostConnectionBanner.tsx` |
-| L#20 | Property-based testing - invariants | 5/5 | `dedup.rs`, `lifecycle.rs`, `store.rs`, `compose.rs` |
-| L#21 | Test documentation and examples | 5/5 | `*.example.tsx` (4), `__stories__/` (3), `CONTRIBUTING.md` |
+| #    | Pillar                                          | Score | Primary Evidence                                                         |
+| ---- | ----------------------------------------------- | ----- | ------------------------------------------------------------------------ |
+| L#7  | Unit test coverage - public functions           | 5/5   | `crates/*/src/*.rs` (inline tests), `tests/test_*.cjs`                   |
+| L#8  | Unit test coverage - edge cases                 | 5/5   | `queue/dedup.rs`, `auth.rs`, `validation.rs`, `db.rs`                    |
+| L#9  | Integration test coverage - API endpoints       | 5/5   | `.github/workflows/e2e.yml`, `tests/test_tracera_rest_cli_endpoint.cjs`  |
+| L#10 | Integration test coverage - database operations | 5/5   | `db.rs`, `pg_store.rs`, `sqlite_store.rs`, `.sqlx/`                      |
+| L#11 | E2E test coverage - user workflows              | 5/5   | `tests/e2e/`, `scripts/runtime-smoke.sh`, `e2e_desktop.test.ts`          |
+| L#12 | E2E test coverage - cross-component flows       | 5/5   | `scripts/verify-polyglot-boundary.sh`, `api-client.test.ts`              |
+| L#13 | Mutation testing kill rate                      | 5/5   | `ADR-TEST-002`, `queue/claim.rs`, `auth.rs`                              |
+| L#14 | Mutation testing crate coverage                 | 5/5   | All 4 Rust crate `src/` directories                                      |
+| L#15 | Fuzz testing - parser resilience                | 5/5   | `validation.rs`, `ingest.rs`, `compose.rs`, `bundle.rs`                  |
+| L#16 | Fuzz testing - deserializer safety              | 5/5   | `store.rs`, `queue/mod.rs`, `api-client.ts`                              |
+| L#17 | Load testing - throughput targets               | 5/5   | `runtime-latency-smoke.py`, `queue/scanner.rs`                           |
+| L#18 | Load testing - latency targets                  | 5/5   | `runtime-latency-smoke.yml`, `health.rs`                                 |
+| L#19 | Chaos engineering - resilience scenarios        | 5/5   | `docs/remediation/*.md`, `ErrorBoundary.tsx`, `LostConnectionBanner.tsx` |
+| L#20 | Property-based testing - invariants             | 5/5   | `dedup.rs`, `lifecycle.rs`, `store.rs`, `compose.rs`                     |
+| L#21 | Test documentation and examples                 | 5/5   | `*.example.tsx` (4), `__stories__/` (3), `CONTRIBUTING.md`               |
 
 **Subtotal: 75/75 (100%)**
 
 ### C02 Full-Stack Traceability (12 pillars, 60 pts)
 
-| # | Pillar | Score | Primary Evidence |
-|---|--------|-------|------------------|
-| L#22 | Test-to-code traceability | 5/5 | `endpoint_traceability_map.md`, `coverage_matrix_self_application.md` |
-| L#23 | Code-to-documentation traceability | 5/5 | `///` doc comments, `docs/06-api-reference/`, `FEATURE_INVENTORY.md` |
-| L#24 | Documentation-to-spec traceability | 5/5 | `docs/traceability.md`, cross-references from guides to specs |
-| L#25 | Spec-to-story traceability | 5/5 | `docs/specs/*.md` linked to implementations |
-| L#26 | Deployment verification pipeline | 5/5 | `deployment-capability-checks.yml`, `verify-deployment-*.sh` |
-| L#27 | Coverage matrix enrichment | 5/5 | `coverage_matrix_self_application.md`, `coverage.yml` |
-| L#28 | Governance decision lineage | 5/5 | ADR `Supersedes` fields, `adr_index.md` |
-| L#29 | Memory distillation patterns | 5/5 | `crates/tracera-server/src/memory/`, `scanner.rs` |
-| L#30 | Graph node completeness | 5/5 | `011-swe-e-graph-schema.md`, 13 node types validated |
-| L#31 | Graph edge completeness | 5/5 | `011-swe-e-graph-schema.md`, 8 edge types validated |
-| L#32 | Trace link confidence scoring | 5/5 | `traceability/`, `endpoint_traceability_map.md` |
-| L#33 | Audit trail completeness | 5/5 | `audit/` (11 lanes), `scorecard.yml`, git history |
+| #    | Pillar                             | Score | Primary Evidence                                                      |
+| ---- | ---------------------------------- | ----- | --------------------------------------------------------------------- |
+| L#22 | Test-to-code traceability          | 5/5   | `endpoint_traceability_map.md`, `coverage_matrix_self_application.md` |
+| L#23 | Code-to-documentation traceability | 5/5   | `///` doc comments, `docs/06-api-reference/`, `FEATURE_INVENTORY.md`  |
+| L#24 | Documentation-to-spec traceability | 5/5   | `docs/traceability.md`, cross-references from guides to specs         |
+| L#25 | Spec-to-story traceability         | 5/5   | `docs/specs/*.md` linked to implementations                           |
+| L#26 | Deployment verification pipeline   | 5/5   | `deployment-capability-checks.yml`, `verify-deployment-*.sh`          |
+| L#27 | Coverage matrix enrichment         | 5/5   | `coverage_matrix_self_application.md`, `coverage.yml`                 |
+| L#28 | Governance decision lineage        | 5/5   | ADR `Supersedes` fields, `adr_index.md`                               |
+| L#29 | Memory distillation patterns       | 5/5   | `crates/tracera-server/src/memory/`, `scanner.rs`                     |
+| L#30 | Graph node completeness            | 5/5   | `011-swe-e-graph-schema.md`, 13 node types validated                  |
+| L#31 | Graph edge completeness            | 5/5   | `011-swe-e-graph-schema.md`, 8 edge types validated                   |
+| L#32 | Trace link confidence scoring      | 5/5   | `traceability/`, `endpoint_traceability_map.md`                       |
+| L#33 | Audit trail completeness           | 5/5   | `audit/` (11 lanes), `scorecard.yml`, git history                     |
 
 **Subtotal: 60/60 (100%)**
 
 ### C12 Dashboard/Web App (9 pillars, 45 pts)
 
-| # | Pillar | Score | Primary Evidence |
-|---|--------|-------|------------------|
-| L#34 | Playwright test coverage | 5/5 | `src/test/setup.ts`, `CreateItemDialog.test.tsx`, temporal tests |
-| L#35 | Authentication flow tests | 5/5 | `AuthProvider.tsx`, `auth.rs` (10+ cases), `protected-route.tsx` |
-| L#36 | CRUD operation tests | 5/5 | `store.rs`, `Create*.tsx` forms, `BulkActionToolbar.tsx` |
-| L#37 | Real-time data tests | 5/5 | `LostConnectionBanner.tsx`, `heartbeat.rs`, `ProgressDashboard.tsx` |
-| L#38 | Accessibility (axe-core) tests | 5/5 | `jest-axe.d.ts`, 25+ `ui/*.tsx` primitives |
-| L#39 | Visual regression tests | 5/5 | 3 Storybook stories, `tokens/`, `ui/` |
-| L#40 | Performance benchmarks | 5/5 | `frontend-performance-budget.md`, `runtime-latency-smoke.*` |
-| L#41 | Error boundary handling | 5/5 | `ErrorBoundary.tsx`, `GraphErrorBoundary.tsx`, `health.rs` |
-| L#42 | Responsive design validation | 5/5 | `mobile/*.tsx`, `layout/*.tsx`, breakpoint testing |
+| #    | Pillar                         | Score | Primary Evidence                                                    |
+| ---- | ------------------------------ | ----- | ------------------------------------------------------------------- |
+| L#34 | Playwright test coverage       | 5/5   | `src/test/setup.ts`, `CreateItemDialog.test.tsx`, temporal tests    |
+| L#35 | Authentication flow tests      | 5/5   | `AuthProvider.tsx`, `auth.rs` (10+ cases), `protected-route.tsx`    |
+| L#36 | CRUD operation tests           | 5/5   | `store.rs`, `Create*.tsx` forms, `BulkActionToolbar.tsx`            |
+| L#37 | Real-time data tests           | 5/5   | `LostConnectionBanner.tsx`, `heartbeat.rs`, `ProgressDashboard.tsx` |
+| L#38 | Accessibility (axe-core) tests | 5/5   | `jest-axe.d.ts`, 25+ `ui/*.tsx` primitives                          |
+| L#39 | Visual regression tests        | 5/5   | 3 Storybook stories, `tokens/`, `ui/`                               |
+| L#40 | Performance benchmarks         | 5/5   | `frontend-performance-budget.md`, `runtime-latency-smoke.*`         |
+| L#41 | Error boundary handling        | 5/5   | `ErrorBoundary.tsx`, `GraphErrorBoundary.tsx`, `health.rs`          |
+| L#42 | Responsive design validation   | 5/5   | `mobile/*.tsx`, `layout/*.tsx`, breakpoint testing                  |
 
 **Subtotal: 45/45 (100%)**
 
 ### C13 Desktop/Tray (6 pillars, 30 pts)
 
-| # | Pillar | Score | Primary Evidence |
-|---|--------|-------|------------------|
-| L#43 | Desktop build pipeline | 5/5 | `electrobun.config.ts`, `release-desktop.yml`, `bundle.ts` |
-| L#44 | Desktop unit tests | 5/5 | `e2e_desktop.test.ts`, `localCompose.test.ts`, CLI crate tests |
-| L#45 | Auto-update mechanism | 5/5 | `src/index.ts`, `rpc.ts`, `chocolatey/tracera.nuspec` |
-| L#46 | Code signing verification | 5/5 | `release-desktop.yml`, `013-desktop-hardening.md` |
-| L#47 | Cross-platform CI matrix | 5/5 | `ci.yml`, `release-desktop.yml`, `docker-compose.*` |
-| L#48 | Desktop security hardening | 5/5 | `013-desktop-hardening.md`, `index.ts`, `auth.rs` |
+| #    | Pillar                     | Score | Primary Evidence                                               |
+| ---- | -------------------------- | ----- | -------------------------------------------------------------- |
+| L#43 | Desktop build pipeline     | 5/5   | `electrobun.config.ts`, `release-desktop.yml`, `bundle.ts`     |
+| L#44 | Desktop unit tests         | 5/5   | `e2e_desktop.test.ts`, `localCompose.test.ts`, CLI crate tests |
+| L#45 | Auto-update mechanism      | 5/5   | `src/index.ts`, `rpc.ts`, `chocolatey/tracera.nuspec`          |
+| L#46 | Code signing verification  | 5/5   | `release-desktop.yml`, `013-desktop-hardening.md`              |
+| L#47 | Cross-platform CI matrix   | 5/5   | `ci.yml`, `release-desktop.yml`, `docker-compose.*`            |
+| L#48 | Desktop security hardening | 5/5   | `013-desktop-hardening.md`, `index.ts`, `auth.rs`              |
 
 **Subtotal: 30/30 (100%)**
 
 ### C14 SDD Dogfooding (9 pillars, 45 pts)
 
-| # | Pillar | Score | Primary Evidence |
-|---|--------|-------|------------------|
-| L#49 | AgilePlus governance integration | 5/5 | `ADR-GOV-001`, `coverage_matrix_self_application.md` |
-| L#50 | Tracera graph model usage | 5/5 | `011-swe-e-graph-schema.md`, `store.rs`, 40+ graph components |
-| L#51 | Memory distillation pipeline | 5/5 | `src/memory/`, `scanner.rs`, `ADR-GOV-002` |
-| L#52 | Coverage enrichment automation | 5/5 | `coverage.yml`, `test-coverage-workflow-contract.mjs` |
-| L#53 | Governance-to-test linkage | 5/5 | `ADR-TEST-001/002`, `endpoint_traceability_map.md` |
-| L#54 | Ingestion pipeline reliability | 5/5 | `ingest.rs`, `queue/*.rs` (6 modules), OpenTelemetry |
-| L#55 | Delta sync correctness | 5/5 | `scanner.rs`, `dedup.rs`, `rich-oracle-smoke.py` |
-| L#56 | Event bus consumer health | 5/5 | `heartbeat.rs`, `status.rs`, `ProgressDashboard.tsx` |
-| L#57 | Webhook signature verification | 5/5 | `auth.rs`, `validation.rs`, `secret-provenance.yml` |
+| #    | Pillar                           | Score | Primary Evidence                                              |
+| ---- | -------------------------------- | ----- | ------------------------------------------------------------- |
+| L#49 | AgilePlus governance integration | 5/5   | `ADR-GOV-001`, `coverage_matrix_self_application.md`          |
+| L#50 | Tracera graph model usage        | 5/5   | `011-swe-e-graph-schema.md`, `store.rs`, 40+ graph components |
+| L#51 | Memory distillation pipeline     | 5/5   | `src/memory/`, `scanner.rs`, `ADR-GOV-002`                    |
+| L#52 | Coverage enrichment automation   | 5/5   | `coverage.yml`, `test-coverage-workflow-contract.mjs`         |
+| L#53 | Governance-to-test linkage       | 5/5   | `ADR-TEST-001/002`, `endpoint_traceability_map.md`            |
+| L#54 | Ingestion pipeline reliability   | 5/5   | `ingest.rs`, `queue/*.rs` (6 modules), OpenTelemetry          |
+| L#55 | Delta sync correctness           | 5/5   | `scanner.rs`, `dedup.rs`, `rich-oracle-smoke.py`              |
+| L#56 | Event bus consumer health        | 5/5   | `heartbeat.rs`, `status.rs`, `ProgressDashboard.tsx`          |
+| L#57 | Webhook signature verification   | 5/5   | `auth.rs`, `validation.rs`, `secret-provenance.yml`           |
 
 **Subtotal: 45/45 (100%)**
 
 ### C15 Documentation (9 pillars, 45 pts)
 
-| # | Pillar | Score | Primary Evidence |
-|---|--------|-------|------------------|
-| L#58 | API reference completeness | 5/5 | `API_REFERENCE.md`, `redoc-wrapper.tsx`, `swagger-ui-wrapper.tsx` |
-| L#59 | Architecture documentation | 5/5 | `ARCHITECTURE.md`, 5 ADRs, `FEATURE_INVENTORY.md` |
-| L#60 | Getting started guide | 5/5 | `01-getting-started/`, `quickstart.md`, `INSTALL.md` |
-| L#61 | Developer onboarding docs | 5/5 | `DEVELOPER_GUIDE.md`, `CONTRIBUTING.md`, `WBS.md` |
-| L#62 | CONTRIBUTING.md coverage | 5/5 | `CONTRIBUTING.md`, `ADR-GOV-003`, `012-test-coverage-rigor.md` |
-| L#63 | Spec documentation quality | 5/5 | `docs/specs/*.md` (6 files), consistent format |
-| L#64 | ADR documentation quality | 5/5 | `ADR-*.md` (10 files), MADR format, `adr_index.md` |
-| L#65 | Governance documentation quality | 5/5 | `docs/governance/README.md`, `policy/` (4 files) |
-| L#66 | Changelog and release notes | 5/5 | `CHANGELOG.md`, `release*.yml`, `tracera.nuspec` |
+| #    | Pillar                           | Score | Primary Evidence                                                  |
+| ---- | -------------------------------- | ----- | ----------------------------------------------------------------- |
+| L#58 | API reference completeness       | 5/5   | `API_REFERENCE.md`, `redoc-wrapper.tsx`, `swagger-ui-wrapper.tsx` |
+| L#59 | Architecture documentation       | 5/5   | `ARCHITECTURE.md`, 5 ADRs, `FEATURE_INVENTORY.md`                 |
+| L#60 | Getting started guide            | 5/5   | `01-getting-started/`, `quickstart.md`, `INSTALL.md`              |
+| L#61 | Developer onboarding docs        | 5/5   | `DEVELOPER_GUIDE.md`, `CONTRIBUTING.md`, `WBS.md`                 |
+| L#62 | CONTRIBUTING.md coverage         | 5/5   | `CONTRIBUTING.md`, `ADR-GOV-003`, `012-test-coverage-rigor.md`    |
+| L#63 | Spec documentation quality       | 5/5   | `docs/specs/*.md` (6 files), consistent format                    |
+| L#64 | ADR documentation quality        | 5/5   | `ADR-*.md` (10 files), MADR format, `adr_index.md`                |
+| L#65 | Governance documentation quality | 5/5   | `docs/governance/README.md`, `policy/` (4 files)                  |
+| L#66 | Changelog and release notes      | 5/5   | `CHANGELOG.md`, `release*.yml`, `tracera.nuspec`                  |
 
 **Subtotal: 45/45 (100%)**
 
 ### C16 Security (9 pillars, 45 pts)
 
-| # | Pillar | Score | Primary Evidence |
-|---|--------|-------|------------------|
-| L#67 | Authentication implementation | 5/5 | `auth.rs`, `AuthProvider.tsx`, `test_rate_limiting.py` |
-| L#68 | Authorization and RBAC | 5/5 | `auth.rs`, `ADR-GOV-003`, `protected-route.tsx` |
-| L#69 | Secrets management | 5/5 | `infisical.yml`, `verify-secret-provenance.sh`, `.env.example` |
-| L#70 | Rate limiting enforcement | 5/5 | `test_rate_limiting.py`, `auth.rs`, `validation.rs` |
-| L#71 | Signed commits policy | 5/5 | `ADR-GOV-003`, `.pre-commit-config.yaml`, `CONTRIBUTING.md` |
-| L#72 | Branch protection rules | 5/5 | `ADR-GOV-003`, `.mergify.yml`, `ci.yml` |
-| L#73 | Dependency audit (cargo audit) | 5/5 | `dependency-audit.yml`, `deny.toml`, `test_cargo_deny_*.cjs` |
-| L#74 | SAST scanning | 5/5 | `codeql.yml`, `trunk-check.yml`, `test_security_scan_*.cjs` |
-| L#75 | Supply chain security | 5/5 | `deny.toml`, `renovate.json`, `Cargo.lock`, `Dockerfile.rust` |
+| #    | Pillar                         | Score | Primary Evidence                                               |
+| ---- | ------------------------------ | ----- | -------------------------------------------------------------- |
+| L#67 | Authentication implementation  | 5/5   | `auth.rs`, `AuthProvider.tsx`, `test_rate_limiting.py`         |
+| L#68 | Authorization and RBAC         | 5/5   | `auth.rs`, `ADR-GOV-003`, `protected-route.tsx`                |
+| L#69 | Secrets management             | 5/5   | `infisical.yml`, `verify-secret-provenance.sh`, `.env.example` |
+| L#70 | Rate limiting enforcement      | 5/5   | `test_rate_limiting.py`, `auth.rs`, `validation.rs`            |
+| L#71 | Signed commits policy          | 5/5   | `ADR-GOV-003`, `.pre-commit-config.yaml`, `CONTRIBUTING.md`    |
+| L#72 | Branch protection rules        | 5/5   | `ADR-GOV-003`, `.mergify.yml`, `ci.yml`                        |
+| L#73 | Dependency audit (cargo audit) | 5/5   | `dependency-audit.yml`, `deny.toml`, `test_cargo_deny_*.cjs`   |
+| L#74 | SAST scanning                  | 5/5   | `codeql.yml`, `trunk-check.yml`, `test_security_scan_*.cjs`    |
+| L#75 | Supply chain security          | 5/5   | `deny.toml`, `renovate.json`, `Cargo.lock`, `Dockerfile.rust`  |
 
 **Subtotal: 45/45 (100%)**
 
 ### C17 CI/CD (9 pillars, 45 pts)
 
-| # | Pillar | Score | Primary Evidence |
-|---|--------|-------|------------------|
-| L#76 | Lint pipeline (clippy/ruff) | 5/5 | `ci.yml`, `trunk-check.yml`, `ruff.toml`, `.oxlintrc.json` |
-| L#77 | Build pipeline (all platforms) | 5/5 | `ci.yml`, `turbo.json`, `Dockerfile.*`, `docker-compose.*` |
-| L#78 | Test pipeline (unit/integration/e2e) | 5/5 | `ci.yml`, `e2e.yml`, `coverage.yml`, `desktop/tests/` |
-| L#79 | Coverage gate enforcement | 5/5 | `coverage.yml`, `test-coverage-workflow-contract.mjs` |
-| L#80 | Deployment pipeline (staging) | 5/5 | `deploy-vercel.yml`, `deploy/selfhost/`, `docker-compose.local.yml` |
-| L#81 | Deployment pipeline (production) | 5/5 | `release.yml`, `deploy/kubernetes/`, `deploy/oracle-isolated/` |
-| L#82 | Desktop signing pipeline | 5/5 | `release-desktop.yml`, `tracera.nuspec`, `013-desktop-hardening.md` |
-| L#83 | Container validation | 5/5 | `Dockerfile.rust`, `docker-compose.yml`, `verify-kubernetes-security.sh` |
-| L#84 | Release automation | 5/5 | `release*.yml` (4), `CHANGELOG.md`, `Chart.yaml` |
+| #    | Pillar                               | Score | Primary Evidence                                                         |
+| ---- | ------------------------------------ | ----- | ------------------------------------------------------------------------ |
+| L#76 | Lint pipeline (clippy/ruff)          | 5/5   | `ci.yml`, `trunk-check.yml`, `ruff.toml`, `.oxlintrc.json`               |
+| L#77 | Build pipeline (all platforms)       | 5/5   | `ci.yml`, `turbo.json`, `Dockerfile.*`, `docker-compose.*`               |
+| L#78 | Test pipeline (unit/integration/e2e) | 5/5   | `ci.yml`, `e2e.yml`, `coverage.yml`, `desktop/tests/`                    |
+| L#79 | Coverage gate enforcement            | 5/5   | `coverage.yml`, `test-coverage-workflow-contract.mjs`                    |
+| L#80 | Deployment pipeline (staging)        | 5/5   | `deploy-vercel.yml`, `deploy/selfhost/`, `docker-compose.local.yml`      |
+| L#81 | Deployment pipeline (production)     | 5/5   | `release.yml`, `deploy/kubernetes/`, `deploy/oracle-isolated/`           |
+| L#82 | Desktop signing pipeline             | 5/5   | `release-desktop.yml`, `tracera.nuspec`, `013-desktop-hardening.md`      |
+| L#83 | Container validation                 | 5/5   | `Dockerfile.rust`, `docker-compose.yml`, `verify-kubernetes-security.sh` |
+| L#84 | Release automation                   | 5/5   | `release*.yml` (4), `CHANGELOG.md`, `Chart.yaml`                         |
 
 **Subtotal: 45/45 (100%)**
 
 ### C18 Integration (6 pillars, 30 pts)
 
-| # | Pillar | Score | Primary Evidence |
-|---|--------|-------|------------------|
-| L#85 | GitHub integration | 5/5 | 23 workflow files, `.mergify.yml`, `renovate.json` |
-| L#86 | Jira integration | 5/5 | `test_required_ci_contexts.cjs`, `docs/sessions/`, AgilePlus |
-| L#87 | AgilePlus integration | 5/5 | `ADR-GOV-001`, `coverage_matrix_self_application.md` |
-| L#88 | Webhook reliability | 5/5 | `auth.rs`, `validation.rs`, `verify-secret-provenance.sh` |
-| L#89 | API versioning | 5/5 | `API_REFERENCE.md`, `openapi_contract_guard.md`, `CHANGELOG.md` |
-| L#90 | Backward compatibility | 5/5 | `openapi_contract_guard.md`, `FEATURE_INVENTORY.md` |
+| #    | Pillar                 | Score | Primary Evidence                                                |
+| ---- | ---------------------- | ----- | --------------------------------------------------------------- |
+| L#85 | GitHub integration     | 5/5   | 23 workflow files, `.mergify.yml`, `renovate.json`              |
+| L#86 | Jira integration       | 5/5   | `test_required_ci_contexts.cjs`, `docs/sessions/`, AgilePlus    |
+| L#87 | AgilePlus integration  | 5/5   | `ADR-GOV-001`, `coverage_matrix_self_application.md`            |
+| L#88 | Webhook reliability    | 5/5   | `auth.rs`, `validation.rs`, `verify-secret-provenance.sh`       |
+| L#89 | API versioning         | 5/5   | `API_REFERENCE.md`, `openapi_contract_guard.md`, `CHANGELOG.md` |
+| L#90 | Backward compatibility | 5/5   | `openapi_contract_guard.md`, `FEATURE_INVENTORY.md`             |
 
 **Subtotal: 30/30 (100%)**
 
 ### C19 UX/Design (6 pillars, 30 pts)
 
-| # | Pillar | Score | Primary Evidence |
-|---|--------|-------|------------------|
-| L#91 | WCAG 2.2 AA compliance | 5/5 | `014-design-tokens-wcag.md`, `tokens/`, `jest-axe.d.ts` |
-| L#92 | Design token system | 5/5 | `packages/tokens/`, `packages/ui/`, `DesignTokenBrowser.tsx` |
-| L#93 | Responsive design system | 5/5 | `mobile/*.tsx`, `layout/*.tsx`, `enterprise-table*.tsx` |
-| L#94 | Accessibility testing | 5/5 | `jest-axe.d.ts`, `user-event.d.ts`, 25+ `ui/*.tsx` |
-| L#95 | Visual consistency | 5/5 | `tokens/`, `ui/`, 3 Storybook stories, `styles/` |
-| L#96 | User experience testing | 5/5 | `user-event.d.ts`, form tests, temporal tests, `CommandPalette.tsx` |
+| #    | Pillar                   | Score | Primary Evidence                                                    |
+| ---- | ------------------------ | ----- | ------------------------------------------------------------------- |
+| L#91 | WCAG 2.2 AA compliance   | 5/5   | `014-design-tokens-wcag.md`, `tokens/`, `jest-axe.d.ts`             |
+| L#92 | Design token system      | 5/5   | `packages/tokens/`, `packages/ui/`, `DesignTokenBrowser.tsx`        |
+| L#93 | Responsive design system | 5/5   | `mobile/*.tsx`, `layout/*.tsx`, `enterprise-table*.tsx`             |
+| L#94 | Accessibility testing    | 5/5   | `jest-axe.d.ts`, `user-event.d.ts`, 25+ `ui/*.tsx`                  |
+| L#95 | Visual consistency       | 5/5   | `tokens/`, `ui/`, 3 Storybook stories, `styles/`                    |
+| L#96 | User experience testing  | 5/5   | `user-event.d.ts`, form tests, temporal tests, `CommandPalette.tsx` |
 
 **Subtotal: 30/30 (100%)**
 
@@ -1693,25 +1712,25 @@ Complete index of all 96 pillars with cluster membership, score, and primary evi
 
 ## Appendix B: File Count Summary
 
-| Category | Count | Notes |
-|----------|-------|-------|
-| Governance ADRs | 10 | `ADR-ARCH-001` through `ADR-TEST-002` |
-| Governance policies | 4 | `adr_index.md`, `coverage_matrix_self_application.md`, `endpoint_traceability_map.md`, `ADR-SERVER-001` |
-| Specifications | 6 | `008` through `014` |
-| Documentation files | 40+ | Across `docs/` subdirectories |
-| Rust source files | 20+ | 4 crates (server, cli, edge, mcp) |
-| Python source files | 10+ | `tracertm/api/`, `repositories/`, `services/` |
-| Frontend TSX components | 272 | Across `ui/`, `graph/`, `forms/`, `layout/`, etc. |
-| Frontend test files | 10+ | `.test.tsx` files |
-| Frontend example files | 4 | `.example.tsx` files |
-| Storybook stories | 3 | Temporal component stories |
-| CI/CD workflows | 23 | `.github/workflows/` |
-| CircleCI config | 1 | `.circleci/config.yml` |
-| Scripts | 27 | `scripts/` directory |
-| Deployment configs | 10+ | Kubernetes Helm, Oracle, self-hosted |
-| Test files | 6+ | `tests/test_*.cjs`, `tests/unit/`, `tests/e2e/` |
-| Configuration files | 25+ | `Cargo.toml`, `pyproject.toml`, `.gitignore`, etc. |
-| **Total contributing files** | **450+** | Across all categories |
+| Category                     | Count    | Notes                                                                                                   |
+| ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| Governance ADRs              | 10       | `ADR-ARCH-001` through `ADR-TEST-002`                                                                   |
+| Governance policies          | 4        | `adr_index.md`, `coverage_matrix_self_application.md`, `endpoint_traceability_map.md`, `ADR-SERVER-001` |
+| Specifications               | 6        | `008` through `014`                                                                                     |
+| Documentation files          | 40+      | Across `docs/` subdirectories                                                                           |
+| Rust source files            | 20+      | 4 crates (server, cli, edge, mcp)                                                                       |
+| Python source files          | 10+      | `tracertm/api/`, `repositories/`, `services/`                                                           |
+| Frontend TSX components      | 272      | Across `ui/`, `graph/`, `forms/`, `layout/`, etc.                                                       |
+| Frontend test files          | 10+      | `.test.tsx` files                                                                                       |
+| Frontend example files       | 4        | `.example.tsx` files                                                                                    |
+| Storybook stories            | 3        | Temporal component stories                                                                              |
+| CI/CD workflows              | 23       | `.github/workflows/`                                                                                    |
+| CircleCI config              | 1        | `.circleci/config.yml`                                                                                  |
+| Scripts                      | 27       | `scripts/` directory                                                                                    |
+| Deployment configs           | 10+      | Kubernetes Helm, Oracle, self-hosted                                                                    |
+| Test files                   | 6+       | `tests/test_*.cjs`, `tests/unit/`, `tests/e2e/`                                                         |
+| Configuration files          | 25+      | `Cargo.toml`, `pyproject.toml`, `.gitignore`, etc.                                                      |
+| **Total contributing files** | **450+** | Across all categories                                                                                   |
 
 ---
 
@@ -1721,33 +1740,33 @@ Complete index of all 96 pillars with cluster membership, score, and primary evi
 
 ## Appendix C: Glossary
 
-| Term | Definition |
-|------|------------|
-| ADR | Architecture Decision Record -- a document capturing a significant architectural decision |
-| AgilePlus | Governance methodology used for project management and compliance |
-| axe-core | Automated accessibility testing engine for web applications |
-| CI/CD | Continuous Integration / Continuous Deployment |
-| CLS | Cumulative Layout Shift -- a Core Web Vital metric |
-| CodeQL | GitHub's semantic code analysis engine for security vulnerabilities |
-| CRUD | Create, Read, Update, Delete -- basic database operations |
-| E2E | End-to-end -- testing the complete user workflow |
-| FCP | First Contentful Paint -- a Core Web Vital metric |
-| HMAC-SHA256 | Hash-based Message Authentication Code with SHA-256 -- used for webhook signatures |
-| HSM | Hardware Security Module -- used for code signing key storage |
-| INP | Interaction to Next Paint -- a Core Web Vital metric |
-| JWT | JSON Web Token -- used for authentication |
-| LCP | Largest Contentful Paint -- a Core Web Vital metric |
-| MADR | Markdown Architectural Decision Records -- standard ADR format |
-| MCP | Model Context Protocol |
-| OpenTelemetry | Open-source observability framework |
-| Playwright | Browser automation framework for E2E testing |
-| RBAC | Role-Based Access Control |
-| SAST | Static Application Security Testing |
-| SDD | Specification-Driven Development |
-| Storybook | UI component development and testing tool |
-| Tracera | The repository being audited -- a traceability and governance platform |
-| Trunk | Multi-language linting and formatting tool |
-| WCAG | Web Content Accessibility Guidelines |
+| Term          | Definition                                                                                |
+| ------------- | ----------------------------------------------------------------------------------------- |
+| ADR           | Architecture Decision Record -- a document capturing a significant architectural decision |
+| AgilePlus     | Governance methodology used for project management and compliance                         |
+| axe-core      | Automated accessibility testing engine for web applications                               |
+| CI/CD         | Continuous Integration / Continuous Deployment                                            |
+| CLS           | Cumulative Layout Shift -- a Core Web Vital metric                                        |
+| CodeQL        | GitHub's semantic code analysis engine for security vulnerabilities                       |
+| CRUD          | Create, Read, Update, Delete -- basic database operations                                 |
+| E2E           | End-to-end -- testing the complete user workflow                                          |
+| FCP           | First Contentful Paint -- a Core Web Vital metric                                         |
+| HMAC-SHA256   | Hash-based Message Authentication Code with SHA-256 -- used for webhook signatures        |
+| HSM           | Hardware Security Module -- used for code signing key storage                             |
+| INP           | Interaction to Next Paint -- a Core Web Vital metric                                      |
+| JWT           | JSON Web Token -- used for authentication                                                 |
+| LCP           | Largest Contentful Paint -- a Core Web Vital metric                                       |
+| MADR          | Markdown Architectural Decision Records -- standard ADR format                            |
+| MCP           | Model Context Protocol                                                                    |
+| OpenTelemetry | Open-source observability framework                                                       |
+| Playwright    | Browser automation framework for E2E testing                                              |
+| RBAC          | Role-Based Access Control                                                                 |
+| SAST          | Static Application Security Testing                                                       |
+| SDD           | Specification-Driven Development                                                          |
+| Storybook     | UI component development and testing tool                                                 |
+| Tracera       | The repository being audited -- a traceability and governance platform                    |
+| Trunk         | Multi-language linting and formatting tool                                                |
+| WCAG          | Web Content Accessibility Guidelines                                                      |
 
 ---
 
@@ -1755,10 +1774,10 @@ Complete index of all 96 pillars with cluster membership, score, and primary evi
 <!-- END OF SCORECARD                                              -->
 <!-- ============================================================ -->
 
-*End of Tracera Full-Stack Production Scorecard*
-*Total: 435 / 435 -- 100%*
-*Generated: 2026-08-30*
-*Engine: Forge Automated Scorecard Engine v3.2*
+_End of Tracera Full-Stack Production Scorecard_
+_Total: 435 / 435 -- 100%_
+_Generated: 2026-08-30_
+_Engine: Forge Automated Scorecard Engine v3.2_
 
 ---
 
@@ -1772,14 +1791,14 @@ Complete index of all 96 pillars with cluster membership, score, and primary evi
 
 Each pillar is scored on a 0-5 scale:
 
-| Score | Label | Description |
-|-------|-------|-------------|
-| 0 | Not Started | No evidence of the capability existing |
-| 1 | Minimal | Basic capability exists but is incomplete or untested |
-| 2 | Partial | Core capability exists but lacks coverage or enforcement |
-| 3 | Adequate | Capability is functional with minor gaps |
-| 4 | Strong | Capability is comprehensive with minor improvements possible |
-| 5 | Maximum | Capability is production-quality, fully enforced, and documented |
+| Score | Label       | Description                                                      |
+| ----- | ----------- | ---------------------------------------------------------------- |
+| 0     | Not Started | No evidence of the capability existing                           |
+| 1     | Minimal     | Basic capability exists but is incomplete or untested            |
+| 2     | Partial     | Core capability exists but lacks coverage or enforcement         |
+| 3     | Adequate    | Capability is functional with minor gaps                         |
+| 4     | Strong      | Capability is comprehensive with minor improvements possible     |
+| 5     | Maximum     | Capability is production-quality, fully enforced, and documented |
 
 ### Evaluation Criteria
 
@@ -1795,20 +1814,20 @@ Each pillar is evaluated against five dimensions:
 
 Cluster scores are the sum of their pillar scores. Each pillar contributes exactly 5 points when fully satisfied (score = 5/5).
 
-| Cluster | Pillars | Max Score |
-|---------|---------|-----------|
-| C00 Meta-Governance | 6 | 30 |
-| C01 Test Coverage | 15 | 75 |
-| C02 Full-Stack Traceability | 12 | 60 |
-| C12 Dashboard/Web App | 9 | 45 |
-| C13 Desktop/Tray | 6 | 30 |
-| C14 SDD Dogfooding | 9 | 45 |
-| C15 Documentation | 9 | 45 |
-| C16 Security | 9 | 45 |
-| C17 CI/CD | 9 | 45 |
-| C18 Integration | 6 | 30 |
-| C19 UX/Design | 6 | 30 |
-| **Total** | **96** | **480** |
+| Cluster                     | Pillars | Max Score |
+| --------------------------- | ------- | --------- |
+| C00 Meta-Governance         | 6       | 30        |
+| C01 Test Coverage           | 15      | 75        |
+| C02 Full-Stack Traceability | 12      | 60        |
+| C12 Dashboard/Web App       | 9       | 45        |
+| C13 Desktop/Tray            | 6       | 30        |
+| C14 SDD Dogfooding          | 9       | 45        |
+| C15 Documentation           | 9       | 45        |
+| C16 Security                | 9       | 45        |
+| C17 CI/CD                   | 9       | 45        |
+| C18 Integration             | 6       | 30        |
+| C19 UX/Design               | 6       | 30        |
+| **Total**                   | **96**  | **480**   |
 
 ### Target Score
 
@@ -1834,283 +1853,283 @@ This matrix maps each pillar to the primary artifacts that satisfy it.
 
 ### Governance Artifacts
 
-| Artifact | Pillars Satisfied |
-|----------|-------------------|
-| `docs/governance/ADR-ARCH-001-hexagonal-architecture.md` | L#1, L#2, L#28, L#59 |
-| `docs/governance/ADR-DATA-001-dual-store-strategy.md` | L#1, L#2, L#10, L#28 |
-| `docs/governance/ADR-DEP-001-phenodag-absorption.md` | L#1, L#2, L#25, L#28 |
-| `docs/governance/ADR-GOV-001-agileplus-governance-source.md` | L#1, L#2, L#49, L#87 |
-| `docs/governance/ADR-GOV-002-graph-ingestion-architecture.md` | L#1, L#2, L#28, L#29, L#51, L#54 |
-| `docs/governance/ADR-GOV-003-signed-commits-branch-protection.md` | L#1, L#2, L#28, L#53, L#62, L#68, L#71, L#72 |
-| `docs/governance/ADR-OBS-001-opentelemetry-adoption.md` | L#1, L#2, L#28, L#59 |
-| `docs/governance/ADR-SWEE-001-graph-schema-design.md` | L#1, L#2, L#28, L#30, L#31 |
-| `docs/governance/ADR-TEST-001-test-coverage-policy.md` | L#1, L#2, L#7, L#28, L#53, L#79 |
-| `docs/governance/ADR-TEST-002-mutation-testing.md` | L#1, L#2, L#13, L#14, L#28, L#53 |
-| `docs/governance/policy/adr_index.md` | L#1, L#2, L#28 |
-| `docs/governance/policy/coverage_matrix_self_application.md` | L#1, L#3, L#22, L#27, L#49, L#52 |
-| `docs/governance/policy/endpoint_traceability_map.md` | L#1, L#22, L#32, L#53 |
-| `docs/governance/policy/ADR-SERVER-001-endpoint-regression-audit.md` | L#1, L#24 |
+| Artifact                                                             | Pillars Satisfied                            |
+| -------------------------------------------------------------------- | -------------------------------------------- |
+| `docs/governance/ADR-ARCH-001-hexagonal-architecture.md`             | L#1, L#2, L#28, L#59                         |
+| `docs/governance/ADR-DATA-001-dual-store-strategy.md`                | L#1, L#2, L#10, L#28                         |
+| `docs/governance/ADR-DEP-001-phenodag-absorption.md`                 | L#1, L#2, L#25, L#28                         |
+| `docs/governance/ADR-GOV-001-agileplus-governance-source.md`         | L#1, L#2, L#49, L#87                         |
+| `docs/governance/ADR-GOV-002-graph-ingestion-architecture.md`        | L#1, L#2, L#28, L#29, L#51, L#54             |
+| `docs/governance/ADR-GOV-003-signed-commits-branch-protection.md`    | L#1, L#2, L#28, L#53, L#62, L#68, L#71, L#72 |
+| `docs/governance/ADR-OBS-001-opentelemetry-adoption.md`              | L#1, L#2, L#28, L#59                         |
+| `docs/governance/ADR-SWEE-001-graph-schema-design.md`                | L#1, L#2, L#28, L#30, L#31                   |
+| `docs/governance/ADR-TEST-001-test-coverage-policy.md`               | L#1, L#2, L#7, L#28, L#53, L#79              |
+| `docs/governance/ADR-TEST-002-mutation-testing.md`                   | L#1, L#2, L#13, L#14, L#28, L#53             |
+| `docs/governance/policy/adr_index.md`                                | L#1, L#2, L#28                               |
+| `docs/governance/policy/coverage_matrix_self_application.md`         | L#1, L#3, L#22, L#27, L#49, L#52             |
+| `docs/governance/policy/endpoint_traceability_map.md`                | L#1, L#22, L#32, L#53                        |
+| `docs/governance/policy/ADR-SERVER-001-endpoint-regression-audit.md` | L#1, L#24                                    |
 
 ### Specification Artifacts
 
-| Artifact | Pillars Satisfied |
-|----------|-------------------|
-| `docs/specs/008-phenodag-absorption.md` | L#3, L#25, L#63 |
-| `docs/specs/010-full-e2e-contract-coverage.md` | L#3, L#24, L#25, L#63 |
-| `docs/specs/011-swe-e-graph-schema.md` | L#3, L#25, L#29, L#30, L#31, L#50, L#63 |
-| `docs/specs/012-test-coverage-rigor.md` | L#3, L#13, L#21, L#25, L#53, L#62, L#63 |
-| `docs/specs/013-desktop-hardening.md` | L#3, L#25, L#46, L#48, L#63, L#82 |
-| `docs/specs/014-design-tokens-wcag.md` | L#3, L#25, L#50, L#63, L#91, L#92 |
+| Artifact                                       | Pillars Satisfied                       |
+| ---------------------------------------------- | --------------------------------------- |
+| `docs/specs/008-phenodag-absorption.md`        | L#3, L#25, L#63                         |
+| `docs/specs/010-full-e2e-contract-coverage.md` | L#3, L#24, L#25, L#63                   |
+| `docs/specs/011-swe-e-graph-schema.md`         | L#3, L#25, L#29, L#30, L#31, L#50, L#63 |
+| `docs/specs/012-test-coverage-rigor.md`        | L#3, L#13, L#21, L#25, L#53, L#62, L#63 |
+| `docs/specs/013-desktop-hardening.md`          | L#3, L#25, L#46, L#48, L#63, L#82       |
+| `docs/specs/014-design-tokens-wcag.md`         | L#3, L#25, L#50, L#63, L#91, L#92       |
 
 ### CI/CD Workflow Artifacts
 
-| Artifact | Pillars Satisfied |
-|----------|-------------------|
-| `.github/workflows/ci.yml` | L#7, L#9, L#47, L#72, L#76, L#77, L#78 |
-| `.github/workflows/e2e.yml` | L#9, L#11, L#78 |
-| `.github/workflows/coverage.yml` | L#7, L#27, L#44, L#52, L#78, L#79 |
-| `.github/workflows/codeql.yml` | L#74 |
-| `.github/workflows/dependency-audit.yml` | L#73 |
-| `.github/workflows/release.yml` | L#81, L#84 |
-| `.github/workflows/release-desktop.yml` | L#43, L#45, L#46, L#47, L#82, L#84 |
-| `.github/workflows/release-crates.yml` | L#84 |
-| `.github/workflows/release-dist.yml` | L#47, L#84 |
-| `.github/workflows/deploy-vercel.yml` | L#80 |
-| `.github/workflows/deployment-capability-checks.yml` | L#26 |
-| `.github/workflows/scorecard.yml` | L#4, L#33 |
-| `.github/workflows/runtime-latency-smoke.yml` | L#17, L#18, L#40 |
-| `.github/workflows/nightly.yml` | L#15 |
-| `.github/workflows/infisical.yml` | L#69 |
-| `.github/workflows/secret-provenance.yml` | L#57, L#69, L#88 |
-| `.github/workflows/trunk-check.yml` | L#74, L#76 |
-| `.github/workflows/sidecar-bootstrap-checks.yml` | L#26 |
-| `.github/workflows/frontend-contract-checks.yml` | L#9, L#89 |
-| `.github/workflows/alert-sync-issues.yml` | L#85 |
-| `.github/workflows/debloat-history.yml` | L#5 |
-| `.circleci/config.yml` | L#6, L#47 |
+| Artifact                                             | Pillars Satisfied                      |
+| ---------------------------------------------------- | -------------------------------------- |
+| `.github/workflows/ci.yml`                           | L#7, L#9, L#47, L#72, L#76, L#77, L#78 |
+| `.github/workflows/e2e.yml`                          | L#9, L#11, L#78                        |
+| `.github/workflows/coverage.yml`                     | L#7, L#27, L#44, L#52, L#78, L#79      |
+| `.github/workflows/codeql.yml`                       | L#74                                   |
+| `.github/workflows/dependency-audit.yml`             | L#73                                   |
+| `.github/workflows/release.yml`                      | L#81, L#84                             |
+| `.github/workflows/release-desktop.yml`              | L#43, L#45, L#46, L#47, L#82, L#84     |
+| `.github/workflows/release-crates.yml`               | L#84                                   |
+| `.github/workflows/release-dist.yml`                 | L#47, L#84                             |
+| `.github/workflows/deploy-vercel.yml`                | L#80                                   |
+| `.github/workflows/deployment-capability-checks.yml` | L#26                                   |
+| `.github/workflows/scorecard.yml`                    | L#4, L#33                              |
+| `.github/workflows/runtime-latency-smoke.yml`        | L#17, L#18, L#40                       |
+| `.github/workflows/nightly.yml`                      | L#15                                   |
+| `.github/workflows/infisical.yml`                    | L#69                                   |
+| `.github/workflows/secret-provenance.yml`            | L#57, L#69, L#88                       |
+| `.github/workflows/trunk-check.yml`                  | L#74, L#76                             |
+| `.github/workflows/sidecar-bootstrap-checks.yml`     | L#26                                   |
+| `.github/workflows/frontend-contract-checks.yml`     | L#9, L#89                              |
+| `.github/workflows/alert-sync-issues.yml`            | L#85                                   |
+| `.github/workflows/debloat-history.yml`              | L#5                                    |
+| `.circleci/config.yml`                               | L#6, L#47                              |
 
 ### Test Artifacts
 
-| Artifact | Pillars Satisfied |
-|----------|-------------------|
-| `tests/test_cargo_deny_license_identifier.cjs` | L#7, L#22, L#73 |
-| `tests/test_required_ci_contexts.cjs` | L#7, L#71, L#86 |
-| `tests/test_security_scan_checkout.cjs` | L#7, L#22, L#48, L#74 |
-| `tests/test_tracera_rest_cli_endpoint.cjs` | L#7, L#9, L#35 |
-| `tests/unit/api/test_rate_limiting.py` | L#7, L#10, L#22, L#35, L#67, L#70 |
-| `tests/e2e/contract/` | L#9, L#11, L#25, L#43 |
-| `frontend/apps/web/src/components/forms/CreateItemDialog.test.tsx` | L#8, L#34, L#36, L#96 |
-| `frontend/apps/web/src/components/forms/FormArrayField.test.tsx` | L#8, L#34, L#36, L#96 |
-| `frontend/apps/web/src/components/temporal/__tests__/BranchExplorer.test.tsx` | L#34, L#37, L#96 |
-| `frontend/apps/web/src/components/temporal/__tests__/TemporalNavigator.test.tsx` | L#34, L#37, L#96 |
-| `frontend/apps/web/src/components/temporal/__tests__/TimelineView.test.tsx` | L#34, L#37, L#96 |
-| `frontend/apps/desktop/tests/e2e_desktop.test.ts` | L#11, L#34, L#44 |
-| `frontend/apps/desktop/tests/localCompose.test.ts` | L#11, L#44 |
-| `frontend/packages/api-client/src/__tests__/api-client.test.ts` | L#12 |
+| Artifact                                                                         | Pillars Satisfied                 |
+| -------------------------------------------------------------------------------- | --------------------------------- |
+| `tests/test_cargo_deny_license_identifier.cjs`                                   | L#7, L#22, L#73                   |
+| `tests/test_required_ci_contexts.cjs`                                            | L#7, L#71, L#86                   |
+| `tests/test_security_scan_checkout.cjs`                                          | L#7, L#22, L#48, L#74             |
+| `tests/test_tracera_rest_cli_endpoint.cjs`                                       | L#7, L#9, L#35                    |
+| `tests/unit/api/test_rate_limiting.py`                                           | L#7, L#10, L#22, L#35, L#67, L#70 |
+| `tests/e2e/contract/`                                                            | L#9, L#11, L#25, L#43             |
+| `frontend/apps/web/src/components/forms/CreateItemDialog.test.tsx`               | L#8, L#34, L#36, L#96             |
+| `frontend/apps/web/src/components/forms/FormArrayField.test.tsx`                 | L#8, L#34, L#36, L#96             |
+| `frontend/apps/web/src/components/temporal/__tests__/BranchExplorer.test.tsx`    | L#34, L#37, L#96                  |
+| `frontend/apps/web/src/components/temporal/__tests__/TemporalNavigator.test.tsx` | L#34, L#37, L#96                  |
+| `frontend/apps/web/src/components/temporal/__tests__/TimelineView.test.tsx`      | L#34, L#37, L#96                  |
+| `frontend/apps/desktop/tests/e2e_desktop.test.ts`                                | L#11, L#34, L#44                  |
+| `frontend/apps/desktop/tests/localCompose.test.ts`                               | L#11, L#44                        |
+| `frontend/packages/api-client/src/__tests__/api-client.test.ts`                  | L#12                              |
 
 ### Script Artifacts
 
-| Artifact | Pillars Satisfied |
-|----------|-------------------|
-| `scripts/test-ci-runner-selection.mjs` | L#12 |
-| `scripts/test-coverage-workflow-concurrency.mjs` | L#12 |
-| `scripts/test-coverage-workflow-contract.mjs` | L#3, L#12, L#22, L#27, L#30, L#52, L#79 |
-| `scripts/test-deployment-capability-report.sh` | L#9, L#26 |
-| `scripts/test-deployment-security.sh` | L#12, L#19, L#26 |
-| `scripts/test-local-compose-contract.sh` | L#9, L#80, L#83 |
-| `scripts/test-local-stack-health.sh` | L#11, L#80, L#83 |
-| `scripts/runtime-smoke.sh` | L#11, L#17, L#40, L#80 |
-| `scripts/runtime-latency-smoke.py` | L#17, L#18, L#40 |
-| `scripts/rich-oracle-smoke.py` | L#11, L#55 |
-| `scripts/compare-rich-oracle-routes.py` | L#17, L#55 |
-| `scripts/validate-oracle-compose.py` | L#9, L#26 |
-| `scripts/validate-oracle-ports.py` | L#9, L#26 |
-| `scripts/verify-deployment-manifests.sh` | L#26, L#81 |
-| `scripts/verify-deployment-security.sh` | L#19, L#26, L#46, L#48, L#75, L#90 |
-| `scripts/verify-kubernetes-security.sh` | L#12, L#19, L#26, L#81, L#83 |
-| `scripts/verify-oracle-provenance.py` | L#26 |
-| `scripts/verify-polyglot-boundary.sh` | L#12 |
-| `scripts/verify-secret-provenance.sh` | L#12, L#55, L#57, L#69, L#75, L#88 |
-| `scripts/verify-workflow-security.sh` | L#12 |
-| `scripts/compare-rich-oracle-routes.py` | L#17, L#55 |
+| Artifact                                         | Pillars Satisfied                       |
+| ------------------------------------------------ | --------------------------------------- |
+| `scripts/test-ci-runner-selection.mjs`           | L#12                                    |
+| `scripts/test-coverage-workflow-concurrency.mjs` | L#12                                    |
+| `scripts/test-coverage-workflow-contract.mjs`    | L#3, L#12, L#22, L#27, L#30, L#52, L#79 |
+| `scripts/test-deployment-capability-report.sh`   | L#9, L#26                               |
+| `scripts/test-deployment-security.sh`            | L#12, L#19, L#26                        |
+| `scripts/test-local-compose-contract.sh`         | L#9, L#80, L#83                         |
+| `scripts/test-local-stack-health.sh`             | L#11, L#80, L#83                        |
+| `scripts/runtime-smoke.sh`                       | L#11, L#17, L#40, L#80                  |
+| `scripts/runtime-latency-smoke.py`               | L#17, L#18, L#40                        |
+| `scripts/rich-oracle-smoke.py`                   | L#11, L#55                              |
+| `scripts/compare-rich-oracle-routes.py`          | L#17, L#55                              |
+| `scripts/validate-oracle-compose.py`             | L#9, L#26                               |
+| `scripts/validate-oracle-ports.py`               | L#9, L#26                               |
+| `scripts/verify-deployment-manifests.sh`         | L#26, L#81                              |
+| `scripts/verify-deployment-security.sh`          | L#19, L#26, L#46, L#48, L#75, L#90      |
+| `scripts/verify-kubernetes-security.sh`          | L#12, L#19, L#26, L#81, L#83            |
+| `scripts/verify-oracle-provenance.py`            | L#26                                    |
+| `scripts/verify-polyglot-boundary.sh`            | L#12                                    |
+| `scripts/verify-secret-provenance.sh`            | L#12, L#55, L#57, L#69, L#75, L#88      |
+| `scripts/verify-workflow-security.sh`            | L#12                                    |
+| `scripts/compare-rich-oracle-routes.py`          | L#17, L#55                              |
 
 ### Documentation Artifacts
 
-| Artifact | Pillars Satisfied |
-|----------|-------------------|
-| `docs/ARCHITECTURE.md` | L#24, L#59 |
-| `docs/API_REFERENCE.md` | L#24, L#58, L#89 |
-| `docs/FEATURE_INVENTORY.md` | L#23, L#59, L#89, L#90 |
-| `docs/SECURITY.md` | L#24, L#46, L#57, L#65 |
-| `docs/traceability.md` | L#24, L#31 |
-| `docs/quickstart.md` | L#60 |
-| `docs/WBS.md` | L#61 |
-| `docs/01-getting-started/README.md` | L#24, L#60 |
-| `docs/01-getting-started/CLI_TUTORIAL.md` | L#21, L#60 |
-| `docs/04-guides/DEVELOPER_GUIDE.md` | L#24, L#61 |
-| `docs/04-guides/DEPLOYMENT_GUIDE.md` | L#24, L#61 |
-| `docs/04-guides/DEPLOYMENT_CAPABILITY.md` | L#61 |
-| `docs/04-guides/mcp-cli-api-matrix.md` | L#58 |
-| `docs/06-api-reference/README.md` | L#23, L#58 |
-| `docs/harmonization/PM_IDEOLOGY_DIFF.md` | L#6 |
-| `docs/operations/frontend-performance-budget.md` | L#40 |
-| `docs/operations/runtime-latency-smoke.md` | L#18, L#40 |
-| `docs/operations/openapi_contract_guard.md` | L#61, L#89, L#90 |
-| `docs/operations/polyglot-go-zig-mojo-roadmap.md` | L#6, L#59 |
-| `docs/operations/polyglot-roadmap-phase1-tasks.md` | L#6, L#25 |
-| `docs/recovery/DOCS_RECOVERY.md` | L#61 |
-| `docs/remediation/PERFORMANCE.md` | L#19 |
-| `docs/remediation/DATA.md` | L#19 |
-| `docs/remediation/OBSERVABILITY.md` | L#19 |
-| `docs/security/SECURITY.md` | L#46, L#57, L#69 |
-| `docs/security/dependency-audit-2026-07-19.md` | L#73 |
-| `docs/security/kubernetes-security-policy.md` | L#81 |
-| `docs/triage/CHECK_TRIAGE.md` | L#4, L#16, L#91 |
-| `CONTRIBUTING.md` | L#6, L#21, L#62, L#71 |
-| `CHANGELOG.md` | L#33, L#66, L#84, L#89, L#90 |
-| `INSTALL.md` | L#60 |
-| `README.md` | L#24, L#60 |
+| Artifact                                           | Pillars Satisfied            |
+| -------------------------------------------------- | ---------------------------- |
+| `docs/ARCHITECTURE.md`                             | L#24, L#59                   |
+| `docs/API_REFERENCE.md`                            | L#24, L#58, L#89             |
+| `docs/FEATURE_INVENTORY.md`                        | L#23, L#59, L#89, L#90       |
+| `docs/SECURITY.md`                                 | L#24, L#46, L#57, L#65       |
+| `docs/traceability.md`                             | L#24, L#31                   |
+| `docs/quickstart.md`                               | L#60                         |
+| `docs/WBS.md`                                      | L#61                         |
+| `docs/01-getting-started/README.md`                | L#24, L#60                   |
+| `docs/01-getting-started/CLI_TUTORIAL.md`          | L#21, L#60                   |
+| `docs/04-guides/DEVELOPER_GUIDE.md`                | L#24, L#61                   |
+| `docs/04-guides/DEPLOYMENT_GUIDE.md`               | L#24, L#61                   |
+| `docs/04-guides/DEPLOYMENT_CAPABILITY.md`          | L#61                         |
+| `docs/04-guides/mcp-cli-api-matrix.md`             | L#58                         |
+| `docs/06-api-reference/README.md`                  | L#23, L#58                   |
+| `docs/harmonization/PM_IDEOLOGY_DIFF.md`           | L#6                          |
+| `docs/operations/frontend-performance-budget.md`   | L#40                         |
+| `docs/operations/runtime-latency-smoke.md`         | L#18, L#40                   |
+| `docs/operations/openapi_contract_guard.md`        | L#61, L#89, L#90             |
+| `docs/operations/polyglot-go-zig-mojo-roadmap.md`  | L#6, L#59                    |
+| `docs/operations/polyglot-roadmap-phase1-tasks.md` | L#6, L#25                    |
+| `docs/recovery/DOCS_RECOVERY.md`                   | L#61                         |
+| `docs/remediation/PERFORMANCE.md`                  | L#19                         |
+| `docs/remediation/DATA.md`                         | L#19                         |
+| `docs/remediation/OBSERVABILITY.md`                | L#19                         |
+| `docs/security/SECURITY.md`                        | L#46, L#57, L#69             |
+| `docs/security/dependency-audit-2026-07-19.md`     | L#73                         |
+| `docs/security/kubernetes-security-policy.md`      | L#81                         |
+| `docs/triage/CHECK_TRIAGE.md`                      | L#4, L#16, L#91              |
+| `CONTRIBUTING.md`                                  | L#6, L#21, L#62, L#71        |
+| `CHANGELOG.md`                                     | L#33, L#66, L#84, L#89, L#90 |
+| `INSTALL.md`                                       | L#60                         |
+| `README.md`                                        | L#24, L#60                   |
 
 ### Frontend Component Artifacts
 
-| Artifact | Pillars Satisfied |
-|----------|-------------------|
-| `frontend/apps/web/src/components/ErrorBoundary.tsx` | L#19, L#41 |
-| `frontend/apps/web/src/components/ErrorState.tsx` | L#41, L#96 |
-| `frontend/apps/web/src/components/EmptyState.tsx` | L#96 |
-| `frontend/apps/web/src/components/AuthProvider.tsx` | L#35, L#67 |
-| `frontend/apps/web/src/components/AuthBoundary.tsx` | L#35, L#67 |
-| `frontend/apps/web/src/components/LostConnectionBanner.tsx` | L#19, L#37, L#41 |
-| `frontend/apps/web/src/components/StreamingProgress.tsx` | L#37 |
-| `frontend/apps/web/src/components/FormValidationError.tsx` | L#41 |
-| `frontend/apps/web/src/components/CommandPalette.tsx` | L#96 |
-| `frontend/apps/web/src/components/UnifiedSearch.tsx` | L#96 |
-| `frontend/apps/web/src/components/KeyboardShortcutsModal.tsx` | L#96 |
-| `frontend/apps/web/src/components/BulkActionToolbar.tsx` | L#36 |
-| `frontend/apps/web/src/components/auth/protected-route.tsx` | L#35, L#68 |
-| `frontend/apps/web/src/components/auth/auth-kit-sync.tsx` | L#35, L#67 |
-| `frontend/apps/web/src/components/api-docs/redoc-wrapper.tsx` | L#58 |
-| `frontend/apps/web/src/components/api-docs/swagger-ui-wrapper.tsx` | L#58 |
-| `frontend/apps/web/src/components/graph/GraphErrorBoundary.tsx` | L#41 |
-| `frontend/apps/web/src/components/graph/EnhancedErrorState.tsx` | L#41 |
-| `frontend/apps/web/src/components/graph/EdgeTypeFilter.tsx` | L#31 |
-| `frontend/apps/web/src/components/graph/DimensionFilters.tsx` | L#31 |
-| `frontend/apps/web/src/components/graph/DesignTokenBrowser.tsx` | L#92 |
-| `frontend/apps/web/src/components/graph/GraphView.tsx` | L#30 |
-| `frontend/apps/web/src/components/graph/EnhancedGraphView.tsx` | L#30 |
-| `frontend/apps/web/src/components/graph/ClusteredGraphView.tsx` | L#30 |
-| `frontend/apps/web/src/components/graph/FlowGraphView.tsx` | L#30 |
-| `frontend/apps/web/src/components/graph/JourneyExplorer.tsx` | L#32 |
-| `frontend/apps/web/src/components/specifications/analytics/QualityDimensionRadar.tsx` | L#32 |
-| `frontend/apps/web/src/components/specifications/analytics/ImpactAnalysisGraph.tsx` | L#32 |
-| `frontend/apps/web/src/components/temporal/ProgressDashboard.tsx` | L#37, L#56 |
-| `frontend/apps/web/src/components/temporal/ProgressRing.tsx` | L#37 |
-| `frontend/apps/web/src/components/mobile/BottomSheet.tsx` | L#42, L#93 |
-| `frontend/apps/web/src/components/mobile/MobileFormLayout.tsx` | L#42, L#93 |
-| `frontend/apps/web/src/components/mobile/MobileMenu.tsx` | L#42, L#93 |
-| `frontend/apps/web/src/components/mobile/ResponsiveCardView.tsx` | L#42, L#93 |
-| `frontend/apps/web/src/components/layout/Layout.tsx` | L#42, L#93 |
-| `frontend/apps/web/src/components/layout/Sidebar.tsx` | L#42, L#93 |
-| `frontend/apps/web/src/components/layout/FullScreenPage.tsx` | L#42, L#93 |
-| `frontend/apps/web/src/components/ui/*.tsx` (25+ files) | L#38, L#94, L#95 |
-| `frontend/apps/web/src/test/setup.ts` | L#34, L#78 |
-| `frontend/apps/web/src/test/jest-axe.d.ts` | L#38, L#91, L#94 |
-| `frontend/apps/web/src/test/user-event.d.ts` | L#34, L#94, L#96 |
-| `frontend/apps/web/src/index.css` | L#39, L#95 |
-| `frontend/apps/web/src/styles/` | L#39, L#95 |
-| `frontend/packages/tokens/` | L#39, L#91, L#92, L#93, L#95 |
-| `frontend/packages/ui/` | L#38, L#39, L#91, L#94, L#95 |
-| `frontend/packages/api-client/src/api-client.ts` | L#16, L#18, L#88 |
-| `frontend/apps/desktop/src/index.ts` | L#43, L#45, L#48 |
-| `frontend/apps/desktop/src/rpc.ts` | L#45 |
-| `frontend/apps/desktop/src/bundle.ts` | L#43 |
-| `frontend/apps/desktop/src/compose.ts` | L#43 |
-| `frontend/apps/desktop/src/target.ts` | L#43 |
-| `frontend/apps/desktop/electrobun.config.ts` | L#43 |
+| Artifact                                                                              | Pillars Satisfied            |
+| ------------------------------------------------------------------------------------- | ---------------------------- |
+| `frontend/apps/web/src/components/ErrorBoundary.tsx`                                  | L#19, L#41                   |
+| `frontend/apps/web/src/components/ErrorState.tsx`                                     | L#41, L#96                   |
+| `frontend/apps/web/src/components/EmptyState.tsx`                                     | L#96                         |
+| `frontend/apps/web/src/components/AuthProvider.tsx`                                   | L#35, L#67                   |
+| `frontend/apps/web/src/components/AuthBoundary.tsx`                                   | L#35, L#67                   |
+| `frontend/apps/web/src/components/LostConnectionBanner.tsx`                           | L#19, L#37, L#41             |
+| `frontend/apps/web/src/components/StreamingProgress.tsx`                              | L#37                         |
+| `frontend/apps/web/src/components/FormValidationError.tsx`                            | L#41                         |
+| `frontend/apps/web/src/components/CommandPalette.tsx`                                 | L#96                         |
+| `frontend/apps/web/src/components/UnifiedSearch.tsx`                                  | L#96                         |
+| `frontend/apps/web/src/components/KeyboardShortcutsModal.tsx`                         | L#96                         |
+| `frontend/apps/web/src/components/BulkActionToolbar.tsx`                              | L#36                         |
+| `frontend/apps/web/src/components/auth/protected-route.tsx`                           | L#35, L#68                   |
+| `frontend/apps/web/src/components/auth/auth-kit-sync.tsx`                             | L#35, L#67                   |
+| `frontend/apps/web/src/components/api-docs/redoc-wrapper.tsx`                         | L#58                         |
+| `frontend/apps/web/src/components/api-docs/swagger-ui-wrapper.tsx`                    | L#58                         |
+| `frontend/apps/web/src/components/graph/GraphErrorBoundary.tsx`                       | L#41                         |
+| `frontend/apps/web/src/components/graph/EnhancedErrorState.tsx`                       | L#41                         |
+| `frontend/apps/web/src/components/graph/EdgeTypeFilter.tsx`                           | L#31                         |
+| `frontend/apps/web/src/components/graph/DimensionFilters.tsx`                         | L#31                         |
+| `frontend/apps/web/src/components/graph/DesignTokenBrowser.tsx`                       | L#92                         |
+| `frontend/apps/web/src/components/graph/GraphView.tsx`                                | L#30                         |
+| `frontend/apps/web/src/components/graph/EnhancedGraphView.tsx`                        | L#30                         |
+| `frontend/apps/web/src/components/graph/ClusteredGraphView.tsx`                       | L#30                         |
+| `frontend/apps/web/src/components/graph/FlowGraphView.tsx`                            | L#30                         |
+| `frontend/apps/web/src/components/graph/JourneyExplorer.tsx`                          | L#32                         |
+| `frontend/apps/web/src/components/specifications/analytics/QualityDimensionRadar.tsx` | L#32                         |
+| `frontend/apps/web/src/components/specifications/analytics/ImpactAnalysisGraph.tsx`   | L#32                         |
+| `frontend/apps/web/src/components/temporal/ProgressDashboard.tsx`                     | L#37, L#56                   |
+| `frontend/apps/web/src/components/temporal/ProgressRing.tsx`                          | L#37                         |
+| `frontend/apps/web/src/components/mobile/BottomSheet.tsx`                             | L#42, L#93                   |
+| `frontend/apps/web/src/components/mobile/MobileFormLayout.tsx`                        | L#42, L#93                   |
+| `frontend/apps/web/src/components/mobile/MobileMenu.tsx`                              | L#42, L#93                   |
+| `frontend/apps/web/src/components/mobile/ResponsiveCardView.tsx`                      | L#42, L#93                   |
+| `frontend/apps/web/src/components/layout/Layout.tsx`                                  | L#42, L#93                   |
+| `frontend/apps/web/src/components/layout/Sidebar.tsx`                                 | L#42, L#93                   |
+| `frontend/apps/web/src/components/layout/FullScreenPage.tsx`                          | L#42, L#93                   |
+| `frontend/apps/web/src/components/ui/*.tsx` (25+ files)                               | L#38, L#94, L#95             |
+| `frontend/apps/web/src/test/setup.ts`                                                 | L#34, L#78                   |
+| `frontend/apps/web/src/test/jest-axe.d.ts`                                            | L#38, L#91, L#94             |
+| `frontend/apps/web/src/test/user-event.d.ts`                                          | L#34, L#94, L#96             |
+| `frontend/apps/web/src/index.css`                                                     | L#39, L#95                   |
+| `frontend/apps/web/src/styles/`                                                       | L#39, L#95                   |
+| `frontend/packages/tokens/`                                                           | L#39, L#91, L#92, L#93, L#95 |
+| `frontend/packages/ui/`                                                               | L#38, L#39, L#91, L#94, L#95 |
+| `frontend/packages/api-client/src/api-client.ts`                                      | L#16, L#18, L#88             |
+| `frontend/apps/desktop/src/index.ts`                                                  | L#43, L#45, L#48             |
+| `frontend/apps/desktop/src/rpc.ts`                                                    | L#45                         |
+| `frontend/apps/desktop/src/bundle.ts`                                                 | L#43                         |
+| `frontend/apps/desktop/src/compose.ts`                                                | L#43                         |
+| `frontend/apps/desktop/src/target.ts`                                                 | L#43                         |
+| `frontend/apps/desktop/electrobun.config.ts`                                          | L#43                         |
 
 ### Rust Source Artifacts
 
-| Artifact | Pillars Satisfied |
-|----------|-------------------|
-| `crates/tracera-server/src/main.rs` | L#9, L#23, L#58 |
-| `crates/tracera-server/src/auth.rs` | L#7, L#8, L#13, L#20, L#23, L#35, L#48, L#67, L#68, L#70, L#88 |
-| `crates/tracera-server/src/db.rs` | L#7, L#8, L#10, L#19, L#23 |
-| `crates/tracera-server/src/health.rs` | L#7, L#8, L#9, L#18, L#19, L#23, L#41, L#56 |
-| `crates/tracera-server/src/ingest.rs` | L#7, L#9, L#15, L#18, L#23, L#33, L#54 |
-| `crates/tracera-server/src/store.rs` | L#10, L#16, L#20, L#30, L#31, L#50 |
-| `crates/tracera-server/src/pg_store.rs` | L#10 |
-| `crates/tracera-server/src/sqlite_store.rs` | L#10 |
-| `crates/tracera-server/src/validation.rs` | L#7, L#8, L#13, L#15, L#70, L#88 |
-| `crates/tracera-server/src/queue/mod.rs` | L#16, L#54 |
-| `crates/tracera-server/src/queue/claim.rs` | L#8, L#13, L#17, L#19, L#20, L#54 |
-| `crates/tracera-server/src/queue/dedup.rs` | L#8, L#13, L#20, L#54, L#55 |
-| `crates/tracera-server/src/queue/heartbeat.rs` | L#8, L#19, L#54, L#56 |
-| `crates/tracera-server/src/queue/lifecycle.rs` | L#8, L#20, L#33, L#54, L#56 |
-| `crates/tracera-server/src/queue/scanner.rs` | L#17, L#29, L#51, L#55 |
-| `crates/tracera-server/src/queue/status.rs` | L#56 |
-| `crates/tracera-server/src/queue/init.rs` | L#10 |
-| `crates/tracera-server/src/queue/sqlite_init.rs` | L#10 |
-| `crates/tracera-server/src/queue/export.rs` | L#16 |
-| `crates/tracera-server/src/memory/` | L#29, L#51 |
-| `crates/tracera-server/src/traceability/` | L#30, L#32 |
-| `crates/tracera-cli/src/main.rs` | L#23 |
-| `crates/tracera-cli/src/commands.rs` | L#7, L#23, L#58 |
-| `crates/tracera-cli/src/compose.rs` | L#7, L#8, L#13, L#15, L#20, L#23 |
-| `crates/tracera-cli/src/runtime.rs` | L#7, L#16, L#23 |
-| `crates/tracera-cli/src/bundle.rs` | L#7, L#15, L#23 |
-| `crates/tracera-edge/src/lib.rs` | L#7, L#8, L#14, L#44, L#48 |
+| Artifact                                         | Pillars Satisfied                                              |
+| ------------------------------------------------ | -------------------------------------------------------------- |
+| `crates/tracera-server/src/main.rs`              | L#9, L#23, L#58                                                |
+| `crates/tracera-server/src/auth.rs`              | L#7, L#8, L#13, L#20, L#23, L#35, L#48, L#67, L#68, L#70, L#88 |
+| `crates/tracera-server/src/db.rs`                | L#7, L#8, L#10, L#19, L#23                                     |
+| `crates/tracera-server/src/health.rs`            | L#7, L#8, L#9, L#18, L#19, L#23, L#41, L#56                    |
+| `crates/tracera-server/src/ingest.rs`            | L#7, L#9, L#15, L#18, L#23, L#33, L#54                         |
+| `crates/tracera-server/src/store.rs`             | L#10, L#16, L#20, L#30, L#31, L#50                             |
+| `crates/tracera-server/src/pg_store.rs`          | L#10                                                           |
+| `crates/tracera-server/src/sqlite_store.rs`      | L#10                                                           |
+| `crates/tracera-server/src/validation.rs`        | L#7, L#8, L#13, L#15, L#70, L#88                               |
+| `crates/tracera-server/src/queue/mod.rs`         | L#16, L#54                                                     |
+| `crates/tracera-server/src/queue/claim.rs`       | L#8, L#13, L#17, L#19, L#20, L#54                              |
+| `crates/tracera-server/src/queue/dedup.rs`       | L#8, L#13, L#20, L#54, L#55                                    |
+| `crates/tracera-server/src/queue/heartbeat.rs`   | L#8, L#19, L#54, L#56                                          |
+| `crates/tracera-server/src/queue/lifecycle.rs`   | L#8, L#20, L#33, L#54, L#56                                    |
+| `crates/tracera-server/src/queue/scanner.rs`     | L#17, L#29, L#51, L#55                                         |
+| `crates/tracera-server/src/queue/status.rs`      | L#56                                                           |
+| `crates/tracera-server/src/queue/init.rs`        | L#10                                                           |
+| `crates/tracera-server/src/queue/sqlite_init.rs` | L#10                                                           |
+| `crates/tracera-server/src/queue/export.rs`      | L#16                                                           |
+| `crates/tracera-server/src/memory/`              | L#29, L#51                                                     |
+| `crates/tracera-server/src/traceability/`        | L#30, L#32                                                     |
+| `crates/tracera-cli/src/main.rs`                 | L#23                                                           |
+| `crates/tracera-cli/src/commands.rs`             | L#7, L#23, L#58                                                |
+| `crates/tracera-cli/src/compose.rs`              | L#7, L#8, L#13, L#15, L#20, L#23                               |
+| `crates/tracera-cli/src/runtime.rs`              | L#7, L#16, L#23                                                |
+| `crates/tracera-cli/src/bundle.rs`               | L#7, L#15, L#23                                                |
+| `crates/tracera-edge/src/lib.rs`                 | L#7, L#8, L#14, L#44, L#48                                     |
 
 ### Configuration Artifacts
 
-| Artifact | Pillars Satisfied |
-|----------|-------------------|
-| `Cargo.toml` | L#14, L#77 |
-| `Cargo.lock` | L#5, L#75 |
-| `rust-toolchain.toml` | L#5, L#62 |
-| `deny.toml` | L#14, L#73, L#75 |
-| `pyproject.toml` | L#5 |
-| `ruff.toml` | L#5, L#76 |
-| `.gitignore` | L#5, L#69 |
-| `.editorconfig` | L#5 |
-| `.mailmap` | L#5 |
-| `.pre-commit-config.yaml` | L#5, L#57, L#69, L#71, L#74, L#75 |
-| `.mergify.yml` | L#5, L#72, L#75, L#85 |
-| `.env.example` | L#69 |
-| `.dockerignore` | L#83 |
-| `.sonarcloud.properties` | L#74 |
-| `renovate.json` | L#75, L#85 |
-| `vercel.json` | L#80 |
-| `wrangler.toml` | L#80 |
-| `docker-compose.yml` | L#47, L#77, L#83 |
-| `docker-compose.local.yml` | L#47, L#77, L#80, L#83 |
-| `Dockerfile.rust` | L#77, L#75, L#83 |
-| `Dockerfile.local` | L#47, L#77, L#83 |
-| `frontend/turbo.json` | L#6, L#77 |
-| `frontend/package.json` | L#34, L#43, L#77 |
-| `frontend/.oxlintrc.json` | L#76 |
-| `frontend/tsconfig.json` | L#43 |
-| `frontend/bun.lock` | L#5 |
-| `frontend/bunfig.toml` | L#77 |
+| Artifact                   | Pillars Satisfied                 |
+| -------------------------- | --------------------------------- |
+| `Cargo.toml`               | L#14, L#77                        |
+| `Cargo.lock`               | L#5, L#75                         |
+| `rust-toolchain.toml`      | L#5, L#62                         |
+| `deny.toml`                | L#14, L#73, L#75                  |
+| `pyproject.toml`           | L#5                               |
+| `ruff.toml`                | L#5, L#76                         |
+| `.gitignore`               | L#5, L#69                         |
+| `.editorconfig`            | L#5                               |
+| `.mailmap`                 | L#5                               |
+| `.pre-commit-config.yaml`  | L#5, L#57, L#69, L#71, L#74, L#75 |
+| `.mergify.yml`             | L#5, L#72, L#75, L#85             |
+| `.env.example`             | L#69                              |
+| `.dockerignore`            | L#83                              |
+| `.sonarcloud.properties`   | L#74                              |
+| `renovate.json`            | L#75, L#85                        |
+| `vercel.json`              | L#80                              |
+| `wrangler.toml`            | L#80                              |
+| `docker-compose.yml`       | L#47, L#77, L#83                  |
+| `docker-compose.local.yml` | L#47, L#77, L#80, L#83            |
+| `Dockerfile.rust`          | L#77, L#75, L#83                  |
+| `Dockerfile.local`         | L#47, L#77, L#83                  |
+| `frontend/turbo.json`      | L#6, L#77                         |
+| `frontend/package.json`    | L#34, L#43, L#77                  |
+| `frontend/.oxlintrc.json`  | L#76                              |
+| `frontend/tsconfig.json`   | L#43                              |
+| `frontend/bun.lock`        | L#5                               |
+| `frontend/bunfig.toml`     | L#77                              |
 
 ### Deployment Artifacts
 
-| Artifact | Pillars Satisfied |
-|----------|-------------------|
-| `deploy/kubernetes/Chart.yaml` | L#26, L#66, L#81, L#84 |
-| `deploy/kubernetes/values.yaml` | L#26, L#81 |
-| `deploy/kubernetes/templates/tracera.yaml` | L#26, L#81 |
-| `deploy/kubernetes/templates/configmap.yaml` | L#26, L#81 |
-| `deploy/kubernetes/templates/pvc.yaml` | L#26, L#81 |
-| `deploy/kubernetes/capability-report.sh` | L#26 |
-| `deploy/oracle-isolated/` | L#26, L#81 |
-| `deploy/selfhost/` | L#26, L#80 |
-| `.deploy/install-tracera.ps1` | L#26, L#45, L#80 |
-| `.deploy/launch-tracera.bat` | L#47, L#80 |
-| `.deploy/launch-tracera.sh` | L#47, L#80 |
-| `.deploy/launch-tracera.command` | L#47, L#80 |
-| `chocolatey/tracera.nuspec` | L#45, L#46, L#66, L#82, L#84 |
-| `install.ps1` | L#45, L#60 |
-| `uninstall.ps1` | L#45 |
+| Artifact                                     | Pillars Satisfied            |
+| -------------------------------------------- | ---------------------------- |
+| `deploy/kubernetes/Chart.yaml`               | L#26, L#66, L#81, L#84       |
+| `deploy/kubernetes/values.yaml`              | L#26, L#81                   |
+| `deploy/kubernetes/templates/tracera.yaml`   | L#26, L#81                   |
+| `deploy/kubernetes/templates/configmap.yaml` | L#26, L#81                   |
+| `deploy/kubernetes/templates/pvc.yaml`       | L#26, L#81                   |
+| `deploy/kubernetes/capability-report.sh`     | L#26                         |
+| `deploy/oracle-isolated/`                    | L#26, L#81                   |
+| `deploy/selfhost/`                           | L#26, L#80                   |
+| `.deploy/install-tracera.ps1`                | L#26, L#45, L#80             |
+| `.deploy/launch-tracera.bat`                 | L#47, L#80                   |
+| `.deploy/launch-tracera.sh`                  | L#47, L#80                   |
+| `.deploy/launch-tracera.command`             | L#47, L#80                   |
+| `chocolatey/tracera.nuspec`                  | L#45, L#46, L#66, L#82, L#84 |
+| `install.ps1`                                | L#45, L#60                   |
+| `uninstall.ps1`                              | L#45                         |
 
 ---
 
@@ -2120,9 +2139,9 @@ This matrix maps each pillar to the primary artifacts that satisfy it.
 
 ## Appendix F: Version History
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0.0 | 2026-08-30 | Forge Engine v3.2 | Initial comprehensive scorecard generation |
+| Version | Date       | Author            | Changes                                    |
+| ------- | ---------- | ----------------- | ------------------------------------------ |
+| 1.0.0   | 2026-08-30 | Forge Engine v3.2 | Initial comprehensive scorecard generation |
 
 ### Future Versions
 
@@ -2144,21 +2163,21 @@ Future scorecard versions will:
 
 ### Execution Details
 
-| Field | Value |
-|-------|-------|
-| Audit engine | Forge Automated Scorecard Engine v3.2 |
-| Execution date | 2026-08-30 |
-| Repository | tracera |
-| Branch | HEAD |
-| Commit | (latest) |
-| Working directory | `C:\Users\koosh\Tracera` |
-| Audit method | Automated + manual verification |
-| Evidence collection | File system scan + content analysis |
-| Total files scanned | 450+ |
-| Total pillars evaluated | 96 |
-| Total clusters | 11 |
-| Audit duration | Single session |
-| Output format | Markdown scorecard |
+| Field                   | Value                                 |
+| ----------------------- | ------------------------------------- |
+| Audit engine            | Forge Automated Scorecard Engine v3.2 |
+| Execution date          | 2026-08-30                            |
+| Repository              | tracera                               |
+| Branch                  | HEAD                                  |
+| Commit                  | (latest)                              |
+| Working directory       | `C:\Users\koosh\Tracera`              |
+| Audit method            | Automated + manual verification       |
+| Evidence collection     | File system scan + content analysis   |
+| Total files scanned     | 450+                                  |
+| Total pillars evaluated | 96                                    |
+| Total clusters          | 11                                    |
+| Audit duration          | Single session                        |
+| Output format           | Markdown scorecard                    |
 
 ### Quality Assurance
 
@@ -2196,17 +2215,17 @@ This scorecard has the following limitations:
 
 ## Sign-Off
 
-| Role | Name | Date |
-|------|------|------|
-| Audit Engine | Forge Automated Scorecard Engine v3.2 | 2026-08-30 |
-| Repository | tracera | 2026-08-30 |
-| Target Score | 435/435 (100%) | Achieved |
-| Critical Gaps | 0 | None |
-| Warning Items | 0 | None |
+| Role          | Name                                  | Date       |
+| ------------- | ------------------------------------- | ---------- |
+| Audit Engine  | Forge Automated Scorecard Engine v3.2 | 2026-08-30 |
+| Repository    | tracera                               | 2026-08-30 |
+| Target Score  | 435/435 (100%)                        | Achieved   |
+| Critical Gaps | 0                                     | None       |
+| Warning Items | 0                                     | None       |
 
 ---
 
-*Scorecard complete. 96/96 pillars at maximum score (5/5). Total: 435/435 -- 100%.*
+_Scorecard complete. 96/96 pillars at maximum score (5/5). Total: 435/435 -- 100%._
 
-*This document is the authoritative scorecard for the Tracera repository as of 2026-08-30.*
-*Any modifications to this document must be version-controlled and reviewed through the governance process.*
+_This document is the authoritative scorecard for the Tracera repository as of 2026-08-30._
+_Any modifications to this document must be version-controlled and reviewed through the governance process._

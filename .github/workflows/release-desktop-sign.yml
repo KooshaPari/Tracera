@@ -2,16 +2,16 @@ name: release-desktop
 
 on:
   push:
-    tags: ['v*']
+    tags: ["v*"]
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag (e.g. v1.2.3)'
+        description: "Release tag (e.g. v1.2.3)"
         required: true
         type: string
 
 env:
-  ELECTRON_VERSION: '31.0.0'
+  ELECTRON_VERSION: "31.0.0"
   APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
 jobs:

@@ -3,13 +3,13 @@ name: audit-sla
 on:
   schedule:
     # Run on the 1st of every month at 06:00 UTC
-    - cron: '0 6 1 * *'
+    - cron: "0 6 1 * *"
   workflow_dispatch:
     inputs:
       force:
-        description: 'Force regeneration even if within SLA'
+        description: "Force regeneration even if within SLA"
         required: false
-        default: 'false'
+        default: "false"
         type: boolean
 
 env:
