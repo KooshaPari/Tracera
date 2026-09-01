@@ -184,8 +184,8 @@ export const validateNoPathTraversal = (path: string, fieldName = "Path"): strin
 // XSS validation
 export const containsXSS = (value: string): boolean => {
   const xssPatterns = [
-    /<script[^>]*>[\s\S]*?<\/script\s*>/gi,
-    /<iframe[^>]*>[\s\S]*?<\/iframe\s*>/gi,
+    /<script(?:\s|>)/gi,
+    /<iframe(?:\s|>)/gi,
     /javascript:/gi,
     /on\w+\s*=/gi, // Event handlers
   ];

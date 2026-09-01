@@ -108,7 +108,7 @@ describe(ItemsTableView, () => {
       </QueryClientProvider>,
     );
 
-    // Should show loading skeleton
+    expect(screen.getByTestId("items-live-region")).toHaveClass("animate-pulse");
   });
 
   it("handles sorting", async () => {

@@ -59,11 +59,11 @@ describe("Content Security Policy Tests", () => {
     });
 
     it("should reject inline script tags", () => {
-      const hasInlineScript = (html: string): boolean =>
-        /<script[^>]*>[\s\S]*?<\/script\s*>/i.test(html);
+      const hasInlineScript = (html: string): boolean => /<script(?:\s|>)/i.test(html);
 
       const maliciousHTML = '<div><script>alert("XSS")</script></div>';
       expect(hasInlineScript(maliciousHTML)).toBeTruthy();
+      expect(hasInlineScript('<script>alert("XSS")</script >')).toBeTruthy();
 
       const safeHTML = "<div>Content</div>";
       expect(hasInlineScript(safeHTML)).toBeFalsy();

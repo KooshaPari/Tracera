@@ -34,13 +34,10 @@ export function GraphLayoutExample() {
       { id: "BC", source: "B", target: "C" },
     ];
 
-    const onProgress = createProgressCallback();
-
     try {
       const result = await worker.computeLayout(nodes, edges, {
+        algorithm: "dagre",
         direction: "TB",
-        type: "dagre",
-        onProgress,
       });
       setLayoutResult(result as unknown as Record<string, unknown>);
     } catch {

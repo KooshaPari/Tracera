@@ -170,9 +170,7 @@ describe(ItemsTreeView, () => {
     );
 
     const searchInput = screen.getByPlaceholderText(/Search/i);
-    if (searchInput) {
-      await user.type(searchInput, "test");
-      // Should filter tree items
-    }
+    await user.type(searchInput, "test");
+    expect(searchInput).toHaveValue("test");
   });
 });

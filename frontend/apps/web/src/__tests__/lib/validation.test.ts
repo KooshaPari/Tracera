@@ -173,6 +173,7 @@ describe("Security Validation", () => {
 
   it("detects XSS attempts", () => {
     expect(containsXSS("<script>alert('XSS')</script>")).toBe(true);
+    expect(containsXSS("<script>alert('XSS')</script >")).toBe(true);
     expect(containsXSS("<iframe src='evil.com'></iframe>")).toBe(true);
     expect(containsXSS("javascript:alert('XSS')")).toBe(true);
     expect(containsXSS("<div onclick='alert()'>")).toBe(true);

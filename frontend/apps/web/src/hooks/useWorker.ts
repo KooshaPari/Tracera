@@ -12,7 +12,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { DataTransformWorkerAPI } from "../workers/data-transform.worker";
 import type { ExportImportWorkerAPI } from "../workers/export-import.worker";
-import type { GraphLayoutWorkerAPI } from "../workers/graph-layout.worker";
+import type { GraphLayoutWorkerAPI } from "../workers/graphLayout.worker";
 import type { SearchIndexWorkerAPI } from "../workers/search-index.worker";
 
 export interface UseWorkerOptions {
@@ -207,7 +207,7 @@ export const useWorkerSupport = () => {
 export const useGraphLayoutWorker = (options?: UseWorkerOptions) =>
   useWorkerWithProgress<GraphLayoutWorkerAPI>(
     () =>
-      new Worker(new URL("../workers/graph-layout.worker.ts", import.meta.url), { type: "module" }),
+      new Worker(new URL("../workers/graphLayout.worker.ts", import.meta.url), { type: "module" }),
     options,
   );
 

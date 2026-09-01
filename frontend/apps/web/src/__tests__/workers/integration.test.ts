@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { DataTransformWorkerAPI } from "../../workers/data-transform.worker";
 import type { ExportImportWorkerAPI } from "../../workers/export-import.worker";
-import type { GraphLayoutWorkerAPI } from "../../workers/graph-layout.worker";
+import type { GraphLayoutWorkerAPI } from "../../workers/graphLayout.worker";
 import type { SearchIndexWorkerAPI } from "../../workers/search-index.worker";
 
 const describeWorker = typeof Worker === "undefined" ? describe.skip : describe;
@@ -21,7 +21,7 @@ describeWorker("Graph Layout Worker Integration", () => {
   let api: Remote<GraphLayoutWorkerAPI>;
 
   beforeEach(() => {
-    worker = new Worker(new URL("../../workers/graph-layout.worker.ts", import.meta.url), {
+    worker = new Worker(new URL("../../workers/graphLayout.worker.ts", import.meta.url), {
       type: "module",
     });
     api = wrap<GraphLayoutWorkerAPI>(worker);
@@ -43,7 +43,7 @@ describeWorker("Graph Layout Worker Integration", () => {
       { id: "BC", source: "B", target: "C" },
     ];
 
-    const result = await api.computeLayout(nodes, edges, { type: "dagre" });
+    const result = await api.computeLayout(nodes, edges, { algorithm: "dagre" });
 
     expect(result.positions).toBeDefined();
     expect(result.positions.A).toBeDefined();
@@ -68,8 +68,7 @@ describeWorker("Graph Layout Worker Integration", () => {
     }));
 
     const result = await api.computeLayout(nodes, edges, {
-      iterations: 50,
-      type: "force",
+      algorithm: "d3-force",
     });
 
     expect(result.positions).toBeDefined();
@@ -91,7 +90,7 @@ describeWorker("Graph Layout Worker Integration", () => {
     }));
 
     const startTime = performance.now();
-    const result = await api.computeLayout(nodes, edges, { type: "dagre" });
+    const result = await api.computeLayout(nodes, edges, { algorithm: "dagre" });
     const duration = performance.now() - startTime;
 
     expect(result.positions).toBeDefined();

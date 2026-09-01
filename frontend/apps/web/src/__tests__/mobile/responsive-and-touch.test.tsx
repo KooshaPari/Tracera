@@ -3,7 +3,7 @@
  * Tests mobile-specific UX and accessibility requirements
  */
 
-import { render as testingLibraryRender, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render as testingLibraryRender, screen, waitFor } from "@testing-library/react";
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
@@ -423,22 +423,13 @@ describe("Swipe Gestures - Touch Interactions", () => {
     render(<MockSwipeableListItem label="Item" onSwipeLeft={handleSwipeLeft} />);
 
     const item = container.querySelector(".bg-white");
+    expect(item).toBeInTheDocument();
 
-    // Simulate swipe left
-    const touchStart = new TouchEvent("touchstart", {
-      // Minimal touch for test; Touch type is narrow
-      touches: [{ clientX: 100 } as Touch],
-    });
-    const touchEnd = new TouchEvent("touchend");
+    fireEvent.touchStart(item!, { touches: [{ clientX: 100 }] });
+    fireEvent.touchMove(item!, { touches: [{ clientX: 30 }] });
+    fireEvent.touchEnd(item!);
 
-    item?.dispatchEvent(touchStart);
-
-    // Simulate moving to x=30 (swipe left)
-    const touchMove = new TouchEvent("touchmove", {
-      touches: [{ clientX: 30 } as Touch],
-    });
-    item?.dispatchEvent(touchMove);
-    item?.dispatchEvent(touchEnd);
+    expect(handleSwipeLeft).toHaveBeenCalledOnce();
   });
 
   it("should have smooth touch interaction", () => {
