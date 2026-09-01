@@ -9,12 +9,13 @@ from __future__ import annotations
 
 import logging
 import os
+from collections.abc import AsyncGenerator
 from datetime import UTC, datetime, timedelta
-from typing import Any, AsyncGenerator
+from typing import Any
 
 import jwt
-from fastapi import Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 logger = logging.getLogger(__name__)
 

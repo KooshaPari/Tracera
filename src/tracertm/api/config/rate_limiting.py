@@ -13,7 +13,6 @@ from typing import Any
 from fastapi import HTTPException, status
 from starlette.requests import Request
 
-
 DEFAULT_SENSITIVE_PREFIXES = (
     "/api/v1/impact",
     "/api/v1/trace",
@@ -33,7 +32,7 @@ class RateLimitConfig:
     sensitive_prefixes: tuple[str, ...] = DEFAULT_SENSITIVE_PREFIXES
 
     @classmethod
-    def from_env(cls) -> "RateLimitConfig":
+    def from_env(cls) -> RateLimitConfig:
         """Load and validate ``TRACERA_RATE_LIMIT_*`` settings."""
         limit = int(os.getenv("TRACERA_RATE_LIMIT_REQUESTS", str(cls.limit)))
         window = float(os.getenv("TRACERA_RATE_LIMIT_WINDOW_SECONDS", str(cls.window_seconds)))

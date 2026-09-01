@@ -5,6 +5,7 @@ ignore = ["E501"]
 [lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "tests/*" = ["B011"]
+"alembic/env.py" = ["E402"]
 
 [format]
 quote-style = "double"
