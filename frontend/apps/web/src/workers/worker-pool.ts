@@ -153,6 +153,10 @@ export class WorkerPool {
         worker.timeoutId = undefined;
       }
 
+      if (worker.busy) {
+        this.releaseWorkerTask(worker);
+      }
+
       this.detachWorkerListeners(worker);
       workerObjects.add(worker.worker);
     }

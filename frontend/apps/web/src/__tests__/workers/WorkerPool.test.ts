@@ -257,6 +257,21 @@ describe(WorkerPool, () => {
 
       await expect(pool.executeTask('test', {})).rejects.toThrow('shutting down');
     });
+
+    it('should release busy worker state during termination without error', async () => {
+      // Start a task so a worker becomes busy, then terminate while it is active.
+      // terminate() must call releaseWorkerTask() for each busy worker, which
+      // resets busy=false and clears currentTaskId — observable by the call not
+      // throwing and by the pool cleanly reaching the shutting-down state.
+      const task = pool.executeTask('test', {});
+      // Give the task a moment to be assigned to a busy worker
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      // terminate() must not throw: releaseWorkerTask() handles the busy worker
+      // correctly and the pool reaches a clean shut-down state.
+      expect(() => pool.terminate()).not.toThrow();
+      await expect(task).rejects.toThrow('terminated');
+    });
   });
 
   describe('Transferables', () => {
