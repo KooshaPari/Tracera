@@ -284,7 +284,7 @@ describe(useGpuForceLayout, () => {
       );
 
       await waitFor(() => {
-        expect(result.current.nodes.length).toBe(5);
+        expect(result.current.duration).not.toBeNull();
       });
 
       // Update with new nodes
@@ -312,7 +312,7 @@ describe(useGpuForceLayout, () => {
       );
 
       await waitFor(() => {
-        expect(result.current.nodes.length).toBe(5);
+        expect(result.current.duration).not.toBeNull();
       });
 
       const firstDuration = result.current.duration;

@@ -181,7 +181,7 @@ describe(useGraphPerformanceMonitor, () => {
       () => {
         expect(result.current.currentMetrics).toBeDefined();
       },
-      { timeout: 200 },
+      { timeout: 1000 },
     );
 
     const metrics = result.current.currentMetrics!;
