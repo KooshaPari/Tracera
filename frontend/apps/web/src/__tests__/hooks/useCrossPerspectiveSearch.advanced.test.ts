@@ -434,22 +434,19 @@ describe('useCrossPerspectiveSearch - Advanced Features', () => {
     it('should use cache to improve repeated search performance', () => {
       const { result } = renderHook(() => useCrossPerspectiveSearch());
 
-      // First search (cache miss)
-      const start1 = performance.now();
       act(() => {
         result.current.performSearch(mockItems, mockLinks, 'test');
       });
-      const duration1 = performance.now() - start1;
+      const initialStats = result.current.getCacheStats();
 
-      // Second search (cache hit)
-      const start2 = performance.now();
       act(() => {
         result.current.performSearch(mockItems, mockLinks, 'test');
       });
-      const duration2 = performance.now() - start2;
+      const repeatedStats = result.current.getCacheStats();
 
-      // Cache hit should be significantly faster
-      expect(duration2).toBeLessThan(duration1);
+      expect(initialStats.size).toBe(1);
+      expect(initialStats.entries[0]?.hits).toBe(0);
+      expect(repeatedStats.entries[0]?.hits).toBe(1);
     });
   });
 
