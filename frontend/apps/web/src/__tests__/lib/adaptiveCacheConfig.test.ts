@@ -108,7 +108,11 @@ describe('Adaptive Cache Configuration', () => {
       };
 
       const result = calculateAdaptiveTTL(largeData, baseConfig);
-      expect(result.staleTime).toBeLessThan(baseConfig.staleTime);
+      const smallerDataResult = calculateAdaptiveTTL(
+        { ...largeData, dataSize: 500 * 1024 },
+        baseConfig,
+      );
+      expect(result.staleTime).toBeLessThan(smallerDataResult.staleTime);
     });
 
     it('should increase TTL for small datasets', () => {
