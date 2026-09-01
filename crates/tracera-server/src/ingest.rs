@@ -576,19 +576,187 @@ pub async fn persist_issues(
     })
 }
 
+/// Configuration for the AgCord ingest source (agent communication platform).
+///
+/// AgCord provides HTTP APIs for agents, tasks, and system status.
+/// Set `AGCORD_URL` to the base URL (e.g. `http://localhost:3001`).
+pub struct AgcordConfig {
+    pub base_url: String,
+}
+
+impl AgcordConfig {
+    /// Read from environment. Returns `None` if `AGCORD_URL` is absent.
+    pub fn from_env() -> Option<Self> {
+        let base_url = std::env::var("AGCORD_URL").ok()?;
+        Some(Self { base_url })
+    }
+}
+
+/// Fetch agents from AgCord's `/api/agents` endpoint.
+///
+/// AgCord agents represent autonomous entities with types, capabilities,
+/// and status. Each agent is normalised into a `NormalisedIssue` with
+/// source="agcord" for traceability into Tracera's graph model.
+///
+/// // wraps: reqwest 0.13
+pub async fn fetch_agcord_agents(cfg: &AgcordConfig) -> Result<Vec<NormalisedIssue>, IngestError> {
+    let client = reqwest::Client::builder()
+        .user_agent("tracera-ingest/0.1 (github.com/KooshaPari/Tracera)")
+        .build()
+        .map_err(|e| IngestError::Fetch(e.to_string()))?;
+
+    let url = format!("{}/api/agents", cfg.base_url);
+    let resp = client
+        .get(&url)
+        .header("Accept", "application/json")
+        .send()
+        .await
+        .map_err(|e| IngestError::Fetch(format!("AgCord agents HTTP error: {e}")))?;
+
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        return Err(IngestError::Fetch(format!(
+            "AgCord /api/agents returned {status}: {body}"
+        )));
+    }
+
+    let items: Vec<Value> = resp
+        .json()
+        .await
+        .map_err(|e| IngestError::Fetch(format!("AgCord agents JSON decode: {e}")))?;
+
+    let issues = items
+        .into_iter()
+        .filter_map(|v| {
+            let id = v.get("id")?.as_str()?.to_string();
+            let name = v.get("name")?.as_str()?.to_string();
+            let agent_type = v
+                .get("type")
+                .and_then(|t| t.as_str())
+                .unwrap_or("unknown")
+                .to_string();
+            let status = v
+                .get("status")
+                .and_then(|s| s.as_str())
+                .unwrap_or("unknown")
+                .to_string();
+            let capabilities = v
+                .get("capabilities")
+                .and_then(|c| c.as_array())
+                .map(|arr| {
+                    arr.iter()
+                        .filter_map(|v| v.as_str())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                })
+                .unwrap_or_default();
+            let body = format!(
+                "type={agent_type}; status={status}; capabilities={capabilities}"
+            );
+            Some(NormalisedIssue {
+                external_id: format!("agcord-agent-{id}"),
+                title: format!("[agent] {name}"),
+                body,
+                url: format!("{}/api/agents", cfg.base_url),
+                status,
+                source: "agcord".to_string(),
+            })
+        })
+        .collect();
+
+    Ok(issues)
+}
+
+/// Fetch tasks from AgCord's `/api/tasks` endpoint.
+///
+/// AgCord tasks represent work items with priority, assignment, and status.
+/// Each task is normalised into a `NormalisedIssue` with source="agcord".
+///
+/// // wraps: reqwest 0.13
+pub async fn fetch_agcord_tasks(cfg: &AgcordConfig) -> Result<Vec<NormalisedIssue>, IngestError> {
+    let client = reqwest::Client::builder()
+        .user_agent("tracera-ingest/0.1 (github.com/KooshaPari/Tracera)")
+        .build()
+        .map_err(|e| IngestError::Fetch(e.to_string()))?;
+
+    let url = format!("{}/api/tasks", cfg.base_url);
+    let resp = client
+        .get(&url)
+        .header("Accept", "application/json")
+        .send()
+        .await
+        .map_err(|e| IngestError::Fetch(format!("AgCord tasks HTTP error: {e}")))?;
+
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        return Err(IngestError::Fetch(format!(
+            "AgCord /api/tasks returned {status}: {body}"
+        )));
+    }
+
+    let items: Vec<Value> = resp
+        .json()
+        .await
+        .map_err(|e| IngestError::Fetch(format!("AgCord tasks JSON decode: {e}")))?;
+
+    let issues = items
+        .into_iter()
+        .filter_map(|v| {
+            let id = v.get("id")?.as_str()?.to_string();
+            let name = v.get("name")?.as_str()?.to_string();
+            let _description = v
+                .get("description")
+                .and_then(|d| d.as_str())
+                .unwrap_or("")
+                .to_string();
+            let priority = v
+                .get("priority")
+                .and_then(|p| p.as_str())
+                .unwrap_or("medium")
+                .to_string();
+            let status = v
+                .get("status")
+                .and_then(|s| s.as_str())
+                .unwrap_or("pending")
+                .to_string();
+            let assigned = v
+                .get("assignedAgent")
+                .and_then(|a| a.as_str())
+                .unwrap_or("")
+                .to_string();
+            let body = format!(
+                "priority={priority}; status={status}; assigned={assigned}"
+            );
+            Some(NormalisedIssue {
+                external_id: format!("agcord-task-{id}"),
+                title: format!("[task] {name}"),
+                body,
+                url: format!("{}/api/tasks", cfg.base_url),
+                status,
+                source: "agcord".to_string(),
+            })
+        })
+        .collect();
+
+    Ok(issues)
+}
+
 // ---------------------------------------------------------------------------
 // Live ingest orchestrator
 // ---------------------------------------------------------------------------
 
-/// Perform a live ingest from all configured sources (GitHub + Jira).
+/// Perform a live ingest from all configured sources (GitHub + Jira + AgCord).
 ///
-/// Fails loud with `IngestError::NoSourceConfigured` if neither source has
+/// Fails loud with `IngestError::NoSourceConfigured` if no source has
 /// its required env vars set — never returns a fake-success empty result.
 pub async fn ingest_live(store: &Arc<dyn Store>) -> Result<BulkIngestionResult, IngestError> {
     let gh_cfg = GitHubConfig::from_env();
     let jira_cfg = JiraConfig::from_env();
+    let agcord_cfg = AgcordConfig::from_env();
 
-    if gh_cfg.is_none() && jira_cfg.is_none() {
+    if gh_cfg.is_none() && jira_cfg.is_none() && agcord_cfg.is_none() {
         return Err(IngestError::NoSourceConfigured);
     }
 
@@ -615,6 +783,27 @@ pub async fn ingest_live(store: &Arc<dyn Store>) -> Result<BulkIngestionResult, 
         all_issues.extend(issues);
     }
 
+    if let Some(cfg) = agcord_cfg {
+        match fetch_agcord_agents(&cfg).await {
+            Ok(agents) => {
+                tracing::info!("AgCord: fetched {} agents", agents.len());
+                all_issues.extend(agents);
+            }
+            Err(e) => {
+                tracing::warn!("AgCord agents fetch failed: {e}");
+            }
+        }
+        match fetch_agcord_tasks(&cfg).await {
+            Ok(tasks) => {
+                tracing::info!("AgCord: fetched {} tasks", tasks.len());
+                all_issues.extend(tasks);
+            }
+            Err(e) => {
+                tracing::warn!("AgCord tasks fetch failed: {e}");
+            }
+        }
+    }
+
     persist_issues(&all_issues, store).await
 }
 
@@ -634,10 +823,13 @@ pub async fn ingest_from_payload(
     let normalised: Vec<NormalisedIssue> = issues
         .iter()
         .filter_map(|v| {
-            let title = v.get("title")?.as_str()?.trim().to_string();
-            if title.is_empty() {
-                return None;
-            }
+            // Support both "title" (GitHub/Jira) and "name" (AgCord) fields
+            let title = v
+                .get("title")
+                .or_else(|| v.get("name"))
+                .and_then(|t| t.as_str())
+                .map(|t| t.trim().to_string())
+                .filter(|t| !t.is_empty())?;
             let external_id = v
                 .get(ref_field)
                 .map(|x| x.to_string().trim_matches('"').to_string())

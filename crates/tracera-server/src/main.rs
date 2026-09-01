@@ -8,6 +8,7 @@ mod pg_store;
 mod queue;
 mod sqlite_store;
 mod store;
+mod swee;
 mod traceability;
 mod validation;
 
@@ -526,6 +527,14 @@ struct JiraIngestRequest {
     issues: Vec<Value>,
 }
 
+#[derive(Deserialize)]
+struct AgcordIngestRequest {
+    /// Caller-supplied items (agents/tasks). Optional — if AGCORD_URL is set,
+    /// the handler fetches live from AgCord and ignores this field.
+    #[serde(default)]
+    items: Vec<Value>,
+}
+
 #[derive(Serialize)]
 pub struct BulkIngestionResult {
     pub total_processed: usize,
@@ -823,6 +832,7 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/evidence/health", get(health::health))
         .route("/ingest/github", post(ingest_github))
         .route("/ingest/jira", post(ingest_jira))
+        .route("/ingest/agileplus", post(ingest_agileplus))
         .route("/sdlc-pm/health", get(health::health))
         .route("/sdlc-pm/sprints", get(list_sprints).post(create_sprint))
         .route("/sdlc-pm/stories", get(list_stories))
@@ -2007,6 +2017,60 @@ async fn ingest_jira(
     }
 
     let result = ingest::ingest_from_payload(&req.issues, "key", "jira", &state.store).await;
+    (axum::http::StatusCode::OK, Json(result))
+}
+
+/// POST /ingest/agileplus
+///
+/// Ingests agent and task data from AgCord (autonomous agent communication
+/// platform) into Tracera's traceability graph.
+///
+/// Two modes:
+///   1. Live fetch — if `AGCORD_URL` is set, fetches agents and tasks from
+///      AgCord's HTTP API (`/api/agents`, `/api/tasks`).
+///   2. Payload push — caller-supplied `items` array (agents/tasks).
+///
+/// AgCord provides the governance and work-management layer that Tracera
+/// expands into full graph-based traceability for agentic product engineering.
+async fn ingest_agileplus(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    Json(req): Json<AgcordIngestRequest>,
+) -> (axum::http::StatusCode, Json<BulkIngestionResult>) {
+    // Try live AgCord fetch first
+    if ingest::AgcordConfig::from_env().is_some() {
+        match ingest::ingest_live(&state.store).await {
+            Ok(result) => return (axum::http::StatusCode::OK, Json(result)),
+            Err(ingest::IngestError::NoSourceConfigured) => {}
+            Err(e) => {
+                tracing::error!("AgCord live ingest failed: {e}");
+                let result = BulkIngestionResult {
+                    total_processed: 0,
+                    requirements_created: 0,
+                    trace_links_created: 0,
+                    errors: vec![format!("live ingest error: {e}")],
+                };
+                return (axum::http::StatusCode::BAD_GATEWAY, Json(result));
+            }
+        }
+    }
+
+    // Fall back to payload-based ingest
+    if req.items.is_empty() {
+        let result = BulkIngestionResult {
+            total_processed: 0,
+            requirements_created: 0,
+            trace_links_created: 0,
+            errors: vec![
+                "no ingest source configured: set AGCORD_URL, \
+                 or supply items[] in the request body"
+                    .to_string(),
+            ],
+        };
+        return (axum::http::StatusCode::UNPROCESSABLE_ENTITY, Json(result));
+    }
+
+    let result =
+        ingest::ingest_from_payload(&req.items, "id", "agcord", &state.store).await;
     (axum::http::StatusCode::OK, Json(result))
 }
 
