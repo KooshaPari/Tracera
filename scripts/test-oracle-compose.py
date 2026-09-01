@@ -6,12 +6,11 @@ overlay is the security boundary: every published dependency port must be
 loopback-only, while the backend network remains internal in Compose.
 """
 
-from pathlib import Path
 import importlib.util
 import re
 import sys
 import tempfile
-
+from pathlib import Path
 
 VALIDATOR_PATH = Path(__file__).resolve().with_name("validate-oracle-compose.py")
 VALIDATOR_SPEC = importlib.util.spec_from_file_location("oracle_compose_validator", VALIDATOR_PATH)

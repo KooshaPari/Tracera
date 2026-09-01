@@ -14,7 +14,6 @@ from typing import Any
 
 from tracertm.api.middleware.request_id import request_id_var
 
-
 _LOGGING_CONFIGURED = False
 
 
@@ -45,7 +44,7 @@ class JSONFormatter(logging.Formatter):
         if record.exc_info:
             event["exception"] = self.formatException(record.exc_info)
         if hasattr(record, "elapsed_ms"):
-            event["elapsed_ms"] = getattr(record, "elapsed_ms")
+            event["elapsed_ms"] = record.elapsed_ms
         for key, value in record.__dict__.items():
             if key.startswith("_") or key in {
                 "name",

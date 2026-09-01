@@ -12,17 +12,15 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import statistics
 import sys
 import threading
 import time
-from urllib.parse import urlparse
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
 from urllib.request import Request, urlopen
-
 
 DEFAULT_PATHS = ("/health", "/ready", "/", "/evidence", "/sdlc-pm/sprints")
 

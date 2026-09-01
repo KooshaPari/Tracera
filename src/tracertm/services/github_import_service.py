@@ -6,7 +6,12 @@ from dataclasses import dataclass, field
 from typing import Any
 from uuid import NAMESPACE_DNS, UUID, uuid5
 
-from tracertm.models.trace_link import ArtifactKind, Requirement, TraceLink, TraceLinkType
+from tracertm.models.trace_link import (
+    ArtifactKind,
+    Requirement,
+    TraceLink,
+    TraceLinkType,
+)
 
 
 @dataclass

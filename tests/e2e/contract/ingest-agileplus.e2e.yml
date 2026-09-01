@@ -1,0 +1,20 @@
+name: ingest-agileplus
+endpoint: /ingest/agileplus
+base_url: http://127.0.0.1:8080
+tests:
+  happy_path:
+    method: POST
+    body: { "payload": {} }
+    expect:
+      status: 200
+      has_body: true
+  empty_input:
+    method: POST
+    body: {}
+    expect:
+      status: 200
+  malformed_json:
+    method: POST
+    body: "not json"
+    expect:
+      status: 400

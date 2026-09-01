@@ -57,25 +57,25 @@ The central component providing RESTful API endpoints for trace management, evid
 
 **API Endpoints:**
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/healthz`, `/health` | GET | Liveness probes |
-| `/readyz`, `/ready` | GET | Readiness probes |
-| `/metrics` | GET | Prometheus metrics |
-| `/api/v1/coverage-matrix` | POST | Generate coverage matrix from trace links |
-| `/api/v1/impact` | POST | Calculate impact analysis (blast radius) |
-| `/api/v1/confidence` | POST | Compute trace-link confidence scores |
-| `/api/v1/blast-radius` | POST | Determine affected artifacts |
-| `/api/v1/governance/spec-check` | POST | Validate governance compliance |
-| `/api/v1/trace/{id}/links` | GET | List persisted trace links |
-| `/evidence` | GET/POST | Evidence management |
-| `/ingest/github` | POST | GitHub issue ingestion |
-| `/ingest/jira` | POST | Jira issue ingestion |
-| `/sdlc-pm/sprints` | GET/POST | Sprint management |
-| `/problems` | GET/POST | Problem management (ITIL) |
-| `/api/v1/projects` | GET | Project listing |
-| `/org-intel/teams` | GET | Team intelligence |
-| `/org-intel/metrics` | GET | Organization metrics |
+| Endpoint                        | Method   | Description                               |
+| ------------------------------- | -------- | ----------------------------------------- |
+| `/healthz`, `/health`           | GET      | Liveness probes                           |
+| `/readyz`, `/ready`             | GET      | Readiness probes                          |
+| `/metrics`                      | GET      | Prometheus metrics                        |
+| `/api/v1/coverage-matrix`       | POST     | Generate coverage matrix from trace links |
+| `/api/v1/impact`                | POST     | Calculate impact analysis (blast radius)  |
+| `/api/v1/confidence`            | POST     | Compute trace-link confidence scores      |
+| `/api/v1/blast-radius`          | POST     | Determine affected artifacts              |
+| `/api/v1/governance/spec-check` | POST     | Validate governance compliance            |
+| `/api/v1/trace/{id}/links`      | GET      | List persisted trace links                |
+| `/evidence`                     | GET/POST | Evidence management                       |
+| `/ingest/github`                | POST     | GitHub issue ingestion                    |
+| `/ingest/jira`                  | POST     | Jira issue ingestion                      |
+| `/sdlc-pm/sprints`              | GET/POST | Sprint management                         |
+| `/problems`                     | GET/POST | Problem management (ITIL)                 |
+| `/api/v1/projects`              | GET      | Project listing                           |
+| `/org-intel/teams`              | GET      | Team intelligence                         |
+| `/org-intel/metrics`            | GET      | Organization metrics                      |
 
 ### 2. Store Trait (`store.rs`)
 
@@ -118,12 +118,14 @@ pub trait Store: Send + Sync {
 ### 3. Database Backends
 
 #### PostgreSQL (Server Tier)
+
 - **Use Case**: Production deployments, multi-user environments
 - **Location**: `crates/tracera-server/src/pg_store.rs`
 - **Migrations**: `crates/tracera-server/migrations/`
 - **Connection**: Uses `sqlx` with connection pooling
 
 #### SQLite (On-Device Tier)
+
 - **Use Case**: Local development, single-user desktop apps
 - **Location**: `crates/tracera-server/src/sqlite_store.rs`
 - **Migrations**: `crates/tracera-server/migrations-sqlite/`
@@ -132,17 +134,20 @@ pub trait Store: Send + Sync {
 ### 4. Frontend Applications
 
 #### Web Application (`frontend/apps/web`)
+
 - **Framework**: React with Vite
 - **Styling**: Tailwind CSS
 - **State Management**: React Query / TanStack Query
 - **Testing**: Playwright (E2E), Vitest (Unit)
 
 #### Desktop Application (`frontend/apps/desktop`)
+
 - **Framework**: Electrobun (Rust + Web)
 - **Purpose**: Native desktop viewer for trace sessions
 - **Bundling**: Custom bundle process via `bundle.ts`
 
 #### Shared UI Package (`frontend/packages/ui`)
+
 - **Components**: Reusable UI primitives (Button, Card, Dialog, etc.)
 - **Testing**: Comprehensive test suite with Vitest
 
@@ -299,20 +304,20 @@ FROM debian:bookworm-slim
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | Database connection string | Required |
-| `TRACERA_AUTH_TOKEN` | Bearer token for API auth | None |
-| `TRACERA_BIND_ADDR` | Server bind address | `127.0.0.1:8080` |
-| `TRACERA_PUBLIC_BIND_MODE` | Network deployment mode | `private-network` |
-| `TRACERA_FRONTEND_DIST` | Frontend dist path | `frontend/dist` |
-| `TRACERA_RATE_LIMIT_RPS` | Rate limit (requests/second) | `100` |
-| `GITHUB_TOKEN` | GitHub API token | Optional |
-| `GITHUB_REPO` | GitHub repository (owner/repo) | Optional |
-| `JIRA_URL` | Jira server URL | Optional |
-| `JIRA_EMAIL` | Jira user email | Optional |
-| `JIRA_API_TOKEN` | Jira API token | Optional |
-| `JIRA_PROJECT_KEY` | Jira project key | Optional |
+| Variable                   | Description                    | Default           |
+| -------------------------- | ------------------------------ | ----------------- |
+| `DATABASE_URL`             | Database connection string     | Required          |
+| `TRACERA_AUTH_TOKEN`       | Bearer token for API auth      | None              |
+| `TRACERA_BIND_ADDR`        | Server bind address            | `127.0.0.1:8080`  |
+| `TRACERA_PUBLIC_BIND_MODE` | Network deployment mode        | `private-network` |
+| `TRACERA_FRONTEND_DIST`    | Frontend dist path             | `frontend/dist`   |
+| `TRACERA_RATE_LIMIT_RPS`   | Rate limit (requests/second)   | `100`             |
+| `GITHUB_TOKEN`             | GitHub API token               | Optional          |
+| `GITHUB_REPO`              | GitHub repository (owner/repo) | Optional          |
+| `JIRA_URL`                 | Jira server URL                | Optional          |
+| `JIRA_EMAIL`               | Jira user email                | Optional          |
+| `JIRA_API_TOKEN`           | Jira API token                 | Optional          |
+| `JIRA_PROJECT_KEY`         | Jira project key               | Optional          |
 
 ### Cargo Features
 
