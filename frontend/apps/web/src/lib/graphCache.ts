@@ -2,7 +2,7 @@
  * Lightweight graph cache utilities used across web graph modules.
  */
 
-import { useGraphCacheOperations } from '@/stores/graph-cache-operations';
+import { useGraphCacheOperations } from "@/stores/graph-cache-operations";
 
 export interface GraphCacheNode {
   id: string;
@@ -16,7 +16,7 @@ export interface GraphCacheEntry {
   timestamp: number;
 }
 
-export type GraphCachePressure = 'comfortable' | 'caution' | 'critical';
+export type GraphCachePressure = "comfortable" | "caution" | "critical";
 
 export interface GraphCacheStats {
   totalEntries: number;
@@ -83,7 +83,7 @@ class BaseLRUCache<T> {
       return 4;
     }
 
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       return value.length * 2;
     }
 
@@ -102,24 +102,24 @@ class BaseLRUCache<T> {
     return (this.totalMemory / this.config.maxMemory) * 100;
   }
 
-  private computeSizeCategory(size: number): keyof GraphCacheStats['entriesBySize'] {
+  private computeSizeCategory(size: number): keyof GraphCacheStats["entriesBySize"] {
     if (size <= CATEGORY_THRESHOLDS.tiny) {
-      return 'tiny';
+      return "tiny";
     }
 
     if (size <= CATEGORY_THRESHOLDS.small) {
-      return 'small';
+      return "small";
     }
 
     if (size <= CATEGORY_THRESHOLDS.medium) {
-      return 'medium';
+      return "medium";
     }
 
     if (size <= CATEGORY_THRESHOLDS.large) {
-      return 'large';
+      return "large";
     }
 
-    return 'oversized';
+    return "oversized";
   }
 
   private pruneIfNeeded(): void {
@@ -143,8 +143,8 @@ class BaseLRUCache<T> {
   }
 
   private patternToRegex(pattern: string): RegExp {
-    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
-    const withWildcard = escaped.replace(/\*/g, '.*');
+    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+    const withWildcard = escaped.replace(/\*/g, ".*");
     return new RegExp(`^${withWildcard}$`);
   }
 
@@ -214,7 +214,7 @@ class BaseLRUCache<T> {
       medium: 0,
       large: 0,
       oversized: 0,
-    } as GraphCacheStats['entriesBySize'];
+    } as GraphCacheStats["entriesBySize"];
 
     for (const item of this.store.values()) {
       entriesBySize[this.computeSizeCategory(item.size)] += 1;
@@ -272,14 +272,14 @@ class BaseLRUCache<T> {
     const ratio = this.computeMemoryRatio();
 
     if (ratio >= 85) {
-      return 'critical';
+      return "critical";
     }
 
     if (ratio >= 70) {
-      return 'caution';
+      return "caution";
     }
 
-    return 'comfortable';
+    return "comfortable";
   }
 
   resetStats(): void {
@@ -311,8 +311,7 @@ export const cacheKeys = {
 export const createGraphCache = (
   maxEntries = 100,
   maxMemory = 10 * 1024 * 1024,
-): BaseLRUCache<GraphCacheValue> =>
-  cacheFactory(maxEntries, maxMemory);
+): BaseLRUCache<GraphCacheValue> => cacheFactory(maxEntries, maxMemory);
 
 export function clearAllCaches(): void {
   graphCache.clear();

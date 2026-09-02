@@ -1,11 +1,11 @@
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from "lucide-react";
 
-import type { ItemLink } from '@/views/item-detail/types';
+import type { ItemLink } from "@/views/item-detail/types";
 
-import { Button, Card, Separator } from '@tracertm/ui';
+import { Button, Card, Separator } from "@tracertm/ui";
 
-import { ItemDetailTabs } from './ItemDetailTabs';
-import { TraceabilityStats } from './TraceabilityStats';
+import { ItemDetailTabs } from "./ItemDetailTabs";
+import { TraceabilityStats } from "./TraceabilityStats";
 
 type MetadataEntry = readonly [key: string, value: unknown];
 
@@ -50,17 +50,17 @@ export function TraceabilitySection(props: TraceabilitySectionProps): JSX.Elemen
   } = props;
 
   return (
-    <Card className='bg-card/50 border-0 shadow-lg shadow-slate-950/5'>
-      <div className='space-y-6 p-6'>
-        <div className='flex items-center justify-between'>
-          <div className='space-y-1'>
-            <p className='text-muted-foreground text-[10px] font-black tracking-[0.3em] uppercase'>
+    <Card className="bg-card/50 border-0 shadow-lg shadow-slate-950/5">
+      <div className="space-y-6 p-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-muted-foreground text-[10px] font-black tracking-[0.3em] uppercase">
               Traceability
             </p>
-            <h2 className='text-lg font-black tracking-tight'>Relationship map</h2>
+            <h2 className="text-lg font-black tracking-tight">Relationship map</h2>
           </div>
-          <Button size='sm' className='gap-2 rounded-full' onClick={onRunAnalysis}>
-            <Sparkles className='h-4 w-4' />
+          <Button size="sm" className="gap-2 rounded-full" onClick={onRunAnalysis}>
+            <Sparkles className="h-4 w-4" />
             Run analysis
           </Button>
         </div>

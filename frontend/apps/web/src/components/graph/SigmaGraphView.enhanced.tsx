@@ -18,11 +18,11 @@
  * - 100k nodes: 60 FPS (with aggressive optimizations)
  */
 
-import type Graph from 'graphology';
+import type Graph from "graphology";
 
-import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from '@react-sigma/core';
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import '@react-sigma/core/lib/react-sigma.min.css';
+import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from "@react-sigma/core";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import "@react-sigma/core/lib/react-sigma.min.css";
 
 export interface SigmaGraphViewProps {
   graph: Graph;
@@ -33,7 +33,7 @@ export interface SigmaGraphViewProps {
   selectedNodeId?: string | null;
   hoveredNodeId?: string | null;
   className?: string;
-  performanceMode?: 'balanced' | 'performance' | 'quality';
+  performanceMode?: "balanced" | "performance" | "quality";
 }
 
 interface PerformanceMetrics {
@@ -56,8 +56,8 @@ function SigmaGraphContent({
   onBackgroundClick,
   selectedNodeId,
   hoveredNodeId,
-  performanceMode = 'balanced',
-}: Omit<SigmaGraphViewProps, 'className'>) {
+  performanceMode = "balanced",
+}: Omit<SigmaGraphViewProps, "className">) {
   const loadGraph = useLoadGraph();
   const sigma = useSigma();
   const registerEvents = useRegisterEvents();
@@ -96,31 +96,31 @@ function SigmaGraphContent({
     const settings = sigma.getSettings();
 
     switch (performanceMode) {
-      case 'performance': {
+      case "performance": {
         // Aggressive optimizations for 100k+ nodes
         settings.renderEdgeLabels = false;
         settings.enableEdgeEvents = false;
         settings.hideEdgesOnMove = true;
         settings.hideLabelsOnMove = true;
         settings.labelRenderedSizeThreshold = 1.5;
-        settings.defaultNodeType = 'circle';
-        settings.defaultEdgeType = 'line';
+        settings.defaultNodeType = "circle";
+        settings.defaultEdgeType = "line";
         break;
       }
 
-      case 'quality': {
+      case "quality": {
         // Best visual quality for smaller graphs
         settings.renderEdgeLabels = true;
         settings.enableEdgeEvents = true;
         settings.hideEdgesOnMove = false;
         settings.hideLabelsOnMove = false;
         settings.labelRenderedSizeThreshold = 0.5;
-        settings.defaultNodeType = 'circle';
-        settings.defaultEdgeType = 'arrow';
+        settings.defaultNodeType = "circle";
+        settings.defaultEdgeType = "arrow";
         break;
       }
 
-      case 'balanced':
+      case "balanced":
       default: {
         // Balanced settings (default)
         settings.renderEdgeLabels = false;
@@ -128,8 +128,8 @@ function SigmaGraphContent({
         settings.hideEdgesOnMove = true;
         settings.hideLabelsOnMove = true;
         settings.labelRenderedSizeThreshold = 0.8;
-        settings.defaultNodeType = 'circle';
-        settings.defaultEdgeType = 'line';
+        settings.defaultNodeType = "circle";
+        settings.defaultEdgeType = "line";
         break;
       }
     }
@@ -147,16 +147,16 @@ function SigmaGraphContent({
 
     // Clear all highlights first
     graph.forEachNode((node) => {
-      graph.setNodeAttribute(node, 'highlighted', false);
+      graph.setNodeAttribute(node, "highlighted", false);
     });
 
     // Highlight selected node and its neighbors
     if (selectedNodeId && graph.hasNode(selectedNodeId)) {
-      graph.setNodeAttribute(selectedNodeId, 'highlighted', true);
+      graph.setNodeAttribute(selectedNodeId, "highlighted", true);
 
       // Highlight neighbors
       graph.forEachNeighbor(selectedNodeId, (neighbor) => {
-        graph.setNodeAttribute(neighbor, 'highlighted', true);
+        graph.setNodeAttribute(neighbor, "highlighted", true);
       });
     }
 
@@ -173,12 +173,12 @@ function SigmaGraphContent({
 
     // Clear all hover highlights
     graph.forEachNode((node) => {
-      graph.setNodeAttribute(node, 'hovered', false);
+      graph.setNodeAttribute(node, "hovered", false);
     });
 
     // Highlight hovered node
     if (hoveredNodeId && graph.hasNode(hoveredNodeId)) {
-      graph.setNodeAttribute(hoveredNodeId, 'hovered', true);
+      graph.setNodeAttribute(hoveredNodeId, "hovered", true);
     }
 
     sigma.refresh();
@@ -264,7 +264,7 @@ function SigmaGraphContent({
 
       graph.forEachNode((_node, attrs) => {
         const { x, y } = attrs;
-        if (typeof x !== 'number' || typeof y !== 'number') {
+        if (typeof x !== "number" || typeof y !== "number") {
           return;
         }
 
@@ -295,13 +295,13 @@ function SigmaGraphContent({
 
     // Update on camera change (event name may vary by sigma version)
     const cameraWithEvents = camera as any;
-    cameraWithEvents.on('updated', updateViewport);
+    cameraWithEvents.on("updated", updateViewport);
 
     // Initial update
     updateViewport();
 
     return () => {
-      cameraWithEvents.off('updated', updateViewport);
+      cameraWithEvents.off("updated", updateViewport);
     };
   }, [sigma]);
 
@@ -316,53 +316,53 @@ function SigmaGraphContent({
 export const SigmaGraphViewEnhanced = memo(function SigmaGraphViewEnhanced(
   props: SigmaGraphViewProps,
 ) {
-  const { className = '', performanceMode = 'balanced', ...contentProps } = props;
+  const { className = "", performanceMode = "balanced", ...contentProps } = props;
 
   // Determine optimal settings based on graph size
   const nodeCount = props.graph.order;
   const autoPerformanceMode = useMemo(() => {
-    if (performanceMode !== 'balanced') {
+    if (performanceMode !== "balanced") {
       return performanceMode;
     }
 
     if (nodeCount > 50_000) {
-      return 'performance';
+      return "performance";
     }
     if (nodeCount < 1000) {
-      return 'quality';
+      return "quality";
     }
-    return 'balanced';
+    return "balanced";
   }, [nodeCount, performanceMode]);
 
   return (
     <SigmaContainer
       className={`sigma-container ${className}`}
       style={{
-        background: 'transparent',
-        height: '100%',
-        width: '100%',
+        background: "transparent",
+        height: "100%",
+        width: "100%",
       }}
       settings={{
         allowInvalidContainer: false,
-        defaultEdgeType: 'line',
-        defaultNodeType: 'circle',
+        defaultEdgeType: "line",
+        defaultNodeType: "circle",
         doubleClickZoomingDuration: 200,
         doubleClickZoomingRatio: 2,
         enableCameraPanning: true,
         enableCameraRotation: false,
         enableCameraZooming: true,
-        enableEdgeEvents: autoPerformanceMode === 'quality',
-        hideEdgesOnMove: autoPerformanceMode !== 'quality',
-        hideLabelsOnMove: autoPerformanceMode !== 'quality',
+        enableEdgeEvents: autoPerformanceMode === "quality",
+        hideEdgesOnMove: autoPerformanceMode !== "quality",
+        hideLabelsOnMove: autoPerformanceMode !== "quality",
         labelRenderedSizeThreshold:
-          autoPerformanceMode === 'performance'
+          autoPerformanceMode === "performance"
             ? 1.5
-            : autoPerformanceMode === 'quality'
+            : autoPerformanceMode === "quality"
               ? 0.5
               : 0.8,
         maxCameraRatio: 20,
         minCameraRatio: 0.05,
-        renderEdgeLabels: autoPerformanceMode === 'quality',
+        renderEdgeLabels: autoPerformanceMode === "quality",
         renderLabels: true,
         zoomDuration: 300,
         zoomToSizeRatioFunction: (x: number) => x,

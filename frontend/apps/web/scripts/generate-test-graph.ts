@@ -8,11 +8,11 @@
  * Example: bun run scripts/generate-test-graph.ts 10000 15000
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
-const NODE_TYPES = ['requirement', 'test', 'defect', 'epic', 'story', 'task'] as const;
-const EDGE_TYPES = ['implements', 'tests', 'depends_on', 'related_to'] as const;
+const NODE_TYPES = ["requirement", "test", "defect", "epic", "story", "task"] as const;
+const EDGE_TYPES = ["implements", "tests", "depends_on", "related_to"] as const;
 
 interface TestNode {
   id: string;
@@ -58,8 +58,8 @@ function generateTestGraph(nodeCount: number, edgeCount: number): TestGraph {
     return {
       data: {
         description: `Generated test ${nodeType} for performance testing`,
-        priority: ['low', 'medium', 'high', 'critical'][Math.floor(Math.random() * 4)],
-        status: ['open', 'in_progress', 'done', 'blocked'][Math.floor(Math.random() * 4)],
+        priority: ["low", "medium", "high", "critical"][Math.floor(Math.random() * 4)],
+        status: ["open", "in_progress", "done", "blocked"][Math.floor(Math.random() * 4)],
         title: `Test ${nodeType} ${i}`,
       },
       id: `test-node-${i}`,
@@ -142,7 +142,7 @@ function main() {
   const generationTime = performance.now() - startTime;
 
   // Write to file
-  const outputDir = path.join(process.cwd(), 'test-data');
+  const outputDir = path.join(process.cwd(), "test-data");
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }

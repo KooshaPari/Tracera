@@ -1,4 +1,4 @@
-const DEFAULT_DESCRIPTION = 'No description provided for this item.';
+const DEFAULT_DESCRIPTION = "No description provided for this item.";
 
 function capitalize(input: string): string {
   if (input.length === 0) {
@@ -8,7 +8,7 @@ function capitalize(input: string): string {
 }
 
 function formatViewTypeLabel(view: unknown, type: string): string {
-  if (typeof view !== 'string') {
+  if (typeof view !== "string") {
     return type;
   }
   const trimmed = view.trim();

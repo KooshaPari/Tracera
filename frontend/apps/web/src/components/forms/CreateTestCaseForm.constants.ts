@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const MAX_ASSIGNED_TO_LENGTH = 255;
 const MAX_AUTOMATION_FRAMEWORK_LENGTH = 100;
@@ -16,29 +16,29 @@ const MIN_TITLE_LENGTH = 1;
 const MAX_TITLE_LENGTH = 500;
 
 const testTypes = [
-  'functional',
-  'integration',
-  'unit',
-  'e2e',
-  'performance',
-  'security',
-  'accessibility',
-  'regression',
-  'smoke',
-  'exploratory',
+  "functional",
+  "integration",
+  "unit",
+  "e2e",
+  "performance",
+  "security",
+  "accessibility",
+  "regression",
+  "smoke",
+  "exploratory",
 ] as const;
 
-const priorities = ['critical', 'high', 'medium', 'low'] as const;
+const priorities = ["critical", "high", "medium", "low"] as const;
 
 const automationStatuses = [
-  'not_automated',
-  'in_progress',
-  'automated',
-  'cannot_automate',
+  "not_automated",
+  "in_progress",
+  "automated",
+  "cannot_automate",
 ] as const;
 
 const testStepSchema = z.object({
-  action: z.string().min(MIN_STEP_ACTION_LENGTH, 'Action is required'),
+  action: z.string().min(MIN_STEP_ACTION_LENGTH, "Action is required"),
   expectedResult: z.string().optional(),
   testData: z.string().optional(),
 });
@@ -62,45 +62,45 @@ const testCaseSchema = z.object({
   testType: z.enum(testTypes),
   title: z
     .string()
-    .min(MIN_TITLE_LENGTH, 'Title is required')
-    .max(MAX_TITLE_LENGTH, 'Title too long'),
+    .min(MIN_TITLE_LENGTH, "Title is required")
+    .max(MAX_TITLE_LENGTH, "Title too long"),
 });
 
 type TestCaseFormInput = z.input<typeof testCaseSchema>;
 type TestCaseFormData = z.infer<typeof testCaseSchema>;
 
 const categoryOptions = [
-  'User Authentication',
-  'User Interface',
-  'API',
-  'Database',
-  'Integration',
-  'Performance',
-  'Security',
-  'Accessibility',
-  'Mobile',
-  'Desktop',
-  'Other',
+  "User Authentication",
+  "User Interface",
+  "API",
+  "Database",
+  "Integration",
+  "Performance",
+  "Security",
+  "Accessibility",
+  "Mobile",
+  "Desktop",
+  "Other",
 ];
 
 const typeLabels: Record<(typeof testTypes)[number], string> = {
-  accessibility: 'Accessibility',
-  e2e: 'End-to-End',
-  exploratory: 'Exploratory',
-  functional: 'Functional',
-  integration: 'Integration',
-  performance: 'Performance',
-  regression: 'Regression',
-  security: 'Security',
-  smoke: 'Smoke',
-  unit: 'Unit',
+  accessibility: "Accessibility",
+  e2e: "End-to-End",
+  exploratory: "Exploratory",
+  functional: "Functional",
+  integration: "Integration",
+  performance: "Performance",
+  regression: "Regression",
+  security: "Security",
+  smoke: "Smoke",
+  unit: "Unit",
 };
 
 const automationLabels: Record<(typeof automationStatuses)[number], string> = {
-  automated: 'Fully Automated',
-  cannot_automate: 'Cannot Be Automated',
-  in_progress: 'Automation In Progress',
-  not_automated: 'Not Automated (Manual)',
+  automated: "Fully Automated",
+  cannot_automate: "Cannot Be Automated",
+  in_progress: "Automation In Progress",
+  not_automated: "Not Automated (Manual)",
 };
 
 export {

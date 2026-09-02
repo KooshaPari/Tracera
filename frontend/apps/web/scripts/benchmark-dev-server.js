@@ -5,8 +5,8 @@
  * Measures startup time and HMR update latency
  */
 
-import { spawn } from 'node:child_process';
-import { performance } from 'node:perf_hooks';
+import { spawn } from "node:child_process";
+import { performance } from "node:perf_hooks";
 
 const TARGETS = {
   startup: 3000, // Target: <3s startup time
@@ -17,19 +17,19 @@ let startupTime = 0;
 
 // Measure startup time
 const startTime = performance.now();
-const devServer = spawn('bun', ['run', 'dev'], {
+const devServer = spawn("bun", ["run", "dev"], {
   shell: true,
-  stdio: 'pipe',
+  stdio: "pipe",
 });
 
 let serverReady = false;
 
-devServer.stdout.on('data', (data) => {
+devServer.stdout.on("data", (data) => {
   const output = data.toString();
   process.stdout.write(output);
 
   // Detect server ready
-  if (!serverReady && (output.includes('Local:') || output.includes('ready in'))) {
+  if (!serverReady && (output.includes("Local:") || output.includes("ready in"))) {
     serverReady = true;
     startupTime = Math.round(performance.now() - startTime);
 
@@ -45,11 +45,11 @@ devServer.stdout.on('data', (data) => {
   }
 });
 
-devServer.stderr.on('data', (data) => {
+devServer.stderr.on("data", (data) => {
   process.stderr.write(data);
 });
 
-devServer.on('error', (error) => {
+devServer.on("error", (error) => {
   process.exit(1);
 });
 

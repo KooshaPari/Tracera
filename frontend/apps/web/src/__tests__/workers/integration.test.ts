@@ -4,23 +4,25 @@
  * Tests actual worker implementations with real computations
  */
 
-import type { Remote } from 'comlink';
+import type { Remote } from "comlink";
 
-import { wrap } from 'comlink';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { wrap } from "comlink";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import type { DataTransformWorkerAPI } from '../../workers/data-transform.worker';
-import type { ExportImportWorkerAPI } from '../../workers/export-import.worker';
-import type { GraphLayoutWorkerAPI } from '../../workers/graph-layout.worker';
-import type { SearchIndexWorkerAPI } from '../../workers/search-index.worker';
+import type { DataTransformWorkerAPI } from "../../workers/data-transform.worker";
+import type { ExportImportWorkerAPI } from "../../workers/export-import.worker";
+import type { GraphLayoutWorkerAPI } from "../../workers/graphLayout.worker";
+import type { SearchIndexWorkerAPI } from "../../workers/search-index.worker";
 
-describe('Graph Layout Worker Integration', () => {
+const describeWorker = typeof Worker === "undefined" ? describe.skip : describe;
+
+describeWorker("Graph Layout Worker Integration", () => {
   let worker: Worker;
   let api: Remote<GraphLayoutWorkerAPI>;
 
   beforeEach(() => {
-    worker = new Worker(new URL('../../workers/graph-layout.worker.ts', import.meta.url), {
-      type: 'module',
+    worker = new Worker(new URL("../../workers/graphLayout.worker.ts", import.meta.url), {
+      type: "module",
     });
     api = wrap<GraphLayoutWorkerAPI>(worker);
   });
@@ -29,19 +31,19 @@ describe('Graph Layout Worker Integration', () => {
     worker.terminate();
   });
 
-  it('should compute dagre layout for simple graph', async () => {
+  it("should compute dagre layout for simple graph", async () => {
     const nodes = [
-      { height: 50, id: 'A', width: 100 },
-      { height: 50, id: 'B', width: 100 },
-      { height: 50, id: 'C', width: 100 },
+      { height: 50, id: "A", width: 100 },
+      { height: 50, id: "B", width: 100 },
+      { height: 50, id: "C", width: 100 },
     ];
 
     const edges = [
-      { id: 'AB', source: 'A', target: 'B' },
-      { id: 'BC', source: 'B', target: 'C' },
+      { id: "AB", source: "A", target: "B" },
+      { id: "BC", source: "B", target: "C" },
     ];
 
-    const result = await api.computeLayout(nodes, edges, { type: 'dagre' });
+    const result = await api.computeLayout(nodes, edges, { algorithm: "dagre" });
 
     expect(result.positions).toBeDefined();
     expect(result.positions.A).toBeDefined();
@@ -52,7 +54,7 @@ describe('Graph Layout Worker Integration', () => {
     expect(result.size.height).toBeGreaterThan(0);
   });
 
-  it('should compute force-directed layout', async () => {
+  it("should compute force-directed layout", async () => {
     const nodes = Array.from({ length: 10 }, (_, i) => ({
       height: 40,
       id: `node-${i}`,
@@ -66,15 +68,14 @@ describe('Graph Layout Worker Integration', () => {
     }));
 
     const result = await api.computeLayout(nodes, edges, {
-      iterations: 50,
-      type: 'force',
+      algorithm: "d3-force",
     });
 
     expect(result.positions).toBeDefined();
     expect(Object.keys(result.positions)).toHaveLength(10);
   });
 
-  it('should handle large graphs efficiently', async () => {
+  it("should handle large graphs efficiently", async () => {
     const nodeCount = 1000;
     const nodes = Array.from({ length: nodeCount }, (_, i) => ({
       height: 50,
@@ -89,7 +90,7 @@ describe('Graph Layout Worker Integration', () => {
     }));
 
     const startTime = performance.now();
-    const result = await api.computeLayout(nodes, edges, { type: 'dagre' });
+    const result = await api.computeLayout(nodes, edges, { algorithm: "dagre" });
     const duration = performance.now() - startTime;
 
     expect(result.positions).toBeDefined();
@@ -99,13 +100,13 @@ describe('Graph Layout Worker Integration', () => {
   });
 });
 
-describe('Data Transform Worker Integration', () => {
+describeWorker("Data Transform Worker Integration", () => {
   let worker: Worker;
   let api: Remote<DataTransformWorkerAPI>;
 
   beforeEach(() => {
-    worker = new Worker(new URL('../../workers/data-transform.worker.ts', import.meta.url), {
-      type: 'module',
+    worker = new Worker(new URL("../../workers/data-transform.worker.ts", import.meta.url), {
+      type: "module",
     });
     api = wrap<DataTransformWorkerAPI>(worker);
   });
@@ -114,15 +115,15 @@ describe('Data Transform Worker Integration', () => {
     worker.terminate();
   });
 
-  it('should sort large dataset', async () => {
+  it("should sort large dataset", async () => {
     const data = Array.from({ length: 10_000 }, (_, i) => ({
       id: i,
       value: Math.random() * 1000,
     }));
 
     const sorted = await api.sortData(data, {
-      direction: 'asc',
-      field: 'value',
+      direction: "asc",
+      field: "value",
     });
 
     expect(sorted).toHaveLength(data.length);
@@ -133,19 +134,19 @@ describe('Data Transform Worker Integration', () => {
     }
   });
 
-  it('should aggregate data by field', async () => {
+  it("should aggregate data by field", async () => {
     const data = [
-      { category: 'A', value: 10 },
-      { category: 'B', value: 20 },
-      { category: 'A', value: 15 },
-      { category: 'B', value: 25 },
-      { category: 'C', value: 30 },
+      { category: "A", value: 10 },
+      { category: "B", value: 20 },
+      { category: "A", value: 15 },
+      { category: "B", value: 25 },
+      { category: "C", value: 30 },
     ];
 
     const aggregated = await api.aggregateData(data, {
-      aggregateField: 'value',
-      aggregationType: 'sum',
-      groupByField: 'category',
+      aggregateField: "value",
+      aggregationType: "sum",
+      groupByField: "category",
     });
 
     expect(aggregated).toEqual({
@@ -155,10 +156,10 @@ describe('Data Transform Worker Integration', () => {
     });
   });
 
-  it('should calculate statistics correctly', async () => {
+  it("should calculate statistics correctly", async () => {
     const data = [{ value: 10 }, { value: 20 }, { value: 30 }, { value: 40 }, { value: 50 }];
 
-    const stats = await api.calculateStatistics(data, { field: 'value' });
+    const stats = await api.calculateStatistics(data, { field: "value" });
 
     expect(stats.count).toBe(5);
     expect(stats.sum).toBe(150);
@@ -168,29 +169,29 @@ describe('Data Transform Worker Integration', () => {
     expect(stats.max).toBe(50);
   });
 
-  it('should deduplicate data', async () => {
+  it("should deduplicate data", async () => {
     const data = [
-      { id: 1, name: 'A' },
-      { id: 2, name: 'B' },
-      { id: 1, name: 'A' },
-      { id: 3, name: 'C' },
-      { id: 2, name: 'B' },
+      { id: 1, name: "A" },
+      { id: 2, name: "B" },
+      { id: 1, name: "A" },
+      { id: 3, name: "C" },
+      { id: 2, name: "B" },
     ];
 
-    const deduped = await api.deduplicateData(data, { field: 'id' });
+    const deduped = await api.deduplicateData(data, { field: "id" });
 
     expect(deduped).toHaveLength(3);
     expect(deduped.map((d) => d.id)).toEqual([1, 2, 3]);
   });
 });
 
-describe('Export/Import Worker Integration', () => {
+describeWorker("Export/Import Worker Integration", () => {
   let worker: Worker;
   let api: Remote<ExportImportWorkerAPI>;
 
   beforeEach(() => {
-    worker = new Worker(new URL('../../workers/export-import.worker.ts', import.meta.url), {
-      type: 'module',
+    worker = new Worker(new URL("../../workers/export-import.worker.ts", import.meta.url), {
+      type: "module",
     });
     api = wrap<ExportImportWorkerAPI>(worker);
   });
@@ -199,11 +200,11 @@ describe('Export/Import Worker Integration', () => {
     worker.terminate();
   });
 
-  it('should parse and generate NDJSON', async () => {
+  it("should parse and generate NDJSON", async () => {
     const data = [
-      { id: 1, name: 'Alice' },
-      { id: 2, name: 'Bob' },
-      { id: 3, name: 'Charlie' },
+      { id: 1, name: "Alice" },
+      { id: 2, name: "Bob" },
+      { id: 3, name: "Charlie" },
     ];
 
     const ndjson = await api.generateNDJSON(data);
@@ -213,36 +214,36 @@ describe('Export/Import Worker Integration', () => {
     expect(parsed).toEqual(data);
   });
 
-  it('should parse and generate CSV', async () => {
+  it("should parse and generate CSV", async () => {
     const data = [
-      { age: 30, city: 'NYC', name: 'Alice' },
-      { age: 25, city: 'LA', name: 'Bob' },
-      { age: 35, city: 'SF', name: 'Charlie' },
+      { age: 30, city: "NYC", name: "Alice" },
+      { age: 25, city: "LA", name: "Bob" },
+      { age: 35, city: "SF", name: "Charlie" },
     ];
 
     const csv = await api.generateCSV(data);
-    expect(csv).toContain('name,age,city');
-    expect(csv).toContain('Alice,30,NYC');
+    expect(csv).toContain("name,age,city");
+    expect(csv).toContain("Alice,30,NYC");
 
     const parsed = await api.parseCSV(csv, { hasHeader: true });
     expect(parsed).toHaveLength(3);
-    expect(parsed[0].name).toBe('Alice');
+    expect(parsed[0].name).toBe("Alice");
   });
 
-  it('should validate data against schema', async () => {
+  it("should validate data against schema", async () => {
     const data = [
-      { age: 30, id: 1, name: 'Alice' },
-      { id: 2, name: 'Bob' }, // Missing age
-      { age: '35', id: 3, name: 'Charlie' }, // Wrong type
-      { age: 40, id: 4, name: 'David' },
+      { age: 30, id: 1, name: "Alice" },
+      { id: 2, name: "Bob" }, // Missing age
+      { age: "35", id: 3, name: "Charlie" }, // Wrong type
+      { age: 40, id: 4, name: "David" },
     ];
 
     const result = await api.validateData(data, {
-      required: ['id', 'name', 'age'],
+      required: ["id", "name", "age"],
       types: {
-        age: 'number',
-        id: 'number',
-        name: 'string',
+        age: "number",
+        id: "number",
+        name: "string",
       },
     });
 
@@ -250,7 +251,7 @@ describe('Export/Import Worker Integration', () => {
     expect(result.invalid).toHaveLength(2);
   });
 
-  it('should handle large JSON serialization', async () => {
+  it("should handle large JSON serialization", async () => {
     const largeData = Array.from({ length: 10_000 }, (_, i) => ({
       data: `Item ${i}`,
       id: i,
@@ -271,13 +272,13 @@ describe('Export/Import Worker Integration', () => {
   });
 });
 
-describe('Search Index Worker Integration', () => {
+describeWorker("Search Index Worker Integration", () => {
   let worker: Worker;
   let api: Remote<SearchIndexWorkerAPI>;
 
   beforeEach(() => {
-    worker = new Worker(new URL('../../workers/search-index.worker.ts', import.meta.url), {
-      type: 'module',
+    worker = new Worker(new URL("../../workers/search-index.worker.ts", import.meta.url), {
+      type: "module",
     });
     api = wrap<SearchIndexWorkerAPI>(worker);
   });
@@ -286,48 +287,48 @@ describe('Search Index Worker Integration', () => {
     worker.terminate();
   });
 
-  it('should build and search index', async () => {
+  it("should build and search index", async () => {
     const documents = [
       {
         fields: {
-          content: 'React is a JavaScript library for building user interfaces',
-          title: 'Introduction to React',
+          content: "React is a JavaScript library for building user interfaces",
+          title: "Introduction to React",
         },
-        id: '1',
+        id: "1",
       },
       {
         fields: {
-          content: 'Vue is a progressive framework for building user interfaces',
-          title: 'Vue.js Basics',
+          content: "Vue is a progressive framework for building user interfaces",
+          title: "Vue.js Basics",
         },
-        id: '2',
+        id: "2",
       },
       {
         fields: {
-          content: 'Angular is a platform for building web applications',
-          title: 'Angular Guide',
+          content: "Angular is a platform for building web applications",
+          title: "Angular Guide",
         },
-        id: '3',
+        id: "3",
       },
     ];
 
     const index = await api.buildIndex(documents);
     expect(index).toBeDefined();
 
-    const results = await api.search(index, 'user interfaces');
+    const results = await api.search(index, "user interfaces");
 
     expect(results.length).toBeGreaterThan(0);
     expect(results[0].score).toBeGreaterThan(0);
   });
 
-  it('should perform fuzzy search', async () => {
+  it("should perform fuzzy search", async () => {
     const documents = [
-      { fields: { text: 'The quick brown fox' }, id: '1' },
-      { fields: { text: 'The quik brwn fox' }, id: '2' }, // Typos
+      { fields: { text: "The quick brown fox" }, id: "1" },
+      { fields: { text: "The quik brwn fox" }, id: "2" }, // Typos
     ];
 
     const index = await api.buildIndex(documents);
-    const results = await api.search(index, 'quick brown', {
+    const results = await api.search(index, "quick brown", {
       fuzzy: true,
       maxDistance: 2,
     });
@@ -335,24 +336,24 @@ describe('Search Index Worker Integration', () => {
     expect(results).toHaveLength(2);
   });
 
-  it('should provide auto-suggestions', async () => {
+  it("should provide auto-suggestions", async () => {
     const documents = [
-      { fields: { text: 'JavaScript programming' }, id: '1' },
-      { fields: { text: 'Java programming' }, id: '2' },
-      { fields: { text: 'Python programming' }, id: '3' },
+      { fields: { text: "JavaScript programming" }, id: "1" },
+      { fields: { text: "Java programming" }, id: "2" },
+      { fields: { text: "Python programming" }, id: "3" },
     ];
 
     const index = await api.buildIndex(documents);
-    const suggestions = await api.autoSuggest(index, 'java', 5);
+    const suggestions = await api.autoSuggest(index, "java", 5);
 
     expect(suggestions.length).toBeGreaterThan(0);
-    expect(suggestions.some((s) => s.includes('java'))).toBeTruthy();
+    expect(suggestions.some((s) => s.includes("java"))).toBeTruthy();
   });
 
-  it('should update index incrementally', async () => {
+  it("should update index incrementally", async () => {
     const documents = [
-      { fields: { text: 'Document 1' }, id: '1' },
-      { fields: { text: 'Document 2' }, id: '2' },
+      { fields: { text: "Document 1" }, id: "1" },
+      { fields: { text: "Document 2" }, id: "2" },
     ];
 
     let index = await api.buildIndex(documents);
@@ -362,9 +363,9 @@ describe('Search Index Worker Integration', () => {
     // Add new document
     index = await api.updateIndex(index, [
       {
-        action: 'add',
-        document: { fields: { text: 'Document 3' }, id: '3' },
-        id: '3',
+        action: "add",
+        document: { fields: { text: "Document 3" }, id: "3" },
+        id: "3",
       },
     ]);
 
@@ -372,13 +373,13 @@ describe('Search Index Worker Integration', () => {
     expect(updatedStats.documentCount).toBe(3);
 
     // Remove document
-    index = await api.updateIndex(index, [{ action: 'remove', id: '2' }]);
+    index = await api.updateIndex(index, [{ action: "remove", id: "2" }]);
 
     const finalStats = await api.getIndexStats(index);
     expect(finalStats.documentCount).toBe(2);
   });
 
-  it('should handle large index efficiently', async () => {
+  it("should handle large index efficiently", async () => {
     const documents = Array.from({ length: 5000 }, (_, i) => ({
       fields: {
         content: `This is the content of document number ${i} with some random text`,
@@ -394,7 +395,7 @@ describe('Search Index Worker Integration', () => {
     expect(buildDuration).toBeLessThan(5000); // Should build in < 5 seconds
 
     const searchStart = performance.now();
-    const results = await api.search(index, 'document content');
+    const results = await api.search(index, "document content");
     const searchDuration = performance.now() - searchStart;
 
     expect(searchDuration).toBeLessThan(1000); // Should search in < 1 second
@@ -402,8 +403,8 @@ describe('Search Index Worker Integration', () => {
   });
 });
 
-describe('Performance Benchmarks', () => {
-  it('should process 10k items faster in worker than main thread', async () => {
+describeWorker("Performance Benchmarks", () => {
+  it("should process 10k items faster in worker than main thread", async () => {
     const data = Array.from({ length: 10_000 }, (_, i) => ({
       id: i,
       value: Math.random() * 1000,
@@ -415,15 +416,15 @@ describe('Performance Benchmarks', () => {
     const mainThreadDuration = performance.now() - mainThreadStart;
 
     // Worker sorting
-    const worker = new Worker(new URL('../../workers/data-transform.worker.ts', import.meta.url), {
-      type: 'module',
+    const worker = new Worker(new URL("../../workers/data-transform.worker.ts", import.meta.url), {
+      type: "module",
     });
     const api = wrap<DataTransformWorkerAPI>(worker);
 
     const workerStart = performance.now();
     const workerSorted = await api.sortData(data, {
-      direction: 'asc',
-      field: 'value',
+      direction: "asc",
+      field: "value",
     });
     const workerDuration = performance.now() - workerStart;
 

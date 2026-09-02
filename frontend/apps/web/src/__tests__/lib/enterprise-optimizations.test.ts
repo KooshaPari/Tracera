@@ -3,8 +3,8 @@
  * Target: 0% → 95% coverage
  */
 
-import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   dateUtils,
@@ -16,27 +16,27 @@ import {
   useErrorReporter,
   useGridLayout,
   useVirtualScroll,
-} from '../../lib/enterprise-optimizations';
+} from "../../lib/enterprise-optimizations";
 
 // Mock react-hotkeys-hook
 const mockUseHotkeys = vi.fn();
-vi.mock('react-hotkeys-hook', () => ({
+vi.mock("react-hotkeys-hook", () => ({
   useHotkeys: (...args: unknown[]) => mockUseHotkeys(...args),
 }));
 
 // Mock date-fns
-vi.mock('date-fns', () => ({
+vi.mock("date-fns", () => ({
   format: vi.fn((_date, formatStr) => `formatted:${formatStr}`),
-  formatDistanceToNow: vi.fn(() => '2 hours ago'),
-  formatRelative: vi.fn(() => 'yesterday'),
+  formatDistanceToNow: vi.fn(() => "2 hours ago"),
+  formatRelative: vi.fn(() => "yesterday"),
 }));
 
 // Mock zustand persist
-vi.mock('zustand/middleware', () => ({
+vi.mock("zustand/middleware", () => ({
   persist: <T>(fn: () => T) => fn,
 }));
 
-describe('enterprise-optimizations', () => {
+describe("enterprise-optimizations", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -45,75 +45,75 @@ describe('enterprise-optimizations', () => {
     vi.useRealTimers();
   });
 
-  describe('useEnterpriseHotkeys', () => {
-    it('should register keyboard shortcuts', () => {
+  describe("useEnterpriseHotkeys", () => {
+    it("should register keyboard shortcuts", () => {
       renderHook(() => useEnterpriseHotkeys());
 
       expect(mockUseHotkeys).toHaveBeenCalled();
     });
   });
 
-  describe('dateUtils', () => {
-    it('should format date with default format', () => {
-      const result = dateUtils.format(new Date('2024-01-01'));
+  describe("dateUtils", () => {
+    it("should format date with default format", () => {
+      const result = dateUtils.format(new Date("2024-01-01"));
       expect(result).toBeDefined();
     });
 
-    it('should format date with custom format', () => {
-      const result = dateUtils.format(new Date('2024-01-01'), 'yyyy-MM-dd');
+    it("should format date with custom format", () => {
+      const result = dateUtils.format(new Date("2024-01-01"), "yyyy-MM-dd");
       expect(result).toBeDefined();
     });
 
-    it('should format date string', () => {
-      const result = dateUtils.format('2024-01-01');
+    it("should format date string", () => {
+      const result = dateUtils.format("2024-01-01");
       expect(result).toBeDefined();
     });
 
-    it('should format relative date', () => {
+    it("should format relative date", () => {
       const result = dateUtils.formatRelative(new Date());
       expect(result).toBeDefined();
     });
 
-    it('should format distance to now', () => {
+    it("should format distance to now", () => {
       const result = dateUtils.formatDistanceToNow(new Date());
       expect(result).toBeDefined();
     });
 
-    it('should format date only', () => {
+    it("should format date only", () => {
       const result = dateUtils.formatDate(new Date());
       expect(result).toBeDefined();
     });
 
-    it('should format date and time', () => {
+    it("should format date and time", () => {
       const result = dateUtils.formatDateTime(new Date());
       expect(result).toBeDefined();
     });
 
-    it('should format time only', () => {
+    it("should format time only", () => {
       const result = dateUtils.formatTime(new Date());
       expect(result).toBeDefined();
     });
 
-    it('should format for audit', () => {
+    it("should format for audit", () => {
       const result = dateUtils.formatForAudit(new Date());
       expect(result).toBeDefined();
     });
 
-    it('should format for display (recent date)', () => {
+    it("should format for display (recent date)", () => {
       const recentDate = new Date();
       recentDate.setHours(recentDate.getHours() - 2);
       const result = dateUtils.formatForDisplay(recentDate);
       expect(result).toBeDefined();
     });
 
-    it('should format for display (this week)', () => {
+    it("should format for display (this week)", () => {
       const weekDate = new Date();
       weekDate.setDate(weekDate.getDate() - 3);
       const result = dateUtils.formatForDisplay(weekDate);
       expect(result).toBeDefined();
     });
 
-    it('should format for display (older)', () => {
+    it("should format for display (older)", () => {
       const oldDate = new Date();
       oldDate.setDate(oldDate.getDate() - 10);
       const result = dateUtils.formatForDisplay(oldDate);
@@ -121,28 +121,28 @@ describe('enterprise-optimizations', () => {
     });
   });
 
-  describe('useEnterpriseStore', () => {
-    it('should initialize with default state', () => {
+  describe("useEnterpriseStore", () => {
+    it("should initialize with default state", () => {
       const { result } = renderHook(() => useEnterpriseStore());
 
-      expect(result.current.preferences.theme).toBe('system');
+      expect(result.current.preferences.theme).toBe("system");
       expect(result.current.preferences.compactMode).toBe(false);
       expect(result.current.viewSettings.defaultPageSize).toBe(20);
       expect(result.current.recentProjects).toEqual([]);
       expect(result.current.notifications).toEqual([]);
     });
 
-    it('should update preferences', () => {
+    it("should update preferences", () => {
       const { result } = renderHook(() => useEnterpriseStore());
 
       act(() => {
-        result.current.updatePreferences({ theme: 'dark' });
+        result.current.updatePreferences({ theme: "dark" });
       });
 
-      expect(result.current.preferences.theme).toBe('dark');
+      expect(result.current.preferences.theme).toBe("dark");
     });
 
-    it('should update view settings', () => {
+    it("should update view settings", () => {
       const { result } = renderHook(() => useEnterpriseStore());
 
       act(() => {
@@ -152,29 +152,29 @@ describe('enterprise-optimizations', () => {
       expect(result.current.viewSettings.defaultPageSize).toBe(50);
     });
 
-    it('should add to recent projects', () => {
+    it("should add to recent projects", () => {
       const { result } = renderHook(() => useEnterpriseStore());
 
       act(() => {
-        result.current.addToRecentProjects({ id: 'proj-1', name: 'Project 1' });
+        result.current.addToRecentProjects({ id: "proj-1", name: "Project 1" });
       });
 
       expect(result.current.recentProjects).toHaveLength(1);
-      expect(result.current.recentProjects[0].id).toBe('proj-1');
+      expect(result.current.recentProjects[0].id).toBe("proj-1");
     });
 
-    it('should update existing recent project', () => {
+    it("should update existing recent project", () => {
       const { result } = renderHook(() => useEnterpriseStore());
 
       act(() => {
-        result.current.addToRecentProjects({ id: 'proj-1', name: 'Project 1' });
-        result.current.addToRecentProjects({ id: 'proj-1', name: 'Project 1' });
+        result.current.addToRecentProjects({ id: "proj-1", name: "Project 1" });
+        result.current.addToRecentProjects({ id: "proj-1", name: "Project 1" });
       });
 
       expect(result.current.recentProjects).toHaveLength(1);
     });
 
-    it('should limit recent projects to 10', () => {
+    it("should limit recent projects to 10", () => {
       const { result } = renderHook(() => useEnterpriseStore());
 
       act(() => {
@@ -193,39 +193,39 @@ describe('enterprise-optimizations', () => {
       expect(result.current.recentProjects.length).toBeLessThanOrEqual(11);
     });
 
-    it('should clear recent projects', () => {
+    it("should clear recent projects", () => {
       const { result } = renderHook(() => useEnterpriseStore());
 
       act(() => {
-        result.current.addToRecentProjects({ id: 'proj-1', name: 'Project 1' });
+        result.current.addToRecentProjects({ id: "proj-1", name: "Project 1" });
         result.current.clearRecentProjects();
       });
 
       expect(result.current.recentProjects).toEqual([]);
     });
 
-    it('should set workflow context', () => {
+    it("should set workflow context", () => {
       const { result } = renderHook(() => useEnterpriseStore());
 
       act(() => {
         result.current.setWorkflowContext({
-          currentProject: 'proj-1',
-          currentView: 'table',
+          currentProject: "proj-1",
+          currentView: "table",
         });
       });
 
-      expect(result.current.workflow.currentProject).toBe('proj-1');
-      expect(result.current.workflow.currentView).toBe('table');
+      expect(result.current.workflow.currentProject).toBe("proj-1");
+      expect(result.current.workflow.currentView).toBe("table");
     });
 
-    it('should add notification', () => {
+    it("should add notification", () => {
       const { result } = renderHook(() => useEnterpriseStore());
 
       act(() => {
         result.current.addNotification({
-          type: 'info',
-          title: 'Test',
-          message: 'Test message',
+          type: "info",
+          title: "Test",
+          message: "Test message",
         });
       });
 
@@ -233,9 +233,9 @@ describe('enterprise-optimizations', () => {
       const notification = result.current.notifications[0];
       expect(notification).toBeDefined();
       if (notification) {
-        expect(notification.title).toBe('Test');
-        expect(notification.message).toBe('Test message');
-        expect(notification.type).toBe('info');
+        expect(notification.title).toBe("Test");
+        expect(notification.message).toBe("Test message");
+        expect(notification.type).toBe("info");
         expect(notification.id).toBeDefined();
         expect(notification.timestamp).toBeDefined();
         // read property may not be set by default in the implementation
@@ -243,15 +243,15 @@ describe('enterprise-optimizations', () => {
       }
     });
 
-    it('should limit notifications to 50', () => {
+    it("should limit notifications to 50", () => {
       const { result } = renderHook(() => useEnterpriseStore());
 
       act(() => {
         for (let i = 0; i < 60; i++) {
           result.current.addNotification({
-            type: 'info',
+            type: "info",
             title: `Notification ${i}`,
-            message: 'Test',
+            message: "Test",
           });
         }
       });
@@ -261,14 +261,14 @@ describe('enterprise-optimizations', () => {
       expect(result.current.notifications.length).toBeLessThanOrEqual(51);
     });
 
-    it('should mark notification as read', () => {
+    it("should mark notification as read", () => {
       const { result } = renderHook(() => useEnterpriseStore());
 
       act(() => {
         result.current.addNotification({
-          type: 'info',
-          title: 'Test',
-          message: 'Test',
+          type: "info",
+          title: "Test",
+          message: "Test",
         });
       });
 
@@ -281,14 +281,14 @@ describe('enterprise-optimizations', () => {
       expect(result.current.notifications[0].read).toBe(true);
     });
 
-    it('should clear notifications', () => {
+    it("should clear notifications", () => {
       const { result } = renderHook(() => useEnterpriseStore());
 
       act(() => {
         result.current.addNotification({
-          type: 'info',
-          title: 'Test',
-          message: 'Test',
+          type: "info",
+          title: "Test",
+          message: "Test",
         });
         result.current.clearNotifications();
       });
@@ -297,8 +297,8 @@ describe('enterprise-optimizations', () => {
     });
   });
 
-  describe('useVirtualScroll', () => {
-    it('should calculate visible items', () => {
+  describe("useVirtualScroll", () => {
+    it("should calculate visible items", () => {
       const items = Array.from({ length: 100 }, (_, i) => ({ id: i }));
       const { result } = renderHook(() => useVirtualScroll(items, 50, 200, 5));
 
@@ -307,7 +307,7 @@ describe('enterprise-optimizations', () => {
       expect(result.current.endIndex).toBeLessThanOrEqual(items.length);
     });
 
-    it('should handle scroll events', () => {
+    it("should handle scroll events", () => {
       const items = Array.from({ length: 100 }, (_, i) => ({ id: i }));
       const { result } = renderHook(() => useVirtualScroll(items, 50, 200, 5));
 
@@ -325,7 +325,7 @@ describe('enterprise-optimizations', () => {
       expect(result.current.startIndex).toBeGreaterThanOrEqual(0);
     });
 
-    it('should calculate total height', () => {
+    it("should calculate total height", () => {
       const items = Array.from({ length: 50 }, (_, i) => ({ id: i }));
       const { result } = renderHook(() => useVirtualScroll(items, 50, 200, 5));
 
@@ -333,52 +333,52 @@ describe('enterprise-optimizations', () => {
     });
   });
 
-  describe('useDebounce', () => {
-    it('should debounce value updates', async () => {
+  describe("useDebounce", () => {
+    it("should debounce value updates", async () => {
       vi.useFakeTimers();
       const { result, rerender } = renderHook(({ value, delay }) => useDebounce(value, delay), {
-        initialProps: { value: 'initial', delay: 100 },
+        initialProps: { value: "initial", delay: 100 },
       });
 
-      expect(result.current).toBe('initial');
+      expect(result.current).toBe("initial");
 
-      rerender({ value: 'updated', delay: 100 });
+      rerender({ value: "updated", delay: 100 });
 
       // Value should not update immediately
-      expect(result.current).toBe('initial');
+      expect(result.current).toBe("initial");
 
       act(() => {
         vi.advanceTimersByTime(100);
       });
 
-      expect(result.current).toBe('updated');
+      expect(result.current).toBe("updated");
       vi.useRealTimers();
     });
 
-    it('should handle different delay values', async () => {
+    it("should handle different delay values", async () => {
       vi.useFakeTimers();
       const { result, rerender } = renderHook(({ value, delay }) => useDebounce(value, delay), {
-        initialProps: { value: 'initial', delay: 50 },
+        initialProps: { value: "initial", delay: 50 },
       });
 
-      expect(result.current).toBe('initial');
+      expect(result.current).toBe("initial");
 
-      rerender({ value: 'updated', delay: 50 });
+      rerender({ value: "updated", delay: 50 });
 
       // Value should not update immediately
-      expect(result.current).toBe('initial');
+      expect(result.current).toBe("initial");
 
       act(() => {
         vi.advanceTimersByTime(50);
       });
 
-      expect(result.current).toBe('updated');
+      expect(result.current).toBe("updated");
       vi.useRealTimers();
     });
   });
 
-  describe('useGridLayout', () => {
-    it('should calculate columns based on container width', () => {
+  describe("useGridLayout", () => {
+    it("should calculate columns based on container width", () => {
       const _mockRef = {
         current: {
           clientWidth: 1000,
@@ -397,7 +397,7 @@ describe('enterprise-optimizations', () => {
       expect(result.current.itemWidth).toBeDefined();
     });
 
-    it('should handle container resize', () => {
+    it("should handle container resize", () => {
       global.ResizeObserver = class ResizeObserver {
         observe = vi.fn();
         disconnect = vi.fn();
@@ -409,45 +409,46 @@ describe('enterprise-optimizations', () => {
     });
   });
 
-  describe('EnterpriseError', () => {
-    it('should create error with all properties', () => {
-      const originalError = new Error('Original');
+  describe("EnterpriseError", () => {
+    it("should create error with all properties", () => {
+      const originalError = new Error("Original");
       const error = new EnterpriseError(
-        'Test error',
-        'TEST_CODE',
+        "Test error",
+        "TEST_CODE",
         originalError,
-        { context: 'test' },
-        'high',
+        { context: "test" },
+        "high",
         true,
       );
 
       expect(error).toBeInstanceOf(Error);
       expect(error).toBeInstanceOf(EnterpriseError);
-      expect(error.message).toBe('Test error');
-      expect(error.code).toBe('TEST_CODE');
+      expect(error.message).toBe("Test error");
+      expect(error.code).toBe("TEST_CODE");
       expect(error.originalError).toBe(originalError);
-      expect(error.context).toEqual({ context: 'test' });
-      expect(error.severity).toBe('high');
+      expect(error.context).toEqual({ context: "test" });
+      expect(error.severity).toBe("high");
       expect(error.retryable).toBe(true);
-      expect(error.name).toBe('EnterpriseError');
+      expect(error.name).toBe("EnterpriseError");
     });
 
-    it('should create error with defaults', () => {
-      const error = new EnterpriseError('Test error', 'TEST_CODE');
+    it("should create error with defaults", () => {
+      const error = new EnterpriseError("Test error", "TEST_CODE");
 
-      expect(error.severity).toBe('medium');
+      expect(error.severity).toBe("medium");
       expect(error.retryable).toBe(false);
       expect(error.originalError).toBeUndefined();
       expect(error.context).toBeUndefined();
     });
   });
 
-  describe('useErrorReporter', () => {
-    it('should report error', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  describe("useErrorReporter", () => {
+    it("should report error", async () => {
+      const { logger } = await import("@/lib/logger");
+      const consoleSpy = vi.spyOn(logger, "error").mockImplementation(() => {});
       const { result } = renderHook(() => useErrorReporter());
 
-      const error = new EnterpriseError('Test error', 'TEST_CODE');
+      const error = new EnterpriseError("Test error", "TEST_CODE");
 
       act(() => {
         result.current.reportError(error);
@@ -458,8 +459,8 @@ describe('enterprise-optimizations', () => {
     });
   });
 
-  describe('MIGRATION_RECOMMENDATIONS', () => {
-    it('should have all migration recommendations', () => {
+  describe("MIGRATION_RECOMMENDATIONS", () => {
+    it("should have all migration recommendations", () => {
       expect(MIGRATION_RECOMMENDATIONS.apiMigration).toBeDefined();
       expect(MIGRATION_RECOMMENDATIONS.websocketMigration).toBeDefined();
       expect(MIGRATION_RECOMMENDATIONS.dateMigration).toBeDefined();
@@ -467,7 +468,7 @@ describe('enterprise-optimizations', () => {
       expect(MIGRATION_RECOMMENDATIONS.hotkeysMigration).toBeDefined();
     });
 
-    it('should have migration details', () => {
+    it("should have migration details", () => {
       expect(MIGRATION_RECOMMENDATIONS.apiMigration.from).toBeDefined();
       expect(MIGRATION_RECOMMENDATIONS.apiMigration.to).toBeDefined();
       expect(MIGRATION_RECOMMENDATIONS.apiMigration.benefits).toBeDefined();

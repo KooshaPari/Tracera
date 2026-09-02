@@ -1,7 +1,7 @@
-import { useAuthStore } from '@/stores/authStore';
+import { useAuthStore } from "@/stores/authStore";
 
 export const hasStoredTokenOrIsE2E = (): boolean => {
-  if (typeof globalThis.window === 'undefined') {
+  if (typeof globalThis.window === "undefined") {
     return false;
   }
 

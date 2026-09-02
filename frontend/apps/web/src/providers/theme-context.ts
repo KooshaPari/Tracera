@@ -1,6 +1,6 @@
-import { createContext } from 'react';
+import { createContext } from "react";
 
-type Theme = 'light' | 'dark';
+type Theme = "light" | "dark";
 
 interface ThemeContextType {
   isReady: boolean;
@@ -14,7 +14,7 @@ const createNoop = (): void => {};
 const DEFAULT_THEME_CONTEXT: ThemeContextType = {
   isReady: false,
   setTheme: createNoop,
-  theme: 'light',
+  theme: "light",
   toggleTheme: createNoop,
 };
 

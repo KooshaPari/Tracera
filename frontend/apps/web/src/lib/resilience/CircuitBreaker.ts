@@ -6,9 +6,9 @@
  */
 
 export enum CircuitState {
-  CLOSED = 'closed',
-  OPEN = 'open',
-  HALF_OPEN = 'half-open',
+  CLOSED = "closed",
+  OPEN = "open",
+  HALF_OPEN = "half-open",
 }
 
 export interface CircuitBreakerConfig {
@@ -133,7 +133,7 @@ export class CircuitBreaker {
     const oldState = this.state;
     this.state = CircuitState.CLOSED;
     this.resetCounts();
-    console.log('✅ Circuit breaker CLOSED (healthy)');
+    console.log("✅ Circuit breaker CLOSED (healthy)");
     this.config.onStateChange?.(oldState, this.state);
   }
 
@@ -144,7 +144,7 @@ export class CircuitBreaker {
     const oldState = this.state;
     this.state = CircuitState.OPEN;
     this.openedAt = Date.now();
-    console.error('❌ Circuit breaker OPEN (service unavailable)');
+    console.error("❌ Circuit breaker OPEN (service unavailable)");
     this.config.onStateChange?.(oldState, this.state);
   }
 
@@ -155,7 +155,7 @@ export class CircuitBreaker {
     const oldState = this.state;
     this.state = CircuitState.HALF_OPEN;
     this.counts.successes = 0;
-    console.warn('⚠️  Circuit breaker HALF_OPEN (testing recovery)');
+    console.warn("⚠️  Circuit breaker HALF_OPEN (testing recovery)");
     this.config.onStateChange?.(oldState, this.state);
   }
 

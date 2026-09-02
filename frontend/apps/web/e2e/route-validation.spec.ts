@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
-import { collectBrowserLogs, collectNetworkLogs } from './fixtures/test-helpers';
+import { collectBrowserLogs, collectNetworkLogs } from "./fixtures/test-helpers";
 
 /**
  * Route Validation E2E Tests
@@ -19,13 +19,13 @@ interface RouteTest {
 }
 
 const ROUTES_TO_TEST: RouteTest[] = [
-  { path: '/', name: 'Dashboard' },
-  { path: '/projects', name: 'Projects List' },
-  { path: '/settings', name: 'Settings' },
-  { path: '/agents', name: 'Agents' },
+  { path: "/", name: "Dashboard" },
+  { path: "/projects", name: "Projects List" },
+  { path: "/settings", name: "Settings" },
+  { path: "/agents", name: "Agents" },
 ];
 
-test.describe('Route Validation', () => {
+test.describe("Route Validation", () => {
   test.beforeEach(async ({ page }) => {
     /**
      * Collect logs and network activity from the start of each test
@@ -41,8 +41,8 @@ test.describe('Route Validation', () => {
      * Navigate to root - MSW mocks will handle authentication
      * The app will load with mocked API responses
      */
-    await page.goto('http://localhost:5173/', { waitUntil: 'networkidle' });
-    await page.waitForLoadState('networkidle');
+    await page.goto("http://localhost:5173/", { waitUntil: "networkidle" });
+    await page.waitForLoadState("networkidle");
   });
 
   ROUTES_TO_TEST.forEach((route) => {
@@ -50,8 +50,8 @@ test.describe('Route Validation', () => {
       /**
        * Navigate to the route
        */
-      await page.goto(`http://localhost:5173${route.path}`, { waitUntil: 'networkidle' });
-      await page.waitForLoadState('networkidle');
+      await page.goto(`http://localhost:5173${route.path}`, { waitUntil: "networkidle" });
+      await page.waitForLoadState("networkidle");
 
       // Get collected logs and network data
       const logs = (page as any).testLogs;
@@ -62,9 +62,9 @@ test.describe('Route Validation', () => {
        */
       const consoleErrors = logs.errors.filter(
         (e: { message: string }) =>
-          !e.message.includes('Deprecation') &&
-          !e.message.includes('ResizeObserver loop') &&
-          !e.message.includes('WARNING'),
+          !e.message.includes("Deprecation") &&
+          !e.message.includes("ResizeObserver loop") &&
+          !e.message.includes("WARNING"),
       );
 
       expect(
@@ -79,13 +79,13 @@ test.describe('Route Validation', () => {
       const failedRequests = networkLogs.filter(
         (req: { status: number; url: string }) =>
           req.status >= 400 &&
-          !req.url.includes('mock') &&
-          !req.url.includes('favicon') &&
-          !req.url.includes('.jpg') &&
-          !req.url.includes('.png') &&
-          !req.url.includes('.gif') &&
-          !req.url.includes('.svg') &&
-          !req.url.includes('.webp'),
+          !req.url.includes("mock") &&
+          !req.url.includes("favicon") &&
+          !req.url.includes(".jpg") &&
+          !req.url.includes(".png") &&
+          !req.url.includes(".gif") &&
+          !req.url.includes(".svg") &&
+          !req.url.includes(".webp"),
       );
 
       expect(
@@ -115,7 +115,7 @@ test.describe('Route Validation', () => {
     });
   });
 
-  test('should handle navigation between routes without errors', async ({ page }) => {
+  test("should handle navigation between routes without errors", async ({ page }) => {
     /**
      * Test sequential navigation between all routes
      * This validates that route transitions don't break state or create stray errors
@@ -124,17 +124,17 @@ test.describe('Route Validation', () => {
     for (const route of ROUTES_TO_TEST) {
       const logs = await collectBrowserLogs(page);
 
-      await page.goto(`http://localhost:5173${route.path}`, { waitUntil: 'networkidle' });
-      await page.waitForLoadState('networkidle');
+      await page.goto(`http://localhost:5173${route.path}`, { waitUntil: "networkidle" });
+      await page.waitForLoadState("networkidle");
 
       /**
        * Check for errors after navigation
        */
       const consoleErrors = logs.errors.filter(
         (e: { message: string }) =>
-          !e.message.includes('Deprecation') &&
-          !e.message.includes('ResizeObserver loop') &&
-          !e.message.includes('WARNING'),
+          !e.message.includes("Deprecation") &&
+          !e.message.includes("ResizeObserver loop") &&
+          !e.message.includes("WARNING"),
       );
 
       expect(consoleErrors, `No errors during navigation to ${route.path}`).toHaveLength(0);
@@ -149,7 +149,7 @@ test.describe('Route Validation', () => {
     }
   });
 
-  test('should handle invalid routes gracefully', async ({ page }) => {
+  test("should handle invalid routes gracefully", async ({ page }) => {
     /**
      * Test navigation to non-existent route
      * Should either show 404 or redirect to valid page, but no console errors
@@ -158,8 +158,8 @@ test.describe('Route Validation', () => {
     const logs = await collectBrowserLogs(page);
 
     // Navigate to invalid route
-    await page.goto('http://localhost:5173/nonexistent-route-12345', {
-      waitUntil: 'networkidle',
+    await page.goto("http://localhost:5173/nonexistent-route-12345", {
+      waitUntil: "networkidle",
     });
 
     /**
@@ -167,17 +167,17 @@ test.describe('Route Validation', () => {
      */
     const consoleErrors = logs.errors.filter(
       (e) =>
-        !e.message.includes('Deprecation') &&
-        !e.message.includes('ResizeObserver loop') &&
-        !e.message.includes('WARNING'),
+        !e.message.includes("Deprecation") &&
+        !e.message.includes("ResizeObserver loop") &&
+        !e.message.includes("WARNING"),
     );
 
-    expect(consoleErrors, 'Invalid route should not cause critical console errors').toHaveLength(0);
+    expect(consoleErrors, "Invalid route should not cause critical console errors").toHaveLength(0);
 
-    console.log('✅ Invalid route handled gracefully');
+    console.log("✅ Invalid route handled gracefully");
   });
 
-  test('should maintain authentication across route transitions', async ({ page }) => {
+  test("should maintain authentication across route transitions", async ({ page }) => {
     /**
      * Verify that authentication state persists when navigating between routes
      * This ensures auth tokens and session data are maintained
@@ -185,7 +185,7 @@ test.describe('Route Validation', () => {
 
     // Check localStorage for auth token after initial login
     const authToken = await page.evaluate(
-      () => localStorage.getItem('auth_token') ?? sessionStorage.getItem('auth_token'),
+      () => localStorage.getItem("auth_token") ?? sessionStorage.getItem("auth_token"),
     );
 
     expect(authToken).toBeTruthy();
@@ -195,19 +195,19 @@ test.describe('Route Validation', () => {
      * Navigate through all routes and verify auth token remains consistent
      */
     for (const route of ROUTES_TO_TEST) {
-      await page.goto(`http://localhost:5173${route.path}`, { waitUntil: 'networkidle' });
+      await page.goto(`http://localhost:5173${route.path}`, { waitUntil: "networkidle" });
 
       const currentToken = await page.evaluate(
-        () => localStorage.getItem('auth_token') ?? sessionStorage.getItem('auth_token'),
+        () => localStorage.getItem("auth_token") ?? sessionStorage.getItem("auth_token"),
       );
 
       expect(currentToken).toBe(initialToken);
     }
 
-    console.log('✅ Authentication state maintained across route transitions');
+    console.log("✅ Authentication state maintained across route transitions");
   });
 
-  test('should load all routes within acceptable time', async ({ page }) => {
+  test("should load all routes within acceptable time", async ({ page }) => {
     /**
      * Performance validation: Routes should load within 5 seconds
      * This catches slow routes that might degrade user experience
@@ -218,8 +218,8 @@ test.describe('Route Validation', () => {
     for (const route of ROUTES_TO_TEST) {
       const startTime = Date.now();
 
-      await page.goto(`http://localhost:5173${route.path}`, { waitUntil: 'networkidle' });
-      await page.waitForLoadState('networkidle');
+      await page.goto(`http://localhost:5173${route.path}`, { waitUntil: "networkidle" });
+      await page.waitForLoadState("networkidle");
 
       const loadTime = Date.now() - startTime;
       loadTimes[route.path] = loadTime;

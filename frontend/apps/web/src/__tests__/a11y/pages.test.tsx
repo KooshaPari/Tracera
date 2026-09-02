@@ -3,23 +3,23 @@
  * Tests page-level accessibility for WCAG 2.1 Level AA compliance
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render as rtlRender, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render as rtlRender, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
-import { axe } from './setup';
+import { axe } from "./setup";
 
 // Mock TanStack Router
-vi.mock('@tanstack/react-router', async () => {
-  const actual = await vi.importActual('@tanstack/react-router');
+vi.mock("@tanstack/react-router", async () => {
+  const actual = await vi.importActual("@tanstack/react-router");
   return {
     ...actual,
     useNavigate: () => vi.fn(),
     useRouter: () => ({ navigate: vi.fn() }),
-    useLocation: () => ({ pathname: '/' }),
+    useLocation: () => ({ pathname: "/" }),
     useParams: () => ({}),
     Link: ({ children, to, ...props }: any) => (
-      <a href={typeof to === 'string' ? to : to?.toString?.()} {...props}>
+      <a href={typeof to === "string" ? to : to?.toString?.()} {...props}>
         {children}
       </a>
     ),
@@ -40,7 +40,7 @@ function TestWrapper({ children }: { children: React.ReactNode }) {
 // Keep the page-level tests concise while exposing the DOM handles needed by
 // axe and the loading-state rerender assertion.
 let container: HTMLElement;
-let rerender: ReturnType<typeof rtlRender>['rerender'];
+let rerender: ReturnType<typeof rtlRender>["rerender"];
 const render = (ui: Parameters<typeof rtlRender>[0]) => {
   const result = rtlRender(ui);
   container = result.container;
@@ -48,10 +48,10 @@ const render = (ui: Parameters<typeof rtlRender>[0]) => {
   return result;
 };
 
-describe('Page Structure', () => {
-  it('should have valid HTML document structure', async () => {
+describe("Page Structure", () => {
+  it("should have valid HTML document structure", async () => {
     render(
-      <div lang='en'>
+      <div lang="en">
         <header>
           <h1>Page Title</h1>
         </header>
@@ -65,7 +65,7 @@ describe('Page Structure', () => {
     expect(results).toHaveNoViolations();
   });
 
-  it('should have unique page title', async () => {
+  it("should have unique page title", async () => {
     render(
       <div>
         <title>TraceRTM - Dashboard</title>
@@ -73,10 +73,10 @@ describe('Page Structure', () => {
       </div>,
     );
 
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Dashboard');
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Dashboard");
   });
 
-  it('should have proper heading hierarchy', async () => {
+  it("should have proper heading hierarchy", async () => {
     render(
       <main>
         <h1>Main Title</h1>
@@ -95,12 +95,12 @@ describe('Page Structure', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
 
-    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
-    expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(2);
-    expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(3);
+    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(2);
+    expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(3);
   });
 
-  it('should not skip heading levels', async () => {
+  it("should not skip heading levels", async () => {
     render(
       <main>
         <h1>Page Title</h1>
@@ -115,20 +115,20 @@ describe('Page Structure', () => {
   });
 });
 
-describe('Dashboard Page', () => {
-  it('should not have accessibility violations', async () => {
+describe("Dashboard Page", () => {
+  it("should not have accessibility violations", async () => {
     render(
       <TestWrapper>
         <main>
           <h1>Dashboard</h1>
-          <section aria-labelledby='recent-projects'>
-            <h2 id='recent-projects'>Recent Projects</h2>
+          <section aria-labelledby="recent-projects">
+            <h2 id="recent-projects">Recent Projects</h2>
             <ul>
               <li>
-                <a href='/projects/1'>Project 1</a>
+                <a href="/projects/1">Project 1</a>
               </li>
               <li>
-                <a href='/projects/2'>Project 2</a>
+                <a href="/projects/2">Project 2</a>
               </li>
             </ul>
           </section>
@@ -140,14 +140,14 @@ describe('Dashboard Page', () => {
     expect(results).toHaveNoViolations();
   });
 
-  it('should have accessible project cards', async () => {
+  it("should have accessible project cards", async () => {
     render(
       <TestWrapper>
         <div>
-          <article aria-labelledby='project-1-title'>
-            <h3 id='project-1-title'>Project Alpha</h3>
+          <article aria-labelledby="project-1-title">
+            <h3 id="project-1-title">Project Alpha</h3>
             <p>Description of project</p>
-            <a href='/projects/1'>View project</a>
+            <a href="/projects/1">View project</a>
           </article>
         </div>
       </TestWrapper>,
@@ -156,18 +156,18 @@ describe('Dashboard Page', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
 
-    expect(screen.getByRole('article')).toBeInTheDocument();
+    expect(screen.getByRole("article")).toBeInTheDocument();
   });
 });
 
-describe('Project List Page', () => {
-  it('should not have accessibility violations', async () => {
+describe("Project List Page", () => {
+  it("should not have accessibility violations", async () => {
     render(
       <TestWrapper>
         <main>
           <h1>Projects</h1>
-          <section aria-labelledby='projects-list'>
-            <h2 id='projects-list' className='sr-only'>
+          <section aria-labelledby="projects-list">
+            <h2 id="projects-list" className="sr-only">
               All Projects
             </h2>
             <ul>
@@ -183,17 +183,17 @@ describe('Project List Page', () => {
     expect(results).toHaveNoViolations();
   });
 
-  it('should have accessible table for project list', async () => {
+  it("should have accessible table for project list", async () => {
     render(
       <TestWrapper>
         <table>
           <caption>Projects</caption>
           <thead>
             <tr>
-              <th scope='col'>Name</th>
-              <th scope='col'>Status</th>
-              <th scope='col'>Last Updated</th>
-              <th scope='col'>Actions</th>
+              <th scope="col">Name</th>
+              <th scope="col">Status</th>
+              <th scope="col">Last Updated</th>
+              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -202,7 +202,7 @@ describe('Project List Page', () => {
               <td>Active</td>
               <td>2025-01-15</td>
               <td>
-                <button aria-label='Edit Project Alpha'>Edit</button>
+                <button aria-label="Edit Project Alpha">Edit</button>
               </td>
             </tr>
           </tbody>
@@ -213,26 +213,26 @@ describe('Project List Page', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
 
-    expect(screen.getByRole('table')).toBeInTheDocument();
-    expect(screen.getByRole('caption')).toBeInTheDocument();
+    expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.getByRole("caption")).toBeInTheDocument();
   });
 });
 
-describe('Project Detail Page', () => {
-  it('should not have accessibility violations', async () => {
+describe("Project Detail Page", () => {
+  it("should not have accessibility violations", async () => {
     render(
       <TestWrapper>
         <main>
           <header>
             <h1>Project Alpha</h1>
-            <nav aria-label='Project views'>
-              <a href='/projects/1/feature'>Features</a>
-              <a href='/projects/1/code'>Code</a>
-              <a href='/projects/1/test'>Tests</a>
+            <nav aria-label="Project views">
+              <a href="/projects/1/feature">Features</a>
+              <a href="/projects/1/code">Code</a>
+              <a href="/projects/1/test">Tests</a>
             </nav>
           </header>
-          <section aria-labelledby='overview'>
-            <h2 id='overview'>Overview</h2>
+          <section aria-labelledby="overview">
+            <h2 id="overview">Overview</h2>
             <p>Project description</p>
           </section>
         </main>
@@ -243,21 +243,21 @@ describe('Project Detail Page', () => {
     expect(results).toHaveNoViolations();
   });
 
-  it('should have accessible tab navigation', async () => {
+  it("should have accessible tab navigation", async () => {
     render(
       <TestWrapper>
-        <div role='tablist' aria-label='Project views'>
-          <button role='tab' aria-selected='true' aria-controls='feature-panel' id='feature-tab'>
+        <div role="tablist" aria-label="Project views">
+          <button role="tab" aria-selected="true" aria-controls="feature-panel" id="feature-tab">
             Features
           </button>
-          <button role='tab' aria-selected='false' aria-controls='code-panel' id='code-tab'>
+          <button role="tab" aria-selected="false" aria-controls="code-panel" id="code-tab">
             Code
           </button>
-          <button role='tab' aria-selected='false' aria-controls='test-panel' id='test-tab'>
+          <button role="tab" aria-selected="false" aria-controls="test-panel" id="test-tab">
             Tests
           </button>
         </div>
-        <div role='tabpanel' id='feature-panel' aria-labelledby='feature-tab'>
+        <div role="tabpanel" id="feature-panel" aria-labelledby="feature-tab">
           <h2>Features</h2>
         </div>
       </TestWrapper>,
@@ -266,17 +266,17 @@ describe('Project Detail Page', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
 
-    expect(screen.getByRole('tablist')).toBeInTheDocument();
-    expect(screen.getAllByRole('tab')).toHaveLength(3);
-    expect(screen.getByRole('tabpanel')).toBeInTheDocument();
+    expect(screen.getByRole("tablist")).toBeInTheDocument();
+    expect(screen.getAllByRole("tab")).toHaveLength(3);
+    expect(screen.getByRole("tabpanel")).toBeInTheDocument();
   });
 });
 
-describe('Empty States', () => {
-  it('should have accessible empty state messages', async () => {
+describe("Empty States", () => {
+  it("should have accessible empty state messages", async () => {
     render(
       <TestWrapper>
-        <div role='status' aria-live='polite'>
+        <div role="status" aria-live="polite">
           <p>No projects found</p>
           <button>Create your first project</button>
         </div>
@@ -286,10 +286,10 @@ describe('Empty States', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
 
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
-  it('should provide clear call-to-action in empty state', async () => {
+  it("should provide clear call-to-action in empty state", async () => {
     render(
       <TestWrapper>
         <div>
@@ -303,19 +303,19 @@ describe('Empty States', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
 
-    expect(screen.getByRole('button', { name: 'Create Item' })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create Item" })).toBeInTheDocument();
   });
 });
 
-describe('Loading States', () => {
-  it('should have accessible loading indicators', async () => {
+describe("Loading States", () => {
+  it("should have accessible loading indicators", async () => {
     render(
       <TestWrapper>
-        <div role='status' aria-live='polite' aria-busy='true'>
-          <span className='sr-only'>Loading projects...</span>
-          <div aria-hidden='true'>
+        <div role="status" aria-live="polite" aria-busy="true">
+          <span className="sr-only">Loading projects...</span>
+          <div aria-hidden="true">
             {/* Visual spinner */}
-            <svg className='animate-spin' />
+            <svg className="animate-spin" />
           </div>
         </div>
       </TestWrapper>,
@@ -324,13 +324,13 @@ describe('Loading States', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
 
-    expect(screen.getByText('Loading projects...')).toBeInTheDocument();
+    expect(screen.getByText("Loading projects...")).toBeInTheDocument();
   });
 
-  it('should announce when content loads', async () => {
+  it("should announce when content loads", async () => {
     render(
       <TestWrapper>
-        <div role='status' aria-live='polite' aria-busy='true'>
+        <div role="status" aria-live="polite" aria-busy="true">
           Loading...
         </div>
       </TestWrapper>,
@@ -339,8 +339,8 @@ describe('Loading States', () => {
     // Content loaded
     rerender(
       <TestWrapper>
-        <div role='status' aria-live='polite'>
-          <span className='sr-only'>Projects loaded</span>
+        <div role="status" aria-live="polite">
+          <span className="sr-only">Projects loaded</span>
           <ul>
             <li>Project 1</li>
           </ul>
@@ -353,11 +353,11 @@ describe('Loading States', () => {
   });
 });
 
-describe('Error States', () => {
-  it('should have accessible error messages', async () => {
+describe("Error States", () => {
+  it("should have accessible error messages", async () => {
     render(
       <TestWrapper>
-        <div role='alert' aria-live='assertive'>
+        <div role="alert" aria-live="assertive">
           <h2>Error loading projects</h2>
           <p>Unable to fetch project data. Please try again.</p>
           <button>Retry</button>
@@ -368,13 +368,13 @@ describe('Error States', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
 
-    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toBeInTheDocument();
   });
 
-  it('should provide recovery actions in error state', async () => {
+  it("should provide recovery actions in error state", async () => {
     render(
       <TestWrapper>
-        <div role='alert'>
+        <div role="alert">
           <p>Connection failed</p>
           <button>Retry</button>
           <button>Go back</button>
@@ -385,19 +385,19 @@ describe('Error States', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
 
-    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
   });
 });
 
-describe('Search and Filter', () => {
-  it('should have accessible search input', async () => {
+describe("Search and Filter", () => {
+  it("should have accessible search input", async () => {
     render(
       <TestWrapper>
-        <form role='search'>
-          <label htmlFor='search'>Search projects</label>
-          <input id='search' type='search' aria-describedby='search-help' />
-          <span id='search-help'>Enter keywords to search</span>
-          <button type='submit'>Search</button>
+        <form role="search">
+          <label htmlFor="search">Search projects</label>
+          <input id="search" type="search" aria-describedby="search-help" />
+          <span id="search-help">Enter keywords to search</span>
+          <button type="submit">Search</button>
         </form>
       </TestWrapper>,
     );
@@ -405,18 +405,18 @@ describe('Search and Filter', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
 
-    expect(screen.getByRole('search')).toBeInTheDocument();
-    expect(screen.getByLabelText('Search projects')).toBeInTheDocument();
+    expect(screen.getByRole("search")).toBeInTheDocument();
+    expect(screen.getByLabelText("Search projects")).toBeInTheDocument();
   });
 
-  it('should announce search results', async () => {
+  it("should announce search results", async () => {
     render(
       <TestWrapper>
         <div>
-          <div role='status' aria-live='polite'>
+          <div role="status" aria-live="polite">
             5 results found
           </div>
-          <ul aria-label='Search results'>
+          <ul aria-label="Search results">
             <li>Result 1</li>
             <li>Result 2</li>
           </ul>
@@ -427,23 +427,23 @@ describe('Search and Filter', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
 
-    expect(screen.getByRole('status')).toHaveTextContent('5 results found');
+    expect(screen.getByRole("status")).toHaveTextContent("5 results found");
   });
 });
 
-describe('Breadcrumbs', () => {
-  it('should have accessible breadcrumb navigation', async () => {
+describe("Breadcrumbs", () => {
+  it("should have accessible breadcrumb navigation", async () => {
     render(
       <TestWrapper>
-        <nav aria-label='Breadcrumb'>
+        <nav aria-label="Breadcrumb">
           <ol>
             <li>
-              <a href='/'>Home</a>
+              <a href="/">Home</a>
             </li>
             <li>
-              <a href='/projects'>Projects</a>
+              <a href="/projects">Projects</a>
             </li>
-            <li aria-current='page'>Project Alpha</li>
+            <li aria-current="page">Project Alpha</li>
           </ol>
         </nav>
       </TestWrapper>,
@@ -452,35 +452,35 @@ describe('Breadcrumbs', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
 
-    expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument();
-    const currentPage = screen.getByText('Project Alpha');
-    expect(currentPage).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toBeInTheDocument();
+    const currentPage = screen.getByText("Project Alpha");
+    expect(currentPage).toHaveAttribute("aria-current", "page");
   });
 });
 
-describe('Pagination', () => {
-  it('should have accessible pagination controls', async () => {
+describe("Pagination", () => {
+  it("should have accessible pagination controls", async () => {
     render(
       <TestWrapper>
-        <nav aria-label='Pagination'>
+        <nav aria-label="Pagination">
           <ul>
             <li>
-              <a href='?page=1' aria-label='Go to previous page' aria-disabled='true'>
+              <a href="?page=1" aria-label="Go to previous page" aria-disabled="true">
                 Previous
               </a>
             </li>
             <li>
-              <a href='?page=1' aria-current='page'>
+              <a href="?page=1" aria-current="page">
                 1
               </a>
             </li>
             <li>
-              <a href='?page=2' aria-label='Go to page 2'>
+              <a href="?page=2" aria-label="Go to page 2">
                 2
               </a>
             </li>
             <li>
-              <a href='?page=2' aria-label='Go to next page'>
+              <a href="?page=2" aria-label="Go to next page">
                 Next
               </a>
             </li>
@@ -492,7 +492,7 @@ describe('Pagination', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
 
-    expect(screen.getByRole('navigation', { name: 'Pagination' })).toBeInTheDocument();
-    expect(screen.getByLabelText('Go to next page')).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Pagination" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Go to next page")).toBeInTheDocument();
   });
 });

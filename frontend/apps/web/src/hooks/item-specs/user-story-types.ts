@@ -1,4 +1,4 @@
-import type { UserStoryStatus } from './shared-types';
+import type { UserStoryStatus } from "./shared-types";
 
 interface UserStorySpec {
   id: string;

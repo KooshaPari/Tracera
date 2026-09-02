@@ -187,7 +187,7 @@ Default thresholds for different test types:
 These can be adjusted per-test using:
 
 ```typescript
-await expect(page).toHaveScreenshot('test.png', {
+await expect(page).toHaveScreenshot("test.png", {
   maxDiffPixels: 50,
   threshold: 0.1,
 });
@@ -198,14 +198,14 @@ await expect(page).toHaveScreenshot('test.png', {
 ### Basic Component Test
 
 ```typescript
-import { test, expect } from '@playwright/test';
-import { setupVisualTest } from './helpers/visual-test-helpers';
+import { test, expect } from "@playwright/test";
+import { setupVisualTest } from "./helpers/visual-test-helpers";
 
-test('my component visual test', async ({ page }) => {
+test("my component visual test", async ({ page }) => {
   await setupVisualTest(page);
 
   await page.evaluate(() => {
-    document.getElementById('root')!.innerHTML = `
+    document.getElementById("root")!.innerHTML = `
       <div class="p-8">
         <button class="bg-primary text-primary-foreground px-4 py-2 rounded">
           My Button
@@ -214,22 +214,27 @@ test('my component visual test', async ({ page }) => {
     `;
   });
 
-  await expect(page.locator('#root')).toHaveScreenshot('my-component.png');
+  await expect(page.locator("#root")).toHaveScreenshot("my-component.png");
 });
 ```
 
 ### Theme Test
 
 ```typescript
-import { test, expect } from '@playwright/test';
-import { setupVisualTest, setTheme, testAllThemes } from './helpers/visual-test-helpers';
+import { test, expect } from "@playwright/test";
+import {
+  setupVisualTest,
+  setTheme,
+  testAllThemes,
+} from "./helpers/visual-test-helpers";
 
-test('component in both themes', async ({ page }) => {
+test("component in both themes", async ({ page }) => {
   await setupVisualTest(page);
 
   await testAllThemes(page, async (theme) => {
     await page.evaluate(() => {
-      document.getElementById('root')!.innerHTML = `<div class="bg-background p-8">Content</div>`;
+      document.getElementById("root")!.innerHTML =
+        `<div class="bg-background p-8">Content</div>`;
     });
 
     await expect(page).toHaveScreenshot(`component-${theme}.png`);
@@ -240,21 +245,21 @@ test('component in both themes', async ({ page }) => {
 ### Responsive Test
 
 ```typescript
-import { test, expect, devices } from '@playwright/test';
-import { setupVisualTest } from './helpers/visual-test-helpers';
+import { test, expect, devices } from "@playwright/test";
+import { setupVisualTest } from "./helpers/visual-test-helpers";
 
-test.use({ ...devices['iPhone 12'] });
+test.use({ ...devices["iPhone 12"] });
 
-test('mobile responsive layout', async ({ page }) => {
+test("mobile responsive layout", async ({ page }) => {
   await setupVisualTest(page);
 
   await page.evaluate(() => {
-    document.getElementById('root')!.innerHTML = `
+    document.getElementById("root")!.innerHTML = `
       <div class="p-4">Mobile layout</div>
     `;
   });
 
-  await expect(page).toHaveScreenshot('mobile.png', { fullPage: true });
+  await expect(page).toHaveScreenshot("mobile.png", { fullPage: true });
 });
 ```
 
@@ -265,7 +270,7 @@ test('mobile responsive layout', async ({ page }) => {
 Always disable animations for consistent screenshots:
 
 ```typescript
-import { disableAnimations } from './helpers/visual-test-helpers';
+import { disableAnimations } from "./helpers/visual-test-helpers";
 
 await disableAnimations(page);
 ```
@@ -275,7 +280,7 @@ await disableAnimations(page);
 Ensure fonts are loaded before screenshots:
 
 ```typescript
-import { waitForFonts } from './helpers/visual-test-helpers';
+import { waitForFonts } from "./helpers/visual-test-helpers";
 
 await waitForFonts(page);
 ```
@@ -285,9 +290,9 @@ await waitForFonts(page);
 Hide time-based or dynamic content:
 
 ```typescript
-import { hideFlakeyElements } from './helpers/visual-test-helpers';
+import { hideFlakeyElements } from "./helpers/visual-test-helpers";
 
-await hideFlakeyElements(page, ['.timestamp', '.live-indicator']);
+await hideFlakeyElements(page, [".timestamp", ".live-indicator"]);
 ```
 
 ### 4. Mock Time
@@ -295,9 +300,9 @@ await hideFlakeyElements(page, ['.timestamp', '.live-indicator']);
 For consistent timestamp displays:
 
 ```typescript
-import { mockTime } from './helpers/visual-test-helpers';
+import { mockTime } from "./helpers/visual-test-helpers";
 
-await mockTime(page, new Date('2025-01-01T12:00:00Z'));
+await mockTime(page, new Date("2025-01-01T12:00:00Z"));
 ```
 
 ### 5. Use Stable Selectors
@@ -309,7 +314,7 @@ Use semantic selectors for better test maintenance:
 await expect(page.locator('[data-testid="primary-button"]')).toHaveScreenshot();
 
 // ❌ Avoid
-await expect(page.locator('.css-xyz123')).toHaveScreenshot();
+await expect(page.locator(".css-xyz123")).toHaveScreenshot();
 ```
 
 ## Troubleshooting
@@ -351,20 +356,20 @@ Visual test configuration is in `playwright-visual.config.ts`:
 
 ```typescript
 export default defineConfig({
-  testDir: './visual',
-  snapshotDir: './visual-snapshots',
+  testDir: "./visual",
+  snapshotDir: "./visual-snapshots",
 
   expect: {
     toHaveScreenshot: {
       maxDiffPixels: 100,
       threshold: 0.2,
-      animations: 'disabled',
+      animations: "disabled",
     },
   },
 
   projects: [
-    { name: 'chromium-desktop', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile-iphone', use: { ...devices['iPhone 12'] } },
+    { name: "chromium-desktop", use: { ...devices["Desktop Chrome"] } },
+    { name: "mobile-iphone", use: { ...devices["iPhone 12"] } },
     // ... more projects
   ],
 });

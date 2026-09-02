@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from "react";
 
 export interface HistoryEntry<T> {
   state: T;
@@ -22,7 +22,7 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoResult<T> {
   const [state, setStateInternal] = useState<T>(initialState);
   const historyRef = useRef<HistoryEntry<T>[]>([
     {
-      description: 'Initial state',
+      description: "Initial state",
       state: initialState,
       timestamp: Date.now(),
     },
@@ -80,7 +80,7 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoResult<T> {
   const clear = useCallback(() => {
     historyRef.current = [
       {
-        description: 'Initial state',
+        description: "Initial state",
         state: initialState,
         timestamp: Date.now(),
       },

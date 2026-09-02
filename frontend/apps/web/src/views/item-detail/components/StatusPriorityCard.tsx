@@ -1,8 +1,8 @@
-import type { ItemStatus, Priority } from '@tracertm/types';
+import type { ItemStatus, Priority } from "@tracertm/types";
 
-import { cn } from '@/lib/utils';
-import { priorityColors, statusColors } from '@/views/item-detail/palette';
-import { PRIORITY_OPTIONS, STATUS_OPTIONS } from '@/views/item-detail/types';
+import { cn } from "@/lib/utils";
+import { priorityColors, statusColors } from "@/views/item-detail/palette";
+import { PRIORITY_OPTIONS, STATUS_OPTIONS } from "@/views/item-detail/types";
 import {
   Badge,
   Card,
@@ -11,7 +11,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@tracertm/ui';
+} from "@tracertm/ui";
 
 interface StatusPriorityCardProps {
   isEditing: boolean;
@@ -30,26 +30,26 @@ export function StatusPriorityCard({
 }: StatusPriorityCardProps): JSX.Element {
   if (isEditing) {
     return (
-      <Card className='bg-muted/40 space-y-3 border-0 px-4 py-3'>
-        <p className='text-muted-foreground text-[10px] font-black tracking-widest uppercase'>
+      <Card className="bg-muted/40 space-y-3 border-0 px-4 py-3">
+        <p className="text-muted-foreground text-[10px] font-black tracking-widest uppercase">
           Status & Priority
         </p>
-        <div className='grid grid-cols-2 gap-2'>
+        <div className="grid grid-cols-2 gap-2">
           <Select value={status} onValueChange={onChangeStatus}>
-            <SelectTrigger className='h-8 text-xs'>
-              <SelectValue placeholder='Status' />
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
               {STATUS_OPTIONS.map((option) => (
                 <SelectItem key={option} value={option}>
-                  {option.replace('_', ' ')}
+                  {option.replace("_", " ")}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={priority} onValueChange={onChangePriority}>
-            <SelectTrigger className='h-8 text-xs'>
-              <SelectValue placeholder='Priority' />
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue placeholder="Priority" />
             </SelectTrigger>
             <SelectContent>
               {PRIORITY_OPTIONS.map((option) => (
@@ -65,19 +65,19 @@ export function StatusPriorityCard({
   }
 
   return (
-    <Card className='bg-muted/40 space-y-3 border-0 px-4 py-3'>
-      <p className='text-muted-foreground text-[10px] font-black tracking-widest uppercase'>
+    <Card className="bg-muted/40 space-y-3 border-0 px-4 py-3">
+      <p className="text-muted-foreground text-[10px] font-black tracking-widest uppercase">
         Status & Priority
       </p>
-      <div className='flex items-center gap-2'>
+      <div className="flex items-center gap-2">
         <Badge
-          className={cn('text-[10px] font-black uppercase tracking-widest', statusColors[status])}
+          className={cn("text-[10px] font-black uppercase tracking-widest", statusColors[status])}
         >
-          {status.replace('_', ' ')}
+          {status.replace("_", " ")}
         </Badge>
         <Badge
           className={cn(
-            'text-[10px] font-black uppercase tracking-widest',
+            "text-[10px] font-black uppercase tracking-widest",
             priorityColors[priority],
           )}
         >

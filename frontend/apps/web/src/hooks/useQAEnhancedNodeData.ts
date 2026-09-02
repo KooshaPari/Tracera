@@ -4,9 +4,9 @@ import type {
   QANodeArtifact,
   QANodeMetrics,
   QANodePreview,
-} from '../components/graph/nodes/QAEnhancedNode';
+} from "../components/graph/nodes/QAEnhancedNode";
 
-import { useExecutionArtifacts, useExecutions } from './useExecutions';
+import { useExecutionArtifacts, useExecutions } from "./useExecutions";
 
 interface UseQAEnhancedNodeDataOptions {
   projectId: string;
@@ -29,9 +29,9 @@ export function useQAEnhancedNodeData({ projectId, itemId }: UseQAEnhancedNodeDa
       return;
     }
 
-    const completed = itemExecutions.filter((e) => e.status === 'passed' || e.status === 'failed');
-    const passed = completed.filter((e) => e.status === 'passed');
-    const failed = completed.filter((e) => e.status === 'failed');
+    const completed = itemExecutions.filter((e) => e.status === "passed" || e.status === "failed");
+    const passed = completed.filter((e) => e.status === "passed");
+    const failed = completed.filter((e) => e.status === "failed");
 
     const totalTests = completed.length;
     const passCount = passed.length;
@@ -74,7 +74,7 @@ export function useQAEnhancedNodeData({ projectId, itemId }: UseQAEnhancedNodeDa
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   )[0];
 
-  const { data: artifactsData } = useExecutionArtifacts(projectId, latestExecution?.id ?? '');
+  const { data: artifactsData } = useExecutionArtifacts(projectId, latestExecution?.id ?? "");
 
   // Transform artifacts
   const artifacts: QANodeArtifact[] | undefined =
@@ -100,9 +100,9 @@ export function useQAEnhancedNodeData({ projectId, itemId }: UseQAEnhancedNodeDa
       return;
     }
 
-    const screenshot = artifacts.find((a) => a.type === 'screenshot');
-    const gif = artifacts.find((a) => a.type === 'gif');
-    const video = artifacts.find((a) => a.type === 'video');
+    const screenshot = artifacts.find((a) => a.type === "screenshot");
+    const gif = artifacts.find((a) => a.type === "gif");
+    const video = artifacts.find((a) => a.type === "video");
 
     return {
       ...(screenshot?.thumbnailUrl || screenshot?.url

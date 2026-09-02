@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
-import type { ConnectionStatusState } from '@/stores/connection-status-store';
+import type { ConnectionStatusState } from "@/stores/connection-status-store";
 
-import { client } from '@/api/client';
-import { useConnectionStatusStore } from '@/stores/connection-status-store';
+import { client } from "@/api/client";
+import { useConnectionStatusStore } from "@/stores/connection-status-store";
 
 const { apiClient } = client;
 
@@ -31,39 +31,39 @@ export function useConnectionHealth(): void {
     async function poll(): Promise<void> {
       try {
         if (!hasEverConnected) {
-          setConnecting('Connecting…');
+          setConnecting("Connecting…");
         }
-        const { response, error, data } = await apiClient.GET('/api/v1/health', {});
+        const { response, error, data } = await apiClient.GET("/api/v1/health", {});
         if (cancelled) {
           return;
         }
         const unhealthy =
           error !== undefined ||
           !response?.ok ||
-          (data as { status?: string })?.status === 'unhealthy';
+          (data as { status?: string })?.status === "unhealthy";
         if (unhealthy) {
           if (!hasEverConnected) {
-            setConnecting('Still waiting for backend…');
+            setConnecting("Still waiting for backend…");
           } else {
-            setReconnecting('Reconnecting…');
+            setReconnecting("Reconnecting…");
           }
           for (let i = 0; i < RETRY_ATTEMPTS && !cancelled; i += 1) {
             await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
-            const retry = await apiClient.GET('/api/v1/health', {});
+            const retry = await apiClient.GET("/api/v1/health", {});
             if (cancelled) {
               return;
             }
             const retryOk =
               !retry.error &&
               retry.response?.ok &&
-              !((retry.data as { status?: string }).status === 'unhealthy');
+              !((retry.data as { status?: string }).status === "unhealthy");
             if (retryOk) {
               setOnline();
               hasEverConnected = true;
               return;
             }
           }
-          setLost(hasEverConnected ? 'Connection to backend lost' : 'Backend unavailable');
+          setLost(hasEverConnected ? "Connection to backend lost" : "Backend unavailable");
           return;
         }
         setOnline();
@@ -73,21 +73,21 @@ export function useConnectionHealth(): void {
           return;
         }
         if (!hasEverConnected) {
-          setConnecting('Still waiting for backend…');
+          setConnecting("Still waiting for backend…");
         } else {
-          setReconnecting('Reconnecting…');
+          setReconnecting("Reconnecting…");
         }
         for (let i = 0; i < RETRY_ATTEMPTS && !cancelled; i += 1) {
           await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
           try {
-            const retry = await apiClient.GET('/api/v1/health', {});
+            const retry = await apiClient.GET("/api/v1/health", {});
             if (cancelled) {
               return;
             }
             const retryOk =
               !retry.error &&
               retry.response?.ok &&
-              !((retry.data as { status?: string }).status === 'unhealthy');
+              !((retry.data as { status?: string }).status === "unhealthy");
             if (retryOk) {
               setOnline();
               hasEverConnected = true;
@@ -97,7 +97,7 @@ export function useConnectionHealth(): void {
             // Continue retries
           }
         }
-        setLost(hasEverConnected ? 'Connection to backend lost' : 'Backend unavailable');
+        setLost(hasEverConnected ? "Connection to backend lost" : "Backend unavailable");
       }
     }
 

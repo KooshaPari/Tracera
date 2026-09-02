@@ -1,19 +1,19 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import type { CSSProperties } from 'react';
+import type { Meta, StoryObj } from "@storybook/react";
+import type { CSSProperties } from "react";
 
-import { PerspectiveSelector } from '../PerspectiveSelector';
+import { PerspectiveSelector } from "../PerspectiveSelector";
 
-const DARK_DECORATOR_STYLE: CSSProperties = { padding: '20px' };
+const DARK_DECORATOR_STYLE: CSSProperties = { padding: "20px" };
 const NO_OP = (): void => {};
 
 const meta: Meta<typeof PerspectiveSelector> = {
   argTypes: {
     currentPerspective: {
-      control: 'select',
-      options: ['all', 'product', 'business', 'technical', 'ui', 'security', 'performance'],
+      control: "select",
+      options: ["all", "product", "business", "technical", "ui", "security", "performance"],
     },
-    itemCounts: { control: 'object' },
-    onPerspectiveChange: { action: 'perspective changed' },
+    itemCounts: { control: "object" },
+    onPerspectiveChange: { action: "perspective changed" },
   },
   component: PerspectiveSelector,
   parameters: {
@@ -28,8 +28,8 @@ const meta: Meta<typeof PerspectiveSelector> = {
       disable: true,
     },
   },
-  tags: ['autodocs', 'skip-tests'],
-  title: 'Components/Graph/PerspectiveSelector',
+  tags: ["autodocs", "skip-tests"],
+  title: "Components/Graph/PerspectiveSelector",
 };
 
 export default meta;
@@ -40,7 +40,7 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
   args: {
-    currentPerspective: 'all',
+    currentPerspective: "all",
     itemCounts: undefined,
     onPerspectiveChange: NO_OP,
   },
@@ -51,7 +51,7 @@ export const Default: Story = {
  */
 export const WithCounts: Story = {
   args: {
-    currentPerspective: 'all',
+    currentPerspective: "all",
     itemCounts: { all: 42, product: 12, technical: 20 },
     onPerspectiveChange: NO_OP,
   },
@@ -62,13 +62,13 @@ export const WithCounts: Story = {
  */
 export const Tablet: Story = {
   args: {
-    currentPerspective: 'all',
+    currentPerspective: "all",
     itemCounts: undefined,
     onPerspectiveChange: NO_OP,
   },
   parameters: {
     viewport: {
-      defaultViewport: 'tablet',
+      defaultViewport: "tablet",
     },
   },
 };
@@ -78,13 +78,13 @@ export const Tablet: Story = {
  */
 export const Mobile: Story = {
   args: {
-    currentPerspective: 'all',
+    currentPerspective: "all",
     itemCounts: undefined,
     onPerspectiveChange: NO_OP,
   },
   parameters: {
     viewport: {
-      defaultViewport: 'mobile',
+      defaultViewport: "mobile",
     },
   },
 };
@@ -94,13 +94,13 @@ export const Mobile: Story = {
  */
 export const DarkMode: Story = {
   args: {
-    currentPerspective: 'all',
+    currentPerspective: "all",
     itemCounts: undefined,
     onPerspectiveChange: NO_OP,
   },
   decorators: [
     (Story) => (
-      <div className='dark' data-theme='dark' style={DARK_DECORATOR_STYLE}>
+      <div className="dark" data-theme="dark" style={DARK_DECORATOR_STYLE}>
         <Story />
       </div>
     ),
@@ -119,12 +119,12 @@ export const DarkMode: Story = {
  */
 export const Focused: Story = {
   args: {
-    currentPerspective: 'all',
+    currentPerspective: "all",
     itemCounts: undefined,
     onPerspectiveChange: NO_OP,
   },
   play: async ({ canvasElement }) => {
-    const selector = canvasElement.querySelector('button');
+    const selector = canvasElement.querySelector("button");
     if (selector) {
       selector.focus();
     }
@@ -136,14 +136,14 @@ export const Focused: Story = {
  */
 export const Hovered: Story = {
   args: {
-    currentPerspective: 'all',
+    currentPerspective: "all",
     itemCounts: undefined,
     onPerspectiveChange: NO_OP,
   },
   play: async ({ canvasElement }) => {
-    const selector = canvasElement.querySelector('button');
+    const selector = canvasElement.querySelector("button");
     if (selector) {
-      selector.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      selector.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
     }
   },
 };

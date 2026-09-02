@@ -9,19 +9,19 @@
  * All data comes from hook-level mocks (no raw API mocks).
  */
 
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { vi, describe, it, expect, beforeEach } from "vitest";
 
-import type { DashboardSummary } from '@/hooks/useDashboardSummary';
+import type { DashboardSummary } from "@/hooks/useDashboardSummary";
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
 // Mock @tanstack/react-router so <Link> renders without a RouterProvider
-vi.mock('@tanstack/react-router', async () => {
-  const actual = await vi.importActual('@tanstack/react-router');
+vi.mock("@tanstack/react-router", async () => {
+  const actual = await vi.importActual("@tanstack/react-router");
   return {
     ...actual,
     Link: ({
@@ -35,7 +35,7 @@ vi.mock('@tanstack/react-router', async () => {
       search?: unknown;
       [key: string]: unknown;
     }) => (
-      <a href={typeof to === 'string' ? to : String((to as unknown) ?? '')} {...props}>
+      <a href={typeof to === "string" ? to : String((to as unknown) ?? "")} {...props}>
         {children}
       </a>
     ),
@@ -46,7 +46,7 @@ vi.mock('@tanstack/react-router', async () => {
 });
 
 // Mock recharts to avoid SVG/ResizeObserver issues in jsdom
-vi.mock('recharts', () => ({
+vi.mock("recharts", () => ({
   Bar: () => null,
   BarChart: () => null,
   CartesianGrid: () => null,
@@ -58,7 +58,7 @@ vi.mock('recharts', () => ({
   Radar: () => null,
   RadarChart: () => null,
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid='responsive-container'>{children}</div>
+    <div data-testid="responsive-container">{children}</div>
   ),
   Tooltip: () => null,
   XAxis: () => null,
@@ -66,14 +66,14 @@ vi.mock('recharts', () => ({
 }));
 
 // Mock sonner toast
-vi.mock('sonner', () => ({
+vi.mock("sonner", () => ({
   toast: { error: vi.fn(), success: vi.fn() },
 }));
 
 // Mock project-name-utils so display names are predictable
-vi.mock('@/lib/project-name-utils', () => ({
+vi.mock("@/lib/project-name-utils", () => ({
   getProjectDisplayName: (project: { id?: string; name?: string }) =>
-    project.name ?? project.id ?? 'Project',
+    project.name ?? project.id ?? "Project",
 }));
 
 // Mutable return values so each test can override
@@ -82,7 +82,7 @@ const mockUseDeleteProject = vi.fn(() => ({
   mutateAsync: vi.fn(),
 }));
 
-vi.mock('@/hooks/useProjects', () => ({
+vi.mock("@/hooks/useProjects", () => ({
   get useDeleteProject() {
     return mockUseDeleteProject;
   },
@@ -93,7 +93,7 @@ vi.mock('@/hooks/useProjects', () => ({
 
 const mockUseDashboardSummary = vi.fn();
 
-vi.mock('@/hooks/useDashboardSummary', () => ({
+vi.mock("@/hooks/useDashboardSummary", () => ({
   get useDashboardSummary() {
     return mockUseDashboardSummary;
   },
@@ -107,16 +107,16 @@ function makeProjects(
   ...items: { id: string; name: string; description?: string; status?: string }[]
 ) {
   return items.map((p) => ({
-    created_at: '2024-01-01',
-    description: p.description ?? '',
+    created_at: "2024-01-01",
+    description: p.description ?? "",
     id: p.id,
     name: p.name,
-    status: p.status ?? 'active',
+    status: p.status ?? "active",
   }));
 }
 
 function makeSummary(
-  perProject: DashboardSummary['perProject'],
+  perProject: DashboardSummary["perProject"],
   overrides?: Partial<DashboardSummary>,
 ): DashboardSummary {
   let totalItemCount = 0;
@@ -162,9 +162,9 @@ function setEmptyState() {
 
 function setPopulatedState() {
   const projects = makeProjects(
-    { id: 'p1', name: 'Alpha Project', description: 'First project' },
-    { id: 'p2', name: 'Beta Project', description: 'Second project' },
-    { id: 'p3', name: 'Gamma Project', description: 'Third project' },
+    { id: "p1", name: "Alpha Project", description: "First project" },
+    { id: "p2", name: "Beta Project", description: "Second project" },
+    { id: "p3", name: "Gamma Project", description: "Third project" },
   );
 
   const summary = makeSummary({
@@ -201,7 +201,7 @@ let DashboardViewCached: any = null;
 
 async function renderDashboard() {
   if (!DashboardViewCached) {
-    const module = await import('@/views/DashboardView');
+    const module = await import("@/views/DashboardView");
     DashboardViewCached = module.DashboardView;
   }
   // Render without wrapping in act() as react-testing-library handles this
@@ -212,7 +212,7 @@ async function renderDashboard() {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('DashboardView', () => {
+describe("DashboardView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -220,8 +220,8 @@ describe('DashboardView', () => {
   // -------------------------------------------------------------------------
   // Loading states
   // -------------------------------------------------------------------------
-  describe('Loading States', () => {
-    it('shows loading skeletons when projects are loading', async () => {
+  describe("Loading States", () => {
+    it("shows loading skeletons when projects are loading", async () => {
       setLoadingState();
       await renderDashboard();
 
@@ -231,7 +231,7 @@ describe('DashboardView', () => {
       expect(skeletons.length).toBeGreaterThan(0);
     });
 
-    it('shows loading skeletons when summary is loading', async () => {
+    it("shows loading skeletons when summary is loading", async () => {
       mockUseProjects.mockReturnValue({ data: [], isLoading: false });
       mockUseDashboardSummary.mockReturnValue({ data: undefined, isLoading: true });
 
@@ -243,7 +243,7 @@ describe('DashboardView', () => {
       expect(skeletons.length).toBeGreaterThan(0);
     });
 
-    it('does not show loading skeletons when both hooks have resolved', async () => {
+    it("does not show loading skeletons when both hooks have resolved", async () => {
       setPopulatedState();
       await renderDashboard();
 
@@ -256,7 +256,7 @@ describe('DashboardView', () => {
   // -------------------------------------------------------------------------
   // Empty state
   // -------------------------------------------------------------------------
-  describe('Empty States', () => {
+  describe("Empty States", () => {
     it('renders empty project grid with "no projects" message when filtering yields zero', async () => {
       setEmptyState();
       await renderDashboard();
@@ -271,45 +271,42 @@ describe('DashboardView', () => {
   // -------------------------------------------------------------------------
   // Project rendering
   // -------------------------------------------------------------------------
-  describe('Project Rendering', () => {
-    it('renders all project names from useProjects', async () => {
+  describe("Project Rendering", () => {
+    it("renders all project names from useProjects", async () => {
       setPopulatedState();
       await renderDashboard();
 
-      expect(screen.getByText('Alpha Project')).toBeInTheDocument();
-      expect(screen.getByText('Beta Project')).toBeInTheDocument();
-      expect(screen.getByText('Gamma Project')).toBeInTheDocument();
+      expect(screen.getByText("Alpha Project")).toBeInTheDocument();
+      expect(screen.getByText("Beta Project")).toBeInTheDocument();
+      expect(screen.getByText("Gamma Project")).toBeInTheDocument();
     });
 
-    it('displays item counts from dashboard summary per project', async () => {
+    it("displays item counts from dashboard summary per project", async () => {
       setPopulatedState();
       await renderDashboard();
 
-      expect(screen.getByText('10')).toBeInTheDocument();
-      expect(screen.getByText('8')).toBeInTheDocument();
-      expect(screen.getByText('3')).toBeInTheDocument();
+      expect(screen.getByText("10")).toBeInTheDocument();
+      expect(screen.getByText("8")).toBeInTheDocument();
+      expect(screen.getByText("3")).toBeInTheDocument();
     });
 
-    it('displays progress percentage derived from completedCount / totalCount', async () => {
+    it("displays progress percentage derived from completedCount / totalCount", async () => {
       setPopulatedState();
       await renderDashboard();
 
       // Alpha: 5/10 = 50%, Beta: 2/8 = 25%, Gamma: 0/3 = 0%
-      expect(screen.getByText('50%')).toBeInTheDocument();
-      expect(screen.getByText('25%')).toBeInTheDocument();
-      expect(screen.getByText('0%')).toBeInTheDocument();
+      expect(screen.getByText("50%")).toBeInTheDocument();
+      expect(screen.getByText("25%")).toBeInTheDocument();
+      expect(screen.getByText("0%")).toBeInTheDocument();
     });
 
-    it('renders project links pointing to /projects/:id', async () => {
+    it("renders project links pointing to /projects/:id", async () => {
       setPopulatedState();
       await renderDashboard();
 
-      const links = screen.getAllByRole('link');
-      const projectLinks = links.filter(
-        (link) =>
-          link.getAttribute('href')?.startsWith('/projects/p1') ??
-          link.getAttribute('href')?.startsWith('/projects/p2') ??
-          link.getAttribute('href')?.startsWith('/projects/p3'),
+      const links = screen.getAllByRole("link");
+      const projectLinks = links.filter((link) =>
+        /^\/projects\/(p1|p2|p3)(\/|$)/.test(link.getAttribute("href") ?? ""),
       );
       expect(projectLinks.length).toBeGreaterThanOrEqual(3);
     });
@@ -318,30 +315,30 @@ describe('DashboardView', () => {
   // -------------------------------------------------------------------------
   // Search / Filter
   // -------------------------------------------------------------------------
-  describe('Search and Filter', () => {
-    it('filters projects by search query in project name', async () => {
+  describe("Search and Filter", () => {
+    it("filters projects by search query in project name", async () => {
       setPopulatedState();
       await renderDashboard();
 
       const searchInput = screen.getByPlaceholderText(/Search projects/i);
-      fireEvent.change(searchInput, { target: { value: 'Beta' } });
+      fireEvent.change(searchInput, { target: { value: "Beta" } });
 
       await waitFor(
         () => {
-          expect(screen.getByText('Beta Project')).toBeInTheDocument();
-          expect(screen.queryByText('Alpha Project')).not.toBeInTheDocument();
-          expect(screen.queryByText('Gamma Project')).not.toBeInTheDocument();
+          expect(screen.getByText("Beta Project")).toBeInTheDocument();
+          expect(screen.queryByText("Alpha Project")).not.toBeInTheDocument();
+          expect(screen.queryByText("Gamma Project")).not.toBeInTheDocument();
         },
         { timeout: 5000 },
       );
     }, 15_000);
 
-    it('shows empty state when search matches no projects', async () => {
+    it("shows empty state when search matches no projects", async () => {
       setPopulatedState();
       await renderDashboard();
 
       const searchInput = screen.getByPlaceholderText(/Search projects/i);
-      fireEvent.change(searchInput, { target: { value: 'NonExistent' } });
+      fireEvent.change(searchInput, { target: { value: "NonExistent" } });
 
       await waitFor(
         () => {
@@ -353,29 +350,29 @@ describe('DashboardView', () => {
       );
     }, 15_000);
 
-    it('provides a clear-search button in the empty state', async () => {
+    it("provides a clear-search button in the empty state", async () => {
       setPopulatedState();
       await renderDashboard();
 
       const searchInput = screen.getByPlaceholderText(/Search projects/i);
-      fireEvent.change(searchInput, { target: { value: 'NonExistent' } });
+      fireEvent.change(searchInput, { target: { value: "NonExistent" } });
 
       await waitFor(
         () => {
-          expect(screen.getByRole('button', { name: /Clear search/i })).toBeInTheDocument();
+          expect(screen.getByRole("button", { name: /Clear search/i })).toBeInTheDocument();
         },
         { timeout: 5000 },
       );
 
-      const clearButton = screen.getByRole('button', { name: /Clear search/i });
+      const clearButton = screen.getByRole("button", { name: /Clear search/i });
       fireEvent.click(clearButton);
 
       // All projects should reappear
       await waitFor(
         () => {
-          expect(screen.getByText('Alpha Project')).toBeInTheDocument();
-          expect(screen.getByText('Beta Project')).toBeInTheDocument();
-          expect(screen.getByText('Gamma Project')).toBeInTheDocument();
+          expect(screen.getByText("Alpha Project")).toBeInTheDocument();
+          expect(screen.getByText("Beta Project")).toBeInTheDocument();
+          expect(screen.getByText("Gamma Project")).toBeInTheDocument();
         },
         { timeout: 5000 },
       );
@@ -385,17 +382,17 @@ describe('DashboardView', () => {
   // -------------------------------------------------------------------------
   // Sorting
   // -------------------------------------------------------------------------
-  describe('Sorting', () => {
-    it('renders the sort-by select trigger', async () => {
+  describe("Sorting", () => {
+    it("renders the sort-by select trigger", async () => {
       setPopulatedState();
       await renderDashboard();
 
       // The sort select trigger should be rendered with a combobox role
-      const trigger = screen.queryByRole('combobox');
+      const trigger = screen.queryByRole("combobox");
       expect(trigger).toBeInTheDocument();
     });
 
-    it('sorts projects by name alphabetically by default', async () => {
+    it("sorts projects by name alphabetically by default", async () => {
       setPopulatedState();
       await renderDashboard();
 
@@ -404,30 +401,30 @@ describe('DashboardView', () => {
       const projectNames = screen
         .getAllByText(/Alpha Project|Beta Project|Gamma Project/)
         .map((el) => el.textContent);
-      expect(projectNames).toEqual(['Alpha Project', 'Beta Project', 'Gamma Project']);
+      expect(projectNames).toEqual(["Alpha Project", "Beta Project", "Gamma Project"]);
     });
   });
 
   // -------------------------------------------------------------------------
   // Pinning
   // -------------------------------------------------------------------------
-  describe('Pinning', () => {
-    it('auto-pins the first project on initial render', async () => {
+  describe("Pinning", () => {
+    it("auto-pins the first project on initial render", async () => {
       setPopulatedState();
       await renderDashboard();
 
       const pinButtons = screen.getAllByTitle(/pin project|unpin project/i);
       // The first project should show "Unpin project" since it's auto-pinned
-      expect(pinButtons[0]).toHaveAttribute('title', 'Unpin project');
+      expect(pinButtons[0]).toHaveAttribute("title", "Unpin project");
     });
 
-    it('toggles pin when clicking the pin button on a different project', async () => {
+    it("toggles pin when clicking the pin button on a different project", async () => {
       setPopulatedState();
       await renderDashboard();
 
       let pinButtons = screen.getAllByTitle(/pin project|unpin project/i);
-      expect(pinButtons[0]).toHaveAttribute('title', 'Unpin project');
-      expect(pinButtons[1]).toHaveAttribute('title', 'Pin project');
+      expect(pinButtons[0]).toHaveAttribute("title", "Unpin project");
+      expect(pinButtons[1]).toHaveAttribute("title", "Pin project");
 
       // Click pin on the second project
       fireEvent.click(pinButtons[1]);
@@ -436,24 +433,24 @@ describe('DashboardView', () => {
       await waitFor(
         () => {
           pinButtons = screen.getAllByTitle(/pin project|unpin project/i);
-          expect(pinButtons[1]).toHaveAttribute('title', 'Unpin project');
+          expect(pinButtons[1]).toHaveAttribute("title", "Unpin project");
         },
         { timeout: 5000 },
       );
     }, 15_000);
 
-    it('shows toast when pinning a project', async () => {
-      const { toast } = await import('sonner');
+    it("shows toast when pinning a project", async () => {
+      const { toast } = await import("sonner");
       setPopulatedState();
       await renderDashboard();
 
       // Get the "Pin project" buttons (not the already-unpinned ones)
-      const pinButtons = screen.getAllByTitle('Pin project');
+      const pinButtons = screen.getAllByTitle("Pin project");
       fireEvent.click(pinButtons[0]);
 
       await waitFor(
         () => {
-          expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('Pinned'));
+          expect(toast.success).toHaveBeenCalledWith(expect.stringContaining("Pinned"));
         },
         { timeout: 5000 },
       );
@@ -463,41 +460,43 @@ describe('DashboardView', () => {
   // -------------------------------------------------------------------------
   // View mode toggle
   // -------------------------------------------------------------------------
-  describe('View Mode', () => {
-    it('defaults to grid view and renders project names', async () => {
+  describe("View Mode", () => {
+    it("defaults to grid view and renders project names", async () => {
       setPopulatedState();
       await renderDashboard();
 
-      expect(screen.getByText('Alpha Project')).toBeInTheDocument();
+      expect(screen.getByText("Alpha Project")).toBeInTheDocument();
     });
   });
 
   // -------------------------------------------------------------------------
   // Header content
   // -------------------------------------------------------------------------
-  describe('Header', () => {
-    it('renders the dashboard heading and description', async () => {
+  describe("Header", () => {
+    it("renders the dashboard heading and description", async () => {
       setPopulatedState();
       await renderDashboard();
 
       expect(screen.getByText(/Traceability Dashboard/i)).toBeInTheDocument();
       expect(
-        screen.getByText(/Monitor project health and system-wide traceability status/i),
+        screen.getByText(
+          /Monitor project health, Evidence coverage, and system-wide traceability status/i,
+        ),
       ).toBeInTheDocument();
     });
 
-    it('shows system status badge as healthy by default', async () => {
+    it("shows system status badge as healthy by default", async () => {
       setPopulatedState();
       await renderDashboard();
 
       expect(screen.getByText(/System: healthy/i)).toBeInTheDocument();
     });
 
-    it('renders New Project button linking to /projects', async () => {
+    it("renders New Project button linking to /projects", async () => {
       setPopulatedState();
       await renderDashboard();
 
-      const newProjectBtn = screen.queryByRole('link', { name: /New Project/i });
+      const newProjectBtn = screen.queryByRole("link", { name: /New Project/i });
       expect(newProjectBtn).toBeInTheDocument();
     });
   });
@@ -505,8 +504,8 @@ describe('DashboardView', () => {
   // -------------------------------------------------------------------------
   // Active Projects section heading
   // -------------------------------------------------------------------------
-  describe('Active Projects Section', () => {
-    it('renders the Active Projects heading', async () => {
+  describe("Active Projects Section", () => {
+    it("renders the Active Projects heading", async () => {
       setPopulatedState();
       await renderDashboard();
 

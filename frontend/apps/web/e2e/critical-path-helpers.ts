@@ -1,6 +1,6 @@
-import type { Page } from '@playwright/test';
+import type { Page } from "@playwright/test";
 
-import { expect } from '@playwright/test';
+import { expect } from "@playwright/test";
 
 /**
  * Critical Path Test Helpers
@@ -36,67 +36,67 @@ export interface TestLink {
 export async function authenticateAndNavigate(page: Page, route: string): Promise<void> {
   const authState = {
     account: {
-      account_type: 'personal',
-      id: 'test-account',
-      name: 'Test Account',
-      slug: 'test-account',
+      account_type: "personal",
+      id: "test-account",
+      name: "Test Account",
+      slug: "test-account",
     },
     isAuthenticated: true,
-    token: 'test-token',
+    token: "test-token",
     user: {
-      email: 'test@example.com',
-      id: 'test-user',
-      name: 'Test User',
-      role: 'admin',
+      email: "test@example.com",
+      id: "test-user",
+      name: "Test User",
+      role: "admin",
     },
   };
 
   await page.addInitScript((state) => {
     const serialized = JSON.stringify({ state, version: 0 });
-    localStorage.setItem('tracertm-auth-store', serialized);
+    localStorage.setItem("tracertm-auth-store", serialized);
     if (state.token) {
-      localStorage.setItem('auth_token', state.token);
-      localStorage.setItem('authToken', state.token);
+      localStorage.setItem("auth_token", state.token);
+      localStorage.setItem("authToken", state.token);
     }
   }, authState);
 
   await page.goto(route);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 }
 
 export async function navigateToDashboard(page: Page): Promise<void> {
-  await page.goto('/');
-  await page.waitForLoadState('networkidle');
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
 }
 
 export async function navigateToProjects(page: Page): Promise<void> {
-  await page.goto('/projects');
-  await page.waitForLoadState('networkidle');
+  await page.goto("/projects");
+  await page.waitForLoadState("networkidle");
 }
 
 export async function navigateToItems(page: Page): Promise<void> {
-  await page.goto('/items');
-  await page.waitForLoadState('networkidle');
+  await page.goto("/items");
+  await page.waitForLoadState("networkidle");
 }
 
 export async function navigateToGraph(page: Page): Promise<void> {
-  await page.goto('/graph');
-  await page.waitForLoadState('networkidle');
+  await page.goto("/graph");
+  await page.waitForLoadState("networkidle");
 }
 
 export async function navigateToSettings(page: Page): Promise<void> {
-  await page.goto('/settings');
-  await page.waitForLoadState('networkidle');
+  await page.goto("/settings");
+  await page.waitForLoadState("networkidle");
 }
 
 export async function navigateToItemDetail(page: Page, itemId: string): Promise<void> {
   await page.goto(`/items/${itemId}`);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 }
 
 export async function navigateToProjectDetail(page: Page, projectId: string): Promise<void> {
   await page.goto(`/projects/${projectId}`);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 }
 
 /**
@@ -105,7 +105,7 @@ export async function navigateToProjectDetail(page: Page, projectId: string): Pr
 
 export async function createProject(page: Page, project: TestProject): Promise<boolean> {
   // Find and click create button
-  const createBtn = page.getByRole('button', { name: /create|new|add.*project/i }).first();
+  const createBtn = page.getByRole("button", { name: /create|new|add.*project/i }).first();
   await expect(createBtn).toBeVisible({ timeout: 2000 });
 
   await createBtn.click();
@@ -121,7 +121,7 @@ export async function createProject(page: Page, project: TestProject): Promise<b
 
   await nameInput.fill(project.name);
 
-  if (project.description != null && project.description !== '') {
+  if (project.description != null && project.description !== "") {
     const descInput = page
       .getByLabel(/description/i)
       .or(page.getByPlaceholder(/description/i))
@@ -132,14 +132,14 @@ export async function createProject(page: Page, project: TestProject): Promise<b
   }
 
   // Submit
-  const submitBtn = page.getByRole('button', {
+  const submitBtn = page.getByRole("button", {
     name: /create|save|submit/i,
   });
 
   await expect(submitBtn).toBeVisible({ timeout: 1000 });
 
   await submitBtn.click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 
   // Verify creation
   const projectText = page.getByText(project.name);
@@ -152,7 +152,7 @@ export async function createProject(page: Page, project: TestProject): Promise<b
  */
 
 export async function createItem(page: Page, item: TestItem): Promise<boolean> {
-  const createBtn = page.getByRole('button', { name: /create|new|add.*item/i }).first();
+  const createBtn = page.getByRole("button", { name: /create|new|add.*item/i }).first();
   await expect(createBtn).toBeVisible({ timeout: 2000 });
 
   await createBtn.click();
@@ -169,7 +169,7 @@ export async function createItem(page: Page, item: TestItem): Promise<boolean> {
   await titleInput.fill(item.title);
 
   // Fill optional fields
-  if (item.description != null && item.description !== '') {
+  if (item.description != null && item.description !== "") {
     const descInput = page
       .getByLabel(/description/i)
       .or(page.getByPlaceholder(/description/i))
@@ -179,26 +179,26 @@ export async function createItem(page: Page, item: TestItem): Promise<boolean> {
     await descInput.fill(item.description);
   }
 
-  if (item.type != null && item.type !== '') {
+  if (item.type != null && item.type !== "") {
     const typeSelect = page.getByLabel(/type/i).first();
     await expect(typeSelect).toBeVisible({ timeout: 1000 });
     await typeSelect.click();
     await page.waitForTimeout(300);
 
-    const option = page.getByText(new RegExp(item.type, 'i'));
+    const option = page.getByText(new RegExp(item.type, "i"));
     await expect(option).toBeVisible({ timeout: 1000 });
     await option.click();
   }
 
   // Submit
-  const submitBtn = page.getByRole('button', {
+  const submitBtn = page.getByRole("button", {
     name: /create|save|submit|add/i,
   });
 
   await expect(submitBtn).toBeVisible({ timeout: 1000 });
 
   await submitBtn.click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 
   // Verify
   const itemText = page.getByText(item.title);
@@ -217,17 +217,17 @@ export async function updateItemStatus(page: Page, newStatus: string): Promise<b
   await statusField.click();
   await page.waitForTimeout(300);
 
-  const option = page.getByText(new RegExp(newStatus, 'i'));
+  const option = page.getByText(new RegExp(newStatus, "i"));
   await expect(option).toBeVisible({ timeout: 1000 });
 
   await option.click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 
   return true;
 }
 
 export async function deleteItem(page: Page): Promise<boolean> {
-  const deleteBtn = page.getByRole('button', { name: /delete/i }).first();
+  const deleteBtn = page.getByRole("button", { name: /delete/i }).first();
 
   await expect(deleteBtn).toBeVisible({ timeout: 2000 });
 
@@ -235,14 +235,14 @@ export async function deleteItem(page: Page): Promise<boolean> {
   await page.waitForTimeout(500);
 
   // Confirm deletion
-  const confirmBtn = page.getByRole('button', {
+  const confirmBtn = page.getByRole("button", {
     name: /confirm|yes|delete/i,
   });
 
   await expect(confirmBtn).toBeVisible({ timeout: 2000 });
 
   await confirmBtn.click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 
   return true;
 }
@@ -252,7 +252,7 @@ export async function deleteItem(page: Page): Promise<boolean> {
  */
 
 export async function createLink(page: Page, link: TestLink): Promise<boolean> {
-  const createLinkBtn = page.getByRole('button', {
+  const createLinkBtn = page.getByRole("button", {
     name: /add link|create link|new link/i,
   });
 
@@ -283,18 +283,18 @@ export async function createLink(page: Page, link: TestLink): Promise<boolean> {
   await typeSelect.click();
   await page.waitForTimeout(300);
 
-  const typeOption = page.getByText(new RegExp(link.type, 'i'));
+  const typeOption = page.getByText(new RegExp(link.type, "i"));
   await expect(typeOption).toBeVisible({ timeout: 1000 });
 
   await typeOption.click();
   await page.waitForTimeout(300);
 
   // Submit
-  const submitBtn = page.getByRole('button', { name: /create|save/i });
+  const submitBtn = page.getByRole("button", { name: /create|save/i });
   await expect(submitBtn).toBeVisible({ timeout: 1000 });
 
   await submitBtn.click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 
   return true;
 }
@@ -305,7 +305,7 @@ export async function createLink(page: Page, link: TestLink): Promise<boolean> {
 
 export async function searchItems(page: Page, query: string): Promise<number> {
   const searchInput = page
-    .getByRole('searchbox')
+    .getByRole("searchbox")
     .or(page.getByPlaceholder(/search/i))
     .first();
 
@@ -314,7 +314,7 @@ export async function searchItems(page: Page, query: string): Promise<number> {
   await searchInput.fill(query);
   await page.waitForTimeout(500);
 
-  const results = page.getByText(new RegExp(query, 'i'));
+  const results = page.getByText(new RegExp(query, "i"));
   return results.count();
 }
 
@@ -322,14 +322,14 @@ export async function filterByType(page: Page, type: string): Promise<boolean> {
   const typeFilter = page
     .getByLabel(/type|filter.*type/i)
     .first()
-    .or(page.locator('select').filter({ hasText: /type/i }).first());
+    .or(page.locator("select").filter({ hasText: /type/i }).first());
 
   await expect(typeFilter).toBeVisible({ timeout: 2000 });
 
   await typeFilter.click();
   await page.waitForTimeout(300);
 
-  const option = page.getByText(new RegExp(type, 'i')).first();
+  const option = page.getByText(new RegExp(type, "i")).first();
   await expect(option).toBeVisible({ timeout: 1000 });
 
   await option.click();
@@ -344,7 +344,7 @@ export async function filterByStatus(page: Page, status: string): Promise<boolea
     .first()
     .or(
       page
-        .locator('select')
+        .locator("select")
         .filter({ hasText: /status/i })
         .first(),
     );
@@ -354,7 +354,7 @@ export async function filterByStatus(page: Page, status: string): Promise<boolea
   await statusFilter.click();
   await page.waitForTimeout(300);
 
-  const option = page.getByText(new RegExp(status, 'i'));
+  const option = page.getByText(new RegExp(status, "i"));
   await expect(option).toBeVisible({ timeout: 1000 });
 
   await option.click();
@@ -364,7 +364,7 @@ export async function filterByStatus(page: Page, status: string): Promise<boolea
 }
 
 export async function clearSearchAndFilters(page: Page): Promise<boolean> {
-  const clearBtn = page.getByRole('button', { name: /clear|reset/i }).first();
+  const clearBtn = page.getByRole("button", { name: /clear|reset/i }).first();
 
   await expect(clearBtn).toBeVisible({ timeout: 2000 });
 
@@ -379,7 +379,7 @@ export async function clearSearchAndFilters(page: Page): Promise<boolean> {
  */
 
 export async function expectPageUrl(page: Page, urlPattern: RegExp | string) {
-  if (typeof urlPattern === 'string') {
+  if (typeof urlPattern === "string") {
     await expect(page).toHaveURL(urlPattern);
   } else {
     await expect(page).toHaveURL(urlPattern);
@@ -401,18 +401,18 @@ export async function expectText(page: Page, text: string, timeout = 5000) {
  */
 
 export async function waitForLoadComplete(page: Page): Promise<void> {
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
   await page.waitForTimeout(500);
 }
 
-export function generateUniqueId(prefix = ''): string {
+export function generateUniqueId(prefix = ""): string {
   return `${prefix}${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
 
 export function generateProject(overrides?: Partial<TestProject>): TestProject {
   return {
     name: `Test Project ${Date.now()}`,
-    description: 'Test project created via critical path test',
+    description: "Test project created via critical path test",
     ...overrides,
   };
 }
@@ -420,10 +420,10 @@ export function generateProject(overrides?: Partial<TestProject>): TestProject {
 export function generateItem(overrides?: Partial<TestItem>): TestItem {
   return {
     title: `Test Item ${Date.now()}`,
-    type: 'Requirement',
-    status: 'Pending',
-    priority: 'Medium',
-    description: 'Test item created via critical path test',
+    type: "Requirement",
+    status: "Pending",
+    priority: "Medium",
+    description: "Test item created via critical path test",
     ...overrides,
   };
 }
@@ -433,7 +433,7 @@ export function generateItem(overrides?: Partial<TestItem>): TestItem {
  */
 
 export async function getTableRowCount(page: Page): Promise<number> {
-  const rows = page.locator('tbody tr').or(page.locator("[role='row']"));
+  const rows = page.locator("tbody tr").or(page.locator("[role='row']"));
   return rows.count();
 }
 
@@ -448,7 +448,7 @@ export async function clickTableRowByText(page: Page, text: string): Promise<boo
   await expect(row).toBeVisible({ timeout: 2000 });
 
   await row.click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 
   return true;
 }
@@ -458,18 +458,18 @@ export async function clickTableRowByText(page: Page, text: string): Promise<boo
  */
 
 export async function expectDialogOpen(page: Page): Promise<boolean> {
-  const dialog = page.getByRole('dialog').first();
+  const dialog = page.getByRole("dialog").first();
   await expect(dialog).toBeVisible({ timeout: 2000 });
   return true;
 }
 
 export async function closeDialog(page: Page): Promise<boolean> {
   // Try ESC key
-  await page.keyboard.press('Escape');
+  await page.keyboard.press("Escape");
   await page.waitForTimeout(300);
 
   // Check if dialog is closed
-  const dialog = page.getByRole('dialog').first();
+  const dialog = page.getByRole("dialog").first();
   await expect(dialog).not.toBeVisible({ timeout: 1000 });
   return true;
 }
@@ -480,6 +480,6 @@ export async function closeDialog(page: Page): Promise<boolean> {
 
 export async function measurePageLoadTime(page: Page): Promise<number> {
   const startTime = Date.now();
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
   return Date.now() - startTime;
 }

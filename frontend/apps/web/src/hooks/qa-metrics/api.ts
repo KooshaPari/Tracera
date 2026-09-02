@@ -1,4 +1,4 @@
-import { client } from '@/api/client';
+import { client } from "@/api/client";
 
 import type {
   CoverageMetrics,
@@ -7,9 +7,9 @@ import type {
   FlakyTests,
   PassRateTrend,
   QAMetricsSummary,
-} from './types';
+} from "./types";
 
-import { asRecord } from './coerce';
+import { asRecord } from "./coerce";
 import {
   transformCoverageMetrics,
   transformDefectDensity,
@@ -17,11 +17,11 @@ import {
   transformFlakyTests,
   transformPassRateTrend,
   transformSummary,
-} from './transform';
+} from "./transform";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 async function readJsonRecord(res: Response): Promise<Record<string, unknown>> {
   const json: unknown = await res.json();
@@ -33,7 +33,7 @@ async function fetchQAMetricsSummary(projectId: string): Promise<QAMetricsSummar
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch QA metrics summary');
+    throw new Error("Failed to fetch QA metrics summary");
   }
   const data = await readJsonRecord(res);
   return transformSummary(data);
@@ -45,7 +45,7 @@ async function fetchPassRateTrend(projectId: string, days = 30): Promise<PassRat
     { headers: getAuthHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch pass rate trend');
+    throw new Error("Failed to fetch pass rate trend");
   }
   const data = await readJsonRecord(res);
   return transformPassRateTrend(data);
@@ -56,7 +56,7 @@ async function fetchCoverageMetrics(projectId: string): Promise<CoverageMetrics>
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch coverage metrics');
+    throw new Error("Failed to fetch coverage metrics");
   }
   const data = await readJsonRecord(res);
   return transformCoverageMetrics(data);
@@ -67,7 +67,7 @@ async function fetchDefectDensity(projectId: string): Promise<DefectDensity> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch defect density');
+    throw new Error("Failed to fetch defect density");
   }
   const data = await readJsonRecord(res);
   return transformDefectDensity(data);
@@ -78,7 +78,7 @@ async function fetchFlakyTests(projectId: string): Promise<FlakyTests> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch flaky tests');
+    throw new Error("Failed to fetch flaky tests");
   }
   const data = await readJsonRecord(res);
   return transformFlakyTests(data);
@@ -90,7 +90,7 @@ async function fetchExecutionHistory(projectId: string, days = 7): Promise<Execu
     { headers: getAuthHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch execution history');
+    throw new Error("Failed to fetch execution history");
   }
   const data = await readJsonRecord(res);
   return transformExecutionHistory(data);

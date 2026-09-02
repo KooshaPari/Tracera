@@ -2,18 +2,18 @@
  * Integration test for item CRUD flow
  */
 
-import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it } from "vitest";
 
-import { useCreateItem, useDeleteItem, useItems, useUpdateItem } from '../../hooks/useItems';
-import { createWrapper } from '../utils/test-utils';
+import { useCreateItem, useDeleteItem, useItems, useUpdateItem } from "../../hooks/useItems";
+import { createWrapper } from "../utils/test-utils";
 
-describe('Item CRUD Integration', () => {
+describe("Item CRUD Integration", () => {
   beforeEach(() => {
     // Reset any state if needed
   });
 
-  it('should complete full CRUD cycle', async () => {
+  it("should complete full CRUD cycle", async () => {
     // 1. List items - just verify hook initializes
     const { result: listResult } = renderHook(() => useItems(), {
       wrapper: createWrapper(),
@@ -28,15 +28,15 @@ describe('Item CRUD Integration', () => {
     });
 
     const newItem = {
-      priority: 'high' as const,
-      projectId: 'proj-1',
-      status: 'todo' as const,
-      title: 'Test CRUD Item',
-      type: 'feature',
-      view: 'CODE' as const,
+      priority: "high" as const,
+      projectId: "proj-1",
+      status: "todo" as const,
+      title: "Test CRUD Item",
+      type: "feature",
+      view: "CODE" as const,
     };
 
-    let createdItemId = '';
+    let createdItemId = "";
 
     await act(async () => {
       createResult.current.mutate(newItem, {
@@ -63,8 +63,8 @@ describe('Item CRUD Integration', () => {
       await act(async () => {
         updateResult.current.mutate({
           data: {
-            status: 'in_progress' as const,
-            title: 'Updated CRUD Item',
+            status: "in_progress" as const,
+            title: "Updated CRUD Item",
           },
           id: createdItemId,
         });
@@ -97,7 +97,7 @@ describe('Item CRUD Integration', () => {
     }
   });
 
-  it('should handle create errors', async () => {
+  it("should handle create errors", async () => {
     const { result } = renderHook(() => useCreateItem(), {
       wrapper: createWrapper(),
     });
@@ -105,12 +105,12 @@ describe('Item CRUD Integration', () => {
     // Try to create an invalid item (this would fail in real API)
     await act(async () => {
       result.current.mutate({
-        priority: 'high' as const,
-        projectId: '',
-        status: 'todo' as const,
-        title: '',
-        type: '',
-        view: 'CODE' as const,
+        priority: "high" as const,
+        projectId: "",
+        status: "todo" as const,
+        title: "",
+        type: "",
+        view: "CODE" as const,
       });
     });
 

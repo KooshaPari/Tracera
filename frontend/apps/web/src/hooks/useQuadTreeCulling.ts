@@ -19,16 +19,16 @@
  * ```
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import type { QuadTreeNode } from '@/lib/quadTreeIndex';
+import type { QuadTreeNode } from "@/lib/quadTreeIndex";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import {
   QuadTreeNodeIndex,
   convertToQuadTreeNodes,
   createViewportRectangle,
-} from '@/lib/quadTreeIndex';
+} from "@/lib/quadTreeIndex";
 
 export interface UseQuadTreeCullingOptions {
   /** All nodes in the graph */
@@ -131,7 +131,7 @@ export function useQuadTreeCulling({
       indexDepth: indexStats.depth,
     }));
 
-    if (process.env['NODE_ENV'] === 'development') {
+    if (process.env["NODE_ENV"] === "development") {
       logger.info(
         `[QuadTree] Built index for ${nodes.length} nodes in ${buildTime.toFixed(2)}ms (depth: ${indexStats.depth})`,
       );

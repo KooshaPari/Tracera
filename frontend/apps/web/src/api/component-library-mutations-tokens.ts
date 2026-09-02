@@ -1,10 +1,10 @@
-import type * as ReactQuery from '@tanstack/react-query';
+import type * as ReactQuery from "@tanstack/react-query";
 
-import type * as TracerTypes from '@tracertm/types';
+import type * as TracerTypes from "@tracertm/types";
 
-import * as QueryKeys from './component-library-keys';
-import * as QueryClient from './query-client';
-import * as ReactQueryHooks from './react-query-hooks';
+import * as QueryKeys from "./component-library-keys";
+import * as QueryClient from "./query-client";
+import * as ReactQueryHooks from "./react-query-hooks";
 
 interface CreateDesignTokenInput {
   libraryId: string;
@@ -35,7 +35,7 @@ const useCreateDesignToken = (
   > = {
     mutationFn: async (input: CreateDesignTokenInput): Promise<TracerTypes.DesignToken> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.post<TracerTypes.DesignToken>('/api/v1/libraries/{libraryId}/tokens', {
+        QueryClient.api.post<TracerTypes.DesignToken>("/api/v1/libraries/{libraryId}/tokens", {
           body: {
             category: input.category,
             description: input.description,
@@ -86,7 +86,7 @@ const useUpdateDesignToken = (
       data: UpdateDesignTokenInput;
     }): Promise<TracerTypes.DesignToken> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.put<TracerTypes.DesignToken>('/api/v1/tokens/{tokenId}', {
+        QueryClient.api.put<TracerTypes.DesignToken>("/api/v1/tokens/{tokenId}", {
           body: input.data,
           params: { path: { tokenId: input.tokenId } },
         }),
@@ -120,7 +120,7 @@ const useDeleteDesignToken = (
   > = {
     mutationFn: async (input: { tokenId: string; libraryId: string }): Promise<void> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.del<void>('/api/v1/tokens/{tokenId}', {
+        QueryClient.api.del<void>("/api/v1/tokens/{tokenId}", {
           params: { path: { tokenId: input.tokenId } },
         }),
       ),

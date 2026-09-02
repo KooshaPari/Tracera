@@ -1,9 +1,9 @@
-import type { Edge, Node } from '@xyflow/react';
-import type Graph from 'graphology';
+import type { Edge, Node } from "@xyflow/react";
+import type Graph from "graphology";
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 
-import { createGraphologyAdapter } from '@/lib/graphology/adapter';
+import { createGraphologyAdapter } from "@/lib/graphology/adapter";
 
 const NODE_THRESHOLD = 10_000; // Switch to WebGL at 10k nodes
 
@@ -18,7 +18,7 @@ export interface HybridGraphState {
   nodeCount: number;
   edgeCount: number;
   graphologyGraph: Graph | null;
-  performanceMode: 'reactflow' | 'webgl';
+  performanceMode: "reactflow" | "webgl";
 }
 
 export const useHybridGraph = (nodes: Node[], edges: Edge[], config: HybridGraphConfig = {}) => {
@@ -53,7 +53,7 @@ export const useHybridGraph = (nodes: Node[], edges: Edge[], config: HybridGraph
     edgeCount: edges.length,
     graphologyGraph,
     nodeCount: nodes.length,
-    performanceMode: useWebGL ? 'webgl' : 'reactflow',
+    performanceMode: useWebGL ? "webgl" : "reactflow",
     useWebGL,
   };
 

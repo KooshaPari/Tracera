@@ -1,13 +1,13 @@
-import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { KeyboardShortcutAction } from '@/hooks/useKeyboardShortcuts';
+import type { KeyboardShortcutAction } from "@/hooks/useKeyboardShortcuts";
 
 import {
   __resetKeyboardShortcutsRegistry,
   formatKeyboardShortcut,
   useKeyboardShortcuts,
-} from '@/hooks/useKeyboardShortcuts';
+} from "@/hooks/useKeyboardShortcuts";
 
 describe(useKeyboardShortcuts, () => {
   beforeEach(() => {
@@ -21,13 +21,13 @@ describe(useKeyboardShortcuts, () => {
     __resetKeyboardShortcutsRegistry();
   });
 
-  it('initializes with closed modal', () => {
+  it("initializes with closed modal", () => {
     const { result } = renderHook(() => useKeyboardShortcuts([]));
 
     expect(result.current.isShortcutsModalOpen).toBeFalsy();
   });
 
-  it('opens and closes shortcuts modal', () => {
+  it("opens and closes shortcuts modal", () => {
     const { result } = renderHook(() => useKeyboardShortcuts([]));
 
     act(() => {
@@ -43,20 +43,20 @@ describe(useKeyboardShortcuts, () => {
     expect(result.current.isShortcutsModalOpen).toBeFalsy();
   });
 
-  it('returns all registered shortcuts', () => {
+  it("returns all registered shortcuts", () => {
     const shortcuts: KeyboardShortcutAction[] = [
       {
         action: vi.fn(),
-        category: 'editing',
-        description: 'Save',
-        key: 's',
+        category: "editing",
+        description: "Save",
+        key: "s",
         meta: true,
       },
       {
         action: vi.fn(),
-        category: 'navigation',
-        description: 'New',
-        key: 'n',
+        category: "navigation",
+        description: "New",
+        key: "n",
         meta: true,
       },
     ];
@@ -64,20 +64,20 @@ describe(useKeyboardShortcuts, () => {
     const { result } = renderHook(() => useKeyboardShortcuts(shortcuts));
 
     expect(result.current.allShortcuts).toHaveLength(2);
-    expect(result.current.allShortcuts[0].description).toBe('Save');
-    expect(result.current.allShortcuts[1].description).toBe('New');
+    expect(result.current.allShortcuts[0].description).toBe("Save");
+    expect(result.current.allShortcuts[1].description).toBe("New");
   });
 
-  it('registers new shortcuts dynamically', () => {
+  it("registers new shortcuts dynamically", () => {
     const { result } = renderHook(() => useKeyboardShortcuts([]));
 
     expect(result.current.allShortcuts).toHaveLength(0);
 
     const newShortcut: KeyboardShortcutAction = {
       action: vi.fn(),
-      category: 'editing',
-      description: 'Save',
-      key: 's',
+      category: "editing",
+      description: "Save",
+      key: "s",
       meta: true,
     };
 
@@ -88,12 +88,12 @@ describe(useKeyboardShortcuts, () => {
     expect(result.current.allShortcuts).toHaveLength(1);
   });
 
-  it('unregisters shortcuts', () => {
+  it("unregisters shortcuts", () => {
     const shortcut: KeyboardShortcutAction = {
       action: vi.fn(),
-      category: 'editing',
-      description: 'Save',
-      key: 's',
+      category: "editing",
+      description: "Save",
+      key: "s",
       meta: true,
     };
 
@@ -107,48 +107,48 @@ describe(useKeyboardShortcuts, () => {
     });
   });
 
-  it('groups shortcuts by category', () => {
+  it("groups shortcuts by category", () => {
     const shortcuts: KeyboardShortcutAction[] = [
       {
         action: vi.fn(),
-        category: 'editing',
-        description: 'Save',
-        key: 's',
+        category: "editing",
+        description: "Save",
+        key: "s",
         meta: true,
       },
       {
         action: vi.fn(),
-        category: 'editing',
-        description: 'New Item',
-        key: 'n',
+        category: "editing",
+        description: "New Item",
+        key: "n",
         meta: true,
       },
       {
         action: vi.fn(),
-        category: 'navigation',
-        description: 'Find',
-        key: 'f',
+        category: "navigation",
+        description: "Find",
+        key: "f",
         meta: true,
       },
     ];
 
     const { result } = renderHook(() => useKeyboardShortcuts(shortcuts));
 
-    const editingShortcuts = result.current.allShortcuts.filter((s) => s.category === 'editing');
+    const editingShortcuts = result.current.allShortcuts.filter((s) => s.category === "editing");
     const navigationShortcuts = result.current.allShortcuts.filter(
-      (s) => s.category === 'navigation',
+      (s) => s.category === "navigation",
     );
 
     expect(editingShortcuts).toHaveLength(2);
     expect(navigationShortcuts).toHaveLength(1);
   });
 
-  it('respects enabled flag', () => {
+  it("respects enabled flag", () => {
     const shortcut: KeyboardShortcutAction = {
       action: vi.fn(),
-      category: 'editing',
-      description: 'Save',
-      key: 's',
+      category: "editing",
+      description: "Save",
+      key: "s",
       meta: true,
     };
 
@@ -159,133 +159,133 @@ describe(useKeyboardShortcuts, () => {
 });
 
 describe(formatKeyboardShortcut, () => {
-  it('formats meta shortcuts', () => {
+  it("formats meta shortcuts", () => {
     const result = formatKeyboardShortcut({
-      category: 'editing',
-      description: 'Save',
-      key: 's',
+      category: "editing",
+      description: "Save",
+      key: "s",
       meta: true,
     });
 
-    expect(result).toContain('⌘');
-    expect(result).toContain('S');
+    expect(result).toContain("⌘");
+    expect(result).toContain("S");
   });
 
-  it('formats ctrl shortcuts', () => {
+  it("formats ctrl shortcuts", () => {
     const result = formatKeyboardShortcut({
-      category: 'editing',
+      category: "editing",
       ctrl: true,
-      description: 'Save',
-      key: 's',
+      description: "Save",
+      key: "s",
     });
 
-    expect(result).toContain('Ctrl');
-    expect(result).toContain('S');
+    expect(result).toContain("Ctrl");
+    expect(result).toContain("S");
   });
 
-  it('formats shift shortcuts', () => {
+  it("formats shift shortcuts", () => {
     const result = formatKeyboardShortcut({
-      category: 'editing',
-      description: 'Save',
-      key: 's',
+      category: "editing",
+      description: "Save",
+      key: "s",
       shift: true,
     });
 
-    expect(result).toContain('Shift');
-    expect(result).toContain('S');
+    expect(result).toContain("Shift");
+    expect(result).toContain("S");
   });
 
-  it('formats alt shortcuts', () => {
+  it("formats alt shortcuts", () => {
     const result = formatKeyboardShortcut({
       alt: true,
-      category: 'editing',
-      description: 'Save',
-      key: 's',
+      category: "editing",
+      description: "Save",
+      key: "s",
     });
 
-    expect(result).toContain('Alt');
-    expect(result).toContain('S');
+    expect(result).toContain("Alt");
+    expect(result).toContain("S");
   });
 
-  it('formats arrow keys', () => {
+  it("formats arrow keys", () => {
     expect(
       formatKeyboardShortcut({
-        category: 'navigation',
-        description: 'Move up',
-        key: 'ArrowUp',
+        category: "navigation",
+        description: "Move up",
+        key: "ArrowUp",
       }),
-    ).toContain('↑');
+    ).toContain("↑");
 
     expect(
       formatKeyboardShortcut({
-        category: 'navigation',
-        description: 'Move down',
-        key: 'ArrowDown',
+        category: "navigation",
+        description: "Move down",
+        key: "ArrowDown",
       }),
-    ).toContain('↓');
+    ).toContain("↓");
 
     expect(
       formatKeyboardShortcut({
-        category: 'navigation',
-        description: 'Move left',
-        key: 'ArrowLeft',
+        category: "navigation",
+        description: "Move left",
+        key: "ArrowLeft",
       }),
-    ).toContain('←');
+    ).toContain("←");
 
     expect(
       formatKeyboardShortcut({
-        category: 'navigation',
-        description: 'Move right',
-        key: 'ArrowRight',
+        category: "navigation",
+        description: "Move right",
+        key: "ArrowRight",
       }),
-    ).toContain('→');
+    ).toContain("→");
   });
 
-  it('formats special keys', () => {
+  it("formats special keys", () => {
     expect(
       formatKeyboardShortcut({
-        category: 'editing',
-        description: 'Confirm',
-        key: 'Enter',
+        category: "editing",
+        description: "Confirm",
+        key: "Enter",
       }),
-    ).toContain('↵');
+    ).toContain("↵");
 
     expect(
       formatKeyboardShortcut({
-        category: 'system',
-        description: 'Close',
-        key: 'Escape',
+        category: "system",
+        description: "Close",
+        key: "Escape",
       }),
-    ).toContain('Esc');
+    ).toContain("Esc");
 
     expect(
       formatKeyboardShortcut({
-        category: 'editing',
-        description: 'Delete',
-        key: 'Backspace',
+        category: "editing",
+        description: "Delete",
+        key: "Backspace",
       }),
-    ).toContain('⌫');
+    ).toContain("⌫");
 
     expect(
       formatKeyboardShortcut({
-        category: 'editing',
-        description: 'Delete',
-        key: 'Delete',
+        category: "editing",
+        description: "Delete",
+        key: "Delete",
       }),
-    ).toContain('Del');
+    ).toContain("Del");
   });
 
-  it('formats combined shortcuts', () => {
+  it("formats combined shortcuts", () => {
     const result = formatKeyboardShortcut({
-      category: 'editing',
-      description: 'Redo',
-      key: 'z',
+      category: "editing",
+      description: "Redo",
+      key: "z",
       meta: true,
       shift: true,
     });
 
-    expect(result).toContain('⌘');
-    expect(result).toContain('Shift');
-    expect(result).toContain('Z');
+    expect(result).toContain("⌘");
+    expect(result).toContain("Shift");
+    expect(result).toContain("Z");
   });
 });

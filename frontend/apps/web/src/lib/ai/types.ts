@@ -3,7 +3,7 @@
  */
 
 /** Supported AI providers */
-export type AIProvider = 'claude' | 'codex' | 'gemini';
+export type AIProvider = "claude" | "codex" | "gemini";
 
 /** Model configuration */
 export interface AIModel {
@@ -24,7 +24,7 @@ export interface AIProviderConfig {
 }
 
 /** Chat message role */
-export type ChatRole = 'user' | 'assistant' | 'system';
+export type ChatRole = "user" | "assistant" | "system";
 
 /** Chat message */
 export interface ChatMessage {
@@ -82,12 +82,12 @@ export interface ChatRequest {
 
 /** SSE event types from server */
 export type SSEEventType =
-  | 'text'
-  | 'tool_use_start'
-  | 'tool_use_input'
-  | 'tool_result'
-  | 'error'
-  | 'done';
+  | "text"
+  | "tool_use_start"
+  | "tool_use_input"
+  | "tool_result"
+  | "error"
+  | "done";
 
 /** SSE event from streaming response */
 export interface SSEEvent {
@@ -128,7 +128,7 @@ export interface ChatStreamChunk {
 /** Chat store UI state */
 export interface ChatUIState {
   isOpen: boolean;
-  mode: 'bubble' | 'sidebar';
+  mode: "bubble" | "sidebar";
   bubblePosition: { x: number; y: number };
   sidebarWidth: number;
 }

@@ -1,5 +1,5 @@
 // Re-export projects API from endpoints
-import { projectsApi } from './endpoints';
+import { projectsApi } from "./endpoints";
 
 export const fetchProjects = projectsApi.list;
 export const fetchProject = projectsApi.get;

@@ -3,13 +3,13 @@
  * Utilities for managing visual test snapshots and baselines
  */
 
-import type { Meta } from '@storybook/react';
+import type { Meta } from "@storybook/react";
 
-import React from 'react';
+import React from "react";
 
-import type { VIEWPORTS } from './visual-test.config';
+import type { VIEWPORTS } from "./visual-test.config";
 
-import { COMPONENT_VISUAL_CONFIGS, THEMES } from './visual-test.config';
+import { COMPONENT_VISUAL_CONFIGS, THEMES } from "./visual-test.config";
 
 /**
  * Generates visual test parameters for a component
@@ -28,8 +28,8 @@ function getComponentConfig(
 
 const DEFAULT_VISUAL_CONFIG = {
   delay: 300,
-  themes: ['light', 'dark'] as (keyof typeof THEMES)[],
-  viewports: ['desktop', 'tablet'] as ViewportKey[],
+  themes: ["light", "dark"] as (keyof typeof THEMES)[],
+  viewports: ["desktop", "tablet"] as ViewportKey[],
 };
 
 export function generateVisualTestParameters(
@@ -94,7 +94,7 @@ export function createViewportStories<T extends Record<string, any>>(
  */
 export function createThemeStories<T extends Record<string, any>>(
   baseArgs: T,
-  themesToTest: (keyof typeof THEMES)[] = ['light', 'dark'],
+  themesToTest: (keyof typeof THEMES)[] = ["light", "dark"],
 ) {
   return Object.fromEntries(
     themesToTest.map((theme) => [
@@ -104,11 +104,11 @@ export function createThemeStories<T extends Record<string, any>>(
         decorators: [
           (Story: any) =>
             React.createElement(
-              'div',
+              "div",
               {
-                className: theme === 'dark' ? 'dark' : '',
-                'data-theme': theme,
-                style: { minHeight: '100vh' },
+                className: theme === "dark" ? "dark" : "",
+                "data-theme": theme,
+                style: { minHeight: "100vh" },
               },
               React.createElement(Story, null),
             ),
@@ -132,7 +132,7 @@ export function createThemeStories<T extends Record<string, any>>(
  */
 export function createInteractionStories<T extends Record<string, any>>(
   baseArgs: T,
-  selector = 'button',
+  selector = "button",
 ) {
   return {
     Active: {
@@ -140,8 +140,8 @@ export function createInteractionStories<T extends Record<string, any>>(
       play: ({ canvasElement }: { canvasElement: HTMLElement }) => {
         const element = canvasElement.querySelector(selector);
         if (element !== null && element !== undefined) {
-          element.classList.add('active');
-          element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+          element.classList.add("active");
+          element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
         }
       },
     },
@@ -162,7 +162,7 @@ export function createInteractionStories<T extends Record<string, any>>(
       play: async ({ canvasElement }: any) => {
         const element = canvasElement.querySelector(selector);
         if (element) {
-          element.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+          element.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
         }
       },
     },
@@ -198,10 +198,10 @@ export function generateSnapshotName(
   state?: string,
 ) {
   const parts = [componentName, variant, viewport, theme];
-  if (state != null && state !== '') {
+  if (state != null && state !== "") {
     parts.push(state);
   }
-  return parts.join('-').toLowerCase().replaceAll(/\s+/g, '-');
+  return parts.join("-").toLowerCase().replaceAll(/\s+/g, "-");
 }
 
 /**
@@ -219,14 +219,14 @@ export class VisualRegressionTracker {
   }
 
   getChanges(componentName?: string) {
-    if (componentName != null && componentName !== '') {
+    if (componentName != null && componentName !== "") {
       return this.changes.get(componentName) ?? [];
     }
     return [...this.changes.entries()];
   }
 
   hasChanges(componentName?: string) {
-    if (componentName != null && componentName !== '') {
+    if (componentName != null && componentName !== "") {
       return (this.changes.get(componentName) ?? []).length > 0;
     }
     return this.changes.size > 0;
@@ -243,8 +243,8 @@ export class VisualRegressionTracker {
  */
 export function validateComponentVisualTests(
   componentName: string,
-  requiredViewports: (keyof typeof VIEWPORTS)[] = ['desktop', 'tablet'],
-  requiredThemes: (keyof typeof THEMES)[] = ['light', 'dark'],
+  requiredViewports: (keyof typeof VIEWPORTS)[] = ["desktop", "tablet"],
+  requiredThemes: (keyof typeof THEMES)[] = ["light", "dark"],
 ) {
   const config = getComponentConfig(componentName);
   if (config === undefined) {

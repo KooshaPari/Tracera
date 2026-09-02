@@ -1,8 +1,8 @@
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import { extractCSRFTokenFromResponse, handleCSRFError } from '../lib/csrf';
-import { useConnectionStatusStore } from '../stores/connection-status-store';
-import { apiConstants } from './client-constants';
+import { extractCSRFTokenFromResponse, handleCSRFError } from "../lib/csrf";
+import { useConnectionStatusStore } from "../stores/connection-status-store";
+import { apiConstants } from "./client-constants";
 
 interface ToastAction {
   label: string;
@@ -25,7 +25,7 @@ interface RateLimitBody {
 }
 
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
-  Object.prototype.toString.call(value) === '[object Object]';
+  Object.prototype.toString.call(value) === "[object Object]";
 
 const parseJsonObject = async (response: Response): Promise<Record<string, unknown>> => {
   try {
@@ -41,15 +41,15 @@ const parseJsonObject = async (response: Response): Promise<Record<string, unkno
 
 const parseIntegrationAuthBody = async (response: Response): Promise<IntegrationAuthBody> => {
   const data = await parseJsonObject(response);
-  const code = typeof data['code'] === 'string' ? data['code'] : undefined;
-  const detail = typeof data['detail'] === 'string' ? data['detail'] : undefined;
+  const code = typeof data["code"] === "string" ? data["code"] : undefined;
+  const detail = typeof data["detail"] === "string" ? data["detail"] : undefined;
   return { code, detail };
 };
 
 const parseRateLimitBody = async (response: Response): Promise<RateLimitBody> => {
   const data = await parseJsonObject(response);
-  const detail = typeof data['detail'] === 'string' ? data['detail'] : undefined;
-  const retryAfter = typeof data['retry_after'] === 'number' ? data['retry_after'] : undefined;
+  const detail = typeof data["detail"] === "string" ? data["detail"] : undefined;
+  const retryAfter = typeof data["retry_after"] === "number" ? data["retry_after"] : undefined;
   return { detail, retry_after: retryAfter };
 };
 
@@ -62,7 +62,7 @@ const showToast = async (
     return false;
   }
 
-  const { toast } = await import('sonner');
+  const { toast } = await import("sonner");
   const toastOptions: ToastOptions = { description };
   if (action) {
     toastOptions.action = action;
@@ -78,14 +78,14 @@ const handleCsrf = async (response: Response): Promise<boolean> => {
 
   const wasCsrfError = await handleCSRFError(response.clone());
   if (wasCsrfError) {
-    logger.warn('[API Client] CSRF token was refreshed, request may need to be retried');
+    logger.warn("[API Client] CSRF token was refreshed, request may need to be retried");
   }
   return wasCsrfError;
 };
 
 const showIntegrationAuthToast = async (detail: string): Promise<boolean> =>
-  showToast('Connection expired', detail, {
-    label: 'Settings',
+  showToast("Connection expired", detail, {
+    label: "Settings",
     onClick: () => {
       if (globalThis.window) {
         globalThis.window.location.href = apiConstants.settingsPath;
@@ -94,8 +94,8 @@ const showIntegrationAuthToast = async (detail: string): Promise<boolean> =>
   });
 
 const getIntegrationAuthDetail = (body: IntegrationAuthBody): string | null => {
-  if (body.code === 'integration_auth_required') {
-    return body.detail ?? 'Reconnect this integration in Settings.';
+  if (body.code === "integration_auth_required") {
+    return body.detail ?? "Reconnect this integration in Settings.";
   }
   return null;
 };
@@ -115,7 +115,7 @@ const handleUnauthorizedBody = async (
   if (detail) {
     return showIntegrationAuthToast(detail);
   }
-  logger.warn('[Auth] Session expired or invalid - redirecting to login');
+  logger.warn("[Auth] Session expired or invalid - redirecting to login");
   handleLogout();
   return true;
 };
@@ -141,7 +141,7 @@ const buildRateLimitMessage = (seconds: number): string => {
 };
 
 const resolveRateLimitSeconds = (retryAfterHeader: string, body: RateLimitBody): number => {
-  if (retryAfterHeader !== '') {
+  if (retryAfterHeader !== "") {
     return Number.parseInt(retryAfterHeader, 10);
   }
   return body.retry_after ?? apiConstants.defaultRateLimitSeconds;
@@ -157,16 +157,16 @@ const handleRateLimited = async (response: Response): Promise<boolean> => {
     return false;
   }
   const body = await parseRateLimitBody(response);
-  const retryAfterHeader = response.headers.get(apiConstants.retryAfterHeader) ?? '';
+  const retryAfterHeader = response.headers.get(apiConstants.retryAfterHeader) ?? "";
   const seconds = resolveRateLimitSeconds(retryAfterHeader, body);
   const detail = buildRateLimitDetail(seconds, body);
-  await showToast('Rate limited', detail);
+  await showToast("Rate limited", detail);
   return true;
 };
 
 const handleForbidden = async (response: Response, wasCsrfError: boolean): Promise<boolean> => {
   if (response.status === apiConstants.statusForbidden && !wasCsrfError) {
-    await showToast('Access denied', "You don't have permission for this action.");
+    await showToast("Access denied", "You don't have permission for this action.");
     return true;
   }
   return false;
@@ -177,9 +177,9 @@ const handleNotFound = async (response: Response): Promise<boolean> => {
     return false;
   }
   const body = await parseIntegrationAuthBody(response);
-  if (body.code === 'integration_not_found') {
-    const detail = body.detail ?? 'The requested item was not found.';
-    return showToast('Resource not found', detail);
+  if (body.code === "integration_not_found") {
+    const detail = body.detail ?? "The requested item was not found.";
+    return showToast("Resource not found", detail);
   }
   return false;
 };
@@ -190,7 +190,7 @@ const handleServerError = async (response: Response): Promise<boolean> => {
   }
   const message = `Backend error ${response.status}`;
   useConnectionStatusStore.getState().setLost(message);
-  await showToast('Server error', "Connection issue. We'll retry; check back in a moment.");
+  await showToast("Server error", "Connection issue. We'll retry; check back in a moment.");
   return true;
 };
 

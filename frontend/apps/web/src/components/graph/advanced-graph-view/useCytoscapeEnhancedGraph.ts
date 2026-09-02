@@ -1,15 +1,15 @@
-import type { Core } from 'cytoscape';
-import type { RefObject } from 'react';
+import type { Core } from "cytoscape";
+import type { RefObject } from "react";
 
-import cytoscape from 'cytoscape';
-import { useCallback, useEffect, useRef } from 'react';
+import cytoscape from "cytoscape";
+import { useCallback, useEffect, useRef } from "react";
 
-import type { EnhancedNodeData, GraphPerspective } from '@/components/graph/types';
-import type { LayoutType, Link } from '@tracertm/types';
+import type { EnhancedNodeData, GraphPerspective } from "@/components/graph/types";
+import type { LayoutType, Link } from "@tracertm/types";
 
-import { PERSPECTIVE_CONFIGS } from '@/components/graph/types';
+import { PERSPECTIVE_CONFIGS } from "@/components/graph/types";
 
-import { createEnhancedCytoscapeStyle } from './cytoscapeStyle';
+import { createEnhancedCytoscapeStyle } from "./cytoscapeStyle";
 
 interface UseCytoscapeEnhancedGraphArgs {
   filteredLinks: Link[];
@@ -45,7 +45,7 @@ export function useCytoscapeEnhancedGraph({
   const cyRef = useRef<Core | null>(null);
 
   const clearHighlights = useCallback((): void => {
-    cyRef.current?.elements().removeClass('faded highlighted');
+    cyRef.current?.elements().removeClass("faded highlighted");
   }, []);
 
   const initCytoscape = useCallback((): void => {
@@ -72,7 +72,7 @@ export function useCytoscapeEnhancedGraph({
     const cytoscapeEdges = filteredLinks.map((link) => ({
       data: {
         id: link.id,
-        label: link.type.replaceAll('_', ' '),
+        label: link.type.replaceAll("_", " "),
         source: link.sourceId,
         target: link.targetId,
         type: link.type,
@@ -86,17 +86,17 @@ export function useCytoscapeEnhancedGraph({
       container: containerRef.current,
       elements: [...cytoscapeNodes, ...cytoscapeEdges],
       layout: {
-        name: layout === 'elk' ? 'breadthfirst' : layout,
+        name: layout === "elk" ? "breadthfirst" : layout,
         animate: true,
         animationDuration: 500,
-        ...(layout === 'breadthfirst' || layout === 'elk'
+        ...(layout === "breadthfirst" || layout === "elk"
           ? {
               directed: true,
               padding: 50,
               spacingFactor: 1.5,
             }
           : {}),
-        ...(layout === 'cose'
+        ...(layout === "cose"
           ? {
               edgeElasticity: (): number => 100,
               gravity: 0.25,
@@ -112,7 +112,7 @@ export function useCytoscapeEnhancedGraph({
     });
 
     // Event handlers
-    cyRef.current.on('tap', 'node', (evt) => {
+    cyRef.current.on("tap", "node", (evt) => {
       const nodeId = String(evt.target.id());
       onSelectNodeId(nodeId);
       onShowDetailPanel(true);
@@ -126,12 +126,12 @@ export function useCytoscapeEnhancedGraph({
         return;
       }
 
-      cy.elements().addClass('faded');
-      neighborhood.removeClass('faded');
-      neighborhood.addClass('highlighted');
+      cy.elements().addClass("faded");
+      neighborhood.removeClass("faded");
+      neighborhood.addClass("highlighted");
     });
 
-    cyRef.current.on('tap', (evt) => {
+    cyRef.current.on("tap", (evt) => {
       if (evt.target === cyRef.current) {
         onClearSelection();
         clearHighlights();
@@ -180,7 +180,7 @@ export function useCytoscapeEnhancedGraph({
       return;
     }
     cy.fit(undefined, 50);
-    cy.elements().removeClass('faded highlighted');
+    cy.elements().removeClass("faded highlighted");
   }, []);
 
   const focusNode = useCallback(
@@ -204,10 +204,10 @@ export function useCytoscapeEnhancedGraph({
       });
 
       // Highlight
-      cy.elements().addClass('faded');
+      cy.elements().addClass("faded");
       const neighborhood = node.closedNeighborhood();
-      neighborhood.removeClass('faded');
-      neighborhood.addClass('highlighted');
+      neighborhood.removeClass("faded");
+      neighborhood.addClass("highlighted");
     },
     [onSelectNodeId],
   );
@@ -217,8 +217,8 @@ export function useCytoscapeEnhancedGraph({
     if (!cy) {
       return;
     }
-    const png = cy.png({ bg: '#1a1a2e', full: true, scale: 2 });
-    const link = document.createElement('a');
+    const png = cy.png({ bg: "#1a1a2e", full: true, scale: 2 });
+    const link = document.createElement("a");
     link.download = `graph-${perspective}-${new Date().toISOString()}.png`;
     link.href = png;
     link.click();

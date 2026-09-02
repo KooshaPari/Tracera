@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
-import type { EnhancedNodeData, GraphPerspective } from '@/components/graph/types';
-import type { Item, Link, LinkType } from '@tracertm/types';
+import type { EnhancedNodeData, GraphPerspective } from "@/components/graph/types";
+import type { Item, Link, LinkType } from "@tracertm/types";
 
-import { PERSPECTIVE_CONFIGS, TYPE_TO_PERSPECTIVE } from '@/components/graph/types';
+import { PERSPECTIVE_CONFIGS, TYPE_TO_PERSPECTIVE } from "@/components/graph/types";
 
 const EMPTY_LINK_TYPE_COUNTS: Record<LinkType, number> = {
   implements: 0,
@@ -30,7 +30,7 @@ const EMPTY_LINK_TYPE_COUNTS: Record<LinkType, number> = {
 function computeDepth(item: Item, itemMap: Map<string, Item>): number {
   let depth = 0;
   let currentId: string | undefined = item.parentId;
-  while (typeof currentId === 'string' && currentId.length > 0 && depth < 10) {
+  while (typeof currentId === "string" && currentId.length > 0 && depth < 10) {
     depth += 1;
     const parent = itemMap.get(currentId);
     currentId = parent?.parentId;
@@ -43,7 +43,7 @@ function getStringMetadata(
   key: string,
 ): string | undefined {
   const value = metadata?.[key];
-  return typeof value === 'string' ? value : undefined;
+  return typeof value === "string" ? value : undefined;
 }
 
 interface UseEnhancedGraphDataArgs {
@@ -104,7 +104,7 @@ export function useEnhancedGraphData({
 
     return items.map((item) => {
       const itemType = item.type.toLowerCase();
-      const perspectives = TYPE_TO_PERSPECTIVE[itemType] ?? ['all'];
+      const perspectives = TYPE_TO_PERSPECTIVE[itemType] ?? ["all"];
       const incoming = incomingCount.get(item.id) ?? 0;
       const outgoing = outgoingCount.get(item.id) ?? 0;
 
@@ -113,11 +113,11 @@ export function useEnhancedGraphData({
 
       const depth = computeDepth(item, itemMap);
 
-      const screenshotUrl = getStringMetadata(item.metadata, 'screenshotUrl');
-      const componentCode = getStringMetadata(item.metadata, 'code');
-      const interactiveWidgetUrl = getStringMetadata(item.metadata, 'interactiveUrl');
+      const screenshotUrl = getStringMetadata(item.metadata, "screenshotUrl");
+      const componentCode = getStringMetadata(item.metadata, "code");
+      const interactiveWidgetUrl = getStringMetadata(item.metadata, "interactiveUrl");
 
-      const label = item.title.length > 0 ? item.title : 'Untitled';
+      const label = item.title.length > 0 ? item.title : "Untitled";
 
       const nodeData: EnhancedNodeData = {
         connections: {
@@ -136,7 +136,7 @@ export function useEnhancedGraphData({
         status: item.status,
         type: itemType,
         uiPreview:
-          typeof screenshotUrl === 'string' && screenshotUrl.length > 0
+          typeof screenshotUrl === "string" && screenshotUrl.length > 0
             ? {
                 componentCode,
                 interactiveWidgetUrl,
@@ -150,7 +150,7 @@ export function useEnhancedGraphData({
   }, [items, links]);
 
   const filteredNodes = useMemo(() => {
-    if (perspective === 'all') {
+    if (perspective === "all") {
       return enhancedNodes;
     }
 
@@ -187,7 +187,7 @@ export function useEnhancedGraphData({
 
     for (const node of enhancedNodes) {
       for (const p of node.perspective) {
-        if (p !== 'all') {
+        if (p !== "all") {
           counts[p] = (counts[p] ?? 0) + 1;
         }
       }

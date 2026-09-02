@@ -14,7 +14,7 @@ export interface QueuedMutation {
   lastError?: string | undefined;
 }
 
-const STORAGE_KEY = 'pending_mutations';
+const STORAGE_KEY = "pending_mutations";
 
 /**
  * Get all queued mutations from localStorage
@@ -34,7 +34,7 @@ export function getQueuedMutations(): QueuedMutation[] {
 /**
  * Add a mutation to the queue
  */
-export function queueMutation(mutation: Omit<QueuedMutation, 'id'>): string {
+export function queueMutation(mutation: Omit<QueuedMutation, "id">): string {
   const mutations = getQueuedMutations();
   const id = `mutation_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
@@ -47,7 +47,7 @@ export function queueMutation(mutation: Omit<QueuedMutation, 'id'>): string {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mutations));
   } catch (error) {
     // LocalStorage quota exceeded
-    console.error('Failed to queue mutation:', error);
+    console.error("Failed to queue mutation:", error);
   }
 
   return id;
@@ -63,7 +63,7 @@ export function removeMutationFromQueue(id: string): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
   } catch (error) {
-    console.error('Failed to remove queued mutation:', error);
+    console.error("Failed to remove queued mutation:", error);
   }
 }
 
@@ -84,7 +84,7 @@ export function updateMutationError(id: string, error: string, attempts: number)
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mutations));
   } catch (error) {
-    console.error('Failed to update queued mutation:', error);
+    console.error("Failed to update queued mutation:", error);
   }
 }
 
@@ -95,7 +95,7 @@ export function clearMutationQueue(): void {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
-    console.error('Failed to clear mutation queue:', error);
+    console.error("Failed to clear mutation queue:", error);
   }
 }
 

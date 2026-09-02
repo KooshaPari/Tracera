@@ -1,22 +1,22 @@
 // UseTemporal - React Query hooks for temporal navigation
 // Handles branch and version management
 
-import * as ReactQuery from '@tanstack/react-query';
+import * as ReactQuery from "@tanstack/react-query";
 
-import type { Branch, Version } from '@/components/temporal/TemporalNavigator';
+import type { Branch, Version } from "@/components/temporal/TemporalNavigator";
 
-import { client } from '@/api/client';
-import { QUERY_CONFIGS, queryKeys } from '@/lib/queryConfig';
+import { client } from "@/api/client";
+import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
 
 const { getAuthHeaders } = client;
 const { useMutation, useQuery, useQueryClient } = ReactQuery;
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || "";
 type JsonObject = Record<string, unknown>;
 type TemporalConflict = Record<string, unknown>;
 
 function isJsonObject(value: unknown): value is JsonObject {
-  return typeof value === 'object' && value !== null;
+  return typeof value === "object" && value !== null;
 }
 
 async function parseJson(response: Response): Promise<unknown> {
@@ -44,10 +44,10 @@ async function fetchBranches(projectId: string): Promise<Branch[]> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch branches');
+    throw new Error("Failed to fetch branches");
   }
   const data = await parseJson(res);
-  return getArrayFromPayload<Branch>(data, 'branches');
+  return getArrayFromPayload<Branch>(data, "branches");
 }
 
 export function useBranches(projectId: string): ReactQuery.UseQueryResult<Branch[]> {
@@ -64,10 +64,10 @@ async function fetchVersions(branchId: string): Promise<Version[]> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch versions');
+    throw new Error("Failed to fetch versions");
   }
   const data = await parseJson(res);
-  return getArrayFromPayload<Version>(data, 'versions');
+  return getArrayFromPayload<Version>(data, "versions");
 }
 
 export function useVersions(branchId: string): ReactQuery.UseQueryResult<Version[]> {
@@ -89,15 +89,15 @@ interface CreateBranchInput {
 async function createBranch(input: CreateBranchInput): Promise<Branch> {
   const res = await fetch(`${API_URL}/api/v1/projects/${input.projectId}/branches`, {
     body: JSON.stringify(input),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to create branch');
+    throw new Error("Failed to create branch");
   }
   const data = await parseJson(res);
   if (!isJsonObject(data)) {
-    throw new Error('Invalid branch payload');
+    throw new Error("Invalid branch payload");
   }
   return data as unknown as Branch;
 }
@@ -119,21 +119,21 @@ interface CreateVersionInput {
   title: string;
   description?: string;
   tag?: string;
-  status?: 'draft' | 'published' | 'archived';
+  status?: "draft" | "published" | "archived";
 }
 
 async function createVersion(input: CreateVersionInput): Promise<Version> {
   const res = await fetch(`${API_URL}/api/v1/branches/${input.branchId}/versions`, {
     body: JSON.stringify(input),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to create version');
+    throw new Error("Failed to create version");
   }
   const data = await parseJson(res);
   if (!isJsonObject(data)) {
-    throw new Error('Invalid version payload');
+    throw new Error("Invalid version payload");
   }
   return data as unknown as Version;
 }
@@ -157,7 +157,7 @@ export function useCreateVersion(): ReactQuery.UseMutationResult<
 interface MergeBranchInput {
   sourceBranchId: string;
   targetBranchId: string;
-  conflictResolution?: 'manual' | 'source' | 'target';
+  conflictResolution?: "manual" | "source" | "target";
 }
 
 interface MergeBranchResult {
@@ -168,25 +168,25 @@ interface MergeBranchResult {
 async function mergeBranch(input: MergeBranchInput): Promise<MergeBranchResult> {
   const res = await fetch(`${API_URL}/api/v1/branches/${input.targetBranchId}/merge`, {
     body: JSON.stringify({
-      conflictResolution: input.conflictResolution ?? 'manual',
+      conflictResolution: input.conflictResolution ?? "manual",
       sourceBranchId: input.sourceBranchId,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to merge branches');
+    throw new Error("Failed to merge branches");
   }
   const data = await parseJson(res);
-  if (!isJsonObject(data) || typeof data['success'] !== 'boolean') {
-    throw new Error('Invalid merge payload');
+  if (!isJsonObject(data) || typeof data["success"] !== "boolean") {
+    throw new Error("Invalid merge payload");
   }
 
-  const conflicts = Array.isArray(data['conflicts'])
-    ? (data['conflicts'].filter(isJsonObject) as TemporalConflict[])
+  const conflicts = Array.isArray(data["conflicts"])
+    ? (data["conflicts"].filter(isJsonObject) as TemporalConflict[])
     : undefined;
 
-  const success = data['success'];
+  const success = data["success"];
 
   return conflicts === undefined ? { success } : { conflicts, success };
 }
@@ -233,11 +233,11 @@ async function getVersionSnapshot(versionId: string): Promise<VersionSnapshot> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch version snapshot');
+    throw new Error("Failed to fetch version snapshot");
   }
   const data = await parseJson(res);
   if (!isJsonObject(data)) {
-    throw new Error('Invalid version snapshot payload');
+    throw new Error("Invalid version snapshot payload");
   }
   return data as VersionSnapshot;
 }
@@ -255,7 +255,7 @@ interface UpdateBranchInput {
   branchId: string;
   name?: string;
   description?: string;
-  status?: 'active' | 'review' | 'merged' | 'abandoned';
+  status?: "active" | "review" | "merged" | "abandoned";
 }
 
 async function updateBranch(input: UpdateBranchInput): Promise<Branch> {
@@ -265,15 +265,15 @@ async function updateBranch(input: UpdateBranchInput): Promise<Branch> {
       name: input.name,
       status: input.status,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'PATCH',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "PATCH",
   });
   if (!res.ok) {
-    throw new Error('Failed to update branch');
+    throw new Error("Failed to update branch");
   }
   const data = await parseJson(res);
   if (!isJsonObject(data)) {
-    throw new Error('Invalid branch payload');
+    throw new Error("Invalid branch payload");
   }
   return data as unknown as Branch;
 }
@@ -295,7 +295,7 @@ interface UpdateVersionInput {
   title?: string;
   description?: string;
   tag?: string;
-  status?: 'draft' | 'published' | 'archived';
+  status?: "draft" | "published" | "archived";
 }
 
 async function updateVersion(input: UpdateVersionInput): Promise<Version> {
@@ -306,15 +306,15 @@ async function updateVersion(input: UpdateVersionInput): Promise<Version> {
       tag: input.tag,
       title: input.title,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'PATCH',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "PATCH",
   });
   if (!res.ok) {
-    throw new Error('Failed to update version');
+    throw new Error("Failed to update version");
   }
   const data = await parseJson(res);
   if (!isJsonObject(data)) {
-    throw new Error('Invalid version payload');
+    throw new Error("Invalid version payload");
   }
   return data as unknown as Version;
 }
@@ -338,10 +338,10 @@ export function useUpdateVersion(): ReactQuery.UseMutationResult<
 async function deleteBranch(branchId: string): Promise<void> {
   const res = await fetch(`${API_URL}/api/v1/branches/${branchId}`, {
     headers: getAuthHeaders(),
-    method: 'DELETE',
+    method: "DELETE",
   });
   if (!res.ok) {
-    throw new Error('Failed to delete branch');
+    throw new Error("Failed to delete branch");
   }
 }
 
@@ -374,27 +374,27 @@ async function compareBranches(
     { headers: getAuthHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to compare branches');
+    throw new Error("Failed to compare branches");
   }
   const data = await parseJson(res);
   if (!isJsonObject(data)) {
-    throw new Error('Invalid branch comparison payload');
+    throw new Error("Invalid branch comparison payload");
   }
 
-  const divergencePoint = isJsonObject(data['divergencePoint'])
-    ? (data['divergencePoint'] as unknown as Version)
+  const divergencePoint = isJsonObject(data["divergencePoint"])
+    ? (data["divergencePoint"] as unknown as Version)
     : null;
-  const sourceVersions = Array.isArray(data['sourceVersions'])
-    ? (data['sourceVersions'] as Version[])
+  const sourceVersions = Array.isArray(data["sourceVersions"])
+    ? (data["sourceVersions"] as Version[])
     : [];
-  const targetVersions = Array.isArray(data['targetVersions'])
-    ? (data['targetVersions'] as Version[])
+  const targetVersions = Array.isArray(data["targetVersions"])
+    ? (data["targetVersions"] as Version[])
     : [];
-  const commonVersions = Array.isArray(data['commonVersions'])
-    ? (data['commonVersions'] as Version[])
+  const commonVersions = Array.isArray(data["commonVersions"])
+    ? (data["commonVersions"] as Version[])
     : [];
-  const conflicts = Array.isArray(data['conflicts'])
-    ? (data['conflicts'].filter(isJsonObject) as TemporalConflict[])
+  const conflicts = Array.isArray(data["conflicts"])
+    ? (data["conflicts"].filter(isJsonObject) as TemporalConflict[])
     : [];
 
   return {

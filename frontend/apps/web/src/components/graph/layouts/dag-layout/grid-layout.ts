@@ -1,6 +1,6 @@
-import type { Node } from '@xyflow/react';
+import type { Node } from "@xyflow/react";
 
-import { GRID_COMPACT_PADDING_DIVISOR, GRID_MIN_COLUMNS } from './constants';
+import { GRID_COMPACT_PADDING_DIVISOR, GRID_MIN_COLUMNS } from "./constants";
 
 interface GridLayoutOptions {
   nodeWidth: number;

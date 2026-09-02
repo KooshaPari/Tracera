@@ -4,7 +4,7 @@ import type {
   RequirementType,
   RiskLevel,
   VerificationStatus,
-} from './shared-types';
+} from "./shared-types";
 
 interface RequirementSpec {
   id: string;

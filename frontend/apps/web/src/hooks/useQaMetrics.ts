@@ -1,12 +1,12 @@
-import type { UseQueryResult } from '@tanstack/react-query';
+import type { UseQueryResult } from "@tanstack/react-query";
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
-import { client } from '@/api/client';
+import { client } from "@/api/client";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 interface QAMetricsSummary {
   projectId: string;
@@ -123,7 +123,7 @@ interface ExecutionHistory {
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && Boolean(value) && !Array.isArray(value);
+  return typeof value === "object" && Boolean(value) && !Array.isArray(value);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -141,10 +141,10 @@ function asArray(value: unknown): unknown[] {
 }
 
 function asNumber(value: unknown, fallback: number): number {
-  if (typeof value === 'number' && Number.isFinite(value)) {
+  if (typeof value === "number" && Number.isFinite(value)) {
     return value;
   }
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const parsed = Number(value);
     if (Number.isFinite(parsed)) {
       return parsed;
@@ -154,21 +154,21 @@ function asNumber(value: unknown, fallback: number): number {
 }
 
 function asString(value: unknown, fallback: string): string {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   return fallback;
 }
 
 function asOptionalString(value: unknown): string | undefined {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   return undefined;
 }
 
 function asOptionalNumber(value: unknown): number | undefined {
-  if (typeof value === 'number' && Number.isFinite(value)) {
+  if (typeof value === "number" && Number.isFinite(value)) {
     return value;
   }
   return undefined;
@@ -186,154 +186,154 @@ function asRecordNumberMap(value: unknown): Record<string, number> {
   return out;
 }
 
-function asCoverageByView(value: unknown): CoverageMetrics['byView'] {
+function asCoverageByView(value: unknown): CoverageMetrics["byView"] {
   const rec = asRecord(value);
-  const out: CoverageMetrics['byView'] = {};
+  const out: CoverageMetrics["byView"] = {};
   for (const [key, entryValue] of Object.entries(rec)) {
     const entry = asRecord(entryValue);
     out[key] = {
-      covered: asNumber(entry['covered'], 0),
-      percentage: asNumber(entry['percentage'], 0),
-      total: asNumber(entry['total'], 0),
+      covered: asNumber(entry["covered"], 0),
+      percentage: asNumber(entry["percentage"], 0),
+      total: asNumber(entry["total"], 0),
     };
   }
   return out;
 }
 
 function transformSummary(data: Record<string, unknown>): QAMetricsSummary {
-  const testCasesData = asRecord(data['test_cases']);
-  const testSuitesData = asRecord(data['test_suites']);
-  const testRunsData = asRecord(data['test_runs']);
-  const coverageData = asRecord(data['coverage']);
+  const testCasesData = asRecord(data["test_cases"]);
+  const testSuitesData = asRecord(data["test_suites"]);
+  const testRunsData = asRecord(data["test_runs"]);
+  const coverageData = asRecord(data["coverage"]);
   return {
     coverage: {
-      byType: asRecordNumberMap(coverageData['by_type']),
-      coveragePercentage: asNumber(coverageData['coverage_percentage'], 0),
-      coveredRequirements: asNumber(coverageData['covered_requirements'], 0),
-      totalMappings: asNumber(coverageData['total_mappings'], 0),
-      totalRequirements: asNumber(coverageData['total_requirements'], 0),
-      uncoveredRequirements: asNumber(coverageData['uncovered_requirements'], 0),
+      byType: asRecordNumberMap(coverageData["by_type"]),
+      coveragePercentage: asNumber(coverageData["coverage_percentage"], 0),
+      coveredRequirements: asNumber(coverageData["covered_requirements"], 0),
+      totalMappings: asNumber(coverageData["total_mappings"], 0),
+      totalRequirements: asNumber(coverageData["total_requirements"], 0),
+      uncoveredRequirements: asNumber(coverageData["uncovered_requirements"], 0),
     },
-    projectId: asString(data['project_id'], ''),
+    projectId: asString(data["project_id"], ""),
     testCases: {
-      automatedCount: asNumber(testCasesData['automated_count'], 0),
-      automationPercentage: asNumber(testCasesData['automation_percentage'], 0),
-      byPriority: asRecordNumberMap(testCasesData['by_priority']),
-      byStatus: asRecordNumberMap(testCasesData['by_status']),
-      manualCount: asNumber(testCasesData['manual_count'], 0),
-      total: asNumber(testCasesData['total'], 0),
+      automatedCount: asNumber(testCasesData["automated_count"], 0),
+      automationPercentage: asNumber(testCasesData["automation_percentage"], 0),
+      byPriority: asRecordNumberMap(testCasesData["by_priority"]),
+      byStatus: asRecordNumberMap(testCasesData["by_status"]),
+      manualCount: asNumber(testCasesData["manual_count"], 0),
+      total: asNumber(testCasesData["total"], 0),
     },
     testRuns: {
-      averageDurationSeconds: asNumber(testRunsData['average_duration_seconds'], 0),
-      averagePassRate: asNumber(testRunsData['average_pass_rate'], 0),
-      byStatus: asRecordNumberMap(testRunsData['by_status']),
-      byType: asRecordNumberMap(testRunsData['by_type']),
-      total: asNumber(testRunsData['total'], 0),
+      averageDurationSeconds: asNumber(testRunsData["average_duration_seconds"], 0),
+      averagePassRate: asNumber(testRunsData["average_pass_rate"], 0),
+      byStatus: asRecordNumberMap(testRunsData["by_status"]),
+      byType: asRecordNumberMap(testRunsData["by_type"]),
+      total: asNumber(testRunsData["total"], 0),
     },
     testSuites: {
-      byStatus: asRecordNumberMap(testSuitesData['by_status']),
-      total: asNumber(testSuitesData['total'], 0),
-      totalTestCases: asNumber(testSuitesData['total_test_cases'], 0),
+      byStatus: asRecordNumberMap(testSuitesData["by_status"]),
+      total: asNumber(testSuitesData["total"], 0),
+      totalTestCases: asNumber(testSuitesData["total_test_cases"], 0),
     },
   };
 }
 
 function transformPassRateTrend(data: Record<string, unknown>): PassRateTrend {
   return {
-    days: asNumber(data['days'], 0),
-    projectId: asString(data['project_id'], ''),
-    trend: asArray(data['trend']).map((item: unknown) => {
+    days: asNumber(data["days"], 0),
+    projectId: asString(data["project_id"], ""),
+    trend: asArray(data["trend"]).map((item: unknown) => {
       const trendItem = asRecord(item);
       return {
-        avgPassRate: asNumber(trendItem['avg_pass_rate'], 0),
-        date: asString(trendItem['date'], ''),
-        totalFailed: asNumber(trendItem['total_failed'], 0),
-        totalPassed: asNumber(trendItem['total_passed'], 0),
-        totalRuns: asNumber(trendItem['total_runs'], 0),
+        avgPassRate: asNumber(trendItem["avg_pass_rate"], 0),
+        date: asString(trendItem["date"], ""),
+        totalFailed: asNumber(trendItem["total_failed"], 0),
+        totalPassed: asNumber(trendItem["total_passed"], 0),
+        totalRuns: asNumber(trendItem["total_runs"], 0),
       };
     }),
   };
 }
 
 function transformCoverageMetrics(data: Record<string, unknown>): CoverageMetrics {
-  const overall = asRecord(data['overall']);
+  const overall = asRecord(data["overall"]);
   return {
-    byType: asRecordNumberMap(data['by_type']),
-    byView: asCoverageByView(data['by_view']),
-    gapsCount: asNumber(data['gaps_count'], 0),
-    highPriorityGaps: asNumber(data['high_priority_gaps'], 0),
+    byType: asRecordNumberMap(data["by_type"]),
+    byView: asCoverageByView(data["by_view"]),
+    gapsCount: asNumber(data["gaps_count"], 0),
+    highPriorityGaps: asNumber(data["high_priority_gaps"], 0),
     overall: {
-      coveragePercentage: asNumber(overall['coverage_percentage'], 0),
-      coveredRequirements: asNumber(overall['covered_requirements'], 0),
-      totalRequirements: asNumber(overall['total_requirements'], 0),
+      coveragePercentage: asNumber(overall["coverage_percentage"], 0),
+      coveredRequirements: asNumber(overall["covered_requirements"], 0),
+      totalRequirements: asNumber(overall["total_requirements"], 0),
     },
-    projectId: asString(data['project_id'], ''),
+    projectId: asString(data["project_id"], ""),
   };
 }
 
 function transformDefectDensity(data: Record<string, unknown>): DefectDensity {
   return {
-    overallDefectDensity: asNumber(data['overall_defect_density'], 0),
-    projectId: asString(data['project_id'], ''),
-    testCasesWithFailures: asNumber(data['test_cases_with_failures'], 0),
-    topFailingTests: asArray(data['top_failing_tests']).map((item: unknown) => {
+    overallDefectDensity: asNumber(data["overall_defect_density"], 0),
+    projectId: asString(data["project_id"], ""),
+    testCasesWithFailures: asNumber(data["test_cases_with_failures"], 0),
+    topFailingTests: asArray(data["top_failing_tests"]).map((item: unknown) => {
       const topFailingTest = asRecord(item);
       return {
-        failureCount: asNumber(topFailingTest['failure_count'], 0),
-        failureRate: asNumber(topFailingTest['failure_rate'], 0),
-        testCaseId: asString(topFailingTest['test_case_id'], ''),
-        totalExecutions: asNumber(topFailingTest['total_executions'], 0),
+        failureCount: asNumber(topFailingTest["failure_count"], 0),
+        failureRate: asNumber(topFailingTest["failure_rate"], 0),
+        testCaseId: asString(topFailingTest["test_case_id"], ""),
+        totalExecutions: asNumber(topFailingTest["total_executions"], 0),
       };
     }),
-    totalExecutions: asNumber(data['total_executions'], 0),
-    totalFailures: asNumber(data['total_failures'], 0),
+    totalExecutions: asNumber(data["total_executions"], 0),
+    totalFailures: asNumber(data["total_failures"], 0),
   };
 }
 
 function transformFlakyTests(data: Record<string, unknown>): FlakyTests {
   return {
-    markedFlaky: asArray(data['marked_flaky']).map((item: unknown) => {
+    markedFlaky: asArray(data["marked_flaky"]).map((item: unknown) => {
       const flakyItem = asRecord(item);
       return {
-        flakyOccurrences: asNumber(flakyItem['flaky_occurrences'], 0),
-        testCaseId: asString(flakyItem['test_case_id'], ''),
+        flakyOccurrences: asNumber(flakyItem["flaky_occurrences"], 0),
+        testCaseId: asString(flakyItem["test_case_id"], ""),
       };
     }),
-    markedFlakyCount: asNumber(data['marked_flaky_count'], 0),
-    potentiallyFlaky: asArray(data['potentially_flaky']).map((item: unknown) => {
+    markedFlakyCount: asNumber(data["marked_flaky_count"], 0),
+    potentiallyFlaky: asArray(data["potentially_flaky"]).map((item: unknown) => {
       const potentiallyFlakyItem = asRecord(item);
       return {
-        inconsistentDays: asNumber(potentiallyFlakyItem['inconsistent_days'], 0),
-        testCaseId: asString(potentiallyFlakyItem['test_case_id'], ''),
+        inconsistentDays: asNumber(potentiallyFlakyItem["inconsistent_days"], 0),
+        testCaseId: asString(potentiallyFlakyItem["test_case_id"], ""),
       };
     }),
-    potentiallyFlakyCount: asNumber(data['potentially_flaky_count'], 0),
-    projectId: asString(data['project_id'], ''),
+    potentiallyFlakyCount: asNumber(data["potentially_flaky_count"], 0),
+    projectId: asString(data["project_id"], ""),
   };
 }
 
 function transformExecutionHistory(data: Record<string, unknown>): ExecutionHistory {
   return {
-    days: asNumber(data['days'], 0),
-    projectId: asString(data['project_id'], ''),
-    runs: asArray(data['runs']).map((run: unknown) => {
+    days: asNumber(data["days"], 0),
+    projectId: asString(data["project_id"], ""),
+    runs: asArray(data["runs"]).map((run: unknown) => {
       const runRecord = asRecord(run);
       return {
-        branch: asOptionalString(runRecord['branch']),
-        buildNumber: asOptionalString(runRecord['build_number']),
-        completedAt: asOptionalString(runRecord['completed_at']),
-        durationSeconds: asOptionalNumber(runRecord['duration_seconds']),
-        environment: asOptionalString(runRecord['environment']),
-        failedCount: asNumber(runRecord['failed_count'], 0),
-        id: asString(runRecord['id'], ''),
-        name: asString(runRecord['name'], ''),
-        passRate: asOptionalNumber(runRecord['pass_rate']),
-        passedCount: asNumber(runRecord['passed_count'], 0),
-        runNumber: asString(runRecord['run_number'], ''),
-        runType: asString(runRecord['run_type'], ''),
-        startedAt: asOptionalString(runRecord['started_at']),
-        status: asString(runRecord['status'], ''),
-        totalTests: asNumber(runRecord['total_tests'], 0),
+        branch: asOptionalString(runRecord["branch"]),
+        buildNumber: asOptionalString(runRecord["build_number"]),
+        completedAt: asOptionalString(runRecord["completed_at"]),
+        durationSeconds: asOptionalNumber(runRecord["duration_seconds"]),
+        environment: asOptionalString(runRecord["environment"]),
+        failedCount: asNumber(runRecord["failed_count"], 0),
+        id: asString(runRecord["id"], ""),
+        name: asString(runRecord["name"], ""),
+        passRate: asOptionalNumber(runRecord["pass_rate"]),
+        passedCount: asNumber(runRecord["passed_count"], 0),
+        runNumber: asString(runRecord["run_number"], ""),
+        runType: asString(runRecord["run_type"], ""),
+        startedAt: asOptionalString(runRecord["started_at"]),
+        status: asString(runRecord["status"], ""),
+        totalTests: asNumber(runRecord["total_tests"], 0),
       };
     }),
   };
@@ -349,7 +349,7 @@ async function fetchQAMetricsSummary(projectId: string): Promise<QAMetricsSummar
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch QA metrics summary');
+    throw new Error("Failed to fetch QA metrics summary");
   }
   const data = await readJsonRecord(res);
   return transformSummary(data);
@@ -361,7 +361,7 @@ async function fetchPassRateTrend(projectId: string, days = 30): Promise<PassRat
     { headers: getAuthHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch pass rate trend');
+    throw new Error("Failed to fetch pass rate trend");
   }
   const data = await readJsonRecord(res);
   return transformPassRateTrend(data);
@@ -372,7 +372,7 @@ async function fetchCoverageMetrics(projectId: string): Promise<CoverageMetrics>
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch coverage metrics');
+    throw new Error("Failed to fetch coverage metrics");
   }
   const data = await readJsonRecord(res);
   return transformCoverageMetrics(data);
@@ -383,7 +383,7 @@ async function fetchDefectDensity(projectId: string): Promise<DefectDensity> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch defect density');
+    throw new Error("Failed to fetch defect density");
   }
   const data = await readJsonRecord(res);
   return transformDefectDensity(data);
@@ -394,7 +394,7 @@ async function fetchFlakyTests(projectId: string): Promise<FlakyTests> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch flaky tests');
+    throw new Error("Failed to fetch flaky tests");
   }
   const data = await readJsonRecord(res);
   return transformFlakyTests(data);
@@ -406,7 +406,7 @@ async function fetchExecutionHistory(projectId: string, days = 7): Promise<Execu
     { headers: getAuthHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch execution history');
+    throw new Error("Failed to fetch execution history");
   }
   const data = await readJsonRecord(res);
   return transformExecutionHistory(data);
@@ -417,12 +417,12 @@ function useQAMetricsSummary(projectId: string | undefined): UseQueryResult<QAMe
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) {
-        throw new Error('projectId is required');
+        throw new Error("projectId is required");
       }
       const result = await fetchQAMetricsSummary(projectId);
       return result;
     },
-    queryKey: ['qaMetrics', 'summary', projectId],
+    queryKey: ["qaMetrics", "summary", projectId],
   });
 }
 
@@ -431,12 +431,12 @@ function usePassRateTrend(projectId: string | undefined, days = 30): UseQueryRes
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) {
-        throw new Error('projectId is required');
+        throw new Error("projectId is required");
       }
       const result = await fetchPassRateTrend(projectId, days);
       return result;
     },
-    queryKey: ['qaMetrics', 'passRate', projectId, days],
+    queryKey: ["qaMetrics", "passRate", projectId, days],
   });
 }
 
@@ -445,12 +445,12 @@ function useCoverageMetrics(projectId: string | undefined): UseQueryResult<Cover
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) {
-        throw new Error('projectId is required');
+        throw new Error("projectId is required");
       }
       const result = await fetchCoverageMetrics(projectId);
       return result;
     },
-    queryKey: ['qaMetrics', 'coverage', projectId],
+    queryKey: ["qaMetrics", "coverage", projectId],
   });
 }
 
@@ -459,12 +459,12 @@ function useDefectDensity(projectId: string | undefined): UseQueryResult<DefectD
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) {
-        throw new Error('projectId is required');
+        throw new Error("projectId is required");
       }
       const result = await fetchDefectDensity(projectId);
       return result;
     },
-    queryKey: ['qaMetrics', 'defectDensity', projectId],
+    queryKey: ["qaMetrics", "defectDensity", projectId],
   });
 }
 
@@ -473,12 +473,12 @@ function useFlakyTests(projectId: string | undefined): UseQueryResult<FlakyTests
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) {
-        throw new Error('projectId is required');
+        throw new Error("projectId is required");
       }
       const result = await fetchFlakyTests(projectId);
       return result;
     },
-    queryKey: ['qaMetrics', 'flakyTests', projectId],
+    queryKey: ["qaMetrics", "flakyTests", projectId],
   });
 }
 
@@ -490,12 +490,12 @@ function useExecutionHistory(
     enabled: Boolean(projectId),
     queryFn: async () => {
       if (projectId === undefined) {
-        throw new Error('projectId is required');
+        throw new Error("projectId is required");
       }
       const result = await fetchExecutionHistory(projectId, days);
       return result;
     },
-    queryKey: ['qaMetrics', 'executionHistory', projectId, days],
+    queryKey: ["qaMetrics", "executionHistory", projectId, days],
   });
 }
 

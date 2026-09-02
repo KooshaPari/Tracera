@@ -3,8 +3,8 @@
  * Configures jest-axe for WCAG 2.1 Level AA compliance testing
  */
 
-import { configureAxe } from 'jest-axe';
-import { expect } from 'vitest';
+import { configureAxe } from "jest-axe";
+import { expect } from "vitest";
 
 // jest-axe's Jest matcher relies on `expectAssertion.call`, which Vitest 4
 // does not provide. Keep the same assertion semantics with a native Vitest
@@ -18,10 +18,10 @@ expect.extend({
       pass: violations.length === 0,
       message: () =>
         violations.length === 0
-          ? 'Expected axe to report at least one accessibility violation'
+          ? "Expected axe to report at least one accessibility violation"
           : `Expected no accessibility violations, received ${violations.length}: ${violations
-              .map((violation) => `${violation.id ?? 'unknown'} (${violation.help ?? 'no help'})`)
-              .join(', ')}`,
+              .map((violation) => `${violation.id ?? "unknown"} (${violation.help ?? "no help"})`)
+              .join(", ")}`,
     };
   },
 });
@@ -30,30 +30,30 @@ expect.extend({
 export const axe = configureAxe({
   rules: {
     // WCAG 2.1 Level A & AA rules
-    'aria-allowed-attr': { enabled: true },
-    'aria-required-attr': { enabled: true },
-    'aria-valid-attr': { enabled: true },
-    'aria-valid-attr-value': { enabled: true },
-    'button-name': { enabled: true },
-    'color-contrast': { enabled: true },
-    'duplicate-id': { enabled: true },
-    'form-field-multiple-labels': { enabled: true },
-    'frame-title': { enabled: true },
-    'html-has-lang': { enabled: true },
-    'html-lang-valid': { enabled: true },
-    'image-alt': { enabled: true },
-    'input-image-alt': { enabled: true },
+    "aria-allowed-attr": { enabled: true },
+    "aria-required-attr": { enabled: true },
+    "aria-valid-attr": { enabled: true },
+    "aria-valid-attr-value": { enabled: true },
+    "button-name": { enabled: true },
+    "color-contrast": { enabled: true },
+    "duplicate-id": { enabled: true },
+    "form-field-multiple-labels": { enabled: true },
+    "frame-title": { enabled: true },
+    "html-has-lang": { enabled: true },
+    "html-lang-valid": { enabled: true },
+    "image-alt": { enabled: true },
+    "input-image-alt": { enabled: true },
     label: { enabled: true },
-    'link-name': { enabled: true },
+    "link-name": { enabled: true },
     list: { enabled: true },
     listitem: { enabled: true },
-    'meta-viewport': { enabled: true },
-    'valid-lang': { enabled: true },
-    'video-caption': { enabled: true },
+    "meta-viewport": { enabled: true },
+    "valid-lang": { enabled: true },
+    "video-caption": { enabled: true },
   },
 });
 
-import { act } from '@testing-library/react';
+import { act } from "@testing-library/react";
 
 /**
  * Helper to test keyboard navigation
@@ -61,7 +61,7 @@ import { act } from '@testing-library/react';
 export function pressKey(key: string, options: KeyboardEventInit = {}) {
   let event: KeyboardEvent | null = null;
   act(() => {
-    event = new KeyboardEvent('keydown', {
+    event = new KeyboardEvent("keydown", {
       key,
       bubbles: true,
       cancelable: true,
@@ -80,32 +80,32 @@ export function pressKey(key: string, options: KeyboardEventInit = {}) {
  * Helper to simulate Tab key navigation
  */
 export function pressTab(shift = false) {
-  return pressKey('Tab', { shiftKey: shift });
+  return pressKey("Tab", { shiftKey: shift });
 }
 
 /**
  * Helper to simulate Enter key
  */
 export function pressEnter() {
-  return pressKey('Enter');
+  return pressKey("Enter");
 }
 
 /**
  * Helper to simulate Escape key
  */
 export function pressEscape() {
-  return pressKey('Escape');
+  return pressKey("Escape");
 }
 
 /**
  * Helper to simulate arrow keys
  */
 export function pressArrowDown() {
-  return pressKey('ArrowDown');
+  return pressKey("ArrowDown");
 }
 
 export function pressArrowUp() {
-  return pressKey('ArrowUp');
+  return pressKey("ArrowUp");
 }
 
 /**
@@ -125,7 +125,7 @@ export function hasFocusIndicator(element: Element | null) {
   const styles = globalThis.getComputedStyle(element);
 
   // Check for outline or box-shadow (common focus indicators)
-  return styles.outline !== 'none' || styles.outlineWidth !== '0px' || styles.boxShadow !== 'none';
+  return styles.outline !== "none" || styles.outlineWidth !== "0px" || styles.boxShadow !== "none";
 }
 
 /**
@@ -137,10 +137,10 @@ export function isKeyboardAccessible(element: Element | null) {
   }
 
   const tagName = element.tagName.toLowerCase();
-  const tabIndex = element.getAttribute('tabindex');
+  const tabIndex = element.getAttribute("tabindex");
 
   // Naturally keyboard accessible elements
-  const interactiveElements = ['a', 'button', 'input', 'select', 'textarea'];
+  const interactiveElements = ["a", "button", "input", "select", "textarea"];
   if (interactiveElements.includes(tagName)) {
     return true;
   }

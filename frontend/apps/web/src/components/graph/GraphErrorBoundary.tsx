@@ -1,10 +1,10 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-import React, { Component } from 'react';
+import React, { Component } from "react";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import { EnhancedErrorState } from './EnhancedErrorState';
+import { EnhancedErrorState } from "./EnhancedErrorState";
 
 interface Props {
   children: ReactNode;
@@ -28,7 +28,7 @@ export class GraphErrorBoundary extends Component<Props, State> {
   }
 
   override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    logger.error('Graph error boundary caught:', error, errorInfo);
+    logger.error("Graph error boundary caught:", error, errorInfo);
     this.props.onError?.(error, errorInfo);
   }
 
@@ -43,7 +43,7 @@ export class GraphErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className='flex h-full items-center justify-center p-4'>
+        <div className="flex h-full items-center justify-center p-4">
           <EnhancedErrorState error={this.state.error} onRetry={this.reset} />
         </div>
       );

@@ -12,7 +12,7 @@
  * @see docs/architecture/quadtree-culling.md
  */
 
-import { quadtree, type Quadtree } from 'd3-quadtree';
+import { quadtree, type Quadtree } from "d3-quadtree";
 
 /**
  * Node position in graph coordinate space

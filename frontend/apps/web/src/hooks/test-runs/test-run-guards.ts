@@ -1,26 +1,26 @@
 type JsonRecord = Record<string, unknown>;
 
 function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function isString(value: unknown): value is string {
-  return typeof value === 'string';
+  return typeof value === "string";
 }
 
 function isNumber(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value);
+  return typeof value === "number" && Number.isFinite(value);
 }
 
 function isBoolean(value: unknown): value is boolean {
-  return typeof value === 'boolean';
+  return typeof value === "boolean";
 }
 
 function isStringArray(value: unknown): value is string[] {
   if (!Array.isArray(value)) {
     return false;
   }
-  return value.every((item: unknown): item is string => typeof item === 'string');
+  return value.every((item: unknown): item is string => typeof item === "string");
 }
 
 function asRecord(value: unknown, label: string): JsonRecord {

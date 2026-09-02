@@ -4,16 +4,16 @@
  * This demonstrates progressive graph loading for large datasets.
  */
 
-import type { Edge, Node, Viewport } from '@xyflow/react';
-import type { ComponentProps, ComponentType } from 'react';
+import type { Edge, Node, Viewport } from "@xyflow/react";
+import type { ComponentProps, ComponentType } from "react";
 
-import { ReactFlow, ReactFlowProvider, useReactFlow } from '@xyflow/react';
-import { useCallback, useState } from 'react';
+import { ReactFlow, ReactFlowProvider, useReactFlow } from "@xyflow/react";
+import { useCallback, useState } from "react";
 
-import { LoadingSpinner } from '@/components/layout/LoadingSpinner';
+import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
 
-import { logger } from '../lib/logger';
-import { useViewportGraph } from './useViewportGraph';
+import { logger } from "../lib/logger";
+import { useViewportGraph } from "./useViewportGraph";
 
 /** ReactFlow as JSX component (type assertion for @xyflow/react typings) */
 const ReactFlowComponent = ReactFlow as ComponentType<ComponentProps<typeof ReactFlow>>;
@@ -49,7 +49,7 @@ export function BasicViewportGraphExample({ projectId }: { projectId: string }) 
   );
 
   return (
-    <div style={{ height: '600px', width: '100%' }}>
+    <div style={{ height: "600px", width: "100%" }}>
       <ReactFlowComponent
         nodes={nodes}
         edges={edges}
@@ -61,38 +61,38 @@ export function BasicViewportGraphExample({ projectId }: { projectId: string }) 
         {isLoading && (
           <div
             style={{
-              background: 'rgba(0,0,0,0.8)',
+              background: "rgba(0,0,0,0.8)",
               borderRadius: 4,
-              color: 'white',
-              padding: '8px 16px',
-              position: 'absolute',
+              color: "white",
+              padding: "8px 16px",
+              position: "absolute",
               right: 16,
               top: 16,
             }}
           >
-            <LoadingSpinner size='sm' text='Loading region...' />
+            <LoadingSpinner size="sm" text="Loading region..." />
           </div>
         )}
         <div
           style={{
-            background: 'rgba(0,0,0,0.7)',
+            background: "rgba(0,0,0,0.7)",
             borderRadius: 4,
-            color: 'white',
+            color: "white",
             left: 16,
-            padding: '8px 16px',
-            position: 'absolute',
+            padding: "8px 16px",
+            position: "absolute",
             top: 16,
           }}
         >
           <div>
             Loaded: {nodes.length} / {totalCount} nodes
           </div>
-          <div style={{ fontSize: '0.8em', marginTop: 4 }}>
-            {hasMore.north && '⬆️ '}
-            {hasMore.south && '⬇️ '}
-            {hasMore.east && '➡️ '}
-            {hasMore.west && '⬅️ '}
-            {!hasMore.north && !hasMore.south && !hasMore.east && !hasMore.west && '✓ All loaded'}
+          <div style={{ fontSize: "0.8em", marginTop: 4 }}>
+            {hasMore.north && "⬆️ "}
+            {hasMore.south && "⬇️ "}
+            {hasMore.east && "➡️ "}
+            {hasMore.west && "⬅️ "}
+            {!hasMore.north && !hasMore.south && !hasMore.east && !hasMore.west && "✓ All loaded"}
           </div>
         </div>
       </ReactFlowComponent>
@@ -127,8 +127,8 @@ export function ViewportGraphWithCallbackExample({ projectId }: { projectId: str
     <div>
       <div
         style={{
-          background: '#f5f5f5',
-          borderBottom: '1px solid #ddd',
+          background: "#f5f5f5",
+          borderBottom: "1px solid #ddd",
           padding: 16,
         }}
       >
@@ -137,7 +137,7 @@ export function ViewportGraphWithCallbackExample({ projectId }: { projectId: str
         <p>Total nodes: {nodes.length}</p>
         <p>Total edges: {edges.length}</p>
       </div>
-      <div style={{ height: '600px', width: '100%' }}>
+      <div style={{ height: "600px", width: "100%" }}>
         <ReactFlowComponent nodes={nodes} edges={edges} fitView />
       </div>
     </div>
@@ -151,7 +151,7 @@ export function ManualViewportLoadExample({ projectId }: { projectId: string }) 
   const reactFlow = useReactFlow();
   const { nodes, edges, loadViewport, isLoading, hasMore } = useViewportGraph(projectId);
 
-  const handleLoadMore = (direction: 'north' | 'south' | 'east' | 'west') => {
+  const handleLoadMore = (direction: "north" | "south" | "east" | "west") => {
     const viewport = reactFlow.getViewport();
     const rf = reactFlow as unknown as { getSize?: () => { width: number; height: number } };
     const { width, height } = rf.getSize?.() ?? { width: 1200, height: 600 };
@@ -165,22 +165,22 @@ export function ManualViewportLoadExample({ projectId }: { projectId: string }) 
     // Shift viewport in the specified direction
     const shift = 2000; // 2000px shift
     switch (direction) {
-      case 'north': {
+      case "north": {
         minY -= shift;
         maxY -= shift;
         break;
       }
-      case 'south': {
+      case "south": {
         minY += shift;
         maxY += shift;
         break;
       }
-      case 'east': {
+      case "east": {
         minX += shift;
         maxX += shift;
         break;
       }
-      case 'west': {
+      case "west": {
         minX -= shift;
         maxX -= shift;
         break;
@@ -192,10 +192,10 @@ export function ManualViewportLoadExample({ projectId }: { projectId: string }) 
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 8, padding: 16 }}>
+      <div style={{ display: "flex", gap: 8, padding: 16 }}>
         <button
           onClick={() => {
-            handleLoadMore('north');
+            handleLoadMore("north");
           }}
           disabled={!hasMore.north || isLoading}
         >
@@ -203,7 +203,7 @@ export function ManualViewportLoadExample({ projectId }: { projectId: string }) 
         </button>
         <button
           onClick={() => {
-            handleLoadMore('south');
+            handleLoadMore("south");
           }}
           disabled={!hasMore.south || isLoading}
         >
@@ -211,7 +211,7 @@ export function ManualViewportLoadExample({ projectId }: { projectId: string }) 
         </button>
         <button
           onClick={() => {
-            handleLoadMore('east');
+            handleLoadMore("east");
           }}
           disabled={!hasMore.east || isLoading}
         >
@@ -219,14 +219,14 @@ export function ManualViewportLoadExample({ projectId }: { projectId: string }) 
         </button>
         <button
           onClick={() => {
-            handleLoadMore('west');
+            handleLoadMore("west");
           }}
           disabled={!hasMore.west || isLoading}
         >
           Load West ⬅️
         </button>
       </div>
-      <div style={{ height: '600px', width: '100%' }}>
+      <div style={{ height: "600px", width: "100%" }}>
         <ReactFlowComponent nodes={nodes} edges={edges} fitView />
       </div>
     </div>

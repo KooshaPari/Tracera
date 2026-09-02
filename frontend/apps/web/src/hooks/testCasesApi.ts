@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 import type {
   AutomationStatus,
@@ -9,13 +9,13 @@ import type {
   TestCaseStatus,
   TestCaseType,
   TestStep,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
-import { client } from '@/api/client';
+import { client } from "@/api/client";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 const submitReviewResponseSchema = z.object({
   id: z.string(),
@@ -122,9 +122,9 @@ interface TestCaseActivitiesResult {
   activities: TestCaseActivity[];
 }
 
-const DEFAULT_AUTOMATION_STATUS: AutomationStatus = 'not_automated';
-const DEFAULT_PRIORITY: TestCasePriority = 'medium';
-const DEFAULT_TEST_TYPE: TestCaseType = 'functional';
+const DEFAULT_AUTOMATION_STATUS: AutomationStatus = "not_automated";
+const DEFAULT_PRIORITY: TestCasePriority = "medium";
+const DEFAULT_TEST_TYPE: TestCaseType = "functional";
 const DEFAULT_METADATA: Record<string, unknown> = {};
 const DEFAULT_STATS_TOTAL = 0;
 
@@ -133,22 +133,22 @@ async function readJson<TData>(response: Response, schema: z.ZodType<TData>): Pr
   return schema.parse(data);
 }
 
-function getString(value: unknown, fallback = ''): string {
-  if (typeof value === 'string') {
+function getString(value: unknown, fallback = ""): string {
+  if (typeof value === "string") {
     return value;
   }
   return fallback;
 }
 
 function getNumber(value: unknown, fallback = 0): number {
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return value;
   }
   return fallback;
 }
 
 function getRecord(value: unknown): Record<string, unknown> | undefined {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
     return undefined;
   }
   return value as Record<string, unknown>;
@@ -163,7 +163,7 @@ function parseNumberRecord(value: unknown): Record<string, number> {
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
     return false;
   }
   return true;
@@ -204,20 +204,20 @@ function buildCreatePayload(data: CreateTestCaseData): Record<string, unknown> {
   };
 
   const automationStatus = data.automationStatus ?? DEFAULT_AUTOMATION_STATUS;
-  payload['automation_status'] = automationStatus;
+  payload["automation_status"] = automationStatus;
 
   const priority = data.priority ?? DEFAULT_PRIORITY;
-  payload['priority'] = priority;
+  payload["priority"] = priority;
 
   const testType = data.testType ?? DEFAULT_TEST_TYPE;
-  payload['test_type'] = testType;
+  payload["test_type"] = testType;
 
   const metadata = data.metadata ?? DEFAULT_METADATA;
-  payload['metadata'] = metadata;
+  payload["metadata"] = metadata;
 
   const testSteps = buildTestSteps(data.testSteps);
   if (testSteps) {
-    payload['test_steps'] = testSteps;
+    payload["test_steps"] = testSteps;
   }
 
   return payload;
@@ -232,113 +232,113 @@ function applyUpdate(payload: Record<string, unknown>, key: string, value: unkno
 function buildUpdatePayload(data: Partial<CreateTestCaseData>): Record<string, unknown> {
   const payload: Record<string, unknown> = {};
 
-  applyUpdate(payload, 'title', data.title);
-  applyUpdate(payload, 'description', data.description);
-  applyUpdate(payload, 'objective', data.objective);
-  applyUpdate(payload, 'test_type', data.testType);
-  applyUpdate(payload, 'priority', data.priority);
-  applyUpdate(payload, 'category', data.category);
-  applyUpdate(payload, 'tags', data.tags);
-  applyUpdate(payload, 'preconditions', data.preconditions);
-  applyUpdate(payload, 'expected_result', data.expectedResult);
-  applyUpdate(payload, 'postconditions', data.postconditions);
-  applyUpdate(payload, 'test_data', data.testData);
-  applyUpdate(payload, 'automation_status', data.automationStatus);
-  applyUpdate(payload, 'automation_script_path', data.automationScriptPath);
-  applyUpdate(payload, 'automation_framework', data.automationFramework);
-  applyUpdate(payload, 'automation_notes', data.automationNotes);
-  applyUpdate(payload, 'estimated_duration_minutes', data.estimatedDurationMinutes);
-  applyUpdate(payload, 'assigned_to', data.assignedTo);
-  applyUpdate(payload, 'metadata', data.metadata);
+  applyUpdate(payload, "title", data.title);
+  applyUpdate(payload, "description", data.description);
+  applyUpdate(payload, "objective", data.objective);
+  applyUpdate(payload, "test_type", data.testType);
+  applyUpdate(payload, "priority", data.priority);
+  applyUpdate(payload, "category", data.category);
+  applyUpdate(payload, "tags", data.tags);
+  applyUpdate(payload, "preconditions", data.preconditions);
+  applyUpdate(payload, "expected_result", data.expectedResult);
+  applyUpdate(payload, "postconditions", data.postconditions);
+  applyUpdate(payload, "test_data", data.testData);
+  applyUpdate(payload, "automation_status", data.automationStatus);
+  applyUpdate(payload, "automation_script_path", data.automationScriptPath);
+  applyUpdate(payload, "automation_framework", data.automationFramework);
+  applyUpdate(payload, "automation_notes", data.automationNotes);
+  applyUpdate(payload, "estimated_duration_minutes", data.estimatedDurationMinutes);
+  applyUpdate(payload, "assigned_to", data.assignedTo);
+  applyUpdate(payload, "metadata", data.metadata);
 
   const testSteps = buildTestSteps(data.testSteps);
   if (testSteps) {
-    payload['test_steps'] = testSteps;
+    payload["test_steps"] = testSteps;
   }
 
   return payload;
 }
 
 function transformTestCase(data: Record<string, unknown>): TestCase {
-  const rawSteps = Array.isArray(data['test_steps']) ? data['test_steps'] : [];
+  const rawSteps = Array.isArray(data["test_steps"]) ? data["test_steps"] : [];
   const stepRecords = rawSteps.filter((step) => isRecord(step));
   const testSteps = stepRecords.map((step, index) => ({
-    action: getString(step['action']),
-    expectedResult: getString(step['expected_result']),
-    stepNumber: getNumber(step['step_number'], index + 1),
-    testData: getString(step['test_data']),
+    action: getString(step["action"]),
+    expectedResult: getString(step["expected_result"]),
+    stepNumber: getNumber(step["step_number"], index + 1),
+    testData: getString(step["test_data"]),
   }));
 
   return {
-    approvedAt: data['approved_at'],
-    approvedBy: data['approved_by'],
-    assignedTo: data['assigned_to'],
-    automationFramework: data['automation_framework'],
-    automationNotes: data['automation_notes'],
-    automationScriptPath: data['automation_script_path'],
-    automationStatus: data['automation_status'],
-    category: data['category'],
-    createdAt: data['created_at'],
-    createdBy: data['created_by'],
-    deprecatedAt: data['deprecated_at'],
-    deprecationReason: data['deprecation_reason'],
-    description: data['description'],
-    estimatedDurationMinutes: data['estimated_duration_minutes'],
-    expectedResult: data['expected_result'],
-    failCount: data['fail_count'] ?? 0,
-    id: data['id'],
-    lastExecutedAt: data['last_executed_at'],
-    lastExecutionResult: data['last_execution_result'],
-    metadata: data['metadata'],
-    objective: data['objective'],
-    passCount: data['pass_count'] ?? 0,
-    postconditions: data['postconditions'],
-    preconditions: data['preconditions'],
-    priority: data['priority'],
-    projectId: data['project_id'],
-    reviewedAt: data['reviewed_at'],
-    reviewedBy: data['reviewed_by'],
-    status: data['status'],
-    tags: data['tags'],
-    testCaseNumber: data['test_case_number'],
-    testData: data['test_data'],
+    approvedAt: data["approved_at"],
+    approvedBy: data["approved_by"],
+    assignedTo: data["assigned_to"],
+    automationFramework: data["automation_framework"],
+    automationNotes: data["automation_notes"],
+    automationScriptPath: data["automation_script_path"],
+    automationStatus: data["automation_status"],
+    category: data["category"],
+    createdAt: data["created_at"],
+    createdBy: data["created_by"],
+    deprecatedAt: data["deprecated_at"],
+    deprecationReason: data["deprecation_reason"],
+    description: data["description"],
+    estimatedDurationMinutes: data["estimated_duration_minutes"],
+    expectedResult: data["expected_result"],
+    failCount: data["fail_count"] ?? 0,
+    id: data["id"],
+    lastExecutedAt: data["last_executed_at"],
+    lastExecutionResult: data["last_execution_result"],
+    metadata: data["metadata"],
+    objective: data["objective"],
+    passCount: data["pass_count"] ?? 0,
+    postconditions: data["postconditions"],
+    preconditions: data["preconditions"],
+    priority: data["priority"],
+    projectId: data["project_id"],
+    reviewedAt: data["reviewed_at"],
+    reviewedBy: data["reviewed_by"],
+    status: data["status"],
+    tags: data["tags"],
+    testCaseNumber: data["test_case_number"],
+    testData: data["test_data"],
     testSteps,
-    testType: data['test_type'],
-    title: data['title'],
-    totalExecutions: data['total_executions'] ?? 0,
-    updatedAt: data['updated_at'],
-    version: data['version'],
+    testType: data["test_type"],
+    title: data["title"],
+    totalExecutions: data["total_executions"] ?? 0,
+    updatedAt: data["updated_at"],
+    version: data["version"],
   } as TestCase;
 }
 
 async function fetchTestCases(filters: TestCaseFilters): Promise<TestCaseListResult> {
   const params = new URLSearchParams();
-  params.set('project_id', filters.projectId);
+  params.set("project_id", filters.projectId);
   if (filters.status) {
-    params.set('status', filters.status);
+    params.set("status", filters.status);
   }
   if (filters.testType) {
-    params.set('test_type', filters.testType);
+    params.set("test_type", filters.testType);
   }
   if (filters.priority) {
-    params.set('priority', filters.priority);
+    params.set("priority", filters.priority);
   }
   if (filters.automationStatus) {
-    params.set('automation_status', filters.automationStatus);
+    params.set("automation_status", filters.automationStatus);
   }
   if (filters.category) {
-    params.set('category', filters.category);
+    params.set("category", filters.category);
   }
   if (filters.assignedTo) {
-    params.set('assigned_to', filters.assignedTo);
+    params.set("assigned_to", filters.assignedTo);
   }
   if (filters.search) {
-    params.set('search', filters.search);
+    params.set("search", filters.search);
   }
 
   const res = await fetch(`${API_URL}/api/v1/test-cases?${params.toString()}`, {
     headers: {
-      'X-Bulk-Operation': 'true',
+      "X-Bulk-Operation": "true",
       ...getAuthHeaders(),
     },
   });
@@ -359,7 +359,7 @@ async function fetchTestCase(id: string): Promise<TestCase> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch test case');
+    throw new Error("Failed to fetch test case");
   }
   const data = await readJson(res, testCaseResponseSchema);
   return transformTestCase(data);
@@ -371,11 +371,11 @@ async function createTestCase(
   const payload = buildCreatePayload(data);
   const res = await fetch(`${API_URL}/api/v1/test-cases?project_id=${data.projectId}`, {
     body: JSON.stringify(payload),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to create test case');
+    throw new Error("Failed to create test case");
   }
   const result = await readJson(res, createTestCaseResponseSchema);
   return { id: result.id, testCaseNumber: result.test_case_number };
@@ -388,11 +388,11 @@ async function updateTestCase(
   const payload = buildUpdatePayload(data);
   const res = await fetch(`${API_URL}/api/v1/test-cases/${id}`, {
     body: JSON.stringify(payload),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'PUT',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "PUT",
   });
   if (!res.ok) {
-    throw new Error('Failed to update test case');
+    throw new Error("Failed to update test case");
   }
   return readJson(res, updateTestCaseResponseSchema);
 }
@@ -407,8 +407,8 @@ async function transitionTestCaseStatus(
       new_status: newStatus,
       reason,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
     const errorText = await res.text();
@@ -427,11 +427,11 @@ async function submitTestCaseForReview(
       notes,
       reviewer,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to submit for review');
+    throw new Error("Failed to submit for review");
   }
   const result = await readJson(res, submitReviewResponseSchema);
   return {
@@ -449,13 +449,13 @@ async function approveTestCase(
     body: JSON.stringify({
       approved: true,
       notes,
-      reviewer: '',
+      reviewer: "",
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to approve test case');
+    throw new Error("Failed to approve test case");
   }
   const result = await readJson(res, approveTestCaseResponseSchema);
   return {
@@ -475,11 +475,11 @@ async function deprecateTestCase(
       reason,
       replacement_test_case_id: replacementTestCaseId,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to deprecate test case');
+    throw new Error("Failed to deprecate test case");
   }
   return readJson(res, deprecateTestCaseResponseSchema);
 }
@@ -487,10 +487,10 @@ async function deprecateTestCase(
 async function deleteTestCase(id: string): Promise<void> {
   const res = await fetch(`${API_URL}/api/v1/test-cases/${id}`, {
     headers: getAuthHeaders(),
-    method: 'DELETE',
+    method: "DELETE",
   });
   if (!res.ok) {
-    throw new Error('Failed to delete test case');
+    throw new Error("Failed to delete test case");
   }
 }
 
@@ -502,21 +502,21 @@ async function fetchTestCaseActivities(
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch activities');
+    throw new Error("Failed to fetch activities");
   }
   const data = await readJson(res, testCaseActivitiesResponseSchema);
   const activities = data.activities ?? [];
   return {
     activities: activities.map((activity) => ({
-      activityType: getString(activity['activity_type']),
-      createdAt: getString(activity['created_at']),
-      description: getString(activity['description']),
-      fromValue: getString(activity['from_value']),
-      id: getString(activity['id']),
-      metadata: getRecord(activity['metadata']),
-      performedBy: getString(activity['performed_by']),
-      testCaseId: getString(activity['test_case_id']),
-      toValue: getString(activity['to_value']),
+      activityType: getString(activity["activity_type"]),
+      createdAt: getString(activity["created_at"]),
+      description: getString(activity["description"]),
+      fromValue: getString(activity["from_value"]),
+      id: getString(activity["id"]),
+      metadata: getRecord(activity["metadata"]),
+      performedBy: getString(activity["performed_by"]),
+      testCaseId: getString(activity["test_case_id"]),
+      toValue: getString(activity["to_value"]),
     })),
     testCaseId: data.test_case_id,
   };
@@ -527,7 +527,7 @@ async function fetchTestCaseStats(projectId: string): Promise<TestCaseStats> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch test case stats');
+    throw new Error("Failed to fetch test case stats");
   }
   const data = await readJson(res, testCaseStatsSchema);
   return {

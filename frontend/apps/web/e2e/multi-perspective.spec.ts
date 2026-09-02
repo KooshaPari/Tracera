@@ -1,4 +1,4 @@
-import { expect, test } from './global-setup';
+import { expect, test } from "./global-setup";
 
 /**
  * Multi-Perspective Graph View Tests
@@ -14,17 +14,17 @@ import { expect, test } from './global-setup';
  * - Pivot: Navigation-focused view with equivalents
  */
 
-test.describe('Multi-Perspective Display Modes', () => {
+test.describe("Multi-Perspective Display Modes", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/graph');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/graph");
+    await page.waitForLoadState("networkidle");
     await page.waitForTimeout(1000); // Allow graph to render
   });
 
-  test.describe('Display Mode Switching', () => {
-    test('should render default single view mode', async ({ page }) => {
+  test.describe("Display Mode Switching", () => {
+    test("should render default single view mode", async ({ page }) => {
       // Single view should be the default display mode
-      const graphContainer = page.locator('.react-flow');
+      const graphContainer = page.locator(".react-flow");
       await expect(graphContainer).toBeVisible({ timeout: 5000 });
 
       // Check for graph controls that indicate single view
@@ -33,14 +33,14 @@ test.describe('Multi-Perspective Display Modes', () => {
         .filter({ hasText: /view|mode|perspective|display/i });
 
       if (await modeSelector.isVisible({ timeout: 2000 }).catch(() => false)) {
-        console.log('Display mode selector found');
+        console.log("Display mode selector found");
       }
     });
 
-    test('should switch to split view mode', async ({ page }) => {
+    test("should switch to split view mode", async ({ page }) => {
       // Look for view/mode selector
       const modeBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /split|view|mode/i })
         .first();
 
@@ -60,21 +60,21 @@ test.describe('Multi-Perspective Display Modes', () => {
           const containerCount = await splitContainers.count().catch(() => 0);
 
           if (containerCount >= 2) {
-            console.log('Split view activated with two containers');
+            console.log("Split view activated with two containers");
           } else {
-            console.log('Split view mode may use different layout structure');
+            console.log("Split view mode may use different layout structure");
           }
         } else {
-          console.log('Split mode option not found in dropdown');
+          console.log("Split mode option not found in dropdown");
         }
       } else {
-        console.log('View mode selector not found');
+        console.log("View mode selector not found");
       }
     });
 
-    test('should switch to layered view mode', async ({ page }) => {
+    test("should switch to layered view mode", async ({ page }) => {
       const modeBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /view|mode|display/i })
         .first();
 
@@ -88,7 +88,7 @@ test.describe('Multi-Perspective Display Modes', () => {
           await page.waitForTimeout(1000);
 
           // Verify layered view
-          const graphContainer = page.locator('.react-flow');
+          const graphContainer = page.locator(".react-flow");
           await expect(graphContainer).toBeVisible();
 
           // Layered view might show dimension indicators or tabs
@@ -100,19 +100,19 @@ test.describe('Multi-Perspective Display Modes', () => {
           if (tabCount > 0) {
             console.log(`Layered view with ${tabCount} dimension tabs`);
           } else {
-            console.log('Layered view structure identified');
+            console.log("Layered view structure identified");
           }
         } else {
-          console.log('Layered mode option not found');
+          console.log("Layered mode option not found");
         }
       } else {
-        console.log('View mode selector not available');
+        console.log("View mode selector not available");
       }
     });
 
-    test('should switch to unified view mode', async ({ page }) => {
+    test("should switch to unified view mode", async ({ page }) => {
       const modeBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /view|mode|display/i })
         .first();
 
@@ -126,7 +126,7 @@ test.describe('Multi-Perspective Display Modes', () => {
           await page.waitForTimeout(1000);
 
           // Verify unified view is displaying all dimensions
-          const graphContainer = page.locator('.react-flow');
+          const graphContainer = page.locator(".react-flow");
           await expect(graphContainer).toBeVisible();
 
           // Look for color/style coding that indicates multiple dimensions
@@ -138,19 +138,19 @@ test.describe('Multi-Perspective Display Modes', () => {
           if (coloredCount > 0) {
             console.log(`Unified view with ${coloredCount} styled nodes`);
           } else {
-            console.log('Unified view activated');
+            console.log("Unified view activated");
           }
         } else {
-          console.log('Unified mode option not found');
+          console.log("Unified mode option not found");
         }
       } else {
-        console.log('View mode selector not available');
+        console.log("View mode selector not available");
       }
     });
 
-    test('should switch to pivot view mode', async ({ page }) => {
+    test("should switch to pivot view mode", async ({ page }) => {
       const modeBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /view|mode|perspective|pivot/i })
         .first();
 
@@ -164,7 +164,7 @@ test.describe('Multi-Perspective Display Modes', () => {
           await page.waitForTimeout(1000);
 
           // Verify pivot view
-          const graphContainer = page.locator('.react-flow');
+          const graphContainer = page.locator(".react-flow");
           await expect(graphContainer).toBeVisible();
 
           // Pivot view should show navigation controls or equivalent panels
@@ -176,27 +176,27 @@ test.describe('Multi-Perspective Display Modes', () => {
           if (controlCount > 0) {
             console.log(`Pivot view with ${controlCount} navigation controls`);
           } else {
-            console.log('Pivot view mode activated');
+            console.log("Pivot view mode activated");
           }
         } else {
-          console.log('Pivot mode option not found');
+          console.log("Pivot mode option not found");
         }
       } else {
-        console.log('View mode selector not available');
+        console.log("View mode selector not available");
       }
     });
 
-    test('should toggle between view modes without data loss', async ({ page }) => {
+    test("should toggle between view modes without data loss", async ({ page }) => {
       // Switch to split view
       const modeBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /view|mode|display/i })
         .first();
 
       if (await modeBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
         // Count initial nodes
         const initialNodeCount = await page
-          .locator('.react-flow__nodes > div[data-id]')
+          .locator(".react-flow__nodes > div[data-id]")
           .count()
           .catch(() => 0);
 
@@ -221,25 +221,25 @@ test.describe('Multi-Perspective Display Modes', () => {
 
               // Verify nodes are still present
               const finalNodeCount = await page
-                .locator('.react-flow__nodes > div[data-id]')
+                .locator(".react-flow__nodes > div[data-id]")
                 .count()
                 .catch(() => 0);
 
               expect(finalNodeCount).toEqual(initialNodeCount);
-              console.log('Mode switching preserved node data');
+              console.log("Mode switching preserved node data");
             }
           }
         }
       } else {
-        console.log('View mode switching not available');
+        console.log("View mode switching not available");
       }
     });
   });
 
-  test.describe('Split View Perspectives', () => {
-    test('should display two side-by-side graph containers', async ({ page }) => {
+  test.describe("Split View Perspectives", () => {
+    test("should display two side-by-side graph containers", async ({ page }) => {
       const modeBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /view|mode|display/i })
         .first();
 
@@ -260,17 +260,17 @@ test.describe('Multi-Perspective Display Modes', () => {
           const rightVisible = await rightPanel.isVisible({ timeout: 2000 }).catch(() => false);
 
           if (leftVisible && rightVisible) {
-            console.log('Split view with left and right panels');
+            console.log("Split view with left and right panels");
           } else {
-            console.log('Split view may use different panel structure');
+            console.log("Split view may use different panel structure");
           }
         }
       }
     });
 
-    test('should select different perspectives for split panels', async ({ page }) => {
+    test("should select different perspectives for split panels", async ({ page }) => {
       const modeBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /view|mode|display/i })
         .first();
 
@@ -306,18 +306,18 @@ test.describe('Multi-Perspective Display Modes', () => {
               await option.click();
               await page.waitForTimeout(500);
 
-              console.log('Perspective selector changed in split view');
+              console.log("Perspective selector changed in split view");
             }
           } else {
-            console.log('Perspective selectors not found in split view');
+            console.log("Perspective selectors not found in split view");
           }
         }
       }
     });
 
-    test('should synchronize pan/zoom between split panels', async ({ page }) => {
+    test("should synchronize pan/zoom between split panels", async ({ page }) => {
       const modeBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /view|mode|display/i })
         .first();
 
@@ -331,7 +331,7 @@ test.describe('Multi-Perspective Display Modes', () => {
           await page.waitForTimeout(1000);
 
           // Get left and right graph containers
-          const graphs = page.locator('.react-flow');
+          const graphs = page.locator(".react-flow");
           const graphCount = await graphs.count().catch(() => 0);
 
           if (graphCount >= 2) {
@@ -350,7 +350,7 @@ test.describe('Multi-Perspective Display Modes', () => {
 
               await page.waitForTimeout(500);
 
-              console.log('Split view pan/zoom synchronization test');
+              console.log("Split view pan/zoom synchronization test");
             }
           }
         }
@@ -358,10 +358,10 @@ test.describe('Multi-Perspective Display Modes', () => {
     });
   });
 
-  test.describe('Pivot Navigation', () => {
-    test('should navigate between equivalents in pivot view', async ({ page }) => {
+  test.describe("Pivot Navigation", () => {
+    test("should navigate between equivalents in pivot view", async ({ page }) => {
       const modeBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /view|mode|perspective|pivot/i })
         .first();
 
@@ -386,7 +386,7 @@ test.describe('Multi-Perspective Display Modes', () => {
               .catch(() => {});
             await page.waitForTimeout(500);
 
-            console.log('Pivot navigation button clicked');
+            console.log("Pivot navigation button clicked");
           } else {
             // Look for equivalent items in a list
             const equivalentItems = page.locator("[class*='equivalent'], [class*='pivot']");
@@ -401,16 +401,16 @@ test.describe('Multi-Perspective Display Modes', () => {
 
               console.log(`Found ${itemCount} equivalent items in pivot view`);
             } else {
-              console.log('Equivalent navigation not found');
+              console.log("Equivalent navigation not found");
             }
           }
         }
       }
     });
 
-    test('should show equivalence relationships in pivot mode', async ({ page }) => {
+    test("should show equivalence relationships in pivot mode", async ({ page }) => {
       const modeBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /view|mode|perspective|pivot/i })
         .first();
 
@@ -445,8 +445,8 @@ test.describe('Multi-Perspective Display Modes', () => {
     });
   });
 
-  test.describe('Dimension Perspective Selection', () => {
-    test('should show available dimensions for perspective selection', async ({ page }) => {
+  test.describe("Dimension Perspective Selection", () => {
+    test("should show available dimensions for perspective selection", async ({ page }) => {
       // Look for dimension selector/chooser
       const dimensionSelector = page.locator(
         "[class*='dimension'], [class*='perspective'], select, button[aria-label*='dimension']",
@@ -463,10 +463,10 @@ test.describe('Multi-Perspective Display Modes', () => {
       }
     });
 
-    test('should switch dimension perspective and update display', async ({ page }) => {
+    test("should switch dimension perspective and update display", async ({ page }) => {
       // Try to find and interact with dimension selector
       const dimensionBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /dimension|perspective|view/i })
         .first();
 
@@ -484,25 +484,25 @@ test.describe('Multi-Perspective Display Modes', () => {
           await page.waitForTimeout(1000);
 
           // Verify graph updated with new perspective
-          const graphContainer = page.locator('.react-flow');
+          const graphContainer = page.locator(".react-flow");
           await expect(graphContainer).toBeVisible();
 
-          console.log('Dimension perspective updated');
+          console.log("Dimension perspective updated");
         }
       }
     });
   });
 });
 
-test.describe('View Persistence and State Management', () => {
-  test('should remember selected display mode after page refresh', async ({ page }) => {
-    await page.goto('/graph');
-    await page.waitForLoadState('networkidle');
+test.describe("View Persistence and State Management", () => {
+  test("should remember selected display mode after page refresh", async ({ page }) => {
+    await page.goto("/graph");
+    await page.waitForLoadState("networkidle");
     await page.waitForTimeout(500);
 
     // Switch to a display mode
     const modeBtn = page
-      .locator('button')
+      .locator("button")
       .filter({ hasText: /view|mode|display/i })
       .first();
 
@@ -517,37 +517,37 @@ test.describe('View Persistence and State Management', () => {
 
         // Reload page
         await page.reload();
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState("networkidle");
         await page.waitForTimeout(500);
 
         // Check if split mode is still active
-        const graphs = page.locator('.react-flow');
+        const graphs = page.locator(".react-flow");
         const graphCount = await graphs.count().catch(() => 0);
 
         if (graphCount >= 2) {
-          console.log('Display mode preference persisted');
+          console.log("Display mode preference persisted");
         } else {
-          console.log('Display mode not persisted (may be expected)');
+          console.log("Display mode not persisted (may be expected)");
         }
       }
     }
   });
 
-  test('should maintain perspective selections across view changes', async ({ page }) => {
-    await page.goto('/graph');
-    await page.waitForLoadState('networkidle');
+  test("should maintain perspective selections across view changes", async ({ page }) => {
+    await page.goto("/graph");
+    await page.waitForLoadState("networkidle");
     await page.waitForTimeout(500);
 
     // Store initial perspective state
-    const initialGraphContainer = page.locator('.react-flow');
+    const initialGraphContainer = page.locator(".react-flow");
     const initialNodeCount = await initialGraphContainer
-      .evaluate((el) => el.querySelectorAll('[data-id]').length)
+      .evaluate((el) => el.querySelectorAll("[data-id]").length)
       .catch(() => 0);
 
     if (initialNodeCount > 0) {
       // Switch to different display mode and back
       const modeBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /view|mode|display/i })
         .first();
 
@@ -570,11 +570,11 @@ test.describe('View Persistence and State Management', () => {
             await page.waitForTimeout(500);
 
             const finalNodeCount = await initialGraphContainer
-              .evaluate((el) => el.querySelectorAll('[data-id]').length)
+              .evaluate((el) => el.querySelectorAll("[data-id]").length)
               .catch(() => 0);
 
             if (finalNodeCount === initialNodeCount) {
-              console.log('Perspective state maintained');
+              console.log("Perspective state maintained");
             }
           }
         }

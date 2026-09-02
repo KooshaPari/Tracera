@@ -1,12 +1,12 @@
-import type { FC } from 'react';
+import type { FC } from "react";
 
-import { AlertCircle, Download, Loader2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { AlertCircle, Download, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
-import { clientCore } from '@/api/client-core';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { clientCore } from "@/api/client-core";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -14,10 +14,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { logger } from '@/lib/logger';
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { logger } from "@/lib/logger";
 
 const { getAuthHeaders } = clientCore;
 
@@ -25,11 +25,11 @@ const BYTES_PER_KB = 1024;
 const EMBEDDING_BYTES_PER_CONCEPT = 12_800;
 const ESTIMATED_BYTES_PER_ITEM = 500;
 const SIZE_DECIMALS = 2;
-const SIZE_UNITS = ['B', 'KB', 'MB', 'GB'] as const;
+const SIZE_UNITS = ["B", "KB", "MB", "GB"] as const;
 
-type ExportStep = 'options' | 'review';
+type ExportStep = "options" | "review";
 
-type ExportFormat = 'json' | 'yaml';
+type ExportFormat = "json" | "yaml";
 
 export interface ExportWizardProps {
   projectId: string;
@@ -60,7 +60,7 @@ interface ExportStats {
   averageConfidence: number;
 }
 
-const toBoolean = (checked: boolean | 'indeterminate'): boolean => Boolean(checked);
+const toBoolean = (checked: boolean | "indeterminate"): boolean => Boolean(checked);
 
 const formatSize = (bytes: number): string => {
   let size = bytes;
@@ -74,7 +74,7 @@ const formatSize = (bytes: number): string => {
 
 const downloadExportBlob = (blob: Blob, filename: string): void => {
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
   link.download = filename;
   document.body.append(link);
@@ -97,7 +97,7 @@ const fetchExportStats = async (projectId: string): Promise<ExportStats> => {
     headers: getAuthHeaders(),
   });
   if (!response.ok) {
-    throw new Error('Failed to fetch statistics');
+    throw new Error("Failed to fetch statistics");
   }
   return (await response.json()) as ExportStats;
 };
@@ -111,10 +111,10 @@ const runDefaultExport = async (
     headers: getAuthHeaders(),
   });
   if (!response.ok) {
-    throw new Error('Export failed');
+    throw new Error("Export failed");
   }
   const blob = await response.blob();
-  const date = new Date().toISOString().split('T')[0];
+  const date = new Date().toISOString().split("T")[0];
   downloadExportBlob(blob, `equivalence-${projectName}-${date}.${config.format}`);
 };
 
@@ -136,9 +136,9 @@ const useExportStats = (isOpen: boolean, projectId: string) => {
         }
       })
       .catch((fetchError) => {
-        logger.error('Failed to fetch export statistics:', fetchError);
+        logger.error("Failed to fetch export statistics:", fetchError);
         if (isMounted) {
-          setError('Failed to load export statistics');
+          setError("Failed to load export statistics");
         }
       });
     return () => {
@@ -150,7 +150,7 @@ const useExportStats = (isOpen: boolean, projectId: string) => {
 };
 
 const useExportOptions = () => {
-  const [format, setFormat] = useState<ExportFormat>('json');
+  const [format, setFormat] = useState<ExportFormat>("json");
   const [includeEmbeddings, setIncludeEmbeddings] = useState(false);
   const [includeMetadata, setIncludeMetadata] = useState(true);
   const [includeItemInfo, setIncludeItemInfo] = useState(true);
@@ -160,19 +160,19 @@ const useExportOptions = () => {
     setFormat(value as ExportFormat);
   };
 
-  const handleEmbeddingsChange = (checked: boolean | 'indeterminate') => {
+  const handleEmbeddingsChange = (checked: boolean | "indeterminate") => {
     setIncludeEmbeddings(toBoolean(checked));
   };
 
-  const handleItemInfoChange = (checked: boolean | 'indeterminate') => {
+  const handleItemInfoChange = (checked: boolean | "indeterminate") => {
     setIncludeItemInfo(toBoolean(checked));
   };
 
-  const handleMetadataChange = (checked: boolean | 'indeterminate') => {
+  const handleMetadataChange = (checked: boolean | "indeterminate") => {
     setIncludeMetadata(toBoolean(checked));
   };
 
-  const handlePrettyChange = (checked: boolean | 'indeterminate') => {
+  const handlePrettyChange = (checked: boolean | "indeterminate") => {
     setPretty(toBoolean(checked));
   };
 
@@ -191,12 +191,12 @@ const useExportOptions = () => {
 };
 
 const useExportStep = () => {
-  const [step, setStep] = useState<ExportStep>('options');
+  const [step, setStep] = useState<ExportStep>("options");
   const goToOptions = () => {
-    setStep('options');
+    setStep("options");
   };
   const goToReview = () => {
-    setStep('review');
+    setStep("review");
   };
   return { goToOptions, goToReview, step };
 };
@@ -204,7 +204,7 @@ const useExportStep = () => {
 const useEstimatedSize = (stats: ExportStats | null, includeEmbeddings: boolean): string =>
   useMemo(() => {
     if (!stats) {
-      return 'Calculating...';
+      return "Calculating...";
     }
     const baseSize = (stats.concepts + stats.projections + stats.links) * ESTIMATED_BYTES_PER_ITEM;
     const embeddingsSize = includeEmbeddings ? stats.concepts * EMBEDDING_BYTES_PER_CONCEPT : 0;
@@ -214,7 +214,7 @@ const useEstimatedSize = (stats: ExportStats | null, includeEmbeddings: boolean)
 const useExportActions = (params: {
   config: ExportConfig;
   onClose: () => void;
-  onExport: ExportWizardProps['onExport'];
+  onExport: ExportWizardProps["onExport"];
   projectId: string;
   projectName: string;
   resetStep: () => void;
@@ -239,7 +239,7 @@ const useExportActions = (params: {
       }
       params.onClose();
     } catch (exportError) {
-      params.setError(exportError instanceof Error ? exportError.message : 'Export failed');
+      params.setError(exportError instanceof Error ? exportError.message : "Export failed");
     } finally {
       setIsLoading(false);
     }
@@ -257,7 +257,7 @@ interface CheckboxRowProps {
   id: string;
   label: string;
   checked: boolean;
-  onChange: (checked: boolean | 'indeterminate') => void;
+  onChange: (checked: boolean | "indeterminate") => void;
 }
 
 interface OptionsSectionProps {
@@ -265,10 +265,10 @@ interface OptionsSectionProps {
   includeItemInfo: boolean;
   includeMetadata: boolean;
   pretty: boolean;
-  onEmbeddingsChange: (checked: boolean | 'indeterminate') => void;
-  onItemInfoChange: (checked: boolean | 'indeterminate') => void;
-  onMetadataChange: (checked: boolean | 'indeterminate') => void;
-  onPrettyChange: (checked: boolean | 'indeterminate') => void;
+  onEmbeddingsChange: (checked: boolean | "indeterminate") => void;
+  onItemInfoChange: (checked: boolean | "indeterminate") => void;
+  onMetadataChange: (checked: boolean | "indeterminate") => void;
+  onPrettyChange: (checked: boolean | "indeterminate") => void;
 }
 
 interface OptionsStepProps {
@@ -281,10 +281,10 @@ interface OptionsStepProps {
   pretty: boolean;
   estimatedSize: string;
   onFormatChange: (value: string) => void;
-  onEmbeddingsChange: (checked: boolean | 'indeterminate') => void;
-  onItemInfoChange: (checked: boolean | 'indeterminate') => void;
-  onMetadataChange: (checked: boolean | 'indeterminate') => void;
-  onPrettyChange: (checked: boolean | 'indeterminate') => void;
+  onEmbeddingsChange: (checked: boolean | "indeterminate") => void;
+  onItemInfoChange: (checked: boolean | "indeterminate") => void;
+  onMetadataChange: (checked: boolean | "indeterminate") => void;
+  onPrettyChange: (checked: boolean | "indeterminate") => void;
 }
 
 interface ReviewOptionsListProps {
@@ -332,11 +332,11 @@ interface ExportOptionsState {
   includeItemInfo: boolean;
   includeMetadata: boolean;
   pretty: boolean;
-  handleEmbeddingsChange: (checked: boolean | 'indeterminate') => void;
+  handleEmbeddingsChange: (checked: boolean | "indeterminate") => void;
   handleFormatChange: (value: string) => void;
-  handleItemInfoChange: (checked: boolean | 'indeterminate') => void;
-  handleMetadataChange: (checked: boolean | 'indeterminate') => void;
-  handlePrettyChange: (checked: boolean | 'indeterminate') => void;
+  handleItemInfoChange: (checked: boolean | "indeterminate") => void;
+  handleMetadataChange: (checked: boolean | "indeterminate") => void;
+  handlePrettyChange: (checked: boolean | "indeterminate") => void;
 }
 
 const buildBodyProps = (params: {
@@ -390,36 +390,36 @@ const buildFooterProps = (params: {
 
 const SummaryItem: FC<{ label: string; value: number }> = ({ label, value }) => (
   <div>
-    <div className='font-medium'>{value}</div>
-    <div className='text-xs'>{label}</div>
+    <div className="font-medium">{value}</div>
+    <div className="text-xs">{label}</div>
   </div>
 );
 
 const ExportSummary: FC<{ stats: ExportStats }> = ({ stats }) => (
-  <div className='rounded-lg border border-blue-200 bg-blue-50 p-4'>
-    <h3 className='mb-2 font-semibold text-blue-900'>Export Summary</h3>
-    <div className='grid grid-cols-2 gap-4 text-sm text-blue-800'>
-      <SummaryItem label='Canonical Concepts' value={stats.concepts} />
-      <SummaryItem label='Projections' value={stats.projections} />
-      <SummaryItem label='Equivalence Links' value={stats.links} />
-      <SummaryItem label='Perspectives' value={stats.perspectives} />
+  <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+    <h3 className="mb-2 font-semibold text-blue-900">Export Summary</h3>
+    <div className="grid grid-cols-2 gap-4 text-sm text-blue-800">
+      <SummaryItem label="Canonical Concepts" value={stats.concepts} />
+      <SummaryItem label="Projections" value={stats.projections} />
+      <SummaryItem label="Equivalence Links" value={stats.links} />
+      <SummaryItem label="Perspectives" value={stats.perspectives} />
     </div>
   </div>
 );
 
 const FormatSelector: FC<FormatSelectorProps> = ({ format, onChange }) => (
   <div>
-    <Label className='mb-3 block text-base font-semibold'>Format</Label>
+    <Label className="mb-3 block text-base font-semibold">Format</Label>
     <RadioGroup value={format} onValueChange={onChange}>
-      <div className='mb-2 flex items-center space-x-2'>
-        <RadioGroupItem value='json' id='json' />
-        <Label htmlFor='json' className='cursor-pointer font-normal'>
+      <div className="mb-2 flex items-center space-x-2">
+        <RadioGroupItem value="json" id="json" />
+        <Label htmlFor="json" className="cursor-pointer font-normal">
           JSON - Universal format with detailed structure
         </Label>
       </div>
-      <div className='flex items-center space-x-2'>
-        <RadioGroupItem value='yaml' id='yaml' />
-        <Label htmlFor='yaml' className='cursor-pointer font-normal'>
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem value="yaml" id="yaml" />
+        <Label htmlFor="yaml" className="cursor-pointer font-normal">
           YAML - Human-readable format
         </Label>
       </div>
@@ -428,7 +428,7 @@ const FormatSelector: FC<FormatSelectorProps> = ({ format, onChange }) => (
 );
 
 const CheckboxRow: FC<CheckboxRowProps> = ({ id, label, checked, onChange }) => (
-  <div className='flex items-center space-x-2'>
+  <div className="flex items-center space-x-2">
     <Checkbox
       id={id}
       checked={checked}
@@ -436,7 +436,7 @@ const CheckboxRow: FC<CheckboxRowProps> = ({ id, label, checked, onChange }) => 
         onChange(e.target.checked);
       }}
     />
-    <Label htmlFor={id} className='cursor-pointer font-normal'>
+    <Label htmlFor={id} className="cursor-pointer font-normal">
       {label}
     </Label>
   </div>
@@ -452,30 +452,30 @@ const OptionsSection: FC<OptionsSectionProps> = ({
   onPrettyChange,
   pretty,
 }) => (
-  <div className='space-y-3'>
-    <Label className='text-base font-semibold'>Options</Label>
-    <div className='space-y-2'>
+  <div className="space-y-3">
+    <Label className="text-base font-semibold">Options</Label>
+    <div className="space-y-2">
       <CheckboxRow
-        id='embeddings'
-        label='Include embeddings (larger file size)'
+        id="embeddings"
+        label="Include embeddings (larger file size)"
         checked={includeEmbeddings}
         onChange={onEmbeddingsChange}
       />
       <CheckboxRow
-        id='metadata'
-        label='Include metadata and evidence'
+        id="metadata"
+        label="Include metadata and evidence"
         checked={includeMetadata}
         onChange={onMetadataChange}
       />
       <CheckboxRow
-        id='iteminfo'
-        label='Include item information (titles, types)'
+        id="iteminfo"
+        label="Include item information (titles, types)"
         checked={includeItemInfo}
         onChange={onItemInfoChange}
       />
       <CheckboxRow
-        id='pretty'
-        label='Pretty print (larger but human-readable)'
+        id="pretty"
+        label="Pretty print (larger but human-readable)"
         checked={pretty}
         onChange={onPrettyChange}
       />
@@ -484,10 +484,10 @@ const OptionsSection: FC<OptionsSectionProps> = ({
 );
 
 const EstimatedSizeRow: FC<{ size: string }> = ({ size }) => (
-  <div className='border-t pt-2 pb-2'>
-    <div className='flex items-center justify-between'>
-      <span className='text-sm text-gray-600'>Estimated file size:</span>
-      <span className='font-semibold'>{size}</span>
+  <div className="border-t pt-2 pb-2">
+    <div className="flex items-center justify-between">
+      <span className="text-sm text-gray-600">Estimated file size:</span>
+      <span className="font-semibold">{size}</span>
     </div>
   </div>
 );
@@ -507,15 +507,15 @@ const OptionsStep: FC<OptionsStepProps> = ({
   onMetadataChange,
   onPrettyChange,
 }) => (
-  <div className='space-y-6'>
+  <div className="space-y-6">
     {error && (
-      <Alert variant='destructive'>
-        <AlertCircle className='h-4 w-4' />
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
         <AlertDescription>{error}</AlertDescription>
       </Alert>
     )}
     {stats && <ExportSummary stats={stats} />}
-    <div className='space-y-4'>
+    <div className="space-y-4">
       <FormatSelector format={format} onChange={onFormatChange} />
       <OptionsSection
         includeEmbeddings={includeEmbeddings}
@@ -538,7 +538,7 @@ const ReviewOptionsList: FC<ReviewOptionsListProps> = ({
   includeMetadata,
   pretty,
 }) => (
-  <ul className='list-inside list-disc space-y-1 text-sm'>
+  <ul className="list-inside list-disc space-y-1 text-sm">
     {includeEmbeddings && <li>Embeddings</li>}
     {includeMetadata && <li>Metadata & Evidence</li>}
     {includeItemInfo && <li>Item Information</li>}
@@ -554,20 +554,20 @@ const ReviewStep: FC<ReviewStepProps> = ({
   includeMetadata,
   pretty,
 }) => (
-  <div className='space-y-4'>
-    <div className='space-y-3 rounded-lg bg-gray-50 p-4'>
-      <div className='grid grid-cols-2 gap-4 text-sm'>
+  <div className="space-y-4">
+    <div className="space-y-3 rounded-lg bg-gray-50 p-4">
+      <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
-          <span className='text-gray-600'>Format:</span>
-          <span className='ml-2 font-semibold'>{format.toUpperCase()}</span>
+          <span className="text-gray-600">Format:</span>
+          <span className="ml-2 font-semibold">{format.toUpperCase()}</span>
         </div>
         <div>
-          <span className='text-gray-600'>File size:</span>
-          <span className='ml-2 font-semibold'>{estimatedSize}</span>
+          <span className="text-gray-600">File size:</span>
+          <span className="ml-2 font-semibold">{estimatedSize}</span>
         </div>
       </div>
-      <div className='border-t pt-3'>
-        <div className='mb-2 text-sm text-gray-600'>Options enabled:</div>
+      <div className="border-t pt-3">
+        <div className="mb-2 text-sm text-gray-600">Options enabled:</div>
         <ReviewOptionsList
           includeEmbeddings={includeEmbeddings}
           includeItemInfo={includeItemInfo}
@@ -577,7 +577,7 @@ const ReviewStep: FC<ReviewStepProps> = ({
       </div>
     </div>
     <Alert>
-      <AlertCircle className='h-4 w-4' />
+      <AlertCircle className="h-4 w-4" />
       <AlertDescription>
         The export file will contain all equivalence data for this project. You can import it later
         into another project or keep it as a backup.
@@ -595,9 +595,9 @@ const ExportFooter: FC<ExportFooterProps> = ({
   onNext,
 }) => (
   <DialogFooter>
-    {step === 'options' ? (
+    {step === "options" ? (
       <>
-        <Button variant='outline' onClick={onClose}>
+        <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>
         <Button onClick={onNext} disabled={isLoading}>
@@ -606,18 +606,18 @@ const ExportFooter: FC<ExportFooterProps> = ({
       </>
     ) : (
       <>
-        <Button variant='outline' onClick={onBack} disabled={isLoading}>
+        <Button variant="outline" onClick={onBack} disabled={isLoading}>
           Back
         </Button>
-        <Button onClick={onExport} disabled={isLoading} className='gap-2'>
+        <Button onClick={onExport} disabled={isLoading} className="gap-2">
           {isLoading ? (
             <>
-              <Loader2 className='h-4 w-4 animate-spin' />
+              <Loader2 className="h-4 w-4 animate-spin" />
               Exporting...
             </>
           ) : (
             <>
-              <Download className='h-4 w-4' />
+              <Download className="h-4 w-4" />
               Export
             </>
           )}
@@ -628,7 +628,7 @@ const ExportFooter: FC<ExportFooterProps> = ({
 );
 
 const ExportWizardBody: FC<ExportWizardBodyProps> = ({ optionsProps, reviewProps, step }) =>
-  step === 'options' ? <OptionsStep {...optionsProps} /> : <ReviewStep {...reviewProps} />;
+  step === "options" ? <OptionsStep {...optionsProps} /> : <ReviewStep {...reviewProps} />;
 
 const ExportWizardLayout: FC<ExportWizardLayoutProps> = ({
   bodyProps,
@@ -638,7 +638,7 @@ const ExportWizardLayout: FC<ExportWizardLayoutProps> = ({
   projectName,
 }) => (
   <Dialog open={isOpen} onOpenChange={onClose}>
-    <DialogContent className='max-w-2xl'>
+    <DialogContent className="max-w-2xl">
       <DialogHeader>
         <DialogTitle>Export Equivalence Data</DialogTitle>
         <DialogDescription>

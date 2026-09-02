@@ -9,8 +9,8 @@
  * Usage: bun run scripts/manual-verification-test.ts
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
 interface TestResult {
   testName: string;
@@ -45,7 +45,7 @@ class VerificationTester {
     // Load test data
     const testData = this.loadTestData(10_000);
     if (!testData) {
-      throw new Error('Failed to load test data. Run generate-test-graph.ts first.');
+      throw new Error("Failed to load test data. Run generate-test-graph.ts first.");
     }
 
     // Performance Tests
@@ -68,13 +68,13 @@ class VerificationTester {
   }
 
   private loadTestData(nodeCount: number): any {
-    const testDataPath = path.join(process.cwd(), 'test-data', `test-graph-${nodeCount}.json`);
+    const testDataPath = path.join(process.cwd(), "test-data", `test-graph-${nodeCount}.json`);
 
     if (!fs.existsSync(testDataPath)) {
       return null;
     }
 
-    const data = fs.readFileSync(testDataPath, 'utf8');
+    const data = fs.readFileSync(testDataPath, "utf8");
     return JSON.parse(data);
   }
 
@@ -114,13 +114,13 @@ class VerificationTester {
       notes: `Simulated ${frameCount} frames in ${Math.round(actualDuration)}ms`,
       passed,
       result: `${Math.round(fps)} FPS`,
-      target: '≥60 FPS',
-      testName: 'FPS @ 10k nodes',
+      target: "≥60 FPS",
+      testName: "FPS @ 10k nodes",
     });
 
     if (!passed) {
       this.recommendations.push(
-        'Consider optimizing viewport culling algorithm or using Web Workers',
+        "Consider optimizing viewport culling algorithm or using Web Workers",
       );
     }
   }
@@ -160,13 +160,13 @@ class VerificationTester {
       notes: `Average over ${iterations} queries`,
       passed,
       result: `${avgQueryTime.toFixed(2)}ms`,
-      target: '<5ms',
-      testName: 'R-tree query time',
+      target: "<5ms",
+      testName: "R-tree query time",
     });
 
     if (!passed) {
       this.recommendations.push(
-        'Implement spatial indexing with RBush for better query performance',
+        "Implement spatial indexing with RBush for better query performance",
       );
     }
   }
@@ -180,15 +180,15 @@ class VerificationTester {
     const passed = totalMemory < 600;
 
     this.results.push({
-      notes: 'Estimated based on node/edge data structures',
+      notes: "Estimated based on node/edge data structures",
       passed,
       result: `~${Math.round(totalMemory)}MB`,
-      target: '<600MB',
-      testName: 'Memory usage @ 10k nodes',
+      target: "<600MB",
+      testName: "Memory usage @ 10k nodes",
     });
 
     if (!passed) {
-      this.recommendations.push('Consider using memory pooling or data compression');
+      this.recommendations.push("Consider using memory pooling or data compression");
     }
   }
 
@@ -200,11 +200,11 @@ class VerificationTester {
     for (const zoom of zoomLevels) {
       let lod: string;
       if (zoom >= 0.8) {
-        lod = 'high (RichNodePill)';
+        lod = "high (RichNodePill)";
       } else if (zoom >= 0.5) {
-        lod = 'medium (MediumPill)';
+        lod = "medium (MediumPill)";
       } else {
-        lod = 'low (SimplePill)';
+        lod = "low (SimplePill)";
       }
 
       lodTransitions.push(`zoom ${zoom}: ${lod}`);
@@ -213,11 +213,11 @@ class VerificationTester {
     const passed = true; // Visual test - assuming implementation is correct
 
     this.results.push({
-      notes: lodTransitions.join('; '),
+      notes: lodTransitions.join("; "),
       passed,
-      result: 'Smooth',
-      target: 'Smooth transitions',
-      testName: 'Node LOD transitions',
+      result: "Smooth",
+      target: "Smooth transitions",
+      testName: "Node LOD transitions",
     });
   }
 
@@ -231,9 +231,9 @@ class VerificationTester {
     this.results.push({
       notes: `At zoom ${testZoom}, selected node shows RichNodePill`,
       passed,
-      result: 'Full detail shown',
-      target: 'Full detail on selection',
-      testName: 'Selected node full detail',
+      result: "Full detail shown",
+      target: "Full detail on selection",
+      testName: "Selected node full detail",
     });
   }
 
@@ -245,11 +245,11 @@ class VerificationTester {
     for (const distance of edgeDistances) {
       let detail: string;
       if (distance < 500) {
-        detail = 'bezier curve with label';
+        detail = "bezier curve with label";
       } else if (distance < 1500) {
-        detail = 'simple straight line';
+        detail = "simple straight line";
       } else {
-        detail = 'hidden (opacity 0)';
+        detail = "hidden (opacity 0)";
       }
 
       edgeLOD.push(`${distance}px: ${detail}`);
@@ -258,11 +258,11 @@ class VerificationTester {
     const passed = true;
 
     this.results.push({
-      notes: edgeLOD.join('; '),
+      notes: edgeLOD.join("; "),
       passed,
-      result: 'Smooth',
-      target: 'Progressive simplification',
-      testName: 'Edge LOD transitions',
+      result: "Smooth",
+      target: "Progressive simplification",
+      testName: "Edge LOD transitions",
     });
   }
 
@@ -276,17 +276,17 @@ class VerificationTester {
       const estimatedFPS = 60 * Math.max(0.3, 1 - (size - 5000) / 20_000);
       const usable = estimatedFPS >= 30;
 
-      results.push(`${size}: ${Math.round(estimatedFPS)} FPS (${usable ? 'usable' : 'degraded'})`);
+      results.push(`${size}: ${Math.round(estimatedFPS)} FPS (${usable ? "usable" : "degraded"})`);
     }
 
     const passed = true; // 10k is usable, 20k degraded as expected
 
     this.results.push({
-      notes: results.join('; '),
+      notes: results.join("; "),
       passed,
-      result: 'As expected',
-      target: 'Usable at 10k, degraded at 20k',
-      testName: 'Maximum node count',
+      result: "As expected",
+      target: "Usable at 10k, degraded at 20k",
+      testName: "Maximum node count",
     });
   }
 
@@ -322,13 +322,13 @@ class VerificationTester {
       notes: `${panIterations} pan operations in ${Math.round(panTime)}ms`,
       passed,
       result: `${avgPanTime.toFixed(2)}ms avg`,
-      target: 'No frame drops',
-      testName: 'Pan performance',
+      target: "No frame drops",
+      testName: "Pan performance",
     });
 
     if (!passed) {
       this.recommendations.push(
-        'Optimize viewport culling or implement debouncing for pan operations',
+        "Optimize viewport culling or implement debouncing for pan operations",
       );
     }
   }
@@ -342,11 +342,11 @@ class VerificationTester {
       // Simulate LOD level calculation
       let _lodLevel: string;
       if (zoom >= 0.8) {
-        _lodLevel = 'high';
+        _lodLevel = "high";
       } else if (zoom >= 0.5) {
-        _lodLevel = 'medium';
+        _lodLevel = "medium";
       } else {
-        _lodLevel = 'low';
+        _lodLevel = "low";
       }
 
       // Simulate node filtering
@@ -374,12 +374,12 @@ class VerificationTester {
       notes: `${zoomLevels.length} zoom levels tested`,
       passed,
       result: `${avgZoomTime.toFixed(2)}ms avg`,
-      target: 'Smooth transitions',
-      testName: 'Zoom performance',
+      target: "Smooth transitions",
+      testName: "Zoom performance",
     });
 
     if (!passed) {
-      this.recommendations.push('Add animation frame throttling for zoom operations');
+      this.recommendations.push("Add animation frame throttling for zoom operations");
     }
   }
 
@@ -414,7 +414,7 @@ async function main() {
   const reportContent = generateMarkdownReport(report);
 
   // Write report to file
-  const reportPath = path.join(process.cwd(), 'PERFORMANCE_VERIFICATION_RESULTS.md');
+  const reportPath = path.join(process.cwd(), "PERFORMANCE_VERIFICATION_RESULTS.md");
   fs.writeFileSync(reportPath, reportContent);
 
   if (report.summary.failed > 0) {
@@ -438,7 +438,7 @@ function generateMarkdownReport(report: VerificationReport): string {
 `;
 
   for (const test of tests) {
-    const statusIcon = test.passed ? '✓' : '✗';
+    const statusIcon = test.passed ? "✓" : "✗";
     markdown += `| ${test.testName} | ${test.target} | ${test.result} | ${statusIcon} |\n`;
   }
 
@@ -460,8 +460,8 @@ function generateMarkdownReport(report: VerificationReport): string {
 
 - **Target:** ${test.target}
 - **Result:** ${test.result}
-- **Status:** ${test.passed ? '✓ PASSED' : '✗ FAILED'}
-${test.notes ? `- **Notes:** ${test.notes}` : ''}
+- **Status:** ${test.passed ? "✓ PASSED" : "✗ FAILED"}
+${test.notes ? `- **Notes:** ${test.notes}` : ""}
 
 `;
   }
@@ -469,7 +469,7 @@ ${test.notes ? `- **Notes:** ${test.notes}` : ''}
   markdown += `## Performance Metrics
 
 - **Baseline (500 nodes):** ~60 FPS
-- **Target (10,000 nodes):** ${tests.find((t) => t.testName === 'FPS @ 10k nodes')?.result ?? 'N/A'}
+- **Target (10,000 nodes):** ${tests.find((t) => t.testName === "FPS @ 10k nodes")?.result ?? "N/A"}
 - **Maximum tested:** 20,000 nodes
 
 ## Recommendations
@@ -496,15 +496,15 @@ ${test.notes ? `- **Notes:** ${test.notes}` : ''}
 
 ## Verification Checklist
 
-- [${tests.find((t) => t.testName === 'FPS @ 10k nodes')?.passed ? 'x' : ' '}] FPS @ 10k nodes ≥60 FPS
-- [${tests.find((t) => t.testName === 'R-tree query time')?.passed ? 'x' : ' '}] R-tree query time <5ms
-- [${tests.find((t) => t.testName === 'Memory usage @ 10k nodes')?.passed ? 'x' : ' '}] Memory usage <600MB
-- [${tests.find((t) => t.testName === 'Node LOD transitions')?.passed ? 'x' : ' '}] Node LOD transitions smooth
-- [${tests.find((t) => t.testName === 'Selected node full detail')?.passed ? 'x' : ' '}] Selected node shows full detail
-- [${tests.find((t) => t.testName === 'Edge LOD transitions')?.passed ? 'x' : ' '}] Edge LOD transitions smooth
-- [${tests.find((t) => t.testName === 'Maximum node count')?.passed ? 'x' : ' '}] Usable at 10k nodes
-- [${tests.find((t) => t.testName === 'Pan performance')?.passed ? 'x' : ' '}] Pan performance acceptable
-- [${tests.find((t) => t.testName === 'Zoom performance')?.passed ? 'x' : ' '}] Zoom performance smooth
+- [${tests.find((t) => t.testName === "FPS @ 10k nodes")?.passed ? "x" : " "}] FPS @ 10k nodes ≥60 FPS
+- [${tests.find((t) => t.testName === "R-tree query time")?.passed ? "x" : " "}] R-tree query time <5ms
+- [${tests.find((t) => t.testName === "Memory usage @ 10k nodes")?.passed ? "x" : " "}] Memory usage <600MB
+- [${tests.find((t) => t.testName === "Node LOD transitions")?.passed ? "x" : " "}] Node LOD transitions smooth
+- [${tests.find((t) => t.testName === "Selected node full detail")?.passed ? "x" : " "}] Selected node shows full detail
+- [${tests.find((t) => t.testName === "Edge LOD transitions")?.passed ? "x" : " "}] Edge LOD transitions smooth
+- [${tests.find((t) => t.testName === "Maximum node count")?.passed ? "x" : " "}] Usable at 10k nodes
+- [${tests.find((t) => t.testName === "Pan performance")?.passed ? "x" : " "}] Pan performance acceptable
+- [${tests.find((t) => t.testName === "Zoom performance")?.passed ? "x" : " "}] Zoom performance smooth
 
 ---
 

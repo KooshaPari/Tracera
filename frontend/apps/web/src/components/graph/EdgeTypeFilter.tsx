@@ -3,14 +3,14 @@
  * Allows users to selectively show/hide edge types for managing visual complexity
  */
 
-import { Filter } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { Filter } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 
-import type { LinkType } from '@tracertm/types';
+import type { LinkType } from "@tracertm/types";
 
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
-import { Card } from '@tracertm/ui/components/Card';
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -18,9 +18,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@tracertm/ui/components/DropdownMenu';
+} from "@tracertm/ui/components/DropdownMenu";
 
-import { LINK_STYLES } from './types';
+import { LINK_STYLES } from "./types";
 
 export interface EdgeTypeFilterProps {
   availableTypes: LinkType[];
@@ -63,22 +63,22 @@ export function EdgeTypeFilter({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <span>
-            <Button variant='outline' size='sm' className='h-8 gap-1'>
-              <Filter className='h-3 w-3' />
-              <span className='text-xs'>
+            <Button variant="outline" size="sm" className="h-8 gap-1">
+              <Filter className="h-3 w-3" />
+              <span className="text-xs">
                 Types ({activeCount}/{totalCount})
               </span>
             </Button>
           </span>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='start' className='w-64'>
-          <DropdownMenuLabel className='flex items-center justify-between'>
+        <DropdownMenuContent align="start" className="w-64">
+          <DropdownMenuLabel className="flex items-center justify-between">
             <span>Edge Types</span>
-            <div className='flex gap-1'>
-              <Button variant='ghost' size='sm' onClick={onEnableAll} className='h-6 px-2 text-xs'>
+            <div className="flex gap-1">
+              <Button variant="ghost" size="sm" onClick={onEnableAll} className="h-6 px-2 text-xs">
                 All
               </Button>
-              <Button variant='ghost' size='sm' onClick={onDisableAll} className='h-6 px-2 text-xs'>
+              <Button variant="ghost" size="sm" onClick={onDisableAll} className="h-6 px-2 text-xs">
                 None
               </Button>
             </div>
@@ -87,7 +87,7 @@ export function EdgeTypeFilter({
           {sortedTypes.map((type) => {
             const style = LINK_STYLES[type] ?? {
               arrow: false,
-              color: '#64748b',
+              color: "#64748b",
               dashed: false,
             };
             const count = edgeStats?.[type] ?? 0;
@@ -100,20 +100,20 @@ export function EdgeTypeFilter({
                 onCheckedChange={() => {
                   onToggleType(type);
                 }}
-                className='flex items-center justify-between'
+                className="flex items-center justify-between"
               >
-                <div className='flex items-center gap-2'>
+                <div className="flex items-center gap-2">
                   <div
-                    className='h-2 w-4 rounded'
+                    className="h-2 w-4 rounded"
                     style={{
                       backgroundColor: style.color,
                       opacity: isEnabled ? 1 : 0.3,
                     }}
                   />
-                  <span className='text-xs capitalize'>{type.replaceAll('_', ' ')}</span>
+                  <span className="text-xs capitalize">{type.replaceAll("_", " ")}</span>
                 </div>
                 {edgeStats && (
-                  <Badge variant='secondary' className='ml-2 h-4 px-1 text-[10px]'>
+                  <Badge variant="secondary" className="ml-2 h-4 px-1 text-[10px]">
                     {count}
                   </Badge>
                 )}
@@ -126,30 +126,30 @@ export function EdgeTypeFilter({
   }
 
   return (
-    <Card className='p-3'>
-      <div className='mb-3 flex items-center justify-between'>
-        <div className='flex items-center gap-2'>
-          <Filter className='text-muted-foreground h-4 w-4' />
-          <span className='text-sm font-medium'>Edge Types</span>
-          <Badge variant='secondary' className='text-xs'>
-            {activeCount === 0 ? 'All' : `${activeCount}/${totalCount}`}
+    <Card className="p-3">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Filter className="text-muted-foreground h-4 w-4" />
+          <span className="text-sm font-medium">Edge Types</span>
+          <Badge variant="secondary" className="text-xs">
+            {activeCount === 0 ? "All" : `${activeCount}/${totalCount}`}
           </Badge>
         </div>
-        <div className='flex gap-1'>
-          <Button variant='ghost' size='sm' onClick={onEnableAll} className='h-6 px-2 text-xs'>
+        <div className="flex gap-1">
+          <Button variant="ghost" size="sm" onClick={onEnableAll} className="h-6 px-2 text-xs">
             All
           </Button>
-          <Button variant='ghost' size='sm' onClick={onDisableAll} className='h-6 px-2 text-xs'>
+          <Button variant="ghost" size="sm" onClick={onDisableAll} className="h-6 px-2 text-xs">
             None
           </Button>
         </div>
       </div>
 
-      <div className='space-y-1.5'>
+      <div className="space-y-1.5">
         {sortedTypes.map((type) => {
           const style = LINK_STYLES[type] ?? {
             arrow: false,
-            color: '#64748b',
+            color: "#64748b",
             dashed: false,
           };
           const count = edgeStats?.[type] ?? 0;
@@ -162,26 +162,26 @@ export function EdgeTypeFilter({
                 onToggleType(type);
               }}
               className={`hover:bg-accent flex w-full items-center justify-between rounded-md p-2 transition-colors ${
-                isEnabled ? 'bg-accent/50' : 'opacity-50'
+                isEnabled ? "bg-accent/50" : "opacity-50"
               }`}
             >
-              <div className='flex items-center gap-2'>
+              <div className="flex items-center gap-2">
                 <div
-                  className='h-3 w-6 rounded'
+                  className="h-3 w-6 rounded"
                   style={{
                     backgroundColor: style.color,
                     opacity: isEnabled ? 1 : 0.5,
                   }}
                 />
-                <span className='text-sm capitalize'>{type.replaceAll('_', ' ')}</span>
+                <span className="text-sm capitalize">{type.replaceAll("_", " ")}</span>
               </div>
-              <div className='flex items-center gap-2'>
+              <div className="flex items-center gap-2">
                 {edgeStats && (
-                  <Badge variant='secondary' className='text-xs'>
+                  <Badge variant="secondary" className="text-xs">
                     {count}
                   </Badge>
                 )}
-                {isEnabled && <div className='bg-primary h-2 w-2 rounded-full' />}
+                {isEnabled && <div className="bg-primary h-2 w-2 rounded-full" />}
               </div>
             </button>
           );

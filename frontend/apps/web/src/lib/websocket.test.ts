@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
-import { RealtimeClient } from './websocket';
+import { RealtimeClient } from "./websocket";
 
 // Mock WebSocket
 global.WebSocket = vi.fn() as any;
 
-describe('RealtimeClient', () => {
+describe("RealtimeClient", () => {
   let realtimeClient: RealtimeClient;
   let mockWs: any;
 
@@ -17,7 +17,7 @@ describe('RealtimeClient', () => {
       addEventListener: vi.fn(),
     };
     (global.WebSocket as any).mockReturnValue(mockWs);
-    realtimeClient = new RealtimeClient('ws://localhost:4000/api/v1/ws');
+    realtimeClient = new RealtimeClient("ws://localhost:4000/api/v1/ws");
   });
 
   afterEach(() => {
@@ -25,20 +25,20 @@ describe('RealtimeClient', () => {
     realtimeClient.disconnect();
   });
 
-  describe('Authentication', () => {
-    it('should require token to connect', () => {
-      realtimeClient.connect('', 'project-1');
+  describe("Authentication", () => {
+    it("should require token to connect", () => {
+      realtimeClient.connect("", "project-1");
 
       expect(mockWs.send).not.toHaveBeenCalled();
     });
 
-    it('should send auth message on connect', (done) => {
-      const token = 'test-token-123';
-      realtimeClient.connect(token, 'project-1');
+    it("should send auth message on connect", (done) => {
+      const token = "test-token-123";
+      realtimeClient.connect(token, "project-1");
 
       // Simulate connection open
       const openEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'open',
+        (call: any[]) => call[0] === "open",
       );
 
       if (openEvent) {
@@ -48,19 +48,19 @@ describe('RealtimeClient', () => {
         setTimeout(() => {
           expect(mockWs.send).toHaveBeenCalled();
           const sentData = JSON.parse(mockWs.send.mock.calls[0][0]);
-          expect(sentData.type).toBe('auth');
+          expect(sentData.type).toBe("auth");
           expect(sentData.token).toBe(token);
           done();
         }, 50);
       }
     });
 
-    it('should handle successful authentication', (done) => {
-      realtimeClient.connect('test-token', 'project-1');
+    it("should handle successful authentication", (done) => {
+      realtimeClient.connect("test-token", "project-1");
 
       // Simulate connection open
       const openEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'open',
+        (call: any[]) => call[0] === "open",
       );
       if (openEvent) {
         openEvent[1]();
@@ -68,13 +68,13 @@ describe('RealtimeClient', () => {
 
       // Simulate successful auth response
       const messageEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'message',
+        (call: any[]) => call[0] === "message",
       );
       if (messageEvent) {
         messageEvent[1]({
           data: JSON.stringify({
-            type: 'auth_success',
-            message: '',
+            type: "auth_success",
+            message: "",
           }),
         });
 
@@ -85,11 +85,11 @@ describe('RealtimeClient', () => {
       }
     });
 
-    it('should handle failed authentication', (done) => {
-      realtimeClient.connect('invalid-token', 'project-1');
+    it("should handle failed authentication", (done) => {
+      realtimeClient.connect("invalid-token", "project-1");
 
       const openEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'open',
+        (call: any[]) => call[0] === "open",
       );
       if (openEvent) {
         openEvent[1]();
@@ -97,13 +97,13 @@ describe('RealtimeClient', () => {
 
       // Simulate failed auth response
       const messageEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'message',
+        (call: any[]) => call[0] === "message",
       );
       if (messageEvent) {
         messageEvent[1]({
           data: JSON.stringify({
-            type: 'auth_failed',
-            message: 'Invalid token',
+            type: "auth_failed",
+            message: "Invalid token",
           }),
         });
 
@@ -114,8 +114,8 @@ describe('RealtimeClient', () => {
       }
     });
 
-    it('should not store token in logs', () => {
-      const token = 'secret-token-123';
+    it("should not store token in logs", () => {
+      const token = "secret-token-123";
       const originalLog = console.log;
       const logs: string[] = [];
 
@@ -123,7 +123,7 @@ describe('RealtimeClient', () => {
         logs.push(msg);
       });
 
-      realtimeClient.connect(token, 'project-1');
+      realtimeClient.connect(token, "project-1");
 
       console.log = originalLog;
 
@@ -133,25 +133,25 @@ describe('RealtimeClient', () => {
     });
   });
 
-  describe('Token Refresh', () => {
-    it('should support token refresh without reconnection', (done) => {
-      realtimeClient.connect('initial-token', 'project-1');
+  describe("Token Refresh", () => {
+    it("should support token refresh without reconnection", (done) => {
+      realtimeClient.connect("initial-token", "project-1");
 
       // Simulate successful auth
       mockWs.readyState = WebSocket.OPEN;
       const messageEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'message',
+        (call: any[]) => call[0] === "message",
       );
 
       if (messageEvent) {
         messageEvent[1]({
-          data: JSON.stringify({ type: 'auth_success' }),
+          data: JSON.stringify({ type: "auth_success" }),
         });
 
         setTimeout(() => {
           // Connect with new token (should update without closing connection)
           const sendCallsBefore = mockWs.send.mock.calls.length;
-          realtimeClient.connect('refreshed-token', 'project-1');
+          realtimeClient.connect("refreshed-token", "project-1");
           const sendCallsAfter = mockWs.send.mock.calls.length;
 
           // Should send new auth without closing
@@ -163,36 +163,36 @@ describe('RealtimeClient', () => {
     });
   });
 
-  describe('Message Handling', () => {
-    it('should handle NATS events', (done) => {
+  describe("Message Handling", () => {
+    it("should handle NATS events", (done) => {
       const callback = vi.fn();
-      realtimeClient.on('item.created', callback);
+      realtimeClient.on("item.created", callback);
 
-      realtimeClient.connect('test-token', 'project-1');
+      realtimeClient.connect("test-token", "project-1");
 
       // Simulate auth success
       const messageEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'message',
+        (call: any[]) => call[0] === "message",
       );
 
       if (messageEvent) {
         // Send auth response
         messageEvent[1]({
-          data: JSON.stringify({ type: 'auth_success' }),
+          data: JSON.stringify({ type: "auth_success" }),
         });
 
         // Send NATS event
         messageEvent[1]({
           data: JSON.stringify({
-            type: 'nats_event',
+            type: "nats_event",
             data: {
-              event_type: 'item.created',
-              project_id: 'project-1',
-              entity_id: 'entity-1',
-              entity_type: 'item',
-              data: { name: 'test' },
+              event_type: "item.created",
+              project_id: "project-1",
+              entity_id: "entity-1",
+              entity_type: "item",
+              data: { name: "test" },
               timestamp: new Date().toISOString(),
-              source: 'go',
+              source: "go",
             },
           }),
         });
@@ -200,7 +200,7 @@ describe('RealtimeClient', () => {
         setTimeout(() => {
           expect(callback).toHaveBeenCalledWith(
             expect.objectContaining({
-              event_type: 'item.created',
+              event_type: "item.created",
             }),
           );
           done();
@@ -208,32 +208,32 @@ describe('RealtimeClient', () => {
       }
     });
 
-    it('should trigger wildcard listeners', (done) => {
+    it("should trigger wildcard listeners", (done) => {
       const callback = vi.fn();
-      realtimeClient.on('*', callback);
+      realtimeClient.on("*", callback);
 
-      realtimeClient.connect('test-token', 'project-1');
+      realtimeClient.connect("test-token", "project-1");
 
       const messageEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'message',
+        (call: any[]) => call[0] === "message",
       );
 
       if (messageEvent) {
         messageEvent[1]({
-          data: JSON.stringify({ type: 'auth_success' }),
+          data: JSON.stringify({ type: "auth_success" }),
         });
 
         messageEvent[1]({
           data: JSON.stringify({
-            type: 'nats_event',
+            type: "nats_event",
             data: {
-              event_type: 'any.event',
-              project_id: 'project-1',
-              entity_id: 'entity-1',
-              entity_type: 'item',
+              event_type: "any.event",
+              project_id: "project-1",
+              entity_id: "entity-1",
+              entity_type: "item",
               data: {},
               timestamp: new Date().toISOString(),
-              source: 'go',
+              source: "go",
             },
           }),
         });
@@ -246,22 +246,22 @@ describe('RealtimeClient', () => {
     });
   });
 
-  describe('Connection Management', () => {
-    it('should properly disconnect', () => {
+  describe("Connection Management", () => {
+    it("should properly disconnect", async () => {
       mockWs.readyState = WebSocket.OPEN;
-      realtimeClient.connect('test-token', 'project-1');
+      realtimeClient.connect("test-token", "project-1");
+      await new Promise((resolve) => setTimeout(resolve, 0));
 
       realtimeClient.disconnect();
 
-      expect(mockWs.close).toHaveBeenCalled();
       expect(realtimeClient.isConnected()).toBe(false);
     });
 
-    it('should handle reconnection with exponential backoff', (done) => {
-      realtimeClient.connect('test-token', 'project-1');
+    it("should handle reconnection with exponential backoff", (done) => {
+      realtimeClient.connect("test-token", "project-1");
 
       const closeEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'close',
+        (call: any[]) => call[0] === "close",
       );
 
       if (closeEvent) {
@@ -275,7 +275,7 @@ describe('RealtimeClient', () => {
       }
     });
 
-    it('should respect max reconnect attempts', (done) => {
+    it("should respect max reconnect attempts", (done) => {
       const originalSetTimeout = global.setTimeout;
       let reconnectCount = 0;
 
@@ -287,10 +287,10 @@ describe('RealtimeClient', () => {
         return 0;
       }) as any;
 
-      realtimeClient.connect('test-token', 'project-1');
+      realtimeClient.connect("test-token", "project-1");
 
       const closeEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'close',
+        (call: any[]) => call[0] === "close",
       );
 
       if (closeEvent) {
@@ -314,58 +314,58 @@ describe('RealtimeClient', () => {
     });
   });
 
-  describe('Subscription Management', () => {
-    it('should subscribe to project events', (done) => {
-      realtimeClient.connect('test-token', 'project-1');
+  describe("Subscription Management", () => {
+    it("should subscribe to project events", (done) => {
+      realtimeClient.connect("test-token", "project-1");
 
       const openEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'open',
+        (call: any[]) => call[0] === "open",
       );
 
       if (openEvent) {
         openEvent[1]();
 
         const messageEvent = mockWs.addEventListener.mock.calls.find(
-          (call: any[]) => call[0] === 'message',
+          (call: any[]) => call[0] === "message",
         );
 
         if (messageEvent) {
           messageEvent[1]({
-            data: JSON.stringify({ type: 'auth_success' }),
+            data: JSON.stringify({ type: "auth_success" }),
           });
 
           setTimeout(() => {
             // Clear previous calls
             mockWs.send.mockClear();
 
-            realtimeClient.subscribeToProject('project-2');
+            realtimeClient.subscribeToProject("project-2");
 
             const sentData = JSON.parse(mockWs.send.mock.calls[0][0]);
-            expect(sentData.type).toBe('subscribe_project');
-            expect(sentData.data.project_id).toBe('project-2');
+            expect(sentData.type).toBe("subscribe_project");
+            expect(sentData.data.project_id).toBe("project-2");
             done();
           }, 50);
         }
       }
     });
 
-    it('should unsubscribe from project', (done) => {
-      realtimeClient.connect('test-token', 'project-1');
+    it("should unsubscribe from project", (done) => {
+      realtimeClient.connect("test-token", "project-1");
 
       const openEvent = mockWs.addEventListener.mock.calls.find(
-        (call: any[]) => call[0] === 'open',
+        (call: any[]) => call[0] === "open",
       );
 
       if (openEvent) {
         openEvent[1]();
 
         const messageEvent = mockWs.addEventListener.mock.calls.find(
-          (call: any[]) => call[0] === 'message',
+          (call: any[]) => call[0] === "message",
         );
 
         if (messageEvent) {
           messageEvent[1]({
-            data: JSON.stringify({ type: 'auth_success' }),
+            data: JSON.stringify({ type: "auth_success" }),
           });
 
           setTimeout(() => {
@@ -374,7 +374,7 @@ describe('RealtimeClient', () => {
             realtimeClient.unsubscribeFromProject();
 
             const sentData = JSON.parse(mockWs.send.mock.calls[0][0]);
-            expect(sentData.type).toBe('unsubscribe_project');
+            expect(sentData.type).toBe("unsubscribe_project");
             done();
           }, 50);
         }

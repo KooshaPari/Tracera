@@ -1,11 +1,11 @@
-import { memo, useCallback, useState } from 'react';
-import { toast } from 'sonner';
+import { memo, useCallback, useState } from "react";
+import { toast } from "sonner";
 
-import type { Project } from '@tracertm/types';
+import type { Project } from "@tracertm/types";
 
-import { useDeleteProject } from '@/hooks/useProjects';
-import { getProjectDisplayName } from '@/lib/project-name-utils';
-import { Button, Dialog, DialogContent } from '@tracertm/ui';
+import { useDeleteProject } from "@/hooks/useProjects";
+import { getProjectDisplayName } from "@/lib/project-name-utils";
+import { Button, Dialog, DialogContent } from "@tracertm/ui";
 
 interface ProjectDeleteDialogProps {
   open: boolean;
@@ -33,7 +33,7 @@ export const ProjectDeleteDialog = memo(function ProjectDeleteDialog({
     setIsDeleting(true);
     deleteProject.mutate(project.id, {
       onError: () => {
-        toast.error('Failed to delete project');
+        toast.error("Failed to delete project");
       },
       onSettled: () => {
         setIsDeleting(false);
@@ -46,35 +46,35 @@ export const ProjectDeleteDialog = memo(function ProjectDeleteDialog({
     });
   }, [deleteProject, onClosed, onOpenChange, project]);
 
-  let deleteLabel = 'Delete';
+  let deleteLabel = "Delete";
   if (isDeleting) {
-    deleteLabel = 'Deleting…';
+    deleteLabel = "Deleting…";
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='bg-card max-w-[420px] rounded-[2rem] border-none p-6 shadow-2xl'>
-        <div className='space-y-4'>
+      <DialogContent className="bg-card max-w-[420px] rounded-[2rem] border-none p-6 shadow-2xl">
+        <div className="space-y-4">
           <div>
-            <h2 className='text-lg font-black tracking-tight uppercase'>Delete Project</h2>
-            <p className='text-muted-foreground mt-1 text-xs font-medium'>
+            <h2 className="text-lg font-black tracking-tight uppercase">Delete Project</h2>
+            <p className="text-muted-foreground mt-1 text-xs font-medium">
               Deleting this project removes all related items and links. This cannot be undone.
             </p>
           </div>
-          <div className='flex gap-3'>
+          <div className="flex gap-3">
             <Button
-              type='button'
-              variant='ghost'
+              type="button"
+              variant="ghost"
               onClick={handleCancel}
-              className='flex-1 rounded-xl text-[10px] font-black tracking-widest uppercase'
+              className="flex-1 rounded-xl text-[10px] font-black tracking-widest uppercase"
             >
               Cancel
             </Button>
             <Button
-              type='button'
+              type="button"
               onClick={handleConfirm}
               disabled={isDeleting}
-              className='bg-destructive text-destructive-foreground flex-1 rounded-xl text-[10px] font-black tracking-widest uppercase'
+              className="bg-destructive text-destructive-foreground flex-1 rounded-xl text-[10px] font-black tracking-widest uppercase"
             >
               {deleteLabel}
             </Button>

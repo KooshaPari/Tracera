@@ -16,7 +16,7 @@ import type {
   RowSelectionState,
   SortingState,
   VisibilityState,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 
 import {
   flexRender,
@@ -25,14 +25,14 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from '@tanstack/react-table';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowUpDown } from 'lucide-react';
-import * as React from 'react';
+} from "@tanstack/react-table";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowUpDown } from "lucide-react";
+import * as React from "react";
 
-import { Button } from '@/components/ui/enterprise-button';
-import { DataTablePagination } from '@/components/ui/enterprise-table-pagination';
-import { DataTableToolbar } from '@/components/ui/enterprise-table-toolbar';
+import { Button } from "@/components/ui/enterprise-button";
+import { DataTablePagination } from "@/components/ui/enterprise-table-pagination";
+import { DataTableToolbar } from "@/components/ui/enterprise-table-toolbar";
 import {
   Table,
   TableBody,
@@ -40,8 +40,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -73,7 +73,7 @@ const SKELETON_ROWS = 5;
 export function DataTable<TData, TValue>({
   columns,
   data,
-  searchPlaceholder = 'Search...',
+  searchPlaceholder = "Search...",
   enableColumnResizing = true,
   enableColumnReordering = true,
   enableRowSelection = true,
@@ -87,7 +87,7 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const [searchQuery, setSearchQuery] = React.useState("");
   const [isCompact, setIsCompact] = React.useState(false);
 
   const table = useReactTable({
@@ -121,20 +121,20 @@ export function DataTable<TData, TValue>({
       table
         .getVisibleFlatColumns()
         .map((col) => col.id)
-        .join(','),
+        .join(","),
       table.getRowModel().rows.map((row) =>
         row
           .getVisibleCells()
           .map((cell) => String(cell.getValue()))
-          .join(','),
+          .join(","),
       ),
-    ].join('\n');
+    ].join("\n");
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
+    const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `export_${new Date().toISOString().split('T')[0]}.csv`;
+    anchor.download = `export_${new Date().toISOString().split("T")[0]}.csv`;
     anchor.click();
     URL.revokeObjectURL(url);
   }, [table]);
@@ -156,7 +156,7 @@ export function DataTable<TData, TValue>({
   }, [searchQuery, table, data, paginationProps]);
 
   return (
-    <div className='space-y-4'>
+    <div className="space-y-4">
       <DataTableToolbar
         table={table}
         searchQuery={searchQuery}
@@ -171,32 +171,32 @@ export function DataTable<TData, TValue>({
         onExport={handleExport}
       />
 
-      <div className='bg-card rounded-md border'>
+      <div className="bg-card rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className='bg-muted/30'>
+              <TableRow key={headerGroup.id} className="bg-muted/30">
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
                     className={cn(
-                      'font-medium',
-                      header.column.getCanSort() && 'cursor-pointer hover:bg-muted/50',
-                      isCompact && 'px-2 py-1',
+                      "font-medium",
+                      header.column.getCanSort() && "cursor-pointer hover:bg-muted/50",
+                      isCompact && "px-2 py-1",
                     )}
                     onClick={header.column.getToggleSortingHandler()}
                   >
                     {header.isPlaceholder ? null : (
-                      <div className='flex items-center space-x-2'>
+                      <div className="flex items-center space-x-2">
                         <span>
                           {flexRender(header.column.columnDef.header, header.getContext())}
                         </span>
                         {header.column.getCanSort() && (
-                          <Button variant='ghost' size='sm' className='h-6 w-6 p-0'>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                             <ArrowUpDown
                               className={cn(
-                                'h-3 w-3',
-                                header.column.getIsSorted() === 'asc' && 'rotate-180',
+                                "h-3 w-3",
+                                header.column.getIsSorted() === "asc" && "rotate-180",
                               )}
                             />
                           </Button>
@@ -216,9 +216,9 @@ export function DataTable<TData, TValue>({
                     {columns.map((_, colIndex) => (
                       <TableCell
                         key={String(colIndex)}
-                        className={isCompact ? 'px-2 py-1' : undefined}
+                        className={isCompact ? "px-2 py-1" : undefined}
                       >
-                        <div className='bg-muted h-4 animate-pulse rounded' />
+                        <div className="bg-muted h-4 animate-pulse rounded" />
                       </TableCell>
                     ))}
                   </TableRow>
@@ -227,15 +227,15 @@ export function DataTable<TData, TValue>({
                 table.getRowModel().rows.map((row) => (
                   <motion.tr
                     key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
+                    data-state={row.getIsSelected() && "selected"}
                     {...ROW_ANIMATION}
                     className={cn(
-                      'hover:bg-muted/50 transition-colors',
-                      isCompact && 'divide-x divide-border',
+                      "hover:bg-muted/50 transition-colors",
+                      isCompact && "divide-x divide-border",
                     )}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className={cn(isCompact && 'px-2 py-1')}>
+                      <TableCell key={cell.id} className={cn(isCompact && "px-2 py-1")}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}
@@ -245,7 +245,7 @@ export function DataTable<TData, TValue>({
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className='text-muted-foreground h-24 text-center'
+                    className="text-muted-foreground h-24 text-center"
                   >
                     No results found.
                   </TableCell>
@@ -300,8 +300,8 @@ export function createEnterpriseColumn<TData, TValue>({
     accessorFn: () => null as TValue,
     meta: {
       ...meta,
-      isAction: meta?.['isAction'],
-      isSticky: meta?.['isSticky'],
+      isAction: meta?.["isAction"],
+      isSticky: meta?.["isSticky"],
     },
   } as ColumnDef<TData, TValue>;
 }

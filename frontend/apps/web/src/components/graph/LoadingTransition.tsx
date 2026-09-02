@@ -1,6 +1,6 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState } from "react";
 
-import { GraphSkeleton } from './GraphSkeleton';
+import { GraphSkeleton } from "./GraphSkeleton";
 
 interface LoadingTransitionProps {
   isLoading: boolean;
@@ -34,7 +34,7 @@ export const LoadingTransition = memo(function LoadingTransition({
 
   if (showSkeleton) {
     return (
-      <div className={`transition-opacity duration-300 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}>
+      <div className={`transition-opacity duration-300 ${fadeOut ? "opacity-0" : "opacity-100"}`}>
         <GraphSkeleton />
       </div>
     );

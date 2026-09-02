@@ -4,14 +4,14 @@
  * Demonstrates how to use the GraphologyDataLayer in React components
  */
 
-import type { Node, Edge } from '@xyflow/react';
+import type { Node, Edge } from "@xyflow/react";
 
-import { ReactFlow, useNodesState, useEdgesState } from '@xyflow/react';
-import React, { useEffect, useState } from 'react';
+import { ReactFlow, useNodesState, useEdgesState } from "@xyflow/react";
+import React, { useEffect, useState } from "react";
 
-import { LoadingSpinner } from '@/components/layout/LoadingSpinner';
+import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
 
-import { createGraphologyDataLayer } from './GraphologyDataLayer';
+import { createGraphologyDataLayer } from "./GraphologyDataLayer";
 
 /**
  * Example 1: Basic Usage with ReactFlow
@@ -29,28 +29,28 @@ export function BasicGraphologyExample() {
       // Sample data (normally from API)
       const sampleNodes: Node[] = [
         {
-          id: '1',
-          type: 'default',
+          id: "1",
+          type: "default",
           position: { x: 0, y: 0 },
-          data: { label: 'Node 1' },
+          data: { label: "Node 1" },
         },
         {
-          id: '2',
-          type: 'default',
+          id: "2",
+          type: "default",
           position: { x: 100, y: 100 },
-          data: { label: 'Node 2' },
+          data: { label: "Node 2" },
         },
         {
-          id: '3',
-          type: 'default',
+          id: "3",
+          type: "default",
           position: { x: 200, y: 0 },
-          data: { label: 'Node 3' },
+          data: { label: "Node 3" },
         },
       ];
 
       const sampleEdges: Edge[] = [
-        { id: 'e1-2', source: '1', target: '2' },
-        { id: 'e2-3', source: '2', target: '3' },
+        { id: "e1-2", source: "1", target: "2" },
+        { id: "e2-3", source: "2", target: "3" },
       ];
 
       // Initialize with data
@@ -58,7 +58,7 @@ export function BasicGraphologyExample() {
 
       // Compute layout
       await dataLayer.computeLayout({
-        algorithm: 'forceAtlas2',
+        algorithm: "forceAtlas2",
         iterations: 200,
       });
 
@@ -69,7 +69,7 @@ export function BasicGraphologyExample() {
       setEdges(layoutEdges);
       setLoading(false);
 
-      console.log('Performance:', dataLayer.getPerformanceMetrics());
+      console.log("Performance:", dataLayer.getPerformanceMetrics());
     }
 
     loadGraph();
@@ -77,14 +77,14 @@ export function BasicGraphologyExample() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
-        <LoadingSpinner size='sm' text='Loading graph...' />
+      <div style={{ display: "flex", justifyContent: "center", padding: "24px" }}>
+        <LoadingSpinner size="sm" text="Loading graph..." />
       </div>
     );
   }
 
   return (
-    <div style={{ width: '100%', height: '600px' }}>
+    <div style={{ width: "100%", height: "600px" }}>
       <ReactFlow nodes={nodes} edges={edges} fitView />
     </div>
   );
@@ -105,7 +105,7 @@ export function LargeGraphWithCommunities() {
       // Generate large graph (10k nodes)
       const largeNodes: Node[] = Array.from({ length: 10000 }, (_, i) => ({
         id: `node-${i}`,
-        type: 'default',
+        type: "default",
         position: { x: 0, y: 0 },
         data: { label: `Node ${i}` },
       }));
@@ -123,14 +123,14 @@ export function LargeGraphWithCommunities() {
       }
 
       // Initialize
-      console.time('Initialize 10k nodes');
+      console.time("Initialize 10k nodes");
       await dataLayer.initialize(largeNodes, largeEdges);
-      console.timeEnd('Initialize 10k nodes');
+      console.timeEnd("Initialize 10k nodes");
 
       // Detect communities
-      console.time('Detect communities');
+      console.time("Detect communities");
       const communities = await dataLayer.detectCommunities();
-      console.timeEnd('Detect communities');
+      console.timeEnd("Detect communities");
 
       // Color nodes by community
       const communityColors = new Map<number, string>();
@@ -145,9 +145,9 @@ export function LargeGraphWithCommunities() {
       });
 
       // Compute layout (circular for speed)
-      console.time('Compute layout');
-      await dataLayer.computeLayout({ algorithm: 'circular' });
-      console.timeEnd('Compute layout');
+      console.time("Compute layout");
+      await dataLayer.computeLayout({ algorithm: "circular" });
+      console.timeEnd("Compute layout");
 
       // Get stats
       const graphStats = dataLayer.getStats();
@@ -158,7 +158,7 @@ export function LargeGraphWithCommunities() {
       setNodes(allNodes.slice(0, 1000));
       setEdges(allEdges.slice(0, 1000));
 
-      console.log('Performance:', dataLayer.getPerformanceMetrics());
+      console.log("Performance:", dataLayer.getPerformanceMetrics());
     }
 
     loadLargeGraph();
@@ -167,7 +167,7 @@ export function LargeGraphWithCommunities() {
   return (
     <div>
       {stats && (
-        <div style={{ padding: '10px', background: '#f5f5f5' }}>
+        <div style={{ padding: "10px", background: "#f5f5f5" }}>
           <h3>Graph Statistics</h3>
           <p>Nodes: {stats.nodeCount}</p>
           <p>Edges: {stats.edgeCount}</p>
@@ -176,7 +176,7 @@ export function LargeGraphWithCommunities() {
           <p>Avg Degree: {stats.averageDegree.toFixed(2)}</p>
         </div>
       )}
-      <div style={{ width: '100%', height: '800px' }}>
+      <div style={{ width: "100%", height: "800px" }}>
         <ReactFlow nodes={nodes} edges={edges} fitView />
       </div>
     </div>
@@ -197,7 +197,7 @@ export function IncrementalGraphExample() {
 
     dataLayer.addNode({
       id: newId,
-      type: 'default',
+      type: "default",
       position: { x: Math.random() * 500, y: Math.random() * 500 },
       data: { label: `New ${newId}` },
     });
@@ -222,7 +222,7 @@ export function IncrementalGraphExample() {
   return (
     <div>
       <button onClick={addRandomNode}>Add Random Node</button>
-      <div style={{ width: '100%', height: '600px' }}>
+      <div style={{ width: "100%", height: "600px" }}>
         <ReactFlow nodes={nodes} edges={edges} fitView />
       </div>
     </div>
@@ -321,7 +321,7 @@ export function GraphWithCustomHook() {
   useEffect(() => {
     const sampleNodes: Node[] = Array.from({ length: 100 }, (_, i) => ({
       id: `node-${i}`,
-      type: 'default',
+      type: "default",
       position: { x: 0, y: 0 },
       data: { label: `Node ${i}` },
     }));
@@ -337,11 +337,11 @@ export function GraphWithCustomHook() {
 
   return (
     <div>
-      <div style={{ padding: '10px', background: '#f5f5f5' }}>
-        <button onClick={() => computeLayout({ algorithm: 'forceAtlas2' })} disabled={loading}>
+      <div style={{ padding: "10px", background: "#f5f5f5" }}>
+        <button onClick={() => computeLayout({ algorithm: "forceAtlas2" })} disabled={loading}>
           ForceAtlas2 Layout
         </button>
-        <button onClick={() => computeLayout({ algorithm: 'circular' })} disabled={loading}>
+        <button onClick={() => computeLayout({ algorithm: "circular" })} disabled={loading}>
           Circular Layout
         </button>
         <button onClick={detectCommunities} disabled={loading}>
@@ -357,10 +357,10 @@ export function GraphWithCustomHook() {
         )}
       </div>
 
-      <div style={{ width: '100%', height: '600px' }}>
+      <div style={{ width: "100%", height: "600px" }}>
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
-            <LoadingSpinner size='sm' text='Loading...' />
+          <div style={{ display: "flex", justifyContent: "center", padding: "24px" }}>
+            <LoadingSpinner size="sm" text="Loading..." />
           </div>
         ) : (
           <ReactFlow nodes={nodes} edges={edges} fitView />

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import 'swagger-ui-react/swagger-ui.css';
-import type { ComponentProps, ReactNode } from 'react';
+import "swagger-ui-react/swagger-ui.css";
+import type { ComponentProps, ReactNode } from "react";
 
-import { Copy, Download, Moon, Sun } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import SwaggerUI from 'swagger-ui-react';
+import { Copy, Download, Moon, Sun } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import SwaggerUI from "swagger-ui-react";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 interface SwaggerUIWrapperProps {
   specUrl?: string | undefined;
@@ -17,15 +17,15 @@ interface SwaggerUIWrapperProps {
   displayRequestDuration?: boolean | undefined;
   filter?: boolean | undefined;
   deepLinking?: boolean | undefined;
-  requestInterceptor?: SwaggerUIProps['requestInterceptor'] | undefined;
-  responseInterceptor?: SwaggerUIProps['responseInterceptor'] | undefined;
+  requestInterceptor?: SwaggerUIProps["requestInterceptor"] | undefined;
+  responseInterceptor?: SwaggerUIProps["responseInterceptor"] | undefined;
 }
 
 type SwaggerUIProps = ComponentProps<typeof SwaggerUI>;
 
-type SwaggerRequest = Parameters<NonNullable<SwaggerUIProps['requestInterceptor']>>[0];
+type SwaggerRequest = Parameters<NonNullable<SwaggerUIProps["requestInterceptor"]>>[0];
 
-type SwaggerResponse = Parameters<NonNullable<SwaggerUIProps['responseInterceptor']>>[0];
+type SwaggerResponse = Parameters<NonNullable<SwaggerUIProps["responseInterceptor"]>>[0];
 
 const COPY_RESET_MS = 2000;
 const DEFAULT_MODELS_EXPAND_DEPTH = 1;
@@ -36,29 +36,29 @@ const SWAGGER_DEFAULTS = {
   displayRequestDuration: true,
   filter: true,
   persistAuthorization: true,
-  specUrl: '/specs/openapi.json',
+  specUrl: "/specs/openapi.json",
   tryItOutEnabled: true,
 };
 
-const SUPPORTED_SUBMIT_METHODS: NonNullable<SwaggerUIProps['supportedSubmitMethods']> = [
-  'get',
-  'put',
-  'post',
-  'delete',
-  'options',
-  'head',
-  'patch',
-  'trace',
+const SUPPORTED_SUBMIT_METHODS: NonNullable<SwaggerUIProps["supportedSubmitMethods"]> = [
+  "get",
+  "put",
+  "post",
+  "delete",
+  "options",
+  "head",
+  "patch",
+  "trace",
 ];
 
 const downloadOpenApiJson = (data: unknown): void => {
   const blob = new Blob([JSON.stringify(data, null, JSON_INDENT)], {
-    type: 'application/json',
+    type: "application/json",
   });
   const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
+  const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = 'openapi-spec.json';
+  anchor.download = "openapi-spec.json";
   document.body.append(anchor);
   anchor.click();
   document.body.removeChild(anchor);
@@ -66,8 +66,8 @@ const downloadOpenApiJson = (data: unknown): void => {
 };
 
 const resolveDarkModePreference = (): boolean =>
-  document.documentElement.classList.contains('dark') ||
-  globalThis.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.classList.contains("dark") ||
+  globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
 
 const writeToClipboard = async (value: string) => {
   if (navigator.clipboard?.writeText) {
@@ -75,14 +75,14 @@ const writeToClipboard = async (value: string) => {
     return;
   }
 
-  const textarea = document.createElement('textarea');
+  const textarea = document.createElement("textarea");
   textarea.value = value;
-  textarea.setAttribute('readonly', 'true');
-  textarea.style.position = 'absolute';
-  textarea.style.left = '-9999px';
+  textarea.setAttribute("readonly", "true");
+  textarea.style.position = "absolute";
+  textarea.style.left = "-9999px";
   document.body.append(textarea);
   textarea.select();
-  document.execCommand('copy');
+  document.execCommand("copy");
   document.body.removeChild(textarea);
 };
 
@@ -97,7 +97,7 @@ const fetchSpecFromUrl = async (specUrl?: string) => {
 
 const setHeader = (req: SwaggerRequest, name: string, value: string) => {
   const { headers } = req;
-  if (headers && typeof headers.set === 'function') {
+  if (headers && typeof headers.set === "function") {
     headers.set(name, value);
   }
 };
@@ -127,7 +127,7 @@ const useSpecData = (specUrl?: string, spec?: object) => {
         setSpecData(data);
       })
       .catch((error) => {
-        logger.error('Failed to load OpenAPI spec:', error);
+        logger.error("Failed to load OpenAPI spec:", error);
       });
   }, [spec, specUrl]);
 
@@ -144,7 +144,7 @@ const useDarkMode = () => {
   const toggleDarkMode = useCallback(() => {
     setDarkMode((prev) => {
       const next = !prev;
-      document.documentElement.classList.toggle('dark', next);
+      document.documentElement.classList.toggle("dark", next);
       return next;
     });
   }, []);
@@ -168,7 +168,7 @@ const useCopySpecUrl = (specUrl?: string) => {
         setCopied(false);
       }, COPY_RESET_MS);
     } catch (error) {
-      logger.error('Failed to copy spec URL:', error);
+      logger.error("Failed to copy spec URL:", error);
     }
   }, [specUrl]);
 
@@ -186,21 +186,21 @@ const useDownloadSpec = (resolvedSpec: object | null, specUrl?: string) =>
   }, [resolvedSpec, specUrl]);
 
 const useSwaggerInterceptors = (
-  requestInterceptor?: SwaggerUIProps['requestInterceptor'],
-  responseInterceptor?: SwaggerUIProps['responseInterceptor'],
+  requestInterceptor?: SwaggerUIProps["requestInterceptor"],
+  responseInterceptor?: SwaggerUIProps["responseInterceptor"],
 ) => {
   const defaultRequestInterceptor = useCallback(
     (req: SwaggerRequest) => {
       const isStorageAvailable =
-        typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function';
-      const token = isStorageAvailable ? localStorage.getItem('api_token') : null;
-      const apiKey = isStorageAvailable ? localStorage.getItem('api_key') : null;
+        typeof localStorage !== "undefined" && typeof localStorage.getItem === "function";
+      const token = isStorageAvailable ? localStorage.getItem("api_token") : null;
+      const apiKey = isStorageAvailable ? localStorage.getItem("api_key") : null;
 
       if (token) {
-        setHeader(req, 'Authorization', `Bearer ${token}`);
+        setHeader(req, "Authorization", `Bearer ${token}`);
       }
       if (apiKey) {
-        setHeader(req, 'X-API-Key', apiKey);
+        setHeader(req, "X-API-Key", apiKey);
       }
 
       return requestInterceptor ? requestInterceptor(req) : req;
@@ -210,9 +210,9 @@ const useSwaggerInterceptors = (
 
   const defaultResponseInterceptor = useCallback(
     (res: SwaggerResponse) => {
-      logger.info('API Response:', {
-        status: res['status'],
-        url: res['url'],
+      logger.info("API Response:", {
+        status: res["status"],
+        url: res["url"],
       });
 
       return responseInterceptor ? responseInterceptor(res) : res;
@@ -228,8 +228,8 @@ const useSwaggerProps = (params: {
   displayRequestDuration: boolean;
   filter: boolean;
   persistAuthorization: boolean;
-  requestInterceptor: SwaggerUIProps['requestInterceptor'];
-  responseInterceptor: SwaggerUIProps['responseInterceptor'];
+  requestInterceptor: SwaggerUIProps["requestInterceptor"];
+  responseInterceptor: SwaggerUIProps["responseInterceptor"];
   resolvedSpec: object | null;
   specUrl?: string | undefined;
   tryItOutEnabled: boolean;
@@ -242,7 +242,7 @@ const useSwaggerProps = (params: {
         defaultModelsExpandDepth: DEFAULT_MODELS_EXPAND_DEPTH,
         displayOperationId: false,
         displayRequestDuration: params.displayRequestDuration,
-        docExpansion: 'list',
+        docExpansion: "list",
         filter: params.filter,
         persistAuthorization: params.persistAuthorization,
         requestInterceptor: params.requestInterceptor,
@@ -268,8 +268,8 @@ const useSwaggerProps = (params: {
   );
 
 const LoadingState = ({ label }: { label: string }) => (
-  <div className='swagger-loading'>
-    <div className='spinner' />
+  <div className="swagger-loading">
+    <div className="spinner" />
     <p>{label}</p>
   </div>
 );
@@ -285,8 +285,8 @@ const IconLabelButton = ({
   onClick: () => void;
   title: string;
 }) => (
-  <button type='button' onClick={onClick} className='swagger-btn' title={title}>
-    <span className='swagger-btn-icon'>{icon}</span>
+  <button type="button" onClick={onClick} className="swagger-btn" title={title}>
+    <span className="swagger-btn-icon">{icon}</span>
     <span>{label}</span>
   </button>
 );
@@ -304,27 +304,27 @@ const SwaggerToolbar = ({
   onDownload: () => void;
   onToggleDarkMode: () => void;
 }) => (
-  <div className='swagger-controls'>
-    <div className='swagger-toolbar'>
-      <h1 className='swagger-title'>API Documentation</h1>
-      <div className='swagger-actions'>
+  <div className="swagger-controls">
+    <div className="swagger-toolbar">
+      <h1 className="swagger-title">API Documentation</h1>
+      <div className="swagger-actions">
         <IconLabelButton
           onClick={onCopy}
           icon={<Copy size={ICON_SIZE} />}
-          label={copied ? 'Copied!' : 'Copy URL'}
-          title='Copy Spec URL'
+          label={copied ? "Copied!" : "Copy URL"}
+          title="Copy Spec URL"
         />
         <IconLabelButton
           onClick={onDownload}
           icon={<Download size={ICON_SIZE} />}
-          label='Download Spec'
-          title='Download OpenAPI Spec'
+          label="Download Spec"
+          title="Download OpenAPI Spec"
         />
         <IconLabelButton
           onClick={onToggleDarkMode}
           icon={darkMode ? <Sun size={ICON_SIZE} /> : <Moon size={ICON_SIZE} />}
-          label={darkMode ? 'Light' : 'Dark'}
-          title='Toggle Dark Mode'
+          label={darkMode ? "Light" : "Dark"}
+          title="Toggle Dark Mode"
         />
       </div>
     </div>
@@ -338,7 +338,7 @@ const SwaggerContent = ({
   hasSpec: boolean;
   swaggerProps: SwaggerUIProps;
 }) =>
-  hasSpec ? <SwaggerUI {...swaggerProps} /> : <LoadingState label='Loading API Documentation...' />;
+  hasSpec ? <SwaggerUI {...swaggerProps} /> : <LoadingState label="Loading API Documentation..." />;
 
 const SWAGGER_STYLES = `
   .swagger-ui-container {
@@ -521,7 +521,7 @@ export const SwaggerUIWrapper = (props: SwaggerUIWrapperProps) => {
   const downloadSpec = useDownloadSpec(resolvedSpec, normalized.specUrl);
 
   return (
-    <div className={`swagger-ui-container ${darkMode ? 'dark-mode' : ''}`}>
+    <div className={`swagger-ui-container ${darkMode ? "dark-mode" : ""}`}>
       <SwaggerToolbar
         copied={copied}
         darkMode={darkMode}

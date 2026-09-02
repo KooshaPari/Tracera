@@ -142,9 +142,9 @@ export class RetryPolicy {
 
     // Check for network errors
     if (
-      error.message.includes('fetch') ||
-      error.message.includes('network') ||
-      error.message.includes('timeout')
+      error.message.includes("fetch") ||
+      error.message.includes("network") ||
+      error.message.includes("timeout")
     ) {
       return true;
     }
@@ -166,7 +166,7 @@ export class RetryPolicy {
 export class RetryableError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'RetryableError';
+    this.name = "RetryableError";
   }
 }
 
@@ -287,7 +287,7 @@ export function withIdempotencyKey(options: RequestInit, key: string): RequestIn
     ...options,
     headers: {
       ...options.headers,
-      'Idempotency-Key': key,
+      "Idempotency-Key": key,
     },
   };
 }

@@ -1,33 +1,33 @@
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import type { PerformanceMetrics } from './types';
+import type { PerformanceMetrics } from "./types";
 
 import {
   PROFILER_HISTORY_LIMIT,
   STORAGE_HISTORY_LIMIT,
   STORAGE_KEY_METRICS,
   STORAGE_KEY_PROFILER_PREFIX,
-} from './constants';
+} from "./constants";
 
-const ZERO = Number('0');
+const ZERO = Number("0");
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
+  return typeof value === "object" && value !== null;
 }
 
 function isNumber(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value);
+  return typeof value === "number" && Number.isFinite(value);
 }
 
 function isString(value: unknown): value is string {
-  return typeof value === 'string';
+  return typeof value === "string";
 }
 
 function isPerformanceMetrics(value: unknown): value is PerformanceMetrics {
   if (!isRecord(value)) {
     return false;
   }
-  return isNumber(value['timestamp']);
+  return isNumber(value["timestamp"]);
 }
 
 function safeParseJsonArray(value: string): unknown[] {
@@ -57,7 +57,7 @@ function readMetricsHistoryFromStorage(): PerformanceMetrics[] {
     }
     return result;
   } catch (error: unknown) {
-    logger.warn('[Graph Performance] Failed to read metrics history:', error);
+    logger.warn("[Graph Performance] Failed to read metrics history:", error);
     return [];
   }
 }
@@ -67,7 +67,7 @@ function writeMetricsHistoryToStorage(history: PerformanceMetrics[]): void {
     const trimmed = history.slice(-STORAGE_HISTORY_LIMIT);
     sessionStorage.setItem(STORAGE_KEY_METRICS, JSON.stringify(trimmed));
   } catch (error: unknown) {
-    logger.warn('[Graph Performance] Failed to persist metrics:', error);
+    logger.warn("[Graph Performance] Failed to persist metrics:", error);
   }
 }
 
@@ -78,7 +78,7 @@ function appendMetricToStorage(metrics: PerformanceMetrics): void {
 
 interface ProfilerEntry {
   id: string;
-  phase: 'mount' | 'update' | 'nested-update';
+  phase: "mount" | "update" | "nested-update";
   actualDuration: number;
   baseDuration: number;
   startTime: number;
@@ -91,13 +91,13 @@ function isProfilerEntry(value: unknown): value is ProfilerEntry {
     return false;
   }
   return (
-    isString(value['id']) &&
-    isString(value['phase']) &&
-    isNumber(value['actualDuration']) &&
-    isNumber(value['baseDuration']) &&
-    isNumber(value['startTime']) &&
-    isNumber(value['commitTime']) &&
-    isNumber(value['timestamp'])
+    isString(value["id"]) &&
+    isString(value["phase"]) &&
+    isNumber(value["actualDuration"]) &&
+    isNumber(value["baseDuration"]) &&
+    isNumber(value["startTime"]) &&
+    isNumber(value["commitTime"]) &&
+    isNumber(value["timestamp"])
   );
 }
 
@@ -135,8 +135,8 @@ function clearMetricsStorage(): void {
 }
 
 function isDevelopmentEnv(): boolean {
-  const env = process.env['NODE_ENV'];
-  return env === 'development';
+  const env = process.env["NODE_ENV"];
+  return env === "development";
 }
 
 function safeToLocaleTimeString(timestamp: number): string {

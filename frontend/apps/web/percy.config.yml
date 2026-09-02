@@ -23,7 +23,7 @@ snapshot:
   min-height: 1024
 
   # Wait for network idle before taking snapshot
-  percy-css: ''
+  percy-css: ""
 
 # Discovery configuration
 discovery:
@@ -43,7 +43,7 @@ ci:
   # Parallel build workers
   parallel:
     total: 1
-    nonce: ''
+    nonce: ""
 
 # Image quality and processing
 image:
@@ -51,7 +51,7 @@ image:
   quality: 100
 
   # Enable image diffs
-  diff-mode: 'block'
+  diff-mode: "block"
 
 # Request headers (if needed for authentication)
 # request-headers:
@@ -72,7 +72,6 @@ ignore-regions:
 
 # Freeze animated GIFs
 freeze-animated-image: false
-
 # Freeze animated image by selector
 # freeze-animated-selectors:
 #   - '.loading-spinner'

@@ -1,5 +1,5 @@
-import { componentLibraryMutations } from './component-library.mutations';
-import * as componentLibraryQueries from './component-library.queries';
+import { componentLibraryMutations } from "./component-library.mutations";
+import * as componentLibraryQueries from "./component-library.queries";
 
 type ComponentLibraryApi = typeof componentLibraryQueries & typeof componentLibraryMutations;
 

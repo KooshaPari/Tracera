@@ -1,9 +1,9 @@
 // Mock elkjs before any imports
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
-vi.mock('elkjs', () => ({
+vi.mock("elkjs", () => ({
   default: class MockELK {
-    private readonly version = 'mock';
+    private readonly version = "mock";
 
     async layout(): Promise<{ children: unknown[]; edges: unknown[]; version: string }> {
       await Promise.resolve();

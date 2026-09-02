@@ -1,15 +1,15 @@
-import { AlertCircle, Bug, Copy, RefreshCw } from 'lucide-react';
-import { memo } from 'react';
+import { AlertCircle, Bug, Copy, RefreshCw } from "lucide-react";
+import { memo } from "react";
 
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+} from "@/components/ui/accordion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 
 interface ErrorDetails {
   message: string;
@@ -23,7 +23,7 @@ interface EnhancedErrorStateProps {
   onRetry?: () => void;
   onReportBug?: (error: ErrorDetails) => void;
   showDetails?: boolean;
-  variant?: 'inline' | 'card';
+  variant?: "inline" | "card";
 }
 
 export const EnhancedErrorState = memo(function EnhancedErrorState({
@@ -31,10 +31,10 @@ export const EnhancedErrorState = memo(function EnhancedErrorState({
   onRetry,
   onReportBug,
   showDetails = true,
-  variant = 'card',
+  variant = "card",
 }: EnhancedErrorStateProps) {
   const errorDetails: ErrorDetails =
-    typeof error === 'string'
+    typeof error === "string"
       ? { message: error }
       : error instanceof Error
         ? {
@@ -43,18 +43,31 @@ export const EnhancedErrorState = memo(function EnhancedErrorState({
           }
         : error;
 
-  const handleCopyError = () => {};
+  const handleCopyError = (): void => {
+    const details = [
+      errorDetails.message,
+      errorDetails.code ? `Code: ${errorDetails.code}` : undefined,
+      errorDetails.timestamp ? `Timestamp: ${errorDetails.timestamp.toISOString()}` : undefined,
+      errorDetails.stack,
+    ]
+      .filter((value): value is string => Boolean(value))
+      .join("\n\n");
 
-  if (variant === 'inline') {
+    void Promise.resolve(globalThis.navigator?.clipboard?.writeText(details)).catch(
+      () => undefined,
+    );
+  };
+
+  if (variant === "inline") {
     return (
-      <Alert variant='destructive'>
-        <AlertCircle className='h-4 w-4' />
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
         <AlertTitle>Error</AlertTitle>
-        <AlertDescription className='flex items-center justify-between'>
+        <AlertDescription className="flex items-center justify-between">
           <span>{errorDetails.message}</span>
           {onRetry && (
-            <Button size='sm' variant='outline' onClick={onRetry}>
-              <RefreshCw className='mr-1 h-3 w-3' />
+            <Button size="sm" variant="outline" onClick={onRetry}>
+              <RefreshCw className="mr-1 h-3 w-3" />
               Retry
             </Button>
           )}
@@ -64,26 +77,26 @@ export const EnhancedErrorState = memo(function EnhancedErrorState({
   }
 
   return (
-    <Card className='border-destructive'>
+    <Card className="border-destructive">
       <CardHeader>
-        <div className='flex items-start gap-3'>
-          <AlertCircle className='text-destructive mt-0.5 h-5 w-5' />
-          <div className='flex-1'>
-            <h3 className='text-destructive font-semibold'>Unable to load graph</h3>
-            <p className='text-muted-foreground mt-1 text-sm'>{errorDetails.message}</p>
+        <div className="flex items-start gap-3">
+          <AlertCircle className="text-destructive mt-0.5 h-5 w-5" />
+          <div className="flex-1">
+            <h3 className="text-destructive font-semibold">Unable to load graph</h3>
+            <p className="text-muted-foreground mt-1 text-sm">{errorDetails.message}</p>
           </div>
         </div>
       </CardHeader>
 
       {showDetails && errorDetails.stack && (
         <CardContent>
-          <Accordion type='single' collapsible>
-            <AccordionItem value='details' className='border-0'>
-              <AccordionTrigger className='text-muted-foreground text-xs'>
+          <Accordion type="single" collapsible>
+            <AccordionItem value="details" className="border-0">
+              <AccordionTrigger className="text-muted-foreground text-xs">
                 Show technical details
               </AccordionTrigger>
               <AccordionContent>
-                <pre className='bg-muted max-h-48 overflow-auto rounded p-3 text-xs'>
+                <pre className="bg-muted max-h-48 overflow-auto rounded p-3 text-xs">
                   {errorDetails.stack}
                 </pre>
               </AccordionContent>
@@ -92,26 +105,26 @@ export const EnhancedErrorState = memo(function EnhancedErrorState({
         </CardContent>
       )}
 
-      <CardFooter className='flex gap-2'>
+      <CardFooter className="flex gap-2">
         {onRetry && (
-          <Button size='sm' onClick={onRetry}>
-            <RefreshCw className='mr-2 h-3 w-3' />
+          <Button size="sm" onClick={onRetry}>
+            <RefreshCw className="mr-2 h-3 w-3" />
             Retry
           </Button>
         )}
-        <Button size='sm' variant='outline' onClick={handleCopyError}>
-          <Copy className='mr-2 h-3 w-3' />
+        <Button size="sm" variant="outline" onClick={handleCopyError}>
+          <Copy className="mr-2 h-3 w-3" />
           Copy error
         </Button>
         {onReportBug && (
           <Button
-            size='sm'
-            variant='outline'
+            size="sm"
+            variant="outline"
             onClick={() => {
               onReportBug(errorDetails);
             }}
           >
-            <Bug className='mr-2 h-3 w-3' />
+            <Bug className="mr-2 h-3 w-3" />
             Report bug
           </Button>
         )}

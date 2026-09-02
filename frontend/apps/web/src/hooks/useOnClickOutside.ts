@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from "react";
 
 const isNodeTarget = (target: EventTarget | null): target is Node => target instanceof Node;
 
@@ -21,16 +21,16 @@ export const useOnClickOutside = <ElementType extends HTMLElement = HTMLElement>
   );
 
   useEffect((): (() => void) => {
-    if (typeof document === 'undefined') {
+    if (typeof document === "undefined") {
       return () => {};
     }
 
-    document.addEventListener('mousedown', listener);
-    document.addEventListener('touchstart', listener);
+    document.addEventListener("mousedown", listener);
+    document.addEventListener("touchstart", listener);
 
     return (): void => {
-      document.removeEventListener('mousedown', listener);
-      document.removeEventListener('touchstart', listener);
+      document.removeEventListener("mousedown", listener);
+      document.removeEventListener("touchstart", listener);
     };
   }, [listener]);
 };

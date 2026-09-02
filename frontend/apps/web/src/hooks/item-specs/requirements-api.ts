@@ -5,7 +5,7 @@ import type {
   RequirementType,
   RiskLevel,
   VerificationStatus,
-} from './types';
+} from "./types";
 
 import {
   API_URL,
@@ -15,7 +15,7 @@ import {
   getBulkHeaders,
   getJsonAuthHeaders,
   readJson,
-} from './constants';
+} from "./constants";
 
 async function fetchRequirementSpecs(
   projectId: string,
@@ -28,11 +28,11 @@ async function fetchRequirementSpecs(
   },
 ): Promise<{ specs: RequirementSpec[]; total: number }> {
   const params = new URLSearchParams();
-  appendParam(params, 'requirement_type', options?.requirementType);
-  appendParam(params, 'risk_level', options?.riskLevel);
-  appendParam(params, 'verification_status', options?.verificationStatus);
-  appendParam(params, 'limit', options?.limit);
-  appendParam(params, 'offset', options?.offset);
+  appendParam(params, "requirement_type", options?.requirementType);
+  appendParam(params, "risk_level", options?.riskLevel);
+  appendParam(params, "verification_status", options?.verificationStatus);
+  appendParam(params, "limit", options?.limit);
+  appendParam(params, "offset", options?.offset);
 
   const res = await fetch(
     `${API_URL}/api/v1/projects/${projectId}/item-specs/requirements?${params}`,
@@ -51,7 +51,7 @@ async function fetchRequirementSpec(projectId: string, specId: string): Promise<
     { headers: getAuthHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch requirement spec');
+    throw new Error("Failed to fetch requirement spec");
   }
   return readJson<RequirementSpec>(res);
 }
@@ -65,7 +65,7 @@ async function fetchRequirementSpecByItem(
     { headers: getAuthHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch requirement spec by item');
+    throw new Error("Failed to fetch requirement spec by item");
   }
   return readJson<RequirementSpec>(res);
 }
@@ -79,7 +79,7 @@ async function fetchUnverifiedRequirements(
     { headers: getBulkHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch unverified requirements');
+    throw new Error("Failed to fetch unverified requirements");
   }
   return readJson<{ specs: RequirementSpec[]; total: number }>(res);
 }
@@ -93,7 +93,7 @@ async function fetchHighRiskRequirements(
     { headers: getBulkHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch high-risk requirements');
+    throw new Error("Failed to fetch high-risk requirements");
   }
   return readJson<{ specs: RequirementSpec[]; total: number }>(res);
 }
@@ -105,10 +105,10 @@ async function createRequirementSpec(
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/requirements`, {
     body: JSON.stringify(data),
     headers: getJsonAuthHeaders(),
-    method: 'POST',
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to create requirement spec');
+    throw new Error("Failed to create requirement spec");
   }
   return readJson<RequirementSpec>(res);
 }
@@ -123,11 +123,11 @@ async function updateRequirementSpec(
     {
       body: JSON.stringify(data),
       headers: getJsonAuthHeaders(),
-      method: 'PATCH',
+      method: "PATCH",
     },
   );
   if (!res.ok) {
-    throw new Error('Failed to update requirement spec');
+    throw new Error("Failed to update requirement spec");
   }
   return readJson<RequirementSpec>(res);
 }
@@ -135,10 +135,10 @@ async function updateRequirementSpec(
 async function deleteRequirementSpec(projectId: string, specId: string): Promise<void> {
   const res = await fetch(
     `${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}`,
-    { headers: getAuthHeaders(), method: 'DELETE' },
+    { headers: getAuthHeaders(), method: "DELETE" },
   );
   if (!res.ok) {
-    throw new Error('Failed to delete requirement spec');
+    throw new Error("Failed to delete requirement spec");
   }
 }
 
@@ -148,10 +148,10 @@ async function analyzeRequirementQuality(
 ): Promise<RequirementSpec> {
   const res = await fetch(
     `${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}/analyze-quality`,
-    { headers: getAuthHeaders(), method: 'POST' },
+    { headers: getAuthHeaders(), method: "POST" },
   );
   if (!res.ok) {
-    throw new Error('Failed to analyze requirement quality');
+    throw new Error("Failed to analyze requirement quality");
   }
   return readJson<RequirementSpec>(res);
 }
@@ -162,10 +162,10 @@ async function analyzeRequirementImpact(
 ): Promise<RequirementSpec> {
   const res = await fetch(
     `${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}/analyze-impact`,
-    { headers: getAuthHeaders(), method: 'POST' },
+    { headers: getAuthHeaders(), method: "POST" },
   );
   if (!res.ok) {
-    throw new Error('Failed to analyze requirement impact');
+    throw new Error("Failed to analyze requirement impact");
   }
   return readJson<RequirementSpec>(res);
 }
@@ -184,10 +184,10 @@ async function verifyRequirement(
   });
   const res = await fetch(
     `${API_URL}/api/v1/projects/${projectId}/item-specs/requirements/${specId}/verify?${params}`,
-    { headers: getAuthHeaders(), method: 'POST' },
+    { headers: getAuthHeaders(), method: "POST" },
   );
   if (!res.ok) {
-    throw new Error('Failed to verify requirement');
+    throw new Error("Failed to verify requirement");
   }
   return readJson<RequirementSpec>(res);
 }

@@ -1,7 +1,7 @@
 // DesignTokenBrowser.tsx - Browse, search, and manage design tokens
 // Displays design tokens organized by category with previews and component usage
 
-import type { CSSProperties } from 'react';
+import type { CSSProperties } from "react";
 
 import {
   AlertCircle,
@@ -21,28 +21,28 @@ import {
   Play,
   Search,
   Zap,
-} from 'lucide-react';
-import { memo, useCallback, useMemo, useState } from 'react';
+} from "lucide-react";
+import { memo, useCallback, useMemo, useState } from "react";
 
-import type { DesignToken, DesignTokenType } from '@tracertm/types';
+import type { DesignToken, DesignTokenType } from "@tracertm/types";
 
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@tracertm/ui/components/Card';
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@tracertm/ui/components/Card";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@tracertm/ui/components/Collapsible';
-import { Input } from '@tracertm/ui/components/Input';
-import { ScrollArea } from '@tracertm/ui/components/ScrollArea';
-import { Separator } from '@tracertm/ui/components/Separator';
+} from "@tracertm/ui/components/Collapsible";
+import { Input } from "@tracertm/ui/components/Input";
+import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
+import { Separator } from "@tracertm/ui/components/Separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@tracertm/ui/components/Tooltip';
+} from "@tracertm/ui/components/Tooltip";
 
 // =============================================================================
 // TYPES
@@ -78,35 +78,35 @@ const TOKEN_TYPE_ICONS: Record<DesignTokenType, React.ComponentType<{ className?
   shadow: Zap,
   spacing: Hash,
   typography: FileCode,
-  'z-index': Layers,
+  "z-index": Layers,
 };
 
 const TOKEN_TYPE_LABELS: Record<DesignTokenType, string> = {
-  animation: 'Animation',
-  border: 'Borders',
-  breakpoint: 'Breakpoints',
-  color: 'Colors',
-  custom: 'Custom',
-  opacity: 'Opacity',
-  radius: 'Border Radius',
-  shadow: 'Shadows',
-  spacing: 'Spacing',
-  typography: 'Typography',
-  'z-index': 'Z-Index',
+  animation: "Animation",
+  border: "Borders",
+  breakpoint: "Breakpoints",
+  color: "Colors",
+  custom: "Custom",
+  opacity: "Opacity",
+  radius: "Border Radius",
+  shadow: "Shadows",
+  spacing: "Spacing",
+  typography: "Typography",
+  "z-index": "Z-Index",
 };
 
 const TOKEN_TYPE_COLORS: Record<DesignTokenType, string> = {
-  animation: 'hsl(var(--red-500))',
-  border: 'hsl(var(--orange-500))',
-  breakpoint: 'hsl(var(--indigo-500))',
-  color: 'hsl(var(--primary))',
-  custom: 'hsl(var(--slate-500))',
-  opacity: 'hsl(var(--yellow-500))',
-  radius: 'hsl(var(--pink-500))',
-  shadow: 'hsl(var(--purple-500))',
-  spacing: 'hsl(var(--green-500))',
-  typography: 'hsl(var(--blue-500))',
-  'z-index': 'hsl(var(--cyan-500))',
+  animation: "hsl(var(--red-500))",
+  border: "hsl(var(--orange-500))",
+  breakpoint: "hsl(var(--indigo-500))",
+  color: "hsl(var(--primary))",
+  custom: "hsl(var(--slate-500))",
+  opacity: "hsl(var(--yellow-500))",
+  radius: "hsl(var(--pink-500))",
+  shadow: "hsl(var(--purple-500))",
+  spacing: "hsl(var(--green-500))",
+  typography: "hsl(var(--blue-500))",
+  "z-index": "hsl(var(--cyan-500))",
 };
 
 // =============================================================================
@@ -121,7 +121,7 @@ function DesignTokenBrowserComponent({
   showComponentUsage = true,
   componentMap = new Map(),
 }: DesignTokenBrowserProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [copiedTokenId, setCopiedTokenId] = useState<string | null>(null);
 
@@ -136,7 +136,8 @@ function DesignTokenBrowserComponent({
         (t) =>
           t.name.toLowerCase().includes(query) ||
           t.path.some((p) => p.toLowerCase().includes(query)) ||
-          (t.description?.toLowerCase().includes(query) ?? t.value.toLowerCase().includes(query)) ||
+          (t.description?.toLowerCase().includes(query) ?? false) ||
+          t.value.toLowerCase().includes(query) ||
           t.tags?.some((tag) => tag.toLowerCase().includes(query)),
       );
     }
@@ -190,7 +191,7 @@ function DesignTokenBrowserComponent({
   }, []);
 
   const copyToClipboard = useCallback((text: string, tokenId: string) => {
-    if (typeof globalThis !== 'undefined' && 'navigator' in globalThis) {
+    if (typeof globalThis !== "undefined" && "navigator" in globalThis) {
       const clipboard = globalThis.navigator?.clipboard;
       if (clipboard) {
         void clipboard.writeText(text);
@@ -204,12 +205,12 @@ function DesignTokenBrowserComponent({
 
   if (tokens.length === 0) {
     return (
-      <Card className='h-full'>
-        <CardContent className='flex h-full items-center justify-center'>
-          <div className='text-muted-foreground py-12 text-center'>
-            <Palette className='mx-auto mb-3 h-12 w-12 opacity-50' />
-            <p className='text-sm font-medium'>No design tokens</p>
-            <p className='mx-auto mt-1 max-w-xs text-xs'>
+      <Card className="h-full">
+        <CardContent className="flex h-full items-center justify-center">
+          <div className="text-muted-foreground py-12 text-center">
+            <Palette className="mx-auto mb-3 h-12 w-12 opacity-50" />
+            <p className="text-sm font-medium">No design tokens</p>
+            <p className="mx-auto mt-1 max-w-xs text-xs">
               Import tokens from Figma, Tokens Studio, or define them manually
             </p>
           </div>
@@ -220,33 +221,33 @@ function DesignTokenBrowserComponent({
 
   return (
     <TooltipProvider>
-      <Card className='flex h-full flex-col overflow-hidden'>
+      <Card className="flex h-full flex-col overflow-hidden">
         {/* Header */}
-        <CardHeader className='border-b px-4 py-3'>
-          <div className='flex items-center justify-between'>
-            <div className='flex items-center gap-2'>
-              <Palette className='h-5 w-5 text-purple-500' />
-              <CardTitle className='text-sm font-semibold'>Design Tokens</CardTitle>
+        <CardHeader className="border-b px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Palette className="h-5 w-5 text-purple-500" />
+              <CardTitle className="text-sm font-semibold">Design Tokens</CardTitle>
             </div>
           </div>
 
           {/* Token stats */}
-          <div className='text-muted-foreground mt-2 flex flex-wrap items-center gap-3 text-xs'>
-            <span className='flex items-center gap-1'>
-              <Palette className='h-3 w-3' />
+          <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-3 text-xs">
+            <span className="flex items-center gap-1">
+              <Palette className="h-3 w-3" />
               {stats.total} tokens
             </span>
             {stats.withUsage > 0 && (
-              <span className='flex items-center gap-1'>
-                <Code className='h-3 w-3' />
+              <span className="flex items-center gap-1">
+                <Code className="h-3 w-3" />
                 {stats.withUsage} in use
               </span>
             )}
             {stats.withFigmaStyle > 0 && (
               <Tooltip delayDuration={200}>
                 <TooltipTrigger>
-                  <span className='flex items-center gap-1'>
-                    <Figma className='h-3 w-3' />
+                  <span className="flex items-center gap-1">
+                    <Figma className="h-3 w-3" />
                     {stats.withFigmaStyle} synced
                   </span>
                 </TooltipTrigger>
@@ -256,8 +257,8 @@ function DesignTokenBrowserComponent({
             {stats.withReferences > 0 && (
               <Tooltip delayDuration={200}>
                 <TooltipTrigger>
-                  <span className='flex items-center gap-1'>
-                    <LinkIcon className='h-3 w-3' />
+                  <span className="flex items-center gap-1">
+                    <LinkIcon className="h-3 w-3" />
                     {stats.withReferences} linked
                   </span>
                 </TooltipTrigger>
@@ -268,20 +269,20 @@ function DesignTokenBrowserComponent({
         </CardHeader>
 
         {/* Filter buttons row */}
-        <div className='bg-muted/30 flex flex-wrap items-center gap-2 overflow-x-auto border-b px-4 py-2'>
+        <div className="bg-muted/30 flex flex-wrap items-center gap-2 overflow-x-auto border-b px-4 py-2">
           {[...groupedByType.keys()].map((type) => {
             const TypeIcon = TOKEN_TYPE_ICONS[type];
             return (
               <Button
                 key={type}
-                variant='ghost'
-                size='sm'
-                className='h-6 gap-1 px-2 text-xs whitespace-nowrap'
+                variant="ghost"
+                size="sm"
+                className="h-6 gap-1 px-2 text-xs whitespace-nowrap"
                 onClick={() => {
                   toggleCategory(type);
                 }}
               >
-                {TypeIcon && <TypeIcon className='h-3 w-3' />}
+                {TypeIcon && <TypeIcon className="h-3 w-3" />}
                 {TOKEN_TYPE_LABELS[type]} ({groupedByType.get(type)?.length ?? 0})
               </Button>
             );
@@ -289,37 +290,37 @@ function DesignTokenBrowserComponent({
         </div>
 
         {/* Search */}
-        <div className='border-b px-4 py-2'>
-          <div className='relative'>
-            <Search className='text-muted-foreground absolute top-2 left-2.5 h-4 w-4' />
+        <div className="border-b px-4 py-2">
+          <div className="relative">
+            <Search className="text-muted-foreground absolute top-2 left-2.5 h-4 w-4" />
             <Input
-              placeholder='Search tokens by name, value, or path...'
+              placeholder="Search tokens by name, value, or path..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
               }}
-              className='h-8 pl-8 text-sm'
+              className="h-8 pl-8 text-sm"
             />
           </div>
         </div>
 
         {/* Main content */}
-        <ScrollArea className='flex-1 overflow-hidden'>
-          <div className='p-2'>
+        <ScrollArea className="flex-1 overflow-hidden">
+          <div className="p-2">
             {/* Expand/Collapse controls */}
-            <div className='mb-2 flex gap-2 px-2'>
+            <div className="mb-2 flex gap-2 px-2">
               <Button
-                variant='ghost'
-                size='sm'
-                className='h-6 px-2 text-xs'
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
                 onClick={expandAllCategories}
               >
                 Expand All
               </Button>
               <Button
-                variant='ghost'
-                size='sm'
-                className='h-6 px-2 text-xs'
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
                 onClick={collapseAllCategories}
               >
                 Collapse All
@@ -333,7 +334,7 @@ function DesignTokenBrowserComponent({
                   key={type}
                   type={type}
                   tokens={typeTokens}
-                  isExpanded={expandedCategories.has(type)}
+                  isExpanded={searchQuery.length > 0 || expandedCategories.has(type)}
                   onToggle={() => {
                     toggleCategory(type);
                   }}
@@ -349,10 +350,10 @@ function DesignTokenBrowserComponent({
                 />
               ))
             ) : (
-              <div className='text-muted-foreground py-8 text-center'>
-                <Search className='mx-auto mb-2 h-8 w-8 opacity-50' />
-                <p className='text-sm'>No tokens found</p>
-                <p className='mt-1 text-xs'>Try a different search term</p>
+              <div className="text-muted-foreground py-8 text-center">
+                <Search className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                <p className="text-sm">No tokens found</p>
+                <p className="mt-1 text-xs">Try a different search term</p>
               </div>
             )}
           </div>
@@ -401,23 +402,23 @@ function TokenCategorySection({
   return (
     <Collapsible open={isExpanded} onOpenChange={onToggle}>
       <CollapsibleTrigger>
-        <Button variant='ghost' className='mb-1 h-8 w-full justify-start gap-2 px-2'>
+        <Button variant="ghost" className="mb-1 h-8 w-full justify-start gap-2 px-2">
           {isExpanded ? (
-            <ChevronDown className='h-3.5 w-3.5' />
+            <ChevronDown className="h-3.5 w-3.5" />
           ) : (
-            <ChevronRight className='h-3.5 w-3.5' />
+            <ChevronRight className="h-3.5 w-3.5" />
           )}
           <div style={iconStyle}>
-            <IconComponent className='h-3.5 w-3.5' />
+            <IconComponent className="h-3.5 w-3.5" />
           </div>
-          <span className='text-sm font-medium'>{label}</span>
-          <Badge variant='secondary' className='ml-auto text-xs'>
+          <span className="text-sm font-medium">{label}</span>
+          <Badge variant="secondary" className="ml-auto text-xs">
             {tokens.length}
           </Badge>
         </Button>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className='mb-2 space-y-1 pl-6'>
+        <div className="mb-2 space-y-1 pl-6">
           {tokens.map((token) => (
             <TokenListItem
               key={token.id}
@@ -472,32 +473,32 @@ function TokenListItem({
 
   return (
     <div
-      className={`group flex cursor-pointer flex-col rounded-md border transition-colors ${isSelected ? 'bg-primary/10 border-primary/30' : 'hover:bg-muted/50 border-muted'} `}
+      className={`group flex cursor-pointer flex-col rounded-md border transition-colors ${isSelected ? "bg-primary/10 border-primary/30" : "hover:bg-muted/50 border-muted"} `}
     >
       {/* Main row */}
       <div
-        className='flex items-center gap-2 p-2'
+        className="flex items-center gap-2 p-2"
         onClick={onSelect}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             onSelect();
           }
         }}
-        role='button'
+        role="button"
         tabIndex={0}
       >
         {/* Token preview */}
         <TokenPreview token={token} />
 
         {/* Token info */}
-        <div className='min-w-0 flex-1'>
-          <div className='mb-0.5 flex items-center gap-1.5'>
-            <code className='truncate font-mono text-xs font-semibold'>{token.name}</code>
+        <div className="min-w-0 flex-1">
+          <div className="mb-0.5 flex items-center gap-1.5">
+            <code className="truncate font-mono text-xs font-semibold">{token.name}</code>
             {token.figmaStyleId && (
               <Tooltip delayDuration={200}>
                 <TooltipTrigger>
-                  <Figma className='h-3 w-3 shrink-0 text-blue-500' />
+                  <Figma className="h-3 w-3 shrink-0 text-blue-500" />
                 </TooltipTrigger>
                 <TooltipContent>Linked to Figma</TooltipContent>
               </Tooltip>
@@ -505,7 +506,7 @@ function TokenListItem({
             {hasReferences && (
               <Tooltip delayDuration={200}>
                 <TooltipTrigger>
-                  <LinkIcon className='h-3 w-3 shrink-0 text-amber-500' />
+                  <LinkIcon className="h-3 w-3 shrink-0 text-amber-500" />
                 </TooltipTrigger>
                 <TooltipContent>References other tokens</TooltipContent>
               </Tooltip>
@@ -513,38 +514,39 @@ function TokenListItem({
           </div>
 
           {/* Path breadcrumb */}
-          <div className='mb-0.5 flex items-center gap-1'>
-            <span className='text-muted-foreground text-[10px]'>{token.path.join(' / ')}</span>
+          <div className="mb-0.5 flex items-center gap-1">
+            <span className="text-muted-foreground text-[10px]">{token.path.join(" / ")}</span>
           </div>
 
           {/* Value display */}
-          <div className='flex items-center gap-2'>
-            <code className='text-muted-foreground bg-muted truncate rounded px-1.5 py-0.5 font-mono text-[10px]'>
+          <div className="flex items-center gap-2">
+            <code className="text-muted-foreground bg-muted truncate rounded px-1.5 py-0.5 font-mono text-[10px]">
               {token.resolvedValue ?? token.value}
             </code>
           </div>
         </div>
 
         {/* Actions */}
-        <div className='flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
+        <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           {/* Copy value */}
           <Tooltip delayDuration={200}>
             <TooltipTrigger asChild>
               <Button
-                variant='ghost'
-                size='sm'
-                className='h-6 w-6 p-0'
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                aria-label={`Copy value for ${token.name}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   onCopyValue(token.resolvedValue ?? token.value);
                 }}
               >
                 <Copy
-                  className={`h-3.5 w-3.5 transition-colors ${isCopied ? 'text-green-500' : ''}`}
+                  className={`h-3.5 w-3.5 transition-colors ${isCopied ? "text-green-500" : ""}`}
                 />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{isCopied ? 'Copied!' : 'Copy value'}</TooltipContent>
+            <TooltipContent>{isCopied ? "Copied!" : "Copy value"}</TooltipContent>
           </Tooltip>
 
           {/* Link to Figma */}
@@ -552,15 +554,15 @@ function TokenListItem({
             <Tooltip delayDuration={200}>
               <TooltipTrigger asChild>
                 <Button
-                  variant='ghost'
-                  size='sm'
-                  className='h-6 w-6 p-0'
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     onLinkToFigma();
                   }}
                 >
-                  <Figma className='h-3.5 w-3.5' />
+                  <Figma className="h-3.5 w-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Link to Figma style</TooltipContent>
@@ -570,16 +572,17 @@ function TokenListItem({
           {/* Expand details */}
           {(hasUsage || (hasReferences ?? token.description)) && (
             <Button
-              variant='ghost'
-              size='sm'
-              className='h-6 w-6 p-0'
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              aria-label={`${expandDetails ? "Hide" : "Show"} details for ${token.name}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setExpandDetails(!expandDetails);
               }}
             >
               <ChevronDown
-                className={`h-3.5 w-3.5 transition-transform ${expandDetails ? 'rotate-180' : ''}`}
+                className={`h-3.5 w-3.5 transition-transform ${expandDetails ? "rotate-180" : ""}`}
               />
             </Button>
           )}
@@ -589,7 +592,7 @@ function TokenListItem({
         {hasUsage && (
           <Tooltip delayDuration={200}>
             <TooltipTrigger>
-              <Badge variant='secondary' className='shrink-0 px-1.5 text-[10px]'>
+              <Badge variant="secondary" className="shrink-0 px-1.5 text-[10px]">
                 {token.usageCount}
               </Badge>
             </TooltipTrigger>
@@ -601,21 +604,21 @@ function TokenListItem({
       {/* Expandable details */}
       {expandDetails && (
         <>
-          <Separator className='mx-2' />
-          <div className='space-y-2 p-2'>
+          <Separator className="mx-2" />
+          <div className="space-y-2 p-2">
             {/* Description */}
             {token.description && (
               <div>
-                <p className='text-muted-foreground mb-1 text-[10px] font-medium'>Description</p>
-                <p className='text-foreground text-xs'>{token.description}</p>
+                <p className="text-muted-foreground mb-1 text-[10px] font-medium">Description</p>
+                <p className="text-foreground text-xs">{token.description}</p>
               </div>
             )}
 
             {/* Referenced token */}
             {token.referencesTokenId && (
               <div>
-                <p className='text-muted-foreground mb-1 text-[10px] font-medium'>References</p>
-                <code className='bg-muted block rounded px-2 py-1 font-mono text-[10px]'>
+                <p className="text-muted-foreground mb-1 text-[10px] font-medium">References</p>
+                <code className="bg-muted block rounded px-2 py-1 font-mono text-[10px]">
                   ${token.referencesTokenId}
                 </code>
               </div>
@@ -624,17 +627,17 @@ function TokenListItem({
             {/* Referenced by tokens */}
             {token.referencedByIds && token.referencedByIds.length > 0 && (
               <div>
-                <p className='text-muted-foreground mb-1 text-[10px] font-medium'>
+                <p className="text-muted-foreground mb-1 text-[10px] font-medium">
                   Referenced by {token.referencedByIds.length} token(s)
                 </p>
-                <div className='flex flex-wrap gap-1'>
+                <div className="flex flex-wrap gap-1">
                   {token.referencedByIds.slice(0, 3).map((id) => (
-                    <Badge key={id} variant='outline' className='text-[10px]'>
+                    <Badge key={id} variant="outline" className="text-[10px]">
                       {id}
                     </Badge>
                   ))}
                   {token.referencedByIds.length > 3 && (
-                    <Badge variant='outline' className='text-[10px]'>
+                    <Badge variant="outline" className="text-[10px]">
                       +{token.referencedByIds.length - 3}
                     </Badge>
                   )}
@@ -647,17 +650,17 @@ function TokenListItem({
               token.usedByComponentIds &&
               token.usedByComponentIds.length > 0 && (
                 <div>
-                  <p className='text-muted-foreground mb-1 text-[10px] font-medium'>
+                  <p className="text-muted-foreground mb-1 text-[10px] font-medium">
                     Used in {token.usedByComponentIds.length} component(s)
                   </p>
-                  <div className='flex flex-wrap gap-1'>
+                  <div className="flex flex-wrap gap-1">
                     {token.usedByComponentIds.slice(0, 3).map((componentId) => (
-                      <Badge key={componentId} variant='outline' className='text-[10px]'>
+                      <Badge key={componentId} variant="outline" className="text-[10px]">
                         {componentMap.get(componentId) ?? componentId}
                       </Badge>
                     ))}
                     {token.usedByComponentIds.length > 3 && (
-                      <Badge variant='outline' className='text-[10px]'>
+                      <Badge variant="outline" className="text-[10px]">
                         +{token.usedByComponentIds.length - 3}
                       </Badge>
                     )}
@@ -667,33 +670,33 @@ function TokenListItem({
 
             {/* Figma sync info */}
             {token.figmaStyleId && (
-              <div className='flex items-center gap-2 border-t pt-1'>
-                <Figma className='h-3.5 w-3.5 text-blue-500' />
+              <div className="flex items-center gap-2 border-t pt-1">
+                <Figma className="h-3.5 w-3.5 text-blue-500" />
                 <a
-                  href='https://figma.com/file/styles'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='flex items-center gap-1 text-[10px] text-blue-500 hover:text-blue-600'
+                  href="https://figma.com/file/styles"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-[10px] text-blue-500 hover:text-blue-600"
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
                 >
                   View in Figma
-                  <ExternalLink className='h-2.5 w-2.5' />
+                  <ExternalLink className="h-2.5 w-2.5" />
                 </a>
               </div>
             )}
 
             {/* Tags */}
             {token.tags && token.tags.length > 0 && (
-              <div className='flex flex-wrap gap-1 border-t pt-1'>
+              <div className="flex flex-wrap gap-1 border-t pt-1">
                 {token.tags.slice(0, 3).map((tag) => (
-                  <Badge key={tag} variant='secondary' className='text-[10px]'>
+                  <Badge key={tag} variant="secondary" className="text-[10px]">
                     {tag}
                   </Badge>
                 ))}
                 {token.tags.length > 3 && (
-                  <Badge variant='secondary' className='text-[10px]'>
+                  <Badge variant="secondary" className="text-[10px]">
                     +{token.tags.length - 3}
                   </Badge>
                 )}
@@ -717,45 +720,55 @@ const shadowPreviewStyle = (value: string): CSSProperties => ({
   boxShadow: value,
 });
 const borderPreviewStyle = (radius: string): CSSProperties => ({
-  borderColor: 'currentColor',
+  borderColor: "currentColor",
   borderRadius: radius,
 });
 
 function TokenPreview({ token }: TokenPreviewProps) {
   const value = token.resolvedValue ?? token.value;
   switch (token.type) {
-    case 'color': {
+    case "color": {
       return (
         <div
-          className='border-muted h-8 w-8 shrink-0 rounded-md border-2'
+          className="border-muted h-8 w-8 shrink-0 rounded-md border-2"
           style={colorPreviewStyle(value)}
           title={value}
+          role="img"
+          aria-label={`${token.name} color preview`}
         />
       );
     }
 
-    case 'shadow': {
+    case "shadow": {
       return (
         <div
-          className='border-muted h-8 w-8 shrink-0 rounded-md border'
+          className="border-muted h-8 w-8 shrink-0 rounded-md border"
           style={shadowPreviewStyle(value)}
+          role="img"
+          aria-label={`${token.name} shadow preview`}
         />
       );
     }
 
-    case 'border':
-    case 'radius': {
+    case "border":
+    case "radius": {
       return (
         <div
-          className='h-8 w-8 shrink-0 rounded border-2'
-          style={borderPreviewStyle(token.type === 'radius' ? value : '4px')}
+          className="h-8 w-8 shrink-0 rounded border-2"
+          style={borderPreviewStyle(token.type === "radius" ? value : "4px")}
+          role="img"
+          aria-label={`${token.name} ${token.type} preview`}
         />
       );
     }
     default: {
       return (
-        <div className='border-muted bg-muted flex h-8 w-8 shrink-0 items-center justify-center rounded border'>
-          <Code className='text-muted-foreground h-4 w-4' />
+        <div
+          className="border-muted bg-muted flex h-8 w-8 shrink-0 items-center justify-center rounded border"
+          role="img"
+          aria-label={`${token.name} token preview`}
+        >
+          <Code className="text-muted-foreground h-4 w-4" />
         </div>
       );
     }

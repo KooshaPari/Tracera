@@ -11,18 +11,18 @@
  * - Semantic HTML
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useDeleteItem, useItems } from '../../hooks/useItems';
-import { useProjects } from '../../hooks/useProjects';
-import { ItemsTableViewA11y } from '../../views/ItemsTableViewA11y';
+import { useDeleteItem, useItems } from "../../hooks/useItems";
+import { useProjects } from "../../hooks/useProjects";
+import { ItemsTableViewA11y } from "../../views/ItemsTableViewA11y";
 
 // Mock dependencies
-vi.mock('@tanstack/react-router', async () => {
-  const actual = await vi.importActual('@tanstack/react-router');
+vi.mock("@tanstack/react-router", async () => {
+  const actual = await vi.importActual("@tanstack/react-router");
   return {
     ...actual,
     useNavigate: () => vi.fn(),
@@ -30,7 +30,7 @@ vi.mock('@tanstack/react-router', async () => {
   };
 });
 
-vi.mock('../../hooks/useItems', () => ({
+vi.mock("../../hooks/useItems", () => ({
   useCreateItem: vi.fn(() => ({
     isPending: false,
     mutateAsync: vi.fn(),
@@ -40,11 +40,11 @@ vi.mock('../../hooks/useItems', () => ({
   useUpdateItem: vi.fn(),
 }));
 
-vi.mock('../../hooks/useProjects', () => ({
+vi.mock("../../hooks/useProjects", () => ({
   useProjects: vi.fn(),
 }));
 
-describe('ItemsTableViewA11y - Accessibility', () => {
+describe("ItemsTableViewA11y - Accessibility", () => {
   let queryClient: QueryClient;
   let user: ReturnType<typeof userEvent.setup>;
 
@@ -61,31 +61,31 @@ describe('ItemsTableViewA11y - Accessibility', () => {
 
   const mockItems = [
     {
-      createdAt: new Date('2024-01-01').toISOString(),
-      id: 'item-1',
-      owner: 'john',
-      priority: 'high',
-      status: 'in_progress',
-      title: 'Create Authentication',
-      type: 'feature',
+      createdAt: new Date("2024-01-01").toISOString(),
+      id: "item-1",
+      owner: "john",
+      priority: "high",
+      status: "in_progress",
+      title: "Create Authentication",
+      type: "feature",
     },
     {
-      createdAt: new Date('2024-01-02').toISOString(),
-      id: 'item-2',
-      owner: 'jane',
-      priority: 'critical',
-      status: 'todo',
-      title: 'Setup Database',
-      type: 'feature',
+      createdAt: new Date("2024-01-02").toISOString(),
+      id: "item-2",
+      owner: "jane",
+      priority: "critical",
+      status: "todo",
+      title: "Setup Database",
+      type: "feature",
     },
     {
-      createdAt: new Date('2024-01-03').toISOString(),
-      id: 'item-3',
-      owner: 'bob',
-      priority: 'high',
-      status: 'blocked',
-      title: 'Fix Login Bug',
-      type: 'bug',
+      createdAt: new Date("2024-01-03").toISOString(),
+      id: "item-3",
+      owner: "bob",
+      priority: "high",
+      status: "blocked",
+      title: "Fix Login Bug",
+      type: "bug",
     },
   ];
 
@@ -115,116 +115,120 @@ describe('ItemsTableViewA11y - Accessibility', () => {
     );
   };
 
-  describe('ARIA Roles and Attributes', () => {
-    it('should have proper table role and labels', () => {
+  describe("ARIA Roles and Attributes", () => {
+    it("should have proper table role and labels", () => {
       renderTable();
 
-      const table = screen.getByRole('table', {
+      const table = screen.getByRole("table", {
         name: /Items table with sortable columns/i,
       });
       expect(table).toBeInTheDocument();
     });
 
-    it('should have aria-label on table container', () => {
+    it("should have aria-label on table container", () => {
       renderTable();
 
-      const region = screen.getByRole('region', {
+      const region = screen.getByRole("region", {
         name: /Items table with keyboard navigation support/i,
       });
       expect(region).toBeInTheDocument();
     });
 
-    it('should have columnheader roles on header cells', () => {
+    it("should have columnheader roles on header cells", () => {
       renderTable();
 
-      const headers = screen.getAllByRole('columnheader');
+      const headers = screen.getAllByRole("columnheader");
       expect(headers.length).toBeGreaterThan(0);
-      expect(headers[0]).toHaveAttribute('aria-colindex', '1');
+      expect(headers[0]).toHaveAttribute("aria-colindex", "1");
     });
 
-    it('should have row roles on table rows', () => {
+    it("should have row roles on table rows", () => {
       renderTable();
 
-      const rows = screen.getAllByRole('row');
+      const rows = screen.getAllByRole("row");
       expect(rows.length).toBeGreaterThan(1); // Header + data rows
-      expect(rows[1]).toHaveAttribute('aria-rowindex', '2'); // First data row
+      expect(rows[1]).toHaveAttribute("aria-rowindex", "2"); // First data row
     });
 
-    it('should have gridcell roles on data cells', () => {
+    it("should expose native table cells to assistive technology", () => {
       renderTable();
 
-      const cells = screen.getAllByRole('gridcell');
+      const cells = screen.getAllByRole("cell");
       expect(cells.length).toBeGreaterThan(0);
     });
 
-    it('should have aria-sort on sortable headers', () => {
+    it("should have aria-sort on sortable headers", () => {
       renderTable();
 
-      const nodeIdentifierHeader = screen.getByRole('columnheader', {
+      const nodeIdentifierHeader = screen.getByRole("columnheader", {
         name: /Node Identifier/i,
       });
-      expect(nodeIdentifierHeader).toHaveAttribute('aria-sort');
+      expect(nodeIdentifierHeader).toHaveAttribute("aria-sort");
     });
 
-    it('should have aria-describedby for table instructions', () => {
+    it("should have aria-describedby for table instructions", () => {
       renderTable();
 
-      const table = document.querySelector('#items-table-a11y');
-      expect(table).toHaveAttribute('aria-describedby', 'table-instructions');
+      const table = document.querySelector("#items-table-a11y");
+      expect(table).toHaveAttribute("aria-describedby", "table-instructions");
 
-      const instructions = document.querySelector('#table-instructions');
+      const instructions = document.querySelector("#table-instructions");
       expect(instructions).toBeInTheDocument();
-      expect(instructions).toHaveClass('sr-only');
+      expect(instructions).toHaveClass("sr-only");
     });
   });
 
-  describe('Keyboard Navigation', () => {
-    it('should have arrow key navigation instructions in sr-only text', () => {
+  describe("Keyboard Navigation", () => {
+    it("should have arrow key navigation instructions in sr-only text", () => {
       renderTable();
 
-      const instructions = document.querySelector('#table-instructions');
-      expect(instructions?.textContent).toContain('Use arrow keys to navigate');
-      expect(instructions?.textContent).toContain('Home and End');
-      expect(instructions?.textContent).toContain('Ctrl+Home');
+      const instructions = document.querySelector("#table-instructions");
+      expect(instructions?.textContent).toContain("Use arrow keys to navigate");
+      expect(instructions?.textContent).toContain("Home and End");
+      expect(instructions?.textContent).toContain("Ctrl+Home");
     });
 
-    it('should have focusable elements with proper tabindex', () => {
+    it("should have focusable elements with proper tabindex", () => {
       renderTable();
 
-      const titleButton = screen.getByLabelText(/Item Create Authentication/i);
-      expect(titleButton).toHaveAttribute('tabindex');
+      const titleButton = screen.getByRole("button", {
+        name: "Item Create Authentication (ID: item-1)",
+      });
+      expect(titleButton).toHaveAttribute("tabindex");
     });
 
-    it('should have roving tabindex on action buttons', () => {
+    it("should have roving tabindex on action buttons", () => {
       renderTable();
 
-      const buttons = screen.getAllByRole('button');
+      const buttons = screen.getAllByRole("button");
       // Some buttons should have tabindex=0 or -1 for roving tabindex
       const hasRovingTabindex = buttons.some(
-        (btn) => btn.getAttribute('tabindex') === '0' || btn.getAttribute('tabindex') === '-1',
+        (btn) => btn.getAttribute("tabindex") === "0" || btn.getAttribute("tabindex") === "-1",
       );
       expect(hasRovingTabindex).toBeTruthy();
     });
   });
 
-  describe('Focus Management', () => {
-    it('should announce navigation to screen readers', () => {
+  describe("Focus Management", () => {
+    it("should announce navigation to screen readers", () => {
       renderTable();
 
-      const liveRegion = document.querySelector('#table-announcements');
-      expect(liveRegion).toHaveAttribute('role', 'status');
-      expect(liveRegion).toHaveAttribute('aria-live', 'polite');
-      expect(liveRegion).toHaveAttribute('aria-atomic', 'true');
+      const liveRegion = document.querySelector("#table-announcements");
+      expect(liveRegion).toHaveAttribute("role", "status");
+      expect(liveRegion).toHaveAttribute("aria-live", "polite");
+      expect(liveRegion).toHaveAttribute("aria-atomic", "true");
     });
 
-    it('should have visible focus indicators', () => {
+    it("should have visible focus indicators", () => {
       renderTable();
 
-      const titleButton = screen.getByLabelText(/Item Create Authentication/i);
-      expect(titleButton).toHaveClass('focus:ring-2', 'focus:ring-primary');
+      const titleButton = screen.getByRole("button", {
+        name: "Item Create Authentication (ID: item-1)",
+      });
+      expect(titleButton).toHaveClass("focus:ring-2", "focus:ring-primary");
     });
 
-    it('should manage focus when items are deleted', async () => {
+    it("should manage focus when items are deleted", async () => {
       renderTable();
 
       const deleteButtons = screen.getAllByLabelText(/Delete item/i);
@@ -232,8 +236,8 @@ describe('ItemsTableViewA11y - Accessibility', () => {
     });
   });
 
-  describe('Semantic HTML and Labels', () => {
-    it('should have descriptive aria-labels on action buttons', () => {
+  describe("Semantic HTML and Labels", () => {
+    it("should have descriptive aria-labels on action buttons", () => {
       renderTable();
 
       expect(
@@ -242,28 +246,27 @@ describe('ItemsTableViewA11y - Accessibility', () => {
       expect(screen.getByLabelText(/Delete item Create Authentication/i)).toBeInTheDocument();
     });
 
-    it('should have aria-labels on search input', () => {
+    it("should have aria-labels on search input", () => {
       renderTable();
 
       const searchInput = screen.getByLabelText(/Search items by title or ID/i);
       expect(searchInput).toBeInTheDocument();
     });
 
-    it('should have aria-label on create button', () => {
+    it("should have aria-label on create button", () => {
       renderTable();
 
       const createButton = screen.getByLabelText(/Create new node/i);
       expect(createButton).toBeInTheDocument();
     });
 
-    it('should have aria-label on view switch button', () => {
+    it("should identify the registry view with a level-one heading", () => {
       renderTable();
 
-      const workflowButton = screen.getByLabelText(/Switch to workflow view/i);
-      expect(workflowButton).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 1, name: "Node Registry" })).toBeInTheDocument();
     });
 
-    it('should have status information as aria-labels', () => {
+    it("should have status information as aria-labels", () => {
       renderTable();
 
       // Status should be readable by screen readers
@@ -271,7 +274,7 @@ describe('ItemsTableViewA11y - Accessibility', () => {
       expect(statusElements.length).toBeGreaterThan(0);
     });
 
-    it('should have priority information as aria-labels', () => {
+    it("should have priority information as aria-labels", () => {
       renderTable();
 
       // Priority dot should have aria-label
@@ -279,7 +282,7 @@ describe('ItemsTableViewA11y - Accessibility', () => {
       expect(priorityLabels.length).toBeGreaterThan(0);
     });
 
-    it('should have owner information with avatar labels', () => {
+    it("should have owner information with avatar labels", () => {
       renderTable();
 
       const ownerLabels = screen.getAllByLabelText(/Avatar for/i);
@@ -287,19 +290,19 @@ describe('ItemsTableViewA11y - Accessibility', () => {
     });
   });
 
-  describe('Screen Reader Compatibility', () => {
-    it('should have sr-only instructions visible only to screen readers', () => {
+  describe("Screen Reader Compatibility", () => {
+    it("should have sr-only instructions visible only to screen readers", () => {
       renderTable();
 
-      const instructions = document.querySelector('#table-instructions');
-      expect(instructions).toHaveClass('sr-only');
+      const instructions = document.querySelector("#table-instructions");
+      expect(instructions).toHaveClass("sr-only");
 
       // Verify it's visually hidden but accessible
       const _styles = globalThis.getComputedStyle(instructions!);
       // Sr-only class should hide element from view
     });
 
-    it('should hide decorative icons from screen readers', () => {
+    it("should hide decorative icons from screen readers", () => {
       renderTable();
 
       // All lucide-react icons should have aria-hidden="true"
@@ -307,56 +310,56 @@ describe('ItemsTableViewA11y - Accessibility', () => {
       expect(decorativeIcons.length).toBeGreaterThan(0);
     });
 
-    it('should have proper heading hierarchy', () => {
+    it("should have proper heading hierarchy", () => {
       renderTable();
 
-      const h1 = screen.getByRole('heading', { level: 1 });
+      const h1 = screen.getByRole("heading", { level: 1 });
       expect(h1).toHaveTextContent(/Node Registry/i);
     });
 
-    it('should announce actions through live regions', () => {
+    it("should announce actions through live regions", () => {
       renderTable();
 
-      const liveRegion = document.querySelector('#table-announcements');
+      const liveRegion = document.querySelector("#table-announcements");
       expect(liveRegion).toBeInTheDocument();
     });
   });
 
-  describe('Modal Accessibility', () => {
-    it('should have dialog role on create modal', async () => {
+  describe("Modal Accessibility", () => {
+    it("should have dialog role on create modal", async () => {
       renderTable();
 
       const createButton = screen.getByLabelText(/Create new node/i);
       await user.click(createButton);
 
       // Modal should have proper role
-      const modal = screen.getByRole('dialog');
-      expect(modal).toHaveAttribute('aria-modal', 'true');
+      const modal = screen.getByRole("dialog");
+      expect(modal).toHaveAttribute("aria-modal", "true");
     });
 
-    it('should have aria-labelledby on modal', async () => {
+    it("should have aria-labelledby on modal", async () => {
       renderTable();
 
       const createButton = screen.getByLabelText(/Create new node/i);
       await user.click(createButton);
 
-      const modal = screen.getByRole('dialog');
-      expect(modal).toHaveAttribute('aria-labelledby', 'create-modal-title');
+      const modal = screen.getByRole("dialog");
+      expect(modal).toHaveAttribute("aria-labelledby", "create-modal-title");
     });
 
-    it('should have labels on form inputs', async () => {
+    it("should have labels on form inputs", async () => {
       renderTable();
 
       const createButton = screen.getByLabelText(/Create new node/i);
       await user.click(createButton);
 
-      expect(screen.getByLabelText(/Title/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Type/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Status/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Priority/i)).toBeInTheDocument();
+      expect(screen.getByLabelText("Title")).toBeInTheDocument();
+      expect(screen.getByLabelText("Type")).toBeInTheDocument();
+      expect(screen.getByLabelText("Status")).toBeInTheDocument();
+      expect(screen.getByLabelText("Priority")).toBeInTheDocument();
     });
 
-    it('should have close button with aria-label', async () => {
+    it("should have close button with aria-label", async () => {
       renderTable();
 
       const createButton = screen.getByLabelText(/Create new node/i);
@@ -367,39 +370,42 @@ describe('ItemsTableViewA11y - Accessibility', () => {
     });
   });
 
-  describe('Content Structure', () => {
-    it('should have proper table structure with headers and body', () => {
+  describe("Content Structure", () => {
+    it("should have proper table structure with headers and body", () => {
       renderTable();
 
-      const tableHeader = screen.getByRole('rowgroup');
-      expect(tableHeader).toBeInTheDocument();
+      const table = screen.getByRole("table", {
+        name: /Items table with sortable columns/i,
+      });
+      const rowGroups = within(table).getAllByRole("rowgroup");
+      expect(rowGroups).toHaveLength(2);
 
-      const rows = screen.getAllByRole('row');
+      const rows = screen.getAllByRole("row");
       expect(rows.length).toBeGreaterThan(1);
     });
 
-    it('should display all required columns', () => {
+    it("should display all required columns", () => {
       renderTable();
 
-      expect(screen.getByText('Node Identifier')).toBeInTheDocument();
-      expect(screen.getByText('Type')).toBeInTheDocument();
-      expect(screen.getByText('Status')).toBeInTheDocument();
-      expect(screen.getByText('Priority')).toBeInTheDocument();
-      expect(screen.getByText('Owner')).toBeInTheDocument();
-      expect(screen.getByText('Actions')).toBeInTheDocument();
+      expect(screen.getByText("Node Identifier")).toBeInTheDocument();
+      expect(screen.getByText("Type")).toBeInTheDocument();
+      expect(screen.getByText("Status")).toBeInTheDocument();
+      expect(screen.getByText("Priority")).toBeInTheDocument();
+      expect(screen.getByText("Owner")).toBeInTheDocument();
+      expect(screen.getByText("Actions")).toBeInTheDocument();
     });
 
-    it('should display all item data', () => {
+    it("should display all item data", () => {
       renderTable();
 
-      expect(screen.getByText('Create Authentication')).toBeInTheDocument();
-      expect(screen.getByText('Setup Database')).toBeInTheDocument();
-      expect(screen.getByText('Fix Login Bug')).toBeInTheDocument();
+      expect(screen.getByText("Create Authentication")).toBeInTheDocument();
+      expect(screen.getByText("Setup Database")).toBeInTheDocument();
+      expect(screen.getByText("Fix Login Bug")).toBeInTheDocument();
     });
   });
 
-  describe('Error Handling and States', () => {
-    it('should announce when items are deleted', async () => {
+  describe("Error Handling and States", () => {
+    it("should announce when items are deleted", async () => {
       vi.mocked(useDeleteItem).mockReturnValue({
         mutateAsync: vi.fn().mockResolvedValue({}),
       } as any);
@@ -413,7 +419,7 @@ describe('ItemsTableViewA11y - Accessibility', () => {
       }
     });
 
-    it('should handle empty state accessibly', () => {
+    it("should handle empty state accessibly", () => {
       vi.mocked(useItems).mockReturnValue({
         data: { items: [] },
         error: null,
@@ -430,7 +436,7 @@ describe('ItemsTableViewA11y - Accessibility', () => {
       expect(screen.getByText(/Registry Vacant/i)).toBeInTheDocument();
     });
 
-    it('should handle loading state with semantic meaning', () => {
+    it("should handle loading state with semantic meaning", () => {
       vi.mocked(useItems).mockReturnValue({
         data: null,
         error: null,
@@ -445,32 +451,35 @@ describe('ItemsTableViewA11y - Accessibility', () => {
       );
 
       // Should show loading skeletons
-      const skeletons = document.querySelectorAll('.animate-pulse');
+      const skeletons = document.querySelectorAll(".animate-pulse");
       expect(skeletons.length).toBeGreaterThan(0);
     });
   });
 
-  describe('WCAG 2.1 AA Compliance Specific Tests', () => {
-    it('should have sufficient touch target size (44x44px minimum)', () => {
+  describe("WCAG 2.1 AA Compliance Specific Tests", () => {
+    it("should give row action buttons explicit target dimensions", () => {
       renderTable();
 
-      const buttons = screen.getAllByRole('button');
-      buttons.forEach((button) => {
-        // Buttons should have adequate padding
-        expect(button).toHaveClass('h-8', 'w-8');
+      const rowActionButtons = [
+        ...screen.getAllByLabelText(/Open item details for/i),
+        ...screen.getAllByLabelText(/Delete item/i),
+      ];
+      expect(rowActionButtons).toHaveLength(mockItems.length * 2);
+      rowActionButtons.forEach((button) => {
+        expect(button).toHaveClass("h-8", "w-8");
       });
     });
 
-    it('should support text resizing', () => {
+    it("should support text resizing", () => {
       renderTable();
 
-      const h1 = screen.getByRole('heading', { level: 1 });
+      const h1 = screen.getByRole("heading", { level: 1 });
       const styles = globalThis.getComputedStyle(h1);
       // Should not use fixed pixel sizes for fonts
       expect(styles.fontSize).toBeTruthy();
     });
 
-    it('should maintain focus order', () => {
+    it("should maintain focus order", () => {
       renderTable();
 
       // Focus should be logical and sequential
@@ -480,7 +489,7 @@ describe('ItemsTableViewA11y - Accessibility', () => {
       expect(focusableElements.length).toBeGreaterThan(0);
     });
 
-    it('should have 4.5:1 color contrast for text', () => {
+    it("should have 4.5:1 color contrast for text", () => {
       renderTable();
 
       // Text elements should have sufficient contrast
@@ -488,7 +497,7 @@ describe('ItemsTableViewA11y - Accessibility', () => {
       expect(textElements.length).toBeGreaterThan(0);
     });
 
-    it('should not rely on color alone to convey information', () => {
+    it("should not rely on color alone to convey information", () => {
       renderTable();
 
       // Status badges should have text, not just color

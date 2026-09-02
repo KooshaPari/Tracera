@@ -1,23 +1,23 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
-import * as hooks from '../../hooks/useItems';
-import * as projectHooks from '../../hooks/useProjects';
-import { ItemsTreeView } from '../../views/ItemsTreeView';
+import * as hooks from "../../hooks/useItems";
+import * as projectHooks from "../../hooks/useProjects";
+import { ItemsTreeView } from "../../views/ItemsTreeView";
 
 // Mock react router
-vi.mock('@tanstack/react-router', () => ({
+vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, children }: any) => <a href={to}>{children}</a>,
   useNavigate: vi.fn(() => vi.fn()),
   useSearch: vi.fn(() => ({})),
 }));
 
 // Mock hooks
-vi.mock('../../hooks/useItems', () => ({
+vi.mock("../../hooks/useItems", () => ({
   useItems: vi.fn(),
 }));
 
-vi.mock('../../hooks/useProjects', () => ({
+vi.mock("../../hooks/useProjects", () => ({
   useProjects: vi.fn(),
 }));
 
@@ -25,9 +25,9 @@ const mockTreeItems = Array.from({ length: 50 }, (_, i) => ({
   id: `item-${i}`,
   title: `Item ${i}`,
   description: `Description for item ${i}`,
-  type: ['requirement', 'feature', 'test', 'bug', 'task'][i % 5],
-  status: ['todo', 'in_progress', 'done', 'blocked'][i % 4],
-  priority: ['critical', 'high', 'medium', 'low'][i % 4],
+  type: ["requirement", "feature", "test", "bug", "task"][i % 5],
+  status: ["todo", "in_progress", "done", "blocked"][i % 4],
+  priority: ["critical", "high", "medium", "low"][i % 4],
   owner: i % 2 === 0 ? `User ${i % 5}` : null,
   parentId: i > 10 ? `item-${Math.floor(i / 2)}` : null, // Create hierarchy
   projectId: `project-${i % 3}`,
@@ -35,23 +35,23 @@ const mockTreeItems = Array.from({ length: 50 }, (_, i) => ({
   updatedAt: new Date(),
 }));
 
-describe('ItemsTreeView Performance', () => {
+describe("ItemsTreeView Performance", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(hooks, 'useItems').mockReturnValue({
+    vi.spyOn(hooks, "useItems").mockReturnValue({
       data: { items: mockTreeItems },
       isLoading: false,
     } as any);
-    vi.spyOn(projectHooks, 'useProjects').mockReturnValue({
+    vi.spyOn(projectHooks, "useProjects").mockReturnValue({
       data: [
-        { id: 'project-0', name: 'Project 0' },
-        { id: 'project-1', name: 'Project 1' },
-        { id: 'project-2', name: 'Project 2' },
+        { id: "project-0", name: "Project 0" },
+        { id: "project-1", name: "Project 1" },
+        { id: "project-2", name: "Project 2" },
       ],
     } as any);
   });
 
-  it('renders tree with hierarchical data efficiently', () => {
+  it("renders tree with hierarchical data efficiently", () => {
     const renderSpy = vi.fn();
     const OriginalItemsTreeView = ItemsTreeView;
 
@@ -70,7 +70,7 @@ describe('ItemsTreeView Performance', () => {
     expect(renderSpy).toHaveBeenCalledTimes(2);
   });
 
-  it('memoizes TreeItem components with deep nesting', () => {
+  it("memoizes TreeItem components with deep nesting", () => {
     const { container } = render(<ItemsTreeView />);
 
     // Check that tree items are rendered
@@ -78,13 +78,13 @@ describe('ItemsTreeView Performance', () => {
     expect(treeItems.length).toBeGreaterThan(0);
   });
 
-  it('handles expand/collapse operations efficiently', async () => {
+  it("handles expand/collapse operations efficiently", async () => {
     const user = userEvent.setup();
     const { container } = render(<ItemsTreeView />);
 
     // Find expand buttons
-    const expandButtons = container.querySelectorAll('button');
-    const chevronButtons = [...expandButtons].filter((btn: Element) => btn.querySelector('svg'));
+    const expandButtons = container.querySelectorAll("button");
+    const chevronButtons = [...expandButtons].filter((btn: Element) => btn.querySelector("svg"));
 
     if (chevronButtons.length > 0) {
       const firstButton = chevronButtons[0];
@@ -102,13 +102,13 @@ describe('ItemsTreeView Performance', () => {
     }
   });
 
-  it('expands/collapses all efficiently without performance degradation', async () => {
+  it("expands/collapses all efficiently without performance degradation", async () => {
     const user = userEvent.setup();
     const { container } = render(<ItemsTreeView />);
 
     // Find expand all button (Maximize2 icon)
-    const buttons = screen.getAllByRole('button');
-    const expandAllButton = buttons.find((btn) => btn.getAttribute('title') === 'Expand All');
+    const buttons = screen.getAllByRole("button");
+    const expandAllButton = buttons.find((btn) => btn.getAttribute("title") === "Expand All");
 
     if (expandAllButton) {
       await user.click(expandAllButton);
@@ -118,7 +118,7 @@ describe('ItemsTreeView Performance', () => {
     }
   });
 
-  it('filters tree items efficiently with memoization', async () => {
+  it("filters tree items efficiently with memoization", async () => {
     const user = userEvent.setup();
     const { container } = render(<ItemsTreeView />);
 
@@ -127,7 +127,7 @@ describe('ItemsTreeView Performance', () => {
 
     if (searchInput) {
       // Type to filter
-      await user.type(searchInput, 'Item 1');
+      await user.type(searchInput, "Item 1");
 
       // Should still render efficiently
       const treeItems = container.querySelectorAll('[style*="marginLeft"]');
@@ -135,7 +135,7 @@ describe('ItemsTreeView Performance', () => {
     }
   });
 
-  it('preserves tree structure when filtering', async () => {
+  it("preserves tree structure when filtering", async () => {
     const user = userEvent.setup();
     const { container, rerender } = render(<ItemsTreeView />);
 
@@ -143,7 +143,7 @@ describe('ItemsTreeView Performance', () => {
 
     if (searchInput) {
       await user.clear(searchInput);
-      await user.type(searchInput, '0');
+      await user.type(searchInput, "0");
 
       // Should maintain tree structure
       const treeItems = container.querySelectorAll('[style*="marginLeft"]');
@@ -156,7 +156,7 @@ describe('ItemsTreeView Performance', () => {
     }
   });
 
-  it('memoizes tree structure with expand state', async () => {
+  it("memoizes tree structure with expand state", async () => {
     const user = userEvent.setup();
     const { container } = render(<ItemsTreeView />);
 
@@ -166,8 +166,8 @@ describe('ItemsTreeView Performance', () => {
     void initialCount;
 
     // Toggle expand state
-    const expandButtons = container.querySelectorAll('button');
-    const chevronButtons = [...expandButtons].filter((btn: Element) => btn.querySelector('svg'));
+    const expandButtons = container.querySelectorAll("button");
+    const chevronButtons = [...expandButtons].filter((btn: Element) => btn.querySelector("svg"));
 
     if (chevronButtons.length > 0) {
       const firstButton = chevronButtons[0];

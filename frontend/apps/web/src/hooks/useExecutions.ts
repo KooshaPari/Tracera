@@ -1,14 +1,14 @@
 // React hooks for execution management
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type {
   ExecutionComplete,
   ExecutionCreate,
   ExecutionEnvironmentConfigUpdate,
-} from '../api/executions';
+} from "../api/executions";
 
-import executionsApi from '../api/executions';
+import executionsApi from "../api/executions";
 
 export function useExecutions(
   projectId: string,
@@ -22,7 +22,7 @@ export function useExecutions(
   return useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => executionsApi.list(projectId, options),
-    queryKey: ['executions', projectId, options],
+    queryKey: ["executions", projectId, options],
   });
 }
 
@@ -30,7 +30,7 @@ export function useExecution(projectId: string, executionId: string) {
   return useQuery({
     enabled: Boolean(projectId) && Boolean(executionId),
     queryFn: async () => executionsApi.get(projectId, executionId),
-    queryKey: ['execution', projectId, executionId],
+    queryKey: ["execution", projectId, executionId],
   });
 }
 
@@ -42,7 +42,7 @@ export function useExecutionArtifacts(
   return useQuery({
     enabled: Boolean(projectId) && Boolean(executionId),
     queryFn: async () => executionsApi.listArtifacts(projectId, executionId, artifactType),
-    queryKey: ['execution-artifacts', projectId, executionId, artifactType],
+    queryKey: ["execution-artifacts", projectId, executionId, artifactType],
   });
 }
 
@@ -50,7 +50,7 @@ export function useExecutionConfig(projectId: string) {
   return useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => executionsApi.getConfig(projectId),
-    queryKey: ['execution-config', projectId],
+    queryKey: ["execution-config", projectId],
   });
 }
 
@@ -60,7 +60,7 @@ export function useCreateExecution(projectId: string) {
     mutationFn: async (data: ExecutionCreate) => executionsApi.create(projectId, data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['executions', projectId],
+        queryKey: ["executions", projectId],
       });
     },
   });
@@ -72,10 +72,10 @@ export function useStartExecution(projectId: string) {
     mutationFn: async (executionId: string) => executionsApi.start(projectId, executionId),
     onSuccess: async (_data, executionId) => {
       await queryClient.invalidateQueries({
-        queryKey: ['execution', projectId, executionId],
+        queryKey: ["execution", projectId, executionId],
       });
       await queryClient.invalidateQueries({
-        queryKey: ['executions', projectId],
+        queryKey: ["executions", projectId],
       });
     },
   });
@@ -88,13 +88,13 @@ export function useCompleteExecution(projectId: string) {
       executionsApi.complete(projectId, executionId, data),
     onSuccess: async (_data, { executionId }) => {
       await queryClient.invalidateQueries({
-        queryKey: ['execution', projectId, executionId],
+        queryKey: ["execution", projectId, executionId],
       });
       await queryClient.invalidateQueries({
-        queryKey: ['executions', projectId],
+        queryKey: ["executions", projectId],
       });
       await queryClient.invalidateQueries({
-        queryKey: ['execution-artifacts', projectId, executionId],
+        queryKey: ["execution-artifacts", projectId, executionId],
       });
     },
   });
@@ -107,7 +107,7 @@ export function useUpdateExecutionConfig(projectId: string) {
       executionsApi.updateConfig(projectId, data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['execution-config', projectId],
+        queryKey: ["execution-config", projectId],
       });
     },
   });

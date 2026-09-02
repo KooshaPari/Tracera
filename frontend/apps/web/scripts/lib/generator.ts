@@ -2,13 +2,13 @@
  * Item and link generation logic
  */
 
-import type { ItemPriority, ItemStatus, ItemsByType, ItemType, LinkType } from './types';
+import type { ItemPriority, ItemStatus, ItemsByType, ItemType, LinkType } from "./types";
 
-import { createItemWithRetry, createLinkWithRetry } from './api';
-import { codeSnippets, descriptions } from './data';
+import { createItemWithRetry, createLinkWithRetry } from "./api";
+import { codeSnippets, descriptions } from "./data";
 
-const statuses: ItemStatus[] = ['pending', 'in_progress', 'completed', 'blocked'];
-const priorities: ItemPriority[] = ['low', 'medium', 'high', 'critical'];
+const statuses: ItemStatus[] = ["pending", "in_progress", "completed", "blocked"];
+const priorities: ItemPriority[] = ["low", "medium", "high", "critical"];
 
 export function randomChoice<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -87,7 +87,7 @@ export async function createItemsByType(
     let items: any[] = [];
 
     switch (itemType) {
-      case 'requirement':
+      case "requirement":
         items = await createItemsBatch(
           projectId,
           count,
@@ -98,7 +98,7 @@ export async function createItemsByType(
         );
         break;
 
-      case 'feature':
+      case "feature":
         items = await createItemsBatch(
           projectId,
           count,
@@ -109,18 +109,18 @@ export async function createItemsByType(
         );
         break;
 
-      case 'code':
+      case "code":
         items = await createItemsBatch(
           projectId,
           count,
           itemType,
           (i) => {
-            const ext = projectDomain === 'ai' ? 'py' : 'ts';
+            const ext = projectDomain === "ai" ? "py" : "ts";
             return `${projectDomain}/module_${i}.${ext}`;
           },
           (i) => {
             const lang =
-              projectDomain === 'data' || projectDomain === 'ai' ? 'python' : 'typescript';
+              projectDomain === "data" || projectDomain === "ai" ? "python" : "typescript";
             const snippet = randomChoice(codeSnippets[lang as keyof typeof codeSnippets]);
             return `Code implementation for ${projectDomain}.\n\n\`\`\`${lang}\n${snippet}\n\`\`\``;
           },
@@ -128,7 +128,7 @@ export async function createItemsByType(
         );
         break;
 
-      case 'test':
+      case "test":
         items = await createItemsBatch(
           projectId,
           count,
@@ -139,7 +139,7 @@ export async function createItemsByType(
         );
         break;
 
-      case 'api':
+      case "api":
         items = await createItemsBatch(
           projectId,
           count,
@@ -149,7 +149,7 @@ export async function createItemsByType(
         );
         break;
 
-      case 'database':
+      case "database":
         items = await createItemsBatch(
           projectId,
           count,
@@ -162,7 +162,7 @@ export async function createItemsByType(
         );
         break;
 
-      case 'wireframe':
+      case "wireframe":
         items = await createItemsBatch(
           projectId,
           count,
@@ -172,7 +172,7 @@ export async function createItemsByType(
         );
         break;
 
-      case 'documentation':
+      case "documentation":
         items = await createItemsBatch(
           projectId,
           count,
@@ -182,7 +182,7 @@ export async function createItemsByType(
         );
         break;
 
-      case 'deployment':
+      case "deployment":
         items = await createItemsBatch(
           projectId,
           count,
@@ -219,7 +219,7 @@ export async function createTraceabilityLinks(
         links.push({
           source_id: feat.id,
           target_id: req.id,
-          type: 'implements',
+          type: "implements",
         });
       }
     }
@@ -238,7 +238,7 @@ export async function createTraceabilityLinks(
         links.push({
           source_id: code.id,
           target_id: feat.id,
-          type: 'implements',
+          type: "implements",
         });
       }
     }
@@ -251,7 +251,7 @@ export async function createTraceabilityLinks(
       const code = allItemsByType.code[i % allItemsByType.code.length];
       const test = allItemsByType.test[i % allItemsByType.test.length];
       if (code && test && code.id !== test.id) {
-        links.push({ source_id: test.id, target_id: code.id, type: 'tests' });
+        links.push({ source_id: test.id, target_id: code.id, type: "tests" });
       }
     }
   }
@@ -267,7 +267,7 @@ export async function createTraceabilityLinks(
         links.push({
           source_id: code.id,
           target_id: db.id,
-          type: 'depends_on',
+          type: "depends_on",
         });
       }
     }
@@ -283,7 +283,7 @@ export async function createTraceabilityLinks(
         links.push({
           source_id: api.id,
           target_id: code.id,
-          type: 'depends_on',
+          type: "depends_on",
         });
       }
     }
@@ -304,7 +304,7 @@ export async function createTraceabilityLinks(
         links.push({
           source_id: feat.id,
           target_id: wire.id,
-          type: 'relates_to',
+          type: "relates_to",
         });
       }
     }

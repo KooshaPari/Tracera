@@ -1,10 +1,10 @@
-import type * as ReactQuery from '@tanstack/react-query';
+import type * as ReactQuery from "@tanstack/react-query";
 
-import type * as JourneyTypes from './journeys-types';
+import type * as JourneyTypes from "./journeys-types";
 
-import * as JourneyKeys from './journeys-keys';
-import * as QueryClient from './query-client';
-import * as ReactQueryHooks from './react-query-hooks';
+import * as JourneyKeys from "./journeys-keys";
+import * as QueryClient from "./query-client";
+import * as ReactQueryHooks from "./react-query-hooks";
 
 const useDerivedJourneys = (
   projectId: string,
@@ -12,7 +12,7 @@ const useDerivedJourneys = (
   options?: ReactQuery.UseQueryOptions<JourneyTypes.Journey[]>,
 ): ReactQuery.UseQueryResult<JourneyTypes.Journey[]> => {
   const queryParams: { type?: string } = {};
-  const hasType = typeof type === 'string' && type !== '';
+  const hasType = typeof type === "string" && type !== "";
   if (hasType) {
     queryParams.type = type;
   }
@@ -20,7 +20,7 @@ const useDerivedJourneys = (
     enabled: Boolean(projectId),
     queryFn: async (): Promise<JourneyTypes.Journey[]> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.get<JourneyTypes.Journey[]>('/api/v1/projects/{projectId}/journeys', {
+        QueryClient.api.get<JourneyTypes.Journey[]>("/api/v1/projects/{projectId}/journeys", {
           params: {
             path: { projectId },
             query: queryParams,
@@ -45,7 +45,7 @@ const useJourney = (
     enabled: Boolean(journeyId),
     queryFn: async (): Promise<JourneyTypes.Journey> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.get<JourneyTypes.Journey>('/api/v1/journeys/{journeyId}', {
+        QueryClient.api.get<JourneyTypes.Journey>("/api/v1/journeys/{journeyId}", {
           params: { path: { journeyId } },
         }),
       ),
@@ -67,7 +67,7 @@ const useJourneySteps = (
     enabled: Boolean(journeyId),
     queryFn: async (): Promise<JourneyTypes.JourneyStep[]> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.get<JourneyTypes.JourneyStep[]>('/api/v1/journeys/{journeyId}/steps', {
+        QueryClient.api.get<JourneyTypes.JourneyStep[]>("/api/v1/journeys/{journeyId}/steps", {
           params: { path: { journeyId } },
         }),
       ),

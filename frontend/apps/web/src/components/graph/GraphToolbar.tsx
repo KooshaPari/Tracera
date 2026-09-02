@@ -1,7 +1,7 @@
 // Professional Graph Toolbar - Comprehensive controls for graph visualization
 // Provides zoom, layout, filter, export, and view options
 
-import { useReactFlow } from '@xyflow/react';
+import { useReactFlow } from "@xyflow/react";
 import {
   Download,
   Filter,
@@ -13,24 +13,24 @@ import {
   Settings2,
   ZoomIn,
   ZoomOut,
-} from 'lucide-react';
-import { useCallback, useState } from 'react';
+} from "lucide-react";
+import { useCallback, useState } from "react";
 
-import { Button } from '@tracertm/ui/components/Button';
-import { Separator } from '@tracertm/ui/components/Separator';
+import { Button } from "@tracertm/ui/components/Button";
+import { Separator } from "@tracertm/ui/components/Separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@tracertm/ui/components/Tooltip';
+} from "@tracertm/ui/components/Tooltip";
 
-import type { LayoutType } from './layouts/useDagLayout';
-import type { GraphPerspective } from './types';
+import type { LayoutType } from "./layouts/useDagLayout";
+import type { GraphPerspective } from "./types";
 
-import { ExportControls } from './ExportControls';
-import { FilterControls } from './FilterControls';
-import { LayoutSelector } from './layouts/LayoutSelector';
+import { ExportControls } from "./ExportControls";
+import { FilterControls } from "./FilterControls";
+import { LayoutSelector } from "./layouts/LayoutSelector";
 
 interface GraphToolbarProps {
   // Layout
@@ -58,10 +58,10 @@ interface GraphToolbarProps {
 
   // Optional callbacks
   onReset?: (() => void) | undefined;
-  onExport?: ((format: 'png' | 'svg' | 'json' | 'csv') => void) | undefined;
+  onExport?: ((format: "png" | "svg" | "json" | "csv") => void) | undefined;
 
   // Variant
-  variant?: 'full' | 'compact' | 'minimal' | undefined;
+  variant?: "full" | "compact" | "minimal" | undefined;
   className?: string | undefined;
 }
 
@@ -82,7 +82,7 @@ export function GraphToolbar({
   totalEdges = 0,
   visibleEdges = 0,
   onExport,
-  variant = 'full',
+  variant = "full",
   onReset,
   className,
 }: GraphToolbarProps) {
@@ -107,7 +107,7 @@ export function GraphToolbar({
 
   // Export handler
   const handleExportClick = useCallback(
-    (format: 'png' | 'svg' | 'json' | 'csv') => {
+    (format: "png" | "svg" | "json" | "csv") => {
       onExport?.(format);
       setShowExport(false);
     },
@@ -115,39 +115,39 @@ export function GraphToolbar({
   );
 
   // Compact variant - minimal controls
-  if (variant === 'minimal') {
+  if (variant === "minimal") {
     return (
-      <div className='flex items-center gap-1 p-1' role='toolbar' aria-label='Graph view controls'>
-        <div className='flex items-center gap-0.5 rounded-md border p-0.5'>
+      <div className="flex items-center gap-1 p-1" role="toolbar" aria-label="Graph view controls">
+        <div className="flex items-center gap-0.5 rounded-md border p-0.5">
           <Button
-            variant='ghost'
-            size='sm'
+            variant="ghost"
+            size="sm"
             onClick={handleZoomIn}
-            className='h-7 w-7 p-0'
-            aria-label='Zoom in'
-            title='Zoom in'
+            className="h-7 w-7 p-0"
+            aria-label="Zoom in"
+            title="Zoom in"
           >
-            <ZoomIn className='h-3.5 w-3.5' aria-hidden='true' />
+            <ZoomIn className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
           <Button
-            variant='ghost'
-            size='sm'
+            variant="ghost"
+            size="sm"
             onClick={handleZoomOut}
-            className='h-7 w-7 p-0'
-            aria-label='Zoom out'
-            title='Zoom out'
+            className="h-7 w-7 p-0"
+            aria-label="Zoom out"
+            title="Zoom out"
           >
-            <ZoomOut className='h-3.5 w-3.5' aria-hidden='true' />
+            <ZoomOut className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
           <Button
-            variant='ghost'
-            size='sm'
+            variant="ghost"
+            size="sm"
             onClick={handleFitView}
-            className='h-7 w-7 p-0'
-            aria-label='Fit view to content'
-            title='Fit view'
+            className="h-7 w-7 p-0"
+            aria-label="Fit view to content"
+            title="Fit view"
           >
-            <Maximize2 className='h-3.5 w-3.5' aria-hidden='true' />
+            <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -155,67 +155,67 @@ export function GraphToolbar({
   }
 
   // Compact variant - essential controls
-  if (variant === 'compact') {
+  if (variant === "compact") {
     return (
       <div
-        className='flex items-center gap-2 p-1.5'
-        role='toolbar'
-        aria-label='Graph view controls'
+        className="flex items-center gap-2 p-1.5"
+        role="toolbar"
+        aria-label="Graph view controls"
       >
-        <LayoutSelector value={layout} onChange={onLayoutChange} variant='compact' />
+        <LayoutSelector value={layout} onChange={onLayoutChange} variant="compact" />
 
-        <Separator orientation='vertical' className='h-6' aria-hidden='true' />
+        <Separator orientation="vertical" className="h-6" aria-hidden="true" />
 
         <div
-          className='flex items-center gap-0.5 rounded-md border p-0.5'
-          role='group'
-          aria-label='Zoom controls'
+          className="flex items-center gap-0.5 rounded-md border p-0.5"
+          role="group"
+          aria-label="Zoom controls"
         >
           <Button
-            variant='ghost'
-            size='sm'
+            variant="ghost"
+            size="sm"
             onClick={handleZoomIn}
-            className='h-7 w-7 p-0'
-            aria-label='Zoom in (Cmd +)'
-            title='Zoom in (Cmd +)'
+            className="h-7 w-7 p-0"
+            aria-label="Zoom in (Cmd +)"
+            title="Zoom in (Cmd +)"
           >
-            <ZoomIn className='h-3.5 w-3.5' aria-hidden='true' />
+            <ZoomIn className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
           <Button
-            variant='ghost'
-            size='sm'
+            variant="ghost"
+            size="sm"
             onClick={handleZoomOut}
-            className='h-7 w-7 p-0'
-            aria-label='Zoom out (Cmd -)'
-            title='Zoom out (Cmd -)'
+            className="h-7 w-7 p-0"
+            aria-label="Zoom out (Cmd -)"
+            title="Zoom out (Cmd -)"
           >
-            <ZoomOut className='h-3.5 w-3.5' aria-hidden='true' />
+            <ZoomOut className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
           <Button
-            variant='ghost'
-            size='sm'
+            variant="ghost"
+            size="sm"
             onClick={handleFitView}
-            className='h-7 w-7 p-0'
-            aria-label='Fit view to content (Cmd 0)'
-            title='Fit view (Cmd 0)'
+            className="h-7 w-7 p-0"
+            aria-label="Fit view to content (Cmd 0)"
+            title="Fit view (Cmd 0)"
           >
-            <Maximize2 className='h-3.5 w-3.5' aria-hidden='true' />
+            <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
         </div>
 
         <Button
-          variant='ghost'
-          size='sm'
+          variant="ghost"
+          size="sm"
           onClick={onToggleDetailPanel}
-          className='h-7 w-7 p-0'
-          aria-label={showDetailPanel ? 'Hide detail panel' : 'Show detail panel'}
+          className="h-7 w-7 p-0"
+          aria-label={showDetailPanel ? "Hide detail panel" : "Show detail panel"}
           aria-pressed={showDetailPanel}
-          title='Toggle detail panel'
+          title="Toggle detail panel"
         >
           {showDetailPanel ? (
-            <PanelRightClose className='h-3.5 w-3.5' aria-hidden='true' />
+            <PanelRightClose className="h-3.5 w-3.5" aria-hidden="true" />
           ) : (
-            <PanelRight className='h-3.5 w-3.5' aria-hidden='true' />
+            <PanelRight className="h-3.5 w-3.5" aria-hidden="true" />
           )}
         </Button>
       </div>
@@ -226,42 +226,42 @@ export function GraphToolbar({
   return (
     <TooltipProvider>
       <div
-        className={`bg-card flex flex-wrap items-center justify-between gap-2 rounded-lg border p-2 sm:gap-3 sm:p-3 ${className ?? ''}`}
-        role='toolbar'
-        aria-label='Graph view controls'
+        className={`bg-card flex flex-wrap items-center justify-between gap-2 rounded-lg border p-2 sm:gap-3 sm:p-3 ${className ?? ""}`}
+        role="toolbar"
+        aria-label="Graph view controls"
       >
         {/* Left section: Layout and filters */}
         <div
-          className='flex min-w-0 items-center gap-2'
-          role='group'
-          aria-label='Layout and filter controls'
+          className="flex min-w-0 items-center gap-2"
+          role="group"
+          aria-label="Layout and filter controls"
         >
           {/* Layout selector */}
           <LayoutSelector
             value={layout}
             onChange={onLayoutChange}
-            variant='select'
-            className='w-full max-w-[160px] min-w-0 sm:max-w-[200px]'
+            variant="select"
+            className="w-full max-w-[160px] min-w-0 sm:max-w-[200px]"
           />
 
-          <Separator orientation='vertical' className='hidden h-6 sm:block' aria-hidden='true' />
+          <Separator orientation="vertical" className="hidden h-6 sm:block" aria-hidden="true" />
 
           {/* Filter controls */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant={showFilters ? 'secondary' : 'ghost'}
-                size='sm'
+                variant={showFilters ? "secondary" : "ghost"}
+                size="sm"
                 onClick={() => {
                   setShowFilters(!showFilters);
                 }}
-                className='h-8 w-8 p-0'
-                aria-label='Filter nodes and edges'
+                className="h-8 w-8 p-0"
+                aria-label="Filter nodes and edges"
                 aria-pressed={showFilters}
                 aria-expanded={showFilters}
-                aria-controls='filter-panel'
+                aria-controls="filter-panel"
               >
-                <Filter className='h-4 w-4' aria-hidden='true' />
+                <Filter className="h-4 w-4" aria-hidden="true" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -273,18 +273,18 @@ export function GraphToolbar({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant={showExport ? 'secondary' : 'ghost'}
-                size='sm'
+                variant={showExport ? "secondary" : "ghost"}
+                size="sm"
                 onClick={() => {
                   setShowExport(!showExport);
                 }}
-                className='h-8 w-8 p-0'
-                aria-label='Export graph (Cmd E)'
+                className="h-8 w-8 p-0"
+                aria-label="Export graph (Cmd E)"
                 aria-pressed={showExport}
                 aria-expanded={showExport}
-                aria-controls='export-panel'
+                aria-controls="export-panel"
               >
-                <Download className='h-4 w-4' aria-hidden='true' />
+                <Download className="h-4 w-4" aria-hidden="true" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -294,16 +294,16 @@ export function GraphToolbar({
 
           {/* Stats badge (optional) */}
           {totalNodes > 0 && (
-            <div className='bg-muted/50 hidden items-center gap-1.5 rounded-md px-2 py-1 text-xs md:flex'>
-              <span className='text-muted-foreground'>Nodes:</span>
-              <span className='font-medium'>
+            <div className="bg-muted/50 hidden items-center gap-1.5 rounded-md px-2 py-1 text-xs md:flex">
+              <span className="text-muted-foreground">Nodes:</span>
+              <span className="font-medium">
                 {visibleNodes}/{totalNodes}
               </span>
               {totalEdges > 0 && (
                 <>
-                  <Separator orientation='vertical' className='mx-0.5 h-3' />
-                  <span className='text-muted-foreground'>Edges:</span>
-                  <span className='font-medium'>
+                  <Separator orientation="vertical" className="mx-0.5 h-3" />
+                  <span className="text-muted-foreground">Edges:</span>
+                  <span className="font-medium">
                     {visibleEdges}/{totalEdges}
                   </span>
                 </>
@@ -313,23 +313,23 @@ export function GraphToolbar({
         </div>
 
         {/* Right section: View controls */}
-        <div className='flex items-center gap-2' role='group' aria-label='View and zoom controls'>
+        <div className="flex items-center gap-2" role="group" aria-label="View and zoom controls">
           {/* Zoom controls */}
           <div
-            className='flex items-center gap-0.5 rounded-md border p-0.5'
-            role='group'
-            aria-label='Zoom controls'
+            className="flex items-center gap-0.5 rounded-md border p-0.5"
+            role="group"
+            aria-label="Zoom controls"
           >
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant='ghost'
-                  size='sm'
+                  variant="ghost"
+                  size="sm"
                   onClick={handleZoomIn}
-                  className='h-8 w-8 p-0'
-                  aria-label='Zoom in (Cmd +)'
+                  className="h-8 w-8 p-0"
+                  aria-label="Zoom in (Cmd +)"
                 >
-                  <ZoomIn className='h-4 w-4' aria-hidden='true' />
+                  <ZoomIn className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -340,13 +340,13 @@ export function GraphToolbar({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant='ghost'
-                  size='sm'
+                  variant="ghost"
+                  size="sm"
                   onClick={handleZoomOut}
-                  className='h-8 w-8 p-0'
-                  aria-label='Zoom out (Cmd -)'
+                  className="h-8 w-8 p-0"
+                  aria-label="Zoom out (Cmd -)"
                 >
-                  <ZoomOut className='h-4 w-4' aria-hidden='true' />
+                  <ZoomOut className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -357,13 +357,13 @@ export function GraphToolbar({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant='ghost'
-                  size='sm'
+                  variant="ghost"
+                  size="sm"
                   onClick={handleFitView}
-                  className='h-8 w-8 p-0'
-                  aria-label='Fit view to content (Cmd 0)'
+                  className="h-8 w-8 p-0"
+                  aria-label="Fit view to content (Cmd 0)"
                 >
-                  <Maximize2 className='h-4 w-4' aria-hidden='true' />
+                  <Maximize2 className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -374,13 +374,13 @@ export function GraphToolbar({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant='ghost'
-                  size='sm'
+                  variant="ghost"
+                  size="sm"
                   onClick={handleActualSize}
-                  className='h-8 w-8 p-0'
-                  aria-label='Set actual size to 1:1'
+                  className="h-8 w-8 p-0"
+                  aria-label="Set actual size to 1:1"
                 >
-                  <Settings2 className='h-4 w-4' aria-hidden='true' />
+                  <Settings2 className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -389,28 +389,28 @@ export function GraphToolbar({
             </Tooltip>
           </div>
 
-          <Separator orientation='vertical' className='h-6' aria-hidden='true' />
+          <Separator orientation="vertical" className="h-6" aria-hidden="true" />
 
           {/* Fullscreen toggle */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={onToggleFullscreen}
-                className='h-8 w-8 p-0'
-                aria-label={isFullscreen ? 'Exit fullscreen (Esc)' : 'Enter fullscreen (F)'}
+                className="h-8 w-8 p-0"
+                aria-label={isFullscreen ? "Exit fullscreen (Esc)" : "Enter fullscreen (F)"}
                 aria-pressed={isFullscreen}
               >
                 {isFullscreen ? (
-                  <Minimize className='h-4 w-4' aria-hidden='true' />
+                  <Minimize className="h-4 w-4" aria-hidden="true" />
                 ) : (
-                  <Maximize className='h-4 w-4' aria-hidden='true' />
+                  <Maximize className="h-4 w-4" aria-hidden="true" />
                 )}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen (F)'}</p>
+              <p>{isFullscreen ? "Exit fullscreen (Esc)" : "Fullscreen (F)"}</p>
             </TooltipContent>
           </Tooltip>
 
@@ -418,19 +418,19 @@ export function GraphToolbar({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={onToggleDetailPanel}
-                className='h-8 w-8 p-0'
-                aria-label={showDetailPanel ? 'Hide detail panel (P)' : 'Show detail panel (P)'}
+                className="h-8 w-8 p-0"
+                aria-label={showDetailPanel ? "Hide detail panel (P)" : "Show detail panel (P)"}
                 aria-pressed={showDetailPanel}
                 aria-expanded={showDetailPanel}
-                aria-controls='detail-panel'
+                aria-controls="detail-panel"
               >
                 {showDetailPanel ? (
-                  <PanelRightClose className='h-4 w-4' aria-hidden='true' />
+                  <PanelRightClose className="h-4 w-4" aria-hidden="true" />
                 ) : (
-                  <PanelRight className='h-4 w-4' aria-hidden='true' />
+                  <PanelRight className="h-4 w-4" aria-hidden="true" />
                 )}
               </Button>
             </TooltipTrigger>
@@ -443,10 +443,10 @@ export function GraphToolbar({
         {/* Filter panel (expandable) */}
         {showFilters && (
           <div
-            id='filter-panel'
-            className='mt-2 w-full border-t pt-2'
-            role='region'
-            aria-label='Graph filter options'
+            id="filter-panel"
+            className="mt-2 w-full border-t pt-2"
+            role="region"
+            aria-label="Graph filter options"
           >
             <FilterControls
               perspective={perspective}
@@ -464,10 +464,10 @@ export function GraphToolbar({
         {/* Export panel (expandable) */}
         {showExport && (
           <div
-            id='export-panel'
-            className='mt-2 w-full border-t pt-2'
-            role='region'
-            aria-label='Graph export options'
+            id="export-panel"
+            className="mt-2 w-full border-t pt-2"
+            role="region"
+            aria-label="Graph export options"
           >
             <ExportControls
               onExport={handleExportClick}

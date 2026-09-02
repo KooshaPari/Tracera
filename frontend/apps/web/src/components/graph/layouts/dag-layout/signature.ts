@@ -1,6 +1,6 @@
-import type { LayoutSignatureParams } from './types';
+import type { LayoutSignatureParams } from "./types";
 
-import { LAYOUT_SIGNATURE_SEPARATOR } from './constants';
+import { LAYOUT_SIGNATURE_SEPARATOR } from "./constants";
 
 export function buildSignature<NodeData extends Record<string, unknown>>({
   edges,

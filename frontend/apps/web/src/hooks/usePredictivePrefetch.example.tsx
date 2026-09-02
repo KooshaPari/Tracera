@@ -5,16 +5,16 @@
  * with existing graph components and caching systems.
  */
 
-import type { ReactElement, UIEvent } from 'react';
+import type { ReactElement, UIEvent } from "react";
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { GraphCacheNode } from '../lib/graphCache';
-import type { PredictedViewport, Viewport } from './usePredictivePrefetch';
+import type { GraphCacheNode } from "../lib/graphCache";
+import type { PredictedViewport, Viewport } from "./usePredictivePrefetch";
 
-import { graphCache, setCache } from '../lib/graphCache';
-import { logger } from '../lib/logger';
-import { usePredictivePrefetch, viewportToCacheKey } from './usePredictivePrefetch';
+import { graphCache, setCache } from "../lib/graphCache";
+import { logger } from "../lib/logger";
+import { usePredictivePrefetch, viewportToCacheKey } from "./usePredictivePrefetch";
 
 const ZERO = 0;
 const DEFAULT_VIEWPORT_HEIGHT = 900;
@@ -45,10 +45,10 @@ const COORDINATE_DECIMALS = 0;
 
 const DIRECTIONAL_EXPANSION_PX = 200;
 
-const LABEL_PREDICTING_YES = 'Yes';
-const LABEL_PREDICTING_NO = 'No';
-const LABEL_PREFETCH_ACTIVE = 'Active';
-const LABEL_PREFETCH_IDLE = 'Idle';
+const LABEL_PREDICTING_YES = "Yes";
+const LABEL_PREDICTING_NO = "No";
+const LABEL_PREFETCH_ACTIVE = "Active";
+const LABEL_PREFETCH_IDLE = "Idle";
 
 const DEFAULT_VIEWPORT: Viewport = {
   height: DEFAULT_VIEWPORT_HEIGHT,
@@ -80,8 +80,8 @@ interface ReactFlowBounds {
 interface ReactFlowInstance {
   getViewport: () => ReactFlowViewport;
   getBounds: () => ReactFlowBounds;
-  on: (event: 'move', handler: () => void) => void;
-  off: (event: 'move', handler: () => void) => void;
+  on: (event: "move", handler: () => void) => void;
+  off: (event: "move", handler: () => void) => void;
 }
 
 function formatPredictingLabel(isPredicting: boolean): string {
@@ -107,7 +107,7 @@ function buildPredictedInfo(
 
   return (
     <p>
-      Predicted: ({predictedViewport.minX.toFixed(COORDINATE_DECIMALS)},{' '}
+      Predicted: ({predictedViewport.minX.toFixed(COORDINATE_DECIMALS)},{" "}
       {predictedViewport.minY.toFixed(COORDINATE_DECIMALS)})
     </p>
   );
@@ -167,11 +167,11 @@ const ExampleBasicGraphView = (): ReactElement => {
     const cached = graphCache.get(cacheKey);
 
     if (cached) {
-      logger.info('Using cached data for predicted viewport');
+      logger.info("Using cached data for predicted viewport");
       return;
     }
 
-    logger.info('Prefetching data for:', predicted);
+    logger.info("Prefetching data for:", predicted);
     const data = await fetchGraphData(predicted);
 
     cacheNodes(cacheKey, data);
@@ -190,13 +190,13 @@ const ExampleBasicGraphView = (): ReactElement => {
 
   return (
     <div>
-      <div className='debug-info'>
+      <div className="debug-info">
         <p>Speed: {speed.toFixed(SPEED_DECIMALS)} px/frame</p>
         <p>Predicting: {predictingLabel}</p>
         {predictedInfo}
       </div>
 
-      <div className='graph-container' onScroll={handleScroll}>
+      <div className="graph-container" onScroll={handleScroll}>
         <div>Graph content</div>
       </div>
     </div>
@@ -228,10 +228,10 @@ const ExampleReactFlowIntegration = (): ReactElement => {
     };
 
     updateViewport();
-    reactFlowInstance.on('move', updateViewport);
+    reactFlowInstance.on("move", updateViewport);
 
     return () => {
-      reactFlowInstance.off('move', updateViewport);
+      reactFlowInstance.off("move", updateViewport);
     };
   }, [reactFlowInstance]);
 
@@ -319,7 +319,7 @@ const ExampleAdaptivePrefetching = (): ReactElement => {
 
   return (
     <div>
-      <div className='performance-info'>
+      <div className="performance-info">
         <p>FPS: {fps.toFixed(FPS_DECIMALS)}</p>
         <p>Prediction Horizon: {predictionHorizon}ms</p>
         <p>Prefetching: {prefetchStatus}</p>

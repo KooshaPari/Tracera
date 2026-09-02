@@ -1,8 +1,8 @@
-import type EventSourcePolyfill from 'event-source-polyfill';
+import type EventSourcePolyfill from "event-source-polyfill";
 
 interface JsonRpcRequest {
   id: string | number;
-  jsonrpc: '2.0';
+  jsonrpc: "2.0";
   method: string;
   params?: Record<string, unknown> | undefined;
 }
@@ -16,7 +16,7 @@ interface JsonRpcResponse<TResult = unknown> {
       }
     | undefined;
   id: string | number;
-  jsonrpc: '2.0';
+  jsonrpc: "2.0";
   result?: TResult | undefined;
 }
 

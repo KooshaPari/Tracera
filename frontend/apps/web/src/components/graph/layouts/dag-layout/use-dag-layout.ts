@@ -1,12 +1,12 @@
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from "react";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import type { ElkOptions, LayoutConfig, LayoutType, SyncLayoutResult } from './types';
+import type { ElkOptions, LayoutConfig, LayoutType, SyncLayoutResult } from "./types";
 
-import { computeLayout } from './compute-layout';
+import { computeLayout } from "./compute-layout";
 import {
   DEFAULT_CENTER_X,
   DEFAULT_CENTER_Y,
@@ -16,13 +16,13 @@ import {
   DEFAULT_NODE_SEP,
   DEFAULT_NODE_WIDTH,
   DEFAULT_RANK_SEP,
-} from './constants';
-import { computeElkLayoutInternal, getElkOptions } from './elk-layout';
-import { applyGridLayout } from './grid-layout';
-import { getLayoutConfig } from './layout-config';
-import { buildSignature } from './signature';
-import { resolveSyncLayout } from './sync-layout';
-import { useApplyLayoutEffect } from './use-apply-layout-effect';
+} from "./constants";
+import { computeElkLayoutInternal, getElkOptions } from "./elk-layout";
+import { applyGridLayout } from "./grid-layout";
+import { getLayoutConfig } from "./layout-config";
+import { buildSignature } from "./signature";
+import { resolveSyncLayout } from "./sync-layout";
+import { useApplyLayoutEffect } from "./use-apply-layout-effect";
 
 interface UseDagLayoutOptions {
   nodeWidth?: number;
@@ -123,14 +123,14 @@ function useDagLayout<NodeData extends Record<string, unknown>>(
           inputNodes,
         });
       } catch (error: unknown) {
-        logger.error('Layout calculation failed:', error);
+        logger.error("Layout calculation failed:", error);
         return getGridFallback(inputNodes);
       }
     },
     [applySyncLayout, computeElkLayout, elkOptions, getGridFallback],
   );
 
-  const prevSignatureRef = useRef<string>('');
+  const prevSignatureRef = useRef<string>("");
 
   useApplyLayoutEffect({
     applySyncLayout,

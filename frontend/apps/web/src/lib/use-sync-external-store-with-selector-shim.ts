@@ -13,7 +13,7 @@
 // package root in `exports`); the shim subpath is the alias target so we
 // must not import from it (circular).
 // @ts-expect-error - module has no types; we forward via default
-import real from 'use-sync-external-store/with-selector';
+import real from "use-sync-external-store/with-selector";
 
 export const useSyncExternalStoreWithSelector = real?.useSyncExternalStoreWithSelector ?? real;
 export default real;

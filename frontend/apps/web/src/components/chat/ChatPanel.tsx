@@ -3,28 +3,28 @@
  * Includes a Chat history button that opens a history panel (search, sort, delete).
  */
 
-import type { ChangeEvent, KeyboardEvent, MouseEvent, RefObject } from 'react';
+import type { ChangeEvent, KeyboardEvent, MouseEvent, RefObject } from "react";
 
-import { History, MessageSquarePlus, Send, Settings, Square, X } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { History, MessageSquarePlus, Send, Settings, Square, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { AIModel, ChatConversation, ChatMessage as ChatMessageType } from '@/lib/ai/types';
+import type { AIModel, ChatConversation, ChatMessage as ChatMessageType } from "@/lib/ai/types";
 
-import { useChat } from '@/hooks/useChat';
-import { logger } from '@/lib/logger';
-import { Button, ScrollArea, Textarea, cn } from '@tracertm/ui';
+import { useChat } from "@/hooks/useChat";
+import { logger } from "@/lib/logger";
+import { Button, ScrollArea, Textarea, cn } from "@tracertm/ui";
 
-import { ChatHistoryPanel } from './ChatHistoryPanel';
-import { ChatMessage } from './ChatMessage';
-import { ChatSettingsPanel } from './ChatSettingsPanel';
-import { ModelSelector } from './ModelSelector';
+import { ChatHistoryPanel } from "./ChatHistoryPanel";
+import { ChatMessage } from "./ChatMessage";
+import { ChatSettingsPanel } from "./ChatSettingsPanel";
+import { ModelSelector } from "./ModelSelector";
 
 const MAX_CONVERSATION_TABS = 5;
 
 interface ChatPanelProps {
   onClose: () => void;
   onToggleMode: () => void;
-  mode: 'bubble' | 'sidebar';
+  mode: "bubble" | "sidebar";
   className?: string;
 }
 
@@ -43,32 +43,32 @@ const PanelHeader = ({
   onNewChat: () => void;
   onSelectModel: (model: AIModel) => void;
 }) => (
-  <div className='bg-muted/30 flex min-w-0 shrink-0 items-center justify-between border-b px-3 py-2'>
-    <div className='flex min-w-0 flex-1 items-center gap-2'>
-      <h3 className='min-w-0 truncate text-sm font-semibold'>TraceRTM Assistant</h3>
+  <div className="bg-muted/30 flex min-w-0 shrink-0 items-center justify-between border-b px-3 py-2">
+    <div className="flex min-w-0 flex-1 items-center gap-2">
+      <h3 className="min-w-0 truncate text-sm font-semibold">TraceRTM Assistant</h3>
       <ModelSelector value={model} onChange={onSelectModel} disabled={isStreaming} />
     </div>
-    <div className='flex shrink-0 items-center gap-1'>
+    <div className="flex shrink-0 items-center gap-1">
       <Button
-        variant='ghost'
-        size='icon'
-        className='h-7 w-7'
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7"
         onClick={onOpenHistory}
-        title='Chat history'
+        title="Chat history"
       >
-        <History className='h-4 w-4' />
+        <History className="h-4 w-4" />
       </Button>
       <Button
-        variant='ghost'
-        size='icon'
-        className='h-7 w-7'
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7"
         onClick={onOpenSettings}
-        title='Chat settings & system prompt'
+        title="Chat settings & system prompt"
       >
-        <Settings className='h-4 w-4' />
+        <Settings className="h-4 w-4" />
       </Button>
-      <Button variant='ghost' size='icon' className='h-7 w-7' onClick={onNewChat} title='New chat'>
-        <MessageSquarePlus className='h-4 w-4' />
+      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onNewChat} title="New chat">
+        <MessageSquarePlus className="h-4 w-4" />
       </Button>
     </div>
   </div>
@@ -99,21 +99,21 @@ const ConversationTab = ({
 
   return (
     <button
-      type='button'
+      type="button"
       onClick={handleSelect}
       className={cn(
-        'flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors cursor-pointer shrink-0 min-w-0',
-        'hover:bg-muted',
-        isActive ? 'bg-muted font-medium' : 'text-muted-foreground',
+        "flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors cursor-pointer shrink-0 min-w-0",
+        "hover:bg-muted",
+        isActive ? "bg-muted font-medium" : "text-muted-foreground",
       )}
     >
-      <span className='max-w-[120px] min-w-0 truncate'>{conversation.title}</span>
+      <span className="max-w-[120px] min-w-0 truncate">{conversation.title}</span>
       <button
-        type='button'
+        type="button"
         onClick={handleDelete}
-        className='hover:bg-muted/50 cursor-pointer rounded p-0.5 opacity-50 transition-all hover:opacity-100'
+        className="hover:bg-muted/50 cursor-pointer rounded p-0.5 opacity-50 transition-all hover:opacity-100"
       >
-        <X className='h-3 w-3' />
+        <X className="h-3 w-3" />
       </button>
     </button>
   );
@@ -136,7 +136,7 @@ const ConversationTabs = ({
   );
 
   return (
-    <div className='bg-muted/20 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent flex min-w-0 shrink-0 items-center gap-1 overflow-x-auto border-b px-2 py-1.5'>
+    <div className="bg-muted/20 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent flex min-w-0 shrink-0 items-center gap-1 overflow-x-auto border-b px-2 py-1.5">
       {visibleConversations.map((conversation) => (
         <ConversationTab
           key={conversation.id}
@@ -151,12 +151,12 @@ const ConversationTabs = ({
 };
 
 const EmptyMessages = () => (
-  <div className='flex h-full w-full min-w-0 flex-col items-center justify-center py-8 text-center'>
-    <div className='bg-primary/10 mb-3 flex h-12 w-12 shrink-0 items-center justify-center rounded-full'>
-      <MessageSquarePlus className='text-primary h-6 w-6' />
+  <div className="flex h-full w-full min-w-0 flex-col items-center justify-center py-8 text-center">
+    <div className="bg-primary/10 mb-3 flex h-12 w-12 shrink-0 items-center justify-center rounded-full">
+      <MessageSquarePlus className="text-primary h-6 w-6" />
     </div>
-    <h4 className='mb-1 min-w-0 font-medium'>Welcome to TraceRTM Assistant</h4>
-    <p className='text-muted-foreground w-full max-w-[250px] min-w-0 px-4 text-sm'>
+    <h4 className="mb-1 min-w-0 font-medium">Welcome to TraceRTM Assistant</h4>
+    <p className="text-muted-foreground w-full max-w-[250px] min-w-0 px-4 text-sm">
       Ask questions about requirements traceability, project management, or get help navigating
       TraceRTM.
     </p>
@@ -173,7 +173,7 @@ const MessagesList = ({
   const lastMessageId = messages.length > 0 ? messages.at(-1)?.id : null;
 
   return (
-    <div className='w-full min-w-0 space-y-2'>
+    <div className="w-full min-w-0 space-y-2">
       {messages.map((message) => (
         <ChatMessage key={message.id} message={message} isLast={message.id === lastMessageId} />
       ))}
@@ -199,29 +199,29 @@ const ChatInput = ({
   onStop: () => void;
   textareaRef: RefObject<HTMLTextAreaElement | null>;
 }) => (
-  <div className='bg-muted/20 min-w-0 shrink-0 border-t p-3'>
-    <div className='flex min-w-0 gap-2'>
+  <div className="bg-muted/20 min-w-0 shrink-0 border-t p-3">
+    <div className="flex min-w-0 gap-2">
       <Textarea
         ref={textareaRef}
         value={inputValue}
         onChange={onChange}
         onKeyDown={onKeyDown}
-        placeholder='Ask a question...'
-        className='max-h-[120px] min-h-[40px] min-w-0 flex-1 resize-none text-sm'
+        placeholder="Ask a question..."
+        className="max-h-[120px] min-h-[40px] min-w-0 flex-1 resize-none text-sm"
         disabled={disabled}
         rows={1}
       />
       {disabled ? (
-        <Button size='icon' variant='destructive' onClick={onStop} title='Stop generating'>
-          <Square className='h-4 w-4' />
+        <Button size="icon" variant="destructive" onClick={onStop} title="Stop generating">
+          <Square className="h-4 w-4" />
         </Button>
       ) : (
-        <Button size='icon' onClick={onSend} disabled={!inputValue.trim()} title='Send message'>
-          <Send className='h-4 w-4' />
+        <Button size="icon" onClick={onSend} disabled={!inputValue.trim()} title="Send message">
+          <Send className="h-4 w-4" />
         </Button>
       )}
     </div>
-    <div className='text-muted-foreground mt-1.5 min-w-0 truncate text-center text-[10px]'>
+    <div className="text-muted-foreground mt-1.5 min-w-0 truncate text-center text-[10px]">
       Press Enter to send, Shift+Enter for new line
     </div>
   </div>
@@ -229,25 +229,25 @@ const ChatInput = ({
 
 const useAutoScroll = (ref: RefObject<HTMLDivElement | null>, key: number) => {
   useEffect(() => {
-    ref.current?.scrollIntoView({ behavior: 'smooth' });
+    ref.current?.scrollIntoView({ behavior: "smooth" });
   }, [key, ref]);
 };
 
-const useBubbleFocus = (mode: 'bubble' | 'sidebar', ref: RefObject<HTMLTextAreaElement | null>) => {
+const useBubbleFocus = (mode: "bubble" | "sidebar", ref: RefObject<HTMLTextAreaElement | null>) => {
   useEffect(() => {
-    if (mode !== 'bubble') {
+    if (mode !== "bubble") {
       return;
     }
-    if (typeof document !== 'undefined' && document.activeElement !== document.body) {
+    if (typeof document !== "undefined" && document.activeElement !== document.body) {
       return;
     }
     ref.current?.focus();
   }, [mode, ref]);
 };
 
-const useChatPanelState = (mode: 'bubble' | 'sidebar') => {
+const useChatPanelState = (mode: "bubble" | "sidebar") => {
   const chat = useChat();
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -302,13 +302,13 @@ const ChatPanelBody = ({
 }) => {
   if (isSettingsOpen) {
     return (
-      <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <ChatSettingsPanel
           context={chat.context ?? null}
           systemPromptOverride={chat.systemPromptOverride}
           onSystemPromptOverrideChange={chat.setSystemPromptOverride}
           onClose={onCloseSettings}
-          className='min-h-0 flex-1'
+          className="min-h-0 flex-1"
         />
       </div>
     );
@@ -316,7 +316,7 @@ const ChatPanelBody = ({
 
   if (isHistoryOpen) {
     return (
-      <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <ChatHistoryPanel
           conversations={chat.conversations}
           activeConversationId={chat.activeConversation?.id ?? null}
@@ -324,7 +324,7 @@ const ChatPanelBody = ({
           onSelectConversation={onSelectConversation}
           onDeleteConversation={chat.deleteConversation}
           onClose={onCloseHistory}
-          className='min-h-0 flex-1'
+          className="min-h-0 flex-1"
         />
       </div>
     );
@@ -341,7 +341,7 @@ const ChatPanelBody = ({
         />
       ) : null}
 
-      <ScrollArea className='min-w-0 flex-1 overflow-hidden p-2'>
+      <ScrollArea className="min-w-0 flex-1 overflow-hidden p-2">
         {messages.length === 0 ? (
           <EmptyMessages />
         ) : (
@@ -405,15 +405,15 @@ export const ChatPanel = ({ mode, className }: ChatPanelProps) => {
       return;
     }
 
-    setInputValue('');
+    setInputValue("");
     chat.sendMessage(content).catch((error) => {
-      logger.error('Failed to send chat message:', error);
+      logger.error("Failed to send chat message:", error);
     });
   }, [chat, inputValue, setInputValue]);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLTextAreaElement>) => {
-      if (event.key === 'Enter' && !event.shiftKey) {
+      if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
         handleSend();
       }
@@ -423,7 +423,7 @@ export const ChatPanel = ({ mode, className }: ChatPanelProps) => {
 
   const handleNewChat = useCallback(() => {
     chat.createConversation();
-    setInputValue('');
+    setInputValue("");
     textareaRef.current?.focus();
   }, [chat, setInputValue, textareaRef]);
 
@@ -437,7 +437,7 @@ export const ChatPanel = ({ mode, className }: ChatPanelProps) => {
   return (
     <div
       className={cn(
-        'flex flex-col bg-background border rounded-lg shadow-xl overflow-hidden',
+        "flex flex-col bg-background border rounded-lg shadow-xl overflow-hidden",
         className,
       )}
     >

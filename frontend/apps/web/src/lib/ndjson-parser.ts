@@ -11,7 +11,7 @@
  */
 
 export interface NDJSONProgressEvent {
-  type: 'progress';
+  type: "progress";
   count: number;
   offset?: number;
   section?: string;
@@ -19,7 +19,7 @@ export interface NDJSONProgressEvent {
 }
 
 export interface NDJSONCompleteEvent {
-  type: 'complete';
+  type: "complete";
   total_count?: number;
   count?: number;
   nodes?: number;
@@ -27,12 +27,12 @@ export interface NDJSONCompleteEvent {
 }
 
 export interface NDJSONErrorEvent {
-  type: 'error';
+  type: "error";
   error: string;
 }
 
 export interface NDJSONSectionEvent {
-  type: 'section';
+  type: "section";
   name: string;
   count: number;
 }
@@ -58,12 +58,12 @@ export interface StreamingStats {
  */
 export async function* parseNDJSON<T = any>(response: Response): AsyncGenerator<T, void, unknown> {
   if (!response.body) {
-    throw new Error('Response body is null');
+    throw new Error("Response body is null");
   }
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  let buffer = '';
+  let buffer = "";
 
   try {
     while (true) {
@@ -75,7 +75,7 @@ export async function* parseNDJSON<T = any>(response: Response): AsyncGenerator<
           try {
             yield JSON.parse(buffer) as T;
           } catch (err) {
-            console.error('Failed to parse final NDJSON line:', err);
+            console.error("Failed to parse final NDJSON line:", err);
           }
         }
         break;
@@ -85,10 +85,10 @@ export async function* parseNDJSON<T = any>(response: Response): AsyncGenerator<
       buffer += decoder.decode(value, { stream: true });
 
       // Split by newlines
-      const lines = buffer.split('\n');
+      const lines = buffer.split("\n");
 
       // Keep the last incomplete line in buffer
-      buffer = lines.pop() || '';
+      buffer = lines.pop() || "";
 
       // Parse and yield each complete line
       for (const line of lines) {
@@ -97,7 +97,7 @@ export async function* parseNDJSON<T = any>(response: Response): AsyncGenerator<
           try {
             yield JSON.parse(trimmed) as T;
           } catch (err) {
-            console.error('Failed to parse NDJSON line:', err, 'Line:', trimmed);
+            console.error("Failed to parse NDJSON line:", err, "Line:", trimmed);
           }
         }
       }
@@ -132,11 +132,11 @@ export async function* parseNDJSONWithProgress<T = any>(
     stats.itemsReceived++;
 
     // Handle metadata events
-    if (typeof item === 'object' && item !== null && 'type' in item) {
+    if (typeof item === "object" && item !== null && "type" in item) {
       const metadata = item as NDJSONMetadata;
 
       switch (metadata.type) {
-        case 'progress':
+        case "progress":
           if (onProgress) {
             onProgress({ ...stats });
           }
@@ -145,7 +145,7 @@ export async function* parseNDJSONWithProgress<T = any>(
           }
           continue; // Don't yield progress events
 
-        case 'complete':
+        case "complete":
           stats.endTime = Date.now();
           if (onProgress) {
             onProgress({ ...stats });
@@ -155,14 +155,14 @@ export async function* parseNDJSONWithProgress<T = any>(
           }
           continue; // Don't yield complete events
 
-        case 'error':
+        case "error":
           stats.errors.push(metadata.error);
           if (onMetadata) {
             onMetadata(metadata);
           }
           continue; // Don't yield error events
 
-        case 'section':
+        case "section":
           if (onMetadata) {
             onMetadata(metadata);
           }
@@ -198,7 +198,7 @@ export async function* fetchNDJSON<T = any>(
   const response = await fetch(url, {
     ...options,
     headers: {
-      Accept: 'application/x-ndjson',
+      Accept: "application/x-ndjson",
       ...options?.headers,
     },
   });

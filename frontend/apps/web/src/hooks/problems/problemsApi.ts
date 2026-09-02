@@ -6,9 +6,9 @@ import type {
   RCAMethod,
   ResolutionType,
   RootCauseCategory,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
-import { client } from '@/api/client';
+import { client } from "@/api/client";
 import {
   asArray,
   asBoolean,
@@ -18,11 +18,11 @@ import {
   decodeProblemActivitiesResponse,
   decodeProblemStatsResponse,
   transformProblem,
-} from '@/hooks/problems/problemDecoders';
+} from "@/hooks/problems/problemDecoders";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 interface ProblemFilters {
   projectId: string;
@@ -60,7 +60,7 @@ interface RCAData {
   rootCauseIdentified?: boolean;
   rootCauseDescription?: string;
   rootCauseCategory?: RootCauseCategory;
-  rootCauseConfidence?: 'high' | 'medium' | 'low';
+  rootCauseConfidence?: "high" | "medium" | "low";
 }
 
 async function readJsonRecord(res: Response): Promise<Record<string, unknown>> {
@@ -72,26 +72,26 @@ async function fetchProblems(
   filters: ProblemFilters,
 ): Promise<{ problems: Problem[]; total: number }> {
   const params = new URLSearchParams();
-  params.set('project_id', filters.projectId);
+  params.set("project_id", filters.projectId);
   if (filters.status !== undefined) {
-    params.set('status', filters.status);
+    params.set("status", filters.status);
   }
   if (filters.priority !== undefined) {
-    params.set('priority', filters.priority);
+    params.set("priority", filters.priority);
   }
   if (filters.impactLevel !== undefined) {
-    params.set('impact_level', filters.impactLevel);
+    params.set("impact_level", filters.impactLevel);
   }
   if (filters.category !== undefined && filters.category.length > 0) {
-    params.set('category', filters.category);
+    params.set("category", filters.category);
   }
   if (filters.assignedTo !== undefined && filters.assignedTo.length > 0) {
-    params.set('assigned_to', filters.assignedTo);
+    params.set("assigned_to", filters.assignedTo);
   }
 
   const res = await fetch(`${API_URL}/api/v1/problems?${params}`, {
     headers: {
-      'X-Bulk-Operation': 'true',
+      "X-Bulk-Operation": "true",
       ...getAuthHeaders(),
     },
   });
@@ -101,10 +101,10 @@ async function fetchProblems(
   }
   const data = await readJsonRecord(res);
   return {
-    problems: asArray(data['problems']).map((problemValue: unknown) =>
+    problems: asArray(data["problems"]).map((problemValue: unknown) =>
       transformProblem(asRecord(problemValue)),
     ),
-    total: asNumber(data['total'], 0),
+    total: asNumber(data["total"], 0),
   };
 }
 
@@ -113,7 +113,7 @@ async function fetchProblem(id: string): Promise<Problem> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch problem');
+    throw new Error("Failed to fetch problem");
   }
   const data = await readJsonRecord(res);
   return transformProblem(data);
@@ -131,24 +131,24 @@ async function createProblem(
       business_impact_description: data.businessImpactDescription,
       category: data.category,
       description: data.description,
-      impact_level: data.impactLevel ?? 'medium',
+      impact_level: data.impactLevel ?? "medium",
       metadata: data.metadata ?? {},
       owner: data.owner,
-      priority: data.priority ?? 'medium',
+      priority: data.priority ?? "medium",
       sub_category: data.subCategory,
       tags: data.tags,
       target_resolution_date: data.targetResolutionDate,
       title: data.title,
-      urgency: data.urgency ?? 'medium',
+      urgency: data.urgency ?? "medium",
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to create problem');
+    throw new Error("Failed to create problem");
   }
   const result = await readJsonRecord(res);
-  return { id: asString(result['id'], ''), problemNumber: asString(result['problem_number'], '') };
+  return { id: asString(result["id"], ""), problemNumber: asString(result["problem_number"], "") };
 }
 
 async function updateProblem(
@@ -174,14 +174,14 @@ async function updateProblem(
       title: data.title,
       urgency: data.urgency,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'PUT',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "PUT",
   });
   if (!res.ok) {
-    throw new Error('Failed to update problem');
+    throw new Error("Failed to update problem");
   }
   const result = await readJsonRecord(res);
-  return { id: asString(result['id'], ''), version: asNumber(result['version'], 0) };
+  return { id: asString(result["id"], ""), version: asNumber(result["version"], 0) };
 }
 
 async function transitionProblemStatus(
@@ -194,8 +194,8 @@ async function transitionProblemStatus(
       reason,
       to_status: toStatus,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
     const errorText = await res.text();
@@ -203,9 +203,9 @@ async function transitionProblemStatus(
   }
   const result = await readJsonRecord(res);
   return {
-    id: asString(result['id'], ''),
-    status: asString(result['status'], ''),
-    version: asNumber(result['version'], 0),
+    id: asString(result["id"], ""),
+    status: asString(result["status"], ""),
+    version: asNumber(result["version"], 0),
   };
 }
 
@@ -223,17 +223,17 @@ async function recordRCA(
       root_cause_description: data.rootCauseDescription,
       root_cause_identified: data.rootCauseIdentified ?? false,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to record RCA');
+    throw new Error("Failed to record RCA");
   }
   const result = await readJsonRecord(res);
   return {
-    id: asString(result['id'], ''),
-    rcaPerformed: asBoolean(result['rca_performed'], false),
-    rootCauseIdentified: asBoolean(result['root_cause_identified'], false),
+    id: asString(result["id"], ""),
+    rcaPerformed: asBoolean(result["rca_performed"], false),
+    rootCauseIdentified: asBoolean(result["root_cause_identified"], false),
   };
 }
 
@@ -247,27 +247,27 @@ async function closeProblem(
       closure_notes: closureNotes,
       resolution_type: resolutionType,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to close problem');
+    throw new Error("Failed to close problem");
   }
   const result = await readJsonRecord(res);
   return {
-    id: asString(result['id'], ''),
-    resolutionType: asString(result['resolution_type'], ''),
-    status: asString(result['status'], ''),
+    id: asString(result["id"], ""),
+    resolutionType: asString(result["resolution_type"], ""),
+    status: asString(result["status"], ""),
   };
 }
 
 async function deleteProblem(id: string): Promise<void> {
   const res = await fetch(`${API_URL}/api/v1/problems/${id}`, {
     headers: getAuthHeaders(),
-    method: 'DELETE',
+    method: "DELETE",
   });
   if (!res.ok) {
-    throw new Error('Failed to delete problem');
+    throw new Error("Failed to delete problem");
   }
 }
 
@@ -279,7 +279,7 @@ async function fetchProblemActivities(
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch activities');
+    throw new Error("Failed to fetch activities");
   }
   const data = await readJsonRecord(res);
   return decodeProblemActivitiesResponse(data);
@@ -295,7 +295,7 @@ async function fetchProblemStats(projectId: string): Promise<{
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch problem stats');
+    throw new Error("Failed to fetch problem stats");
   }
   const data = await readJsonRecord(res);
   return decodeProblemStatsResponse(data);

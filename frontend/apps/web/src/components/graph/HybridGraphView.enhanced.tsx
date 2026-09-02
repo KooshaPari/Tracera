@@ -13,22 +13,22 @@
  * - Rich node detail panel for WebGL mode
  */
 
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-import { AnimatePresence, motion } from 'framer-motion';
-import { Activity, AlertTriangle, Layers, Zap } from 'lucide-react';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from "framer-motion";
+import { Activity, AlertTriangle, Layers, Zap } from "lucide-react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
-import type { HybridGraphConfig } from '@/hooks/useHybridGraph';
-import type { Item, Link } from '@tracertm/types';
+import type { HybridGraphConfig } from "@/hooks/useHybridGraph";
+import type { Item, Link } from "@tracertm/types";
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { useHybridGraph } from '@/hooks/useHybridGraph';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useHybridGraph } from "@/hooks/useHybridGraph";
 
-import { FlowGraphViewInner } from './FlowGraphViewInner';
-import { RichNodeDetailPanel } from './sigma/RichNodeDetailPanel';
-import { SigmaGraphViewEnhanced } from './SigmaGraphView.enhanced';
+import { FlowGraphViewInner } from "./FlowGraphViewInner";
+import { RichNodeDetailPanel } from "./sigma/RichNodeDetailPanel";
+import { SigmaGraphViewEnhanced } from "./SigmaGraphView.enhanced";
 
 interface HybridGraphViewProps {
   nodes: Node[];
@@ -41,9 +41,9 @@ interface HybridGraphViewProps {
 }
 
 interface PerformanceWarning {
-  type: 'threshold' | 'fps' | 'memory';
+  type: "threshold" | "fps" | "memory";
   message: string;
-  severity: 'info' | 'warning' | 'error';
+  severity: "info" | "warning" | "error";
 }
 
 export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
@@ -53,7 +53,7 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
   onNodeExpand,
   onNodeNavigate,
   config,
-  className = '',
+  className = "",
 }: HybridGraphViewProps) {
   const { useWebGL, nodeCount, edgeCount, graphologyGraph, selectedNodeId, setSelectedNodeId } =
     useHybridGraph(nodes, edges, config);
@@ -67,21 +67,21 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
     return nodes
       .map((node) => {
         const data = node.data as Record<string, unknown> | undefined;
-        const item = data?.['item'];
+        const item = data?.["item"];
         if (item) {
           return item as Item;
         }
         return {
           createdAt: timestamp,
           id: node.id,
-          priority: 'medium',
-          projectId: 'unknown',
-          status: 'todo',
+          priority: "medium",
+          projectId: "unknown",
+          status: "todo",
           title: node.id,
-          type: node.type ?? 'node',
+          type: node.type ?? "node",
           updatedAt: timestamp,
           version: 1,
-          view: 'FEATURE',
+          view: "FEATURE",
         } satisfies Item;
       })
       .filter((item): item is Item => Boolean(item));
@@ -91,21 +91,21 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
       edges
         .map((edge) => {
           const { data } = edge;
-          const link = data?.['link'];
+          const link = data?.["link"];
           return link as Link | undefined;
         })
         .filter((link): link is Link => Boolean(link)),
     [edges],
   );
   const [showTransition, setShowTransition] = useState(false);
-  const [previousMode, setPreviousMode] = useState<'reactflow' | 'webgl'>(
-    useWebGL ? 'webgl' : 'reactflow',
+  const [previousMode, setPreviousMode] = useState<"reactflow" | "webgl">(
+    useWebGL ? "webgl" : "reactflow",
   );
   const [performanceWarnings, setPerformanceWarnings] = useState<PerformanceWarning[]>([]);
 
   // Detect mode transitions
   useEffect(() => {
-    const currentMode = useWebGL ? 'webgl' : 'reactflow';
+    const currentMode = useWebGL ? "webgl" : "reactflow";
 
     if (currentMode !== previousMode) {
       setShowTransition(true);
@@ -132,8 +132,8 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
     if (!useWebGL && nodeCount > 8000) {
       warnings.push({
         message: `Approaching 10k node threshold (${nodeCount.toLocaleString()} nodes). WebGL mode will activate automatically.`,
-        severity: 'info',
-        type: 'threshold',
+        severity: "info",
+        type: "threshold",
       });
     }
 
@@ -141,8 +141,8 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
     if (useWebGL && nodeCount > 50_000) {
       warnings.push({
         message: `Large graph detected (${nodeCount.toLocaleString()} nodes). Performance mode enabled.`,
-        severity: 'warning',
-        type: 'memory',
+        severity: "warning",
+        type: "memory",
       });
     }
 
@@ -156,13 +156,13 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
 
       // In WebGL mode, open detail panel
       if (useWebGL) {
-        const node = nodes.find((n) => n['id'] === nodeId);
+        const node = nodes.find((n) => n["id"] === nodeId);
         if (node) {
           setDetailPanelNode({
             data: node.data || {},
-            id: node['id'],
-            label: node.data?.['label'] ?? node['id'],
-            type: node['type'] ?? 'default',
+            id: node["id"],
+            label: node.data?.["label"] ?? node["id"],
+            type: node["type"] ?? "default",
           });
         }
       }
@@ -195,48 +195,48 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
   // Determine performance mode for Sigma
   const sigmaPerformanceMode = useMemo(() => {
     if (nodeCount > 50_000) {
-      return 'performance';
+      return "performance";
     }
     if (nodeCount < 1000) {
-      return 'quality';
+      return "quality";
     }
-    return 'balanced';
+    return "balanced";
   }, [nodeCount]);
 
   return (
     <div className={`relative h-full w-full ${className}`}>
       {/* Performance indicators */}
-      <div className='absolute top-4 right-4 z-10 flex flex-col items-end gap-2'>
+      <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
         {/* Mode indicator */}
         <Badge
-          variant={useWebGL ? 'default' : 'secondary'}
-          className='text-xs font-medium shadow-md'
+          variant={useWebGL ? "default" : "secondary"}
+          className="text-xs font-medium shadow-md"
         >
           {useWebGL ? (
             <>
-              <Zap className='mr-1 h-3 w-3' />
+              <Zap className="mr-1 h-3 w-3" />
               WebGL Mode
             </>
           ) : (
             <>
-              <Layers className='mr-1 h-3 w-3' />
+              <Layers className="mr-1 h-3 w-3" />
               ReactFlow Mode
             </>
           )}
         </Badge>
 
         {/* Node/Edge count */}
-        <Badge variant='outline' className='text-xs shadow-md'>
-          <Activity className='mr-1 h-3 w-3' />
+        <Badge variant="outline" className="text-xs shadow-md">
+          <Activity className="mr-1 h-3 w-3" />
           {nodeCount.toLocaleString()}N / {edgeCount.toLocaleString()}E
         </Badge>
 
         {/* Performance mode (WebGL only) */}
         {useWebGL && (
           <Badge
-            variant='outline'
+            variant="outline"
             className={`text-xs shadow-md ${
-              sigmaPerformanceMode === 'performance' ? 'border-orange-500 text-orange-500' : ''
+              sigmaPerformanceMode === "performance" ? "border-orange-500 text-orange-500" : ""
             }`}
           >
             {sigmaPerformanceMode.charAt(0).toUpperCase() + sigmaPerformanceMode.slice(1)}
@@ -246,14 +246,14 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
 
       {/* Performance warnings */}
       {performanceWarnings.length > 0 && (
-        <div className='absolute bottom-4 left-4 z-10 flex max-w-md flex-col gap-2'>
+        <div className="absolute bottom-4 left-4 z-10 flex max-w-md flex-col gap-2">
           {performanceWarnings.map((warning, i) => (
             <Badge
               key={i}
-              variant={warning.severity === 'error' ? 'destructive' : 'default'}
-              className='text-xs shadow-md'
+              variant={warning.severity === "error" ? "destructive" : "default"}
+              className="text-xs shadow-md"
             >
-              <AlertTriangle className='mr-1 h-3 w-3' />
+              <AlertTriangle className="mr-1 h-3 w-3" />
               {warning.message}
             </Badge>
           ))}
@@ -267,17 +267,17 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className='absolute top-20 left-1/2 z-20 -translate-x-1/2 transform'
+            className="absolute top-20 left-1/2 z-20 -translate-x-1/2 transform"
           >
-            <Badge variant='default' className='px-4 py-2 text-sm font-medium shadow-lg'>
+            <Badge variant="default" className="px-4 py-2 text-sm font-medium shadow-lg">
               {useWebGL ? (
                 <>
-                  <Zap className='mr-2 h-4 w-4' />
+                  <Zap className="mr-2 h-4 w-4" />
                   Switching to WebGL for better performance...
                 </>
               ) : (
                 <>
-                  <Layers className='mr-2 h-4 w-4' />
+                  <Layers className="mr-2 h-4 w-4" />
                   Switching to ReactFlow for richer interactivity...
                 </>
               )}
@@ -287,16 +287,16 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
       </AnimatePresence>
 
       {/* Graph renderer with smooth transitions */}
-      <AnimatePresence mode='wait'>
+      <AnimatePresence mode="wait">
         {useWebGL && graphologyGraph ? (
           // WebGL mode (>= 10k nodes)
           <motion.div
-            key='webgl'
+            key="webgl"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className='h-full w-full'
+            className="h-full w-full"
           >
             <SigmaGraphViewEnhanced
               graph={graphologyGraph}
@@ -307,18 +307,18 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
               selectedNodeId={selectedNodeId}
               hoveredNodeId={hoveredNodeId}
               performanceMode={sigmaPerformanceMode}
-              className='h-full w-full'
+              className="h-full w-full"
             />
           </motion.div>
         ) : (
           // ReactFlow mode (< 10k nodes)
           <motion.div
-            key='reactflow'
+            key="reactflow"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className='h-full w-full'
+            className="h-full w-full"
           >
             <FlowGraphViewInner
               items={reactFlowItems}
@@ -336,7 +336,7 @@ export const HybridGraphViewEnhanced = memo(function HybridGraphViewEnhanced({
             initial={{ opacity: 0, x: 400 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 400 }}
-            transition={{ damping: 25, stiffness: 300, type: 'spring' }}
+            transition={{ damping: 25, stiffness: 300, type: "spring" }}
           >
             <RichNodeDetailPanel
               node={detailPanelNode}

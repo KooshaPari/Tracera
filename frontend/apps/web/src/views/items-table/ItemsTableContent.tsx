@@ -1,23 +1,23 @@
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { Filter } from 'lucide-react';
-import React from 'react';
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { Filter } from "lucide-react";
+import React from "react";
 
-import type { TypedItem } from '@tracertm/types';
+import type { TypedItem } from "@tracertm/types";
 
-import { ResponsiveCardView } from '@/components/mobile/ResponsiveCardView';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Table, TableBody } from '@/components/ui/table';
-import { ListLoadingSkeleton, ModalLoadingOverlay } from '@/lib/lazy-loading';
-import { cn } from '@/lib/utils';
-import { Card } from '@tracertm/ui';
+import { ResponsiveCardView } from "@/components/mobile/ResponsiveCardView";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Table, TableBody } from "@/components/ui/table";
+import { ListLoadingSkeleton, ModalLoadingOverlay } from "@/lib/lazy-loading";
+import { cn } from "@/lib/utils";
+import { Card } from "@tracertm/ui";
 
-import { buildCardItems } from './card-items';
-import itemsTableConstants from './constants';
-import itemsTableFormatters from './formatters';
-import { ItemTableRow } from './row';
-import { TableHeaderRow } from './table-header';
-import { useItemsTableKeyboardNav } from './useItemsTableKeyboardNav';
-import { VirtualTable } from './virtual-table';
+import { buildCardItems } from "./card-items";
+import itemsTableConstants from "./constants";
+import itemsTableFormatters from "./formatters";
+import { ItemTableRow } from "./row";
+import { TableHeaderRow } from "./table-header";
+import { useItemsTableKeyboardNav } from "./useItemsTableKeyboardNav";
+import { VirtualTable } from "./virtual-table";
 
 interface ItemsTableLabels {
   title: string;
@@ -36,9 +36,9 @@ interface ItemsTableContentProps {
   liveMessageValue: string;
   showLoadingState: boolean;
   sortColumn: string;
-  sortOrder: 'asc' | 'desc';
+  sortOrder: "asc" | "desc";
   onSortColumnChange: (next: string) => void;
-  onSortOrderChange: (next: 'asc' | 'desc') => void;
+  onSortOrderChange: (next: "asc" | "desc") => void;
   onNavigate: (item: TypedItem) => void;
   onDelete: (id: string) => void;
   onCreate: () => void;
@@ -84,7 +84,7 @@ function ItemsTableContent({
         title={labels.emptyTitle}
         description={labels.emptyDescription}
         actions={emptyStateActions}
-        variant='compact'
+        variant="compact"
       />
     ),
     [emptyStateActions, labels.emptyDescription, labels.emptyTitle],
@@ -95,7 +95,7 @@ function ItemsTableContent({
       return;
     }
     const userAgent = globalThis.navigator?.userAgent ?? itemsTableConstants.EMPTY_STRING;
-    if (userAgent.includes('Firefox')) {
+    if (userAgent.includes("Firefox")) {
       return;
     }
     return (element: Element): number => element.getBoundingClientRect().height;
@@ -112,8 +112,8 @@ function ItemsTableContent({
   const handleSortChange = React.useCallback(
     (column: string): void => {
       onSortColumnChange(column);
-      onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc');
-      rowVirtualizer.scrollToIndex(0, { align: 'center', behavior: 'auto' });
+      onSortOrderChange(sortOrder === "asc" ? "desc" : "asc");
+      rowVirtualizer.scrollToIndex(0, { align: "center", behavior: "auto" });
     },
     [onSortColumnChange, onSortOrderChange, rowVirtualizer, sortOrder],
   );
@@ -131,7 +131,7 @@ function ItemsTableContent({
       <ModalLoadingOverlay
         isVisible={showLoadingState}
         message={itemsTableFormatters.getSearchMessage(liveMessage, labels.title)}
-        detail='Refreshing items'
+        detail="Refreshing items"
       />
     ),
     [labels.title, liveMessage, showLoadingState],
@@ -147,38 +147,38 @@ function ItemsTableContent({
       <ListLoadingSkeleton
         message={itemsTableFormatters.getSearchMessage(liveMessageValue, labels.title)}
         rowCount={itemsTableConstants.LOADING_ROW_COUNT}
-        dataTestId='items-live-region'
+        dataTestId="items-live-region"
       />
     );
   }
 
   return (
-    <div className='mx-auto max-w-[1600px] space-y-6 px-4 pb-20 sm:space-y-8 sm:px-6'>
+    <div className="mx-auto max-w-[1600px] space-y-6 px-4 pb-20 sm:space-y-8 sm:px-6">
       {loadingOverlay}
       <div
-        role='status'
-        aria-live='polite'
-        aria-atomic='true'
-        data-testid='items-live-region'
-        className='sr-only'
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="items-live-region"
+        className="sr-only"
       >
         {liveMessageValue}
       </div>
-      <div id='table-instructions' className='sr-only'>
+      <div id="table-instructions" className="sr-only">
         Use arrow keys to move between cells. Press Home and End to jump to first or last column.
         PageUp and PageDown move several rows.
       </div>
 
-      <div className='md:hidden'>
+      <div className="md:hidden">
         <ResponsiveCardView items={cardItems} isLoading={false} emptyState={emptyStateNode} />
       </div>
 
-      <div className='hidden md:block'>
-        <Card className='bg-card/50 flex flex-col overflow-hidden rounded-[2rem] border-none shadow-sm'>
+      <div className="hidden md:block">
+        <Card className="bg-card/50 flex flex-col overflow-hidden rounded-[2rem] border-none shadow-sm">
           {showEmptyState && (
             <div
               className={cn(
-                'flex items-center justify-center p-6',
+                "flex items-center justify-center p-6",
                 `min-h-[${itemsTableConstants.TABLE_MIN_HEIGHT}px]`,
               )}
             >
@@ -186,8 +186,8 @@ function ItemsTableContent({
             </div>
           )}
           {!showEmptyState && showInlineTable && (
-            <div className='custom-scrollbar overflow-x-auto'>
-              <Table role='table' ariaLabel='Items table' ariaDescribedBy='table-instructions'>
+            <div className="custom-scrollbar overflow-x-auto">
+              <Table role="table" ariaLabel="Items table" ariaDescribedBy="table-instructions">
                 <TableHeaderRow
                   sortColumn={sortColumn}
                   sortOrder={sortOrder}
@@ -210,8 +210,8 @@ function ItemsTableContent({
           )}
           {!showEmptyState && !showInlineTable && (
             <>
-              <div className='custom-scrollbar overflow-x-auto'>
-                <Table role='table' ariaLabel='Items table' ariaDescribedBy='table-instructions'>
+              <div className="custom-scrollbar overflow-x-auto">
+                <Table role="table" ariaLabel="Items table" ariaDescribedBy="table-instructions">
                   <TableHeaderRow
                     sortColumn={sortColumn}
                     sortOrder={sortOrder}

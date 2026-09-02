@@ -1,13 +1,13 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { client } from '../../api/client';
+import { client } from "../../api/client";
 
-export type CoverageViewFilter = 'unit' | 'integration' | 'e2e' | 'manual';
+export type CoverageViewFilter = "unit" | "integration" | "e2e" | "manual";
 
 export interface CoverageGap {
   requirementId: string;
   title: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   reason?: string;
 }
 
@@ -95,7 +95,7 @@ function useCoverageGaps(
         return EMPTY_GAPS;
       }
     },
-    queryKey: ['coverage', 'gaps', projectId, viewFilter],
+    queryKey: ["coverage", "gaps", projectId, viewFilter],
   });
   return {
     data: query.data ?? EMPTY_GAPS,
@@ -118,7 +118,7 @@ function useTraceabilityMatrix(
         return EMPTY_MATRIX;
       }
     },
-    queryKey: ['coverage', 'matrix', projectId, viewFilter],
+    queryKey: ["coverage", "matrix", projectId, viewFilter],
   });
   return {
     data: query.data ?? EMPTY_MATRIX,
@@ -155,10 +155,7 @@ async function fetchCoverages(projectId: string): Promise<CoverageRecord[]> {
   return response;
 }
 
-async function fetchCoverage(
-  projectId: string,
-  coverageId: string,
-): Promise<CoverageRecord> {
+async function fetchCoverage(projectId: string, coverageId: string): Promise<CoverageRecord> {
   const response = await client.apiClient.get<CoverageRecord>(
     `/api/v1/projects/${projectId}/coverage/${coverageId}`,
     { headers: await client.getAuthHeaders() },
@@ -190,10 +187,10 @@ async function patchCoverage(
 }
 
 async function deleteCoverage(projectId: string, coverageId: string): Promise<void> {
-  await client.apiClient.delete(
-    `/api/v1/projects/${projectId}/coverage/${coverageId}`,
-    { headers: await client.getAuthHeaders() },
-  );
+  const headers = await client.getAuthHeaders();
+  await client.apiClient.delete(`/api/v1/projects/${projectId}/coverage/${coverageId}`, {
+    headers,
+  });
 }
 
 async function postVerifyCoverage(
@@ -222,7 +219,7 @@ function useCoverages(projectId: string | undefined): CoverageListResult {
         return EMPTY_COVERAGE_LIST;
       }
     },
-    queryKey: ['coverage', 'list', projectId],
+    queryKey: ["coverage", "list", projectId],
   });
   return { data: query.data ?? EMPTY_COVERAGE_LIST };
 }
@@ -243,7 +240,7 @@ function useCoverage(
         return undefined;
       }
     },
-    queryKey: ['coverage', 'item', projectId, coverageId],
+    queryKey: ["coverage", "item", projectId, coverageId],
   });
   return { data: query.data };
 }
@@ -278,12 +275,12 @@ function useCreateCoverage(projectId: string): CoverageResultMap<CoverageRecord>
   const mutation = useMutation({
     mutationFn: (payload: Partial<CoverageRecord>) => {
       if (projectId === undefined) {
-        return Promise.reject(new Error('missing projectId'));
+        return Promise.reject(new Error("missing projectId"));
       }
       return postCoverage(projectId, payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coverage', 'list', projectId] });
+      queryClient.invalidateQueries({ queryKey: ["coverage", "list", projectId] });
     },
   });
   return { data: mutation.data };
@@ -297,14 +294,14 @@ function useUpdateCoverage(
   const mutation = useMutation({
     mutationFn: (payload: Partial<CoverageRecord>) => {
       if (projectId === undefined || coverageId === undefined) {
-        return Promise.reject(new Error('missing projectId/coverageId'));
+        return Promise.reject(new Error("missing projectId/coverageId"));
       }
       return patchCoverage(projectId, coverageId, payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coverage', 'list', projectId] });
+      queryClient.invalidateQueries({ queryKey: ["coverage", "list", projectId] });
       queryClient.invalidateQueries({
-        queryKey: ['coverage', 'item', projectId, coverageId],
+        queryKey: ["coverage", "item", projectId, coverageId],
       });
     },
   });
@@ -316,12 +313,12 @@ function useDeleteCoverage(projectId: string): CoverageResultMap<void> {
   const mutation = useMutation({
     mutationFn: (coverageId: string) => {
       if (projectId === undefined) {
-        return Promise.reject(new Error('missing projectId'));
+        return Promise.reject(new Error("missing projectId"));
       }
       return deleteCoverage(projectId, coverageId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coverage', 'list', projectId] });
+      queryClient.invalidateQueries({ queryKey: ["coverage", "list", projectId] });
     },
   });
   return { data: mutation.data };
@@ -335,12 +332,12 @@ function useVerifyCoverage(
   const mutation = useMutation({
     mutationFn: () => {
       if (projectId === undefined || coverageId === undefined) {
-        return Promise.reject(new Error('missing projectId/coverageId'));
+        return Promise.reject(new Error("missing projectId/coverageId"));
       }
       return postVerifyCoverage(projectId, coverageId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coverage', 'item', projectId, coverageId] });
+      queryClient.invalidateQueries({ queryKey: ["coverage", "item", projectId, coverageId] });
     },
   });
   return { data: mutation.data };

@@ -1,10 +1,10 @@
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import * as QueryClient from './query-client';
+import * as QueryClient from "./query-client";
 
 interface Settings {
   general: {
-    theme?: 'light' | 'dark' | 'system' | undefined;
+    theme?: "light" | "dark" | "system" | undefined;
     language?: string | undefined;
     timezone?: string | undefined;
   };
@@ -21,8 +21,8 @@ interface Settings {
 
 const DEFAULT_SETTINGS: Settings = {
   general: {
-    language: 'en',
-    theme: 'system',
+    language: "en",
+    theme: "system",
   },
   notifications: {
     email: true,
@@ -35,8 +35,16 @@ const DEFAULT_SETTINGS: Settings = {
   },
 };
 
-const isTheme = (value: unknown): value is 'light' | 'dark' | 'system' =>
-  value === 'light' || value === 'dark' || value === 'system';
+const isSettings = (value: unknown): value is Settings => {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const candidate = value as { general?: unknown };
+  return typeof candidate.general === "object" && candidate.general !== null;
+};
+
+const isTheme = (value: unknown): value is "light" | "dark" | "system" =>
+  value === "light" || value === "dark" || value === "system";
 
 const createBaseSettings = (baseSettings: Settings): Settings => {
   const mergedSettings: Settings = {
@@ -65,7 +73,7 @@ const createBaseSettings = (baseSettings: Settings): Settings => {
   return mergedSettings;
 };
 
-const applyGeneralOverrides = (target: Settings, overrides?: Settings['general']): void => {
+const applyGeneralOverrides = (target: Settings, overrides?: Settings["general"]): void => {
   if (!overrides) {
     return;
   }
@@ -82,7 +90,7 @@ const applyGeneralOverrides = (target: Settings, overrides?: Settings['general']
 
 const applyNotificationOverrides = (
   target: Settings,
-  overrides?: Settings['notifications'],
+  overrides?: Settings["notifications"],
 ): void => {
   if (!overrides) {
     return;
@@ -99,7 +107,7 @@ const applyNotificationOverrides = (
   }
 };
 
-const applySecurityOverrides = (target: Settings, overrides?: Settings['security']): void => {
+const applySecurityOverrides = (target: Settings, overrides?: Settings["security"]): void => {
   if (!overrides) {
     return;
   }
@@ -122,9 +130,9 @@ const mergeSettings = (baseSettings: Settings, overrides: Partial<Settings>): Se
 
 const fetchSettings = async (): Promise<Settings> => {
   try {
-    const response = QueryClient.api.get<Settings>('/api/v1/settings', {});
+    const response = QueryClient.api.get<Settings>("/api/v1/settings", {});
     const data = await QueryClient.handleApiResponse<Settings>(response);
-    return data;
+    return isSettings(data) ? data : DEFAULT_SETTINGS;
   } catch {
     return DEFAULT_SETTINGS;
   }
@@ -132,18 +140,18 @@ const fetchSettings = async (): Promise<Settings> => {
 
 const updateSettings = async (settings: Partial<Settings>): Promise<Settings> => {
   try {
-    const response = QueryClient.api.put<Settings>('/api/v1/settings', {
+    const response = QueryClient.api.put<Settings>("/api/v1/settings", {
       body: settings,
     });
     const data = await QueryClient.handleApiResponse<Settings>(response);
-    return data;
+    return isSettings(data) ? data : mergeSettings(DEFAULT_SETTINGS, settings);
   } catch {
     return mergeSettings(DEFAULT_SETTINGS, settings);
   }
 };
 
 interface GeneralSettingsMap {
-  theme?: 'light' | 'dark' | 'system' | undefined;
+  theme?: "light" | "dark" | "system" | undefined;
 }
 
 interface NotificationSettingsMap {
@@ -154,7 +162,7 @@ interface NotificationSettingsMap {
 
 const buildGeneralSettings = (settings: { theme?: string | undefined }): GeneralSettingsMap => {
   const generalSettings: GeneralSettingsMap = {};
-  if (typeof settings.theme === 'string' && isTheme(settings.theme)) {
+  if (typeof settings.theme === "string" && isTheme(settings.theme)) {
     generalSettings.theme = settings.theme;
   }
   return generalSettings;
@@ -195,7 +203,7 @@ const saveSettings = async (settings: {
       notifications: notificationSettings,
     });
   } catch {
-    logger.info('Settings saved locally:', settings);
+    logger.info("Settings saved locally:", settings);
   }
 };
 

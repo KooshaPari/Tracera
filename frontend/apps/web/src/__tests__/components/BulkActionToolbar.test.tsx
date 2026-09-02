@@ -1,11 +1,11 @@
-import { render } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { Trash2 } from 'lucide-react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { Trash2 } from "lucide-react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { BulkAction } from '../../components/BulkActionToolbar';
+import type { BulkAction } from "../../components/BulkActionToolbar";
 
-import { BulkActionToolbar } from '../../components/BulkActionToolbar';
+import { BulkActionToolbar } from "../../components/BulkActionToolbar";
 
 let user: ReturnType<typeof userEvent.setup>;
 
@@ -21,13 +21,13 @@ describe(BulkActionToolbar, () => {
 
   const getDeleteAction = (): BulkAction => ({
     action: getMockDelete(),
-    icon: <Trash2 className='h-4 w-4' />,
-    id: 'delete',
-    label: 'Delete',
-    variant: 'destructive',
+    icon: <Trash2 className="h-4 w-4" />,
+    id: "delete",
+    label: "Delete",
+    variant: "destructive",
   });
 
-  it('does not render when no items are selected', () => {
+  it("does not render when no items are selected", () => {
     const { container } = render(
       <BulkActionToolbar
         selectedCount={0}
@@ -41,7 +41,7 @@ describe(BulkActionToolbar, () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders when items are selected', () => {
+  it("renders when items are selected", () => {
     const { getByText } = render(
       <BulkActionToolbar
         selectedCount={3}
@@ -55,7 +55,7 @@ describe(BulkActionToolbar, () => {
     expect(getByText(/3 of 10 selected/)).toBeInTheDocument();
   });
 
-  it('displays selection count correctly', () => {
+  it("displays selection count correctly", () => {
     const { getByText } = render(
       <BulkActionToolbar
         selectedCount={5}
@@ -69,7 +69,7 @@ describe(BulkActionToolbar, () => {
     expect(getByText(/5 of 20 selected/)).toBeInTheDocument();
   });
 
-  it('calls onSelectAll when Select All is clicked', async () => {
+  it("calls onSelectAll when Select All is clicked", async () => {
     const mockSelectAll = getMockSelectAll();
     const { getByText } = render(
       <BulkActionToolbar
@@ -81,11 +81,11 @@ describe(BulkActionToolbar, () => {
       />,
     );
 
-    await user.click(getByText('Select All'));
+    await user.click(getByText("Select All"));
     expect(mockSelectAll).toHaveBeenCalled();
   });
 
-  it('calls onSelectNone when Deselect is clicked', async () => {
+  it("calls onSelectNone when Deselect is clicked", async () => {
     const mockSelectNone = getMockSelectNone();
     const { getByText } = render(
       <BulkActionToolbar
@@ -97,11 +97,11 @@ describe(BulkActionToolbar, () => {
       />,
     );
 
-    await user.click(getByText('Deselect'));
+    await user.click(getByText("Deselect"));
     expect(mockSelectNone).toHaveBeenCalled();
   });
 
-  it('disables Select All when all items are selected', () => {
+  it("disables Select All when all items are selected", () => {
     const { getByText } = render(
       <BulkActionToolbar
         selectedCount={10}
@@ -112,16 +112,16 @@ describe(BulkActionToolbar, () => {
       />,
     );
 
-    const selectAllButton = getByText('Select All') as HTMLButtonElement;
+    const selectAllButton = getByText("Select All") as HTMLButtonElement;
     expect(selectAllButton.disabled).toBeTruthy();
   });
 
-  it('renders all provided actions', () => {
+  it("renders all provided actions", () => {
     const archiveAction: BulkAction = {
       action: vi.fn(),
       icon: <span>📦</span>,
-      id: 'archive',
-      label: 'Archive',
+      id: "archive",
+      label: "Archive",
     };
 
     const { getByText } = render(
@@ -134,11 +134,11 @@ describe(BulkActionToolbar, () => {
       />,
     );
 
-    expect(getByText('Delete')).toBeInTheDocument();
-    expect(getByText('Archive')).toBeInTheDocument();
+    expect(getByText("Delete")).toBeInTheDocument();
+    expect(getByText("Archive")).toBeInTheDocument();
   });
 
-  it('disables Select All and actions when loading', () => {
+  it("disables Select All and actions when loading", () => {
     const { getByText } = render(
       <BulkActionToolbar
         selectedCount={3}
@@ -150,11 +150,11 @@ describe(BulkActionToolbar, () => {
       />,
     );
 
-    const selectAllButton = getByText('Select All') as HTMLButtonElement;
+    const selectAllButton = getByText("Select All") as HTMLButtonElement;
     expect(selectAllButton.disabled).toBeTruthy();
   });
 
-  it('respects action disabled flag when rendering', () => {
+  it("respects action disabled flag when rendering", () => {
     const disabledAction: BulkAction = {
       ...getDeleteAction(),
       disabled: true,
@@ -173,11 +173,11 @@ describe(BulkActionToolbar, () => {
     // Verify toolbar renders with content
     expect(getByText(/3 of 10 selected/)).toBeInTheDocument();
     // The button will still render but should be disabled
-    const deleteButton = getByText('Delete') as HTMLButtonElement;
+    const deleteButton = getByText("Delete") as HTMLButtonElement;
     expect(deleteButton).toBeInTheDocument();
   });
 
-  it('closes toolbar when close button is clicked', async () => {
+  it("closes toolbar when close button is clicked", async () => {
     const mockSelectNone = getMockSelectNone();
     const { getByLabelText } = render(
       <BulkActionToolbar
@@ -189,7 +189,7 @@ describe(BulkActionToolbar, () => {
       />,
     );
 
-    const closeButton = getByLabelText('Close toolbar');
+    const closeButton = getByLabelText("Close toolbar");
     await user.click(closeButton);
 
     expect(mockSelectNone).toHaveBeenCalled();

@@ -3,9 +3,9 @@
  * Displays progress for NDJSON streaming operations
  */
 
-import type { StreamingStats } from '../lib/ndjson-parser';
+import type { StreamingStats } from "../lib/ndjson-parser";
 
-import { calculateThroughput } from '../lib/ndjson-parser';
+import { calculateThroughput } from "../lib/ndjson-parser";
 
 const BYTES_IN_KB = 1024;
 const BYTES_IN_MB = BYTES_IN_KB * BYTES_IN_KB;
@@ -49,26 +49,26 @@ const hasErrors = (stats: StreamingStats | null): boolean =>
   stats !== null && stats.errors.length > 0;
 
 const StatItem = ({ label, value }: { label: string; value: string | number }) => (
-  <div className='flex flex-col'>
-    <span className='text-muted-foreground'>{label}</span>
-    <span className='font-mono font-semibold'>{value}</span>
+  <div className="flex flex-col">
+    <span className="text-muted-foreground">{label}</span>
+    <span className="font-mono font-semibold">{value}</span>
   </div>
 );
 
 const ErrorStat = ({ count }: { count: number }) => (
-  <div className='flex flex-col'>
-    <span className='text-destructive'>Errors</span>
-    <span className='text-destructive font-mono font-semibold'>{count}</span>
+  <div className="flex flex-col">
+    <span className="text-destructive">Errors</span>
+    <span className="text-destructive font-mono font-semibold">{count}</span>
   </div>
 );
 
 const ErrorDetails = ({ errors }: { errors: string[] }) => (
-  <div className='text-destructive mt-2 text-sm'>
+  <div className="text-destructive mt-2 text-sm">
     <details>
-      <summary className='cursor-pointer'>
-        {errors.length} error{errors.length > 1 ? 's' : ''} occurred
+      <summary className="cursor-pointer">
+        {errors.length} error{errors.length > 1 ? "s" : ""} occurred
       </summary>
-      <ul className='mt-1 list-inside list-disc pl-4'>
+      <ul className="mt-1 list-inside list-disc pl-4">
         {errors.map((error, idx) => (
           <li key={`${error}-${idx}`}>{error}</li>
         ))}
@@ -88,18 +88,18 @@ const StatsRow = ({
   showThroughput: boolean;
   throughput: ReturnType<typeof calculateThroughput> | null;
 }) => (
-  <div className='flex gap-6 text-sm'>
-    <StatItem label='Items' value={stats?.itemsReceived.toLocaleString() ?? 0} />
+  <div className="flex gap-6 text-sm">
+    <StatItem label="Items" value={stats?.itemsReceived.toLocaleString() ?? 0} />
 
-    {showBytes && stats && <StatItem label='Data' value={formatBytes(stats.bytesReceived)} />}
+    {showBytes && stats && <StatItem label="Data" value={formatBytes(stats.bytesReceived)} />}
 
     {showThroughput && throughput && (
-      <StatItem label='Speed' value={`${throughput.itemsPerSecond.toFixed(0)} items/s`} />
+      <StatItem label="Speed" value={`${throughput.itemsPerSecond.toFixed(0)} items/s`} />
     )}
 
     {stats && (
       <StatItem
-        label='Duration'
+        label="Duration"
         value={formatDuration((stats.endTime ?? Date.now()) - stats.startTime)}
       />
     )}
@@ -109,18 +109,18 @@ const StatsRow = ({
 );
 
 const Spinner = () => (
-  <div className='border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent' />
+  <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
 );
 
 const ProgressBar = () => (
-  <div className='bg-muted mt-2 h-1 w-full overflow-hidden rounded-full'>
-    <div className='bg-primary h-full animate-pulse' />
+  <div className="bg-muted mt-2 h-1 w-full overflow-hidden rounded-full">
+    <div className="bg-primary h-full animate-pulse" />
   </div>
 );
 
 const StatusText = ({ isStreaming }: { isStreaming: boolean }) => (
-  <div className='text-muted-foreground ml-auto text-sm'>
-    {isStreaming ? 'Streaming...' : 'Complete'}
+  <div className="text-muted-foreground ml-auto text-sm">
+    {isStreaming ? "Streaming..." : "Complete"}
   </div>
 );
 
@@ -129,7 +129,7 @@ export const StreamingProgress = ({
   isStreaming,
   showThroughput = true,
   showBytes = false,
-  className = '',
+  className = "",
 }: StreamingProgressProps) => {
   if (!stats && !isStreaming) {
     return null;
@@ -140,7 +140,7 @@ export const StreamingProgress = ({
 
   return (
     <div className={`streaming-progress ${className}`}>
-      <div className='flex items-center gap-4'>
+      <div className="flex items-center gap-4">
         {isStreaming && <Spinner />}
         <StatsRow
           stats={stats}
@@ -169,11 +169,11 @@ export const CompactStreamingProgress = ({ stats, isStreaming }: CompactStreamin
   }
 
   return (
-    <div className='text-muted-foreground inline-flex items-center gap-2 text-sm'>
+    <div className="text-muted-foreground inline-flex items-center gap-2 text-sm">
       {isStreaming && (
-        <div className='border-primary h-3 w-3 animate-spin rounded-full border-2 border-t-transparent' />
+        <div className="border-primary h-3 w-3 animate-spin rounded-full border-2 border-t-transparent" />
       )}
-      <span className='font-mono'>{stats?.itemsReceived.toLocaleString() ?? 0} items</span>
+      <span className="font-mono">{stats?.itemsReceived.toLocaleString() ?? 0} items</span>
       {isStreaming && <span>streaming...</span>}
     </div>
   );
@@ -190,32 +190,32 @@ export const StreamingProgressBar = ({
   current,
   total,
   isStreaming,
-  className = '',
+  className = "",
 }: StreamingProgressBarProps) => {
   const percentage = total ? (current / total) * PERCENTAGE_SCALE : 0;
   const showPercentage = total && total > 0;
 
   return (
     <div className={`streaming-progress-bar ${className}`}>
-      <div className='mb-1 flex justify-between text-sm'>
-        <span className='text-muted-foreground'>
+      <div className="mb-1 flex justify-between text-sm">
+        <span className="text-muted-foreground">
           {current.toLocaleString()}
-          {total ? ` / ${total.toLocaleString()}` : ''} items
+          {total ? ` / ${total.toLocaleString()}` : ""} items
         </span>
         {showPercentage && (
-          <span className='font-mono font-semibold'>
+          <span className="font-mono font-semibold">
             {percentage.toFixed(DECIMAL_PLACES_SECONDS)}%
           </span>
         )}
       </div>
-      <div className='bg-muted h-2 w-full overflow-hidden rounded-full'>
+      <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
         {showPercentage ? (
           <div
-            className='bg-primary h-full transition-all duration-300'
+            className="bg-primary h-full transition-all duration-300"
             style={{ width: `${percentage}%` }}
           />
         ) : (
-          isStreaming && <div className='bg-primary h-full animate-pulse' />
+          isStreaming && <div className="bg-primary h-full animate-pulse" />
         )}
       </div>
     </div>

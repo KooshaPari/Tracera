@@ -4,7 +4,7 @@ import type {
   ContractStatus,
   ContractTransition,
   ContractType,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
 import {
   asBoolean,
@@ -12,19 +12,19 @@ import {
   asOptionalString,
   asOptionalStringArray,
   asString,
-} from './primitive-decoders';
-import { isApiRecord } from './record-decoders';
+} from "./primitive-decoders";
+import { isApiRecord } from "./record-decoders";
 
-const asContractConditionResult = (value: unknown): ContractCondition['lastVerifiedResult'] => {
+const asContractConditionResult = (value: unknown): ContractCondition["lastVerifiedResult"] => {
   const text = asOptionalString(value);
   switch (text) {
-    case 'pass': {
+    case "pass": {
       return text;
     }
-    case 'fail': {
+    case "fail": {
       return text;
     }
-    case 'skip': {
+    case "skip": {
       return text;
     }
     default: {
@@ -40,18 +40,18 @@ const asContractConditions = (value: unknown): ContractCondition[] => {
   const conditions: ContractCondition[] = [];
   for (const entry of value) {
     if (isApiRecord(entry)) {
-      let requiredValue = entry['is_required'];
+      let requiredValue = entry["is_required"];
       if (requiredValue === undefined) {
-        requiredValue = entry['isRequired'];
+        requiredValue = entry["isRequired"];
       }
-      let lastResultValue = entry['last_verified_result'];
+      let lastResultValue = entry["last_verified_result"];
       if (lastResultValue === undefined) {
-        lastResultValue = entry['lastVerifiedResult'];
+        lastResultValue = entry["lastVerifiedResult"];
       }
       conditions.push({
-        id: asString(entry['id']),
-        description: asString(entry['description']),
-        expression: asOptionalString(entry['expression']),
+        id: asString(entry["id"]),
+        description: asString(entry["description"]),
+        expression: asOptionalString(entry["expression"]),
         isRequired: asBoolean(requiredValue),
         lastVerifiedResult: asContractConditionResult(lastResultValue),
       });
@@ -67,30 +67,30 @@ const asContractTransitions = (value: unknown): ContractTransition[] | undefined
   const transitions: ContractTransition[] = [];
   for (const entry of value) {
     if (isApiRecord(entry)) {
-      let fromStateValue = entry['from_state'];
+      let fromStateValue = entry["from_state"];
       if (fromStateValue === undefined) {
-        fromStateValue = entry['fromState'];
+        fromStateValue = entry["fromState"];
       }
-      let toStateValue = entry['to_state'];
+      let toStateValue = entry["to_state"];
       if (toStateValue === undefined) {
-        toStateValue = entry['toState'];
+        toStateValue = entry["toState"];
       }
       transitions.push({
-        id: asString(entry['id']),
+        id: asString(entry["id"]),
         fromState: asString(fromStateValue),
         toState: asString(toStateValue),
-        trigger: asString(entry['trigger']),
-        guards: asOptionalStringArray(entry['guards']),
-        actions: asOptionalStringArray(entry['actions']),
+        trigger: asString(entry["trigger"]),
+        guards: asOptionalStringArray(entry["guards"]),
+        actions: asOptionalStringArray(entry["actions"]),
       });
     }
   }
   return transitions;
 };
 
-const asSpecLanguage = (value: unknown): Contract['specLanguage'] => {
+const asSpecLanguage = (value: unknown): Contract["specLanguage"] => {
   const text = asOptionalString(value);
-  if (text === 'typescript' || text === 'python' || text === 'gherkin') {
+  if (text === "typescript" || text === "python" || text === "gherkin") {
     return text;
   }
   return undefined;
@@ -99,23 +99,23 @@ const asSpecLanguage = (value: unknown): Contract['specLanguage'] => {
 const asContractType = (value: unknown): ContractType => {
   const text = asString(value);
   switch (text) {
-    case 'api': {
+    case "api": {
       return text;
     }
-    case 'function': {
+    case "function": {
       return text;
     }
-    case 'invariant': {
+    case "invariant": {
       return text;
     }
-    case 'data': {
+    case "data": {
       return text;
     }
-    case 'integration': {
+    case "integration": {
       return text;
     }
     default: {
-      return 'api';
+      return "api";
     }
   }
 };
@@ -123,64 +123,64 @@ const asContractType = (value: unknown): ContractType => {
 const asContractStatus = (value: unknown): ContractStatus => {
   const text = asString(value);
   switch (text) {
-    case 'draft': {
+    case "draft": {
       return text;
     }
-    case 'active': {
+    case "active": {
       return text;
     }
-    case 'verified': {
+    case "verified": {
       return text;
     }
-    case 'violated': {
+    case "violated": {
       return text;
     }
-    case 'deprecated': {
+    case "deprecated": {
       return text;
     }
     default: {
-      return 'draft';
+      return "draft";
     }
   }
 };
 
-const asVerificationStatus = (value: unknown): 'pass' | 'fail' | 'error' => {
+const asVerificationStatus = (value: unknown): "pass" | "fail" | "error" => {
   const text = asString(value);
   switch (text) {
-    case 'pass': {
+    case "pass": {
       return text;
     }
-    case 'fail': {
+    case "fail": {
       return text;
     }
-    case 'error': {
+    case "error": {
       return text;
     }
     default: {
-      return 'error';
+      return "error";
     }
   }
 };
 
-function buildVerificationResult(value: unknown): Contract['verificationResult'] {
+function buildVerificationResult(value: unknown): Contract["verificationResult"] {
   if (!isApiRecord(value)) {
     return;
   }
 
-  let passedValue = value['passed_conditions'];
+  let passedValue = value["passed_conditions"];
   if (passedValue === undefined) {
-    passedValue = value['passedConditions'];
+    passedValue = value["passedConditions"];
   }
 
-  let failedValue = value['failed_conditions'];
+  let failedValue = value["failed_conditions"];
   if (failedValue === undefined) {
-    failedValue = value['failedConditions'];
+    failedValue = value["failedConditions"];
   }
 
-  const detailsValue = value['details'];
+  const detailsValue = value["details"];
 
   return {
-    status: asVerificationStatus(value['status']),
+    status: asVerificationStatus(value["status"]),
     passedConditions: asNumber(passedValue),
     failedConditions: asNumber(failedValue),
     details: asOptionalString(detailsValue),

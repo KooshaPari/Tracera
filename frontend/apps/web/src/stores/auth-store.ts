@@ -1,17 +1,17 @@
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
-import { getCSRFHeaders } from '@/lib/csrf';
-import { logger } from '@/lib/logger';
-import { API_ORIGIN } from '@/config/api-origin';
+import { getCSRFHeaders } from "@/lib/csrf";
+import { logger } from "@/lib/logger";
+import { API_ORIGIN } from "@/config/api-origin";
 
 const API_BASE_URL_DEFAULT = API_ORIGIN;
-const AUTH_TOKEN_KEY = 'auth_token';
-const HTTP_UNAUTHORIZED = Number('401');
-const REFRESH_INTERVAL_MINUTES = Number('20');
-const SECONDS_PER_MINUTE = Number('60');
-const MILLISECONDS_PER_SECOND = Number('1000');
-const BODY_PREVIEW_LIMIT = Number('150');
+const AUTH_TOKEN_KEY = "auth_token";
+const HTTP_UNAUTHORIZED = Number("401");
+const REFRESH_INTERVAL_MINUTES = Number("20");
+const SECONDS_PER_MINUTE = Number("60");
+const MILLISECONDS_PER_SECOND = Number("1000");
+const BODY_PREVIEW_LIMIT = Number("150");
 const REFRESH_INTERVAL_MS = REFRESH_INTERVAL_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
 
 interface StorageAdapter {
@@ -29,9 +29,9 @@ const noopStorage: StorageAdapter = {
 const getStorage = (): StorageAdapter => {
   // Check if we're in a browser environment with proper localStorage
   if (
-    typeof globalThis.window === 'undefined' ||
-    typeof localStorage === 'undefined' ||
-    typeof localStorage.getItem !== 'function'
+    typeof globalThis.window === "undefined" ||
+    typeof localStorage === "undefined" ||
+    typeof localStorage.getItem !== "function"
   ) {
     return noopStorage;
   }
@@ -41,11 +41,11 @@ const getStorage = (): StorageAdapter => {
 const getApiBaseUrl = (): string => import.meta.env.VITE_API_URL || API_BASE_URL_DEFAULT;
 
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
-  Object.prototype.toString.call(value) === '[object Object]';
+  Object.prototype.toString.call(value) === "[object Object]";
 
 const readStringField = (obj: Record<string, unknown>, key: string): string | undefined => {
   const value = obj[key];
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   return undefined;
@@ -76,7 +76,7 @@ const isUser = (value: unknown): value is User => {
   if (!isRecordObject(value)) {
     return false;
   }
-  return typeof value['id'] === 'string' && typeof value['email'] === 'string';
+  return typeof value["id"] === "string" && typeof value["email"] === "string";
 };
 
 const isAccount = (value: unknown): value is Account => {
@@ -84,10 +84,10 @@ const isAccount = (value: unknown): value is Account => {
     return false;
   }
   return (
-    typeof value['id'] === 'string' &&
-    typeof value['name'] === 'string' &&
-    typeof value['slug'] === 'string' &&
-    typeof value['account_type'] === 'string'
+    typeof value["id"] === "string" &&
+    typeof value["name"] === "string" &&
+    typeof value["slug"] === "string" &&
+    typeof value["account_type"] === "string"
   );
 };
 
@@ -97,12 +97,12 @@ const parseLoginResponse = (
   if (!isRecordObject(data)) {
     return undefined;
   }
-  const userValue = data['user'];
+  const userValue = data["user"];
   if (!isUser(userValue)) {
     return undefined;
   }
   // Check for 'token' (backend) or 'access_token' (legacy/standard)
-  const token = readStringField(data, 'token') ?? readStringField(data, 'access_token');
+  const token = readStringField(data, "token") ?? readStringField(data, "access_token");
   return { token, user: userValue };
 };
 
@@ -111,11 +111,11 @@ const parseSessionResponse = (data: unknown): { account?: Account; user?: User }
     return undefined;
   }
   const response: { account?: Account; user?: User } = {};
-  const userValue = data['user'];
+  const userValue = data["user"];
   if (isUser(userValue)) {
     response.user = userValue;
   }
-  const accountValue = data['account'];
+  const accountValue = data["account"];
   if (isAccount(accountValue)) {
     response.account = accountValue;
   }
@@ -127,11 +127,11 @@ const parseRefreshResponse = (data: unknown): { token?: string; user?: User } | 
     return undefined;
   }
   const response: { token?: string; user?: User } = {};
-  const userValue = data['user'];
+  const userValue = data["user"];
   if (isUser(userValue)) {
     response.user = userValue;
   }
-  const token = readStringField(data, 'token') ?? readStringField(data, 'access_token');
+  const token = readStringField(data, "token") ?? readStringField(data, "access_token");
   if (token !== undefined) {
     response.token = token;
   }
@@ -142,7 +142,7 @@ const parseAccountResponse = (data: unknown): { account?: Account } | undefined 
   if (!isRecordObject(data)) {
     return undefined;
   }
-  const accountValue = data['account'];
+  const accountValue = data["account"];
   if (isAccount(accountValue)) {
     return { account: accountValue };
   }
@@ -198,7 +198,7 @@ const normalizeToken = (token: string | null): string | null => {
 };
 
 const persistToken = (token: string | null): void => {
-  if (typeof localStorage === 'undefined') {
+  if (typeof localStorage === "undefined") {
     return;
   }
   if (token) {
@@ -213,7 +213,7 @@ const fetchJson = async (
   options: RequestInit,
 ): Promise<{ data?: unknown; response: Response }> => {
   const headers = new Headers(options.headers ?? {});
-  const csrfHeaders = getCSRFHeaders(options.method ?? 'GET');
+  const csrfHeaders = getCSRFHeaders(options.method ?? "GET");
   for (const [key, value] of Object.entries(csrfHeaders)) {
     headers.set(key, value);
   }
@@ -233,7 +233,7 @@ const fetchJson = async (
 
 const createSetterActions = (
   set: StoreSetter,
-): Pick<AuthStateActions, 'setAccount' | 'setToken' | 'setUser'> => ({
+): Pick<AuthStateActions, "setAccount" | "setToken" | "setUser"> => ({
   setAccount: (account): void => {
     set({ account });
   },
@@ -253,32 +253,32 @@ const createSetterActions = (
 const createAuthKitActions = (
   set: StoreSetter,
   get: StoreGetter,
-): Pick<AuthStateActions, 'loginWithCode' | 'redirectToAuthKit'> => ({
+): Pick<AuthStateActions, "loginWithCode" | "redirectToAuthKit"> => ({
   loginWithCode: async (code, state): Promise<void> => {
     set({ isLoading: true });
     try {
       if (!code || !state) {
-        throw new Error('Authorization code and state are required');
+        throw new Error("Authorization code and state are required");
       }
 
-      const { data, response } = await fetchJson('/api/v1/auth/authkit/callback', {
+      const { data, response } = await fetchJson("/api/v1/auth/authkit/callback", {
         body: JSON.stringify({ code, state }),
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        method: 'POST',
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
 
       if (!response.ok) {
         const detail =
-          isRecordObject(data) && typeof data['error'] === 'string'
-            ? data['error']
-            : 'Authentication failed';
+          isRecordObject(data) && typeof data["error"] === "string"
+            ? data["error"]
+            : "Authentication failed";
         throw new Error(`${detail}: ${response.status}`);
       }
 
       const parsed = parseLoginResponse(data);
       if (!parsed) {
-        throw new Error('Invalid response from callback endpoint');
+        throw new Error("Invalid response from callback endpoint");
       }
 
       get().setUser(parsed.user);
@@ -287,7 +287,7 @@ const createAuthKitActions = (
       }
       // Store AuthKit refresh token
       if (isRecordObject(data)) {
-        const refreshToken = readStringField(data as Record<string, unknown>, 'refresh_token');
+        const refreshToken = readStringField(data as Record<string, unknown>, "refresh_token");
         if (refreshToken) {
           set({ authKitRefreshToken: refreshToken });
         }
@@ -295,7 +295,7 @@ const createAuthKitActions = (
       get().initializeAutoRefresh();
     } catch (error) {
       set({ authKitRefreshToken: null, isAuthenticated: false, token: null, user: null });
-      logger.error('AuthKit login failed:', error);
+      logger.error("AuthKit login failed:", error);
       throw error;
     } finally {
       set({ isLoading: false });
@@ -304,31 +304,31 @@ const createAuthKitActions = (
   redirectToAuthKit: async (screenHint?: string): Promise<void> => {
     set({ isLoading: true });
     try {
-      const params = screenHint ? `?screen_hint=${encodeURIComponent(screenHint)}` : '';
+      const params = screenHint ? `?screen_hint=${encodeURIComponent(screenHint)}` : "";
       const { data, response } = await fetchJson(`/api/v1/auth/authkit/authorize${params}`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        method: 'GET',
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        method: "GET",
       });
 
       if (!response.ok) {
         const bodyHint =
           data !== undefined
-            ? ` (body: ${typeof data === 'string' ? data.slice(0, 100) : JSON.stringify(data)?.slice(0, 100)})`
-            : ' (body: non-JSON or empty)';
+            ? ` (body: ${typeof data === "string" ? data.slice(0, 100) : JSON.stringify(data)?.slice(0, 100)})`
+            : " (body: non-JSON or empty)";
         throw new Error(`Failed to get authorization URL: ${response.status}${bodyHint}`);
       }
 
       if (!isRecordObject(data)) {
         const typeHint =
-          data === undefined ? 'undefined (JSON parse failed or empty body)' : typeof data;
+          data === undefined ? "undefined (JSON parse failed or empty body)" : typeof data;
         let bodyPreview = String(data);
-        if (typeof data === 'string') {
+        if (typeof data === "string") {
           bodyPreview = data.slice(0, BODY_PREVIEW_LIMIT);
-        } else if (data !== null && typeof data === 'object') {
+        } else if (data !== null && typeof data === "object") {
           bodyPreview = JSON.stringify(data).slice(0, BODY_PREVIEW_LIMIT);
         }
-        logger.error('AuthKit authorize: invalid response shape', {
+        logger.error("AuthKit authorize: invalid response shape", {
           type: typeHint,
           bodyPreview,
           url: `${getApiBaseUrl()}/api/v1/auth/authkit/authorize`,
@@ -341,23 +341,23 @@ const createAuthKitActions = (
 
       const authorizationUrl = readStringField(
         data as Record<string, unknown>,
-        'authorization_url',
+        "authorization_url",
       );
       if (!authorizationUrl) {
-        throw new Error('No authorization URL in response');
+        throw new Error("No authorization URL in response");
       }
 
       // Store state for CSRF verification on callback
-      const authState = readStringField(data as Record<string, unknown>, 'state');
+      const authState = readStringField(data as Record<string, unknown>, "state");
       if (authState) {
-        sessionStorage.setItem('authkit_state', authState);
+        sessionStorage.setItem("authkit_state", authState);
       }
 
       // Redirect to AuthKit hosted UI
       window.location.href = authorizationUrl;
     } catch (error) {
       set({ isLoading: false });
-      logger.error('AuthKit redirect failed:', error);
+      logger.error("AuthKit redirect failed:", error);
       throw error;
     }
   },
@@ -366,32 +366,32 @@ const createAuthKitActions = (
 const createLogoutAction = (
   set: StoreSetter,
   get: StoreGetter,
-): Pick<AuthStateActions, 'logout'> => ({
+): Pick<AuthStateActions, "logout"> => ({
   logout: async (): Promise<void> => {
     try {
       get().stopAutoRefresh();
-      await fetchJson('/api/v1/auth/logout', {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        method: 'POST',
+      await fetchJson("/api/v1/auth/logout", {
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       }).catch(() => {
-        logger.warn('Logout API call failed, clearing local state');
+        logger.warn("Logout API call failed, clearing local state");
       });
     } catch (error) {
-      logger.error('Logout error:', error);
+      logger.error("Logout error:", error);
     } finally {
       get().setToken(null);
       get().setUser(null);
       set({ authKitRefreshToken: null, isAuthenticated: false });
 
       // Clear AuthKit state from session storage
-      if (typeof sessionStorage !== 'undefined') {
-        sessionStorage.removeItem('authkit_state');
+      if (typeof sessionStorage !== "undefined") {
+        sessionStorage.removeItem("authkit_state");
       }
 
       // Notify React Query to clear cache on logout
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('auth:logout'));
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth:logout"));
       }
     }
   },
@@ -400,7 +400,7 @@ const createLogoutAction = (
 const createSessionActions = (
   set: StoreSetter,
   get: StoreGetter,
-): Pick<AuthStateActions, 'refreshToken' | 'switchAccount' | 'validateSession'> => ({
+): Pick<AuthStateActions, "refreshToken" | "switchAccount" | "validateSession"> => ({
   refreshToken: async (): Promise<void> => {
     try {
       const currentRefreshToken = get().authKitRefreshToken;
@@ -409,11 +409,11 @@ const createSessionActions = (
         return;
       }
 
-      const { data, response } = await fetchJson('/api/v1/auth/authkit/refresh', {
+      const { data, response } = await fetchJson("/api/v1/auth/authkit/refresh", {
         body: JSON.stringify({ refresh_token: currentRefreshToken }),
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        method: 'POST',
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
 
       if (!response.ok) {
@@ -426,7 +426,7 @@ const createSessionActions = (
         get().setToken(parsed.token);
       }
       if (isRecordObject(data)) {
-        const newRefreshToken = readStringField(data, 'refresh_token');
+        const newRefreshToken = readStringField(data, "refresh_token");
         if (newRefreshToken) {
           set({ authKitRefreshToken: newRefreshToken });
         }
@@ -435,24 +435,24 @@ const createSessionActions = (
         get().setUser(parsed.user);
       }
     } catch (error) {
-      logger.error('Token refresh failed:', error);
+      logger.error("Token refresh failed:", error);
       await get().logout();
     }
   },
   switchAccount: async (accountId: string): Promise<void> => {
     if (!get().user) {
-      throw new Error('Not authenticated');
+      throw new Error("Not authenticated");
     }
 
     try {
       const { data, response } = await fetchJson(`/api/v1/accounts/${accountId}/switch`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        method: 'POST',
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to switch account');
+        throw new Error("Failed to switch account");
       }
 
       const parsed = parseAccountResponse(data);
@@ -460,7 +460,7 @@ const createSessionActions = (
         get().setAccount(parsed.account);
       }
     } catch (error) {
-      logger.error('Failed to switch account:', error);
+      logger.error("Failed to switch account:", error);
       throw error;
     }
   },
@@ -471,13 +471,13 @@ const createSessionActions = (
         return false;
       }
 
-      const { data, response } = await fetchJson('/api/v1/auth/me', {
-        credentials: 'include',
+      const { data, response } = await fetchJson("/api/v1/auth/me", {
+        credentials: "include",
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        method: 'GET',
+        method: "GET",
       });
 
       if (response.status === HTTP_UNAUTHORIZED) {
@@ -499,7 +499,7 @@ const createSessionActions = (
 
       return true;
     } catch (error) {
-      logger.error('Session validation error:', error);
+      logger.error("Session validation error:", error);
       await get().logout();
       return false;
     }
@@ -509,7 +509,7 @@ const createSessionActions = (
 const createProfileActions = (
   set: StoreSetter,
   get: StoreGetter,
-): Pick<AuthStateActions, 'updateProfile'> => ({
+): Pick<AuthStateActions, "updateProfile"> => ({
   updateProfile: (updates): void => {
     const currentUser = get().user;
     if (currentUser) {
@@ -521,7 +521,7 @@ const createProfileActions = (
 const createAutoRefreshActions = (
   set: StoreSetter,
   get: StoreGetter,
-): Pick<AuthStateActions, 'initializeAutoRefresh' | 'stopAutoRefresh'> => ({
+): Pick<AuthStateActions, "initializeAutoRefresh" | "stopAutoRefresh"> => ({
   initializeAutoRefresh: (): void => {
     get().stopAutoRefresh();
 
@@ -529,7 +529,7 @@ const createAutoRefreshActions = (
       get()
         .refreshToken()
         .catch((error) => {
-          logger.error('Auto refresh failed:', error);
+          logger.error("Auto refresh failed:", error);
         });
     }, REFRESH_INTERVAL_MS);
 
@@ -556,7 +556,7 @@ const buildAuthStore = (set: StoreSetter, get: StoreGetter): AuthState => ({
 
 export const useAuthStore = create<AuthState>()(
   persist<AuthState>((set, get) => buildAuthStore(set, get), {
-    name: 'tracertm-auth-store',
+    name: "tracertm-auth-store",
     partialize: (state: AuthState) =>
       ({
         account: state.account,

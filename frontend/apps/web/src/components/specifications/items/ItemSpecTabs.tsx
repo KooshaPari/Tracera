@@ -6,7 +6,7 @@
  * available spec types.
  */
 
-import { Bug, CheckCircle2, FileCode, FileText, Layers, ListTodo, Plus, Users } from 'lucide-react';
+import { Bug, CheckCircle2, FileCode, FileText, Layers, ListTodo, Plus, Users } from "lucide-react";
 
 import type {
   DefectSpec,
@@ -15,7 +15,7 @@ import type {
   TaskSpec,
   TestSpec,
   UserStorySpec,
-} from '@/hooks/useItemSpecs';
+} from "@/hooks/useItemSpecs";
 
 import {
   useDefectSpecByItem,
@@ -24,8 +24,8 @@ import {
   useTaskSpecByItem,
   useTestSpecByItem,
   useUserStorySpecByItem,
-} from '@/hooks/useItemSpecs';
-import { cn } from '@/lib/utils';
+} from "@/hooks/useItemSpecs";
+import { cn } from "@/lib/utils";
 import {
   Badge,
   Button,
@@ -35,14 +35,14 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@tracertm/ui';
+} from "@tracertm/ui";
 
-import { DefectSpecCard } from './DefectSpecCard';
-import { EpicSpecCard } from './EpicSpecCard';
-import { RequirementSpecCard } from './RequirementSpecCard';
-import { TaskSpecCard } from './TaskSpecCard';
-import { TestSpecCard } from './TestSpecCard';
-import { UserStorySpecCard } from './UserStorySpecCard';
+import { DefectSpecCard } from "./DefectSpecCard";
+import { EpicSpecCard } from "./EpicSpecCard";
+import { RequirementSpecCard } from "./RequirementSpecCard";
+import { TaskSpecCard } from "./TaskSpecCard";
+import { TestSpecCard } from "./TestSpecCard";
+import { UserStorySpecCard } from "./UserStorySpecCard";
 
 interface ItemSpecTabsProps {
   projectId: string;
@@ -54,70 +54,70 @@ interface ItemSpecTabsProps {
 
 const specTypes = [
   {
-    description: 'EARS patterns, constraints, quality metrics',
+    description: "EARS patterns, constraints, quality metrics",
     icon: FileText,
-    id: 'requirement',
-    label: 'Requirement',
+    id: "requirement",
+    label: "Requirement",
   },
   {
-    description: 'Test cases, flakiness, coverage',
+    description: "Test cases, flakiness, coverage",
     icon: FileCode,
-    id: 'test',
-    label: 'Test',
+    id: "test",
+    label: "Test",
   },
   {
-    description: 'Business value, timeline, stories',
+    description: "Business value, timeline, stories",
     icon: Layers,
-    id: 'epic',
-    label: 'Epic',
+    id: "epic",
+    label: "Epic",
   },
   {
-    description: 'As a/I want/So that, acceptance criteria',
+    description: "As a/I want/So that, acceptance criteria",
     icon: Users,
-    id: 'user_story',
-    label: 'User Story',
+    id: "user_story",
+    label: "User Story",
   },
   {
-    description: 'Time tracking, subtasks, blockers',
+    description: "Time tracking, subtasks, blockers",
     icon: ListTodo,
-    id: 'task',
-    label: 'Task',
+    id: "task",
+    label: "Task",
   },
   {
-    description: 'Severity, reproduction, root cause',
+    description: "Severity, reproduction, root cause",
     icon: Bug,
-    id: 'defect',
-    label: 'Defect',
+    id: "defect",
+    label: "Defect",
   },
 ];
 
 function getRecommendedSpecs(itemType?: string): string[] {
   switch (itemType?.toLowerCase()) {
-    case 'requirement':
-    case 'functional_requirement':
-    case 'non_functional_requirement': {
-      return ['requirement'];
+    case "requirement":
+    case "functional_requirement":
+    case "non_functional_requirement": {
+      return ["requirement"];
     }
-    case 'test':
-    case 'test_case': {
-      return ['test', 'requirement'];
+    case "test":
+    case "test_case": {
+      return ["test", "requirement"];
     }
-    case 'epic': {
-      return ['epic'];
+    case "epic": {
+      return ["epic"];
     }
-    case 'user_story':
-    case 'story': {
-      return ['user_story', 'requirement'];
+    case "user_story":
+    case "story": {
+      return ["user_story", "requirement"];
     }
-    case 'task': {
-      return ['task'];
+    case "task": {
+      return ["task"];
     }
-    case 'bug':
-    case 'defect': {
-      return ['defect'];
+    case "bug":
+    case "defect": {
+      return ["defect"];
     }
     default: {
-      return ['requirement', 'test'];
+      return ["requirement", "test"];
     }
   }
 }
@@ -167,21 +167,21 @@ export function ItemSpecTabs({
   const defaultTab =
     specTypes.find((s) => existingSpecs[s.id as keyof typeof existingSpecs])?.id ??
     recommendedSpecs[0] ??
-    'requirement';
+    "requirement";
 
   if (isLoading) {
     return (
-      <Card className={cn('p-4 space-y-4', className)}>
-        <Skeleton className='h-10 w-full' />
-        <Skeleton className='h-48 w-full' />
+      <Card className={cn("p-4 space-y-4", className)}>
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-48 w-full" />
       </Card>
     );
   }
 
   return (
-    <div className={cn('space-y-4', className)}>
-      <Tabs defaultValue={defaultTab} className='w-full'>
-        <TabsList className='bg-muted/50 h-auto w-full flex-wrap justify-start gap-1 rounded-xl p-1'>
+    <div className={cn("space-y-4", className)}>
+      <Tabs defaultValue={defaultTab} className="w-full">
+        <TabsList className="bg-muted/50 h-auto w-full flex-wrap justify-start gap-1 rounded-xl p-1">
           {specTypes.map((spec) => {
             const Icon = spec.icon;
             const exists = existingSpecs[spec.id as keyof typeof existingSpecs];
@@ -192,15 +192,15 @@ export function ItemSpecTabs({
                 key={spec.id}
                 value={spec.id}
                 className={cn(
-                  'rounded-lg gap-1.5 text-xs data-[state=active]:bg-background',
-                  !exists && 'opacity-50',
+                  "rounded-lg gap-1.5 text-xs data-[state=active]:bg-background",
+                  !exists && "opacity-50",
                 )}
               >
-                <Icon className='h-3.5 w-3.5' />
+                <Icon className="h-3.5 w-3.5" />
                 {spec.label}
-                {exists && <CheckCircle2 className='h-3 w-3 text-green-500' />}
+                {exists && <CheckCircle2 className="h-3 w-3 text-green-500" />}
                 {!exists && isRecommended && (
-                  <Badge variant='outline' className='h-4 px-1 py-0 text-[8px]'>
+                  <Badge variant="outline" className="h-4 px-1 py-0 text-[8px]">
                     Suggested
                   </Badge>
                 )}
@@ -210,78 +210,78 @@ export function ItemSpecTabs({
         </TabsList>
 
         {/* Requirement Tab */}
-        <TabsContent value='requirement' className='pt-4'>
+        <TabsContent value="requirement" className="pt-4">
           {reqSpec ? (
             <RequirementSpecCard spec={reqSpec} showQuality />
           ) : (
             <EmptySpecState
-              specType='requirement'
-              description='Add EARS patterns, constraints, and quality metrics'
+              specType="requirement"
+              description="Add EARS patterns, constraints, and quality metrics"
               onCreateSpec={onCreateSpec}
             />
           )}
         </TabsContent>
 
         {/* Test Tab */}
-        <TabsContent value='test' className='pt-4'>
+        <TabsContent value="test" className="pt-4">
           {testSpec ? (
             <TestSpecCard spec={testSpec} showCoverage />
           ) : (
             <EmptySpecState
-              specType='test'
-              description='Link test cases with flakiness detection and coverage tracking'
+              specType="test"
+              description="Link test cases with flakiness detection and coverage tracking"
               onCreateSpec={onCreateSpec}
             />
           )}
         </TabsContent>
 
         {/* Epic Tab */}
-        <TabsContent value='epic' className='pt-4'>
+        <TabsContent value="epic" className="pt-4">
           {epicSpec ? (
             <EpicSpecCard spec={epicSpec} showRisks />
           ) : (
             <EmptySpecState
-              specType='epic'
-              description='Define business value, timeline, and user stories'
+              specType="epic"
+              description="Define business value, timeline, and user stories"
               onCreateSpec={onCreateSpec}
             />
           )}
         </TabsContent>
 
         {/* User Story Tab */}
-        <TabsContent value='user_story' className='pt-4'>
+        <TabsContent value="user_story" className="pt-4">
           {storySpec ? (
             <UserStorySpecCard spec={storySpec} showAcceptanceCriteria />
           ) : (
             <EmptySpecState
-              specType='user_story'
-              description='Capture As a/I want/So that format with acceptance criteria'
+              specType="user_story"
+              description="Capture As a/I want/So that format with acceptance criteria"
               onCreateSpec={onCreateSpec}
             />
           )}
         </TabsContent>
 
         {/* Task Tab */}
-        <TabsContent value='task' className='pt-4'>
+        <TabsContent value="task" className="pt-4">
           {taskSpec ? (
             <TaskSpecCard spec={taskSpec} showBlockers />
           ) : (
             <EmptySpecState
-              specType='task'
-              description='Track time, subtasks, and blockers'
+              specType="task"
+              description="Track time, subtasks, and blockers"
               onCreateSpec={onCreateSpec}
             />
           )}
         </TabsContent>
 
         {/* Defect Tab */}
-        <TabsContent value='defect' className='pt-4'>
+        <TabsContent value="defect" className="pt-4">
           {defectSpec ? (
             <DefectSpecCard spec={defectSpec} showReproSteps />
           ) : (
             <EmptySpecState
-              specType='defect'
-              description='Document bugs with severity, reproduction steps, and root cause'
+              specType="defect"
+              description="Document bugs with severity, reproduction steps, and root cause"
               onCreateSpec={onCreateSpec}
             />
           )}
@@ -302,23 +302,23 @@ function EmptySpecState({ specType, description, onCreateSpec }: EmptySpecStateP
   const Icon = spec?.icon ?? FileText;
 
   return (
-    <Card className='flex flex-col items-center justify-center space-y-4 border-2 border-dashed p-8 text-center'>
-      <div className='bg-muted/50 flex h-12 w-12 items-center justify-center rounded-full'>
-        <Icon className='text-muted-foreground h-6 w-6' />
+    <Card className="flex flex-col items-center justify-center space-y-4 border-2 border-dashed p-8 text-center">
+      <div className="bg-muted/50 flex h-12 w-12 items-center justify-center rounded-full">
+        <Icon className="text-muted-foreground h-6 w-6" />
       </div>
-      <div className='space-y-1'>
-        <h3 className='text-sm font-semibold'>No {spec?.label} Specification</h3>
-        <p className='text-muted-foreground max-w-[300px] text-xs'>{description}</p>
+      <div className="space-y-1">
+        <h3 className="text-sm font-semibold">No {spec?.label} Specification</h3>
+        <p className="text-muted-foreground max-w-[300px] text-xs">{description}</p>
       </div>
       {onCreateSpec && (
         <Button
-          size='sm'
+          size="sm"
           onClick={() => {
             onCreateSpec(specType);
           }}
-          className='gap-1'
+          className="gap-1"
         >
-          <Plus className='h-3.5 w-3.5' />
+          <Plus className="h-3.5 w-3.5" />
           Create {spec?.label} Spec
         </Button>
       )}

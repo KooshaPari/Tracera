@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * Accessible Table Keyboard Navigation Hook
@@ -80,35 +80,35 @@ export function useTableKeyboardNavigation({
 
       switch (key) {
         // Arrow Left: Move to previous column
-        case 'ArrowLeft': {
+        case "ArrowLeft": {
           newColIndex = Math.max(0, focusState.colIndex - 1);
           shouldPreventDefault = true;
           break;
         }
 
         // Arrow Right: Move to next column
-        case 'ArrowRight': {
+        case "ArrowRight": {
           newColIndex = Math.min(colCount - 1, focusState.colIndex + 1);
           shouldPreventDefault = true;
           break;
         }
 
         // Arrow Up: Move to previous row
-        case 'ArrowUp': {
+        case "ArrowUp": {
           newRowIndex = Math.max(0, focusState.rowIndex - 1);
           shouldPreventDefault = true;
           break;
         }
 
         // Arrow Down: Move to next row
-        case 'ArrowDown': {
+        case "ArrowDown": {
           newRowIndex = Math.min(rowCount - 1, focusState.rowIndex + 1);
           shouldPreventDefault = true;
           break;
         }
 
         // Home: Jump to first column in row
-        case 'Home': {
+        case "Home": {
           if (!isCtrlKey) {
             newColIndex = 0;
             shouldPreventDefault = true;
@@ -122,7 +122,7 @@ export function useTableKeyboardNavigation({
         }
 
         // End: Jump to last column in row
-        case 'End': {
+        case "End": {
           if (!isCtrlKey) {
             newColIndex = colCount - 1;
             shouldPreventDefault = true;
@@ -136,14 +136,14 @@ export function useTableKeyboardNavigation({
         }
 
         // PageUp: Jump up 5 rows
-        case 'PageUp': {
+        case "PageUp": {
           newRowIndex = Math.max(0, focusState.rowIndex - 5);
           shouldPreventDefault = true;
           break;
         }
 
         // PageDown: Jump down 5 rows
-        case 'PageDown': {
+        case "PageDown": {
           newRowIndex = Math.min(rowCount - 1, focusState.rowIndex + 5);
           shouldPreventDefault = true;
           break;
@@ -189,10 +189,10 @@ export function useTableKeyboardNavigation({
       return;
     }
 
-    container.addEventListener('keydown', handleKeyDown as EventListener);
+    container.addEventListener("keydown", handleKeyDown as EventListener);
 
     return () => {
-      container.removeEventListener('keydown', handleKeyDown as EventListener);
+      container.removeEventListener("keydown", handleKeyDown as EventListener);
     };
   }, [containerId, handleKeyDown]);
 
@@ -208,14 +208,14 @@ export function useTableKeyboardNavigation({
  */
 function announceToScreenReader(message: string) {
   // Get or create live region
-  let liveRegion = document.querySelector('#table-announcements');
+  let liveRegion = document.querySelector("#table-announcements");
   if (!liveRegion) {
-    liveRegion = document.createElement('div');
-    liveRegion.id = 'table-announcements';
-    liveRegion.setAttribute('role', 'status');
-    liveRegion.setAttribute('aria-live', 'polite');
-    liveRegion.setAttribute('aria-atomic', 'true');
-    liveRegion.className = 'sr-only';
+    liveRegion = document.createElement("div");
+    liveRegion.id = "table-announcements";
+    liveRegion.setAttribute("role", "status");
+    liveRegion.setAttribute("aria-live", "polite");
+    liveRegion.setAttribute("aria-atomic", "true");
+    liveRegion.className = "sr-only";
     document.body.append(liveRegion);
   }
 
@@ -247,24 +247,24 @@ export function useRovingTabindex(itemCount: number, onNavigate?: (index: number
       let handled = false;
 
       switch (event.key) {
-        case 'ArrowDown':
-        case 'ArrowRight': {
+        case "ArrowDown":
+        case "ArrowRight": {
           newIndex = (focusedIndex + 1) % itemCount;
           handled = true;
           break;
         }
-        case 'ArrowUp':
-        case 'ArrowLeft': {
+        case "ArrowUp":
+        case "ArrowLeft": {
           newIndex = focusedIndex === 0 ? itemCount - 1 : focusedIndex - 1;
           handled = true;
           break;
         }
-        case 'Home': {
+        case "Home": {
           newIndex = 0;
           handled = true;
           break;
         }
-        case 'End': {
+        case "End": {
           newIndex = itemCount - 1;
           handled = true;
           break;

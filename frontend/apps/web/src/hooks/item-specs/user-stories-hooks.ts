@@ -1,8 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { UserStorySpecCreate, UserStorySpecUpdate, UserStoryStatus } from './types';
+import type { UserStorySpecCreate, UserStorySpecUpdate, UserStoryStatus } from "./types";
 
-import { itemSpecKeys } from './keys';
+import { itemSpecKeys } from "./keys";
 import {
   createUserStorySpec,
   deleteUserStorySpec,
@@ -10,7 +10,7 @@ import {
   fetchUserStorySpecByItem,
   fetchUserStorySpecs,
   updateUserStorySpec,
-} from './user-stories-api';
+} from "./user-stories-api";
 
 function useUserStorySpecs(
   projectId: string,
@@ -62,14 +62,14 @@ function useCreateUserStorySpec(projectId: string) {
       return result;
     },
     onSuccess: async (data, variables) => {
-      queryClient.setQueryData(itemSpecKeys.userStory(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.userStory(projectId, data["id"]), data);
       const invalidations = [
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.userStories(projectId) }),
         queryClient.invalidateQueries({
           queryKey: itemSpecKeys.userStoriesByStatus(projectId, data.status),
         }),
       ];
-      if (typeof variables.parent_epic === 'string') {
+      if (typeof variables.parent_epic === "string") {
         invalidations.push(
           queryClient.invalidateQueries({
             queryKey: itemSpecKeys.userStoriesByEpic(projectId, variables.parent_epic),
@@ -93,14 +93,14 @@ function useUpdateUserStorySpec(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.userStory(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.userStory(projectId, data["id"]), data);
       const invalidations = [
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.userStories(projectId) }),
         queryClient.invalidateQueries({
           queryKey: itemSpecKeys.userStoriesByStatus(projectId, data.status),
         }),
       ];
-      if (typeof data.parent_epic === 'string') {
+      if (typeof data.parent_epic === "string") {
         invalidations.push(
           queryClient.invalidateQueries({
             queryKey: itemSpecKeys.userStoriesByEpic(projectId, data.parent_epic),

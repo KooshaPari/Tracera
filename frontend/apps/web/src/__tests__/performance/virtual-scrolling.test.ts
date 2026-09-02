@@ -1,11 +1,11 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from "vitest";
 
-describe('Virtual Scrolling Performance Benchmarks', () => {
+describe("Virtual Scrolling Performance Benchmarks", () => {
   beforeEach(() => {
     // Setup would happen here if we had a test environment
   });
 
-  it('should render virtual table with less than 500 DOM nodes for 1000+ items', () => {
+  it("should render virtual table with less than 500 DOM nodes for 1000+ items", () => {
     // This test validates the core benefit of virtual scrolling:
     // Only visible rows are rendered, not all items
 
@@ -19,7 +19,7 @@ describe('Virtual Scrolling Performance Benchmarks', () => {
     expect(actualNodes).toBeLessThan(1000 / 20); // Much less than 1/20th of total items
   });
 
-  it('should achieve 400-600% performance improvement over non-virtual rendering', () => {
+  it("should achieve 400-600% performance improvement over non-virtual rendering", () => {
     // Non-virtual rendering: ~2000-3000 DOM nodes for 1000 items
     // Virtual rendering: ~50 DOM nodes for 1000 items
     // Performance improvement: 2000/50 = 40x = 4000%
@@ -32,7 +32,7 @@ describe('Virtual Scrolling Performance Benchmarks', () => {
     expect(improvement).toBeLessThan(6000);
   });
 
-  it('should maintain smooth scrolling at 60 FPS', () => {
+  it("should maintain smooth scrolling at 60 FPS", () => {
     // Virtual scrolling should enable smooth 60 FPS scrolling
     // Frame budget: 16.67ms per frame
     // Rough estimate: scroll handler execution < 5ms
@@ -43,7 +43,7 @@ describe('Virtual Scrolling Performance Benchmarks', () => {
     expect(estimatedScrollHandlerTime).toBeLessThan(frameBudgetMs);
   });
 
-  it('should reduce memory usage significantly for large datasets', () => {
+  it("should reduce memory usage significantly for large datasets", () => {
     // Without virtual scrolling: All items in memory + all DOM nodes
     // With virtual scrolling: Only visible items in memory + visible DOM nodes
 
@@ -58,7 +58,7 @@ describe('Virtual Scrolling Performance Benchmarks', () => {
     expect(memoryImprovement).toBeGreaterThan(1000); // 20x improvement
   });
 
-  it('should filter 1000 items in under 100ms', () => {
+  it("should filter 1000 items in under 100ms", () => {
     // Filtering should be fast because it doesn't re-render everything
     // Just updates the virtualized list
 
@@ -68,7 +68,7 @@ describe('Virtual Scrolling Performance Benchmarks', () => {
     expect(filterTime).toBeLessThan(threshold);
   });
 
-  it('should sort 1000 items in under 150ms', () => {
+  it("should sort 1000 items in under 150ms", () => {
     // Sorting involves filtering and virtual scroll reset
     // Should still be very fast
 
@@ -78,7 +78,7 @@ describe('Virtual Scrolling Performance Benchmarks', () => {
     expect(sortTime).toBeLessThan(threshold);
   });
 
-  it('should maintain stable scroll performance even during rapid scrolling', () => {
+  it("should maintain stable scroll performance even during rapid scrolling", () => {
     // Virtual scroller should handle rapid scroll events
     // Without frame drops or stuttering
 
@@ -89,7 +89,7 @@ describe('Virtual Scrolling Performance Benchmarks', () => {
     expect(estimatedFps).toBeGreaterThan(fpsThreshold);
   });
 
-  it('should initialize table with 1000 items in under 500ms', () => {
+  it("should initialize table with 1000 items in under 500ms", () => {
     // Initial render should be fast
     // Virtual scroller only renders visible items on initial load
 
@@ -99,7 +99,7 @@ describe('Virtual Scrolling Performance Benchmarks', () => {
     expect(initialRenderTime).toBeLessThan(threshold);
   });
 
-  it('should provide scroll-to-item without blocking UI', () => {
+  it("should provide scroll-to-item without blocking UI", () => {
     // Scroll-to-item should complete synchronously or very quickly
 
     const scrollToItemTime = 10; // Ms (estimated)
@@ -108,7 +108,7 @@ describe('Virtual Scrolling Performance Benchmarks', () => {
     expect(scrollToItemTime).toBeLessThan(threshold);
   });
 
-  it('should handle 1000+ items without layout thrashing', () => {
+  it("should handle 1000+ items without layout thrashing", () => {
     // Layout thrashing happens when you read then write DOM
     // Virtual scroller batches these operations
 
@@ -119,7 +119,7 @@ describe('Virtual Scrolling Performance Benchmarks', () => {
     expect(estimatedLayouts).toBeLessThan(nonVirtualLayouts / 50);
   });
 
-  it('should update visible range on scroll without full re-render', () => {
+  it("should update visible range on scroll without full re-render", () => {
     // Only the visible items should update, not the entire list
 
     const itemsToUpdate = 50; // Visible + overscan
@@ -130,8 +130,8 @@ describe('Virtual Scrolling Performance Benchmarks', () => {
   });
 });
 
-describe('Virtual Scrolling with Filtering and Sorting', () => {
-  it('should apply filter and sort without re-rendering all items', () => {
+describe("Virtual Scrolling with Filtering and Sorting", () => {
+  it("should apply filter and sort without re-rendering all items", () => {
     // Filter + Sort should be O(n) for filtering/sorting
     // But rendering should be O(visible_items)
 
@@ -141,7 +141,7 @@ describe('Virtual Scrolling with Filtering and Sorting', () => {
     expect(visibleItems).toBeLessThan(totalItems / 10);
   });
 
-  it('should show row count indicator accurately', () => {
+  it("should show row count indicator accurately", () => {
     // Filtered count should match actual visible items
 
     const totalItems = 1000;
@@ -151,7 +151,7 @@ describe('Virtual Scrolling with Filtering and Sorting', () => {
     expect(filteredItems).toBeGreaterThan(0);
   });
 
-  it('should reset scroll position on sort for better UX', () => {
+  it("should reset scroll position on sort for better UX", () => {
     // When sorting, scroll should reset to top
     // This ensures user sees the first sorted items
 
@@ -161,16 +161,16 @@ describe('Virtual Scrolling with Filtering and Sorting', () => {
   });
 });
 
-describe('Virtual Scrolling Accessibility', () => {
-  it('should maintain proper ARIA labels for virtual container', () => {
+describe("Virtual Scrolling Accessibility", () => {
+  it("should maintain proper ARIA labels for virtual container", () => {
     // Virtual container should have aria-label
-    const ariaLabel = 'Table content with virtual scrolling';
+    const ariaLabel = "Table content with virtual scrolling";
 
-    expect(ariaLabel).toContain('Table content');
-    expect(ariaLabel).toContain('virtual');
+    expect(ariaLabel).toContain("Table content");
+    expect(ariaLabel).toContain("virtual");
   });
 
-  it('should support keyboard navigation through virtualized rows', () => {
+  it("should support keyboard navigation through virtualized rows", () => {
     // Keyboard navigation should work even though not all items are in DOM
     // This is handled by scroll-to-item functionality
 
@@ -179,7 +179,7 @@ describe('Virtual Scrolling Accessibility', () => {
     expect(canScrollToItem).toBeTruthy();
   });
 
-  it('should announce row count to screen readers', () => {
+  it("should announce row count to screen readers", () => {
     // Row count should be announced dynamically
     const rowCountAnnounced = true;
 
@@ -187,8 +187,8 @@ describe('Virtual Scrolling Accessibility', () => {
   });
 });
 
-describe('Virtual Scrolling Memory Efficiency', () => {
-  it('should use constant memory regardless of dataset size', () => {
+describe("Virtual Scrolling Memory Efficiency", () => {
+  it("should use constant memory regardless of dataset size", () => {
     // Memory usage should not scale with total item count
     // Only with visible item count
 
@@ -202,7 +202,7 @@ describe('Virtual Scrolling Memory Efficiency', () => {
     expect(difference).toBeLessThan(10); // Less than 10KB difference
   });
 
-  it('should not accumulate garbage from scrolling', () => {
+  it("should not accumulate garbage from scrolling", () => {
     // Scrolling should not create memory leaks
     // Old DOM nodes should be properly cleaned up
 

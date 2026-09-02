@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import * as specificationsApi from '@/hooks/useSpecifications.api';
-import * as queryUtils from './query-utils';
+import * as specificationsApi from "@/hooks/useSpecifications.api";
+import * as queryUtils from "./query-utils";
 
 type FetchContractsResult = Awaited<ReturnType<typeof specificationsApi.fetchContracts>>;
 
@@ -28,7 +28,7 @@ const useContracts = (
       const response = await specificationsApi.fetchContracts(filters);
       return response;
     },
-    queryKey: ['contracts', JSON.stringify(filters)],
+    queryKey: ["contracts", JSON.stringify(filters)],
   });
 
 const useContract = (id: string): queryUtils.QueryResult<FetchContractResult> =>
@@ -38,7 +38,7 @@ const useContract = (id: string): queryUtils.QueryResult<FetchContractResult> =>
       const response = await specificationsApi.fetchContract(id);
       return response;
     },
-    queryKey: ['contracts', id],
+    queryKey: ["contracts", id],
   });
 
 const useCreateContract = (): queryUtils.MutationResult<
@@ -53,9 +53,9 @@ const useCreateContract = (): queryUtils.MutationResult<
       return response;
     },
     onSuccess: async (_, variables) => {
-      await queryUtils.invalidateQueries(queryClient, [['contracts'], ['contractStats']]);
+      await queryUtils.invalidateQueries(queryClient, [["contracts"], ["contractStats"]]);
       await queryClient.invalidateQueries({
-        queryKey: ['specificationSummary', variables.projectId],
+        queryKey: ["specificationSummary", variables.projectId],
       });
     },
   });
@@ -68,12 +68,18 @@ const useUpdateContract = (): queryUtils.MutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: specificationsApi.UpdateContractData }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: specificationsApi.UpdateContractData;
+    }) => {
       const response = await specificationsApi.updateContract(id, data);
       return response;
     },
     onSuccess: async (_, { id }) => {
-      await queryUtils.invalidateQueries(queryClient, [['contracts', id], ['contracts']]);
+      await queryUtils.invalidateQueries(queryClient, [["contracts", id], ["contracts"]]);
     },
   });
 };
@@ -87,9 +93,9 @@ const useDeleteContract = (): queryUtils.MutationResult<void, string> => {
     },
     onSuccess: async () => {
       await queryUtils.invalidateQueries(queryClient, [
-        ['contracts'],
-        ['contractStats'],
-        ['specificationSummary'],
+        ["contracts"],
+        ["contractStats"],
+        ["specificationSummary"],
       ]);
     },
   });
@@ -104,8 +110,12 @@ const useVerifyContract = (): queryUtils.MutationResult<VerifyContractResult, st
       return response;
     },
     onSuccess: async (_, id) => {
-      await queryUtils.invalidateQueries(queryClient, [['contracts', id], ['contracts'], ['contractStats']]);
-      await queryClient.invalidateQueries({ queryKey: ['specificationSummary'] });
+      await queryUtils.invalidateQueries(queryClient, [
+        ["contracts", id],
+        ["contracts"],
+        ["contractStats"],
+      ]);
+      await queryClient.invalidateQueries({ queryKey: ["specificationSummary"] });
     },
   });
 };
@@ -119,19 +129,17 @@ const useContractActivities = (
       const response = await specificationsApi.fetchContractActivities(contractId);
       return response;
     },
-    queryKey: ['contractActivities', contractId],
+    queryKey: ["contractActivities", contractId],
   });
 
-const useContractStats = (
-  projectId: string,
-): queryUtils.QueryResult<FetchContractStatsResult> =>
+const useContractStats = (projectId: string): queryUtils.QueryResult<FetchContractStatsResult> =>
   useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => {
       const response = await specificationsApi.fetchContractStats(projectId);
       return response;
     },
-    queryKey: ['contractStats', projectId],
+    queryKey: ["contractStats", projectId],
   });
 
 export {

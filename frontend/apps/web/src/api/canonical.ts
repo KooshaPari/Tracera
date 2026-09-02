@@ -5,11 +5,11 @@ import type {
   UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
-} from '@tanstack/react-query';
+} from "@tanstack/react-query";
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { client } from './client';
+import { client } from "./client";
 
 const { apiClient, handleApiResponse } = client;
 
@@ -60,21 +60,21 @@ interface UpdateCanonicalConceptInput {
 }
 
 const canonicalQueryKeys = {
-  all: ['canonical'] as const,
+  all: ["canonical"] as const,
   detail: (id: string) => [...canonicalQueryKeys.details(), id] as const,
-  details: () => [...canonicalQueryKeys.all, 'detail'] as const,
+  details: () => [...canonicalQueryKeys.all, "detail"] as const,
   list: (projectId: string) => [...canonicalQueryKeys.lists(), projectId] as const,
-  lists: () => [...canonicalQueryKeys.all, 'list'] as const,
-  pivots: (itemId: string) => ['canonical', 'pivots', itemId] as const,
-  projections: (conceptId: string) => ['canonical', 'projections', conceptId] as const,
+  lists: () => [...canonicalQueryKeys.all, "list"] as const,
+  pivots: (itemId: string) => ["canonical", "pivots", itemId] as const,
+  projections: (conceptId: string) => ["canonical", "projections", conceptId] as const,
 };
 
 type ApiClient = typeof apiClient;
 
-const apiDelete: ApiClient['DELETE'] = apiClient.DELETE;
-const apiGet: ApiClient['GET'] = apiClient.GET;
-const apiPost: ApiClient['POST'] = apiClient.POST;
-const apiPut: ApiClient['PUT'] = apiClient.PUT;
+const apiDelete: ApiClient["DELETE"] = apiClient.DELETE;
+const apiGet: ApiClient["GET"] = apiClient.GET;
+const apiPost: ApiClient["POST"] = apiClient.POST;
+const apiPut: ApiClient["PUT"] = apiClient.PUT;
 
 const useCanonicalConcepts = (
   projectId: string,
@@ -84,7 +84,7 @@ const useCanonicalConcepts = (
     enabled: Boolean(projectId),
     queryFn: async (): Promise<CanonicalConcept[]> =>
       handleApiResponse(
-        apiGet('/api/v1/projects/{projectId}/concepts', {
+        apiGet("/api/v1/projects/{projectId}/concepts", {
           params: { path: { projectId } },
         }),
       ),
@@ -103,7 +103,7 @@ const useCanonicalConcept = (
     enabled: Boolean(conceptId),
     queryFn: async (): Promise<CanonicalConcept> =>
       handleApiResponse(
-        apiGet('/api/v1/concepts/{conceptId}', {
+        apiGet("/api/v1/concepts/{conceptId}", {
           params: { path: { conceptId } },
         }),
       ),
@@ -121,7 +121,7 @@ const useCreateCanonicalConcept = (
   const baseOptions = {
     mutationFn: async (input: CreateCanonicalConceptInput) =>
       handleApiResponse(
-        apiPost('/api/v1/projects/{projectId}/concepts', {
+        apiPost("/api/v1/projects/{projectId}/concepts", {
           body: {
             category: input.category,
             description: input.description,
@@ -157,7 +157,7 @@ const useUpdateCanonicalConcept = (
   const baseOptions = {
     mutationFn: async (input: { conceptId: string; data: UpdateCanonicalConceptInput }) =>
       handleApiResponse(
-        apiPut('/api/v1/concepts/{conceptId}', {
+        apiPut("/api/v1/concepts/{conceptId}", {
           body: {
             category: input.data.category,
             description: input.data.description,
@@ -190,7 +190,7 @@ const useDeleteCanonicalConcept = (
   const baseOptions = {
     mutationFn: async (conceptId: string) =>
       handleApiResponse(
-        apiDelete('/api/v1/concepts/{conceptId}', {
+        apiDelete("/api/v1/concepts/{conceptId}", {
           params: { path: { conceptId } },
         }),
       ),
@@ -213,7 +213,7 @@ const useCanonicalProjections = (
     enabled: Boolean(conceptId),
     queryFn: async (): Promise<CanonicalProjection[]> =>
       handleApiResponse(
-        apiGet('/api/v1/concepts/{conceptId}/projections', {
+        apiGet("/api/v1/concepts/{conceptId}/projections", {
           params: { path: { conceptId } },
         }),
       ),
@@ -239,7 +239,7 @@ const useCreateCanonicalProjection = (
   const baseOptions = {
     mutationFn: async (input: { conceptId: string; itemId: string; confidence?: number }) =>
       handleApiResponse(
-        apiPost('/api/v1/concepts/{conceptId}/projections', {
+        apiPost("/api/v1/concepts/{conceptId}/projections", {
           body: { confidence: input.confidence, itemId: input.itemId },
           params: { path: { conceptId: input.conceptId } },
         }),
@@ -262,7 +262,7 @@ const useDeleteCanonicalProjection = (
   const baseOptions = {
     mutationFn: async (input: { conceptId: string; projectionId: string }): Promise<void> =>
       handleApiResponse(
-        apiDelete('/api/v1/concepts/{conceptId}/projections/{projectionId}', {
+        apiDelete("/api/v1/concepts/{conceptId}/projections/{projectionId}", {
           params: {
             path: { conceptId: input.conceptId, projectionId: input.projectionId },
           },
@@ -287,7 +287,7 @@ const usePivotTargets = (
     enabled: Boolean(itemId),
     queryFn: async (): Promise<PivotTarget[]> =>
       handleApiResponse(
-        apiGet('/api/v1/items/{itemId}/pivot-targets', {
+        apiGet("/api/v1/items/{itemId}/pivot-targets", {
           params: { path: { itemId } },
         }),
       ),
@@ -305,7 +305,7 @@ const usePivotItem = (
   const baseOptions = {
     mutationFn: async (input: { itemId: string; conceptId: string }): Promise<void> =>
       handleApiResponse(
-        apiPost('/api/v1/items/{itemId}/pivot', {
+        apiPost("/api/v1/items/{itemId}/pivot", {
           body: { conceptId: input.conceptId },
           params: { path: { itemId: input.itemId } },
         }),

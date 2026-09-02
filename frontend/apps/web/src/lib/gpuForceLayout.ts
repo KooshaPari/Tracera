@@ -12,19 +12,19 @@
  * @see docs/architecture/gpu-force-layout.md
  */
 
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
-export type GPUBackend = 'webgpu' | 'webgl' | 'cpu';
+export type GPUBackend = "webgpu" | "webgl" | "cpu";
 
 export interface GPUForceLayoutOptions {
   /** Layout algorithm */
-  algorithm?: 'fruchterman' | 'barnes-hut' | undefined;
+  algorithm?: "fruchterman" | "barnes-hut" | undefined;
   /** Number of simulation iterations (default: 100) */
   iterations?: number | undefined;
   /** Enable GPU acceleration (auto-detect if true) */
@@ -62,39 +62,39 @@ export async function detectGPUBackend(): Promise<GPUBackend> {
   if (cachedBackend) return cachedBackend;
 
   // Check if running in browser environment
-  if (typeof window === 'undefined' || typeof document === 'undefined') {
-    cachedBackend = 'cpu';
-    return 'cpu';
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    cachedBackend = "cpu";
+    return "cpu";
   }
 
   // Check WebGPU (preferred)
-  if ('gpu' in navigator) {
+  if ("gpu" in navigator) {
     try {
       const adapter = await (navigator as any).gpu.requestAdapter();
       if (adapter) {
-        cachedBackend = 'webgpu';
-        return 'webgpu';
+        cachedBackend = "webgpu";
+        return "webgpu";
       }
     } catch (err) {
-      logger.warn('WebGPU detection failed:', err);
+      logger.warn("WebGPU detection failed:", err);
     }
   }
 
   // Check WebGL 2.0 (fallback)
   try {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl2');
+    const canvas = document.createElement("canvas");
+    const gl = canvas.getContext("webgl2");
     if (gl) {
-      cachedBackend = 'webgl';
-      return 'webgl';
+      cachedBackend = "webgl";
+      return "webgl";
     }
   } catch (err) {
-    logger.warn('WebGL detection failed:', err);
+    logger.warn("WebGL detection failed:", err);
   }
 
   // CPU fallback
-  cachedBackend = 'cpu';
-  return 'cpu';
+  cachedBackend = "cpu";
+  return "cpu";
 }
 
 // ============================================================================
@@ -108,8 +108,8 @@ export async function detectGPUBackend(): Promise<GPUBackend> {
 function cpuForceLayout<T extends Record<string, unknown>>(
   nodes: Node<T>[],
   edges: Edge[],
-  options: Required<Omit<GPUForceLayoutOptions, 'onProgress' | 'forceBackend'>> & {
-    onProgress?: GPUForceLayoutOptions['onProgress'] | undefined;
+  options: Required<Omit<GPUForceLayoutOptions, "onProgress" | "forceBackend">> & {
+    onProgress?: GPUForceLayoutOptions["onProgress"] | undefined;
   },
 ): Map<string, { x: number; y: number }> {
   const positions = new Map<string, { x: number; y: number; vx: number; vy: number }>();
@@ -225,13 +225,13 @@ function cpuForceLayout<T extends Record<string, unknown>>(
 async function webgpuForceLayout<T extends Record<string, unknown>>(
   nodes: Node<T>[],
   edges: Edge[],
-  options: Required<Omit<GPUForceLayoutOptions, 'onProgress' | 'forceBackend'>> & {
-    onProgress?: GPUForceLayoutOptions['onProgress'] | undefined;
+  options: Required<Omit<GPUForceLayoutOptions, "onProgress" | "forceBackend">> & {
+    onProgress?: GPUForceLayoutOptions["onProgress"] | undefined;
   },
 ): Promise<Map<string, { x: number; y: number }>> {
   // TODO: Implement WebGPU compute shaders
   // For now, fall back to CPU
-  logger.warn('WebGPU implementation not yet available, falling back to CPU');
+  logger.warn("WebGPU implementation not yet available, falling back to CPU");
   return cpuForceLayout(nodes, edges, options);
 }
 
@@ -248,13 +248,13 @@ async function webgpuForceLayout<T extends Record<string, unknown>>(
 async function webglForceLayout<T extends Record<string, unknown>>(
   nodes: Node<T>[],
   edges: Edge[],
-  options: Required<Omit<GPUForceLayoutOptions, 'onProgress' | 'forceBackend'>> & {
-    onProgress?: GPUForceLayoutOptions['onProgress'] | undefined;
+  options: Required<Omit<GPUForceLayoutOptions, "onProgress" | "forceBackend">> & {
+    onProgress?: GPUForceLayoutOptions["onProgress"] | undefined;
   },
 ): Promise<Map<string, { x: number; y: number }>> {
   // TODO: Implement WebGL GPGPU
   // For now, fall back to CPU
-  logger.warn('WebGL implementation not yet available, falling back to CPU');
+  logger.warn("WebGL implementation not yet available, falling back to CPU");
   return cpuForceLayout(nodes, edges, options);
 }
 
@@ -287,8 +287,8 @@ async function webglForceLayout<T extends Record<string, unknown>>(
 export class GPUForceLayout<T extends Record<string, unknown>> {
   private nodes: Node<T>[];
   private edges: Edge[];
-  private options: Required<Omit<GPUForceLayoutOptions, 'onProgress' | 'forceBackend'>> & {
-    onProgress?: GPUForceLayoutOptions['onProgress'] | undefined;
+  private options: Required<Omit<GPUForceLayoutOptions, "onProgress" | "forceBackend">> & {
+    onProgress?: GPUForceLayoutOptions["onProgress"] | undefined;
     forceBackend?: GPUBackend | undefined;
   };
 
@@ -296,7 +296,7 @@ export class GPUForceLayout<T extends Record<string, unknown>> {
     this.nodes = nodes;
     this.edges = edges;
     this.options = {
-      algorithm: options.algorithm || 'fruchterman',
+      algorithm: options.algorithm || "fruchterman",
       iterations: options.iterations || 100,
       gpu: options.gpu !== false,
       repulsionStrength: options.repulsionStrength || 5000,
@@ -318,7 +318,7 @@ export class GPUForceLayout<T extends Record<string, unknown>> {
     if (this.options.forceBackend) {
       backend = this.options.forceBackend;
     } else if (!this.options.gpu) {
-      backend = 'cpu';
+      backend = "cpu";
     } else {
       backend = await detectGPUBackend();
     }
@@ -327,13 +327,13 @@ export class GPUForceLayout<T extends Record<string, unknown>> {
     let positions: Map<string, { x: number; y: number }>;
 
     switch (backend) {
-      case 'webgpu':
+      case "webgpu":
         positions = await webgpuForceLayout(this.nodes, this.edges, this.options);
         break;
-      case 'webgl':
+      case "webgl":
         positions = await webglForceLayout(this.nodes, this.edges, this.options);
         break;
-      case 'cpu':
+      case "cpu":
       default:
         positions = cpuForceLayout(this.nodes, this.edges, this.options);
         break;
@@ -403,8 +403,8 @@ export async function getGPUBackendInfo(): Promise<{
   };
 
   // Only check GPU backends in browser environment
-  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-    if ('gpu' in navigator) {
+  if (typeof window !== "undefined" && typeof document !== "undefined") {
+    if ("gpu" in navigator) {
       try {
         const adapter = await (navigator as any).gpu.requestAdapter();
         available.webgpu = !!adapter;
@@ -414,8 +414,8 @@ export async function getGPUBackendInfo(): Promise<{
     }
 
     try {
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl2');
+      const canvas = document.createElement("canvas");
+      const gl = canvas.getContext("webgl2");
       available.webgl = !!gl;
     } catch (error) {
       // Not available

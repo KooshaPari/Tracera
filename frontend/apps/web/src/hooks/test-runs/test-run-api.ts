@@ -1,15 +1,15 @@
-import type { TestResult, TestRun, TestRunActivity, TestRunStats } from '@tracertm/types';
+import type { TestResult, TestRun, TestRunActivity, TestRunStats } from "@tracertm/types";
 
-import { client } from '@/api/client';
+import { client } from "@/api/client";
 
-import type { CreateTestRunData, SubmitTestResultData, TestRunFilters } from './test-run-types';
+import type { CreateTestRunData, SubmitTestResultData, TestRunFilters } from "./test-run-types";
 
-import { testRunGuards } from './test-run-guards';
-import { testRunParsers } from './test-run-parsers';
+import { testRunGuards } from "./test-run-guards";
+import { testRunParsers } from "./test-run-parsers";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 interface TestRunsResponse {
   testRuns: TestRun[];
@@ -36,15 +36,15 @@ async function fetchJson(url: string, init?: RequestInit): Promise<unknown> {
 
 function buildTestRunsParams(filters: TestRunFilters): URLSearchParams {
   const params = new URLSearchParams();
-  params.set('project_id', filters.projectId);
+  params.set("project_id", filters.projectId);
 
   const stringParams: { key: string; value: string | undefined }[] = [
-    { key: 'status', value: filters.status },
-    { key: 'run_type', value: filters.runType },
-    { key: 'suite_id', value: filters.suiteId },
-    { key: 'environment', value: filters.environment },
-    { key: 'initiated_by', value: filters.initiatedBy },
-    { key: 'search', value: filters.search },
+    { key: "status", value: filters.status },
+    { key: "run_type", value: filters.runType },
+    { key: "suite_id", value: filters.suiteId },
+    { key: "environment", value: filters.environment },
+    { key: "initiated_by", value: filters.initiatedBy },
+    { key: "search", value: filters.search },
   ];
 
   for (const { key, value } of stringParams) {
@@ -54,10 +54,10 @@ function buildTestRunsParams(filters: TestRunFilters): URLSearchParams {
   }
 
   if (filters.skip !== undefined) {
-    params.set('skip', String(filters.skip));
+    params.set("skip", String(filters.skip));
   }
   if (filters.limit !== undefined) {
-    params.set('limit', String(filters.limit));
+    params.set("limit", String(filters.limit));
   }
 
   return params;
@@ -67,14 +67,14 @@ async function fetchTestRuns(filters: TestRunFilters): Promise<TestRunsResponse>
   const params = buildTestRunsParams(filters);
   const json = await fetchJson(`${API_URL}/api/v1/test-runs?${params.toString()}`, {
     headers: {
-      'X-Bulk-Operation': 'true',
+      "X-Bulk-Operation": "true",
       ...getAuthHeaders(),
     },
   });
 
-  const data = testRunGuards.asRecord(json, 'test runs response');
-  const rawRuns = testRunGuards.getOptionalArray(data, 'test_runs') ?? [];
-  const total = testRunGuards.getOptionalNumber(data, 'total') ?? 0;
+  const data = testRunGuards.asRecord(json, "test runs response");
+  const rawRuns = testRunGuards.getOptionalArray(data, "test_runs") ?? [];
+  const total = testRunGuards.getOptionalNumber(data, "total") ?? 0;
   return {
     testRuns: rawRuns.map((item: unknown) => testRunParsers.parseTestRun(item)),
     total,
@@ -102,13 +102,13 @@ async function createTestRun(data: CreateTestRunData): Promise<{ id: string; run
       metadata: data.metadata ?? {},
       name: data.name,
       notes: data.notes,
-      run_type: data.runType ?? 'manual',
+      run_type: data.runType ?? "manual",
       scheduled_at: data.scheduledAt,
       suite_id: data.suiteId,
       tags: data.tags,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   return testRunParsers.parseIdRunNumber(json);
 }
@@ -130,8 +130,8 @@ async function updateTestRun(
       notes: data.notes,
       tags: data.tags,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'PUT',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "PUT",
   });
   return testRunParsers.parseIdVersion(json);
 }
@@ -142,8 +142,8 @@ async function startTestRun(
 ): Promise<{ id: string; status: string; startedAt?: string | undefined }> {
   const json = await fetchJson(`${API_URL}/api/v1/test-runs/${id}/start`, {
     body: JSON.stringify({ executed_by: executedBy }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   const parsed = testRunParsers.parseIdStatusTimestamp(json);
   return { id: parsed.id, startedAt: parsed.startedAt, status: parsed.status };
@@ -161,8 +161,8 @@ async function completeTestRun(
 }> {
   const json = await fetchJson(`${API_URL}/api/v1/test-runs/${id}/complete`, {
     body: JSON.stringify({ failure_summary: failureSummary, notes }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   const parsed = testRunParsers.parseIdStatusTimestamp(json);
   return {
@@ -176,8 +176,8 @@ async function completeTestRun(
 async function cancelTestRun(id: string, reason?: string): Promise<{ id: string; status: string }> {
   const json = await fetchJson(`${API_URL}/api/v1/test-runs/${id}/cancel`, {
     body: JSON.stringify({ reason }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   return testRunParsers.parseCancelResponse(json);
 }
@@ -185,7 +185,7 @@ async function cancelTestRun(id: string, reason?: string): Promise<{ id: string;
 async function deleteTestRun(id: string): Promise<void> {
   await fetchJson(`${API_URL}/api/v1/test-runs/${id}`, {
     headers: getAuthHeaders(),
-    method: 'DELETE',
+    method: "DELETE",
   });
 }
 
@@ -209,8 +209,8 @@ async function submitTestResult(runId: string, data: SubmitTestResultData): Prom
       step_results: data.stepResults,
       test_case_id: data.testCaseId,
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   return testRunParsers.parseTestResult(json);
 }
@@ -235,8 +235,8 @@ async function submitBulkTestResults(
         test_case_id: r.testCaseId,
       })),
     }),
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    method: 'POST',
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    method: "POST",
   });
   return testRunParsers.parseBulkSubmitResponse(json);
 }
@@ -245,8 +245,8 @@ async function fetchTestRunResults(runId: string): Promise<TestResult[]> {
   const json = await fetchJson(`${API_URL}/api/v1/test-runs/${runId}/results`, {
     headers: getAuthHeaders(),
   });
-  const data = testRunGuards.asRecord(json, 'test run results response');
-  const rawResults = testRunGuards.getOptionalArray(data, 'results') ?? [];
+  const data = testRunGuards.asRecord(json, "test run results response");
+  const rawResults = testRunGuards.getOptionalArray(data, "results") ?? [];
   return rawResults.map((item: unknown) => testRunParsers.parseTestResult(item));
 }
 

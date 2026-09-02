@@ -1,12 +1,12 @@
-import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { TestResult, TestRunActivity, TestRunStats } from '@tracertm/types';
+import type { TestResult, TestRunActivity, TestRunStats } from "@tracertm/types";
 
-import type { CreateTestRunData, SubmitTestResultData, TestRunFilters } from './test-run-types';
+import type { CreateTestRunData, SubmitTestResultData, TestRunFilters } from "./test-run-types";
 
-import { testRunApi } from './test-run-api';
+import { testRunApi } from "./test-run-api";
 
 type TestRunsResponse = Awaited<ReturnType<typeof testRunApi.fetchTestRuns>>;
 type BulkSubmitResponse = Awaited<ReturnType<typeof testRunApi.submitBulkTestResults>>;
@@ -19,7 +19,7 @@ function useTestRuns(filters: TestRunFilters): UseQueryResult<TestRunsResponse> 
       const result = await testRunApi.fetchTestRuns(filters);
       return result;
     },
-    queryKey: ['testRuns', JSON.stringify(filters)],
+    queryKey: ["testRuns", JSON.stringify(filters)],
   });
 }
 
@@ -30,7 +30,7 @@ function useTestRun(id: string): UseQueryResult<TestRun> {
       const result = await testRunApi.fetchTestRun(id);
       return result;
     },
-    queryKey: ['testRuns', id],
+    queryKey: ["testRuns", id],
   });
 }
 
@@ -46,7 +46,7 @@ function useCreateTestRun(): UseMutationResult<
       return result;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['testRuns'] });
+      await queryClient.invalidateQueries({ queryKey: ["testRuns"] });
     },
   });
 }
@@ -63,8 +63,8 @@ function useUpdateTestRun(): UseMutationResult<
       return result;
     },
     onSuccess: async (_, vars) => {
-      await queryClient.invalidateQueries({ queryKey: ['testRuns'] });
-      await queryClient.invalidateQueries({ queryKey: ['testRuns', vars.id] });
+      await queryClient.invalidateQueries({ queryKey: ["testRuns"] });
+      await queryClient.invalidateQueries({ queryKey: ["testRuns", vars.id] });
     },
   });
 }
@@ -81,9 +81,9 @@ function useStartTestRun(): UseMutationResult<
       return result;
     },
     onSuccess: async (_, vars) => {
-      await queryClient.invalidateQueries({ queryKey: ['testRuns'] });
-      await queryClient.invalidateQueries({ queryKey: ['testRuns', vars.id] });
-      await queryClient.invalidateQueries({ queryKey: ['testRunActivities', vars.id] });
+      await queryClient.invalidateQueries({ queryKey: ["testRuns"] });
+      await queryClient.invalidateQueries({ queryKey: ["testRuns", vars.id] });
+      await queryClient.invalidateQueries({ queryKey: ["testRunActivities", vars.id] });
     },
   });
 }
@@ -95,14 +95,18 @@ function useCompleteTestRun(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { id: string; failureSummary?: string | undefined; notes?: string | undefined }) => {
+    mutationFn: async (vars: {
+      id: string;
+      failureSummary?: string | undefined;
+      notes?: string | undefined;
+    }) => {
       const result = await testRunApi.completeTestRun(vars.id, vars.failureSummary, vars.notes);
       return result;
     },
     onSuccess: async (_, vars) => {
-      await queryClient.invalidateQueries({ queryKey: ['testRuns'] });
-      await queryClient.invalidateQueries({ queryKey: ['testRuns', vars.id] });
-      await queryClient.invalidateQueries({ queryKey: ['testRunActivities', vars.id] });
+      await queryClient.invalidateQueries({ queryKey: ["testRuns"] });
+      await queryClient.invalidateQueries({ queryKey: ["testRuns", vars.id] });
+      await queryClient.invalidateQueries({ queryKey: ["testRunActivities", vars.id] });
     },
   });
 }
@@ -119,9 +123,9 @@ function useCancelTestRun(): UseMutationResult<
       return result;
     },
     onSuccess: async (_, vars) => {
-      await queryClient.invalidateQueries({ queryKey: ['testRuns'] });
-      await queryClient.invalidateQueries({ queryKey: ['testRuns', vars.id] });
-      await queryClient.invalidateQueries({ queryKey: ['testRunActivities', vars.id] });
+      await queryClient.invalidateQueries({ queryKey: ["testRuns"] });
+      await queryClient.invalidateQueries({ queryKey: ["testRuns", vars.id] });
+      await queryClient.invalidateQueries({ queryKey: ["testRunActivities", vars.id] });
     },
   });
 }
@@ -133,7 +137,7 @@ function useDeleteTestRun(): UseMutationResult<void, Error, string> {
       await testRunApi.deleteTestRun(id);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['testRuns'] });
+      await queryClient.invalidateQueries({ queryKey: ["testRuns"] });
     },
   });
 }
@@ -150,8 +154,8 @@ function useSubmitTestResult(): UseMutationResult<
       return result;
     },
     onSuccess: async (_, vars) => {
-      await queryClient.invalidateQueries({ queryKey: ['testRunResults', vars.runId] });
-      await queryClient.invalidateQueries({ queryKey: ['testRuns', vars.runId] });
+      await queryClient.invalidateQueries({ queryKey: ["testRunResults", vars.runId] });
+      await queryClient.invalidateQueries({ queryKey: ["testRuns", vars.runId] });
     },
   });
 }
@@ -168,8 +172,8 @@ function useSubmitBulkTestResults(): UseMutationResult<
       return result;
     },
     onSuccess: async (_, vars) => {
-      await queryClient.invalidateQueries({ queryKey: ['testRunResults', vars.runId] });
-      await queryClient.invalidateQueries({ queryKey: ['testRuns', vars.runId] });
+      await queryClient.invalidateQueries({ queryKey: ["testRunResults", vars.runId] });
+      await queryClient.invalidateQueries({ queryKey: ["testRuns", vars.runId] });
     },
   });
 }
@@ -181,7 +185,7 @@ function useTestRunResults(runId: string): UseQueryResult<TestResult[]> {
       const result = await testRunApi.fetchTestRunResults(runId);
       return result;
     },
-    queryKey: ['testRunResults', runId],
+    queryKey: ["testRunResults", runId],
   });
 }
 
@@ -195,7 +199,7 @@ function useTestRunActivities(
       const result = await testRunApi.fetchTestRunActivities(runId, limit);
       return result;
     },
-    queryKey: ['testRunActivities', runId, limit],
+    queryKey: ["testRunActivities", runId, limit],
   });
 }
 
@@ -206,7 +210,7 @@ function useTestRunStats(projectId: string): UseQueryResult<TestRunStats> {
       const result = await testRunApi.fetchTestRunStats(projectId);
       return result;
     },
-    queryKey: ['testRunStats', projectId],
+    queryKey: ["testRunStats", projectId],
   });
 }
 

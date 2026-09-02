@@ -1,7 +1,7 @@
 // Flow Graph View - React Flow based graph with rich custom nodes
 // Provides block pill nodes with embedded previews and interactive widgets
 
-import type { Edge, Node, NodeTypes } from '@xyflow/react';
+import type { Edge, Node, NodeTypes } from "@xyflow/react";
 
 import {
   Background,
@@ -15,7 +15,7 @@ import {
   useEdgesState,
   useNodesState,
   useReactFlow,
-} from '@xyflow/react';
+} from "@xyflow/react";
 import {
   Layers,
   LayoutGrid,
@@ -26,40 +26,40 @@ import {
   RotateCcw,
   ZoomIn,
   ZoomOut,
-} from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { Item, Link, LinkType } from '@tracertm/types';
+import type { Item, Link, LinkType } from "@tracertm/types";
 
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
-import { Card } from '@tracertm/ui/components/Card';
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+import { Card } from "@tracertm/ui/components/Card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@tracertm/ui/components/Select';
+} from "@tracertm/ui/components/Select";
 
-import '@xyflow/react/dist/style.css';
-import { Separator } from '@tracertm/ui/components/Separator';
-import { Skeleton } from '@tracertm/ui/components/Skeleton';
+import "@xyflow/react/dist/style.css";
+import { Separator } from "@tracertm/ui/components/Separator";
+import { Skeleton } from "@tracertm/ui/components/Skeleton";
 
-import type { RichNodeData } from './RichNodePill';
-import type { EnhancedNodeData, GraphPerspective } from './types';
+import type { RichNodeData } from "./RichNodePill";
+import type { EnhancedNodeData, GraphPerspective } from "./types";
 
-import { NodeDetailPanel } from './NodeDetailPanel';
-import { QAEnhancedNode } from './nodes/QAEnhancedNode';
-import { PerspectiveSelector } from './PerspectiveSelector';
-import { RichNodePill } from './RichNodePill';
+import { NodeDetailPanel } from "./NodeDetailPanel";
+import { QAEnhancedNode } from "./nodes/QAEnhancedNode";
+import { PerspectiveSelector } from "./PerspectiveSelector";
+import { RichNodePill } from "./RichNodePill";
 import {
   ENHANCED_TYPE_COLORS,
   LINK_STYLES,
   PERSPECTIVE_CONFIGS,
   TYPE_TO_PERSPECTIVE,
-} from './types';
-import { UIComponentTree } from './UIComponentTree';
+} from "./types";
+import { UIComponentTree } from "./UIComponentTree";
 
 // Custom node types - using as assertion for React Flow compatibility
 const nodeTypes: NodeTypes = {
@@ -76,7 +76,7 @@ interface FlowGraphViewProps {
 }
 
 // Layout algorithms
-type LayoutType = 'force' | 'hierarchical' | 'radial' | 'grid';
+type LayoutType = "force" | "hierarchical" | "radial" | "grid";
 
 function FlowGraphViewInner({
   items,
@@ -84,8 +84,8 @@ function FlowGraphViewInner({
   isLoading = false,
   onNavigateToItem,
 }: FlowGraphViewProps) {
-  const [perspective, setPerspective] = useState<GraphPerspective>('all');
-  const [layout, setLayout] = useState<LayoutType>('force');
+  const [perspective, setPerspective] = useState<GraphPerspective>("all");
+  const [layout, setLayout] = useState<LayoutType>("force");
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [showDetailPanel, setShowDetailPanel] = useState(true);
   const [showUITree, setShowUITree] = useState(false);
@@ -119,8 +119,8 @@ function FlowGraphViewInner({
     }
 
     return items.map((item) => {
-      const itemType = (item.type || item.view || 'item').toLowerCase();
-      const perspectives = TYPE_TO_PERSPECTIVE[itemType] ?? ['all'];
+      const itemType = (item.type || item.view || "item").toLowerCase();
+      const perspectives = TYPE_TO_PERSPECTIVE[itemType] ?? ["all"];
       const incoming = incomingCount.get(item.id) ?? 0;
       const outgoing = outgoingCount.get(item.id) ?? 0;
 
@@ -145,17 +145,17 @@ function FlowGraphViewInner({
         hasChildren,
         id: item.id,
         item,
-        label: item.title || 'Untitled',
+        label: item.title || "Untitled",
         parentId: item.parentId,
         perspective: perspectives,
         status: item.status,
         type: itemType,
-        uiPreview: item.metadata?.['screenshotUrl']
+        uiPreview: item.metadata?.["screenshotUrl"]
           ? {
-              componentCode: item.metadata['code'] as string | undefined,
-              interactiveWidgetUrl: item.metadata['interactiveUrl'] as string | undefined,
-              screenshotUrl: item.metadata['screenshotUrl'] as string,
-              thumbnailUrl: item.metadata['thumbnailUrl'] as string | undefined,
+              componentCode: item.metadata["code"] as string | undefined,
+              interactiveWidgetUrl: item.metadata["interactiveUrl"] as string | undefined,
+              screenshotUrl: item.metadata["screenshotUrl"] as string,
+              thumbnailUrl: item.metadata["thumbnailUrl"] as string | undefined,
             }
           : undefined,
       } as EnhancedNodeData;
@@ -164,7 +164,7 @@ function FlowGraphViewInner({
 
   // Filter nodes by perspective
   const filteredNodes = useMemo(() => {
-    if (perspective === 'all') {
+    if (perspective === "all") {
       return enhancedNodes;
     }
 
@@ -202,7 +202,7 @@ function FlowGraphViewInner({
 
     for (const node of enhancedNodes) {
       for (const p of node.perspective) {
-        if (p !== 'all') {
+        if (p !== "all") {
           counts[p] = (counts[p] ?? 0) + 1;
         }
       }
@@ -234,7 +234,7 @@ function FlowGraphViewInner({
         },
         onNavigate: onNavigateToItem ?? undefined,
         onSelect: setSelectedNodeId,
-        showPreview: perspective === 'ui',
+        showPreview: perspective === "ui",
         status: node.status,
         type: node.type,
         uiPreview: node.uiPreview ?? undefined,
@@ -252,7 +252,7 @@ function FlowGraphViewInner({
       const padding = 50;
 
       switch (layoutType) {
-        case 'hierarchical': {
+        case "hierarchical": {
           // Group by depth, then arrange
           const byDepth = new Map<number, EnhancedNodeData[]>();
           for (const node of nodes) {
@@ -280,7 +280,7 @@ function FlowGraphViewInner({
                 data: createNodeData(node),
                 id: node.id,
                 position: { x: startX + index * (nodeWidth + padding), y },
-                type: 'richPill',
+                type: "richPill",
               });
             });
           });
@@ -288,7 +288,7 @@ function FlowGraphViewInner({
           return result;
         }
 
-        case 'radial': {
+        case "radial": {
           // Arrange in concentric circles by depth
           const byDepth = new Map<number, EnhancedNodeData[]>();
           for (const node of nodes) {
@@ -316,7 +316,7 @@ function FlowGraphViewInner({
                   x: centerX + radius * Math.cos(angle) - nodeWidth / 2,
                   y: centerY + radius * Math.sin(angle) - nodeHeight / 2,
                 },
-                type: 'richPill',
+                type: "richPill",
               });
             });
           });
@@ -324,7 +324,7 @@ function FlowGraphViewInner({
           return result;
         }
 
-        case 'grid': {
+        case "grid": {
           // Simple grid layout
           const cols = Math.ceil(Math.sqrt(nodes.length));
           return nodes.map((node, index) => ({
@@ -334,7 +334,7 @@ function FlowGraphViewInner({
               x: (index % cols) * (nodeWidth + padding),
               y: Math.floor(index / cols) * (nodeHeight + padding),
             },
-            type: 'richPill',
+            type: "richPill",
           }));
         }
         default: {
@@ -353,7 +353,7 @@ function FlowGraphViewInner({
                 x: baseX + (Math.random() - 0.5) * jitter,
                 y: baseY + (Math.random() - 0.5) * jitter,
               },
-              type: 'richPill',
+              type: "richPill",
             };
           });
         }
@@ -369,24 +369,24 @@ function FlowGraphViewInner({
   );
 
   const initialEdges = useMemo((): Edge[] => {
-    const defaultStyle = { arrow: false, color: '#64748b', dashed: true };
+    const defaultStyle = { arrow: false, color: "#64748b", dashed: true };
     return filteredLinks.map((link) => {
       const linkStyle = LINK_STYLES[link.type] ?? defaultStyle;
       const edge: Edge = {
-        animated: link.type === 'depends_on' || link.type === 'blocks',
+        animated: link.type === "depends_on" || link.type === "blocks",
         id: link.id,
-        label: link.type.replaceAll('_', ' '),
+        label: link.type.replaceAll("_", " "),
         labelBgPadding: [4, 2] as [number, number],
-        labelBgStyle: { fill: 'rgba(26, 26, 46, 0.9)' },
+        labelBgStyle: { fill: "rgba(26, 26, 46, 0.9)" },
         labelStyle: { fill: linkStyle.color, fontSize: 10 },
         source: link.sourceId,
         style: {
           stroke: linkStyle.color,
           strokeWidth: 2,
-          ...(linkStyle.dashed && { strokeDasharray: '5,5' }),
+          ...(linkStyle.dashed && { strokeDasharray: "5,5" }),
         },
         target: link.targetId,
-        type: 'smoothstep',
+        type: "smoothstep",
       };
       if (linkStyle.arrow) {
         edge.markerEnd = {
@@ -402,19 +402,19 @@ function FlowGraphViewInner({
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const layoutInputSignature = useMemo(() => {
-    const nodeIds = filteredNodes.map((node) => node.id).join('|');
-    const linkIds = filteredLinks.map((link) => link.id).join('|');
+    const nodeIds = filteredNodes.map((node) => node.id).join("|");
+    const linkIds = filteredLinks.map((link) => link.id).join("|");
     return `${layout}|${nodeIds}|${linkIds}`;
   }, [filteredNodes, filteredLinks, layout]);
   const edgesSignature = useMemo(
     () =>
       filteredLinks
         .map((edge) => `${edge.id}:${edge.sourceId}->${edge.targetId}:${edge.type}`)
-        .join('|'),
+        .join("|"),
     [filteredLinks],
   );
-  const prevNodesSignature = useRef<string>('');
-  const prevEdgesSignature = useRef<string>('');
+  const prevNodesSignature = useRef<string>("");
+  const prevEdgesSignature = useRef<string>("");
 
   // Update nodes when data changes
   useEffect(() => {
@@ -464,24 +464,24 @@ function FlowGraphViewInner({
   const handlePerspectiveChange = (newPerspective: GraphPerspective) => {
     setPerspective(newPerspective);
     setSelectedNodeId(null);
-    setShowUITree(newPerspective === 'ui');
+    setShowUITree(newPerspective === "ui");
 
     const config = PERSPECTIVE_CONFIGS.find((c) => c.id === newPerspective);
-    if (config?.layoutPreference === 'breadthfirst') {
-      setLayout('hierarchical');
-    } else if (config?.layoutPreference === 'elk') {
-      setLayout('hierarchical');
-    } else if (config?.layoutPreference === 'circle') {
-      setLayout('radial');
+    if (config?.layoutPreference === "breadthfirst") {
+      setLayout("hierarchical");
+    } else if (config?.layoutPreference === "elk") {
+      setLayout("hierarchical");
+    } else if (config?.layoutPreference === "circle") {
+      setLayout("radial");
     } else {
-      setLayout('force');
+      setLayout("force");
     }
   };
 
   const handleFit = () => {};
   const handleReset = () => {
-    setPerspective('all');
-    setLayout('force');
+    setPerspective("all");
+    setLayout("force");
     setSelectedNodeId(null);
     setShowUITree(false);
     setExpandedNodes(new Set());
@@ -499,10 +499,10 @@ function FlowGraphViewInner({
   // Loading state
   if (isLoading) {
     return (
-      <div className='space-y-6'>
-        <Skeleton className='h-12 w-full' />
-        <Skeleton className='h-14 w-full' />
-        <Skeleton className='h-[calc(100vh-300px)]' />
+      <div className="space-y-6">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-[calc(100vh-300px)]" />
       </div>
     );
   }
@@ -510,18 +510,18 @@ function FlowGraphViewInner({
   // Empty state
   if (items.length === 0) {
     return (
-      <div className='space-y-6'>
+      <div className="space-y-6">
         <div>
-          <h1 className='text-3xl font-bold tracking-tight'>Traceability Graph</h1>
-          <p className='text-muted-foreground mt-2'>
+          <h1 className="text-3xl font-bold tracking-tight">Traceability Graph</h1>
+          <p className="text-muted-foreground mt-2">
             Multi-perspective visualization with rich node previews
           </p>
         </div>
-        <Card className='p-12'>
-          <div className='text-center'>
-            <Network className='text-muted-foreground mx-auto mb-4 h-16 w-16' />
-            <p className='text-muted-foreground'>No items to visualize</p>
-            <p className='text-muted-foreground mt-1 text-sm'>
+        <Card className="p-12">
+          <div className="text-center">
+            <Network className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
+            <p className="text-muted-foreground">No items to visualize</p>
+            <p className="text-muted-foreground mt-1 text-sm">
               Create items and links to see the traceability graph
             </p>
           </div>
@@ -531,23 +531,23 @@ function FlowGraphViewInner({
   }
 
   return (
-    <div className='space-y-4'>
+    <div className="space-y-4">
       {/* Header */}
-      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className='flex items-center gap-2 text-3xl font-bold tracking-tight'>
-            <Network className='h-8 w-8' />
+          <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
+            <Network className="h-8 w-8" />
             Traceability Graph
           </h1>
-          <p className='text-muted-foreground mt-1'>
+          <p className="text-muted-foreground mt-1">
             {filteredNodes.length} items · {filteredLinks.length} connections
           </p>
         </div>
 
-        {perspective !== 'all' && (
+        {perspective !== "all" && (
           <Badge
-            variant='outline'
-            className='px-3 py-1'
+            variant="outline"
+            className="px-3 py-1"
             style={{
               backgroundColor: `${PERSPECTIVE_CONFIGS.find((c) => c.id === perspective)?.color}20`,
               borderColor: PERSPECTIVE_CONFIGS.find((c) => c.id === perspective)?.color,
@@ -566,9 +566,9 @@ function FlowGraphViewInner({
       />
 
       {/* Controls */}
-      <Card className='p-3'>
-        <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-          <div className='flex flex-wrap items-center gap-2'>
+      <Card className="p-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Layout selector */}
             <Select
               value={layout}
@@ -576,91 +576,91 @@ function FlowGraphViewInner({
                 setLayout(v as LayoutType);
               }}
             >
-              <SelectTrigger className='h-9 w-[160px]' aria-label='Graph layout selection'>
-                <Layers className='mr-2 h-4 w-4' aria-hidden='true' />
+              <SelectTrigger className="h-9 w-[160px]" aria-label="Graph layout selection">
+                <Layers className="mr-2 h-4 w-4" aria-hidden="true" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='force'>Force-directed</SelectItem>
-                <SelectItem value='hierarchical'>Hierarchical</SelectItem>
-                <SelectItem value='radial'>Radial</SelectItem>
-                <SelectItem value='grid'>Grid</SelectItem>
+                <SelectItem value="force">Force-directed</SelectItem>
+                <SelectItem value="hierarchical">Hierarchical</SelectItem>
+                <SelectItem value="radial">Radial</SelectItem>
+                <SelectItem value="grid">Grid</SelectItem>
               </SelectContent>
             </Select>
 
-            <Separator orientation='vertical' className='h-6' aria-hidden='true' />
+            <Separator orientation="vertical" className="h-6" aria-hidden="true" />
 
             {/* UI Tree toggle */}
             <Button
-              variant={showUITree ? 'default' : 'outline'}
-              size='sm'
+              variant={showUITree ? "default" : "outline"}
+              size="sm"
               onClick={() => {
                 setShowUITree(!showUITree);
               }}
-              className='h-9'
+              className="h-9"
             >
-              <LayoutGrid className='mr-2 h-4 w-4' />
+              <LayoutGrid className="mr-2 h-4 w-4" />
               UI Library
             </Button>
 
             {/* Detail panel toggle */}
             <Button
-              variant='ghost'
-              size='sm'
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setShowDetailPanel(!showDetailPanel);
               }}
-              className='h-9'
+              className="h-9"
             >
               {showDetailPanel ? (
-                <PanelRightClose className='h-4 w-4' />
+                <PanelRightClose className="h-4 w-4" />
               ) : (
-                <PanelRight className='h-4 w-4' />
+                <PanelRight className="h-4 w-4" />
               )}
             </Button>
           </div>
 
-          <div className='flex items-center gap-2'>
-            <div className='flex items-center gap-1 rounded-md border p-1'>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 rounded-md border p-1">
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={async () => zoomIn()}
-                className='h-7 w-7 p-0'
-                aria-label='Zoom in'
-                title='Zoom in (Ctrl/Cmd + Plus)'
+                className="h-7 w-7 p-0"
+                aria-label="Zoom in"
+                title="Zoom in (Ctrl/Cmd + Plus)"
               >
-                <ZoomIn className='h-4 w-4' aria-hidden='true' />
+                <ZoomIn className="h-4 w-4" aria-hidden="true" />
               </Button>
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={async () => zoomOut()}
-                className='h-7 w-7 p-0'
-                aria-label='Zoom out'
-                title='Zoom out (Ctrl/Cmd + Minus)'
+                className="h-7 w-7 p-0"
+                aria-label="Zoom out"
+                title="Zoom out (Ctrl/Cmd + Minus)"
               >
-                <ZoomOut className='h-4 w-4' aria-hidden='true' />
+                <ZoomOut className="h-4 w-4" aria-hidden="true" />
               </Button>
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={handleFit}
-                className='h-7 w-7 p-0'
-                aria-label='Fit view to content'
-                title='Fit all nodes in view'
+                className="h-7 w-7 p-0"
+                aria-label="Fit view to content"
+                title="Fit all nodes in view"
               >
-                <Maximize2 className='h-4 w-4' aria-hidden='true' />
+                <Maximize2 className="h-4 w-4" aria-hidden="true" />
               </Button>
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={handleReset}
-                className='h-7 w-7 p-0'
-                aria-label='Reset graph view'
-                title='Reset to default view'
+                className="h-7 w-7 p-0"
+                aria-label="Reset graph view"
+                title="Reset to default view"
               >
-                <RotateCcw className='h-4 w-4' aria-hidden='true' />
+                <RotateCcw className="h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
           </div>
@@ -668,10 +668,10 @@ function FlowGraphViewInner({
       </Card>
 
       {/* Main content area */}
-      <div className='flex gap-4' style={{ height: 'calc(100vh - 340px)' }}>
+      <div className="flex gap-4" style={{ height: "calc(100vh - 340px)" }}>
         {/* UI Component Tree (left panel) */}
         {showUITree && (
-          <div className='w-80 shrink-0'>
+          <div className="w-80 shrink-0">
             <UIComponentTree
               items={items}
               links={links}
@@ -682,7 +682,7 @@ function FlowGraphViewInner({
         )}
 
         {/* Graph Container (center) */}
-        <Card className='flex-1 overflow-hidden p-0'>
+        <Card className="flex-1 overflow-hidden p-0">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -693,27 +693,27 @@ function FlowGraphViewInner({
             minZoom={0.1}
             maxZoom={2}
             proOptions={{ hideAttribution: true }}
-            className='bg-background'
+            className="bg-background"
           >
-            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color='#374151' />
+            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#374151" />
             <Controls showInteractive={false} />
             <MiniMap
               nodeColor={(node) => {
                 const nodeType = (node.data as RichNodeData | undefined)?.type;
-                return nodeType ? (ENHANCED_TYPE_COLORS[nodeType] ?? '#64748b') : '#64748b';
+                return nodeType ? (ENHANCED_TYPE_COLORS[nodeType] ?? "#64748b") : "#64748b";
               }}
-              maskColor='rgba(0, 0, 0, 0.7)'
-              className='!bg-card !border-border'
+              maskColor="rgba(0, 0, 0, 0.7)"
+              className="!bg-card !border-border"
             />
-            <Panel position='bottom-left' className='!m-2'>
-              <div className='bg-card/90 flex flex-wrap gap-2 rounded-lg border p-2 text-[10px] backdrop-blur-sm'>
+            <Panel position="bottom-left" className="!m-2">
+              <div className="bg-card/90 flex flex-wrap gap-2 rounded-lg border p-2 text-[10px] backdrop-blur-sm">
                 {Object.entries(ENHANCED_TYPE_COLORS)
                   .filter(([type]) => filteredNodes.some((n) => n.type === type))
                   .slice(0, 8)
                   .map(([type, color]) => (
-                    <div key={type} className='flex items-center gap-1'>
-                      <div className='h-2.5 w-5 rounded' style={{ backgroundColor: color }} />
-                      <span className='capitalize'>{type.replaceAll('_', ' ')}</span>
+                    <div key={type} className="flex items-center gap-1">
+                      <div className="h-2.5 w-5 rounded" style={{ backgroundColor: color }} />
+                      <span className="capitalize">{type.replaceAll("_", " ")}</span>
                     </div>
                   ))}
               </div>

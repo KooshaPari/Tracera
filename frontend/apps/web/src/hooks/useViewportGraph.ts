@@ -20,16 +20,16 @@
  * ```
  */
 
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { client } from '@/api/client';
-import { logger } from '@/lib/logger';
+import { client } from "@/api/client";
+import { logger } from "@/lib/logger";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 /**
  * Viewport bounds with zoom level
@@ -169,12 +169,12 @@ export function useViewportGraph(
       try {
         // Fetch viewport data from backend
         const response = await fetch(`${API_URL}/api/v1/projects/${projectId}/graph/viewport`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             ...getAuthHeaders(),
           },
-          credentials: 'include', // Send HttpOnly cookies
+          credentials: "include", // Send HttpOnly cookies
           body: JSON.stringify({
             bufferPx,
             viewport: {
@@ -233,7 +233,7 @@ export function useViewportGraph(
           );
         }
       } catch (error) {
-        logger.error('[useViewportGraph] Failed to load viewport:', error);
+        logger.error("[useViewportGraph] Failed to load viewport:", error);
         // Don't add to loadedRegions on error - allow retry
       } finally {
         // Remove from loading set

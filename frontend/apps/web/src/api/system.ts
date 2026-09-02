@@ -1,11 +1,11 @@
 // System status API stub
-import { client } from './client';
-import { getMcpConfig } from './mcp-config';
+import { client } from "./client";
+import { getMcpConfig } from "./mcp-config";
 
 const { apiClient, getAuthHeaders, API_BASE_URL } = client;
 
 export interface SystemStatus {
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   uptime: number;
   queuedJobs: number;
   version?: string;
@@ -36,9 +36,9 @@ export interface DashboardSummary {
 
 export const fetchDashboardSummary = async (signal?: AbortSignal): Promise<DashboardSummary> => {
   const res = await fetch(`${API_BASE_URL}/api/v1/dashboard/summary`, {
-    credentials: 'include',
+    credentials: "include",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...getAuthHeaders(),
     },
     signal: signal ?? null,
@@ -53,13 +53,13 @@ export const fetchSystemStatus = async (): Promise<SystemStatus> => {
   // Try to fetch from health endpoint, fallback to mock data
   try {
     const [response, mcpConfig] = await Promise.all([
-      apiClient.GET('/api/v1/health', {}),
+      apiClient.GET("/api/v1/health", {}),
       getMcpConfig().catch(() => null),
     ]);
     if (response.data) {
       const baseStatus: SystemStatus = {
         queuedJobs: 0,
-        status: 'healthy',
+        status: "healthy",
         uptime: 99.9,
       };
       const merged: SystemStatus = {
@@ -87,7 +87,7 @@ export const fetchSystemStatus = async (): Promise<SystemStatus> => {
   }
   return {
     queuedJobs: 0,
-    status: 'healthy',
+    status: "healthy",
     uptime: 99.9,
   };
 };

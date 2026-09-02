@@ -1,33 +1,33 @@
-import type { ChangeEvent, MouseEvent } from 'react';
+import type { ChangeEvent, MouseEvent } from "react";
 
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
 import type {
   MappingCreateArgs,
   MappingFormState,
-} from '@/pages/projects/views/integrations-view/tabs/mappings/useMappingFormState';
+} from "@/pages/projects/views/integrations-view/tabs/mappings/useMappingFormState";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-const REPO_FULL_NAME_ATTR = 'data-repo-full-name';
-const REPO_URL_ATTR = 'data-repo-url';
+const REPO_FULL_NAME_ATTR = "data-repo-full-name";
+const REPO_URL_ATTR = "data-repo-url";
 
-const PROJECT_ID_ATTR = 'data-project-id';
-const PROJECT_TITLE_ATTR = 'data-project-title';
-const PROJECT_URL_ATTR = 'data-project-url';
+const PROJECT_ID_ATTR = "data-project-id";
+const PROJECT_TITLE_ATTR = "data-project-title";
+const PROJECT_URL_ATTR = "data-project-url";
 
-const LINEAR_PROJECT_ID_ATTR = 'data-linear-project-id';
-const LINEAR_PROJECT_NAME_ATTR = 'data-linear-project-name';
-const LINEAR_PROJECT_URL_ATTR = 'data-linear-project-url';
+const LINEAR_PROJECT_ID_ATTR = "data-linear-project-id";
+const LINEAR_PROJECT_NAME_ATTR = "data-linear-project-name";
+const LINEAR_PROJECT_URL_ATTR = "data-linear-project-url";
 
 type MappingSourceHandlersInput = Pick<
   MappingFormState,
-  | 'handleCreateMapping'
-  | 'projectOwner'
-  | 'projectOwnerIsOrg'
-  | 'setProjectOwner'
-  | 'setProjectOwnerIsOrg'
-  | 'setRepoSearch'
+  | "handleCreateMapping"
+  | "projectOwner"
+  | "projectOwnerIsOrg"
+  | "setProjectOwner"
+  | "setProjectOwnerIsOrg"
+  | "setRepoSearch"
 >;
 
 interface MappingSourceHandlers {
@@ -41,7 +41,7 @@ interface MappingSourceHandlers {
 
 function readOptionalAttribute(element: HTMLElement, name: string): string | undefined {
   const value = element.getAttribute(name) ?? undefined;
-  if (value === undefined || value === '') {
+  if (value === undefined || value === "") {
     return undefined;
   }
   return value;
@@ -54,16 +54,16 @@ function safeCreateMapping(
   try {
     handleCreateMapping(args);
   } catch (error) {
-    logger.error('Failed to create mapping:', error);
+    logger.error("Failed to create mapping:", error);
   }
 }
 
 function useRepoHandlers({
   handleCreateMapping,
   setRepoSearch,
-}: Pick<MappingSourceHandlersInput, 'handleCreateMapping' | 'setRepoSearch'>): Pick<
+}: Pick<MappingSourceHandlersInput, "handleCreateMapping" | "setRepoSearch">): Pick<
   MappingSourceHandlers,
-  'onRepoLinkClick' | 'onRepoSearchChange'
+  "onRepoLinkClick" | "onRepoSearchChange"
 > {
   const onRepoSearchChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -75,8 +75,8 @@ function useRepoHandlers({
   const onRepoLinkClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       const element = event.currentTarget;
-      const fullName = element.getAttribute(REPO_FULL_NAME_ATTR) ?? '';
-      if (fullName === '') {
+      const fullName = element.getAttribute(REPO_FULL_NAME_ATTR) ?? "";
+      if (fullName === "") {
         return;
       }
 
@@ -84,10 +84,10 @@ function useRepoHandlers({
       safeCreateMapping(handleCreateMapping, {
         externalId: fullName,
         externalKey: fullName,
-        externalType: 'github_repo',
+        externalType: "github_repo",
         externalUrl: htmlUrl,
         mappingMetadata: {
-          external_kind: 'repo',
+          external_kind: "repo",
           repo_full_name: fullName,
         },
       });
@@ -101,9 +101,9 @@ function useRepoHandlers({
 function useOwnerHandlers({
   setProjectOwner,
   setProjectOwnerIsOrg,
-}: Pick<MappingSourceHandlersInput, 'setProjectOwner' | 'setProjectOwnerIsOrg'>): Pick<
+}: Pick<MappingSourceHandlersInput, "setProjectOwner" | "setProjectOwnerIsOrg">): Pick<
   MappingSourceHandlers,
-  'onOwnerChange' | 'onOrgToggle'
+  "onOwnerChange" | "onOrgToggle"
 > {
   const onOwnerChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -128,13 +128,13 @@ function useProjectLinkHandler({
   projectOwnerIsOrg,
 }: Pick<
   MappingSourceHandlersInput,
-  'handleCreateMapping' | 'projectOwner' | 'projectOwnerIsOrg'
->): Pick<MappingSourceHandlers, 'onProjectLinkClick'> {
+  "handleCreateMapping" | "projectOwner" | "projectOwnerIsOrg"
+>): Pick<MappingSourceHandlers, "onProjectLinkClick"> {
   const onProjectLinkClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       const element = event.currentTarget;
-      const externalId = element.getAttribute(PROJECT_ID_ATTR) ?? '';
-      if (externalId === '') {
+      const externalId = element.getAttribute(PROJECT_ID_ATTR) ?? "";
+      if (externalId === "") {
         return;
       }
 
@@ -144,10 +144,10 @@ function useProjectLinkHandler({
       safeCreateMapping(handleCreateMapping, {
         externalId,
         externalKey,
-        externalType: 'github_project',
+        externalType: "github_project",
         externalUrl,
         mappingMetadata: {
-          external_kind: 'project',
+          external_kind: "project",
           project_id: externalId,
           project_owner: projectOwner,
           project_owner_is_org: projectOwnerIsOrg,
@@ -162,15 +162,15 @@ function useProjectLinkHandler({
 
 function useLinearLinkHandler({
   handleCreateMapping,
-}: Pick<MappingSourceHandlersInput, 'handleCreateMapping'>): Pick<
+}: Pick<MappingSourceHandlersInput, "handleCreateMapping">): Pick<
   MappingSourceHandlers,
-  'onLinearProjectLinkClick'
+  "onLinearProjectLinkClick"
 > {
   const onLinearProjectLinkClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       const element = event.currentTarget;
-      const externalId = element.getAttribute(LINEAR_PROJECT_ID_ATTR) ?? '';
-      if (externalId === '') {
+      const externalId = element.getAttribute(LINEAR_PROJECT_ID_ATTR) ?? "";
+      if (externalId === "") {
         return;
       }
 
@@ -180,10 +180,10 @@ function useLinearLinkHandler({
       safeCreateMapping(handleCreateMapping, {
         externalId,
         externalKey,
-        externalType: 'linear_project',
+        externalType: "linear_project",
         externalUrl,
         mappingMetadata: {
-          external_kind: 'project',
+          external_kind: "project",
           project_id: externalId,
         },
       });

@@ -1,51 +1,51 @@
 type RequirementType =
-  | 'ubiquitous'
-  | 'event_driven'
-  | 'state_driven'
-  | 'optional'
-  | 'complex'
-  | 'unwanted';
+  | "ubiquitous"
+  | "event_driven"
+  | "state_driven"
+  | "optional"
+  | "complex"
+  | "unwanted";
 
-type ConstraintType = 'hard' | 'soft' | 'optimizable';
+type ConstraintType = "hard" | "soft" | "optimizable";
 
-type VerificationStatus = 'unverified' | 'pending' | 'verified' | 'failed' | 'expired';
+type VerificationStatus = "unverified" | "pending" | "verified" | "failed" | "expired";
 
-type RiskLevel = 'critical' | 'high' | 'medium' | 'low' | 'minimal';
+type RiskLevel = "critical" | "high" | "medium" | "low" | "minimal";
 
 type TestType =
-  | 'unit'
-  | 'integration'
-  | 'e2e'
-  | 'performance'
-  | 'security'
-  | 'accessibility'
-  | 'contract'
-  | 'mutation'
-  | 'fuzz'
-  | 'property';
+  | "unit"
+  | "integration"
+  | "e2e"
+  | "performance"
+  | "security"
+  | "accessibility"
+  | "contract"
+  | "mutation"
+  | "fuzz"
+  | "property";
 
-type TestResultStatus = 'passed' | 'failed' | 'skipped' | 'blocked' | 'flaky' | 'timeout' | 'error';
+type TestResultStatus = "passed" | "failed" | "skipped" | "blocked" | "flaky" | "timeout" | "error";
 
-type EpicStatus = 'backlog' | 'in_progress' | 'completed' | 'archived';
+type EpicStatus = "backlog" | "in_progress" | "completed" | "archived";
 
-type UserStoryStatus = 'backlog' | 'ready' | 'in_progress' | 'review' | 'done' | 'archived';
+type UserStoryStatus = "backlog" | "ready" | "in_progress" | "review" | "done" | "archived";
 
-type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done' | 'blocked';
+type TaskStatus = "todo" | "in_progress" | "review" | "done" | "blocked";
 
-type DefectSeverity = 'critical' | 'major' | 'minor' | 'trivial';
+type DefectSeverity = "critical" | "major" | "minor" | "trivial";
 
 type DefectStatus =
-  | 'new'
-  | 'assigned'
-  | 'in_progress'
-  | 'resolved'
-  | 'verified'
-  | 'closed'
-  | 'reopened';
+  | "new"
+  | "assigned"
+  | "in_progress"
+  | "resolved"
+  | "verified"
+  | "closed"
+  | "reopened";
 
 interface QualityIssue {
   dimension: string;
-  severity: 'error' | 'warning' | 'info';
+  severity: "error" | "warning" | "info";
   message: string;
   suggestion?: string | undefined;
 }

@@ -9,9 +9,9 @@
  * - 50k nodes: <500ms per iteration
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // TYPES
@@ -48,17 +48,17 @@ export interface ForceComputeParams {
  */
 async function initializeWebGPU(): Promise<GPUComputeDevice | null> {
   if (!navigator.gpu) {
-    logger.warn('WebGPU not supported in this browser');
+    logger.warn("WebGPU not supported in this browser");
     return null;
   }
 
   try {
     const adapter = await navigator.gpu.requestAdapter({
-      powerPreference: 'high-performance',
+      powerPreference: "high-performance",
     });
 
     if (!adapter) {
-      logger.warn('No WebGPU adapter available');
+      logger.warn("No WebGPU adapter available");
       return null;
     }
 
@@ -72,13 +72,13 @@ async function initializeWebGPU(): Promise<GPUComputeDevice | null> {
     });
 
     device.lost.then((info) => {
-      logger.error('WebGPU device lost:', info.message);
+      logger.error("WebGPU device lost:", info.message);
     });
 
-    logger.info('WebGPU device initialized successfully');
+    logger.info("WebGPU device initialized successfully");
     return { adapter, device };
   } catch (error) {
-    logger.error('Failed to initialize WebGPU:', error);
+    logger.error("Failed to initialize WebGPU:", error);
     return null;
   }
 }
@@ -178,11 +178,11 @@ async function createComputePipeline(
 
   const bindGroupLayout = device.createBindGroupLayout({
     entries: [
-      { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } }, // Positions
-      { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } }, // Velocities
-      { binding: 2, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } }, // Forces
-      { binding: 3, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } }, // Edges
-      { binding: 4, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } }, // Params
+      { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: "storage" } }, // Positions
+      { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: "storage" } }, // Velocities
+      { binding: 2, visibility: GPUShaderStage.COMPUTE, buffer: { type: "storage" } }, // Forces
+      { binding: 3, visibility: GPUShaderStage.COMPUTE, buffer: { type: "read-only-storage" } }, // Edges
+      { binding: 4, visibility: GPUShaderStage.COMPUTE, buffer: { type: "uniform" } }, // Params
     ],
   });
 
@@ -192,7 +192,7 @@ async function createComputePipeline(
 
   const pipeline = device.createComputePipeline({
     compute: {
-      entryPoint: 'main',
+      entryPoint: "main",
       module: shaderModule,
     },
     layout: pipelineLayout,
@@ -278,7 +278,7 @@ export function useGPUCompute(shaderCode: string): UseGPUComputeResult {
           pipelineRef.current = pipeline;
           setIsReady(true);
         } catch (error) {
-          logger.error('Failed to create compute pipeline:', error);
+          logger.error("Failed to create compute pipeline:", error);
           setIsReady(false);
         }
       } else {
@@ -305,7 +305,7 @@ export function useGPUCompute(shaderCode: string): UseGPUComputeResult {
       const pipeline = pipelineRef.current;
 
       if (!gpu || !pipeline) {
-        logger.warn('GPU compute not ready');
+        logger.warn("GPU compute not ready");
         return null;
       }
 
@@ -401,7 +401,7 @@ export function useGPUCompute(shaderCode: string): UseGPUComputeResult {
           velocities: outputVelocities,
         };
       } catch (error) {
-        logger.error('GPU compute failed:', error);
+        logger.error("GPU compute failed:", error);
         return null;
       }
     },

@@ -1,10 +1,10 @@
-import type Graph from 'graphology';
+import type Graph from "graphology";
 
-import louvain from 'graphology-communities-louvain';
+import louvain from "graphology-communities-louvain";
 
-const GOLDEN_ANGLE_DEGREES = Number('137.508');
-const FULL_CIRCLE_DEGREES = Number('360');
-const PERCENT_SCALE = Number('100');
+const GOLDEN_ANGLE_DEGREES = Number("137.508");
+const FULL_CIRCLE_DEGREES = Number("360");
+const PERCENT_SCALE = Number("100");
 
 export interface ClusterNode {
   id: string;
@@ -118,7 +118,7 @@ export class GraphClustering {
     graph: Graph,
     communities: Map<string, number>,
   ): { nodes: string[]; edges: string[] } {
-    const clusterNumber = Number.parseInt(clusterId.replace('cluster-', ''));
+    const clusterNumber = Number.parseInt(clusterId.replace("cluster-", ""));
     const memberNodes: string[] = [];
 
     communities.forEach((community, nodeId) => {
@@ -161,7 +161,7 @@ export class GraphClustering {
           label: `Cluster ${communityId}`,
           memberIds: [],
           size: 0,
-          type: 'cluster',
+          type: "cluster",
           x: 0,
           y: 0,
         });
@@ -170,8 +170,8 @@ export class GraphClustering {
       const cluster = clusterNodes.get(communityId)!;
       cluster.size += 1;
       cluster.memberIds.push(nodeId);
-      cluster.x += attrs['x'] || 0;
-      cluster.y += attrs['y'] || 0;
+      cluster.x += attrs["x"] || 0;
+      cluster.y += attrs["y"] || 0;
     });
 
     clusterNodes.forEach((cluster) => {
@@ -197,9 +197,9 @@ export class GraphClustering {
     });
 
     return [...clusterEdgeWeights.entries()].map(([key, weight]) => {
-      const [source, target] = key.split('-');
+      const [source, target] = key.split("-");
       return {
-        color: '#94a3b8',
+        color: "#94a3b8",
         id: key,
         source: `cluster-${source}`,
         target: `cluster-${target}`,

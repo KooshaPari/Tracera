@@ -1,8 +1,8 @@
-import { useParams } from '@tanstack/react-router';
-import React, { memo, useState } from 'react';
+import { useLocation, useParams } from "@tanstack/react-router";
+import React, { memo, useState } from "react";
 
-import { useProjects } from '@/hooks/useProjects';
-import { useProjectStore } from '@/stores/project-store';
+import { useProjects } from "@/hooks/useProjects";
+import { useProjectStore } from "@/stores/project-store";
 
 import {
   useProjectActionHandler,
@@ -12,8 +12,8 @@ import {
   useSidebarRefs,
   useSidebarViewData,
   useSidebarWidth,
-} from './sidebar-hooks';
-import { SidebarView } from './sidebar-view';
+} from "./sidebar-hooks";
+import { SidebarView } from "./sidebar-view";
 
 const NO_INDEX = -1;
 const HIGHLIGHT_KEY_SLICE = 8;
@@ -24,13 +24,13 @@ const highlightText = (text: string, query: string): (string | JSX.Element)[] =>
     return [text];
   }
   const queryLower = trimmedQuery.toLowerCase();
-  const parts = text.split(new RegExp(`(${trimmedQuery})`, 'gi'));
+  const parts = text.split(new RegExp(`(${trimmedQuery})`, "gi"));
   return parts.map((part, index) => {
     if (part.toLowerCase() === queryLower) {
       return (
         <mark
           key={`${index}-${part.slice(0, HIGHLIGHT_KEY_SLICE)}`}
-          className='bg-primary/20 text-primary rounded px-0.5 font-medium'
+          className="bg-primary/20 text-primary rounded px-0.5 font-medium"
         >
           {part}
         </mark>
@@ -41,11 +41,12 @@ const highlightText = (text: string, query: string): (string | JSX.Element)[] =>
 };
 
 const SidebarComponent = function SidebarComponent(): JSX.Element {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [, setFocusedIndex] = useState<number>(NO_INDEX);
   const { currentProject, recentProjects } = useProjectStore();
   const { data: allProjects } = useProjects();
   const { projectId } = useParams({ strict: false });
+  const { pathname } = useLocation();
   const isTestEnv = Boolean(globalThis.navigator?.webdriver);
 
   const {
@@ -81,7 +82,6 @@ const SidebarComponent = function SidebarComponent(): JSX.Element {
     recentSort,
     searchQuery,
   });
-
   resetNavItemRefs();
 
   const handleProjectAction = useProjectActionHandler(recentProjects);
@@ -114,6 +114,7 @@ const SidebarComponent = function SidebarComponent(): JSX.Element {
       activeTab={activeTab}
       collapsedGroups={collapsedGroups}
       currentProjectId={currentProject?.id}
+      currentPathname={pathname}
       filteredNavGroups={filteredNavGroups}
       isCollapsed={isCollapsed}
       isResizing={isResizing}

@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import * as specificationsApi from '@/hooks/useSpecifications.api';
-import * as queryUtils from './query-utils';
+import * as specificationsApi from "@/hooks/useSpecifications.api";
+import * as queryUtils from "./query-utils";
 
 type FetchFeaturesResult = Awaited<ReturnType<typeof specificationsApi.fetchFeatures>>;
 
@@ -26,7 +26,7 @@ const useFeatures = (
       const response = await specificationsApi.fetchFeatures(filters);
       return response;
     },
-    queryKey: ['features', JSON.stringify(filters)],
+    queryKey: ["features", JSON.stringify(filters)],
   });
 
 const useFeature = (id: string): queryUtils.QueryResult<FetchFeatureResult> =>
@@ -36,7 +36,7 @@ const useFeature = (id: string): queryUtils.QueryResult<FetchFeatureResult> =>
       const response = await specificationsApi.fetchFeature(id);
       return response;
     },
-    queryKey: ['features', id],
+    queryKey: ["features", id],
   });
 
 const useCreateFeature = (): queryUtils.MutationResult<
@@ -51,9 +51,9 @@ const useCreateFeature = (): queryUtils.MutationResult<
       return response;
     },
     onSuccess: async (_, variables) => {
-      await queryUtils.invalidateQueries(queryClient, [['features'], ['featureStats']]);
+      await queryUtils.invalidateQueries(queryClient, [["features"], ["featureStats"]]);
       await queryClient.invalidateQueries({
-        queryKey: ['specificationSummary', variables.projectId],
+        queryKey: ["specificationSummary", variables.projectId],
       });
     },
   });
@@ -71,7 +71,7 @@ const useUpdateFeature = (): queryUtils.MutationResult<
       return response;
     },
     onSuccess: async (_, { id }) => {
-      await queryUtils.invalidateQueries(queryClient, [['features', id], ['features']]);
+      await queryUtils.invalidateQueries(queryClient, [["features", id], ["features"]]);
     },
   });
 };
@@ -85,9 +85,9 @@ const useDeleteFeature = (): queryUtils.MutationResult<void, string> => {
     },
     onSuccess: async () => {
       await queryUtils.invalidateQueries(queryClient, [
-        ['features'],
-        ['featureStats'],
-        ['specificationSummary'],
+        ["features"],
+        ["featureStats"],
+        ["specificationSummary"],
       ]);
     },
   });
@@ -102,19 +102,17 @@ const useFeatureActivities = (
       const response = await specificationsApi.fetchFeatureActivities(featureId);
       return response;
     },
-    queryKey: ['featureActivities', featureId],
+    queryKey: ["featureActivities", featureId],
   });
 
-const useFeatureStats = (
-  projectId: string,
-): queryUtils.QueryResult<FetchFeatureStatsResult> =>
+const useFeatureStats = (projectId: string): queryUtils.QueryResult<FetchFeatureStatsResult> =>
   useQuery({
     enabled: Boolean(projectId),
     queryFn: async () => {
       const response = await specificationsApi.fetchFeatureStats(projectId);
       return response;
     },
-    queryKey: ['featureStats', projectId],
+    queryKey: ["featureStats", projectId],
   });
 
 export {

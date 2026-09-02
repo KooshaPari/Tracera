@@ -1,24 +1,24 @@
-import { useNavigate } from '@tanstack/react-router';
-import { useCallback, useMemo } from 'react';
+import { useNavigate } from "@tanstack/react-router";
+import { useCallback, useMemo } from "react";
 
 import type {
   CoverageDataItem,
   GapItem,
   TypeDistributionRow,
-} from '@/views/SpecificationsDashboardView.data';
-import type { ADR, Contract, Feature, SpecificationSummary, TypedItem } from '@tracertm/types';
+} from "@/views/SpecificationsDashboardView.data";
+import type { ADR, Contract, Feature, SpecificationSummary, TypedItem } from "@tracertm/types";
 
-import { useItems } from '@/hooks/useItems';
-import { useADRs, useContracts, useFeatures } from '@/hooks/useSpecifications';
+import { useItems } from "@/hooks/useItems";
+import { useADRs, useContracts, useFeatures } from "@/hooks/useSpecifications";
 import {
   buildCoverageData,
   buildGapItems,
   buildSpecificationSummary,
   buildTypeDistribution,
-} from '@/views/SpecificationsDashboardView.data';
+} from "@/views/SpecificationsDashboardView.data";
 
-type SpecificationsTab = 'adrs' | 'contracts' | 'features';
-type CreateNewType = 'adr' | 'contract' | 'feature';
+type SpecificationsTab = "adrs" | "contracts" | "features";
+type CreateNewType = "adr" | "contract" | "feature";
 
 type ViewModel = Readonly<{
   coverageData: CoverageDataItem[];
@@ -38,20 +38,20 @@ const EMPTY_ADRS: ADR[] = [];
 const EMPTY_CONTRACTS: Contract[] = [];
 const EMPTY_FEATURES: Feature[] = [];
 const EMPTY_ITEMS: TypedItem[] = [];
-const ITEMS_LIMIT = Number('500');
+const ITEMS_LIMIT = Number("500");
 
 const CREATE_TYPE_TO_TAB: Readonly<Record<CreateNewType, SpecificationsTab>> = {
-  adr: 'adrs',
-  contract: 'contracts',
-  feature: 'features',
+  adr: "adrs",
+  contract: "contracts",
+  feature: "features",
 } as const;
 
 function isSpecificationsTab(value: string): value is SpecificationsTab {
-  return value === 'adrs' || value === 'contracts' || value === 'features';
+  return value === "adrs" || value === "contracts" || value === "features";
 }
 
 function isCreateNewType(value: string): value is CreateNewType {
-  return value === 'adr' || value === 'contract' || value === 'feature';
+  return value === "adr" || value === "contract" || value === "feature";
 }
 
 function navigateToTab(
@@ -63,7 +63,7 @@ function navigateToTab(
   const result = navigate({
     params: { projectId },
     search: { tab },
-    to: '/projects/$projectId/specifications',
+    to: "/projects/$projectId/specifications",
   });
 
   if (result instanceof Promise) {
@@ -113,21 +113,21 @@ export function useSpecificationsDashboardViewModel(projectId: string): ViewMode
 
   const onNavigateADRs = useCallback(
     function onNavigateADRs(): void {
-      handleNavigateTab('adrs');
+      handleNavigateTab("adrs");
     },
     [handleNavigateTab],
   );
 
   const onNavigateContracts = useCallback(
     function onNavigateContracts(): void {
-      handleNavigateTab('contracts');
+      handleNavigateTab("contracts");
     },
     [handleNavigateTab],
   );
 
   const onNavigateFeatures = useCallback(
     function onNavigateFeatures(): void {
-      handleNavigateTab('features');
+      handleNavigateTab("features");
     },
     [handleNavigateTab],
   );

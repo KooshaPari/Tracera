@@ -1,7 +1,7 @@
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import { API_URL, getAuthHeaders, withFallback } from './base';
-import { asNumber, asOptionalStringArray, asRecordArray, asString, toApiRecord } from './decoders';
+import { API_URL, getAuthHeaders, withFallback } from "./base";
+import { asNumber, asOptionalStringArray, asRecordArray, asString, toApiRecord } from "./decoders";
 
 interface QualityReport {
   id: string;
@@ -19,15 +19,15 @@ interface QualityReport {
 async function fetchQualityReports(projectId: string): Promise<QualityReport[]> {
   const authHeaders = getAuthHeaders();
   const itemsRes = await fetch(`${API_URL}/api/v1/items?project_id=${projectId}&limit=1000`, {
-    headers: { 'X-Bulk-Operation': 'true', ...authHeaders },
+    headers: { "X-Bulk-Operation": "true", ...authHeaders },
   });
   if (!itemsRes.ok) {
     throw new Error(`Failed to fetch items: ${itemsRes.status}`);
   }
 
   const itemsData = toApiRecord(await itemsRes.json());
-  const items = asRecordArray(itemsData['items'])
-    .map((item) => asString(item['id']))
+  const items = asRecordArray(itemsData["items"])
+    .map((item) => asString(item["id"]))
     .filter((itemId) => itemId.length > 0);
 
   const qualityPromises = items.map(async (itemId) => {
@@ -38,16 +38,16 @@ async function fetchQualityReports(projectId: string): Promise<QualityReport[]> 
       if (qualityRes.ok) {
         const qualityData = toApiRecord(await qualityRes.json());
         return {
-          ambiguityScore: asNumber(qualityData['ambiguity_score']),
-          completenessScore: asNumber(qualityData['completeness_score']),
-          createdAt: asString(qualityData['created_at']),
-          id: asString(qualityData['id']),
-          itemId: asString(qualityData['item_id']),
-          lastAnalyzedAt: asString(qualityData['last_analyzed_at']),
-          smells: withFallback(asOptionalStringArray(qualityData['smells']), []),
-          suggestions: withFallback(asOptionalStringArray(qualityData['suggestions']), []),
-          updatedAt: asString(qualityData['updated_at']),
-          version: asNumber(qualityData['version']),
+          ambiguityScore: asNumber(qualityData["ambiguity_score"]),
+          completenessScore: asNumber(qualityData["completeness_score"]),
+          createdAt: asString(qualityData["created_at"]),
+          id: asString(qualityData["id"]),
+          itemId: asString(qualityData["item_id"]),
+          lastAnalyzedAt: asString(qualityData["last_analyzed_at"]),
+          smells: withFallback(asOptionalStringArray(qualityData["smells"]), []),
+          suggestions: withFallback(asOptionalStringArray(qualityData["suggestions"]), []),
+          updatedAt: asString(qualityData["updated_at"]),
+          version: asNumber(qualityData["version"]),
         };
       }
     } catch (error) {

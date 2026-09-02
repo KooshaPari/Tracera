@@ -3,19 +3,19 @@
  * Provides reusable functions for visual regression tests
  */
 
-import type { Page } from '@playwright/test';
+import type { Page } from "@playwright/test";
 
 /**
  * Theme modes supported by TraceRTM
  */
-export type ThemeMode = 'light' | 'dark';
+export type ThemeMode = "light" | "dark";
 
 /**
  * Set the theme mode for visual testing
  */
 export async function setTheme(page: Page, theme: ThemeMode): Promise<void> {
   await page.evaluate((t) => {
-    document.documentElement.classList.toggle('dark', t === 'dark');
+    document.documentElement.classList.toggle("dark", t === "dark");
   }, theme);
 
   // Wait for theme transition to complete
@@ -51,10 +51,10 @@ export async function waitForFonts(page: Page): Promise<void> {
  * Create a component showcase page for visual testing
  */
 export async function createShowcasePage(page: Page, html: string): Promise<void> {
-  await page.goto('http://localhost:5173');
+  await page.goto("http://localhost:5173");
 
   await page.evaluate((content) => {
-    const root = document.querySelector('#root');
+    const root = document.querySelector("#root");
     if (root) {
       root.innerHTML = content;
     }
@@ -153,7 +153,7 @@ export async function waitForStableElement(
   selector: string,
   timeout = 1000,
 ): Promise<void> {
-  await page.waitForSelector(selector, { state: 'visible' });
+  await page.waitForSelector(selector, { state: "visible" });
 
   // Wait for potential layout shifts
   await page.waitForTimeout(timeout);
@@ -163,7 +163,7 @@ export async function waitForStableElement(
  * Screenshot comparison options optimized for component testing
  */
 export const COMPONENT_SCREENSHOT_OPTIONS = {
-  animations: 'disabled' as const,
+  animations: "disabled" as const,
   maxDiffPixels: 100,
   threshold: 0.2,
 };
@@ -172,7 +172,7 @@ export const COMPONENT_SCREENSHOT_OPTIONS = {
  * Screenshot comparison options optimized for layout testing
  */
 export const LAYOUT_SCREENSHOT_OPTIONS = {
-  animations: 'disabled' as const,
+  animations: "disabled" as const,
   fullPage: true,
   maxDiffPixels: 200,
   threshold: 0.3,
@@ -182,7 +182,7 @@ export const LAYOUT_SCREENSHOT_OPTIONS = {
  * Screenshot comparison options optimized for theme testing
  */
 export const THEME_SCREENSHOT_OPTIONS = {
-  animations: 'disabled' as const,
+  animations: "disabled" as const,
   maxDiffPixels: 150,
   threshold: 0.25,
 };
@@ -205,7 +205,7 @@ export async function testAllThemes(
   page: Page,
   testFn: (theme: ThemeMode) => Promise<void>,
 ): Promise<void> {
-  for (const theme of ['light', 'dark'] as const) {
+  for (const theme of ["light", "dark"] as const) {
     await setTheme(page, theme);
     await testFn(theme);
   }
@@ -263,7 +263,7 @@ export async function hideFlakeyElements(page: Page, selectors: string[]): Promi
       const elements = document.querySelectorAll(sel);
       elements.forEach((el) => {
         if (el instanceof HTMLElement) {
-          el.style.visibility = 'hidden';
+          el.style.visibility = "hidden";
         }
       });
     }, selector);
@@ -295,7 +295,7 @@ export async function mockTime(page: Page, timestamp: Date): Promise<void> {
  * Standard setup for visual tests
  */
 export async function setupVisualTest(page: Page): Promise<void> {
-  await page.goto('http://localhost:5173');
+  await page.goto("http://localhost:5173");
   await disableAnimations(page);
   await waitForFonts(page);
 }

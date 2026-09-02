@@ -3,9 +3,9 @@
  * Displays ISO 29148 quality dimensions as a radar/spider chart
  */
 
-import type { QualityDimension, QualityGrade } from '@/hooks/useItemSpecAnalytics';
+import type { QualityDimension, QualityGrade } from "@/hooks/useItemSpecAnalytics";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface QualityDimensionRadarProps {
   dimensions: Record<string, number>;
@@ -16,22 +16,22 @@ interface QualityDimensionRadarProps {
 }
 
 const dimensionLabels: Record<QualityDimension, string> = {
-  completeness: 'Completeness',
-  consistency: 'Consistency',
-  feasibility: 'Feasibility',
-  necessity: 'Necessity',
-  singularity: 'Singularity',
-  traceability: 'Traceability',
-  unambiguity: 'Unambiguity',
-  verifiability: 'Verifiability',
+  completeness: "Completeness",
+  consistency: "Consistency",
+  feasibility: "Feasibility",
+  necessity: "Necessity",
+  singularity: "Singularity",
+  traceability: "Traceability",
+  unambiguity: "Unambiguity",
+  verifiability: "Verifiability",
 };
 
 const gradeColors: Record<QualityGrade, { bg: string; text: string; ring: string }> = {
-  A: { bg: 'bg-green-100', ring: 'ring-green-500', text: 'text-green-800' },
-  B: { bg: 'bg-blue-100', ring: 'ring-blue-500', text: 'text-blue-800' },
-  C: { bg: 'bg-yellow-100', ring: 'ring-yellow-500', text: 'text-yellow-800' },
-  D: { bg: 'bg-orange-100', ring: 'ring-orange-500', text: 'text-orange-800' },
-  F: { bg: 'bg-red-100', ring: 'ring-red-500', text: 'text-red-800' },
+  A: { bg: "bg-green-100", ring: "ring-green-500", text: "text-green-800" },
+  B: { bg: "bg-blue-100", ring: "ring-blue-500", text: "text-blue-800" },
+  C: { bg: "bg-yellow-100", ring: "ring-yellow-500", text: "text-yellow-800" },
+  D: { bg: "bg-orange-100", ring: "ring-orange-500", text: "text-orange-800" },
+  F: { bg: "bg-red-100", ring: "ring-red-500", text: "text-red-800" },
 };
 
 export function QualityDimensionRadar({
@@ -59,8 +59,8 @@ export function QualityDimensionRadar({
   });
 
   const polygonPath = `${scorePoints
-    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
-    .join(' ')} Z`;
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+    .join(" ")} Z`;
 
   // Generate grid circles
   const gridLevels = [0.25, 0.5, 0.75, 1];
@@ -68,7 +68,7 @@ export function QualityDimensionRadar({
   const gradeConfig = gradeColors[grade];
 
   return (
-    <div className={cn('flex flex-col items-center gap-4', className)}>
+    <div className={cn("flex flex-col items-center gap-4", className)}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         {/* Grid circles */}
         {gridLevels.map((level) => (
@@ -77,8 +77,8 @@ export function QualityDimensionRadar({
             cx={center}
             cy={center}
             r={maxRadius * level}
-            fill='none'
-            stroke='currentColor'
+            fill="none"
+            stroke="currentColor"
             strokeOpacity={0.1}
             strokeWidth={1}
           />
@@ -96,7 +96,7 @@ export function QualityDimensionRadar({
               y1={center}
               x2={x2}
               y2={y2}
-              stroke='currentColor'
+              stroke="currentColor"
               strokeOpacity={0.2}
               strokeWidth={1}
             />
@@ -106,15 +106,15 @@ export function QualityDimensionRadar({
         {/* Score polygon */}
         <path
           d={polygonPath}
-          fill='hsl(var(--primary))'
+          fill="hsl(var(--primary))"
           fillOpacity={0.2}
-          stroke='hsl(var(--primary))'
+          stroke="hsl(var(--primary))"
           strokeWidth={2}
         />
 
         {/* Score points */}
         {scorePoints.map((point, i) => (
-          <circle key={i} cx={point.x} cy={point.y} r={4} fill='hsl(var(--primary))' />
+          <circle key={i} cx={point.x} cy={point.y} r={4} fill="hsl(var(--primary))" />
         ))}
 
         {/* Labels */}
@@ -130,9 +130,9 @@ export function QualityDimensionRadar({
               key={key}
               x={x}
               y={y}
-              textAnchor='middle'
-              dominantBaseline='middle'
-              className='fill-current text-[10px]'
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="fill-current text-[10px]"
             >
               {label.slice(0, 4)}
             </text>
@@ -141,20 +141,20 @@ export function QualityDimensionRadar({
       </svg>
 
       {/* Overall Score */}
-      <div className='flex items-center gap-3'>
+      <div className="flex items-center gap-3">
         <div
           className={cn(
-            'flex items-center justify-center w-12 h-12 rounded-full ring-2',
+            "flex items-center justify-center w-12 h-12 rounded-full ring-2",
             gradeConfig.bg,
             gradeConfig.text,
             gradeConfig.ring,
           )}
         >
-          <span className='text-xl font-bold'>{grade}</span>
+          <span className="text-xl font-bold">{grade}</span>
         </div>
-        <div className='text-sm'>
-          <div className='font-medium'>Overall Score</div>
-          <div className='text-muted-foreground'>{Math.round(overallScore)}%</div>
+        <div className="text-sm">
+          <div className="font-medium">Overall Score</div>
+          <div className="text-muted-foreground">{Math.round(overallScore)}%</div>
         </div>
       </div>
     </div>
@@ -170,30 +170,30 @@ export function QualityDimensionBars({ dimensions, className }: QualityDimension
   const dimKeys = Object.keys(dimensions) as QualityDimension[];
 
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn("space-y-2", className)}>
       {dimKeys.map((key) => {
         const value = dimensions[key] ?? 0;
         const label = dimensionLabels[key] || key;
         const colorClass =
           value >= 80
-            ? 'bg-green-500'
+            ? "bg-green-500"
             : value >= 60
-              ? 'bg-blue-500'
+              ? "bg-blue-500"
               : value >= 40
-                ? 'bg-yellow-500'
+                ? "bg-yellow-500"
                 : value >= 20
-                  ? 'bg-orange-500'
-                  : 'bg-red-500';
+                  ? "bg-orange-500"
+                  : "bg-red-500";
 
         return (
-          <div key={key} className='space-y-1'>
-            <div className='flex justify-between text-sm'>
-              <span className='font-medium'>{label}</span>
-              <span className='text-muted-foreground'>{Math.round(value)}%</span>
+          <div key={key} className="space-y-1">
+            <div className="flex justify-between text-sm">
+              <span className="font-medium">{label}</span>
+              <span className="text-muted-foreground">{Math.round(value)}%</span>
             </div>
-            <div className='bg-muted h-2 overflow-hidden rounded-full'>
+            <div className="bg-muted h-2 overflow-hidden rounded-full">
               <div
-                className={cn('h-full rounded-full transition-all', colorClass)}
+                className={cn("h-full rounded-full transition-all", colorClass)}
                 style={{ width: `${value}%` }}
               />
             </div>

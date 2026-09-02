@@ -1,7 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from "@tanstack/react-router";
 
-import { ItemsKanbanView } from '@/views/ItemsKanbanView';
+import { ItemsKanbanView } from "@/views/ItemsKanbanView";
 
-export const Route = createFileRoute('/items/kanban')({
+export const Route = createFileRoute("/items/kanban")({
   component: ItemsKanbanView,
 });

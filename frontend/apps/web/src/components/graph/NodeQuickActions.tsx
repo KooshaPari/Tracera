@@ -1,12 +1,12 @@
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent } from "react";
 
-import { FileEdit, Link2, Tag } from 'lucide-react';
-import { memo, useCallback, useState } from 'react';
+import { FileEdit, Link2, Tag } from "lucide-react";
+import { memo, useCallback, useState } from "react";
 
-import { Button } from '@tracertm/ui/components/Button';
-import { Input } from '@tracertm/ui/components/Input';
-import { Label } from '@tracertm/ui/components/Label';
-import { Popover, PopoverContent, PopoverTrigger } from '@tracertm/ui/components/Popover';
+import { Button } from "@tracertm/ui/components/Button";
+import { Input } from "@tracertm/ui/components/Input";
+import { Label } from "@tracertm/ui/components/Label";
+import { Popover, PopoverContent, PopoverTrigger } from "@tracertm/ui/components/Popover";
 
 interface NodeQuickActionsProps {
   nodeId: string;
@@ -26,22 +26,23 @@ const ActionPopover = ({ buttonLabel, buttonTitle, children, icon }: ActionPopov
   <Popover>
     <PopoverTrigger asChild>
       <Button
-        size='sm'
-        variant='ghost'
-        className='h-6 w-6 p-0'
+        size="sm"
+        variant="ghost"
+        className="h-6 w-6 p-0"
         aria-label={buttonLabel}
         title={buttonTitle}
       >
         {icon}
       </Button>
     </PopoverTrigger>
-    <PopoverContent className='w-64'>{children}</PopoverContent>
+    <PopoverContent className="w-64">{children}</PopoverContent>
   </Popover>
 );
 
 interface ActionInputProps {
   buttonLabel: string;
   buttonTitle: string;
+  confirmLabel: string;
   icon: React.ReactNode;
   inputId: string;
   inputLabel: string;
@@ -54,6 +55,7 @@ interface ActionInputProps {
 const ActionInput = ({
   buttonLabel,
   buttonTitle,
+  confirmLabel,
   icon,
   inputId,
   inputLabel,
@@ -71,9 +73,9 @@ const ActionInput = ({
 
   return (
     <ActionPopover buttonLabel={buttonLabel} buttonTitle={buttonTitle} icon={icon}>
-      <div className='space-y-2'>
+      <div className="space-y-2">
         <Label htmlFor={inputId}>{inputLabel}</Label>
-        <div className='flex gap-2'>
+        <div className="flex gap-2">
           <Input
             id={inputId}
             placeholder={placeholder}
@@ -81,7 +83,7 @@ const ActionInput = ({
             onChange={handleChange}
             aria-label={inputLabel}
           />
-          <Button size='sm' onClick={onConfirm} aria-label={buttonLabel}>
+          <Button size="sm" onClick={onConfirm} aria-label={confirmLabel}>
             Add
           </Button>
         </div>
@@ -106,21 +108,21 @@ const NoteAction = ({ note, onChange, onSave }: NoteActionProps) => {
 
   return (
     <ActionPopover
-      buttonLabel='Edit note for node'
-      buttonTitle='Edit note for node'
-      icon={<FileEdit className='h-3 w-3' aria-hidden='true' />}
+      buttonLabel="Edit note for node"
+      buttonTitle="Edit note for node"
+      icon={<FileEdit className="h-3 w-3" aria-hidden="true" />}
     >
-      <div className='space-y-2'>
-        <Label htmlFor='note'>Quick note</Label>
-        <div className='flex gap-2'>
+      <div className="space-y-2">
+        <Label htmlFor="note">Quick note</Label>
+        <div className="flex gap-2">
           <Input
-            id='note'
-            placeholder='Add note...'
+            id="note"
+            placeholder="Add note..."
             value={note}
             onChange={handleNoteChange}
-            aria-label='Quick note for node'
+            aria-label="Quick note for node"
           />
-          <Button size='sm' onClick={onSave} aria-label='Save node note'>
+          <Button size="sm" onClick={onSave} aria-label="Save node note">
             Save
           </Button>
         </div>
@@ -135,45 +137,47 @@ const NodeQuickActions = memo(function NodeQuickActions({
   onAddTag,
   onEditNote,
 }: NodeQuickActionsProps) {
-  const [linkTarget, setLinkTarget] = useState('');
-  const [tag, setTag] = useState('');
-  const [note, setNote] = useState('');
+  const [linkTarget, setLinkTarget] = useState("");
+  const [tag, setTag] = useState("");
+  const [note, setNote] = useState("");
 
   const handleAddLink = useCallback(() => {
     onAddLink(nodeId, linkTarget);
-    setLinkTarget('');
+    setLinkTarget("");
   }, [linkTarget, nodeId, onAddLink]);
 
   const handleAddTag = useCallback(() => {
     onAddTag(nodeId, tag);
-    setTag('');
+    setTag("");
   }, [nodeId, onAddTag, tag]);
 
   const handleSaveNote = useCallback(() => {
     onEditNote(nodeId, note);
-    setNote('');
+    setNote("");
   }, [nodeId, note, onEditNote]);
 
   return (
-    <div className='flex gap-1' role='group' aria-label='Node quick actions'>
+    <div className="flex gap-1" role="group" aria-label="Node quick actions">
       <ActionInput
-        buttonLabel='Add link to another node'
-        buttonTitle='Add link to another node'
-        icon={<Link2 className='h-3 w-3' aria-hidden='true' />}
-        inputId='link-target'
-        inputLabel='Link to node'
-        placeholder='Node ID'
+        buttonLabel="Add link to another node"
+        buttonTitle="Add link to another node"
+        confirmLabel="Confirm link to node"
+        icon={<Link2 className="h-3 w-3" aria-hidden="true" />}
+        inputId="link-target"
+        inputLabel="Link to node"
+        placeholder="Node ID"
         value={linkTarget}
         onChange={setLinkTarget}
         onConfirm={handleAddLink}
       />
       <ActionInput
-        buttonLabel='Add tag to node'
-        buttonTitle='Add tag to node'
-        icon={<Tag className='h-3 w-3' aria-hidden='true' />}
-        inputId='tag'
-        inputLabel='Add tag'
-        placeholder='Tag name'
+        buttonLabel="Add tag to node"
+        buttonTitle="Add tag to node"
+        confirmLabel="Confirm tag for node"
+        icon={<Tag className="h-3 w-3" aria-hidden="true" />}
+        inputId="tag"
+        inputLabel="Add tag"
+        placeholder="Tag name"
         value={tag}
         onChange={setTag}
         onConfirm={handleAddTag}

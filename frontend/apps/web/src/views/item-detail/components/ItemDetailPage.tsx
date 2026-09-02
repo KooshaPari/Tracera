@@ -1,18 +1,18 @@
-import type { DimensionEntry, ItemLink, TimelineEvent } from '@/views/item-detail/types';
-import type { Item, ItemStatus, Priority } from '@tracertm/types';
+import type { DimensionEntry, ItemLink, TimelineEvent } from "@/views/item-detail/types";
+import type { Item, ItemStatus, Priority } from "@tracertm/types";
 
-import { descriptionOrDefault, formatViewTypeLabel } from '@/views/item-detail/format';
+import { descriptionOrDefault, formatViewTypeLabel } from "@/views/item-detail/format";
 
-import { ActivityTimelineCard } from './ActivityTimelineCard';
-import { ChangeLogCard } from './ChangeLogCard';
-import { DimensionsCard } from './DimensionsCard';
-import { InsightCard } from './InsightCard';
-import { ItemSummarySection } from './ItemSummarySection';
-import { PageShell } from './PageShell';
-import { ReferencesCard } from './ReferencesCard';
-import { SignalStackCard } from './SignalStackCard';
-import { TopBar } from './TopBar';
-import { TraceabilitySection } from './TraceabilitySection';
+import { ActivityTimelineCard } from "./ActivityTimelineCard";
+import { ChangeLogCard } from "./ChangeLogCard";
+import { DimensionsCard } from "./DimensionsCard";
+import { InsightCard } from "./InsightCard";
+import { ItemSummarySection } from "./ItemSummarySection";
+import { PageShell } from "./PageShell";
+import { ReferencesCard } from "./ReferencesCard";
+import { SignalStackCard } from "./SignalStackCard";
+import { TopBar } from "./TopBar";
+import { TraceabilitySection } from "./TraceabilitySection";
 
 interface ItemDetailPageProps {
   itemId: string;
@@ -67,23 +67,23 @@ interface ItemDetailPageProps {
 }
 
 function buildViewLabel(view: unknown): string {
-  if (typeof view !== 'string') {
-    return 'general';
+  if (typeof view !== "string") {
+    return "general";
   }
   const trimmed = view.trim();
   if (trimmed.length === 0) {
-    return 'general';
+    return "general";
   }
   return trimmed.toLowerCase();
 }
 
 function buildTypeLabel(type: unknown): string {
-  if (typeof type !== 'string') {
-    return 'unknown';
+  if (typeof type !== "string") {
+    return "unknown";
   }
   const trimmed = type.trim();
   if (trimmed.length === 0) {
-    return 'unknown';
+    return "unknown";
   }
   return trimmed;
 }
@@ -91,7 +91,7 @@ function buildTypeLabel(type: unknown): string {
 function buildCodeReference(item: Item): string {
   const ref = item.codeRef;
   if (ref === null || ref === undefined) {
-    return 'No code reference attached';
+    return "No code reference attached";
   }
   return `${ref.filePath} · ${ref.symbolName}`;
 }
@@ -99,10 +99,10 @@ function buildCodeReference(item: Item): string {
 function buildDocReference(item: Item): string {
   const ref = item.docRef;
   if (ref === null || ref === undefined) {
-    return 'No doc reference attached';
+    return "No doc reference attached";
   }
   const section = ref.sectionTitle;
-  if (typeof section === 'string' && section.trim().length > 0) {
+  if (typeof section === "string" && section.trim().length > 0) {
     return `${ref.documentTitle} · ${section}`;
   }
   return `${ref.documentTitle} · ${ref.documentPath}`;
@@ -174,7 +174,7 @@ export function ItemDetailPage(props: ItemDetailPageProps): JSX.Element {
         onOpenNewTab={onOpenNewTab}
       />
 
-      <main className='min-h-0 flex-1 overflow-auto pt-6 md:pt-8'>
+      <main className="min-h-0 flex-1 overflow-auto pt-6 md:pt-8">
         <ItemSummarySection
           itemId={itemId}
           viewLabel={viewLabel}
@@ -200,8 +200,8 @@ export function ItemDetailPage(props: ItemDetailPageProps): JSX.Element {
           onChangePriority={onChangePriority}
         />
 
-        <div className='grid grid-cols-1 gap-8 pt-8 lg:grid-cols-[1.6fr_1fr]'>
-          <div className='space-y-8'>
+        <div className="grid grid-cols-1 gap-8 pt-8 lg:grid-cols-[1.6fr_1fr]">
+          <div className="space-y-8">
             <TraceabilitySection
               upstreamCount={upstreamCount}
               downstreamCount={downstreamCount}
@@ -221,7 +221,7 @@ export function ItemDetailPage(props: ItemDetailPageProps): JSX.Element {
             />
           </div>
 
-          <div className='space-y-6'>
+          <div className="space-y-6">
             <SignalStackCard
               connectedCount={upstreamCount + downstreamCount}
               onOpenImpactAnalysis={onOpenImpactAnalysis}

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 export function useLocalStorage<T>(
   key: string,
@@ -8,7 +8,7 @@ export function useLocalStorage<T>(
 ): [T, (value: T | ((val: T) => T)) => void] {
   // Get from local storage then parse stored json or return initialValue
   const readValue = (): T => {
-    if (typeof globalThis.window === 'undefined') {
+    if (typeof globalThis.window === "undefined") {
       return initialValue;
     }
 
@@ -28,13 +28,13 @@ export function useLocalStorage<T>(
     try {
       // Allow value to be a function so we have same API as useState
       const valueToStore =
-        typeof value === 'function' ? (value as (val: T) => T)(storedValue) : value;
+        typeof value === "function" ? (value as (val: T) => T)(storedValue) : value;
 
       // Save state
       setStoredValue(valueToStore);
 
       // Save to local storage
-      if (typeof globalThis.window !== 'undefined') {
+      if (typeof globalThis.window !== "undefined") {
         globalThis.localStorage.setItem(key, JSON.stringify(valueToStore));
       }
     } catch (error) {
@@ -54,13 +54,13 @@ export function useLocalStorage<T>(
       }
     };
 
-    if (typeof globalThis.window === 'undefined') {
+    if (typeof globalThis.window === "undefined") {
       return;
     }
 
-    globalThis.addEventListener('storage', handleStorageChange);
+    globalThis.addEventListener("storage", handleStorageChange);
     return () => {
-      globalThis.removeEventListener('storage', handleStorageChange);
+      globalThis.removeEventListener("storage", handleStorageChange);
     };
   }, [key]);
 

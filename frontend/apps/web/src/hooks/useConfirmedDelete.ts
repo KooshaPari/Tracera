@@ -3,10 +3,10 @@
  * Provides consistent UX for all destructive operations
  */
 
-import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 export interface DeleteConfig {
   /** Item identifier (for logging) */
@@ -34,7 +34,7 @@ export interface DeleteConfig {
   context?: string;
 
   /** Severity level for styling */
-  severity?: 'warning' | 'danger' | 'critical';
+  severity?: "warning" | "danger" | "critical";
 }
 
 export interface UseConfirmedDeleteOptions {
@@ -109,7 +109,7 @@ export function useConfirmedDelete(
           );
         }
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        const errorMsg = error instanceof Error ? error.message : "Unknown error";
 
         if (showErrorToast) {
           toast.error(
@@ -163,7 +163,7 @@ export interface BulkDeleteConfig {
   errorMessage?: string;
 
   /** Severity level */
-  severity?: 'warning' | 'danger' | 'critical';
+  severity?: "warning" | "danger" | "critical";
 }
 
 export function useConfirmedBulkDelete(options: UseConfirmedDeleteOptions = {}) {
@@ -192,7 +192,7 @@ export function useConfirmedBulkDelete(options: UseConfirmedDeleteOptions = {}) 
         setDialogOpen(false);
 
         if (showSuccessToast) {
-          const itemWord = pendingDelete.count === 1 ? 'item' : 'items';
+          const itemWord = pendingDelete.count === 1 ? "item" : "items";
           toast.success(
             pendingDelete.successMessage ??
               `${pendingDelete.count} ${itemWord} deleted successfully`,
@@ -202,13 +202,13 @@ export function useConfirmedBulkDelete(options: UseConfirmedDeleteOptions = {}) 
           );
         }
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        const errorMsg = error instanceof Error ? error.message : "Unknown error";
 
         if (showErrorToast) {
           toast.error(pendingDelete.errorMessage ?? `Failed to delete items: ${errorMsg}`);
         }
 
-        logger.error('[Bulk Delete Error]:', error);
+        logger.error("[Bulk Delete Error]:", error);
       } finally {
         setIsDeleting(false);
         setPendingDelete(null);

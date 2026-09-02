@@ -1,8 +1,8 @@
-import { useParams } from '@tanstack/react-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useParams } from "@tanstack/react-router";
+import { useCallback, useMemo, useState } from "react";
 
-import { UnifiedGraphView } from '../components/graph/UnifiedGraphView';
-import { useGraphProjection, useGraphs } from '../hooks/useGraphs';
+import { UnifiedGraphView } from "../components/graph/UnifiedGraphView";
+import { useGraphProjection, useGraphs } from "../hooks/useGraphs";
 
 const MAX_EDGES_INITIAL = 500;
 const EDGES_LOAD_MORE = 500;
@@ -35,7 +35,7 @@ export const ProjectMappingGraphView = () => {
 
   const { data: graphsData } = useGraphs(projectId);
   const mappingGraph = useMemo(
-    () => graphsData?.find((g) => g.graphType === 'mapping') ?? graphsData?.[0],
+    () => graphsData?.find((g) => g.graphType === "mapping") ?? graphsData?.[0],
     [graphsData],
   );
   const { data: graphData, isLoading } = useGraphProjection(projectId, mappingGraph?.id);
@@ -56,9 +56,9 @@ export const ProjectMappingGraphView = () => {
       items={items}
       links={visibleLinks}
       isLoading={isLoading}
-      projectId={projectId ?? ''}
+      projectId={projectId ?? ""}
       onNavigateToItem={handleNavigateToItem}
-      defaultView='components'
+      defaultView="components"
       canLoadMore={canLoadMore}
       visibleEdges={visibleLinks.length}
       totalEdges={links.length}

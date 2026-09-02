@@ -1,9 +1,9 @@
-import type { Priority, TypedItem, ViewType } from '@tracertm/types';
+import type { Priority, TypedItem, ViewType } from "@tracertm/types";
 
-import itemsTableConstants from './constants';
+import itemsTableConstants from "./constants";
 
 function readString(value: unknown): string | undefined {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   return undefined;
@@ -13,7 +13,7 @@ function hasValue(value: string | undefined): boolean {
   if (value === undefined) {
     return false;
   }
-  return value.trim() !== '';
+  return value.trim() !== "";
 }
 
 function getViewSegment(view?: ViewType, fallback?: ViewType): string {
@@ -27,10 +27,10 @@ function getViewSegment(view?: ViewType, fallback?: ViewType): string {
 }
 
 function getItemOwnerLabel(owner?: string): { label: string; initial: string } {
-  if (owner !== undefined && owner.trim() !== '') {
+  if (owner !== undefined && owner.trim() !== "") {
     return { label: owner, initial: owner.charAt(0) };
   }
-  return { label: 'Unassigned', initial: '?' };
+  return { label: "Unassigned", initial: "?" };
 }
 
 function getPriorityLabel(priority?: Priority): string {
@@ -42,14 +42,14 @@ function getPriorityLabel(priority?: Priority): string {
 
 function getSearchValue(searchParams: Record<string, unknown>, key: string): string | undefined {
   const value = readString(searchParams[key]);
-  if (value !== undefined && value.trim() !== '') {
+  if (value !== undefined && value.trim() !== "") {
     return value;
   }
   return undefined;
 }
 
 function createViewTypeValue(value: string | undefined): string {
-  if (value !== undefined && value.trim() !== '') {
+  if (value !== undefined && value.trim() !== "") {
     return value;
   }
   return itemsTableConstants.FILTER_ALL;
@@ -66,7 +66,7 @@ function getFilterValue(value: string | undefined): string | undefined {
 }
 
 function getItemTypeValue(type: string | undefined, view: ViewType | undefined): string {
-  if (type !== undefined && type.trim() !== '') {
+  if (type !== undefined && type.trim() !== "") {
     return type;
   }
   if (view !== undefined) {
@@ -83,36 +83,36 @@ function getViewValue(view: ViewType | undefined): ViewType {
 }
 
 function getSearchMessage(liveMessage: string, title: string): string {
-  if (liveMessage.trim() !== '') {
+  if (liveMessage.trim() !== "") {
     return liveMessage;
   }
   return `Loading ${title.toLowerCase()}...`;
 }
 
 function getLiveMessage(message: string): string {
-  if (message.trim() !== '') {
+  if (message.trim() !== "") {
     return message;
   }
-  return 'Items loaded.';
+  return "Items loaded.";
 }
 
 function getSortDirection(
   sortColumn: string,
-  sortOrder: 'asc' | 'desc',
+  sortOrder: "asc" | "desc",
   column: string,
-): 'ascending' | 'descending' | 'none' {
+): "ascending" | "descending" | "none" {
   if (sortColumn !== column) {
-    return 'none';
+    return "none";
   }
-  if (sortOrder === 'asc') {
-    return 'ascending';
+  if (sortOrder === "asc") {
+    return "ascending";
   }
-  return 'descending';
+  return "descending";
 }
 
-function getSortAriaLabel(sortColumn: string, sortOrder: 'asc' | 'desc', column: string): string {
+function getSortAriaLabel(sortColumn: string, sortOrder: "asc" | "desc", column: string): string {
   if (sortColumn !== column) {
-    return 'not sorted';
+    return "not sorted";
   }
   return `sorted ${sortOrder}`;
 }
@@ -122,7 +122,7 @@ function getSortedItems(
   effectiveTypeFilter: string | undefined,
   query: string,
   sortColumn: string,
-  sortOrder: 'asc' | 'desc',
+  sortOrder: "asc" | "desc",
 ): TypedItem[] {
   const filtered = items.filter((item) => {
     let matchesType = true;
@@ -141,13 +141,13 @@ function getSortedItems(
     return matchesType && matchesQuery;
   });
 
-  const direction = sortOrder === 'asc' ? 1 : -1;
+  const direction = sortOrder === "asc" ? 1 : -1;
 
   return filtered.toSorted((a, b) => {
-    if (sortColumn === 'title') {
+    if (sortColumn === "title") {
       return a.title.localeCompare(b.title) * direction;
     }
-    if (sortColumn === 'created') {
+    if (sortColumn === "created") {
       return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * direction;
     }
     return 0;

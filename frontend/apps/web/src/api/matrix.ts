@@ -1,7 +1,7 @@
-import type { Item, Link } from './types';
+import type { Item, Link } from "./types";
 
 // Traceability Matrix API stub
-import { client } from './client';
+import { client } from "./client";
 
 interface TraceabilityMatrix {
   coverage: {
@@ -30,7 +30,7 @@ const emptyMatrix: TraceabilityMatrix = {
 };
 
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
-  Object.prototype.toString.call(value) === '[object Object]';
+  Object.prototype.toString.call(value) === "[object Object]";
 
 const isTraceabilityMatrix = (value: unknown): value is TraceabilityMatrix => {
   if (!isRecordObject(value)) {
@@ -46,17 +46,17 @@ const isTraceabilityMatrix = (value: unknown): value is TraceabilityMatrix => {
   }
 
   return (
-    typeof coverage['percentage'] === 'number' &&
-    typeof coverage['total'] === 'number' &&
-    typeof coverage['traced'] === 'number' &&
-    typeof coverage['untraced'] === 'number'
+    typeof coverage["percentage"] === "number" &&
+    typeof coverage["total"] === "number" &&
+    typeof coverage["traced"] === "number" &&
+    typeof coverage["untraced"] === "number"
   );
 };
 
 const fetchMatrix = async (projectId: string): Promise<TraceabilityMatrix> => {
   try {
     const response = await safeApiCall(
-      get('/api/v1/projects/{id}/matrix', {
+      get("/api/v1/projects/{id}/matrix", {
         params: { path: { id: projectId } },
       }),
     );
@@ -70,18 +70,18 @@ const fetchMatrix = async (projectId: string): Promise<TraceabilityMatrix> => {
   }
 };
 
-const exportMatrix = async (projectId: string, format: 'csv' | 'json' | 'xlsx'): Promise<Blob> => {
+const exportMatrix = async (projectId: string, format: "csv" | "json" | "xlsx"): Promise<Blob> => {
   try {
     const response = await safeApiCall(
-      get('/api/v1/projects/{id}/matrix/export', {
+      get("/api/v1/projects/{id}/matrix/export", {
         params: { path: { id: projectId }, query: { format } },
       }),
     );
     return new Blob([JSON.stringify(response.data)], {
-      type: 'application/json',
+      type: "application/json",
     });
   } catch {
-    return new Blob(['{}'], { type: 'application/json' });
+    return new Blob(["{}"], { type: "application/json" });
   }
 };
 

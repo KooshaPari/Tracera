@@ -2,14 +2,14 @@
  * Project configurations for mock data generation
  */
 
-import type { ProjectConfig } from './types';
+import type { ProjectConfig } from "./types";
 
 export const PROJECTS: ProjectConfig[] = [
   {
-    name: 'TraceRTM Core Platform',
+    name: "TraceRTM Core Platform",
     description:
-      'Enterprise requirements traceability and impact analysis system with real-time collaboration',
-    domain: 'fullstack',
+      "Enterprise requirements traceability and impact analysis system with real-time collaboration",
+    domain: "fullstack",
     itemCounts: {
       requirements: 200,
       features: 300,
@@ -23,9 +23,9 @@ export const PROJECTS: ProjectConfig[] = [
     },
   },
   {
-    name: 'React Native Mobile Client',
-    description: 'Cross-platform mobile application for TraceRTM with offline-first architecture',
-    domain: 'mobile',
+    name: "React Native Mobile Client",
+    description: "Cross-platform mobile application for TraceRTM with offline-first architecture",
+    domain: "mobile",
     itemCounts: {
       requirements: 120,
       features: 180,
@@ -39,9 +39,9 @@ export const PROJECTS: ProjectConfig[] = [
     },
   },
   {
-    name: 'Data Analytics & Insights Engine',
-    description: 'Real-time analytics, reporting, and predictive insights for project metrics',
-    domain: 'data',
+    name: "Data Analytics & Insights Engine",
+    description: "Real-time analytics, reporting, and predictive insights for project metrics",
+    domain: "data",
     itemCounts: {
       requirements: 150,
       features: 200,
@@ -55,9 +55,9 @@ export const PROJECTS: ProjectConfig[] = [
     },
   },
   {
-    name: 'Infrastructure & DevOps',
-    description: 'Kubernetes-based deployment, monitoring, and infrastructure-as-code automation',
-    domain: 'devops',
+    name: "Infrastructure & DevOps",
+    description: "Kubernetes-based deployment, monitoring, and infrastructure-as-code automation",
+    domain: "devops",
     itemCounts: {
       requirements: 100,
       features: 150,
@@ -71,10 +71,10 @@ export const PROJECTS: ProjectConfig[] = [
     },
   },
   {
-    name: 'AI-Powered Recommendations',
+    name: "AI-Powered Recommendations",
     description:
-      'Machine learning models for intelligent requirement suggestions and anomaly detection',
-    domain: 'ai',
+      "Machine learning models for intelligent requirement suggestions and anomaly detection",
+    domain: "ai",
     itemCounts: {
       requirements: 120,
       features: 150,
@@ -88,10 +88,10 @@ export const PROJECTS: ProjectConfig[] = [
     },
   },
   {
-    name: 'Frontend Web Application v2',
+    name: "Frontend Web Application v2",
     description:
-      'Next-generation React + TypeScript web interface with advanced data visualization',
-    domain: 'frontend',
+      "Next-generation React + TypeScript web interface with advanced data visualization",
+    domain: "frontend",
     itemCounts: {
       requirements: 180,
       features: 250,
@@ -105,10 +105,10 @@ export const PROJECTS: ProjectConfig[] = [
     },
   },
   {
-    name: 'Backend API Gateway',
+    name: "Backend API Gateway",
     description:
-      'GraphQL and REST API gateway with advanced caching, rate limiting, and authentication',
-    domain: 'backend',
+      "GraphQL and REST API gateway with advanced caching, rate limiting, and authentication",
+    domain: "backend",
     itemCounts: {
       requirements: 130,
       features: 170,
@@ -122,10 +122,10 @@ export const PROJECTS: ProjectConfig[] = [
     },
   },
   {
-    name: 'Integration Platform',
+    name: "Integration Platform",
     description:
-      'Multi-vendor integrations with Jira, GitHub, Azure DevOps, and enterprise systems',
-    domain: 'backend',
+      "Multi-vendor integrations with Jira, GitHub, Azure DevOps, and enterprise systems",
+    domain: "backend",
     itemCounts: {
       requirements: 110,
       features: 140,

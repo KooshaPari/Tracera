@@ -3,11 +3,12 @@
  * Target: 0% → 95% coverage
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { OpenAPISpec } from '../../lib/openapi-utils';
+import { logger } from "@/lib/logger";
 
 import {
+  type OpenAPISpec,
   downloadSpec,
   fetchOpenAPISpec,
   formatPathWithParams,
@@ -21,7 +22,7 @@ import {
   getTags,
   requiresAuth,
   validateOpenAPISpec,
-} from '../../lib/openapi-utils';
+} from "../../lib/openapi-utils";
 
 // Mock localStorage
 const localStorageMock = {
@@ -35,8 +36,8 @@ global.localStorage = localStorageMock as any;
 // Mock document.createElement and related DOM APIs
 global.document = {
   createElement: vi.fn(() => ({
-    href: '',
-    download: '',
+    href: "",
+    download: "",
     click: vi.fn(),
   })),
   body: {
@@ -46,7 +47,7 @@ global.document = {
 } as any;
 
 global.URL = {
-  createObjectURL: vi.fn(() => 'blob:url'),
+  createObjectURL: vi.fn(() => "blob:url"),
   revokeObjectURL: vi.fn(),
 } as any;
 
@@ -57,17 +58,17 @@ global.Blob = class Blob {
   ) {}
 } as any;
 
-describe('openapi-utils', () => {
+describe("openapi-utils", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = vi.fn();
   });
 
-  describe('fetchOpenAPISpec', () => {
-    it('should fetch OpenAPI spec successfully', async () => {
+  describe("fetchOpenAPISpec", () => {
+    it("should fetch OpenAPI spec successfully", async () => {
       const mockSpec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test API', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test API", version: "1.0.0" },
         paths: {},
       };
 
@@ -76,80 +77,80 @@ describe('openapi-utils', () => {
         json: async () => mockSpec,
       } as Response);
 
-      const result = await fetchOpenAPISpec('http://api.example.com/openapi.json');
+      const result = await fetchOpenAPISpec("http://api.example.com/openapi.json");
 
       expect(result).toEqual(mockSpec);
-      expect(global.fetch).toHaveBeenCalledWith('http://api.example.com/openapi.json');
+      expect(global.fetch).toHaveBeenCalledWith("http://api.example.com/openapi.json");
     });
 
-    it('should throw error on failed fetch', async () => {
+    it("should throw error on failed fetch", async () => {
       vi.mocked(global.fetch).mockResolvedValueOnce({
         ok: false,
-        statusText: 'Not Found',
+        statusText: "Not Found",
       } as Response);
 
-      await expect(fetchOpenAPISpec('http://api.example.com/openapi.json')).rejects.toThrow(
-        'Failed to fetch OpenAPI spec: Not Found',
+      await expect(fetchOpenAPISpec("http://api.example.com/openapi.json")).rejects.toThrow(
+        "Failed to fetch OpenAPI spec: Not Found",
       );
     });
   });
 
-  describe('validateOpenAPISpec', () => {
-    it('should validate valid OpenAPI spec', () => {
+  describe("validateOpenAPISpec", () => {
+    it("should validate valid OpenAPI spec", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
       };
 
       expect(validateOpenAPISpec(spec)).toBe(true);
     });
 
-    it('should reject invalid spec without openapi', () => {
+    it("should reject invalid spec without openapi", () => {
       const spec = { info: {}, paths: {} };
       expect(validateOpenAPISpec(spec)).toBe(false);
     });
 
-    it('should reject invalid spec without info', () => {
-      const spec = { openapi: '3.0.0', paths: {} };
+    it("should reject invalid spec without info", () => {
+      const spec = { openapi: "3.0.0", paths: {} };
       expect(validateOpenAPISpec(spec)).toBe(false);
     });
 
-    it('should reject invalid spec without paths', () => {
-      const spec = { openapi: '3.0.0', info: {} };
+    it("should reject invalid spec without paths", () => {
+      const spec = { openapi: "3.0.0", info: {} };
       expect(validateOpenAPISpec(spec)).toBe(false);
     });
 
-    it('should reject null spec', () => {
+    it("should reject null spec", () => {
       expect(validateOpenAPISpec(null)).toBe(false);
     });
 
-    it('should reject non-object spec', () => {
-      expect(validateOpenAPISpec('string')).toBe(false);
+    it("should reject non-object spec", () => {
+      expect(validateOpenAPISpec("string")).toBe(false);
     });
 
-    it('should warn about non-3.x version', () => {
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    it("should warn about non-3.x version", () => {
+      const loggerSpy = vi.spyOn(logger, "warn").mockImplementation(() => {});
       const spec = {
-        openapi: '2.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "2.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
       };
 
       validateOpenAPISpec(spec);
 
-      expect(consoleSpy).toHaveBeenCalledWith('Only OpenAPI 3.x is fully supported');
-      consoleSpy.mockRestore();
+      expect(loggerSpy).toHaveBeenCalledWith("Only OpenAPI 3.x is fully supported");
+      loggerSpy.mockRestore();
     });
   });
 
-  describe('getHttpMethods', () => {
-    it('should extract all HTTP methods', () => {
+  describe("getHttpMethods", () => {
+    it("should extract all HTTP methods", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {
-          '/items': {
+          "/items": {
             get: {},
             post: {},
             put: {},
@@ -160,17 +161,17 @@ describe('openapi-utils', () => {
       };
 
       const methods = getHttpMethods(spec);
-      expect(methods).toContain('GET');
-      expect(methods).toContain('POST');
-      expect(methods).toContain('PUT');
-      expect(methods).toContain('PATCH');
-      expect(methods).toContain('DELETE');
+      expect(methods).toContain("GET");
+      expect(methods).toContain("POST");
+      expect(methods).toContain("PUT");
+      expect(methods).toContain("PATCH");
+      expect(methods).toContain("DELETE");
     });
 
-    it('should handle empty paths', () => {
+    it("should handle empty paths", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
       };
 
@@ -178,31 +179,31 @@ describe('openapi-utils', () => {
     });
   });
 
-  describe('getTags', () => {
-    it('should extract all tags', () => {
+  describe("getTags", () => {
+    it("should extract all tags", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {
-          '/items': {
-            get: { tags: ['items', 'read'] },
-            post: { tags: ['items', 'write'] },
+          "/items": {
+            get: { tags: ["items", "read"] },
+            post: { tags: ["items", "write"] },
           },
         },
       };
 
       const tags = getTags(spec);
-      expect(tags).toContain('items');
-      expect(tags).toContain('read');
-      expect(tags).toContain('write');
+      expect(tags).toContain("items");
+      expect(tags).toContain("read");
+      expect(tags).toContain("write");
     });
 
-    it('should handle paths without tags', () => {
+    it("should handle paths without tags", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {
-          '/items': {
+          "/items": {
             get: {},
           },
         },
@@ -212,17 +213,17 @@ describe('openapi-utils', () => {
     });
   });
 
-  describe('getSecuritySchemes', () => {
-    it('should return security schemes', () => {
+  describe("getSecuritySchemes", () => {
+    it("should return security schemes", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
         components: {
           securitySchemes: {
             bearerAuth: {
-              type: 'http',
-              scheme: 'bearer',
+              type: "http",
+              scheme: "bearer",
             },
           },
         },
@@ -231,16 +232,16 @@ describe('openapi-utils', () => {
       const schemes = getSecuritySchemes(spec);
       expect(schemes).toEqual({
         bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
+          type: "http",
+          scheme: "bearer",
         },
       });
     });
 
-    it('should return undefined when no components', () => {
+    it("should return undefined when no components", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
       };
 
@@ -248,15 +249,15 @@ describe('openapi-utils', () => {
     });
   });
 
-  describe('requiresAuth', () => {
-    it('should return true when security schemes exist', () => {
+  describe("requiresAuth", () => {
+    it("should return true when security schemes exist", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
         components: {
           securitySchemes: {
-            bearerAuth: { type: 'http', scheme: 'bearer' },
+            bearerAuth: { type: "http", scheme: "bearer" },
           },
         },
       };
@@ -264,10 +265,10 @@ describe('openapi-utils', () => {
       expect(requiresAuth(spec)).toBe(true);
     });
 
-    it('should return false when no security schemes', () => {
+    it("should return false when no security schemes", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
       };
 
@@ -275,71 +276,71 @@ describe('openapi-utils', () => {
     });
   });
 
-  describe('getSupportedAuthTypes', () => {
-    it('should return bearer auth type', () => {
+  describe("getSupportedAuthTypes", () => {
+    it("should return bearer auth type", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
         components: {
           securitySchemes: {
-            bearerAuth: { type: 'http', scheme: 'bearer' },
+            bearerAuth: { type: "http", scheme: "bearer" },
           },
         },
       };
 
-      expect(getSupportedAuthTypes(spec)).toContain('bearer');
+      expect(getSupportedAuthTypes(spec)).toContain("bearer");
     });
 
-    it('should return apiKey auth type', () => {
+    it("should return apiKey auth type", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
         components: {
           securitySchemes: {
-            apiKey: { type: 'apiKey', in: 'header', name: 'X-API-Key' },
+            apiKey: { type: "apiKey", in: "header", name: "X-API-Key" },
           },
         },
       };
 
-      expect(getSupportedAuthTypes(spec)).toContain('apiKey');
+      expect(getSupportedAuthTypes(spec)).toContain("apiKey");
     });
 
-    it('should return oauth2 auth type', () => {
+    it("should return oauth2 auth type", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
         components: {
           securitySchemes: {
-            oauth2: { type: 'oauth2', flows: {} },
+            oauth2: { type: "oauth2", flows: {} },
           },
         },
       };
 
-      expect(getSupportedAuthTypes(spec)).toContain('oauth2');
+      expect(getSupportedAuthTypes(spec)).toContain("oauth2");
     });
 
-    it('should return basic auth type', () => {
+    it("should return basic auth type", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
         components: {
           securitySchemes: {
-            basicAuth: { type: 'http', scheme: 'basic' },
+            basicAuth: { type: "http", scheme: "basic" },
           },
         },
       };
 
-      expect(getSupportedAuthTypes(spec)).toContain('basic');
+      expect(getSupportedAuthTypes(spec)).toContain("basic");
     });
 
-    it('should return empty array when no schemes', () => {
+    it("should return empty array when no schemes", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
       };
 
@@ -347,153 +348,153 @@ describe('openapi-utils', () => {
     });
   });
 
-  describe('getServerUrls', () => {
-    it('should return server URLs', () => {
+  describe("getServerUrls", () => {
+    it("should return server URLs", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
-        servers: [{ url: 'https://api.example.com' }, { url: 'https://staging.example.com' }],
+        servers: [{ url: "https://api.example.com" }, { url: "https://staging.example.com" }],
       };
 
       expect(getServerUrls(spec)).toEqual([
-        'https://api.example.com',
-        'https://staging.example.com',
+        "https://api.example.com",
+        "https://staging.example.com",
       ]);
     });
 
-    it('should return default URL when no servers', () => {
+    it("should return default URL when no servers", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
       };
 
-      expect(getServerUrls(spec)).toEqual(['http://localhost:4000']);
+      expect(getServerUrls(spec)).toEqual([""]);
     });
   });
 
-  describe('generateCodeExamples', () => {
-    it('should generate curl example', () => {
-      const examples = generateCodeExamples('GET', '/items', 'https://api.com');
-      expect(examples.curl).toContain('curl -X GET');
-      expect(examples.curl).toContain('/items');
+  describe("generateCodeExamples", () => {
+    it("should generate curl example", () => {
+      const examples = generateCodeExamples("GET", "/items", "https://api.com");
+      expect(examples.curl).toContain("curl -X GET");
+      expect(examples.curl).toContain("/items");
     });
 
-    it('should generate curl example with auth', () => {
-      const examples = generateCodeExamples('GET', '/items', 'https://api.com', 'token123');
-      expect(examples.curl).toContain('Authorization: Bearer token123');
+    it("should generate curl example with auth", () => {
+      const examples = generateCodeExamples("GET", "/items", "https://api.com", "token123");
+      expect(examples.curl).toContain("Authorization: Bearer token123");
     });
 
-    it('should generate JavaScript example', () => {
-      const examples = generateCodeExamples('GET', '/items', 'https://api.com');
-      expect(examples.javascript).toContain('fetch');
-      expect(examples.javascript).toContain('/items');
+    it("should generate JavaScript example", () => {
+      const examples = generateCodeExamples("GET", "/items", "https://api.com");
+      expect(examples.javascript).toContain("fetch");
+      expect(examples.javascript).toContain("/items");
     });
 
-    it('should generate Python example', () => {
-      const examples = generateCodeExamples('GET', '/items', 'https://api.com');
-      expect(examples.python).toContain('import requests');
-      expect(examples.python).toContain('/items');
+    it("should generate Python example", () => {
+      const examples = generateCodeExamples("GET", "/items", "https://api.com");
+      expect(examples.python).toContain("import requests");
+      expect(examples.python).toContain("/items");
     });
 
-    it('should generate TypeScript example', () => {
-      const examples = generateCodeExamples('GET', '/items', 'https://api.com');
-      expect(examples.typescript).toContain('fetch');
-      expect(examples.typescript).toContain('/items');
+    it("should generate TypeScript example", () => {
+      const examples = generateCodeExamples("GET", "/items", "https://api.com");
+      expect(examples.typescript).toContain("fetch");
+      expect(examples.typescript).toContain("/items");
     });
 
-    it('should include body for POST requests', () => {
-      const examples = generateCodeExamples('POST', '/items', 'https://api.com');
-      expect(examples.curl).toContain('-d');
-      expect(examples.javascript).toContain('body');
+    it("should include body for POST requests", () => {
+      const examples = generateCodeExamples("POST", "/items", "https://api.com");
+      expect(examples.curl).toContain("-d");
+      expect(examples.javascript).toContain("body");
     });
   });
 
-  describe('downloadSpec', () => {
-    it('should download spec as JSON', () => {
+  describe("downloadSpec", () => {
+    it("should download spec as JSON", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {},
       };
 
-      downloadSpec(spec, 'test.json');
+      downloadSpec(spec, "test.json");
 
-      expect(global.document.createElement).toHaveBeenCalledWith('a');
+      expect(global.document.createElement).toHaveBeenCalledWith("a");
       expect(global.URL.createObjectURL).toHaveBeenCalled();
     });
   });
 
-  describe('getEndpointByOperationId', () => {
-    it('should find endpoint by operationId', () => {
+  describe("getEndpointByOperationId", () => {
+    it("should find endpoint by operationId", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {
-          '/items': {
+          "/items": {
             get: {
-              operationId: 'getItems',
-              summary: 'Get items',
+              operationId: "getItems",
+              summary: "Get items",
             },
           },
         },
       };
 
-      const result = getEndpointByOperationId(spec, 'getItems');
+      const result = getEndpointByOperationId(spec, "getItems");
       expect(result).toEqual({
-        path: '/items',
-        method: 'get',
+        path: "/items",
+        method: "get",
         operation: {
-          operationId: 'getItems',
-          summary: 'Get items',
+          operationId: "getItems",
+          summary: "Get items",
         },
       });
     });
 
-    it('should return null when operationId not found', () => {
+    it("should return null when operationId not found", () => {
       const spec: OpenAPISpec = {
-        openapi: '3.0.0',
-        info: { title: 'Test', version: '1.0.0' },
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
         paths: {
-          '/items': {
+          "/items": {
             get: {
-              operationId: 'getItems',
+              operationId: "getItems",
             },
           },
         },
       };
 
-      expect(getEndpointByOperationId(spec, 'notFound')).toBeNull();
+      expect(getEndpointByOperationId(spec, "notFound")).toBeNull();
     });
   });
 
-  describe('formatPathWithParams', () => {
-    it('should format path with parameters', () => {
-      const path = '/items/{itemId}/comments/{commentId}';
-      const params = { itemId: '123', commentId: '456' };
+  describe("formatPathWithParams", () => {
+    it("should format path with parameters", () => {
+      const path = "/items/{itemId}/comments/{commentId}";
+      const params = { itemId: "123", commentId: "456" };
 
       const result = formatPathWithParams(path, params);
-      expect(result).toBe('/items/123/comments/456');
+      expect(result).toBe("/items/123/comments/456");
     });
 
-    it('should handle path without params', () => {
-      const path = '/items';
+    it("should handle path without params", () => {
+      const path = "/items";
       const params = {};
 
       const result = formatPathWithParams(path, params);
-      expect(result).toBe('/items');
+      expect(result).toBe("/items");
     });
   });
 
-  describe('getResponseExamples', () => {
-    it('should extract response examples', () => {
+  describe("getResponseExamples", () => {
+    it("should extract response examples", () => {
       const operation = {
         responses: {
-          '200': {
+          "200": {
             content: {
-              'application/json': {
-                example: { id: '1', name: 'Item' },
+              "application/json": {
+                example: { id: "1", name: "Item" },
               },
             },
           },
@@ -501,14 +502,14 @@ describe('openapi-utils', () => {
       };
 
       const examples = getResponseExamples(operation);
-      expect(examples['200']).toEqual({ id: '1', name: 'Item' });
+      expect(examples["200"]).toEqual({ id: "1", name: "Item" });
     });
 
-    it('should handle responses without examples', () => {
+    it("should handle responses without examples", () => {
       const operation = {
         responses: {
-          '200': {
-            description: 'Success',
+          "200": {
+            description: "Success",
           },
         },
       };

@@ -3,10 +3,10 @@
  * Provides authentication checks and redirects for protected routes
  */
 
-import { redirect } from '@tanstack/react-router';
+import { redirect } from "@tanstack/react-router";
 
-import { logger } from '@/lib/logger';
-import { useAuthStore } from '@/stores/authStore';
+import { logger } from "@/lib/logger";
+import { useAuthStore } from "@/stores/authStore";
 
 interface RouteGuardOptions {
   includeReturnUrl?: boolean;
@@ -14,10 +14,10 @@ interface RouteGuardOptions {
 }
 
 interface RouteGuardState {
-  account: ReturnType<typeof useAuthStore.getState>['account'];
+  account: ReturnType<typeof useAuthStore.getState>["account"];
   isAuthenticated: boolean;
-  token: ReturnType<typeof useAuthStore.getState>['token'];
-  user: ReturnType<typeof useAuthStore.getState>['user'];
+  token: ReturnType<typeof useAuthStore.getState>["token"];
+  user: ReturnType<typeof useAuthStore.getState>["user"];
 }
 
 type E2EWindow = Window & { __E2E__?: boolean };
@@ -25,9 +25,9 @@ type E2EWindow = Window & { __E2E__?: boolean };
 const getReturnTo = (): string => window.location.pathname + window.location.search;
 
 const isE2ERuntime = (): boolean =>
-  typeof window !== 'undefined' &&
+  typeof window !== "undefined" &&
   (Boolean((window as E2EWindow).__E2E__) ||
-    (typeof navigator !== 'undefined' && navigator.webdriver));
+    (typeof navigator !== "undefined" && navigator.webdriver));
 
 const hasValidSession = async (): Promise<boolean> => {
   try {
@@ -43,13 +43,13 @@ const hasValidSession = async (): Promise<boolean> => {
     const latest = useAuthStore.getState();
     return Boolean(ok && latest.isAuthenticated && latest.user && latest.token?.trim());
   } catch (error) {
-    logger.error('Session validation error:', error);
+    logger.error("Session validation error:", error);
     return false;
   }
 };
 
 export async function requireAuth(options?: RouteGuardOptions): Promise<void> {
-  const { redirectTo = '/auth/login', includeReturnUrl = true } = options || {};
+  const { redirectTo = "/auth/login", includeReturnUrl = true } = options || {};
 
   if (isE2ERuntime()) {
     return;
@@ -65,7 +65,7 @@ export async function requireAuth(options?: RouteGuardOptions): Promise<void> {
 }
 
 export async function requireAuthWithAccount(options?: RouteGuardOptions): Promise<void> {
-  const { redirectTo = '/auth/login', includeReturnUrl = true } = options || {};
+  const { redirectTo = "/auth/login", includeReturnUrl = true } = options || {};
 
   if (isE2ERuntime()) {
     return;
@@ -83,13 +83,13 @@ export async function requireAuthWithAccount(options?: RouteGuardOptions): Promi
   if (!account) {
     throw redirect({
       search: includeReturnUrl ? { returnTo: getReturnTo() } : undefined,
-      to: '/account/select',
+      to: "/account/select",
     });
   }
 }
 
-export async function requireAdmin(options?: Pick<RouteGuardOptions, 'redirectTo'>): Promise<void> {
-  const redirectTo = options?.redirectTo ?? '/home';
+export async function requireAdmin(options?: Pick<RouteGuardOptions, "redirectTo">): Promise<void> {
+  const redirectTo = options?.redirectTo ?? "/home";
 
   if (isE2ERuntime()) {
     return;
@@ -99,12 +99,12 @@ export async function requireAdmin(options?: Pick<RouteGuardOptions, 'redirectTo
   if (!isValid) {
     throw redirect({
       search: { returnTo: getReturnTo() },
-      to: '/auth/login',
+      to: "/auth/login",
     });
   }
 
   const { user } = useAuthStore.getState();
-  if (!user || user.role !== 'admin') {
+  if (!user || user.role !== "admin") {
     throw redirect({ to: redirectTo });
   }
 }

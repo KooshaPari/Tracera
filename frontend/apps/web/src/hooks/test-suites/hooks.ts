@@ -1,6 +1,6 @@
-import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type {
   TestSuite,
@@ -8,11 +8,11 @@ import type {
   TestSuiteStats,
   TestSuiteStatus,
   TestSuiteTestCase,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
-import type { AddTestCaseToSuiteInput, CreateTestSuiteData, TestSuiteFilters } from './api';
+import type { AddTestCaseToSuiteInput, CreateTestSuiteData, TestSuiteFilters } from "./api";
 
-import { testSuitesApi } from './api';
+import { testSuitesApi } from "./api";
 
 interface FetchTestSuitesResponse {
   testSuites: TestSuite[];
@@ -26,7 +26,7 @@ function useTestSuitesHook(filters: TestSuiteFilters): UseQueryResult<FetchTestS
       const result = await testSuitesApi.fetchTestSuites(filters);
       return result;
     },
-    queryKey: ['testSuites', JSON.stringify(filters)],
+    queryKey: ["testSuites", JSON.stringify(filters)],
   });
 }
 
@@ -37,7 +37,7 @@ function useTestSuiteHook(id: string): UseQueryResult<TestSuite> {
       const result = await testSuitesApi.fetchTestSuite(id);
       return result;
     },
-    queryKey: ['testSuites', id],
+    queryKey: ["testSuites", id],
   });
 }
 
@@ -51,9 +51,9 @@ function useCreateTestSuiteHook(): UseMutationResult<
     mutationFn: testSuitesApi.createTestSuite,
     onSuccess: async (_, variables) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['testSuites'] }),
+        queryClient.invalidateQueries({ queryKey: ["testSuites"] }),
         queryClient.invalidateQueries({
-          queryKey: ['testSuiteStats', variables.projectId],
+          queryKey: ["testSuiteStats", variables.projectId],
         }),
       ]);
     },
@@ -77,8 +77,8 @@ function useUpdateTestSuiteHook(): UseMutationResult<
     },
     onSuccess: async (_, variables) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['testSuites', variables.id] }),
-        queryClient.invalidateQueries({ queryKey: ['testSuites'] }),
+        queryClient.invalidateQueries({ queryKey: ["testSuites", variables.id] }),
+        queryClient.invalidateQueries({ queryKey: ["testSuites"] }),
       ]);
     },
   });
@@ -105,9 +105,9 @@ function useTransitionTestSuiteStatusHook(): UseMutationResult<
     },
     onSuccess: async (_, variables) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['testSuites', variables.id] }),
-        queryClient.invalidateQueries({ queryKey: ['testSuites'] }),
-        queryClient.invalidateQueries({ queryKey: ['testSuiteStats'] }),
+        queryClient.invalidateQueries({ queryKey: ["testSuites", variables.id] }),
+        queryClient.invalidateQueries({ queryKey: ["testSuites"] }),
+        queryClient.invalidateQueries({ queryKey: ["testSuiteStats"] }),
       ]);
     },
   });
@@ -119,8 +119,8 @@ function useDeleteTestSuiteHook(): UseMutationResult<void, Error, string> {
     mutationFn: testSuitesApi.deleteTestSuite,
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['testSuites'] }),
-        queryClient.invalidateQueries({ queryKey: ['testSuiteStats'] }),
+        queryClient.invalidateQueries({ queryKey: ["testSuites"] }),
+        queryClient.invalidateQueries({ queryKey: ["testSuiteStats"] }),
       ]);
     },
   });
@@ -136,8 +136,8 @@ function useAddTestCaseToSuiteHook(): UseMutationResult<
     mutationFn: testSuitesApi.addTestCaseToSuite,
     onSuccess: async (_, variables) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['suiteTestCases', variables.suiteId] }),
-        queryClient.invalidateQueries({ queryKey: ['testSuites', variables.suiteId] }),
+        queryClient.invalidateQueries({ queryKey: ["suiteTestCases", variables.suiteId] }),
+        queryClient.invalidateQueries({ queryKey: ["testSuites", variables.suiteId] }),
       ]);
     },
   });
@@ -155,8 +155,8 @@ function useRemoveTestCaseFromSuiteHook(): UseMutationResult<
     },
     onSuccess: async (_, variables) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['suiteTestCases', variables.suiteId] }),
-        queryClient.invalidateQueries({ queryKey: ['testSuites', variables.suiteId] }),
+        queryClient.invalidateQueries({ queryKey: ["suiteTestCases", variables.suiteId] }),
+        queryClient.invalidateQueries({ queryKey: ["testSuites", variables.suiteId] }),
       ]);
     },
   });
@@ -169,7 +169,7 @@ function useSuiteTestCasesHook(suiteId: string): UseQueryResult<TestSuiteTestCas
       const result = await testSuitesApi.fetchSuiteTestCases(suiteId);
       return result;
     },
-    queryKey: ['suiteTestCases', suiteId],
+    queryKey: ["suiteTestCases", suiteId],
   });
 }
 
@@ -184,7 +184,7 @@ function useReorderSuiteTestCasesHook(): UseMutationResult<
       await testSuitesApi.reorderSuiteTestCases(variables.suiteId, variables.testCaseIds);
     },
     onSuccess: async (_, variables) => {
-      await queryClient.invalidateQueries({ queryKey: ['suiteTestCases', variables.suiteId] });
+      await queryClient.invalidateQueries({ queryKey: ["suiteTestCases", variables.suiteId] });
     },
   });
 }
@@ -199,7 +199,7 @@ function useTestSuiteActivitiesHook(
       const result = await testSuitesApi.fetchTestSuiteActivities(suiteId, limit);
       return result;
     },
-    queryKey: ['testSuiteActivities', suiteId, limit],
+    queryKey: ["testSuiteActivities", suiteId, limit],
   });
 }
 
@@ -210,7 +210,7 @@ function useTestSuiteStatsHook(projectId: string): UseQueryResult<TestSuiteStats
       const result = await testSuitesApi.fetchTestSuiteStats(projectId);
       return result;
     },
-    queryKey: ['testSuiteStats', projectId],
+    queryKey: ["testSuiteStats", projectId],
   });
 }
 

@@ -20,13 +20,13 @@
  * ```
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { Edge, NodePosition, ViewportBounds } from '../lib/spatialIndex';
+import type { Edge, NodePosition, ViewportBounds } from "../lib/spatialIndex";
 
-import { logger } from '../lib/logger';
-import { RBushSpatialIndex } from '../lib/spatialIndex';
-import { getViewportBounds } from '../lib/viewportCulling';
+import { logger } from "../lib/logger";
+import { RBushSpatialIndex } from "../lib/spatialIndex";
+import { getViewportBounds } from "../lib/viewportCulling";
 
 const ZERO = 0;
 const DEFAULT_PADDING = 100;
@@ -47,8 +47,8 @@ interface ReactFlowViewport {
 
 interface ReactFlowInstance {
   getViewport?: (() => ReactFlowViewport) | undefined;
-  addListener?: ((event: 'move', handler: () => void) => void) | undefined;
-  removeListener?: ((event: 'move', handler: () => void) => void) | undefined;
+  addListener?: ((event: "move", handler: () => void) => void) | undefined;
+  removeListener?: ((event: "move", handler: () => void) => void) | undefined;
 }
 
 interface RTreeNode {
@@ -373,16 +373,16 @@ function useViewportBoundsState(
     };
 
     if (reactFlowInstance.addListener) {
-      reactFlowInstance.addListener('move', handleMove);
+      reactFlowInstance.addListener("move", handleMove);
     }
 
-    window.addEventListener('resize', handleViewportChange);
+    window.addEventListener("resize", handleViewportChange);
 
     return () => {
       if (reactFlowInstance.removeListener) {
-        reactFlowInstance.removeListener('move', handleMove);
+        reactFlowInstance.removeListener("move", handleMove);
       }
-      window.removeEventListener('resize', handleViewportChange);
+      window.removeEventListener("resize", handleViewportChange);
     };
   }, [enabled, reactFlowInstance, handleViewportChange]);
 
@@ -464,12 +464,12 @@ const useRTreeDebug = (stats: CullingStats | undefined, edgeCount: number): void
     }
 
     const detailedStats = getRTreeCullingStats(stats);
-    let rTreeLabel = '❌';
+    let rTreeLabel = "❌";
     if (detailedStats.usingRTree) {
-      rTreeLabel = '✅';
+      rTreeLabel = "✅";
     }
 
-    logger.info('🌳 R-tree Viewport Culling Stats');
+    logger.info("🌳 R-tree Viewport Culling Stats");
     logger.info(`Edges: ${edgeCount.toLocaleString()}`);
     logger.info(`Visible: ${detailedStats.visibleCount.toLocaleString()}`);
     logger.info(`Culled: ${detailedStats.culledCount.toLocaleString()}`);
@@ -480,7 +480,7 @@ const useRTreeDebug = (stats: CullingStats | undefined, edgeCount: number): void
     logger.info(
       `Estimated Speedup: ${detailedStats.estimatedSpeedupVsLinear.toFixed(SPEEDUP_DECIMALS)}x`,
     );
-    logger.info('🌳 End R-tree Viewport Culling Stats');
+    logger.info("🌳 End R-tree Viewport Culling Stats");
   }, [stats, edgeCount]);
 };
 

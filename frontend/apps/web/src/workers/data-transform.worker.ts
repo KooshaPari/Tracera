@@ -8,15 +8,15 @@
  * - Statistical computations
  */
 
-import { expose } from 'comlink';
+import { expose } from "comlink";
 
 export interface TransformOptions {
-  type: 'filter' | 'sort' | 'aggregate' | 'normalize' | 'deduplicate';
+  type: "filter" | "sort" | "aggregate" | "normalize" | "deduplicate";
   field?: string;
   predicate?: string; // Serialized function
-  direction?: 'asc' | 'desc';
+  direction?: "asc" | "desc";
   groupBy?: string;
-  aggregation?: 'sum' | 'avg' | 'min' | 'max' | 'count';
+  aggregation?: "sum" | "avg" | "min" | "max" | "count";
 }
 
 export type ProgressCallback = (progress: number) => void;
@@ -40,14 +40,14 @@ interface FilterOptions {
 
 interface SortOptions {
   field: string;
-  direction?: 'asc' | 'desc';
+  direction?: "asc" | "desc";
   onProgress?: ProgressCallback;
 }
 
 interface AggregateOptions {
   groupByField: string;
   aggregateField: string;
-  aggregationType: 'sum' | 'avg' | 'min' | 'max' | 'count';
+  aggregationType: "sum" | "avg" | "min" | "max" | "count";
   onProgress?: ProgressCallback;
 }
 
@@ -76,7 +76,7 @@ interface PivotOptions {
 interface JoinOptions {
   leftKey: string;
   rightKey: string;
-  joinType?: 'inner' | 'left' | 'right' | 'outer';
+  joinType?: "inner" | "left" | "right" | "outer";
   onProgress?: ProgressCallback;
 }
 
@@ -94,16 +94,16 @@ const calculateProgress = (current: number, total: number): number => {
 };
 
 const normalizeComparable = (value: unknown): number | string => {
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return value;
   }
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   return String(value);
 };
 
-const compareValues = (first: unknown, second: unknown, direction: 'asc' | 'desc'): number => {
+const compareValues = (first: unknown, second: unknown, direction: "asc" | "desc"): number => {
   if (first === second) {
     return ZERO;
   }
@@ -111,7 +111,7 @@ const compareValues = (first: unknown, second: unknown, direction: 'asc' | 'desc
   const leftValue = normalizeComparable(first);
   const rightValue = normalizeComparable(second);
   const comparison = leftValue < rightValue ? -ONE : ONE;
-  return direction === 'asc' ? comparison : -comparison;
+  return direction === "asc" ? comparison : -comparison;
 };
 
 const createEmptyStats = () => ({
@@ -155,7 +155,7 @@ const filterData = <T extends Record<string, unknown>>(data: T[], options: Filte
  * Sort large dataset
  */
 const sortData = <T extends Record<string, unknown>>(data: T[], options: SortOptions): T[] => {
-  const { direction = 'asc', field, onProgress } = options;
+  const { direction = "asc", field, onProgress } = options;
   reportProgress(onProgress, PROGRESS_START);
 
   const sorted = [...data].toSorted((first, second) =>
@@ -205,26 +205,26 @@ const buildGroups = <T extends Record<string, unknown>>(
 
 const aggregateValues = (
   values: number[],
-  aggregationType: AggregateOptions['aggregationType'],
+  aggregationType: AggregateOptions["aggregationType"],
 ): number => {
   if (values.length === ZERO) {
     return ZERO;
   }
 
   switch (aggregationType) {
-    case 'sum': {
+    case "sum": {
       return values.reduce((sum, value) => sum + value, ZERO);
     }
-    case 'avg': {
+    case "avg": {
       return values.reduce((sum, value) => sum + value, ZERO) / values.length;
     }
-    case 'min': {
+    case "min": {
       return Math.min(...values);
     }
-    case 'max': {
+    case "max": {
       return Math.max(...values);
     }
-    case 'count': {
+    case "count": {
       return values.length;
     }
   }
@@ -482,7 +482,7 @@ const joinData = <T extends Record<string, unknown>, U extends Record<string, un
   right: U[],
   options: JoinOptions,
 ): (T & U)[] => {
-  const { joinType = 'inner', leftKey, onProgress, rightKey } = options;
+  const { joinType = "inner", leftKey, onProgress, rightKey } = options;
   reportProgress(onProgress, PROGRESS_START);
 
   const rightIndex = new Map<unknown, U[]>();
@@ -511,7 +511,7 @@ const joinData = <T extends Record<string, unknown>, U extends Record<string, un
       for (const rightItem of rightItems) {
         result.push({ ...leftItem, ...rightItem });
       }
-    } else if (joinType === 'left' || joinType === 'outer') {
+    } else if (joinType === "left" || joinType === "outer") {
       result.push({ ...leftItem } as T & U);
     }
 

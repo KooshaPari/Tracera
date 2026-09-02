@@ -5,28 +5,27 @@
  * and performance benchmarks.
  */
 
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-const ASSIGNEE_RANGE = Number('10');
-const CHILD_RELATION_BIAS = Number('0.7');
-const CLUSTER_DISTANCE_LIMIT = Number('1500');
-const CLUSTER_OFFSET = Number('1000');
-const CLUSTER_OFFSET_HALF = Number('0.5');
-const CLUSTER_SPACING = Number('3000');
-const DAYS_IN_YEAR = Number('365');
-const DEFAULT_CLUSTER_SIZE = Number('100');
-const DEFAULT_DENSITY = Number('0.5');
-const DEFAULT_YEAR = Number('2024');
-const EDGE_ATTEMPT_MULTIPLIER = Number('3');
-const HIERARCHY_LEVEL_SPACING = Number('500');
-const HIERARCHY_X_MULTIPLIER = Number('10');
-const PRIORITY_OFFSET = Number('1');
-const PRIORITY_RANGE = Number('5');
-const RANDOM_POSITION_SCALE = Number('2');
-const SEED_MODULUS = Number('2147483647');
-const SEED_MODULUS_MINUS_ONE = Number('2147483646');
-const SEED_MULTIPLIER = Number('16807');
-const TWO = Number('2');
+const ASSIGNEE_RANGE = Number("10");
+const CHILD_RELATION_BIAS = Number("0.7");
+const CLUSTER_OFFSET = Number("1000");
+const CLUSTER_OFFSET_HALF = Number("0.5");
+const CLUSTER_SPACING = Number("3000");
+const DAYS_IN_YEAR = Number("365");
+const DEFAULT_CLUSTER_SIZE = Number("100");
+const DEFAULT_DENSITY = Number("0.5");
+const DEFAULT_YEAR = Number("2024");
+const EDGE_ATTEMPT_MULTIPLIER = Number("3");
+const HIERARCHY_LEVEL_SPACING = Number("500");
+const HIERARCHY_X_MULTIPLIER = Number("10");
+const PRIORITY_OFFSET = Number("1");
+const PRIORITY_RANGE = Number("5");
+const RANDOM_POSITION_SCALE = Number("2");
+const SEED_MODULUS = Number("2147483647");
+const SEED_MODULUS_MINUS_ONE = Number("2147483646");
+const SEED_MULTIPLIER = Number("16807");
+const TWO = Number("2");
 
 export interface SyntheticGraphOptions {
   /**
@@ -35,7 +34,7 @@ export interface SyntheticGraphOptions {
    * - 'clustered': Nodes grouped in clusters
    * - 'hierarchical': Tree-like structure
    */
-  distribution?: 'random' | 'clustered' | 'hierarchical' | undefined;
+  distribution?: "random" | "clustered" | "hierarchical" | undefined;
 
   /**
    * Edge density (0-1)
@@ -98,8 +97,8 @@ const buildClusteredPosition = (
   const offsetY = (rng.next() - CLUSTER_OFFSET_HALF) * CLUSTER_OFFSET;
 
   return {
-    x: clusterX + offsetX,
-    y: clusterY + offsetY,
+    x: clusterX + offsetX + CLUSTER_OFFSET_HALF * CLUSTER_OFFSET,
+    y: clusterY + offsetY + CLUSTER_OFFSET_HALF * CLUSTER_OFFSET,
   };
 };
 
@@ -124,9 +123,9 @@ const buildNodeData = (
   rng: SeededRandom,
   nodeTypes: string[],
   statuses: string[],
-): Node['data'] => {
-  const type = pickRandom(nodeTypes, rng, nodeTypes[0] ?? 'node');
-  const status = pickRandom(statuses, rng, statuses[0] ?? 'active');
+): Node["data"] => {
+  const type = pickRandom(nodeTypes, rng, nodeTypes[0] ?? "node");
+  const status = pickRandom(statuses, rng, statuses[0] ?? "active");
   const priority = Math.floor(rng.next() * PRIORITY_RANGE) + PRIORITY_OFFSET;
   const assignee = `user-${Math.floor(rng.next() * ASSIGNEE_RANGE)}`;
   const created = new Date(DEFAULT_YEAR, 0, Math.floor(rng.next() * DAYS_IN_YEAR)).toISOString();
@@ -147,15 +146,15 @@ const buildNodes = (
   rng: SeededRandom,
   options: { clusterCount: number; distribution: string },
 ): Node[] => {
-  const nodeTypes = ['requirement', 'test', 'defect', 'task', 'epic', 'story'];
-  const statuses = ['active', 'completed', 'blocked', 'pending', 'in-progress'];
+  const nodeTypes = ["requirement", "test", "defect", "task", "epic", "story"];
+  const statuses = ["active", "completed", "blocked", "pending", "in-progress"];
 
   return Array.from({ length: nodeCount }, (_unused, index) => {
     let position: { x: number; y: number };
 
-    if (options.distribution === 'clustered') {
+    if (options.distribution === "clustered") {
       position = buildClusteredPosition(options.clusterCount, rng);
-    } else if (options.distribution === 'hierarchical') {
+    } else if (options.distribution === "hierarchical") {
       position = buildHierarchicalPosition(index, nodeCount);
     } else {
       position = buildRandomPosition(nodeCount, rng);
@@ -165,7 +164,7 @@ const buildNodes = (
       data: buildNodeData(index, rng, nodeTypes, statuses),
       id: `node-${index}`,
       position,
-      type: 'default',
+      type: "default",
     };
   });
 };
@@ -188,6 +187,7 @@ const pickClusteredTarget = (
   sourceIdx: number,
   nodeCount: number,
   nodes: Node[],
+  clusterNodeIndices: Map<string, number[]>,
   rng: SeededRandom,
   density: number,
 ): number => {
@@ -196,18 +196,15 @@ const pickClusteredTarget = (
     return Math.floor(rng.next() * nodeCount);
   }
 
-  const candidates = nodes.filter((node, index) => {
-    if (index === sourceIdx) return false;
-    const dx = node.position.x - sourceNode.position.x;
-    const dy = node.position.y - sourceNode.position.y;
-    const distance = Math.hypot(dx, dy);
-    return distance < CLUSTER_DISTANCE_LIMIT;
-  });
+  const clusterKey = `${Math.floor(sourceNode.position.x / CLUSTER_SPACING)}:${Math.floor(sourceNode.position.y / CLUSTER_SPACING)}`;
+  const candidates = clusterNodeIndices.get(clusterKey) ?? [];
 
-  if (candidates.length > 0 && rng.next() < density) {
-    const candidate = pickRandom(candidates, rng, candidates[0]!);
-    const candidateIndex = nodes.findIndex((node) => node.id === candidate.id);
-    return candidateIndex >= 0 ? candidateIndex : Math.floor(rng.next() * nodeCount);
+  if (candidates.length > 1 && rng.next() < density) {
+    const candidatePosition = Math.floor(rng.next() * candidates.length);
+    const candidateIndex = candidates[candidatePosition] ?? sourceIdx;
+    return candidateIndex === sourceIdx
+      ? (candidates[(candidatePosition + 1) % candidates.length] ?? sourceIdx)
+      : candidateIndex;
   }
 
   return Math.floor(rng.next() * nodeCount);
@@ -218,16 +215,25 @@ const pickTargetIndex = (options: {
   density: number;
   nodeCount: number;
   nodes: Node[];
+  clusterNodeIndices: Map<string, number[]>;
   seededRandom: SeededRandom;
   sourceIdx: number;
 }): number => {
-  const { distribution, density, nodeCount, nodes, seededRandom, sourceIdx } = options;
+  const { clusterNodeIndices, distribution, density, nodeCount, nodes, seededRandom, sourceIdx } =
+    options;
 
-  if (distribution === 'hierarchical') {
+  if (distribution === "hierarchical") {
     return pickHierarchicalTarget(sourceIdx, nodeCount, seededRandom);
   }
-  if (distribution === 'clustered') {
-    return pickClusteredTarget(sourceIdx, nodeCount, nodes, seededRandom, density);
+  if (distribution === "clustered") {
+    return pickClusteredTarget(
+      sourceIdx,
+      nodeCount,
+      nodes,
+      clusterNodeIndices,
+      seededRandom,
+      density,
+    );
   }
   return Math.floor(seededRandom.next() * nodeCount);
 };
@@ -245,17 +251,27 @@ const buildEdges = (options: {
 
   const edges: Edge[] = [];
   const edgeSet = new Set<string>();
+  const clusterNodeIndices = new Map<string, number[]>();
+  if (distribution === "clustered") {
+    nodes.forEach((node, index) => {
+      const key = `${Math.floor(node.position.x / CLUSTER_SPACING)}:${Math.floor(node.position.y / CLUSTER_SPACING)}`;
+      const indices = clusterNodeIndices.get(key) ?? [];
+      indices.push(index);
+      clusterNodeIndices.set(key, indices);
+    });
+  }
   const maxAttempts = edgeCount * EDGE_ATTEMPT_MULTIPLIER; // Prevent infinite loops
   let attempts = 0;
 
-  const edgeTypes = ['default', 'smoothstep', 'step', 'straight'];
-  const linkTypes = ['depends_on', 'blocks', 'relates_to', 'implements', 'tests'];
+  const edgeTypes = ["default", "smoothstep", "step", "straight"];
+  const linkTypes = ["depends_on", "blocks", "relates_to", "implements", "tests"];
 
   while (edges.length < edgeCount && attempts < maxAttempts) {
     attempts += 1;
 
     const sourceIdx = Math.floor(seededRandom.next() * nodeCount);
     const targetIdx = pickTargetIndex({
+      clusterNodeIndices,
       density,
       distribution,
       nodeCount,
@@ -275,8 +291,8 @@ const buildEdges = (options: {
 
     edgeSet.add(edgeKey);
 
-    const type = pickRandom(edgeTypes, seededRandom, 'default');
-    const linkType = pickRandom(linkTypes, seededRandom, 'depends_on');
+    const type = pickRandom(edgeTypes, seededRandom, "default");
+    const linkType = pickRandom(linkTypes, seededRandom, "depends_on");
     const created = new Date(
       DEFAULT_YEAR,
       0,
@@ -310,7 +326,7 @@ export const generateSyntheticGraph = (
   const {
     clusterCount = Math.ceil(nodeCount / DEFAULT_CLUSTER_SIZE),
     density = DEFAULT_DENSITY,
-    distribution = 'random',
+    distribution = "random",
     seed,
   } = options;
 
@@ -340,7 +356,7 @@ const PERFORMANCE_GRAPH_CONFIGS = {
  * Generate a performance test graph with known characteristics
  */
 export const generatePerformanceGraph = (
-  size: 'small' | 'medium' | 'large' | 'xlarge',
+  size: "small" | "medium" | "large" | "xlarge",
 ): {
   edges: Edge[];
   nodes: Node[];
@@ -348,8 +364,8 @@ export const generatePerformanceGraph = (
   const config = PERFORMANCE_GRAPH_CONFIGS[size];
   return generateSyntheticGraph(config.nodes, config.edges, {
     clusterCount: Math.ceil(config.nodes / DEFAULT_CLUSTER_SIZE),
-    density: Number('0.6'),
-    distribution: 'clustered',
+    density: Number("0.6"),
+    distribution: "clustered",
   });
 };
 
@@ -359,38 +375,38 @@ export const generatePerformanceGraph = (
 export const generateMinimalGraph = (): { nodes: Node[]; edges: Edge[] } => ({
   edges: [
     {
-      data: { linkType: 'depends_on' },
-      id: 'edge-1',
-      source: 'node-1',
-      target: 'node-2',
-      type: 'default',
+      data: { linkType: "depends_on" },
+      id: "edge-1",
+      source: "node-1",
+      target: "node-2",
+      type: "default",
     },
     {
-      data: { linkType: 'tests' },
-      id: 'edge-2',
-      source: 'node-2',
-      target: 'node-3',
-      type: 'default',
+      data: { linkType: "tests" },
+      id: "edge-2",
+      source: "node-2",
+      target: "node-3",
+      type: "default",
     },
   ],
   nodes: [
     {
-      data: { label: 'Node 1', status: 'active', type: 'requirement' },
-      id: 'node-1',
+      data: { label: "Node 1", status: "active", type: "requirement" },
+      id: "node-1",
       position: { x: 0, y: 0 },
-      type: 'default',
+      type: "default",
     },
     {
-      data: { label: 'Node 2', status: 'active', type: 'test' },
-      id: 'node-2',
+      data: { label: "Node 2", status: "active", type: "test" },
+      id: "node-2",
       position: { x: 200, y: 0 },
-      type: 'default',
+      type: "default",
     },
     {
-      data: { label: 'Node 3', status: 'blocked', type: 'defect' },
-      id: 'node-3',
+      data: { label: "Node 3", status: "blocked", type: "defect" },
+      id: "node-3",
       position: { x: 100, y: 200 },
-      type: 'default',
+      type: "default",
     },
   ],
 });

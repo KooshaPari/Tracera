@@ -10,22 +10,22 @@ import {
   FileJson,
   FileText,
   Filter,
-} from 'lucide-react';
-import { memo, useCallback, useState } from 'react';
+} from "lucide-react";
+import { memo, useCallback, useState } from "react";
 
-import type { CanonicalConcept, CanonicalProjection, EquivalenceLink } from '@tracertm/types';
+import type { CanonicalConcept, CanonicalProjection, EquivalenceLink } from "@tracertm/types";
 
-import { Checkbox } from '@/components/ui/checkbox';
-import { logger } from '@/lib/logger';
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
+import { Checkbox } from "@/components/ui/checkbox";
+import { logger } from "@/lib/logger";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@tracertm/ui/components/Card';
+} from "@tracertm/ui/components/Card";
 import {
   Dialog,
   DialogContent,
@@ -33,12 +33,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@tracertm/ui/components/Dialog';
-import { Input } from '@tracertm/ui/components/Input';
-import { ScrollArea } from '@tracertm/ui/components/ScrollArea';
-import { Separator } from '@tracertm/ui/components/Separator';
+} from "@tracertm/ui/components/Dialog";
+import { Input } from "@tracertm/ui/components/Input";
+import { ScrollArea } from "@tracertm/ui/components/ScrollArea";
+import { Separator } from "@tracertm/ui/components/Separator";
 
-import { createExportSummary, serializeToCSV, serializeToJSON } from './utils/equivalenceIO';
+import { createExportSummary, serializeToCSV, serializeToJSON } from "./utils/equivalenceIO";
 
 // =============================================================================
 // TYPES
@@ -58,14 +58,14 @@ export interface EquivalenceExportProps {
 }
 
 interface ExportOptions {
-  format: 'json' | 'csv';
+  format: "json" | "csv";
   includeLinks: boolean;
   includeConcepts: boolean;
   includeProjections: boolean;
   includeConfidenceScores: boolean;
   includeSources: boolean;
   minConfidence: number;
-  statuses: ('suggested' | 'confirmed' | 'rejected' | 'auto_confirmed')[];
+  statuses: ("suggested" | "confirmed" | "rejected" | "auto_confirmed")[];
   domains: string[];
 }
 
@@ -82,14 +82,14 @@ interface FilterState {
 
 const DEFAULT_EXPORT_OPTIONS: ExportOptions = {
   domains: [],
-  format: 'json',
+  format: "json",
   includeConcepts: true,
   includeConfidenceScores: true,
   includeLinks: true,
   includeProjections: true,
   includeSources: true,
   minConfidence: 0,
-  statuses: ['confirmed', 'auto_confirmed', 'suggested'],
+  statuses: ["confirmed", "auto_confirmed", "suggested"],
 };
 
 // =============================================================================
@@ -138,7 +138,7 @@ function EquivalenceExportComponent({
       exportedAt: new Date().toISOString(),
       exportedBy: userId,
       projectId,
-      version: '1.0' as const,
+      version: "1.0" as const,
     };
 
     const data = {
@@ -150,7 +150,7 @@ function EquivalenceExportComponent({
         exportedAt: baseData.exportedAt,
         exportedBy: userId,
         projectId,
-        version: '1.0',
+        version: "1.0",
       }),
       equivalenceLinks: options.includeLinks ? filteredLinks : [],
       canonicalConcepts: options.includeConcepts ? filteredConcepts : [],
@@ -164,7 +164,7 @@ function EquivalenceExportComponent({
   const handleExportJSON = useCallback(() => {
     const data = createExportPackage();
     const json = serializeToJSON(data);
-    downloadFile(json, 'equivalence-export.json', 'application/json');
+    downloadFile(json, "equivalence-export.json", "application/json");
     setIsOpen(false);
   }, [createExportPackage]);
 
@@ -179,17 +179,17 @@ function EquivalenceExportComponent({
       exportedBy: data.exportedBy,
       metadata: data.metadata,
       projectId: data.projectId,
-      version: '1.0',
+      version: "1.0",
     });
 
     if (options.includeLinks && data.equivalenceLinks.length > 0) {
-      downloadFile(csvData.links, 'equivalence-links.csv', 'text/csv');
+      downloadFile(csvData.links, "equivalence-links.csv", "text/csv");
     }
     if (options.includeConcepts && data.canonicalConcepts.length > 0) {
-      downloadFile(csvData.concepts, 'canonical-concepts.csv', 'text/csv');
+      downloadFile(csvData.concepts, "canonical-concepts.csv", "text/csv");
     }
     if (options.includeProjections && data.canonicalProjections.length > 0) {
-      downloadFile(csvData.projections, 'canonical-projections.csv', 'text/csv');
+      downloadFile(csvData.projections, "canonical-projections.csv", "text/csv");
     }
 
     setIsOpen(false);
@@ -208,20 +208,20 @@ function EquivalenceExportComponent({
         }, 2000);
       })
       .catch((error) => {
-        logger.error('Failed to copy:', error);
+        logger.error("Failed to copy:", error);
       });
   }, [createExportPackage]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant='outline' size='sm' className='gap-2'>
-          <Download className='h-4 w-4' />
+        <Button variant="outline" size="sm" className="gap-2">
+          <Download className="h-4 w-4" />
           Export
         </Button>
       </DialogTrigger>
 
-      <DialogContent className='max-h-[80vh] max-w-2xl'>
+      <DialogContent className="max-h-[80vh] max-w-2xl">
         <DialogHeader>
           <DialogTitle>Export Equivalence Data</DialogTitle>
           <DialogDescription>
@@ -229,33 +229,33 @@ function EquivalenceExportComponent({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className='h-auto max-h-[calc(80vh-120px)]'>
-          <div className='space-y-6 pr-4'>
+        <ScrollArea className="h-auto max-h-[calc(80vh-120px)]">
+          <div className="space-y-6 pr-4">
             {/* Export Format Selection */}
             <Card>
               <CardHeader>
-                <CardTitle className='text-base'>Export Format</CardTitle>
+                <CardTitle className="text-base">Export Format</CardTitle>
               </CardHeader>
-              <CardContent className='space-y-3'>
-                <div className='grid grid-cols-2 gap-3'>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
                   <Button
-                    variant={options.format === 'json' ? 'default' : 'outline'}
-                    className='gap-2'
+                    variant={options.format === "json" ? "default" : "outline"}
+                    className="gap-2"
                     onClick={() => {
-                      setOptions({ ...options, format: 'json' });
+                      setOptions({ ...options, format: "json" });
                     }}
                   >
-                    <FileJson className='h-4 w-4' />
+                    <FileJson className="h-4 w-4" />
                     JSON
                   </Button>
                   <Button
-                    variant={options.format === 'csv' ? 'default' : 'outline'}
-                    className='gap-2'
+                    variant={options.format === "csv" ? "default" : "outline"}
+                    className="gap-2"
                     onClick={() => {
-                      setOptions({ ...options, format: 'csv' });
+                      setOptions({ ...options, format: "csv" });
                     }}
                   >
-                    <FileText className='h-4 w-4' />
+                    <FileText className="h-4 w-4" />
                     CSV
                   </Button>
                 </div>
@@ -265,13 +265,13 @@ function EquivalenceExportComponent({
             {/* Content Selection */}
             <Card>
               <CardHeader>
-                <CardTitle className='text-base'>Data to Include</CardTitle>
+                <CardTitle className="text-base">Data to Include</CardTitle>
                 <CardDescription>Select which data types to include in the export</CardDescription>
               </CardHeader>
-              <CardContent className='space-y-3'>
-                <div className='flex items-center gap-2'>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-2">
                   <Checkbox
-                    id='include-links'
+                    id="include-links"
                     checked={options.includeLinks}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       setOptions({
@@ -279,20 +279,20 @@ function EquivalenceExportComponent({
                         includeLinks: e.target.checked,
                       });
                     }}
-                    className='h-4 w-4'
+                    className="h-4 w-4"
                   />
                   <label
-                    htmlFor='include-links'
-                    className='flex-1 cursor-pointer text-sm font-medium'
+                    htmlFor="include-links"
+                    className="flex-1 cursor-pointer text-sm font-medium"
                   >
                     Equivalence Links
                   </label>
-                  <Badge variant='secondary'>{filteredLinks.length}</Badge>
+                  <Badge variant="secondary">{filteredLinks.length}</Badge>
                 </div>
 
-                <div className='flex items-center gap-2'>
+                <div className="flex items-center gap-2">
                   <Checkbox
-                    id='include-concepts'
+                    id="include-concepts"
                     checked={options.includeConcepts}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       setOptions({
@@ -302,17 +302,17 @@ function EquivalenceExportComponent({
                     }}
                   />
                   <label
-                    htmlFor='include-concepts'
-                    className='flex-1 cursor-pointer text-sm font-medium'
+                    htmlFor="include-concepts"
+                    className="flex-1 cursor-pointer text-sm font-medium"
                   >
                     Canonical Concepts
                   </label>
-                  <Badge variant='secondary'>{filteredConcepts.length}</Badge>
+                  <Badge variant="secondary">{filteredConcepts.length}</Badge>
                 </div>
 
-                <div className='flex items-center gap-2'>
+                <div className="flex items-center gap-2">
                   <Checkbox
-                    id='include-projections'
+                    id="include-projections"
                     checked={options.includeProjections}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       setOptions({
@@ -322,12 +322,12 @@ function EquivalenceExportComponent({
                     }}
                   />
                   <label
-                    htmlFor='include-projections'
-                    className='flex-1 cursor-pointer text-sm font-medium'
+                    htmlFor="include-projections"
+                    className="flex-1 cursor-pointer text-sm font-medium"
                   >
                     Canonical Projections
                   </label>
-                  <Badge variant='secondary'>{filteredProjections.length}</Badge>
+                  <Badge variant="secondary">{filteredProjections.length}</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -335,12 +335,12 @@ function EquivalenceExportComponent({
             {/* Advanced Options */}
             <Card>
               <CardHeader>
-                <CardTitle className='text-base'>Advanced Options</CardTitle>
+                <CardTitle className="text-base">Advanced Options</CardTitle>
               </CardHeader>
-              <CardContent className='space-y-3'>
-                <div className='flex items-center gap-2'>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-2">
                   <Checkbox
-                    id='include-confidence'
+                    id="include-confidence"
                     checked={options.includeConfidenceScores}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       setOptions({
@@ -350,16 +350,16 @@ function EquivalenceExportComponent({
                     }}
                   />
                   <label
-                    htmlFor='include-confidence'
-                    className='cursor-pointer text-sm font-medium'
+                    htmlFor="include-confidence"
+                    className="cursor-pointer text-sm font-medium"
                   >
                     Include Confidence Scores
                   </label>
                 </div>
 
-                <div className='flex items-center gap-2'>
+                <div className="flex items-center gap-2">
                   <Checkbox
-                    id='include-sources'
+                    id="include-sources"
                     checked={options.includeSources}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       setOptions({
@@ -368,7 +368,7 @@ function EquivalenceExportComponent({
                       });
                     }}
                   />
-                  <label htmlFor='include-sources' className='cursor-pointer text-sm font-medium'>
+                  <label htmlFor="include-sources" className="cursor-pointer text-sm font-medium">
                     Include Sources and Strategies
                   </label>
                 </div>
@@ -377,10 +377,10 @@ function EquivalenceExportComponent({
 
             {/* Filters */}
             <Card>
-              <CardHeader className='pb-3'>
+              <CardHeader className="pb-3">
                 <Button
-                  variant='ghost'
-                  className='h-auto w-full justify-between px-0 py-0'
+                  variant="ghost"
+                  className="h-auto w-full justify-between px-0 py-0"
                   onClick={() => {
                     setFilters({
                       ...filters,
@@ -388,30 +388,30 @@ function EquivalenceExportComponent({
                     });
                   }}
                 >
-                  <div className='flex items-center gap-2'>
-                    <Filter className='h-4 w-4' />
-                    <span className='text-base font-semibold'>Filters</span>
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4" />
+                    <span className="text-base font-semibold">Filters</span>
                   </div>
                   {filters.showFilters ? (
-                    <ChevronDown className='h-4 w-4' />
+                    <ChevronDown className="h-4 w-4" />
                   ) : (
-                    <ChevronRight className='h-4 w-4' />
+                    <ChevronRight className="h-4 w-4" />
                   )}
                 </Button>
               </CardHeader>
 
               {filters.showFilters && (
-                <CardContent className='space-y-4'>
+                <CardContent className="space-y-4">
                   {/* Confidence Filter */}
-                  <div className='space-y-2'>
-                    <label className='text-sm font-medium'>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
                       Minimum Confidence: {Math.round(filters.minConfidence * 100)}%
                     </label>
                     <input
-                      type='range'
-                      min='0'
-                      max='1'
-                      step='0.1'
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
                       value={filters.minConfidence}
                       onChange={(e) => {
                         setFilters({
@@ -419,18 +419,18 @@ function EquivalenceExportComponent({
                           minConfidence: Number.parseFloat(e.target.value),
                         });
                       }}
-                      className='w-full'
+                      className="w-full"
                     />
                   </div>
 
                   <Separator />
 
                   {/* Status Filter */}
-                  <div className='space-y-2'>
-                    <label className='text-sm font-medium'>Link Status</label>
-                    {(['confirmed', 'auto_confirmed', 'suggested', 'rejected'] as const).map(
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Link Status</label>
+                    {(["confirmed", "auto_confirmed", "suggested", "rejected"] as const).map(
                       (status) => (
-                        <div key={status} className='flex items-center gap-2'>
+                        <div key={status} className="flex items-center gap-2">
                           <Checkbox
                             id={`status-${status}`}
                             checked={filters.selectedStatuses.has(status)}
@@ -449,9 +449,9 @@ function EquivalenceExportComponent({
                           />
                           <label
                             htmlFor={`status-${status}`}
-                            className='cursor-pointer text-sm capitalize'
+                            className="cursor-pointer text-sm capitalize"
                           >
-                            {status.replace('_', ' ')}
+                            {status.replace("_", " ")}
                           </label>
                         </div>
                       ),
@@ -463,10 +463,10 @@ function EquivalenceExportComponent({
                       <Separator />
 
                       {/* Domain Filter */}
-                      <div className='space-y-2'>
-                        <label className='text-sm font-medium'>Domains</label>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Domains</label>
                         {uniqueDomains.map((domain) => (
-                          <div key={domain} className='flex items-center gap-2'>
+                          <div key={domain} className="flex items-center gap-2">
                             <Checkbox
                               id={`domain-${domain}`}
                               checked={
@@ -490,7 +490,7 @@ function EquivalenceExportComponent({
                                 });
                               }}
                             />
-                            <label htmlFor={`domain-${domain}`} className='cursor-pointer text-sm'>
+                            <label htmlFor={`domain-${domain}`} className="cursor-pointer text-sm">
                               {domain}
                             </label>
                           </div>
@@ -505,24 +505,24 @@ function EquivalenceExportComponent({
             {/* Export Summary */}
             <Card>
               <CardHeader>
-                <CardTitle className='text-base'>Export Summary</CardTitle>
+                <CardTitle className="text-base">Export Summary</CardTitle>
               </CardHeader>
-              <CardContent className='space-y-2 text-sm'>
-                <div className='flex justify-between'>
-                  <span className='text-muted-foreground'>Equivalence Links:</span>
-                  <span className='font-medium'>
+              <CardContent className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Equivalence Links:</span>
+                  <span className="font-medium">
                     {options.includeLinks ? filteredLinks.length : 0}
                   </span>
                 </div>
-                <div className='flex justify-between'>
-                  <span className='text-muted-foreground'>Canonical Concepts:</span>
-                  <span className='font-medium'>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Canonical Concepts:</span>
+                  <span className="font-medium">
                     {options.includeConcepts ? filteredConcepts.length : 0}
                   </span>
                 </div>
-                <div className='flex justify-between'>
-                  <span className='text-muted-foreground'>Canonical Projections:</span>
-                  <span className='font-medium'>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Canonical Projections:</span>
+                  <span className="font-medium">
                     {options.includeProjections ? filteredProjections.length : 0}
                   </span>
                 </div>
@@ -532,30 +532,30 @@ function EquivalenceExportComponent({
         </ScrollArea>
 
         {/* Action Buttons */}
-        <div className='flex items-center justify-end gap-2 border-t pt-4'>
-          {options.format === 'json' && (
-            <Button variant='outline' size='sm' className='gap-2' onClick={handleCopyJSON}>
+        <div className="flex items-center justify-end gap-2 border-t pt-4">
+          {options.format === "json" && (
+            <Button variant="outline" size="sm" className="gap-2" onClick={handleCopyJSON}>
               {copied ? (
                 <>
-                  <Check className='h-4 w-4' />
+                  <Check className="h-4 w-4" />
                   Copied!
                 </>
               ) : (
                 <>
-                  <Copy className='h-4 w-4' />
+                  <Copy className="h-4 w-4" />
                   Copy JSON
                 </>
               )}
             </Button>
           )}
           <Button
-            variant='default'
-            size='sm'
-            className='gap-2'
-            onClick={options.format === 'json' ? handleExportJSON : handleExportCSV}
+            variant="default"
+            size="sm"
+            className="gap-2"
+            onClick={options.format === "json" ? handleExportJSON : handleExportCSV}
           >
-            <Download className='h-4 w-4' />
-            {options.format === 'json' ? 'Download JSON' : 'Download CSVs'}
+            <Download className="h-4 w-4" />
+            {options.format === "json" ? "Download JSON" : "Download CSVs"}
           </Button>
         </div>
       </DialogContent>
@@ -573,7 +573,7 @@ function EquivalenceExportComponent({
 function downloadFile(content: string, filename: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
   link.download = filename;
   document.body.append(link);

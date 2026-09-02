@@ -1,7 +1,7 @@
-import type Graph from 'graphology';
+import type Graph from "graphology";
 
-import { SigmaContainer, useLoadGraph, useSigma } from '@react-sigma/core';
-import { memo, useEffect, useRef } from 'react';
+import { SigmaContainer, useLoadGraph, useSigma } from "@react-sigma/core";
+import { memo, useEffect, useRef } from "react";
 
 interface SigmaGraphViewProps {
   graph: Graph;
@@ -60,16 +60,16 @@ function SigmaGraphContent({
       }
     };
 
-    sigma.on('clickNode', handleClick);
-    sigma.on('doubleClickNode', handleDoubleClick);
-    sigma.on('enterNode', handleEnterNode);
-    sigma.on('leaveNode', handleLeaveNode);
+    sigma.on("clickNode", handleClick);
+    sigma.on("doubleClickNode", handleDoubleClick);
+    sigma.on("enterNode", handleEnterNode);
+    sigma.on("leaveNode", handleLeaveNode);
 
     return () => {
-      sigma.off('clickNode', handleClick);
-      sigma.off('doubleClickNode', handleDoubleClick);
-      sigma.off('enterNode', handleEnterNode);
-      sigma.off('leaveNode', handleLeaveNode);
+      sigma.off("clickNode", handleClick);
+      sigma.off("doubleClickNode", handleDoubleClick);
+      sigma.off("enterNode", handleEnterNode);
+      sigma.off("leaveNode", handleLeaveNode);
     };
   }, [sigma, onNodeClick, onNodeHover, onNodeDoubleClick]);
 
@@ -77,20 +77,20 @@ function SigmaGraphContent({
 }
 
 export const SigmaGraphView = memo(function SigmaGraphView(props: SigmaGraphViewProps) {
-  const { className = '', ...contentProps } = props;
+  const { className = "", ...contentProps } = props;
 
   return (
     <SigmaContainer
       className={`sigma-container ${className}`}
-      style={{ height: '100%', width: '100%' }}
+      style={{ height: "100%", width: "100%" }}
       settings={{
         // Performance optimizations
         renderEdgeLabels: false, // Labels only on zoom
         enableEdgeEvents: false,
 
         // Rendering settings
-        defaultNodeType: 'custom',
-        defaultEdgeType: 'custom',
+        defaultNodeType: "custom",
+        defaultEdgeType: "custom",
 
         // Camera settings
         minCameraRatio: 0.1,

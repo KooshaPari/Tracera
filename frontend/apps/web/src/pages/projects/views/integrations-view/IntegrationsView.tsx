@@ -1,6 +1,6 @@
-import type { ReactElement } from 'react';
+import type { ReactElement } from "react";
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from "react";
 
 import type {
   IntegrationCredential,
@@ -8,7 +8,7 @@ import type {
   IntegrationStats,
   SyncConflict,
   SyncStatusSummary,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
 import {
   useConflicts,
@@ -16,24 +16,24 @@ import {
   useIntegrationStats,
   useMappings,
   useSyncStatus,
-} from '@/hooks/useIntegrations';
+} from "@/hooks/useIntegrations";
 
-import type { IntegrationsMode, TabConfig, TabId } from './types';
+import type { IntegrationsMode, TabConfig, TabId } from "./types";
 
-import PageHeader from './components/PageHeader';
-import TabContent from './components/TabContent';
-import TabsNav from './components/TabsNav';
+import PageHeader from "./components/PageHeader";
+import TabContent from "./components/TabContent";
+import TabsNav from "./components/TabsNav";
 
 const ACCOUNT_TABS: TabConfig[] = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'credentials', label: 'Credentials' },
+  { id: "overview", label: "Overview" },
+  { id: "credentials", label: "Credentials" },
 ];
 
 const PROJECT_TABS: TabConfig[] = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'mappings', label: 'Mappings' },
-  { id: 'sync', label: 'Sync Status' },
-  { id: 'conflicts', label: 'Conflicts' },
+  { id: "overview", label: "Overview" },
+  { id: "mappings", label: "Mappings" },
+  { id: "sync", label: "Sync Status" },
+  { id: "conflicts", label: "Conflicts" },
 ];
 
 const EMPTY_CREDENTIALS: IntegrationCredential[] = [];
@@ -82,7 +82,7 @@ const useIntegrationsViewData = (
   const credentials = useCredentials(projectId);
   const mappings = useMappings(projectId);
   const syncStatus = useSyncStatus(projectId);
-  const conflicts = useConflicts(projectId, 'pending');
+  const conflicts = useConflicts(projectId, "pending");
 
   return { conflicts, credentials, mappings, stats, syncStatus };
 };
@@ -93,7 +93,7 @@ const useIntegrationsTabs = (
 ): TabConfig[] =>
   useMemo(() => {
     let defaultTabs = PROJECT_TABS;
-    if (mode === 'account') {
+    if (mode === "account") {
       defaultTabs = ACCOUNT_TABS;
     }
     if (allowedTabs === undefined) {
@@ -104,8 +104,8 @@ const useIntegrationsTabs = (
 
 export default function IntegrationsView({
   projectId,
-  mode = 'project',
-  initialTab = 'overview',
+  mode = "project",
+  initialTab = "overview",
   allowedTabs,
 }: IntegrationsViewProps): ReactElement {
   const [activeTab, setActiveTab] = useState<TabId>(initialTab);
@@ -125,7 +125,7 @@ export default function IntegrationsView({
   }, []);
 
   return (
-    <div className='p-6'>
+    <div className="p-6">
       <PageHeader />
       <TabsNav
         activeTab={activeTab}

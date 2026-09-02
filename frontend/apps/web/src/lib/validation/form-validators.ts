@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Common form validation utilities
@@ -11,8 +11,8 @@ export const isValidUUID = (value: string): boolean => {
 };
 
 export const validateUUID = (value: string): string | undefined => {
-  if (!value) return 'UUID is required';
-  if (!isValidUUID(value)) return 'Invalid UUID format';
+  if (!value) return "UUID is required";
+  if (!isValidUUID(value)) return "Invalid UUID format";
   return undefined;
 };
 
@@ -23,9 +23,9 @@ export const isValidEmail = (value: string): boolean => {
 };
 
 export const validateEmail = (value: string): string | undefined => {
-  if (!value) return 'Email is required';
-  if (!isValidEmail(value.trim())) return 'Invalid email format';
-  if (value.length > 255) return 'Email is too long';
+  if (!value) return "Email is required";
+  if (!isValidEmail(value.trim())) return "Invalid email format";
+  if (value.length > 255) return "Email is too long";
   return undefined;
 };
 
@@ -33,7 +33,7 @@ export const validateEmail = (value: string): string | undefined => {
 export const isValidURL = (value: string): boolean => {
   try {
     const url = new URL(value);
-    return url.protocol === 'http:' || url.protocol === 'https:';
+    return url.protocol === "http:" || url.protocol === "https:";
   } catch (error) {
     return false;
   }
@@ -41,10 +41,10 @@ export const isValidURL = (value: string): boolean => {
 
 export const validateURL = (value: string, required = true): string | undefined => {
   if (!value) {
-    return required ? 'URL is required' : undefined;
+    return required ? "URL is required" : undefined;
   }
-  if (!isValidURL(value.trim())) return 'Invalid URL format';
-  if (value.length > 2000) return 'URL is too long';
+  if (!isValidURL(value.trim())) return "Invalid URL format";
+  if (value.length > 2000) return "URL is too long";
   return undefined;
 };
 
@@ -53,7 +53,7 @@ export const validateLength = (
   value: string,
   min: number,
   max: number,
-  fieldName = 'This field',
+  fieldName = "This field",
 ): string | undefined => {
   const trimmed = value.trim();
   if (trimmed.length < min) {
@@ -67,9 +67,9 @@ export const validateLength = (
 
 export const validateRequired = (
   value: string | undefined | null,
-  fieldName = 'This field',
+  fieldName = "This field",
 ): string | undefined => {
-  const trimmed = value?.trim() || '';
+  const trimmed = value?.trim() || "";
   if (!trimmed) {
     return `${fieldName} is required`;
   }
@@ -81,7 +81,7 @@ export const validateNumberRange = (
   value: number,
   min: number,
   max: number,
-  fieldName = 'This field',
+  fieldName = "This field",
 ): string | undefined => {
   if (value < min) {
     return `${fieldName} must be at least ${min}`;
@@ -94,7 +94,7 @@ export const validateNumberRange = (
 
 export const validatePositiveNumber = (
   value: number,
-  fieldName = 'This field',
+  fieldName = "This field",
 ): string | undefined => {
   if (value <= 0) {
     return `${fieldName} must be a positive number`;
@@ -104,12 +104,12 @@ export const validatePositiveNumber = (
 
 // Password validation
 export const validatePasswordStrength = (password: string): string | undefined => {
-  if (!password) return 'Password is required';
-  if (password.length < 8) return 'Password must be at least 8 characters';
-  if (password.length > 128) return 'Password is too long';
-  if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter';
-  if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter';
-  if (!/\d/.test(password)) return 'Password must contain at least one number';
+  if (!password) return "Password is required";
+  if (password.length < 8) return "Password must be at least 8 characters";
+  if (password.length > 128) return "Password is too long";
+  if (!/[a-z]/.test(password)) return "Password must contain at least one lowercase letter";
+  if (!/[A-Z]/.test(password)) return "Password must contain at least one uppercase letter";
+  if (!/\d/.test(password)) return "Password must contain at least one number";
   return undefined;
 };
 
@@ -139,12 +139,12 @@ export const validateFileType = (file: File, allowedTypes: string[]): string | u
 
 export const validateImageFile = (file: File): string | undefined => {
   const allowedTypes = [
-    'image/jpeg',
-    'image/jpg',
-    'image/png',
-    'image/webp',
-    'image/gif',
-    'image/svg+xml',
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "image/svg+xml",
   ];
   const maxSize = 5 * 1024 * 1024; // 5MB
 
@@ -159,22 +159,22 @@ export const validateImageFile = (file: File): string | undefined => {
 
 // Filename validation
 export const validateFilename = (filename: string): string | undefined => {
-  if (!filename) return 'Filename is required';
-  if (filename.includes('..')) return 'Filename contains invalid characters';
-  if (filename.includes('/') || filename.includes('\\'))
-    return 'Filename cannot contain path separators';
-  if (filename.includes('\0')) return 'Filename contains invalid characters';
-  if (filename.length > 255) return 'Filename is too long';
+  if (!filename) return "Filename is required";
+  if (filename.includes("..")) return "Filename contains invalid characters";
+  if (filename.includes("/") || filename.includes("\\"))
+    return "Filename cannot contain path separators";
+  if (filename.includes("\0")) return "Filename contains invalid characters";
+  if (filename.length > 255) return "Filename is too long";
   return undefined;
 };
 
 // Path traversal validation
 export const hasPathTraversal = (path: string): boolean => {
-  const dangerous = ['../', '..\\', './', '.\\', '//', '\\\\'];
+  const dangerous = ["../", "..\\", "./", ".\\", "//", "\\\\"];
   return dangerous.some((pattern) => path.includes(pattern));
 };
 
-export const validateNoPathTraversal = (path: string, fieldName = 'Path'): string | undefined => {
+export const validateNoPathTraversal = (path: string, fieldName = "Path"): string | undefined => {
   if (hasPathTraversal(path)) {
     return `${fieldName} contains invalid path sequences`;
   }
@@ -184,15 +184,15 @@ export const validateNoPathTraversal = (path: string, fieldName = 'Path'): strin
 // XSS validation
 export const containsXSS = (value: string): boolean => {
   const xssPatterns = [
-    /<script[^>]*>.*?<\/script>/gi,
-    /<iframe[^>]*>.*?<\/iframe>/gi,
+    /<script(?:\s|>)/gi,
+    /<iframe(?:\s|>)/gi,
     /javascript:/gi,
     /on\w+\s*=/gi, // Event handlers
   ];
   return xssPatterns.some((pattern) => pattern.test(value));
 };
 
-export const validateNoXSS = (value: string, fieldName = 'This field'): string | undefined => {
+export const validateNoXSS = (value: string, fieldName = "This field"): string | undefined => {
   if (containsXSS(value)) {
     return `${fieldName} contains potentially dangerous content`;
   }
@@ -212,7 +212,7 @@ export const containsSQLInjection = (value: string): boolean => {
 
 export const validateNoSQLInjection = (
   value: string,
-  fieldName = 'This field',
+  fieldName = "This field",
 ): string | undefined => {
   if (containsSQLInjection(value)) {
     return `${fieldName} contains invalid characters`;
@@ -222,11 +222,11 @@ export const validateNoSQLInjection = (
 
 // Sanitization helpers
 export const sanitizeString = (value: string): string => {
-  return value.trim().replace(/\0/g, '');
+  return value.trim().replace(/\0/g, "");
 };
 
 export const sanitizeHTML = (value: string): string => {
-  const div = document.createElement('div');
+  const div = document.createElement("div");
   div.textContent = value;
   return div.innerHTML;
 };
@@ -235,10 +235,10 @@ export const sanitizeHTML = (value: string): string => {
 export const validateEnum = <T extends string>(
   value: string,
   allowedValues: readonly T[],
-  fieldName = 'This field',
+  fieldName = "This field",
 ): string | undefined => {
   if (!allowedValues.includes(value as T)) {
-    return `${fieldName} must be one of: ${allowedValues.join(', ')}`;
+    return `${fieldName} must be one of: ${allowedValues.join(", ")}`;
   }
   return undefined;
 };
@@ -254,7 +254,7 @@ export const createAsyncValidator = <T>(
       const isValid = await validator(value);
       return isValid ? undefined : errorMessage;
     } catch (error) {
-      return 'Validation error';
+      return "Validation error";
     }
   };
 };
@@ -264,7 +264,7 @@ export const createAsyncValidator = <T>(
 export const validateConditionalRequired = (
   value: string | undefined | null,
   condition: boolean,
-  fieldName = 'This field',
+  fieldName = "This field",
 ): string | undefined => {
   if (condition) {
     return validateRequired(value, fieldName);
@@ -274,7 +274,7 @@ export const validateConditionalRequired = (
 
 export const validateDateRange = (startDate: Date, endDate: Date): string | undefined => {
   if (startDate > endDate) {
-    return 'Start date must be before end date';
+    return "Start date must be before end date";
   }
   return undefined;
 };
@@ -315,7 +315,7 @@ export const createZodResolver = <T extends z.ZodType>(schema: T) => {
       if (error instanceof z.ZodError) {
         const errors: Record<string, { type: string; message: string }> = {};
         error.issues.forEach((err: any) => {
-          const path = err.path.join('.');
+          const path = err.path.join(".");
           errors[path] = {
             type: err.code,
             message: err.message,

@@ -1,12 +1,12 @@
-import type { GraphCacheTypes } from './graph-cache-types';
+import type { GraphCacheTypes } from "./graph-cache-types";
 
-import { graphCacheConstants } from './graph-cache-constants';
+import { graphCacheConstants } from "./graph-cache-constants";
 
-type CacheStatistics = GraphCacheTypes['CacheStatistics'];
-type GroupingData = GraphCacheTypes['GroupingData'];
-type ItemDependencies = GraphCacheTypes['ItemDependencies'];
-type LayoutData = GraphCacheTypes['LayoutData'];
-type SearchResult = GraphCacheTypes['SearchResult'];
+type CacheStatistics = GraphCacheTypes["CacheStatistics"];
+type GroupingData = GraphCacheTypes["GroupingData"];
+type ItemDependencies = GraphCacheTypes["ItemDependencies"];
+type LayoutData = GraphCacheTypes["LayoutData"];
+type SearchResult = GraphCacheTypes["SearchResult"];
 
 interface GraphCacheInvalidationState {
   cacheStats: CacheStatistics;
@@ -179,7 +179,7 @@ const invalidateProject = (set: StoreSetter, projectId: string): void => {
 
 const invalidatePattern = (set: StoreSetter, pattern: string): number => {
   const tracker: CountTracker = { value: graphCacheConstants.emptyCount };
-  const regex = new RegExp(`^${pattern.replaceAll('*', '.*').replaceAll('?', '.')}$`);
+  const regex = new RegExp(`^${pattern.replaceAll("*", ".*").replaceAll("?", ".")}$`);
 
   set((draft) => {
     removeMatchingKeys(draft.layouts, regex, tracker);

@@ -1,11 +1,11 @@
-import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { CreateProblemData, ProblemFilters, RCAData } from '@/hooks/problems/problemsApi';
-import type { Problem, ProblemActivity, ProblemStatus, ResolutionType } from '@tracertm/types';
+import type { CreateProblemData, ProblemFilters, RCAData } from "@/hooks/problems/problemsApi";
+import type { Problem, ProblemActivity, ProblemStatus, ResolutionType } from "@tracertm/types";
 
-import { problemsApi } from '@/hooks/problems/problemsApi';
+import { problemsApi } from "@/hooks/problems/problemsApi";
 
 function useProblems(
   filters: ProblemFilters,
@@ -16,7 +16,7 @@ function useProblems(
       const result = await problemsApi.fetchProblems(filters);
       return result;
     },
-    queryKey: ['problems', JSON.stringify(filters)],
+    queryKey: ["problems", JSON.stringify(filters)],
   });
 }
 
@@ -27,7 +27,7 @@ function useProblem(id: string): UseQueryResult<Problem> {
       const result = await problemsApi.fetchProblem(id);
       return result;
     },
-    queryKey: ['problems', id],
+    queryKey: ["problems", id],
   });
 }
 
@@ -40,7 +40,7 @@ function useCreateProblem(): UseMutationResult<
   return useMutation({
     mutationFn: problemsApi.createProblem,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['problems'] });
+      await queryClient.invalidateQueries({ queryKey: ["problems"] });
     },
   });
 }
@@ -57,7 +57,7 @@ function useUpdateProblem(): UseMutationResult<
       return result;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['problems'] });
+      await queryClient.invalidateQueries({ queryKey: ["problems"] });
     },
   });
 }
@@ -74,7 +74,7 @@ function useTransitionProblemStatus(): UseMutationResult<
       return result;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['problems'] });
+      await queryClient.invalidateQueries({ queryKey: ["problems"] });
     },
   });
 }
@@ -91,7 +91,7 @@ function useRecordRCA(): UseMutationResult<
       return result;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['problems'] });
+      await queryClient.invalidateQueries({ queryKey: ["problems"] });
     },
   });
 }
@@ -116,7 +116,7 @@ function useCloseProblem(): UseMutationResult<
       return result;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['problems'] });
+      await queryClient.invalidateQueries({ queryKey: ["problems"] });
     },
   });
 }
@@ -126,7 +126,7 @@ function useDeleteProblem(): UseMutationResult<void, unknown, string> {
   return useMutation({
     mutationFn: problemsApi.deleteProblem,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['problems'] });
+      await queryClient.invalidateQueries({ queryKey: ["problems"] });
     },
   });
 }
@@ -141,7 +141,7 @@ function useProblemActivities(
       const result = await problemsApi.fetchProblemActivities(problemId, limit);
       return result;
     },
-    queryKey: ['problemActivities', problemId, limit],
+    queryKey: ["problemActivities", problemId, limit],
   });
 }
 
@@ -157,7 +157,7 @@ function useProblemStats(projectId: string): UseQueryResult<{
       const result = await problemsApi.fetchProblemStats(projectId);
       return result;
     },
-    queryKey: ['problemStats', projectId],
+    queryKey: ["problemStats", projectId],
   });
 }
 

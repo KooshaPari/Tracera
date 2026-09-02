@@ -12,12 +12,12 @@
  * @module graphLayout.worker
  */
 
-import type { ElkExtendedEdge, ElkNode } from 'elkjs';
+import type { ElkExtendedEdge, ElkNode } from "elkjs";
 
-import * as Comlink from 'comlink';
-import * as ELKModule from 'elkjs/lib/elk.bundled.js';
+import * as Comlink from "comlink";
+import * as ELKModule from "elkjs/lib/elk.bundled.js";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -40,11 +40,11 @@ export interface NodePosition {
   y: number;
 }
 
-export type LayoutAlgorithm = 'dagre' | 'elk' | 'd3-force' | 'grid' | 'circular' | 'radial';
+export type LayoutAlgorithm = "dagre" | "elk" | "d3-force" | "grid" | "circular" | "radial";
 
 export interface LayoutOptions {
   algorithm: LayoutAlgorithm;
-  direction?: 'TB' | 'LR' | 'BT' | 'RL';
+  direction?: "TB" | "LR" | "BT" | "RL";
   nodeSep?: number;
   rankSep?: number;
   marginX?: number;
@@ -112,10 +112,10 @@ const DEFAULT_BENCHMARK_ITERATIONS = 5;
 // ============================================================================
 
 const DIRECTION_MAP: Record<string, string> = {
-  BT: 'UP',
-  LR: 'RIGHT',
-  RL: 'LEFT',
-  TB: 'DOWN',
+  BT: "UP",
+  LR: "RIGHT",
+  RL: "LEFT",
+  TB: "DOWN",
 };
 
 let elkInstance: any = null;
@@ -126,7 +126,7 @@ const getELK = () => {
       const ELK = (ELKModule as any).default ?? ELKModule;
       elkInstance = new ELK();
     } catch (error) {
-      logger.error('[GraphLayoutWorker] Failed to initialize ELK:', error);
+      logger.error("[GraphLayoutWorker] Failed to initialize ELK:", error);
       throw error;
     }
   }
@@ -178,7 +178,7 @@ const buildElkGraph = (
   options: LayoutOptions,
 ): ElkNode => {
   const {
-    direction = 'TB',
+    direction = "TB",
     nodeSep = DEFAULT_NODE_SEP,
     rankSep = DEFAULT_RANK_SEP,
     marginX = DEFAULT_MARGIN_X,
@@ -198,15 +198,15 @@ const buildElkGraph = (
       sources: [edge.source],
       targets: [edge.target],
     })) as ElkExtendedEdge[],
-    id: 'root',
+    id: "root",
     layoutOptions: {
-      'elk.algorithm': 'layered',
-      'elk.direction': DIRECTION_MAP[direction] ?? 'DOWN',
-      'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
-      'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
-      'elk.layered.spacing.nodeNodeBetweenLayers': String(rankSep),
-      'elk.padding': `[left=${marginX}, top=${marginY}, right=${marginX}, bottom=${marginY}]`,
-      'elk.spacing.nodeNode': String(nodeSep),
+      "elk.algorithm": "layered",
+      "elk.direction": DIRECTION_MAP[direction] ?? "DOWN",
+      "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
+      "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
+      "elk.layered.spacing.nodeNodeBetweenLayers": String(rankSep),
+      "elk.padding": `[left=${marginX}, top=${marginY}, right=${marginX}, bottom=${marginY}]`,
+      "elk.spacing.nodeNode": String(nodeSep),
     },
   };
 };
@@ -742,7 +742,7 @@ const layoutProgressive = async function* layoutProgressive(
   const batchSize = options.batchSize ?? DEFAULT_BATCH_SIZE;
   const totalBatches = Math.ceil(nodes.length / batchSize);
 
-  if (options.algorithm === 'grid') {
+  if (options.algorithm === "grid") {
     for (let i = ZERO; i < totalBatches; i += ONE) {
       const start = i * batchSize;
       const end = Math.min(start + batchSize, nodes.length);
@@ -770,27 +770,27 @@ export const computeLayout = async (
 
   let result: LayoutResult;
   switch (options.algorithm) {
-    case 'elk': {
+    case "elk": {
       result = await layoutWithELK(nodes, edges, options);
       break;
     }
-    case 'dagre': {
+    case "dagre": {
       result = layoutWithDagre(nodes, edges, options);
       break;
     }
-    case 'd3-force': {
+    case "d3-force": {
       result = layoutWithForce(nodes, edges, options);
       break;
     }
-    case 'grid': {
+    case "grid": {
       result = layoutWithGrid(nodes, edges, options);
       break;
     }
-    case 'circular': {
+    case "circular": {
       result = layoutWithCircular(nodes, edges, options);
       break;
     }
-    case 'radial': {
+    case "radial": {
       result = layoutWithRadial(nodes, edges, options);
       break;
     }

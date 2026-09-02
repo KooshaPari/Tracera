@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-import { useAuthStore } from '../stores/auth-store';
+import { useAuthStore } from "../stores/auth-store";
 
 /**
  * Auth token context - delegates to auth-store (Zustand).

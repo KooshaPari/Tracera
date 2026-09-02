@@ -1,4 +1,4 @@
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
 import {
   FULL_CIRCLE_RADIANS,
@@ -6,7 +6,7 @@ import {
   RADIAL_ORPHAN_SEGMENTS,
   RADIAL_RADIUS_MULTIPLIER,
   START_ANGLE_RADIANS,
-} from './constants';
+} from "./constants";
 
 interface Point {
   coordX: number;

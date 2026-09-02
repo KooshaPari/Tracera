@@ -1,14 +1,14 @@
-import type { HttpMethod } from 'openapi-typescript-helpers';
+import type { HttpMethod } from "openapi-typescript-helpers";
 
-import createClient from 'openapi-fetch';
+import createClient from "openapi-fetch";
 
-import { API_ORIGIN } from '@/config/api-origin';
-import { logger } from '@/lib/logger';
+import { API_ORIGIN } from "@/config/api-origin";
+import { logger } from "@/lib/logger";
 
-import { getCSRFHeaders } from '../lib/csrf';
-import { useAuthStore } from '../stores/authStore';
-import { apiConstants } from './client-constants';
-import { responseHandlers } from './client-response-handlers';
+import { getCSRFHeaders } from "../lib/csrf";
+import { useAuthStore } from "../stores/authStore";
+import { apiConstants } from "./client-constants";
+import { responseHandlers } from "./client-response-handlers";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- openapi-fetch needs explicit HttpMethod keys to avoid PathsWithMethod resolving to never under exactOptionalPropertyTypes
 type AnyPaths = { [path: string]: { [method in HttpMethod]: any } };
@@ -19,19 +19,19 @@ const API_BASE_URL = API_ORIGIN;
 
 const rawApiClient = createClient<AnyPaths>({
   baseUrl: API_BASE_URL,
-  credentials: 'include',
+  credentials: "include",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 if (!rawApiClient) {
-  logger.error('API client failed to initialize');
-  throw new Error('API client initialization failed');
+  logger.error("API client failed to initialize");
+  throw new Error("API client initialization failed");
 }
 
 type LegacyRequestInit = Record<string, unknown>;
-type LegacyHttpMethod = Extract<HttpMethod, 'get' | 'post' | 'put' | 'delete'>;
+type LegacyHttpMethod = Extract<HttpMethod, "get" | "post" | "put" | "delete">;
 type LegacyApiClient = typeof rawApiClient & {
   get<T>(path: string, init?: LegacyRequestInit): Promise<T>;
   post<T>(path: string, init?: LegacyRequestInit): Promise<T>;
@@ -52,42 +52,44 @@ const requestLegacyEndpoint = <T>(
 ): Promise<T> => {
   // openapi-fetch types require 3 args; cast through `any` to allow the no-init
   // overload used by the legacy helpers, matching the existing `as never` style.
-  const request = init === undefined
-    ? (rawApiClient.request as any)(method, path)
-    : (rawApiClient.request as any)(method, path, init);
+  const request =
+    init === undefined
+      ? (rawApiClient.request as any)(method, path)
+      : (rawApiClient.request as any)(method, path, init);
   return unwrap<T>(request);
 };
 
 const apiClient: LegacyApiClient = Object.assign(rawApiClient, {
-  get: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>('get', path, init),
-  post: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>('post', path, init),
-  put: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>('put', path, init),
-  delete: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>('delete', path, init),
+  get: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>("get", path, init),
+  post: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>("post", path, init),
+  put: <T>(path: string, init?: LegacyRequestInit) => requestLegacyEndpoint<T>("put", path, init),
+  delete: <T>(path: string, init?: LegacyRequestInit) =>
+    requestLegacyEndpoint<T>("delete", path, init),
 });
 
 const normalizeToken = (token: string): string => {
-  if (token === '') {
-    return '';
+  if (token === "") {
+    return "";
   }
   return token.trim();
 };
 
 const getLocalStorageToken = (): string => {
   if (!globalThis.window) {
-    return '';
+    return "";
   }
   const localToken = globalThis.window.localStorage.getItem(apiConstants.authTokenKey);
-  return localToken ?? '';
+  return localToken ?? "";
 };
 
 const getStoreToken = (): string => {
   const storeToken = useAuthStore.getState().token;
-  return storeToken ?? '';
+  return storeToken ?? "";
 };
 
 const getStoredToken = (): string => {
   const storeToken = getStoreToken();
-  if (storeToken !== '') {
+  if (storeToken !== "") {
     return normalizeToken(storeToken);
   }
   return normalizeToken(getLocalStorageToken());
@@ -95,7 +97,7 @@ const getStoredToken = (): string => {
 
 const getAuthHeaders = (): Record<string, string> => {
   const token = getStoredToken();
-  if (token === '') {
+  if (token === "") {
     return {};
   }
   return {
@@ -105,7 +107,7 @@ const getAuthHeaders = (): Record<string, string> => {
 
 const handleLogout = (): void => {
   if (globalThis.window) {
-    const logoutEvent = new CustomEvent('auth:logout');
+    const logoutEvent = new CustomEvent("auth:logout");
     globalThis.window.dispatchEvent(logoutEvent);
     globalThis.window.location.href = apiConstants.authLoginRedirect;
   }
@@ -113,12 +115,12 @@ const handleLogout = (): void => {
 
 const handleSessionResponse = (response: Response): boolean => {
   if (response.status === apiConstants.statusUnauthorized) {
-    logger.warn('[Auth] Session validation failed: 401 Unauthorized');
+    logger.warn("[Auth] Session validation failed: 401 Unauthorized");
     return false;
   }
 
   if (response.ok) {
-    logger.debug('[Auth] Session validated successfully');
+    logger.debug("[Auth] Session validated successfully");
     return true;
   }
 
@@ -126,25 +128,25 @@ const handleSessionResponse = (response: Response): boolean => {
 };
 
 const handleSessionError = (error: unknown): boolean => {
-  logger.error('[Auth] Session validation error:', error);
+  logger.error("[Auth] Session validation error:", error);
   return false;
 };
 
 const validateSession = async (): Promise<boolean> => {
   const token = getStoredToken();
-  if (token === '') {
+  if (token === "") {
     return false;
   }
 
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
-    'Content-Type': apiConstants.contentTypeJson,
+    "Content-Type": apiConstants.contentTypeJson,
   };
 
   const requestInit: RequestInit = {
-    credentials: 'include',
+    credentials: "include",
     headers,
-    method: 'GET',
+    method: "GET",
   };
 
   try {
@@ -165,7 +167,7 @@ const getRequestUrl = (request: Request): URL | null => {
 
 const buildRewriteUrl = (url: URL): string | null => {
   const targetBase = getBackendURL(url.pathname);
-  if (targetBase === '') {
+  if (targetBase === "") {
     return null;
   }
   const target = new URL(targetBase);
@@ -203,7 +205,7 @@ const applyCsrfHeaders = (request: Request): void => {
   }
 };
 
-const protectedBackendRoots = ['/api', '/evidence', '/sdlc-pm', '/org-intel'] as const;
+const protectedBackendRoots = ["/api", "/evidence", "/sdlc-pm", "/org-intel"] as const;
 
 const isProtectedBackendPath = (pathname: string): boolean =>
   protectedBackendRoots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
@@ -219,8 +221,8 @@ const applyAuthHeaders = (request: Request): void => {
   }
 
   const token = getStoredToken();
-  if (token !== '') {
-    request.headers.set('Authorization', `Bearer ${token}`);
+  if (token !== "") {
+    request.headers.set("Authorization", `Bearer ${token}`);
   }
 };
 

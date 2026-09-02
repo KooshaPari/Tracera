@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 export const useMediaQuery = (query: string): boolean => {
   const [matches, setMatches] = useState(false);
 
   useEffect(() => {
-    if (typeof globalThis.window === 'undefined') {
+    if (typeof globalThis.window === "undefined") {
       return;
     }
 
@@ -20,7 +20,7 @@ export const useMediaQuery = (query: string): boolean => {
 
     // Add listener
     if (media.addEventListener) {
-      media.addEventListener('change', listener);
+      media.addEventListener("change", listener);
     } else {
       // Fallback for older browsers
       media.addListener(listener);
@@ -29,7 +29,7 @@ export const useMediaQuery = (query: string): boolean => {
     // Cleanup
     return () => {
       if (media.removeEventListener) {
-        media.removeEventListener('change', listener);
+        media.removeEventListener("change", listener);
       } else {
         media.removeListener(listener);
       }
@@ -40,11 +40,11 @@ export const useMediaQuery = (query: string): boolean => {
 };
 
 // Predefined breakpoint hooks
-export const useIsMobile = (): boolean => useMediaQuery('(max-width: 768px)');
+export const useIsMobile = (): boolean => useMediaQuery("(max-width: 768px)");
 
 export const useIsTablet = (): boolean =>
-  useMediaQuery('(min-width: 769px) and (max-width: 1024px)');
+  useMediaQuery("(min-width: 769px) and (max-width: 1024px)");
 
-export const useIsDesktop = (): boolean => useMediaQuery('(min-width: 1025px)');
+export const useIsDesktop = (): boolean => useMediaQuery("(min-width: 1025px)");
 
-export const useIsDarkMode = (): boolean => useMediaQuery('(prefers-color-scheme: dark)');
+export const useIsDarkMode = (): boolean => useMediaQuery("(prefers-color-scheme: dark)");

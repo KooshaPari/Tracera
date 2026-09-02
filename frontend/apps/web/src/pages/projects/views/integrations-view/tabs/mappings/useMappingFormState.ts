@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from "react";
 
 import type {
   GitHubProject,
@@ -7,7 +7,7 @@ import type {
   IntegrationProvider,
   LinearProject,
   MappingDirection,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
 import {
   useCreateMapping,
@@ -15,8 +15,8 @@ import {
   useGitHubProjects,
   useGitHubRepos,
   useLinearProjects,
-} from '@/hooks/useIntegrations';
-import { logger } from '@/lib/logger';
+} from "@/hooks/useIntegrations";
+import { logger } from "@/lib/logger";
 
 interface MappingCreateArgs {
   externalId: string;
@@ -67,7 +67,7 @@ const EMPTY_LINEAR_PROJECTS: LinearProject[] = [];
 const FIRST_PAGE = 1;
 
 function parseIntegrationProvider(value: string): IntegrationProvider | undefined {
-  if (value === 'github' || value === 'github_projects' || value === 'linear') {
+  if (value === "github" || value === "github_projects" || value === "linear") {
     return value;
   }
   return undefined;
@@ -84,19 +84,19 @@ function selectActiveCredentialId(
   selectedCredentialId: string,
   providerCredentials: IntegrationCredential[],
 ): string {
-  if (selectedCredentialId !== '') {
+  if (selectedCredentialId !== "") {
     return selectedCredentialId;
   }
 
   const [firstCredential] = providerCredentials;
   if (firstCredential === undefined) {
-    return '';
+    return "";
   }
   return firstCredential.id;
 }
 
 function selectSearchParam(value: string): string | undefined {
-  if (value === '') {
+  if (value === "") {
     return undefined;
   }
   return value;
@@ -149,18 +149,18 @@ function useMappingSources({
 } {
   const repoSearchParam = useMemo(() => selectSearchParam(repoSearch), [repoSearch]);
 
-  let githubReposCredentialId = '';
-  if (provider === 'github') {
+  let githubReposCredentialId = "";
+  if (provider === "github") {
     githubReposCredentialId = activeCredentialId;
   }
 
-  let githubProjectsCredentialId = '';
-  if (provider === 'github_projects') {
+  let githubProjectsCredentialId = "";
+  if (provider === "github_projects") {
     githubProjectsCredentialId = activeCredentialId;
   }
 
-  let linearCredentialId = '';
-  if (provider === 'linear') {
+  let linearCredentialId = "";
+  if (provider === "linear") {
     linearCredentialId = activeCredentialId;
   }
 
@@ -202,8 +202,8 @@ function useCreateMappingHandler({
       externalUrl,
       mappingMetadata,
     }: MappingCreateArgs) => {
-      if (activeCredentialId === '') {
-        const message = 'Select a credential before creating a mapping.';
+      if (activeCredentialId === "") {
+        const message = "Select a credential before creating a mapping.";
         setErrorMessage(message);
         logger.warn(message);
         return;
@@ -213,12 +213,12 @@ function useCreateMappingHandler({
 
       const payload: CreateMappingPayload = {
         credentialId: activeCredentialId,
-        direction: 'bidirectional',
+        direction: "bidirectional",
         externalId,
         externalKey,
         externalType,
         localItemId: projectId,
-        localItemType: 'project',
+        localItemType: "project",
         projectId,
         syncEnabled: true,
       };
@@ -232,8 +232,8 @@ function useCreateMappingHandler({
 
       createMapping.mutate(payload, {
         onError: (error: unknown) => {
-          logger.error('Failed to create mapping:', error);
-          setErrorMessage('Failed to create mapping. Please try again.');
+          logger.error("Failed to create mapping:", error);
+          setErrorMessage("Failed to create mapping. Please try again.");
         },
       });
     },
@@ -282,10 +282,10 @@ function useStableSources({
 }
 
 function useMappingFormState(projectId: string): MappingFormState {
-  const [provider, setProvider] = useState<IntegrationProvider>('github');
-  const [selectedCredentialId, setCredentialId] = useState('');
-  const [repoSearch, setRepoSearch] = useState('');
-  const [projectOwner, setProjectOwner] = useState('');
+  const [provider, setProvider] = useState<IntegrationProvider>("github");
+  const [selectedCredentialId, setCredentialId] = useState("");
+  const [repoSearch, setRepoSearch] = useState("");
+  const [projectOwner, setProjectOwner] = useState("");
   const [projectOwnerIsOrg, setProjectOwnerIsOrg] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 

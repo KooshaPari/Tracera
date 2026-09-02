@@ -1,11 +1,11 @@
-import { useParams } from '@tanstack/react-router';
-import { useCallback } from 'react';
-import { toast } from 'sonner';
+import { useParams } from "@tanstack/react-router";
+import { useCallback } from "react";
+import { toast } from "sonner";
 
-import { ItemDetailPage } from '@/views/item-detail/components/ItemDetailPage';
-import { LoadingView } from '@/views/item-detail/components/LoadingView';
-import { NotFoundView } from '@/views/item-detail/components/NotFoundView';
-import { useItemDetailViewModel } from '@/views/item-detail/view-model';
+import { ItemDetailPage } from "@/views/item-detail/components/ItemDetailPage";
+import { LoadingView } from "@/views/item-detail/components/LoadingView";
+import { NotFoundView } from "@/views/item-detail/components/NotFoundView";
+import { useItemDetailViewModel } from "@/views/item-detail/view-model";
 
 type ParamsRecord = Record<string, unknown>;
 
@@ -13,7 +13,7 @@ function isRecord(value: unknown): value is ParamsRecord {
   if (value === null) {
     return false;
   }
-  return typeof value === 'object';
+  return typeof value === "object";
 }
 
 function readParam(params: unknown, key: string): string | undefined {
@@ -21,7 +21,7 @@ function readParam(params: unknown, key: string): string | undefined {
     return;
   }
   const value = params[key];
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return;
   }
   const trimmed = value.trim();
@@ -33,9 +33,9 @@ function readParam(params: unknown, key: string): string | undefined {
 
 export function ItemDetailView(): JSX.Element {
   const params = useParams({ strict: false });
-  const itemId = readParam(params, 'itemId');
-  const projectId = readParam(params, 'projectId');
-  const viewTypeParam = readParam(params, 'viewType');
+  const itemId = readParam(params, "itemId");
+  const projectId = readParam(params, "projectId");
+  const viewTypeParam = readParam(params, "viewType");
 
   const model = useItemDetailViewModel({ itemId, projectId, viewTypeParam });
 
@@ -44,7 +44,7 @@ export function ItemDetailView(): JSX.Element {
   }, []);
 
   const handleOpenNewTab = useCallback((): void => {
-    globalThis.open(globalThis.location.href, '_blank', 'noopener,noreferrer');
+    globalThis.open(globalThis.location.href, "_blank", "noopener,noreferrer");
   }, []);
 
   const handleStartEdit = useCallback((): void => {
@@ -98,11 +98,11 @@ export function ItemDetailView(): JSX.Element {
   );
 
   const { query } = model;
-  if (query.kind === 'loading') {
+  if (query.kind === "loading") {
     return <LoadingView />;
   }
 
-  if (query.kind === 'not_found') {
+  if (query.kind === "not_found") {
     return <NotFoundView message={query.message} onBack={model.handleBack} />;
   }
 

@@ -3,22 +3,22 @@
  * Receives nodes/edges/options, returns positions.
  */
 
-import type { ElkExtendedEdge, ElkNode } from 'elkjs';
+import type { ElkExtendedEdge, ElkNode } from "elkjs";
 
-import * as ELKModule from 'elkjs/lib/elk.bundled.js';
+import * as ELKModule from "elkjs/lib/elk.bundled.js";
 
 const ELK = (ELKModule as { default?: unknown }).default ?? ELKModule;
 const elk = new (ELK as new () => { layout: (g: ElkNode) => Promise<ElkNode> })();
 
 const DIRECTION_MAP: Record<string, string> = {
-  BT: 'UP',
-  LR: 'RIGHT',
-  RL: 'LEFT',
-  TB: 'DOWN',
+  BT: "UP",
+  LR: "RIGHT",
+  RL: "LEFT",
+  TB: "DOWN",
 };
 
 export interface ElkOptionsPayload {
-  direction: 'TB' | 'LR' | 'BT' | 'RL';
+  direction: "TB" | "LR" | "BT" | "RL";
   nodeWidth: number;
   nodeHeight: number;
   rankSep: number;
@@ -28,14 +28,14 @@ export interface ElkOptionsPayload {
 }
 
 export interface LayoutRequest {
-  type: 'layout';
+  type: "layout";
   nodes: { id: string }[];
   edges: { id: string; source: string; target: string }[];
   options: ElkOptionsPayload;
 }
 
 export interface LayoutResponse {
-  type: 'result';
+  type: "result";
   positions: { id: string; x: number; y: number }[];
 }
 
@@ -59,13 +59,13 @@ async function runElkLayout(
       sources: [e.source],
       targets: [e.target],
     })) as ElkExtendedEdge[],
-    id: 'root',
+    id: "root",
     layoutOptions: {
-      'elk.algorithm': 'layered',
-      'elk.direction': DIRECTION_MAP[options.direction] ?? 'DOWN',
-      'elk.layered.spacing.nodeNodeBetweenLayers': String(options.rankSep),
-      'elk.padding': `[left=${options.marginX}, top=${options.marginY}, right=${options.marginX}, bottom=${options.marginY}]`,
-      'elk.spacing.nodeNode': String(options.nodeSep),
+      "elk.algorithm": "layered",
+      "elk.direction": DIRECTION_MAP[options.direction] ?? "DOWN",
+      "elk.layered.spacing.nodeNodeBetweenLayers": String(options.rankSep),
+      "elk.padding": `[left=${options.marginX}, top=${options.marginY}, right=${options.marginX}, bottom=${options.marginY}]`,
+      "elk.spacing.nodeNode": String(options.nodeSep),
     },
   };
 
@@ -82,7 +82,7 @@ async function runElkLayout(
 
 globalThis.onmessage = (ev: MessageEvent<LayoutRequest>) => {
   const msg = ev.data;
-  if (msg.type !== 'layout') {
+  if (msg.type !== "layout") {
     return;
   }
 
@@ -91,7 +91,7 @@ globalThis.onmessage = (ev: MessageEvent<LayoutRequest>) => {
       self.postMessage(
         {
           positions,
-          type: 'result',
+          type: "result",
         } satisfies LayoutResponse,
         self.location.origin,
       );
@@ -100,7 +100,7 @@ globalThis.onmessage = (ev: MessageEvent<LayoutRequest>) => {
       self.postMessage(
         {
           error: error instanceof Error ? error.message : String(error),
-          type: 'error',
+          type: "error",
         },
         self.location.origin,
       );

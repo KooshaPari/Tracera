@@ -1,15 +1,15 @@
 // General helper utilities
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-const BASE36_RADIX = Number('36');
-const ID_SLICE_START = Number('2');
-const ID_SLICE_END = Number('9');
-const FULL_PERCENT = Number('100');
-const ORDER_BEFORE = Number('-1');
-const ORDER_AFTER = Number('1');
+const BASE36_RADIX = Number("36");
+const ID_SLICE_START = Number("2");
+const ID_SLICE_END = Number("9");
+const FULL_PERCENT = Number("100");
+const ORDER_BEFORE = Number("-1");
+const ORDER_AFTER = Number("1");
 
 // Array utilities
 const groupBy = function groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
@@ -21,16 +21,16 @@ const groupBy = function groupBy<T>(array: T[], key: keyof T): Record<string, T[
   }, {});
 };
 
-const sortBy = function sortBy<T>(array: T[], key: keyof T, order: 'asc' | 'desc' = 'asc'): T[] {
+const sortBy = function sortBy<T>(array: T[], key: keyof T, order: "asc" | "desc" = "asc"): T[] {
   return [...array].toSorted((a: T, b: T) => {
     const aVal = a[key];
     const bVal = b[key];
 
     if (aVal < bVal) {
-      return order === 'asc' ? ORDER_BEFORE : ORDER_AFTER;
+      return order === "asc" ? ORDER_BEFORE : ORDER_AFTER;
     }
     if (aVal > bVal) {
-      return order === 'asc' ? ORDER_AFTER : ORDER_BEFORE;
+      return order === "asc" ? ORDER_AFTER : ORDER_BEFORE;
     }
     return 0;
   });
@@ -101,14 +101,14 @@ const slugify = function slugify(text: string): string {
   return text
     .toLowerCase()
     .trim()
-    .replaceAll(/[^\w\s-]/g, '')
-    .replaceAll(/[\s_-]+/g, '-')
-    .replaceAll(/^-+|-+$/g, '');
+    .replaceAll(/[^\w\s-]/g, "")
+    .replaceAll(/[\s_-]+/g, "-")
+    .replaceAll(/^-+|-+$/g, "");
 };
 
 const randomString = function randomString(length: number): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
   for (let index = 0; index < length; index += 1) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -214,13 +214,13 @@ const calculateProgress = function calculateProgress(items: Item[]): number {
   if (items.length === 0) {
     return 0;
   }
-  const doneItems = items.filter((item) => item.status === 'done').length;
+  const doneItems = items.filter((item) => item.status === "done").length;
   return (doneItems / items.length) * FULL_PERCENT;
 };
 
 // Local storage utilities (SSR-safe)
 const isLocalStorageAvailable = function isLocalStorageAvailable(): boolean {
-  return typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function';
+  return typeof localStorage !== "undefined" && typeof localStorage.getItem === "function";
 };
 
 const getFromStorage = function getFromStorage<T>(key: string, defaultValue: T): T {
@@ -242,7 +242,7 @@ const setToStorage = function setToStorage<T>(key: string, value: T): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
-    logger.error('Error saving to localStorage:', error);
+    logger.error("Error saving to localStorage:", error);
   }
 };
 
@@ -253,16 +253,16 @@ const removeFromStorage = function removeFromStorage(key: string): void {
   try {
     localStorage.removeItem(key);
   } catch (error) {
-    logger.error('Error removing from localStorage:', error);
+    logger.error("Error removing from localStorage:", error);
   }
 };
 
 // Copy to clipboard
 const copyToClipboard = async function copyToClipboard(text: string): Promise<boolean> {
   if (
-    typeof globalThis.window === 'undefined' ||
-    typeof navigator === 'undefined' ||
-    typeof document === 'undefined'
+    typeof globalThis.window === "undefined" ||
+    typeof navigator === "undefined" ||
+    typeof document === "undefined"
   ) {
     return false;
   }
@@ -278,14 +278,14 @@ const copyToClipboard = async function copyToClipboard(text: string): Promise<bo
 
   // Fallback for older browsers
   try {
-    const textArea = document.createElement('textarea');
+    const textArea = document.createElement("textarea");
     textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
     document.body.append(textArea);
     textArea.select();
     try {
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(textArea);
       return true;
     } catch {
@@ -301,15 +301,15 @@ const copyToClipboard = async function copyToClipboard(text: string): Promise<bo
 const downloadFile = function downloadFile(
   content: string,
   filename: string,
-  type = 'text/plain',
+  type = "text/plain",
 ): void {
-  if (typeof globalThis.window === 'undefined' || typeof document === 'undefined') {
+  if (typeof globalThis.window === "undefined" || typeof document === "undefined") {
     return;
   }
 
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
   link.download = filename;
   document.body.append(link);

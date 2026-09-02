@@ -1,7 +1,7 @@
 // Hierarchy utilities for graph visualization
 // Handles parent-child relationships, depth calculation, and breadcrumb paths
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
 const NOT_FOUND_DEPTH = -1;
 
@@ -37,7 +37,7 @@ export function buildHierarchy(items: Item[], links: Link[]): Map<string, Hierar
 
   // Find parent_of links to build parent-child relationships
   for (const link of links) {
-    if (link.type === 'parent_of') {
+    if (link.type === "parent_of") {
       // Parent_of: source is parent, target is child
       if (!childMap.has(link.sourceId)) {
         childMap.set(link.sourceId, new Set());
@@ -323,7 +323,7 @@ export function getBreadcrumbPath(
     const n = hierarchyMap.get(id);
     return {
       id,
-      title: n?.item.title ?? 'Unknown',
+      title: n?.item.title ?? "Unknown",
     };
   });
 }

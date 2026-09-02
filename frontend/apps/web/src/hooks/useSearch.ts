@@ -1,17 +1,17 @@
-import { useQuery } from '@tanstack/react-query';
-import { useCallback, useState } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
 
-import type { SearchQuery } from '../api/types';
+import type { SearchQuery } from "../api/types";
 
-import { api } from '../api/endpoints';
-import { useDebounce } from './useDebounce';
+import { api } from "../api/endpoints";
+import { useDebounce } from "./useDebounce";
 
 const DEFAULT_DEBOUNCE_DELAY = 300;
 const DEFAULT_SUGGESTIONS_DEBOUNCE = 200;
 
 export const useSearch = (initialQuery: Partial<SearchQuery> = {}) => {
   const [query, setQuery] = useState<SearchQuery>({
-    q: '',
+    q: "",
     page: 1,
     per_page: 20,
     ...initialQuery,
@@ -22,7 +22,7 @@ export const useSearch = (initialQuery: Partial<SearchQuery> = {}) => {
   const searchQuery = useQuery({
     enabled: debouncedQuery.length > 0,
     queryFn: async () => api.search.search({ ...query, q: debouncedQuery }),
-    queryKey: ['search', JSON.stringify({ ...query, q: debouncedQuery })],
+    queryKey: ["search", JSON.stringify({ ...query, q: debouncedQuery })],
   });
 
   const updateQuery = useCallback((updates: Partial<SearchQuery>) => {
@@ -41,7 +41,7 @@ export const useSearch = (initialQuery: Partial<SearchQuery> = {}) => {
     setQuery({
       page: 1,
       per_page: 20,
-      q: '',
+      q: "",
     });
   }, []);
 
@@ -64,7 +64,7 @@ export const useSearchSuggestions = (q: string, limit = 10) => {
   return useQuery({
     enabled: debouncedQuery.length > 2,
     queryFn: async () => api.search.suggest(debouncedQuery, limit),
-    queryKey: ['search-suggestions', debouncedQuery, limit],
+    queryKey: ["search-suggestions", debouncedQuery, limit],
     staleTime: 60_000, // 1 minute
   });
 };

@@ -1,6 +1,6 @@
-import { defineConfig, devices } from '@playwright/test';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { defineConfig, devices } from "@playwright/test";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,9 +22,9 @@ export default defineConfig({
   // ============================================================================
   // Test Directory & File Patterns
   // ============================================================================
-  testDir: './e2e',
-  testMatch: '**/*.spec.ts',
-  testIgnore: ['**/node_modules/**', '**/dist/**'],
+  testDir: "./e2e",
+  testMatch: "**/*.spec.ts",
+  testIgnore: ["**/node_modules/**", "**/dist/**"],
 
   // ============================================================================
   // Timeouts
@@ -40,7 +40,7 @@ export default defineConfig({
   fullyParallel: true, // Run tests in parallel across workers
   forbidOnly: Boolean(process.env.CI), // Prevent test.only in CI
   retries: process.env.CI ? 2 : 0, // Retry failed tests on CI
-  workers: process.env.CI ? '50%' : undefined, // Use 50% of CPUs on CI
+  workers: process.env.CI ? "50%" : undefined, // Use 50% of CPUs on CI
 
   // ============================================================================
   // Reporters
@@ -48,47 +48,47 @@ export default defineConfig({
   reporter: [
     // HTML report with screenshots and traces
     [
-      'html',
+      "html",
       {
-        open: 'never',
-        outputFolder: 'playwright-report', // Don't auto-open, use `npx playwright show-report`
+        open: "never",
+        outputFolder: "playwright-report", // Don't auto-open, use `npx playwright show-report`
       },
     ],
 
     // JSON report for programmatic access
     [
-      'json',
+      "json",
       {
-        outputFile: 'playwright-report/results.json',
+        outputFile: "playwright-report/results.json",
       },
     ],
 
     // JUnit XML for CI integration (Jenkins, GitLab, etc.)
     [
-      'junit',
+      "junit",
       {
-        outputFile: 'playwright-report/junit.xml',
+        outputFile: "playwright-report/junit.xml",
       },
     ],
 
     // List reporter for terminal output
     [
-      'list',
+      "list",
       {
         printSteps: true, // Show test steps in terminal
       },
     ],
 
     // GitHub Actions reporter (only on CI)
-    ...(process.env.CI ? [['github' as const]] : []),
+    ...(process.env.CI ? [["github" as const]] : []),
 
     // Blob reporter for Playwright Cloud/Trace Viewer
     ...(process.env.CI
       ? [
           [
-            'blob' as const,
+            "blob" as const,
             {
-              outputDir: 'playwright-report/blob',
+              outputDir: "playwright-report/blob",
             },
           ],
         ]
@@ -100,34 +100,34 @@ export default defineConfig({
   // ============================================================================
   use: {
     // Base URL for tests
-    baseURL: process.env.BASE_URL ?? 'http://localhost:5173',
+    baseURL: process.env.BASE_URL ?? "http://localhost:5173",
 
     // Browser context options
     viewport: { height: 720, width: 1280 },
     ignoreHTTPSErrors: true,
     acceptDownloads: true,
-    locale: 'en-US',
-    timezoneId: 'America/New_York',
+    locale: "en-US",
+    timezoneId: "America/New_York",
     permissions: [], // No permissions by default
     geolocation: undefined,
-    colorScheme: 'light',
+    colorScheme: "light",
 
     // Timeouts
     actionTimeout: 10_000, // 10s for actions (click, fill, etc.)
     navigationTimeout: 30_000, // 30s for navigation
 
     // Traces - capture on failure and retry
-    trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
+    trace: process.env.CI ? "on-first-retry" : "retain-on-failure",
 
     // Screenshots
     screenshot: {
       fullPage: true,
-      mode: 'only-on-failure',
+      mode: "only-on-failure",
     },
 
     // Videos
     video: {
-      mode: 'retain-on-failure',
+      mode: "retain-on-failure",
       size: { height: 720, width: 1280 },
     },
 
@@ -149,49 +149,49 @@ export default defineConfig({
     // Desktop Browsers
     // --------------------------------------------------------------------------
     {
-      name: 'chromium',
+      name: "chromium",
       // Avoid double-running specialized suites (they have dedicated projects below).
       testIgnore: [
-        '**/*.a11y.spec.ts',
-        '**/*.perf.spec.ts',
-        '**/*.visual.spec.ts',
-        '**/*.setup.ts',
+        "**/*.a11y.spec.ts",
+        "**/*.perf.spec.ts",
+        "**/*.visual.spec.ts",
+        "**/*.setup.ts",
       ],
       use: {
-        ...devices['Desktop Chrome'],
-        channel: 'chrome', // Use installed Chrome (for Lighthouse)
+        ...devices["Desktop Chrome"],
+        channel: "chrome", // Use installed Chrome (for Lighthouse)
         launchOptions: {
           args: [
-            '--disable-blink-features=AutomationControlled', // Hide automation
-            '--disable-dev-shm-usage', // Prevent /dev/shm issues in Docker
+            "--disable-blink-features=AutomationControlled", // Hide automation
+            "--disable-dev-shm-usage", // Prevent /dev/shm issues in Docker
           ],
         },
       },
     },
 
     {
-      name: 'firefox',
+      name: "firefox",
       testIgnore: [
-        '**/*.a11y.spec.ts',
-        '**/*.perf.spec.ts',
-        '**/*.visual.spec.ts',
-        '**/*.setup.ts',
+        "**/*.a11y.spec.ts",
+        "**/*.perf.spec.ts",
+        "**/*.visual.spec.ts",
+        "**/*.setup.ts",
       ],
       use: {
-        ...devices['Desktop Firefox'],
+        ...devices["Desktop Firefox"],
       },
     },
 
     {
-      name: 'webkit',
+      name: "webkit",
       testIgnore: [
-        '**/*.a11y.spec.ts',
-        '**/*.perf.spec.ts',
-        '**/*.visual.spec.ts',
-        '**/*.setup.ts',
+        "**/*.a11y.spec.ts",
+        "**/*.perf.spec.ts",
+        "**/*.visual.spec.ts",
+        "**/*.setup.ts",
       ],
       use: {
-        ...devices['Desktop Safari'],
+        ...devices["Desktop Safari"],
       },
     },
 
@@ -199,41 +199,41 @@ export default defineConfig({
     // Mobile Devices
     // --------------------------------------------------------------------------
     {
-      name: 'mobile-chrome',
+      name: "mobile-chrome",
       testIgnore: [
-        '**/*.a11y.spec.ts',
-        '**/*.perf.spec.ts',
-        '**/*.visual.spec.ts',
-        '**/*.setup.ts',
+        "**/*.a11y.spec.ts",
+        "**/*.perf.spec.ts",
+        "**/*.visual.spec.ts",
+        "**/*.setup.ts",
       ],
       use: {
-        ...devices['Pixel 5'],
+        ...devices["Pixel 5"],
       },
     },
 
     {
-      name: 'mobile-safari',
+      name: "mobile-safari",
       testIgnore: [
-        '**/*.a11y.spec.ts',
-        '**/*.perf.spec.ts',
-        '**/*.visual.spec.ts',
-        '**/*.setup.ts',
+        "**/*.a11y.spec.ts",
+        "**/*.perf.spec.ts",
+        "**/*.visual.spec.ts",
+        "**/*.setup.ts",
       ],
       use: {
-        ...devices['iPhone 13'],
+        ...devices["iPhone 13"],
       },
     },
 
     {
-      name: 'tablet-ipad',
+      name: "tablet-ipad",
       testIgnore: [
-        '**/*.a11y.spec.ts',
-        '**/*.perf.spec.ts',
-        '**/*.visual.spec.ts',
-        '**/*.setup.ts',
+        "**/*.a11y.spec.ts",
+        "**/*.perf.spec.ts",
+        "**/*.visual.spec.ts",
+        "**/*.setup.ts",
       ],
       use: {
-        ...devices['iPad Pro'],
+        ...devices["iPad Pro"],
       },
     },
 
@@ -241,18 +241,18 @@ export default defineConfig({
     // Branded/Authenticated Tests
     // --------------------------------------------------------------------------
     {
-      dependencies: ['setup'],
-      name: 'chromium-authenticated',
+      dependencies: ["setup"],
+      name: "chromium-authenticated",
       testIgnore: [
-        '**/*.a11y.spec.ts',
-        '**/*.perf.spec.ts',
-        '**/*.visual.spec.ts',
-        '**/*.setup.ts',
+        "**/*.a11y.spec.ts",
+        "**/*.perf.spec.ts",
+        "**/*.visual.spec.ts",
+        "**/*.setup.ts",
       ],
       use: {
-        ...devices['Desktop Chrome'],
-        channel: 'chrome',
-        storageState: 'playwright/.auth/user.json', // Reuse auth state
+        ...devices["Desktop Chrome"],
+        channel: "chrome",
+        storageState: "playwright/.auth/user.json", // Reuse auth state
       }, // Run setup project first
     },
 
@@ -260,16 +260,16 @@ export default defineConfig({
     // Dark Mode Testing
     // --------------------------------------------------------------------------
     {
-      name: 'chromium-dark',
+      name: "chromium-dark",
       testIgnore: [
-        '**/*.a11y.spec.ts',
-        '**/*.perf.spec.ts',
-        '**/*.visual.spec.ts',
-        '**/*.setup.ts',
+        "**/*.a11y.spec.ts",
+        "**/*.perf.spec.ts",
+        "**/*.visual.spec.ts",
+        "**/*.setup.ts",
       ],
       use: {
-        ...devices['Desktop Chrome'],
-        colorScheme: 'dark',
+        ...devices["Desktop Chrome"],
+        colorScheme: "dark",
       },
     },
 
@@ -277,11 +277,11 @@ export default defineConfig({
     // Accessibility Testing Project (axe-core)
     // --------------------------------------------------------------------------
     {
-      name: 'accessibility',
-      testMatch: '**/*.a11y.spec.ts',
+      name: "accessibility",
+      testMatch: "**/*.a11y.spec.ts",
       use: {
-        ...devices['Desktop Chrome'],
-        channel: 'chrome',
+        ...devices["Desktop Chrome"],
+        channel: "chrome",
       },
     },
 
@@ -289,14 +289,14 @@ export default defineConfig({
     // Performance Testing Project (Lighthouse)
     // --------------------------------------------------------------------------
     {
-      name: 'performance',
-      testMatch: '**/*.perf.spec.ts',
+      name: "performance",
+      testMatch: "**/*.perf.spec.ts",
       timeout: 120_000,
       use: {
-        ...devices['Desktop Chrome'],
-        channel: 'chrome',
+        ...devices["Desktop Chrome"],
+        channel: "chrome",
         launchOptions: {
-          args: ['--remote-debugging-port=9222'],
+          args: ["--remote-debugging-port=9222"],
         },
       }, // Lighthouse needs more time
     },
@@ -305,11 +305,11 @@ export default defineConfig({
     // Visual Regression Testing (Percy/Chromatic)
     // --------------------------------------------------------------------------
     {
-      name: 'visual',
-      testMatch: '**/*.visual.spec.ts',
+      name: "visual",
+      testMatch: "**/*.visual.spec.ts",
       use: {
-        ...devices['Desktop Chrome'],
-        channel: 'chrome',
+        ...devices["Desktop Chrome"],
+        channel: "chrome",
       },
     },
 
@@ -317,8 +317,8 @@ export default defineConfig({
     // Setup Project (runs once before tests)
     // --------------------------------------------------------------------------
     {
-      name: 'setup',
-      testMatch: '**/*.setup.ts',
+      name: "setup",
+      testMatch: "**/*.setup.ts",
     },
   ],
 
@@ -326,36 +326,36 @@ export default defineConfig({
   // Web Server - Start dev server before tests
   // ============================================================================
   webServer: {
-    command: 'bun run dev',
-    url: 'http://localhost:5173',
+    command: "bun run dev",
+    url: "http://localhost:5173",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000, // 2 minutes to start
-    stdout: 'pipe',
-    stderr: 'pipe',
+    stdout: "pipe",
+    stderr: "pipe",
     env: {
-      NODE_ENV: 'test',
-      VITE_API_URL: 'http://localhost:8080',
+      NODE_ENV: "test",
+      VITE_API_URL: "http://localhost:8080",
     },
   },
 
   // ============================================================================
   // Output Directories
   // ============================================================================
-  outputDir: 'test-results', // Test artifacts (videos, traces, screenshots)
+  outputDir: "test-results", // Test artifacts (videos, traces, screenshots)
 
   // ============================================================================
   // Global Setup/Teardown
   // ============================================================================
-  globalSetup: path.resolve(__dirname, './e2e/global-setup.ts'),
-  globalTeardown: path.resolve(__dirname, './e2e/global-teardown.ts'),
+  globalSetup: path.resolve(__dirname, "./e2e/global-setup.ts"),
+  globalTeardown: path.resolve(__dirname, "./e2e/global-teardown.ts"),
 
   // ============================================================================
   // Metadata
   // ============================================================================
   metadata: {
-    'app-version': process.env.npm_package_version ?? 'unknown',
-    'build-id': process.env.BUILD_ID ?? 'local',
-    'git-commit': process.env.GIT_COMMIT ?? 'unknown',
+    "app-version": process.env.npm_package_version ?? "unknown",
+    "build-id": process.env.BUILD_ID ?? "local",
+    "git-commit": process.env.GIT_COMMIT ?? "unknown",
   },
 
   // ============================================================================
@@ -372,8 +372,8 @@ export default defineConfig({
   // Set via env: SHARD=1/4 (run 1st shard of 4 total)
   shard: process.env.SHARD
     ? {
-        current: Number.parseInt(process.env.SHARD.split('/')[0]),
-        total: Number.parseInt(process.env.SHARD.split('/')[1]),
+        current: Number.parseInt(process.env.SHARD.split("/")[0]),
+        total: Number.parseInt(process.env.SHARD.split("/")[1]),
       }
     : undefined,
 });

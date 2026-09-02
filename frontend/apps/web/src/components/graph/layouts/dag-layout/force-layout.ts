@@ -1,4 +1,4 @@
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
 import {
   FORCE_ATTRACTION_STRENGTH,
@@ -11,7 +11,7 @@ import {
   FORCE_REPULSION_STRENGTH,
   GRID_FALLBACK_PADDING_MULTIPLIER,
   GRID_MIN_COLUMNS,
-} from './constants';
+} from "./constants";
 
 interface ForcePosition {
   posX: number;

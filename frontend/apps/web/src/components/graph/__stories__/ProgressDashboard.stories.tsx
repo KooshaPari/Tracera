@@ -1,13 +1,13 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from "@storybook/react";
 
-import { ProgressDashboard } from '@/components/temporal/ProgressDashboard';
+import { ProgressDashboard } from "@/components/temporal/ProgressDashboard";
 
 const meta: Meta<typeof ProgressDashboard> = {
   argTypes: {
-    isLoading: { control: 'boolean' },
-    onMilestoneClick: { action: 'milestoneClick' },
-    onSprintClick: { action: 'sprintClick' },
-    projectId: { control: 'text' },
+    isLoading: { control: "boolean" },
+    onMilestoneClick: { action: "milestoneClick" },
+    onSprintClick: { action: "sprintClick" },
+    projectId: { control: "text" },
   },
   component: ProgressDashboard,
   parameters: {
@@ -19,10 +19,10 @@ const meta: Meta<typeof ProgressDashboard> = {
       },
       pauseAnimationAtEnd: true,
     },
-    layout: 'fullscreen',
+    layout: "fullscreen",
   },
-  tags: ['autodocs'],
-  title: 'Components/Graph/ProgressDashboard',
+  tags: ["autodocs"],
+  title: "Components/Graph/ProgressDashboard",
 };
 
 export default meta;
@@ -31,11 +31,11 @@ type Story = StoryObj<typeof meta>;
 const mockMilestones = [
   {
     createdAt: new Date().toISOString(),
-    health: 'green' as const,
-    id: 'm1',
+    health: "green" as const,
+    id: "m1",
     itemCount: 10,
-    itemIds: ['item-1', 'item-2'],
-    name: 'v1.0 Release',
+    itemIds: ["item-1", "item-2"],
+    name: "v1.0 Release",
     progress: {
       blockedItems: 0,
       completedItems: 7,
@@ -44,10 +44,10 @@ const mockMilestones = [
       percentage: 70,
       totalItems: 10,
     },
-    projectId: 'proj-1',
+    projectId: "proj-1",
     riskScore: 0,
-    slug: 'v1-0-release',
-    status: 'in_progress' as const,
+    slug: "v1-0-release",
+    status: "in_progress" as const,
     targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -61,18 +61,18 @@ const mockSprints = [
     createdAt: new Date().toISOString(),
     durationDays: 14,
     endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-    health: 'green' as const,
-    id: 's1',
+    health: "green" as const,
+    id: "s1",
     itemCount: 10,
     itemIds: [] as string[],
-    name: 'Sprint 1',
+    name: "Sprint 1",
     plannedPoints: 50,
-    projectId: 'proj-1',
+    projectId: "proj-1",
     remainingPoints: 15,
     removedPoints: 0,
-    slug: 'sprint-1',
+    slug: "sprint-1",
     startDate: new Date().toISOString(),
-    status: 'active' as const,
+    status: "active" as const,
     updatedAt: new Date().toISOString(),
   },
 ];
@@ -84,7 +84,7 @@ export const Default: Story = {
   args: {
     isLoading: false,
     milestones: mockMilestones,
-    projectId: 'proj-1',
+    projectId: "proj-1",
     sprints: mockSprints,
   },
 };
@@ -96,7 +96,7 @@ export const Loading: Story = {
   args: {
     isLoading: true,
     milestones: [],
-    projectId: 'proj-1',
+    projectId: "proj-1",
     sprints: [],
   },
 };
@@ -108,7 +108,7 @@ export const Empty: Story = {
   args: {
     isLoading: false,
     milestones: [],
-    projectId: 'proj-1',
+    projectId: "proj-1",
     sprints: [],
   },
 };
@@ -120,12 +120,12 @@ export const Tablet: Story = {
   args: {
     isLoading: false,
     milestones: mockMilestones,
-    projectId: 'proj-1',
+    projectId: "proj-1",
     sprints: mockSprints,
   },
   parameters: {
     viewport: {
-      defaultViewport: 'tablet',
+      defaultViewport: "tablet",
     },
   },
 };
@@ -137,12 +137,12 @@ export const DarkMode: Story = {
   args: {
     isLoading: false,
     milestones: mockMilestones,
-    projectId: 'proj-1',
+    projectId: "proj-1",
     sprints: mockSprints,
   },
   decorators: [
     (Story: React.ComponentType) => (
-      <div className='dark' data-theme='dark' style={{ minHeight: '100vh' }}>
+      <div className="dark" data-theme="dark" style={{ minHeight: "100vh" }}>
         <Story />
       </div>
     ),

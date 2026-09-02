@@ -1,7 +1,7 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
-test.describe('Dashboard Performance @performance @dashboard', () => {
-  test('loads /home within performance budget', async ({ page }) => {
+test.describe("Dashboard Performance @performance @dashboard", () => {
+  test("loads /home within performance budget", async ({ page }) => {
     // Inject performance observer script BEFORE navigation
     await page.addInitScript(() => {
       (window as any).__perfMetrics = {
@@ -19,7 +19,7 @@ test.describe('Dashboard Performance @performance @dashboard', () => {
       });
 
       try {
-        observer.observe({ type: 'largest-contentful-paint', buffered: true });
+        observer.observe({ type: "largest-contentful-paint", buffered: true });
       } catch {
         // LCP not supported in this context
       }
@@ -27,12 +27,12 @@ test.describe('Dashboard Performance @performance @dashboard', () => {
 
     // Navigate and wait for network idle
     const startTime = Date.now();
-    await page.goto('/home', { waitUntil: 'networkidle' });
+    await page.goto("/home", { waitUntil: "networkidle" });
     const loadTime = Date.now() - startTime;
 
     // Collect metrics after navigation
     const metrics = await page.evaluate(() => {
-      const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
       const { memory } = performance as any;
       const lcpMs = (window as any).__perfMetrics?.lcpMs ?? 0;
 
@@ -44,7 +44,7 @@ test.describe('Dashboard Performance @performance @dashboard', () => {
       };
     });
 
-    console.log('Dashboard perf metrics:', metrics);
+    console.log("Dashboard perf metrics:", metrics);
 
     // Load time budget: <5s (use navigator timing as fallback)
     const finalLoadTime = metrics.loadTime > 0 ? metrics.loadTime : metrics.navigatorLoadTime;
@@ -61,17 +61,17 @@ test.describe('Dashboard Performance @performance @dashboard', () => {
     }
   });
 
-  test('does not trigger excessive network requests', async ({ page }) => {
+  test("does not trigger excessive network requests", async ({ page }) => {
     const requests: string[] = [];
-    page.on('request', (req) => {
-      if (req.url().includes('/api/')) {
+    page.on("request", (req) => {
+      if (req.url().includes("/api/")) {
         requests.push(req.url());
       }
     });
 
-    await page.goto('/home', { waitUntil: 'networkidle' });
+    await page.goto("/home", { waitUntil: "networkidle" });
 
-    const apiCalls = requests.filter((u) => u.includes('/api/v1/'));
+    const apiCalls = requests.filter((u) => u.includes("/api/v1/"));
     console.log(`API calls on /home: ${apiCalls.length}`, apiCalls);
 
     // Dashboard should not spawn excessive API calls
@@ -79,8 +79,8 @@ test.describe('Dashboard Performance @performance @dashboard', () => {
     expect(apiCalls.length).toBeLessThan(50);
   });
 
-  test('heap does not grow unboundedly during 10s idle', async ({ page }) => {
-    await page.goto('/home', { waitUntil: 'networkidle' });
+  test("heap does not grow unboundedly during 10s idle", async ({ page }) => {
+    await page.goto("/home", { waitUntil: "networkidle" });
 
     const initialHeap = await page.evaluate(() => {
       const { memory } = performance as any;

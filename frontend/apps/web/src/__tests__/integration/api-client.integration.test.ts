@@ -5,12 +5,12 @@
  * Target: 5% integration layer in test pyramid.
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ApiError, handleApiResponse } from '../../api/client-errors';
-import { api } from '../../api/endpoints';
-import { setCSRFToken } from '../../lib/csrf';
-import { useAuthStore } from '../../stores/auth-store';
+import { ApiError, handleApiResponse } from "../../api/client-errors";
+import { api } from "../../api/endpoints";
+import { setCSRFToken } from "../../lib/csrf";
+import { useAuthStore } from "../../stores/auth-store";
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -18,7 +18,7 @@ import { useAuthStore } from '../../stores/auth-store';
 
 const createJsonResponse = (data: unknown, status = 200): Response =>
   new Response(JSON.stringify(data), {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
     status,
   });
 
@@ -26,20 +26,20 @@ const createJsonResponse = (data: unknown, status = 200): Response =>
 // 1) Auth flow integration
 // -----------------------------------------------------------------------------
 
-describe('API Client Integration', () => {
-  describe('auth flow', () => {
+describe("API Client Integration", () => {
+  describe("auth flow", () => {
     beforeEach(async () => {
       vi.stubGlobal(
-        'fetch',
+        "fetch",
         vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
-          const path = typeof url === 'string' ? url : url instanceof Request ? url.url : url.href;
-          if (path.includes('/api/v1/auth/logout') && init?.method === 'POST') {
+          const path = typeof url === "string" ? url : url instanceof Request ? url.url : url.href;
+          if (path.includes("/api/v1/auth/logout") && init?.method === "POST") {
             return createJsonResponse({});
           }
           return createJsonResponse({}, 404);
         }),
       );
-      setCSRFToken('integration-csrf-token');
+      setCSRFToken("integration-csrf-token");
       await useAuthStore
         .getState()
         .logout()
@@ -48,61 +48,59 @@ describe('API Client Integration', () => {
       localStorage.clear();
     });
 
-    it('login updates auth store and token is available for API client', async () => {
+    it("login updates auth store and token is available for API client", async () => {
       const mockUser = {
-        email: 'test@example.com',
-        id: 'user-1',
-        name: 'Test User',
+        email: "test@example.com",
+        id: "user-1",
+        name: "Test User",
       };
-      const mockToken = 'access-token-123';
+      const mockToken = "access-token-123";
 
-      const fetchMock = vi.fn(
-        async (url: string | URL | Request, init?: RequestInit) => {
-          const path = typeof url === 'string' ? url : url instanceof Request ? url.url : url.href;
-          if (path.includes('/api/v1/auth/authkit/callback') && init?.method === 'POST') {
-            return createJsonResponse({
-              access_token: mockToken,
-              user: mockUser,
-            });
-          }
-          return createJsonResponse({}, 404);
-        },
-      );
-      vi.stubGlobal('fetch', fetchMock);
+      const fetchMock = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+        const path = typeof url === "string" ? url : url instanceof Request ? url.url : url.href;
+        if (path.includes("/api/v1/auth/authkit/callback") && init?.method === "POST") {
+          return createJsonResponse({
+            access_token: mockToken,
+            user: mockUser,
+          });
+        }
+        return createJsonResponse({}, 404);
+      });
+      vi.stubGlobal("fetch", fetchMock);
 
-      await useAuthStore.getState().loginWithCode('authorization-code', 'csrf-state');
+      await useAuthStore.getState().loginWithCode("authorization-code", "csrf-state");
 
       const state = useAuthStore.getState();
       expect(state.isAuthenticated).toBeTruthy();
-      expect(state.user?.id).toBe('user-1');
-      expect(state.user?.email).toBe('test@example.com');
+      expect(state.user?.id).toBe("user-1");
+      expect(state.user?.email).toBe("test@example.com");
       expect(state.token).toBe(mockToken);
-      expect(localStorage.getItem('auth_token')).toBe(mockToken);
+      expect(localStorage.getItem("auth_token")).toBe(mockToken);
       const callbackCall = fetchMock.mock.calls.find(
         ([url, init]) =>
-          typeof url === 'string' &&
-          url.includes('/api/v1/auth/authkit/callback') &&
-          init?.method === 'POST',
+          typeof url === "string" &&
+          url.includes("/api/v1/auth/authkit/callback") &&
+          init?.method === "POST",
       );
       expect(callbackCall).toBeDefined();
-      expect(new Headers(callbackCall?.[1]?.headers).get('X-CSRF-Token')).toBe(
-        'integration-csrf-token',
+      expect(new Headers(callbackCall?.[1]?.headers).get("X-CSRF-Token")).toBe(
+        "integration-csrf-token",
       );
     });
   });
 
-  describe('CRUD', () => {
+  describe("CRUD", () => {
     const mockProjects = [
       {
-        id: 'p1',
-        name: 'Project 1',
+        id: "p1",
+        name: "Project 1",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         metadata: {},
       },
       {
-        id: 'p2',
-        name: 'Project 2',
+        id: "p2",
+        name: "Project 2",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         metadata: {},
@@ -110,12 +108,12 @@ describe('API Client Integration', () => {
     ];
     const mockItems = [
       {
-        id: 'item-1',
-        project_id: 'p1',
-        title: 'Item 1',
-        type: 'requirement',
-        status: 'pending',
-        priority: 'medium',
+        id: "item-1",
+        project_id: "p1",
+        title: "Item 1",
+        type: "requirement",
+        status: "pending",
+        priority: "medium",
         metadata: {},
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -126,58 +124,58 @@ describe('API Client Integration', () => {
       vi.clearAllMocks();
     });
 
-    it('projects and items CRUD flow with API client', async () => {
-      const listProjectsSpy = vi.spyOn(api.projects, 'list').mockResolvedValue(mockProjects as any);
+    it("projects and items CRUD flow with API client", async () => {
+      const listProjectsSpy = vi.spyOn(api.projects, "list").mockResolvedValue(mockProjects as any);
       const createProjectSpy = vi
-        .spyOn(api.projects, 'create')
-        .mockResolvedValue({ ...mockProjects[0], id: 'p-new', name: 'New Project' } as any);
+        .spyOn(api.projects, "create")
+        .mockResolvedValue({ ...mockProjects[0], id: "p-new", name: "New Project" } as any);
       const updateProjectSpy = vi
-        .spyOn(api.projects, 'update')
-        .mockResolvedValue({ ...mockProjects[0], name: 'Updated Project' } as any);
-      const deleteProjectSpy = vi.spyOn(api.projects, 'delete').mockResolvedValue();
+        .spyOn(api.projects, "update")
+        .mockResolvedValue({ ...mockProjects[0], name: "Updated Project" } as any);
+      const deleteProjectSpy = vi.spyOn(api.projects, "delete").mockResolvedValue();
 
-      const listItemsSpy = vi.spyOn(api.items, 'list').mockResolvedValue(mockItems as any);
+      const listItemsSpy = vi.spyOn(api.items, "list").mockResolvedValue(mockItems as any);
 
       const projects = await api.projects.list();
       expect(projects).toHaveLength(2);
       expect(listProjectsSpy).toHaveBeenCalled();
 
-      const created = await api.projects.create({ name: 'New Project' });
-      expect(created.name).toBe('New Project');
-      expect(createProjectSpy).toHaveBeenCalledWith({ name: 'New Project' });
+      const created = await api.projects.create({ name: "New Project" });
+      expect(created.name).toBe("New Project");
+      expect(createProjectSpy).toHaveBeenCalledWith({ name: "New Project" });
 
-      const updated = await api.projects.update('p1', { name: 'Updated Project' });
-      expect(updated.name).toBe('Updated Project');
-      expect(updateProjectSpy).toHaveBeenCalledWith('p1', { name: 'Updated Project' });
+      const updated = await api.projects.update("p1", { name: "Updated Project" });
+      expect(updated.name).toBe("Updated Project");
+      expect(updateProjectSpy).toHaveBeenCalledWith("p1", { name: "Updated Project" });
 
-      await api.projects.delete('p1');
-      expect(deleteProjectSpy).toHaveBeenCalledWith('p1');
+      await api.projects.delete("p1");
+      expect(deleteProjectSpy).toHaveBeenCalledWith("p1");
 
-      const items = await api.items.list({ project_id: 'p1' });
+      const items = await api.items.list({ project_id: "p1" });
       expect(items).toBeDefined();
       expect(Array.isArray(items) ? items : (items as any).items).toBeDefined();
       expect(listItemsSpy).toHaveBeenCalled();
     });
   });
 
-  describe('errors', () => {
+  describe("errors", () => {
     beforeEach(() => {
       vi.clearAllMocks();
     });
 
-    it('API client throws ApiError with status and message on 4xx/5xx', async () => {
-      const listSpy = vi.spyOn(api.projects, 'list').mockRejectedValue(new Error('Network error'));
-      await expect(api.projects.list()).rejects.toThrow('Network error');
+    it("API client throws ApiError with status and message on 4xx/5xx", async () => {
+      const listSpy = vi.spyOn(api.projects, "list").mockRejectedValue(new Error("Network error"));
+      await expect(api.projects.list()).rejects.toThrow("Network error");
       listSpy.mockRestore();
 
       // Exercise handleApiResponse with error response (integration with client-errors)
-      const errorResponse = new Response(JSON.stringify({ detail: 'Not Found' }), {
+      const errorResponse = new Response(JSON.stringify({ detail: "Not Found" }), {
         status: 404,
-        statusText: 'Not Found',
+        statusText: "Not Found",
       });
       const promise = Promise.resolve({
         data: undefined,
-        error: { detail: 'Not Found' },
+        error: { detail: "Not Found" },
         response: errorResponse,
       });
 
@@ -185,7 +183,7 @@ describe('API Client Integration', () => {
 
       const promise2 = Promise.resolve({
         data: undefined,
-        error: { detail: 'Not Found' },
+        error: { detail: "Not Found" },
         response: errorResponse,
       });
       try {
@@ -193,7 +191,7 @@ describe('API Client Integration', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(ApiError);
         expect((error as ApiError).status).toBe(404);
-        expect((error as ApiError).statusText).toBe('Not Found');
+        expect((error as ApiError).statusText).toBe("Not Found");
       }
     });
   });

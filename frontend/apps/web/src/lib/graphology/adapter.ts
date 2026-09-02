@@ -1,20 +1,20 @@
-import type { Node, Edge } from '@xyflow/react';
+import type { Node, Edge } from "@xyflow/react";
 
-import Graph from 'graphology';
+import Graph from "graphology";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 import type {
   GraphologyAdapter,
   GraphologyNodeAttributes,
   GraphologyEdgeAttributes,
-} from './types';
+} from "./types";
 
 export class GraphologyDataAdapter implements GraphologyAdapter {
   private graph: Graph;
 
   constructor() {
-    this.graph = new Graph({ multi: false, type: 'directed' });
+    this.graph = new Graph({ multi: false, type: "directed" });
   }
 
   getGraph(): Graph {
@@ -29,11 +29,11 @@ export class GraphologyDataAdapter implements GraphologyAdapter {
       const data = (node.data as any) || {};
       const attributes: GraphologyNodeAttributes = {
         label: data.label || node.id,
-        type: (node.type as string) || 'default',
+        type: (node.type as string) || "default",
         x: node.position?.x || 0,
         y: node.position?.y || 0,
         size: 10,
-        color: data.color || '#64748b',
+        color: data.color || "#64748b",
         ...data,
       };
 
@@ -52,12 +52,12 @@ export class GraphologyDataAdapter implements GraphologyAdapter {
         const data = (edge.data as any) || {};
         const attributes: GraphologyEdgeAttributes = {
           id: edge.id,
-          label: typeof edge.label === 'string' ? edge.label : undefined,
+          label: typeof edge.label === "string" ? edge.label : undefined,
           weight: 1,
           color:
-            typeof (edge.style as any)?.stroke === 'string'
+            typeof (edge.style as any)?.stroke === "string"
               ? (edge.style as any).stroke
-              : '#94a3b8',
+              : "#94a3b8",
           ...data,
         };
 
@@ -77,7 +77,7 @@ export class GraphologyDataAdapter implements GraphologyAdapter {
     this.graph.forEachNode((nodeId, attributes) => {
       nodes.push({
         id: nodeId,
-        type: attributes.type || 'default',
+        type: attributes.type || "default",
         position: {
           x: attributes.x || 0,
           y: attributes.y || 0,
@@ -105,7 +105,7 @@ export class GraphologyDataAdapter implements GraphologyAdapter {
 
   async cluster(): Promise<Map<string, number>> {
     // Dynamically import Louvain (for code splitting)
-    const louvainModule = await import('graphology-communities-louvain');
+    const louvainModule = await import("graphology-communities-louvain");
     const louvain = louvainModule.default;
     const communities = louvain(this.graph);
     return new Map(Object.entries(communities));
@@ -113,7 +113,7 @@ export class GraphologyDataAdapter implements GraphologyAdapter {
 
   async computeLayout(iterations: number = 500): Promise<void> {
     // Dynamically import ForceAtlas2 (for code splitting)
-    const forceAtlas2Module = await import('graphology-layout-forceatlas2');
+    const forceAtlas2Module = await import("graphology-layout-forceatlas2");
     const forceAtlas2 = forceAtlas2Module.default;
 
     // Compute layout in-place (mutates graph node positions)

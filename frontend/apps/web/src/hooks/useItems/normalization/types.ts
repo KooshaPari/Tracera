@@ -1,4 +1,4 @@
-import type { Item, ItemStatus, Priority, ViewType } from '@tracertm/types';
+import type { Item, ItemStatus, Priority, ViewType } from "@tracertm/types";
 
 interface CreateItemData {
   projectId: string;

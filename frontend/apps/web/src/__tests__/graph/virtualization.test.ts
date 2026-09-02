@@ -1,13 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 
-import type { NodePosition, ViewportBounds } from '../../components/graph/hooks/useVirtualization';
+import type { NodePosition, ViewportBounds } from "../../components/graph/hooks/useVirtualization";
 
-describe('Virtual Rendering Utilities', () => {
-  describe('Viewport culling', () => {
-    it('should identify nodes within viewport bounds', () => {
+describe("Virtual Rendering Utilities", () => {
+  describe("Viewport culling", () => {
+    it("should identify nodes within viewport bounds", () => {
       const node: NodePosition = {
         height: 120,
-        id: 'node-1',
+        id: "node-1",
         width: 200,
         x: 100,
         y: 100,
@@ -29,10 +29,10 @@ describe('Virtual Rendering Utilities', () => {
       expect(isVisible).toBeTruthy();
     });
 
-    it('should cull nodes outside viewport bounds', () => {
+    it("should cull nodes outside viewport bounds", () => {
       const node: NodePosition = {
         height: 120,
-        id: 'node-1',
+        id: "node-1",
         width: 200,
         x: 1000,
         y: 1000,
@@ -54,10 +54,10 @@ describe('Virtual Rendering Utilities', () => {
       expect(isVisible).toBeFalsy();
     });
 
-    it('should handle nodes at viewport edges', () => {
+    it("should handle nodes at viewport edges", () => {
       const nodeLeft: NodePosition = {
         height: 120,
-        id: 'node-left',
+        id: "node-left",
         width: 200,
         x: -50,
         y: 100,
@@ -79,7 +79,7 @@ describe('Virtual Rendering Utilities', () => {
       expect(isVisibleLeft).toBeTruthy(); // Partially visible
     });
 
-    it('should calculate viewport bounds with padding', () => {
+    it("should calculate viewport bounds with padding", () => {
       const viewport = { height: 600, width: 1000, x: 100, y: 100, zoom: 1 };
       const padding = 200;
 
@@ -96,7 +96,7 @@ describe('Virtual Rendering Utilities', () => {
       expect(bounds.maxY).toBe(900);
     });
 
-    it('should account for zoom level in viewport calculation', () => {
+    it("should account for zoom level in viewport calculation", () => {
       const viewport = { height: 600, width: 1000, x: 0, y: 0, zoom: 0.5 };
       const padding = 0;
 
@@ -112,37 +112,37 @@ describe('Virtual Rendering Utilities', () => {
     });
   });
 
-  describe('Level of Detail (LOD)', () => {
-    it('should return high LOD above zoom threshold', () => {
+  describe("Level of Detail (LOD)", () => {
+    it("should return high LOD above zoom threshold", () => {
       const zoom = 0.9;
       const threshold = 0.8;
-      const lodLevel = zoom >= threshold ? 'high' : zoom >= threshold / 2 ? 'medium' : 'low';
-      expect(lodLevel).toBe('high');
+      const lodLevel = zoom >= threshold ? "high" : zoom >= threshold / 2 ? "medium" : "low";
+      expect(lodLevel).toBe("high");
     });
 
-    it('should return medium LOD between thresholds', () => {
+    it("should return medium LOD between thresholds", () => {
       const zoom = 0.6;
       const highThreshold = 0.8;
       const mediumThreshold = 0.5;
-      const lodLevel = zoom >= highThreshold ? 'high' : zoom >= mediumThreshold ? 'medium' : 'low';
-      expect(lodLevel).toBe('medium');
+      const lodLevel = zoom >= highThreshold ? "high" : zoom >= mediumThreshold ? "medium" : "low";
+      expect(lodLevel).toBe("medium");
     });
 
-    it('should return low LOD below zoom threshold', () => {
+    it("should return low LOD below zoom threshold", () => {
       const zoom = 0.3;
       const highThreshold = 0.8;
       const mediumThreshold = 0.5;
-      const lodLevel = zoom >= highThreshold ? 'high' : zoom >= mediumThreshold ? 'medium' : 'low';
-      expect(lodLevel).toBe('low');
+      const lodLevel = zoom >= highThreshold ? "high" : zoom >= mediumThreshold ? "medium" : "low";
+      expect(lodLevel).toBe("low");
     });
   });
 
-  describe('Node clustering', () => {
-    it('should group nodes within distance threshold', () => {
+  describe("Node clustering", () => {
+    it("should group nodes within distance threshold", () => {
       const nodes: NodePosition[] = [
-        { height: 100, id: 'n1', width: 100, x: 0, y: 0 },
-        { height: 100, id: 'n2', width: 100, x: 50, y: 50 }, // Close to n1
-        { height: 100, id: 'n3', width: 100, x: 500, y: 500 }, // Far from others
+        { height: 100, id: "n1", width: 100, x: 0, y: 0 },
+        { height: 100, id: "n2", width: 100, x: 50, y: 50 }, // Close to n1
+        { height: 100, id: "n3", width: 100, x: 500, y: 500 }, // Far from others
       ];
 
       const clusterDistance = 200;
@@ -195,8 +195,8 @@ describe('Virtual Rendering Utilities', () => {
     });
   });
 
-  describe('Culling metrics', () => {
-    it('should calculate culling ratio', () => {
+  describe("Culling metrics", () => {
+    it("should calculate culling ratio", () => {
       const totalNodes = 1000;
       const visibleNodes = 150;
       const culledNodes = totalNodes - visibleNodes;
@@ -205,7 +205,7 @@ describe('Virtual Rendering Utilities', () => {
       expect(cullingRatio).toBeCloseTo(0.85); // 850 culled / 1000 total
     });
 
-    it('should track render performance', () => {
+    it("should track render performance", () => {
       const renderStart = performance.now();
       // Simulate work
       for (let i = 0; i < 1000; i++) {
@@ -214,12 +214,12 @@ describe('Virtual Rendering Utilities', () => {
       const renderTime = performance.now() - renderStart;
 
       expect(renderTime).toBeGreaterThan(0);
-      expect(typeof renderTime).toBe('number');
+      expect(typeof renderTime).toBe("number");
     });
   });
 
-  describe('Progressive loading', () => {
-    it('should load items in batches', () => {
+  describe("Progressive loading", () => {
+    it("should load items in batches", () => {
       const items = Array.from({ length: 500 }, (_, i) => ({
         id: `item-${i}`,
       }));
@@ -239,7 +239,7 @@ describe('Virtual Rendering Utilities', () => {
       expect(loadedItems.size).toBe(items.length);
     });
 
-    it('should calculate loading progress', () => {
+    it("should calculate loading progress", () => {
       const totalItems = 200;
       const loadedItems = 50;
       const progress = (loadedItems / totalItems) * 100;
@@ -248,20 +248,20 @@ describe('Virtual Rendering Utilities', () => {
     });
   });
 
-  describe('Intersection Observer visibility', () => {
-    it('should track visible node IDs', () => {
-      const visibleIds = new Set(['node-1', 'node-2', 'node-5']);
+  describe("Intersection Observer visibility", () => {
+    it("should track visible node IDs", () => {
+      const visibleIds = new Set(["node-1", "node-2", "node-5"]);
 
       const isVisible = (nodeId: string) => visibleIds.has(nodeId);
 
-      expect(isVisible('node-1')).toBeTruthy();
-      expect(isVisible('node-3')).toBeFalsy();
-      expect(isVisible('node-5')).toBeTruthy();
+      expect(isVisible("node-1")).toBeTruthy();
+      expect(isVisible("node-3")).toBeFalsy();
+      expect(isVisible("node-5")).toBeTruthy();
     });
   });
 
-  describe('Large graph handling', () => {
-    it('should handle 10000 nodes efficiently', () => {
+  describe("Large graph handling", () => {
+    it("should handle 10000 nodes efficiently", () => {
       const nodes: NodePosition[] = Array.from({ length: 10_000 }, (_, i) => ({
         height: 120,
         id: `node-${i}`,
@@ -296,7 +296,7 @@ describe('Virtual Rendering Utilities', () => {
       expect(visible.length).toBeLessThan(nodes.length);
     });
 
-    it('should reduce render load with virtualization', () => {
+    it("should reduce render load with virtualization", () => {
       const totalNodes = 5000;
       const viewport = { height: 600, width: 1000, x: 0, y: 0, zoom: 1 };
       const padding = 300;

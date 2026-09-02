@@ -2,16 +2,16 @@
  * Create GitHub repository modal component.
  */
 
-import { Github, Loader2 } from 'lucide-react';
-import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
+import { Github, Loader2 } from "lucide-react";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
-import type { GitHubAppInstallation, GitHubRepo } from '@/api/github';
-import type { ApiErrorResponse } from '@/types';
+import type { GitHubAppInstallation, GitHubRepo } from "@/api/github";
+import type { ApiErrorResponse } from "@/types";
 
-import { Button } from '@/components/ui/enterprise-button';
-import { useCreateGitHubRepo } from '@/hooks/useGitHub';
-import { Input } from '@tracertm/ui';
+import { Button } from "@/components/ui/enterprise-button";
+import { useCreateGitHubRepo } from "@/hooks/useGitHub";
+import { Input } from "@tracertm/ui";
 import {
   Dialog,
   DialogContent,
@@ -19,9 +19,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@tracertm/ui/components/Dialog';
-import { Label } from '@tracertm/ui/components/Label';
-import { Textarea } from '@tracertm/ui/components/Textarea';
+} from "@tracertm/ui/components/Dialog";
+import { Label } from "@tracertm/ui/components/Label";
+import { Textarea } from "@tracertm/ui/components/Textarea";
 
 export interface CreateRepoModalProps {
   open: boolean;
@@ -37,13 +37,13 @@ function getCreateRepoErrorMessage(error: unknown): string {
   }
   if (
     error &&
-    typeof error === 'object' &&
-    'message' in error &&
-    typeof (error as ApiErrorResponse).message === 'string'
+    typeof error === "object" &&
+    "message" in error &&
+    typeof (error as ApiErrorResponse).message === "string"
   ) {
     return (error as ApiErrorResponse).message;
   }
-  return 'Failed to create repository';
+  return "Failed to create repository";
 }
 
 export const CreateRepoModal = function CreateRepoModal({
@@ -53,8 +53,8 @@ export const CreateRepoModal = function CreateRepoModal({
   accountId,
   onSuccess,
 }: CreateRepoModalProps) {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
 
   const createRepo = useCreateGitHubRepo();
@@ -64,14 +64,14 @@ export const CreateRepoModal = function CreateRepoModal({
       e.preventDefault();
 
       if (!name.trim()) {
-        toast.error('Repository name is required');
+        toast.error("Repository name is required");
         return;
       }
 
       try {
         const trimmedDescription = description.trim();
         const orgValue =
-          installation.target_type === 'Organization' ? installation.account_login : undefined;
+          installation.target_type === "Organization" ? installation.account_login : undefined;
         const repo = await createRepo.mutateAsync({
           account_id: accountId,
           ...(trimmedDescription ? { description: trimmedDescription } : {}),
@@ -85,8 +85,8 @@ export const CreateRepoModal = function CreateRepoModal({
         onSuccess?.(repo);
         onOpenChange(false);
 
-        setName('');
-        setDescription('');
+        setName("");
+        setDescription("");
         setIsPrivate(false);
       } catch (error) {
         toast.error(getCreateRepoErrorMessage(error));
@@ -121,10 +121,10 @@ export const CreateRepoModal = function CreateRepoModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[500px]'>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className='flex items-center gap-2'>
-            <Github className='h-5 w-5' />
+          <DialogTitle className="flex items-center gap-2">
+            <Github className="h-5 w-5" />
             Create New Repository
           </DialogTitle>
           <DialogDescription>
@@ -133,28 +133,28 @@ export const CreateRepoModal = function CreateRepoModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className='space-y-4 py-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='repo-name'>Repository Name *</Label>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="repo-name">Repository Name *</Label>
               <Input
-                id='repo-name'
-                placeholder='my-awesome-repo'
+                id="repo-name"
+                placeholder="my-awesome-repo"
                 value={name}
                 onChange={handleNameChange}
                 disabled={createRepo.isPending}
-                pattern='[a-zA-Z0-9._-]+'
-                title='Repository name can only contain letters, numbers, dots, hyphens, and underscores'
+                pattern="[a-zA-Z0-9._-]+"
+                title="Repository name can only contain letters, numbers, dots, hyphens, and underscores"
               />
-              <p className='text-muted-foreground text-xs'>
+              <p className="text-muted-foreground text-xs">
                 Repository name can only contain letters, numbers, dots, hyphens, and underscores
               </p>
             </div>
 
-            <div className='space-y-2'>
-              <Label htmlFor='repo-description'>Description</Label>
+            <div className="space-y-2">
+              <Label htmlFor="repo-description">Description</Label>
               <Textarea
-                id='repo-description'
-                placeholder='A short description of your repository'
+                id="repo-description"
+                placeholder="A short description of your repository"
                 value={description}
                 onChange={handleDescriptionChange}
                 disabled={createRepo.isPending}
@@ -162,16 +162,16 @@ export const CreateRepoModal = function CreateRepoModal({
               />
             </div>
 
-            <div className='flex items-center space-x-2'>
+            <div className="flex items-center space-x-2">
               <input
-                type='checkbox'
-                id='repo-private'
+                type="checkbox"
+                id="repo-private"
                 checked={isPrivate}
                 onChange={handlePrivateChange}
                 disabled={createRepo.isPending}
-                className='h-4 w-4 rounded border-gray-300'
+                className="h-4 w-4 rounded border-gray-300"
               />
-              <Label htmlFor='repo-private' className='cursor-pointer'>
+              <Label htmlFor="repo-private" className="cursor-pointer">
                 Make this repository private
               </Label>
             </div>
@@ -179,15 +179,15 @@ export const CreateRepoModal = function CreateRepoModal({
 
           <DialogFooter>
             <Button
-              type='button'
-              variant='outline'
+              type="button"
+              variant="outline"
               onClick={handleCancel}
               disabled={createRepo.isPending}
             >
               Cancel
             </Button>
-            <Button type='submit' disabled={createRepo.isPending || !name.trim()}>
-              {createRepo.isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+            <Button type="submit" disabled={createRepo.isPending || !name.trim()}>
+              {createRepo.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Repository
             </Button>
           </DialogFooter>

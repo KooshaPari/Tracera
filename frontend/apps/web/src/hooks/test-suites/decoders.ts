@@ -1,9 +1,9 @@
-import type { TestSuiteStatus } from '@tracertm/types';
+import type { TestSuiteStatus } from "@tracertm/types";
 
 type JsonObject = Record<string, unknown>;
 
 function isJsonObject(value: unknown): value is JsonObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function isUnknownArray(value: unknown): value is unknown[] {
@@ -26,7 +26,7 @@ function getOptionalString(obj: JsonObject, key: string): string | undefined {
   if (value === undefined || value === null) {
     return undefined;
   }
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   throw new TypeError(`Expected string for ${key}`);
@@ -45,7 +45,7 @@ function getOptionalNumber(obj: JsonObject, key: string): number | undefined {
   if (value === undefined || value === null) {
     return undefined;
   }
-  if (typeof value === 'number' && Number.isFinite(value)) {
+  if (typeof value === "number" && Number.isFinite(value)) {
     return value;
   }
   throw new TypeError(`Expected number for ${key}`);
@@ -64,7 +64,7 @@ function getOptionalBoolean(obj: JsonObject, key: string): boolean | undefined {
   if (value === undefined || value === null) {
     return undefined;
   }
-  if (typeof value === 'boolean') {
+  if (typeof value === "boolean") {
     return value;
   }
   throw new TypeError(`Expected boolean for ${key}`);
@@ -97,7 +97,7 @@ function getOptionalStringArray(obj: JsonObject, key: string): string[] | undefi
 
   const result: string[] = [];
   for (const value of values) {
-    if (typeof value !== 'string') {
+    if (typeof value !== "string") {
       throw new TypeError(`Expected string[] for ${key}`);
     }
     result.push(value);
@@ -127,7 +127,7 @@ function getOptionalRecordOfString(
 
   const result: Record<string, string> = {};
   for (const [entryKey, entryValue] of Object.entries(value)) {
-    if (typeof entryValue !== 'string') {
+    if (typeof entryValue !== "string") {
       throw new TypeError(`Expected Record<string, string> for ${key}`);
     }
     result[entryKey] = entryValue;
@@ -146,7 +146,7 @@ function getOptionalRecordOfNumber(
 
   const result: Record<string, number> = {};
   for (const [entryKey, entryValue] of Object.entries(value)) {
-    if (typeof entryValue !== 'number' || !Number.isFinite(entryValue)) {
+    if (typeof entryValue !== "number" || !Number.isFinite(entryValue)) {
       throw new TypeError(`Expected Record<string, number> for ${key}`);
     }
     result[entryKey] = entryValue;
@@ -154,7 +154,7 @@ function getOptionalRecordOfNumber(
   return result;
 }
 
-const testSuiteStatusValues = new Set<string>(['draft', 'active', 'deprecated', 'archived']);
+const testSuiteStatusValues = new Set<string>(["draft", "active", "deprecated", "archived"]);
 
 function isTestSuiteStatus(value: string): value is TestSuiteStatus {
   return testSuiteStatusValues.has(value);

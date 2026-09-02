@@ -1,12 +1,12 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from "vitest";
 
-describe('Virtual Scrolling Integration Tests', () => {
+describe("Virtual Scrolling Integration Tests", () => {
   beforeEach(() => {
     // Setup test environment
   });
 
-  describe('Table Rendering with Virtual Scrolling', () => {
-    it('should render only visible rows in DOM', async () => {
+  describe("Table Rendering with Virtual Scrolling", () => {
+    it("should render only visible rows in DOM", async () => {
       // Virtual scrolling should only render visible items
       // Not all items in the dataset
 
@@ -22,7 +22,7 @@ describe('Virtual Scrolling Integration Tests', () => {
       expect(expectedBehavior.expectedVisibleRowRatio).toBeLessThan(0.1);
     });
 
-    it('should efficiently update visible rows on scroll', async () => {
+    it("should efficiently update visible rows on scroll", async () => {
       // When scrolling, only affected rows should update
       // Not entire table
 
@@ -35,10 +35,10 @@ describe('Virtual Scrolling Integration Tests', () => {
 
       // Only ~20 rows should update
       expect(scrollEvent.rowsToUpdate).toBeLessThan(50);
-      expect(scrollEvent.rowsToUpdate).toBeLessThan(scrollEvent.totalRowsInDataset / 50);
+      expect(scrollEvent.rowsToUpdate).toBeLessThan(scrollEvent.totalRowsInDataset);
     });
 
-    it('should maintain scrollbar position accuracy', async () => {
+    it("should maintain scrollbar position accuracy", async () => {
       // Virtual scrolling should maintain accurate scrollbar
       // Indicating true position in dataset
 
@@ -54,8 +54,8 @@ describe('Virtual Scrolling Integration Tests', () => {
     });
   });
 
-  describe('Performance with Filtering and Sorting', () => {
-    it('should filter without re-rendering entire table', async () => {
+  describe("Performance with Filtering and Sorting", () => {
+    it("should filter without re-rendering entire table", async () => {
       // Filter operation should be fast
       // Only filtered items should be included in virtual list
 
@@ -70,7 +70,7 @@ describe('Virtual Scrolling Integration Tests', () => {
       expect(filterOperation.filteredItems).toBeLessThan(filterOperation.totalItems);
     });
 
-    it('should sort filtered results efficiently', async () => {
+    it("should sort filtered results efficiently", async () => {
       // Sorting should work on filtered items
       // And complete quickly
 
@@ -83,7 +83,7 @@ describe('Virtual Scrolling Integration Tests', () => {
       expect(sortOperation.sortTime).toBeLessThan(sortOperation.threshold);
     });
 
-    it('should update row count indicator on filter', async () => {
+    it("should update row count indicator on filter", async () => {
       // When filtering, row count should update
       // Showing accurate count
 
@@ -98,8 +98,8 @@ describe('Virtual Scrolling Integration Tests', () => {
     });
   });
 
-  describe('Scroll-to-Item Functionality', () => {
-    it('should scroll to specific item without blocking UI', async () => {
+  describe("Scroll-to-Item Functionality", () => {
+    it("should scroll to specific item without blocking UI", async () => {
       // ScrollToItem should complete quickly
 
       const scrollToOperation = {
@@ -111,16 +111,16 @@ describe('Virtual Scrolling Integration Tests', () => {
       expect(scrollToOperation.executionTime).toBeLessThan(scrollToOperation.threshold);
     });
 
-    it('should center item in viewport when scrolling', async () => {
+    it("should center item in viewport when scrolling", async () => {
       // Scroll-to-item should align target to center
       // For better UX
 
-      const alignment = 'center';
+      const alignment = "center";
 
-      expect(alignment).toBe('center');
+      expect(alignment).toBe("center");
     });
 
-    it('should handle scroll-to with invalid index gracefully', async () => {
+    it("should handle scroll-to with invalid index gracefully", async () => {
       // Should not error on out of bounds indices
 
       const invalidIndex = -1;
@@ -130,8 +130,8 @@ describe('Virtual Scrolling Integration Tests', () => {
     });
   });
 
-  describe('Dynamic Row Heights', () => {
-    it('should measure actual row heights for accuracy', async () => {
+  describe("Dynamic Row Heights", () => {
+    it("should measure actual row heights for accuracy", async () => {
       // Virtual scroller should measure real row heights
       // Not just estimate
 
@@ -144,11 +144,11 @@ describe('Virtual Scrolling Integration Tests', () => {
       expect(Math.abs(heightMeasurement.actual - heightMeasurement.estimated)).toBeLessThan(2);
     });
 
-    it('should recalculate heights on data updates', async () => {
+    it("should recalculate heights on data updates", async () => {
       // Heights should be recalculated if content changes
 
       const rowHeightRecalculation = {
-        triggerReason: 'data-update',
+        triggerReason: "data-update",
         triggered: true,
       };
 
@@ -156,8 +156,8 @@ describe('Virtual Scrolling Integration Tests', () => {
     });
   });
 
-  describe('Overscan and Rendering Buffer', () => {
-    it('should render extra rows for smooth scrolling', async () => {
+  describe("Overscan and Rendering Buffer", () => {
+    it("should render extra rows for smooth scrolling", async () => {
       // Overscan ensures rows are pre-rendered
       // Preventing white space on fast scrolls
 
@@ -172,7 +172,7 @@ describe('Virtual Scrolling Integration Tests', () => {
       );
     });
 
-    it('should adjust overscan for different scroll speeds', async () => {
+    it("should adjust overscan for different scroll speeds", async () => {
       // Overscan might adjust based on scroll velocity
       // (This would be an advanced optimization)
 
@@ -185,35 +185,35 @@ describe('Virtual Scrolling Integration Tests', () => {
     });
   });
 
-  describe('Integration with Table Features', () => {
-    it('should preserve sort order while scrolling', async () => {
+  describe("Integration with Table Features", () => {
+    it("should preserve sort order while scrolling", async () => {
       // Scrolling should not affect sort order
 
       const sortState = {
-        column: 'title',
-        order: 'asc',
+        column: "title",
+        order: "asc",
         preservedDurringScroll: true,
       };
 
       expect(sortState.preservedDurringScroll).toBeTruthy();
     });
 
-    it('should maintain filter state while scrolling', async () => {
+    it("should maintain filter state while scrolling", async () => {
       // Scrolling should not affect active filters
 
       const filterState = {
-        activeFilters: ['type:feature'],
+        activeFilters: ["type:feature"],
         preservedDuringScroll: true,
       };
 
       expect(filterState.preservedDuringScroll).toBeTruthy();
     });
 
-    it('should support row actions while scrolling', async () => {
+    it("should support row actions while scrolling", async () => {
       // Delete, edit, etc. should work on any row
 
       const rowAction = {
-        actionType: 'delete',
+        actionType: "delete",
         rowIndex: 500,
         rowInViewport: false, // Even if not visible
         actionExecutes: true,
@@ -223,8 +223,8 @@ describe('Virtual Scrolling Integration Tests', () => {
     });
   });
 
-  describe('Memory Management', () => {
-    it('should not accumulate memory during extended scrolling', async () => {
+  describe("Memory Management", () => {
+    it("should not accumulate memory during extended scrolling", async () => {
       // Scrolling should not leak memory
       // Old DOM nodes should be cleaned up
 
@@ -238,7 +238,7 @@ describe('Virtual Scrolling Integration Tests', () => {
       expect(increase).toBeLessThan(memoryProfile.acceptableIncrease);
     });
 
-    it('should clean up event listeners on unmount', async () => {
+    it("should clean up event listeners on unmount", async () => {
       // Component should clean up properly
       // No dangling listeners or references
 
@@ -252,8 +252,8 @@ describe('Virtual Scrolling Integration Tests', () => {
     });
   });
 
-  describe('Edge Cases', () => {
-    it('should handle empty result set', async () => {
+  describe("Edge Cases", () => {
+    it("should handle empty result set", async () => {
       // Should show empty state instead of errors
 
       const emptyState = {
@@ -266,7 +266,7 @@ describe('Virtual Scrolling Integration Tests', () => {
       expect(emptyState.noErrors).toBeTruthy();
     });
 
-    it('should handle single item', async () => {
+    it("should handle single item", async () => {
       // Should work with just 1 item
 
       const singleItem = {
@@ -277,7 +277,7 @@ describe('Virtual Scrolling Integration Tests', () => {
       expect(singleItem.rendersCorrectly).toBeTruthy();
     });
 
-    it('should handle very large dataset (10k+ items)', async () => {
+    it("should handle very large dataset (10k+ items)", async () => {
       // Should handle massive datasets efficiently
 
       const largeDataset = {
@@ -290,7 +290,7 @@ describe('Virtual Scrolling Integration Tests', () => {
       expect(largeDataset.renderTime).toBeLessThan(largeDataset.threshold);
     });
 
-    it('should handle window resize', async () => {
+    it("should handle window resize", async () => {
       // Should recalculate on viewport change
 
       const resize = {

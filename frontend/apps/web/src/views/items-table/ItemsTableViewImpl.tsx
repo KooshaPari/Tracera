@@ -1,20 +1,20 @@
-import { useNavigate, useSearch } from '@tanstack/react-router';
-import React from 'react';
-import { toast } from 'sonner';
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import React from "react";
+import { toast } from "sonner";
 
-import type { Project, TypedItem, ViewType } from '@tracertm/types';
+import type { Project, TypedItem, ViewType } from "@tracertm/types";
 
-import { useCreateItem, useDeleteItem, useItems } from '@/hooks/useItems';
-import { useProjects } from '@/hooks/useProjects';
+import { useCreateItem, useDeleteItem, useItems } from "@/hooks/useItems";
+import { useProjects } from "@/hooks/useProjects";
 
-import type { CreateItemPayload } from './create-item-modal';
+import type { CreateItemPayload } from "./create-item-modal";
 
-import itemsTableConstants from './constants';
-import { CreateItemModal } from './create-item-modal';
-import itemsTableFormatters from './formatters';
-import { ItemsTableContent } from './ItemsTableContent';
-import { ItemsTableFiltersBar } from './ItemsTableFiltersBar';
-import { getViewLabels } from './view-labels';
+import itemsTableConstants from "./constants";
+import { CreateItemModal } from "./create-item-modal";
+import itemsTableFormatters from "./formatters";
+import { ItemsTableContent } from "./ItemsTableContent";
+import { ItemsTableFiltersBar } from "./ItemsTableFiltersBar";
+import { getViewLabels } from "./view-labels";
 
 interface ItemsTableViewProps {
   projectId?: string | undefined;
@@ -25,7 +25,7 @@ interface ItemsTableViewProps {
 const EMPTY_ITEMS: TypedItem[] = [];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 const mergeSearch = (prev: unknown, patch: Record<string, unknown>): Record<string, unknown> => {
@@ -88,10 +88,10 @@ function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = {}): JS
 
   const [showCreateModal, setShowCreateModal] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState<string>(itemsTableConstants.EMPTY_STRING);
-  const [sortColumn, setSortColumn] = React.useState('created');
-  const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('desc');
+  const [sortColumn, setSortColumn] = React.useState("created");
+  const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("desc");
   const [showLoadingState, setShowLoadingState] = React.useState(false);
-  const [liveMessage, setLiveMessage] = React.useState('Items loaded.');
+  const [liveMessage, setLiveMessage] = React.useState("Items loaded.");
 
   React.useEffect(() => {
     if (actionParam === itemsTableConstants.ACTION_CREATE) {
@@ -128,10 +128,10 @@ function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = {}): JS
     (id: string): void => {
       deleteItem.mutate(id, {
         onError: () => {
-          toast.error('Purge failure');
+          toast.error("Purge failure");
         },
         onSuccess: () => {
-          toast.success('Node purged from registry');
+          toast.success("Node purged from registry");
         },
       });
     },
@@ -140,10 +140,10 @@ function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = {}): JS
 
   const handleRefresh = React.useCallback((): void => {
     setShowLoadingState(true);
-    setLiveMessage('Loading items...');
+    setLiveMessage("Loading items...");
     globalThis.setTimeout(() => {
       setShowLoadingState(false);
-      setLiveMessage('Items loaded.');
+      setLiveMessage("Items loaded.");
     }, itemsTableConstants.LOADING_OVERLAY_DELAY_MS);
   }, []);
 
@@ -177,7 +177,7 @@ function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = {}): JS
     (payload: CreateItemPayload): void => {
       const projectIdValue = effectiveProjectId;
       if (projectIdValue === undefined) {
-        toast.error('Select a project before creating a node.');
+        toast.error("Select a project before creating a node.");
         return;
       }
 
@@ -196,11 +196,11 @@ function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = {}): JS
         },
         {
           onError: () => {
-            toast.error('Failed to create node');
+            toast.error("Failed to create node");
           },
           onSuccess: () => {
-            toast.success('Node created');
-            setLiveMessage('Item created.');
+            toast.success("Node created");
+            setLiveMessage("Item created.");
             closeCreateModal();
           },
         },
@@ -231,7 +231,7 @@ function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = {}): JS
     setSortColumn(next);
   }, []);
 
-  const handleSortOrderChange = React.useCallback((next: 'asc' | 'desc'): void => {
+  const handleSortOrderChange = React.useCallback((next: "asc" | "desc"): void => {
     setSortOrder(next);
   }, []);
 

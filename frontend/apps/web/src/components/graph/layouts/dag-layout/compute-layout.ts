@@ -1,8 +1,8 @@
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-import type { ElkOptions, SyncLayoutResult } from './types';
+import type { ElkOptions, SyncLayoutResult } from "./types";
 
-const ZERO = Number('0');
+const ZERO = Number("0");
 
 interface ComputeLayoutParams<NodeData extends Record<string, unknown>> {
   applySyncLayout: (inputNodes: Node<NodeData>[], inputEdges: Edge[]) => SyncLayoutResult<NodeData>;
@@ -30,7 +30,7 @@ async function computeLayout<NodeData extends Record<string, unknown>>({
   }
 
   const syncResult = applySyncLayout(inputNodes, inputEdges);
-  if (syncResult.kind === 'sync' && syncResult.nodes) {
+  if (syncResult.kind === "sync" && syncResult.nodes) {
     return syncResult.nodes;
   }
 

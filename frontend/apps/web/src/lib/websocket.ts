@@ -1,5 +1,5 @@
-import { logger } from '@/lib/logger';
-import { API_ORIGIN, WS_ORIGIN } from '@/config/api-origin';
+import { logger } from "@/lib/logger";
+import { API_ORIGIN, WS_ORIGIN } from "@/config/api-origin";
 /**
  * Real-time WebSocket Client for NATS Event Propagation
  *
@@ -8,7 +8,7 @@ import { API_ORIGIN, WS_ORIGIN } from '@/config/api-origin';
  */
 
 export type NATSEventMessage = {
-  type: 'nats_event';
+  type: "nats_event";
   data: {
     event_type: string;
     project_id: string;
@@ -23,17 +23,17 @@ export type NATSEventMessage = {
 
 export type WebSocketMessage =
   | NATSEventMessage
-  | { type: 'pong'; timestamp: string }
-  | { type: 'auth_success'; message?: string }
-  | { type: 'auth_failed'; message?: string }
+  | { type: "pong"; timestamp: string }
+  | { type: "auth_success"; message?: string }
+  | { type: "auth_failed"; message?: string }
   | {
-      type: 'subscription_confirmed';
+      type: "subscription_confirmed";
       data: { project_id: string };
       timestamp: string;
     }
-  | { type: 'error'; message: string };
+  | { type: "error"; message: string };
 
-export type EventListener = (data: NATSEventMessage['data']) => void;
+export type EventListener = (data: NATSEventMessage["data"]) => void;
 
 export class RealtimeClient {
   private ws: WebSocket | null = null;
@@ -49,10 +49,10 @@ export class RealtimeClient {
 
   constructor(private url: string = `${WS_ORIGIN}/api/v1/ws`) {
     // Use gateway host (same as API) so ws connects to :4000, not the frontend origin (:5173)
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const base = API_ORIGIN;
-      const wsBase = import.meta.env?.VITE_WS_URL || base.replace(/^http/, 'ws');
-      this.url = `${wsBase.replace(/\/$/, '')}/api/v1/ws`;
+      const wsBase = import.meta.env?.VITE_WS_URL || base.replace(/^http/, "ws");
+      this.url = `${wsBase.replace(/\/$/, "")}/api/v1/ws`;
     }
   }
 
@@ -63,12 +63,12 @@ export class RealtimeClient {
   connect(token: string, projectID?: string) {
     this.token = token;
     this.currentProjectID = projectID || null;
-    logger.info(`[WebSocket] connect() called with projectID: ${projectID || 'undefined'}`);
+    logger.info(`[WebSocket] connect() called with projectID: ${projectID || "undefined"}`);
 
     if (this.ws?.readyState === WebSocket.OPEN) {
       // Already connected, re-authenticate with new token
       if (token !== this.token) {
-        logger.info('[WebSocket] Token changed, re-authenticating');
+        logger.info("[WebSocket] Token changed, re-authenticating");
         this.sendAuth();
       }
       // Subscribe to project if needed
@@ -87,21 +87,21 @@ export class RealtimeClient {
     );
 
     if (!this.token) {
-      logger.error('Cannot connect without authentication token');
+      logger.error("Cannot connect without authentication token");
       return;
     }
 
     // WebSocket requires project_id query param
     // If no project_id set, use a default "global" project for general notifications
-    const projectID = this.currentProjectID || 'global-notifications';
+    const projectID = this.currentProjectID || "global-notifications";
     const url = `${this.url}?project_id=${encodeURIComponent(projectID)}`;
 
-    logger.info(`[WebSocket] Connecting to: ${url.replace(/eyJ[^&]*/g, 'TOKEN...')}`);
+    logger.info(`[WebSocket] Connecting to: ${url.replace(/eyJ[^&]*/g, "TOKEN...")}`);
 
     this.ws = new WebSocket(url);
 
     this.ws.onopen = () => {
-      logger.info('✅ WebSocket connected');
+      logger.info("✅ WebSocket connected");
       this.reconnectAttempts = 0;
 
       // Send authentication message (REQUIRED - token NOT in URL)
@@ -113,12 +113,12 @@ export class RealtimeClient {
         const message: WebSocketMessage = JSON.parse(event.data);
         this.handleMessage(message);
       } catch (error) {
-        logger.error('Failed to parse WebSocket message:', error);
+        logger.error("Failed to parse WebSocket message:", error);
       }
     };
 
     this.ws.onclose = () => {
-      logger.info('❌ WebSocket disconnected');
+      logger.info("❌ WebSocket disconnected");
       this.isAuthenticated = false;
       this.cleanup();
 
@@ -134,12 +134,12 @@ export class RealtimeClient {
           this.doConnect();
         }, delay);
       } else {
-        logger.error('❌ Max reconnection attempts reached');
+        logger.error("❌ Max reconnection attempts reached");
       }
     };
 
     this.ws.onerror = (error) => {
-      logger.error('❌ WebSocket error:', error);
+      logger.error("❌ WebSocket error:", error);
     };
   }
 
@@ -149,15 +149,15 @@ export class RealtimeClient {
     }
 
     this.send({
-      type: 'auth',
+      type: "auth",
       token: this.token,
     });
   }
 
   private handleMessage(message: WebSocketMessage) {
     switch (message.type) {
-      case 'auth_success':
-        logger.info('✅ WebSocket authenticated');
+      case "auth_success":
+        logger.info("✅ WebSocket authenticated");
         this.isAuthenticated = true;
 
         // Start ping interval
@@ -169,26 +169,26 @@ export class RealtimeClient {
         }
         break;
 
-      case 'auth_failed':
-        logger.error('❌ WebSocket authentication failed:', message.message);
+      case "auth_failed":
+        logger.error("❌ WebSocket authentication failed:", message.message);
         this.disconnect();
         break;
 
-      case 'subscription_confirmed':
-        logger.info('✅ Subscribed to project:', message.data.project_id);
+      case "subscription_confirmed":
+        logger.info("✅ Subscribed to project:", message.data.project_id);
         this.currentProjectID = message.data.project_id;
         break;
 
-      case 'nats_event':
+      case "nats_event":
         this.handleNATSEvent(message);
         break;
 
-      case 'pong':
+      case "pong":
         // Keepalive response
         break;
 
-      case 'error':
-        logger.error('❌ WebSocket error:', message.message);
+      case "error":
+        logger.error("❌ WebSocket error:", message.message);
         break;
     }
   }
@@ -196,7 +196,7 @@ export class RealtimeClient {
   private handleNATSEvent(message: NATSEventMessage) {
     const { event_type, data } = message.data;
 
-    logger.info('📡 Received NATS event:', event_type, data);
+    logger.info("📡 Received NATS event:", event_type, data);
 
     // Trigger listeners for this specific event type
     const eventListeners = this.listeners.get(event_type);
@@ -205,7 +205,7 @@ export class RealtimeClient {
     }
 
     // Also trigger wildcard listeners
-    const wildcardListeners = this.listeners.get('*');
+    const wildcardListeners = this.listeners.get("*");
     if (wildcardListeners) {
       wildcardListeners.forEach((callback) => callback(message.data));
     }
@@ -216,13 +216,13 @@ export class RealtimeClient {
    */
   subscribeToProject(projectID: string) {
     if (!this.isAuthenticated) {
-      logger.warn('Cannot subscribe before authentication');
+      logger.warn("Cannot subscribe before authentication");
       return;
     }
 
     this.currentProjectID = projectID;
     this.send({
-      type: 'subscribe_project',
+      type: "subscribe_project",
       data: {
         project_id: projectID,
       },
@@ -238,7 +238,7 @@ export class RealtimeClient {
     }
 
     this.send({
-      type: 'unsubscribe_project',
+      type: "unsubscribe_project",
     });
     this.currentProjectID = null;
   }
@@ -279,7 +279,7 @@ export class RealtimeClient {
 
   private startPingInterval(): void {
     this.pingInterval = setInterval(() => {
-      this.send({ type: 'ping' });
+      this.send({ type: "ping" });
     }, 30000); // Ping every 30 seconds
   }
 
@@ -318,16 +318,16 @@ export class RealtimeClient {
   /**
    * Get current connection status
    */
-  getStatus(): 'connected' | 'connecting' | 'disconnected' {
-    if (!this.ws) return 'disconnected';
+  getStatus(): "connected" | "connecting" | "disconnected" {
+    if (!this.ws) return "disconnected";
 
     switch (this.ws.readyState) {
       case WebSocket.CONNECTING:
-        return 'connecting';
+        return "connecting";
       case WebSocket.OPEN:
-        return this.isAuthenticated ? 'connected' : 'connecting';
+        return this.isAuthenticated ? "connected" : "connecting";
       default:
-        return 'disconnected';
+        return "disconnected";
     }
   }
 }

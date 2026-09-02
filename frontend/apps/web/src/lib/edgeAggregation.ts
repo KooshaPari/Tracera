@@ -10,7 +10,7 @@
  * Target: 1M edges → <100 visible edges
  */
 
-import type { LinkType } from '@tracertm/types';
+import type { LinkType } from "@tracertm/types";
 
 // ============================================================================
 // Types
@@ -63,7 +63,7 @@ export interface EdgeSamplingConfig {
   maxVisibleEdges: number;
 
   // Sampling strategy
-  samplingStrategy: 'statistical' | 'importance' | 'hybrid';
+  samplingStrategy: "statistical" | "importance" | "hybrid";
 
   // For importance sampling
   priorityTypes?: LinkType[] | undefined;
@@ -282,7 +282,7 @@ export function sampleEdgesStatistically(
 export function sampleEdgesByImportance(
   edges: EdgeBase[],
   maxEdges: number,
-  priorityTypes: LinkType[] = ['implements', 'tests', 'blocks'],
+  priorityTypes: LinkType[] = ["implements", "tests", "blocks"],
 ): AggregatedEdge[] {
   // Separate priority and non-priority edges
   const priorityEdges: EdgeBase[] = [];
@@ -436,7 +436,7 @@ export function detectCanvasFallbackAreas(
   const clusterInfos: DenseClusterInfo[] = [];
 
   for (const [key, groupEdges] of gridGroups) {
-    const parts = key.split(',').map(Number);
+    const parts = key.split(",").map(Number);
     const gridX = parts[0] ?? 0;
     const gridY = parts[1] ?? 0;
 
@@ -535,13 +535,13 @@ export function applyLazyEdgeRendering(
   // Step 3: Apply aggregation and sampling
   let visibleEdges: AggregatedEdge[];
 
-  if (config.samplingStrategy === 'statistical') {
+  if (config.samplingStrategy === "statistical") {
     // Pure statistical sampling
     const aggregated = aggregateParallelEdges(filteredEdges, config.minEdgesForAggregation);
     const sampleRatio = Math.min(config.maxVisibleEdges / aggregated.length, 1.0);
     const sampled = sampleEdgesStatistically(aggregated, sampleRatio);
     visibleEdges = sampled as AggregatedEdge[];
-  } else if (config.samplingStrategy === 'importance') {
+  } else if (config.samplingStrategy === "importance") {
     // Importance-based sampling
     const aggregated = aggregateParallelEdges(filteredEdges, config.minEdgesForAggregation);
     visibleEdges = sampleEdgesByImportance(
@@ -575,26 +575,26 @@ export function applyLazyEdgeRendering(
 export function createDefaultSamplingConfig(totalEdges: number): EdgeSamplingConfig {
   // Auto-tune based on edge count
   let maxVisibleEdges = 100;
-  let samplingStrategy: 'statistical' | 'importance' | 'hybrid' = 'hybrid';
+  let samplingStrategy: "statistical" | "importance" | "hybrid" = "hybrid";
 
   if (totalEdges < 1000) {
     maxVisibleEdges = 500;
-    samplingStrategy = 'importance';
+    samplingStrategy = "importance";
   } else if (totalEdges < 10000) {
     maxVisibleEdges = 300;
-    samplingStrategy = 'hybrid';
+    samplingStrategy = "hybrid";
   } else if (totalEdges < 100000) {
     maxVisibleEdges = 150;
-    samplingStrategy = 'hybrid';
+    samplingStrategy = "hybrid";
   } else {
     maxVisibleEdges = 100;
-    samplingStrategy = 'statistical';
+    samplingStrategy = "statistical";
   }
 
   return {
     maxVisibleEdges,
     samplingStrategy,
-    priorityTypes: ['implements', 'tests', 'blocks', 'depends_on'],
+    priorityTypes: ["implements", "tests", "blocks", "depends_on"],
     sampleRatio: maxVisibleEdges / totalEdges,
     minEdgesForAggregation: 2,
     canvasFallbackDensity: 50,

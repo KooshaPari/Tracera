@@ -25,15 +25,15 @@ declare global {
   }
 }
 
-import { renderHook, waitFor } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 
-import { useHybridGraph } from '@/hooks/useHybridGraph';
-import { GraphologyDataAdapter } from '@/lib/graphology/adapter';
-import { GraphClustering } from '@/lib/graphology/clustering';
-import { logger } from '@/lib/logger';
-import { RBushSpatialIndex } from '@/lib/spatialIndex';
-import { generateSyntheticGraph } from '@/lib/test-utils/synthetic-graph';
+import { useHybridGraph } from "@/hooks/useHybridGraph";
+import { GraphologyDataAdapter } from "@/lib/graphology/adapter";
+import { GraphClustering } from "@/lib/graphology/clustering";
+import { logger } from "@/lib/logger";
+import { RBushSpatialIndex } from "@/lib/spatialIndex";
+import { generateSyntheticGraph } from "@/lib/test-utils/synthetic-graph";
 
 // Test results accumulator for reporting
 const benchmarkResults: {
@@ -68,21 +68,21 @@ const benchmarkResults: {
   spatialIndex: [],
 };
 
-describe('Performance Benchmarks', () => {
-  describe('FPS Benchmarks', () => {
+describe("Performance Benchmarks", () => {
+  describe("FPS Benchmarks", () => {
     const scenarios = [
-      { edges: 150, expectedFps: 60, mode: 'ReactFlow', nodes: 100 },
-      { edges: 1500, expectedFps: 60, mode: 'ReactFlow', nodes: 1000 },
-      { edges: 7500, expectedFps: 60, mode: 'ReactFlow', nodes: 5000 },
-      { edges: 15_000, expectedFps: 60, mode: 'ReactFlow', nodes: 10_000 },
-      { edges: 75_000, expectedFps: 50, mode: 'WebGL', nodes: 50_000 },
-      { edges: 150_000, expectedFps: 50, mode: 'WebGL', nodes: 100_000 },
+      { edges: 150, expectedFps: 60, mode: "ReactFlow", nodes: 100 },
+      { edges: 1500, expectedFps: 60, mode: "ReactFlow", nodes: 1000 },
+      { edges: 7500, expectedFps: 60, mode: "ReactFlow", nodes: 5000 },
+      { edges: 15_000, expectedFps: 60, mode: "ReactFlow", nodes: 10_000 },
+      { edges: 75_000, expectedFps: 50, mode: "WebGL", nodes: 50_000 },
+      { edges: 150_000, expectedFps: 50, mode: "WebGL", nodes: 100_000 },
     ];
 
     scenarios.forEach(({ nodes, edges, expectedFps, mode }) => {
       it(`should achieve ${expectedFps}+ FPS with ${nodes.toLocaleString()} nodes (${mode})`, async () => {
         const { nodes: testNodes, edges: testEdges } = generateSyntheticGraph(nodes, edges, {
-          distribution: 'clustered',
+          distribution: "clustered",
           seed: 42,
         });
 
@@ -96,7 +96,7 @@ describe('Performance Benchmarks', () => {
 
         await waitFor(
           () => {
-            expect(result.current.useWebGL).toBe(mode === 'WebGL');
+            expect(result.current.useWebGL).toBe(mode === "WebGL");
           },
           { timeout: 5000 },
         );
@@ -140,8 +140,8 @@ describe('Performance Benchmarks', () => {
     });
   });
 
-  describe('Memory Usage', () => {
-    it('should stay under 600MB for 10k nodes', async () => {
+  describe("Memory Usage", () => {
+    it("should stay under 600MB for 10k nodes", async () => {
       const { nodes, edges } = generateSyntheticGraph(10_000, 15_000, {
         seed: 42,
       });
@@ -170,7 +170,7 @@ describe('Performance Benchmarks', () => {
       }
     });
 
-    it('should stay under 1GB for 100k nodes', async () => {
+    it("should stay under 1GB for 100k nodes", async () => {
       const { nodes, edges } = generateSyntheticGraph(100_000, 150_000, {
         seed: 42,
       });
@@ -199,8 +199,8 @@ describe('Performance Benchmarks', () => {
     });
   });
 
-  describe('Interaction Latency', () => {
-    it('should respond to click in <50ms (ReactFlow)', async () => {
+  describe("Interaction Latency", () => {
+    it("should respond to click in <50ms (ReactFlow)", async () => {
       const { nodes, edges: _edges } = generateSyntheticGraph(5000, 7500, {
         seed: 42,
       });
@@ -219,8 +219,8 @@ describe('Performance Benchmarks', () => {
 
       benchmarkResults.interactions.push({
         latency,
-        mode: 'ReactFlow',
-        operation: 'Node Click',
+        mode: "ReactFlow",
+        operation: "Node Click",
       });
 
       logger.info(`✓ Click latency (ReactFlow, 5k nodes): ${latency.toFixed(2)}ms`);
@@ -228,13 +228,13 @@ describe('Performance Benchmarks', () => {
       expect(latency).toBeLessThan(50);
     });
 
-    it('should respond to hover in <30ms', () => {
+    it("should respond to hover in <30ms", () => {
       const startTime = performance.now();
 
       // Simulate hover state change
-      const hoveredNodeId = 'test-node-123';
+      const hoveredNodeId = "test-node-123";
       const isHovered = true;
-      expect(hoveredNodeId).toBe('test-node-123');
+      expect(hoveredNodeId).toBe("test-node-123");
       expect(isHovered).toBeTruthy();
 
       const endTime = performance.now();
@@ -242,8 +242,8 @@ describe('Performance Benchmarks', () => {
 
       benchmarkResults.interactions.push({
         latency,
-        mode: 'ReactFlow',
-        operation: 'Node Hover',
+        mode: "ReactFlow",
+        operation: "Node Hover",
       });
 
       logger.info(`✓ Hover latency: ${latency.toFixed(2)}ms`);
@@ -251,7 +251,7 @@ describe('Performance Benchmarks', () => {
       expect(latency).toBeLessThan(30);
     });
 
-    it('should respond to zoom in <16ms', () => {
+    it("should respond to zoom in <16ms", () => {
       const startTime = performance.now();
 
       // Simulate zoom change
@@ -265,8 +265,8 @@ describe('Performance Benchmarks', () => {
 
       benchmarkResults.interactions.push({
         latency,
-        mode: 'ReactFlow',
-        operation: 'Zoom',
+        mode: "ReactFlow",
+        operation: "Zoom",
       });
 
       logger.info(`✓ Zoom latency: ${latency.toFixed(2)}ms`);
@@ -274,7 +274,7 @@ describe('Performance Benchmarks', () => {
       expect(latency).toBeLessThan(16); // 60 FPS = 16.67ms per frame
     });
 
-    it('should respond to pan in <16ms', () => {
+    it("should respond to pan in <16ms", () => {
       const startTime = performance.now();
 
       // Simulate pan
@@ -289,8 +289,8 @@ describe('Performance Benchmarks', () => {
 
       benchmarkResults.interactions.push({
         latency,
-        mode: 'ReactFlow',
-        operation: 'Pan',
+        mode: "ReactFlow",
+        operation: "Pan",
       });
 
       logger.info(`✓ Pan latency: ${latency.toFixed(2)}ms`);
@@ -299,8 +299,8 @@ describe('Performance Benchmarks', () => {
     });
   });
 
-  describe('Spatial Index Performance (R-tree)', () => {
-    it('should query 10k nodes in <5ms', () => {
+  describe("Spatial Index Performance (R-tree)", () => {
+    it("should query 10k nodes in <5ms", () => {
       const { nodes, edges } = generateSyntheticGraph(10_000, 15_000, {
         seed: 42,
       });
@@ -344,7 +344,7 @@ describe('Performance Benchmarks', () => {
       expect(queryTime).toBeLessThan(5);
     });
 
-    it('should query 100k nodes in <10ms', () => {
+    it("should query 100k nodes in <10ms", () => {
       const { nodes, edges } = generateSyntheticGraph(100_000, 150_000, {
         seed: 42,
       });
@@ -385,11 +385,11 @@ describe('Performance Benchmarks', () => {
     });
   });
 
-  describe('Clustering Performance (Louvain)', () => {
-    it('should cluster 50k nodes in <2s', async () => {
+  describe("Clustering Performance (Louvain)", () => {
+    it("should cluster 50k nodes in <2s", async () => {
       const { nodes, edges } = generateSyntheticGraph(50_000, 75_000, {
         density: 0.8,
-        distribution: 'clustered',
+        distribution: "clustered",
         seed: 42,
       });
 
@@ -426,9 +426,9 @@ describe('Performance Benchmarks', () => {
       expect(edgeReduction).toBeGreaterThan(95);
     });
 
-    it('should cluster 10k nodes efficiently', async () => {
+    it("should cluster 10k nodes efficiently", async () => {
       const { nodes, edges } = generateSyntheticGraph(10_000, 15_000, {
-        distribution: 'clustered',
+        distribution: "clustered",
         seed: 42,
       });
 
@@ -459,8 +459,8 @@ describe('Performance Benchmarks', () => {
     });
   });
 
-  describe('Layout Computation', () => {
-    it('should compute simulated layout for 5k nodes in <1s', () => {
+  describe("Layout Computation", () => {
+    it("should compute simulated layout for 5k nodes in <1s", () => {
       const { nodes, edges: _edges } = generateSyntheticGraph(5000, 7500, {
         seed: 42,
       });
@@ -481,7 +481,7 @@ describe('Performance Benchmarks', () => {
       const layoutTime = performance.now() - startTime;
 
       benchmarkResults.layout.push({
-        algorithm: 'Simulated',
+        algorithm: "Simulated",
         nodes: 5000,
         time: layoutTime,
       });
@@ -493,71 +493,71 @@ describe('Performance Benchmarks', () => {
     });
   });
 
-  describe('Summary Report', () => {
-    it('should generate comprehensive benchmark report', () => {
-      logger.info('\n' + '='.repeat(80));
-      logger.info('COMPREHENSIVE PERFORMANCE BENCHMARK REPORT');
-      logger.info('='.repeat(80));
+  describe("Summary Report", () => {
+    it("should generate comprehensive benchmark report", () => {
+      logger.info("\n" + "=".repeat(80));
+      logger.info("COMPREHENSIVE PERFORMANCE BENCHMARK REPORT");
+      logger.info("=".repeat(80));
 
-      logger.info('\n📊 FPS Benchmarks:');
-      logger.info('─'.repeat(80));
+      logger.info("\n📊 FPS Benchmarks:");
+      logger.info("─".repeat(80));
       benchmarkResults.fps.forEach(({ nodes, edges: _edges, fps, mode, renderTime }) => {
-        const status = fps >= 50 ? '✓' : '✗';
+        const status = fps >= 50 ? "✓" : "✗";
         logger.info(
           `  ${status} ${nodes.toLocaleString().padStart(7)} nodes (${mode.padEnd(9)}): ${fps.toFixed(1).padStart(5)} FPS (render: ${renderTime.toFixed(0)}ms)`,
         );
       });
 
-      logger.info('\n💾 Memory Usage:');
-      logger.info('─'.repeat(80));
+      logger.info("\n💾 Memory Usage:");
+      logger.info("─".repeat(80));
       benchmarkResults.memory.forEach(({ nodes, memoryMB }) => {
         const limit = nodes === 10_000 ? 600 : 1024;
-        const status = memoryMB < limit ? '✓' : '✗';
+        const status = memoryMB < limit ? "✓" : "✗";
         const percentage = ((memoryMB / limit) * 100).toFixed(1);
         logger.info(
           `  ${status} ${nodes.toLocaleString().padStart(7)} nodes: ${memoryMB.toFixed(1).padStart(7)} MB (${percentage}% of ${limit}MB limit)`,
         );
       });
 
-      logger.info('\n⚡ Interaction Latency:');
-      logger.info('─'.repeat(80));
+      logger.info("\n⚡ Interaction Latency:");
+      logger.info("─".repeat(80));
       benchmarkResults.interactions.forEach(({ operation, mode, latency }) => {
-        const target = operation === 'Node Click' ? 50 : operation === 'Node Hover' ? 30 : 16;
-        const status = latency < target ? '✓' : '✗';
+        const target = operation === "Node Click" ? 50 : operation === "Node Hover" ? 30 : 16;
+        const status = latency < target ? "✓" : "✗";
         logger.info(
           `  ${status} ${operation.padEnd(15)} (${mode.padEnd(9)}): ${latency.toFixed(2).padStart(6)} ms (target: <${target}ms)`,
         );
       });
 
-      logger.info('\n🌳 Spatial Index (R-tree):');
-      logger.info('─'.repeat(80));
+      logger.info("\n🌳 Spatial Index (R-tree):");
+      logger.info("─".repeat(80));
       benchmarkResults.spatialIndex.forEach(({ nodes, queryTime, speedup, visibleNodes }) => {
         const target = nodes === 10_000 ? 5 : 10;
-        const status = queryTime < target ? '✓' : '✗';
+        const status = queryTime < target ? "✓" : "✗";
         logger.info(
           `  ${status} ${nodes.toLocaleString().padStart(7)} nodes: ${queryTime.toFixed(2).padStart(6)} ms (${visibleNodes.toLocaleString().padStart(5)} visible, ${speedup.toFixed(0)}x speedup)`,
         );
       });
 
-      logger.info('\n🔗 Clustering (Louvain):');
-      logger.info('─'.repeat(80));
+      logger.info("\n🔗 Clustering (Louvain):");
+      logger.info("─".repeat(80));
       benchmarkResults.clustering.forEach(({ nodes, edges: _edges, time, edgeReduction }) => {
-        const status = edgeReduction > 95 ? '✓' : '✗';
+        const status = edgeReduction > 95 ? "✓" : "✗";
         logger.info(
           `  ${status} ${nodes.toLocaleString().padStart(7)} nodes: ${time.toFixed(0).padStart(6)} ms (${edgeReduction.toFixed(1)}% edge reduction)`,
         );
       });
 
-      logger.info('\n📐 Layout Computation:');
-      logger.info('─'.repeat(80));
+      logger.info("\n📐 Layout Computation:");
+      logger.info("─".repeat(80));
       benchmarkResults.layout.forEach(({ algorithm, nodes, time }) => {
-        const status = time < 1000 ? '✓' : '✗';
+        const status = time < 1000 ? "✓" : "✗";
         logger.info(
           `  ${status} ${algorithm.padEnd(15)} (${nodes.toLocaleString().padStart(5)} nodes): ${time.toFixed(0).padStart(6)} ms`,
         );
       });
 
-      logger.info('\n' + '='.repeat(80));
+      logger.info("\n" + "=".repeat(80));
 
       // Overall pass/fail
       const allPassed =
@@ -566,11 +566,11 @@ describe('Performance Benchmarks', () => {
         benchmarkResults.clustering.every((r) => r.edgeReduction > 95);
 
       if (allPassed) {
-        logger.info('✓ ALL BENCHMARKS PASSED');
+        logger.info("✓ ALL BENCHMARKS PASSED");
       } else {
-        logger.info('⚠ SOME BENCHMARKS FAILED - Review results above');
+        logger.info("⚠ SOME BENCHMARKS FAILED - Review results above");
       }
-      logger.info('='.repeat(80) + '\n');
+      logger.info("=".repeat(80) + "\n");
 
       expect(true).toBeTruthy(); // Always pass the report test
     });

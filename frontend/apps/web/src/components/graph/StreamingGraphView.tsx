@@ -9,19 +9,19 @@
  * - Predictive prefetch
  */
 
-import { RefreshCw, ZoomIn, ZoomOut } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { RefreshCw, ZoomIn, ZoomOut } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import type { ViewportBounds } from '../../lib/graph/IncrementalGraphBuilder';
+import type { ViewportBounds } from "../../lib/graph/IncrementalGraphBuilder";
 
 import {
   calculatePanDirection,
   calculatePanVelocity,
   useIncrementalGraph,
-} from '../../hooks/useIncrementalGraph';
-import { Button } from '../ui/button';
-import { Card } from '../ui/card';
-import { GraphLoadingProgress, GraphLoadingProgressCompact } from './GraphLoadingProgress';
+} from "../../hooks/useIncrementalGraph";
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
+import { GraphLoadingProgress, GraphLoadingProgressCompact } from "./GraphLoadingProgress";
 
 export interface StreamingGraphViewProps {
   projectId: string;
@@ -38,7 +38,7 @@ export function StreamingGraphView({
   onViewportChange,
   showProgress = true,
   enablePrefetch = true,
-  className = '',
+  className = "",
 }: StreamingGraphViewProps) {
   const [viewport, setViewport] = useState<ViewportBounds>(initialViewport);
   const [zoom, setZoom] = useState(1);
@@ -130,7 +130,7 @@ export function StreamingGraphView({
     <div className={`relative ${className}`}>
       {/* Progress UI */}
       {showProgress && state.isLoading && (
-        <div className='absolute top-4 right-4 z-10 w-80'>
+        <div className="absolute top-4 right-4 z-10 w-80">
           <GraphLoadingProgress
             progress={state.progress}
             metadata={state.metadata}
@@ -141,21 +141,21 @@ export function StreamingGraphView({
       )}
 
       {/* Controls */}
-      <div className='absolute top-4 left-4 z-10 flex gap-2'>
-        <Button variant='outline' size='sm' onClick={handleZoomIn} title='Zoom In'>
-          <ZoomIn className='h-4 w-4' />
+      <div className="absolute top-4 left-4 z-10 flex gap-2">
+        <Button variant="outline" size="sm" onClick={handleZoomIn} title="Zoom In">
+          <ZoomIn className="h-4 w-4" />
         </Button>
-        <Button variant='outline' size='sm' onClick={handleZoomOut} title='Zoom Out'>
-          <ZoomOut className='h-4 w-4' />
+        <Button variant="outline" size="sm" onClick={handleZoomOut} title="Zoom Out">
+          <ZoomOut className="h-4 w-4" />
         </Button>
-        <Button variant='outline' size='sm' onClick={handleReset} title='Reset View'>
-          <RefreshCw className='h-4 w-4' />
+        <Button variant="outline" size="sm" onClick={handleReset} title="Reset View">
+          <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Compact progress at bottom */}
       {showProgress && state.isLoading && (
-        <div className='absolute bottom-4 left-1/2 z-10 -translate-x-1/2 transform'>
+        <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 transform">
           <GraphLoadingProgressCompact
             progress={state.progress}
             isLoading={state.isLoading}
@@ -166,18 +166,18 @@ export function StreamingGraphView({
 
       {/* Graph Canvas */}
       <Card
-        className={`h-full min-h-[600px] w-full cursor-${isPanning ? 'grabbing' : 'grab'} overflow-hidden`}
+        className={`h-full min-h-[600px] w-full cursor-${isPanning ? "grabbing" : "grab"} overflow-hidden`}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
         <svg
-          className='h-full w-full'
+          className="h-full w-full"
           viewBox={`${viewport.minX} ${viewport.minY} ${viewport.maxX - viewport.minX} ${viewport.maxY - viewport.minY}`}
         >
           {/* Render edges */}
-          <g className='edges'>
+          <g className="edges">
             {state.edges.map((edge) => {
               const source = state.nodes.find((n) => n.id === edge.sourceId);
               const target = state.nodes.find((n) => n.id === edge.targetId);
@@ -193,31 +193,31 @@ export function StreamingGraphView({
                   y1={source.position.y}
                   x2={target.position.x}
                   y2={target.position.y}
-                  stroke='currentColor'
+                  stroke="currentColor"
                   strokeWidth={2 / zoom}
-                  className='text-muted-foreground/30'
+                  className="text-muted-foreground/30"
                 />
               );
             })}
           </g>
 
           {/* Render nodes */}
-          <g className='nodes'>
+          <g className="nodes">
             {state.nodes.map((node) => (
               <g key={node.id} transform={`translate(${node.position.x}, ${node.position.y})`}>
                 <circle
                   r={20 / zoom}
-                  fill='currentColor'
-                  className='text-primary'
-                  stroke='white'
+                  fill="currentColor"
+                  className="text-primary"
+                  stroke="white"
                   strokeWidth={2 / zoom}
                 />
                 <text
                   y={30 / zoom}
-                  textAnchor='middle'
+                  textAnchor="middle"
                   fontSize={12 / zoom}
-                  fill='currentColor'
-                  className='text-foreground select-none'
+                  fill="currentColor"
+                  className="text-foreground select-none"
                 >
                   {node.label}
                 </text>
@@ -228,25 +228,25 @@ export function StreamingGraphView({
       </Card>
 
       {/* Stats */}
-      <div className='text-muted-foreground mt-4 flex justify-between text-xs'>
+      <div className="text-muted-foreground mt-4 flex justify-between text-xs">
         <div>
-          Nodes: <span className='font-mono'>{state.nodes.length}</span> | Edges:{' '}
-          <span className='font-mono'>{state.edges.length}</span>
+          Nodes: <span className="font-mono">{state.nodes.length}</span> | Edges:{" "}
+          <span className="font-mono">{state.edges.length}</span>
         </div>
         <div>
-          Zoom: <span className='font-mono'>{zoom.toFixed(2)}x</span>
+          Zoom: <span className="font-mono">{zoom.toFixed(2)}x</span>
         </div>
         {state.metadata && (
           <div>
-            Total: <span className='font-mono'>{state.metadata.totalNodes}</span> nodes,{' '}
-            <span className='font-mono'>{state.metadata.totalEdges}</span> edges
+            Total: <span className="font-mono">{state.metadata.totalNodes}</span> nodes,{" "}
+            <span className="font-mono">{state.metadata.totalEdges}</span> edges
           </div>
         )}
       </div>
 
       {/* Error display */}
       {state.error && (
-        <div className='bg-destructive/10 text-destructive mt-4 rounded-lg p-4 text-sm'>
+        <div className="bg-destructive/10 text-destructive mt-4 rounded-lg p-4 text-sm">
           <strong>Error loading graph:</strong> {state.error.message}
         </div>
       )}
@@ -258,13 +258,13 @@ export function StreamingGraphView({
  * Example usage in a page component
  */
 export function StreamingGraphViewExample() {
-  const [projectId] = useState('example-project-id');
+  const [projectId] = useState("example-project-id");
 
   return (
-    <div className='container mx-auto p-6'>
-      <div className='mb-6'>
-        <h1 className='mb-2 text-2xl font-bold'>Streaming Graph View</h1>
-        <p className='text-muted-foreground'>
+    <div className="container mx-auto p-6">
+      <div className="mb-6">
+        <h1 className="mb-2 text-2xl font-bold">Streaming Graph View</h1>
+        <p className="text-muted-foreground">
           Real-time incremental loading with predictive prefetch
         </p>
       </div>

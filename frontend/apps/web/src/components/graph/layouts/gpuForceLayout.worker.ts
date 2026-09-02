@@ -5,38 +5,38 @@
  * Uses Barnes-Hut optimization for O(n log n) complexity.
  */
 
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-import type { ForceSimulationConfig } from './gpuForceLayout';
+import type { ForceSimulationConfig } from "./gpuForceLayout";
 
-import { GPUForceLayout } from './gpuForceLayout';
+import { GPUForceLayout } from "./gpuForceLayout";
 
 // ============================================================================
 // MESSAGE TYPES
 // ============================================================================
 
 export interface ForceLayoutRequest {
-  type: 'simulate';
+  type: "simulate";
   nodes: { id: string }[];
   edges: { id: string; source: string; target: string }[];
   config: ForceSimulationConfig;
 }
 
 export interface ForceLayoutResponse {
-  type: 'result';
+  type: "result";
   positions: { id: string; x: number; y: number }[];
   duration: number;
 }
 
 export interface ForceLayoutProgress {
-  type: 'progress';
+  type: "progress";
   iteration: number;
   totalIterations: number;
   progress: number;
 }
 
 export interface ForceLayoutError {
-  type: 'error';
+  type: "error";
   error: string;
 }
 
@@ -46,10 +46,10 @@ export interface ForceLayoutError {
 
 const layoutEngine = new GPUForceLayout();
 
-self.addEventListener('message', async (ev: MessageEvent<ForceLayoutRequest>) => {
+self.addEventListener("message", async (ev: MessageEvent<ForceLayoutRequest>) => {
   const msg = ev.data;
 
-  if (msg.type !== 'simulate') {
+  if (msg.type !== "simulate") {
     return;
   }
 
@@ -61,7 +61,7 @@ self.addEventListener('message', async (ev: MessageEvent<ForceLayoutRequest>) =>
       data: {},
       id: n.id,
       position: { x: 0, y: 0 },
-      type: 'default',
+      type: "default",
     }));
 
     const edges: Edge[] = msg.edges.map((e) => ({
@@ -86,14 +86,14 @@ self.addEventListener('message', async (ev: MessageEvent<ForceLayoutRequest>) =>
     const response: ForceLayoutResponse = {
       duration,
       positions,
-      type: 'result',
+      type: "result",
     };
 
     (globalThis as unknown as Worker).postMessage(response);
   } catch (error) {
     const errorResponse: ForceLayoutError = {
       error: error instanceof Error ? error.message : String(error),
-      type: 'error',
+      type: "error",
     };
 
     (globalThis as unknown as Worker).postMessage(errorResponse);
@@ -101,10 +101,10 @@ self.addEventListener('message', async (ev: MessageEvent<ForceLayoutRequest>) =>
 });
 
 // Handle cleanup
-self.addEventListener('error', (err) => {
+self.addEventListener("error", (err) => {
   const errorResponse: ForceLayoutError = {
-    error: err.message || 'Worker error occurred',
-    type: 'error',
+    error: err.message || "Worker error occurred",
+    type: "error",
   };
 
   (globalThis as unknown as Worker).postMessage(errorResponse);

@@ -3,14 +3,14 @@ import type {
   UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
-} from '@tanstack/react-query';
+} from "@tanstack/react-query";
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { Mutation } from '@tracertm/types';
+import type { Mutation } from "@tracertm/types";
 
-import { queryKeys } from './queries-keys';
-import { api, handleApiResponse } from './query-client';
+import { queryKeys } from "./queries-keys";
+import { api, handleApiResponse } from "./query-client";
 
 interface MutationFilters {
   since?: string | undefined;
@@ -24,7 +24,7 @@ const useMutations = (
   const baseOptions: UseQueryOptions<Mutation[]> = {
     queryFn: async () =>
       handleApiResponse(
-        api.get<Mutation[]>('/api/v1/mutations', {
+        api.get<Mutation[]>("/api/v1/mutations", {
           params: { query: filters },
         }),
       ),
@@ -41,7 +41,7 @@ const useCreateMutation = (
   const baseOptions: UseMutationOptions<Mutation, Error, Partial<Mutation>> = {
     mutationFn: async (data: Partial<Mutation>) =>
       handleApiResponse(
-        api.post<Mutation>('/api/v1/mutations', {
+        api.post<Mutation>("/api/v1/mutations", {
           body: data as Record<string, unknown>,
         }),
       ),

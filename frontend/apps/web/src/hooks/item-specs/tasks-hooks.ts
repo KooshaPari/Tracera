@@ -1,8 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { TaskSpecCreate, TaskSpecUpdate, TaskStatus } from './types';
+import type { TaskSpecCreate, TaskSpecUpdate, TaskStatus } from "./types";
 
-import { itemSpecKeys } from './keys';
+import { itemSpecKeys } from "./keys";
 import {
   createTaskSpec,
   deleteTaskSpec,
@@ -10,7 +10,7 @@ import {
   fetchTaskSpecByItem,
   fetchTaskSpecs,
   updateTaskSpec,
-} from './tasks-api';
+} from "./tasks-api";
 
 function useTaskSpecs(
   projectId: string,
@@ -62,14 +62,14 @@ function useCreateTaskSpec(projectId: string) {
       return result;
     },
     onSuccess: async (data, variables) => {
-      queryClient.setQueryData(itemSpecKeys.task(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.task(projectId, data["id"]), data);
       const invalidations = [
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.tasks(projectId) }),
         queryClient.invalidateQueries({
           queryKey: itemSpecKeys.tasksByStatus(projectId, data.status),
         }),
       ];
-      if (typeof variables.parent_story === 'string') {
+      if (typeof variables.parent_story === "string") {
         invalidations.push(
           queryClient.invalidateQueries({
             queryKey: itemSpecKeys.tasksByStory(projectId, variables.parent_story),
@@ -93,14 +93,14 @@ function useUpdateTaskSpec(projectId: string) {
       return result;
     },
     onSuccess: async (data) => {
-      queryClient.setQueryData(itemSpecKeys.task(projectId, data['id']), data);
+      queryClient.setQueryData(itemSpecKeys.task(projectId, data["id"]), data);
       const invalidations = [
         queryClient.invalidateQueries({ queryKey: itemSpecKeys.tasks(projectId) }),
         queryClient.invalidateQueries({
           queryKey: itemSpecKeys.tasksByStatus(projectId, data.status),
         }),
       ];
-      if (typeof data.parent_story === 'string') {
+      if (typeof data.parent_story === "string") {
         invalidations.push(
           queryClient.invalidateQueries({
             queryKey: itemSpecKeys.tasksByStory(projectId, data.parent_story),

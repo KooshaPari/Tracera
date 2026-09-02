@@ -1,9 +1,9 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, AlertTriangle, CheckCircle, Circle, Code, Shield } from 'lucide-react';
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertCircle, AlertTriangle, CheckCircle, Circle, Code, Shield } from "lucide-react";
 
-import type { ContractCondition } from '@tracertm/types';
+import type { ContractCondition } from "@tracertm/types";
 
-import { Card } from '@tracertm/ui';
+import { Card } from "@tracertm/ui";
 
 interface ConditionListProps {
   preconditions?: ContractCondition[];
@@ -46,24 +46,24 @@ interface VerificationStatusIconMap {
 
 const conditionSeverityStyles: ConditionSeverityStyleMap = {
   critical: {
-    bg: 'bg-red-500/10',
+    bg: "bg-red-500/10",
     icon: AlertCircle,
-    text: 'text-red-600',
+    text: "text-red-600",
   },
   high: {
-    bg: 'bg-orange-500/10',
+    bg: "bg-orange-500/10",
     icon: AlertTriangle,
-    text: 'text-orange-600',
+    text: "text-orange-600",
   },
   low: {
-    bg: 'bg-blue-500/10',
+    bg: "bg-blue-500/10",
     icon: Circle,
-    text: 'text-blue-600',
+    text: "text-blue-600",
   },
   medium: {
-    bg: 'bg-yellow-500/10',
+    bg: "bg-yellow-500/10",
     icon: Circle,
-    text: 'text-yellow-600',
+    text: "text-yellow-600",
   },
 };
 
@@ -75,21 +75,21 @@ const verificationStatusIcons: VerificationStatusIconMap = {
 };
 
 const verificationStatusColors: Record<string, string> = {
-  fail: 'text-red-600',
-  pass: 'text-green-600',
-  skip: 'text-gray-600',
-  undefined: 'text-gray-400',
+  fail: "text-red-600",
+  pass: "text-green-600",
+  skip: "text-gray-600",
+  undefined: "text-gray-400",
 };
 
 interface ConditionItemProps {
   condition: ContractCondition;
-  type: 'precondition' | 'postcondition' | 'invariant';
+  type: "precondition" | "postcondition" | "invariant";
   onClick?: () => void;
 }
 
 function ConditionItem({ condition, type, onClick }: ConditionItemProps) {
-  const severity = (condition as ContractCondition & { severity?: string }).severity ?? 'medium';
-  const status = condition.lastVerifiedResult ?? 'undefined';
+  const severity = (condition as ContractCondition & { severity?: string }).severity ?? "medium";
+  const status = condition.lastVerifiedResult ?? "undefined";
   const StatusIcon = (verificationStatusIcons[status] || Circle) as React.ComponentType<{
     className?: string;
     title?: string;
@@ -105,16 +105,16 @@ function ConditionItem({ condition, type, onClick }: ConditionItemProps) {
       className={`cursor-pointer rounded-lg border p-4 transition-colors hover:shadow-sm ${severityStyle?.bg}`}
       onClick={onClick}
     >
-      <div className='space-y-3'>
+      <div className="space-y-3">
         {/* Header with Type, Severity, and Status */}
-        <div className='flex items-start justify-between gap-3'>
-          <div className='flex min-w-0 flex-1 items-center gap-2'>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             {/* Type Icon */}
-            {type === 'precondition' && <Shield className='h-4 w-4 flex-shrink-0 text-blue-600' />}
-            {type === 'postcondition' && (
-              <Shield className='h-4 w-4 flex-shrink-0 text-green-600' />
+            {type === "precondition" && <Shield className="h-4 w-4 flex-shrink-0 text-blue-600" />}
+            {type === "postcondition" && (
+              <Shield className="h-4 w-4 flex-shrink-0 text-green-600" />
             )}
-            {type === 'invariant' && <Shield className='h-4 w-4 flex-shrink-0 text-purple-600' />}
+            {type === "invariant" && <Shield className="h-4 w-4 flex-shrink-0 text-purple-600" />}
 
             {/* Condition Description */}
             <p className={`text-sm font-medium ${severityStyle?.text} truncate`}>
@@ -123,7 +123,7 @@ function ConditionItem({ condition, type, onClick }: ConditionItemProps) {
           </div>
 
           {/* Verification Status */}
-          <div className='flex flex-shrink-0 items-center gap-1'>
+          <div className="flex flex-shrink-0 items-center gap-1">
             <StatusIcon
               className={`h-4 w-4 ${verificationStatusColors[status]}`}
               title={`Verification: ${status}`}
@@ -133,29 +133,29 @@ function ConditionItem({ condition, type, onClick }: ConditionItemProps) {
 
         {/* Expression (if available) */}
         {condition.expression && (
-          <div className='bg-background/60 border-border/50 overflow-x-auto rounded border p-2'>
-            <code className='text-muted-foreground font-mono text-xs whitespace-nowrap'>
+          <div className="bg-background/60 border-border/50 overflow-x-auto rounded border p-2">
+            <code className="text-muted-foreground font-mono text-xs whitespace-nowrap">
               {condition.expression}
             </code>
           </div>
         )}
 
         {/* Metadata Row */}
-        <div className='text-muted-foreground flex items-center justify-between text-xs'>
-          <div className='flex items-center gap-2'>
+        <div className="text-muted-foreground flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2">
             {!condition.isRequired && (
-              <span className='rounded bg-yellow-500/10 px-1.5 py-0.5 text-[10px] font-medium text-yellow-600'>
+              <span className="rounded bg-yellow-500/10 px-1.5 py-0.5 text-[10px] font-medium text-yellow-600">
                 Optional
               </span>
             )}
-            <span className='flex items-center gap-1'>
-              <Code className='h-3 w-3' />
-              {condition.expression ? 'Expression' : 'Descriptive'}
+            <span className="flex items-center gap-1">
+              <Code className="h-3 w-3" />
+              {condition.expression ? "Expression" : "Descriptive"}
             </span>
           </div>
-          {status !== 'undefined' && (
+          {status !== "undefined" && (
             <span className={`font-medium ${verificationStatusColors[status]}`}>
-              {status === 'pass' ? '✓ Verified' : status === 'fail' ? '✗ Failed' : '⊘ Skipped'}
+              {status === "pass" ? "✓ Verified" : status === "fail" ? "✗ Failed" : "⊘ Skipped"}
             </span>
           )}
         </div>
@@ -169,7 +169,7 @@ export function ConditionList({
   postconditions,
   invariants,
   onConditionClick,
-  className = '',
+  className = "",
 }: ConditionListProps) {
   const hasAnyConditions =
     (preconditions?.length ?? 0) > 0 ||
@@ -179,9 +179,9 @@ export function ConditionList({
   if (!hasAnyConditions) {
     return (
       <Card className={`text-muted-foreground p-6 text-center ${className}`}>
-        <Shield className='mx-auto mb-2 h-8 w-8 opacity-50' />
-        <p className='text-sm'>No conditions defined yet.</p>
-        <p className='text-xs'>
+        <Shield className="mx-auto mb-2 h-8 w-8 opacity-50" />
+        <p className="text-sm">No conditions defined yet.</p>
+        <p className="text-xs">
           Add preconditions, postconditions, or invariants to this contract.
         </p>
       </Card>
@@ -192,20 +192,20 @@ export function ConditionList({
     <div className={`space-y-6 ${className}`}>
       {/* Preconditions Section */}
       {preconditions && preconditions.length > 0 && (
-        <div className='space-y-3'>
-          <div className='flex items-center gap-2'>
-            <Shield className='h-4 w-4 text-blue-600' />
-            <h3 className='text-sm font-semibold text-blue-600'>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-blue-600" />
+            <h3 className="text-sm font-semibold text-blue-600">
               Preconditions ({preconditions.length})
             </h3>
           </div>
-          <div className='grid gap-3'>
-            <AnimatePresence mode='popLayout'>
+          <div className="grid gap-3">
+            <AnimatePresence mode="popLayout">
               {preconditions.map((condition) => (
                 <ConditionItem
                   key={condition.id}
                   condition={condition}
-                  type='precondition'
+                  type="precondition"
                   onClick={() => onConditionClick?.(condition)}
                 />
               ))}
@@ -216,20 +216,20 @@ export function ConditionList({
 
       {/* Postconditions Section */}
       {postconditions && postconditions.length > 0 && (
-        <div className='space-y-3'>
-          <div className='flex items-center gap-2'>
-            <Shield className='h-4 w-4 text-green-600' />
-            <h3 className='text-sm font-semibold text-green-600'>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-green-600" />
+            <h3 className="text-sm font-semibold text-green-600">
               Postconditions ({postconditions.length})
             </h3>
           </div>
-          <div className='grid gap-3'>
-            <AnimatePresence mode='popLayout'>
+          <div className="grid gap-3">
+            <AnimatePresence mode="popLayout">
               {postconditions.map((condition) => (
                 <ConditionItem
                   key={condition.id}
                   condition={condition}
-                  type='postcondition'
+                  type="postcondition"
                   onClick={() => onConditionClick?.(condition)}
                 />
               ))}
@@ -240,20 +240,20 @@ export function ConditionList({
 
       {/* Invariants Section */}
       {invariants && invariants.length > 0 && (
-        <div className='space-y-3'>
-          <div className='flex items-center gap-2'>
-            <Shield className='h-4 w-4 text-purple-600' />
-            <h3 className='text-sm font-semibold text-purple-600'>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-purple-600" />
+            <h3 className="text-sm font-semibold text-purple-600">
               Invariants ({invariants.length})
             </h3>
           </div>
-          <div className='grid gap-3'>
-            <AnimatePresence mode='popLayout'>
+          <div className="grid gap-3">
+            <AnimatePresence mode="popLayout">
               {invariants.map((condition) => (
                 <ConditionItem
                   key={condition.id}
                   condition={condition}
-                  type='invariant'
+                  type="invariant"
                   onClick={() => onConditionClick?.(condition)}
                 />
               ))}

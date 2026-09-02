@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo } from "react";
 
 import {
   ContextMenu,
@@ -6,7 +6,7 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from '@tracertm/ui/components/ContextMenu';
+} from "@tracertm/ui/components/ContextMenu";
 
 interface NodeContextMenuProps {
   children: React.ReactNode;
@@ -57,7 +57,7 @@ export const NodeContextMenu = memo(function NodeContextMenu({
           onClick={() => {
             onDelete(nodeId);
           }}
-          className='text-destructive'
+          className="text-destructive"
         >
           Delete
         </ContextMenuItem>

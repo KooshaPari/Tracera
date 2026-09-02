@@ -8,16 +8,16 @@
  * - Memory: <500MB for 100k nodes
  */
 
-import type { Node, Edge } from '@xyflow/react';
+import type { Node, Edge } from "@xyflow/react";
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 
 import {
   GraphologyDataLayer,
   createGraphologyDataLayer,
   getGraphologyDataLayer,
   resetGraphologyDataLayer,
-} from '../GraphologyDataLayer';
+} from "../GraphologyDataLayer";
 
 /**
  * Generate synthetic graph data for benchmarking
@@ -36,12 +36,12 @@ function generateGraphData(
   for (let i = 0; i < nodeCount; i++) {
     nodes.push({
       id: `node-${i}`,
-      type: 'default',
+      type: "default",
       position: { x: Math.random() * 1000, y: Math.random() * 1000 },
       data: {
         label: `Node ${i}`,
-        type: 'test',
-        color: '#64748b',
+        type: "test",
+        color: "#64748b",
       },
     });
   }
@@ -56,7 +56,7 @@ function generateGraphData(
           id: `edge-${edgeId++}`,
           source: `node-${i}`,
           target: `node-${target}`,
-          type: 'default',
+          type: "default",
           data: { weight: 1 },
         });
       }
@@ -66,7 +66,7 @@ function generateGraphData(
   return { nodes, edges };
 }
 
-describe('GraphologyDataLayer Benchmarks', () => {
+describe("GraphologyDataLayer Benchmarks", () => {
   let dataLayer: GraphologyDataLayer;
 
   beforeEach(() => {
@@ -74,8 +74,8 @@ describe('GraphologyDataLayer Benchmarks', () => {
     dataLayer = createGraphologyDataLayer();
   });
 
-  describe('Initialization Performance', () => {
-    it('should initialize 1k nodes in <50ms', async () => {
+  describe("Initialization Performance", () => {
+    it("should initialize 1k nodes in <50ms", async () => {
       const { nodes, edges } = generateGraphData(1000, 5);
 
       const start = performance.now();
@@ -89,7 +89,7 @@ describe('GraphologyDataLayer Benchmarks', () => {
       expect(dataLayer.getGraph().order).toBe(1000);
     });
 
-    it('should initialize 10k nodes in <1s', async () => {
+    it("should initialize 10k nodes in <1s", async () => {
       const { nodes, edges } = generateGraphData(10000, 5);
 
       const start = performance.now();
@@ -103,7 +103,7 @@ describe('GraphologyDataLayer Benchmarks', () => {
       expect(dataLayer.getGraph().order).toBe(10000);
     });
 
-    it('should initialize 50k nodes in <5s', async () => {
+    it("should initialize 50k nodes in <5s", async () => {
       const { nodes, edges } = generateGraphData(50000, 5);
 
       const start = performance.now();
@@ -117,7 +117,7 @@ describe('GraphologyDataLayer Benchmarks', () => {
       expect(dataLayer.getGraph().order).toBe(50000);
     });
 
-    it('should initialize 100k nodes in <10s (TARGET)', async () => {
+    it("should initialize 100k nodes in <10s (TARGET)", async () => {
       const { nodes, edges } = generateGraphData(100000, 5);
 
       const start = performance.now();
@@ -132,14 +132,14 @@ describe('GraphologyDataLayer Benchmarks', () => {
     });
   });
 
-  describe('Layout Computation Performance', () => {
-    it('should compute layout for 1k nodes in <100ms', async () => {
+  describe("Layout Computation Performance", () => {
+    it("should compute layout for 1k nodes in <100ms", async () => {
       const { nodes, edges } = generateGraphData(1000, 5);
       await dataLayer.initialize(nodes, edges);
 
       const start = performance.now();
       await dataLayer.computeLayout({
-        algorithm: 'forceAtlas2',
+        algorithm: "forceAtlas2",
         iterations: 100,
       });
       const end = performance.now();
@@ -150,13 +150,13 @@ describe('GraphologyDataLayer Benchmarks', () => {
       expect(time).toBeLessThan(100);
     });
 
-    it('should compute layout for 10k nodes in <1s', async () => {
+    it("should compute layout for 10k nodes in <1s", async () => {
       const { nodes, edges } = generateGraphData(10000, 5);
       await dataLayer.initialize(nodes, edges);
 
       const start = performance.now();
       await dataLayer.computeLayout({
-        algorithm: 'forceAtlas2',
+        algorithm: "forceAtlas2",
         iterations: 100,
       });
       const end = performance.now();
@@ -167,13 +167,13 @@ describe('GraphologyDataLayer Benchmarks', () => {
       expect(time).toBeLessThan(1000);
     });
 
-    it('should compute circular layout for 100k nodes in <500ms', async () => {
+    it("should compute circular layout for 100k nodes in <500ms", async () => {
       const { nodes, edges } = generateGraphData(100000, 5);
       await dataLayer.initialize(nodes, edges);
 
       const start = performance.now();
       await dataLayer.computeLayout({
-        algorithm: 'circular',
+        algorithm: "circular",
       });
       const end = performance.now();
 
@@ -184,8 +184,8 @@ describe('GraphologyDataLayer Benchmarks', () => {
     });
   });
 
-  describe('Conversion Performance', () => {
-    it('should convert 1k nodes to ReactFlow in <10ms', async () => {
+  describe("Conversion Performance", () => {
+    it("should convert 1k nodes to ReactFlow in <10ms", async () => {
       const { nodes, edges } = generateGraphData(1000, 5);
       await dataLayer.initialize(nodes, edges);
 
@@ -200,7 +200,7 @@ describe('GraphologyDataLayer Benchmarks', () => {
       expect(result.nodes.length).toBe(1000);
     });
 
-    it('should convert 10k nodes to ReactFlow in <100ms', async () => {
+    it("should convert 10k nodes to ReactFlow in <100ms", async () => {
       const { nodes, edges } = generateGraphData(10000, 5);
       await dataLayer.initialize(nodes, edges);
 
@@ -215,7 +215,7 @@ describe('GraphologyDataLayer Benchmarks', () => {
       expect(result.nodes.length).toBe(10000);
     });
 
-    it('should convert 100k nodes to ReactFlow in <500ms (TARGET)', async () => {
+    it("should convert 100k nodes to ReactFlow in <500ms (TARGET)", async () => {
       const { nodes, edges } = generateGraphData(100000, 5);
       await dataLayer.initialize(nodes, edges);
 
@@ -231,8 +231,8 @@ describe('GraphologyDataLayer Benchmarks', () => {
     });
   });
 
-  describe('Community Detection Performance', () => {
-    it('should detect communities in 1k nodes in <100ms', async () => {
+  describe("Community Detection Performance", () => {
+    it("should detect communities in 1k nodes in <100ms", async () => {
       const { nodes, edges } = generateGraphData(1000, 5);
       await dataLayer.initialize(nodes, edges);
 
@@ -247,7 +247,7 @@ describe('GraphologyDataLayer Benchmarks', () => {
       expect(communities.size).toBeGreaterThan(0);
     });
 
-    it('should detect communities in 10k nodes in <1s', async () => {
+    it("should detect communities in 10k nodes in <1s", async () => {
       const { nodes, edges } = generateGraphData(10000, 5);
       await dataLayer.initialize(nodes, edges);
 
@@ -263,8 +263,8 @@ describe('GraphologyDataLayer Benchmarks', () => {
     });
   });
 
-  describe('Memory Usage', () => {
-    it('should track memory metrics for 100k nodes', async () => {
+  describe("Memory Usage", () => {
+    it("should track memory metrics for 100k nodes", async () => {
       const { nodes, edges } = generateGraphData(100000, 5);
       await dataLayer.initialize(nodes, edges);
 
@@ -272,7 +272,7 @@ describe('GraphologyDataLayer Benchmarks', () => {
       const memoryMB = metrics.totalMemory / (1024 * 1024);
 
       console.log(`100k nodes estimated memory: ${memoryMB.toFixed(2)}MB`);
-      console.log('Performance metrics:', {
+      console.log("Performance metrics:", {
         initTime: `${metrics.initializationTime.toFixed(2)}ms`,
         nodeCount: metrics.nodeCount,
         edgeCount: metrics.edgeCount,
@@ -283,8 +283,8 @@ describe('GraphologyDataLayer Benchmarks', () => {
     });
   });
 
-  describe('Incremental Updates', () => {
-    it('should handle incremental node additions efficiently', async () => {
+  describe("Incremental Updates", () => {
+    it("should handle incremental node additions efficiently", async () => {
       const { nodes, edges } = generateGraphData(1000, 5);
       await dataLayer.initialize(nodes, edges);
 
@@ -292,7 +292,7 @@ describe('GraphologyDataLayer Benchmarks', () => {
       for (let i = 0; i < 1000; i++) {
         dataLayer.addNode({
           id: `new-node-${i}`,
-          type: 'default',
+          type: "default",
           position: { x: 0, y: 0 },
           data: { label: `New ${i}` },
         });
@@ -306,7 +306,7 @@ describe('GraphologyDataLayer Benchmarks', () => {
       expect(dataLayer.getGraph().order).toBe(2000);
     });
 
-    it('should handle incremental edge additions efficiently', async () => {
+    it("should handle incremental edge additions efficiently", async () => {
       const { nodes, edges } = generateGraphData(1000, 5);
       await dataLayer.initialize(nodes, edges);
 
@@ -316,7 +316,7 @@ describe('GraphologyDataLayer Benchmarks', () => {
           id: `new-edge-${i}`,
           source: `node-${i % 1000}`,
           target: `node-${(i + 1) % 1000}`,
-          type: 'default',
+          type: "default",
           data: { weight: 1 },
         });
       }
@@ -329,8 +329,8 @@ describe('GraphologyDataLayer Benchmarks', () => {
     });
   });
 
-  describe('Graph Statistics', () => {
-    it('should compute stats for large graphs efficiently', async () => {
+  describe("Graph Statistics", () => {
+    it("should compute stats for large graphs efficiently", async () => {
       const { nodes, edges } = generateGraphData(5000, 5);
       await dataLayer.initialize(nodes, edges);
 
@@ -340,7 +340,7 @@ describe('GraphologyDataLayer Benchmarks', () => {
 
       const time = end - start;
       console.log(`Stats computed in ${time.toFixed(2)}ms`);
-      console.log('Stats:', stats);
+      console.log("Stats:", stats);
 
       expect(time).toBeLessThan(1000);
       expect(stats.nodeCount).toBe(5000);
@@ -349,15 +349,15 @@ describe('GraphologyDataLayer Benchmarks', () => {
     });
   });
 
-  describe('Global Instance', () => {
-    it('should provide singleton instance', () => {
+  describe("Global Instance", () => {
+    it("should provide singleton instance", () => {
       const instance1 = getGraphologyDataLayer();
       const instance2 = getGraphologyDataLayer();
 
       expect(instance1).toBe(instance2);
     });
 
-    it('should reset global instance', () => {
+    it("should reset global instance", () => {
       const instance1 = getGraphologyDataLayer();
       resetGraphologyDataLayer();
       const instance2 = getGraphologyDataLayer();
@@ -366,11 +366,11 @@ describe('GraphologyDataLayer Benchmarks', () => {
     });
   });
 
-  describe('Comparison: Old vs New', () => {
-    it('should show improvement over baseline (manual test)', async () => {
+  describe("Comparison: Old vs New", () => {
+    it("should show improvement over baseline (manual test)", async () => {
       const sizes = [1000, 5000, 10000, 50000];
 
-      console.log('\n=== Performance Comparison ===\n');
+      console.log("\n=== Performance Comparison ===\n");
 
       for (const size of sizes) {
         const { nodes, edges } = generateGraphData(size, 5);
@@ -388,14 +388,14 @@ describe('GraphologyDataLayer Benchmarks', () => {
 
         // Test layout (circular for speed)
         const layoutStart = performance.now();
-        await layer.computeLayout({ algorithm: 'circular' });
+        await layer.computeLayout({ algorithm: "circular" });
         const layoutEnd = performance.now();
 
         console.log(`${size} nodes:`);
         console.log(`  Init: ${(initEnd - initStart).toFixed(2)}ms`);
         console.log(`  Convert: ${(convEnd - convStart).toFixed(2)}ms`);
         console.log(`  Layout: ${(layoutEnd - layoutStart).toFixed(2)}ms`);
-        console.log('');
+        console.log("");
       }
     });
   });

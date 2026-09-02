@@ -7,10 +7,10 @@
  * Performance: 200-500ms → <50ms for related item queries (75-90% faster)
  */
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
-const INDEX_ENTRY_BYTES = Number('40');
-const BYTES_PER_KILOBYTE = Number('1024');
+const INDEX_ENTRY_BYTES = Number("40");
+const BYTES_PER_KILOBYTE = Number("1024");
 
 /**
  * Pre-computed indices for O(1) lookups

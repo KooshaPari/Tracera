@@ -1,8 +1,8 @@
-import type { CacheStatistics } from '@/lib/cache';
+import type { CacheStatistics } from "@/lib/cache";
 
-import type { CacheHitRateMetrics, LODDistribution, PerformanceMetrics } from './types';
+import type { CacheHitRateMetrics, LODDistribution, PerformanceMetrics } from "./types";
 
-import { PERCENT_SCALE, ZERO } from './constants';
+import { PERCENT_SCALE, ZERO } from "./constants";
 
 interface PerformanceMemory {
   usedJSHeapSize: number;
@@ -19,7 +19,7 @@ interface InteractionMetrics {
   isZooming: boolean;
   panDuration: number;
   zoomDuration: number;
-  lastInteractionType: 'pan' | 'zoom' | 'idle';
+  lastInteractionType: "pan" | "zoom" | "idle";
 }
 
 interface FPSMetrics {
@@ -72,7 +72,7 @@ function computeCullingRatio(total: number, rendered: number): { culled: number;
   return { culled, ratio: (culled / total) * PERCENT_SCALE };
 }
 
-function resolveLOD(lodDistribution: LODDistribution | undefined): PerformanceMetrics['lod'] {
+function resolveLOD(lodDistribution: LODDistribution | undefined): PerformanceMetrics["lod"] {
   return {
     high: lodDistribution?.high ?? ZERO,
     low: lodDistribution?.low ?? ZERO,
@@ -81,7 +81,7 @@ function resolveLOD(lodDistribution: LODDistribution | undefined): PerformanceMe
   };
 }
 
-function resolveTiming(now: number, markers: TimingMarkers): PerformanceMetrics['timing'] {
+function resolveTiming(now: number, markers: TimingMarkers): PerformanceMetrics["timing"] {
   let cullingMs = ZERO;
   if (markers.cullingStart !== undefined) {
     cullingMs = now - markers.cullingStart;
@@ -105,7 +105,7 @@ function resolveTiming(now: number, markers: TimingMarkers): PerformanceMetrics[
   return { cullingMs, layoutComputeMs, renderMs, viewportLoadMs };
 }
 
-function resolveMemory(): PerformanceMetrics['memory'] | undefined {
+function resolveMemory(): PerformanceMetrics["memory"] | undefined {
   const { memory } = performance as PerformanceWithMemory;
   if (memory === undefined) {
     return undefined;

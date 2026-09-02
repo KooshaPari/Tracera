@@ -1,10 +1,10 @@
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import { API_ORIGIN } from '@/config/api-origin';
+import { API_ORIGIN } from "@/config/api-origin";
 
 const API_BASE_URL = API_ORIGIN;
-const CSRF_COOKIE_NAME = 'csrf_token';
-const CSRF_HEADER = 'X-CSRF-Token';
+const CSRF_COOKIE_NAME = "csrf_token";
+const CSRF_HEADER = "X-CSRF-Token";
 const HTTP_STATUS_FORBIDDEN = 403;
 
 // In-memory token storage (never use localStorage for CSRF tokens)
@@ -32,11 +32,11 @@ export const fetchCSRFToken = async (): Promise<string> => {
   tokenFetchPromise = (async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/csrf-token`, {
-        credentials: 'include', // Include cookies for double-submit pattern
+        credentials: "include", // Include cookies for double-submit pattern
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        method: 'GET',
+        method: "GET",
       });
 
       if (!response.ok) {
@@ -46,15 +46,15 @@ export const fetchCSRFToken = async (): Promise<string> => {
       const data = (await response.json()) as { token: string; valid: boolean };
 
       if (!data.token) {
-        throw new Error('No CSRF token in response');
+        throw new Error("No CSRF token in response");
       }
 
       csrfToken = data.token;
-      logger.debug('[CSRF] Token fetched successfully');
+      logger.debug("[CSRF] Token fetched successfully");
 
       return csrfToken;
     } catch (error) {
-      logger.error('[CSRF] Failed to fetch token:', error);
+      logger.error("[CSRF] Failed to fetch token:", error);
       throw error;
     } finally {
       // Reset promise so next call will attempt fresh fetch
@@ -80,7 +80,7 @@ export const getCSRFToken = (): string | null => csrfToken;
  */
 export const setCSRFToken = (token: string): void => {
   csrfToken = token;
-  logger.debug('[CSRF] Token updated');
+  logger.debug("[CSRF] Token updated");
 };
 
 /**
@@ -103,9 +103,9 @@ export const refreshCSRFToken = async (): Promise<string> => {
 export const initializeCSRF = async (): Promise<void> => {
   try {
     await fetchCSRFToken();
-    logger.info('[CSRF] Initialized successfully');
+    logger.info("[CSRF] Initialized successfully");
   } catch (error) {
-    logger.error('[CSRF] Failed to initialize:', error);
+    logger.error("[CSRF] Failed to initialize:", error);
     // Don't throw - CSRF is optional in dev mode
     // In production, requests will fail if token is missing
   }
@@ -118,7 +118,7 @@ export const initializeCSRF = async (): Promise<void> => {
  * @returns {boolean} Whether the method mutates server state.
  */
 const isStateChangingRequest = (method: string): boolean =>
-  ['DELETE', 'PATCH', 'POST', 'PUT'].includes(method.toUpperCase());
+  ["DELETE", "PATCH", "POST", "PUT"].includes(method.toUpperCase());
 
 /**
  * Get CSRF headers to include in requests
@@ -133,7 +133,7 @@ export const getCSRFHeaders = (method: string): Record<string, string> => {
   }
 
   if (!csrfToken) {
-    logger.warn('[CSRF] Token not available for state-changing request');
+    logger.warn("[CSRF] Token not available for state-changing request");
     return {};
   }
 
@@ -158,10 +158,10 @@ export const extractCSRFTokenFromResponse = (response: Response): string | null 
   }
 
   // Try to extract from Set-Cookie header (cookie pattern)
-  const setCookie = response.headers.get('set-cookie');
+  const setCookie = response.headers.get("set-cookie");
   if (setCookie?.includes(CSRF_COOKIE_NAME)) {
     // Cookie is automatically set by browser, no action needed
-    logger.debug('[CSRF] New token cookie received');
+    logger.debug("[CSRF] New token cookie received");
     return null; // Token will be in cookie, fetch it when needed
   }
 
@@ -192,7 +192,7 @@ export function createCSRFRequestInterceptor(): (request: Request) => Promise<Re
         try {
           await fetchCSRFToken();
         } catch (error) {
-          logger.warn('[CSRF] Failed to fetch token before request:', error);
+          logger.warn("[CSRF] Failed to fetch token before request:", error);
         }
       }
 
@@ -216,15 +216,15 @@ export function createCSRFRequestInterceptor(): (request: Request) => Promise<Re
 export const handleCSRFError = async (response: Response): Promise<boolean> => {
   // Check for CSRF-related 403 errors
   if (response.status === HTTP_STATUS_FORBIDDEN) {
-    const contentType = response.headers.get('content-type');
-    if (contentType?.includes('application/json')) {
+    const contentType = response.headers.get("content-type");
+    if (contentType?.includes("application/json")) {
       try {
         const data = (await response.json()) as { error?: string };
         const isCsrfError =
-          data.error?.toLowerCase().includes('csrf') || data.error?.toLowerCase().includes('token');
+          data.error?.toLowerCase().includes("csrf") || data.error?.toLowerCase().includes("token");
 
         if (isCsrfError) {
-          logger.warn('[CSRF] Token validation failed, refreshing...');
+          logger.warn("[CSRF] Token validation failed, refreshing...");
 
           try {
             // Refresh token
@@ -233,7 +233,7 @@ export const handleCSRFError = async (response: Response): Promise<boolean> => {
             // Caller should retry the request
             return true;
           } catch (error) {
-            logger.error('[CSRF] Failed to refresh token:', error);
+            logger.error("[CSRF] Failed to refresh token:", error);
             return false;
           }
         }
@@ -255,13 +255,13 @@ export const handleCSRFError = async (response: Response): Promise<boolean> => {
 export const getCSRFCookies = (): Record<string, string> => {
   const cookies: Record<string, string> = {};
 
-  if (typeof document === 'undefined') {
+  if (typeof document === "undefined") {
     return cookies;
   }
 
   // Parse document.cookie
-  document.cookie.split(';').forEach((cookie) => {
-    const [name, value] = cookie.trim().split('=');
+  document.cookie.split(";").forEach((cookie) => {
+    const [name, value] = cookie.trim().split("=");
     if (name && value) {
       cookies[name] = decodeURIComponent(value);
     }
@@ -276,7 +276,7 @@ export const getCSRFCookies = (): Record<string, string> => {
 export const clearCSRFToken = (): void => {
   csrfToken = null;
   tokenFetchPromise = null;
-  logger.debug('[CSRF] Token cleared');
+  logger.debug("[CSRF] Token cleared");
 };
 
 /**
@@ -286,10 +286,10 @@ export const clearCSRFToken = (): void => {
  */
 export const logCSRFState = (): void => {
   const tokenPreviewLength = 20;
-  logger.group('[CSRF] Current State');
-  logger.info('Token in memory:', csrfToken ? 'Yes' : 'No');
-  const tokenPreview = csrfToken ? `${csrfToken.slice(0, tokenPreviewLength)}...` : 'None';
-  logger.info('Token value:', tokenPreview);
-  logger.info('Cookies:', getCSRFCookies());
+  logger.group("[CSRF] Current State");
+  logger.info("Token in memory:", csrfToken ? "Yes" : "No");
+  const tokenPreview = csrfToken ? `${csrfToken.slice(0, tokenPreviewLength)}...` : "None";
+  logger.info("Token value:", tokenPreview);
+  logger.info("Cookies:", getCSRFCookies());
   logger.groupEnd();
 };

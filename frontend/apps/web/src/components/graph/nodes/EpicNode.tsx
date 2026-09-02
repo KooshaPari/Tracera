@@ -1,22 +1,22 @@
 // EpicNode - Type-specific node for epic items
 // Shows business value, timeline progress, and story completion
 
-import type { Node, NodeProps } from '@xyflow/react';
+import type { Node, NodeProps } from "@xyflow/react";
 
-import { Handle, Position } from '@xyflow/react';
-import { CheckCircle2, Circle, GitBranch, TrendingUp } from 'lucide-react';
-import { memo } from 'react';
+import { Handle, Position } from "@xyflow/react";
+import { CheckCircle2, Circle, GitBranch, TrendingUp } from "lucide-react";
+import { memo } from "react";
 
-import type { EpicItem } from '@tracertm/types';
+import type { EpicItem } from "@tracertm/types";
 
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Card } from '@tracertm/ui/components/Card';
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Card } from "@tracertm/ui/components/Card";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@tracertm/ui/components/Tooltip';
+} from "@tracertm/ui/components/Tooltip";
 
 // Epic-specific node data
 export interface EpicNodeData {
@@ -27,7 +27,7 @@ export interface EpicNodeData {
   status: string;
 
   // Epic-specific fields
-  businessValue?: 'low' | 'medium' | 'high' | 'critical';
+  businessValue?: "low" | "medium" | "high" | "critical";
   timelineProgress?: number; // 0-100
   storyCount?: number; // Total stories
   completedStoryCount?: number; // Completed stories
@@ -48,14 +48,14 @@ export interface EpicNodeData {
 
 // Business value colors
 const BUSINESS_VALUE_COLORS = {
-  critical: '#f59e0b',
-  high: '#10b981',
-  low: '#94a3b8',
-  medium: '#3b82f6',
+  critical: "#f59e0b",
+  high: "#10b981",
+  low: "#94a3b8",
+  medium: "#3b82f6",
 };
 
-function EpicNodeComponent({ data, selected }: NodeProps<Node<EpicNodeData, 'epic'>>) {
-  const businessValueColor = BUSINESS_VALUE_COLORS[data.businessValue ?? 'medium'];
+function EpicNodeComponent({ data, selected }: NodeProps<Node<EpicNodeData, "epic">>) {
+  const businessValueColor = BUSINESS_VALUE_COLORS[data.businessValue ?? "medium"];
   const storyCompletion = data.storyCount
     ? ((data.completedStoryCount ?? 0) / data.storyCount) * 100
     : 0;
@@ -68,38 +68,38 @@ function EpicNodeComponent({ data, selected }: NodeProps<Node<EpicNodeData, 'epi
     <TooltipProvider>
       {/* Input handle */}
       <Handle
-        type='target'
+        type="target"
         position={Position.Left}
-        className='!bg-background !h-3 !w-3 !border-2'
-        style={{ borderColor: '#7c3aed' }}
+        className="!bg-background !h-3 !w-3 !border-2"
+        style={{ borderColor: "#7c3aed" }}
       />
 
       {/* Main card */}
       <Card
-        className={`relative w-[260px] cursor-pointer overflow-hidden transition-all duration-200 ${selected ? 'ring-offset-background ring-2 ring-white ring-offset-2' : ''} `}
+        className={`relative w-[260px] cursor-pointer overflow-hidden transition-all duration-200 ${selected ? "ring-offset-background ring-2 ring-white ring-offset-2" : ""} `}
         onClick={handleClick}
       >
         {/* Color accent bar */}
-        <div className='absolute top-0 right-0 left-0 h-1' style={{ backgroundColor: '#7c3aed' }} />
+        <div className="absolute top-0 right-0 left-0 h-1" style={{ backgroundColor: "#7c3aed" }} />
 
         {/* Content section */}
-        <div className='p-3 pt-3.5'>
+        <div className="p-3 pt-3.5">
           {/* Header: Icon + Badges */}
-          <div className='mb-2 flex items-start gap-2'>
-            <div className='flex-shrink-0 rounded p-1.5' style={{ backgroundColor: '#7c3aed20' }}>
-              <GitBranch className='h-4 w-4 text-purple-700' />
+          <div className="mb-2 flex items-start gap-2">
+            <div className="flex-shrink-0 rounded p-1.5" style={{ backgroundColor: "#7c3aed20" }}>
+              <GitBranch className="h-4 w-4 text-purple-700" />
             </div>
 
-            <div className='min-w-0 flex-1 space-y-1'>
-              <div className='flex flex-wrap items-center gap-1.5'>
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex flex-wrap items-center gap-1.5">
                 {/* Type Badge */}
                 <Badge
-                  variant='outline'
-                  className='h-5 px-1.5 text-[10px]'
+                  variant="outline"
+                  className="h-5 px-1.5 text-[10px]"
                   style={{
-                    backgroundColor: '#7c3aed15',
-                    borderColor: '#7c3aed40',
-                    color: '#7c3aed',
+                    backgroundColor: "#7c3aed15",
+                    borderColor: "#7c3aed40",
+                    color: "#7c3aed",
                   }}
                 >
                   Epic
@@ -110,15 +110,15 @@ function EpicNodeComponent({ data, selected }: NodeProps<Node<EpicNodeData, 'epi
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Badge
-                        variant='outline'
-                        className='ml-auto h-5 px-1.5 text-[10px]'
+                        variant="outline"
+                        className="ml-auto h-5 px-1.5 text-[10px]"
                         style={{
                           backgroundColor: `${businessValueColor}15`,
                           borderColor: `${businessValueColor}40`,
                           color: businessValueColor,
                         }}
                       >
-                        <TrendingUp className='mr-0.5 h-3 w-3' />
+                        <TrendingUp className="mr-0.5 h-3 w-3" />
                         {data.businessValue}
                       </Badge>
                     </TooltipTrigger>
@@ -132,22 +132,22 @@ function EpicNodeComponent({ data, selected }: NodeProps<Node<EpicNodeData, 'epi
           </div>
 
           {/* Title */}
-          <h4 className='mb-3 line-clamp-2 text-sm leading-tight font-semibold'>{data.label}</h4>
+          <h4 className="mb-3 line-clamp-2 text-sm leading-tight font-semibold">{data.label}</h4>
 
           {/* Progress Metrics */}
-          <div className='space-y-2.5'>
+          <div className="space-y-2.5">
             {/* Timeline Progress */}
             {data.timelineProgress !== undefined && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className='space-y-1'>
-                    <div className='flex items-center justify-between text-xs'>
-                      <span className='text-muted-foreground'>Timeline</span>
-                      <span className='font-medium'>{data.timelineProgress}%</span>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Timeline</span>
+                      <span className="font-medium">{data.timelineProgress}%</span>
                     </div>
-                    <div className='bg-muted h-1.5 w-full overflow-hidden rounded-full'>
+                    <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
                       <div
-                        className='h-full bg-blue-500 transition-all'
+                        className="h-full bg-blue-500 transition-all"
                         style={{ width: `${data.timelineProgress}%` }}
                       />
                     </div>
@@ -163,19 +163,19 @@ function EpicNodeComponent({ data, selected }: NodeProps<Node<EpicNodeData, 'epi
             {data.storyCount !== undefined && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className='space-y-1'>
-                    <div className='flex items-center justify-between text-xs'>
-                      <span className='text-muted-foreground flex items-center gap-1'>
-                        <Circle className='h-3 w-3' />
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <Circle className="h-3 w-3" />
                         Stories
                       </span>
-                      <span className='font-medium'>
+                      <span className="font-medium">
                         {data.completedStoryCount ?? 0} / {data.storyCount}
                       </span>
                     </div>
-                    <div className='bg-muted h-1.5 w-full overflow-hidden rounded-full'>
+                    <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
                       <div
-                        className='h-full bg-purple-500 transition-all'
+                        className="h-full bg-purple-500 transition-all"
                         style={{ width: `${storyCompletion}%` }}
                       />
                     </div>
@@ -193,28 +193,28 @@ function EpicNodeComponent({ data, selected }: NodeProps<Node<EpicNodeData, 'epi
 
           {/* Completion Badge */}
           {storyCompletion === 100 && (
-            <div className='mt-2 flex items-center gap-1.5 rounded bg-green-500/15 px-2 py-1 text-xs font-medium text-green-600'>
-              <CheckCircle2 className='h-3.5 w-3.5' />
+            <div className="mt-2 flex items-center gap-1.5 rounded bg-green-500/15 px-2 py-1 text-xs font-medium text-green-600">
+              <CheckCircle2 className="h-3.5 w-3.5" />
               <span>All stories completed</span>
             </div>
           )}
 
           {/* Footer: Status badge and connections */}
-          <div className='text-muted-foreground mt-2 flex items-center justify-between border-t pt-2 text-[10px]'>
-            <Badge variant='secondary' className='h-4 px-1.5 text-[10px]'>
+          <div className="text-muted-foreground mt-2 flex items-center justify-between border-t pt-2 text-[10px]">
+            <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
               {data.status}
             </Badge>
-            <span className='flex items-center gap-0.5'>{data.connections.total} links</span>
+            <span className="flex items-center gap-0.5">{data.connections.total} links</span>
           </div>
         </div>
       </Card>
 
       {/* Output handle */}
       <Handle
-        type='source'
+        type="source"
         position={Position.Right}
-        className='!bg-background !h-3 !w-3 !border-2'
-        style={{ borderColor: '#7c3aed' }}
+        className="!bg-background !h-3 !w-3 !border-2"
+        style={{ borderColor: "#7c3aed" }}
       />
     </TooltipProvider>
   );

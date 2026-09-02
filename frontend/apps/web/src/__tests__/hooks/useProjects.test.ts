@@ -2,13 +2,13 @@
  * Tests for useProjects hook
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
-import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useCreateProject, useProject, useProjects } from '../../hooks/useProjects';
-import { useAuthStore } from '../../stores/authStore';
+import { useCreateProject, useProject, useProjects } from "../../hooks/useProjects";
+import { useAuthStore } from "../../stores/authStore";
 
 // Mock fetch (vi.fn() compatible with fetch at runtime)
 const mockFetch = vi.fn();
@@ -29,13 +29,13 @@ const createWrapper = () => {
 describe(useProjects, () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuthStore.setState({ token: 'gateway-contract-token' });
+    useAuthStore.setState({ token: "gateway-contract-token" });
   });
 
-  it('should fetch projects', async () => {
+  it("should fetch projects", async () => {
     const mockProjects = [
-      { description: 'Desc 1', id: '1', name: 'Project 1' },
-      { description: 'Desc 2', id: '2', name: 'Project 2' },
+      { description: "Desc 1", id: "1", name: "Project 1" },
+      { description: "Desc 2", id: "2", name: "Project 2" },
     ];
 
     mockFetch.mockResolvedValueOnce({
@@ -55,9 +55,9 @@ describe(useProjects, () => {
     expect(mockFetch).toHaveBeenCalledOnce();
   });
 
-  it('should normalize the Rust gateway count and items project envelope', async () => {
+  it("should normalize the Rust gateway count and items project envelope", async () => {
     const gatewayProjects = [
-      { description: 'Derived from a persisted problem', id: 'problem-1', name: 'Gateway project' },
+      { description: "Derived from a persisted problem", id: "problem-1", name: "Gateway project" },
     ];
 
     mockFetch.mockResolvedValueOnce({
@@ -76,7 +76,7 @@ describe(useProjects, () => {
     expect(result.current.data).toEqual(gatewayProjects);
   });
 
-  it('should handle fetch error', async () => {
+  it("should handle fetch error", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 500,
@@ -97,14 +97,14 @@ describe(useProjects, () => {
 describe(useProject, () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuthStore.setState({ token: null });
+    useAuthStore.setState({ token: "gateway-contract-token" });
   });
 
-  it('should fetch a single project', async () => {
+  it("should fetch a single project", async () => {
     const mockProject = {
-      description: 'Description',
-      id: '1',
-      name: 'Project 1',
+      description: "Description",
+      id: "1",
+      name: "Project 1",
     };
 
     mockFetch.mockResolvedValueOnce({
@@ -112,7 +112,7 @@ describe(useProject, () => {
       ok: true,
     });
 
-    const { result } = renderHook(() => useProject('1'), {
+    const { result } = renderHook(() => useProject("1"), {
       wrapper: createWrapper(),
     });
 
@@ -122,21 +122,22 @@ describe(useProject, () => {
 
     expect(result.current.data).toEqual(mockProject);
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/projects/1'),
+      expect.stringContaining("/api/v1/projects/1"),
       expect.objectContaining({
-        headers: {
-          'X-Bulk-Operation': 'true',
-        },
+        headers: expect.objectContaining({
+          Authorization: "Bearer gateway-contract-token",
+          "X-Bulk-Operation": "true",
+        }),
       }),
     );
   });
 
-  it('should not fetch when id is empty', () => {
-    const { result } = renderHook(() => useProject(''), {
+  it("should not fetch when id is empty", () => {
+    const { result } = renderHook(() => useProject(""), {
       wrapper: createWrapper(),
     });
 
-    expect(result.current.fetchStatus).toBe('idle');
+    expect(result.current.fetchStatus).toBe("idle");
     expect(mockFetch).not.toHaveBeenCalled();
   });
 });
@@ -147,14 +148,14 @@ describe(useCreateProject, () => {
     useAuthStore.setState({ token: null });
   });
 
-  it('should create a project', async () => {
+  it("should create a project", async () => {
     const newProject = {
-      description: 'New Description',
-      name: 'New Project',
+      description: "New Description",
+      name: "New Project",
     };
 
     const createdProject = {
-      id: '1',
+      id: "1",
       ...newProject,
     };
 
@@ -175,14 +176,14 @@ describe(useCreateProject, () => {
 
     expect(result.current.data).toEqual(createdProject);
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/projects'),
+      expect.stringContaining("/api/v1/projects"),
       expect.objectContaining({
-        method: 'POST',
+        method: "POST",
       }),
     );
   });
 
-  it('should handle create error', async () => {
+  it("should handle create error", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 400,
@@ -193,8 +194,8 @@ describe(useCreateProject, () => {
     });
 
     result.current.mutate({
-      description: 'Description',
-      name: 'New Project',
+      description: "Description",
+      name: "New Project",
     });
 
     await waitFor(() => {

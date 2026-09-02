@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-import React from 'react';
+import React from "react";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface MobileFormLayoutProps {
   children: ReactNode;
@@ -22,16 +22,16 @@ export const MobileFormLayout = function MobileFormLayout({
   description,
 }: MobileFormLayoutProps) {
   return (
-    <div className={cn('mx-auto w-full px-4 sm:px-6 py-6 sm:py-8', 'max-w-2xl', className)}>
+    <div className={cn("mx-auto w-full px-4 sm:px-6 py-6 sm:py-8", "max-w-2xl", className)}>
       {title && (
-        <div className='mb-6 sm:mb-8'>
-          <h1 className='text-foreground text-xl font-bold sm:text-2xl'>{title}</h1>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-foreground text-xl font-bold sm:text-2xl">{title}</h1>
           {description && (
-            <p className='text-muted-foreground mt-2 text-sm sm:text-base'>{description}</p>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">{description}</p>
           )}
         </div>
       )}
-      <form className='space-y-4 sm:space-y-5'>{children}</form>
+      <form className="space-y-4 sm:space-y-5">{children}</form>
     </div>
   );
 };
@@ -57,27 +57,27 @@ export const FormField = function FormField({
   className,
 }: FormFieldProps) {
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn("space-y-2", className)}>
       {label && (
-        <label className='text-foreground block text-sm font-semibold sm:text-base'>
+        <label className="text-foreground block text-sm font-semibold sm:text-base">
           {label}
-          {required && <span className='text-destructive ml-1'>*</span>}
+          {required && <span className="text-destructive ml-1">*</span>}
         </label>
       )}
 
       {/* Input wrapper - ensures minimum 44px height */}
-      <div className='relative'>{children}</div>
+      <div className="relative">{children}</div>
 
-      {error && <p className='text-destructive text-xs font-medium sm:text-sm'>{error}</p>}
+      {error && <p className="text-destructive text-xs font-medium sm:text-sm">{error}</p>}
 
-      {helperText && <p className='text-muted-foreground text-xs sm:text-sm'>{helperText}</p>}
+      {helperText && <p className="text-muted-foreground text-xs sm:text-sm">{helperText}</p>}
     </div>
   );
 };
 
 interface FormGroupProps {
   children: ReactNode;
-  columns?: '1' | '2';
+  columns?: "1" | "2";
   className?: string;
 }
 
@@ -87,12 +87,12 @@ interface FormGroupProps {
  */
 export const FormGroup = function FormGroup({
   children,
-  columns = '1',
+  columns = "1",
   className,
 }: FormGroupProps) {
   const gridClass = {
-    '1': 'grid-cols-1',
-    '2': 'grid-cols-1 sm:grid-cols-2',
+    "1": "grid-cols-1",
+    "2": "grid-cols-1 sm:grid-cols-2",
   }[columns];
 
   return <div className={cn(`grid ${gridClass} gap-4 sm:gap-5`, className)}>{children}</div>;
@@ -101,7 +101,7 @@ export const FormGroup = function FormGroup({
 interface FormActionsProps {
   children: ReactNode;
   className?: string;
-  justify?: 'start' | 'end' | 'center' | 'between';
+  justify?: "start" | "end" | "center" | "between";
   stacked?: boolean;
 }
 
@@ -112,22 +112,22 @@ interface FormActionsProps {
 export const FormActions = function FormActions({
   children,
   className,
-  justify = 'end',
+  justify = "end",
   stacked = false,
 }: FormActionsProps) {
   const justifyClass = {
-    between: 'justify-between',
-    center: 'justify-center',
-    end: 'justify-end',
-    start: 'justify-start',
+    between: "justify-between",
+    center: "justify-center",
+    end: "justify-end",
+    start: "justify-start",
   }[justify];
 
   return (
     <div
       className={cn(
-        'pt-4 sm:pt-6 border-t border-border/30',
+        "pt-4 sm:pt-6 border-t border-border/30",
         stacked
-          ? 'flex flex-col sm:flex-row gap-3 sm:gap-4'
+          ? "flex flex-col sm:flex-row gap-3 sm:gap-4"
           : `flex ${justifyClass} gap-3 sm:gap-4`,
         className,
       )}
@@ -149,14 +149,14 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
     <input
       ref={ref}
       className={cn(
-        'w-full px-4 py-3 sm:py-3 rounded-lg',
-        'bg-background border border-border',
-        'text-sm sm:text-base',
-        'placeholder:text-muted-foreground',
-        'focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
-        'transition-all duration-200',
-        isMobile && 'min-h-[44px]',
+        "w-full px-4 py-3 sm:py-3 rounded-lg",
+        "bg-background border border-border",
+        "text-sm sm:text-base",
+        "placeholder:text-muted-foreground",
+        "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
+        "transition-all duration-200",
+        isMobile && "min-h-[44px]",
         className,
       )}
       {...props}
@@ -164,7 +164,7 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
   ),
 );
 
-FormInput.displayName = 'FormInput';
+FormInput.displayName = "FormInput";
 
 interface FormSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   isMobile?: boolean;
@@ -178,13 +178,13 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
     <select
       ref={ref}
       className={cn(
-        'w-full px-4 py-3 rounded-lg',
-        'bg-background border border-border',
-        'text-sm sm:text-base',
-        'focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
-        'transition-all duration-200',
-        isMobile && 'min-h-[44px]',
+        "w-full px-4 py-3 rounded-lg",
+        "bg-background border border-border",
+        "text-sm sm:text-base",
+        "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
+        "transition-all duration-200",
+        isMobile && "min-h-[44px]",
         className,
       )}
       {...props}
@@ -192,7 +192,7 @@ export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
   ),
 );
 
-FormSelect.displayName = 'FormSelect';
+FormSelect.displayName = "FormSelect";
 
 interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   isMobile?: boolean;
@@ -206,15 +206,15 @@ export const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaPr
     <textarea
       ref={ref}
       className={cn(
-        'w-full px-4 py-3 rounded-lg',
-        'bg-background border border-border',
-        'text-sm sm:text-base',
-        'placeholder:text-muted-foreground',
-        'focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
-        'transition-all duration-200',
-        'resize-vertical min-h-[120px] sm:min-h-[140px]',
-        isMobile && 'min-h-[44px]',
+        "w-full px-4 py-3 rounded-lg",
+        "bg-background border border-border",
+        "text-sm sm:text-base",
+        "placeholder:text-muted-foreground",
+        "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
+        "transition-all duration-200",
+        "resize-vertical min-h-[120px] sm:min-h-[140px]",
+        isMobile && "min-h-[44px]",
         className,
       )}
       {...props}
@@ -222,4 +222,4 @@ export const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaPr
   ),
 );
 
-FormTextarea.displayName = 'FormTextarea';
+FormTextarea.displayName = "FormTextarea";

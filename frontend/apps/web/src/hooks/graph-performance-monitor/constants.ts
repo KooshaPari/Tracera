@@ -1,28 +1,28 @@
-const ZERO = Number('0');
-const ONE = Number('1');
-const NEGATIVE_ONE = Number('-1');
+const ZERO = Number("0");
+const ONE = Number("1");
+const NEGATIVE_ONE = Number("-1");
 
-const MS_PER_SECOND = Number('1000');
-const DEFAULT_REPORT_INTERVAL_MS = Number('5000');
+const MS_PER_SECOND = Number("1000");
+const DEFAULT_REPORT_INTERVAL_MS = Number("5000");
 
-const FPS_SAMPLE_LIMIT = Number('60');
-const MAX_HISTORY_LENGTH = Number('50');
-const STORAGE_HISTORY_LIMIT = Number('100');
-const PROFILER_HISTORY_LIMIT = Number('50');
+const FPS_SAMPLE_LIMIT = Number("60");
+const MAX_HISTORY_LENGTH = Number("50");
+const STORAGE_HISTORY_LIMIT = Number("100");
+const PROFILER_HISTORY_LIMIT = Number("50");
 
-const FPS_GOOD_THRESHOLD = Number('55');
-const FPS_WARN_THRESHOLD = Number('30');
+const FPS_GOOD_THRESHOLD = Number("55");
+const FPS_WARN_THRESHOLD = Number("30");
 
-const BYTES_PER_KB = Number('1024');
+const BYTES_PER_KB = Number("1024");
 const BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB;
 
-const PERCENT_SCALE = Number('100');
-const PERCENT_DECIMALS = Number('1');
-const DURATION_DECIMALS = Number('2');
+const PERCENT_SCALE = Number("100");
+const PERCENT_DECIMALS = Number("1");
+const DURATION_DECIMALS = Number("2");
 const NO_DECIMALS = ZERO;
 
-const STORAGE_KEY_METRICS = 'trace_graph_performance_metrics';
-const STORAGE_KEY_PROFILER_PREFIX = 'trace_profiler_';
+const STORAGE_KEY_METRICS = "trace_graph_performance_metrics";
+const STORAGE_KEY_PROFILER_PREFIX = "trace_profiler_";
 
 export {
   BYTES_PER_MB,

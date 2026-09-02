@@ -1,7 +1,7 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 
-import { appProvidersDeps } from './app-providers-deps';
+import { appProvidersDeps } from "./app-providers-deps";
 
 const {
   ReactQueryDevtools,
@@ -89,7 +89,7 @@ const buildContent = (children) => {
     <QueryClientProvider client={queryClient}>
       <WebSocketInitializer />
       {children}
-      <Toaster position='top-right' />
+      <Toaster position="top-right" />
       {devtools}
     </QueryClientProvider>
   );

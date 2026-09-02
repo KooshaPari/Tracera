@@ -1,9 +1,9 @@
-import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
-import { toHaveNoViolations } from 'jest-axe';
-import { createRequire } from 'node:module';
-import { afterEach, beforeEach } from 'vitest';
-import { expect } from 'vitest';
+import "@testing-library/jest-dom/vitest";
+import { cleanup } from "@testing-library/react";
+import { toHaveNoViolations } from "jest-axe";
+import { createRequire } from "node:module";
+import { afterEach, beforeEach } from "vitest";
+import { expect } from "vitest";
 
 expect.extend({ toHaveNoViolations } as never);
 
@@ -33,7 +33,7 @@ const localStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(globalThis, 'localStorage', {
+Object.defineProperty(globalThis, "localStorage", {
   configurable: true,
   value: localStorageMock,
   writable: true,
@@ -42,9 +42,9 @@ Object.defineProperty(globalThis, 'localStorage', {
 // Bun + ESM can trip over CJS interop for @testing-library/dom named exports when importing
 // @testing-library/user-event's ESM build. Force the CJS build here to keep test setup stable.
 const require = createRequire(import.meta.url);
-const userEventModule = require('@testing-library/user-event') as {
-  default?: { setup: typeof import('@testing-library/user-event').default.setup } | undefined;
-  setup?: typeof import('@testing-library/user-event').default.setup | undefined;
+const userEventModule = require("@testing-library/user-event") as {
+  default?: { setup: typeof import("@testing-library/user-event").default.setup } | undefined;
+  setup?: typeof import("@testing-library/user-event").default.setup | undefined;
 };
 const userEvent = userEventModule.default ?? userEventModule;
 

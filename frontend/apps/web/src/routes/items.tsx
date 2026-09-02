@@ -1,8 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useMemo } from 'react';
+import { createFileRoute } from "@tanstack/react-router";
+import { useMemo } from "react";
 
-import { useProjects } from '@/hooks/useProjects';
-import { ItemsTableView } from '@/views/ItemsTableView';
+import { useProjects } from "@/hooks/useProjects";
+import { ItemsTableView } from "@/views/ItemsTableView";
 
 const ItemsListView = () => {
   const { data: projects } = useProjects();
@@ -16,6 +16,6 @@ const ItemsListView = () => {
   return <ItemsTableView projectId={projectId} />;
 };
 
-export const Route = createFileRoute('/items')({
+export const Route = createFileRoute("/items")({
   component: ItemsListView,
 });

@@ -1,13 +1,13 @@
-import type { Resolver, SubmitHandler } from 'react-hook-form';
+import type { Resolver, SubmitHandler } from "react-hook-form";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Trash2, X } from 'lucide-react';
-import { useFieldArray, useForm } from 'react-hook-form';
-import { z } from 'zod';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, Trash2, X } from "lucide-react";
+import { useFieldArray, useForm } from "react-hook-form";
+import { z } from "zod";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-import { useCreateProcess } from '../../hooks/useProcesses';
+import { useCreateProcess } from "../../hooks/useProcesses";
 
 // Constants
 const MAX_DESCRIPTION_LENGTH = 5000;
@@ -17,13 +17,13 @@ const MAX_PURPOSE_LENGTH = 2000;
 const MAX_RESPONSIBLE_TEAM_LENGTH = 255;
 
 const categoryOptions = [
-  'compliance',
-  'development',
-  'integration',
-  'management',
-  'operational',
-  'other',
-  'support',
+  "compliance",
+  "development",
+  "integration",
+  "management",
+  "operational",
+  "other",
+  "support",
 ] as const;
 
 const stageSchema = z.object({
@@ -31,7 +31,7 @@ const stageSchema = z.object({
   description: z.string().optional(),
   estimatedDurationMinutes: z.coerce.number().optional(),
   id: z.string(),
-  name: z.string().min(1, 'Stage name required'),
+  name: z.string().min(1, "Stage name required"),
   order: z.number(),
   required: z.boolean().default(true),
 });
@@ -39,7 +39,7 @@ const stageSchema = z.object({
 const swimlaneSchema = z.object({
   description: z.string().optional(),
   id: z.string(),
-  name: z.string().min(1, 'Swimlane name required'),
+  name: z.string().min(1, "Swimlane name required"),
   role: z.string().optional(),
 });
 
@@ -48,7 +48,7 @@ const processSchema = z.object({
   description: z.string().max(MAX_DESCRIPTION_LENGTH).optional(),
   exitCriteria: z.string().optional(),
   expectedDurationHours: z.coerce.number().optional(),
-  name: z.string().min(1, 'Name is required').max(MAX_NAME_LENGTH, 'Name too long'),
+  name: z.string().min(1, "Name is required").max(MAX_NAME_LENGTH, "Name too long"),
   owner: z.string().max(MAX_OWNER_LENGTH).optional(),
   purpose: z.string().max(MAX_PURPOSE_LENGTH).optional(),
   responsibleTeam: z.string().max(MAX_RESPONSIBLE_TEAM_LENGTH).optional(),
@@ -149,7 +149,7 @@ const buildProcessPayload = (
     payload.slaHours = data.slaHours;
   }
   if (data.exitCriteria) {
-    payload.exitCriteria = data.exitCriteria.split('\n').filter((c) => c.trim());
+    payload.exitCriteria = data.exitCriteria.split("\n").filter((c) => c.trim());
   }
   if (data.stages?.length) {
     payload.stages = data.stages.map((s) => ({
@@ -198,7 +198,7 @@ export function CreateProcessForm({ projectId, onCancel, onSuccess }: CreateProc
     remove: removeStage,
   } = useFieldArray({
     control,
-    name: 'stages',
+    name: "stages",
   });
 
   const {
@@ -207,7 +207,7 @@ export function CreateProcessForm({ projectId, onCancel, onSuccess }: CreateProc
     remove: removeSwimlane,
   } = useFieldArray({
     control,
-    name: 'swimlanes',
+    name: "swimlanes",
   });
 
   const onSubmit: SubmitHandler<ProcessFormData> = async (data) => {
@@ -216,14 +216,14 @@ export function CreateProcessForm({ projectId, onCancel, onSuccess }: CreateProc
       await createProcess.mutateAsync(payload as Parameters<typeof createProcess.mutateAsync>[0]);
       onSuccess();
     } catch (error) {
-      logger.error('Failed to create process:', error);
+      logger.error("Failed to create process:", error);
     }
   };
 
   const addStage = () => {
     appendStage({
       id: crypto.randomUUID(),
-      name: '',
+      name: "",
       order: stageFields.length + 1,
       required: true,
     });
@@ -232,83 +232,83 @@ export function CreateProcessForm({ projectId, onCancel, onSuccess }: CreateProc
   const addSwimlane = () => {
     appendSwimlane({
       id: crypto.randomUUID(),
-      name: '',
+      name: "",
     });
   };
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center'>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className='fixed inset-0 bg-black/50 backdrop-blur-sm'
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onCancel}
-        role='presentation'
+        role="presentation"
       />
       <div
-        className='bg-background relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border p-6 shadow-2xl'
-        role='dialog'
-        aria-modal='true'
-        aria-labelledby='create-process-title'
+        className="bg-background relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border p-6 shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-process-title"
       >
-        <div className='flex items-center justify-between'>
-          <h2 id='create-process-title' className='text-lg font-semibold'>
+        <div className="flex items-center justify-between">
+          <h2 id="create-process-title" className="text-lg font-semibold">
             Create Process
           </h2>
           <button
-            type='button'
+            type="button"
             onClick={onCancel}
-            aria-label='Close dialog'
-            className='hover:bg-accent rounded-lg p-1'
+            aria-label="Close dialog"
+            className="hover:bg-accent rounded-lg p-1"
           >
-            <X className='h-5 w-5' />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className='mt-6 space-y-6'>
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-6">
           {/* Basic Info */}
-          <div className='space-y-4'>
-            <h3 className='font-medium'>Basic Information</h3>
+          <div className="space-y-4">
+            <h3 className="font-medium">Basic Information</h3>
 
             <div>
-              <label htmlFor='name' className='block text-sm font-medium'>
-                Name <span className='text-red-500'>*</span>
+              <label htmlFor="name" className="block text-sm font-medium">
+                Name <span className="text-red-500">*</span>
               </label>
               <input
-                id='name'
-                {...register('name')}
-                placeholder='Process name'
-                className='bg-background mt-1 w-full rounded-lg border px-3 py-2'
+                id="name"
+                {...register("name")}
+                placeholder="Process name"
+                className="bg-background mt-1 w-full rounded-lg border px-3 py-2"
               />
-              {errors.name && <p className='mt-1 text-sm text-red-500'>{errors.name.message}</p>}
+              {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>}
             </div>
 
             <div>
-              <label className='block text-sm font-medium'>Description</label>
+              <label className="block text-sm font-medium">Description</label>
               <textarea
-                {...register('description')}
+                {...register("description")}
                 rows={3}
-                placeholder='Describe this process...'
-                className='bg-background mt-1 w-full rounded-lg border px-3 py-2'
+                placeholder="Describe this process..."
+                className="bg-background mt-1 w-full rounded-lg border px-3 py-2"
               />
             </div>
 
             <div>
-              <label className='block text-sm font-medium'>Purpose</label>
+              <label className="block text-sm font-medium">Purpose</label>
               <textarea
-                {...register('purpose')}
+                {...register("purpose")}
                 rows={2}
-                placeholder='What is the purpose of this process?'
-                className='bg-background mt-1 w-full rounded-lg border px-3 py-2'
+                placeholder="What is the purpose of this process?"
+                className="bg-background mt-1 w-full rounded-lg border px-3 py-2"
               />
             </div>
 
-            <div className='grid gap-4 sm:grid-cols-2'>
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className='block text-sm font-medium'>Category</label>
+                <label className="block text-sm font-medium">Category</label>
                 <select
-                  {...register('category')}
-                  className='bg-background mt-1 w-full rounded-lg border px-3 py-2'
+                  {...register("category")}
+                  className="bg-background mt-1 w-full rounded-lg border px-3 py-2"
                 >
-                  <option value=''>Select category...</option>
+                  <option value="">Select category...</option>
                   {categoryOptions.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -317,96 +317,96 @@ export function CreateProcessForm({ projectId, onCancel, onSuccess }: CreateProc
                 </select>
               </div>
               <div>
-                <label className='block text-sm font-medium'>Owner</label>
+                <label className="block text-sm font-medium">Owner</label>
                 <input
-                  {...register('owner')}
-                  placeholder='Process owner...'
-                  className='bg-background mt-1 w-full rounded-lg border px-3 py-2'
+                  {...register("owner")}
+                  placeholder="Process owner..."
+                  className="bg-background mt-1 w-full rounded-lg border px-3 py-2"
                 />
               </div>
             </div>
 
-            <div className='grid gap-4 sm:grid-cols-3'>
+            <div className="grid gap-4 sm:grid-cols-3">
               <div>
-                <label className='block text-sm font-medium'>Responsible Team</label>
+                <label className="block text-sm font-medium">Responsible Team</label>
                 <input
-                  {...register('responsibleTeam')}
-                  placeholder='Team...'
-                  className='bg-background mt-1 w-full rounded-lg border px-3 py-2'
+                  {...register("responsibleTeam")}
+                  placeholder="Team..."
+                  className="bg-background mt-1 w-full rounded-lg border px-3 py-2"
                 />
               </div>
               <div>
-                <label className='block text-sm font-medium'>Expected Duration (hours)</label>
+                <label className="block text-sm font-medium">Expected Duration (hours)</label>
                 <input
-                  {...register('expectedDurationHours')}
-                  type='number'
+                  {...register("expectedDurationHours")}
+                  type="number"
                   min={0}
-                  placeholder='Hours...'
-                  className='bg-background mt-1 w-full rounded-lg border px-3 py-2'
+                  placeholder="Hours..."
+                  className="bg-background mt-1 w-full rounded-lg border px-3 py-2"
                 />
               </div>
               <div>
-                <label className='block text-sm font-medium'>SLA (hours)</label>
+                <label className="block text-sm font-medium">SLA (hours)</label>
                 <input
-                  {...register('slaHours')}
-                  type='number'
+                  {...register("slaHours")}
+                  type="number"
                   min={0}
-                  placeholder='Hours...'
-                  className='bg-background mt-1 w-full rounded-lg border px-3 py-2'
+                  placeholder="Hours..."
+                  className="bg-background mt-1 w-full rounded-lg border px-3 py-2"
                 />
               </div>
             </div>
           </div>
 
           {/* Stages */}
-          <div className='space-y-4'>
-            <div className='flex items-center justify-between'>
-              <h3 className='font-medium'>Stages</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-medium">Stages</h3>
               <button
-                type='button'
+                type="button"
                 onClick={addStage}
-                className='text-primary flex items-center gap-1 text-sm hover:underline'
+                className="text-primary flex items-center gap-1 text-sm hover:underline"
               >
-                <Plus className='h-4 w-4' /> Add Stage
+                <Plus className="h-4 w-4" /> Add Stage
               </button>
             </div>
 
             {stageFields.length === 0 ? (
-              <p className='text-muted-foreground text-sm'>
+              <p className="text-muted-foreground text-sm">
                 No stages defined. Click "Add Stage" to define process steps.
               </p>
             ) : (
-              <div className='space-y-3'>
+              <div className="space-y-3">
                 {stageFields.map((field, index) => (
-                  <div key={field.id} className='flex items-start gap-3 rounded-lg border p-3'>
-                    <span className='text-muted-foreground mt-2 text-sm font-medium'>
+                  <div key={field.id} className="flex items-start gap-3 rounded-lg border p-3">
+                    <span className="text-muted-foreground mt-2 text-sm font-medium">
                       {index + 1}.
                     </span>
-                    <div className='grid flex-1 gap-3 sm:grid-cols-2'>
+                    <div className="grid flex-1 gap-3 sm:grid-cols-2">
                       <input
                         {...register(`stages.${index}.name`)}
-                        placeholder='Stage name'
-                        className='bg-background rounded-lg border px-3 py-2'
+                        placeholder="Stage name"
+                        className="bg-background rounded-lg border px-3 py-2"
                       />
                       <input
                         {...register(`stages.${index}.assignedRole`)}
-                        placeholder='Assigned role'
-                        className='bg-background rounded-lg border px-3 py-2'
+                        placeholder="Assigned role"
+                        className="bg-background rounded-lg border px-3 py-2"
                       />
                       <input
                         {...register(`stages.${index}.description`)}
-                        placeholder='Description'
-                        className='bg-background rounded-lg border px-3 py-2 sm:col-span-2'
+                        placeholder="Description"
+                        className="bg-background rounded-lg border px-3 py-2 sm:col-span-2"
                       />
                     </div>
                     <button
-                      type='button'
+                      type="button"
                       onClick={() => {
                         removeStage(index);
                       }}
-                      className='mt-2 text-red-500 hover:text-red-700'
+                      className="mt-2 text-red-500 hover:text-red-700"
                     >
-                      <Trash2 className='h-4 w-4' />
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
@@ -415,46 +415,46 @@ export function CreateProcessForm({ projectId, onCancel, onSuccess }: CreateProc
           </div>
 
           {/* Swimlanes */}
-          <div className='space-y-4'>
-            <div className='flex items-center justify-between'>
-              <h3 className='font-medium'>Swimlanes (Actors/Roles)</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-medium">Swimlanes (Actors/Roles)</h3>
               <button
-                type='button'
+                type="button"
                 onClick={addSwimlane}
-                className='text-primary flex items-center gap-1 text-sm hover:underline'
+                className="text-primary flex items-center gap-1 text-sm hover:underline"
               >
-                <Plus className='h-4 w-4' /> Add Swimlane
+                <Plus className="h-4 w-4" /> Add Swimlane
               </button>
             </div>
 
             {swimlaneFields.length === 0 ? (
-              <p className='text-muted-foreground text-sm'>
+              <p className="text-muted-foreground text-sm">
                 No swimlanes defined. Click "Add Swimlane" to define actors.
               </p>
             ) : (
-              <div className='space-y-3'>
+              <div className="space-y-3">
                 {swimlaneFields.map((field, index) => (
-                  <div key={field.id} className='flex items-center gap-3 rounded-lg border p-3'>
-                    <div className='grid flex-1 gap-3 sm:grid-cols-2'>
+                  <div key={field.id} className="flex items-center gap-3 rounded-lg border p-3">
+                    <div className="grid flex-1 gap-3 sm:grid-cols-2">
                       <input
                         {...register(`swimlanes.${index}.name`)}
-                        placeholder='Swimlane name'
-                        className='bg-background rounded-lg border px-3 py-2'
+                        placeholder="Swimlane name"
+                        className="bg-background rounded-lg border px-3 py-2"
                       />
                       <input
                         {...register(`swimlanes.${index}.role`)}
-                        placeholder='Role'
-                        className='bg-background rounded-lg border px-3 py-2'
+                        placeholder="Role"
+                        className="bg-background rounded-lg border px-3 py-2"
                       />
                     </div>
                     <button
-                      type='button'
+                      type="button"
                       onClick={() => {
                         removeSwimlane(index);
                       }}
-                      className='text-red-500 hover:text-red-700'
+                      className="text-red-500 hover:text-red-700"
                     >
-                      <Trash2 className='h-4 w-4' />
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
@@ -464,36 +464,36 @@ export function CreateProcessForm({ projectId, onCancel, onSuccess }: CreateProc
 
           {/* Exit Criteria */}
           <div>
-            <label className='block text-sm font-medium'>Exit Criteria (one per line)</label>
+            <label className="block text-sm font-medium">Exit Criteria (one per line)</label>
             <textarea
-              {...register('exitCriteria')}
+              {...register("exitCriteria")}
               rows={3}
-              placeholder='Conditions that must be met to complete the process...'
-              className='bg-background mt-1 w-full rounded-lg border px-3 py-2'
+              placeholder="Conditions that must be met to complete the process..."
+              className="bg-background mt-1 w-full rounded-lg border px-3 py-2"
             />
           </div>
 
           {/* Actions */}
-          <div className='flex gap-3 pt-4'>
+          <div className="flex gap-3 pt-4">
             <button
-              type='button'
+              type="button"
               onClick={onCancel}
-              className='hover:bg-accent flex-1 rounded-lg border px-4 py-2'
+              className="hover:bg-accent flex-1 rounded-lg border px-4 py-2"
             >
               Cancel
             </button>
             <button
-              type='submit'
+              type="submit"
               disabled={createProcess.isPending}
-              className='bg-primary text-primary-foreground flex-1 rounded-lg px-4 py-2 disabled:opacity-50'
+              className="bg-primary text-primary-foreground flex-1 rounded-lg px-4 py-2 disabled:opacity-50"
             >
-              {createProcess.isPending ? 'Creating...' : 'Create Process'}
+              {createProcess.isPending ? "Creating..." : "Create Process"}
             </button>
           </div>
 
           {createProcess.isError && (
-            <p className='text-sm text-red-500'>
-              Error:{' '}
+            <p className="text-sm text-red-500">
+              Error:{" "}
               {createProcess.error instanceof Error
                 ? createProcess.error.message
                 : String(createProcess.error)}

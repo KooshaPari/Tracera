@@ -17,8 +17,8 @@ import {
   lineIntersectsRectFast,
   type LineSegment,
   type Rectangle,
-} from './cohenSutherlandClipping';
-import { RBushSpatialIndex } from './spatialIndex';
+} from "./cohenSutherlandClipping";
+import { RBushSpatialIndex } from "./spatialIndex";
 
 export interface ViewportBounds {
   minX: number;
@@ -302,7 +302,7 @@ export class EdgeSpatialIndex {
   } {
     const spatialIndexStats = this.spatialIndex.getStats();
     const spatialIndexBytes =
-      parseInt(spatialIndexStats.memoryEstimate.replace(/[^0-9]/g, '')) * 1024;
+      parseInt(spatialIndexStats.memoryEstimate.replace(/[^0-9]/g, "")) * 1024;
 
     const midpointsBytes = this.edgeMidpoints.size * 16; // 2 floats (8 bytes each)
     const cacheBytes = this.visibilityCache.size * 12; // float + overhead

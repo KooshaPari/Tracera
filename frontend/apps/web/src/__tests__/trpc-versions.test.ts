@@ -1,13 +1,13 @@
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 
-const trpcPackages = ['@trpc/client', '@trpc/react-query', '@trpc/server'] as const;
+const trpcPackages = ["@trpc/client", "@trpc/react-query", "@trpc/server"] as const;
 
 async function readWebDependencies(): Promise<Record<(typeof trpcPackages)[number], string>> {
-  const packageJsonPath = resolve(process.cwd(), 'package.json');
-  const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8')) as {
+  const packageJsonPath = resolve(process.cwd(), "package.json");
+  const packageJson = JSON.parse(await readFile(packageJsonPath, "utf8")) as {
     dependencies: Record<string, string>;
   };
 
@@ -16,10 +16,10 @@ async function readWebDependencies(): Promise<Record<(typeof trpcPackages)[numbe
   ) as Record<(typeof trpcPackages)[number], string>;
 }
 
-describe('tRPC dependency versions', () => {
-  it('keeps the client, React Query bridge, and server on the same release', async () => {
+describe("tRPC dependency versions", () => {
+  it("keeps the client, React Query bridge, and server on the same release", async () => {
     const dependencies = await readWebDependencies();
 
-    expect(new Set(Object.values(dependencies))).toEqual(new Set(['^11.18.0']));
+    expect(new Set(Object.values(dependencies))).toEqual(new Set(["^10.45.2"]));
   });
 });

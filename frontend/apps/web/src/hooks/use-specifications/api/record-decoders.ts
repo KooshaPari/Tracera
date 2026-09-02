@@ -1,7 +1,7 @@
 type ApiRecord = Record<string, unknown>;
 
 const isApiRecord = (value: unknown): value is ApiRecord =>
-  typeof value === 'object' && Object.prototype.toString.call(value) !== '[object Null]';
+  typeof value === "object" && Object.prototype.toString.call(value) !== "[object Null]";
 
 const toApiRecord = (value: unknown): ApiRecord => {
   if (!isApiRecord(value)) {
@@ -30,7 +30,7 @@ const asNumberRecord = (value: unknown): Record<string, number> => {
   }
   const result: Record<string, number> = {};
   for (const [key, entry] of Object.entries(value)) {
-    if (typeof entry === 'number') {
+    if (typeof entry === "number") {
       result[key] = entry;
     }
   }

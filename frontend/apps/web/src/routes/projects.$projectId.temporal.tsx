@@ -1,17 +1,17 @@
-import type { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from "react";
 
-import { createFileRoute, useParams } from '@tanstack/react-router';
-import { useCallback, useEffect, useState } from 'react';
+import { createFileRoute, useParams } from "@tanstack/react-router";
+import { useCallback, useEffect, useState } from "react";
 
-import type { Branch, Version } from '@/components/temporal/TemporalNavigator';
-import type { Milestone, Sprint } from '@tracertm/types';
+import type { Branch, Version } from "@/components/temporal/TemporalNavigator";
+import type { Milestone, Sprint } from "@tracertm/types";
 
-import { ProgressDashboard } from '@/components/temporal/ProgressDashboard';
-import { TemporalNavigator } from '@/components/temporal/TemporalNavigator';
-import { logger } from '@/lib/logger';
-import { requireAuth } from '@/lib/route-guards';
+import { ProgressDashboard } from "@/components/temporal/ProgressDashboard";
+import { TemporalNavigator } from "@/components/temporal/TemporalNavigator";
+import { logger } from "@/lib/logger";
+import { requireAuth } from "@/lib/route-guards";
 
-type TemporalTab = 'navigator' | 'progress';
+type TemporalTab = "navigator" | "progress";
 
 interface TemporalTabsProps {
   activeTab: TemporalTab;
@@ -51,10 +51,10 @@ interface TemporalDataState {
 const createMockBranches = (): Branch[] => [
   {
     createdAt: new Date(),
-    id: 'main',
+    id: "main",
     mergeRequestCount: 0,
-    name: 'Main',
-    status: 'active',
+    name: "Main",
+    status: "active",
     updatedAt: new Date(),
   },
 ];
@@ -63,15 +63,15 @@ const createMockBranches = (): Branch[] => [
 const createMockVersions = (branchId: string): Version[] => [
   {
     branchId,
-    id: 'v1',
-    status: 'published',
+    id: "v1",
+    status: "published",
     timestamp: new Date(),
-    title: 'Version 1.0',
+    title: "Version 1.0",
   },
 ];
 
 const getTabClassName = (activeTab: TemporalTab, tab: TemporalTab): string => {
-  const baseClassName = 'px-4 py-2 font-medium transition-colors';
+  const baseClassName = "px-4 py-2 font-medium transition-colors";
   if (activeTab === tab) {
     return `${baseClassName} border-b-2 border-primary text-primary`;
   }
@@ -79,10 +79,10 @@ const getTabClassName = (activeTab: TemporalTab, tab: TemporalTab): string => {
 };
 
 const TemporalHeader = (): JSX.Element => (
-  <div className='flex items-center justify-between'>
+  <div className="flex items-center justify-between">
     <div>
-      <h1 className='text-3xl font-bold tracking-tight'>Temporal Navigation</h1>
-      <p className='text-muted-foreground'>Version and branch management with progress tracking</p>
+      <h1 className="text-3xl font-bold tracking-tight">Temporal Navigation</h1>
+      <p className="text-muted-foreground">Version and branch management with progress tracking</p>
     </div>
   </div>
 );
@@ -92,18 +92,18 @@ const TemporalTabs = ({
   onNavigatorClick,
   onProgressClick,
 }: TemporalTabsProps): JSX.Element => (
-  <div className='flex gap-2 border-b'>
+  <div className="flex gap-2 border-b">
     <button
-      type='button'
+      type="button"
       onClick={onNavigatorClick}
-      className={getTabClassName(activeTab, 'navigator')}
+      className={getTabClassName(activeTab, "navigator")}
     >
       Version Navigator
     </button>
     <button
-      type='button'
+      type="button"
       onClick={onProgressClick}
-      className={getTabClassName(activeTab, 'progress')}
+      className={getTabClassName(activeTab, "progress")}
     >
       Progress Dashboard
     </button>
@@ -125,7 +125,7 @@ const TemporalContent = ({
   onMilestoneClick,
   onSprintClick,
 }: TemporalContentProps): JSX.Element => {
-  if (activeTab === 'navigator') {
+  if (activeTab === "navigator") {
     return (
       <TemporalNavigator
         projectId={projectId}
@@ -157,8 +157,8 @@ const useTemporalData = (projectId: string): TemporalDataState => {
   const [versions, setVersions] = useState<Version[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [sprints, setSprints] = useState<Sprint[]>([]);
-  const [currentBranchId, setCurrentBranchId] = useState<string>('');
-  const [currentVersionId, setCurrentVersionId] = useState<string>('');
+  const [currentBranchId, setCurrentBranchId] = useState<string>("");
+  const [currentVersionId, setCurrentVersionId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -167,13 +167,13 @@ const useTemporalData = (projectId: string): TemporalDataState => {
       // NOTE: Replace with actual API calls when backend endpoints are wired.
       const mockBranches = createMockBranches();
       const [firstBranch] = mockBranches;
-      let firstBranchId = '';
+      let firstBranchId = "";
       if (firstBranch) {
         firstBranchId = firstBranch.id;
       }
       const mockVersions = createMockVersions(firstBranchId);
       const [firstVersion] = mockVersions;
-      let firstVersionId = '';
+      let firstVersionId = "";
       if (firstVersion) {
         firstVersionId = firstVersion.id;
       }
@@ -185,7 +185,7 @@ const useTemporalData = (projectId: string): TemporalDataState => {
       setCurrentBranchId(firstBranchId);
       setCurrentVersionId(firstVersionId);
     } catch (error) {
-      logger.error('Failed to load temporal data:', error);
+      logger.error("Failed to load temporal data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -209,8 +209,8 @@ const useTemporalData = (projectId: string): TemporalDataState => {
  * Provides version/branch navigation and progress tracking
  */
 const TemporalView = (): JSX.Element => {
-  const { projectId } = useParams({ from: '/projects/$projectId/temporal' });
-  const [activeTab, setActiveTab] = useState<TemporalTab>('navigator');
+  const { projectId } = useParams({ from: "/projects/$projectId/temporal" });
+  const [activeTab, setActiveTab] = useState<TemporalTab>("navigator");
   const {
     branches,
     currentBranchId,
@@ -242,23 +242,23 @@ const TemporalView = (): JSX.Element => {
   );
 
   const handleMilestoneClick = useCallback((milestoneId: string): void => {
-    logger.info('Milestone clicked:', milestoneId);
+    logger.info("Milestone clicked:", milestoneId);
   }, []);
 
   const handleSprintClick = useCallback((sprintId: string): void => {
-    logger.info('Sprint clicked:', sprintId);
+    logger.info("Sprint clicked:", sprintId);
   }, []);
 
   const handleNavigatorTabClick = useCallback((): void => {
-    setActiveTab('navigator');
+    setActiveTab("navigator");
   }, []);
 
   const handleProgressTabClick = useCallback((): void => {
-    setActiveTab('progress');
+    setActiveTab("progress");
   }, []);
 
   return (
-    <div className='flex-1 space-y-6 p-6'>
+    <div className="flex-1 space-y-6 p-6">
       <TemporalHeader />
 
       <TemporalTabs
@@ -267,7 +267,7 @@ const TemporalView = (): JSX.Element => {
         onProgressClick={handleProgressTabClick}
       />
 
-      <div className='space-y-6'>
+      <div className="space-y-6">
         <TemporalContent
           activeTab={activeTab}
           branches={branches}
@@ -290,7 +290,7 @@ const TemporalView = (): JSX.Element => {
 
 const TEMPORAL_VIEW = TemporalView;
 
-const Route = createFileRoute('/projects/$projectId/temporal')({
+const Route = createFileRoute("/projects/$projectId/temporal")({
   beforeLoad: async () => {
     await requireAuth();
   },

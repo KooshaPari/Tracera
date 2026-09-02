@@ -8,9 +8,9 @@ import type {
   Priority,
   Project,
   ViewType,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
-import type { paths } from './schema';
+import type { paths } from "./schema";
 
 // OpenAPI Schema Type Exports
 
@@ -19,7 +19,7 @@ type ApiPaths = keyof paths;
 type PathOperations<P extends ApiPaths> = keyof paths[P];
 
 type ApiRequestBody<P extends ApiPaths, M extends PathOperations<P>> = paths[P][M] extends {
-  requestBody: { content: { 'application/json': infer Body } };
+  requestBody: { content: { "application/json": infer Body } };
 }
   ? Body
   : never;
@@ -30,7 +30,7 @@ type ApiResponse<
   Status extends number = 200,
 > = paths[P][M] extends { responses: infer R }
   ? Status extends keyof R
-    ? R[Status] extends { content: { 'application/json': infer Body } }
+    ? R[Status] extends { content: { "application/json": infer Body } }
       ? Body
       : never
     : never

@@ -1,14 +1,14 @@
-import type { ItemStatus, Priority } from '@tracertm/types';
+import type { ItemStatus, Priority } from "@tracertm/types";
 
-import { Card } from '@tracertm/ui';
+import { Card } from "@tracertm/ui";
 
-import { CanonicalParentCard } from './CanonicalParentCard';
-import { ItemBadgesRow } from './ItemBadgesRow';
-import { ItemMetaLine } from './ItemMetaLine';
-import { ItemTitleSection } from './ItemTitleSection';
-import { OwnerCard } from './OwnerCard';
-import { StatusPriorityCard } from './StatusPriorityCard';
-import { VersionPerspectiveCard } from './VersionPerspectiveCard';
+import { CanonicalParentCard } from "./CanonicalParentCard";
+import { ItemBadgesRow } from "./ItemBadgesRow";
+import { ItemMetaLine } from "./ItemMetaLine";
+import { ItemTitleSection } from "./ItemTitleSection";
+import { OwnerCard } from "./OwnerCard";
+import { StatusPriorityCard } from "./StatusPriorityCard";
+import { VersionPerspectiveCard } from "./VersionPerspectiveCard";
 
 interface ItemSummarySectionProps {
   itemId: string;
@@ -66,8 +66,8 @@ export function ItemSummarySection(props: ItemSummarySectionProps): JSX.Element 
   } = props;
 
   return (
-    <Card className='bg-card/60 shadow-primary/10 overflow-hidden border-0 shadow-xl backdrop-blur-sm'>
-      <div className='space-y-6 p-8'>
+    <Card className="bg-card/60 shadow-primary/10 overflow-hidden border-0 shadow-xl backdrop-blur-sm">
+      <div className="space-y-6 p-8">
         <ItemBadgesRow
           viewLabel={viewLabel}
           typeLabel={typeLabel}
@@ -76,8 +76,8 @@ export function ItemSummarySection(props: ItemSummarySectionProps): JSX.Element 
           itemId={itemId}
         />
 
-        <div className='grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]'>
-          <div className='space-y-4'>
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]">
+          <div className="space-y-4">
             <ItemTitleSection
               isEditing={isEditing}
               subtitle={subtitle}
@@ -93,7 +93,7 @@ export function ItemSummarySection(props: ItemSummarySectionProps): JSX.Element 
             />
           </div>
 
-          <div className='grid gap-3'>
+          <div className="grid gap-3">
             <StatusPriorityCard
               isEditing={isEditing}
               status={status}

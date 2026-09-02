@@ -1,19 +1,19 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type {
   GraphPerformanceMonitor,
   PerformanceMetrics,
   UseGraphPerformanceMonitorConfig,
-} from './types';
+} from "./types";
 
-import { MAX_HISTORY_LENGTH } from './constants';
-import { formatSummary } from './formatting';
-import { FPSTracker } from './fps-tracker';
-import { InteractionTracker } from './interaction-tracker';
-import { logGraphPerformanceMetrics } from './logging';
-import { buildPerformanceMetrics } from './metrics';
-import { appendMetricToStorage, clearMetricsStorage, isDevelopmentEnv } from './storage';
-import { createInterval, resolveReportInterval } from './timing';
+import { MAX_HISTORY_LENGTH } from "./constants";
+import { formatSummary } from "./formatting";
+import { FPSTracker } from "./fps-tracker";
+import { InteractionTracker } from "./interaction-tracker";
+import { logGraphPerformanceMetrics } from "./logging";
+import { buildPerformanceMetrics } from "./metrics";
+import { appendMetricToStorage, clearMetricsStorage, isDevelopmentEnv } from "./storage";
+import { createInterval, resolveReportInterval } from "./timing";
 
 interface TimingMarkers {
   viewportLoadStart?: number;
@@ -175,7 +175,7 @@ function useGraphPerformanceMonitorImpl<NodeType = unknown, EdgeType = unknown>(
   const getSummary = useCallback((): string => {
     const metrics = currentMetrics;
     if (metrics === undefined) {
-      return 'No metrics available';
+      return "No metrics available";
     }
     return formatSummary(metrics);
   }, [currentMetrics]);

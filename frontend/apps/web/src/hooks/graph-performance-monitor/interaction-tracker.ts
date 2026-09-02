@@ -1,19 +1,19 @@
-import type { InteractionMetrics } from './metrics';
+import type { InteractionMetrics } from "./metrics";
 
-import { ZERO } from './constants';
+import { ZERO } from "./constants";
 
 class InteractionTracker {
   private isPanning = false;
   private isZooming = false;
   private panStartTime = ZERO;
   private zoomStartTime = ZERO;
-  private lastInteractionType: InteractionMetrics['lastInteractionType'] = 'idle';
+  private lastInteractionType: InteractionMetrics["lastInteractionType"] = "idle";
 
   startPan(): void {
     if (!this.isPanning) {
       this.isPanning = true;
       this.panStartTime = performance.now();
-      this.lastInteractionType = 'pan';
+      this.lastInteractionType = "pan";
     }
   }
 
@@ -25,7 +25,7 @@ class InteractionTracker {
     if (!this.isZooming) {
       this.isZooming = true;
       this.zoomStartTime = performance.now();
-      this.lastInteractionType = 'zoom';
+      this.lastInteractionType = "zoom";
     }
   }
 
@@ -60,7 +60,7 @@ class InteractionTracker {
     this.isZooming = false;
     this.panStartTime = ZERO;
     this.zoomStartTime = ZERO;
-    this.lastInteractionType = 'idle';
+    this.lastInteractionType = "idle";
   }
 }
 

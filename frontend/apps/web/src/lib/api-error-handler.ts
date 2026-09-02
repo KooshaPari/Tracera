@@ -5,19 +5,19 @@
  * for comprehensive error handling in the frontend.
  */
 
-import { ApiError } from '@/api/client-errors';
+import { ApiError } from "@/api/client-errors";
 import {
   isAuthError,
   isNetworkError,
   isServerError,
   isTimeoutError,
   isValidationError,
-} from '@/lib/retry';
+} from "@/lib/retry";
 
 // Re-export error predicates for convenience
 export { isAuthError, isNetworkError, isServerError, isTimeoutError, isValidationError };
 
-export type ErrorType = 'network' | 'validation' | 'auth' | 'server' | 'unknown' | 'timeout';
+export type ErrorType = "network" | "validation" | "auth" | "server" | "unknown" | "timeout";
 
 export interface ErrorMetadata {
   type: ErrorType;
@@ -33,21 +33,21 @@ export interface ErrorMetadata {
  */
 export function getErrorType(error: unknown): ErrorType {
   if (isNetworkError(error)) {
-    return 'network';
+    return "network";
   }
   if (isTimeoutError(error)) {
-    return 'timeout';
+    return "timeout";
   }
   if (isAuthError(error)) {
-    return 'auth';
+    return "auth";
   }
   if (isValidationError(error)) {
-    return 'validation';
+    return "validation";
   }
   if (isServerError(error)) {
-    return 'server';
+    return "server";
   }
-  return 'unknown';
+  return "unknown";
 }
 
 /**
@@ -66,14 +66,14 @@ export function extractValidationErrors(error: unknown): Record<string, string[]
   }
 
   // Format 1: { errors: { field: ["error1", "error2"] } }
-  if ('errors' in data && typeof data.errors === 'object' && data.errors !== null) {
+  if ("errors" in data && typeof data.errors === "object" && data.errors !== null) {
     return data.errors as Record<string, string[]>;
   }
 
   // Format 2: { field: ["error1", "error2"] }
   // Check if object has string array values (looks like validation errors)
   const isValidationFormat = Object.entries(data).every(
-    ([, value]) => Array.isArray(value) && value.every((v) => typeof v === 'string'),
+    ([, value]) => Array.isArray(value) && value.every((v) => typeof v === "string"),
   );
 
   if (isValidationFormat) {
@@ -88,26 +88,26 @@ export function extractValidationErrors(error: unknown): Record<string, string[]
  */
 export function getUserFriendlyMessage(errorType: ErrorType, error?: Error): string {
   switch (errorType) {
-    case 'network': {
-      return 'Unable to connect to the server. Please check your internet connection and try again.';
+    case "network": {
+      return "Unable to connect to the server. Please check your internet connection and try again.";
     }
-    case 'timeout': {
-      return 'Request timed out. The server is taking too long to respond. Please try again.';
+    case "timeout": {
+      return "Request timed out. The server is taking too long to respond. Please try again.";
     }
-    case 'validation': {
-      return 'Please check your input and try again.';
+    case "validation": {
+      return "Please check your input and try again.";
     }
-    case 'auth': {
-      return 'Your session has expired. Please log in again.';
+    case "auth": {
+      return "Your session has expired. Please log in again.";
     }
-    case 'server': {
-      return 'Server error. Please try again later.';
+    case "server": {
+      return "Server error. Please try again later.";
     }
-    case 'unknown': {
-      return error?.message || 'An unexpected error occurred. Please try again.';
+    case "unknown": {
+      return error?.message || "An unexpected error occurred. Please try again.";
     }
     default: {
-      return 'An error occurred. Please try again.';
+      return "An error occurred. Please try again.";
     }
   }
 }
@@ -124,7 +124,7 @@ export function buildErrorMetadata(error: unknown): ErrorMetadata {
   return {
     message: originalError.message,
     originalError,
-    retryable: errorType === 'network' || errorType === 'timeout' || errorType === 'server',
+    retryable: errorType === "network" || errorType === "timeout" || errorType === "server",
     statusCode,
     type: errorType,
     userMessage,
@@ -148,7 +148,7 @@ export function formatErrorForLogging(metadata: ErrorMetadata): Record<string, u
  * Determine if error requires special handling (e.g., redirect to login for auth errors)
  */
 export function requiresSpecialHandling(errorType: ErrorType): boolean {
-  return errorType === 'auth';
+  return errorType === "auth";
 }
 
 /**
@@ -157,10 +157,10 @@ export function requiresSpecialHandling(errorType: ErrorType): boolean {
 export function formatValidationErrorMessage(errors: Record<string, string[]>): string {
   const errorList = Object.entries(errors)
     .map(([field, messages]) => {
-      const fieldName = field.replace(/_/g, ' ').toLowerCase();
-      return `${fieldName}: ${messages.join(', ')}`;
+      const fieldName = field.replace(/_/g, " ").toLowerCase();
+      return `${fieldName}: ${messages.join(", ")}`;
     })
-    .join('\n');
+    .join("\n");
 
   return `Validation failed:\n${errorList}`;
 }

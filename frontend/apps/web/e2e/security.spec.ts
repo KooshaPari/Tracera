@@ -1,4 +1,4 @@
-import { expect, test } from './global-setup';
+import { expect, test } from "./global-setup";
 
 /**
  * Security E2E Tests
@@ -7,21 +7,21 @@ import { expect, test } from './global-setup';
  * authentication bypass, data leakage, and other security vulnerabilities.
  */
 
-test.describe('Security - XSS Prevention', () => {
+test.describe("Security - XSS Prevention", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should prevent XSS in item titles', async ({ page }) => {
-    await page.goto('/items');
+  test("should prevent XSS in item titles", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
     const xssPayload = '<script>alert("XSS")</script>';
 
     // Monitor for any dialog (alert) that would indicate XSS
     let alertTriggered = false;
-    page.on('dialog', () => {
+    page.on("dialog", () => {
       alertTriggered = true;
     });
 
@@ -40,14 +40,14 @@ test.describe('Security - XSS Prevention', () => {
     expect(titleText).toBe(xssPayload);
   });
 
-  test('should prevent XSS in descriptions', async ({ page }) => {
-    await page.goto('/items');
+  test("should prevent XSS in descriptions", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
-    const xssPayload = '<img src=x onerror="alert(\'XSS\')">';
+    const xssPayload = "<img src=x onerror=\"alert('XSS')\">";
 
     let alertTriggered = false;
-    page.on('dialog', () => {
+    page.on("dialog", () => {
       alertTriggered = true;
     });
 
@@ -61,16 +61,16 @@ test.describe('Security - XSS Prevention', () => {
     const description = page.locator('[data-testid="item-description"]');
     const html = await description.innerHTML();
 
-    expect(html).not.toContain('onerror');
+    expect(html).not.toContain("onerror");
   });
 
-  test('should prevent DOM-based XSS', async ({ page }) => {
+  test("should prevent DOM-based XSS", async ({ page }) => {
     // Try to inject via URL parameters
     const xssPayload = encodeURIComponent('<script>alert("XSS")</script>');
     await page.goto(`/items?search=${xssPayload}`);
 
     let alertTriggered = false;
-    page.on('dialog', () => {
+    page.on("dialog", () => {
       alertTriggered = true;
     });
 
@@ -81,11 +81,11 @@ test.describe('Security - XSS Prevention', () => {
     const searchInput = page.locator('[data-testid="search-input"]');
     const value = await searchInput.inputValue();
 
-    expect(value).not.toContain('<script>');
+    expect(value).not.toContain("<script>");
   });
 
-  test('should sanitize markdown content', async ({ page }) => {
-    await page.goto('/items');
+  test("should sanitize markdown content", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
     // Markdown with embedded script
@@ -99,15 +99,15 @@ test.describe('Security - XSS Prevention', () => {
     const html = await description.innerHTML();
 
     // Script tags should be removed
-    expect(html).not.toContain('<script>');
+    expect(html).not.toContain("<script>");
 
     // But markdown should be rendered
-    expect(html).toContain('<h1>');
-    expect(html).toContain('<strong>');
+    expect(html).toContain("<h1>");
+    expect(html).toContain("<strong>");
   });
 
-  test('should prevent javascript: URLs', async ({ page }) => {
-    await page.goto('/items');
+  test("should prevent javascript: URLs", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
     const maliciousUrl = 'javascript:alert("XSS")';
@@ -120,7 +120,7 @@ test.describe('Security - XSS Prevention', () => {
 
     if ((await link.count()) > 0) {
       let alertTriggered = false;
-      page.on('dialog', () => {
+      page.on("dialog", () => {
         alertTriggered = true;
       });
 
@@ -129,20 +129,20 @@ test.describe('Security - XSS Prevention', () => {
     }
   });
 
-  test('should prevent data: URLs for images', async ({ page }) => {
-    await page.goto('/items');
+  test("should prevent data: URLs for images", async ({ page }) => {
+    await page.goto("/items");
 
     const maliciousDataUrl = 'data:text/html,<script>alert("XSS")</script>';
 
     // Try to inject via image source
     await page.evaluate((url) => {
-      const img = document.createElement('img');
+      const img = document.createElement("img");
       img.src = url;
       document.body.append(img);
     }, maliciousDataUrl);
 
     let alertTriggered = false;
-    page.on('dialog', () => {
+    page.on("dialog", () => {
       alertTriggered = true;
     });
 
@@ -151,9 +151,9 @@ test.describe('Security - XSS Prevention', () => {
   });
 });
 
-test.describe('Security - SQL Injection', () => {
-  test('should prevent SQL injection in search', async ({ page }) => {
-    await page.goto('/items');
+test.describe("Security - SQL Injection", () => {
+  test("should prevent SQL injection in search", async ({ page }) => {
+    await page.goto("/items");
 
     const sqlPayload = "'; DROP TABLE items; --";
 
@@ -164,12 +164,12 @@ test.describe('Security - SQL Injection', () => {
     await expect(page.locator('[data-testid="items-list"]')).toBeVisible();
 
     // No error messages about SQL
-    const errorText = await page.textContent('body');
+    const errorText = await page.textContent("body");
     expect(errorText).not.toMatch(/SQL|syntax error|database/i);
   });
 
-  test('should prevent SQL injection in filters', async ({ page }) => {
-    await page.goto('/items');
+  test("should prevent SQL injection in filters", async ({ page }) => {
+    await page.goto("/items");
 
     const sqlPayload = "1' OR '1'='1";
 
@@ -183,9 +183,9 @@ test.describe('Security - SQL Injection', () => {
   });
 });
 
-test.describe('Security - CSRF Protection', () => {
-  test('should include CSRF token in forms', async ({ page }) => {
-    await page.goto('/items');
+test.describe("Security - CSRF Protection", () => {
+  test("should include CSRF token in forms", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
     // Check for CSRF token
@@ -196,7 +196,7 @@ test.describe('Security - CSRF Protection', () => {
       const inputValue = inputField instanceof HTMLInputElement ? inputField.value : undefined;
       return {
         input: inputValue,
-        meta: metaTag?.getAttribute('content'),
+        meta: metaTag?.getAttribute("content"),
       };
     });
 
@@ -204,8 +204,8 @@ test.describe('Security - CSRF Protection', () => {
     expect(csrfToken.meta ?? csrfToken.input).toBeTruthy();
   });
 
-  test('should validate CSRF token on submissions', async ({ page }) => {
-    await page.goto('/items');
+  test("should validate CSRF token on submissions", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
     // Remove CSRF token
@@ -216,7 +216,7 @@ test.describe('Security - CSRF Protection', () => {
       }
     });
 
-    await page.fill('input[name="title"]', 'Test Item');
+    await page.fill('input[name="title"]', "Test Item");
     await page.click('button:has-text("Save")');
 
     // Should show error or reject request
@@ -225,29 +225,29 @@ test.describe('Security - CSRF Protection', () => {
   });
 });
 
-test.describe('Security - Authentication & Authorization', () => {
-  test('should redirect unauthenticated users', async ({ page, context }) => {
+test.describe("Security - Authentication & Authorization", () => {
+  test("should redirect unauthenticated users", async ({ page, context }) => {
     // Clear all cookies and storage
     await context.clearCookies();
     await context.clearPermissions();
 
-    await page.goto('/items');
+    await page.goto("/items");
 
     // Should redirect to login
-    await page.waitForURL('/auth/login', { timeout: 5000 });
-    await expect(page).toHaveURL('/auth/login');
+    await page.waitForURL("/auth/login", { timeout: 5000 });
+    await expect(page).toHaveURL("/auth/login");
   });
 
-  test('should not expose sensitive data in localStorage', async ({ page }) => {
-    await page.goto('/');
+  test("should not expose sensitive data in localStorage", async ({ page }) => {
+    await page.goto("/");
 
     const sensitiveData = await page.evaluate(() => {
       const storage = JSON.stringify(localStorage);
 
       return {
-        hasApiKey: storage.includes('apiKey') || storage.includes('api_key'),
-        hasPassword: storage.includes('password'),
-        hasToken: storage.includes('token') && storage.includes('Bearer'),
+        hasApiKey: storage.includes("apiKey") || storage.includes("api_key"),
+        hasPassword: storage.includes("password"),
+        hasToken: storage.includes("token") && storage.includes("Bearer"),
       };
     });
 
@@ -258,8 +258,8 @@ test.describe('Security - Authentication & Authorization', () => {
     expect(sensitiveData.hasApiKey).toBe(false);
   });
 
-  test('should not expose auth tokens in URL', async ({ page }) => {
-    await page.goto('/');
+  test("should not expose auth tokens in URL", async ({ page }) => {
+    await page.goto("/");
 
     const url = page.url();
 
@@ -269,43 +269,43 @@ test.describe('Security - Authentication & Authorization', () => {
     expect(url).not.toMatch(/key=/);
   });
 
-  test('should validate session on protected routes', async ({ page }) => {
-    await page.goto('/items');
+  test("should validate session on protected routes", async ({ page }) => {
+    await page.goto("/items");
 
     // Invalidate session
     await page.evaluate(() => {
-      localStorage.removeItem('authToken');
+      localStorage.removeItem("authToken");
       sessionStorage.clear();
     });
 
     // Navigate to another protected route
-    await page.goto('/projects');
+    await page.goto("/projects");
 
     // Should redirect to login
-    await page.waitForURL('/auth/login', { timeout: 5000 });
+    await page.waitForURL("/auth/login", { timeout: 5000 });
   });
 
-  test('should prevent privilege escalation', async ({ page }) => {
-    await page.goto('/items');
+  test("should prevent privilege escalation", async ({ page }) => {
+    await page.goto("/items");
 
     // Try to access admin routes
-    await page.goto('/admin');
+    await page.goto("/admin");
 
     // Should either redirect or show 403
     const url = page.url();
-    const content = await page.textContent('body');
+    const content = await page.textContent("body");
 
     expect(
-      url.includes('/auth/login') ?? content?.includes('403') ?? content?.includes('Forbidden'),
+      url.includes("/auth/login") ?? content?.includes("403") ?? content?.includes("Forbidden"),
     ).toBe(true);
   });
 });
 
-test.describe('Security - Data Validation', () => {
-  test('should validate email format', async ({ page }) => {
-    await page.goto('/auth/register');
+test.describe("Security - Data Validation", () => {
+  test("should validate email format", async ({ page }) => {
+    await page.goto("/auth/register");
 
-    await page.fill('input[name="email"]', 'invalid-email');
+    await page.fill('input[name="email"]', "invalid-email");
     await page.click('button[type="submit"]');
 
     const error = page.locator('input[name="email"] ~ .error');
@@ -313,12 +313,12 @@ test.describe('Security - Data Validation', () => {
     await expect(error).toContainText(/valid email/i);
   });
 
-  test('should enforce password complexity', async ({ page }) => {
-    await page.goto('/auth/register');
+  test("should enforce password complexity", async ({ page }) => {
+    await page.goto("/auth/register");
 
     // Weak password
-    await page.fill('input[name="password"]', '123');
-    await page.fill('input[name="confirmPassword"]', '123');
+    await page.fill('input[name="password"]', "123");
+    await page.fill('input[name="confirmPassword"]', "123");
 
     const strengthIndicator = page.locator('[data-testid="password-strength"]');
     const submitButton = page.locator('button[type="submit"]');
@@ -331,8 +331,8 @@ test.describe('Security - Data Validation', () => {
     await expect(error).toBeVisible();
   });
 
-  test('should validate file uploads', async ({ page }) => {
-    await page.goto('/items');
+  test("should validate file uploads", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
     // Try to upload executable file
@@ -340,9 +340,9 @@ test.describe('Security - Data Validation', () => {
 
     if ((await fileInput.count()) > 0) {
       await fileInput.setInputFiles({
-        buffer: Buffer.from('fake executable content'),
-        mimeType: 'application/x-msdownload',
-        name: 'malicious.exe',
+        buffer: Buffer.from("fake executable content"),
+        mimeType: "application/x-msdownload",
+        name: "malicious.exe",
       });
 
       // Should show error
@@ -352,12 +352,12 @@ test.describe('Security - Data Validation', () => {
     }
   });
 
-  test('should enforce size limits on inputs', async ({ page }) => {
-    await page.goto('/items');
+  test("should enforce size limits on inputs", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
     // Very long title
-    const longTitle = 'A'.repeat(1000);
+    const longTitle = "A".repeat(1000);
     await page.fill('input[name="title"]', longTitle);
 
     // Should either truncate or show error
@@ -365,11 +365,11 @@ test.describe('Security - Data Validation', () => {
     expect(value.length).toBeLessThan(500);
   });
 
-  test('should validate URL format', async ({ page }) => {
-    await page.goto('/items');
+  test("should validate URL format", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
-    const invalidUrl = 'not a url';
+    const invalidUrl = "not a url";
     await page.fill('input[name="url"]', invalidUrl);
     await page.click('button:has-text("Save")');
 
@@ -379,35 +379,35 @@ test.describe('Security - Data Validation', () => {
   });
 });
 
-test.describe('Security - Clickjacking Prevention', () => {
-  test('should set X-Frame-Options header', async ({ page }) => {
-    const response = await page.goto('/');
+test.describe("Security - Clickjacking Prevention", () => {
+  test("should set X-Frame-Options header", async ({ page }) => {
+    const response = await page.goto("/");
 
     const headers = response?.headers();
-    const xFrameOptions = headers?.['x-frame-options'];
+    const xFrameOptions = headers?.["x-frame-options"];
 
     // Should prevent framing
     expect(xFrameOptions).toMatch(/DENY|SAMEORIGIN/i);
   });
 
-  test('should set CSP frame-ancestors', async ({ page }) => {
-    const response = await page.goto('/');
+  test("should set CSP frame-ancestors", async ({ page }) => {
+    const response = await page.goto("/");
 
     const headers = response?.headers();
-    const csp = headers?.['content-security-policy'];
+    const csp = headers?.["content-security-policy"];
 
     if (csp) {
-      expect(csp).toContain('frame-ancestors');
+      expect(csp).toContain("frame-ancestors");
     }
   });
 });
 
-test.describe('Security - Content Security Policy', () => {
-  test('should have strict CSP header', async ({ page }) => {
-    const response = await page.goto('/');
+test.describe("Security - Content Security Policy", () => {
+  test("should have strict CSP header", async ({ page }) => {
+    const response = await page.goto("/");
 
     const headers = response?.headers();
-    const csp = headers?.['content-security-policy'];
+    const csp = headers?.["content-security-policy"];
 
     expect(csp).toBeTruthy();
 
@@ -418,14 +418,14 @@ test.describe('Security - Content Security Policy', () => {
     }
   });
 
-  test('should prevent inline scripts', async ({ page }) => {
-    await page.goto('/');
+  test("should prevent inline scripts", async ({ page }) => {
+    await page.goto("/");
 
     // Try to inject inline script
     const scriptExecuted = await page.evaluate(() => {
       try {
-        const script = document.createElement('script');
-        script.textContent = 'window.inlineScriptExecuted = true';
+        const script = document.createElement("script");
+        script.textContent = "window.inlineScriptExecuted = true";
         document.body.append(script);
 
         return Boolean(
@@ -441,24 +441,24 @@ test.describe('Security - Content Security Policy', () => {
   });
 });
 
-test.describe('Security - Information Disclosure', () => {
-  test('should not expose stack traces', async ({ page }) => {
+test.describe("Security - Information Disclosure", () => {
+  test("should not expose stack traces", async ({ page }) => {
     // Trigger an error
-    await page.goto('/items/nonexistent-item-id');
+    await page.goto("/items/nonexistent-item-id");
 
-    const bodyText = await page.textContent('body');
+    const bodyText = await page.textContent("body");
 
     // Should not expose stack traces
     expect(bodyText).not.toMatch(/at Object\.|at Function\.|at Array\./i);
-    expect(bodyText).not.toContain('node_modules');
-    expect(bodyText).not.toContain('.ts:');
+    expect(bodyText).not.toContain("node_modules");
+    expect(bodyText).not.toContain(".ts:");
   });
 
-  test('should not expose API keys in source', async ({ page }) => {
-    await page.goto('/');
+  test("should not expose API keys in source", async ({ page }) => {
+    await page.goto("/");
 
     const scripts = await page.evaluate(() => {
-      const scriptTags = document.querySelectorAll('script');
+      const scriptTags = document.querySelectorAll("script");
       const content: string[] = [];
 
       scriptTags.forEach((script) => {
@@ -467,25 +467,25 @@ test.describe('Security - Information Disclosure', () => {
         }
       });
 
-      return content.join('\n');
+      return content.join("\n");
     });
 
     // Should not contain API keys
     expect(scripts).not.toMatch(/sk_live_|pk_live_|AIza[0-9A-Za-z-_]{35}/);
   });
 
-  test('should not expose version information', async ({ page }) => {
-    const response = await page.goto('/');
+  test("should not expose version information", async ({ page }) => {
+    const response = await page.goto("/");
 
     const headers = response?.headers();
 
     // Should not expose server version
     expect(headers?.server).not.toMatch(/\d+\.\d+/);
-    expect(headers?.['x-powered-by']).toBeUndefined();
+    expect(headers?.["x-powered-by"]).toBeUndefined();
   });
 
-  test('should not expose user emails in HTML', async ({ page }) => {
-    await page.goto('/items');
+  test("should not expose user emails in HTML", async ({ page }) => {
+    await page.goto("/items");
 
     const html = await page.content();
 
@@ -498,20 +498,20 @@ test.describe('Security - Information Disclosure', () => {
   });
 });
 
-test.describe('Security - Session Security', () => {
-  test('should set secure cookie flags', async ({ page }) => {
-    await page.goto('/');
+test.describe("Security - Session Security", () => {
+  test("should set secure cookie flags", async ({ page }) => {
+    await page.goto("/");
 
     const cookies = await page.context().cookies();
 
-    const sessionCookie = cookies.find((c) => c.name.includes('session'));
+    const sessionCookie = cookies.find((c) => c.name.includes("session"));
 
     if (sessionCookie) {
       // Should be HTTP-only
       expect(sessionCookie.httpOnly).toBe(true);
 
       // Should be secure in production
-      if (page.url().startsWith('https://')) {
+      if (page.url().startsWith("https://")) {
         expect(sessionCookie.secure).toBe(true);
       }
 
@@ -520,8 +520,8 @@ test.describe('Security - Session Security', () => {
     }
   });
 
-  test('should invalidate session on logout', async ({ page }) => {
-    await page.goto('/');
+  test("should invalidate session on logout", async ({ page }) => {
+    await page.goto("/");
 
     const cookiesBefore = await page.context().cookies();
 
@@ -532,77 +532,77 @@ test.describe('Security - Session Security', () => {
     const cookiesAfter = await page.context().cookies();
 
     // Session cookies should be cleared
-    const sessionCookieBefore = cookiesBefore.find((c) => c.name.includes('session'));
-    const sessionCookieAfter = cookiesAfter.find((c) => c.name.includes('session'));
+    const sessionCookieBefore = cookiesBefore.find((c) => c.name.includes("session"));
+    const sessionCookieAfter = cookiesAfter.find((c) => c.name.includes("session"));
 
     if (sessionCookieBefore) {
       expect(sessionCookieAfter).toBeUndefined();
     }
   });
 
-  test('should implement session timeout', async ({ page }) => {
-    await page.goto('/');
+  test("should implement session timeout", async ({ page }) => {
+    await page.goto("/");
 
     // Simulate session timeout
     await page.evaluate(() => {
       const expiredTime = Date.now() - 24 * 60 * 60 * 1000; // 24 hours ago
-      localStorage.setItem('sessionExpiry', expiredTime.toString());
+      localStorage.setItem("sessionExpiry", expiredTime.toString());
     });
 
     // Try to access protected route
-    await page.goto('/items');
+    await page.goto("/items");
 
     // Should redirect to login
-    await page.waitForURL('/auth/login', { timeout: 5000 });
+    await page.waitForURL("/auth/login", { timeout: 5000 });
   });
 });
 
-test.describe('Security - API Security', () => {
-  test('should use HTTPS for API calls', async ({ page }) => {
+test.describe("Security - API Security", () => {
+  test("should use HTTPS for API calls", async ({ page }) => {
     const apiCalls: string[] = [];
 
-    page.on('request', (request) => {
-      if (request.url().includes('/api/')) {
+    page.on("request", (request) => {
+      if (request.url().includes("/api/")) {
         apiCalls.push(request.url());
       }
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     // All API calls should use HTTPS (in production)
     apiCalls.forEach((url) => {
-      if (!url.startsWith('http://localhost')) {
+      if (!url.startsWith("http://localhost")) {
         expect(url).toMatch(/^https:\/\//);
       }
     });
   });
 
-  test('should include auth headers in API requests', async ({ page }) => {
+  test("should include auth headers in API requests", async ({ page }) => {
     let hasAuthHeader = false;
 
-    page.on('request', (request) => {
-      if (request.url().includes('/api/')) {
+    page.on("request", (request) => {
+      if (request.url().includes("/api/")) {
         const headers = request.headers();
-        if (headers.authorization || headers['x-auth-token']) {
+        if (headers.authorization || headers["x-auth-token"]) {
           hasAuthHeader = true;
         }
       }
     });
 
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     expect(hasAuthHeader).toBe(true);
   });
 
-  test('should handle 401 responses properly', async ({ page }) => {
-    await page.goto('/items');
+  test("should handle 401 responses properly", async ({ page }) => {
+    await page.goto("/items");
 
     // Simulate 401 response
-    await page.route('**/api/**', (route) => {
+    await page.route("**/api/**", (route) => {
       void route.fulfill({
-        body: JSON.stringify({ error: 'Unauthorized' }),
+        body: JSON.stringify({ error: "Unauthorized" }),
         status: 401,
       });
     });
@@ -610,17 +610,17 @@ test.describe('Security - API Security', () => {
     await page.reload();
 
     // Should redirect to login
-    await page.waitForURL('/auth/login', { timeout: 5000 });
+    await page.waitForURL("/auth/login", { timeout: 5000 });
   });
 });
 
-test.describe('Security - Rate Limiting', () => {
-  test('should rate limit rapid requests', async ({ page }) => {
-    await page.goto('/items');
+test.describe("Security - Rate Limiting", () => {
+  test("should rate limit rapid requests", async ({ page }) => {
+    await page.goto("/items");
 
     let rateLimitHit = false;
 
-    page.on('response', (response) => {
+    page.on("response", (response) => {
       if (response.status() === 429) {
         rateLimitHit = true;
       }

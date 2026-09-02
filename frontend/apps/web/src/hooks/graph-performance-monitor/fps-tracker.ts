@@ -1,6 +1,6 @@
-import type { FPSMetrics } from './metrics';
+import type { FPSMetrics } from "./metrics";
 
-import { FPS_SAMPLE_LIMIT, MS_PER_SECOND, ZERO } from './constants';
+import { FPS_SAMPLE_LIMIT, MS_PER_SECOND, ZERO } from "./constants";
 
 class FPSTracker {
   private frames: number[] = [];

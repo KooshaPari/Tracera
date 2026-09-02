@@ -1,4 +1,4 @@
-import type { DefectSeverity, DefectStatus } from './shared-types';
+import type { DefectSeverity, DefectStatus } from "./shared-types";
 
 interface DefectSpec {
   id: string;
@@ -17,7 +17,7 @@ interface DefectSpec {
   actual_behavior: string;
   affected_components: string[];
   affected_versions?: string[] | undefined;
-  regression_risk?: 'low' | 'medium' | 'high' | 'critical' | undefined;
+  regression_risk?: "low" | "medium" | "high" | "critical" | undefined;
   reproducible?: boolean | undefined;
   environment?: string | undefined;
   root_cause?: string | undefined;

@@ -1,19 +1,19 @@
 // Drill-down navigation utilities for graph visualization
 // Supports progressive disclosure: Project → Repository → Module → File → Function
 
-import type { Item } from '@tracertm/types';
+import type { Item } from "@tracertm/types";
 
-import type { HierarchyNode } from './hierarchy';
+import type { HierarchyNode } from "./hierarchy";
 
 /**
  * Drill-down level definitions
  */
 export type DrillDownLevel =
-  | 'project' // Top level: entire project
-  | 'repository' // Code repository
-  | 'module' // Module or package
-  | 'file' // Individual file
-  | 'function'; // Function/method level
+  | "project" // Top level: entire project
+  | "repository" // Code repository
+  | "module" // Module or package
+  | "file" // Individual file
+  | "function"; // Function/method level
 
 /**
  * Drill-down context for navigation
@@ -71,22 +71,22 @@ export interface DrillDownNodeGroup {
  * Icon mapping for levels
  */
 const LEVEL_ICONS: Record<DrillDownLevel, string> = {
-  file: 'FileCode',
-  function: 'Function',
-  module: 'Folder',
-  project: 'Package',
-  repository: 'GitRepository',
+  file: "FileCode",
+  function: "Function",
+  module: "Folder",
+  project: "Package",
+  repository: "GitRepository",
 };
 
 /**
  * Color mapping for levels
  */
 const LEVEL_COLORS: Record<DrillDownLevel, string> = {
-  file: '#f59e0b',
-  function: '#10b981',
-  module: '#ec4899',
-  project: '#3b82f6',
-  repository: '#8b5cf6',
+  file: "#f59e0b",
+  function: "#10b981",
+  module: "#ec4899",
+  project: "#3b82f6",
+  repository: "#8b5cf6",
 };
 
 /**
@@ -95,30 +95,30 @@ const LEVEL_COLORS: Record<DrillDownLevel, string> = {
 export const inferDrillDownLevel = (itemType: string): DrillDownLevel => {
   const lower = itemType.toLowerCase();
 
-  if (lower.includes('project')) {
-    return 'project';
+  if (lower.includes("project")) {
+    return "project";
   }
-  if (lower.includes('repo') || lower.includes('repository')) {
-    return 'repository';
+  if (lower.includes("repo") || lower.includes("repository")) {
+    return "repository";
   }
-  if (lower.includes('module') || lower.includes('package')) {
-    return 'module';
+  if (lower.includes("module") || lower.includes("package")) {
+    return "module";
   }
-  if (lower.includes('file') || lower.includes('code')) {
-    return 'file';
+  if (lower.includes("file") || lower.includes("code")) {
+    return "file";
   }
-  if (lower.includes('function') || lower.includes('method')) {
-    return 'function';
+  if (lower.includes("function") || lower.includes("method")) {
+    return "function";
   }
 
-  return 'module'; // Default
+  return "module"; // Default
 };
 
 /**
  * Determine next drill-down level
  */
 export const getNextLevel = (current: DrillDownLevel): DrillDownLevel | null => {
-  const levels: DrillDownLevel[] = ['project', 'repository', 'module', 'file', 'function'];
+  const levels: DrillDownLevel[] = ["project", "repository", "module", "file", "function"];
   const currentIndex = levels.indexOf(current);
 
   if (currentIndex === -1 || currentIndex === levels.length - 1) {
@@ -131,7 +131,7 @@ export const getNextLevel = (current: DrillDownLevel): DrillDownLevel | null => 
  * Determine previous drill-down level
  */
 export const getPreviousLevel = (current: DrillDownLevel): DrillDownLevel | null => {
-  const levels: DrillDownLevel[] = ['project', 'repository', 'module', 'file', 'function'];
+  const levels: DrillDownLevel[] = ["project", "repository", "module", "file", "function"];
   const currentIndex = levels.indexOf(current);
 
   if (currentIndex <= 0) {
@@ -220,9 +220,9 @@ export const createDrillDownContext = (opts: CreateDrillDownContextOptions): Dri
     return {
       breadcrumbs: [],
       childrenAvailable: false,
-      currentLevel: 'project',
+      currentLevel: "project",
       itemId,
-      itemTitle: 'Unknown',
+      itemTitle: "Unknown",
       visibleItems: [],
     };
   }

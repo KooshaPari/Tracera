@@ -12,7 +12,7 @@
  * - INP (Interaction to Next Paint): <200ms good, >500ms poor
  */
 
-import { onCLS, onINP, onLCP, onTTFB, type Metric } from 'web-vitals';
+import { onCLS, onINP, onLCP, onTTFB, type Metric } from "web-vitals";
 
 // ============================================================================
 // Types
@@ -21,7 +21,7 @@ import { onCLS, onINP, onLCP, onTTFB, type Metric } from 'web-vitals';
 export interface WebVitalsMetric {
   name: string;
   value: number;
-  rating: 'good' | 'needs-improvement' | 'poor';
+  rating: "good" | "needs-improvement" | "poor";
   delta: number;
   id: string;
   navigationType: string;
@@ -46,7 +46,7 @@ export interface BundleSizeMetric {
 export interface ComponentRenderMetric {
   componentName: string;
   renderTime: number;
-  phase: 'mount' | 'update';
+  phase: "mount" | "update";
   timestamp: number;
 }
 
@@ -55,7 +55,7 @@ export interface ErrorMetric {
   stack?: string;
   componentName?: string;
   timestamp: number;
-  severity: 'error' | 'warning';
+  severity: "error" | "warning";
 }
 
 // ============================================================================
@@ -77,11 +77,11 @@ const THRESHOLDS = {
 function getRating(
   metricName: keyof typeof THRESHOLDS,
   value: number,
-): 'good' | 'needs-improvement' | 'poor' {
+): "good" | "needs-improvement" | "poor" {
   const threshold = THRESHOLDS[metricName];
-  if (value <= threshold.good) return 'good';
-  if (value <= threshold.poor) return 'needs-improvement';
-  return 'poor';
+  if (value <= threshold.good) return "good";
+  if (value <= threshold.poor) return "needs-improvement";
+  return "poor";
 }
 
 // ============================================================================
@@ -90,7 +90,7 @@ function getRating(
 
 class WebVitalsCollector {
   private metrics: WebVitalsMetric[] = [];
-  private reportEndpoint = '/api/v1/metrics/web-vitals';
+  private reportEndpoint = "/api/v1/metrics/web-vitals";
   private batchSize = 10;
   private batchTimeout = 5000; // 5 seconds
   private batchTimer: ReturnType<typeof setTimeout> | null = null;
@@ -114,7 +114,7 @@ class WebVitalsCollector {
         rating: getRating(metric.name as keyof typeof THRESHOLDS, metric.value),
         delta: metric.delta,
         id: metric.id,
-        navigationType: metric.navigationType || 'navigate',
+        navigationType: metric.navigationType || "navigate",
         timestamp: Date.now(),
       };
 
@@ -122,7 +122,7 @@ class WebVitalsCollector {
       this.scheduleBatch();
 
       // Log poor metrics immediately
-      if (webVital.rating === 'poor') {
+      if (webVital.rating === "poor") {
         console.warn(`Poor ${webVital.name}: ${webVital.value}`, webVital);
       }
     };
@@ -139,10 +139,10 @@ class WebVitalsCollector {
   // --------------------------------------------------------------------------
 
   private initBundleSizeTracking(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    window.addEventListener('load', () => {
-      const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+    window.addEventListener("load", () => {
+      const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
 
       const bundleSize: BundleSizeMetric = {
         total: 0,
@@ -156,9 +156,9 @@ class WebVitalsCollector {
         const size = resource.transferSize || resource.encodedBodySize || 0;
         bundleSize.total += size;
 
-        if (resource.name.endsWith('.js') || resource.name.includes('/_next/static/chunks/')) {
+        if (resource.name.endsWith(".js") || resource.name.includes("/_next/static/chunks/")) {
           bundleSize.js += size;
-        } else if (resource.name.endsWith('.css')) {
+        } else if (resource.name.endsWith(".css")) {
           bundleSize.css += size;
         } else if (resource.name.match(/\.(jpg|jpeg|png|gif|svg|webp|avif)(\?.*)?$/i)) {
           bundleSize.images += size;
@@ -175,25 +175,25 @@ class WebVitalsCollector {
   // --------------------------------------------------------------------------
 
   private initErrorTracking(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     // Global error handler
-    window.addEventListener('error', (event) => {
+    window.addEventListener("error", (event) => {
       const errorMetric: ErrorMetric = {
         message: event.error?.message || event.message,
         stack: event.error?.stack,
         timestamp: Date.now(),
-        severity: 'error',
+        severity: "error",
       };
       this.reportError(errorMetric);
     });
 
     // Unhandled promise rejections
-    window.addEventListener('unhandledrejection', (event) => {
+    window.addEventListener("unhandledrejection", (event) => {
       const errorMetric: ErrorMetric = {
         message: `Unhandled Promise Rejection: ${event.reason}`,
         timestamp: Date.now(),
-        severity: 'error',
+        severity: "error",
       };
       this.reportError(errorMetric);
     });
@@ -204,13 +204,13 @@ class WebVitalsCollector {
   // --------------------------------------------------------------------------
 
   private initPerformanceObserver(): void {
-    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return;
+    if (typeof window === "undefined" || !("PerformanceObserver" in window)) return;
 
     try {
       const observer = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
-          if (entry.entryType === 'longtask') {
-            console.warn('Long Task detected:', {
+          if (entry.entryType === "longtask") {
+            console.warn("Long Task detected:", {
               duration: entry.duration,
               startTime: entry.startTime,
             });
@@ -218,10 +218,10 @@ class WebVitalsCollector {
         });
       });
 
-      observer.observe({ entryTypes: ['longtask'] });
+      observer.observe({ entryTypes: ["longtask"] });
     } catch (e) {
       // PerformanceObserver may not be supported
-      console.warn('PerformanceObserver not supported:', e);
+      console.warn("PerformanceObserver not supported:", e);
     }
   }
 
@@ -255,9 +255,9 @@ class WebVitalsCollector {
 
     try {
       await fetch(this.reportEndpoint, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           metrics: metricsToSend,
@@ -269,7 +269,7 @@ class WebVitalsCollector {
         keepalive: true,
       });
     } catch (error) {
-      console.error('Failed to report web vitals:', error);
+      console.error("Failed to report web vitals:", error);
       // Re-add metrics to queue for retry
       this.metrics.push(...metricsToSend);
     }
@@ -281,30 +281,30 @@ class WebVitalsCollector {
 
   private async reportBundleSize(bundleSize: BundleSizeMetric): Promise<void> {
     try {
-      await fetch('/api/v1/metrics/bundle-size', {
-        method: 'POST',
+      await fetch("/api/v1/metrics/bundle-size", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(bundleSize),
       });
     } catch (error) {
-      console.error('Failed to report bundle size:', error);
+      console.error("Failed to report bundle size:", error);
     }
   }
 
   private async reportError(error: ErrorMetric): Promise<void> {
     try {
-      await fetch('/api/v1/metrics/errors', {
-        method: 'POST',
+      await fetch("/api/v1/metrics/errors", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(error),
         keepalive: true,
       });
     } catch (e) {
-      console.error('Failed to report error metric:', e);
+      console.error("Failed to report error metric:", e);
     }
   }
 
@@ -313,14 +313,14 @@ class WebVitalsCollector {
   // --------------------------------------------------------------------------
 
   public reportComponentRender(metric: ComponentRenderMetric): void {
-    fetch('/api/v1/metrics/component-render', {
-      method: 'POST',
+    fetch("/api/v1/metrics/component-render", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(metric),
     }).catch((error) => {
-      console.error('Failed to report component render:', error);
+      console.error("Failed to report component render:", error);
     });
   }
 
@@ -340,7 +340,7 @@ class WebVitalsCollector {
 export function createProfilerOnRender(componentName: string) {
   return (
     id: string,
-    phase: 'mount' | 'update',
+    phase: "mount" | "update",
     actualDuration: number,
     _baseDuration: number,
     _startTime: number,
@@ -365,7 +365,7 @@ export function createProfilerOnRender(componentName: string) {
 let webVitalsCollector: WebVitalsCollector;
 
 export function initWebVitals(): WebVitalsCollector {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     // Return a no-op collector for SSR
     return {
       reportComponentRender: () => {},
@@ -378,13 +378,13 @@ export function initWebVitals(): WebVitalsCollector {
     webVitalsCollector = new WebVitalsCollector();
 
     // Flush metrics before page unload
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener("beforeunload", () => {
       webVitalsCollector.forceFlush();
     });
 
     // Flush metrics on visibility change (tab switch)
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') {
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
         webVitalsCollector.forceFlush();
       }
     });

@@ -3,17 +3,17 @@
  * Tests real-world scenarios, multiple hook interactions, and edge cases
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
-import type { RealtimeEvent } from '../../api/websocket';
+import type { RealtimeEvent } from "../../api/websocket";
 
-import { useWebSocketStore } from '../../stores/websocket-store';
+import { useWebSocketStore } from "../../stores/websocket-store";
 
-describe('WebSocket Hooks - Integration Tests', () => {
-  const mockEvent = (id: string, type: string = 'created'): RealtimeEvent => ({
+describe("WebSocket Hooks - Integration Tests", () => {
+  const mockEvent = (id: string, type: string = "created"): RealtimeEvent => ({
     record: { id, title: `Item ${id}` },
-    schema: 'public',
-    table: 'items',
+    schema: "public",
+    table: "items",
     timestamp: Date.now(),
     type: type as any,
   });
@@ -26,13 +26,13 @@ describe('WebSocket Hooks - Integration Tests', () => {
     useWebSocketStore.getState().clearEvents();
   });
 
-  describe('Event subscription patterns', () => {
-    it('should handle multiple subscriptions to same channel', () => {
+  describe("Event subscription patterns", () => {
+    it("should handle multiple subscriptions to same channel", () => {
       const store = useWebSocketStore.getState();
       const callback1 = vi.fn();
       const callback2 = vi.fn();
 
-      const channel = 'items:*';
+      const channel = "items:*";
 
       // Simulate subscription (actual implementation details)
       store.activeChannels.add(channel);
@@ -41,94 +41,94 @@ describe('WebSocket Hooks - Integration Tests', () => {
       expect(store.activeChannels.size).toBe(1);
     });
 
-    it('should handle subscriptions to different channels', () => {
+    it("should handle subscriptions to different channels", () => {
       const store = useWebSocketStore.getState();
 
-      store.activeChannels.add('items:*');
-      store.activeChannels.add('projects:*');
-      store.activeChannels.add('users:*');
+      store.activeChannels.add("items:*");
+      store.activeChannels.add("projects:*");
+      store.activeChannels.add("users:*");
 
       expect(store.activeChannels.size).toBe(3);
-      expect(store.activeChannels.has('items:*')).toBeTruthy();
-      expect(store.activeChannels.has('projects:*')).toBeTruthy();
-      expect(store.activeChannels.has('users:*')).toBeTruthy();
+      expect(store.activeChannels.has("items:*")).toBeTruthy();
+      expect(store.activeChannels.has("projects:*")).toBeTruthy();
+      expect(store.activeChannels.has("users:*")).toBeTruthy();
     });
 
-    it('should handle channel unsubscription', () => {
+    it("should handle channel unsubscription", () => {
       const store = useWebSocketStore.getState();
 
-      store.activeChannels.add('items:*');
-      store.activeChannels.add('projects:*');
+      store.activeChannels.add("items:*");
+      store.activeChannels.add("projects:*");
 
-      store.activeChannels.delete('items:*');
+      store.activeChannels.delete("items:*");
 
-      expect(store.activeChannels.has('items:*')).toBeFalsy();
-      expect(store.activeChannels.has('projects:*')).toBeTruthy();
+      expect(store.activeChannels.has("items:*")).toBeFalsy();
+      expect(store.activeChannels.has("projects:*")).toBeTruthy();
     });
   });
 
-  describe('Event filtering and routing', () => {
-    it('should filter events by table', () => {
+  describe("Event filtering and routing", () => {
+    it("should filter events by table", () => {
       const store = useWebSocketStore.getState();
 
-      store.addEvent(mockEvent('1', 'created'));
+      store.addEvent(mockEvent("1", "created"));
       store.addEvent({
-        ...mockEvent('2', 'created'),
-        table: 'projects',
+        ...mockEvent("2", "created"),
+        table: "projects",
       });
-      store.addEvent(mockEvent('3', 'created'));
+      store.addEvent(mockEvent("3", "created"));
 
-      const itemEvents = useWebSocketStore.getState().events.filter((e) => e.table === 'items');
+      const itemEvents = useWebSocketStore.getState().events.filter((e) => e.table === "items");
       const projectEvents = useWebSocketStore
         .getState()
-        .events.filter((e) => e.table === 'projects');
+        .events.filter((e) => e.table === "projects");
 
       expect(itemEvents).toHaveLength(2);
       expect(projectEvents).toHaveLength(1);
     });
 
-    it('should filter events by type', () => {
+    it("should filter events by type", () => {
       const store = useWebSocketStore.getState();
 
-      store.addEvent(mockEvent('1', 'created'));
-      store.addEvent(mockEvent('2', 'updated'));
-      store.addEvent(mockEvent('3', 'deleted'));
-      store.addEvent(mockEvent('4', 'created'));
+      store.addEvent(mockEvent("1", "created"));
+      store.addEvent(mockEvent("2", "updated"));
+      store.addEvent(mockEvent("3", "deleted"));
+      store.addEvent(mockEvent("4", "created"));
 
-      const createdEvents = useWebSocketStore.getState().events.filter((e) => e.type === 'created');
-      const updatedEvents = useWebSocketStore.getState().events.filter((e) => e.type === 'updated');
+      const createdEvents = useWebSocketStore.getState().events.filter((e) => e.type === "created");
+      const updatedEvents = useWebSocketStore.getState().events.filter((e) => e.type === "updated");
 
       expect(createdEvents).toHaveLength(2);
       expect(updatedEvents).toHaveLength(1);
     });
 
-    it('should filter events by record ID', () => {
+    it("should filter events by record ID", () => {
       const store = useWebSocketStore.getState();
 
-      store.addEvent(mockEvent('item-1'));
-      store.addEvent(mockEvent('item-2'));
-      store.addEvent(mockEvent('item-1')); // Duplicate
+      store.addEvent(mockEvent("item-1"));
+      store.addEvent(mockEvent("item-2"));
+      store.addEvent(mockEvent("item-1")); // Duplicate
 
       const item1Events = useWebSocketStore
         .getState()
-        .events.filter((e) => e.record?.id === 'item-1');
+        .events.filter((e) => e.record?.id === "item-1");
       const item2Events = useWebSocketStore
         .getState()
-        .events.filter((e) => e.record?.id === 'item-2');
+        .events.filter((e) => e.record?.id === "item-2");
 
       expect(item1Events).toHaveLength(2);
       expect(item2Events).toHaveLength(1);
     });
   });
 
-  describe('Event ordering and deduplication', () => {
-    it('should maintain timestamp order', () => {
+  describe("Event ordering and deduplication", () => {
+    it("should maintain timestamp order", () => {
       const store = useWebSocketStore.getState();
       const now = Date.now();
 
-      const event1: RealtimeEvent = { ...mockEvent('1'), timestamp: now };
-      const event2: RealtimeEvent = { ...mockEvent('2'), timestamp: now + 1000 };
-      const event3: RealtimeEvent = { ...mockEvent('3'), timestamp: now + 2000 };
+      const event1: RealtimeEvent = { ...mockEvent("1"), timestamp: now };
+      const event2: RealtimeEvent = { ...mockEvent("2"), timestamp: now + 1000 };
+      const event3: RealtimeEvent = { ...mockEvent("3"), timestamp: now + 2000 };
 
       store.addEvent(event1);
       store.addEvent(event2);
@@ -141,14 +141,14 @@ describe('WebSocket Hooks - Integration Tests', () => {
       expect(events[1].timestamp).toBeGreaterThanOrEqual(events[2].timestamp);
     });
 
-    it('should handle out-of-order event arrival', () => {
+    it("should handle out-of-order event arrival", () => {
       const store = useWebSocketStore.getState();
       const now = Date.now();
 
       // Add in non-chronological order
-      const event1 = { ...mockEvent('1'), timestamp: now + 2000 };
-      const event2 = { ...mockEvent('2'), timestamp: now };
-      const event3 = { ...mockEvent('3'), timestamp: now + 1000 };
+      const event1 = { ...mockEvent("1"), timestamp: now + 2000 };
+      const event2 = { ...mockEvent("2"), timestamp: now };
+      const event3 = { ...mockEvent("3"), timestamp: now + 1000 };
 
       store.addEvent(event1);
       store.addEvent(event2);
@@ -164,28 +164,28 @@ describe('WebSocket Hooks - Integration Tests', () => {
       expect(timestamps).toContain(event3.timestamp);
     });
 
-    it('should deduplicate events with same ID', () => {
+    it("should deduplicate events with same ID", () => {
       const store = useWebSocketStore.getState();
 
-      const event: RealtimeEvent = mockEvent('dup-id');
+      const event: RealtimeEvent = mockEvent("dup-id");
 
       store.addEvent(event);
       store.addEvent(event);
 
       const { events } = useWebSocketStore.getState();
-      const dupCount = events.filter((e) => e.record?.id === 'dup-id').length;
+      const dupCount = events.filter((e) => e.record?.id === "dup-id").length;
 
       expect(dupCount).toBeGreaterThanOrEqual(1); // Depends on implementation
     });
   });
 
-  describe('Connection lifecycle', () => {
-    it('should initialize in disconnected state', () => {
+  describe("Connection lifecycle", () => {
+    it("should initialize in disconnected state", () => {
       const state = useWebSocketStore.getState();
-      expect(typeof state.isConnected).toBe('boolean');
+      expect(typeof state.isConnected).toBe("boolean");
     });
 
-    it('should transition through connection states', () => {
+    it("should transition through connection states", () => {
       const store = useWebSocketStore.getState();
 
       store.setConnectionStatus(false);
@@ -198,13 +198,13 @@ describe('WebSocket Hooks - Integration Tests', () => {
       expect(useWebSocketStore.getState().isConnected).toBeFalsy();
     });
 
-    it('should preserve events across connection transitions', () => {
+    it("should preserve events across connection transitions", () => {
       const store = useWebSocketStore.getState();
 
       // Connect and add events
       store.setConnectionStatus(true);
-      store.addEvent(mockEvent('1'));
-      store.addEvent(mockEvent('2'));
+      store.addEvent(mockEvent("1"));
+      store.addEvent(mockEvent("2"));
 
       let state = useWebSocketStore.getState();
       expect(state.events).toHaveLength(2);
@@ -221,8 +221,8 @@ describe('WebSocket Hooks - Integration Tests', () => {
     });
   });
 
-  describe('Event buffer management', () => {
-    it('should maintain max 100 events', () => {
+  describe("Event buffer management", () => {
+    it("should maintain max 100 events", () => {
       const store = useWebSocketStore.getState();
 
       for (let i = 0; i < 150; i++) {
@@ -233,22 +233,22 @@ describe('WebSocket Hooks - Integration Tests', () => {
       expect(events).toHaveLength(100);
     });
 
-    it('should drop oldest events when buffer exceeds limit', () => {
+    it("should drop oldest events when buffer exceeds limit", () => {
       const store = useWebSocketStore.getState();
 
       for (let i = 0; i < 110; i++) {
-        store.addEvent(mockEvent(`event-${i}`, 'created'));
+        store.addEvent(mockEvent(`event-${i}`, "created"));
       }
 
       const { events } = useWebSocketStore.getState();
       const eventIds = new Set(events.map((e) => e.record?.id));
 
       // Oldest events (0-9) should be dropped
-      expect(eventIds.has('event-0')).toBeFalsy();
-      expect(eventIds.has('event-9')).toBeFalsy();
+      expect(eventIds.has("event-0")).toBeFalsy();
+      expect(eventIds.has("event-9")).toBeFalsy();
     });
 
-    it('should clear event buffer', () => {
+    it("should clear event buffer", () => {
       const store = useWebSocketStore.getState();
 
       for (let i = 0; i < 10; i++) {
@@ -266,50 +266,50 @@ describe('WebSocket Hooks - Integration Tests', () => {
     });
   });
 
-  describe('Real-time update patterns', () => {
-    it('should handle create events', () => {
+  describe("Real-time update patterns", () => {
+    it("should handle create events", () => {
       const store = useWebSocketStore.getState();
-      const event = mockEvent('new-item', 'created');
+      const event = mockEvent("new-item", "created");
 
       store.addEvent(event);
 
       const state = useWebSocketStore.getState();
-      expect(state.lastEvent?.type).toBe('created');
-      expect(state.lastEvent?.record?.id).toBe('new-item');
+      expect(state.lastEvent?.type).toBe("created");
+      expect(state.lastEvent?.record?.id).toBe("new-item");
     });
 
-    it('should handle update events', () => {
+    it("should handle update events", () => {
       const store = useWebSocketStore.getState();
 
       // Create event
-      store.addEvent(mockEvent('item-1', 'created'));
+      store.addEvent(mockEvent("item-1", "created"));
 
       // Update event
-      const updateEvent = mockEvent('item-1', 'updated');
+      const updateEvent = mockEvent("item-1", "updated");
       store.addEvent(updateEvent);
 
       const state = useWebSocketStore.getState();
-      expect(state.lastEvent?.type).toBe('updated');
+      expect(state.lastEvent?.type).toBe("updated");
     });
 
-    it('should handle delete events', () => {
+    it("should handle delete events", () => {
       const store = useWebSocketStore.getState();
 
-      store.addEvent(mockEvent('item-1', 'created'));
-      store.addEvent(mockEvent('item-1', 'deleted'));
+      store.addEvent(mockEvent("item-1", "created"));
+      store.addEvent(mockEvent("item-1", "deleted"));
 
       const state = useWebSocketStore.getState();
-      expect(state.lastEvent?.type).toBe('deleted');
+      expect(state.lastEvent?.type).toBe("deleted");
     });
 
-    it('should batch handle multiple events', () => {
+    it("should batch handle multiple events", () => {
       const store = useWebSocketStore.getState();
 
       const events = [
-        mockEvent('1', 'created'),
-        mockEvent('2', 'created'),
-        mockEvent('3', 'created'),
-        mockEvent('1', 'updated'),
+        mockEvent("1", "created"),
+        mockEvent("2", "created"),
+        mockEvent("3", "created"),
+        mockEvent("1", "updated"),
       ];
 
       events.forEach((event) => {
@@ -318,18 +318,18 @@ describe('WebSocket Hooks - Integration Tests', () => {
 
       const state = useWebSocketStore.getState();
       expect(state.events).toHaveLength(4);
-      expect(state.lastEvent?.record?.id).toBe('1');
+      expect(state.lastEvent?.record?.id).toBe("1");
     });
   });
 
-  describe('Reconnection scenarios', () => {
-    it('should accumulate events across reconnections', () => {
+  describe("Reconnection scenarios", () => {
+    it("should accumulate events across reconnections", () => {
       const store = useWebSocketStore.getState();
 
       // First connection
       store.setConnectionStatus(true);
-      store.addEvent(mockEvent('event-1'));
-      store.addEvent(mockEvent('event-2'));
+      store.addEvent(mockEvent("event-1"));
+      store.addEvent(mockEvent("event-2"));
 
       let state = useWebSocketStore.getState();
       expect(state.events).toHaveLength(2);
@@ -339,13 +339,13 @@ describe('WebSocket Hooks - Integration Tests', () => {
 
       // Reconnect
       store.setConnectionStatus(true);
-      store.addEvent(mockEvent('event-3'));
+      store.addEvent(mockEvent("event-3"));
 
       state = useWebSocketStore.getState();
       expect(state.events).toHaveLength(3);
     });
 
-    it('should handle rapid reconnections', () => {
+    it("should handle rapid reconnections", () => {
       const store = useWebSocketStore.getState();
 
       for (let i = 0; i < 5; i++) {
@@ -359,8 +359,8 @@ describe('WebSocket Hooks - Integration Tests', () => {
     });
   });
 
-  describe('Error scenarios', () => {
-    it('should handle malformed events gracefully', () => {
+  describe("Error scenarios", () => {
+    it("should handle malformed events gracefully", () => {
       const store = useWebSocketStore.getState();
 
       // Malformed event
@@ -375,7 +375,7 @@ describe('WebSocket Hooks - Integration Tests', () => {
       }).not.toThrow();
     });
 
-    it('should handle concurrent event additions', async () => {
+    it("should handle concurrent event additions", async () => {
       const store = useWebSocketStore.getState();
 
       const promises = Array.from({ length: 10 }, async (_, i) =>
@@ -390,7 +390,7 @@ describe('WebSocket Hooks - Integration Tests', () => {
       expect(state.events.length).toBeGreaterThan(0);
     });
 
-    it('should handle null/undefined events', () => {
+    it("should handle null/undefined events", () => {
       const store = useWebSocketStore.getState();
 
       expect(() => {
@@ -403,18 +403,18 @@ describe('WebSocket Hooks - Integration Tests', () => {
     });
   });
 
-  describe('State isolation and cleanup', () => {
-    it('should not leak events between test cases', () => {
+  describe("State isolation and cleanup", () => {
+    it("should not leak events between test cases", () => {
       const store = useWebSocketStore.getState();
 
-      store.addEvent(mockEvent('test-1'));
+      store.addEvent(mockEvent("test-1"));
       expect(useWebSocketStore.getState().events).toHaveLength(1);
 
       store.clearEvents();
       expect(useWebSocketStore.getState().events).toHaveLength(0);
     });
 
-    it('should reset connection status', () => {
+    it("should reset connection status", () => {
       const store = useWebSocketStore.getState();
 
       store.setConnectionStatus(true);
@@ -425,8 +425,8 @@ describe('WebSocket Hooks - Integration Tests', () => {
     });
   });
 
-  describe('Performance under load', () => {
-    it('should handle rapid event additions', () => {
+  describe("Performance under load", () => {
+    it("should handle rapid event additions", () => {
       const store = useWebSocketStore.getState();
       const startTime = Date.now();
 
@@ -438,7 +438,7 @@ describe('WebSocket Hooks - Integration Tests', () => {
       expect(duration).toBeLessThan(1000); // Should complete quickly
     });
 
-    it('should maintain lastEvent accuracy', () => {
+    it("should maintain lastEvent accuracy", () => {
       const store = useWebSocketStore.getState();
 
       for (let i = 0; i < 50; i++) {

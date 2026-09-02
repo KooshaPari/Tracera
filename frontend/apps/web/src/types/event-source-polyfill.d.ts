@@ -1,4 +1,4 @@
-declare module 'event-source-polyfill' {
+declare module "event-source-polyfill" {
   export interface EventSourceInit {
     headers?: Record<string, string>;
     heartbeatTimeout?: number;

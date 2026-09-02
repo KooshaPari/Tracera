@@ -1,8 +1,8 @@
-import { X } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
-import type { ItemStatus, Priority } from '@tracertm/types';
+import type { ItemStatus, Priority } from "@tracertm/types";
 
 import {
   Button,
@@ -12,9 +12,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@tracertm/ui';
+} from "@tracertm/ui";
 
-import itemsTableConstants from './constants';
+import itemsTableConstants from "./constants";
 
 interface ItemsTableLabels {
   title: string;
@@ -59,16 +59,16 @@ function isPriority(value: string): value is Priority {
 }
 
 const FOCUSABLE_SELECTOR = [
-  'button',
-  'input',
-  'textarea',
-  'select',
+  "button",
+  "input",
+  "textarea",
+  "select",
   "[tabindex]:not([tabindex='-1'])",
-].join(',');
+].join(",");
 
 function getFocusableElements(modal: HTMLElement): HTMLElement[] {
   return [...modal.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)].filter(
-    (element) => !element.hasAttribute('disabled') && element.tabIndex !== -1,
+    (element) => !element.hasAttribute("disabled") && element.tabIndex !== -1,
   );
 }
 
@@ -190,13 +190,13 @@ function CreateItemModal({
     }, 0);
 
     const handleKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         event.preventDefault();
         onClose();
         return;
       }
 
-      if (event.key !== 'Tab') {
+      if (event.key !== "Tab") {
         return;
       }
 
@@ -213,10 +213,10 @@ function CreateItemModal({
       });
     };
 
-    globalThis.addEventListener('keydown', handleKeyDown);
+    globalThis.addEventListener("keydown", handleKeyDown);
     return (): void => {
       globalThis.clearTimeout(timer);
-      globalThis.removeEventListener('keydown', handleKeyDown);
+      globalThis.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose]);
 
@@ -226,8 +226,8 @@ function CreateItemModal({
   const handleCreateSubmit = useCallback((): void => {
     const trimmedTitle = readNonEmptyString(newTitle);
     if (trimmedTitle === undefined) {
-      toast.error('Title is required.');
-      setFormError('Title is required.');
+      toast.error("Title is required.");
+      setFormError("Title is required.");
       return;
     }
 
@@ -267,86 +267,86 @@ function CreateItemModal({
   }, []);
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center'>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       <button
-        type='button'
-        className='fixed inset-0 bg-black/50 backdrop-blur-sm'
+        type="button"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
-        aria-label='Close modal'
+        aria-label="Close modal"
       />
       <div
         ref={modalRef}
-        className='bg-background relative w-full max-w-lg rounded-xl border p-6 shadow-2xl'
-        role='dialog'
-        aria-modal='true'
-        aria-labelledby='create-item-title'
+        className="bg-background relative w-full max-w-lg rounded-xl border p-6 shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-item-title"
       >
-        <div className='flex items-center justify-between'>
-          <h2 id='create-item-title' className='text-lg font-semibold'>
+        <div className="flex items-center justify-between">
+          <h2 id="create-item-title" className="text-lg font-semibold">
             {labels.createModalTitle ?? itemsTableConstants.DEFAULT_CREATE_LABEL}
           </h2>
           <button
-            type='button'
+            type="button"
             onClick={onClose}
-            id='close-create-item'
-            aria-label='Close dialog'
+            id="close-create-item"
+            aria-label="Close dialog"
             tabIndex={-1}
-            className='hover:bg-accent focus:ring-primary rounded-lg p-1 focus:ring-2 focus:outline-none'
+            className="hover:bg-accent focus:ring-primary rounded-lg p-1 focus:ring-2 focus:outline-none"
           >
-            <X className='h-5 w-5' />
+            <X className="h-5 w-5" />
           </button>
         </div>
-        <div className='mt-4 space-y-4'>
+        <div className="mt-4 space-y-4">
           {formError !== undefined && (
             <div
-              role='alert'
-              aria-live='assertive'
-              className='border-destructive/30 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm'
+              role="alert"
+              aria-live="assertive"
+              className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm"
             >
               {formError}
             </div>
           )}
           <div>
-            <label htmlFor='item-title' className='block text-sm font-medium'>
+            <label htmlFor="item-title" className="block text-sm font-medium">
               Title
             </label>
             <Input
-              id='item-title'
-              name='title'
+              id="item-title"
+              name="title"
               ref={titleInputRef}
               value={newTitle}
               onChange={handleTitleChange}
-              placeholder='Enter item title'
-              className='mt-1'
-              aria-label='Title'
+              placeholder="Enter item title"
+              className="mt-1"
+              aria-label="Title"
             />
           </div>
           <div>
-            <label htmlFor='item-description' className='block text-sm font-medium'>
+            <label htmlFor="item-description" className="block text-sm font-medium">
               Description
             </label>
             <textarea
-              id='item-description'
-              name='description'
+              id="item-description"
+              name="description"
               value={newDescription}
               onChange={handleDescriptionChange}
-              placeholder='Describe the item'
-              className='border-input bg-background focus:ring-primary mt-1 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:ring-2 focus:outline-none'
-              aria-label='Description'
+              placeholder="Describe the item"
+              className="border-input bg-background focus:ring-primary mt-1 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:ring-2 focus:outline-none"
+              aria-label="Description"
             />
           </div>
-          <div className='grid gap-4 sm:grid-cols-2'>
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor='item-type' className='block text-sm font-medium'>
+              <label htmlFor="item-type" className="block text-sm font-medium">
                 Type
               </label>
               <Select value={newType} onValueChange={setNewType}>
                 <SelectTrigger
-                  id='item-type'
-                  aria-label='Type'
-                  className='border-input bg-background focus:ring-primary mt-1 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:ring-2 focus:outline-none'
+                  id="item-type"
+                  aria-label="Type"
+                  className="border-input bg-background focus:ring-primary mt-1 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:ring-2 focus:outline-none"
                 >
-                  <SelectValue placeholder='Select type' />
+                  <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
                   {itemsTableConstants.VIEW_TYPE_OPTIONS.map((option) => (
@@ -358,38 +358,38 @@ function CreateItemModal({
               </Select>
             </div>
             <div>
-              <label htmlFor='item-status' className='block text-sm font-medium'>
+              <label htmlFor="item-status" className="block text-sm font-medium">
                 Status
               </label>
               <select
-                id='item-status'
-                name='status'
+                id="item-status"
+                name="status"
                 value={newStatus}
                 onChange={handleStatusChange}
                 tabIndex={-1}
-                className='border-input bg-background focus:ring-primary mt-1 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:ring-2 focus:outline-none'
-                aria-label='Status'
+                className="border-input bg-background focus:ring-primary mt-1 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:ring-2 focus:outline-none"
+                aria-label="Status"
               >
                 {itemsTableConstants.STATUS_VALUES.map((status) => (
                   <option key={status} value={status}>
-                    {status.replace('_', ' ')}
+                    {status.replace("_", " ")}
                   </option>
                 ))}
               </select>
             </div>
           </div>
           <div>
-            <label htmlFor='item-priority' className='block text-sm font-medium'>
+            <label htmlFor="item-priority" className="block text-sm font-medium">
               Priority
             </label>
             <select
-              id='item-priority'
-              name='priority'
+              id="item-priority"
+              name="priority"
               value={newPriority}
               onChange={handlePriorityChange}
               tabIndex={-1}
-              className='border-input bg-background focus:ring-primary mt-1 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:ring-2 focus:outline-none'
-              aria-label='Priority'
+              className="border-input bg-background focus:ring-primary mt-1 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:ring-2 focus:outline-none"
+              aria-label="Priority"
             >
               {itemsTableConstants.PRIORITY_VALUES.map((priority) => (
                 <option key={priority} value={priority}>
@@ -398,13 +398,13 @@ function CreateItemModal({
               ))}
             </select>
           </div>
-          <div className='flex justify-end gap-2 pt-2'>
-            <Button id='create-item-save' onClick={handleCreateSubmit} disabled={!canSubmit}>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button id="create-item-save" onClick={handleCreateSubmit} disabled={!canSubmit}>
               {pending
-                ? 'Creating...'
+                ? "Creating..."
                 : (labels.createButtonLabel ?? itemsTableConstants.DEFAULT_CREATE_LABEL)}
             </Button>
-            <Button id='create-item-cancel' variant='ghost' onClick={onClose}>
+            <Button id="create-item-cancel" variant="ghost" onClick={onClose}>
               Cancel
             </Button>
           </div>

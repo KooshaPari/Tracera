@@ -1,17 +1,17 @@
-import type { Edge, Node } from '@xyflow/react';
-import type { ElkExtendedEdge, ElkNode } from 'elkjs';
+import type { Edge, Node } from "@xyflow/react";
+import type { ElkExtendedEdge, ElkNode } from "elkjs";
 
-import ELK from 'elkjs/lib/elk.bundled.js';
+import ELK from "elkjs/lib/elk.bundled.js";
 
-import type { ElkOptions, LayoutType } from './types';
+import type { ElkOptions, LayoutType } from "./types";
 
-import { LAYOUT_WORKER_THRESHOLD, TREE_NODE_SEP_FACTOR, TREE_RANK_SEP_FACTOR } from './constants';
+import { LAYOUT_WORKER_THRESHOLD, TREE_NODE_SEP_FACTOR, TREE_RANK_SEP_FACTOR } from "./constants";
 
-const DIRECTION_MAP: Record<ElkOptions['direction'], string> = {
-  BT: 'UP',
-  LR: 'RIGHT',
-  RL: 'LEFT',
-  TB: 'DOWN',
+const DIRECTION_MAP: Record<ElkOptions["direction"], string> = {
+  BT: "UP",
+  LR: "RIGHT",
+  RL: "LEFT",
+  TB: "DOWN",
 };
 
 interface ElkInstance {
@@ -27,12 +27,12 @@ interface LayoutResponsePosition {
 }
 
 interface LayoutResponseResult {
-  type: 'result';
+  type: "result";
   positions: LayoutResponsePosition[];
 }
 
 interface LayoutResponseError {
-  type: 'error';
+  type: "error";
   error: string;
 }
 
@@ -45,7 +45,7 @@ interface PromiseWithResolvers<Value> {
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
+  return typeof value === "object" && value !== null;
 }
 
 function isPromiseWithResolvers<Value>(value: unknown): value is PromiseWithResolvers<Value> {
@@ -55,15 +55,15 @@ function isPromiseWithResolvers<Value>(value: unknown): value is PromiseWithReso
 
   const candidate = value;
   return (
-    typeof candidate['resolve'] === 'function' &&
-    typeof candidate['reject'] === 'function' &&
-    candidate['promise'] instanceof Promise
+    typeof candidate["resolve"] === "function" &&
+    typeof candidate["reject"] === "function" &&
+    candidate["promise"] instanceof Promise
   );
 }
 
 function getPromiseWithResolvers<Value>(): PromiseWithResolvers<Value> | undefined {
-  const withResolversCandidate = Reflect.get(Promise, 'withResolvers');
-  if (typeof withResolversCandidate !== 'function') {
+  const withResolversCandidate = Reflect.get(Promise, "withResolvers");
+  if (typeof withResolversCandidate !== "function") {
     return undefined;
   }
 
@@ -94,13 +94,13 @@ async function applyElkLayout<NodeData extends Record<string, unknown>>(
       sources: [edge.source],
       targets: [edge.target],
     })) as ElkExtendedEdge[],
-    id: 'root',
+    id: "root",
     layoutOptions: {
-      'elk.algorithm': 'layered',
-      'elk.direction': DIRECTION_MAP[options.direction] ?? 'DOWN',
-      'elk.layered.spacing.nodeNodeBetweenLayers': String(options.rankSep),
-      'elk.padding': `[left=${options.marginX}, top=${options.marginY}, right=${options.marginX}, bottom=${options.marginY}]`,
-      'elk.spacing.nodeNode': String(options.nodeSep),
+      "elk.algorithm": "layered",
+      "elk.direction": DIRECTION_MAP[options.direction] ?? "DOWN",
+      "elk.layered.spacing.nodeNodeBetweenLayers": String(options.rankSep),
+      "elk.padding": `[left=${options.marginX}, top=${options.marginY}, right=${options.marginX}, bottom=${options.marginY}]`,
+      "elk.spacing.nodeNode": String(options.nodeSep),
     },
   };
 
@@ -127,7 +127,7 @@ async function runElkLayoutInWorker<NodeData extends Record<string, unknown>>(
   edges: Edge[],
   options: ElkOptions,
 ): Promise<Node<NodeData>[]> {
-  if (typeof Worker === 'undefined') {
+  if (typeof Worker === "undefined") {
     return applyElkLayout(nodes, edges, options);
   }
 
@@ -137,13 +137,13 @@ async function runElkLayoutInWorker<NodeData extends Record<string, unknown>>(
   }
 
   const { promise, resolve, reject } = resolvers;
-  const worker = new Worker(new URL('../graphLayout.worker.ts', import.meta.url), {
-    type: 'module',
+  const worker = new Worker(new URL("../graphLayout.worker.ts", import.meta.url), {
+    type: "module",
   });
 
   const onMessage = (event: MessageEvent<WorkerMessage>): void => {
     worker.terminate();
-    if (event.data.type === 'result') {
+    if (event.data.type === "result") {
       const positionMap = new Map(
         event.data.positions.map((position) => [position.id, { x: position.x, y: position.y }]),
       );
@@ -158,13 +158,13 @@ async function runElkLayoutInWorker<NodeData extends Record<string, unknown>>(
       );
       return;
     }
-    reject(new Error(event.data.error ?? 'Layout worker error'));
+    reject(new Error(event.data.error ?? "Layout worker error"));
   };
 
-  worker.addEventListener('message', onMessage);
-  worker.addEventListener('error', () => {
+  worker.addEventListener("message", onMessage);
+  worker.addEventListener("error", () => {
     worker.terminate();
-    reject(new Error('Layout worker failed'));
+    reject(new Error("Layout worker failed"));
   });
 
   worker.postMessage(
@@ -184,7 +184,7 @@ async function runElkLayoutInWorker<NodeData extends Record<string, unknown>>(
         nodeWidth: options.nodeWidth,
         rankSep: options.rankSep,
       },
-      type: 'layout',
+      type: "layout",
     },
     [],
   );
@@ -219,15 +219,15 @@ function getElkOptions(
 ): ElkOptions | undefined {
   const { marginX, marginY, nodeHeight, nodeSep, nodeWidth, rankSep } = options;
 
-  if (layout === 'flow-chart') {
-    return { direction: 'TB', marginX, marginY, nodeHeight, nodeSep, nodeWidth, rankSep };
+  if (layout === "flow-chart") {
+    return { direction: "TB", marginX, marginY, nodeHeight, nodeSep, nodeWidth, rankSep };
   }
-  if (layout === 'timeline') {
-    return { direction: 'LR', marginX, marginY, nodeHeight, nodeSep, nodeWidth, rankSep };
+  if (layout === "timeline") {
+    return { direction: "LR", marginX, marginY, nodeHeight, nodeSep, nodeWidth, rankSep };
   }
-  if (layout === 'tree') {
+  if (layout === "tree") {
     return {
-      direction: 'TB',
+      direction: "TB",
       marginX,
       marginY,
       nodeHeight,

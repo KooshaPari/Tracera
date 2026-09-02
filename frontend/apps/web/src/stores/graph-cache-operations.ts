@@ -1,12 +1,12 @@
-import type { GraphCacheStoreState } from './graph-cache-store';
-import type { GraphCacheTypes } from './graph-cache-types';
+import type { GraphCacheStoreState } from "./graph-cache-store";
+import type { GraphCacheTypes } from "./graph-cache-types";
 
-import { useGraphCacheStore } from './graph-cache-store';
+import { useGraphCacheStore } from "./graph-cache-store";
 
-type CacheStatistics = GraphCacheTypes['CacheStatistics'];
-type GroupingData = GraphCacheTypes['GroupingData'];
-type LayoutData = GraphCacheTypes['LayoutData'];
-type SearchResult = GraphCacheTypes['SearchResult'];
+type CacheStatistics = GraphCacheTypes["CacheStatistics"];
+type GroupingData = GraphCacheTypes["GroupingData"];
+type LayoutData = GraphCacheTypes["LayoutData"];
+type SearchResult = GraphCacheTypes["SearchResult"];
 
 interface CacheSize {
   groupings: number;

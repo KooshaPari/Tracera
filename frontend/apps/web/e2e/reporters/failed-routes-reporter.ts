@@ -1,7 +1,7 @@
-import type { Reporter, TestCase, TestResult } from '@playwright/test/reporter';
+import type { Reporter, TestCase, TestResult } from "@playwright/test/reporter";
 
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 /**
  * Failed Routes Reporter
@@ -14,7 +14,7 @@ class FailedRoutesReporter implements Reporter {
   private testResults: {
     title: string;
     url?: string;
-    status: 'passed' | 'failed' | 'skipped' | 'timedout';
+    status: "passed" | "failed" | "skipped" | "timedout";
     error?: string;
     duration: number;
   }[] = [];
@@ -27,18 +27,18 @@ class FailedRoutesReporter implements Reporter {
     const url = urlMatch ? urlMatch[0] : undefined;
 
     // Track failed routes
-    if (result.status === 'failed' && url) {
+    if (result.status === "failed" && url) {
       this.failedRoutes.add(url);
     }
 
     // Map Playwright status to our status type
-    let status: 'passed' | 'failed' | 'skipped' | 'timedout' = 'passed';
-    if (result.status === 'failed') {
-      status = 'failed';
-    } else if (result.status === 'skipped') {
-      status = 'skipped';
-    } else if (result.status === 'timedOut' || result.status === 'interrupted') {
-      status = 'timedout';
+    let status: "passed" | "failed" | "skipped" | "timedout" = "passed";
+    if (result.status === "failed") {
+      status = "failed";
+    } else if (result.status === "skipped") {
+      status = "skipped";
+    } else if (result.status === "timedOut" || result.status === "interrupted") {
+      status = "timedout";
     }
 
     // Store test result details
@@ -54,7 +54,7 @@ class FailedRoutesReporter implements Reporter {
   }
 
   onEnd() {
-    const reportDir = 'playwright-report';
+    const reportDir = "playwright-report";
 
     // Create directory if it doesn't exist
     if (!fs.existsSync(reportDir)) {
@@ -68,17 +68,17 @@ class FailedRoutesReporter implements Reporter {
       totalDuration: this.totalDuration,
       summary: {
         total: this.testResults.length,
-        passed: this.testResults.filter((r) => r.status === 'passed').length,
-        failed: this.testResults.filter((r) => r.status === 'failed').length,
-        skipped: this.testResults.filter((r) => r.status === 'skipped').length,
-        timedout: this.testResults.filter((r) => r.status === 'timedout').length,
+        passed: this.testResults.filter((r) => r.status === "passed").length,
+        failed: this.testResults.filter((r) => r.status === "failed").length,
+        skipped: this.testResults.filter((r) => r.status === "skipped").length,
+        timedout: this.testResults.filter((r) => r.status === "timedout").length,
       },
       failedRoutes: [...this.failedRoutes].toSorted(),
       details: this.testResults,
     };
 
     // Write JSON report
-    const reportPath = path.join(reportDir, 'failed-routes.json');
+    const reportPath = path.join(reportDir, "failed-routes.json");
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
     console.log(`\n📊 Failed Routes Report written to: ${reportPath}`);
 

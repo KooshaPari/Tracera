@@ -8,12 +8,12 @@ import type {
   ResetPasswordRequest,
   UpdateUserProfileRequest,
   User,
-} from './auth-types';
+} from "./auth-types";
 
-import authConstants from './auth-constants';
-import { AuthError } from './auth-types';
-import { ensureCSRFToken, getStoredToken, handleAuthResponse } from './auth-utils';
-import { client } from './client';
+import authConstants from "./auth-constants";
+import { AuthError } from "./auth-types";
+import { ensureCSRFToken, getStoredToken, handleAuthResponse } from "./auth-utils";
+import { client } from "./client";
 
 const { apiClient } = client;
 const { safeApiCall } = client;
@@ -26,7 +26,7 @@ const del = apiClient.DELETE.bind(apiClient);
 const fetchCurrentUser = async (): Promise<User> =>
   handleAuthResponse(
     safeApiCall(
-      get('/api/v1/auth/me', {
+      get("/api/v1/auth/me", {
         params: { query: {} },
       }),
     ),
@@ -53,7 +53,7 @@ const authApi: AuthApi = {
     await ensureCSRFToken();
     await handleAuthResponse(
       safeApiCall(
-        post('/api/v1/auth/change-password', {
+        post("/api/v1/auth/change-password", {
           body: request,
         }),
       ),
@@ -63,7 +63,7 @@ const authApi: AuthApi = {
     await ensureCSRFToken();
     await handleAuthResponse(
       safeApiCall(
-        post('/api/v1/auth/reset-password/confirm', {
+        post("/api/v1/auth/reset-password/confirm", {
           body: request,
         }),
       ),
@@ -73,7 +73,7 @@ const authApi: AuthApi = {
     await ensureCSRFToken();
     await handleAuthResponse(
       safeApiCall(
-        del('/api/v1/auth/account', {
+        del("/api/v1/auth/account", {
           params: { query: {} },
         }),
       ),
@@ -83,7 +83,7 @@ const authApi: AuthApi = {
     await ensureCSRFToken();
     return handleAuthResponse(
       safeApiCall(
-        post('/api/v1/auth/authkit/callback', {
+        post("/api/v1/auth/authkit/callback", {
           body: { code, state },
         }),
       ),
@@ -92,11 +92,11 @@ const authApi: AuthApi = {
   getAuthorizationUrl: async (screenHint?: string): Promise<AuthKitAuthorizeResponse> => {
     const params: Record<string, string> = {};
     if (screenHint) {
-      params['screen_hint'] = screenHint;
+      params["screen_hint"] = screenHint;
     }
     return handleAuthResponse(
       safeApiCall(
-        get('/api/v1/auth/authkit/authorize', {
+        get("/api/v1/auth/authkit/authorize", {
           params: { query: params },
         }),
       ),
@@ -120,7 +120,7 @@ const authApi: AuthApi = {
     await ensureCSRFToken();
     await handleAuthResponse(
       safeApiCall(
-        post('/api/v1/auth/logout', {
+        post("/api/v1/auth/logout", {
           body: {},
         }),
       ),
@@ -130,7 +130,7 @@ const authApi: AuthApi = {
     await ensureCSRFToken();
     return handleAuthResponse(
       safeApiCall(
-        post('/api/v1/auth/refresh', {
+        post("/api/v1/auth/refresh", {
           body: {},
         }),
       ),
@@ -140,7 +140,7 @@ const authApi: AuthApi = {
     await ensureCSRFToken();
     return handleAuthResponse(
       safeApiCall(
-        post('/api/v1/auth/authkit/refresh', {
+        post("/api/v1/auth/authkit/refresh", {
           body: { refresh_token: refreshToken },
         }),
       ),
@@ -150,7 +150,7 @@ const authApi: AuthApi = {
     await ensureCSRFToken();
     await handleAuthResponse(
       safeApiCall(
-        post('/api/v1/auth/request-verification', {
+        post("/api/v1/auth/request-verification", {
           body: {},
         }),
       ),
@@ -160,7 +160,7 @@ const authApi: AuthApi = {
     await ensureCSRFToken();
     await handleAuthResponse(
       safeApiCall(
-        post('/api/v1/auth/reset-password', {
+        post("/api/v1/auth/reset-password", {
           body: request,
         }),
       ),
@@ -170,7 +170,7 @@ const authApi: AuthApi = {
     await ensureCSRFToken();
     return handleAuthResponse(
       safeApiCall(
-        put('/api/v1/auth/profile', {
+        put("/api/v1/auth/profile", {
           body: updates,
         }),
       ),
@@ -180,7 +180,7 @@ const authApi: AuthApi = {
     await ensureCSRFToken();
     await handleAuthResponse(
       safeApiCall(
-        post('/api/v1/auth/verify-email', {
+        post("/api/v1/auth/verify-email", {
           body: { token },
         }),
       ),

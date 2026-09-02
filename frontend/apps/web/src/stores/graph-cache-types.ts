@@ -31,7 +31,7 @@ export interface GraphCacheTypes {
   InvalidationPattern: {
     description: string;
     pattern: string;
-    priority: 'low' | 'medium' | 'high';
+    priority: "low" | "medium" | "high";
     timestamp: number;
   };
   ItemDependencies: {
@@ -59,6 +59,6 @@ export interface GraphCacheTypes {
     id: string;
     score: number;
     title: string;
-    type: 'item' | 'link' | 'group';
+    type: "item" | "link" | "group";
   };
 }

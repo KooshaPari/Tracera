@@ -1,8 +1,8 @@
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { requireAuth } from '@/lib/route-guards';
+import { requireAuth } from "@/lib/route-guards";
 
-export const Route = createFileRoute('/projects/$projectId/contracts')({
+export const Route = createFileRoute("/projects/$projectId/contracts")({
   beforeLoad: ({ params }) => {
     // Check auth first
     requireAuth();
@@ -10,8 +10,8 @@ export const Route = createFileRoute('/projects/$projectId/contracts')({
     // Then redirect
     throw redirect({
       params,
-      search: { tab: 'contracts' },
-      to: '/projects/$projectId/specifications',
+      search: { tab: "contracts" },
+      to: "/projects/$projectId/specifications",
     });
   },
   component: ContractsPage,

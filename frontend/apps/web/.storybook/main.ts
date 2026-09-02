@@ -1,14 +1,14 @@
-import type { StorybookConfig } from '@storybook/react-vite';
+import type { StorybookConfig } from "@storybook/react-vite";
 
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const config: StorybookConfig = {
   addons: [
-    getAbsolutePath('@storybook/addon-a11y'),
-    getAbsolutePath('@storybook/addon-coverage'),
-    getAbsolutePath('@storybook/addon-themes'),
-    getAbsolutePath('@storybook/addon-docs'),
+    getAbsolutePath("@storybook/addon-a11y"),
+    getAbsolutePath("@storybook/addon-coverage"),
+    getAbsolutePath("@storybook/addon-themes"),
+    getAbsolutePath("@storybook/addon-docs"),
   ],
   core: {
     disableTelemetry: true,
@@ -21,12 +21,12 @@ const config: StorybookConfig = {
     storyStoreV7: true,
   },
   framework: {
-    name: getAbsolutePath('@storybook/react-vite'),
+    name: getAbsolutePath("@storybook/react-vite"),
     options: {},
   },
   stories: [
-    '../src/components/**/*.stories.@(js|jsx|mjs|ts|tsx)',
-    '../src/views/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+    "../src/components/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+    "../src/views/**/*.stories.@(js|jsx|mjs|ts|tsx)",
   ],
 };
 

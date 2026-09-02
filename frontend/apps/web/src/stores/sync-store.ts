@@ -1,6 +1,6 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
-import type { Mutation } from '@tracertm/types';
+import type { Mutation } from "@tracertm/types";
 
 interface SyncConflict {
   localData: unknown;
@@ -43,7 +43,7 @@ type SyncGetter = () => SyncState;
 const createInitialState = (): SyncDataState => ({
   conflicts: [],
   failedMutations: [],
-  isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+  isOnline: typeof navigator !== "undefined" ? navigator.onLine : true,
   isSyncing: false,
   lastSyncedAt: null,
   pendingMutations: [],
@@ -52,7 +52,7 @@ const createInitialState = (): SyncDataState => ({
 
 const createStatusActions = (
   set: SyncSetter,
-): Pick<SyncActions, 'finishSync' | 'setOnline' | 'startSync'> => ({
+): Pick<SyncActions, "finishSync" | "setOnline" | "startSync"> => ({
   finishSync: (error) => {
     set((state) => ({
       isSyncing: false,
@@ -72,11 +72,11 @@ const createMutationActions = (
   set: SyncSetter,
 ): Pick<
   SyncActions,
-  | 'addPendingMutation'
-  | 'clearFailedMutations'
-  | 'moveMutationToFailed'
-  | 'removePendingMutation'
-  | 'retryFailedMutation'
+  | "addPendingMutation"
+  | "clearFailedMutations"
+  | "moveMutationToFailed"
+  | "removePendingMutation"
+  | "retryFailedMutation"
 > => ({
   addPendingMutation: (mutation) => {
     set((state) => ({
@@ -125,7 +125,7 @@ const createMutationActions = (
 
 const createConflictActions = (
   set: SyncSetter,
-): Pick<SyncActions, 'addConflict' | 'resolveConflict'> => ({
+): Pick<SyncActions, "addConflict" | "resolveConflict"> => ({
   addConflict: (mutation, serverData, localData) => {
     set((state) => ({
       conflicts: [...state.conflicts, { localData, mutation, serverData }],
@@ -138,7 +138,7 @@ const createConflictActions = (
   },
 });
 
-const createResetAction = (set: SyncSetter): Pick<SyncActions, 'reset'> => ({
+const createResetAction = (set: SyncSetter): Pick<SyncActions, "reset"> => ({
   reset: () => {
     set({
       conflicts: [],
@@ -162,11 +162,11 @@ const buildSyncStore = (set: SyncSetter, _get: SyncGetter): SyncState => ({
 export const useSyncStore = create<SyncState>((set, get) => buildSyncStore(set, get));
 
 // Setup online/offline listeners
-if ('window' in globalThis) {
-  globalThis.addEventListener('online', () => {
+if ("window" in globalThis) {
+  globalThis.addEventListener("online", () => {
     useSyncStore.getState().setOnline(true);
   });
-  globalThis.addEventListener('offline', () => {
+  globalThis.addEventListener("offline", () => {
     useSyncStore.getState().setOnline(false);
   });
 }

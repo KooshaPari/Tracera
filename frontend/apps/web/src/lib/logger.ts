@@ -2,7 +2,7 @@
  * Simple logging utility for examples and development
  */
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = "debug" | "info" | "warn" | "error";
 
 type ConsoleMethod = (...args: unknown[]) => void;
 
@@ -13,9 +13,9 @@ const consoleApi = globalThis.console;
 const debugConsole: ConsoleMethod = consoleApi.debug.bind(consoleApi);
 const errorConsole: ConsoleMethod = consoleApi.error.bind(consoleApi);
 const groupConsole: ConsoleGroupMethod | undefined =
-  typeof consoleApi.group === 'function' ? consoleApi.group.bind(consoleApi) : undefined;
+  typeof consoleApi.group === "function" ? consoleApi.group.bind(consoleApi) : undefined;
 const groupEndConsole: (() => void) | undefined =
-  typeof consoleApi.groupEnd === 'function' ? consoleApi.groupEnd.bind(consoleApi) : undefined;
+  typeof consoleApi.groupEnd === "function" ? consoleApi.groupEnd.bind(consoleApi) : undefined;
 const infoConsole: ConsoleMethod = consoleApi.info.bind(consoleApi);
 const warnConsole: ConsoleMethod = consoleApi.warn.bind(consoleApi);
 

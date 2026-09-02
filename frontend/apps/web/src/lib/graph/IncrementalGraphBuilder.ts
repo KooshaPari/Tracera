@@ -26,7 +26,7 @@ export interface GraphEdge {
 }
 
 export interface StreamChunk {
-  type: 'metadata' | 'node' | 'edge' | 'progress' | 'complete' | 'error';
+  type: "metadata" | "node" | "edge" | "progress" | "complete" | "error";
   data: any;
   progress?: ProgressInfo | undefined;
   timestamp: number;
@@ -36,7 +36,7 @@ export interface ProgressInfo {
   current: number;
   total: number;
   percentage: number;
-  stage: 'nodes' | 'edges' | 'complete';
+  stage: "nodes" | "edges" | "complete";
 }
 
 export interface StreamMetadata {
@@ -172,38 +172,38 @@ export class IncrementalGraphBuilder {
    */
   processChunk(chunk: StreamChunk): void {
     switch (chunk.type) {
-      case 'metadata':
+      case "metadata":
         this.metadata = chunk.data as StreamMetadata;
         break;
 
-      case 'node':
+      case "node":
         this.addNode(chunk.data as GraphNode);
         if (chunk.progress) {
           this.options.onProgress?.(chunk.progress);
         }
         break;
 
-      case 'edge':
+      case "edge":
         this.addEdge(chunk.data as GraphEdge);
         if (chunk.progress) {
           this.options.onProgress?.(chunk.progress);
         }
         break;
 
-      case 'progress':
+      case "progress":
         if (chunk.progress) {
           this.options.onProgress?.(chunk.progress);
         }
         break;
 
-      case 'complete':
+      case "complete":
         this.flushBatch();
         this.isComplete = true;
         this.options.onComplete?.(this.getResult());
         break;
 
-      case 'error':
-        this.options.onError?.(new Error(chunk.data.error || 'Stream error'));
+      case "error":
+        this.options.onError?.(new Error(chunk.data.error || "Stream error"));
         break;
     }
   }
@@ -244,9 +244,9 @@ export class IncrementalGraphBuilder {
 
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...options.headers,
         },
         body: JSON.stringify(viewportRequest),
@@ -259,7 +259,7 @@ export class IncrementalGraphBuilder {
       }
 
       if (!response.body) {
-        throw new Error('Response body is null');
+        throw new Error("Response body is null");
       }
 
       // Parse NDJSON stream
@@ -280,7 +280,7 @@ export class IncrementalGraphBuilder {
   private async parseNDJSONStream(stream: ReadableStream<Uint8Array>): Promise<void> {
     const reader = stream.getReader();
     const decoder = new TextDecoder();
-    let buffer = '';
+    let buffer = "";
 
     try {
       while (true) {
@@ -292,8 +292,8 @@ export class IncrementalGraphBuilder {
         buffer += decoder.decode(value, { stream: true });
 
         // Process complete lines
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Keep incomplete line
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || ""; // Keep incomplete line
 
         for (const line of lines) {
           if (line.trim()) {
@@ -301,7 +301,7 @@ export class IncrementalGraphBuilder {
               const chunk = JSON.parse(line) as StreamChunk;
               this.processChunk(chunk);
             } catch (err) {
-              console.error('Failed to parse chunk:', err, line);
+              console.error("Failed to parse chunk:", err, line);
             }
           }
         }
@@ -313,7 +313,7 @@ export class IncrementalGraphBuilder {
           const chunk = JSON.parse(buffer) as StreamChunk;
           this.processChunk(chunk);
         } catch (err) {
-          console.error('Failed to parse final chunk:', err);
+          console.error("Failed to parse final chunk:", err);
         }
       }
     } finally {
@@ -377,12 +377,12 @@ export class IncrementalGraphBuilder {
  */
 export async function* parseNDJSON<T = any>(response: Response): AsyncGenerator<T, void, unknown> {
   if (!response.body) {
-    throw new Error('Response body is null');
+    throw new Error("Response body is null");
   }
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  let buffer = '';
+  let buffer = "";
 
   try {
     while (true) {
@@ -392,15 +392,15 @@ export async function* parseNDJSON<T = any>(response: Response): AsyncGenerator<
 
       buffer += decoder.decode(value, { stream: true });
 
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
 
       for (const line of lines) {
         if (line.trim()) {
           try {
             yield JSON.parse(line) as T;
           } catch (err) {
-            console.error('Failed to parse NDJSON line:', err, line);
+            console.error("Failed to parse NDJSON line:", err, line);
           }
         }
       }
@@ -410,7 +410,7 @@ export async function* parseNDJSON<T = any>(response: Response): AsyncGenerator<
       try {
         yield JSON.parse(buffer) as T;
       } catch (err) {
-        console.error('Failed to parse final NDJSON:', err);
+        console.error("Failed to parse final NDJSON:", err);
       }
     }
   } finally {

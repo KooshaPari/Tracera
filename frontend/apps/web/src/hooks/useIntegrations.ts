@@ -1,8 +1,8 @@
-import * as reactQuery from '@tanstack/react-query';
+import * as reactQuery from "@tanstack/react-query";
 
-import type { IntegrationProvider, MappingDirection } from '@tracertm/types';
+import type { IntegrationProvider, MappingDirection } from "@tracertm/types";
 
-import { API_URL, getAuthHeaders } from './integrationsApi';
+import { API_URL, getAuthHeaders } from "./integrationsApi";
 import {
   transformConflict,
   transformCredential,
@@ -10,7 +10,7 @@ import {
   transformStats,
   transformSyncQueueItem,
   transformSyncStatus,
-} from './integrationTransforms';
+} from "./integrationTransforms";
 import {
   useGitHubIssues,
   useGitHubProjects,
@@ -18,7 +18,7 @@ import {
   useLinearIssues,
   useLinearProjects,
   useLinearTeams,
-} from './useIntegrationsDiscovery';
+} from "./useIntegrationsDiscovery";
 
 interface CredentialsResponse {
   credentials: ReturnType<typeof transformCredential>[];
@@ -45,7 +45,7 @@ interface StartOAuthInput {
   provider: IntegrationProvider;
   redirectUri: string;
   scopes?: string[];
-  credentialScope?: 'project' | 'user';
+  credentialScope?: "project" | "user";
 }
 
 interface StartOAuthResponse {
@@ -90,7 +90,7 @@ interface TriggerSyncInput {
 
 interface ResolveConflictInput {
   conflictId: string;
-  resolution: 'local' | 'external' | 'merge' | 'skip';
+  resolution: "local" | "external" | "merge" | "skip";
   mergedValue?: unknown;
 }
 
@@ -98,24 +98,24 @@ interface ResolveConflictInput {
 
 async function fetchCredentials(projectId: string): Promise<CredentialsResponse> {
   const res = await fetch(`${API_URL}/api/v1/integrations/credentials?project_id=${projectId}`, {
-    headers: { 'X-Bulk-Operation': 'true', ...getAuthHeaders() },
+    headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
   });
   if (!res.ok) {
     throw new Error(`Failed to fetch credentials: ${res.status}`);
   }
   const data = await res.json();
-  const credentials = (data['credentials'] as Record<string, unknown>[] | undefined) ?? [];
+  const credentials = (data["credentials"] as Record<string, unknown>[] | undefined) ?? [];
   return {
     credentials: credentials.map((item) => transformCredential(item)),
-    total: Number(data['total'] ?? 0),
+    total: Number(data["total"] ?? 0),
   };
 }
 
 function useCredentials(projectId: string): reactQuery.UseQueryResult<CredentialsResponse> {
   return reactQuery.useQuery({
-    enabled: projectId !== '',
+    enabled: projectId !== "",
     queryFn: async () => fetchCredentials(projectId),
-    queryKey: ['integrations', 'credentials', projectId],
+    queryKey: ["integrations", "credentials", projectId],
   });
 }
 
@@ -125,8 +125,8 @@ function useValidateCredential(): reactQuery.UseMutationResult<unknown, Error, s
       const res = await fetch(
         `${API_URL}/api/v1/integrations/credentials/${credentialId}/validate`,
         {
-          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-          method: 'POST',
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+          method: "POST",
         },
       );
       if (!res.ok) {
@@ -142,7 +142,7 @@ function useDeleteCredential(): reactQuery.UseMutationResult<unknown, Error, str
     mutationFn: async (credentialId: string) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/credentials/${credentialId}`, {
         headers: getAuthHeaders(),
-        method: 'DELETE',
+        method: "DELETE",
       });
       if (!res.ok) {
         throw new Error(`Failed to delete credential: ${res.status}`);
@@ -159,14 +159,14 @@ function useStartOAuth(): reactQuery.UseMutationResult<StartOAuthResponse, Error
     mutationFn: async (data: StartOAuthInput) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/oauth/start`, {
         body: JSON.stringify({
-          credential_scope: data['credentialScope'],
-          project_id: data['projectId'],
-          provider: data['provider'],
-          redirect_uri: data['redirectUri'],
-          scopes: data['scopes'],
+          credential_scope: data["credentialScope"],
+          project_id: data["projectId"],
+          provider: data["provider"],
+          redirect_uri: data["redirectUri"],
+          scopes: data["scopes"],
         }),
-        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-        method: 'POST',
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        method: "POST",
       });
       if (!res.ok) {
         throw new Error(`Failed to start OAuth: ${res.status}`);
@@ -182,12 +182,12 @@ function useCompleteOAuth(): reactQuery.UseMutationResult<unknown, Error, Comple
     mutationFn: async (data: CompleteOAuthInput) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/oauth/callback`, {
         body: JSON.stringify({
-          code: data['code'],
-          redirect_uri: data['redirectUri'],
-          state: data['state'],
+          code: data["code"],
+          redirect_uri: data["redirectUri"],
+          state: data["state"],
         }),
-        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-        method: 'POST',
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        method: "POST",
       });
       if (!res.ok) {
         throw new Error(`Failed to complete OAuth: ${res.status}`);
@@ -205,20 +205,20 @@ async function fetchMappings(
 ): Promise<MappingsResponse> {
   const params = new URLSearchParams({ project_id: projectId });
   if (provider !== undefined) {
-    params.set('provider', provider);
+    params.set("provider", provider);
   }
 
   const res = await fetch(`${API_URL}/api/v1/integrations/mappings?${params}`, {
-    headers: { 'X-Bulk-Operation': 'true', ...getAuthHeaders() },
+    headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
   });
   if (!res.ok) {
     throw new Error(`Failed to fetch mappings: ${res.status}`);
   }
   const data = await res.json();
-  const mappings = (data['mappings'] as Record<string, unknown>[] | undefined) ?? [];
+  const mappings = (data["mappings"] as Record<string, unknown>[] | undefined) ?? [];
   return {
     mappings: mappings.map((item) => transformMapping(item)),
-    total: Number(data['total'] ?? 0),
+    total: Number(data["total"] ?? 0),
   };
 }
 
@@ -227,9 +227,9 @@ function useMappings(
   provider?: IntegrationProvider,
 ): reactQuery.UseQueryResult<MappingsResponse> {
   return reactQuery.useQuery({
-    enabled: projectId !== '',
+    enabled: projectId !== "",
     queryFn: async () => fetchMappings(projectId, provider),
-    queryKey: ['integrations', 'mappings', projectId, provider],
+    queryKey: ["integrations", "mappings", projectId, provider],
   });
 }
 
@@ -238,21 +238,21 @@ function useCreateMapping(): reactQuery.UseMutationResult<unknown, Error, Create
     mutationFn: async (data: CreateMappingInput) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/mappings`, {
         body: JSON.stringify({
-          credential_id: data['credentialId'],
-          direction: data['direction'] ?? 'bidirectional',
-          external_id: data['externalId'],
-          external_key: data['externalKey'],
-          external_type: data['externalType'],
-          external_url: data['externalUrl'],
-          field_mappings: data['fieldMappings'],
-          local_item_id: data['localItemId'],
-          local_item_type: data['localItemType'],
-          mapping_metadata: data['mappingMetadata'],
-          project_id: data['projectId'],
-          sync_enabled: data['syncEnabled'] ?? true,
+          credential_id: data["credentialId"],
+          direction: data["direction"] ?? "bidirectional",
+          external_id: data["externalId"],
+          external_key: data["externalKey"],
+          external_type: data["externalType"],
+          external_url: data["externalUrl"],
+          field_mappings: data["fieldMappings"],
+          local_item_id: data["localItemId"],
+          local_item_type: data["localItemType"],
+          mapping_metadata: data["mappingMetadata"],
+          project_id: data["projectId"],
+          sync_enabled: data["syncEnabled"] ?? true,
         }),
-        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-        method: 'POST',
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        method: "POST",
       });
       if (!res.ok) {
         throw new Error(`Failed to create mapping: ${res.status}`);
@@ -267,13 +267,13 @@ function useUpdateMapping(): reactQuery.UseMutationResult<unknown, Error, Update
     mutationFn: async ({ mappingId, ...data }: UpdateMappingInput) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/mappings/${mappingId}`, {
         body: JSON.stringify({
-          direction: data['direction'],
-          field_mappings: data['fieldMappings'],
-          status: data['status'],
-          sync_enabled: data['syncEnabled'],
+          direction: data["direction"],
+          field_mappings: data["fieldMappings"],
+          status: data["status"],
+          sync_enabled: data["syncEnabled"],
         }),
-        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-        method: 'PUT',
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        method: "PUT",
       });
       if (!res.ok) {
         throw new Error(`Failed to update mapping: ${res.status}`);
@@ -288,7 +288,7 @@ function useDeleteMapping(): reactQuery.UseMutationResult<unknown, Error, string
     mutationFn: async (mappingId: string) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/mappings/${mappingId}`, {
         headers: getAuthHeaders(),
-        method: 'DELETE',
+        method: "DELETE",
       });
       if (!res.ok) {
         throw new Error(`Failed to delete mapping: ${res.status}`);
@@ -304,11 +304,11 @@ function useSyncStatus(
   projectId: string,
 ): reactQuery.UseQueryResult<ReturnType<typeof transformSyncStatus>> {
   return reactQuery.useQuery({
-    enabled: projectId !== '',
+    enabled: projectId !== "",
     queryFn: async () => {
       const res = await fetch(
         `${API_URL}/api/v1/integrations/sync/status?project_id=${projectId}`,
-        { headers: { 'X-Bulk-Operation': 'true', ...getAuthHeaders() } },
+        { headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() } },
       );
       if (!res.ok) {
         throw new Error(`Failed to fetch sync status: ${res.status}`);
@@ -316,7 +316,7 @@ function useSyncStatus(
       const data = await res.json();
       return transformSyncStatus(data);
     },
-    queryKey: ['integrations', 'sync', 'status', projectId],
+    queryKey: ["integrations", "sync", "status", projectId],
     refetchInterval: 30_000, // Refresh every 30 seconds
   });
 }
@@ -327,30 +327,30 @@ function useSyncQueue(
   limit?: number,
 ): reactQuery.UseQueryResult<SyncQueueResponse> {
   return reactQuery.useQuery({
-    enabled: projectId !== '',
+    enabled: projectId !== "",
     queryFn: async () => {
       const params = new URLSearchParams({ project_id: projectId });
       if (status !== undefined) {
-        params.set('status', status);
+        params.set("status", status);
       }
       if (limit !== undefined) {
-        params.set('limit', String(limit));
+        params.set("limit", String(limit));
       }
 
       const res = await fetch(`${API_URL}/api/v1/integrations/sync/queue?${params}`, {
-        headers: { 'X-Bulk-Operation': 'true', ...getAuthHeaders() },
+        headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
       });
       if (!res.ok) {
         throw new Error(`Failed to fetch sync queue: ${res.status}`);
       }
       const data = await res.json();
-      const items = (data['items'] as Record<string, unknown>[] | undefined) ?? [];
+      const items = (data["items"] as Record<string, unknown>[] | undefined) ?? [];
       return {
         items: items.map((item) => transformSyncQueueItem(item)),
-        total: Number(data['total'] ?? 0),
+        total: Number(data["total"] ?? 0),
       };
     },
-    queryKey: ['integrations', 'sync', 'queue', projectId, status, limit],
+    queryKey: ["integrations", "sync", "queue", projectId, status, limit],
   });
 }
 
@@ -359,13 +359,13 @@ function useTriggerSync(): reactQuery.UseMutationResult<unknown, Error, TriggerS
     mutationFn: async (data: TriggerSyncInput) => {
       const res = await fetch(`${API_URL}/api/v1/integrations/sync/trigger`, {
         body: JSON.stringify({
-          credential_id: data['credentialId'],
-          direction: data['direction'] ?? 'pull',
-          mapping_id: data['mappingId'],
-          payload: data['payload'],
+          credential_id: data["credentialId"],
+          direction: data["direction"] ?? "pull",
+          mapping_id: data["mappingId"],
+          payload: data["payload"],
         }),
-        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-        method: 'POST',
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        method: "POST",
       });
       if (!res.ok) {
         throw new Error(`Failed to trigger sync: ${res.status}`);
@@ -382,27 +382,27 @@ function useConflicts(
   status?: string,
 ): reactQuery.UseQueryResult<ConflictsResponse> {
   return reactQuery.useQuery({
-    enabled: projectId !== '',
+    enabled: projectId !== "",
     queryFn: async () => {
       const params = new URLSearchParams({ project_id: projectId });
       if (status !== undefined) {
-        params.set('status', status);
+        params.set("status", status);
       }
 
       const res = await fetch(`${API_URL}/api/v1/integrations/conflicts?${params}`, {
-        headers: { 'X-Bulk-Operation': 'true', ...getAuthHeaders() },
+        headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
       });
       if (!res.ok) {
         throw new Error(`Failed to fetch conflicts: ${res.status}`);
       }
       const data = await res.json();
-      const conflictsData = (data['conflicts'] as Record<string, unknown>[] | undefined) ?? [];
+      const conflictsData = (data["conflicts"] as Record<string, unknown>[] | undefined) ?? [];
       return {
         conflicts: conflictsData.map((item) => transformConflict(item)),
-        total: Number(data['total'] ?? 0),
+        total: Number(data["total"] ?? 0),
       };
     },
-    queryKey: ['integrations', 'conflicts', projectId, status],
+    queryKey: ["integrations", "conflicts", projectId, status],
   });
 }
 
@@ -414,8 +414,8 @@ function useResolveConflict(): reactQuery.UseMutationResult<unknown, Error, Reso
           merged_value: mergedValue,
           resolution,
         }),
-        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-        method: 'POST',
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        method: "POST",
       });
       if (!res.ok) {
         throw new Error(`Failed to resolve conflict: ${res.status}`);
@@ -431,10 +431,10 @@ function useIntegrationStats(
   projectId: string,
 ): reactQuery.UseQueryResult<ReturnType<typeof transformStats>> {
   return reactQuery.useQuery({
-    enabled: projectId !== '',
+    enabled: projectId !== "",
     queryFn: async () => {
       const res = await fetch(`${API_URL}/api/v1/integrations/stats?project_id=${projectId}`, {
-        headers: { 'X-Bulk-Operation': 'true', ...getAuthHeaders() },
+        headers: { "X-Bulk-Operation": "true", ...getAuthHeaders() },
       });
       if (!res.ok) {
         throw new Error(`Failed to fetch integration stats: ${res.status}`);
@@ -442,7 +442,7 @@ function useIntegrationStats(
       const data = await res.json();
       return transformStats(data);
     },
-    queryKey: ['integrations', 'stats', projectId],
+    queryKey: ["integrations", "stats", projectId],
   });
 }
 

@@ -1,15 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from "@tanstack/react-router";
 
-import { requireAuth } from '@/lib/route-guards';
-import { SettingsView } from '@/views/SettingsView';
+import { requireAuth } from "@/lib/route-guards";
+import { SettingsView } from "@/views/SettingsView";
 
 function SettingsComponent() {
   return (
-    <div className='flex-1 space-y-6 p-6'>
-      <div className='flex items-center justify-between'>
+    <div className="flex-1 space-y-6 p-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className='text-3xl font-bold tracking-tight'>Settings</h1>
-          <p className='text-muted-foreground'>
+          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+          <p className="text-muted-foreground">
             Configure your TraceRTM platform preferences and integrations
           </p>
         </div>
@@ -20,7 +20,7 @@ function SettingsComponent() {
   );
 }
 
-export const Route = createFileRoute('/settings')({
+export const Route = createFileRoute("/settings")({
   beforeLoad: async () => {
     await requireAuth();
   },

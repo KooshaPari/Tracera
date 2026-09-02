@@ -1,39 +1,39 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from "@storybook/react";
 
-import type { Item, LinkType } from '@tracertm/types';
+import type { Item, LinkType } from "@tracertm/types";
 
-import type { EnhancedNodeData } from '../types';
+import type { EnhancedNodeData } from "../types";
 
-import { GraphNodePill } from '../GraphNodePill';
+import { GraphNodePill } from "../GraphNodePill";
 
 function makeNode(
   overrides: Partial<{
     id: string;
     label: string;
     type: string;
-    status: Item['status'];
+    status: Item["status"];
   }> = {},
 ): EnhancedNodeData {
   const linkTypes: LinkType[] = [
-    'implements',
-    'tests',
-    'depends_on',
-    'related_to',
-    'blocks',
-    'parent_of',
-    'same_as',
-    'represents',
-    'manifests_as',
-    'documents',
-    'mentions',
-    'calls',
-    'imports',
-    'derives_from',
-    'alternative_to',
-    'conflicts_with',
-    'supersedes',
-    'validates',
-    'traces_to',
+    "implements",
+    "tests",
+    "depends_on",
+    "related_to",
+    "blocks",
+    "parent_of",
+    "same_as",
+    "represents",
+    "manifests_as",
+    "documents",
+    "mentions",
+    "calls",
+    "imports",
+    "derives_from",
+    "alternative_to",
+    "conflicts_with",
+    "supersedes",
+    "validates",
+    "traces_to",
   ];
   const emptyLinkTypeCounts = Object.fromEntries(linkTypes.map((type) => [type, 0])) as Record<
     LinkType,
@@ -41,16 +41,16 @@ function makeNode(
   >;
   const item: Item = {
     createdAt: new Date().toISOString(),
-    description: '',
-    id: overrides.id ?? 'item-1',
-    priority: 'medium',
-    projectId: 'proj-1',
-    status: overrides.status ?? 'todo',
-    title: overrides.label ?? 'Button Component',
-    type: overrides.type! ?? 'feature',
+    description: "",
+    id: overrides.id ?? "item-1",
+    priority: "medium",
+    projectId: "proj-1",
+    status: overrides.status ?? "todo",
+    title: overrides.label ?? "Button Component",
+    type: overrides.type! ?? "feature",
     updatedAt: new Date().toISOString(),
     version: 1,
-    view: 'feature',
+    view: "feature",
   };
   return {
     connections: {
@@ -63,26 +63,26 @@ function makeNode(
     hasChildren: false,
     id: item.id,
     item,
-    label: overrides.label ?? 'Button Component',
-    perspective: ['technical'],
-    status: overrides.status ?? 'todo',
-    type: overrides.type ?? 'component',
+    label: overrides.label ?? "Button Component",
+    perspective: ["technical"],
+    status: overrides.status ?? "todo",
+    type: overrides.type ?? "component",
   };
 }
 
-const defaultNode = makeNode({ label: 'Button Component', type: 'component' });
-const viewNode = makeNode({ label: 'Dashboard View', type: 'view' });
-const routeNode = makeNode({ label: '/components', type: 'route' });
-const stateNode = makeNode({ label: 'Loading', type: 'state' });
-const eventNode = makeNode({ label: 'onClick', type: 'event' });
+const defaultNode = makeNode({ label: "Button Component", type: "component" });
+const viewNode = makeNode({ label: "Dashboard View", type: "view" });
+const routeNode = makeNode({ label: "/components", type: "route" });
+const stateNode = makeNode({ label: "Loading", type: "state" });
+const eventNode = makeNode({ label: "onClick", type: "event" });
 
 const meta: Meta<typeof GraphNodePill> = {
   argTypes: {
-    isHighlighted: { control: 'boolean' },
-    isSelected: { control: 'boolean' },
-    onExpand: { action: 'expand' },
-    onSelect: { action: 'select' },
-    showPreview: { control: 'boolean' },
+    isHighlighted: { control: "boolean" },
+    isSelected: { control: "boolean" },
+    onExpand: { action: "expand" },
+    onSelect: { action: "select" },
+    showPreview: { control: "boolean" },
   },
   component: GraphNodePill,
   parameters: {
@@ -97,8 +97,8 @@ const meta: Meta<typeof GraphNodePill> = {
       disable: true,
     },
   },
-  tags: ['autodocs', 'skip-tests'],
-  title: 'Components/Graph/GraphNodePill',
+  tags: ["autodocs", "skip-tests"],
+  title: "Components/Graph/GraphNodePill",
 };
 
 export default meta;
@@ -216,7 +216,7 @@ export const DarkMode: Story = {
   },
   decorators: [
     (Story) => (
-      <div className='dark' data-theme='dark' style={{ padding: '20px' }}>
+      <div className="dark" data-theme="dark" style={{ padding: "20px" }}>
         <Story />
       </div>
     ),
@@ -237,7 +237,7 @@ export const AllVariants: Story = {
   render: () => {
     const noop = () => {};
     return (
-      <div className='flex flex-wrap gap-2 p-4'>
+      <div className="flex flex-wrap gap-2 p-4">
         <GraphNodePill
           node={defaultNode}
           isSelected={false}

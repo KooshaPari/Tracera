@@ -1,4 +1,4 @@
-import type { CacheStatistics } from '@/lib/cache';
+import type { CacheStatistics } from "@/lib/cache";
 
 interface PerformanceMetrics {
   timestamp: number;
@@ -60,7 +60,7 @@ interface PerformanceMetrics {
     isZooming: boolean;
     panDuration: number;
     zoomDuration: number;
-    lastInteractionType: 'pan' | 'zoom' | 'idle';
+    lastInteractionType: "pan" | "zoom" | "idle";
   };
 }
 

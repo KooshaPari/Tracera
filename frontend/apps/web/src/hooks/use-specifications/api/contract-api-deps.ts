@@ -13,7 +13,7 @@ import {
   asString,
   buildVerificationResult,
   toApiRecord,
-} from './decoders';
+} from "./decoders";
 
 const contractApiDecoders = {
   asContractConditions,

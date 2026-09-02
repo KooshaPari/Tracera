@@ -88,7 +88,7 @@ class AuthError extends Error {
     super(message);
     this.code = code;
     this.details = details;
-    this.name = 'AuthError';
+    this.name = "AuthError";
     this.statusCode = statusCode;
     Object.setPrototypeOf(this, AuthError.prototype);
   }

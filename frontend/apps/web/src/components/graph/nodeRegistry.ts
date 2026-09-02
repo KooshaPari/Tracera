@@ -2,20 +2,20 @@
 // Implements Phase 5 of Type-Aware Node System + B3 LOD (simplePill at scale)
 // Phase 2 Task 2.4: Enhanced LOD-aware node type selection
 
-import type { NodeTypes } from '@xyflow/react';
+import type { NodeTypes } from "@xyflow/react";
 
-import { MediumPill } from './MediumPill';
-import { NodeErrorSkeleton } from './NodeErrorSkeleton';
-import { NodeLoadingSkeleton } from './NodeLoadingSkeleton';
-import { EpicNode } from './nodes/EpicNode';
-import { RequirementNode } from './nodes/RequirementNode';
-import { TestNode } from './nodes/TestNode';
-import { QAEnhancedNode } from './QAEnhancedNode';
-import { RichNodePill } from './RichNodePill';
-import { SimpleNodePill } from './SimpleNodePill';
-import { SimplePill } from './SimplePill';
-import { SkeletonPill } from './SkeletonPill';
-import { LOD_NODE_COUNT_THRESHOLD } from './utils/lod';
+import { MediumPill } from "./MediumPill";
+import { NodeErrorSkeleton } from "./NodeErrorSkeleton";
+import { NodeLoadingSkeleton } from "./NodeLoadingSkeleton";
+import { EpicNode } from "./nodes/EpicNode";
+import { RequirementNode } from "./nodes/RequirementNode";
+import { TestNode } from "./nodes/TestNode";
+import { QAEnhancedNode } from "./QAEnhancedNode";
+import { RichNodePill } from "./RichNodePill";
+import { SimpleNodePill } from "./SimpleNodePill";
+import { SimplePill } from "./SimplePill";
+import { SkeletonPill } from "./SkeletonPill";
+import { LOD_NODE_COUNT_THRESHOLD } from "./utils/lod";
 
 /**
  * Context for LOD-aware node type selection
@@ -31,7 +31,7 @@ export interface NodeTypeContext {
   /** Whether this node is currently focused */
   isFocused: boolean;
   /** Loading or error state (if applicable) */
-  loadingState?: 'loading' | 'error';
+  loadingState?: "loading" | "error";
   /** Distance from viewport center (in pixels, optional) */
   distance?: number;
 }
@@ -78,22 +78,22 @@ export function getNodeTypeLegacy(itemType: string): string {
   // Type-specific mappings
   const typeMap: Record<string, string> = {
     // Test types
-    test: 'test',
-    test_case: 'test_case',
-    test_suite: 'test_suite',
+    test: "test",
+    test_case: "test_case",
+    test_suite: "test_suite",
 
     // Requirement types
-    requirement: 'requirement',
+    requirement: "requirement",
 
     // Epic types
-    epic: 'epic',
+    epic: "epic",
 
     // QA enhanced for certain types (if they have preview data)
     // This will be determined at runtime based on node data
   };
 
   // Return mapped type or default to richPill
-  return typeMap[itemType] ?? 'default';
+  return typeMap[itemType] ?? "default";
 }
 
 /**
@@ -114,7 +114,7 @@ export function getNodeTypeLegacy(itemType: string): string {
 export function getNodeType(itemType: string, context: NodeTypeContext): string {
   // Priority 1: Loading or error states
   if (context.loadingState) {
-    return 'skeleton';
+    return "skeleton";
   }
 
   // Priority 2: Always show full detail for selected or focused nodes
@@ -127,13 +127,13 @@ export function getNodeType(itemType: string, context: NodeTypeContext): string 
   // Priority 3: Use simple representation for high scale or low zoom
   // Thresholds: >5000 nodes OR zoom < 0.5 OR distance > 800px
   if (totalNodeCount > 5000 || zoom < 0.5 || distance > 800) {
-    return 'simple';
+    return "simple";
   }
 
   // Priority 4: Use medium representation for moderate scale
   // Thresholds: >2000 nodes OR zoom < 0.8 OR distance > 400px
   if (totalNodeCount > 2000 || zoom < 0.8 || distance > 400) {
-    return 'medium';
+    return "medium";
   }
 
   // Priority 5: Default to type-specific or default
@@ -148,7 +148,7 @@ export function getNodeType(itemType: string, context: NodeTypeContext): string 
  * @returns True if node should use qaEnhanced type
  */
 export function shouldUseQAEnhancedNode(nodeData: Record<string, unknown>): boolean {
-  return Boolean(nodeData['preview'] ?? nodeData['artifacts'] ?? nodeData['metrics']);
+  return Boolean(nodeData["preview"] ?? nodeData["artifacts"] ?? nodeData["metrics"]);
 }
 
 /**
@@ -162,7 +162,7 @@ export function shouldUseQAEnhancedNode(nodeData: Record<string, unknown>): bool
 export function getNodeTypeForItem(itemType: string, nodeData: Record<string, unknown>): string {
   // Check if QA enhanced should be used
   if (shouldUseQAEnhancedNode(nodeData)) {
-    return 'qaEnhanced';
+    return "qaEnhanced";
   }
 
   // Otherwise use type-specific or default
@@ -184,15 +184,15 @@ export function getNodeTypeWithLOD(
   nodeData: Record<string, unknown>,
   options: { nodeCount: number; zoom?: number },
 ): string {
-  if (nodeData['loading'] === true) {
-    return 'nodeLoading';
+  if (nodeData["loading"] === true) {
+    return "nodeLoading";
   }
-  if (nodeData['error'] != null && nodeData['error'] !== false) {
-    return 'nodeError';
+  if (nodeData["error"] != null && nodeData["error"] !== false) {
+    return "nodeError";
   }
   const { nodeCount } = options;
   if (nodeCount >= LOD_NODE_COUNT_THRESHOLD) {
-    return 'simplePill';
+    return "simplePill";
   }
   return getNodeTypeForItem(itemType, nodeData);
 }

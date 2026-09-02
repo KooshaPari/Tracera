@@ -1,6 +1,6 @@
-import type { TypedItem } from '@tracertm/types';
+import type { TypedItem } from "@tracertm/types";
 
-import itemsTableConstants from './constants';
+import itemsTableConstants from "./constants";
 
 interface UseItemsTableKeyboardNavArgs {
   items: TypedItem[];
@@ -62,20 +62,20 @@ function getNextCellPosition({
     };
   }
 
-  if (key === 'Home') {
+  if (key === "Home") {
     return { colIndex: 0, rowIndex: ctrlKey ? 0 : rowIndex };
   }
-  if (key === 'End') {
+  if (key === "End") {
     return { colIndex: maxCol, rowIndex: ctrlKey ? maxRow : rowIndex };
   }
 
-  if (key === 'PageDown') {
+  if (key === "PageDown") {
     return {
       colIndex,
       rowIndex: clamp(rowIndex + itemsTableConstants.KEYBOARD_PAGE_OFFSET, 0, maxRow),
     };
   }
-  if (key === 'PageUp') {
+  if (key === "PageUp") {
     return {
       colIndex,
       rowIndex: clamp(rowIndex - itemsTableConstants.KEYBOARD_PAGE_OFFSET, 0, maxRow),
@@ -102,7 +102,7 @@ function useItemsTableKeyboardNav({
     const maxRow = Math.max(items.length - itemsTableConstants.ROW_INDEX_OFFSET, 0);
     const maxCol = itemsTableConstants.MAX_COL_INDEX;
 
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       const item = items[position.rowIndex];
       if (item !== undefined) {

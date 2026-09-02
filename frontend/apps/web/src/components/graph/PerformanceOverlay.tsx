@@ -1,17 +1,17 @@
-import { memo } from 'react';
+import { memo } from "react";
 
-import { useFPSMonitor } from '@/hooks/useFPSMonitor';
-import { useMemoryMonitor } from '@/hooks/useMemoryMonitor';
+import { useFPSMonitor } from "@/hooks/useFPSMonitor";
+import { useMemoryMonitor } from "@/hooks/useMemoryMonitor";
 
-import { PerformanceStats } from './PerformanceStats';
+import { PerformanceStats } from "./PerformanceStats";
 
 interface PerformanceOverlayProps {
   nodeCount: number;
   edgeCount: number;
   visibleNodeCount: number;
   visibleEdgeCount: number;
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | undefined;
-  variant?: 'compact' | 'detailed' | undefined;
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | undefined;
+  variant?: "compact" | "detailed" | undefined;
 }
 
 export const PerformanceOverlay = memo(function PerformanceOverlay({
@@ -19,17 +19,17 @@ export const PerformanceOverlay = memo(function PerformanceOverlay({
   edgeCount,
   visibleNodeCount,
   visibleEdgeCount,
-  position = 'top-right',
-  variant = 'compact',
+  position = "top-right",
+  variant = "compact",
 }: PerformanceOverlayProps) {
   const fpsStats = useFPSMonitor(true);
   const memoryStats = useMemoryMonitor(true);
 
   const positionClasses = {
-    'bottom-left': 'bottom-4 left-4',
-    'bottom-right': 'bottom-4 right-4',
-    'top-left': 'top-4 left-4',
-    'top-right': 'top-4 right-4',
+    "bottom-left": "bottom-4 left-4",
+    "bottom-right": "bottom-4 right-4",
+    "top-left": "top-4 left-4",
+    "top-right": "top-4 right-4",
   };
 
   return (

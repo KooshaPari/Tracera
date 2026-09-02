@@ -1,8 +1,8 @@
 // Keyboard Shortcuts Hook for Graph Controls
 // Provides keyboard navigation and control shortcuts
 
-import { useReactFlow } from '@xyflow/react';
-import { useCallback, useEffect } from 'react';
+import { useReactFlow } from "@xyflow/react";
+import { useCallback, useEffect } from "react";
 
 interface KeyboardShortcutsConfig {
   // View controls
@@ -52,7 +52,7 @@ export function useGraphKeyboardShortcuts({
 
       // Ignore if user is typing in an input
       const target = event.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
         return;
       }
 
@@ -60,7 +60,7 @@ export function useGraphKeyboardShortcuts({
       const isShift = event.shiftKey;
 
       // Zoom in: Cmd/Ctrl + Plus/Equal
-      if (isMod && (event.key === '+' || event.key === '=')) {
+      if (isMod && (event.key === "+" || event.key === "=")) {
         event.preventDefault();
         if (onZoomIn) {
           onZoomIn();
@@ -71,7 +71,7 @@ export function useGraphKeyboardShortcuts({
       }
 
       // Zoom out: Cmd/Ctrl + Minus
-      if (isMod && event.key === '-') {
+      if (isMod && event.key === "-") {
         event.preventDefault();
         if (onZoomOut) {
           onZoomOut();
@@ -82,7 +82,7 @@ export function useGraphKeyboardShortcuts({
       }
 
       // Fit view: Cmd/Ctrl + 0
-      if (isMod && event.key === '0') {
+      if (isMod && event.key === "0") {
         event.preventDefault();
         if (onFitView) {
           onFitView();
@@ -93,49 +93,49 @@ export function useGraphKeyboardShortcuts({
       }
 
       // Actual size: Cmd/Ctrl + 1
-      if (isMod && event.key === '1') {
+      if (isMod && event.key === "1") {
         event.preventDefault();
         onActualSize?.();
         return;
       }
 
       // Export: Cmd/Ctrl + E
-      if (isMod && event.key === 'e') {
+      if (isMod && event.key === "e") {
         event.preventDefault();
         onExport?.();
         return;
       }
 
       // Toggle filters: Cmd/Ctrl + F
-      if (isMod && event.key === 'f') {
+      if (isMod && event.key === "f") {
         event.preventDefault();
         onToggleFilters?.();
         return;
       }
 
       // Reset: Cmd/Ctrl + R
-      if (isMod && isShift && event.key === 'r') {
+      if (isMod && isShift && event.key === "r") {
         event.preventDefault();
         onReset?.();
         return;
       }
 
       // Fullscreen: F or F11
-      if (event.key === 'f' && !isMod) {
+      if (event.key === "f" && !isMod) {
         event.preventDefault();
         onFullscreen?.();
         return;
       }
 
       // Toggle detail panel: P
-      if (event.key === 'p' && !isMod) {
+      if (event.key === "p" && !isMod) {
         event.preventDefault();
         onToggleDetailPanel?.();
         return;
       }
 
       // Toggle mini-map: M
-      if (event.key === 'm' && !isMod) {
+      if (event.key === "m" && !isMod) {
         event.preventDefault();
         onToggleMiniMap?.();
         return;
@@ -164,9 +164,9 @@ export function useGraphKeyboardShortcuts({
       return;
     }
 
-    globalThis.addEventListener('keydown', handleKeyDown);
+    globalThis.addEventListener("keydown", handleKeyDown);
     return () => {
-      globalThis.removeEventListener('keydown', handleKeyDown);
+      globalThis.removeEventListener("keydown", handleKeyDown);
     };
   }, [handleKeyDown, enabled]);
 }
@@ -174,19 +174,19 @@ export function useGraphKeyboardShortcuts({
 // Keyboard shortcuts reference
 export const KEYBOARD_SHORTCUTS = {
   actions: {
-    export: 'Cmd/Ctrl + E',
-    filters: 'Cmd/Ctrl + F',
-    reset: 'Cmd/Ctrl + Shift + R',
+    export: "Cmd/Ctrl + E",
+    filters: "Cmd/Ctrl + F",
+    reset: "Cmd/Ctrl + Shift + R",
   },
   view: {
-    detailPanel: 'P',
-    fullscreen: 'F',
-    miniMap: 'M',
+    detailPanel: "P",
+    fullscreen: "F",
+    miniMap: "M",
   },
   zoom: {
-    actualSize: 'Cmd/Ctrl + 1',
-    fit: 'Cmd/Ctrl + 0',
-    in: 'Cmd/Ctrl + Plus',
-    out: 'Cmd/Ctrl + Minus',
+    actualSize: "Cmd/Ctrl + 1",
+    fit: "Cmd/Ctrl + 0",
+    in: "Cmd/Ctrl + Plus",
+    out: "Cmd/Ctrl + Minus",
   },
 } as const;

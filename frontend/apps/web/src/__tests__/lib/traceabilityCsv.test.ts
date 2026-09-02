@@ -21,12 +21,12 @@ describe("traceabilityCsv", () => {
 
   it("neutralizes spreadsheet formulas in exported titles", () => {
     const csv = buildTraceabilityCsv({
-      features: [{ id: "feature-1", title: "=HYPERLINK(\"https://invalid.example\")" }],
+      features: [{ id: "feature-1", title: '=HYPERLINK("https://invalid.example")' }],
       linkedFeatureIdsByRequirement: {},
       requirements: [{ id: "requirement-1", title: "+1+1" }],
     });
 
-    expect(csv).toContain('Feature: =HYPERLINK');
+    expect(csv).toContain("Feature: =HYPERLINK");
     expect(csv).toContain(",'+1+1,UNCOVERED,");
   });
 

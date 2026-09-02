@@ -1,13 +1,13 @@
 /* oxlint-disable import/no-named-export, promise/prefer-await-to-then */
 // Reports API stub
-import { exportImportApi } from './endpoints';
+import { exportImportApi } from "./endpoints";
 
 interface ReportTemplate {
   id: string;
   name: string;
   description: string;
-  type: 'coverage' | 'traceability' | 'status' | 'progress' | 'custom';
-  format: 'pdf' | 'html' | 'json' | 'csv' | 'xlsx';
+  type: "coverage" | "traceability" | "status" | "progress" | "custom";
+  format: "pdf" | "html" | "json" | "csv" | "xlsx";
 }
 
 interface GeneratedReport {
@@ -22,32 +22,32 @@ interface GeneratedReport {
 
 const reportTemplates: ReportTemplate[] = [
   {
-    description: 'Test coverage report',
-    format: 'pdf',
-    id: '1',
-    name: 'Coverage Report',
-    type: 'coverage',
+    description: "Test coverage report",
+    format: "pdf",
+    id: "1",
+    name: "Coverage Report",
+    type: "coverage",
   },
   {
-    description: 'Full traceability matrix',
-    format: 'xlsx',
-    id: '2',
-    name: 'Traceability Matrix',
-    type: 'traceability',
+    description: "Full traceability matrix",
+    format: "xlsx",
+    id: "2",
+    name: "Traceability Matrix",
+    type: "traceability",
   },
   {
-    description: 'Project status summary',
-    format: 'html',
-    id: '3',
-    name: 'Status Report',
-    type: 'status',
+    description: "Project status summary",
+    format: "html",
+    id: "3",
+    name: "Status Report",
+    type: "status",
   },
   {
-    description: 'Sprint progress report',
-    format: 'pdf',
-    id: '4',
-    name: 'Progress Report',
-    type: 'progress',
+    description: "Sprint progress report",
+    format: "pdf",
+    id: "4",
+    name: "Progress Report",
+    type: "progress",
   },
 ];
 

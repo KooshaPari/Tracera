@@ -5,56 +5,56 @@
  * Uses Playwright with Axe for automated accessibility checks.
  */
 
-import AxeBuilder from '@axe-core/playwright';
+import AxeBuilder from "@axe-core/playwright";
 
-import { expect, test } from './global-setup';
+import { expect, test } from "./global-setup";
 
-test.describe('Table Accessibility - Keyboard Navigation', () => {
+test.describe("Table Accessibility - Keyboard Navigation", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should have proper ARIA roles on table', async ({ page }) => {
+  test("should have proper ARIA roles on table", async ({ page }) => {
     // Check table structure
     const table = page.locator('[role="table"]').first();
     await expect(table).toBeVisible();
 
     // Check for aria-label
-    const ariaLabel = await table.getAttribute('aria-label');
+    const ariaLabel = await table.getAttribute("aria-label");
     expect(ariaLabel).toBeTruthy();
   });
 
-  test('should have accessible column headers with sort indicators', async ({ page }) => {
+  test("should have accessible column headers with sort indicators", async ({ page }) => {
     const headers = await page.locator('[role="columnheader"]').all();
     expect(headers.length).toBeGreaterThan(0);
 
     // First header should be Node Identifier
     const firstHeader = headers[0];
     const text = await firstHeader.textContent();
-    expect(text).toContain('Node Identifier');
+    expect(text).toContain("Node Identifier");
 
     // Should have aria-sort attribute
-    const ariaSort = await firstHeader.getAttribute('aria-sort');
+    const ariaSort = await firstHeader.getAttribute("aria-sort");
     expect(ariaSort).toBeTruthy();
   });
 
-  test('should support arrow key navigation left/right', async ({ page }) => {
+  test("should support arrow key navigation left/right", async ({ page }) => {
     // Focus first cell
     const firstCell = page.locator('[role="gridcell"]').first();
     await firstCell.focus();
 
     // Press Right arrow
-    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(100);
 
     // Should maintain focus (some cells may not be directly focusable)
-    const focused = await page.evaluate(() => document.activeElement?.getAttribute('role'));
+    const focused = await page.evaluate(() => document.activeElement?.getAttribute("role"));
     // Focus should still be in table area
     expect(focused).toBeTruthy();
   });
 
-  test('should support arrow key navigation up/down', async ({ page }) => {
+  test("should support arrow key navigation up/down", async ({ page }) => {
     const rows = await page.locator('[role="row"]').all();
     if (rows.length < 3) {
       test.skip(); // Need at least header + 2 data rows
@@ -66,17 +66,17 @@ test.describe('Table Accessibility - Keyboard Navigation', () => {
     await cell.focus();
 
     // Press down arrow to move to next row
-    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press("ArrowDown");
     await page.waitForTimeout(100);
 
     // Verify navigation occurred
     const focused = await page.evaluate(() =>
-      document.activeElement?.getAttribute('data-row-index'),
+      document.activeElement?.getAttribute("data-row-index"),
     );
     expect(focused).toBeTruthy();
   });
 
-  test('should support Home key to jump to first column', async ({ page }) => {
+  test("should support Home key to jump to first column", async ({ page }) => {
     const cells = await page.locator('[role="gridcell"]').all();
     if (cells.length === 0) {
       test.skip();
@@ -86,16 +86,16 @@ test.describe('Table Accessibility - Keyboard Navigation', () => {
     await cells.at(-1).focus();
 
     // Press Home to go to first column
-    await page.keyboard.press('Home');
+    await page.keyboard.press("Home");
     await page.waitForTimeout(100);
 
     const focused = await page.evaluate(() =>
-      document.activeElement?.getAttribute('data-col-index'),
+      document.activeElement?.getAttribute("data-col-index"),
     );
     expect(focused).toBeTruthy();
   });
 
-  test('should support End key to jump to last column', async ({ page }) => {
+  test("should support End key to jump to last column", async ({ page }) => {
     const cells = await page.locator('[role="gridcell"]').all();
     if (cells.length === 0) {
       test.skip();
@@ -105,14 +105,14 @@ test.describe('Table Accessibility - Keyboard Navigation', () => {
     await cells[0].focus();
 
     // Press End to go to last column in row
-    await page.keyboard.press('End');
+    await page.keyboard.press("End");
     await page.waitForTimeout(100);
 
     const focused = await page.evaluate(() => document.activeElement);
     expect(focused).toBeTruthy();
   });
 
-  test('should support Ctrl+Home to jump to first cell', async ({ page }) => {
+  test("should support Ctrl+Home to jump to first cell", async ({ page }) => {
     const cells = await page.locator('[role="gridcell"]').all();
     if (cells.length === 0) {
       test.skip();
@@ -123,17 +123,17 @@ test.describe('Table Accessibility - Keyboard Navigation', () => {
     await lastCell.focus();
 
     // Press Ctrl+Home (or Cmd+Home on Mac)
-    await page.keyboard.press('Control+Home');
+    await page.keyboard.press("Control+Home");
     await page.waitForTimeout(100);
 
     const position = await page.evaluate(() =>
-      document.activeElement?.getAttribute('data-row-index'),
+      document.activeElement?.getAttribute("data-row-index"),
     );
     // Should be at first row
-    expect(position).toBe('0');
+    expect(position).toBe("0");
   });
 
-  test('should support Ctrl+End to jump to last cell', async ({ page }) => {
+  test("should support Ctrl+End to jump to last cell", async ({ page }) => {
     const rows = await page.locator('[role="row"]').all();
     if (rows.length < 2) {
       test.skip();
@@ -144,14 +144,14 @@ test.describe('Table Accessibility - Keyboard Navigation', () => {
     await firstCell.focus();
 
     // Press Ctrl+End
-    await page.keyboard.press('Control+End');
+    await page.keyboard.press("Control+End");
     await page.waitForTimeout(100);
 
     const focused = await page.evaluate(() => document.activeElement);
     expect(focused).toBeTruthy();
   });
 
-  test('should support PageUp to jump up 5 rows', async ({ page }) => {
+  test("should support PageUp to jump up 5 rows", async ({ page }) => {
     const rows = await page.locator('[role="row"]').all();
     if (rows.length < 7) {
       test.skip(); // Need at least 7 rows
@@ -162,76 +162,76 @@ test.describe('Table Accessibility - Keyboard Navigation', () => {
     await cell.focus();
 
     // Press PageUp
-    await page.keyboard.press('PageUp');
+    await page.keyboard.press("PageUp");
     await page.waitForTimeout(100);
 
     const position = await page.evaluate(() =>
-      document.activeElement?.getAttribute('data-row-index'),
+      document.activeElement?.getAttribute("data-row-index"),
     );
     expect(position).toBeTruthy();
   });
 
-  test('should support PageDown to jump down 5 rows', async ({ page }) => {
+  test("should support PageDown to jump down 5 rows", async ({ page }) => {
     // Focus first cell
     const firstCell = page.locator('[role="gridcell"]').first();
     await firstCell.focus();
 
     // Press PageDown
-    await page.keyboard.press('PageDown');
+    await page.keyboard.press("PageDown");
     await page.waitForTimeout(100);
 
     const focused = await page.evaluate(() => document.activeElement);
     expect(focused).toBeTruthy();
   });
 
-  test('should maintain focus visibility when navigating', async ({ page }) => {
+  test("should maintain focus visibility when navigating", async ({ page }) => {
     const cell = page.locator('[role="gridcell"]').first();
     await cell.focus();
 
     // Element should have visible focus indicator
     const hasFocusClass = await cell.evaluate((el: Element) => {
-      const classes = (el as HTMLElement).getAttribute('class') ?? '';
-      return classes.includes('focus:ring') || classes.includes('focus-visible');
+      const classes = (el as HTMLElement).getAttribute("class") ?? "";
+      return classes.includes("focus:ring") || classes.includes("focus-visible");
     });
 
     expect(hasFocusClass).toBe(true);
   });
 
-  test('should announce navigation to screen readers', async ({ page }) => {
+  test("should announce navigation to screen readers", async ({ page }) => {
     // Check for aria-live region
     const liveRegion = page.locator('[role="status"][aria-live="polite"]').first();
     await expect(liveRegion).toBeInTheDocument();
 
     // Should have aria-atomic for announcement
-    const ariaAtomic = await liveRegion.getAttribute('aria-atomic');
-    expect(ariaAtomic).toBe('true');
+    const ariaAtomic = await liveRegion.getAttribute("aria-atomic");
+    expect(ariaAtomic).toBe("true");
   });
 
-  test('should have sr-only table instructions', async ({ page }) => {
-    const instructions = page.locator('#table-instructions');
+  test("should have sr-only table instructions", async ({ page }) => {
+    const instructions = page.locator("#table-instructions");
     await expect(instructions).toBeInTheDocument();
 
     // Should be screen-reader only (sr-only class)
     const isHidden = await instructions.evaluate((el: Element) => {
-      const classes = (el as HTMLElement).getAttribute('class') ?? '';
-      return classes.includes('sr-only');
+      const classes = (el as HTMLElement).getAttribute("class") ?? "";
+      return classes.includes("sr-only");
     });
     expect(isHidden).toBe(true);
 
     // But content should be present
     const text = await instructions.textContent();
-    expect(text).toContain('arrow keys');
-    expect(text).toContain('Home and End');
+    expect(text).toContain("arrow keys");
+    expect(text).toContain("Home and End");
   });
 });
 
-test.describe('Table Accessibility - Screen Reader Support', () => {
+test.describe("Table Accessibility - Screen Reader Support", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should have descriptive labels on action buttons', async ({ page }) => {
+  test("should have descriptive labels on action buttons", async ({ page }) => {
     // Open/view button should have aria-label
     const openButtons = await page.locator('button[aria-label*="Open item"]').all();
     expect(openButtons.length).toBeGreaterThan(0);
@@ -241,7 +241,7 @@ test.describe('Table Accessibility - Screen Reader Support', () => {
     expect(deleteButtons.length).toBeGreaterThan(0);
   });
 
-  test('should label status information accessibly', async ({ page }) => {
+  test("should label status information accessibly", async ({ page }) => {
     // Status badges should be readable by screen readers
     const statusBadges = await page.locator('[data-col-index="2"]').all();
     expect(statusBadges.length).toBeGreaterThan(0);
@@ -253,7 +253,7 @@ test.describe('Table Accessibility - Screen Reader Support', () => {
     }
   });
 
-  test('should label priority information with icons and text', async ({ page }) => {
+  test("should label priority information with icons and text", async ({ page }) => {
     // Priority cells should have both visual (dot) and text information
     const priorityCells = await page.locator('[data-col-index="3"]').all();
 
@@ -261,34 +261,34 @@ test.describe('Table Accessibility - Screen Reader Support', () => {
       // Should contain priority text (low, medium, high, critical)
       const text = await cell.textContent();
       const hasPriorityText =
-        (text?.includes('low') ?? false) ||
-        (text?.includes('medium') ?? false) ||
-        (text?.includes('high') ?? false) ||
-        (text?.includes('critical') ?? false);
+        (text?.includes("low") ?? false) ||
+        (text?.includes("medium") ?? false) ||
+        (text?.includes("high") ?? false) ||
+        (text?.includes("critical") ?? false);
       expect(hasPriorityText).toBe(true);
     }
   });
 
-  test('should have accessible search input', async ({ page }) => {
+  test("should have accessible search input", async ({ page }) => {
     const searchInput = page.locator('input[aria-label*="Search items"]');
     await expect(searchInput).toBeInTheDocument();
   });
 
-  test('should have accessible create button', async ({ page }) => {
+  test("should have accessible create button", async ({ page }) => {
     const createButton = page.locator('button[aria-label*="Create new node"]');
     await expect(createButton).toBeInTheDocument();
   });
 
-  test('should have sortable column headers', async ({ page }) => {
+  test("should have sortable column headers", async ({ page }) => {
     const sortButton = page.locator('button[aria-label*="sorted"]');
 
     // Should have indication of sort state
     await expect(sortButton.first()).toBeVisible({ timeout: 5000 });
-    const ariaLabel = await sortButton.first().getAttribute('aria-label');
+    const ariaLabel = await sortButton.first().getAttribute("aria-label");
     expect(ariaLabel).toMatch(/sorted|not sorted/i);
   });
 
-  test('should have accessible modal dialog', async ({ page }) => {
+  test("should have accessible modal dialog", async ({ page }) => {
     // Open create modal
     await page.locator('button[aria-label*="Create new node"]').click();
     await page.waitForTimeout(300);
@@ -298,18 +298,18 @@ test.describe('Table Accessibility - Screen Reader Support', () => {
     await expect(modal).toBeInTheDocument();
 
     // Should have aria-modal
-    const ariaModal = await modal.getAttribute('aria-modal');
-    expect(ariaModal).toBe('true');
+    const ariaModal = await modal.getAttribute("aria-modal");
+    expect(ariaModal).toBe("true");
 
     // Should have aria-labelledby
-    const ariaLabelledBy = await modal.getAttribute('aria-labelledby');
+    const ariaLabelledBy = await modal.getAttribute("aria-labelledby");
     expect(ariaLabelledBy).toBeTruthy();
 
     // Close modal
     await page.locator('button[aria-label*="Close dialog"]').click();
   });
 
-  test('should label form inputs in modal', async ({ page }) => {
+  test("should label form inputs in modal", async ({ page }) => {
     // Open modal
     await page.locator('button[aria-label*="Create new node"]').click();
     await page.waitForTimeout(300);
@@ -329,49 +329,49 @@ test.describe('Table Accessibility - Screen Reader Support', () => {
   });
 });
 
-test.describe('Table Accessibility - Automated Axe Checks', () => {
+test.describe("Table Accessibility - Automated Axe Checks", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should pass automated accessibility audit', async ({ page }) => {
-    const results = await new AxeBuilder({ page }).withTags(['wcag2aa', 'wcag21aa']).analyze();
+  test("should pass automated accessibility audit", async ({ page }) => {
+    const results = await new AxeBuilder({ page }).withTags(["wcag2aa", "wcag21aa"]).analyze();
 
     expect(results.violations).toEqual([]);
   });
 
-  test('should have no color contrast violations', async ({ page }) => {
-    const results = await new AxeBuilder({ page }).withRules(['color-contrast']).analyze();
+  test("should have no color contrast violations", async ({ page }) => {
+    const results = await new AxeBuilder({ page }).withRules(["color-contrast"]).analyze();
 
     expect(results.violations).toEqual([]);
   });
 
-  test('should have proper heading hierarchy', async ({ page }) => {
-    const results = await new AxeBuilder({ page }).withRules(['heading-order']).analyze();
+  test("should have proper heading hierarchy", async ({ page }) => {
+    const results = await new AxeBuilder({ page }).withRules(["heading-order"]).analyze();
 
     expect(results.violations).toEqual([]);
   });
 
-  test('should have descriptive button labels', async ({ page }) => {
-    const results = await new AxeBuilder({ page }).withRules(['button-name']).analyze();
+  test("should have descriptive button labels", async ({ page }) => {
+    const results = await new AxeBuilder({ page }).withRules(["button-name"]).analyze();
 
     expect(results.violations).toEqual([]);
   });
 
-  test('should have proper form labels', async ({ page }) => {
+  test("should have proper form labels", async ({ page }) => {
     // Open modal with form
     await page.locator('button[aria-label*="Create new node"]').click();
     await page.waitForTimeout(300);
 
-    const results = await new AxeBuilder({ page }).withRules(['label']).analyze();
+    const results = await new AxeBuilder({ page }).withRules(["label"]).analyze();
 
     expect(results.violations).toEqual([]);
   });
 
-  test('should have proper landmark roles', async ({ page }) => {
+  test("should have proper landmark roles", async ({ page }) => {
     const results = await new AxeBuilder({ page })
-      .withRules(['landmark-one-main', 'region'])
+      .withRules(["landmark-one-main", "region"])
       .analyze();
 
     // Should have regions defined
@@ -379,20 +379,20 @@ test.describe('Table Accessibility - Automated Axe Checks', () => {
   });
 });
 
-test.describe('Table Accessibility - Focus Management', () => {
+test.describe("Table Accessibility - Focus Management", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should have logical focus order', async ({ page }) => {
+  test("should have logical focus order", async ({ page }) => {
     // Tab through elements - they should appear in logical order
     const _initialFocus = await page.evaluate(() => document.activeElement?.tagName);
 
-    await page.keyboard.press('Tab');
+    await page.keyboard.press("Tab");
     const firstTab = await page.evaluate(() => document.activeElement?.tagName);
 
-    await page.keyboard.press('Tab');
+    await page.keyboard.press("Tab");
     const secondTab = await page.evaluate(() => document.activeElement?.tagName);
 
     // Should have moved through elements
@@ -400,7 +400,7 @@ test.describe('Table Accessibility - Focus Management', () => {
     expect(secondTab).toBeTruthy();
   });
 
-  test('should indicate focused element with visible indicator', async ({ page }) => {
+  test("should indicate focused element with visible indicator", async ({ page }) => {
     // Focus an element
     await page.locator('[role="gridcell"]').first().focus();
 
@@ -411,14 +411,14 @@ test.describe('Table Accessibility - Focus Management', () => {
         return false;
       }
       const styles = globalThis.getComputedStyle(focused);
-      const className = 'className' in focused ? String(focused.className) : '';
-      return styles.outline !== 'none' || className.includes('ring') || className.includes('focus');
+      const className = "className" in focused ? String(focused.className) : "";
+      return styles.outline !== "none" || className.includes("ring") || className.includes("focus");
     });
 
     expect(hasOutline).toBe(true);
   });
 
-  test('should trap focus in modal dialog', async ({ page }) => {
+  test("should trap focus in modal dialog", async ({ page }) => {
     // Open modal
     await page.locator('button[aria-label*="Create new node"]').click();
     await page.waitForTimeout(300);
@@ -426,9 +426,9 @@ test.describe('Table Accessibility - Focus Management', () => {
     // Tab through modal - focus should stay within
     const _initialElement = await page.evaluate(() => document.activeElement?.id);
 
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Tab");
 
     const finalElementId = await page.evaluate(() => document.activeElement?.id);
 
@@ -442,15 +442,15 @@ test.describe('Table Accessibility - Focus Management', () => {
   });
 });
 
-test.describe('Table Accessibility - WCAG 2.1 AA Compliance', () => {
+test.describe("Table Accessibility - WCAG 2.1 AA Compliance", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should have sufficient touch target size', async ({ page }) => {
+  test("should have sufficient touch target size", async ({ page }) => {
     // All buttons should be at least 44x44px
-    const buttons = await page.locator('button').all();
+    const buttons = await page.locator("button").all();
 
     for (const button of buttons) {
       const box = await button.boundingBox();
@@ -462,10 +462,10 @@ test.describe('Table Accessibility - WCAG 2.1 AA Compliance', () => {
     }
   });
 
-  test('should support text resizing', async ({ page }) => {
+  test("should support text resizing", async ({ page }) => {
     // Zoom in 200%
     await page.evaluate(() => {
-      document.body.style.zoom = '2';
+      document.body.style.zoom = "2";
     });
 
     // Content should still be visible and usable
@@ -474,11 +474,11 @@ test.describe('Table Accessibility - WCAG 2.1 AA Compliance', () => {
 
     // Reset zoom
     await page.evaluate(() => {
-      document.body.style.zoom = '1';
+      document.body.style.zoom = "1";
     });
   });
 
-  test('should not rely on color alone for information', async ({ page }) => {
+  test("should not rely on color alone for information", async ({ page }) => {
     // Status should have text, not just color
     const statusCells = await page.locator('[data-col-index="2"]').all();
 
@@ -489,14 +489,14 @@ test.describe('Table Accessibility - WCAG 2.1 AA Compliance', () => {
     }
   });
 
-  test('should maintain focus visibility', async ({ page }) => {
+  test("should maintain focus visibility", async ({ page }) => {
     const cell = page.locator('[role="gridcell"]').first();
     await cell.focus();
 
     const isFocusVisible = await cell.evaluate((el: Element) => {
       const styles = globalThis.getComputedStyle(el);
-      const className = (el as HTMLElement).getAttribute('class') ?? '';
-      return styles.outline !== 'none' || styles.boxShadow !== 'none' || className.includes('ring');
+      const className = (el as HTMLElement).getAttribute("class") ?? "";
+      return styles.outline !== "none" || styles.boxShadow !== "none" || className.includes("ring");
     });
 
     expect(isFocusVisible).toBe(true);

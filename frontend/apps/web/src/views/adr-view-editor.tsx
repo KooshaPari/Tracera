@@ -1,8 +1,8 @@
-import React from 'react';
+import React from "react";
 
-import type { ADR } from '@tracertm/types';
+import type { ADR } from "@tracertm/types";
 
-import { ADREditor } from '@/components/specifications/adr/ADREditor';
+import { ADREditor } from "@/components/specifications/adr/ADREditor";
 
 interface ADRDraft {
   consequences?: string;
@@ -46,11 +46,11 @@ const ADRViewEditor = ({
       new Promise<void>((resolve) => {
         createADR.mutate(
           {
-            consequences: data.consequences ?? '',
-            context: data.context ?? '',
-            decision: data.decision ?? '',
+            consequences: data.consequences ?? "",
+            context: data.context ?? "",
+            decision: data.decision ?? "",
             projectId,
-            title: data.title ?? '',
+            title: data.title ?? "",
           },
           {
             onSuccess: () => {
@@ -64,7 +64,7 @@ const ADRViewEditor = ({
   );
 
   return (
-    <div className='p-6'>
+    <div className="p-6">
       <ADREditor onSave={handleSave} onCancel={handleCancel} />
     </div>
   );

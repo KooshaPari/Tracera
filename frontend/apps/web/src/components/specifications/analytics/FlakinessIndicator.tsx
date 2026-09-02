@@ -3,13 +3,13 @@
  * Displays test flakiness probability and patterns based on Meta's model
  */
 
-import type { CSSProperties, ReactElement } from 'react';
+import type { CSSProperties, ReactElement } from "react";
 
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
-import type { FlakinessPattern } from '@/hooks/useItemSpecAnalytics';
+import type { FlakinessPattern } from "@/hooks/useItemSpecAnalytics";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface FlakinessIndicatorProps {
   probability: number;
@@ -65,53 +65,53 @@ const FACTOR_MEDIUM_THRESHOLD = 0.25;
 
 const patternLabels: Record<FlakinessPattern, PatternConfig> = {
   async: {
-    description: 'Asynchronous operation handling issues',
-    icon: '⟳',
-    label: 'Async',
+    description: "Asynchronous operation handling issues",
+    icon: "⟳",
+    label: "Async",
   },
   environment: {
-    description: 'Environment-specific configuration issues',
-    icon: '🌍',
-    label: 'Environment',
+    description: "Environment-specific configuration issues",
+    icon: "🌍",
+    label: "Environment",
   },
   network: {
-    description: 'Network connectivity or latency issues',
-    icon: '🌐',
-    label: 'Network',
+    description: "Network connectivity or latency issues",
+    icon: "🌐",
+    label: "Network",
   },
   order_dependent: {
-    description: 'Test execution order dependencies',
-    icon: '📋',
-    label: 'Order Dependent',
+    description: "Test execution order dependencies",
+    icon: "📋",
+    label: "Order Dependent",
   },
   random: {
-    description: 'Random or non-deterministic behavior',
-    icon: '🎲',
-    label: 'Random',
+    description: "Random or non-deterministic behavior",
+    icon: "🎲",
+    label: "Random",
   },
   resource: {
-    description: 'Resource contention or availability issues',
-    icon: '💾',
-    label: 'Resource',
+    description: "Resource contention or availability issues",
+    icon: "💾",
+    label: "Resource",
   },
   timing: {
-    description: 'Race conditions or timeout issues',
-    icon: '⏱',
-    label: 'Timing',
+    description: "Race conditions or timeout issues",
+    icon: "⏱",
+    label: "Timing",
   },
 };
 
 const getProbabilityLevel = (probability: number): ProbabilityLevel => {
   if (probability >= HIGH_THRESHOLD) {
-    return { barColor: 'bg-red-500', label: 'High', textColor: 'text-red-600' };
+    return { barColor: "bg-red-500", label: "High", textColor: "text-red-600" };
   }
   if (probability >= MEDIUM_THRESHOLD) {
-    return { barColor: 'bg-orange-500', label: 'Medium', textColor: 'text-orange-500' };
+    return { barColor: "bg-orange-500", label: "Medium", textColor: "text-orange-500" };
   }
   if (probability >= LOW_THRESHOLD) {
-    return { barColor: 'bg-yellow-500', label: 'Low', textColor: 'text-yellow-600' };
+    return { barColor: "bg-yellow-500", label: "Low", textColor: "text-yellow-600" };
   }
-  return { barColor: 'bg-green-500', label: 'Minimal', textColor: 'text-green-600' };
+  return { barColor: "bg-green-500", label: "Minimal", textColor: "text-green-600" };
 };
 
 const getPatternConfig = (
@@ -135,7 +135,7 @@ const getNonEmptyString = (value: string | null | undefined): string | undefined
 
 const buildEvidenceElement = (evidence: string | undefined): ReactElement | undefined => {
   if (evidence !== undefined) {
-    return <span className='text-muted-foreground'> - {evidence}</span>;
+    return <span className="text-muted-foreground"> - {evidence}</span>;
   }
   return undefined;
 };
@@ -143,18 +143,18 @@ const buildEvidenceElement = (evidence: string | undefined): ReactElement | unde
 const getPercentage = (probability: number): number => Math.round(probability * PERCENT_MULTIPLIER);
 
 const buildFactorKey = (factor: Factor): string => {
-  const evidence = factor.evidence ?? 'none';
+  const evidence = factor.evidence ?? "none";
   return `${factor.factor}-${factor.weight}-${evidence}`;
 };
 
 const getFactorColor = (weight: number): string => {
   if (weight > FACTOR_HIGH_THRESHOLD) {
-    return 'bg-red-500';
+    return "bg-red-500";
   }
   if (weight > FACTOR_MEDIUM_THRESHOLD) {
-    return 'bg-yellow-500';
+    return "bg-yellow-500";
   }
-  return 'bg-gray-400';
+  return "bg-gray-400";
 };
 
 const FlakinessGauge = ({
@@ -164,40 +164,40 @@ const FlakinessGauge = ({
   percentage: number;
   barColor: string;
 }): ReactElement => (
-  <div className='relative h-16 w-16'>
-    <svg viewBox={`0 0 ${GAUGE_SIZE} ${GAUGE_SIZE}`} className='h-full w-full -rotate-90'>
+  <div className="relative h-16 w-16">
+    <svg viewBox={`0 0 ${GAUGE_SIZE} ${GAUGE_SIZE}`} className="h-full w-full -rotate-90">
       <circle
         cx={GAUGE_SIZE / HALF}
         cy={GAUGE_SIZE / HALF}
         r={GAUGE_RADIUS}
-        fill='none'
-        stroke='currentColor'
+        fill="none"
+        stroke="currentColor"
         strokeWidth={GAUGE_STROKE}
-        className='text-muted'
+        className="text-muted"
       />
       <circle
         cx={GAUGE_SIZE / HALF}
         cy={GAUGE_SIZE / HALF}
         r={GAUGE_RADIUS}
-        fill='none'
-        stroke='currentColor'
+        fill="none"
+        stroke="currentColor"
         strokeWidth={GAUGE_STROKE}
         strokeDasharray={`${percentage} ${PERCENT_MULTIPLIER}`}
-        strokeLinecap='round'
-        className={barColor.replace('bg-', 'text-')}
+        strokeLinecap="round"
+        className={barColor.replace("bg-", "text-")}
       />
     </svg>
-    <div className='absolute inset-0 flex items-center justify-center'>
-      <span className='text-sm font-bold'>{percentage}%</span>
+    <div className="absolute inset-0 flex items-center justify-center">
+      <span className="text-sm font-bold">{percentage}%</span>
     </div>
   </div>
 );
 
 const PatternSummary = ({ config }: { config: PatternConfig }): ReactElement => (
-  <div className='text-muted-foreground mt-1 flex items-center gap-1.5 text-sm'>
+  <div className="text-muted-foreground mt-1 flex items-center gap-1.5 text-sm">
     <span>{config.icon}</span>
     <span>{config.label}</span>
-    <span className='text-xs'>- {config.description}</span>
+    <span className="text-xs">- {config.description}</span>
   </div>
 );
 
@@ -211,20 +211,20 @@ const PatternDetails = ({
   let confidenceElement: ReactElement | undefined = undefined;
   if (confidence !== undefined) {
     confidenceElement = (
-      <span className='text-muted-foreground text-sm'>
+      <span className="text-muted-foreground text-sm">
         ({Math.round(confidence * PERCENT_MULTIPLIER)}% confidence)
       </span>
     );
   }
 
   return (
-    <div className='bg-muted rounded-lg p-3'>
-      <div className='mb-2 flex items-center gap-2'>
-        <span className='text-lg'>{config.icon}</span>
-        <span className='font-medium'>{config.label} Pattern</span>
+    <div className="bg-muted rounded-lg p-3">
+      <div className="mb-2 flex items-center gap-2">
+        <span className="text-lg">{config.icon}</span>
+        <span className="font-medium">{config.label} Pattern</span>
         {confidenceElement}
       </div>
-      <p className='text-muted-foreground text-sm'>{config.description}</p>
+      <p className="text-muted-foreground text-sm">{config.description}</p>
     </div>
   );
 };
@@ -238,24 +238,24 @@ const FlakinessStats = ({
   flakyRuns: number | undefined;
   passRate: number | undefined;
 }): ReactElement => {
-  let passRateDisplay = '-';
+  let passRateDisplay = "-";
   if (passRate !== undefined) {
     passRateDisplay = `${Math.round(passRate * PERCENT_MULTIPLIER)}%`;
   }
 
   return (
-    <div className='grid grid-cols-3 gap-4 text-center'>
-      <div className='bg-muted rounded p-2'>
-        <div className='text-lg font-semibold'>{recentRuns ?? '-'}</div>
-        <div className='text-muted-foreground text-xs'>Recent Runs</div>
+    <div className="grid grid-cols-3 gap-4 text-center">
+      <div className="bg-muted rounded p-2">
+        <div className="text-lg font-semibold">{recentRuns ?? "-"}</div>
+        <div className="text-muted-foreground text-xs">Recent Runs</div>
       </div>
-      <div className='bg-muted rounded p-2'>
-        <div className='text-lg font-semibold'>{flakyRuns ?? '-'}</div>
-        <div className='text-muted-foreground text-xs'>Flaky Runs</div>
+      <div className="bg-muted rounded p-2">
+        <div className="text-lg font-semibold">{flakyRuns ?? "-"}</div>
+        <div className="text-muted-foreground text-xs">Flaky Runs</div>
       </div>
-      <div className='bg-muted rounded p-2'>
-        <div className='text-lg font-semibold'>{passRateDisplay}</div>
-        <div className='text-muted-foreground text-xs'>Pass Rate</div>
+      <div className="bg-muted rounded p-2">
+        <div className="text-lg font-semibold">{passRateDisplay}</div>
+        <div className="text-muted-foreground text-xs">Pass Rate</div>
       </div>
     </div>
   );
@@ -279,14 +279,14 @@ const EntropySection = ({
 
   return (
     <div>
-      <div className='mb-1 flex justify-between text-sm'>
-        <span className='text-muted-foreground'>Entropy Score</span>
-        <span className='font-medium'>{entropy.toFixed(ENTROPY_PRECISION)}</span>
+      <div className="mb-1 flex justify-between text-sm">
+        <span className="text-muted-foreground">Entropy Score</span>
+        <span className="font-medium">{entropy.toFixed(ENTROPY_PRECISION)}</span>
       </div>
-      <div className='bg-muted h-2 overflow-hidden rounded-full'>
-        <div className={cn('h-full rounded-full', barColor)} style={barStyle} />
+      <div className="bg-muted h-2 overflow-hidden rounded-full">
+        <div className={cn("h-full rounded-full", barColor)} style={barStyle} />
       </div>
-      <p className='text-muted-foreground mt-1 text-xs'>
+      <p className="text-muted-foreground mt-1 text-xs">
         Higher entropy indicates more unpredictable behavior
       </p>
     </div>
@@ -304,18 +304,18 @@ const ContributingFactorsSection = ({
 
   return (
     <div>
-      <h4 className='mb-2 text-sm font-medium'>Contributing Factors</h4>
-      <ul className='space-y-1.5'>
+      <h4 className="mb-2 text-sm font-medium">Contributing Factors</h4>
+      <ul className="space-y-1.5">
         {factors.map((factor) => {
           const badgeColor = getFactorColor(factor.weight);
           const evidence = getNonEmptyString(factor.evidence);
           const evidenceElement = buildEvidenceElement(evidence);
 
           return (
-            <li key={buildFactorKey(factor)} className='flex items-start gap-2 text-sm'>
-              <div className={cn('w-2 h-2 rounded-full mt-1.5 flex-shrink-0', badgeColor)} />
+            <li key={buildFactorKey(factor)} className="flex items-start gap-2 text-sm">
+              <div className={cn("w-2 h-2 rounded-full mt-1.5 flex-shrink-0", badgeColor)} />
               <div>
-                <span className='font-medium'>{factor.factor}</span>
+                <span className="font-medium">{factor.factor}</span>
                 {evidenceElement}
               </div>
             </li>
@@ -327,12 +327,12 @@ const ContributingFactorsSection = ({
 };
 
 const QuarantineNotice = ({ reason }: { reason: string }): ReactElement => (
-  <div className='rounded-lg border border-red-200 bg-red-50 p-3'>
-    <div className='mb-1 flex items-center gap-2 font-medium text-red-700'>
+  <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+    <div className="mb-1 flex items-center gap-2 font-medium text-red-700">
       <span>⚠</span>
       <span>Quarantine Recommended</span>
     </div>
-    <p className='text-sm text-red-600'>{reason}</p>
+    <p className="text-sm text-red-600">{reason}</p>
   </div>
 );
 
@@ -349,7 +349,7 @@ const FlakinessIndicator = ({
   let quarantineElement: ReactElement | undefined = undefined;
   if (quarantineRecommended === true) {
     quarantineElement = (
-      <span className='rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700'>
+      <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700">
         Quarantine Recommended
       </span>
     );
@@ -361,11 +361,11 @@ const FlakinessIndicator = ({
   }
 
   return (
-    <div className={cn('flex items-center gap-3', className)}>
+    <div className={cn("flex items-center gap-3", className)}>
       <FlakinessGauge percentage={percentage} barColor={level.barColor} />
-      <div className='flex-1'>
-        <div className='flex items-center gap-2'>
-          <span className={cn('font-semibold', level.textColor)}>{level.label} Flakiness</span>
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <span className={cn("font-semibold", level.textColor)}>{level.label} Flakiness</span>
           {quarantineElement}
         </div>
         {patternElement}
@@ -403,8 +403,8 @@ const FlakinessDetailCard = ({
   }
 
   return (
-    <div className={cn('rounded-lg border p-4 space-y-4', className)}>
-      <div className='flex items-start justify-between'>
+    <div className={cn("rounded-lg border p-4 space-y-4", className)}>
+      <div className="flex items-start justify-between">
         <FlakinessIndicator
           probability={probability}
           pattern={pattern}

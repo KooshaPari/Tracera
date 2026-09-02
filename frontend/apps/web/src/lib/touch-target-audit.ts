@@ -1,4 +1,4 @@
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 /**
  * Touch Target Audit Utility
  *
@@ -28,14 +28,14 @@ export function auditTouchTargets(container: Document | Element = document): Tou
 
   // Elements that should have touch targets
   const interactiveSelectors = [
-    'button',
-    'a',
+    "button",
+    "a",
     "input[type='button']",
     "input[type='checkbox']",
     "input[type='radio']",
     "input[type='submit']",
     "input[type='reset']",
-    'select',
+    "select",
     "[role='button']",
     "[role='link']",
     "[role='checkbox']",
@@ -43,10 +43,10 @@ export function auditTouchTargets(container: Document | Element = document): Tou
     "[role='tab']",
     "[role='switch']",
     "[role='menuitem']",
-    '[onclick]',
+    "[onclick]",
   ];
 
-  const selector = interactiveSelectors.join(',');
+  const selector = interactiveSelectors.join(",");
   const elements = container.querySelectorAll(selector);
 
   elements.forEach((element) => {
@@ -59,8 +59,8 @@ export function auditTouchTargets(container: Document | Element = document): Tou
     // Check if element is hidden or has opacity 0
     const computedStyle = window.getComputedStyle(element);
     if (
-      computedStyle.display === 'none' ||
-      computedStyle.visibility === 'hidden' ||
+      computedStyle.display === "none" ||
+      computedStyle.visibility === "hidden" ||
       Number(computedStyle.opacity) === 0
     ) {
       return;
@@ -69,7 +69,7 @@ export function auditTouchTargets(container: Document | Element = document): Tou
     // Check if element is within a smaller parent (icon inside button)
     // Skip if parent is a button (common pattern for icons)
     const parent = element.parentElement;
-    if (parent?.tagName === 'BUTTON' || parent?.tagName === 'A') {
+    if (parent?.tagName === "BUTTON" || parent?.tagName === "A") {
       return;
     }
 
@@ -99,7 +99,7 @@ function getElementSelector(element: Element): string {
   let selector = element.tagName.toLowerCase();
 
   if (element.className) {
-    selector += `.${element.className.split(' ').join('.')}`;
+    selector += `.${element.className.split(" ").join(".")}`;
   }
 
   if (element.parentElement && element.parentElement !== document.body) {
@@ -117,15 +117,15 @@ function getElementSelector(element: Element): string {
 export function logTouchTargetAudit(issues: TouchTargetIssue[]): void {
   if (issues.length === 0) {
     logger.info(
-      '%c✓ All touch targets meet minimum 44x44px size requirement',
-      'color: green; font-weight: bold;',
+      "%c✓ All touch targets meet minimum 44x44px size requirement",
+      "color: green; font-weight: bold;",
     );
     return;
   }
 
   logger.warn(
     `%c⚠ Found ${issues.length} touch target(s) below 44x44px minimum:`,
-    'color: #ff6b6b; font-weight: bold;',
+    "color: #ff6b6b; font-weight: bold;",
   );
 
   issues.forEach((issue) => {
@@ -137,7 +137,7 @@ export function logTouchTargetAudit(issues: TouchTargetIssue[]): void {
  * Highlight touch target issues in the DOM for debugging
  */
 export function highlightTouchTargetIssues(issues: TouchTargetIssue[]): void {
-  const style = document.createElement('style');
+  const style = document.createElement("style");
   style.textContent = `
     [data-touch-target-issue] {
       outline: 2px dashed #ff6b6b !important;
@@ -147,7 +147,7 @@ export function highlightTouchTargetIssues(issues: TouchTargetIssue[]): void {
   document.head.appendChild(style);
 
   issues.forEach((issue) => {
-    issue.element.setAttribute('data-touch-target-issue', issue.message);
+    issue.element.setAttribute("data-touch-target-issue", issue.message);
   });
 }
 
@@ -155,11 +155,11 @@ export function highlightTouchTargetIssues(issues: TouchTargetIssue[]): void {
  * Remove highlighting from touch target issues
  */
 export function clearTouchTargetHighlights(): void {
-  document.querySelectorAll('[data-touch-target-issue]').forEach((el) => {
-    el.removeAttribute('data-touch-target-issue');
+  document.querySelectorAll("[data-touch-target-issue]").forEach((el) => {
+    el.removeAttribute("data-touch-target-issue");
   });
 
-  const style = document.querySelector('style[data-touch-target-audit]') as HTMLStyleElement | null;
+  const style = document.querySelector("style[data-touch-target-audit]") as HTMLStyleElement | null;
   if (style) {
     style.remove();
   }
@@ -170,15 +170,15 @@ export function clearTouchTargetHighlights(): void {
  */
 export const touchTargetClasses = {
   // Minimum height for buttons and inputs
-  minTouchHeight: 'min-h-[44px]',
+  minTouchHeight: "min-h-[44px]",
   // Minimum width for buttons and inputs
-  minTouchWidth: 'min-w-[44px]',
+  minTouchWidth: "min-w-[44px]",
   // Combined minimum height and width
-  minTouchTarget: 'min-h-[44px] min-w-[44px]',
+  minTouchTarget: "min-h-[44px] min-w-[44px]",
   // Padding to ensure target size
-  touchPadding: 'p-2.5', // 10px padding = 44px with normal text size
+  touchPadding: "p-2.5", // 10px padding = 44px with normal text size
   // Reduced padding if text provides height
-  touchPaddingSmall: 'p-2', // 8px padding = 40px with normal text
+  touchPaddingSmall: "p-2", // 8px padding = 40px with normal text
 };
 
 /**
@@ -188,30 +188,30 @@ export function getTouchTargetStyle(
   options: {
     hasText?: boolean;
     hasIcon?: boolean;
-    size?: 'sm' | 'md' | 'lg';
+    size?: "sm" | "md" | "lg";
   } = {},
 ): string {
-  const { hasText = true, hasIcon = true, size = 'md' } = options;
+  const { hasText = true, hasIcon = true, size = "md" } = options;
 
-  const baseClasses = ['focus:outline-none', 'focus:ring-2', 'focus:ring-primary'];
+  const baseClasses = ["focus:outline-none", "focus:ring-2", "focus:ring-primary"];
 
   if (hasIcon && !hasText) {
     // Icon-only button: ensure it's 44x44
-    baseClasses.push('h-11 w-11');
+    baseClasses.push("h-11 w-11");
   } else if (hasText && !hasIcon) {
     // Text-only button: ensure minimum height
-    baseClasses.push('min-h-[44px]', 'px-4');
+    baseClasses.push("min-h-[44px]", "px-4");
   } else {
     // Text with icon or complex content
-    baseClasses.push('min-h-[44px]');
-    if (size === 'sm') {
-      baseClasses.push('px-3', 'py-2');
-    } else if (size === 'md') {
-      baseClasses.push('px-4', 'py-3');
+    baseClasses.push("min-h-[44px]");
+    if (size === "sm") {
+      baseClasses.push("px-3", "py-2");
+    } else if (size === "md") {
+      baseClasses.push("px-4", "py-3");
     } else {
-      baseClasses.push('px-6', 'py-4');
+      baseClasses.push("px-6", "py-4");
     }
   }
 
-  return baseClasses.join(' ');
+  return baseClasses.join(" ");
 }

@@ -2,20 +2,20 @@
 // Provides separated views: traceability, page flow, component library, and perspectives
 // Uses Python backend for BOTH items and links so one DB source (avoids 0 nodes when Go has no items).
 
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { useNavigate, useParams } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useNavigate, useParams } from "@tanstack/react-router";
+import { useEffect } from "react";
 
-import { client } from '@/api/client';
-import { UnifiedGraphView } from '@/components/graph/UnifiedGraphView';
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Skeleton } from '@tracertm/ui/components/Skeleton';
+import { client } from "@/api/client";
+import { UnifiedGraphView } from "@/components/graph/UnifiedGraphView";
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Skeleton } from "@tracertm/ui/components/Skeleton";
 
 const { getAuthHeaders, getBackendURL } = client;
 
 /** Python backend base URL for graph data (items + links from same DB so nodes/edges match). */
 function getGraphBackendURL(): string {
-  return getBackendURL('/api/v1/links');
+  return getBackendURL("/api/v1/links");
 }
 
 interface GraphViewProps {
@@ -49,17 +49,17 @@ export function GraphView({ projectId: projectIdProp }: GraphViewProps) {
         `${base}/api/v1/items?project_id=${resolvedProjectId}&limit=${pageSizeItems}&skip=${pageParam}`,
         {
           headers: {
-            'X-Bulk-Operation': 'true',
+            "X-Bulk-Operation": "true",
             ...getAuthHeaders(),
           },
         },
       );
       if (!res.ok) {
-        throw new Error('Failed to fetch items');
+        throw new Error("Failed to fetch items");
       }
       return res.json();
     },
-    queryKey: ['graph-items', resolvedProjectId],
+    queryKey: ["graph-items", resolvedProjectId],
   });
 
   const linksQuery = useInfiniteQuery<{ links?: unknown[]; total?: number }>({
@@ -76,17 +76,17 @@ export function GraphView({ projectId: projectIdProp }: GraphViewProps) {
         `${base}/api/v1/links?project_id=${resolvedProjectId}&limit=${pageSizeLinks}&skip=${pageParam}`,
         {
           headers: {
-            'X-Bulk-Operation': 'true', // Python backend skips rate limit when present
+            "X-Bulk-Operation": "true", // Python backend skips rate limit when present
             ...getAuthHeaders(),
           },
         },
       );
       if (!res.ok) {
-        throw new Error('Failed to fetch links');
+        throw new Error("Failed to fetch links");
       }
       return res.json();
     },
-    queryKey: ['graph-links', resolvedProjectId],
+    queryKey: ["graph-links", resolvedProjectId],
   });
 
   // OPTIMIZATION: Parallel prefetch of first pages on mount
@@ -148,20 +148,20 @@ export function GraphView({ projectId: projectIdProp }: GraphViewProps) {
   const handleNavigateToItem = (itemId: string) => {};
 
   return (
-    <div className='relative h-full'>
+    <div className="relative h-full">
       {(itemsLoading || linksLoading) && (
-        <div className='absolute top-6 right-6 z-20'>
-          <Badge variant='outline' className='gap-2 text-xs'>
-            <span className='bg-primary inline-flex h-2 w-2 animate-pulse rounded-full' />
+        <div className="absolute top-6 right-6 z-20">
+          <Badge variant="outline" className="gap-2 text-xs">
+            <span className="bg-primary inline-flex h-2 w-2 animate-pulse rounded-full" />
             Loading graph
           </Badge>
         </div>
       )}
 
       {isPriming ? (
-        <div className='space-y-4 p-6'>
-          <Skeleton className='h-10 w-56' />
-          <Skeleton className='h-[calc(100vh-220px)] w-full' />
+        <div className="space-y-4 p-6">
+          <Skeleton className="h-10 w-56" />
+          <Skeleton className="h-[calc(100vh-220px)] w-full" />
         </div>
       ) : (
         <UnifiedGraphView

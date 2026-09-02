@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-import { Copy, Download, ExternalLink, Moon, Sun } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { RedocStandalone } from 'redoc';
+import { Copy, Download, ExternalLink, Moon, Sun } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { RedocStandalone } from "redoc";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 interface RedocWrapperProps {
   specUrl?: string;
@@ -30,7 +30,7 @@ const ICON_SIZE = 18;
 const JSON_INDENT = 2;
 const REDOC_DEFAULTS = {
   disableSearch: false,
-  expandResponses: '200,201',
+  expandResponses: "200,201",
   expandSingleSchemaField: true,
   hideDownloadButton: false,
   hideHostname: false,
@@ -40,81 +40,81 @@ const REDOC_DEFAULTS = {
   scrollYOffset: DEFAULT_SCROLL_Y_OFFSET,
   showExtensions: false,
   sortPropsAlphabetically: false,
-  specUrl: '/specs/openapi.json',
+  specUrl: "/specs/openapi.json",
 };
 
 const DARK_COLORS = {
   border: {
-    dark: '#404040',
-    light: '#505050',
+    dark: "#404040",
+    light: "#505050",
   },
   http: {
-    basic: '#999',
-    delete: '#e27a7a',
-    get: '#6bbd5b',
-    head: '#c167e4',
-    link: '#31bbb6',
-    options: '#d3ca12',
-    patch: '#e09d43',
-    post: '#248fb2',
-    put: '#9b708b',
+    basic: "#999",
+    delete: "#e27a7a",
+    get: "#6bbd5b",
+    head: "#c167e4",
+    link: "#31bbb6",
+    options: "#d3ca12",
+    patch: "#e09d43",
+    post: "#248fb2",
+    put: "#9b708b",
   },
   primary: {
-    main: '#4a90e2',
+    main: "#4a90e2",
   },
   text: {
-    primary: '#f0f0f0',
-    secondary: '#b0b0b0',
+    primary: "#f0f0f0",
+    secondary: "#b0b0b0",
   },
 };
 
 const LIGHT_COLORS = {
   border: {
-    dark: '#e0e0e0',
-    light: '#f0f0f0',
+    dark: "#e0e0e0",
+    light: "#f0f0f0",
   },
   http: {
-    basic: '#999',
-    delete: '#f93e3e',
-    get: '#61affe',
-    head: '#c167e4',
-    link: '#31bbb6',
-    options: '#d3ca12',
-    patch: '#50e3c2',
-    post: '#49cc90',
-    put: '#fca130',
+    basic: "#999",
+    delete: "#f93e3e",
+    get: "#61affe",
+    head: "#c167e4",
+    link: "#31bbb6",
+    options: "#d3ca12",
+    patch: "#50e3c2",
+    post: "#49cc90",
+    put: "#fca130",
   },
   primary: {
-    main: '#4a90e2',
+    main: "#4a90e2",
   },
   text: {
-    primary: '#333',
-    secondary: '#666',
+    primary: "#333",
+    secondary: "#666",
   },
 };
 
 const TYPOGRAPHY = {
   code: {
     fontFamily: '"Fira Code", "Courier New", monospace',
-    fontSize: '14px',
-    fontWeight: '400',
+    fontSize: "14px",
+    fontWeight: "400",
   },
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  fontSize: '16px',
+  fontSize: "16px",
   headings: {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    fontWeight: '700',
+    fontWeight: "700",
   },
 };
 
 const downloadOpenApiJson = (data: unknown): void => {
   const blob = new Blob([JSON.stringify(data, null, JSON_INDENT)], {
-    type: 'application/json',
+    type: "application/json",
   });
   const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
+  const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = 'openapi-spec.json';
+  anchor.download = "openapi-spec.json";
   document.body.append(anchor);
   anchor.click();
   document.body.removeChild(anchor);
@@ -122,12 +122,12 @@ const downloadOpenApiJson = (data: unknown): void => {
 };
 
 const openInSwagger = (): void => {
-  window.open('/api-docs/swagger', '_blank');
+  window.open("/api-docs/swagger", "_blank");
 };
 
 const resolveDarkModePreference = (): boolean =>
-  document.documentElement.classList.contains('dark') ||
-  globalThis.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.classList.contains("dark") ||
+  globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
 
 const writeToClipboard = async (value: string) => {
   if (navigator.clipboard?.writeText) {
@@ -135,14 +135,14 @@ const writeToClipboard = async (value: string) => {
     return;
   }
 
-  const textarea = document.createElement('textarea');
+  const textarea = document.createElement("textarea");
   textarea.value = value;
-  textarea.setAttribute('readonly', 'true');
-  textarea.style.position = 'absolute';
-  textarea.style.left = '-9999px';
+  textarea.setAttribute("readonly", "true");
+  textarea.style.position = "absolute";
+  textarea.style.left = "-9999px";
   document.body.append(textarea);
   textarea.select();
-  document.execCommand('copy');
+  document.execCommand("copy");
   document.body.removeChild(textarea);
 };
 
@@ -180,7 +180,7 @@ const useSpecData = (specUrl?: string, spec?: object) => {
         setSpecData(data);
       })
       .catch((error) => {
-        logger.error('Failed to load OpenAPI spec:', error);
+        logger.error("Failed to load OpenAPI spec:", error);
       });
   }, [spec, specUrl]);
 
@@ -197,7 +197,7 @@ const useDarkMode = () => {
   const toggleDarkMode = useCallback(() => {
     setDarkMode((prev) => {
       const next = !prev;
-      document.documentElement.classList.toggle('dark', next);
+      document.documentElement.classList.toggle("dark", next);
       return next;
     });
   }, []);
@@ -221,7 +221,7 @@ const useCopySpecUrl = (specUrl?: string) => {
         setCopied(false);
       }, COPY_RESET_MS);
     } catch (error) {
-      logger.error('Failed to copy spec URL:', error);
+      logger.error("Failed to copy spec URL:", error);
     }
   }, [specUrl]);
 
@@ -241,14 +241,14 @@ const useDownloadSpec = (resolvedSpec: object | null, specUrl?: string) =>
 const buildTheme = (darkMode: boolean) => ({
   colors: darkMode ? DARK_COLORS : LIGHT_COLORS,
   rightPanel: {
-    backgroundColor: darkMode ? '#1a1a1a' : '#263238',
-    textColor: '#ffffff',
+    backgroundColor: darkMode ? "#1a1a1a" : "#263238",
+    textColor: "#ffffff",
   },
   sidebar: {
-    activeTextColor: '#4a90e2',
-    backgroundColor: darkMode ? '#2d2d2d' : '#fafafa',
-    textColor: darkMode ? '#f0f0f0' : '#333',
-    width: '280px',
+    activeTextColor: "#4a90e2",
+    backgroundColor: darkMode ? "#2d2d2d" : "#fafafa",
+    textColor: darkMode ? "#f0f0f0" : "#333",
+    width: "280px",
   },
   typography: TYPOGRAPHY,
 });
@@ -341,8 +341,8 @@ const useStandaloneProps = (
   }, [options, resolvedSpec, specUrl]);
 
 const LoadingState = ({ label }: { label: string }) => (
-  <div className='redoc-loading'>
-    <div className='spinner' />
+  <div className="redoc-loading">
+    <div className="spinner" />
     <p>{label}</p>
   </div>
 );
@@ -358,8 +358,8 @@ const IconLabelButton = ({
   onClick: () => void;
   title: string;
 }) => (
-  <button type='button' onClick={onClick} className='redoc-btn' title={title}>
-    <span className='redoc-btn-icon'>{icon}</span>
+  <button type="button" onClick={onClick} className="redoc-btn" title={title}>
+    <span className="redoc-btn-icon">{icon}</span>
     <span>{label}</span>
   </button>
 );
@@ -379,33 +379,33 @@ const RedocToolbar = ({
   onOpenSwagger: () => void;
   onToggleDarkMode: () => void;
 }) => (
-  <div className='redoc-controls'>
-    <div className='redoc-toolbar'>
-      <h1 className='redoc-title'>API Reference</h1>
-      <div className='redoc-actions'>
+  <div className="redoc-controls">
+    <div className="redoc-toolbar">
+      <h1 className="redoc-title">API Reference</h1>
+      <div className="redoc-actions">
         <IconLabelButton
           onClick={onCopy}
           icon={<Copy size={ICON_SIZE} />}
-          label={copied ? 'Copied!' : 'Copy URL'}
-          title='Copy Spec URL'
+          label={copied ? "Copied!" : "Copy URL"}
+          title="Copy Spec URL"
         />
         <IconLabelButton
           onClick={onDownload}
           icon={<Download size={ICON_SIZE} />}
-          label='Download'
-          title='Download OpenAPI Spec'
+          label="Download"
+          title="Download OpenAPI Spec"
         />
         <IconLabelButton
           onClick={onOpenSwagger}
           icon={<ExternalLink size={ICON_SIZE} />}
-          label='Swagger UI'
-          title='Open in Swagger UI'
+          label="Swagger UI"
+          title="Open in Swagger UI"
         />
         <IconLabelButton
           onClick={onToggleDarkMode}
           icon={darkMode ? <Sun size={ICON_SIZE} /> : <Moon size={ICON_SIZE} />}
-          label={darkMode ? 'Light' : 'Dark'}
-          title='Toggle Dark Mode'
+          label={darkMode ? "Light" : "Dark"}
+          title="Toggle Dark Mode"
         />
       </div>
     </div>
@@ -425,7 +425,7 @@ const RedocContent = ({
   hasSpec ? (
     <RedocStandalone {...(standaloneProps as Parameters<typeof RedocStandalone>[0])} />
   ) : (
-    <LoadingState label='Loading API Reference...' />
+    <LoadingState label="Loading API Reference..." />
   );
 
 const REDOC_STYLES = `
@@ -598,7 +598,7 @@ export const RedocWrapper = (props: RedocWrapperProps) => {
   const downloadSpec = useDownloadSpec(resolvedSpec, normalized.specUrl);
 
   return (
-    <div className={`redoc-container ${darkMode ? 'dark-mode' : ''}`}>
+    <div className={`redoc-container ${darkMode ? "dark-mode" : ""}`}>
       <RedocToolbar
         copied={copied}
         darkMode={darkMode}

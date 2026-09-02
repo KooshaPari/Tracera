@@ -1,4 +1,4 @@
-import { DEFAULT_REPORT_INTERVAL_MS, ZERO } from './constants';
+import { DEFAULT_REPORT_INTERVAL_MS, ZERO } from "./constants";
 
 function createInterval(
   callback: () => void,

@@ -1,7 +1,7 @@
-import { client } from '@/api/client';
+import { client } from "@/api/client";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 export { API_URL, getAuthHeaders };

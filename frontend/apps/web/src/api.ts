@@ -10,7 +10,7 @@ import type {
   Priority,
   Project,
   ViewType,
-} from '@tracertm/types';
+} from "@tracertm/types";
 
 import type {
   AuthErrorDetails,
@@ -23,9 +23,9 @@ import type {
   UpdateUserProfileRequest,
   User,
   UserMetadata,
-} from './api/auth';
+} from "./api/auth";
 
-import { agentApi } from './api/agent';
+import { agentApi } from "./api/agent";
 import {
   AuthError,
   authApi,
@@ -34,9 +34,9 @@ import {
   loginWithCodeAndToast,
   redirectToAuthKitWithToast,
   shouldLogoutOnError,
-} from './api/auth';
-import { client } from './api/client';
-import { componentLibraryApi } from './api/component-library';
+} from "./api/auth";
+import { client } from "./api/client";
+import { componentLibraryApi } from "./api/component-library";
 
 type ClientExports = typeof client;
 

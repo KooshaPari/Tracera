@@ -2,9 +2,9 @@
 // Tracks expansion state (collapsed/preview/panel), manages parent/children hierarchy
 // Supports keyboard navigation and memoization for performance
 
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from "react";
 
-export type NodeExpansionState = 'collapsed' | 'preview' | 'panel';
+export type NodeExpansionState = "collapsed" | "preview" | "panel";
 
 /**
  * Expansion state for a single node
@@ -73,7 +73,7 @@ export function useNodeExpansion(items: { id: string; parentId?: string }[]) {
 
   // Get expansion state for a node
   const getExpansionState = useCallback(
-    (nodeId: string): NodeExpansionState => expansionStateRef.current.get(nodeId) ?? 'collapsed',
+    (nodeId: string): NodeExpansionState => expansionStateRef.current.get(nodeId) ?? "collapsed",
     [],
   );
 
@@ -192,7 +192,7 @@ export function useNodeExpansion(items: { id: string; parentId?: string }[]) {
   const expandedNodes = useMemo(() => {
     const expanded: string[] = [];
     for (const [nodeId, state] of expansionStateRef.current) {
-      if (state !== 'collapsed') {
+      if (state !== "collapsed") {
         expanded.push(nodeId);
       }
     }
@@ -203,39 +203,39 @@ export function useNodeExpansion(items: { id: string; parentId?: string }[]) {
   const handleKeyboardNavigation = useCallback(
     (key: string, currentNodeId: string): string | null => {
       switch (key) {
-        case 'ArrowUp': {
+        case "ArrowUp": {
           // Navigate to parent
           return navigateToParent(currentNodeId);
         }
-        case 'ArrowDown': {
+        case "ArrowDown": {
           // Navigate to first child
           return navigateToChild(currentNodeId, 0);
         }
-        case 'ArrowLeft': {
+        case "ArrowLeft": {
           // Collapse current node
-          setExpansionState(currentNodeId, 'collapsed');
+          setExpansionState(currentNodeId, "collapsed");
           return currentNodeId;
         }
-        case 'ArrowRight': {
+        case "ArrowRight": {
           // Expand current node
           const state = getExpansionState(currentNodeId);
-          if (state === 'collapsed') {
-            setExpansionState(currentNodeId, 'preview');
-          } else if (state === 'preview') {
-            setExpansionState(currentNodeId, 'panel');
+          if (state === "collapsed") {
+            setExpansionState(currentNodeId, "preview");
+          } else if (state === "preview") {
+            setExpansionState(currentNodeId, "panel");
           }
           return currentNodeId;
         }
-        case 'Backspace': {
+        case "Backspace": {
           // Go back in history
           return navigateBack();
         }
-        case 'Enter': {
+        case "Enter": {
           // Toggle expansion state
           {
             const state = getExpansionState(currentNodeId);
             const nextState: NodeExpansionState =
-              state === 'collapsed' ? 'preview' : state === 'preview' ? 'panel' : 'collapsed';
+              state === "collapsed" ? "preview" : state === "preview" ? "panel" : "collapsed";
             setExpansionState(currentNodeId, nextState);
           }
           return currentNodeId;
@@ -283,5 +283,5 @@ export function useExpansionStateSelector(
   expansionState: Map<string, NodeExpansionState>,
   nodeId: string,
 ): NodeExpansionState {
-  return useMemo(() => expansionState.get(nodeId) ?? 'collapsed', [expansionState, nodeId]);
+  return useMemo(() => expansionState.get(nodeId) ?? "collapsed", [expansionState, nodeId]);
 }

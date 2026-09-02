@@ -3,9 +3,9 @@
  * Displays IPFS-style content addressing information
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from "react";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 const CID_PREVIEW_LENGTH = 12;
 const COPY_RESET_MS = 2000;
@@ -54,7 +54,7 @@ interface ContentHashComparisonProps {
 const SignatureBadge = ({ signatureValid }: { signatureValid: boolean | null | undefined }) => {
   if (signatureValid === true) {
     return (
-      <span className='flex items-center gap-1 rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700'>
+      <span className="flex items-center gap-1 rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
         <span>🔏</span>
         Signed & Valid
       </span>
@@ -62,14 +62,14 @@ const SignatureBadge = ({ signatureValid }: { signatureValid: boolean | null | u
   }
   if (signatureValid === false) {
     return (
-      <span className='flex items-center gap-1 rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700'>
+      <span className="flex items-center gap-1 rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
         <span>⚠</span>
         Invalid Signature
       </span>
     );
   }
   return (
-    <span className='flex items-center gap-1 rounded-md bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-700'>
+    <span className="flex items-center gap-1 rounded-md bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-700">
       <span>🔏</span>
       Signed
     </span>
@@ -80,14 +80,14 @@ const ContentAddressCardHeader = ({
   versionNumber,
   digitalSignature,
   signatureValid,
-}: Pick<ContentAddressCardProps, 'versionNumber' | 'digitalSignature' | 'signatureValid'>) => (
-  <div className='flex items-start justify-between'>
+}: Pick<ContentAddressCardProps, "versionNumber" | "digitalSignature" | "signatureValid">) => (
+  <div className="flex items-start justify-between">
     <div>
-      <h3 className='flex items-center gap-2 text-lg font-semibold'>
+      <h3 className="flex items-center gap-2 text-lg font-semibold">
         <span>📍</span>
         Content Address
       </h3>
-      <p className='text-muted-foreground text-sm'>
+      <p className="text-muted-foreground text-sm">
         Version {versionNumber} • Immutable content identifier
       </p>
     </div>
@@ -107,26 +107,26 @@ const HashField = ({ label, value, icon, fieldId, onCopy, copied, highlight }: H
   return (
     <div
       className={cn(
-        'p-3 rounded-lg',
-        highlight ? 'bg-primary/5 border border-primary/20' : 'bg-muted',
+        "p-3 rounded-lg",
+        highlight ? "bg-primary/5 border border-primary/20" : "bg-muted",
       )}
     >
-      <div className='mb-1 flex items-center justify-between'>
-        <div className='text-muted-foreground flex items-center gap-1.5 text-xs'>
+      <div className="mb-1 flex items-center justify-between">
+        <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
           {icon ? <span>{icon}</span> : null}
           <span>{label}</span>
         </div>
         {onCopy ? (
           <button
-            type='button'
+            type="button"
             onClick={handleClick}
-            className='hover:bg-muted-foreground/10 rounded px-2 py-0.5 text-xs transition-colors'
+            className="hover:bg-muted-foreground/10 rounded px-2 py-0.5 text-xs transition-colors"
           >
-            {copied ? 'Copied!' : 'Copy'}
+            {copied ? "Copied!" : "Copy"}
           </button>
         ) : null}
       </div>
-      <code className='font-mono text-xs break-all'>{value}</code>
+      <code className="font-mono text-xs break-all">{value}</code>
     </div>
   );
 };
@@ -142,21 +142,21 @@ const HashFieldsSection = ({
   copiedField: string | null;
   onCopy: (text: string, field: string) => void;
 }) => (
-  <div className='space-y-3'>
+  <div className="space-y-3">
     <HashField
-      copied={copiedField === 'cid'}
-      fieldId='cid'
+      copied={copiedField === "cid"}
+      fieldId="cid"
       highlight
-      icon='📦'
-      label='Content CID (IPFS-style)'
+      icon="📦"
+      label="Content CID (IPFS-style)"
       onCopy={onCopy}
       value={contentCid}
     />
     <HashField
-      copied={copiedField === 'hash'}
-      fieldId='hash'
-      icon='🔒'
-      label='Content Hash (SHA-256)'
+      copied={copiedField === "hash"}
+      fieldId="hash"
+      icon="🔒"
+      label="Content Hash (SHA-256)"
       onCopy={onCopy}
       value={contentHash}
     />
@@ -179,24 +179,24 @@ const VersionChainSection = ({
   }
 
   return (
-    <div className='space-y-3 border-t pt-4'>
-      <h4 className='text-sm font-medium'>Version Chain</h4>
+    <div className="space-y-3 border-t pt-4">
+      <h4 className="text-sm font-medium">Version Chain</h4>
       {versionChainHead ? (
         <HashField
-          copied={copiedField === 'chain'}
-          fieldId='chain'
-          icon='⛓'
-          label='Chain Head'
+          copied={copiedField === "chain"}
+          fieldId="chain"
+          icon="⛓"
+          label="Chain Head"
           onCopy={onCopy}
           value={versionChainHead}
         />
       ) : null}
       {previousVersionHash ? (
         <HashField
-          copied={copiedField === 'prev'}
-          fieldId='prev'
-          icon='⬅'
-          label='Previous Version'
+          copied={copiedField === "prev"}
+          fieldId="prev"
+          icon="⬅"
+          label="Previous Version"
           onCopy={onCopy}
           value={previousVersionHash}
         />
@@ -215,12 +215,12 @@ const SignatureSection = ({
   onCopy: (text: string, field: string) => void;
 }) =>
   digitalSignature ? (
-    <div className='border-t pt-4'>
+    <div className="border-t pt-4">
       <HashField
-        copied={copiedField === 'sig'}
-        fieldId='sig'
-        icon='🔏'
-        label='Digital Signature'
+        copied={copiedField === "sig"}
+        fieldId="sig"
+        icon="🔏"
+        label="Digital Signature"
         onCopy={onCopy}
         value={digitalSignature}
       />
@@ -234,13 +234,13 @@ const TimestampsSection = ({
   createdAt: string;
   lastModifiedAt: string;
 }) => (
-  <div className='grid grid-cols-2 gap-4 border-t pt-4 text-sm'>
+  <div className="grid grid-cols-2 gap-4 border-t pt-4 text-sm">
     <div>
-      <div className='text-muted-foreground mb-1'>Created</div>
+      <div className="text-muted-foreground mb-1">Created</div>
       <div>{formatDate(createdAt)}</div>
     </div>
     <div>
-      <div className='text-muted-foreground mb-1'>Last Modified</div>
+      <div className="text-muted-foreground mb-1">Last Modified</div>
       <div>{formatDate(lastModifiedAt)}</div>
     </div>
   </div>
@@ -290,7 +290,7 @@ export const ContentAddressCard = ({
   );
 
   return (
-    <div className={cn('rounded-lg border p-4 space-y-4', className)}>
+    <div className={cn("rounded-lg border p-4 space-y-4", className)}>
       <ContentAddressCardHeader
         digitalSignature={digitalSignature}
         signatureValid={signatureValid}
@@ -321,14 +321,14 @@ export const ContentAddressBadge = ({
 }: ContentAddressBadgeProps) => (
   <div
     className={cn(
-      'inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-muted text-sm',
+      "inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-muted text-sm",
       className,
     )}
   >
     <span>📍</span>
-    <code className='font-mono text-xs'>{contentCid.slice(0, CID_PREVIEW_LENGTH)}...</code>
-    <span className='text-muted-foreground'>v{versionNumber}</span>
-    {signed ? <span title='Digitally signed'>🔏</span> : null}
+    <code className="font-mono text-xs">{contentCid.slice(0, CID_PREVIEW_LENGTH)}...</code>
+    <span className="text-muted-foreground">v{versionNumber}</span>
+    {signed ? <span title="Digitally signed">🔏</span> : null}
   </div>
 );
 
@@ -339,33 +339,33 @@ export const ContentHashComparison = ({
 }: ContentHashComparisonProps) => {
   const matches = currentHash === baselineHash;
   return (
-    <div className={cn('rounded-lg border p-4 space-y-3', className)}>
-      <div className='flex items-center justify-between'>
-        <h4 className='text-sm font-medium'>Content Hash Comparison</h4>
+    <div className={cn("rounded-lg border p-4 space-y-3", className)}>
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-medium">Content Hash Comparison</h4>
         {matches ? (
-          <span className='rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700'>
+          <span className="rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
             ✓ Matches
           </span>
         ) : (
-          <span className='rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700'>
+          <span className="rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
             ✕ Modified
           </span>
         )}
       </div>
 
-      <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
-        <div className='bg-muted rounded p-2'>
-          <div className='text-muted-foreground mb-1 text-xs'>Current</div>
-          <code className='font-mono text-xs break-all'>{currentHash}</code>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="bg-muted rounded p-2">
+          <div className="text-muted-foreground mb-1 text-xs">Current</div>
+          <code className="font-mono text-xs break-all">{currentHash}</code>
         </div>
-        <div className='bg-muted rounded p-2'>
-          <div className='text-muted-foreground mb-1 text-xs'>Baseline</div>
-          <code className='font-mono text-xs break-all'>{baselineHash}</code>
+        <div className="bg-muted rounded p-2">
+          <div className="text-muted-foreground mb-1 text-xs">Baseline</div>
+          <code className="font-mono text-xs break-all">{baselineHash}</code>
         </div>
       </div>
 
       {!matches ? (
-        <p className='text-sm text-amber-600'>
+        <p className="text-sm text-amber-600">
           ⚠ Content has been modified since baseline was established
         </p>
       ) : null}

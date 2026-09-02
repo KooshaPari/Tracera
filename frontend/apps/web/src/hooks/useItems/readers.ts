@@ -1,4 +1,4 @@
-const EMPTY_STRING = '';
+const EMPTY_STRING = "";
 
 type ApiItem = Record<string, unknown>;
 
@@ -7,16 +7,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function readString(value: unknown): string | undefined {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   return undefined;
 }
 
 function readNonEmptyString(value: unknown): string | undefined {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const trimmed = value.trim();
-    if (trimmed !== '') {
+    if (trimmed !== "") {
       return value;
     }
   }
@@ -24,14 +24,14 @@ function readNonEmptyString(value: unknown): string | undefined {
 }
 
 function readNumber(value: unknown): number | undefined {
-  if (typeof value === 'number' && !Number.isNaN(value)) {
+  if (typeof value === "number" && !Number.isNaN(value)) {
     return value;
   }
   return undefined;
 }
 
 function readBoolean(value: unknown): boolean | undefined {
-  if (typeof value === 'boolean') {
+  if (typeof value === "boolean") {
     return value;
   }
   return undefined;
@@ -39,7 +39,7 @@ function readBoolean(value: unknown): boolean | undefined {
 
 function readStringArray(value: unknown): string[] | undefined {
   if (Array.isArray(value)) {
-    const allStrings = value.every((entry) => typeof entry === 'string');
+    const allStrings = value.every((entry) => typeof entry === "string");
     if (allStrings) {
       return value;
     }
@@ -49,7 +49,7 @@ function readStringArray(value: unknown): string[] | undefined {
 
 function readNumberArray(value: unknown): number[] | undefined {
   if (Array.isArray(value)) {
-    const allNumbers = value.every((entry) => typeof entry === 'number' && !Number.isNaN(entry));
+    const allNumbers = value.every((entry) => typeof entry === "number" && !Number.isNaN(entry));
     if (allNumbers) {
       return value;
     }
@@ -65,7 +65,7 @@ function readRecord(value: unknown): Record<string, unknown> | undefined {
 }
 
 function readEnumValue<T extends string>(value: unknown, allowed: readonly T[]): T | undefined {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const match = allowed.find((entry) => entry === value);
     if (match !== undefined) {
       return match;

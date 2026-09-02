@@ -1,21 +1,21 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
 // Import components directly to avoid layout dependencies
-import { NodeActions } from '../../../components/graph/NodeActions';
-import { NodeContextMenu } from '../../../components/graph/NodeContextMenu';
-import { NodeHoverTooltip } from '../../../components/graph/NodeHoverTooltip';
-import { NodeQuickActions } from '../../../components/graph/NodeQuickActions';
+import { NodeActions } from "../../../components/graph/NodeActions";
+import { NodeContextMenu } from "../../../components/graph/NodeContextMenu";
+import { NodeHoverTooltip } from "../../../components/graph/NodeHoverTooltip";
+import { NodeQuickActions } from "../../../components/graph/NodeQuickActions";
 
 describe(NodeActions, () => {
-  it('renders all action buttons', () => {
+  it("renders all action buttons", () => {
     const onExpand = vi.fn();
     const onNavigate = vi.fn();
     const onShowMenu = vi.fn();
 
     render(
       <NodeActions
-        nodeId='test-node'
+        nodeId="test-node"
         isExpanded={false}
         onExpand={onExpand}
         onNavigate={onNavigate}
@@ -23,19 +23,19 @@ describe(NodeActions, () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: /expand/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /open details/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /more actions/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /expand/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /open details/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /more actions/i })).toBeInTheDocument();
   });
 
-  it('calls onExpand when expand button is clicked', async () => {
+  it("calls onExpand when expand button is clicked", async () => {
     const onExpand = vi.fn();
     const onNavigate = vi.fn();
     const onShowMenu = vi.fn();
 
     render(
       <NodeActions
-        nodeId='test-node'
+        nodeId="test-node"
         isExpanded={false}
         onExpand={onExpand}
         onNavigate={onNavigate}
@@ -43,21 +43,21 @@ describe(NodeActions, () => {
       />,
     );
 
-    const expandButton = screen.getByRole('button', { name: /expand/i });
+    const expandButton = screen.getByRole("button", { name: /expand/i });
     await user.click(expandButton);
 
-    expect(onExpand).toHaveBeenCalledWith('test-node');
+    expect(onExpand).toHaveBeenCalledWith("test-node");
     expect(onExpand).toHaveBeenCalledOnce();
   });
 
-  it('calls onNavigate when navigate button is clicked', async () => {
+  it("calls onNavigate when navigate button is clicked", async () => {
     const onExpand = vi.fn();
     const onNavigate = vi.fn();
     const onShowMenu = vi.fn();
 
     render(
       <NodeActions
-        nodeId='test-node'
+        nodeId="test-node"
         isExpanded={false}
         onExpand={onExpand}
         onNavigate={onNavigate}
@@ -65,19 +65,19 @@ describe(NodeActions, () => {
       />,
     );
 
-    const navigateButton = screen.getByRole('button', {
+    const navigateButton = screen.getByRole("button", {
       name: /open details/i,
     });
     await user.click(navigateButton);
 
-    expect(onNavigate).toHaveBeenCalledWith('test-node');
+    expect(onNavigate).toHaveBeenCalledWith("test-node");
     expect(onNavigate).toHaveBeenCalledOnce();
   });
 
-  it('shows collapse icon when expanded', () => {
+  it("shows collapse icon when expanded", () => {
     render(
       <NodeActions
-        nodeId='test-node'
+        nodeId="test-node"
         isExpanded
         onExpand={vi.fn()}
         onNavigate={vi.fn()}
@@ -85,17 +85,17 @@ describe(NodeActions, () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: /collapse/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /collapse/i })).toBeInTheDocument();
   });
 
-  it('stops event propagation on button clicks', async () => {
+  it("stops event propagation on button clicks", async () => {
     const onExpand = vi.fn();
     const parentClick = vi.fn();
 
     render(
       <div onClick={parentClick}>
         <NodeActions
-          nodeId='test-node'
+          nodeId="test-node"
           isExpanded={false}
           onExpand={onExpand}
           onNavigate={vi.fn()}
@@ -104,7 +104,7 @@ describe(NodeActions, () => {
       </div>,
     );
 
-    const expandButton = screen.getByRole('button', { name: /expand/i });
+    const expandButton = screen.getByRole("button", { name: /expand/i });
     await user.click(expandButton);
 
     expect(onExpand).toHaveBeenCalled();
@@ -113,11 +113,11 @@ describe(NodeActions, () => {
 });
 
 describe(NodeContextMenu, () => {
-  it('renders children as trigger', () => {
+  it("renders children as trigger", () => {
     render(
       <NodeContextMenu
-        nodeId='test-node'
-        nodeType='requirement'
+        nodeId="test-node"
+        nodeType="requirement"
         onCopyId={vi.fn()}
         onDuplicate={vi.fn()}
         onDelete={vi.fn()}
@@ -127,14 +127,14 @@ describe(NodeContextMenu, () => {
       </NodeContextMenu>,
     );
 
-    expect(screen.getByText('Test Content')).toBeInTheDocument();
+    expect(screen.getByText("Test Content")).toBeInTheDocument();
   });
 
-  it('shows menu items on right click', async () => {
+  it("shows menu items on right click", async () => {
     render(
       <NodeContextMenu
-        nodeId='test-node'
-        nodeType='requirement'
+        nodeId="test-node"
+        nodeType="requirement"
         onCopyId={vi.fn()}
         onDuplicate={vi.fn()}
         onDelete={vi.fn()}
@@ -145,25 +145,25 @@ describe(NodeContextMenu, () => {
     );
 
     await user.pointer({
-      keys: '[MouseRight>]',
-      target: screen.getByText('Test Content'),
+      keys: "[MouseRight>]",
+      target: screen.getByText("Test Content"),
     });
 
     await waitFor(() => {
-      expect(screen.getByText('View Details')).toBeInTheDocument();
-      expect(screen.getByText('Copy ID')).toBeInTheDocument();
-      expect(screen.getByText('Duplicate')).toBeInTheDocument();
-      expect(screen.getByText('Delete')).toBeInTheDocument();
+      expect(screen.getByText("View Details")).toBeInTheDocument();
+      expect(screen.getByText("Copy ID")).toBeInTheDocument();
+      expect(screen.getByText("Duplicate")).toBeInTheDocument();
+      expect(screen.getByText("Delete")).toBeInTheDocument();
     });
   });
 
-  it('calls onViewDetails when menu item is clicked', async () => {
+  it("calls onViewDetails when menu item is clicked", async () => {
     const onViewDetails = vi.fn();
 
     render(
       <NodeContextMenu
-        nodeId='test-node'
-        nodeType='requirement'
+        nodeId="test-node"
+        nodeType="requirement"
         onCopyId={vi.fn()}
         onDuplicate={vi.fn()}
         onDelete={vi.fn()}
@@ -174,26 +174,26 @@ describe(NodeContextMenu, () => {
     );
 
     await user.pointer({
-      keys: '[MouseRight>]',
-      target: screen.getByText('Test Content'),
+      keys: "[MouseRight>]",
+      target: screen.getByText("Test Content"),
     });
 
     await waitFor(() => {
-      expect(screen.getByText('View Details')).toBeInTheDocument();
+      expect(screen.getByText("View Details")).toBeInTheDocument();
     });
 
-    await user.click(screen.getByText('View Details'));
+    await user.click(screen.getByText("View Details"));
 
-    expect(onViewDetails).toHaveBeenCalledWith('test-node');
+    expect(onViewDetails).toHaveBeenCalledWith("test-node");
   });
 
-  it('calls onCopyId when Copy ID is clicked', async () => {
+  it("calls onCopyId when Copy ID is clicked", async () => {
     const onCopyId = vi.fn();
 
     render(
       <NodeContextMenu
-        nodeId='test-node'
-        nodeType='requirement'
+        nodeId="test-node"
+        nodeType="requirement"
         onCopyId={onCopyId}
         onDuplicate={vi.fn()}
         onDelete={vi.fn()}
@@ -204,101 +204,101 @@ describe(NodeContextMenu, () => {
     );
 
     await user.pointer({
-      keys: '[MouseRight>]',
-      target: screen.getByText('Test Content'),
+      keys: "[MouseRight>]",
+      target: screen.getByText("Test Content"),
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Copy ID')).toBeInTheDocument();
+      expect(screen.getByText("Copy ID")).toBeInTheDocument();
     });
 
-    await user.click(screen.getByText('Copy ID'));
+    await user.click(screen.getByText("Copy ID"));
 
-    expect(onCopyId).toHaveBeenCalledWith('test-node');
+    expect(onCopyId).toHaveBeenCalledWith("test-node");
   });
 });
 
 describe(NodeHoverTooltip, () => {
-  it('renders tooltip with basic info', () => {
+  it("renders tooltip with basic info", () => {
     render(
       <NodeHoverTooltip
-        nodeId='test-node'
-        nodeType='requirement'
-        label='Test Requirement'
+        nodeId="test-node"
+        nodeType="requirement"
+        label="Test Requirement"
         position={{ x: 100, y: 100 }}
       />,
     );
 
-    expect(screen.getByText('Test Requirement')).toBeInTheDocument();
-    expect(screen.getByText('requirement')).toBeInTheDocument();
+    expect(screen.getByText("Test Requirement")).toBeInTheDocument();
+    expect(screen.getByText("requirement")).toBeInTheDocument();
   });
 
-  it('renders status when provided', () => {
+  it("renders status when provided", () => {
     render(
       <NodeHoverTooltip
-        nodeId='test-node'
-        nodeType='requirement'
-        label='Test Requirement'
-        status='in_progress'
+        nodeId="test-node"
+        nodeType="requirement"
+        label="Test Requirement"
+        status="in_progress"
         position={{ x: 100, y: 100 }}
       />,
     );
 
-    expect(screen.getByText('in_progress')).toBeInTheDocument();
+    expect(screen.getByText("in_progress")).toBeInTheDocument();
   });
 
-  it('renders metadata when provided', () => {
+  it("renders metadata when provided", () => {
     const metadata = {
-      assignee: 'John Doe',
-      deadline: '2024-12-31',
-      priority: 'high',
+      assignee: "John Doe",
+      deadline: "2024-12-31",
+      priority: "high",
     };
 
     render(
       <NodeHoverTooltip
-        nodeId='test-node'
-        nodeType='requirement'
-        label='Test Requirement'
+        nodeId="test-node"
+        nodeType="requirement"
+        label="Test Requirement"
         metadata={metadata}
         position={{ x: 100, y: 100 }}
       />,
     );
 
-    expect(screen.getByText('priority:')).toBeInTheDocument();
-    expect(screen.getByText('high')).toBeInTheDocument();
-    expect(screen.getByText('assignee:')).toBeInTheDocument();
-    expect(screen.getByText('John Doe')).toBeInTheDocument();
+    expect(screen.getByText("priority:")).toBeInTheDocument();
+    expect(screen.getByText("high")).toBeInTheDocument();
+    expect(screen.getByText("assignee:")).toBeInTheDocument();
+    expect(screen.getByText("John Doe")).toBeInTheDocument();
   });
 
-  it('limits metadata to 3 items', () => {
+  it("limits metadata to 3 items", () => {
     const metadata = {
-      assignee: 'John Doe',
-      category: 'feature',
-      deadline: '2024-12-31',
-      priority: 'high',
-      status: 'active',
+      assignee: "John Doe",
+      category: "feature",
+      deadline: "2024-12-31",
+      priority: "high",
+      status: "active",
     };
 
-    render(
+    const { container } = render(
       <NodeHoverTooltip
-        nodeId='test-node'
-        nodeType='requirement'
-        label='Test Requirement'
+        nodeId="test-node"
+        nodeType="requirement"
+        label="Test Requirement"
         metadata={metadata}
         position={{ x: 100, y: 100 }}
       />,
     );
 
-    const metadataItems = container.querySelectorAll('dl > div');
+    const metadataItems = container.querySelectorAll("dl > div");
     expect(metadataItems.length).toBe(3);
   });
 
-  it('positions tooltip based on position prop', () => {
-    render(
+  it("positions tooltip based on position prop", () => {
+    const { container } = render(
       <NodeHoverTooltip
-        nodeId='test-node'
-        nodeType='requirement'
-        label='Test Requirement'
+        nodeId="test-node"
+        nodeType="requirement"
+        label="Test Requirement"
         position={{ x: 150, y: 200 }}
       />,
     );
@@ -306,174 +306,174 @@ describe(NodeHoverTooltip, () => {
     const tooltip = container.firstChild;
     expect(tooltip).toBeInstanceOf(HTMLElement);
     if (tooltip instanceof HTMLElement) {
-      expect(tooltip.style.left).toBe('160px'); // X + 10
-      expect(tooltip.style.top).toBe('210px'); // Y + 10
+      expect(tooltip.style.left).toBe("160px"); // X + 10
+      expect(tooltip.style.top).toBe("210px"); // Y + 10
     }
   });
 });
 
 describe(NodeQuickActions, () => {
-  it('renders all quick action buttons', () => {
+  it("renders all quick action buttons", () => {
     render(
       <NodeQuickActions
-        nodeId='test-node'
+        nodeId="test-node"
         onAddLink={vi.fn()}
         onAddTag={vi.fn()}
         onEditNote={vi.fn()}
       />,
     );
 
-    const buttons = screen.getAllByRole('button');
+    const buttons = screen.getAllByRole("button");
     expect(buttons).toHaveLength(3); // Link, Tag, Note buttons
   });
 
-  it('opens link popover when link button is clicked', async () => {
+  it("opens link popover when link button is clicked", async () => {
     render(
       <NodeQuickActions
-        nodeId='test-node'
+        nodeId="test-node"
         onAddLink={vi.fn()}
         onAddTag={vi.fn()}
         onEditNote={vi.fn()}
       />,
     );
 
-    const buttons = screen.getAllByRole('button');
+    const buttons = screen.getAllByRole("button");
     await user.click(buttons[0]); // First button is link
 
     await waitFor(() => {
-      expect(screen.getByText('Link to node')).toBeInTheDocument();
+      expect(screen.getByText("Link to node")).toBeInTheDocument();
     });
   });
 
-  it('calls onAddLink when link is submitted', async () => {
+  it("calls onAddLink when link is submitted", async () => {
     const onAddLink = vi.fn();
 
     render(
       <NodeQuickActions
-        nodeId='test-node'
+        nodeId="test-node"
         onAddLink={onAddLink}
         onAddTag={vi.fn()}
         onEditNote={vi.fn()}
       />,
     );
 
-    const buttons = screen.getAllByRole('button');
+    const buttons = screen.getAllByRole("button");
     await user.click(buttons[0]);
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText('Node ID')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Node ID")).toBeInTheDocument();
     });
 
-    const input = screen.getByPlaceholderText('Node ID');
-    await user.type(input, 'target-node-123');
+    const input = screen.getByPlaceholderText("Node ID");
+    await user.type(input, "target-node-123");
 
-    const addButton = screen.getByRole('button', { name: /add/i });
+    const addButton = screen.getByRole("button", { name: "Confirm link to node" });
     await user.click(addButton);
 
-    expect(onAddLink).toHaveBeenCalledWith('test-node', 'target-node-123');
+    expect(onAddLink).toHaveBeenCalledWith("test-node", "target-node-123");
   });
 
-  it('opens tag popover when tag button is clicked', async () => {
+  it("opens tag popover when tag button is clicked", async () => {
     render(
       <NodeQuickActions
-        nodeId='test-node'
+        nodeId="test-node"
         onAddLink={vi.fn()}
         onAddTag={vi.fn()}
         onEditNote={vi.fn()}
       />,
     );
 
-    const buttons = screen.getAllByRole('button');
+    const buttons = screen.getAllByRole("button");
     await user.click(buttons[1]); // Second button is tag
 
     await waitFor(() => {
-      expect(screen.getByText('Add tag')).toBeInTheDocument();
+      expect(screen.getByText("Add tag")).toBeInTheDocument();
     });
   });
 
-  it('calls onAddTag when tag is submitted', async () => {
+  it("calls onAddTag when tag is submitted", async () => {
     const onAddTag = vi.fn();
 
     render(
       <NodeQuickActions
-        nodeId='test-node'
+        nodeId="test-node"
         onAddLink={vi.fn()}
         onAddTag={onAddTag}
         onEditNote={vi.fn()}
       />,
     );
 
-    const buttons = screen.getAllByRole('button');
+    const buttons = screen.getAllByRole("button");
     await user.click(buttons[1]);
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText('Tag name')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Tag name")).toBeInTheDocument();
     });
 
-    const input = screen.getByPlaceholderText('Tag name');
-    await user.type(input, 'important');
+    const input = screen.getByPlaceholderText("Tag name");
+    await user.type(input, "important");
 
-    const addButton = screen.getByRole('button', { name: /add/i });
+    const addButton = screen.getByRole("button", { name: "Confirm tag for node" });
     await user.click(addButton);
 
-    expect(onAddTag).toHaveBeenCalledWith('test-node', 'important');
+    expect(onAddTag).toHaveBeenCalledWith("test-node", "important");
   });
 
-  it('calls onEditNote when note is submitted', async () => {
+  it("calls onEditNote when note is submitted", async () => {
     const onEditNote = vi.fn();
 
     render(
       <NodeQuickActions
-        nodeId='test-node'
+        nodeId="test-node"
         onAddLink={vi.fn()}
         onAddTag={vi.fn()}
         onEditNote={onEditNote}
       />,
     );
 
-    const buttons = screen.getAllByRole('button');
+    const buttons = screen.getAllByRole("button");
     await user.click(buttons[2]); // Third button is note
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText('Add note...')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Add note...")).toBeInTheDocument();
     });
 
-    const input = screen.getByPlaceholderText('Add note...');
-    await user.type(input, 'This is a test note');
+    const input = screen.getByPlaceholderText("Add note...");
+    await user.type(input, "This is a test note");
 
-    const saveButton = screen.getByRole('button', { name: /save/i });
+    const saveButton = screen.getByRole("button", { name: /save/i });
     await user.click(saveButton);
 
-    expect(onEditNote).toHaveBeenCalledWith('test-node', 'This is a test note');
+    expect(onEditNote).toHaveBeenCalledWith("test-node", "This is a test note");
   });
 
-  it('clears input after submission', async () => {
+  it("clears input after submission", async () => {
     render(
       <NodeQuickActions
-        nodeId='test-node'
+        nodeId="test-node"
         onAddLink={vi.fn()}
         onAddTag={vi.fn()}
         onEditNote={vi.fn()}
       />,
     );
 
-    const buttons = screen.getAllByRole('button');
+    const buttons = screen.getAllByRole("button");
     await user.click(buttons[1]); // Tag button
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText('Tag name')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("Tag name")).toBeInTheDocument();
     });
 
-    const inputEl = screen.getByPlaceholderText('Tag name');
+    const inputEl = screen.getByPlaceholderText("Tag name");
     if (inputEl instanceof HTMLInputElement) {
-      await user.type(inputEl, 'test-tag');
+      await user.type(inputEl, "test-tag");
     }
 
-    const addButton = screen.getByRole('button', { name: /add/i });
+    const addButton = screen.getByRole("button", { name: "Confirm tag for node" });
     await user.click(addButton);
 
     await waitFor(() => {
-      expect(inputEl instanceof HTMLInputElement ? inputEl.value : '').toBe('');
+      expect(inputEl instanceof HTMLInputElement ? inputEl.value : "").toBe("");
     });
   });
 });

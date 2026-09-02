@@ -1,12 +1,12 @@
-import type { ReactElement } from 'react';
+import type { ReactElement } from "react";
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from "react";
 
-import type { IntegrationCredential } from '@tracertm/types';
+import type { IntegrationCredential } from "@tracertm/types";
 
-import { LoadingSpinner } from '@/components/layout/LoadingSpinner';
-import { useDeleteCredential, useValidateCredential } from '@/hooks/useIntegrations';
-import CredentialRow from '@/pages/projects/views/integrations-view/tabs/credentials/CredentialRow';
+import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
+import { useDeleteCredential, useValidateCredential } from "@/hooks/useIntegrations";
+import CredentialRow from "@/pages/projects/views/integrations-view/tabs/credentials/CredentialRow";
 
 interface CredentialsTabProps {
   credentials: IntegrationCredential[];
@@ -62,7 +62,7 @@ function useCredentialActions(): CredentialActionsState {
 
 function renderEmptyState(): ReactElement {
   return (
-    <div className='py-12 text-center text-gray-500'>
+    <div className="py-12 text-center text-gray-500">
       No credentials configured. Connect a provider from the Overview tab.
     </div>
   );
@@ -70,7 +70,7 @@ function renderEmptyState(): ReactElement {
 
 function previewCredentialIdentifier(credential: IntegrationCredential): string {
   const previewLength = 8;
-  if (credential.providerUserId !== undefined && credential.providerUserId !== '') {
+  if (credential.providerUserId !== undefined && credential.providerUserId !== "") {
     return credential.providerUserId;
   }
   return credential.id.slice(0, previewLength);
@@ -99,8 +99,8 @@ export default function CredentialsTab({
 
   if (isLoading) {
     return (
-      <div className='flex justify-center py-8'>
-        <LoadingSpinner text='Loading credentials...' />
+      <div className="flex justify-center py-8">
+        <LoadingSpinner text="Loading credentials..." />
       </div>
     );
   }
@@ -110,7 +110,7 @@ export default function CredentialsTab({
   }
 
   return (
-    <div className='space-y-4'>
+    <div className="space-y-4">
       {sortedCredentials.map((credential) => (
         <CredentialRow
           key={credential.id}

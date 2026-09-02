@@ -5,7 +5,7 @@ export class ELK {
       children: [],
       edges: [],
       height: 0,
-      id: 'root',
+      id: "root",
       width: 0,
       x: 0,
       y: 0,

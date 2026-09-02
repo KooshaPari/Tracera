@@ -1,9 +1,9 @@
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { Project } from '@tracertm/types';
+import type { Project } from "@tracertm/types";
 
-const RECENT_PROJECTS_LIMIT = Number('10');
+const RECENT_PROJECTS_LIMIT = Number("10");
 
 // SSR-safe storage that only accesses localStorage on the client
 const noopStorage = {
@@ -15,9 +15,9 @@ const noopStorage = {
 const getStorage = () => {
   // Check if we're in a browser environment with proper localStorage
   if (
-    typeof globalThis.window === 'undefined' ||
-    typeof localStorage === 'undefined' ||
-    typeof localStorage.getItem !== 'function'
+    typeof globalThis.window === "undefined" ||
+    typeof localStorage === "undefined" ||
+    typeof localStorage.getItem !== "function"
   ) {
     return noopStorage;
   }
@@ -71,7 +71,7 @@ const getProjectSettingsOrDefault = (state: ProjectState, projectId: string): Pr
 
 const createRecentProjectActions = (
   set: StoreSetter,
-): Pick<ProjectStateActions, 'addRecentProject' | 'setRecentProjects'> => ({
+): Pick<ProjectStateActions, "addRecentProject" | "setRecentProjects"> => ({
   addRecentProject: (projectId) => {
     set((state) => {
       const filtered = state.recentProjects.filter((id) => id !== projectId);
@@ -90,7 +90,7 @@ const createRecentProjectActions = (
 const createCurrentProjectActions = (
   set: StoreSetter,
   get: StoreGetter,
-): Pick<ProjectStateActions, 'clearCurrentProject' | 'setCurrentProject'> => ({
+): Pick<ProjectStateActions, "clearCurrentProject" | "setCurrentProject"> => ({
   clearCurrentProject: () => {
     set({
       currentProject: null,
@@ -113,7 +113,7 @@ const createProjectSettingsActions = (
   get: StoreGetter,
 ): Pick<
   ProjectStateActions,
-  'getProjectSettings' | 'pinItem' | 'unpinItem' | 'updateProjectSettings'
+  "getProjectSettings" | "pinItem" | "unpinItem" | "updateProjectSettings"
 > => ({
   getProjectSettings: (projectId) => get().projectSettings[projectId] ?? {},
   pinItem: (projectId, itemId) => {
@@ -171,7 +171,7 @@ const buildProjectStore = (set: StoreSetter, get: StoreGetter): ProjectState => 
 
 export const useProjectStore = create<ProjectState>()(
   persist<ProjectState>((set, get) => buildProjectStore(set, get), {
-    name: 'tracertm-project-store',
+    name: "tracertm-project-store",
     partialize: (state: ProjectState) =>
       ({
         currentProjectId: state.currentProjectId,

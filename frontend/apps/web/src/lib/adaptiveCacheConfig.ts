@@ -8,43 +8,43 @@
  * - Time of day (peak hours → shorter TTL)
  */
 
-import type { DefaultError, UseQueryOptions } from '@tanstack/react-query';
+import type { DefaultError, UseQueryOptions } from "@tanstack/react-query";
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
-const SECOND_IN_MS = Number('1000');
-const MINUTE_IN_MS = Number('60') * SECOND_IN_MS;
-const HOUR_IN_MS = Number('60') * MINUTE_IN_MS;
+const SECOND_IN_MS = Number("1000");
+const MINUTE_IN_MS = Number("60") * SECOND_IN_MS;
+const HOUR_IN_MS = Number("60") * MINUTE_IN_MS;
 
-const KILOBYTE = Number('1024');
-const HUNDRED_KILOBYTES = Number('100') * KILOBYTE;
+const KILOBYTE = Number("1024");
+const HUNDRED_KILOBYTES = Number("100") * KILOBYTE;
 const MEGABYTE = KILOBYTE * KILOBYTE;
-const TEN_MEGABYTES = Number('10') * MEGABYTE;
+const TEN_MEGABYTES = Number("10") * MEGABYTE;
 
-const ONE_PER_HOUR = Number('1');
-const FIVE_PER_HOUR = Number('5');
-const TEN_PER_HOUR = Number('10');
-const TWENTY_PER_HOUR = Number('20');
-const HUNDRED_PER_HOUR = Number('100');
+const ONE_PER_HOUR = Number("1");
+const FIVE_PER_HOUR = Number("5");
+const TEN_PER_HOUR = Number("10");
+const TWENTY_PER_HOUR = Number("20");
+const HUNDRED_PER_HOUR = Number("100");
 
-const PEAK_START_HOUR = Number('9');
-const PEAK_END_HOUR = Number('18');
-const NIGHT_START_HOUR = Number('23');
-const NIGHT_END_HOUR = Number('6');
+const PEAK_START_HOUR = Number("9");
+const PEAK_END_HOUR = Number("18");
+const NIGHT_START_HOUR = Number("23");
+const NIGHT_END_HOUR = Number("6");
 
-const MULTIPLIER_TINY = Number('1.5');
-const MULTIPLIER_SMALL = Number('1.2');
-const MULTIPLIER_BASELINE = Number('1.0');
-const MULTIPLIER_LARGE = Number('0.7');
-const MULTIPLIER_HUGE = Number('0.4');
-const MULTIPLIER_RARELY = Number('1.8');
-const MULTIPLIER_FREQUENT = Number('0.6');
-const MULTIPLIER_VERY_FREQUENT = Number('0.3');
-const MULTIPLIER_COLD = Number('0.8');
-const MULTIPLIER_HOT = Number('1.3');
-const MULTIPLIER_VERY_HOT = Number('1.5');
+const MULTIPLIER_TINY = Number("1.5");
+const MULTIPLIER_SMALL = Number("1.2");
+const MULTIPLIER_BASELINE = Number("1.0");
+const MULTIPLIER_LARGE = Number("0.7");
+const MULTIPLIER_HUGE = Number("0.4");
+const MULTIPLIER_RARELY = Number("1.8");
+const MULTIPLIER_FREQUENT = Number("0.6");
+const MULTIPLIER_VERY_FREQUENT = Number("0.3");
+const MULTIPLIER_COLD = Number("0.8");
+const MULTIPLIER_HOT = Number("1.3");
+const MULTIPLIER_VERY_HOT = Number("1.5");
 
-const REALTIME_REFETCH_INTERVAL_MS = Number('5') * SECOND_IN_MS;
+const REALTIME_REFETCH_INTERVAL_MS = Number("5") * SECOND_IN_MS;
 
 export interface CacheMetrics {
   /** Size of the data in bytes */
@@ -71,20 +71,20 @@ export interface CacheConfig {
  */
 export const TTL_BOUNDS = {
   MAX_GC_TIME: HOUR_IN_MS,
-  MAX_STALE_TIME: Number('30') * MINUTE_IN_MS,
+  MAX_STALE_TIME: Number("30") * MINUTE_IN_MS,
   MIN_GC_TIME: ONE_PER_HOUR * MINUTE_IN_MS,
-  MIN_STALE_TIME: Number('30') * SECOND_IN_MS,
+  MIN_STALE_TIME: Number("30") * SECOND_IN_MS,
 };
 
 /**
  * Size categories for data-aware caching
  */
 export enum DataSizeCategory {
-  TINY = 'tiny', // < 1 KB
-  SMALL = 'small', // 1 KB - 100 KB
-  MEDIUM = 'medium', // 100 KB - 1 MB
-  LARGE = 'large', // 1 MB - 10 MB
-  HUGE = 'huge', // > 10 MB
+  TINY = "tiny", // < 1 KB
+  SMALL = "small", // 1 KB - 100 KB
+  MEDIUM = "medium", // 100 KB - 1 MB
+  LARGE = "large", // 1 MB - 10 MB
+  HUGE = "huge", // > 10 MB
 }
 
 /**
@@ -114,11 +114,11 @@ const SIZE_MULTIPLIERS: Record<DataSizeCategory, number> = {
  * Update frequency categories
  */
 export enum UpdateFrequencyCategory {
-  RARELY = 'rarely', // < 1 update/hour
-  INFREQUENT = 'infrequent', // 1-5 updates/hour
-  MODERATE = 'moderate', // 5-20 updates/hour
-  FREQUENT = 'frequent', // 20-100 updates/hour
-  VERY_FREQUENT = 'veryFrequent', // > 100 updates/hour
+  RARELY = "rarely", // < 1 update/hour
+  INFREQUENT = "infrequent", // 1-5 updates/hour
+  MODERATE = "moderate", // 5-20 updates/hour
+  FREQUENT = "frequent", // 20-100 updates/hour
+  VERY_FREQUENT = "veryFrequent", // > 100 updates/hour
 }
 
 /**
@@ -148,10 +148,10 @@ const UPDATE_FREQUENCY_MULTIPLIERS: Record<UpdateFrequencyCategory, number> = {
  * Access frequency categories
  */
 export enum AccessFrequencyCategory {
-  COLD = 'cold', // < 1 access/hour
-  WARM = 'warm', // 1-10 accesses/hour
-  HOT = 'hot', // 10-100 accesses/hour
-  VERY_HOT = 'veryHot', // > 100 accesses/hour
+  COLD = "cold", // < 1 access/hour
+  WARM = "warm", // 1-10 accesses/hour
+  HOT = "hot", // 10-100 accesses/hour
+  VERY_HOT = "veryHot", // > 100 accesses/hour
 }
 
 /**
@@ -255,11 +255,11 @@ export const ADAPTIVE_CONFIGS = {
    */
   dynamicAdaptive: (metrics: CacheMetrics): CacheConfig => {
     const base: CacheConfig = {
-      gcTime: Number('5') * MINUTE_IN_MS,
+      gcTime: Number("5") * MINUTE_IN_MS,
       refetchOnMount: true,
       refetchOnReconnect: true,
       refetchOnWindowFocus: false,
-      staleTime: Number('30') * SECOND_IN_MS,
+      staleTime: Number("30") * SECOND_IN_MS,
     };
     return calculateAdaptiveTTL(metrics, base);
   },
@@ -271,11 +271,11 @@ export const ADAPTIVE_CONFIGS = {
    */
   graphAdaptive: (metrics: CacheMetrics): CacheConfig => {
     const base: CacheConfig = {
-      gcTime: Number('15') * MINUTE_IN_MS,
+      gcTime: Number("15") * MINUTE_IN_MS,
       refetchOnMount: false,
       refetchOnReconnect: false,
       refetchOnWindowFocus: false,
-      staleTime: Number('5') * MINUTE_IN_MS,
+      staleTime: Number("5") * MINUTE_IN_MS,
     };
     return calculateAdaptiveTTL(metrics, base);
   },
@@ -301,11 +301,11 @@ export const ADAPTIVE_CONFIGS = {
    */
   staticAdaptive: (metrics: CacheMetrics): CacheConfig => {
     const base: CacheConfig = {
-      gcTime: Number('30') * MINUTE_IN_MS,
+      gcTime: Number("30") * MINUTE_IN_MS,
       refetchOnMount: false,
       refetchOnReconnect: false,
       refetchOnWindowFocus: false,
-      staleTime: Number('10') * MINUTE_IN_MS,
+      staleTime: Number("10") * MINUTE_IN_MS,
     };
     return calculateAdaptiveTTL(metrics, base);
   },
@@ -316,19 +316,19 @@ export const ADAPTIVE_CONFIGS = {
  */
 export const createAdaptiveQueryOptions = <TData = unknown, TError = DefaultError>(
   metrics: CacheMetrics,
-  configType: 'static' | 'dynamic' | 'graph',
+  configType: "static" | "dynamic" | "graph",
   overrides?: Partial<CacheConfig>,
 ): UseQueryOptions<TData, TError> => {
   let config: CacheConfig;
 
   switch (configType) {
-    case 'static':
+    case "static":
       config = ADAPTIVE_CONFIGS.staticAdaptive(metrics);
       break;
-    case 'dynamic':
+    case "dynamic":
       config = ADAPTIVE_CONFIGS.dynamicAdaptive(metrics);
       break;
-    case 'graph':
+    case "graph":
       config = ADAPTIVE_CONFIGS.graphAdaptive(metrics);
       break;
   }
@@ -347,12 +347,13 @@ export const logAdaptiveCacheDecision = (
   config: CacheConfig,
   reason: string,
 ): void => {
-  if (process.env['NODE_ENV'] === 'development') {
+  if (process.env["NODE_ENV"] === "development") {
     const sizeCategory = getDataSizeCategory(metrics.dataSize);
     const updateCategory = getUpdateFrequencyCategory(metrics.updateFrequency);
     const accessCategory = getAccessFrequencyCategory(metrics.accessFrequency);
 
-    logger.debug('[AdaptiveCache]', {
+    logger.debug("[AdaptiveCache]", {
+      accessCategory,
       accessFrequency: `${metrics.accessFrequency}/hour`,
       dataSize: `${(metrics.dataSize / KILOBYTE).toFixed(1)}KB`,
       gcTime: `${(config.gcTime / MINUTE_IN_MS).toFixed(1)}m`,

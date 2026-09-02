@@ -1,4 +1,4 @@
-import { test } from './global-setup';
+import { test } from "./global-setup";
 
 /**
  * Journey Overlay Tests
@@ -16,15 +16,15 @@ import { test } from './global-setup';
  * - Clear journey overlay
  */
 
-test.describe('Journey Overlay', () => {
+test.describe("Journey Overlay", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/graph');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/graph");
+    await page.waitForLoadState("networkidle");
     await page.waitForTimeout(1000);
   });
 
-  test.describe('Journey Selection', () => {
-    test('should display journey selector dropdown', async ({ page }) => {
+  test.describe("Journey Selection", () => {
+    test("should display journey selector dropdown", async ({ page }) => {
       // Look for journey selector
       const journeySelector = page
         .locator("button, select, [role='combobox']")
@@ -34,9 +34,9 @@ test.describe('Journey Overlay', () => {
       await expect(journeySelector).toBeVisible({ timeout: 10_000 });
     });
 
-    test('should list available journeys', async ({ page }) => {
+    test("should list available journeys", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario|flow/i })
         .first();
 
@@ -51,9 +51,9 @@ test.describe('Journey Overlay', () => {
       await expect(journeyOptions.first()).toBeVisible({ timeout: 5000 });
     });
 
-    test('should select journey from dropdown', async ({ page }) => {
+    test("should select journey from dropdown", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario|flow/i })
         .first();
 
@@ -72,9 +72,9 @@ test.describe('Journey Overlay', () => {
       await page.waitForTimeout(1000);
     });
 
-    test('should show selected journey name', async ({ page }) => {
+    test("should show selected journey name", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario|flow/i })
         .first();
 
@@ -88,7 +88,7 @@ test.describe('Journey Overlay', () => {
         .first();
 
       await expect(journeyOption).toBeVisible({ timeout: 5000 });
-      const journeyName = (await journeyOption.textContent()) ?? '';
+      const journeyName = (await journeyOption.textContent()) ?? "";
 
       await journeyOption.click();
       await page.waitForTimeout(500);
@@ -97,9 +97,9 @@ test.describe('Journey Overlay', () => {
       await expect(journeySelector).toContainText(journeyName);
     });
 
-    test('should handle multiple journey selection', async ({ page }) => {
+    test("should handle multiple journey selection", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario|flow/i })
         .first();
 
@@ -120,10 +120,10 @@ test.describe('Journey Overlay', () => {
     });
   });
 
-  test.describe('Journey Highlighting', () => {
-    test('should highlight journey nodes in graph', async ({ page }) => {
+  test.describe("Journey Highlighting", () => {
+    test("should highlight journey nodes in graph", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -148,9 +148,9 @@ test.describe('Journey Overlay', () => {
       await expect(highlightedNodes.first()).toBeVisible({ timeout: 10_000 });
     });
 
-    test('should show journey path visualization', async ({ page }) => {
+    test("should show journey path visualization", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -172,9 +172,9 @@ test.describe('Journey Overlay', () => {
       await expect(journeyEdges.first()).toBeVisible({ timeout: 10_000 });
     });
 
-    test('should distinguish journey start and end nodes', async ({ page }) => {
+    test("should distinguish journey start and end nodes", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -198,9 +198,9 @@ test.describe('Journey Overlay', () => {
       await expect(startNode.or(endNode)).toBeVisible({ timeout: 10_000 });
     });
 
-    test('should highlight journey sequence steps', async ({ page }) => {
+    test("should highlight journey sequence steps", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -223,10 +223,10 @@ test.describe('Journey Overlay', () => {
     });
   });
 
-  test.describe('Journey Statistics and Metrics', () => {
-    test('should display journey statistics panel', async ({ page }) => {
+  test.describe("Journey Statistics and Metrics", () => {
+    test("should display journey statistics panel", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -248,9 +248,9 @@ test.describe('Journey Overlay', () => {
       await expect(statsPanel).toBeVisible({ timeout: 10_000 });
     });
 
-    test('should show journey step count', async ({ page }) => {
+    test("should show journey step count", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -272,9 +272,9 @@ test.describe('Journey Overlay', () => {
       await expect(stepCount.first()).toBeVisible({ timeout: 10_000 });
     });
 
-    test('should display journey coverage metrics', async ({ page }) => {
+    test("should display journey coverage metrics", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -296,9 +296,9 @@ test.describe('Journey Overlay', () => {
       await expect(coverage.first()).toBeVisible({ timeout: 10_000 });
     });
 
-    test('should show journey completion status', async ({ page }) => {
+    test("should show journey completion status", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -321,10 +321,10 @@ test.describe('Journey Overlay', () => {
     });
   });
 
-  test.describe('Journey Explorer Navigation', () => {
-    test('should navigate journey steps sequentially', async ({ page }) => {
+  test.describe("Journey Explorer Navigation", () => {
+    test("should navigate journey steps sequentially", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -343,7 +343,7 @@ test.describe('Journey Overlay', () => {
 
       // Look for next/previous navigation buttons
       const nextBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /next|forward|right/i })
         .first();
 
@@ -352,9 +352,9 @@ test.describe('Journey Overlay', () => {
       await page.waitForTimeout(500);
     });
 
-    test('should click on journey step in list to navigate', async ({ page }) => {
+    test("should click on journey step in list to navigate", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -382,9 +382,9 @@ test.describe('Journey Overlay', () => {
       await page.waitForTimeout(500);
     });
 
-    test('should scroll to center graph on journey step selection', async ({ page }) => {
+    test("should scroll to center graph on journey step selection", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -413,16 +413,16 @@ test.describe('Journey Overlay', () => {
     });
   });
 
-  test.describe('Journey Filtering', () => {
-    test('should filter graph to show only journey items', async ({ page }) => {
+  test.describe("Journey Filtering", () => {
+    test("should filter graph to show only journey items", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
       await expect(journeySelector).toBeVisible({ timeout: 10_000 });
       // Get initial node count
-      const initialCount = await page.locator('.react-flow__nodes > div[data-id]').count();
+      const initialCount = await page.locator(".react-flow__nodes > div[data-id]").count();
 
       await journeySelector.click();
       await page.waitForTimeout(300);
@@ -438,7 +438,7 @@ test.describe('Journey Overlay', () => {
 
       // Check if there's a filter toggle for journey-only view
       const filterToggle = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /filter|journey.*only|show.*only/i })
         .first();
 
@@ -446,15 +446,15 @@ test.describe('Journey Overlay', () => {
       await filterToggle.click();
       await page.waitForTimeout(500);
 
-      const filteredCount = await page.locator('.react-flow__nodes > div[data-id]').count();
+      const filteredCount = await page.locator(".react-flow__nodes > div[data-id]").count();
 
       console.log(`Journey filter: ${initialCount} -> ${filteredCount} nodes`);
     });
 
-    test('should preserve other filters when journey is selected', async ({ page }) => {
+    test("should preserve other filters when journey is selected", async ({ page }) => {
       // Apply a dimension filter first
       const maturityFilter = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /maturity|status|type/i })
         .first();
 
@@ -473,7 +473,7 @@ test.describe('Journey Overlay', () => {
 
       // Now select journey
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -492,10 +492,10 @@ test.describe('Journey Overlay', () => {
     });
   });
 
-  test.describe('Clear Journey Overlay', () => {
-    test('should clear journey selection', async ({ page }) => {
+  test.describe("Clear Journey Overlay", () => {
+    test("should clear journey selection", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -519,7 +519,7 @@ test.describe('Journey Overlay', () => {
 
       // Look for clear/reset button
       const clearBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /clear|reset|none|remove/i })
         .first();
 
@@ -535,9 +535,9 @@ test.describe('Journey Overlay', () => {
       expect(remainingHighlighted).toBeLessThan(highlightedCount);
     });
 
-    test('should restore normal graph after clearing journey', async ({ page }) => {
+    test("should restore normal graph after clearing journey", async ({ page }) => {
       const journeySelector = page
-        .locator('button, select')
+        .locator("button, select")
         .filter({ hasText: /journey|scenario/i })
         .first();
 
@@ -554,11 +554,11 @@ test.describe('Journey Overlay', () => {
       await journeyOption.click();
       await page.waitForTimeout(1000);
 
-      const allNodes = await page.locator('.react-flow__nodes > div[data-id]').count();
+      const allNodes = await page.locator(".react-flow__nodes > div[data-id]").count();
 
       // Clear journey
       const clearBtn = page
-        .locator('button')
+        .locator("button")
         .filter({ hasText: /clear|reset|none/i })
         .first();
 
@@ -566,7 +566,7 @@ test.describe('Journey Overlay', () => {
       await clearBtn.click();
       await page.waitForTimeout(500);
 
-      const nodesAfterClear = await page.locator('.react-flow__nodes > div[data-id]').count();
+      const nodesAfterClear = await page.locator(".react-flow__nodes > div[data-id]").count();
 
       expect(nodesAfterClear).toBe(allNodes);
     });

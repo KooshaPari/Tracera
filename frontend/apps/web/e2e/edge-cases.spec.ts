@@ -1,4 +1,4 @@
-import { expect, test } from './global-setup';
+import { expect, test } from "./global-setup";
 
 /**
  * Edge Cases and Error Handling E2E Tests
@@ -7,23 +7,23 @@ import { expect, test } from './global-setup';
  * data validation edge cases, and graceful degradation.
  */
 
-test.describe('Edge Cases - Empty States', () => {
+test.describe("Edge Cases - Empty States", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should display empty state when no items exist', async ({ page }) => {
+  test("should display empty state when no items exist", async ({ page }) => {
     // Mock empty response
-    await page.route('**/api/items**', (route) => {
+    await page.route("**/api/items**", (route) => {
       void route.fulfill({
         body: JSON.stringify({ items: [], total: 0 }),
         status: 200,
       });
     });
 
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Should show empty state
     const emptyState = page.locator('[data-testid="empty-state"]');
@@ -35,24 +35,24 @@ test.describe('Edge Cases - Empty States', () => {
     await expect(createButton).toBeVisible();
   });
 
-  test('should display empty state when no projects exist', async ({ page }) => {
-    await page.route('**/api/projects**', (route) => {
+  test("should display empty state when no projects exist", async ({ page }) => {
+    await page.route("**/api/projects**", (route) => {
       void route.fulfill({
         body: JSON.stringify({ projects: [], total: 0 }),
         status: 200,
       });
     });
 
-    await page.goto('/projects');
+    await page.goto("/projects");
 
     const emptyState = page.locator('[data-testid="empty-state"]');
     await expect(emptyState).toBeVisible();
   });
 
-  test('should display empty search results gracefully', async ({ page }) => {
-    await page.goto('/items');
+  test("should display empty search results gracefully", async ({ page }) => {
+    await page.goto("/items");
 
-    await page.fill('[data-testid="search-input"]', 'nonexistent-query-xyz123');
+    await page.fill('[data-testid="search-input"]', "nonexistent-query-xyz123");
     await page.waitForTimeout(500);
 
     const noResults = page.locator('[data-testid="no-results"]');
@@ -60,31 +60,31 @@ test.describe('Edge Cases - Empty States', () => {
     await expect(noResults).toContainText(/no results found/i);
   });
 
-  test('should handle empty agent list', async ({ page }) => {
-    await page.route('**/api/agents**', (route) => {
+  test("should handle empty agent list", async ({ page }) => {
+    await page.route("**/api/agents**", (route) => {
       void route.fulfill({
         body: JSON.stringify({ agents: [], total: 0 }),
         status: 200,
       });
     });
 
-    await page.goto('/agents');
+    await page.goto("/agents");
 
     const emptyState = page.locator('[data-testid="empty-state"]');
     await expect(emptyState).toBeVisible();
   });
 });
 
-test.describe('Edge Cases - Network Errors', () => {
-  test('should handle network timeout', async ({ page }) => {
-    await page.route('**/api/items**', (route) => {
+test.describe("Edge Cases - Network Errors", () => {
+  test("should handle network timeout", async ({ page }) => {
+    await page.route("**/api/items**", (route) => {
       // Simulate timeout by not responding
       setTimeout(() => {
-        void route.abort('timedout');
+        void route.abort("timedout");
       }, 5000);
     });
 
-    await page.goto('/items');
+    await page.goto("/items");
 
     // Should show timeout error
     const error = page.locator('[data-testid="error-message"]');
@@ -96,23 +96,23 @@ test.describe('Edge Cases - Network Errors', () => {
     await expect(retryButton).toBeVisible();
   });
 
-  test('should handle 500 server error', async ({ page }) => {
-    await page.route('**/api/items**', (route) => {
+  test("should handle 500 server error", async ({ page }) => {
+    await page.route("**/api/items**", (route) => {
       void route.fulfill({
-        body: JSON.stringify({ error: 'Internal Server Error' }),
+        body: JSON.stringify({ error: "Internal Server Error" }),
         status: 500,
       });
     });
 
-    await page.goto('/items');
+    await page.goto("/items");
 
     const error = page.locator('[data-testid="error-message"]');
     await expect(error).toBeVisible();
     await expect(error).toContainText(/something went wrong|server error/i);
   });
 
-  test('should handle 404 not found', async ({ page }) => {
-    await page.goto('/items/nonexistent-item-id-12345');
+  test("should handle 404 not found", async ({ page }) => {
+    await page.goto("/items/nonexistent-item-id-12345");
 
     const notFound = page.locator('[data-testid="not-found"]');
     await expect(notFound).toBeVisible();
@@ -123,16 +123,16 @@ test.describe('Edge Cases - Network Errors', () => {
     await expect(backButton).toBeVisible();
   });
 
-  test('should handle network offline', async ({ page, context }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+  test("should handle network offline", async ({ page, context }) => {
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Go offline
     await context.setOffline(true);
 
     // Try to create item
     await page.click('button:has-text("New Item")');
-    await page.fill('input[name="title"]', 'Offline Item');
+    await page.fill('input[name="title"]', "Offline Item");
     await page.click('button:has-text("Save")');
 
     // Should show offline indicator
@@ -147,10 +147,10 @@ test.describe('Edge Cases - Network Errors', () => {
     await expect(offlineMessage).not.toBeVisible();
   });
 
-  test('should retry failed requests', async ({ page }) => {
+  test("should retry failed requests", async ({ page }) => {
     let requestCount = 0;
 
-    await page.route('**/api/items**', (route) => {
+    await page.route("**/api/items**", (route) => {
       requestCount++;
 
       if (requestCount < 3) {
@@ -163,8 +163,8 @@ test.describe('Edge Cases - Network Errors', () => {
       }
     });
 
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Should eventually succeed after retries
     expect(requestCount).toBeGreaterThanOrEqual(3);
@@ -175,12 +175,12 @@ test.describe('Edge Cases - Network Errors', () => {
   });
 });
 
-test.describe('Edge Cases - Boundary Values', () => {
-  test('should handle very long item titles', async ({ page }) => {
-    await page.goto('/items');
+test.describe("Edge Cases - Boundary Values", () => {
+  test("should handle very long item titles", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
-    const longTitle = 'A'.repeat(500);
+    const longTitle = "A".repeat(500);
     await page.fill('input[name="title"]', longTitle);
     await page.click('button:has-text("Save")');
 
@@ -193,42 +193,42 @@ test.describe('Edge Cases - Boundary Values', () => {
     expect(titleBox?.width).toBeLessThan(1000);
   });
 
-  test('should handle zero items in pagination', async ({ page }) => {
-    await page.route('**/api/items**', (route) => {
+  test("should handle zero items in pagination", async ({ page }) => {
+    await page.route("**/api/items**", (route) => {
       void route.fulfill({
         body: JSON.stringify({ items: [], page: 1, pageSize: 10, total: 0 }),
         status: 200,
       });
     });
 
-    await page.goto('/items');
+    await page.goto("/items");
 
     // Pagination should not appear or show 0
     const pagination = page.locator('[data-testid="pagination"]');
 
     if ((await pagination.count()) > 0) {
       const pageInfo = await pagination.textContent();
-      expect(pageInfo).toContain('0');
+      expect(pageInfo).toContain("0");
     }
   });
 
-  test('should handle maximum items in one page', async ({ page }) => {
+  test("should handle maximum items in one page", async ({ page }) => {
     // Create 100 items
     const items = Array.from({ length: 100 }, (_, i) => ({
       id: `item-${i}`,
       title: `Item ${i}`,
-      type: 'task',
+      type: "task",
     }));
 
-    await page.route('**/api/items**', (route) => {
+    await page.route("**/api/items**", (route) => {
       void route.fulfill({
         body: JSON.stringify({ items, total: 100 }),
         status: 200,
       });
     });
 
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Should render without breaking
     const itemCards = page.locator('[data-testid="item-card"]');
@@ -238,8 +238,8 @@ test.describe('Edge Cases - Boundary Values', () => {
     expect(count).toBeLessThanOrEqual(100);
   });
 
-  test('should handle special characters in search', async ({ page }) => {
-    await page.goto('/items');
+  test("should handle special characters in search", async ({ page }) => {
+    await page.goto("/items");
 
     const specialChars = String.raw`!@#$%^&*()[]{}|\;:"'<>,.?/`;
 
@@ -250,11 +250,11 @@ test.describe('Edge Cases - Boundary Values', () => {
     await expect(page.locator('[data-testid="items-list"]')).toBeVisible();
   });
 
-  test('should handle Unicode characters', async ({ page }) => {
-    await page.goto('/items');
+  test("should handle Unicode characters", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
-    const unicodeTitle = '测试项目 🚀 Тест العربية';
+    const unicodeTitle = "测试项目 🚀 Тест العربية";
 
     await page.fill('input[name="title"]', unicodeTitle);
     await page.click('button:has-text("Save")');
@@ -264,11 +264,11 @@ test.describe('Edge Cases - Boundary Values', () => {
     await expect(title).toHaveText(unicodeTitle);
   });
 
-  test('should handle emoji in content', async ({ page }) => {
-    await page.goto('/items');
+  test("should handle emoji in content", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
-    const emojiTitle = '🎉🎊🎈 Party Time! 🎁🎂🎃';
+    const emojiTitle = "🎉🎊🎈 Party Time! 🎁🎂🎃";
 
     await page.fill('input[name="title"]', emojiTitle);
     await page.click('button:has-text("Save")');
@@ -278,9 +278,9 @@ test.describe('Edge Cases - Boundary Values', () => {
   });
 });
 
-test.describe('Edge Cases - Concurrent Operations', () => {
-  test('should handle rapid clicks on same button', async ({ page }) => {
-    await page.goto('/items');
+test.describe("Edge Cases - Concurrent Operations", () => {
+  test("should handle rapid clicks on same button", async ({ page }) => {
+    await page.goto("/items");
 
     // Rapidly click new item button
     const newButton = page.locator('button:has-text("New Item")');
@@ -295,11 +295,11 @@ test.describe('Edge Cases - Concurrent Operations', () => {
     await expect(dialogs).toHaveCount(1);
   });
 
-  test('should handle simultaneous form submissions', async ({ page }) => {
-    await page.goto('/items');
+  test("should handle simultaneous form submissions", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
-    await page.fill('input[name="title"]', 'Concurrent Item');
+    await page.fill('input[name="title"]', "Concurrent Item");
 
     // Try to submit multiple times rapidly
     const submitButton = page.locator('button:has-text("Save")');
@@ -312,7 +312,7 @@ test.describe('Edge Cases - Concurrent Operations', () => {
 
     // Should only create one item
     await page.waitForTimeout(1000);
-    await page.goto('/items');
+    await page.goto("/items");
 
     const items = page.locator('[data-testid="item-card"]:has-text("Concurrent Item")');
     const count = await items.count();
@@ -320,15 +320,15 @@ test.describe('Edge Cases - Concurrent Operations', () => {
     expect(count).toBeLessThanOrEqual(1);
   });
 
-  test('should handle opening multiple modals', async ({ page }) => {
-    await page.goto('/items');
+  test("should handle opening multiple modals", async ({ page }) => {
+    await page.goto("/items");
 
     // Try to open multiple modals
     await page.click('button:has-text("New Item")');
     await page.waitForTimeout(100);
 
     // Press Escape to close
-    await page.keyboard.press('Escape');
+    await page.keyboard.press("Escape");
     await page.waitForTimeout(100);
 
     // Open again
@@ -340,21 +340,21 @@ test.describe('Edge Cases - Concurrent Operations', () => {
   });
 });
 
-test.describe('Edge Cases - Data Validation', () => {
-  test('should handle null/undefined values gracefully', async ({ page }) => {
-    await page.route('**/api/items/**', (route) => {
+test.describe("Edge Cases - Data Validation", () => {
+  test("should handle null/undefined values gracefully", async ({ page }) => {
+    await page.route("**/api/items/**", (route) => {
       void route.fulfill({
         body: JSON.stringify({
           description: undefined,
-          id: 'test-id',
+          id: "test-id",
           title: null,
-          type: 'task',
+          type: "task",
         }),
         status: 200,
       });
     });
 
-    await page.goto('/items/test-id');
+    await page.goto("/items/test-id");
 
     // Should not crash
     await expect(page.locator('[data-testid="item-detail"]')).toBeVisible();
@@ -364,39 +364,39 @@ test.describe('Edge Cases - Data Validation', () => {
     const titleText = await title.textContent();
 
     expect(titleText).toBeTruthy();
-    expect(titleText).not.toBe('null');
-    expect(titleText).not.toBe('undefined');
+    expect(titleText).not.toBe("null");
+    expect(titleText).not.toBe("undefined");
   });
 
-  test('should handle malformed API responses', async ({ page }) => {
-    await page.route('**/api/items**', (route) => {
+  test("should handle malformed API responses", async ({ page }) => {
+    await page.route("**/api/items**", (route) => {
       void route.fulfill({
-        body: 'Not valid JSON',
+        body: "Not valid JSON",
         status: 200,
       });
     });
 
-    await page.goto('/items');
+    await page.goto("/items");
 
     // Should show error
     const error = page.locator('[data-testid="error-message"]');
     await expect(error).toBeVisible();
   });
 
-  test('should handle missing required fields in response', async ({ page }) => {
-    await page.route('**/api/items**', (route) => {
+  test("should handle missing required fields in response", async ({ page }) => {
+    await page.route("**/api/items**", (route) => {
       void route.fulfill({
         body: JSON.stringify({
           items: [
-            { id: '1' }, // Missing title, type, etc.
-            { title: 'No ID' }, // Missing id
+            { id: "1" }, // Missing title, type, etc.
+            { title: "No ID" }, // Missing id
           ],
         }),
         status: 200,
       });
     });
 
-    await page.goto('/items');
+    await page.goto("/items");
 
     // Should handle gracefully, possibly filtering out invalid items
     const itemCards = page.locator('[data-testid="item-card"]');
@@ -406,25 +406,25 @@ test.describe('Edge Cases - Data Validation', () => {
     expect(count >= 0).toBe(true);
   });
 
-  test('should validate date formats', async ({ page }) => {
-    await page.goto('/items');
+  test("should validate date formats", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
     // Try invalid date
     const dateInput = page.locator('input[type="date"]');
 
     if ((await dateInput.count()) > 0) {
-      await dateInput.fill('invalid-date');
+      await dateInput.fill("invalid-date");
 
       const value = await dateInput.inputValue();
-      expect(value).not.toBe('invalid-date');
+      expect(value).not.toBe("invalid-date");
     }
   });
 });
 
-test.describe('Edge Cases - Browser Compatibility', () => {
-  test('should handle window resize', async ({ page }) => {
-    await page.goto('/items');
+test.describe("Edge Cases - Browser Compatibility", () => {
+  test("should handle window resize", async ({ page }) => {
+    await page.goto("/items");
 
     // Resize to mobile
     await page.setViewportSize({ height: 667, width: 375 });
@@ -443,12 +443,12 @@ test.describe('Edge Cases - Browser Compatibility', () => {
     await expect(desktopNav).toBeVisible();
   });
 
-  test('should handle page zoom', async ({ page }) => {
-    await page.goto('/items');
+  test("should handle page zoom", async ({ page }) => {
+    await page.goto("/items");
 
     // Zoom in
     await page.evaluate(() => {
-      document.body.style.zoom = '150%';
+      document.body.style.zoom = "150%";
     });
 
     await page.waitForTimeout(500);
@@ -459,21 +459,21 @@ test.describe('Edge Cases - Browser Compatibility', () => {
 
     // Reset zoom
     await page.evaluate(() => {
-      document.body.style.zoom = '100%';
+      document.body.style.zoom = "100%";
     });
   });
 
-  test('should work with JavaScript disabled gracefully', async ({ page, context }) => {
+  test("should work with JavaScript disabled gracefully", async ({ page, context }) => {
     // This test checks for progressive enhancement
-    await context.route('**/*.js', async (route) => {
+    await context.route("**/*.js", async (route) => {
       await route.abort();
     });
 
     try {
-      await page.goto('/', { timeout: 5000 });
+      await page.goto("/", { timeout: 5000 });
 
       // Should at least show some content or message
-      const bodyText = await page.textContent('body');
+      const bodyText = await page.textContent("body");
       expect(bodyText).toBeTruthy();
     } catch {
       // Expected to fail, but shouldn't crash completely
@@ -482,24 +482,24 @@ test.describe('Edge Cases - Browser Compatibility', () => {
   });
 });
 
-test.describe('Edge Cases - Form Validation', () => {
-  test('should validate required fields', async ({ page }) => {
-    await page.goto('/items');
+test.describe("Edge Cases - Form Validation", () => {
+  test("should validate required fields", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
     // Try to submit without filling required fields
     await page.click('button:has-text("Save")');
 
     // Should show validation errors
-    const errors = page.locator('.error');
+    const errors = page.locator(".error");
     expect(await errors.count()).toBeGreaterThan(0);
   });
 
-  test('should prevent submission while validating', async ({ page }) => {
-    await page.goto('/items');
+  test("should prevent submission while validating", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
-    await page.fill('input[name="title"]', 'Test');
+    await page.fill('input[name="title"]', "Test");
 
     // Submit button should be disabled during submission
     const submitButton = page.locator('button:has-text("Save")');
@@ -509,12 +509,12 @@ test.describe('Edge Cases - Form Validation', () => {
     await expect(submitButton).toBeDisabled();
   });
 
-  test('should handle form reset', async ({ page }) => {
-    await page.goto('/items');
+  test("should handle form reset", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
-    await page.fill('input[name="title"]', 'Test Item');
-    await page.fill('textarea[name="description"]', 'Test Description');
+    await page.fill('input[name="title"]', "Test Item");
+    await page.fill('textarea[name="description"]', "Test Description");
 
     // Cancel/Reset form
     await page.click('button:has-text("Cancel")');
@@ -524,61 +524,61 @@ test.describe('Edge Cases - Form Validation', () => {
 
     // Form should be empty
     const titleValue = await page.inputValue('input[name="title"]');
-    expect(titleValue).toBe('');
+    expect(titleValue).toBe("");
   });
 
-  test('should preserve form state on validation error', async ({ page }) => {
-    await page.goto('/items');
+  test("should preserve form state on validation error", async ({ page }) => {
+    await page.goto("/items");
     await page.click('button:has-text("New Item")');
 
-    await page.fill('input[name="title"]', 'Test Item');
-    await page.fill('textarea[name="description"]', 'Test Description');
+    await page.fill('input[name="title"]', "Test Item");
+    await page.fill('textarea[name="description"]', "Test Description");
 
     // Trigger validation error (e.g., by removing title)
-    await page.fill('input[name="title"]', '');
+    await page.fill('input[name="title"]', "");
     await page.click('button:has-text("Save")');
 
     // Description should still be there
     const descValue = await page.inputValue('textarea[name="description"]');
-    expect(descValue).toBe('Test Description');
+    expect(descValue).toBe("Test Description");
   });
 });
 
-test.describe('Edge Cases - URL and Routing', () => {
-  test('should handle direct URL access to deep routes', async ({ page }) => {
+test.describe("Edge Cases - URL and Routing", () => {
+  test("should handle direct URL access to deep routes", async ({ page }) => {
     // Directly navigate to a deep route
-    await page.goto('/items/item-123/edit');
+    await page.goto("/items/item-123/edit");
 
     // Should load correctly or redirect appropriately
     const url = page.url();
     expect(url).toBeTruthy();
 
     // Should not show blank page
-    const bodyText = await page.textContent('body');
+    const bodyText = await page.textContent("body");
     expect(bodyText?.length).toBeGreaterThan(0);
   });
 
-  test('should handle malformed URLs', async ({ page }) => {
-    await page.goto('/items/../../../etc/passwd');
+  test("should handle malformed URLs", async ({ page }) => {
+    await page.goto("/items/../../../etc/passwd");
 
     // Should redirect to safe page or show 404
     const url = page.url();
-    expect(url).not.toContain('../');
+    expect(url).not.toContain("../");
   });
 
-  test('should handle URL with query parameters', async ({ page }) => {
-    await page.goto('/items?page=999&sort=invalid&filter[]=<script>');
+  test("should handle URL with query parameters", async ({ page }) => {
+    await page.goto("/items?page=999&sort=invalid&filter[]=<script>");
 
     // Should handle gracefully
     await expect(page).not.toHaveURL(/error/);
 
     // Should sanitize parameters
-    const bodyText = await page.textContent('body');
-    expect(bodyText).not.toContain('<script>');
+    const bodyText = await page.textContent("body");
+    expect(bodyText).not.toContain("<script>");
   });
 
-  test('should preserve query parameters on navigation', async ({ page }) => {
-    await page.goto('/items?status=open&assignee=john');
+  test("should preserve query parameters on navigation", async ({ page }) => {
+    await page.goto("/items?status=open&assignee=john");
 
     const initialUrl = page.url();
 
@@ -592,9 +592,9 @@ test.describe('Edge Cases - URL and Routing', () => {
   });
 });
 
-test.describe('Edge Cases - Performance Under Load', () => {
-  test('should handle rapid scrolling', async ({ page }) => {
-    await page.goto('/items');
+test.describe("Edge Cases - Performance Under Load", () => {
+  test("should handle rapid scrolling", async ({ page }) => {
+    await page.goto("/items");
 
     // Rapidly scroll up and down
     for (let i = 0; i < 10; i++) {
@@ -613,14 +613,14 @@ test.describe('Edge Cases - Performance Under Load', () => {
     await expect(items).toBeVisible();
   });
 
-  test('should handle many open connections', async ({ page }) => {
-    await page.goto('/dashboard');
+  test("should handle many open connections", async ({ page }) => {
+    await page.goto("/dashboard");
 
     // Trigger many API calls
     const promises: Promise<unknown>[] = [];
     for (let i = 0; i < 20; i++) {
-      promises.push(page.goto('/items'));
-      promises.push(page.goto('/projects'));
+      promises.push(page.goto("/items"));
+      promises.push(page.goto("/projects"));
     }
 
     await Promise.allSettled(promises);
@@ -630,27 +630,27 @@ test.describe('Edge Cases - Performance Under Load', () => {
   });
 });
 
-test.describe('Edge Cases - Localization', () => {
-  test('should handle RTL languages', async ({ page }) => {
+test.describe("Edge Cases - Localization", () => {
+  test("should handle RTL languages", async ({ page }) => {
     // Set RTL language
     await page.evaluate(() => {
-      document.documentElement.setAttribute('dir', 'rtl');
+      document.documentElement.setAttribute("dir", "rtl");
     });
 
-    await page.goto('/items');
+    await page.goto("/items");
 
     // Layout should adapt to RTL
-    const direction = await page.evaluate(() => document.documentElement.getAttribute('dir'));
+    const direction = await page.evaluate(() => document.documentElement.getAttribute("dir"));
 
-    expect(direction).toBe('rtl');
+    expect(direction).toBe("rtl");
   });
 
-  test('should handle long translations', async ({ page }) => {
+  test("should handle long translations", async ({ page }) => {
     // Simulate long German translations
-    await page.goto('/items');
+    await page.goto("/items");
 
     // Buttons and labels should not overflow
-    const buttons = page.locator('button');
+    const buttons = page.locator("button");
     const count = await buttons.count();
 
     for (let i = 0; i < Math.min(count, 10); i++) {

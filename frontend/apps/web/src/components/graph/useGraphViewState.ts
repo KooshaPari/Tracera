@@ -1,13 +1,13 @@
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent } from "react";
 
-import { Network } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { Network } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 
-import type { GraphViewMode, ViewConfig } from './GraphViewConfig';
-import type { GraphPerspective } from './types';
+import type { GraphViewMode, ViewConfig } from "./GraphViewConfig";
+import type { GraphPerspective } from "./types";
 
-import { VIEW_CONFIGS } from './GraphViewConfig';
-import { PERSPECTIVE_CONFIGS } from './types';
+import { VIEW_CONFIGS } from "./GraphViewConfig";
+import { PERSPECTIVE_CONFIGS } from "./types";
 
 interface GraphViewLists {
   diagramViews: ViewConfig[];
@@ -32,15 +32,15 @@ interface UseGraphViewStateOutput {
   viewTypeSearch: string;
 }
 
-const DEFAULT_PERSPECTIVE_COLOR = '#64748b';
-const DEFAULT_SEARCH = '';
+const DEFAULT_PERSPECTIVE_COLOR = "#64748b";
+const DEFAULT_SEARCH = "";
 
 const PROJECT_VIEW_CONFIG: ViewConfig = {
-  category: 'graph',
-  description: '',
+  category: "graph",
+  description: "",
   icon: Network,
-  id: 'traceability',
-  label: '',
+  id: "traceability",
+  label: "",
 };
 
 function filterViewsBySearch(list: ViewConfig[], searchLower: string): ViewConfig[] {
@@ -74,9 +74,9 @@ function getCurrentConfig(viewMode: GraphViewMode): ViewConfig {
 }
 
 const GRAPH_VIEW_LISTS: GraphViewLists = {
-  diagramViews: VIEW_CONFIGS.filter((entry) => entry.category === 'diagram'),
-  graphViews: VIEW_CONFIGS.filter((entry) => entry.category === 'graph'),
-  perspectiveViews: VIEW_CONFIGS.filter((entry) => entry.category === 'perspective'),
+  diagramViews: VIEW_CONFIGS.filter((entry) => entry.category === "diagram"),
+  graphViews: VIEW_CONFIGS.filter((entry) => entry.category === "graph"),
+  perspectiveViews: VIEW_CONFIGS.filter((entry) => entry.category === "perspective"),
 };
 
 function useGraphViewState({ defaultView }: UseGraphViewStateInput): UseGraphViewStateOutput {

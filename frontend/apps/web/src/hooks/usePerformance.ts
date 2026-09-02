@@ -1,9 +1,9 @@
 // Performance optimization hook
 // Handles virtual scrolling, lazy edge rendering, memoization, and performance monitoring
 
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * Performance metrics

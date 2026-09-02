@@ -1,17 +1,17 @@
-import type { Edge, Node } from '@xyflow/react';
+import { ReactFlowProvider, type Edge, type Node } from "@xyflow/react";
 
-import { Layers, Zap } from 'lucide-react';
-import { memo, useMemo, useState } from 'react';
+import { Layers, Zap } from "lucide-react";
+import { memo, useMemo, useState } from "react";
 
-import type { HybridGraphConfig } from '@/hooks/useHybridGraph';
-import type { Item, Link } from '@tracertm/types';
+import type { HybridGraphConfig } from "@/hooks/useHybridGraph";
+import type { Item, Link } from "@tracertm/types";
 
-import { Badge } from '@/components/ui/badge';
-import { useHybridGraph } from '@/hooks/useHybridGraph';
+import { Badge } from "@/components/ui/badge";
+import { useHybridGraph } from "@/hooks/useHybridGraph";
 
-import { FlowGraphViewInner } from './FlowGraphViewInner';
-import { RichNodeDetailPanel } from './sigma/RichNodeDetailPanel';
-import { SigmaGraphView } from './SigmaGraphView';
+import { FlowGraphViewInner } from "./FlowGraphViewInner";
+import { RichNodeDetailPanel } from "./sigma/RichNodeDetailPanel";
+import { SigmaGraphView } from "./SigmaGraphView";
 
 interface HybridGraphViewProps {
   nodes: Node[];
@@ -30,7 +30,7 @@ export const HybridGraphView = memo(function HybridGraphView({
   onNodeExpand,
   onNodeNavigate,
   config,
-  className = '',
+  className = "",
 }: HybridGraphViewProps) {
   const { useWebGL, nodeCount, graphologyGraph, setSelectedNodeId } = useHybridGraph(
     nodes,
@@ -44,21 +44,21 @@ export const HybridGraphView = memo(function HybridGraphView({
     return nodes
       .map((node) => {
         const data = node.data as Record<string, unknown> | undefined;
-        const item = data?.['item'];
+        const item = data?.["item"];
         if (item) {
           return item as Item;
         }
         return {
           createdAt: timestamp,
           id: node.id,
-          priority: 'medium',
-          projectId: 'unknown',
-          status: 'todo',
+          priority: "medium",
+          projectId: "unknown",
+          status: "todo",
           title: node.id,
-          type: node.type ?? 'node',
+          type: node.type ?? "node",
           updatedAt: timestamp,
           version: 1,
-          view: 'feature',
+          view: "feature",
         } satisfies Item;
       })
       .filter((item): item is Item => Boolean(item));
@@ -68,7 +68,7 @@ export const HybridGraphView = memo(function HybridGraphView({
       edges
         .map((edge) => {
           const { data } = edge;
-          const link = data?.['link'];
+          const link = data?.["link"];
           return link as Link | undefined;
         })
         .filter((link): link is Link => Boolean(link)),
@@ -87,8 +87,8 @@ export const HybridGraphView = memo(function HybridGraphView({
         setDetailPanelNode({
           data: nodeData,
           id: node.id,
-          label: (nodeData['label'] as string | undefined) ?? node.id,
-          type: node.type ?? 'default',
+          label: (nodeData["label"] as string | undefined) ?? node.id,
+          type: node.type ?? "default",
         });
       }
     }
@@ -109,21 +109,21 @@ export const HybridGraphView = memo(function HybridGraphView({
   return (
     <div className={`relative h-full w-full ${className}`}>
       {/* Performance mode indicator */}
-      <div className='absolute top-4 right-4 z-10 flex items-center gap-2'>
-        <Badge variant={useWebGL ? 'default' : 'secondary'} className='text-xs font-medium'>
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+        <Badge variant={useWebGL ? "default" : "secondary"} className="text-xs font-medium">
           {useWebGL ? (
             <>
-              <Zap className='mr-1 h-3 w-3' />
+              <Zap className="mr-1 h-3 w-3" />
               WebGL Mode
             </>
           ) : (
             <>
-              <Layers className='mr-1 h-3 w-3' />
+              <Layers className="mr-1 h-3 w-3" />
               ReactFlow Mode
             </>
           )}
         </Badge>
-        <Badge variant='outline' className='text-xs'>
+        <Badge variant="outline" className="text-xs">
           {nodeCount.toLocaleString()} nodes
         </Badge>
       </div>
@@ -135,15 +135,17 @@ export const HybridGraphView = memo(function HybridGraphView({
           graph={graphologyGraph}
           onNodeClick={handleNodeClick}
           onNodeDoubleClick={handleNodeDoubleClick}
-          className='h-full w-full'
+          className="h-full w-full"
         />
       ) : (
         // ReactFlow mode (<10k nodes)
-        <FlowGraphViewInner
-          items={reactFlowItems}
-          links={reactFlowLinks}
-          onNavigateToItem={handleNodeClick}
-        />
+        <ReactFlowProvider>
+          <FlowGraphViewInner
+            items={reactFlowItems}
+            links={reactFlowLinks}
+            onNavigateToItem={handleNodeClick}
+          />
+        </ReactFlowProvider>
       )}
 
       {/* Rich node detail panel (WebGL mode only) */}
@@ -160,8 +162,8 @@ export const HybridGraphView = memo(function HybridGraphView({
 
       {/* Threshold warning (near threshold) */}
       {!useWebGL && nodeCount > 8000 && (
-        <div className='absolute bottom-4 left-4 z-10'>
-          <Badge variant='warning' className='text-xs'>
+        <div className="absolute bottom-4 left-4 z-10">
+          <Badge variant="warning" className="text-xs">
             Approaching 10k node threshold - WebGL mode will activate automatically
           </Badge>
         </div>

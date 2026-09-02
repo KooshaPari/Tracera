@@ -12,7 +12,7 @@
  * - Background sync support
  */
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 import type {
   IObservableCache,
@@ -22,9 +22,9 @@ import type {
   CacheEvent,
   CacheEventType,
   CacheEventListener,
-} from './CacheInterface';
+} from "./CacheInterface";
 
-import { TTL, CacheEventType as EventType } from './CacheInterface';
+import { TTL, CacheEventType as EventType } from "./CacheInterface";
 
 /**
  * Service Worker cache configuration
@@ -33,7 +33,7 @@ export interface ServiceWorkerCacheConfig {
   /** Cache name (default: 'trace-api-cache-v1') */
   cacheName?: string | undefined;
   /** Cache strategy (default: 'network-first') */
-  strategy?: 'cache-first' | 'network-first' | 'stale-while-revalidate' | undefined;
+  strategy?: "cache-first" | "network-first" | "stale-while-revalidate" | undefined;
   /** Default TTL (default: 5 minutes) */
   defaultTTL?: number | undefined;
   /** Maximum cache size in MB (default: 50) */
@@ -57,15 +57,15 @@ export class ServiceWorkerCache implements IObservableCache {
   private registration: ServiceWorkerRegistration | null = null;
 
   constructor(config: ServiceWorkerCacheConfig = {}) {
-    this.cacheName = config.cacheName ?? 'trace-api-cache-v1';
-    this.strategy = config.strategy ?? 'network-first';
+    this.cacheName = config.cacheName ?? "trace-api-cache-v1";
+    this.strategy = config.strategy ?? "network-first";
     this.defaultTTL = config.defaultTTL ?? TTL.SHORT;
     this.maxCacheSize = (config.maxCacheSizeMB ?? 50) * 1024 * 1024;
     this.enableLogging = config.enableLogging ?? false;
 
     // Register service worker if not already registered
     this.registerServiceWorker().catch((error) => {
-      logger.error('[ServiceWorkerCache] Registration failed:', error);
+      logger.error("[ServiceWorkerCache] Registration failed:", error);
     });
   }
 
@@ -73,27 +73,27 @@ export class ServiceWorkerCache implements IObservableCache {
    * Register service worker
    */
   private async registerServiceWorker(): Promise<void> {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
-      throw new Error('Service Worker not supported');
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+      throw new Error("Service Worker not supported");
     }
 
     try {
-      this.registration = await navigator.serviceWorker.register('/service-worker.js', {
-        scope: '/',
+      this.registration = await navigator.serviceWorker.register("/service-worker.js", {
+        scope: "/",
       });
 
       if (this.enableLogging) {
-        logger.debug('[ServiceWorkerCache] Service Worker registered');
+        logger.debug("[ServiceWorkerCache] Service Worker registered");
       }
 
       // Listen for updates
-      this.registration.addEventListener('updatefound', () => {
+      this.registration.addEventListener("updatefound", () => {
         if (this.enableLogging) {
-          logger.debug('[ServiceWorkerCache] Update found');
+          logger.debug("[ServiceWorkerCache] Update found");
         }
       });
     } catch (error) {
-      logger.error('[ServiceWorkerCache] Registration failed:', error);
+      logger.error("[ServiceWorkerCache] Registration failed:", error);
       throw error;
     }
   }
@@ -102,8 +102,8 @@ export class ServiceWorkerCache implements IObservableCache {
    * Get cache instance
    */
   private async getCacheInstance(): Promise<Cache> {
-    if (typeof window === 'undefined' || !('caches' in window)) {
-      throw new Error('Cache API not supported');
+    if (typeof window === "undefined" || !("caches" in window)) {
+      throw new Error("Cache API not supported");
     }
     return await caches.open(this.cacheName);
   }
@@ -120,7 +120,7 @@ export class ServiceWorkerCache implements IObservableCache {
         this.totalMisses++;
         this.emit({
           type: EventType.MISS,
-          backend: 'ServiceWorkerCache',
+          backend: "ServiceWorkerCache",
           key,
           timestamp: Date.now(),
         });
@@ -128,7 +128,7 @@ export class ServiceWorkerCache implements IObservableCache {
       }
 
       // Check if expired
-      const expiresHeader = response.headers.get('X-Cache-Expires');
+      const expiresHeader = response.headers.get("X-Cache-Expires");
       if (expiresHeader) {
         const expiresAt = parseInt(expiresHeader, 10);
         if (Date.now() >= expiresAt) {
@@ -136,10 +136,10 @@ export class ServiceWorkerCache implements IObservableCache {
           this.totalMisses++;
           this.emit({
             type: EventType.MISS,
-            backend: 'ServiceWorkerCache',
+            backend: "ServiceWorkerCache",
             key,
             timestamp: Date.now(),
-            metadata: { reason: 'expired' },
+            metadata: { reason: "expired" },
           });
           return null;
         }
@@ -148,7 +148,7 @@ export class ServiceWorkerCache implements IObservableCache {
       this.totalHits++;
       this.emit({
         type: EventType.HIT,
-        backend: 'ServiceWorkerCache',
+        backend: "ServiceWorkerCache",
         key,
         timestamp: Date.now(),
       });
@@ -171,16 +171,16 @@ export class ServiceWorkerCache implements IObservableCache {
 
       // Create response with custom headers
       const headers = new Headers({
-        'Content-Type': 'application/json',
-        'X-Cache-Timestamp': Date.now().toString(),
+        "Content-Type": "application/json",
+        "X-Cache-Timestamp": Date.now().toString(),
       });
 
       if (ttl !== null) {
-        headers.set('X-Cache-Expires', (Date.now() + ttl).toString());
+        headers.set("X-Cache-Expires", (Date.now() + ttl).toString());
       }
 
       if (options.tags && options.tags.length > 0) {
-        headers.set('X-Cache-Tags', JSON.stringify(options.tags));
+        headers.set("X-Cache-Tags", JSON.stringify(options.tags));
       }
 
       const response = new Response(JSON.stringify(value), {
@@ -192,7 +192,7 @@ export class ServiceWorkerCache implements IObservableCache {
 
       this.emit({
         type: EventType.SET,
-        backend: 'ServiceWorkerCache',
+        backend: "ServiceWorkerCache",
         key,
         timestamp: Date.now(),
         metadata: { ttl },
@@ -229,7 +229,7 @@ export class ServiceWorkerCache implements IObservableCache {
       if (result) {
         this.emit({
           type: EventType.DELETE,
-          backend: 'ServiceWorkerCache',
+          backend: "ServiceWorkerCache",
           key,
           timestamp: Date.now(),
         });
@@ -256,7 +256,7 @@ export class ServiceWorkerCache implements IObservableCache {
 
         this.emit({
           type: EventType.CLEAR,
-          backend: 'ServiceWorkerCache',
+          backend: "ServiceWorkerCache",
           timestamp: Date.now(),
         });
 
@@ -273,7 +273,7 @@ export class ServiceWorkerCache implements IObservableCache {
 
         // Check pattern
         if (options.pattern) {
-          const pattern = options.pattern.replace(/\*/g, '.*').replace(/\?/g, '.');
+          const pattern = options.pattern.replace(/\*/g, ".*").replace(/\?/g, ".");
           const regex = new RegExp(pattern);
           if (regex.test(url)) {
             shouldDelete = true;
@@ -284,7 +284,7 @@ export class ServiceWorkerCache implements IObservableCache {
         if (options.tags && options.tags.length > 0) {
           const response = await cache.match(request);
           if (response) {
-            const tagsHeader = response.headers.get('X-Cache-Tags');
+            const tagsHeader = response.headers.get("X-Cache-Tags");
             if (tagsHeader) {
               const tags = JSON.parse(tagsHeader) as string[];
               if (options.tags.some((tag) => tags.includes(tag))) {
@@ -302,7 +302,7 @@ export class ServiceWorkerCache implements IObservableCache {
 
       this.emit({
         type: EventType.INVALIDATE,
-        backend: 'ServiceWorkerCache',
+        backend: "ServiceWorkerCache",
         pattern: options.pattern,
         tags: options.tags,
         timestamp: Date.now(),
@@ -311,7 +311,7 @@ export class ServiceWorkerCache implements IObservableCache {
 
       return count;
     } catch (error) {
-      logger.error('[ServiceWorkerCache] Invalidate failed:', error);
+      logger.error("[ServiceWorkerCache] Invalidate failed:", error);
       return 0;
     }
   }
@@ -327,15 +327,15 @@ export class ServiceWorkerCache implements IObservableCache {
 
       this.emit({
         type: EventType.CLEAR,
-        backend: 'ServiceWorkerCache',
+        backend: "ServiceWorkerCache",
         timestamp: Date.now(),
       });
 
       if (this.enableLogging) {
-        logger.debug('[ServiceWorkerCache] Cache cleared');
+        logger.debug("[ServiceWorkerCache] Cache cleared");
       }
     } catch (error) {
-      logger.error('[ServiceWorkerCache] Clear failed:', error);
+      logger.error("[ServiceWorkerCache] Clear failed:", error);
       throw error;
     }
   }
@@ -377,10 +377,10 @@ export class ServiceWorkerCache implements IObservableCache {
         totalMemory,
         maxMemory: this.maxCacheSize,
         memoryUsagePercent: Math.round((totalMemory / this.maxCacheSize) * 100),
-        backendType: 'ServiceWorkerCache',
+        backendType: "ServiceWorkerCache",
       };
     } catch (error) {
-      logger.error('[ServiceWorkerCache] GetStats failed:', error);
+      logger.error("[ServiceWorkerCache] GetStats failed:", error);
       return {
         totalEntries: 0,
         maxEntries: Infinity,
@@ -390,7 +390,7 @@ export class ServiceWorkerCache implements IObservableCache {
         totalMemory: 0,
         maxMemory: this.maxCacheSize,
         memoryUsagePercent: 0,
-        backendType: 'ServiceWorkerCache',
+        backendType: "ServiceWorkerCache",
       };
     }
   }
@@ -406,10 +406,10 @@ export class ServiceWorkerCache implements IObservableCache {
 
       if (!pattern) return urls;
 
-      const regex = new RegExp(`^${pattern.replace(/\*/g, '.*').replace(/\?/g, '.')}$`);
+      const regex = new RegExp(`^${pattern.replace(/\*/g, ".*").replace(/\?/g, ".")}$`);
       return urls.filter((url) => regex.test(url));
     } catch (error) {
-      logger.error('[ServiceWorkerCache] Keys failed:', error);
+      logger.error("[ServiceWorkerCache] Keys failed:", error);
       return [];
     }
   }
@@ -484,7 +484,7 @@ export class ServiceWorkerCache implements IObservableCache {
         try {
           listener(event);
         } catch (error) {
-          logger.error('[ServiceWorkerCache] Event listener error:', error);
+          logger.error("[ServiceWorkerCache] Event listener error:", error);
         }
       });
     }
@@ -506,7 +506,7 @@ export class ServiceWorkerCache implements IObservableCache {
       const timestampedRequests = await Promise.all(
         requests.map(async (request) => {
           const response = await cache.match(request);
-          const timestamp = response?.headers.get('X-Cache-Timestamp');
+          const timestamp = response?.headers.get("X-Cache-Timestamp");
           return {
             request,
             timestamp: timestamp ? parseInt(timestamp, 10) : 0,
@@ -524,7 +524,7 @@ export class ServiceWorkerCache implements IObservableCache {
         await cache.delete(entry.request);
         this.emit({
           type: EventType.EVICTION,
-          backend: 'ServiceWorkerCache',
+          backend: "ServiceWorkerCache",
           key: entry.request.url,
           timestamp: Date.now(),
         });
@@ -534,7 +534,7 @@ export class ServiceWorkerCache implements IObservableCache {
         logger.debug(`[ServiceWorkerCache] Evicted ${deleteCount} entries due to size limit`);
       }
     } catch (error) {
-      logger.error('[ServiceWorkerCache] EnforceMaxSize failed:', error);
+      logger.error("[ServiceWorkerCache] EnforceMaxSize failed:", error);
     }
   }
 }

@@ -1,12 +1,12 @@
-import { useMutation } from '@tanstack/react-query';
-import { useCallback, useMemo, useState } from 'react';
-import { toast } from 'sonner';
+import { useMutation } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
 
-import type { CanonicalExport } from '@/api/endpoints';
-import type { Project } from '@tracertm/types';
+import type { CanonicalExport } from "@/api/endpoints";
+import type { Project } from "@tracertm/types";
 
-import { exportImportApi } from '@/api/endpoints';
-import { getProjectDisplayName } from '@/lib/project-name-utils';
+import { exportImportApi } from "@/api/endpoints";
+import { getProjectDisplayName } from "@/lib/project-name-utils";
 import {
   Button,
   Dialog,
@@ -17,9 +17,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@tracertm/ui';
+} from "@tracertm/ui";
 
-type ImportMode = 'into-existing' | 'full';
+type ImportMode = "into-existing" | "full";
 
 interface ImportDialogProps {
   open: boolean;
@@ -27,31 +27,31 @@ interface ImportDialogProps {
   projects: Project[];
 }
 
-const EMPTY_STRING = '';
+const EMPTY_STRING = "";
 
 const getImportFileLabel = (mode: ImportMode, file?: File): string => {
   if (file) {
     return file.name;
   }
-  if (mode === 'full') {
-    return 'Canonical JSON';
+  if (mode === "full") {
+    return "Canonical JSON";
   }
-  return 'JSON or CSV';
+  return "JSON or CSV";
 };
 
 const getImportAccept = (mode: ImportMode): string | undefined => {
-  if (mode === 'full') {
-    return 'application/json,.json';
+  if (mode === "full") {
+    return "application/json,.json";
   }
   return undefined;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
+  typeof value === "object" && value !== null;
 
 const readString = (record: Record<string, unknown>, key: string): string | undefined => {
   const value = record[key];
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   return undefined;
@@ -62,7 +62,7 @@ const readOptionalString = (record: Record<string, unknown>, key: string): strin
   if (value === undefined) {
     return undefined;
   }
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   return undefined;
@@ -73,7 +73,7 @@ const readOptionalNumber = (record: Record<string, unknown>, key: string): numbe
   if (value === undefined) {
     return undefined;
   }
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return value;
   }
   return undefined;
@@ -87,42 +87,42 @@ const safeJsonParse = (jsonText: string): unknown => {
   }
 };
 
-const parseCanonicalProject = (value: unknown): CanonicalExport['project'] | undefined => {
+const parseCanonicalProject = (value: unknown): CanonicalExport["project"] | undefined => {
   if (!isRecord(value)) {
     return undefined;
   }
 
-  const projectId = readString(value, 'id');
-  const projectName = readString(value, 'name');
+  const projectId = readString(value, "id");
+  const projectName = readString(value, "name");
   if (projectId === undefined || projectName === undefined) {
     return undefined;
   }
 
-  const project: CanonicalExport['project'] = {
+  const project: CanonicalExport["project"] = {
     id: projectId,
     name: projectName,
   };
-  const description = readOptionalString(value, 'description');
+  const description = readOptionalString(value, "description");
   if (description !== undefined) {
     project.description = description;
   }
-  const created_at = readOptionalString(value, 'created_at');
+  const created_at = readOptionalString(value, "created_at");
   if (created_at !== undefined) {
     project.created_at = created_at;
   }
   return project;
 };
 
-const parseCanonicalItem = (value: unknown): CanonicalExport['items'][number] | undefined => {
+const parseCanonicalItem = (value: unknown): CanonicalExport["items"][number] | undefined => {
   if (!isRecord(value)) {
     return undefined;
   }
 
-  const id = readString(value, 'id');
-  const title = readString(value, 'title');
-  const view = readString(value, 'view');
-  const type = readString(value, 'type');
-  const status = readString(value, 'status');
+  const id = readString(value, "id");
+  const title = readString(value, "title");
+  const view = readString(value, "view");
+  const type = readString(value, "type");
+  const status = readString(value, "status");
   if (
     id === undefined ||
     title === undefined ||
@@ -133,7 +133,7 @@ const parseCanonicalItem = (value: unknown): CanonicalExport['items'][number] | 
     return undefined;
   }
 
-  const canonicalItem: CanonicalExport['items'][number] = {
+  const canonicalItem: CanonicalExport["items"][number] = {
     id,
     status,
     title,
@@ -141,12 +141,12 @@ const parseCanonicalItem = (value: unknown): CanonicalExport['items'][number] | 
     view,
   };
 
-  const description = readOptionalString(value, 'description');
+  const description = readOptionalString(value, "description");
   if (description !== undefined) {
     canonicalItem.description = description;
   }
 
-  const version = readOptionalNumber(value, 'version');
+  const version = readOptionalNumber(value, "version");
   if (version !== undefined) {
     canonicalItem.version = version;
   }
@@ -154,12 +154,12 @@ const parseCanonicalItem = (value: unknown): CanonicalExport['items'][number] | 
   return canonicalItem;
 };
 
-const parseCanonicalItems = (value: unknown): CanonicalExport['items'] | undefined => {
+const parseCanonicalItems = (value: unknown): CanonicalExport["items"] | undefined => {
   if (!Array.isArray(value)) {
     return undefined;
   }
 
-  const items: CanonicalExport['items'] = [];
+  const items: CanonicalExport["items"] = [];
   for (const itemValue of value) {
     const canonicalItem = parseCanonicalItem(itemValue);
     if (canonicalItem === undefined) {
@@ -170,19 +170,19 @@ const parseCanonicalItems = (value: unknown): CanonicalExport['items'] | undefin
   return items;
 };
 
-const parseCanonicalLinks = (value: unknown): CanonicalExport['links'] | undefined => {
+const parseCanonicalLinks = (value: unknown): CanonicalExport["links"] | undefined => {
   if (!Array.isArray(value)) {
     return undefined;
   }
 
-  const links: CanonicalExport['links'] = [];
+  const links: CanonicalExport["links"] = [];
   for (const linkValue of value) {
     if (!isRecord(linkValue)) {
       return undefined;
     }
-    const source_id = readString(linkValue, 'source_id');
-    const target_id = readString(linkValue, 'target_id');
-    const type = readString(linkValue, 'type');
+    const source_id = readString(linkValue, "source_id");
+    const target_id = readString(linkValue, "target_id");
+    const type = readString(linkValue, "type");
     if (source_id === undefined || target_id === undefined || type === undefined) {
       return undefined;
     }
@@ -197,9 +197,9 @@ const parseCanonicalExport = (jsonText: string): CanonicalExport | undefined => 
     return undefined;
   }
 
-  const project = parseCanonicalProject(parsed['project']);
-  const items = parseCanonicalItems(parsed['items']);
-  const links = parseCanonicalLinks(parsed['links']);
+  const project = parseCanonicalProject(parsed["project"]);
+  const items = parseCanonicalItems(parsed["items"]);
+  const links = parseCanonicalLinks(parsed["links"]);
   if (project === undefined || items === undefined || links === undefined) {
     return undefined;
   }
@@ -210,7 +210,7 @@ const getImportTargetId = (
   selectedId: string | undefined,
   projects: Project[],
 ): string | undefined => {
-  if (typeof selectedId === 'string' && selectedId.length > 0) {
+  if (typeof selectedId === "string" && selectedId.length > 0) {
     return selectedId;
   }
   if (projects.length > 0) {
@@ -256,23 +256,23 @@ function useImportMutation(
       targetProjectId,
     }: ImportMutationVariables): Promise<ImportMutationResult> => {
       const content = await file.text();
-      if (mode === 'full') {
+      if (mode === "full") {
         const canonical = parseCanonicalExport(content);
         if (canonical === undefined) {
-          throw new Error('Invalid canonical format: need project, items, and links');
+          throw new Error("Invalid canonical format: need project, items, and links");
         }
         const result = await exportImportApi.importFull(canonical);
         return { importedCount: result.items_imported, linksImported: result.links_imported, mode };
       }
 
-      if (typeof targetProjectId !== 'string' || targetProjectId.length === 0) {
-        throw new Error('Select a project to import into');
+      if (typeof targetProjectId !== "string" || targetProjectId.length === 0) {
+        throw new Error("Select a project to import into");
       }
-      const result = await exportImportApi.import(targetProjectId, 'json', content);
+      const result = await exportImportApi.import(targetProjectId, "json", content);
       return { importedCount: result.imported_count, mode };
     },
     onError: (error) => {
-      let message = 'Import integrity failure';
+      let message = "Import integrity failure";
       if (error instanceof Error) {
         const { message: errorMessage } = error;
         message = errorMessage;
@@ -280,9 +280,9 @@ function useImportMutation(
       toast.error(message);
     },
     onSuccess: ({ importedCount, linksImported, mode }: ImportMutationResult) => {
-      if (mode === 'full') {
+      if (mode === "full") {
         let links = 0;
-        if (typeof linksImported === 'number') {
+        if (typeof linksImported === "number") {
           links = linksImported;
         }
         toast.success(`New project created: ${importedCount} items, ${links} links`);
@@ -296,43 +296,43 @@ function useImportMutation(
 }
 
 function renderImportDialogContent(model: ImportDialogModel, projects: Project[]): JSX.Element {
-  let importLabel = 'Execute Ingestion';
+  let importLabel = "Execute Ingestion";
   if (model.isImporting) {
-    importLabel = 'Importing…';
+    importLabel = "Importing…";
   }
 
   return (
-    <DialogContent className='bg-card rounded-[2rem] border-none p-8 shadow-2xl'>
-      <h2 className='mb-2 text-xl font-black tracking-tight uppercase'>Ingestion Protocol</h2>
-      <p className='text-muted-foreground mb-6 text-xs font-medium tracking-widest uppercase'>
+    <DialogContent className="bg-card rounded-[2rem] border-none p-8 shadow-2xl">
+      <h2 className="mb-2 text-xl font-black tracking-tight uppercase">Ingestion Protocol</h2>
+      <p className="text-muted-foreground mb-6 text-xs font-medium tracking-widest uppercase">
         Upload file: create new project (full) or add to existing
       </p>
-      <div className='space-y-6'>
+      <div className="space-y-6">
         <div>
-          <Label className='text-muted-foreground text-xs font-bold tracking-widest uppercase'>
+          <Label className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
             Mode
           </Label>
           <Select value={model.importMode} onValueChange={model.handleModeChange}>
-            <SelectTrigger className='bg-muted/30 mt-1 h-12 rounded-xl border-none font-bold'>
+            <SelectTrigger className="bg-muted/30 mt-1 h-12 rounded-xl border-none font-bold">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='full'>As new project (canonical JSON)</SelectItem>
-              <SelectItem value='into-existing'>Into existing project (items JSON/CSV)</SelectItem>
+              <SelectItem value="full">As new project (canonical JSON)</SelectItem>
+              <SelectItem value="into-existing">Into existing project (items JSON/CSV)</SelectItem>
             </SelectContent>
           </Select>
         </div>
         {model.showTargetProject && (
           <div>
-            <Label className='text-muted-foreground text-xs font-bold tracking-widest uppercase'>
+            <Label className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
               Target project
             </Label>
             <Select
               value={model.importTargetId ?? EMPTY_STRING}
               onValueChange={model.handleProjectChange}
             >
-              <SelectTrigger className='bg-muted/30 mt-1 h-12 rounded-xl border-none font-bold'>
-                <SelectValue placeholder='Select project' />
+              <SelectTrigger className="bg-muted/30 mt-1 h-12 rounded-xl border-none font-bold">
+                <SelectValue placeholder="Select project" />
               </SelectTrigger>
               <SelectContent>
                 {projects.map((project) => (
@@ -344,17 +344,17 @@ function renderImportDialogContent(model: ImportDialogModel, projects: Project[]
             </Select>
           </div>
         )}
-        <div className='bg-muted/10 group hover:border-primary/50 flex flex-col items-center justify-center rounded-[2rem] border-2 border-dashed p-8 text-center transition-colors'>
+        <div className="bg-muted/10 group hover:border-primary/50 flex flex-col items-center justify-center rounded-[2rem] border-2 border-dashed p-8 text-center transition-colors">
           <input
-            type='file'
-            id='project-import-file'
-            className='hidden'
+            type="file"
+            id="project-import-file"
+            className="hidden"
             accept={model.importAccept}
             onChange={model.handleFileChange}
           />
-          <Label htmlFor='project-import-file' className='cursor-pointer'>
-            <span className='text-primary text-sm font-bold'>Browse Files</span>
-            <p className='text-muted-foreground mt-1 text-[10px] font-medium'>
+          <Label htmlFor="project-import-file" className="cursor-pointer">
+            <span className="text-primary text-sm font-bold">Browse Files</span>
+            <p className="text-muted-foreground mt-1 text-[10px] font-medium">
               {model.importFileLabel}
             </p>
           </Label>
@@ -362,7 +362,7 @@ function renderImportDialogContent(model: ImportDialogModel, projects: Project[]
         <Button
           onClick={model.handleImport}
           disabled={model.isImportDisabled}
-          className='h-12 w-full rounded-xl font-black tracking-widest uppercase shadow-lg'
+          className="h-12 w-full rounded-xl font-black tracking-widest uppercase shadow-lg"
         >
           {importLabel}
         </Button>
@@ -372,7 +372,7 @@ function renderImportDialogContent(model: ImportDialogModel, projects: Project[]
 }
 
 function useImportDialogModel({ onOpenChange, projects }: ImportDialogProps): ImportDialogModel {
-  const [importMode, setImportMode] = useState<ImportMode>('full');
+  const [importMode, setImportMode] = useState<ImportMode>("full");
   const [importProjectId, setImportProjectId] = useState<string | undefined>();
   const [importFile, setImportFile] = useState<File | undefined>();
 
@@ -410,10 +410,10 @@ function useImportDialogModel({ onOpenChange, projects }: ImportDialogProps): Im
 
   const importMutation = useImportMutation(onOpenChange, clearImportFile);
 
-  const showTargetProject = importMode === 'into-existing';
+  const showTargetProject = importMode === "into-existing";
   const isImporting = importMutation.isPending;
 
-  const importTargetPresent = typeof importTargetId === 'string' && importTargetId.length > 0;
+  const importTargetPresent = typeof importTargetId === "string" && importTargetId.length > 0;
   const filePresent = importFile !== undefined;
   const isTargetMissing = showTargetProject && !importTargetPresent;
   const isImportDisabled = isImporting || !filePresent || isTargetMissing;

@@ -7,9 +7,9 @@
  * to ensure <2s requirement for 10k nodes is met.
  */
 
-import type { Item, Link } from '../src/api/types';
+import type { Item, Link } from "../src/api/types";
 
-import { clearClusteringCache, detectCommunities } from '../src/lib/graph/clustering';
+import { clearClusteringCache, detectCommunities } from "../src/lib/graph/clustering";
 
 interface BenchmarkResult {
   nodeCount: number;
@@ -27,8 +27,8 @@ function generateGraph(nodeCount: number, avgDegree: number): { items: Item[]; l
   const items: Item[] = Array.from({ length: nodeCount }, (_, i) => ({
     created_at: new Date().toISOString(),
     id: `node${i}`,
-    item_type: 'requirement',
-    status: 'todo',
+    item_type: "requirement",
+    status: "todo",
     title: `Node ${i}`,
     updated_at: new Date().toISOString(),
   }));
@@ -49,7 +49,7 @@ function generateGraph(nodeCount: number, avgDegree: number): { items: Item[]; l
     links.push({
       created_at: new Date().toISOString(),
       id: `link${i}`,
-      link_type: 'depends_on',
+      link_type: "depends_on",
       source_id: `node${source}`,
       target_id: `node${target}`,
     });
@@ -138,12 +138,12 @@ async function main() {
     const modularity =
       result.modularity !== undefined
         ? result.modularity.toFixed(4).padStart(10)
-        : 'N/A'.padStart(10);
+        : "N/A".padStart(10);
 
     // Highlight 10k row
     if (result.nodeCount === 10_000) {
       const passed = result.clusteringTimeMs < 2000;
-      const status = passed ? '✅ PASSED' : '❌ FAILED';
+      const status = passed ? "✅ PASSED" : "❌ FAILED";
     }
   }
 

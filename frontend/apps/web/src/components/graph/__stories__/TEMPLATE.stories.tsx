@@ -9,15 +9,15 @@
  * - Storybook Setup: ../../.storybook/README.md
  */
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from "@storybook/react";
 
 // Import { COMPONENT_NAME } from "../COMPONENT_NAME";
 
 const meta: Meta = {
   // Set the title following the naming convention: Type/Category/ComponentName
-  title: 'Components/Graph/ComponentName',
+  title: "Components/Graph/ComponentName",
   // Component: COMPONENT_NAME,
-  tags: ['autodocs', 'skip-tests'],
+  tags: ["autodocs", "skip-tests"],
 
   // Configure visual regression testing
   parameters: {
@@ -26,11 +26,11 @@ const meta: Meta = {
       // Test both light and dark modes
       modes: {
         dark: {
-          matcherUrl: '**/dark',
+          matcherUrl: "**/dark",
           query: "[data-theme='dark']",
         },
         light: {
-          matcherUrl: '**/light',
+          matcherUrl: "**/light",
           query: "[data-theme='light']",
         },
       },
@@ -44,7 +44,7 @@ const meta: Meta = {
     },
     // Define available viewports
     viewport: {
-      defaultViewport: 'desktop',
+      defaultViewport: "desktop",
     },
   },
 
@@ -111,7 +111,7 @@ export const Mobile: Story = {
   },
   parameters: {
     viewport: {
-      defaultViewport: 'mobile',
+      defaultViewport: "mobile",
     },
   },
 };
@@ -129,7 +129,7 @@ export const Tablet: Story = {
   },
   parameters: {
     viewport: {
-      defaultViewport: 'tablet',
+      defaultViewport: "tablet",
     },
   },
 };
@@ -147,7 +147,7 @@ export const DarkMode: Story = {
   },
   decorators: [
     (Story) => (
-      <div className='dark' data-theme='dark' style={{ minHeight: '100vh' }}>
+      <div className="dark" data-theme="dark" style={{ minHeight: "100vh" }}>
         <Story />
       </div>
     ),
@@ -177,10 +177,10 @@ export const Hovered: Story = {
   },
   play: async ({ canvasElement }) => {
     // Find the interactive element to hover over
-    const element = canvasElement.querySelector('button') ?? canvasElement.firstChild;
+    const element = canvasElement.querySelector("button") ?? canvasElement.firstChild;
     if (element && element instanceof HTMLElement) {
       element.dispatchEvent(
-        new MouseEvent('mouseenter', {
+        new MouseEvent("mouseenter", {
           bubbles: true,
           cancelable: true,
           view: window,
@@ -202,7 +202,7 @@ export const Focused: Story = {
     // ...Default.args,
   },
   play: async ({ canvasElement }) => {
-    const element = canvasElement.querySelector('button') ?? canvasElement.firstChild;
+    const element = canvasElement.querySelector("button") ?? canvasElement.firstChild;
     if (element instanceof HTMLElement) {
       element.focus();
     }
@@ -221,10 +221,10 @@ export const Active: Story = {
     // ...Default.args,
   },
   play: async ({ canvasElement }) => {
-    const element = canvasElement.querySelector('button') ?? canvasElement.firstChild;
+    const element = canvasElement.querySelector("button") ?? canvasElement.firstChild;
     if (element instanceof HTMLElement) {
-      element.classList.add('active');
-      element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+      element.classList.add("active");
+      element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
     }
   },
 };

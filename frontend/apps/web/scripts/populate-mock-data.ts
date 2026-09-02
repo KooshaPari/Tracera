@@ -7,11 +7,11 @@
  * Usage: bun run populate-mock-data.ts
  */
 
-import type { Project, ProjectConfig } from './lib/types';
+import type { Project, ProjectConfig } from "./lib/types";
 
-import { createProject, fetchProjects, getApiUrl } from './lib/api';
-import { populateProject } from './lib/populator';
-import { PROJECTS, getProjectStats, getTotalItemCount } from './lib/projects';
+import { createProject, fetchProjects, getApiUrl } from "./lib/api";
+import { populateProject } from "./lib/populator";
+import { PROJECTS, getProjectStats, getTotalItemCount } from "./lib/projects";
 
 async function main() {
   try {

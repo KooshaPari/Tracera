@@ -1,11 +1,11 @@
 /// <reference lib="dom" />
 /// <reference lib="es2015" />
 
-import type { Page } from '@playwright/test';
+import type { Page } from "@playwright/test";
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
-import { authenticateAndNavigate } from './critical-path-helpers';
+import { authenticateAndNavigate } from "./critical-path-helpers";
 
 /**
  * Graph Performance E2E Tests
@@ -118,7 +118,7 @@ interface WindowWithGC extends Window {
 async function forceGC(page: Page): Promise<void> {
   await page.evaluate(() => {
     const w = globalThis as WindowWithGC;
-    if (typeof w.gc === 'function') {
+    if (typeof w.gc === "function") {
       w.gc();
     }
   });
@@ -129,10 +129,10 @@ async function forceGC(page: Page): Promise<void> {
  */
 async function waitForGraphReady(page: Page): Promise<void> {
   // Wait for ReactFlow to be initialized
-  await page.waitForSelector('.react-flow', { timeout: 10_000 });
+  await page.waitForSelector(".react-flow", { timeout: 10_000 });
 
   // Wait for nodes to be rendered
-  await page.waitForSelector('.react-flow__node', { timeout: 10_000 });
+  await page.waitForSelector(".react-flow__node", { timeout: 10_000 });
 
   // Give it a moment to stabilize
   await page.waitForTimeout(1000);
@@ -143,7 +143,7 @@ async function waitForGraphReady(page: Page): Promise<void> {
  */
 async function getNodeCount(page: Page): Promise<number> {
   return page.evaluate(() => {
-    const nodes = document.querySelectorAll('.react-flow__node');
+    const nodes = document.querySelectorAll(".react-flow__node");
     return nodes.length;
   });
 }
@@ -153,7 +153,7 @@ async function getNodeCount(page: Page): Promise<number> {
  */
 async function getEdgeCount(page: Page): Promise<number> {
   return page.evaluate(() => {
-    const edges = document.querySelectorAll('.react-flow__edge');
+    const edges = document.querySelectorAll(".react-flow__edge");
     return edges.length;
   });
 }
@@ -181,7 +181,7 @@ async function measureInteractionTime(page: Page, action: () => Promise<void>): 
   return endTime - startTime;
 }
 
-test.describe('Graph Performance - 500 Node Load', () => {
+test.describe("Graph Performance - 500 Node Load", () => {
   test.beforeEach(async ({ page }) => {
     // Enable performance memory API (gc exposed by Node --expose-gc in Playwright)
     await page.addInitScript(() => {
@@ -189,10 +189,10 @@ test.describe('Graph Performance - 500 Node Load', () => {
       w.gc = w.gc ?? (() => {});
     });
 
-    await authenticateAndNavigate(page, '/graph');
+    await authenticateAndNavigate(page, "/graph");
   });
 
-  test('should load 500 node graph within acceptable time', async ({ page }) => {
+  test("should load 500 node graph within acceptable time", async ({ page }) => {
     const startTime = Date.now();
 
     // Wait for graph to be ready
@@ -208,11 +208,11 @@ test.describe('Graph Performance - 500 Node Load', () => {
     expect(nodeCount).toBeGreaterThan(0);
   });
 
-  test('should maintain 60 FPS during panning', async ({ page }) => {
+  test("should maintain 60 FPS during panning", async ({ page }) => {
     await waitForGraphReady(page);
 
     // Get the graph viewport
-    const graphPane = page.locator('.react-flow__pane');
+    const graphPane = page.locator(".react-flow__pane");
 
     // Start measuring frame rate
     const metricsPromise = measureFrameRate(page, 2000);
@@ -241,10 +241,10 @@ test.describe('Graph Performance - 500 Node Load', () => {
     expect(metrics.jankPercentage).toBeLessThan(5);
   });
 
-  test('should maintain performance during continuous panning', async ({ page }) => {
+  test("should maintain performance during continuous panning", async ({ page }) => {
     await waitForGraphReady(page);
 
-    const graphPane = page.locator('.react-flow__pane');
+    const graphPane = page.locator(".react-flow__pane");
 
     // Measure FPS during longer panning session
     const metricsPromise = measureFrameRate(page, 3000);
@@ -274,14 +274,14 @@ test.describe('Graph Performance - 500 Node Load', () => {
   });
 });
 
-test.describe('Graph Performance - Zoom Operations', () => {
+test.describe("Graph Performance - Zoom Operations", () => {
   test.beforeEach(async ({ page }) => {
-    await authenticateAndNavigate(page, '/graph');
+    await authenticateAndNavigate(page, "/graph");
     await waitForGraphReady(page);
   });
 
-  test('should have smooth zoom transitions', async ({ page }) => {
-    const graphPane = page.locator('.react-flow__pane');
+  test("should have smooth zoom transitions", async ({ page }) => {
+    const graphPane = page.locator(".react-flow__pane");
 
     // Measure frame rate during zoom
     const metricsPromise = measureFrameRate(page, 1500);
@@ -306,8 +306,8 @@ test.describe('Graph Performance - Zoom Operations', () => {
     expect(metrics.avgFrameTime).toBeLessThan(20);
   });
 
-  test('should handle rapid zoom changes', async ({ page }) => {
-    const graphPane = page.locator('.react-flow__pane');
+  test("should handle rapid zoom changes", async ({ page }) => {
+    const graphPane = page.locator(".react-flow__pane");
 
     await graphPane.hover({ position: { x: 400, y: 300 } });
 
@@ -331,9 +331,9 @@ test.describe('Graph Performance - Zoom Operations', () => {
     expect(nodeCount).toBeGreaterThan(0);
   });
 
-  test('should use zoom controls efficiently', async ({ page }) => {
+  test("should use zoom controls efficiently", async ({ page }) => {
     // Find zoom in button
-    const zoomInBtn = page.locator('.react-flow__controls-zoomin');
+    const zoomInBtn = page.locator(".react-flow__controls-zoomin");
 
     await expect(zoomInBtn).toBeVisible({ timeout: 10_000 });
     // Measure response time for zoom button clicks
@@ -354,14 +354,14 @@ test.describe('Graph Performance - Zoom Operations', () => {
   });
 });
 
-test.describe('Graph Performance - Node Selection', () => {
+test.describe("Graph Performance - Node Selection", () => {
   test.beforeEach(async ({ page }) => {
-    await authenticateAndNavigate(page, '/graph');
+    await authenticateAndNavigate(page, "/graph");
     await waitForGraphReady(page);
   });
 
-  test('should select nodes with <50ms response time', async ({ page }) => {
-    const nodes = page.locator('.react-flow__node');
+  test("should select nodes with <50ms response time", async ({ page }) => {
+    const nodes = page.locator(".react-flow__node");
     const nodeCount = await nodes.count();
 
     expect(nodeCount).toBeGreaterThan(0);
@@ -390,8 +390,8 @@ test.describe('Graph Performance - Node Selection', () => {
     expect(maxResponseTime).toBeLessThan(100);
   });
 
-  test('should handle rapid node selection without lag', async ({ page }) => {
-    const nodes = page.locator('.react-flow__node');
+  test("should handle rapid node selection without lag", async ({ page }) => {
+    const nodes = page.locator(".react-flow__node");
     const nodeCount = await nodes.count();
 
     const startTime = Date.now();
@@ -411,16 +411,16 @@ test.describe('Graph Performance - Node Selection', () => {
     expect(finalNodeCount).toBe(nodeCount);
   });
 
-  test('should maintain performance with multiple selections', async ({ page }) => {
-    const nodes = page.locator('.react-flow__node');
+  test("should maintain performance with multiple selections", async ({ page }) => {
+    const nodes = page.locator(".react-flow__node");
 
     // Select multiple nodes with Ctrl+Click
     const metricsPromise = measureFrameRate(page, 1000);
 
     for (let i = 0; i < 5; i++) {
-      await page.keyboard.down('Control');
+      await page.keyboard.down("Control");
       await nodes.nth(i).click();
-      await page.keyboard.up('Control');
+      await page.keyboard.up("Control");
       await page.waitForTimeout(100);
     }
 
@@ -431,26 +431,26 @@ test.describe('Graph Performance - Node Selection', () => {
   });
 });
 
-test.describe('Graph Performance - Edge Rendering', () => {
+test.describe("Graph Performance - Edge Rendering", () => {
   test.beforeEach(async ({ page }) => {
-    await authenticateAndNavigate(page, '/graph');
+    await authenticateAndNavigate(page, "/graph");
     await waitForGraphReady(page);
   });
 
-  test('should render edges without flicker during pan', async ({ page }) => {
-    const graphPane = page.locator('.react-flow__pane');
+  test("should render edges without flicker during pan", async ({ page }) => {
+    const graphPane = page.locator(".react-flow__pane");
 
     // Measure stability during panning
     const _visualStability = await page.evaluate(
       async () =>
         new Promise<{ flickerCount: number }>((resolve) => {
           let flickerCount = 0;
-          const edgeElements = document.querySelectorAll('.react-flow__edge');
+          const edgeElements = document.querySelectorAll(".react-flow__edge");
 
           // Monitor edge visibility
           const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-              if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+              if (mutation.type === "attributes" && mutation.attributeName === "style") {
                 // Count potential flickers (visibility changes)
                 flickerCount++;
               }
@@ -459,7 +459,7 @@ test.describe('Graph Performance - Edge Rendering', () => {
 
           edgeElements.forEach((edge) => {
             observer.observe(edge, {
-              attributeFilter: ['style'],
+              attributeFilter: ["style"],
               attributes: true,
             });
           });
@@ -490,8 +490,8 @@ test.describe('Graph Performance - Edge Rendering', () => {
     // This is a basic check; real flicker detection is complex
   });
 
-  test('should maintain edge visibility during zoom', async ({ page }) => {
-    const graphPane = page.locator('.react-flow__pane');
+  test("should maintain edge visibility during zoom", async ({ page }) => {
+    const graphPane = page.locator(".react-flow__pane");
 
     // Get initial edge count
     const _initialEdges = await getEdgeCount(page);
@@ -517,8 +517,8 @@ test.describe('Graph Performance - Edge Rendering', () => {
     }
   });
 
-  test('should handle edge hover interactions smoothly', async ({ page }) => {
-    const edges = page.locator('.react-flow__edge');
+  test("should handle edge hover interactions smoothly", async ({ page }) => {
+    const edges = page.locator(".react-flow__edge");
     const edgeCount = await edges.count();
 
     if (edgeCount > 0) {
@@ -538,14 +538,14 @@ test.describe('Graph Performance - Edge Rendering', () => {
   });
 });
 
-test.describe('Graph Performance - LOD Transitions', () => {
+test.describe("Graph Performance - LOD Transitions", () => {
   test.beforeEach(async ({ page }) => {
-    await authenticateAndNavigate(page, '/graph');
+    await authenticateAndNavigate(page, "/graph");
     await waitForGraphReady(page);
   });
 
-  test('should smoothly transition LOD during zoom', async ({ page }) => {
-    const graphPane = page.locator('.react-flow__pane');
+  test("should smoothly transition LOD during zoom", async ({ page }) => {
+    const graphPane = page.locator(".react-flow__pane");
 
     await graphPane.hover({ position: { x: 400, y: 300 } });
 
@@ -571,8 +571,8 @@ test.describe('Graph Performance - LOD Transitions', () => {
     expect(metrics.jankPercentage).toBeLessThan(15);
   });
 
-  test('should switch node detail levels appropriately', async ({ page }) => {
-    const graphPane = page.locator('.react-flow__pane');
+  test("should switch node detail levels appropriately", async ({ page }) => {
+    const graphPane = page.locator(".react-flow__pane");
 
     await graphPane.hover({ position: { x: 400, y: 300 } });
 
@@ -597,11 +597,11 @@ test.describe('Graph Performance - LOD Transitions', () => {
     expect(nodesAfterZoomIn).toBeGreaterThan(0);
   });
 
-  test('should maintain readable text during LOD transitions', async ({ page }) => {
+  test("should maintain readable text during LOD transitions", async ({ page }) => {
     // Check that node labels remain readable at different zoom levels
     const checkLabels = async () =>
       page.evaluate(() => {
-        const nodes = document.querySelectorAll('.react-flow__node');
+        const nodes = document.querySelectorAll(".react-flow__node");
         let readableCount = 0;
 
         nodes.forEach((node) => {
@@ -617,7 +617,7 @@ test.describe('Graph Performance - LOD Transitions', () => {
     const initialLabels = await checkLabels();
     expect(initialLabels.readable).toBeGreaterThan(0);
 
-    const graphPane = page.locator('.react-flow__pane');
+    const graphPane = page.locator(".react-flow__pane");
     await graphPane.hover({ position: { x: 400, y: 300 } });
 
     // Zoom out
@@ -630,21 +630,21 @@ test.describe('Graph Performance - LOD Transitions', () => {
   });
 });
 
-test.describe('Graph Performance - Large Graph (1000+ Nodes)', () => {
+test.describe("Graph Performance - Large Graph (1000+ Nodes)", () => {
   test.beforeEach(async ({ page }) => {
     // Enable performance monitoring
     await page.addInitScript(() => {
       (globalThis as any).gc = (globalThis as any).gc ?? (() => {});
     });
 
-    await authenticateAndNavigate(page, '/graph');
+    await authenticateAndNavigate(page, "/graph");
   });
 
-  test('should progressively load large graph', async ({ page }) => {
+  test("should progressively load large graph", async ({ page }) => {
     const startTime = Date.now();
 
     // Wait for initial render
-    await page.waitForSelector('.react-flow', { timeout: 15_000 });
+    await page.waitForSelector(".react-flow", { timeout: 15_000 });
 
     const initialLoadTime = Date.now() - startTime;
 
@@ -660,7 +660,7 @@ test.describe('Graph Performance - Large Graph (1000+ Nodes)', () => {
     expect(nodeCount).toBeGreaterThan(0);
   });
 
-  test('should use viewport culling for off-screen nodes', async ({ page }) => {
+  test("should use viewport culling for off-screen nodes", async ({ page }) => {
     await waitForGraphReady(page);
 
     // Get initial visible node count
@@ -672,7 +672,7 @@ test.describe('Graph Performance - Large Graph (1000+ Nodes)', () => {
         y: 0,
       };
 
-      const nodes = document.querySelectorAll('.react-flow__node');
+      const nodes = document.querySelectorAll(".react-flow__node");
       let visibleCount = 0;
 
       nodes.forEach((node) => {
@@ -698,10 +698,10 @@ test.describe('Graph Performance - Large Graph (1000+ Nodes)', () => {
     expect(visibleNodes.visible).toBeLessThanOrEqual(visibleNodes.total);
   });
 
-  test('should maintain performance with large graph panning', async ({ page }) => {
+  test("should maintain performance with large graph panning", async ({ page }) => {
     await waitForGraphReady(page);
 
-    const graphPane = page.locator('.react-flow__pane');
+    const graphPane = page.locator(".react-flow__pane");
 
     // Measure performance during panning large graph
     const metricsPromise = measureFrameRate(page, 2000);
@@ -724,10 +724,10 @@ test.describe('Graph Performance - Large Graph (1000+ Nodes)', () => {
     expect(metrics.jankPercentage).toBeLessThan(20);
   });
 
-  test('should handle large graph zoom efficiently', async ({ page }) => {
+  test("should handle large graph zoom efficiently", async ({ page }) => {
     await waitForGraphReady(page);
 
-    const graphPane = page.locator('.react-flow__pane');
+    const graphPane = page.locator(".react-flow__pane");
     await graphPane.hover({ position: { x: 500, y: 300 } });
 
     const zoomStartTime = Date.now();
@@ -749,7 +749,7 @@ test.describe('Graph Performance - Large Graph (1000+ Nodes)', () => {
     expect(zoomDuration).toBeLessThan(3000);
   });
 
-  test('should not exceed memory limits with large graph', async ({ page }) => {
+  test("should not exceed memory limits with large graph", async ({ page }) => {
     await waitForGraphReady(page);
 
     // Force GC before measurement
@@ -760,7 +760,7 @@ test.describe('Graph Performance - Large Graph (1000+ Nodes)', () => {
 
     if (initialMemory) {
       // Interact with graph
-      const graphPane = page.locator('.react-flow__pane');
+      const graphPane = page.locator(".react-flow__pane");
 
       for (let i = 0; i < 5; i++) {
         await graphPane.hover();
@@ -791,22 +791,22 @@ test.describe('Graph Performance - Large Graph (1000+ Nodes)', () => {
   });
 });
 
-test.describe('Graph Performance - Memory Management', () => {
+test.describe("Graph Performance - Memory Management", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       (globalThis as any).gc = (globalThis as any).gc ?? (() => {});
     });
 
-    await authenticateAndNavigate(page, '/graph');
+    await authenticateAndNavigate(page, "/graph");
     await waitForGraphReady(page);
   });
 
-  test('should not leak memory during repeated interactions', async ({ page }) => {
+  test("should not leak memory during repeated interactions", async ({ page }) => {
     const initialMemory = await getMemoryUsage(page);
 
     if (initialMemory) {
-      const graphPane = page.locator('.react-flow__pane');
-      const nodes = page.locator('.react-flow__node');
+      const graphPane = page.locator(".react-flow__pane");
+      const nodes = page.locator(".react-flow__node");
 
       // Perform repeated operations
       for (let cycle = 0; cycle < 3; cycle++) {
@@ -845,12 +845,12 @@ test.describe('Graph Performance - Memory Management', () => {
     }
   });
 
-  test('should clean up nodes when navigating away', async ({ page }) => {
+  test("should clean up nodes when navigating away", async ({ page }) => {
     const initialMemory = await getMemoryUsage(page);
 
     // Navigate away
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Force GC
     await forceGC(page);
@@ -869,17 +869,17 @@ test.describe('Graph Performance - Memory Management', () => {
   });
 });
 
-test.describe('Graph Performance - Network Requests', () => {
+test.describe("Graph Performance - Network Requests", () => {
   test.beforeEach(async ({ page }) => {
-    await authenticateAndNavigate(page, '/graph');
+    await authenticateAndNavigate(page, "/graph");
   });
 
-  test('should efficiently load graph data', async ({ page }) => {
+  test("should efficiently load graph data", async ({ page }) => {
     const requests: string[] = [];
 
-    page.on('request', (request) => {
+    page.on("request", (request) => {
       const url = request.url();
-      if (url.includes('/api/') || url.includes('/graphql')) {
+      if (url.includes("/api/") || url.includes("/graphql")) {
         requests.push(url);
       }
     });
@@ -890,12 +890,12 @@ test.describe('Graph Performance - Network Requests', () => {
     expect(requests.length).toBeLessThan(10);
   });
 
-  test('should implement progressive loading for viewport', async ({ page }) => {
+  test("should implement progressive loading for viewport", async ({ page }) => {
     const requests: { url: string; timestamp: number }[] = [];
 
-    page.on('request', (request) => {
+    page.on("request", (request) => {
       const url = request.url();
-      if (url.includes('/api/graph') || url.includes('/api/nodes')) {
+      if (url.includes("/api/graph") || url.includes("/api/nodes")) {
         requests.push({ timestamp: Date.now(), url });
       }
     });
@@ -905,7 +905,7 @@ test.describe('Graph Performance - Network Requests', () => {
     const _initialRequests = [...requests];
 
     // Pan to different area
-    const graphPane = page.locator('.react-flow__pane');
+    const graphPane = page.locator(".react-flow__pane");
     await graphPane.hover();
     await page.mouse.down();
     await page.mouse.move(100, 100, { steps: 10 });
@@ -921,23 +921,23 @@ test.describe('Graph Performance - Network Requests', () => {
     expect(totalRequests).toBeLessThan(20);
   });
 
-  test('should cache graph data appropriately', async ({ page }) => {
+  test("should cache graph data appropriately", async ({ page }) => {
     await waitForGraphReady(page);
 
     let secondVisitRequests = 0;
 
-    page.on('request', (request) => {
-      if (request.url().includes('/api/graph')) {
+    page.on("request", (request) => {
+      if (request.url().includes("/api/graph")) {
         secondVisitRequests++;
       }
     });
 
     // Navigate away
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Navigate back
-    await page.goto('/graph');
+    await page.goto("/graph");
     await waitForGraphReady(page);
 
     // Should use cached data (fewer requests)
@@ -945,17 +945,17 @@ test.describe('Graph Performance - Network Requests', () => {
   });
 });
 
-test.describe('Graph Performance - Interaction Responsiveness', () => {
+test.describe("Graph Performance - Interaction Responsiveness", () => {
   test.beforeEach(async ({ page }) => {
-    await authenticateAndNavigate(page, '/graph');
+    await authenticateAndNavigate(page, "/graph");
     await waitForGraphReady(page);
   });
 
-  test('should respond to keyboard shortcuts quickly', async ({ page }) => {
+  test("should respond to keyboard shortcuts quickly", async ({ page }) => {
     const shortcuts = [
-      { description: 'fit view', key: 'f' },
-      { description: 'zoom in', key: '+' },
-      { description: 'zoom out', key: '-' },
+      { description: "fit view", key: "f" },
+      { description: "zoom in", key: "+" },
+      { description: "zoom out", key: "-" },
     ];
 
     for (const shortcut of shortcuts) {
@@ -969,13 +969,13 @@ test.describe('Graph Performance - Interaction Responsiveness', () => {
     }
   });
 
-  test('should handle context menu interactions efficiently', async ({ page }) => {
-    const nodes = page.locator('.react-flow__node');
+  test("should handle context menu interactions efficiently", async ({ page }) => {
+    const nodes = page.locator(".react-flow__node");
     const nodeCount = await nodes.count();
 
     if (nodeCount > 0) {
       const responseTime = await measureInteractionTime(page, async () => {
-        await nodes.first().click({ button: 'right' });
+        await nodes.first().click({ button: "right" });
       });
 
       // Context menu should appear quickly
@@ -983,8 +983,8 @@ test.describe('Graph Performance - Interaction Responsiveness', () => {
     }
   });
 
-  test('should update layout controls without lag', async ({ page }) => {
-    const layoutSelector = page.locator('button').filter({ hasText: /layout/i });
+  test("should update layout controls without lag", async ({ page }) => {
+    const layoutSelector = page.locator("button").filter({ hasText: /layout/i });
 
     await expect(layoutSelector.first()).toBeVisible({ timeout: 10_000 });
     const responseTime = await measureInteractionTime(page, async () => {
@@ -995,13 +995,13 @@ test.describe('Graph Performance - Interaction Responsiveness', () => {
   });
 });
 
-test.describe('Graph Performance - Rendering Optimization', () => {
+test.describe("Graph Performance - Rendering Optimization", () => {
   test.beforeEach(async ({ page }) => {
-    await authenticateAndNavigate(page, '/graph');
+    await authenticateAndNavigate(page, "/graph");
     await waitForGraphReady(page);
   });
 
-  test('should use requestAnimationFrame for smooth updates', async ({ page }) => {
+  test("should use requestAnimationFrame for smooth updates", async ({ page }) => {
     // This test verifies that the graph uses RAF properly
     const rafUsage = await page.evaluate(async () => {
       let rafCalls = 0;
@@ -1026,8 +1026,8 @@ test.describe('Graph Performance - Rendering Optimization', () => {
     expect((rafUsage as any).rafCalls).toBeGreaterThan(0);
   });
 
-  test('should batch DOM updates efficiently', async ({ page }) => {
-    const nodes = page.locator('.react-flow__node');
+  test("should batch DOM updates efficiently", async ({ page }) => {
+    const nodes = page.locator(".react-flow__node");
 
     // Trigger multiple updates
     const startTime = Date.now();
@@ -1042,14 +1042,14 @@ test.describe('Graph Performance - Rendering Optimization', () => {
     expect(updateTime).toBeLessThan(500);
   });
 
-  test('should minimize layout thrashing', async ({ page }) => {
+  test("should minimize layout thrashing", async ({ page }) => {
     const layoutTime = await page.evaluate(
       async () =>
         new Promise<number>((resolve) => {
           const start = performance.now();
 
           // Potentially thrashing operations
-          const nodes = document.querySelectorAll('.react-flow__node');
+          const nodes = document.querySelectorAll(".react-flow__node");
           nodes.forEach((node) => {
             const height = node.clientHeight; // Read
             (node as HTMLElement).style.height = `${height}px`; // Write

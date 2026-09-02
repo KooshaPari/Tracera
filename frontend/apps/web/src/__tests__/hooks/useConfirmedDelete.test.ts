@@ -8,13 +8,14 @@
  * - Toast notifications
  */
 
-import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useConfirmedBulkDelete, useConfirmedDelete } from '@/hooks/useConfirmedDelete';
+import { useConfirmedBulkDelete, useConfirmedDelete } from "@/hooks/useConfirmedDelete";
+import { logger } from "@/lib/logger";
 
 // Mock sonner toast
-vi.mock('sonner', () => ({
+vi.mock("sonner", () => ({
   toast: {
     error: vi.fn(),
     success: vi.fn(),
@@ -24,9 +25,10 @@ vi.mock('sonner', () => ({
 describe(useConfirmedDelete, () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(logger, "error").mockImplementation(() => {});
   });
 
-  it('initializes with closed dialog', () => {
+  it("initializes with closed dialog", () => {
     const { result } = renderHook(() => useConfirmedDelete());
 
     expect(result.current.dialogOpen).toBeFalsy();
@@ -34,32 +36,32 @@ describe(useConfirmedDelete, () => {
     expect(result.current.isDeleting).toBeFalsy();
   });
 
-  it('opens dialog on requestDelete', () => {
+  it("opens dialog on requestDelete", () => {
     const { result } = renderHook(() => useConfirmedDelete());
 
     act(() => {
       result.current.requestDelete({
-        description: 'Are you sure?',
-        id: 'item-1',
-        name: 'Test Item',
-        title: 'Delete item?',
+        description: "Are you sure?",
+        id: "item-1",
+        name: "Test Item",
+        title: "Delete item?",
       });
     });
 
     expect(result.current.dialogOpen).toBeTruthy();
-    expect(result.current.pendingDelete?.id).toBe('item-1');
-    expect(result.current.pendingDelete?.name).toBe('Test Item');
+    expect(result.current.pendingDelete?.id).toBe("item-1");
+    expect(result.current.pendingDelete?.name).toBe("Test Item");
   });
 
-  it('executes delete function on executeDelete', async () => {
+  it("executes delete function on executeDelete", async () => {
     const { result } = renderHook(() => useConfirmedDelete());
     const deleteFunction = vi.fn().mockResolvedValue();
 
     act(() => {
       result.current.requestDelete({
-        id: 'item-1',
-        name: 'Test Item',
-        successMessage: 'Item deleted',
+        id: "item-1",
+        name: "Test Item",
+        successMessage: "Item deleted",
       });
     });
 
@@ -70,14 +72,14 @@ describe(useConfirmedDelete, () => {
     expect(deleteFunction).toHaveBeenCalled();
   });
 
-  it('closes dialog after successful delete', async () => {
+  it("closes dialog after successful delete", async () => {
     const { result } = renderHook(() => useConfirmedDelete());
     const deleteFunction = vi.fn().mockResolvedValue();
 
     act(() => {
       result.current.requestDelete({
-        id: 'item-1',
-        name: 'Test Item',
+        id: "item-1",
+        name: "Test Item",
       });
     });
 
@@ -88,15 +90,15 @@ describe(useConfirmedDelete, () => {
     expect(result.current.dialogOpen).toBeFalsy();
   });
 
-  it('handles delete errors', async () => {
+  it("handles delete errors", async () => {
     const { result } = renderHook(() => useConfirmedDelete());
-    const error = new Error('Delete failed');
+    const error = new Error("Delete failed");
     const deleteFunction = vi.fn().mockRejectedValue(error);
 
     act(() => {
       result.current.requestDelete({
-        id: 'item-1',
-        name: 'Test Item',
+        id: "item-1",
+        name: "Test Item",
       });
     });
 
@@ -107,33 +109,45 @@ describe(useConfirmedDelete, () => {
     expect(result.current.isDeleting).toBeFalsy();
   });
 
-  it('sets isDeleting during execution', async () => {
+  it("sets isDeleting during execution", async () => {
     const { result } = renderHook(() => useConfirmedDelete());
-    const deleteFunction = vi.fn(async () => new Promise((resolve) => setTimeout(resolve, 100)));
+    let resolveDelete!: () => void;
+    const deleteFunction = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveDelete = resolve;
+        }),
+    );
 
     act(() => {
       result.current.requestDelete({
-        id: 'item-1',
-        name: 'Test Item',
+        id: "item-1",
+        name: "Test Item",
       });
     });
 
-    void act(async () => {
-      await result.current.executeDelete(deleteFunction);
+    let deletePromise!: Promise<void>;
+    act(() => {
+      deletePromise = result.current.executeDelete(deleteFunction);
     });
 
-    await waitFor(() => {
-      expect(result.current.isDeleting).toBeFalsy();
+    expect(result.current.isDeleting).toBeTruthy();
+
+    await act(async () => {
+      resolveDelete();
+      await deletePromise;
     });
+
+    expect(result.current.isDeleting).toBeFalsy();
   });
 
-  it('cancels delete operation', () => {
+  it("cancels delete operation", () => {
     const { result } = renderHook(() => useConfirmedDelete());
 
     act(() => {
       result.current.requestDelete({
-        id: 'item-1',
-        name: 'Test Item',
+        id: "item-1",
+        name: "Test Item",
       });
     });
 
@@ -147,13 +161,13 @@ describe(useConfirmedDelete, () => {
     expect(result.current.pendingDelete).toBeNull();
   });
 
-  it('closes dialog without clearing pending state', () => {
+  it("closes dialog without clearing pending state", () => {
     const { result } = renderHook(() => useConfirmedDelete());
 
     act(() => {
       result.current.requestDelete({
-        id: 'item-1',
-        name: 'Test Item',
+        id: "item-1",
+        name: "Test Item",
       });
     });
 
@@ -164,16 +178,16 @@ describe(useConfirmedDelete, () => {
     expect(result.current.dialogOpen).toBeFalsy();
   });
 
-  it('respects showSuccessToast option', async () => {
-    const { toast } = await import('sonner');
+  it("respects showSuccessToast option", async () => {
+    const { toast } = await import("sonner");
     const { result } = renderHook(() => useConfirmedDelete({ showSuccessToast: true }));
     const deleteFunction = vi.fn().mockResolvedValue();
 
     act(() => {
       result.current.requestDelete({
-        id: 'item-1',
-        name: 'Test Item',
-        successMessage: 'Item deleted',
+        id: "item-1",
+        name: "Test Item",
+        successMessage: "Item deleted",
       });
     });
 
@@ -186,15 +200,15 @@ describe(useConfirmedDelete, () => {
     });
   });
 
-  it('respects showErrorToast option', async () => {
-    const { toast } = await import('sonner');
+  it("respects showErrorToast option", async () => {
+    const { toast } = await import("sonner");
     const { result } = renderHook(() => useConfirmedDelete({ showErrorToast: true }));
-    const deleteFunction = vi.fn().mockRejectedValue(new Error('Delete failed'));
+    const deleteFunction = vi.fn().mockRejectedValue(new Error("Delete failed"));
 
     act(() => {
       result.current.requestDelete({
-        id: 'item-1',
-        name: 'Test Item',
+        id: "item-1",
+        name: "Test Item",
       });
     });
 
@@ -211,9 +225,10 @@ describe(useConfirmedDelete, () => {
 describe(useConfirmedBulkDelete, () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(logger, "error").mockImplementation(() => {});
   });
 
-  it('initializes with closed dialog', () => {
+  it("initializes with closed dialog", () => {
     const { result } = renderHook(() => useConfirmedBulkDelete());
 
     expect(result.current.dialogOpen).toBeFalsy();
@@ -221,29 +236,29 @@ describe(useConfirmedBulkDelete, () => {
     expect(result.current.isDeleting).toBeFalsy();
   });
 
-  it('opens dialog for bulk delete', () => {
+  it("opens dialog for bulk delete", () => {
     const { result } = renderHook(() => useConfirmedBulkDelete());
 
     act(() => {
       result.current.requestDelete({
         count: 5,
-        itemType: 'items',
+        itemType: "items",
       });
     });
 
     expect(result.current.dialogOpen).toBeTruthy();
     expect(result.current.pendingDelete?.count).toBe(5);
-    expect(result.current.pendingDelete?.itemType).toBe('items');
+    expect(result.current.pendingDelete?.itemType).toBe("items");
   });
 
-  it('executes bulk delete function', async () => {
+  it("executes bulk delete function", async () => {
     const { result } = renderHook(() => useConfirmedBulkDelete());
     const deleteFunction = vi.fn().mockResolvedValue();
 
     act(() => {
       result.current.requestDelete({
         count: 3,
-        itemType: 'items',
+        itemType: "items",
       });
     });
 
@@ -254,14 +269,14 @@ describe(useConfirmedBulkDelete, () => {
     expect(deleteFunction).toHaveBeenCalled();
   });
 
-  it('closes dialog after successful bulk delete', async () => {
+  it("closes dialog after successful bulk delete", async () => {
     const { result } = renderHook(() => useConfirmedBulkDelete());
     const deleteFunction = vi.fn().mockResolvedValue();
 
     act(() => {
       result.current.requestDelete({
         count: 2,
-        itemType: 'items',
+        itemType: "items",
       });
     });
 
@@ -272,14 +287,14 @@ describe(useConfirmedBulkDelete, () => {
     expect(result.current.dialogOpen).toBeFalsy();
   });
 
-  it('handles bulk delete errors', async () => {
+  it("handles bulk delete errors", async () => {
     const { result } = renderHook(() => useConfirmedBulkDelete());
-    const deleteFunction = vi.fn().mockRejectedValue(new Error('Bulk delete failed'));
+    const deleteFunction = vi.fn().mockRejectedValue(new Error("Bulk delete failed"));
 
     act(() => {
       result.current.requestDelete({
         count: 5,
-        itemType: 'items',
+        itemType: "items",
       });
     });
 
@@ -290,13 +305,13 @@ describe(useConfirmedBulkDelete, () => {
     expect(result.current.isDeleting).toBeFalsy();
   });
 
-  it('cancels bulk delete operation', () => {
+  it("cancels bulk delete operation", () => {
     const { result } = renderHook(() => useConfirmedBulkDelete());
 
     act(() => {
       result.current.requestDelete({
         count: 5,
-        itemType: 'items',
+        itemType: "items",
       });
     });
 

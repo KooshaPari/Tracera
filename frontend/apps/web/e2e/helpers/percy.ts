@@ -3,9 +3,9 @@
  *
  * Utilities for taking Percy snapshots with consistent configuration
  */
-import type { Page } from '@playwright/test';
+import type { Page } from "@playwright/test";
 
-import percySnapshot from '@percy/playwright';
+import percySnapshot from "@percy/playwright";
 
 /**
  * Common viewport widths for responsive testing
@@ -59,7 +59,7 @@ export async function takeSnapshot(page: Page, name: string, options?: PercySnap
 export async function takeResponsiveSnapshot(
   page: Page,
   name: string,
-  options?: Omit<PercySnapshotOptions, 'widths'>,
+  options?: Omit<PercySnapshotOptions, "widths">,
 ) {
   await takeSnapshot(page, name, {
     ...options,
@@ -100,10 +100,10 @@ export async function takeSnapshotHidingDynamic(
   options?: PercySnapshotOptions,
 ) {
   const percyCSS = `
-		${dynamicSelectors.join(',\n')} {
+		${dynamicSelectors.join(",\n")} {
 			display: none !important;
 		}
-		${options?.percyCSS ?? ''}
+		${options?.percyCSS ?? ""}
 	`;
 
   await takeSnapshot(page, name, {
@@ -117,17 +117,17 @@ export async function takeSnapshotHidingDynamic(
  */
 export async function takeThemeSnapshots(page: Page, name: string, options?: PercySnapshotOptions) {
   // Light mode
-  await page.emulateMedia({ colorScheme: 'light' });
+  await page.emulateMedia({ colorScheme: "light" });
   await page.waitForTimeout(300); // Wait for theme transition
   await takeSnapshot(page, `${name} - Light`, options);
 
   // Dark mode
-  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.emulateMedia({ colorScheme: "dark" });
   await page.waitForTimeout(300);
   await takeSnapshot(page, `${name} - Dark`, options);
 
   // Reset to light
-  await page.emulateMedia({ colorScheme: 'light' });
+  await page.emulateMedia({ colorScheme: "light" });
 }
 
 /**
@@ -162,7 +162,7 @@ export async function takeElementSnapshot(
   options?: PercySnapshotOptions,
 ) {
   // Wait for element to be visible
-  await page.waitForSelector(selector, { state: 'visible' });
+  await page.waitForSelector(selector, { state: "visible" });
 
   // Take snapshot scoped to element
   await takeSnapshot(page, name, {
@@ -194,10 +194,10 @@ export async function takeInteractiveStateSnapshots(
   await takeSnapshot(page, `${name} - Focus`, options);
 
   // Active state (mouse down)
-  await page.dispatchEvent(selector, 'mousedown');
+  await page.dispatchEvent(selector, "mousedown");
   await page.waitForTimeout(100);
   await takeSnapshot(page, `${name} - Active`, options);
-  await page.dispatchEvent(selector, 'mouseup');
+  await page.dispatchEvent(selector, "mouseup");
 }
 
 /**
@@ -208,7 +208,7 @@ export async function takeSnapshotAfterNetworkIdle(
   name: string,
   options?: PercySnapshotOptions,
 ) {
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
   await takeSnapshot(page, name, options);
 }
 
@@ -221,11 +221,11 @@ export async function takeSnapshotHidingElements(
   hideSelectors: string[],
   options?: PercySnapshotOptions,
 ) {
-  const percyCSS = hideSelectors.map((sel) => `${sel} { display: none !important; }`).join('\n');
+  const percyCSS = hideSelectors.map((sel) => `${sel} { display: none !important; }`).join("\n");
 
   await takeSnapshot(page, name, {
     ...options,
-    percyCSS: `${percyCSS}\n${options?.percyCSS ?? ''}`,
+    percyCSS: `${percyCSS}\n${options?.percyCSS ?? ""}`,
   });
 }
 
@@ -233,13 +233,13 @@ export async function takeSnapshotHidingElements(
  * Common dynamic selectors to hide in snapshots
  */
 export const COMMON_DYNAMIC_SELECTORS = [
-  '.timestamp',
-  '.live-update',
-  '.real-time',
+  ".timestamp",
+  ".live-update",
+  ".real-time",
   "[data-testid='timestamp']",
   "[data-testid='live-data']",
-  '.elapsed-time',
-  '.current-time',
+  ".elapsed-time",
+  ".current-time",
 ];
 
 /**

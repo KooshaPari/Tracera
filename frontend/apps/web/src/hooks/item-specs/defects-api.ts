@@ -4,7 +4,7 @@ import type {
   DefectSpecCreate,
   DefectSpecUpdate,
   DefectStatus,
-} from './types';
+} from "./types";
 
 import {
   API_URL,
@@ -13,7 +13,7 @@ import {
   getBulkHeaders,
   getJsonAuthHeaders,
   readJson,
-} from './constants';
+} from "./constants";
 
 async function fetchDefectSpecs(
   projectId: string,
@@ -25,10 +25,10 @@ async function fetchDefectSpecs(
   },
 ): Promise<{ specs: DefectSpec[]; total: number }> {
   const params = new URLSearchParams();
-  appendParam(params, 'severity', options?.severity);
-  appendParam(params, 'status', options?.status);
-  appendParam(params, 'limit', options?.limit);
-  appendParam(params, 'offset', options?.offset);
+  appendParam(params, "severity", options?.severity);
+  appendParam(params, "status", options?.status);
+  appendParam(params, "limit", options?.limit);
+  appendParam(params, "offset", options?.offset);
 
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/defects?${params}`, {
     headers: getBulkHeaders(),
@@ -45,7 +45,7 @@ async function fetchDefectSpec(projectId: string, specId: string): Promise<Defec
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch defect spec');
+    throw new Error("Failed to fetch defect spec");
   }
   return readJson<DefectSpec>(res);
 }
@@ -56,7 +56,7 @@ async function fetchDefectSpecByItem(projectId: string, itemId: string): Promise
     { headers: getAuthHeaders() },
   );
   if (!res.ok) {
-    throw new Error('Failed to fetch defect spec by item');
+    throw new Error("Failed to fetch defect spec by item");
   }
   return readJson<DefectSpec>(res);
 }
@@ -65,10 +65,10 @@ async function createDefectSpec(projectId: string, data: DefectSpecCreate): Prom
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/defects`, {
     body: JSON.stringify(data),
     headers: getJsonAuthHeaders(),
-    method: 'POST',
+    method: "POST",
   });
   if (!res.ok) {
-    throw new Error('Failed to create defect spec');
+    throw new Error("Failed to create defect spec");
   }
   return readJson<DefectSpec>(res);
 }
@@ -81,10 +81,10 @@ async function updateDefectSpec(
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/defects/${specId}`, {
     body: JSON.stringify(data),
     headers: getJsonAuthHeaders(),
-    method: 'PATCH',
+    method: "PATCH",
   });
   if (!res.ok) {
-    throw new Error('Failed to update defect spec');
+    throw new Error("Failed to update defect spec");
   }
   return readJson<DefectSpec>(res);
 }
@@ -92,10 +92,10 @@ async function updateDefectSpec(
 async function deleteDefectSpec(projectId: string, specId: string): Promise<void> {
   const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/item-specs/defects/${specId}`, {
     headers: getAuthHeaders(),
-    method: 'DELETE',
+    method: "DELETE",
   });
   if (!res.ok) {
-    throw new Error('Failed to delete defect spec');
+    throw new Error("Failed to delete defect spec");
   }
 }
 

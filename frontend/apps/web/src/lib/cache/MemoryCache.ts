@@ -12,7 +12,7 @@
  * - Pattern matching support
  */
 
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 import type {
   IObservableCache,
@@ -24,7 +24,7 @@ import type {
   CacheEvent,
   CacheEventType,
   CacheEventListener,
-} from './CacheInterface';
+} from "./CacheInterface";
 
 import {
   TTL,
@@ -33,7 +33,7 @@ import {
   matchesPattern,
   estimateSize,
   CacheEventType as EventType,
-} from './CacheInterface';
+} from "./CacheInterface";
 
 /**
  * Memory cache configuration
@@ -72,7 +72,7 @@ export class MemoryCache implements IObservableCache {
     this.maxMemory = config.maxMemory ?? 50 * 1024 * 1024; // 50MB
     this.defaultTTL = config.defaultTTL ?? TTL.SHORT;
     this.enableLogging = config.enableLogging ?? false;
-    this.name = config.name ?? 'MemoryCache';
+    this.name = config.name ?? "MemoryCache";
 
     if (this.enableLogging) {
       logger.debug(
@@ -107,7 +107,7 @@ export class MemoryCache implements IObservableCache {
         backend: this.name,
         key,
         timestamp: Date.now(),
-        metadata: { reason: 'expired' },
+        metadata: { reason: "expired" },
       });
       return null;
     }
@@ -412,11 +412,11 @@ export class MemoryCache implements IObservableCache {
   /**
    * Get memory pressure status
    */
-  getMemoryPressure(): 'comfortable' | 'caution' | 'critical' {
+  getMemoryPressure(): "comfortable" | "caution" | "critical" {
     const percent = this.totalMemory / this.maxMemory;
-    if (percent < 0.7) return 'comfortable';
-    if (percent < 0.85) return 'caution';
-    return 'critical';
+    if (percent < 0.7) return "comfortable";
+    if (percent < 0.85) return "caution";
+    return "critical";
   }
 
   /**

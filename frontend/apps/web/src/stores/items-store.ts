@@ -1,6 +1,6 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
-import type { Item, ItemStatus, Priority, ViewType } from '@tracertm/types';
+import type { Item, ItemStatus, Priority, ViewType } from "@tracertm/types";
 
 interface CreateItemInput {
   projectId: string;
@@ -61,9 +61,9 @@ type StoreSetter = (
 
 type StoreGetter = () => ItemsState;
 
-const DEFAULT_VIEW: ViewType = 'FEATURE';
-const DEFAULT_STATUS: ItemStatus = 'todo';
-const DEFAULT_PRIORITY: Priority = 'medium';
+const DEFAULT_VIEW: ViewType = "FEATURE";
+const DEFAULT_STATUS: ItemStatus = "todo";
+const DEFAULT_PRIORITY: Priority = "medium";
 
 const createInitialState = (): ItemsDataState => ({
   isLoading: false,
@@ -99,7 +99,7 @@ const buildTempItem = (tempId: string, data: CreateItemInput): Item => {
 const createCollectionActions = (
   set: StoreSetter,
   get: StoreGetter,
-): Pick<ItemsActions, 'addItem' | 'addItems' | 'clearItems' | 'removeItem'> => ({
+): Pick<ItemsActions, "addItem" | "addItems" | "clearItems" | "removeItem"> => ({
   addItem: (item) => {
     set((state) => {
       const newItems = new Map(state.items);
@@ -155,7 +155,7 @@ const createCollectionActions = (
 
 const createQueryActions = (
   get: StoreGetter,
-): Pick<ItemsActions, 'getItem' | 'getItemsByProject'> => ({
+): Pick<ItemsActions, "getItem" | "getItemsByProject"> => ({
   getItem: (id) => get().items.get(id),
   getItemsByProject: (projectId) => {
     const itemIds = get().itemsByProject.get(projectId) ?? [];
@@ -171,7 +171,7 @@ const createQueryActions = (
   },
 });
 
-const createUpdateActions = (set: StoreSetter): Pick<ItemsActions, 'updateItem'> => ({
+const createUpdateActions = (set: StoreSetter): Pick<ItemsActions, "updateItem"> => ({
   updateItem: (id, updates) => {
     set((state) => {
       const item = state.items.get(id);
@@ -190,7 +190,7 @@ const createUpdateActions = (set: StoreSetter): Pick<ItemsActions, 'updateItem'>
 const createOptimisticCreateActions = (
   set: StoreSetter,
   get: StoreGetter,
-): Pick<ItemsActions, 'confirmCreate' | 'optimisticCreate' | 'rollbackCreate'> => ({
+): Pick<ItemsActions, "confirmCreate" | "optimisticCreate" | "rollbackCreate"> => ({
   confirmCreate: (tempId, item) => {
     // Remove temp item and add real item
     get().removeItem(tempId);
@@ -227,7 +227,7 @@ const createOptimisticCreateActions = (
 const createOptimisticUpdateActions = (
   set: StoreSetter,
   get: StoreGetter,
-): Pick<ItemsActions, 'confirmUpdate' | 'optimisticUpdate' | 'rollbackUpdate'> => ({
+): Pick<ItemsActions, "confirmUpdate" | "optimisticUpdate" | "rollbackUpdate"> => ({
   confirmUpdate: (id, item) => {
     get().addItem(item);
 
@@ -269,7 +269,7 @@ const createOptimisticUpdateActions = (
 const createOptimisticDeleteActions = (
   set: StoreSetter,
   get: StoreGetter,
-): Pick<ItemsActions, 'confirmDelete' | 'optimisticDelete' | 'rollbackDelete'> => ({
+): Pick<ItemsActions, "confirmDelete" | "optimisticDelete" | "rollbackDelete"> => ({
   confirmDelete: (id) => {
     set((state) => {
       const newPendingDeletes = new Set(state.pendingDeletes);
@@ -304,7 +304,7 @@ const createOptimisticDeleteActions = (
 
 const createLoadingActions = (
   set: StoreSetter,
-): Pick<ItemsActions, 'setItemLoading' | 'setLoading'> => ({
+): Pick<ItemsActions, "setItemLoading" | "setLoading"> => ({
   setItemLoading: (id, loading) => {
     set((state) => {
       const newLoadingItems = new Set(state.loadingItems);

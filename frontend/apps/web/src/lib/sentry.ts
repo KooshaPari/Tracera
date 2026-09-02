@@ -13,10 +13,10 @@
  * @see https://docs.sentry.io/platforms/javascript/guides/react/
  */
 
-import * as Sentry from '@sentry/react';
+import * as Sentry from "@sentry/react";
 
-const SENTRY_DSN = import.meta.env['VITE_SENTRY_DSN'];
-const BUILD_ID = import.meta.env['VITE_BUILD_ID'] || 'local';
+const SENTRY_DSN = import.meta.env["VITE_SENTRY_DSN"];
+const BUILD_ID = import.meta.env["VITE_BUILD_ID"] || "local";
 const SAMPLE_RATE_LOW = 0.1;
 const SAMPLE_RATE_HUNDRED_PERCENT = 1.0;
 const TIMESTAMP_MILLISECONDS_DIVISOR = 1000;
@@ -31,8 +31,8 @@ export const initSentry = (): void => {
   const environment = import.meta.env.MODE;
 
   // Skip initialization if no DSN is provided or in test environment
-  if (!SENTRY_DSN || environment === 'test') {
-    console.log('[Sentry] Skipping initialization (no DSN or test environment)');
+  if (!SENTRY_DSN || environment === "test") {
+    console.log("[Sentry] Skipping initialization (no DSN or test environment)");
     return;
   }
 
@@ -49,7 +49,7 @@ export const initSentry = (): void => {
       }),
 
       // Session replay for debugging (only in production)
-      ...(environment === 'production'
+      ...(environment === "production"
         ? [
             Sentry.replayIntegration({
               // Mask all text and images for privacy
@@ -63,7 +63,7 @@ export const initSentry = (): void => {
 
     // Performance Monitoring
     // Lower sample rate in production to reduce bandwidth
-    tracesSampleRate: environment === 'production' ? SAMPLE_RATE_LOW : SAMPLE_RATE_HUNDRED_PERCENT,
+    tracesSampleRate: environment === "production" ? SAMPLE_RATE_LOW : SAMPLE_RATE_HUNDRED_PERCENT,
 
     // Session Replay
     // Capture replays for 10% of sessions, 100% of error sessions
@@ -71,7 +71,7 @@ export const initSentry = (): void => {
     replaysOnErrorSampleRate: SAMPLE_RATE_HUNDRED_PERCENT,
 
     // Release tracking for versioning
-    release: import.meta.env.VITE_APP_VERSION || 'unknown',
+    release: import.meta.env.VITE_APP_VERSION || "unknown",
 
     // Dist tracking for deployment identification
     dist: BUILD_ID,
@@ -84,14 +84,14 @@ export const initSentry = (): void => {
       if (error instanceof Error) {
         // Ignore network errors that are expected (user offline, etc.)
         if (
-          error.message.includes('Failed to fetch') ||
-          error.message.includes('Network request failed')
+          error.message.includes("Failed to fetch") ||
+          error.message.includes("Network request failed")
         ) {
           return null;
         }
 
         // Ignore chunk loading errors (usually transient)
-        if (error.message.includes('Loading chunk') || error.message.includes('ChunkLoadError')) {
+        if (error.message.includes("Loading chunk") || error.message.includes("ChunkLoadError")) {
           return null;
         }
       }
@@ -102,13 +102,13 @@ export const initSentry = (): void => {
     // Ignore specific errors from browser extensions
     ignoreErrors: [
       // Browser extension errors
-      'ResizeObserver loop limit exceeded',
-      'Non-Error promise rejection captured',
+      "ResizeObserver loop limit exceeded",
+      "Non-Error promise rejection captured",
       // Chrome extensions
-      'chrome-extension://',
-      'moz-extension://',
+      "chrome-extension://",
+      "moz-extension://",
       // Browser quirks
-      'ResizeObserver loop completed with undelivered notifications',
+      "ResizeObserver loop completed with undelivered notifications",
     ],
 
     // Denylist for URLs that shouldn't trigger error reports
@@ -166,8 +166,8 @@ export const setSentryContext = (context: string, data: Record<string, unknown>)
  */
 export const addSentryBreadcrumb = (
   message: string,
-  category: string = 'custom',
-  level: 'info' | 'warning' | 'error' | 'debug' = 'info',
+  category: string = "custom",
+  level: "info" | "warning" | "error" | "debug" = "info",
 ): void => {
   Sentry.addBreadcrumb({
     message,
@@ -204,7 +204,7 @@ export const captureException = (error: Error, context?: Record<string, unknown>
  */
 export const captureMessage = (
   message: string,
-  level: 'info' | 'warning' | 'error' | 'debug' = 'info',
+  level: "info" | "warning" | "error" | "debug" = "info",
 ): void => {
   Sentry.captureMessage(message, level);
 };

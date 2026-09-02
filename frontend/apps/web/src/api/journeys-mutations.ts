@@ -1,10 +1,10 @@
-import type * as ReactQuery from '@tanstack/react-query';
+import type * as ReactQuery from "@tanstack/react-query";
 
-import type * as JourneyTypes from './journeys-types';
+import type * as JourneyTypes from "./journeys-types";
 
-import * as JourneyKeys from './journeys-keys';
-import * as QueryClient from './query-client';
-import * as ReactQueryHooks from './react-query-hooks';
+import * as JourneyKeys from "./journeys-keys";
+import * as QueryClient from "./query-client";
+import * as ReactQueryHooks from "./react-query-hooks";
 
 const useDetectJourneys = (
   options?: ReactQuery.UseMutationOptions<
@@ -29,7 +29,7 @@ const useDetectJourneys = (
       const { projectId, minLength, maxLength, types } = input;
       return QueryClient.handleApiResponse(
         QueryClient.api.post<JourneyTypes.Journey[]>(
-          '/api/v1/projects/{projectId}/journeys/detect',
+          "/api/v1/projects/{projectId}/journeys/detect",
           {
             body: { maxLength, minLength, types },
             params: { path: { projectId } },
@@ -75,7 +75,7 @@ const useCreateJourney = (
     mutationFn: async (input: JourneyTypes.CreateJourneyInput): Promise<JourneyTypes.Journey> => {
       const { projectId, name, description, type, itemIds, metadata } = input;
       return QueryClient.handleApiResponse(
-        QueryClient.api.post<JourneyTypes.Journey>('/api/v1/projects/{projectId}/journeys', {
+        QueryClient.api.post<JourneyTypes.Journey>("/api/v1/projects/{projectId}/journeys", {
           body: { description, itemIds, metadata, name, type },
           params: { path: { projectId } },
         }),
@@ -120,7 +120,7 @@ const useUpdateJourney = (
       data: JourneyTypes.UpdateJourneyInput;
     }): Promise<JourneyTypes.Journey> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.put<JourneyTypes.Journey>('/api/v1/journeys/{journeyId}', {
+        QueryClient.api.put<JourneyTypes.Journey>("/api/v1/journeys/{journeyId}", {
           body: input.data,
           params: { path: { journeyId: input.journeyId } },
         }),
@@ -154,7 +154,7 @@ const useDeleteJourney = (
   const baseOptions: ReactQuery.UseMutationOptions<void, Error, string> = {
     mutationFn: async (journeyId: string): Promise<void> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.del<void>('/api/v1/journeys/{journeyId}', {
+        QueryClient.api.del<void>("/api/v1/journeys/{journeyId}", {
           params: { path: { journeyId } },
         }),
       ),
@@ -196,7 +196,7 @@ const useAddJourneyStep = (
       order?: number;
     }): Promise<JourneyTypes.Journey> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.post<JourneyTypes.Journey>('/api/v1/journeys/{journeyId}/steps', {
+        QueryClient.api.post<JourneyTypes.Journey>("/api/v1/journeys/{journeyId}/steps", {
           body: { itemId: input.itemId, order: input.order },
           params: { path: { journeyId: input.journeyId } },
         }),
@@ -234,7 +234,7 @@ const useRemoveJourneyStep = (
   > = {
     mutationFn: async (input: { journeyId: string; stepItemId: string }): Promise<void> =>
       QueryClient.handleApiResponse(
-        QueryClient.api.del<void>('/api/v1/journeys/{journeyId}/steps/{itemId}', {
+        QueryClient.api.del<void>("/api/v1/journeys/{journeyId}/steps/{itemId}", {
           params: {
             path: { itemId: input.stepItemId, journeyId: input.journeyId },
           },

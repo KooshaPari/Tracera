@@ -1,10 +1,10 @@
-import type { EdgeDisplayData, NodeDisplayData } from 'sigma/types';
+import type { EdgeDisplayData, NodeDisplayData } from "sigma/types";
 
-const DEFAULT_COLOR = '#64748b';
-const DEFAULT_STATUS_COLOR = '#10b981';
-const EDGE_COLOR = '#94a3b8';
-const LABEL_COLOR = '#ffffff';
-const LABEL_BG = 'rgba(26, 26, 46, 0.9)';
+const DEFAULT_COLOR = "#64748b";
+const DEFAULT_STATUS_COLOR = "#10b981";
+const EDGE_COLOR = "#94a3b8";
+const LABEL_COLOR = "#ffffff";
+const LABEL_BG = "rgba(26, 26, 46, 0.9)";
 
 const BORDER_WIDTH = 2;
 const HIGHLIGHT_WIDTH = 3;
@@ -36,44 +36,44 @@ const EDGE_ALPHA = 0.3;
 // Import type colors from existing types
 const ENHANCED_TYPE_COLORS: Record<string, string> = {
   default: DEFAULT_COLOR,
-  defect: '#ef4444',
-  epic: '#8b5cf6',
-  feature: '#ec4899',
-  requirement: '#3b82f6',
-  story: '#06b6d4',
-  task: '#f59e0b',
-  test: '#10b981',
+  defect: "#ef4444",
+  epic: "#8b5cf6",
+  feature: "#ec4899",
+  requirement: "#3b82f6",
+  story: "#06b6d4",
+  task: "#f59e0b",
+  test: "#10b981",
 };
 
 const ICONS: Record<string, string> = {
-  default: '●',
-  defect: '🐛',
-  epic: '🎯',
-  feature: '⭐',
-  requirement: '📋',
-  story: '📖',
-  task: '📝',
-  test: '✓',
+  default: "●",
+  defect: "🐛",
+  epic: "🎯",
+  feature: "⭐",
+  requirement: "📋",
+  story: "📖",
+  task: "📝",
+  test: "✓",
 };
 
 const readNumber = (obj: Record<string, unknown>, key: string): number | undefined => {
   const value = obj[key];
-  return typeof value === 'number' ? value : undefined;
+  return typeof value === "number" ? value : undefined;
 };
 
 const readString = (obj: Record<string, unknown>, key: string): string | undefined => {
   const value = obj[key];
-  return typeof value === 'string' ? value : undefined;
+  return typeof value === "string" ? value : undefined;
 };
 
 const getZoomRatio = (settings: Record<string, unknown>): number => {
-  const value = settings['zoomRatio'];
-  return typeof value === 'number' ? value : ZERO;
+  const value = settings["zoomRatio"];
+  return typeof value === "number" ? value : ZERO;
 };
 
 const getTypeColor = (typeValue: unknown): string => {
-  const out = typeof typeValue === 'string' ? ENHANCED_TYPE_COLORS[typeValue] : undefined;
-  return out ?? ENHANCED_TYPE_COLORS['default'] ?? '#6b7280';
+  const out = typeof typeValue === "string" ? ENHANCED_TYPE_COLORS[typeValue] : undefined;
+  return out ?? ENHANCED_TYPE_COLORS["default"] ?? "#6b7280";
 };
 
 const drawNodeBase = (
@@ -122,8 +122,8 @@ const drawNodeIcon = (
 ): void => {
   context.fillStyle = color;
   context.font = `${size * ICON_FONT_SCALE}px sans-serif`;
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
+  context.textAlign = "center";
+  context.textBaseline = "middle";
   context.fillText(icon, x, y);
 };
 
@@ -136,8 +136,8 @@ const drawNodeLabel = (
 ): void => {
   context.fillStyle = LABEL_COLOR;
   context.font = `${Math.max(LABEL_MIN_SIZE, size * LABEL_FONT_SCALE)}px sans-serif`;
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
+  context.textAlign = "center";
+  context.textBaseline = "middle";
 
   const displayLabel =
     label.length > LABEL_MAX_LENGTH ? `${label.slice(0, LABEL_MAX_LENGTH)}...` : label;
@@ -203,8 +203,8 @@ const drawEdgeLabel = (
 
   context.fillStyle = color;
   context.font = `${LABEL_FONT_SIZE}px sans-serif`;
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
+  context.textAlign = "center";
+  context.textBaseline = "middle";
   context.fillText(label, midX, midY);
 };
 
@@ -241,23 +241,23 @@ const customNodeRenderer = (
 
   drawNodeBase(context, x, y, size, typeColor);
 
-  const status = readString(extra, 'status');
+  const status = readString(extra, "status");
   if (status) {
-    const statusColor = readString(extra, 'statusColor') ?? DEFAULT_STATUS_COLOR;
+    const statusColor = readString(extra, "statusColor") ?? DEFAULT_STATUS_COLOR;
     drawStatusIndicator(context, x, y, size, statusColor);
   }
 
   if (zoomRatio > ZOOM_ICON_THRESHOLD) {
-    const iconKey = typeof type === 'string' ? type : 'default';
-    const icon = ICONS[iconKey] ?? ICONS['default'] ?? '';
+    const iconKey = typeof type === "string" ? type : "default";
+    const icon = ICONS[iconKey] ?? ICONS["default"] ?? "";
     drawNodeIcon(context, x, y, size, typeColor, icon);
   }
 
-  if (zoomRatio > ZOOM_LABEL_THRESHOLD && typeof label === 'string') {
+  if (zoomRatio > ZOOM_LABEL_THRESHOLD && typeof label === "string") {
     drawNodeLabel(context, x, y, size, label);
   }
 
-  if (extra['highlighted'] === true) {
+  if (extra["highlighted"] === true) {
     drawNodeHighlight(context, x, y, size, typeColor);
   }
 };
@@ -272,18 +272,18 @@ const customEdgeRenderer = (
   settings: Record<string, unknown>,
 ): void => {
   const extra = data as unknown as Record<string, unknown>;
-  const x1 = readNumber(extra, 'x1');
-  const y1 = readNumber(extra, 'y1');
-  const x2 = readNumber(extra, 'x2');
-  const y2 = readNumber(extra, 'y2');
+  const x1 = readNumber(extra, "x1");
+  const y1 = readNumber(extra, "y1");
+  const x2 = readNumber(extra, "x2");
+  const y2 = readNumber(extra, "y2");
 
   if (x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined) {
     return;
   }
 
-  const color = readString(extra, 'color') ?? EDGE_COLOR;
-  const size = readNumber(extra, 'size') ?? DEFAULT_EDGE_SIZE;
-  const label = readString(extra, 'label');
+  const color = readString(extra, "color") ?? EDGE_COLOR;
+  const size = readNumber(extra, "size") ?? DEFAULT_EDGE_SIZE;
+  const label = readString(extra, "label");
   const zoomRatio = getZoomRatio(settings);
 
   drawEdgeLine(context, x1, y1, x2, y2, color, size);
@@ -292,7 +292,7 @@ const customEdgeRenderer = (
     drawEdgeLabel(context, x1, y1, x2, y2, label, color);
   }
 
-  if (extra['highlighted'] === true) {
+  if (extra["highlighted"] === true) {
     drawEdgeHighlight(context, x1, y1, x2, y2, color, size);
   }
 };

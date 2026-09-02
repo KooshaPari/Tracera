@@ -1,13 +1,13 @@
-import { Network, Search } from 'lucide-react';
-import { useState } from 'react';
+import { Network, Search } from "lucide-react";
+import { useState } from "react";
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
-import { logger } from '@/lib/logger';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tracertm/ui/components/Tabs';
+import { logger } from "@/lib/logger";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tracertm/ui/components/Tabs";
 
-import { CrossPerspectiveSearch } from './graph/CrossPerspectiveSearch';
-import { GraphSearch } from './graph/GraphSearch';
+import { CrossPerspectiveSearch } from "./graph/CrossPerspectiveSearch";
+import { GraphSearch } from "./graph/GraphSearch";
 
 interface UnifiedSearchProps {
   items: Item[];
@@ -34,7 +34,7 @@ export function UnifiedSearch({
   onHighlightItem,
   className,
 }: UnifiedSearchProps) {
-  const [searchMode, setSearchMode] = useState<'basic' | 'cross-perspective'>('basic');
+  const [searchMode, setSearchMode] = useState<"basic" | "cross-perspective">("basic");
 
   return (
     <div className={className}>
@@ -44,19 +44,19 @@ export function UnifiedSearch({
           setSearchMode(mode as typeof searchMode);
         }}
       >
-        <TabsList className='grid w-full grid-cols-2'>
-          <TabsTrigger value='basic' className='flex items-center gap-2'>
-            <Search className='h-4 w-4' />
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="basic" className="flex items-center gap-2">
+            <Search className="h-4 w-4" />
             Basic Search
           </TabsTrigger>
-          <TabsTrigger value='cross-perspective' className='flex items-center gap-2'>
-            <Network className='h-4 w-4' />
+          <TabsTrigger value="cross-perspective" className="flex items-center gap-2">
+            <Network className="h-4 w-4" />
             Cross-Perspective
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value='basic' className='space-y-4'>
-          <div className='text-muted-foreground text-sm'>
+        <TabsContent value="basic" className="space-y-4">
+          <div className="text-muted-foreground text-sm">
             Search items by name, description, or type within current perspective
           </div>
           <GraphSearch
@@ -68,8 +68,8 @@ export function UnifiedSearch({
           />
         </TabsContent>
 
-        <TabsContent value='cross-perspective' className='space-y-4'>
-          <div className='text-muted-foreground text-sm'>
+        <TabsContent value="cross-perspective" className="space-y-4">
+          <div className="text-muted-foreground text-sm">
             Search across perspectives to find equivalent concepts and related items
           </div>
           <CrossPerspectiveSearch

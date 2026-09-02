@@ -1,24 +1,24 @@
-import type { AuthErrorDetails } from './auth-types';
+import type { AuthErrorDetails } from "./auth-types";
 
-import { fetchCSRFToken, getCSRFToken } from '../lib/csrf';
-import { useAuthStore } from '../stores/auth-store';
-import authConstants from './auth-constants';
-import { AuthError } from './auth-types';
-import { client } from './client';
+import { fetchCSRFToken, getCSRFToken } from "../lib/csrf";
+import { useAuthStore } from "../stores/auth-store";
+import authConstants from "./auth-constants";
+import { AuthError } from "./auth-types";
+import { client } from "./client";
 
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
-  Object.prototype.toString.call(value) === '[object Object]';
+  Object.prototype.toString.call(value) === "[object Object]";
 
 const readStringField = (obj: Record<string, unknown>, key: string): string | undefined => {
   const value = obj[key];
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value;
   }
   return undefined;
 };
 
 const readDetailsField = (obj: Record<string, unknown>): AuthErrorDetails | undefined => {
-  const value = obj['details'];
+  const value = obj["details"];
   if (isRecordObject(value)) {
     return value;
   }
@@ -28,15 +28,15 @@ const readDetailsField = (obj: Record<string, unknown>): AuthErrorDetails | unde
 const buildErrorResult = (
   data: Record<string, unknown>,
 ): { message: string; code?: string; details?: AuthErrorDetails } => {
-  const message = readStringField(data, 'message') ?? '';
-  const code = readStringField(data, 'code');
+  const message = readStringField(data, "message") ?? "";
+  const code = readStringField(data, "code");
   const details = readDetailsField(data);
   const result: {
     message: string;
     code?: string;
     details?: AuthErrorDetails;
   } = { message };
-  if (code !== undefined && code !== '') {
+  if (code !== undefined && code !== "") {
     result.code = code;
   }
   if (details !== undefined) {
@@ -53,7 +53,7 @@ const parseErrorData = (
   details?: AuthErrorDetails;
 } => {
   if (!isRecordObject(data)) {
-    return { message: '' };
+    return { message: "" };
   }
   return buildErrorResult(data);
 };
@@ -64,23 +64,23 @@ const ensureCSRFToken = async (): Promise<string> => {
     try {
       token = normalizeToken(await fetchCSRFToken());
     } catch (error) {
-      let originalError = 'Unknown error';
+      let originalError = "Unknown error";
       if (error instanceof Error) {
         originalError = error.message;
       }
       throw new AuthError(
-        'Failed to fetch CSRF token',
+        "Failed to fetch CSRF token",
         authConstants.httpForbidden,
-        'CSRF_TOKEN_MISSING',
+        "CSRF_TOKEN_MISSING",
         { originalError },
       );
     }
   }
   if (token === undefined) {
     throw new AuthError(
-      'CSRF token not available',
+      "CSRF token not available",
       authConstants.httpForbidden,
-      'CSRF_TOKEN_MISSING',
+      "CSRF_TOKEN_MISSING",
     );
   }
   return token;
@@ -94,24 +94,24 @@ const handleAuthResponse = async <TResponse>(
   } catch (error) {
     if (error instanceof client.ApiError) {
       const { message, code, details } = parseErrorData(error.data);
-      const fallbackMessage = message !== '' ? message : error.message;
+      const fallbackMessage = message !== "" ? message : error.message;
       throw new AuthError(fallbackMessage, error.status, code, details);
     }
     throw error;
   }
 };
 
-const hasWindow = (): boolean => 'window' in globalThis;
+const hasWindow = (): boolean => "window" in globalThis;
 
 const normalizeToken = (value: unknown): string | undefined => {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const trimmed = value.trim();
     if (trimmed.length === authConstants.emptyLength) {
       return undefined;
     }
     return trimmed;
   }
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return String(value);
   }
   return undefined;
@@ -120,7 +120,7 @@ const normalizeToken = (value: unknown): string | undefined => {
 const getStoredToken = (): string | undefined => {
   const storeToken = useAuthStore.getState().token;
   if (hasWindow()) {
-    const storageToken = globalThis.window.localStorage.getItem('auth_token');
+    const storageToken = globalThis.window.localStorage.getItem("auth_token");
     return normalizeToken(storageToken ?? storeToken);
   }
   return normalizeToken(storeToken);
@@ -131,28 +131,28 @@ const isAuthError = (error: unknown): error is AuthError => error instanceof Aut
 const getAuthErrorMessage = (error: AuthError): string => {
   const { code } = error;
   const authErrorCodes = [
-    'CSRF_TOKEN_MISSING',
-    'INVALID_CREDENTIALS',
-    'INVALID_PASSWORD',
-    'INVALID_TOKEN',
-    'PASSWORD_MISMATCH',
-    'USER_DISABLED',
-    'USER_NOT_FOUND',
+    "CSRF_TOKEN_MISSING",
+    "INVALID_CREDENTIALS",
+    "INVALID_PASSWORD",
+    "INVALID_TOKEN",
+    "PASSWORD_MISMATCH",
+    "USER_DISABLED",
+    "USER_NOT_FOUND",
   ] as const;
 
   if (code !== undefined && authErrorCodes.includes(code as any)) {
     return authConstants.authErrorMessages[code as keyof typeof authConstants.authErrorMessages];
   }
   if (error.statusCode === authConstants.httpTooManyRequests) {
-    return 'Too many login attempts, please try again later';
+    return "Too many login attempts, please try again later";
   }
   if (error.statusCode >= authConstants.httpServerErrorMin) {
-    return 'Server error, please try again later';
+    return "Server error, please try again later";
   }
-  if (error.message !== '') {
+  if (error.message !== "") {
     return error.message;
   }
-  return 'Authentication failed';
+  return "Authentication failed";
 };
 
 export {

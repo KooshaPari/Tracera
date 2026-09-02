@@ -1,12 +1,12 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
-import type { RealtimeEvent } from '../api/websocket';
+import type { RealtimeEvent } from "../api/websocket";
 
-import { getWebSocketManager } from '../api/websocket';
+import { getWebSocketManager } from "../api/websocket";
 
-const CONNECTION_CHECK_INTERVAL_MS = Number('1000');
-const MAX_EVENTS = Number('100');
-const ZERO = Number('0');
+const CONNECTION_CHECK_INTERVAL_MS = Number("1000");
+const MAX_EVENTS = Number("100");
+const ZERO = Number("0");
 
 type ConnectionCheckInterval = ReturnType<typeof globalThis.setInterval>;
 
@@ -115,7 +115,7 @@ const ensureConnected = async (
 
 const createInitialState = (): Pick<
   WebSocketState,
-  'activeChannels' | 'events' | 'isConnected' | 'lastEvent' | 'reconnectAttempts'
+  "activeChannels" | "events" | "isConnected" | "lastEvent" | "reconnectAttempts"
 > => ({
   activeChannels: new Set(),
   events: [],
@@ -129,7 +129,7 @@ const createWebSocketActions = (
   get: WebSocketStoreGetter,
 ): Pick<
   WebSocketState,
-  'addEvent' | 'clearEvents' | 'connect' | 'disconnect' | 'setConnectionStatus' | 'subscribe'
+  "addEvent" | "clearEvents" | "connect" | "disconnect" | "setConnectionStatus" | "subscribe"
 > => ({
   addEvent: (event: RealtimeEvent): void => {
     set((state) => ({

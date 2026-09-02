@@ -1,4 +1,4 @@
-import { expect, test } from './global-setup';
+import { expect, test } from "./global-setup";
 
 /**
  * Performance E2E Tests
@@ -7,12 +7,12 @@ import { expect, test } from './global-setup';
  * and runtime performance metrics.
  */
 
-test.describe('Performance - Load Times', () => {
-  test('should load dashboard within acceptable time', async ({ page }) => {
+test.describe("Performance - Load Times", () => {
+  test("should load dashboard within acceptable time", async ({ page }) => {
     const startTime = Date.now();
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     const loadTime = Date.now() - startTime;
 
@@ -20,11 +20,11 @@ test.describe('Performance - Load Times', () => {
     expect(loadTime).toBeLessThan(3000);
   });
 
-  test('should load items page within acceptable time', async ({ page }) => {
+  test("should load items page within acceptable time", async ({ page }) => {
     const startTime = Date.now();
 
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     const loadTime = Date.now() - startTime;
 
@@ -32,11 +32,11 @@ test.describe('Performance - Load Times', () => {
     expect(loadTime).toBeLessThan(3000);
   });
 
-  test('should measure Core Web Vitals', async ({ page }) => {
-    await page.goto('/');
+  test("should measure Core Web Vitals", async ({ page }) => {
+    await page.goto("/");
 
     // Wait for page to fully load
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("networkidle");
 
     // Get performance metrics
     const metrics = await page.evaluate(
@@ -47,17 +47,17 @@ test.describe('Performance - Load Times', () => {
             const vitals: any = {};
 
             for (const entry of entries) {
-              if (entry.entryType === 'largest-contentful-paint') {
+              if (entry.entryType === "largest-contentful-paint") {
                 vitals.lcp = entry.startTime;
               }
-              if (entry.entryType === 'first-input') {
+              if (entry.entryType === "first-input") {
                 vitals.fid = (entry as any).processingStart - entry.startTime;
               }
             }
 
             resolve(vitals);
           }).observe({
-            entryTypes: ['largest-contentful-paint', 'first-input'],
+            entryTypes: ["largest-contentful-paint", "first-input"],
           });
 
           // Timeout after 5 seconds
@@ -78,8 +78,8 @@ test.describe('Performance - Load Times', () => {
     }
   });
 
-  test('should have acceptable Time to Interactive', async ({ page }) => {
-    await page.goto('/');
+  test("should have acceptable Time to Interactive", async ({ page }) => {
+    await page.goto("/");
 
     const tti = await page.evaluate(
       async () =>
@@ -95,10 +95,10 @@ test.describe('Performance - Load Times', () => {
             });
           };
 
-          if (document.readyState === 'complete') {
+          if (document.readyState === "complete") {
             checkInteractive();
           } else {
-            window.addEventListener('load', checkInteractive);
+            window.addEventListener("load", checkInteractive);
           }
         }),
     );
@@ -107,18 +107,18 @@ test.describe('Performance - Load Times', () => {
     expect(tti).toBeLessThan(3800);
   });
 
-  test('should lazy load images', async ({ page }) => {
-    await page.goto('/');
+  test("should lazy load images", async ({ page }) => {
+    await page.goto("/");
 
     // Get all images
-    const images = page.locator('img');
+    const images = page.locator("img");
     const count = await images.count();
 
     let lazyLoadedCount = 0;
 
     for (let i = 0; i < count; i++) {
-      const loading = await images.nth(i).getAttribute('loading');
-      if (loading === 'lazy') {
+      const loading = await images.nth(i).getAttribute("loading");
+      if (loading === "lazy") {
         lazyLoadedCount++;
       }
     }
@@ -127,18 +127,18 @@ test.describe('Performance - Load Times', () => {
     expect(lazyLoadedCount).toBeGreaterThan(0);
   });
 
-  test('should not block rendering with scripts', async ({ page }) => {
-    await page.goto('/');
+  test("should not block rendering with scripts", async ({ page }) => {
+    await page.goto("/");
 
     // Check script tags
     const scripts = await page.evaluate(() => {
-      const scriptElements = document.querySelectorAll('script');
+      const scriptElements = document.querySelectorAll("script");
       const blockingScripts: string[] = [];
 
       for (const script of scriptElements) {
-        const src = script.getAttribute('src');
-        const async = script.hasAttribute('async');
-        const defer = script.hasAttribute('defer');
+        const src = script.getAttribute("src");
+        const async = script.hasAttribute("async");
+        const defer = script.hasAttribute("defer");
 
         if (src && !async && !defer) {
           blockingScripts.push(src);
@@ -153,14 +153,14 @@ test.describe('Performance - Load Times', () => {
   });
 });
 
-test.describe('Performance - Runtime Performance', () => {
+test.describe("Performance - Runtime Performance", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should render large lists efficiently', async ({ page }) => {
-    await page.goto('/items');
+  test("should render large lists efficiently", async ({ page }) => {
+    await page.goto("/items");
 
     // Measure render time for large list
     const renderTime = await page.evaluate(
@@ -182,8 +182,8 @@ test.describe('Performance - Runtime Performance', () => {
     expect(renderTime).toBeLessThan(50);
   });
 
-  test('should handle rapid user interactions smoothly', async ({ page }) => {
-    await page.goto('/items');
+  test("should handle rapid user interactions smoothly", async ({ page }) => {
+    await page.goto("/items");
 
     // Rapidly click through items
     const startTime = Date.now();
@@ -200,8 +200,8 @@ test.describe('Performance - Runtime Performance', () => {
     expect(totalTime / 10).toBeLessThan(150);
   });
 
-  test('should not cause memory leaks', async ({ page }) => {
-    await page.goto('/items');
+  test("should not cause memory leaks", async ({ page }) => {
+    await page.goto("/items");
 
     // Get initial memory
     const initialMemory = await page.evaluate(
@@ -211,7 +211,7 @@ test.describe('Performance - Runtime Performance', () => {
     // Perform operations that might leak
     for (let i = 0; i < 10; i++) {
       await page.click('button:has-text("New Item")');
-      await page.keyboard.press('Escape');
+      await page.keyboard.press("Escape");
       await page.waitForTimeout(100);
     }
 
@@ -232,14 +232,14 @@ test.describe('Performance - Runtime Performance', () => {
     expect(memoryIncrease).toBeLessThan(10 * 1024 * 1024);
   });
 
-  test('should debounce search input', async ({ page }) => {
-    await page.goto('/items');
+  test("should debounce search input", async ({ page }) => {
+    await page.goto("/items");
 
     // Monitor network requests
     let searchRequestCount = 0;
 
-    page.on('request', (request) => {
-      if (request.url().includes('/api/search')) {
+    page.on("request", (request) => {
+      if (request.url().includes("/api/search")) {
         searchRequestCount++;
       }
     });
@@ -247,7 +247,7 @@ test.describe('Performance - Runtime Performance', () => {
     // Rapidly type in search
     await page.click('[data-testid="search-input"]');
 
-    const searchText = 'test query';
+    const searchText = "test query";
     for (const char of searchText) {
       await page.keyboard.type(char);
       await page.waitForTimeout(50);
@@ -259,8 +259,8 @@ test.describe('Performance - Runtime Performance', () => {
     expect(searchRequestCount).toBeLessThan(3);
   });
 
-  test('should virtualize large lists', async ({ page }) => {
-    await page.goto('/items');
+  test("should virtualize large lists", async ({ page }) => {
+    await page.goto("/items");
 
     // Check if list is virtualized
     const isVirtualized = await page.evaluate(() => {
@@ -290,8 +290,8 @@ test.describe('Performance - Runtime Performance', () => {
     expect(isVirtualized.rendered).toBeLessThan(100);
   });
 
-  test('should optimize re-renders with React.memo', async ({ page }) => {
-    await page.goto('/items');
+  test("should optimize re-renders with React.memo", async ({ page }) => {
+    await page.goto("/items");
 
     // Trigger state change that shouldn't re-render all items
     await page.click('[data-testid="filter-button"]');
@@ -317,21 +317,21 @@ test.describe('Performance - Runtime Performance', () => {
   });
 });
 
-test.describe('Performance - Bundle Size', () => {
-  test('should have acceptable initial bundle size', async ({ page }) => {
+test.describe("Performance - Bundle Size", () => {
+  test("should have acceptable initial bundle size", async ({ page }) => {
     const responses: any[] = [];
 
-    page.on('response', (response) => {
-      if (response.url().endsWith('.js')) {
+    page.on("response", (response) => {
+      if (response.url().endsWith(".js")) {
         responses.push({
-          size: Number.parseInt(response.headers()['content-length'] ?? '0', 10),
+          size: Number.parseInt(response.headers()["content-length"] ?? "0", 10),
           url: response.url(),
         });
       }
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     const totalSize = responses.reduce((sum, r) => sum + r.size, 0);
 
@@ -339,23 +339,23 @@ test.describe('Performance - Bundle Size', () => {
     expect(totalSize).toBeLessThan(500 * 1024);
   });
 
-  test('should code-split routes', async ({ page }) => {
+  test("should code-split routes", async ({ page }) => {
     const jsFiles: string[] = [];
 
-    page.on('response', (response) => {
-      if (response.url().endsWith('.js')) {
+    page.on("response", (response) => {
+      if (response.url().endsWith(".js")) {
         jsFiles.push(response.url());
       }
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     const dashboardFiles = new Set(jsFiles);
     jsFiles.length = 0;
 
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     const itemsFiles = jsFiles.filter((f) => !dashboardFiles.has(f));
 
@@ -363,87 +363,87 @@ test.describe('Performance - Bundle Size', () => {
     expect(itemsFiles.length).toBeGreaterThan(0);
   });
 
-  test('should not load unused vendor code', async ({ page }) => {
+  test("should not load unused vendor code", async ({ page }) => {
     const vendorChunks: string[] = [];
 
-    page.on('response', (response) => {
+    page.on("response", (response) => {
       const url = response.url();
-      if (url.includes('vendor') || url.includes('node_modules')) {
+      if (url.includes("vendor") || url.includes("node_modules")) {
         vendorChunks.push(url);
       }
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     // Should not load excessive vendor chunks on initial load
     expect(vendorChunks.length).toBeLessThan(5);
   });
 });
 
-test.describe('Performance - Network Optimization', () => {
-  test('should use HTTP/2', async ({ page }) => {
+test.describe("Performance - Network Optimization", () => {
+  test("should use HTTP/2", async ({ page }) => {
     const protocols: string[] = [];
 
-    page.on('response', (response) => {
-      const protocol = response.frame()?.request()?.protocol?.() ?? '';
+    page.on("response", (response) => {
+      const protocol = response.frame()?.request()?.protocol?.() ?? "";
       if (protocol) {
         protocols.push(protocol);
       }
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     // Should use HTTP/2 or HTTP/3
     const modernProtocols = protocols.filter(
-      (p) => p.toLowerCase().includes('h2') || p.toLowerCase().includes('h3'),
+      (p) => p.toLowerCase().includes("h2") || p.toLowerCase().includes("h3"),
     );
 
     expect(modernProtocols.length).toBeGreaterThan(0);
   });
 
-  test('should compress responses', async ({ page }) => {
+  test("should compress responses", async ({ page }) => {
     let hasCompression = false;
 
-    page.on('response', (response) => {
-      const encoding = response.headers()['content-encoding'];
-      if (encoding && (encoding.includes('gzip') || encoding.includes('br'))) {
+    page.on("response", (response) => {
+      const encoding = response.headers()["content-encoding"];
+      if (encoding && (encoding.includes("gzip") || encoding.includes("br"))) {
         hasCompression = true;
       }
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     // At least some responses should be compressed
     expect(hasCompression).toBe(true);
   });
 
-  test('should cache static assets', async ({ page }) => {
+  test("should cache static assets", async ({ page }) => {
     let hasCacheHeaders = false;
 
-    page.on('response', (response) => {
-      const cacheControl = response.headers()['cache-control'];
-      if (cacheControl?.includes('max-age')) {
+    page.on("response", (response) => {
+      const cacheControl = response.headers()["cache-control"];
+      if (cacheControl?.includes("max-age")) {
         hasCacheHeaders = true;
       }
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     expect(hasCacheHeaders).toBe(true);
   });
 
-  test('should preload critical resources', async ({ page }) => {
-    await page.goto('/');
+  test("should preload critical resources", async ({ page }) => {
+    await page.goto("/");
 
     const preloadLinks = await page.evaluate(() => {
       const links = document.querySelectorAll('link[rel="preload"]');
       return [...links].map((link) => ({
-        as: link.getAttribute('as'),
-        href: link.getAttribute('href'),
+        as: link.getAttribute("as"),
+        href: link.getAttribute("href"),
       }));
     });
 
@@ -451,12 +451,12 @@ test.describe('Performance - Network Optimization', () => {
     expect(preloadLinks.length).toBeGreaterThan(0);
   });
 
-  test('should use prefetch for next likely routes', async ({ page }) => {
-    await page.goto('/');
+  test("should use prefetch for next likely routes", async ({ page }) => {
+    await page.goto("/");
 
     const prefetchLinks = await page.evaluate(() => {
       const links = document.querySelectorAll('link[rel="prefetch"]');
-      return [...links].map((link) => link.getAttribute('href'));
+      return [...links].map((link) => link.getAttribute("href"));
     });
 
     // Should prefetch likely next pages
@@ -464,9 +464,9 @@ test.describe('Performance - Network Optimization', () => {
   });
 });
 
-test.describe('Performance - Rendering Optimization', () => {
-  test('should use CSS containment', async ({ page }) => {
-    await page.goto('/items');
+test.describe("Performance - Rendering Optimization", () => {
+  test("should use CSS containment", async ({ page }) => {
+    await page.goto("/items");
 
     const hasContainment = await page.evaluate(() => {
       const items = document.querySelectorAll('[data-testid="item-card"]');
@@ -474,7 +474,7 @@ test.describe('Performance - Rendering Optimization', () => {
 
       items.forEach((item) => {
         const styles = globalThis.getComputedStyle(item);
-        if (styles.contain !== 'none') {
+        if (styles.contain !== "none") {
           containCount++;
         }
       });
@@ -486,8 +486,8 @@ test.describe('Performance - Rendering Optimization', () => {
     expect(hasContainment).toBe(true);
   });
 
-  test('should minimize layout thrashing', async ({ page }) => {
-    await page.goto('/items');
+  test("should minimize layout thrashing", async ({ page }) => {
+    await page.goto("/items");
 
     const layoutTime = await page.evaluate(
       async () =>
@@ -512,8 +512,8 @@ test.describe('Performance - Rendering Optimization', () => {
     expect(layoutTime).toBeLessThan(50);
   });
 
-  test('should use will-change for animations', async ({ page }) => {
-    await page.goto('/');
+  test("should use will-change for animations", async ({ page }) => {
+    await page.goto("/");
 
     // Open a modal with animations
     await page.click('button:has-text("New Item")');
@@ -521,15 +521,15 @@ test.describe('Performance - Rendering Optimization', () => {
     const hasWillChange = await page.evaluate(() => {
       const modal = document.querySelector('[role="dialog"]');
       const styles = globalThis.getComputedStyle(modal!);
-      return styles.willChange !== 'auto';
+      return styles.willChange !== "auto";
     });
 
     // Animated elements should use will-change
     expect(hasWillChange).toBe(true);
   });
 
-  test('should maintain 60fps during animations', async ({ page }) => {
-    await page.goto('/items');
+  test("should maintain 60fps during animations", async ({ page }) => {
+    await page.goto("/items");
 
     // Measure frame rate during scroll
     const frameRate = await page.evaluate(
@@ -561,53 +561,53 @@ test.describe('Performance - Rendering Optimization', () => {
   });
 });
 
-test.describe('Performance - Database and API', () => {
-  test('should batch API requests', async ({ page }) => {
+test.describe("Performance - Database and API", () => {
+  test("should batch API requests", async ({ page }) => {
     let apiRequestCount = 0;
 
-    page.on('request', (request) => {
-      if (request.url().includes('/api/')) {
+    page.on("request", (request) => {
+      if (request.url().includes("/api/")) {
         apiRequestCount++;
       }
     });
 
-    await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/dashboard");
+    await page.waitForLoadState("networkidle");
 
     // Dashboard should batch requests efficiently
     // (not make excessive individual requests)
     expect(apiRequestCount).toBeLessThan(10);
   });
 
-  test('should implement request caching', async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+  test("should implement request caching", async ({ page }) => {
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     let secondLoadRequests = 0;
 
-    page.on('request', (request) => {
-      if (request.url().includes('/api/items')) {
+    page.on("request", (request) => {
+      if (request.url().includes("/api/items")) {
         secondLoadRequests++;
       }
     });
 
     // Navigate away and back
-    await page.goto('/dashboard');
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/dashboard");
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Should use cached data (fewer requests)
     expect(secondLoadRequests).toBeLessThan(2);
   });
 
-  test('should use optimistic updates', async ({ page }) => {
-    await page.goto('/items');
+  test("should use optimistic updates", async ({ page }) => {
+    await page.goto("/items");
 
     // Create new item
     const startTime = Date.now();
 
     await page.click('button:has-text("New Item")');
-    await page.fill('input[name="title"]', 'Optimistic Item');
+    await page.fill('input[name="title"]', "Optimistic Item");
     await page.click('button:has-text("Save")');
 
     // UI should update immediately (optimistic)
@@ -617,16 +617,16 @@ test.describe('Performance - Database and API', () => {
     expect(uiUpdateTime).toBeLessThan(500);
 
     // Item should appear in list immediately
-    await expect(page.locator('text=Optimistic Item')).toBeVisible();
+    await expect(page.locator("text=Optimistic Item")).toBeVisible();
   });
 
-  test('should implement infinite scroll efficiently', async ({ page }) => {
-    await page.goto('/items');
+  test("should implement infinite scroll efficiently", async ({ page }) => {
+    await page.goto("/items");
 
     let apiCallCount = 0;
 
-    page.on('request', (request) => {
-      if (request.url().includes('/api/items')) {
+    page.on("request", (request) => {
+      if (request.url().includes("/api/items")) {
         apiCallCount++;
       }
     });
@@ -647,26 +647,26 @@ test.describe('Performance - Database and API', () => {
     expect(apiCallCount).toBeLessThan(5);
   });
 
-  test('should handle GraphQL queries efficiently', async ({ page }) => {
+  test("should handle GraphQL queries efficiently", async ({ page }) => {
     let graphqlRequestCount = 0;
     let totalGraphqlSize = 0;
 
-    page.on('request', (request) => {
+    page.on("request", (request) => {
       const url = request.url();
-      if (url.includes('/graphql') || url.includes('/api/graphql')) {
+      if (url.includes("/graphql") || url.includes("/api/graphql")) {
         graphqlRequestCount++;
       }
     });
 
-    page.on('response', (response) => {
+    page.on("response", (response) => {
       const url = response.url();
-      if (url.includes('/graphql') || url.includes('/api/graphql')) {
-        totalGraphqlSize += Number.parseInt(response.headers()['content-length'] ?? '0', 10);
+      if (url.includes("/graphql") || url.includes("/api/graphql")) {
+        totalGraphqlSize += Number.parseInt(response.headers()["content-length"] ?? "0", 10);
       }
     });
 
-    await page.goto('/graph');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/graph");
+    await page.waitForLoadState("networkidle");
 
     // Should batch GraphQL queries
     expect(graphqlRequestCount).toBeLessThan(5);
@@ -675,17 +675,17 @@ test.describe('Performance - Database and API', () => {
     expect(totalGraphqlSize).toBeLessThan(500 * 1024);
   });
 
-  test('should implement request deduplication', async ({ page }) => {
+  test("should implement request deduplication", async ({ page }) => {
     const requestUrls: string[] = [];
 
-    page.on('request', (request) => {
-      if (request.url().includes('/api/')) {
+    page.on("request", (request) => {
+      if (request.url().includes("/api/")) {
         requestUrls.push(request.url());
       }
     });
 
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Count duplicate URLs
     const uniqueUrls = new Set(requestUrls);
@@ -696,12 +696,12 @@ test.describe('Performance - Database and API', () => {
   });
 });
 
-test.describe('Performance - Accessibility and Performance', () => {
-  test('should maintain performance with accessibility features', async ({ page }) => {
+test.describe("Performance - Accessibility and Performance", () => {
+  test("should maintain performance with accessibility features", async ({ page }) => {
     const startTime = Date.now();
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     const loadTime = Date.now() - startTime;
 
@@ -709,12 +709,12 @@ test.describe('Performance - Accessibility and Performance', () => {
     expect(loadTime).toBeLessThan(3500);
   });
 
-  test('should not have performance degradation with focus indicators', async ({ page }) => {
-    await page.goto('/items');
+  test("should not have performance degradation with focus indicators", async ({ page }) => {
+    await page.goto("/items");
 
     // Tab through items to trigger focus indicators
     for (let i = 0; i < 20; i++) {
-      await page.keyboard.press('Tab');
+      await page.keyboard.press("Tab");
       await page.waitForTimeout(50);
     }
 
@@ -722,15 +722,15 @@ test.describe('Performance - Accessibility and Performance', () => {
     await expect(page).toHaveURL(/\/items/);
   });
 
-  test('should work smoothly with screen readers enabled', async ({ page }) => {
+  test("should work smoothly with screen readers enabled", async ({ page }) => {
     // Enable screen reader mode
     await page.addInitScript(() => {
       (globalThis as any).screenReaderEnabled = true;
     });
 
     const startTime = Date.now();
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     const loadTime = Date.now() - startTime;
 
@@ -739,10 +739,10 @@ test.describe('Performance - Accessibility and Performance', () => {
   });
 });
 
-test.describe('Performance - Virtual Scrolling', () => {
-  test('should render virtual scrolled content efficiently', async ({ page }) => {
-    await page.goto('/items');
-    await page.waitForLoadState('networkidle');
+test.describe("Performance - Virtual Scrolling", () => {
+  test("should render virtual scrolled content efficiently", async ({ page }) => {
+    await page.goto("/items");
+    await page.waitForLoadState("networkidle");
 
     // Get initial rendered item count
     const initialItems = await page.evaluate(() => {
@@ -770,8 +770,8 @@ test.describe('Performance - Virtual Scrolling', () => {
     expect(scrolledItems).toBeLessThan(150);
   });
 
-  test('should update virtual scroll viewport smoothly', async ({ page }) => {
-    await page.goto('/items');
+  test("should update virtual scroll viewport smoothly", async ({ page }) => {
+    await page.goto("/items");
 
     const scrollMetrics = await page.evaluate(
       async () =>
@@ -784,14 +784,14 @@ test.describe('Performance - Virtual Scrolling', () => {
             scrollEvents.push(performance.now());
           };
 
-          window.addEventListener('scroll', handleScroll);
+          window.addEventListener("scroll", handleScroll);
 
           // Perform smooth scroll
-          window.scrollBy({ behavior: 'smooth', top: 1000 });
+          window.scrollBy({ behavior: "smooth", top: 1000 });
 
           // Wait and measure
           setTimeout(() => {
-            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener("scroll", handleScroll);
             const avgTime =
               scrollEvents.length > 0
                 ? (scrollEvents.at(-1) - scrollEvents[0]) / scrollEventCount
@@ -808,8 +808,8 @@ test.describe('Performance - Virtual Scrolling', () => {
     expect(scrollMetrics).toBeDefined();
   });
 
-  test('should handle rapid scrolling without janky UI', async ({ page }) => {
-    await page.goto('/items');
+  test("should handle rapid scrolling without janky UI", async ({ page }) => {
+    await page.goto("/items");
 
     const jankMetrics = await page.evaluate(
       async () =>
@@ -849,10 +849,10 @@ test.describe('Performance - Virtual Scrolling', () => {
   });
 });
 
-test.describe('Performance - Lighthouse Integration', () => {
-  test('should pass Lighthouse performance audit', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+test.describe("Performance - Lighthouse Integration", () => {
+  test("should pass Lighthouse performance audit", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     // Get Core Web Vitals
     const vitals = await page.evaluate(() => {
@@ -866,13 +866,13 @@ test.describe('Performance - Lighthouse Integration', () => {
               hadRecentInput?: boolean;
               value?: number;
             };
-            if (!layoutEntry.hadRecentInput && layoutEntry.entryType === 'layout-shift') {
+            if (!layoutEntry.hadRecentInput && layoutEntry.entryType === "layout-shift") {
               clsValue += layoutEntry.value ?? 0;
             }
           }
         });
 
-        observer.observe({ entryTypes: ['layout-shift'] });
+        observer.observe({ entryTypes: ["layout-shift"] });
 
         return clsValue;
       };
@@ -887,15 +887,15 @@ test.describe('Performance - Lighthouse Integration', () => {
     expect(vitals.cls).toBeLessThan(0.1);
   });
 
-  test('should have good accessibility score metrics', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+  test("should have good accessibility score metrics", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     const accessibilityMetrics = await page.evaluate(() => {
-      const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
-      const links = document.querySelectorAll('a');
-      const _buttons = document.querySelectorAll('button');
-      const inputs = document.querySelectorAll('input, textarea, select');
+      const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+      const links = document.querySelectorAll("a");
+      const _buttons = document.querySelectorAll("button");
+      const inputs = document.querySelectorAll("input, textarea, select");
 
       const _ariaLabeled = 0;
       let linkswithText = 0;
@@ -904,17 +904,17 @@ test.describe('Performance - Lighthouse Integration', () => {
       links.forEach((link) => {
         if (
           link.textContent?.trim() ||
-          link.getAttribute('aria-label') ||
-          link.getAttribute('title')
+          link.getAttribute("aria-label") ||
+          link.getAttribute("title")
         ) {
           linkswithText++;
         }
       });
 
       inputs.forEach((input) => {
-        const id = input.getAttribute('id');
+        const id = input.getAttribute("id");
         const label = document.querySelector(`label[for="${id}"]`);
-        const ariaLabel = input.getAttribute('aria-label');
+        const ariaLabel = input.getAttribute("aria-label");
 
         if (label || ariaLabel) {
           labeledInputs++;
@@ -939,14 +939,14 @@ test.describe('Performance - Lighthouse Integration', () => {
     );
   });
 
-  test('should have minimal layout shift during page load', async ({ page }) => {
+  test("should have minimal layout shift during page load", async ({ page }) => {
     let maxCLS = 0;
 
-    page.on('framenavigated', async () => {
+    page.on("framenavigated", async () => {
       const cls = await page.evaluate(() => {
         let clsValue = 0;
 
-        const entries = performance.getEntriesByType('layout-shift');
+        const entries = performance.getEntriesByType("layout-shift");
         for (const entry of entries) {
           if (!(entry as any).hadRecentInput) {
             clsValue += (entry as any).value;
@@ -961,14 +961,14 @@ test.describe('Performance - Lighthouse Integration', () => {
       }
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
 
     // CLS should be under 0.1 (good score is under 0.1)
     expect(maxCLS).toBeLessThan(0.15);
   });
 
-  test('should measure all Core Web Vitals together', async ({ page }) => {
+  test("should measure all Core Web Vitals together", async ({ page }) => {
     const metrics = await page.evaluate(
       async () =>
         new Promise((resolve) => {
@@ -984,7 +984,7 @@ test.describe('Performance - Lighthouse Integration', () => {
             const entries = list.getEntries();
             const lastEntry = entries.at(-1);
             vitals.lcp = lastEntry.startTime;
-          }).observe({ entryTypes: ['largest-contentful-paint'] });
+          }).observe({ entryTypes: ["largest-contentful-paint"] });
 
           // FID observer
           new PerformanceObserver((list) => {
@@ -993,7 +993,7 @@ test.describe('Performance - Lighthouse Integration', () => {
                 vitals.fid = (entry as any).processingStart - entry.startTime;
               }
             }
-          }).observe({ entryTypes: ['first-input'] });
+          }).observe({ entryTypes: ["first-input"] });
 
           // CLS observer
           let clsValue = 0;
@@ -1004,12 +1004,12 @@ test.describe('Performance - Lighthouse Integration', () => {
               }
             }
             vitals.cls = clsValue;
-          }).observe({ entryTypes: ['layout-shift'] });
+          }).observe({ entryTypes: ["layout-shift"] });
 
           // TTFB from navigation timing
-          if (performance.getEntriesByType('navigation').length > 0) {
+          if (performance.getEntriesByType("navigation").length > 0) {
             const navEntry = performance.getEntriesByType(
-              'navigation',
+              "navigation",
             )[0] as PerformanceNavigationTiming;
             vitals.ttfb = navEntry.responseStart - navEntry.fetchStart;
           }
@@ -1028,9 +1028,9 @@ test.describe('Performance - Lighthouse Integration', () => {
   });
 });
 
-test.describe('Performance - Memory Management', () => {
-  test('should not accumulate memory with repeated operations', async ({ page }) => {
-    await page.goto('/items');
+test.describe("Performance - Memory Management", () => {
+  test("should not accumulate memory with repeated operations", async ({ page }) => {
+    await page.goto("/items");
 
     const memoryProfile = await page.evaluate(async () => {
       const readings: number[] = [];
@@ -1051,8 +1051,8 @@ test.describe('Performance - Memory Management', () => {
       // Perform repeated operations
       for (let i = 0; i < 5; i++) {
         // Simulate operations
-        const temp = document.createElement('div');
-        temp.innerHTML = '<p>Test</p>';
+        const temp = document.createElement("div");
+        temp.innerHTML = "<p>Test</p>";
         document.body.append(temp);
         document.body.removeChild(temp);
 
@@ -1077,8 +1077,8 @@ test.describe('Performance - Memory Management', () => {
     expect(memoryProfile.increase).toBeLessThan(5 * 1024 * 1024);
   });
 
-  test('should clean up event listeners properly', async ({ page }) => {
-    await page.goto('/items');
+  test("should clean up event listeners properly", async ({ page }) => {
+    await page.goto("/items");
 
     const eventListenerCount = await page.evaluate(() => {
       // Get initial listener count (this is an approximation)
@@ -1090,8 +1090,8 @@ test.describe('Performance - Memory Management', () => {
     expect(eventListenerCount).toBeLessThan(20);
   });
 
-  test('should not leak timers', async ({ page }) => {
-    await page.goto('/items');
+  test("should not leak timers", async ({ page }) => {
+    await page.goto("/items");
 
     const timerCount = await page.evaluate(() => {
       // Count active timers via performance API

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export interface ViewportBounds {
   minX: number;
@@ -15,7 +15,7 @@ export interface NodePosition {
   height: number;
 }
 
-export type LODLevel = 'high' | 'medium' | 'low';
+export type LODLevel = "high" | "medium" | "low";
 
 export interface VirtualizationMetrics {
   visibleNodeCount: number;
@@ -63,7 +63,7 @@ export function useVirtualization(
   const renderStartRef = useRef<number>(0);
   const [metrics, setMetrics] = useState<VirtualizationMetrics>({
     culledNodeCount: nodes.length,
-    lodLevel: 'medium',
+    lodLevel: "medium",
     renderTime: 0,
     totalNodeCount: nodes.length,
     viewportArea: 0,
@@ -83,16 +83,16 @@ export function useVirtualization(
   // Determine LOD level based on zoom
   const lodLevel = useMemo((): LODLevel => {
     if (!enableLOD) {
-      return 'high';
+      return "high";
     }
 
     if (viewport.zoom >= lodThresholds.zoomHigh) {
-      return 'high';
+      return "high";
     }
     if (viewport.zoom >= lodThresholds.zoomMedium) {
-      return 'medium';
+      return "medium";
     }
-    return 'low';
+    return "low";
   }, [viewport.zoom, enableLOD, lodThresholds]);
 
   // Calculate visible nodes
@@ -134,22 +134,22 @@ export function useVirtualization(
   const getNodeLOD = useCallback(
     (nodeId: string, data: Record<string, unknown>) => {
       switch (lodLevel) {
-        case 'low': {
+        case "low": {
           // Only show ID and type for very zoomed out
           return {
             id: nodeId,
-            type: data['type'],
+            type: data["type"],
           };
         }
-        case 'medium': {
+        case "medium": {
           // Show ID, type, and label
           return {
             id: nodeId,
-            label: data['label'],
-            type: data['type'],
+            label: data["label"],
+            type: data["type"],
           };
         }
-        case 'high': {
+        case "high": {
           // Show full node data
           return data;
         }
@@ -164,17 +164,17 @@ export function useVirtualization(
   // Get simplified node renderer based on LOD level
   const getSimplifiedNodeComponent = useCallback(() => {
     switch (lodLevel) {
-      case 'low': {
-        return 'simplifiedPill';
+      case "low": {
+        return "simplifiedPill";
       }
-      case 'medium': {
-        return 'mediumPill';
+      case "medium": {
+        return "mediumPill";
       }
-      case 'high': {
-        return 'richPill';
+      case "high": {
+        return "richPill";
       }
       default: {
-        return 'richPill';
+        return "richPill";
       }
     }
   }, [lodLevel]);
@@ -247,7 +247,7 @@ export function useIntersectionVisibility(
       },
       {
         root: containerRef.current,
-        rootMargin: '200px',
+        rootMargin: "200px",
         threshold: 0,
         ...options,
       },

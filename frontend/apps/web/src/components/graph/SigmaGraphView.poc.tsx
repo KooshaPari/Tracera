@@ -16,19 +16,19 @@
  * - 100k nodes: 35-40fps (with simple styling)
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
 
-import type { Item, Link } from '@tracertm/types';
+import type { Item, Link } from "@tracertm/types";
 
-import { Badge } from '@tracertm/ui/components/Badge';
-import { Button } from '@tracertm/ui/components/Button';
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@tracertm/ui/components/Select';
+} from "@tracertm/ui/components/Select";
 
 // NOTE: These imports will work after installing dependencies
 // Commented out to prevent build errors before installation
@@ -58,7 +58,7 @@ interface PerformanceStats {
   renderTime: number;
 }
 
-type LayoutAlgorithm = 'force' | 'circular' | 'random' | 'none';
+type LayoutAlgorithm = "force" | "circular" | "random" | "none";
 
 // =============================================================================
 // GRAPH GENERATION (for POC testing)
@@ -76,14 +76,14 @@ function generateRandomGraph(nodeCount: number, avgDegree = 4): { items: Item[];
     items.push({
       createdAt: new Date().toISOString(),
       id: `node-${i}`,
-      priority: 'medium',
-      projectId: 'test',
-      status: 'todo',
+      priority: "medium",
+      projectId: "test",
+      status: "todo",
       title: `Node ${i}`,
-      type: ['feature', 'requirement', 'task', 'test'][i % 4] as any,
+      type: ["feature", "requirement", "task", "test"][i % 4] as any,
       updatedAt: new Date().toISOString(),
       version: 1,
-      view: 'feature',
+      view: "feature",
     });
   }
 
@@ -97,10 +97,10 @@ function generateRandomGraph(nodeCount: number, avgDegree = 4): { items: Item[];
       links.push({
         createdAt: new Date().toISOString(),
         id: `edge-${i}`,
-        projectId: 'test',
+        projectId: "test",
         sourceId: `node-${source}`,
         targetId: `node-${target}`,
-        type: 'relates_to' as any,
+        type: "relates_to" as any,
         updatedAt: new Date().toISOString(),
         version: 1,
       });
@@ -302,7 +302,7 @@ export function SigmaGraphView({
   onNodeHover: _onNodeHover,
 }: SigmaGraphViewProps) {
   const [showPerformance, _setShowPerformance] = useState(true);
-  const [_layout, _setLayout] = useState<LayoutAlgorithm>('random');
+  const [_layout, _setLayout] = useState<LayoutAlgorithm>("random");
   const [_isRunningLayout, _setIsRunningLayout] = useState(false);
 
   const stats = usePerformanceMonitor(showPerformance);
@@ -357,26 +357,26 @@ export function SigmaGraphView({
 
   // Placeholder before sigma.js is installed
   return (
-    <div className='bg-muted/30 flex h-full items-center justify-center'>
-      <div className='max-w-2xl p-8 text-center'>
-        <div className='mb-6'>
-          <div className='mb-4 text-6xl'>📊</div>
-          <h2 className='mb-2 text-2xl font-bold'>Sigma.js Proof of Concept</h2>
-          <p className='text-muted-foreground'>
+    <div className="bg-muted/30 flex h-full items-center justify-center">
+      <div className="max-w-2xl p-8 text-center">
+        <div className="mb-6">
+          <div className="mb-4 text-6xl">📊</div>
+          <h2 className="mb-2 text-2xl font-bold">Sigma.js Proof of Concept</h2>
+          <p className="text-muted-foreground">
             Install dependencies to test WebGL-based graph rendering
           </p>
         </div>
 
-        <div className='bg-background mb-6 rounded-lg border p-6 text-left'>
-          <p className='mb-4 font-mono text-sm'>
+        <div className="bg-background mb-6 rounded-lg border p-6 text-left">
+          <p className="mb-4 font-mono text-sm">
             <code>bun add sigma graphology @react-sigma/core</code>
           </p>
-          <p className='font-mono text-sm'>
+          <p className="font-mono text-sm">
             <code>bun add @react-sigma/layout-forceatlas2</code>
           </p>
         </div>
 
-        <div className='text-muted-foreground space-y-2 text-sm'>
+        <div className="text-muted-foreground space-y-2 text-sm">
           <p>
             ✅ After installation, uncomment the code in <code>SigmaGraphView.poc.tsx</code>
           </p>
@@ -397,7 +397,7 @@ export function SigmaGraphView({
 export function SigmaProofOfConcept() {
   const [nodeCount, setNodeCount] = useState(10_000);
   const [avgDegree, setAvgDegree] = useState(4);
-  const [layout, setLayout] = useState<LayoutAlgorithm>('random');
+  const [layout, setLayout] = useState<LayoutAlgorithm>("random");
 
   const { items, links } = useMemo(
     () => generateRandomGraph(nodeCount, avgDegree),
@@ -408,85 +408,85 @@ export function SigmaProofOfConcept() {
   const stats = usePerformanceMonitor(true);
 
   return (
-    <div className='flex h-screen flex-col'>
+    <div className="flex h-screen flex-col">
       {/* Controls */}
-      <div className='bg-background flex flex-wrap items-center gap-4 border-b p-4'>
-        <div className='flex items-center gap-2'>
-          <label className='text-sm font-medium'>Nodes:</label>
+      <div className="bg-background flex flex-wrap items-center gap-4 border-b p-4">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium">Nodes:</label>
           <input
-            type='range'
-            min='100'
-            max='100000'
-            step='100'
+            type="range"
+            min="100"
+            max="100000"
+            step="100"
             value={nodeCount}
             onChange={(e) => {
               setNodeCount(Number(e.target.value));
             }}
-            className='w-48'
+            className="w-48"
           />
-          <span className='w-24 font-mono text-sm'>{nodeCount.toLocaleString()}</span>
+          <span className="w-24 font-mono text-sm">{nodeCount.toLocaleString()}</span>
         </div>
 
-        <div className='flex items-center gap-2'>
-          <label className='text-sm font-medium'>Avg Degree:</label>
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium">Avg Degree:</label>
           <input
-            type='range'
-            min='2'
-            max='20'
+            type="range"
+            min="2"
+            max="20"
             value={avgDegree}
             onChange={(e) => {
               setAvgDegree(Number(e.target.value));
             }}
-            className='w-32'
+            className="w-32"
           />
-          <span className='w-8 font-mono text-sm'>{avgDegree}</span>
+          <span className="w-8 font-mono text-sm">{avgDegree}</span>
         </div>
 
-        <div className='flex items-center gap-2'>
-          <label className='text-sm font-medium'>Layout:</label>
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium">Layout:</label>
           <Select
             value={layout}
             onValueChange={(v) => {
               setLayout(v as LayoutAlgorithm);
             }}
           >
-            <SelectTrigger className='h-9 w-32'>
+            <SelectTrigger className="h-9 w-32">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='random'>Random</SelectItem>
-              <SelectItem value='circular'>Circular</SelectItem>
-              <SelectItem value='force'>Force-Directed</SelectItem>
-              <SelectItem value='none'>None</SelectItem>
+              <SelectItem value="random">Random</SelectItem>
+              <SelectItem value="circular">Circular</SelectItem>
+              <SelectItem value="force">Force-Directed</SelectItem>
+              <SelectItem value="none">None</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className='flex-1' />
+        <div className="flex-1" />
 
         {stats && (
-          <div className='flex gap-2'>
+          <div className="flex gap-2">
             <Badge
-              variant='outline'
+              variant="outline"
               className={
-                stats.fps >= 55 ? 'bg-green-50' : stats.fps >= 30 ? 'bg-yellow-50' : 'bg-red-50'
+                stats.fps >= 55 ? "bg-green-50" : stats.fps >= 30 ? "bg-yellow-50" : "bg-red-50"
               }
             >
-              FPS: <span className='ml-1 font-mono font-bold'>{stats.fps}</span>
+              FPS: <span className="ml-1 font-mono font-bold">{stats.fps}</span>
             </Badge>
-            <Badge variant='outline' className='bg-blue-50'>
-              Memory: <span className='ml-1 font-mono font-bold'>{stats.memory}MB</span>
+            <Badge variant="outline" className="bg-blue-50">
+              Memory: <span className="ml-1 font-mono font-bold">{stats.memory}MB</span>
             </Badge>
-            <Badge variant='outline' className='bg-purple-50'>
-              Edges:{' '}
-              <span className='ml-1 font-mono font-bold'>{links.length.toLocaleString()}</span>
+            <Badge variant="outline" className="bg-purple-50">
+              Edges:{" "}
+              <span className="ml-1 font-mono font-bold">{links.length.toLocaleString()}</span>
             </Badge>
           </div>
         )}
       </div>
 
       {/* Graph */}
-      <div className='relative flex-1'>
+      <div className="relative flex-1">
         <SigmaGraphView
           items={items}
           links={links}
@@ -495,15 +495,15 @@ export function SigmaProofOfConcept() {
         />
 
         {selectedNode && (
-          <div className='absolute bottom-4 left-4 max-w-xs rounded-lg border bg-white p-4 shadow-lg'>
-            <h3 className='mb-2 font-semibold'>Selected Node</h3>
-            <p className='text-muted-foreground text-sm'>
-              ID: <code className='text-xs'>{selectedNode}</code>
+          <div className="absolute bottom-4 left-4 max-w-xs rounded-lg border bg-white p-4 shadow-lg">
+            <h3 className="mb-2 font-semibold">Selected Node</h3>
+            <p className="text-muted-foreground text-sm">
+              ID: <code className="text-xs">{selectedNode}</code>
             </p>
             <Button
-              size='sm'
-              variant='ghost'
-              className='mt-2'
+              size="sm"
+              variant="ghost"
+              className="mt-2"
               onClick={() => {
                 setSelectedNode(null);
               }}

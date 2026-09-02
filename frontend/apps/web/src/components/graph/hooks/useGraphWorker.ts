@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface LayoutMessage {
-  type: 'layout-request' | 'layout-response' | 'error';
+  type: "layout-request" | "layout-response" | "error";
   id?: string;
   data?: unknown;
   error?: string;
@@ -20,8 +20,8 @@ export interface LayoutEdge {
 }
 
 export interface LayoutOptions {
-  type: 'dagre' | 'elk' | 'fcose';
-  direction?: 'TB' | 'LR' | 'BT' | 'RL';
+  type: "dagre" | "elk" | "fcose";
+  direction?: "TB" | "LR" | "BT" | "RL";
   nodeSep?: number;
   rankSep?: number;
   marginX?: number;
@@ -55,7 +55,7 @@ export function useGraphWorker() {
 
   // Initialize worker
   useEffect(() => {
-    if (typeof globalThis.window === 'undefined') {
+    if (typeof globalThis.window === "undefined") {
       return;
     }
 
@@ -185,7 +185,7 @@ export function useGraphWorker() {
         };
       `;
 
-      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      const blob = new Blob([workerCode], { type: "application/javascript" });
       const workerUrl = URL.createObjectURL(blob);
       const worker = new Worker(workerUrl);
 
@@ -204,15 +204,15 @@ export function useGraphWorker() {
         pendingRequestsRef.current.delete(id);
         clearTimeout(pending.timeout);
 
-        if (type === 'layout-response' && data) {
+        if (type === "layout-response" && data) {
           pending.resolve(data as LayoutResult);
-        } else if (type === 'error') {
-          pending.reject(new Error(errorMsg ?? 'Layout computation failed'));
+        } else if (type === "error") {
+          pending.reject(new Error(errorMsg ?? "Layout computation failed"));
         }
       };
 
       worker.onerror = (error: ErrorEvent) => {
-        const errorMessage = error.message || 'Unknown worker error';
+        const errorMessage = error.message || "Unknown worker error";
         setError(new Error(`Worker error: ${errorMessage}`));
         pendingRequestsRef.current.forEach((pending) => {
           pending.reject(new Error(errorMessage));
@@ -242,7 +242,7 @@ export function useGraphWorker() {
     ): Promise<LayoutResult> =>
       new Promise((resolve, reject) => {
         if (!workerRef.current) {
-          reject(new Error('Worker not initialized'));
+          reject(new Error("Worker not initialized"));
           return;
         }
 
@@ -250,7 +250,7 @@ export function useGraphWorker() {
 
         const timeoutId = setTimeout(() => {
           pendingRequestsRef.current.delete(id);
-          reject(new Error('Layout computation timeout'));
+          reject(new Error("Layout computation timeout"));
         }, 30_000); // 30 second timeout
 
         pendingRequestsRef.current.set(id, {
@@ -265,7 +265,7 @@ export function useGraphWorker() {
           id,
           nodes,
           options,
-          type: 'layout-request',
+          type: "layout-request",
         } as LayoutMessage & {
           nodes: LayoutNode[];
           edges: LayoutEdge[];
@@ -279,7 +279,7 @@ export function useGraphWorker() {
   const cancelRequests = useCallback(() => {
     for (const [, pending] of pendingRequestsRef.current) {
       clearTimeout(pending.timeout);
-      pending.reject(new Error('Cancelled'));
+      pending.reject(new Error("Cancelled"));
     }
     pendingRequestsRef.current.clear();
   }, []);

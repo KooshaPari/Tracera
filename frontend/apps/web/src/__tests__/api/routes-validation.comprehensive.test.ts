@@ -10,11 +10,11 @@
  * Generates JSON and HTML reports for detailed analysis.
  */
 
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
-const TEST_USER_TOKEN = process.env.TEST_USER_TOKEN ?? 'test-token-abc123';
-const API_BASE_URL = process.env.API_BASE_URL ?? 'http://localhost:4000';
-const FRONTEND_ORIGIN = 'http://localhost:5173';
+const TEST_USER_TOKEN = process.env.TEST_USER_TOKEN ?? "test-token-abc123";
+const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:4000";
+const FRONTEND_ORIGIN = "http://localhost:5173";
 
 interface ApiTestResult {
   route: string;
@@ -28,36 +28,36 @@ interface ApiTestResult {
 
 const API_ROUTES = [
   // Projects
-  { path: '/api/v1/projects', method: 'GET' },
-  { path: '/api/v1/projects', method: 'POST' },
+  { path: "/api/v1/projects", method: "GET" },
+  { path: "/api/v1/projects", method: "POST" },
 
   // Items
-  { path: '/api/v1/items', method: 'GET' },
-  { path: '/api/v1/items', method: 'POST' },
+  { path: "/api/v1/items", method: "GET" },
+  { path: "/api/v1/items", method: "POST" },
 
   // Links
-  { path: '/api/v1/links', method: 'GET' },
+  { path: "/api/v1/links", method: "GET" },
 
   // Search
-  { path: '/api/v1/search', method: 'POST' },
+  { path: "/api/v1/search", method: "POST" },
 
   // WebSocket (via OPTIONS preflight)
-  { path: '/api/v1/ws', method: 'OPTIONS' },
+  { path: "/api/v1/ws", method: "OPTIONS" },
 
   // Notifications
-  { path: '/api/v1/notifications', method: 'GET' },
+  { path: "/api/v1/notifications", method: "GET" },
 
   // Health
-  { path: '/health', method: 'GET' },
+  { path: "/health", method: "GET" },
 ];
 
-describe('API Routes Validation', () => {
+describe("API Routes Validation", () => {
   const results: ApiTestResult[] = [];
 
   beforeAll(() => {
     // Mock localStorage for token retrieval
-    vi.stubGlobal('localStorage', {
-      getItem: (key: string) => (key === 'auth_token' ? TEST_USER_TOKEN : null),
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => (key === "auth_token" ? TEST_USER_TOKEN : null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
       clear: vi.fn(),
@@ -80,21 +80,21 @@ describe('API Routes Validation', () => {
           method: route.method,
           headers: {
             Authorization: `Bearer ${TEST_USER_TOKEN}`,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Origin: FRONTEND_ORIGIN,
           },
-          body: route.method === 'POST' ? JSON.stringify({}) : undefined,
+          body: route.method === "POST" ? JSON.stringify({}) : undefined,
         });
 
         ({ status } = response);
 
         // Collect CORS headers
         corsHeaders = {
-          'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
-          'access-control-allow-methods': response.headers.get('access-control-allow-methods'),
-          'access-control-allow-headers': response.headers.get('access-control-allow-headers'),
-          'access-control-allow-credentials': response.headers.get(
-            'access-control-allow-credentials',
+          "access-control-allow-origin": response.headers.get("access-control-allow-origin"),
+          "access-control-allow-methods": response.headers.get("access-control-allow-methods"),
+          "access-control-allow-headers": response.headers.get("access-control-allow-headers"),
+          "access-control-allow-credentials": response.headers.get(
+            "access-control-allow-credentials",
           ),
         };
 
@@ -107,18 +107,18 @@ describe('API Routes Validation', () => {
         }
 
         // Check CORS headers (required except for /health)
-        const corsOrigin = response.headers.get('access-control-allow-origin');
-        if (!corsOrigin && route.path !== '/health') {
-          warnings.push('Missing CORS Access-Control-Allow-Origin header');
+        const corsOrigin = response.headers.get("access-control-allow-origin");
+        if (!corsOrigin && route.path !== "/health") {
+          warnings.push("Missing CORS Access-Control-Allow-Origin header");
         }
 
         // Parse and validate response structure
-        const contentType = response.headers.get('content-type');
-        if (contentType?.includes('application/json') && status !== 204) {
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json") && status !== 204) {
           try {
             const data = await response.json();
             // Check for error responses
-            if (data && typeof data === 'object' && 'error' in data && data.error) {
+            if (data && typeof data === "object" && "error" in data && data.error) {
               // Errors in payload are warnings, not test failures
               if (status >= 500) {
                 errors.push(`Response error: ${data.error}`);
@@ -126,7 +126,7 @@ describe('API Routes Validation', () => {
             }
           } catch {
             if (status < 400) {
-              warnings.push('Response body is not valid JSON');
+              warnings.push("Response body is not valid JSON");
             }
           }
         }
@@ -166,7 +166,7 @@ describe('API Routes Validation', () => {
     });
   });
 
-  it('should generate comprehensive test report', async () => {
+  it("should generate comprehensive test report", async () => {
     const failedRoutes = results.filter((r) => r.errors.length > 0);
     const warningRoutes = results.filter((r) => r.warnings.length > 0);
     const successCount = results.filter((r) => r.errors.length === 0).length;
@@ -178,13 +178,13 @@ describe('API Routes Validation', () => {
         successfulRoutes: successCount,
         failedRoutes: failedRoutes.length,
         routesWithWarnings: warningRoutes.length,
-        successRate: ((successCount / results.length) * 100).toFixed(2) + '%',
+        successRate: ((successCount / results.length) * 100).toFixed(2) + "%",
       },
       performance: {
         averageResponseTime:
-          (results.reduce((sum, r) => sum + r.duration, 0) / results.length).toFixed(2) + 'ms',
-        minResponseTime: Math.min(...results.map((r) => r.duration)).toFixed(2) + 'ms',
-        maxResponseTime: Math.max(...results.map((r) => r.duration)).toFixed(2) + 'ms',
+          (results.reduce((sum, r) => sum + r.duration, 0) / results.length).toFixed(2) + "ms",
+        minResponseTime: Math.min(...results.map((r) => r.duration)).toFixed(2) + "ms",
+        maxResponseTime: Math.max(...results.map((r) => r.duration)).toFixed(2) + "ms",
       },
       details: {
         successful: results.filter((r) => r.errors.length === 0),
@@ -194,27 +194,27 @@ describe('API Routes Validation', () => {
     };
 
     // Log report to console
-    console.log('\n');
-    console.log('='.repeat(80));
-    console.log('📊 API ROUTES VALIDATION REPORT');
-    console.log('='.repeat(80));
+    console.log("\n");
+    console.log("=".repeat(80));
+    console.log("📊 API ROUTES VALIDATION REPORT");
+    console.log("=".repeat(80));
     console.log(`Timestamp: ${report.timestamp}`);
-    console.log('');
-    console.log('SUMMARY:');
+    console.log("");
+    console.log("SUMMARY:");
     console.log(`  Total Routes: ${report.summary.totalRoutes}`);
     console.log(`  Successful: ${report.summary.successfulRoutes}`);
     console.log(`  Failed: ${report.summary.failedRoutes}`);
     console.log(`  Warnings: ${report.summary.routesWithWarnings}`);
     console.log(`  Success Rate: ${report.summary.successRate}`);
-    console.log('');
-    console.log('PERFORMANCE:');
+    console.log("");
+    console.log("PERFORMANCE:");
     console.log(`  Average: ${report.performance.averageResponseTime}`);
     console.log(`  Min: ${report.performance.minResponseTime}`);
     console.log(`  Max: ${report.performance.maxResponseTime}`);
 
     if (failedRoutes.length > 0) {
-      console.log('');
-      console.log('FAILED ROUTES:');
+      console.log("");
+      console.log("FAILED ROUTES:");
       failedRoutes.forEach((route: ApiTestResult) => {
         console.log(`  ❌ ${route.method} ${route.route} (Status: ${route.status})`);
         route.errors.forEach((error) => {
@@ -224,8 +224,8 @@ describe('API Routes Validation', () => {
     }
 
     if (warningRoutes.length > 0) {
-      console.log('');
-      console.log('ROUTES WITH WARNINGS:');
+      console.log("");
+      console.log("ROUTES WITH WARNINGS:");
       warningRoutes.forEach((route: ApiTestResult) => {
         console.log(`  ⚠️  ${route.method} ${route.route} (Status: ${route.status})`);
         route.warnings.forEach((warning) => {
@@ -234,16 +234,16 @@ describe('API Routes Validation', () => {
       });
     }
 
-    console.log('');
-    console.log('='.repeat(80));
+    console.log("");
+    console.log("=".repeat(80));
 
     // Store report as JSON for external parsing
     const jsonReport = JSON.stringify(report, null, 2);
-    console.log('\nJSON Report (for machine parsing):');
+    console.log("\nJSON Report (for machine parsing):");
     console.log(jsonReport);
 
     // Assertions
-    expect(failedRoutes.length, 'No routes should fail').toBe(0);
-    expect(successCount, 'All routes should be successful').toBe(results.length);
+    expect(failedRoutes.length, "No routes should fail").toBe(0);
+    expect(successCount, "All routes should be successful").toBe(results.length);
   });
 });

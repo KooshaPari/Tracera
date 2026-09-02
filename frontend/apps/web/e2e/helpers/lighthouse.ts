@@ -3,16 +3,16 @@
  *
  * Utilities for running Lighthouse audits and checking performance metrics
  */
-import type { Page } from '@playwright/test';
+import type { Page } from "@playwright/test";
 
-import { playAudit } from 'playwright-lighthouse';
+import { playAudit } from "playwright-lighthouse";
 
 /**
  * Default Lighthouse thresholds
  */
 export const DEFAULT_THRESHOLDS = {
   accessibility: 90,
-  'best-practices': 80,
+  "best-practices": 80,
   performance: 70,
   pwa: 50,
   seo: 80,
@@ -22,12 +22,12 @@ export const DEFAULT_THRESHOLDS = {
  * Core Web Vitals thresholds (in milliseconds, except CLS)
  */
 export const WEB_VITALS_THRESHOLDS = {
-  'cumulative-layout-shift': 0.1,
-  'first-contentful-paint': 2000,
-  'largest-contentful-paint': 2500,
-  'speed-index': 3400,
-  'time-to-interactive': 3800,
-  'total-blocking-time': 300,
+  "cumulative-layout-shift": 0.1,
+  "first-contentful-paint": 2000,
+  "largest-contentful-paint": 2500,
+  "speed-index": 3400,
+  "time-to-interactive": 3800,
+  "total-blocking-time": 300,
 };
 
 /**
@@ -47,7 +47,7 @@ export async function runLighthouseAudit(
     page,
     port: options?.port ?? 9222,
     reports: {
-      directory: 'lighthouse-reports',
+      directory: "lighthouse-reports",
       formats: {
         html: true,
         json: true,
@@ -71,12 +71,12 @@ export async function getCoreWebVitals(page: Page) {
         const paintObserver = new PerformanceObserver((list) => {
           const entries = list.getEntries();
           for (const entry of entries) {
-            if (entry.name === 'first-contentful-paint') {
+            if (entry.name === "first-contentful-paint") {
               metrics.fcp = entry.startTime;
             }
           }
         });
-        paintObserver.observe({ entryTypes: ['paint'] });
+        paintObserver.observe({ entryTypes: ["paint"] });
 
         // Largest Contentful Paint (LCP)
         const lcpObserver = new PerformanceObserver((list) => {
@@ -84,7 +84,7 @@ export async function getCoreWebVitals(page: Page) {
           const lastEntry = entries.at(-1);
           metrics.lcp = lastEntry.startTime;
         });
-        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+        lcpObserver.observe({ entryTypes: ["largest-contentful-paint"] });
 
         // Cumulative Layout Shift (CLS)
         let clsScore = 0;
@@ -96,7 +96,7 @@ export async function getCoreWebVitals(page: Page) {
           }
           metrics.cls = clsScore;
         });
-        clsObserver.observe({ entryTypes: ['layout-shift'] });
+        clsObserver.observe({ entryTypes: ["layout-shift"] });
 
         // First Input Delay (FID) - via PerformanceEventTiming
         const fidObserver = new PerformanceObserver((list) => {
@@ -105,7 +105,7 @@ export async function getCoreWebVitals(page: Page) {
             metrics.fid = (entries[0] as any).processingStart - entries[0].startTime;
           }
         });
-        fidObserver.observe({ entryTypes: ['first-input'] });
+        fidObserver.observe({ entryTypes: ["first-input"] });
 
         // Return metrics after 3 seconds
         setTimeout(() => {
@@ -128,16 +128,16 @@ export function assertWebVitals(
 ): { passed: boolean; failures: string[] } {
   const failures: string[] = [];
 
-  if (metrics.fcp && metrics.fcp > thresholds['first-contentful-paint']) {
-    failures.push(`FCP: ${metrics.fcp.toFixed(0)}ms > ${thresholds['first-contentful-paint']}ms`);
+  if (metrics.fcp && metrics.fcp > thresholds["first-contentful-paint"]) {
+    failures.push(`FCP: ${metrics.fcp.toFixed(0)}ms > ${thresholds["first-contentful-paint"]}ms`);
   }
 
-  if (metrics.lcp && metrics.lcp > thresholds['largest-contentful-paint']) {
-    failures.push(`LCP: ${metrics.lcp.toFixed(0)}ms > ${thresholds['largest-contentful-paint']}ms`);
+  if (metrics.lcp && metrics.lcp > thresholds["largest-contentful-paint"]) {
+    failures.push(`LCP: ${metrics.lcp.toFixed(0)}ms > ${thresholds["largest-contentful-paint"]}ms`);
   }
 
-  if (metrics.cls && metrics.cls > thresholds['cumulative-layout-shift']) {
-    failures.push(`CLS: ${metrics.cls.toFixed(3)} > ${thresholds['cumulative-layout-shift']}`);
+  if (metrics.cls && metrics.cls > thresholds["cumulative-layout-shift"]) {
+    failures.push(`CLS: ${metrics.cls.toFixed(3)} > ${thresholds["cumulative-layout-shift"]}`);
   }
 
   if (metrics.fid && metrics.fid > 100) {
@@ -156,7 +156,7 @@ export function assertWebVitals(
  */
 export async function getLoadMetrics(page: Page) {
   return page.evaluate(() => {
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
 
     if (!navigation) {
       return null;
@@ -204,23 +204,23 @@ export async function getLoadMetrics(page: Page) {
  */
 export async function getResourceMetrics(page: Page) {
   return page.evaluate(() => {
-    const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+    const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
 
     const byType: Record<string, { count: number; totalSize: number; totalDuration: number }> = {};
 
     for (const resource of resources) {
       // Extract file extension or type
-      let type = 'other';
-      if (resource.name.endsWith('.js')) {
-        type = 'script';
-      } else if (resource.name.endsWith('.css')) {
-        type = 'stylesheet';
+      let type = "other";
+      if (resource.name.endsWith(".js")) {
+        type = "script";
+      } else if (resource.name.endsWith(".css")) {
+        type = "stylesheet";
       } else if (/\.(png|jpg|jpeg|gif|svg|webp|avif)$/.test(resource.name)) {
-        type = 'image';
+        type = "image";
       } else if (/\.(woff|woff2|ttf|otf)$/.test(resource.name)) {
-        type = 'font';
-      } else if (resource.name.includes('/api/')) {
-        type = 'api';
+        type = "font";
+      } else if (resource.name.includes("/api/")) {
+        type = "api";
       }
 
       if (!byType[type]) {
@@ -247,8 +247,8 @@ export async function getResourceMetrics(page: Page) {
 export async function measureJavaScriptExecution(page: Page) {
   return page.evaluate(() => {
     const jsResources = performance
-      .getEntriesByType('resource')
-      .filter((r) => r.name.endsWith('.js')) as PerformanceResourceTiming[];
+      .getEntriesByType("resource")
+      .filter((r) => r.name.endsWith(".js")) as PerformanceResourceTiming[];
 
     return {
       avgDuration:
@@ -267,15 +267,15 @@ export async function measureJavaScriptExecution(page: Page) {
  */
 export async function checkRenderBlockingResources(page: Page) {
   return page.evaluate(() => {
-    const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+    const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
 
     // Resources that block rendering
     const blocking = resources.filter((r) => {
       const name = r.name.toLowerCase();
       return (
-        (name.endsWith('.css') || name.endsWith('.js')) &&
+        (name.endsWith(".css") || name.endsWith(".js")) &&
         r.startTime < 1000 && // Loaded early
-        r.renderBlockingStatus === 'blocking'
+        r.renderBlockingStatus === "blocking"
       );
     });
 

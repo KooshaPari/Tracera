@@ -8,7 +8,7 @@
  * - Search query processing
  */
 
-import { expose } from 'comlink';
+import { expose } from "comlink";
 
 export interface SearchDocument {
   id: string;
@@ -74,7 +74,7 @@ const tokenize = (text: string, caseSensitive = false): string[] => {
  */
 const stem = (word: string): string => {
   // Very basic stemming - remove common English suffixes
-  const suffixes = ['ing', 'ed', 'es', 's', 'er', 'est', 'ly'];
+  const suffixes = ["ing", "ed", "es", "s", "er", "est", "ly"];
 
   for (const suffix of suffixes) {
     if (word.endsWith(suffix) && word.length > suffix.length + MIN_STEM_EXTRA) {
@@ -177,7 +177,7 @@ const ensureTokenBucket = (index: SearchIndex, token: string): Set<string> => {
 
 const indexDocumentFields = (index: SearchIndex, document: SearchDocument): void => {
   for (const [_field, value] of Object.entries(document.fields)) {
-    if (typeof value !== 'string') {
+    if (typeof value !== "string") {
       continue;
     }
 
@@ -241,7 +241,7 @@ const applyFieldMatches = (
     }
 
     for (const [field, value] of Object.entries(doc.fields)) {
-      if (typeof value !== 'string') {
+      if (typeof value !== "string") {
         continue;
       }
       if (fields && !fields.includes(field)) {
@@ -370,7 +370,7 @@ const updateIndex = (
   index: SearchIndex,
   updates: {
     id: string;
-    action: 'add' | 'remove';
+    action: "add" | "remove";
     document?: SearchDocument;
   }[],
   onProgress?: ProgressCallback,
@@ -389,9 +389,9 @@ const updateIndex = (
       continue;
     }
 
-    if (update.action === 'remove') {
+    if (update.action === "remove") {
       removeDocumentFromIndex(updatedIndex, update.id);
-    } else if (update.action === 'add' && update.document) {
+    } else if (update.action === "add" && update.document) {
       addDocumentToIndex(updatedIndex, update.document);
     }
 

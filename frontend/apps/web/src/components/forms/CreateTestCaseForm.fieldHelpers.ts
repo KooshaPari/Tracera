@@ -1,4 +1,4 @@
-import type { ChangeEvent, FocusEvent } from 'react';
+import type { ChangeEvent, FocusEvent } from "react";
 
 interface RegisterFieldProps {
   name: string;
@@ -8,8 +8,8 @@ interface RegisterFieldProps {
 }
 
 interface FieldHandlers {
-  handleBlur: RegisterFieldProps['onBlur'];
-  handleChange: RegisterFieldProps['onChange'];
+  handleBlur: RegisterFieldProps["onBlur"];
+  handleChange: RegisterFieldProps["onChange"];
 }
 
 function getFieldProps(field: RegisterFieldProps): RegisterFieldProps {

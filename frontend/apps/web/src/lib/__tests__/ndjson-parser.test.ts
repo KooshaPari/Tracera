@@ -2,7 +2,7 @@
  * Tests for NDJSON parser utility
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from "vitest";
 
 import {
   parseNDJSON,
@@ -15,11 +15,11 @@ import {
   type StreamingStats,
   type NDJSONProgressEvent,
   type NDJSONCompleteEvent,
-} from '../ndjson-parser';
+} from "../ndjson-parser";
 
 // Helper to create a mock Response with NDJSON data
 function createNDJSONResponse(lines: string[]): Response {
-  const ndjsonData = lines.join('\n') + '\n';
+  const ndjsonData = lines.join("\n") + "\n";
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     start(controller) {
@@ -29,12 +29,12 @@ function createNDJSONResponse(lines: string[]): Response {
   });
 
   return new Response(stream, {
-    headers: { 'Content-Type': 'application/x-ndjson' },
+    headers: { "Content-Type": "application/x-ndjson" },
   });
 }
 
-describe('parseNDJSON', () => {
-  it('should parse basic NDJSON stream', async () => {
+describe("parseNDJSON", () => {
+  it("should parse basic NDJSON stream", async () => {
     const lines = [
       '{"id": 1, "name": "Item 1"}',
       '{"id": 2, "name": "Item 2"}',
@@ -49,13 +49,13 @@ describe('parseNDJSON', () => {
     }
 
     expect(items).toHaveLength(3);
-    expect(items[0]).toEqual({ id: 1, name: 'Item 1' });
-    expect(items[1]).toEqual({ id: 2, name: 'Item 2' });
-    expect(items[2]).toEqual({ id: 3, name: 'Item 3' });
+    expect(items[0]).toEqual({ id: 1, name: "Item 1" });
+    expect(items[1]).toEqual({ id: 2, name: "Item 2" });
+    expect(items[2]).toEqual({ id: 3, name: "Item 3" });
   });
 
-  it('should handle empty lines', async () => {
-    const lines = ['{"id": 1}', '', '{"id": 2}', '   ', '{"id": 3}'];
+  it("should handle empty lines", async () => {
+    const lines = ['{"id": 1}', "", '{"id": 2}', "   ", '{"id": 3}'];
 
     const response = createNDJSONResponse(lines);
     const items = [];
@@ -67,7 +67,7 @@ describe('parseNDJSON', () => {
     expect(items).toHaveLength(3);
   });
 
-  it('should handle chunked data', async () => {
+  it("should handle chunked data", async () => {
     const encoder = new TextEncoder();
     const chunks = ['{"id": 1}\n', '{"id": 2', '}\n{"id": 3}\n'];
 
@@ -90,7 +90,7 @@ describe('parseNDJSON', () => {
     expect(items).toHaveLength(3);
   });
 
-  it('should handle response without body', async () => {
+  it("should handle response without body", async () => {
     const response = new Response(null);
 
     const promise = (async () => {
@@ -99,12 +99,12 @@ describe('parseNDJSON', () => {
       }
     })();
 
-    await expect(promise).rejects.toThrow('Response body is null');
+    await expect(promise).rejects.toThrow("Response body is null");
   });
 });
 
-describe('parseNDJSONWithProgress', () => {
-  it('should track progress events', async () => {
+describe("parseNDJSONWithProgress", () => {
+  it("should track progress events", async () => {
     const lines = [
       '{"id": 1}',
       '{"type": "progress", "count": 1}',
@@ -127,11 +127,11 @@ describe('parseNDJSONWithProgress', () => {
 
     expect(items).toHaveLength(2); // Only data items, not metadata
     expect(metadataEvents).toHaveLength(2); // Progress and complete events
-    expect(metadataEvents[0].type).toBe('progress');
-    expect(metadataEvents[1].type).toBe('complete');
+    expect(metadataEvents[0].type).toBe("progress");
+    expect(metadataEvents[1].type).toBe("complete");
   });
 
-  it('should filter out metadata events', async () => {
+  it("should filter out metadata events", async () => {
     const lines = [
       '{"id": 1, "data": "item1"}',
       '{"type": "progress", "count": 1}',
@@ -153,7 +153,7 @@ describe('parseNDJSONWithProgress', () => {
     expect(items.every((item) => item.data)).toBe(true);
   });
 
-  it('should handle error events', async () => {
+  it("should handle error events", async () => {
     const lines = ['{"id": 1}', '{"type": "error", "error": "Something went wrong"}', '{"id": 2}'];
 
     const response = createNDJSONResponse(lines);
@@ -167,12 +167,12 @@ describe('parseNDJSONWithProgress', () => {
     }
 
     expect(items).toHaveLength(2);
-    expect(errors).toContain('Something went wrong');
+    expect(errors).toContain("Something went wrong");
   });
 });
 
-describe('collectNDJSON', () => {
-  it('should collect all items into array', async () => {
+describe("collectNDJSON", () => {
+  it("should collect all items into array", async () => {
     const lines = ['{"id": 1}', '{"id": 2}', '{"id": 3}'];
 
     const response = createNDJSONResponse(lines);
@@ -183,7 +183,7 @@ describe('collectNDJSON', () => {
     expect(items[0]).toEqual({ id: 1 });
   });
 
-  it('should respect maxItems limit', async () => {
+  it("should respect maxItems limit", async () => {
     const lines = ['{"id": 1}', '{"id": 2}', '{"id": 3}', '{"id": 4}', '{"id": 5}'];
 
     const response = createNDJSONResponse(lines);
@@ -194,8 +194,8 @@ describe('collectNDJSON', () => {
   });
 });
 
-describe('batchNDJSON', () => {
-  it('should batch items', async () => {
+describe("batchNDJSON", () => {
+  it("should batch items", async () => {
     const lines = ['{"id": 1}', '{"id": 2}', '{"id": 3}', '{"id": 4}', '{"id": 5}'];
 
     const response = createNDJSONResponse(lines);
@@ -212,7 +212,7 @@ describe('batchNDJSON', () => {
     expect(batches[2]).toHaveLength(1); // Remaining item
   });
 
-  it('should handle empty stream', async () => {
+  it("should handle empty stream", async () => {
     const response = createNDJSONResponse([]);
     const stream = parseNDJSON(response);
     const batches: any[][] = [];
@@ -225,8 +225,8 @@ describe('batchNDJSON', () => {
   });
 });
 
-describe('filterNDJSON', () => {
-  it('should filter items', async () => {
+describe("filterNDJSON", () => {
+  it("should filter items", async () => {
     const lines = [
       '{"id": 1, "active": true}',
       '{"id": 2, "active": false}',
@@ -247,8 +247,8 @@ describe('filterNDJSON', () => {
   });
 });
 
-describe('mapNDJSON', () => {
-  it('should map items', async () => {
+describe("mapNDJSON", () => {
+  it("should map items", async () => {
     const lines = ['{"id": 1, "value": 10}', '{"id": 2, "value": 20}', '{"id": 3, "value": 30}'];
 
     const response = createNDJSONResponse(lines);
@@ -262,7 +262,7 @@ describe('mapNDJSON', () => {
     expect(mapped).toEqual([20, 40, 60]);
   });
 
-  it('should handle async mapper', async () => {
+  it("should handle async mapper", async () => {
     const lines = ['{"id": 1}', '{"id": 2}'];
 
     const response = createNDJSONResponse(lines);
@@ -273,12 +273,12 @@ describe('mapNDJSON', () => {
       mapped.push(value);
     }
 
-    expect(mapped).toEqual(['Item 1', 'Item 2']);
+    expect(mapped).toEqual(["Item 1", "Item 2"]);
   });
 });
 
-describe('calculateThroughput', () => {
-  it('should calculate throughput metrics', () => {
+describe("calculateThroughput", () => {
+  it("should calculate throughput metrics", () => {
     const stats: StreamingStats = {
       bytesReceived: 1024 * 1024, // 1 MB
       itemsReceived: 1000,
@@ -294,7 +294,7 @@ describe('calculateThroughput', () => {
     expect(throughput.totalDurationMs).toBeCloseTo(2000, 100);
   });
 
-  it('should handle ongoing streams', () => {
+  it("should handle ongoing streams", () => {
     const stats: StreamingStats = {
       bytesReceived: 1024,
       itemsReceived: 10,
