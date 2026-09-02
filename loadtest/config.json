@@ -37,6 +37,11 @@
       "method": "POST",
       "path": "/api/v1/blast-radius",
       "weight": 5
+    },
+    "events-create": {
+      "method": "POST",
+      "path": "/api/v1/events",
+      "weight": 5
     }
   },
   "ramp_stages": [

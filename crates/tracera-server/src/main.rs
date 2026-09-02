@@ -11,6 +11,8 @@ mod store;
 mod swee;
 mod traceability;
 mod validation;
+mod events;
+mod observability;
 
 use axum::{
     extract::DefaultBodyLimit,
@@ -1129,6 +1131,23 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/api/v1/sync/diff", any(not_implemented))
         .route("/api/v1/sync/merge", any(not_implemented))
         .route("/api/v1/sync/history", any(not_implemented))
+        // SWEE Graph CRUD
+        .route(
+            "/api/v1/graph/nodes",
+            post(create_swee_node_handler).get(list_swee_nodes_handler),
+        )
+        .route(
+            "/api/v1/graph/nodes/{id}",
+            get(get_swee_node_handler),
+        )
+        .route(
+            "/api/v1/graph/edges",
+            post(create_swee_edge_handler).get(list_swee_edges_handler),
+        )
+        .route(
+            "/api/v1/graph/neighbors/{id}",
+            get(get_swee_neighbors_handler),
+        )
         .layer(axum::middleware::from_fn_with_state(
             auth_token,
             auth::require_bearer,
@@ -2072,6 +2091,210 @@ async fn ingest_agileplus(
     let result =
         ingest::ingest_from_payload(&req.items, "id", "agcord", &state.store).await;
     (axum::http::StatusCode::OK, Json(result))
+}
+
+// ---------------------------------------------------------------------------
+// SWEE Graph CRUD handlers
+// ---------------------------------------------------------------------------
+
+#[derive(Deserialize)]
+struct SweeNodeCreate {
+    node_type: String,
+    label: String,
+    #[serde(default = "empty_object")]
+    metadata: Value,
+}
+
+#[derive(Deserialize)]
+struct SweeEdgeCreate {
+    edge_type: String,
+    source_id: String,
+    target_id: String,
+    #[serde(default = "default_confidence_1")]
+    confidence: f64,
+    #[serde(default = "default_edge_source_manual")]
+    source: String,
+    #[serde(default = "empty_object")]
+    metadata: Value,
+}
+
+fn default_confidence_1() -> f64 {
+    1.0
+}
+
+fn default_edge_source_manual() -> String {
+    "manual".to_string()
+}
+
+async fn create_swee_node_handler(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    Json(payload): Json<SweeNodeCreate>,
+) -> Result<
+    (axum::http::StatusCode, Json<Value>),
+    (axum::http::StatusCode, Json<ErrorResponse>),
+> {
+    use crate::swee::NodeKind;
+    if NodeKind::from_str(&payload.node_type).is_none() {
+        return Err(bad_request("invalid node_type"));
+    }
+    let now = Utc::now();
+    let id = format!("node-{}", Uuid::new_v4());
+    state
+        .store
+        .create_swee_node(
+            id.clone(),
+            payload.node_type,
+            payload.label,
+            payload.metadata,
+            now,
+        )
+        .await
+        .map_err(|e| {
+            tracing::error!("create_swee_node failed: {e}");
+            (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "graph node creation failed",
+                }),
+            )
+        })?;
+    Ok((
+        axum::http::StatusCode::CREATED,
+        Json(serde_json::json!({"id": id})),
+    ))
+}
+
+async fn list_swee_nodes_handler(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    axum::extract::Query(params): axum::extract::Query<std::collections::HashMap<String, String>>,
+) -> Result<Json<Value>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    let node_type = params.get("node_type").cloned();
+    let nodes = state.store.list_swee_nodes(node_type).await.map_err(|e| {
+        tracing::error!("list_swee_nodes failed: {e}");
+        (
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "graph node listing failed",
+            }),
+        )
+    })?;
+    Ok(Json(
+        serde_json::json!({"count": nodes.len(), "items": nodes}),
+    ))
+}
+
+async fn get_swee_node_handler(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    axum::extract::Path(id): axum::extract::Path<String>,
+) -> Result<Json<Value>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    match state.store.get_swee_node(id).await {
+        Ok(Some(node)) => Ok(Json(node)),
+        Ok(None) => Err((
+            axum::http::StatusCode::NOT_FOUND,
+            Json(ErrorResponse {
+                error: "node not found",
+            }),
+        )),
+        Err(e) => {
+            tracing::error!("get_swee_node failed: {e}");
+            Err((
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "graph node lookup failed",
+                }),
+            ))
+        }
+    }
+}
+
+async fn create_swee_edge_handler(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    Json(payload): Json<SweeEdgeCreate>,
+) -> Result<
+    (axum::http::StatusCode, Json<Value>),
+    (axum::http::StatusCode, Json<ErrorResponse>),
+> {
+    use crate::swee::EdgeKind;
+    if EdgeKind::from_str(&payload.edge_type).is_none() {
+        return Err(bad_request("invalid edge_type"));
+    }
+    let now = Utc::now();
+    let id = format!("edge-{}", Uuid::new_v4());
+    state
+        .store
+        .create_swee_edge(
+            id.clone(),
+            payload.edge_type,
+            payload.source_id,
+            payload.target_id,
+            payload.confidence,
+            payload.source,
+            payload.metadata,
+            now,
+        )
+        .await
+        .map_err(|e| {
+            tracing::error!("create_swee_edge failed: {e}");
+            (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "graph edge creation failed",
+                }),
+            )
+        })?;
+    Ok((
+        axum::http::StatusCode::CREATED,
+        Json(serde_json::json!({"id": id})),
+    ))
+}
+
+async fn list_swee_edges_handler(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    axum::extract::Query(params): axum::extract::Query<std::collections::HashMap<String, String>>,
+) -> Result<Json<Value>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    let edge_type = params.get("edge_type").cloned();
+    let edges = state.store.list_swee_edges(edge_type).await.map_err(|e| {
+        tracing::error!("list_swee_edges failed: {e}");
+        (
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "graph edge listing failed",
+            }),
+        )
+    })?;
+    Ok(Json(
+        serde_json::json!({"count": edges.len(), "items": edges}),
+    ))
+}
+
+async fn get_swee_neighbors_handler(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    axum::extract::Path(id): axum::extract::Path<String>,
+    axum::extract::Query(params): axum::extract::Query<std::collections::HashMap<String, String>>,
+) -> Result<Json<Value>, (axum::http::StatusCode, Json<ErrorResponse>)> {
+    let direction = params
+        .get("direction")
+        .cloned()
+        .unwrap_or_else(|| "both".to_string());
+    let neighbors = state
+        .store
+        .get_swee_neighbors(id.clone(), direction.clone())
+        .await
+        .map_err(|e| {
+            tracing::error!("get_swee_neighbors failed: {e}");
+            (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "graph neighbor lookup failed",
+                }),
+            )
+        })?;
+    Ok(Json(serde_json::json!({
+        "node_id": id,
+        "direction": direction,
+        "count": neighbors.len(),
+        "items": neighbors,
+    })))
 }
 
 // ---------------------------------------------------------------------------

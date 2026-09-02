@@ -1,0 +1,27 @@
+{
+  "name": "tracera-desktop",
+  "version": "1.0.0",
+  "description": "Tracera Desktop Client",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.tracera.desktop",
+    "productName": "Tracera",
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

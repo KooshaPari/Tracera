@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ENVIRONMENT = "production"
-TRACERA_API = "https://tracera.pheno.studio"
+TRACERA_API = "https://api.tracera.phenotype.studio"
 
 [build]
 # Prepend $HOME/.cargo/bin so the rustup cargo shim is used instead of any system-installed

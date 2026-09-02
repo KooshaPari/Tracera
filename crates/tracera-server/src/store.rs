@@ -349,6 +349,37 @@ pub trait Store: Send + Sync {
         project_id: String,
         status_filter: Option<String>,
     ) -> BoxFuture<'_, StoreResult<i64>>;
+
+    // -----------------------------------------------------------------------
+    // SWEE Graph operations
+    // -----------------------------------------------------------------------
+
+    fn create_swee_node(
+        &self,
+        id: String,
+        node_type: String,
+        label: String,
+        metadata: Value,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<()>>;
+
+    #[allow(clippy::too_many_arguments)]
+    fn create_swee_edge(
+        &self,
+        id: String,
+        edge_type: String,
+        source_id: String,
+        target_id: String,
+        confidence: f64,
+        source: String,
+        metadata: Value,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<()>>;
+
+    fn list_swee_nodes(&self, node_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
+    fn list_swee_edges(&self, edge_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
+    fn get_swee_node(&self, id: String) -> BoxFuture<'_, StoreResult<Option<Value>>>;
+    fn get_swee_neighbors(&self, id: String, direction: String) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
 }
 
 #[cfg(test)]

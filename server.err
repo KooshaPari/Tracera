@@ -1,0 +1,5 @@
+FATAL: DATABASE_URL environment variable is not set.
+Set it to a connection string, e.g.:
+DATABASE_URL=postgres://user:pass@localhost:5432/tracera
+DATABASE_URL=sqlite:///path/to/tracera.db
+DATABASE_URL=sqlite::memory:

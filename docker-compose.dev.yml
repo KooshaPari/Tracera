@@ -1,0 +1,56 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: tracera
+      POSTGRES_USER: tracera
+      POSTGRES_PASSWORD: tracera_dev_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracera"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  tracera-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.rust
+    environment:
+      DATABASE_URL: postgres://tracera:tracera_dev_2026@postgres:5432/tracera
+      TRACERA_AUTH_TOKEN: dev-token-2026
+      TRACERA_BIND_ADDR: 0.0.0.0:8080
+      TRACERA_PUBLIC_BIND_MODE: private-network
+      AGCORD_URL: http://mock-agcord:3001
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mock-agcord:
+        condition: service_started
+
+  mock-agcord:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./mock-agcord:/app
+    command: node server.js
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8080
+
+volumes:
+  pgdata:
