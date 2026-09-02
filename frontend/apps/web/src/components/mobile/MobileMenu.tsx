@@ -211,7 +211,7 @@ export const MobileMenu = function MobileMenu({ className }: MobileMenuProps) {
 
   const handleMenuClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
-      const href = e.currentTarget.getAttribute("data-href");
+      const href = e.currentTarget.dataset.href;
       if (href) {
         handleNavigate(href).catch(() => {});
       }

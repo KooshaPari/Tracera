@@ -46,19 +46,25 @@ function parseArguments(arguments_) {
       [command, ...commandArguments] = override;
       break;
     }
-    if (argument === "--deadline-ms" || argument === "--grace-ms") {
-      const value = arguments_[index + 1];
-      if (value === undefined) throw new Error(`${argument} requires a value`);
-      const milliseconds = parseMilliseconds(value, argument);
-      if (argument === "--deadline-ms") deadlineMs = milliseconds;
-      else graceMs = milliseconds;
-      index += 1;
-      continue;
+    if (argument.startsWith("--")) {
+      const { deadline, grace } = parseDeadlineGraceOption(argument, arguments_, index);
+      if (deadline !== undefined) { deadlineMs = deadline; index += 1; continue; }
+      if (grace !== undefined) { graceMs = grace; index += 1; continue; }
     }
     throw new Error(`Unknown option: ${argument}`);
   }
 
   return { command, commandArguments, deadlineMs, graceMs, help: false };
+}
+
+function parseDeadlineGraceOption(argument, arguments_, index) {
+  if (argument !== "--deadline-ms" && argument !== "--grace-ms") return {};
+  const value = arguments_[index + 1];
+  if (value === undefined) throw new Error(`${argument} requires a value`);
+  const milliseconds = parseMilliseconds(value, argument);
+  return argument === "--deadline-ms"
+    ? { deadline: milliseconds }
+    : { grace: milliseconds };
 }
 
 function signalExitCode(signal) {

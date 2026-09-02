@@ -187,8 +187,9 @@ async function patchCoverage(
 }
 
 async function deleteCoverage(projectId: string, coverageId: string): Promise<void> {
+  const headers = await client.getAuthHeaders();
   await client.apiClient.delete(`/api/v1/projects/${projectId}/coverage/${coverageId}`, {
-    headers: await client.getAuthHeaders(),
+    headers,
   });
 }
 
