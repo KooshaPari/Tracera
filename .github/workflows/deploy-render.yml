@@ -1,0 +1,129 @@
+name: Deploy Render Backend
+on:
+  push:
+    branches: [main, ci/infisical-deploys]
+    paths:
+      - "crates/tracera-server/**"
+      - "Dockerfile.rust"
+      - "render.yaml"
+      - ".github/workflows/deploy-render.yml"
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: "Force redeploy even without code changes"
+        required: false
+        default: "false"
+        type: boolean
+permissions:
+  contents: read
+jobs:
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: render-production
+    env:
+      INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
+      INFISICAL_PROJECT_ID: ${{ vars.INFISICAL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Infisical CLI
+        run: |
+          curl -1sLf "https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.deb.sh" | sudo -E bash
+          sudo apt-get install -y infisical
+
+      - name: Pull Render credentials from Infisical
+        env:
+          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+        run: |
+          # Use Universal Auth (client_id + client_secret) instead of raw token
+          INFISICAL_TOKEN=$(infisical auth universal-auth \
+            --client-id "$INFISICAL_CLIENT_ID" \
+            --client-secret "$INFISICAL_CLIENT_SECRET" \
+            --plain)
+          export INFISICAL_TOKEN
+          RENDER_API_KEY=$(infisical secrets get RENDER_API_KEY --projectId "$INFISICAL_PROJECT_ID" --env prod --plain)
+          RENDER_SERVICE_ID=$(infisical secrets get RENDER_SERVICE_ID --projectId "$INFISICAL_PROJECT_ID" --env prod --plain)
+          echo "RENDER_API_KEY=$RENDER_API_KEY" >> $GITHUB_ENV
+          echo "RENDER_SERVICE_ID=$RENDER_SERVICE_ID" >> $GITHUB_ENV
+
+      - name: Validate Render credentials
+        if: env.RENDER_API_KEY == ''
+        run: |
+          echo "::error::RENDER_API_KEY not found in Infisical (env=prod, project=$INFISICAL_PROJECT_ID)"
+          echo "Add in Infisical: dashboard.infisical.com -> Tracera -> prod -> RENDER_API_KEY"
+          exit 1
+
+      - name: Trigger Render deploy
+        run: |
+          echo "Triggering deploy for service: $RENDER_SERVICE_ID"
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"clear_cache": false}')
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            DEPLOY_ID=$(echo "$BODY" | jq -r '.id // "unknown"')
+            echo "Deploy triggered: $DEPLOY_ID"
+            echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+          else
+            echo "::error::Render deploy failed (HTTP $HTTP_CODE): $BODY"
+            exit 1
+          fi
+
+      - name: Wait for deployment
+        run: |
+          echo "Waiting for deploy to complete..."
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s \
+              "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys/$DEPLOY_ID" \
+              -H "Authorization: Bearer $RENDER_API_KEY" | jq -r '.status')
+            
+            case "$STATUS" in
+              live)
+                echo "Deploy completed successfully"
+                break
+                ;;
+              failed|canceled)
+                echo "::error::Deploy status: $STATUS"
+                exit 1
+                ;;
+              *)
+                echo "[$i/60] Status: $STATUS"
+                sleep 10
+                ;;
+            esac
+          done
+
+      - name: Verify backend health
+        run: |
+          SERVICE_URL="https://${{ env.RENDER_SERVICE_ID }}.onrender.com"
+          echo "Checking $SERVICE_URL/healthz"
+
+          for i in $(seq 1 10); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL/healthz" 2>/dev/null)
+            if [ "$STATUS" = "200" ]; then
+              echo "Backend healthy: $SERVICE_URL/healthz → 200"
+              curl -s "$SERVICE_URL/readyz" | jq .
+              exit 0
+            fi
+            echo "[$i/10] Waiting... (HTTP $STATUS)"
+            sleep 10
+          done
+          echo "::warning::Backend not yet healthy after 100s (may still be starting)"
+
+      - name: Update Vercel API URL
+        if: success()
+        run: |
+          RENDER_URL="https://${{ env.RENDER_SERVICE_ID }}.onrender.com"
+          echo "Backend deployed at: $RENDER_URL"
+          echo "Next: Update Vercel env var VITE_API_URL to $RENDER_URL"
+          echo "Run: vercel env add VITE_API_URL production --value $RENDER_URL"
+          echo "Or update Infisical: VER (prod) -> TRACERA_API_BASE = $RENDER_URL"

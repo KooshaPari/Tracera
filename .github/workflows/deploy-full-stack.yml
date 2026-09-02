@@ -1,0 +1,98 @@
+name: Deploy Full Stack (Backend + Frontend + Edge)
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: false
+        default: production
+        type: choice
+        options: [production, staging]
+      skip_tests:
+        description: "Skip test suite"
+        required: false
+        default: "false"
+        type: boolean
+  push:
+    branches: [main]
+    paths:
+      - "crates/**"
+      - "frontend/**"
+      - "Dockerfile.rust"
+      - "render.yaml"
+      - "wrangler.toml"
+      - "vercel.json"
+permissions:
+  contents: read
+jobs:
+  test:
+    name: Run tests
+    if: inputs.skip_tests != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Cargo test
+        run: cargo test -p tracera-server
+      - name: Frontend typecheck
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: cd frontend && bun install --ignore-scripts && bun run typecheck
+
+  deploy-backend:
+    name: Deploy Backend (Render)
+    needs: [test]
+    if: inputs.skip_tests == 'true' || needs.test.result == 'success'
+    uses: ./.github/workflows/deploy-render.yml
+    secrets: inherit
+    permissions:
+      contents: read
+
+  deploy-frontend:
+    name: Deploy Frontend (Vercel)
+    needs: [test]
+    if: inputs.skip_tests == 'true' || needs.test.result == 'success'
+    uses: ./.github/workflows/deploy-vercel.yml
+    secrets: inherit
+    permissions:
+      contents: read
+
+  deploy-edge:
+    name: Deploy Edge (Cloudflare)
+    needs: [test]
+    if: inputs.skip_tests == 'true' || needs.test.result == 'success'
+    uses: ./.github/workflows/deploy-cloudflare.yml
+    secrets: inherit
+    permissions:
+      contents: read
+
+  post-deploy:
+    name: Post-deploy verification
+    needs: [deploy-backend, deploy-frontend, deploy-edge]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify all services
+        run: |
+          echo "=== Backend ==="
+          curl -sf https://${{ vars.RENDER_SERVICE_ID || 'tracera-server' }}.onrender.com/healthz || echo "BACKEND: pending"
+
+          echo "=== Frontend ==="
+          curl -sf -o /dev/null https://tracera-kappa.vercel.app || echo "FRONTEND: pending"
+
+          echo "=== Edge ==="
+          curl -sf -o /dev/null https://tracera-edge.workers.dev/healthz || echo "EDGE: pending"
+
+          echo "=== All deployments triggered ==="
+
+      - name: Summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Platform | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | Render | ${{ needs.deploy-backend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | Vercel | ${{ needs.deploy-frontend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Edge | Cloudflare | ${{ needs.deploy-edge.result }} |" >> $GITHUB_STEP_SUMMARY

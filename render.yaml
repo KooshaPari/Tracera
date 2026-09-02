@@ -15,7 +15,6 @@ services:
           property: connectionString
       - key: TRACERA_AUTH_TOKEN
         generateValue: true
-        key: TRACERA_AUTH_TOKEN
       - key: TRACERA_BIND_ADDR
         value: "0.0.0.0:8080"
       - key: TRACERA_PUBLIC_BIND_MODE
