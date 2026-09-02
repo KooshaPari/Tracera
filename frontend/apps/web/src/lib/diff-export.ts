@@ -114,9 +114,8 @@ function exportAsCSV(
  * Shared by Added/Removed/Modified item rendering.
  */
 function pushItemSection(lines: string[], item: DiffItem): void {
+  lines.push(`### ${item.title}`, "");
   lines.push(
-    `### ${item.title}`,
-    "",
     `- **ID**: ${item.itemId}`,
     `- **Type**: ${item.type}`,
     `- **Significance**: ${item.significance}`,

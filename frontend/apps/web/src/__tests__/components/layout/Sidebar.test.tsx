@@ -117,46 +117,18 @@ describe("Sidebar Navigation", () => {
       expect(allViewsSection).toBeInTheDocument();
     });
 
-    it("displays Planning & Requirements category", () => {
+    // SonarCloud S5976: parameterize repeated `it(...)` blocks to reduce duplication.
+    it.each([
+      "Planning & Requirements",
+      "Development",
+      "Testing & Quality",
+      "Project Management",
+      "Analysis & Tracking",
+      "Security & Monitoring",
+      "Configuration",
+    ])("displays %s category", (category) => {
       render(<Sidebar />);
-
-      expect(screen.getByText("Planning & Requirements")).toBeInTheDocument();
-    });
-
-    it("displays Development category", () => {
-      render(<Sidebar />);
-
-      expect(screen.getByText("Development")).toBeInTheDocument();
-    });
-
-    it("displays Testing & Quality category", () => {
-      render(<Sidebar />);
-
-      expect(screen.getByText("Testing & Quality")).toBeInTheDocument();
-    });
-
-    it("displays Project Management category", () => {
-      render(<Sidebar />);
-
-      expect(screen.getByText("Project Management")).toBeInTheDocument();
-    });
-
-    it("displays Analysis & Tracking category", () => {
-      render(<Sidebar />);
-
-      expect(screen.getByText("Analysis & Tracking")).toBeInTheDocument();
-    });
-
-    it("displays Security & Monitoring category", () => {
-      render(<Sidebar />);
-
-      expect(screen.getByText("Security & Monitoring")).toBeInTheDocument();
-    });
-
-    it("displays Configuration category", () => {
-      render(<Sidebar />);
-
-      expect(screen.getByText("Configuration")).toBeInTheDocument();
+      expect(screen.getByText(category)).toBeInTheDocument();
     });
   });
 
@@ -165,94 +137,29 @@ describe("Sidebar Navigation", () => {
       mockParams = { projectId: "test-project" };
     });
 
-    it("displays Features view in Planning & Requirements", () => {
+    // SonarCloud S5976: parameterize repeated `it(...)` blocks to reduce duplication.
+    it.each([
+      ["Features", "Planning & Requirements"],
+      ["Code View", "Development"],
+      ["Architecture", "Development"],
+      ["API Documentation", "Development"],
+      ["Database Schema", "Development"],
+      ["Data Flow", "Development"],
+      ["Test Cases", "Testing & Quality"],
+      ["Test Suites", "Testing & Quality"],
+      ["QA Dashboard", "Testing & Quality"],
+      ["Coverage Report", "Testing & Quality"],
+      ["Journey Map", "Project Management"],
+      ["Timeline", "Project Management"],
+      ["Reports", "Project Management"],
+      ["Impact Analysis", "Analysis & Tracking"],
+      ["Dependency Graph", "Analysis & Tracking"],
+      ["Performance Metrics", "Analysis & Tracking"],
+      ["Security Analysis", "Security & Monitoring"],
+      ["Monitoring Dashboard", "Security & Monitoring"],
+    ] as const)("displays %s view in %s", (viewName) => {
       render(<Sidebar />);
-      expect(screen.getByText("Features")).toBeInTheDocument();
-    });
-
-    it("displays Code View in Development", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Code View")).toBeInTheDocument();
-    });
-
-    it("displays Architecture view", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Architecture")).toBeInTheDocument();
-    });
-
-    it("displays API Documentation view", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("API Documentation")).toBeInTheDocument();
-    });
-
-    it("displays Database Schema view", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Database Schema")).toBeInTheDocument();
-    });
-
-    it("displays Data Flow view", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Data Flow")).toBeInTheDocument();
-    });
-
-    it("displays Test Cases view in Testing & Quality", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Test Cases")).toBeInTheDocument();
-    });
-
-    it("displays Test Suites view", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Test Suites")).toBeInTheDocument();
-    });
-
-    it("displays QA Dashboard view", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("QA Dashboard")).toBeInTheDocument();
-    });
-
-    it("displays Coverage Report view", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Coverage Report")).toBeInTheDocument();
-    });
-
-    it("displays Journey Map in Project Management", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Journey Map")).toBeInTheDocument();
-    });
-
-    it("displays Timeline view", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Timeline")).toBeInTheDocument();
-    });
-
-    it("displays Reports view", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Reports")).toBeInTheDocument();
-    });
-
-    it("displays Impact Analysis in Analysis & Tracking", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Impact Analysis")).toBeInTheDocument();
-    });
-
-    it("displays Dependency Graph view", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Dependency Graph")).toBeInTheDocument();
-    });
-
-    it("displays Performance Metrics view", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Performance Metrics")).toBeInTheDocument();
-    });
-
-    it("displays Security Analysis in Security & Monitoring", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Security Analysis")).toBeInTheDocument();
-    });
-
-    it("displays Monitoring Dashboard view", () => {
-      render(<Sidebar />);
-      expect(screen.getByText("Monitoring Dashboard")).toBeInTheDocument();
+      expect(screen.getByText(viewName)).toBeInTheDocument();
     });
 
     it("displays Integrations in Configuration", () => {

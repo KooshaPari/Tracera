@@ -555,31 +555,17 @@ describe("API Endpoints - P1 Coverage", () => {
     });
 
     describe("traverse", () => {
-      it("should traverse up", async () => {
+      it.each([
+        ["up", undefined],
+        ["down", undefined],
+        ["both", undefined],
+        ["up", 3],
+      ] as const)("should traverse %s direction%s", async (direction, depth) => {
         mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
 
-        const result = await api.graph.traverse("item-1", "up");
-        expect(result).toBeDefined();
-      });
-
-      it("should traverse down", async () => {
-        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
-
-        const result = await api.graph.traverse("item-1", "down");
-        expect(result).toBeDefined();
-      });
-
-      it("should traverse both directions", async () => {
-        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
-
-        const result = await api.graph.traverse("item-1", "both");
-        expect(result).toBeDefined();
-      });
-
-      it("should support depth parameter", async () => {
-        mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
-
-        const result = await api.graph.traverse("item-1", "up", 3);
+        const result = depth === undefined
+          ? await api.graph.traverse("item-1", direction)
+          : await api.graph.traverse("item-1", direction, depth);
         expect(result).toBeDefined();
       });
     });
