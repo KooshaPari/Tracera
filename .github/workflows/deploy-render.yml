@@ -35,10 +35,14 @@ jobs:
           sudo apt-get install -y infisical
 
       - name: Pull Render credentials from Infisical
-        # Uses service token via INFISICAL_TOKEN (matching the proven Infisical Sync
-        # workflow pattern). For Universal Auth, set INFISICAL_CLIENT_ID +
-        # INFISICAL_CLIENT_SECRET and swap --token for --client-id/--client-secret.
+        id: pull_creds
+        # Uses service token via INFISICAL_TOKEN. continue-on-error so a bad
+        # token doesn't abort the workflow before the pre-flight check.
+        # The pre-flight step below reads $RENDER_API_KEY from the env and
+        # decides whether to actually deploy or skip with instructions.
+        continue-on-error: true
         run: |
+          set +e
           RENDER_API_KEY=$(infisical secrets get RENDER_API_KEY \
             --projectId "$INFISICAL_PROJECT_ID" --env prod \
             --token "$INFISICAL_TOKEN" --plain)
@@ -47,6 +51,7 @@ jobs:
             --token "$INFISICAL_TOKEN" --plain)
           echo "RENDER_API_KEY=$RENDER_API_KEY" >> $GITHUB_ENV
           echo "RENDER_SERVICE_ID=$RENDER_SERVICE_ID" >> $GITHUB_ENV
+          exit 0
 
       - name: Pre-flight - verify Render credentials
         id: render_scope_check
