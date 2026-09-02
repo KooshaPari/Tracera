@@ -136,27 +136,33 @@ jobs:
           done
 
       - name: Verify backend health
+        if: steps.render_scope_check.outputs.render_creds_ok == 'true'
+        continue-on-error: true
         run: |
-          SERVICE_URL="https://${{ env.RENDER_SERVICE_ID }}.onrender.com"
+          set +e
+          SERVICE_URL="https://${RENDER_SERVICE_ID}.onrender.com"
           echo "Checking $SERVICE_URL/healthz"
 
           for i in $(seq 1 10); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL/healthz" 2>/dev/null)
+            STATUS=$(curl -sS -o /dev/null -w "%{http_code}" "$SERVICE_URL/healthz" 2>/dev/null)
             if [ "$STATUS" = "200" ]; then
-              echo "Backend healthy: $SERVICE_URL/healthz → 200"
-              curl -s "$SERVICE_URL/readyz" | jq .
+              echo "Backend healthy: $SERVICE_URL/healthz -> 200"
+              curl -s "$SERVICE_URL/readyz" | jq . 2>/dev/null || echo "(jq not available)"
               exit 0
             fi
             echo "[$i/10] Waiting... (HTTP $STATUS)"
             sleep 10
           done
           echo "::warning::Backend not yet healthy after 100s (may still be starting)"
+          echo "::warning::Skipping verification - this is non-fatal."
+          exit 0
 
       - name: Update Vercel API URL
-        if: success()
+        if: steps.render_scope_check.outputs.render_creds_ok == 'true' && success()
+        continue-on-error: true
         run: |
-          RENDER_URL="https://${{ env.RENDER_SERVICE_ID }}.onrender.com"
+          RENDER_URL="https://${RENDER_SERVICE_ID}.onrender.com"
           echo "Backend deployed at: $RENDER_URL"
           echo "Next: Update Vercel env var VITE_API_URL to $RENDER_URL"
           echo "Run: vercel env add VITE_API_URL production --value $RENDER_URL"
-          echo "Or update Infisical: VER (prod) -> TRACERA_API_BASE = $RENDER_URL"
+          echo "Or update Infisical: TRACERA_API_BASE (prod) = $RENDER_URL"

@@ -146,11 +146,24 @@ jobs:
             --minify
 
       - name: Verify deployment
+        if: steps.cf_scope_check.outputs.cf_creds_ok == 'true'
+        continue-on-error: true
         run: |
+          set +e
           sleep 10
           BASE="${CF_ZONE:-tracera-edge.workers.dev}"
-          curl -sf "https://$BASE/healthz" || echo "::warning::Worker health check failed (may take time to propagate)"
+          STATUS=$(curl -sS -o /dev/null -w "%{http_code}" "https://$BASE/healthz" 2>/dev/null || echo "000")
+          if [ "$STATUS" = "200" ]; then
+            echo "Worker health check passed: $BASE/healthz -> 200"
+          else
+            echo "::warning::Worker health check returned $STATUS (may take time to propagate)"
+          fi
+          exit 0
 
       - name: Create R2 bucket (idempotent)
+        if: steps.cf_scope_check.outputs.cf_creds_ok == 'true'
+        continue-on-error: true
         run: |
-          npx wrangler r2 bucket create tracera-artifacts 2>/dev/null || echo "R2 bucket already exists"
+          set +e
+          npx wrangler r2 bucket create tracera-artifacts 2>&1 || echo "R2 bucket already exists (or create failed)"
+          exit 0
