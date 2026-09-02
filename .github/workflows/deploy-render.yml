@@ -48,14 +48,38 @@ jobs:
           echo "RENDER_API_KEY=$RENDER_API_KEY" >> $GITHUB_ENV
           echo "RENDER_SERVICE_ID=$RENDER_SERVICE_ID" >> $GITHUB_ENV
 
-      - name: Validate Render credentials
-        if: env.RENDER_API_KEY == ''
+      - name: Pre-flight - verify Render credentials
+        id: render_scope_check
         run: |
-          echo "::error::RENDER_API_KEY not found in Infisical (env=prod, project=$INFISICAL_PROJECT_ID)"
-          echo "Add in Infisical: dashboard.infisical.com -> Tracera -> prod -> RENDER_API_KEY"
-          exit 1
+          if [ -z "$RENDER_API_KEY" ]; then
+            echo "render_creds_ok=false" >> $GITHUB_OUTPUT
+            echo "::notice::RENDER_API_KEY missing from Infisical prod env."
+          elif [[ "$RENDER_API_KEY" != rnd_* ]]; then
+            echo "render_creds_ok=false" >> $GITHUB_OUTPUT
+            echo "::notice::RENDER_API_KEY does not start with 'rnd_' (got prefix '${RENDER_API_KEY:0:4}')."
+            echo "::notice::Generate a Render API key at https://dashboard.render.com/api-keys"
+          elif [ -z "$RENDER_SERVICE_ID" ]; then
+            echo "render_creds_ok=false" >> $GITHUB_OUTPUT
+            echo "::notice::RENDER_SERVICE_ID missing from Infisical prod env."
+            echo "::notice::Connect the Render Blueprint first: https://render.com -> New -> Blueprint"
+            echo "::notice::then copy the service ID (srv-XXXX) into Infisical prod as RENDER_SERVICE_ID."
+          else
+            # Probe the Render API with the key to confirm it actually works
+            PROBE=$(curl -s -o /dev/null -w "%{http_code}" \
+              "https://api.render.com/v1/services/$RENDER_SERVICE_ID" \
+              -H "Authorization: Bearer $RENDER_API_KEY")
+            if [ "$PROBE" = "200" ]; then
+              echo "render_creds_ok=true" >> $GITHUB_OUTPUT
+              echo "Render API key + service ID validated."
+            else
+              echo "render_creds_ok=false" >> $GITHUB_OUTPUT
+              echo "::notice::Render API probe returned HTTP $PROBE for service $RENDER_SERVICE_ID."
+              echo "::notice::Check that the API key has access to that service in Render Dashboard."
+            fi
+          fi
 
       - name: Trigger Render deploy
+        if: steps.render_scope_check.outputs.render_creds_ok == 'true'
         run: |
           echo "Triggering deploy for service: $RENDER_SERVICE_ID"
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
@@ -77,6 +101,7 @@ jobs:
           fi
 
       - name: Wait for deployment
+        if: steps.render_scope_check.outputs.render_creds_ok == 'true'
         run: |
           echo "Waiting for deploy to complete..."
           for i in $(seq 1 60); do
