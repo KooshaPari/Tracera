@@ -31,7 +31,7 @@ jobs:
         if: env.CLOUDFLARE_API_TOKEN == '' || env.CLOUDFLARE_ACCOUNT_ID == ''
         run: |
           echo "::error::CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID not set in repository secrets"
-          echo "Set via: gh secret set CLOUDFLARE_API_TOKEN / gh secret set CLOUDFLARE_ACCOUNT_ID"
+          echo "Set both via the GitHub repository Settings -> Secrets and variables -> Actions UI (do not mutate secrets from this workflow)."
           exit 1
 
       - uses: actions/checkout@v4
