@@ -43,3 +43,6 @@ frontend/**/.tsbuildinfo
 Tracera/worktrees/
 **/worktrees/
 frontend/packages/**/build/
+
+.vercel
+.env*.local
