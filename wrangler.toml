@@ -11,7 +11,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ENVIRONMENT = "production"
-TRACERA_API = "https://api.tracera.phenotype.studio"
+TRACERA_API = "https://api.pheno.studio"
 
 [[kv_namespaces]]
 binding = "TRACERA_KV"

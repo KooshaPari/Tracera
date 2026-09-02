@@ -1,7 +1,7 @@
 name: Deploy Render Backend
 on:
   push:
-    branches: [main]
+    branches: [main, ci/infisical-deploys]
     paths:
       - "crates/tracera-server/**"
       - "Dockerfile.rust"
