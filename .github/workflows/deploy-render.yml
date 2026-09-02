@@ -55,10 +55,14 @@ jobs:
 
       - name: Pre-flight - verify Render credentials
         id: render_scope_check
+        continue-on-error: true
         run: |
+          set +e
           if [ -z "$RENDER_API_KEY" ]; then
             echo "render_creds_ok=false" >> $GITHUB_OUTPUT
-            echo "::notice::RENDER_API_KEY missing from Infisical prod env."
+            echo "::notice::RENDER_API_KEY missing from Infisical prod env (or INFISICAL_TOKEN rejected)."
+            echo "::notice::If INFISICAL_TOKEN is set, verify it has 'read' scope on env=prod."
+            echo "::notice::If INFISICAL_TOKEN is a Universal Auth Client ID, see DEPLOY_CREDENTIALS.md."
           elif [[ "$RENDER_API_KEY" != rnd_* ]]; then
             echo "render_creds_ok=false" >> $GITHUB_OUTPUT
             echo "::notice::RENDER_API_KEY does not start with 'rnd_' (got prefix '${RENDER_API_KEY:0:4}')."
@@ -70,9 +74,9 @@ jobs:
             echo "::notice::then copy the service ID (srv-XXXX) into Infisical prod as RENDER_SERVICE_ID."
           else
             # Probe the Render API with the key to confirm it actually works
-            PROBE=$(curl -s -o /dev/null -w "%{http_code}" \
+            PROBE=$(curl -sS -o /dev/null -w "%{http_code}" \
               "https://api.render.com/v1/services/$RENDER_SERVICE_ID" \
-              -H "Authorization: Bearer $RENDER_API_KEY")
+              -H "Authorization: Bearer $RENDER_API_KEY" 2>/tmp/render_err.txt)
             if [ "$PROBE" = "200" ]; then
               echo "render_creds_ok=true" >> $GITHUB_OUTPUT
               echo "Render API key + service ID validated."
@@ -82,6 +86,7 @@ jobs:
               echo "::notice::Check that the API key has access to that service in Render Dashboard."
             fi
           fi
+          exit 0
 
       - name: Trigger Render deploy
         if: steps.render_scope_check.outputs.render_creds_ok == 'true'

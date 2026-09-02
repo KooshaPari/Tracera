@@ -62,10 +62,14 @@ jobs:
 
       - name: Pre-flight - verify token has Account-scoped permissions
         id: cf_scope_check
+        continue-on-error: true
+        env:
+          CF_API_BASE: https://api.cloudflare.com/client/v4
         run: |
-          STATUS=$(curl -s -o /tmp/cf_resp.json -w "%{http_code}" \
+          set +e
+          STATUS=$(curl -sS -o /tmp/cf_resp.json -w "%{http_code}" \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            "$CF_API_BASE/accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces")
+            "${CF_API_BASE}/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces" 2>/tmp/cf_err.txt)
           echo "Probe status: $STATUS"
           if [ "$STATUS" = "200" ]; then
             echo "cf_creds_ok=true" >> $GITHUB_OUTPUT
@@ -81,6 +85,7 @@ jobs:
             echo "::notice::  Account -> Account Settings: Read"
             echo "::notice::Then set it as the CLOUDFLARE_API_TOKEN repo secret."
           fi
+          exit 0
 
       - name: Resolve KV namespace (create if missing)
         if: steps.cf_scope_check.outputs.cf_creds_ok == 'true'
