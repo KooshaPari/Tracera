@@ -352,65 +352,13 @@ function exportAsHTML(
 
     ${
       diff.added.length > 0
-        ? `
-      <h2>Added Items (${diff.added.length})</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>ID</th>
-            <th>Type</th>
-            <th>Significance</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${diff.added
-            .map(
-              (item) => `
-            <tr>
-              <td>${escapeHtml(item.title)}</td>
-              <td><code>${item.itemId}</code></td>
-              <td>${item.type}</td>
-              <td><span class="significance sig-${item.significance}">${item.significance}</span></td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    `
+        ? buildItemTableHTML("Added Items", diff.added)
         : ""
     }
 
     ${
       diff.removed.length > 0
-        ? `
-      <h2>Removed Items (${diff.removed.length})</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>ID</th>
-            <th>Type</th>
-            <th>Significance</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${diff.removed
-            .map(
-              (item) => `
-            <tr>
-              <td>${escapeHtml(item.title)}</td>
-              <td><code>${item.itemId}</code></td>
-              <td>${item.type}</td>
-              <td><span class="significance sig-${item.significance}">${item.significance}</span></td>
-            </tr>
-          `,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    `
+        ? buildItemTableHTML("Removed Items", diff.removed)
         : ""
     }
 
@@ -545,6 +493,37 @@ function escapeCSVField(value: unknown): string {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
+}
+
+// HTML table builder for Added/Removed items — extracted to eliminate S7778 duplication
+function buildItemTableHTML(label: string, items: DiffItem[]): string {
+  return `
+      <h2>${label} (${items.length})</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Significance</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items
+            .map(
+              (item) => `
+            <tr>
+              <td>${escapeHtml(item.title)}</td>
+              <td><code>${item.itemId}</code></td>
+              <td>${item.type}</td>
+              <td><span class="significance sig-${item.significance}">${item.significance}</span></td>
+            </tr>
+          `,
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
 }
 
 function escapeHtml(text: string): string {
