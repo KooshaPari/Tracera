@@ -110,6 +110,34 @@ function exportAsCSV(
 }
 
 /**
+ * Push a single item section (title + ID/Type/Significance bullets) to lines.
+ * Shared by Added/Removed/Modified item rendering.
+ */
+function pushItemSection(lines: string[], item: DiffItem): void {
+  lines.push(
+    `### ${item.title}`,
+    "",
+    `- **ID**: ${item.itemId}`,
+    `- **Type**: ${item.type}`,
+    `- **Significance**: ${item.significance}`,
+    "",
+  );
+}
+
+/**
+ * Push a single field-change block to lines.
+ * Used when includeFieldChanges is enabled on Modified items.
+ */
+function pushFieldChange(lines: string[], change: { field: string; changeType: string; oldValue: unknown; newValue: unknown }): void {
+  lines.push(
+    `**${change.field}** (${change.changeType})`,
+    `- Old: \`${formatValue(change.oldValue)}\``,
+    `- New: \`${formatValue(change.newValue)}\``,
+    "",
+  );
+}
+
+/**
  * Export as Markdown
  */
 function exportAsMarkdown(
@@ -141,53 +169,25 @@ function exportAsMarkdown(
 
   // Added items
   if (diff.added.length > 0) {
-    lines.push("## Added Items");
-    lines.push("");
-    diff.added.forEach((item) => {
-      lines.push(`### ${item.title}`);
-      lines.push("");
-      lines.push(`- **ID**: ${item.itemId}`);
-      lines.push(`- **Type**: ${item.type}`);
-      lines.push(`- **Significance**: ${item.significance}`);
-      lines.push("");
-    });
+    lines.push("## Added Items", "");
+    diff.added.forEach((item) => pushItemSection(lines, item));
   }
 
   // Removed items
   if (diff.removed.length > 0) {
-    lines.push("## Removed Items");
-    lines.push("");
-    diff.removed.forEach((item) => {
-      lines.push(`### ${item.title}`);
-      lines.push("");
-      lines.push(`- **ID**: ${item.itemId}`);
-      lines.push(`- **Type**: ${item.type}`);
-      lines.push(`- **Significance**: ${item.significance}`);
-      lines.push("");
-    });
+    lines.push("## Removed Items", "");
+    diff.removed.forEach((item) => pushItemSection(lines, item));
   }
 
   // Modified items
   if (diff.modified.length > 0) {
-    lines.push("## Modified Items");
-    lines.push("");
+    lines.push("## Modified Items", "");
     diff.modified.forEach((item) => {
-      lines.push(`### ${item.title}`);
-      lines.push("");
-      lines.push(`- **ID**: ${item.itemId}`);
-      lines.push(`- **Type**: ${item.type}`);
-      lines.push(`- **Significance**: ${item.significance}`);
+      pushItemSection(lines, item);
 
       if (options.includeFieldChanges && item.fieldChanges) {
-        lines.push("");
-        lines.push("#### Field Changes");
-        lines.push("");
-        item.fieldChanges.forEach((change) => {
-          lines.push(`**${change.field}** (${change.changeType})`);
-          lines.push(`- Old: \`${formatValue(change.oldValue)}\``);
-          lines.push(`- New: \`${formatValue(change.newValue)}\``);
-          lines.push("");
-        });
+        lines.push("", "#### Field Changes", "");
+        item.fieldChanges.forEach((change) => pushFieldChange(lines, change));
       }
     });
   }
