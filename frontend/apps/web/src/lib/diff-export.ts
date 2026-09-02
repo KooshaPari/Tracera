@@ -80,70 +80,22 @@ function exportAsCSV(
 
   // Added items
   diff.added.forEach((item) => {
-    rows.push(
-      [
-        escapeCSVField(item.itemId),
-        escapeCSVField(item.title),
-        escapeCSVField(item.type),
-        "added",
-        item.significance,
-        "0",
-        "",
-        "",
-        "",
-      ].join(","),
-    );
+    rows.push(buildCSVRow(item, "added", "0"));
   });
 
   // Removed items
   diff.removed.forEach((item) => {
-    rows.push(
-      [
-        escapeCSVField(item.itemId),
-        escapeCSVField(item.title),
-        escapeCSVField(item.type),
-        "removed",
-        item.significance,
-        "0",
-        "",
-        "",
-        "",
-      ].join(","),
-    );
+    rows.push(buildCSVRow(item, "removed", "0"));
   });
 
   // Modified items
   diff.modified.forEach((item) => {
-    rows.push(
-      [
-        escapeCSVField(item.itemId),
-        escapeCSVField(item.title),
-        escapeCSVField(item.type),
-        "modified",
-        item.significance,
-        String(item.fieldChanges?.length || 0),
-        "",
-        "",
-        "",
-      ].join(","),
-    );
+    rows.push(buildCSVRow(item, "modified", String(item.fieldChanges?.length || 0)));
 
     // Add field changes if requested
     if (options.includeFieldChanges && item.fieldChanges) {
       item.fieldChanges.forEach((change) => {
-        rows.push(
-          [
-            escapeCSVField(item.itemId),
-            escapeCSVField(item.title),
-            escapeCSVField(item.type),
-            "field_change",
-            item.significance,
-            "",
-            escapeCSVField(change.field),
-            escapeCSVField(change.oldValue),
-            escapeCSVField(change.newValue),
-          ].join(","),
-        );
+        rows.push(buildCSVFieldChangeRow(item, change));
       });
     }
   });
@@ -521,6 +473,35 @@ function exportAsHTML(
     mimeType: "text/html",
     content: html,
   };
+}
+
+// CSV row builders — extracted to eliminate code duplication (S7778)
+function buildCSVRow(item: DiffItem, changeType: string, fieldCount: string): string {
+  return [
+    escapeCSVField(item.itemId),
+    escapeCSVField(item.title),
+    escapeCSVField(item.type),
+    changeType,
+    item.significance,
+    fieldCount,
+    "",
+    "",
+    "",
+  ].join(",");
+}
+
+function buildCSVFieldChangeRow(item: DiffItem, change: { field: string; oldValue: unknown; newValue: unknown }): string {
+  return [
+    escapeCSVField(item.itemId),
+    escapeCSVField(item.title),
+    escapeCSVField(item.type),
+    "field_change",
+    item.significance,
+    "",
+    escapeCSVField(change.field),
+    escapeCSVField(change.oldValue),
+    escapeCSVField(change.newValue),
+  ].join(",");
 }
 
 // Helper functions
