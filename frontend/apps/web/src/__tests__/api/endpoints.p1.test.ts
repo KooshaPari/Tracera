@@ -733,35 +733,15 @@ describe("API Endpoints - P1 Coverage", () => {
       total: 1,
     };
 
-    describe("search", () => {
-      it("should search via POST", async () => {
+    describe.each([
+      ["search (POST)", "search"],
+      ["search with filters (POST)", "search"],
+      ["searchGet (GET)", "searchGet"],
+    ] as const)("%s", (_label, method) => {
+      it(`should call api.search.${method} and return a result`, async () => {
         mockFetch.mockResolvedValueOnce(createMockResponse(mockSearchResult));
 
-        const result = await api.search.search({
-          q: "test",
-        });
-
-        expect(result).toBeDefined();
-      });
-
-      it("should search with filters", async () => {
-        mockFetch.mockResolvedValueOnce(createMockResponse(mockSearchResult));
-
-        const result = await api.search.search({
-          q: "test",
-        });
-
-        expect(result).toBeDefined();
-      });
-    });
-
-    describe("searchGet", () => {
-      it("should search via GET", async () => {
-        mockFetch.mockResolvedValueOnce(createMockResponse(mockSearchResult));
-
-        const result = await api.search.searchGet({
-          q: "test",
-        });
+        const result = await api.search[method]({ q: "test" });
 
         expect(result).toBeDefined();
       });
