@@ -281,10 +281,8 @@ describe.skip("VersionDiff Component (legacy fixture contract)", () => {
       const modifiedTab = screen.getByRole("button", { name: /modified/ });
       fireEvent.click(modifiedTab);
 
-      await waitFor(() => {
-        const item = screen.getByText("Core API Specification");
-        fireEvent.click(item.closest("div") ?? item);
-      });
+      const item = screen.getByText("Core API Specification");
+      fireEvent.click(item.closest("div") ?? item);
 
       await waitFor(() => {
         expect(screen.getByText("Old Value")).toBeInTheDocument();
