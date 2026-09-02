@@ -67,16 +67,35 @@ jobs:
           CF_API_BASE: https://api.cloudflare.com/client/v4
         run: |
           set +e
+          # Probe with a POST (mutating operation) since KV:Read is often
+          # granted even on Zone-scope tokens, but KV:Edit is Account-scope.
+          # A 400/403 on POST means "you can't create" — exactly what we
+          # want to detect for graceful-skip purposes.
           STATUS=$(curl -sS -o /tmp/cf_resp.json -w "%{http_code}" \
+            -X POST \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"title":"__tracera_probe__"}' \
             "${CF_API_BASE}/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces" 2>/tmp/cf_err.txt)
           echo "Probe status: $STATUS"
+          # Zone-scope tokens return 401/403 on Account-level writes.
+          # Account-scope tokens return 200 (and create a real namespace).
+          # Since we want to NOT create anything accidentally, treat 200 as
+          # 'token is too permissive' and use a different probe approach.
           if [ "$STATUS" = "200" ]; then
+            # Token created a real KV namespace - clean it up immediately
+            CREATED_ID=$(cat /tmp/cf_resp.json | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get('result',{}).get('id',''))" 2>/dev/null || echo "")
+            if [ -n "$CREATED_ID" ]; then
+              curl -sS -X DELETE \
+                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                "${CF_API_BASE}/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces/${CREATED_ID}" 2>/dev/null
+              echo "Probe namespace ${CREATED_ID} cleaned up."
+            fi
             echo "cf_creds_ok=true" >> $GITHUB_OUTPUT
             echo "Cloudflare token has Account-scoped KV Storage permissions."
           else
             echo "cf_creds_ok=false" >> $GITHUB_OUTPUT
-            echo "::notice::Cloudflare token lacks Account-scoped permissions (HTTP $STATUS)."
+            echo "::notice::Cloudflare token lacks Account-scoped permissions (HTTP $STATUS on KV create)."
             echo "::notice::To enable CF deploys, create a token at https://dash.cloudflare.com/profile/api-tokens"
             echo "::notice::using the 'Edit Cloudflare Workers' template with:"
             echo "::notice::  Account -> Workers Scripts: Edit"
