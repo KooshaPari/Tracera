@@ -56,10 +56,10 @@ jobs:
             -H "Authorization: Bearer $RENDER_API_KEY" \
             -H "Content-Type: application/json" \
             -d '{"clear_cache": false}')
-          
+
           HTTP_CODE=$(echo "$RESPONSE" | tail -1)
           BODY=$(echo "$RESPONSE" | head -n -1)
-          
+
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             DEPLOY_ID=$(echo "$BODY" | jq -r '.id // "unknown"')
             echo "Deploy triggered: $DEPLOY_ID"
@@ -97,7 +97,7 @@ jobs:
         run: |
           SERVICE_URL="https://${{ env.RENDER_SERVICE_ID }}.onrender.com"
           echo "Checking $SERVICE_URL/healthz"
-          
+
           for i in $(seq 1 10); do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL/healthz" 2>/dev/null)
             if [ "$STATUS" = "200" ]; then

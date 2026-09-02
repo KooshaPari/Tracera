@@ -79,13 +79,13 @@ jobs:
         run: |
           echo "=== Backend ==="
           curl -sf https://${{ vars.RENDER_SERVICE_ID || 'tracera-server' }}.onrender.com/healthz || echo "BACKEND: pending"
-          
+
           echo "=== Frontend ==="
           curl -sf -o /dev/null https://tracera-kappa.vercel.app || echo "FRONTEND: pending"
-          
+
           echo "=== Edge ==="
           curl -sf -o /dev/null https://tracera-edge.workers.dev/healthz || echo "EDGE: pending"
-          
+
           echo "=== All deployments triggered ==="
 
       - name: Summary
