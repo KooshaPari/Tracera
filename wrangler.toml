@@ -1,5 +1,11 @@
+# Cloudflare Workers configuration for Tracera Edge
+# NOTE: account_id is intentionally NOT here — it must be provided via the
+# CLOUDFLARE_ACCOUNT_ID environment variable at deploy time.
+# Do not commit production account IDs or tokens to this file.
+# For local dev, set: CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN.
+
 name = "tracera-edge"
-main = "crates/tracera-edge/src/lib.rs"
+main = "crates/tracera-edge/build/index.js"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
@@ -7,23 +13,14 @@ compatibility_flags = ["nodejs_compat"]
 ENVIRONMENT = "production"
 TRACERA_API = "https://api.tracera.phenotype.studio"
 
-[build]
-# Prepend $HOME/.cargo/bin so the rustup cargo shim is used instead of any system-installed
-# cargo (e.g. Homebrew).  The shim reads rust-toolchain.toml and delegates to rustup's own
-# rustc/sysroot, which contains the wasm32-unknown-unknown target.
-command = "export PATH=\"$HOME/.cargo/bin:$PATH\" && cargo install -q worker-build && worker-build --release"
-
 [[kv_namespaces]]
 binding = "TRACERA_KV"
-# PROVISIONING REQUIRED before first deploy:
-#   Run:  wrangler kv namespace create tracera_cache
-#   Then: paste the returned "id" below in place of the PROVISION_REQUIRED token.
-#   For Workers preview/dev:
-#   Run:  wrangler kv namespace create tracera_cache --preview
-#   Then: paste the returned "id" as "preview_id" below.
-#   The helper script at scripts/provision-workers-kv.sh automates both steps.
-id = "8fc0f7553f42414b937c94f4e130ead8"
-preview_id = "5689e98368034100bd9d9e4d7f131eda"
+# Replace with your real KV namespace IDs allocated via:
+#   wrangler kv namespace create TRACERA_KV
+# DO NOT COMMIT the real IDs here if they are sensitive; the deploy workflow
+# injects them via secrets/environment.
+id = "placeholder-kv-id"
+preview_id = "placeholder-kv-preview-id"
 
 [[r2_buckets]]
 binding = "TRACERA_R2"
