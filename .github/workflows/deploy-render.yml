@@ -35,18 +35,16 @@ jobs:
           sudo apt-get install -y infisical
 
       - name: Pull Render credentials from Infisical
-        env:
-          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
-          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+        # Uses service token via INFISICAL_TOKEN (matching the proven Infisical Sync
+        # workflow pattern). For Universal Auth, set INFISICAL_CLIENT_ID +
+        # INFISICAL_CLIENT_SECRET and swap --token for --client-id/--client-secret.
         run: |
-          # Use Universal Auth (client_id + client_secret) instead of raw token
-          INFISICAL_TOKEN=$(infisical auth universal-auth \
-            --client-id "$INFISICAL_CLIENT_ID" \
-            --client-secret "$INFISICAL_CLIENT_SECRET" \
-            --plain)
-          export INFISICAL_TOKEN
-          RENDER_API_KEY=$(infisical secrets get RENDER_API_KEY --projectId "$INFISICAL_PROJECT_ID" --env prod --plain)
-          RENDER_SERVICE_ID=$(infisical secrets get RENDER_SERVICE_ID --projectId "$INFISICAL_PROJECT_ID" --env prod --plain)
+          RENDER_API_KEY=$(infisical secrets get RENDER_API_KEY \
+            --projectId "$INFISICAL_PROJECT_ID" --env prod \
+            --token "$INFISICAL_TOKEN" --plain)
+          RENDER_SERVICE_ID=$(infisical secrets get RENDER_SERVICE_ID \
+            --projectId "$INFISICAL_PROJECT_ID" --env prod \
+            --token "$INFISICAL_TOKEN" --plain)
           echo "RENDER_API_KEY=$RENDER_API_KEY" >> $GITHUB_ENV
           echo "RENDER_SERVICE_ID=$RENDER_SERVICE_ID" >> $GITHUB_ENV
 

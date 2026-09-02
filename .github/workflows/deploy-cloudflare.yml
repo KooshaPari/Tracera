@@ -54,17 +54,43 @@ jobs:
           key: cf-worker-${{ runner.os }}-${{ hashFiles('crates/tracera-edge/Cargo.toml') }}
 
       - name: Resolve KV namespace (create if missing)
+        # First try the repo var (manually set after first create). If absent,
+        # list existing namespaces and pick the one named TRACERA_KV; only create
+        # if none exists. This avoids wrangler's interactive prompts and works
+        # with the free Workers tier.
+        env:
+          CF_API_BASE: https://api.cloudflare.com/client/v4
         run: |
-          # Try to read existing namespace binding from vars; otherwise create it.
-          if [ -z "${{ vars.CF_KV_ID }}" ]; then
-            OUT=$(npx wrangler kv namespace create TRACERA_KV 2>/dev/null || true)
-            KV_ID=$(echo "$OUT" | grep -oE '"id": "[a-z0-9]+"' | head -1 | cut -d'"' -f4)
-            echo "Created KV namespace id=$KV_ID"
-            echo "KV_ID=$KV_ID" >> $GITHUB_ENV
-          else
-            echo "Using existing KV id from repo vars"
+          set -e
+          if [ -n "${{ vars.CF_KV_ID }}" ]; then
+            echo "Using CF_KV_ID from repo vars"
             echo "KV_ID=${{ vars.CF_KV_ID }}" >> $GITHUB_ENV
+            exit 0
           fi
+          # List existing KV namespaces via REST API
+          EXISTING=$(curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "$CF_API_BASE/accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces" \
+            | python3 -c "import json,sys;d=json.load(sys.stdin);print(next((n['id'] for n in d.get('result',[]) if n.get('title')=='TRACERA_KV'),''))" 2>/dev/null || echo "")
+          if [ -n "$EXISTING" ]; then
+            echo "Found existing TRACERA_KV namespace id=$EXISTING"
+            echo "KV_ID=$EXISTING" >> $GITHUB_ENV
+            echo "Set CF_KV_ID=$EXISTING as a repo var to skip future list calls."
+            exit 0
+          fi
+          # Create via REST API (non-interactive)
+          CREATED=$(curl -sf -X POST \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"title":"TRACERA_KV"}' \
+            "$CF_API_BASE/accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces" \
+            | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get('result',{}).get('id',''))" 2>/dev/null || echo "")
+          if [ -z "$CREATED" ]; then
+            echo "::error::Failed to resolve or create TRACERA_KV namespace"
+            exit 1
+          fi
+          echo "Created TRACERA_KV namespace id=$CREATED"
+          echo "Set CF_KV_ID=$CREATED as a repo var to skip future create calls."
+          echo "KV_ID=$CREATED" >> $GITHUB_ENV
 
       - name: Build WASM worker
         working-directory: crates/tracera-edge
