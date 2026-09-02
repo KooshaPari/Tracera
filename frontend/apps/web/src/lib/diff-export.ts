@@ -113,27 +113,28 @@ function exportAsCSV(
  * Push a single item section (title + ID/Type/Significance bullets) to lines.
  * Shared by Added/Removed/Modified item rendering.
  */
-function pushItemSection(lines: string[], item: DiffItem): void {
-  lines.push(`### ${item.title}`, "");
-  lines.push(
+function buildItemSectionLines(item: DiffItem): string[] {
+  return [
+    `### ${item.title}`,
+    "",
     `- **ID**: ${item.itemId}`,
     `- **Type**: ${item.type}`,
     `- **Significance**: ${item.significance}`,
     "",
-  );
+  ];
 }
 
 /**
  * Push a single field-change block to lines.
  * Used when includeFieldChanges is enabled on Modified items.
  */
-function pushFieldChange(lines: string[], change: { field: string; changeType: string; oldValue: unknown; newValue: unknown }): void {
-  lines.push(
+function buildFieldChangeLines(change: { field: string; changeType: string; oldValue: unknown; newValue: unknown }): string[] {
+  return [
     `**${change.field}** (${change.changeType})`,
     `- Old: \`${formatValue(change.oldValue)}\``,
     `- New: \`${formatValue(change.newValue)}\``,
     "",
-  );
+  ];
 }
 
 /**
@@ -169,24 +170,24 @@ function exportAsMarkdown(
   // Added items
   if (diff.added.length > 0) {
     lines.push("## Added Items", "");
-    diff.added.forEach((item) => pushItemSection(lines, item));
+    diff.added.forEach((item) => lines.push(...buildItemSectionLines(item)));
   }
 
   // Removed items
   if (diff.removed.length > 0) {
     lines.push("## Removed Items", "");
-    diff.removed.forEach((item) => pushItemSection(lines, item));
+    diff.removed.forEach((item) => lines.push(...buildItemSectionLines(item)));
   }
 
   // Modified items
   if (diff.modified.length > 0) {
     lines.push("## Modified Items", "");
     diff.modified.forEach((item) => {
-      pushItemSection(lines, item);
+      lines.push(...buildItemSectionLines(item));
 
       if (options.includeFieldChanges && item.fieldChanges) {
         lines.push("", "#### Field Changes", "");
-        item.fieldChanges.forEach((change) => pushFieldChange(lines, change));
+        item.fieldChanges.forEach((change) => lines.push(...buildFieldChangeLines(change)));
       }
     });
   }
