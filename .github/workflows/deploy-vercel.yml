@@ -38,10 +38,8 @@ jobs:
         run: |
           set +e
           echo "::notice title='Vercel deploy skipped'::VERCEL_TOKEN, VERCEL_ORG_ID, or VERCEL_PROJECT_ID is missing. Add them in https://github.com/KooshaPari/Tracera/settings/secrets/actions"
-          echo "Get a token at https://vercel.com/account/tokens, then run:"
-          echo "  gh secret set VERCEL_TOKEN --body '<token>' --repo KooshaPari/Tracera"
-          echo "  gh variable set VERCEL_ORG_ID --body '<org_id>' --repo KooshaPari/Tracera"
-          echo "  gh variable set VERCEL_PROJECT_ID --body '<project_id>' --repo KooshaPari/Tracera"
+          echo "Get a token at https://vercel.com/account/tokens"
+          echo "Then use the GitHub CLI to set VERCEL_TOKEN (secret) plus VERCEL_ORG_ID and VERCEL_PROJECT_ID (variables)."
           echo "After adding secrets, push any commit to main to trigger the deploy."
           exit 0
 
