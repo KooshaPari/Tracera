@@ -61,43 +61,42 @@ jobs:
           key: cf-worker-${{ runner.os }}-${{ hashFiles('crates/tracera-edge/Cargo.toml') }}
 
       - name: Pre-flight - verify token has Account-scoped permissions
+      - name: Verify CF token can deploy (PUT to workers scripts endpoint)
         id: cf_scope_check
         continue-on-error: true
         env:
           CF_API_BASE: https://api.cloudflare.com/client/v4
         run: |
           set +e
-          # Probe with a POST (mutating operation) since KV:Read is often
-          # granted even on Zone-scope tokens, but KV:Edit is Account-scope.
-          # A 400/403 on POST means "you can't create" — exactly what we
-          # want to detect for graceful-skip purposes.
-          STATUS=$(curl -sS -o /tmp/cf_resp.json -w "%{http_code}" \
-            -X POST \
+          # Test the actual deploy path: PUT to the workers scripts endpoint.
+          # PUT requires Account.Workers Scripts:Edit (the permission we need).
+          # Zone-scoped tokens return 403/401; Account-scoped tokens return 400
+          # (bad metadata since we send a fake script). 400 = permission OK, just
+          # bad payload. 200/202 = actually deployed. 401/403 = no permission.
+          HTTP_CODE=$(curl -sS -o /tmp/cf_probe.json -w "%{http_code}" \
+            -X PUT \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"title":"__tracera_probe__"}' \
-            "${CF_API_BASE}/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces" 2>/tmp/cf_err.txt)
-          echo "Probe status: $STATUS"
-          # Zone-scope tokens return 401/403 on Account-level writes.
-          # Account-scope tokens return 200 (and create a real namespace).
-          # Since we want to NOT create anything accidentally, treat 200 as
-          # 'token is too permissive' and use a different probe approach.
-          if [ "$STATUS" = "200" ]; then
-            # Token created a real KV namespace - clean it up immediately
-            CREATED_ID=$(cat /tmp/cf_resp.json | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get('result',{}).get('id',''))" 2>/dev/null || echo "")
-            if [ -n "$CREATED_ID" ]; then
-              curl -sS -X DELETE \
-                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-                "${CF_API_BASE}/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces/${CREATED_ID}" 2>/dev/null
-              echo "Probe namespace ${CREATED_ID} cleaned up."
-            fi
+            -H "Content-Type: application/javascript" \
+            --data "addEventListener('fetch',e=>e.respondWith(new Response('',{status:200})))" \
+            "$CF_API_BASE/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/__tracera_probe__")
+          echo "Probe status: $HTTP_CODE"
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "202" ]; then
             echo "cf_creds_ok=true" >> $GITHUB_OUTPUT
-            echo "Cloudflare token has Account-scoped KV Storage permissions."
+            echo "Cloudflare token can deploy workers (HTTP $HTTP_CODE)."
+            # Clean up the probe script
+            curl -sS -X DELETE \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              "$CF_API_BASE/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/__tracera_probe__" 2>/dev/null
+          elif [ "$HTTP_CODE" = "400" ]; then
+            # 400 = token has permission, but request body was rejected.
+            # This is still a valid Account-scoped token.
+            echo "cf_creds_ok=true" >> $GITHUB_OUTPUT
+            echo "Cloudflare token has Account-scope (400 = permission OK, bad probe payload)."
           else
             echo "cf_creds_ok=false" >> $GITHUB_OUTPUT
-            echo "::notice::Cloudflare token lacks Account-scoped permissions (HTTP $STATUS on KV create)."
+            echo "::notice::Cloudflare token lacks Account.Workers Scripts:Edit (HTTP $HTTP_CODE on worker PUT)."
             echo "::notice::To enable CF deploys, create a token at https://dash.cloudflare.com/profile/api-tokens"
-            echo "::notice::using the 'Edit Cloudflare Workers' template with:"
+            echo "::notice::using the 'Edit Cloudflare Workers' template (Account scope):"
             echo "::notice::  Account -> Workers Scripts: Edit"
             echo "::notice::  Account -> Workers KV Storage: Edit"
             echo "::notice::  Account -> Workers R2 Storage: Edit"
@@ -105,7 +104,6 @@ jobs:
             echo "::notice::Then set it as the CLOUDFLARE_API_TOKEN repo secret."
           fi
           exit 0
-
       - name: Resolve KV namespace (create if missing)
         if: steps.cf_scope_check.outputs.cf_creds_ok == 'true'
         # First try the repo var (manually set after first create). If absent,
@@ -158,6 +156,9 @@ jobs:
 
       - name: Deploy to Cloudflare
         if: steps.cf_scope_check.outputs.cf_creds_ok == 'true'
+        # No continue-on-error here: a real deploy failure must surface as a
+        # red CI run, not a silent skip. The pre-flight probe above is the
+        # only place that may exit gracefully on missing scope.
         run: |
           npx wrangler deploy \
             --config wrangler.deploy.toml \
