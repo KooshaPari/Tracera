@@ -8,6 +8,7 @@
 name: OpenSSF Scorecard
 
 on:
+  workflow_dispatch:
   branch_protection_rule:
   schedule:
     - cron: '25 4 * * 1'  # Weekly Monday 4:25 UTC
