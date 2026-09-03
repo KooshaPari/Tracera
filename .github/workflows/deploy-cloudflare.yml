@@ -60,7 +60,6 @@ jobs:
             crates/tracera-edge/target
           key: cf-worker-${{ runner.os }}-${{ hashFiles('crates/tracera-edge/Cargo.toml') }}
 
-      - name: Pre-flight - verify token has Account-scoped permissions
       - name: Verify CF token can deploy (PUT to workers scripts endpoint)
         id: cf_scope_check
         continue-on-error: true
