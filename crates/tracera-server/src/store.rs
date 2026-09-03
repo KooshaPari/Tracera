@@ -356,17 +356,15 @@ pub trait Store: Send + Sync {
 
     fn create_swee_node(
         &self,
-        id: String,
         node_type: String,
         label: String,
         metadata: Value,
         now: DateTime<Utc>,
-    ) -> BoxFuture<'_, StoreResult<()>>;
+    ) -> BoxFuture<'_, StoreResult<String>>;
 
     #[allow(clippy::too_many_arguments)]
     fn create_swee_edge(
         &self,
-        id: String,
         edge_type: String,
         source_id: String,
         target_id: String,
@@ -374,7 +372,7 @@ pub trait Store: Send + Sync {
         source: String,
         metadata: Value,
         now: DateTime<Utc>,
-    ) -> BoxFuture<'_, StoreResult<()>>;
+    ) -> BoxFuture<'_, StoreResult<String>>;
 
     fn list_swee_nodes(&self, node_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
     fn list_swee_edges(&self, edge_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>>;

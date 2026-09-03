@@ -677,18 +677,17 @@ impl Store for SqliteStore {
 
     fn create_swee_node(
         &self,
-        _id: String,
         node_type: String,
         label: String,
         metadata: Value,
         now: DateTime<Utc>,
-    ) -> BoxFuture<'_, StoreResult<()>> {
+    ) -> BoxFuture<'_, StoreResult<String>> {
         Box::pin(async move {
             let meta_str = serde_json::to_string(&metadata).unwrap_or_else(|_| "{}".to_string());
             let now_str = ts_to_str(now);
 
-            sqlx::query(
-                "INSERT OR IGNORE INTO swee_nodes (type, name, metadata, created_at, updated_at) \
+            let result = sqlx::query(
+                "INSERT INTO swee_nodes (type, name, metadata, created_at, updated_at) \
                  VALUES (?1, ?2, ?3, ?4, ?5)",
             )
             .bind(&node_type)
@@ -700,14 +699,13 @@ impl Store for SqliteStore {
             .await
             .map_err(StoreError::from)?;
 
-            Ok(())
+            Ok(result.last_insert_rowid().to_string())
         })
     }
 
     #[allow(clippy::too_many_arguments)]
     fn create_swee_edge(
         &self,
-        _id: String,
         edge_type: String,
         source_id: String,
         target_id: String,
@@ -715,17 +713,17 @@ impl Store for SqliteStore {
         _source: String,
         metadata: Value,
         now: DateTime<Utc>,
-    ) -> BoxFuture<'_, StoreResult<()>> {
+    ) -> BoxFuture<'_, StoreResult<String>> {
         Box::pin(async move {
             let meta_str = serde_json::to_string(&metadata).unwrap_or_else(|_| "{}".to_string());
             let now_str = ts_to_str(now);
 
-            sqlx::query(
-                "INSERT OR IGNORE INTO swee_edges (source_id, target_id, type, weight, metadata, created_at) \
+            let result = sqlx::query(
+                "INSERT INTO swee_edges (source_id, target_id, type, weight, metadata, created_at) \
                  VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
             )
-            .bind(&source_id)
-            .bind(&target_id)
+            .bind(source_id.parse::<i64>().unwrap_or(0))
+            .bind(target_id.parse::<i64>().unwrap_or(0))
             .bind(&edge_type)
             .bind(confidence)
             .bind(&meta_str)
@@ -734,7 +732,7 @@ impl Store for SqliteStore {
             .await
             .map_err(StoreError::from)?;
 
-            Ok(())
+            Ok(result.last_insert_rowid().to_string())
         })
     }
 

@@ -2201,11 +2201,9 @@ async fn create_swee_node_handler(
         return Err(bad_request("invalid node_type"));
     }
     let now = Utc::now();
-    let id = format!("node-{}", Uuid::new_v4());
-    state
+    let id = state
         .store
         .create_swee_node(
-            id.clone(),
             payload.node_type,
             payload.label,
             payload.metadata,
@@ -2282,11 +2280,9 @@ async fn create_swee_edge_handler(
         return Err(bad_request("invalid edge_type"));
     }
     let now = Utc::now();
-    let id = format!("edge-{}", Uuid::new_v4());
-    state
+    let id = state
         .store
         .create_swee_edge(
-            id.clone(),
             payload.edge_type,
             payload.source_id,
             payload.target_id,
@@ -3977,6 +3973,35 @@ mod tests {
         .execute(&pool)
         .await
         .expect("create problems table");
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS swee_nodes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                type TEXT NOT NULL,
+                name TEXT NOT NULL,
+                metadata TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )",
+        )
+        .execute(&pool)
+        .await
+        .expect("create swee_nodes table");
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS swee_edges (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                source_id    INTEGER NOT NULL,
+                target_id    INTEGER NOT NULL,
+                type         TEXT    NOT NULL,
+                weight       REAL    NOT NULL DEFAULT 1.0,
+                metadata     TEXT    NOT NULL DEFAULT '{}',
+                created_at   TEXT    NOT NULL,
+                FOREIGN KEY (source_id) REFERENCES swee_nodes(id) ON DELETE CASCADE,
+                FOREIGN KEY (target_id) REFERENCES swee_nodes(id) ON DELETE CASCADE
+            )",
+        )
+        .execute(&pool)
+        .await
+        .expect("create swee_edges table");
 
         crate::sqlite_store::SqliteStore::new(pool)
     }
@@ -4550,5 +4575,299 @@ mod tests {
         assert!(links
             .iter()
             .all(|link| link.source_id == "artifact-1" || link.target_id == "artifact-1"));
+    }
+
+    // -----------------------------------------------------------------------
+    // SWEE Graph CRUD integration tests (HTTP + persistence)
+    // -----------------------------------------------------------------------
+
+    /// Helper: build a POST/GET request with CSRF + Origin headers so the
+    /// middleware passes. SWEE routes are state-mutating and require a
+    /// canonical Origin + issued x-csrf-token. Must be sync because
+    /// `Router::oneshot()` takes a `Request<B>` directly, not a Future.
+    fn swee_test_request(
+        method: &str,
+        uri: &str,
+        csrf: &str,
+        body: Option<&str>,
+    ) -> Request<axum::body::Body> {
+        let builder = Request::builder()
+            .method(method)
+            .uri(uri)
+            .header("origin", "http://127.0.0.1:18000")
+            .header("x-csrf-token", csrf);
+        match body {
+            Some(b) => builder
+                .header("content-type", "application/json")
+                .body(axum::body::Body::from(b.to_string()))
+                .expect("body request"),
+            None => builder
+                .body(axum::body::Body::empty())
+                .expect("empty request"),
+        }
+    }
+
+    #[tokio::test]
+    async fn swee_graph_full_crud_via_http_endpoints() {
+        use crate::store::Store as _;
+
+        let store = Arc::new(make_sqlite_store().await);
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store: store.clone(),
+        });
+
+        let csrf = issue_csrf_token().await;
+
+        // 1. POST /api/v1/graph/nodes — create requirement node
+        let resp_a = app
+            .clone()
+            .oneshot(swee_test_request(
+                "POST",
+                "/api/v1/graph/nodes",
+                &csrf,
+                Some(r#"{"node_type":"requirement","label":"REQ-001: user login"}"#),
+            ))
+            .await
+            .expect("node A response");
+        assert_eq!(resp_a.status(), StatusCode::CREATED);
+        let body_a = axum::body::to_bytes(resp_a.into_body(), 4096)
+            .await
+            .expect("node A body");
+        let id_a = serde_json::from_slice::<serde_json::Value>(&body_a)
+            .expect("node A json")["id"]
+            .as_str()
+            .expect("id field")
+            .to_string();
+        // id should be a numeric string (from SQLite AUTOINCREMENT)
+        let numeric_id_a: i64 = id_a.parse().expect("id is numeric");
+        assert!(numeric_id_a > 0);
+
+        // GET /api/v1/graph/nodes/{id} — fetch the created node by numeric id
+        let resp_a_get = app
+            .clone()
+            .oneshot(swee_test_request(
+                "GET",
+                &format!("/api/v1/graph/nodes/{id_a}"),
+                &csrf,
+                None,
+            ))
+            .await
+            .expect("node A GET response");
+        assert_eq!(resp_a_get.status(), StatusCode::OK);
+        let body_a_get = axum::body::to_bytes(resp_a_get.into_body(), 4096)
+            .await
+            .expect("node A GET body");
+        let node_a: serde_json::Value =
+            serde_json::from_slice(&body_a_get).expect("node A GET json");
+        assert_eq!(node_a["node_type"], "requirement");
+        assert_eq!(node_a["id"].as_str().unwrap().parse::<i64>().unwrap(), numeric_id_a);
+        assert!(node_a["created_at"].is_string());
+
+        // 2. POST /api/v1/graph/nodes — create source_file node
+        let resp_b = app
+            .clone()
+            .oneshot(swee_test_request(
+                "POST",
+                "/api/v1/graph/nodes",
+                &csrf,
+                Some(r#"{"node_type":"source_file","label":"auth.rs"}"#),
+            ))
+            .await
+            .expect("node B response");
+        assert_eq!(resp_b.status(), StatusCode::CREATED);
+        let body_b = axum::body::to_bytes(resp_b.into_body(), 4096)
+            .await
+            .expect("node B body");
+        let node_b: serde_json::Value =
+            serde_json::from_slice(&body_b).expect("node B json");
+        let id_b = node_b["id"].as_str().expect("id field").to_string();
+        assert_ne!(id_a, id_b);
+
+        // 3. POST /api/v1/graph/edges — create implements edge
+        let resp_e = app
+            .clone()
+            .oneshot(swee_test_request(
+                "POST",
+                "/api/v1/graph/edges",
+                &csrf,
+                Some(&format!(
+                    r#"{{"edge_type":"implements","source_id":"{id_a}","target_id":"{id_b}","confidence":0.95}}"#,
+                )),
+            ))
+            .await
+            .expect("edge response");
+        assert_eq!(resp_e.status(), StatusCode::CREATED);
+
+        // 4. GET /api/v1/graph/nodes — list all nodes
+        let resp_list = app
+            .clone()
+            .oneshot(swee_test_request("GET", "/api/v1/graph/nodes", &csrf, None))
+            .await
+            .expect("list response");
+        assert_eq!(resp_list.status(), StatusCode::OK);
+        let body_list = axum::body::to_bytes(resp_list.into_body(), 16384)
+            .await
+            .expect("list body");
+        let list: serde_json::Value =
+            serde_json::from_slice(&body_list).expect("list json");
+        let nodes = list["items"].as_array().expect("items is array");
+        assert!(
+            nodes.iter().any(|n| n["id"].as_str().unwrap_or("").parse::<i64>().ok() == Some(numeric_id_a) && n["label"] == "REQ-001: user login"),
+            "node A must appear in list: {nodes:?}",
+        );
+        assert!(
+            nodes
+                .iter()
+                .any(|n| n["node_type"] == "source_file"),
+            "node B must appear in list: {nodes:?}",
+        );
+
+        // 5. GET /api/v1/graph/nodes/{id} — fetch single node
+        let resp_one = app
+            .clone()
+            .oneshot(swee_test_request(
+                "GET",
+                &format!("/api/v1/graph/nodes/{id_a}"),
+                &csrf,
+                None,
+            ))
+            .await
+            .expect("single response");
+        assert_eq!(resp_one.status(), StatusCode::OK);
+        let body_one = axum::body::to_bytes(resp_one.into_body(), 4096)
+            .await
+            .expect("single body");
+        let one: serde_json::Value = serde_json::from_slice(&body_one).expect("single json");
+        assert_eq!(one["id"], id_a);
+        assert_eq!(one["node_type"], "requirement");
+
+        // 6. GET /api/v1/graph/nodes?node_type=requirement — filtered list
+        let resp_filtered = app
+            .clone()
+            .oneshot(swee_test_request(
+                "GET",
+                "/api/v1/graph/nodes?node_type=requirement",
+                &csrf,
+                None,
+            ))
+            .await
+            .expect("filtered response");
+        assert_eq!(resp_filtered.status(), StatusCode::OK);
+        let body_filtered = axum::body::to_bytes(resp_filtered.into_body(), 16384)
+            .await
+            .expect("filtered body");
+        let filtered: serde_json::Value =
+            serde_json::from_slice(&body_filtered).expect("filtered json");
+        let filtered_nodes = filtered["items"].as_array().expect("items is array");
+        assert!(
+            filtered_nodes.iter().all(|n| n["node_type"] == "requirement"),
+            "all filtered nodes must have type=requirement: {filtered_nodes:?}",
+        );
+        assert!(
+            filtered_nodes
+                .iter()
+                .any(|n| n["id"].as_str().unwrap_or("").parse::<i64>().ok() == Some(numeric_id_a)),
+            "REQ-001 must appear in filtered list",
+        );
+        assert!(
+            filtered_nodes
+                .iter()
+                .all(|n| n["node_type"] != "source_file"),
+            "auth.rs (source_file) must not appear in filtered list",
+        );
+
+        // 7. GET /api/v1/graph/neighbors/{id}?direction=forward — outgoing edges
+        let resp_nb = app
+            .clone()
+            .oneshot(swee_test_request(
+                "GET",
+                &format!("/api/v1/graph/neighbors/{id_a}?direction=forward"),
+                &csrf,
+                None,
+            ))
+            .await
+            .expect("neighbors response");
+        assert_eq!(resp_nb.status(), StatusCode::OK);
+        let body_nb = axum::body::to_bytes(resp_nb.into_body(), 16384)
+            .await
+            .expect("neighbors body");
+        let nb: serde_json::Value = serde_json::from_slice(&body_nb).expect("neighbors json");
+        let edges = nb["items"].as_array().expect("items is array");
+        assert_eq!(edges.len(), 1, "expected 1 outgoing edge from REQ-001");
+        assert_eq!(edges[0]["edge_type"], "implements");
+        // source_id/target_id in the response are stored as the original
+        // payload strings (whatever the caller passed); the DB stores them
+        // as INTEGER. We only assert edge_type here because the wire format
+        // echoes the input ids.
+
+        // 8. Verify persistence: store has the row even after handler returns
+        let persisted = store
+            .get_swee_node(id_a.clone())
+            .await
+            .expect("persist get")
+            .expect("node persisted");
+        assert_eq!(persisted["id"], id_a);
+        assert_eq!(persisted["node_type"], "requirement");
+    }
+
+    #[tokio::test]
+    async fn swee_graph_rejects_malformed_node_payload() {
+        let store = Arc::new(make_sqlite_store().await);
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store,
+        });
+
+        let csrf = issue_csrf_token().await;
+
+        // Missing node_type field
+        let resp = app
+            .oneshot(swee_test_request(
+                "POST",
+                "/api/v1/graph/nodes",
+                &csrf,
+                Some(r#"{"label":"oops"}"#),
+            ))
+            .await
+            .expect("malformed response");
+        assert!(
+            resp.status() == StatusCode::BAD_REQUEST || resp.status() == StatusCode::UNPROCESSABLE_ENTITY,
+            "missing node_type must 400 or 422, got {}",
+            resp.status(),
+        );
+    }
+
+    #[tokio::test]
+    async fn swee_graph_get_missing_node_returns_not_found_shape() {
+        // Missing-node response shape (None) must not panic; either 404 or 200
+        // with null body is acceptable per spec.
+        let store = Arc::new(make_sqlite_store().await);
+        let app = build_router(AppState {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            backend: "sqlite",
+            started_at: Instant::now(),
+            store,
+        });
+
+        let csrf = issue_csrf_token().await;
+        let resp = app
+            .oneshot(swee_test_request(
+                "GET",
+                "/api/v1/graph/nodes/does-not-exist",
+                &csrf,
+                None,
+            ))
+            .await
+            .expect("missing response");
+        assert!(
+            resp.status() == StatusCode::OK || resp.status() == StatusCode::NOT_FOUND,
+            "missing node must return 200 (with null) or 404, got {}",
+            resp.status(),
+        );
     }
 }

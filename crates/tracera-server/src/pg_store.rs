@@ -615,35 +615,33 @@ impl Store for PgStore {
 
     fn create_swee_node(
         &self,
-        _id: String,
         node_type: String,
         label: String,
         metadata: Value,
         now: DateTime<Utc>,
-    ) -> BoxFuture<'_, StoreResult<()>> {
+    ) -> BoxFuture<'_, StoreResult<String>> {
         Box::pin(async move {
-            sqlx::query(
+            let row: (i64,) = sqlx::query_as(
                 "INSERT INTO swee_nodes (type, name, metadata, created_at, updated_at) \
                  VALUES ($1, $2, $3::jsonb, $4, $5) \
-                 ON CONFLICT DO NOTHING",
+                 RETURNING id",
             )
             .bind(&node_type)
             .bind(&label)
             .bind(&metadata)
             .bind(now)
             .bind(now)
-            .execute(&self.pool)
+            .fetch_one(&self.pool)
             .await
             .map_err(StoreError::from)?;
 
-            Ok(())
+            Ok(row.0.to_string())
         })
     }
 
     #[allow(clippy::too_many_arguments)]
     fn create_swee_edge(
         &self,
-        _id: String,
         edge_type: String,
         source_id: String,
         target_id: String,
@@ -651,15 +649,15 @@ impl Store for PgStore {
         _source: String,
         metadata: Value,
         now: DateTime<Utc>,
-    ) -> BoxFuture<'_, StoreResult<()>> {
+    ) -> BoxFuture<'_, StoreResult<String>> {
         Box::pin(async move {
             let src_id: i64 = source_id.parse().unwrap_or(0);
             let tgt_id: i64 = target_id.parse().unwrap_or(0);
 
-            sqlx::query(
+            let row: (i64,) = sqlx::query_as(
                 "INSERT INTO swee_edges (source_id, target_id, type, weight, metadata, created_at) \
                  VALUES ($1, $2, $3, $4, $5::jsonb, $6) \
-                 ON CONFLICT DO NOTHING",
+                 RETURNING id",
             )
             .bind(src_id)
             .bind(tgt_id)
@@ -667,11 +665,11 @@ impl Store for PgStore {
             .bind(confidence)
             .bind(&metadata)
             .bind(now)
-            .execute(&self.pool)
+            .fetch_one(&self.pool)
             .await
             .map_err(StoreError::from)?;
 
-            Ok(())
+            Ok(row.0.to_string())
         })
     }
 
