@@ -1,0 +1,32 @@
+# Minimal Dockerfile for tracera-server only (frontend is deployed separately on Vercel).
+# Optimized for Render's free/starter tier (512 MB RAM) — no parallel frontend build.
+FROM rust:1.94-bookworm AS build
+
+WORKDIR /workspace
+COPY Cargo.toml Cargo.lock ./
+COPY crates ./crates
+
+# Use only 1 job to fit in Render's 512 MB limit. Release build with stripped debug.
+RUN CARGO_BUILD_JOBS=1 cargo build --locked --release -p tracera-server \
+    && strip /workspace/target/release/tracera-server
+
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates wget \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /workspace/target/release/tracera-server /usr/local/bin/tracera-server
+
+ENV TRACERA_BIND_ADDR=0.0.0.0:8080 \
+    TRACERA_FRONTEND_DIST=/opt/tracera/frontend/dist \
+    RUST_LOG=info
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=10s --timeout=3s --start-period=30s --retries=6 \
+    CMD wget -q -O /dev/null http://127.0.0.1:8080/healthz || exit 1
+
+# non-root
+USER 65532:65532
+ENTRYPOINT ["/usr/local/bin/tracera-server"]
