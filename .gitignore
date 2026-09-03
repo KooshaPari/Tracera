@@ -46,3 +46,4 @@ frontend/packages/**/build/
 
 .vercel
 .env*.local
+.vault.local.env
