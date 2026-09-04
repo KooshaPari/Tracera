@@ -1,0 +1,49 @@
+[package]
+name = "tracera-graphql"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "GraphQL gateway mirroring the Tracera REST surface, with subscription support for graph events"
+
+[lib]
+name = "tracera_graphql"
+path = "src/lib.rs"
+
+[[bin]]
+name = "graphql-server"
+path = "src/bin/graphql-server.rs"
+
+[dependencies]
+# Core GraphQL engine
+async-graphql = { version = "7", features = ["chrono", "uuid", "tracing"] }
+# Axum integration for the HTTP/WS handler
+async-graphql-axum = { version = "7" }
+
+# Async runtime
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal", "sync", "time"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+futures-util = "0.3"
+
+# Serialisation / dates
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+
+# Observability
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# HTTP server stack — mirrors the REST surface headers / middleware shape
+axum = { version = "0.7", features = ["macros"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "set-header", "limit"] }
+http = "1"
+
+# Errors
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "test-util"] }
+async-graphql = { version = "7", features = ["chrono", "uuid", "tracing", "dynamic_schema"] }

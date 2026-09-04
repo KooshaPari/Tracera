@@ -1,0 +1,40 @@
+[package]
+name = "tracera-ml"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Tracera ML/RAG crate — embeddings (mock + ONNX), Qdrant + pgvector wrappers, and retrieval-augmented generation pipeline."
+authors.workspace = true
+
+[features]
+# Default feature set keeps the crate pure-Rust so it builds on any platform
+# without native model dependencies. Enable `onnx` to pull in `ort` for real
+# ONNX Runtime inference in production deployments.
+default = []
+onnx = ["dep:ort"]
+
+[dependencies]
+# Async traits + HTTP client (used by the Qdrant wrapper and the embed-worker).
+async-trait = "0.1"
+futures = "0.3"
+# Pulled in only when the `onnx` feature is enabled. Keeps `cargo build` cheap
+# for tests / consumers that don't need real model inference.
+ort = { version = "=2.0.0-rc.9", optional = true }
+# Hashing-based deterministic embedder has no math crate of its own — we rely on
+# sha2 + the standard library.
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls", "rustls-native-certs"] }
+# Postgres + pgvector support lives in `pgvector.rs`; we use the runtime query
+# API (no `query!`/`query_as!` macros) to avoid the offline-data requirement.
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "postgres", "macros", "uuid"] }
+thiserror = { workspace = true }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-util", "sync", "time"] }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-util"] }

@@ -1,0 +1,48 @@
+[package]
+name = "tracera-mcp"
+version = "0.1.0"
+edition = "2021"
+description = "Tracera MCP (Model Context Protocol) server over stdio — exposes SWEE graph read/write/propose tools backed by the tracera-server Store trait"
+repository = "https://github.com/KooshhaPari/Tracera"
+license = "MIT"
+readme = "README.md"
+
+[lib]
+name = "tracera_mcp"
+path = "src/lib.rs"
+
+[[bin]]
+name = "tracera-mcp"
+path = "src/bin/mcp-server.rs"
+
+[dependencies]
+# Workspace-wide crates
+chrono = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+
+# Async runtime
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "io-util", "sync"] }
+
+# Official Rust MCP SDK (modelcontextprotocol/rust-sdk).
+# We use:
+#  - `server`            — ServerHandler / tool routing
+#  - `macros`            — #[tool] / #[tool_handler] / #[tool_router] for ergonomic tool registration
+#  - `transport-io`      — stdio transport (tokio::io::stdin/stdout with Content-Length framing)
+#  - `schemars`          — JSON Schema generation for tool input schemas
+# We deliberately do NOT enable the `client` feature; this crate only exposes a server.
+rmcp = { version = "3.2", default-features = false, features = ["server", "macros", "transport-io", "schemars"] }
+
+# Error handling
+thiserror = { workspace = true }
+
+# Stable IDs for synthesized trace-link / change-request rows
+uuid = { workspace = true }
+
+# Direct delegation into the tracera-server Store trait
+tracera-server = { path = "../tracera-server" }
+
+[dev-dependencies]
+# Tests use tokio's runtime to drive the McpServer registry end-to-end.
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }

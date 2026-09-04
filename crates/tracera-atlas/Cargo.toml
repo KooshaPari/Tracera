@@ -1,0 +1,43 @@
+[package]
+name = "tracera-atlas"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Atlas ALM: WorkItem delegation, SDLC observability, agent-of-record, and CI bridge for Tracera"
+authors.workspace = true
+
+[features]
+default = []
+# `server` enables the optional axum-based HTTP service under src/bin/atlas-server.rs.
+# Keeping the HTTP wiring opt-in lets the library build on targets where axum is
+# unavailable (e.g. wasm32) without forcing a feature flag on downstream callers.
+server = ["dep:axum", "dep:tower-http", "dep:tokio", "dep:tracing-subscriber"]
+# `persist-sqlite` wires the engine to a SQLite-backed durable store via sqlx.
+persist-sqlite = ["dep:sqlx", "sqlx/sqlite", "sqlx/runtime-tokio", "sqlx/macros", "sqlx/uuid", "sqlx/chrono"]
+# `persist-postgres` wires the engine to a Postgres-backed durable store via sqlx.
+persist-postgres = ["dep:sqlx", "sqlx/postgres", "sqlx/runtime-tokio", "sqlx/macros", "sqlx/uuid", "sqlx/chrono"]
+
+[dependencies]
+# Core dependencies — pure-Rust, no I/O, suitable for any target.
+chrono = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+indexmap = { workspace = true }
+
+# Optional HTTP server (atlas-server binary)
+axum = { version = "0.8", optional = true }
+tower-http = { version = "0.7", optional = true }
+tokio = { version = "1", optional = true, features = ["macros", "rt-multi-thread", "net", "signal"] }
+tracing-subscriber = { workspace = true, optional = true }
+
+# Optional persistence; the actual driver is selected by the `persist-sqlite`
+# or `persist-postgres` feature so callers only pay for what they use.
+sqlx = { version = "0.9", optional = true, default-features = false }
+
+[dev-dependencies]
+chrono = { workspace = true, features = ["clock"] }

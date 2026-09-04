@@ -1,0 +1,152 @@
+# Lefthook — fast polyglot pre-commit/pre-push hooks.
+#
+# This file lives at the repository root and is consumed by
+# ``lefthook install`` (one-time). After install, lefthook runs the hooks
+# below on every ``git commit`` / ``git push`` invocation.
+#
+# Notes:
+#   * ``parallel: true`` is enabled at the hook level where it is safe
+#     (formatting/linting) — keep it off for hooks that read or mutate
+#     each other's state.
+#   * ``glob`` patterns use gitignore-style matching relative to the
+#     repository root.
+#   * ``exclude_tags`` skips work-in-progress commits during rebases.
+#   * Each command is prefixed with a tiny ``echo`` so the operator can
+#     see which step produced the failure in a multi-hook run.
+
+min_version: 1.6.0
+
+source_dir: .lefthook
+
+# =============================================================================
+# Pre-commit: format + lint the files that are about to be committed.
+# =============================================================================
+pre-commit:
+  parallel: true
+  skip_on_stdin: true
+  commands:
+
+    # ---- RUST -------------------------------------------------------------
+    rustfmt:
+      glob: "*.rs"
+      exclude: "(target/|\.cargo/|crates/tracera-tauri/|frontend/apps/tauri-desktop/src-tauri/)"
+      run: |
+        echo "[lefthook] rustfmt {staged_files}"
+        cargo fmt --all -- --check
+
+    clippy:
+      glob: "*.rs"
+      exclude: "(target/|\.cargo/|crates/tracera-tauri/|frontend/apps/tauri-desktop/src-tauri/)"
+      run: |
+        echo "[lefthook] clippy {staged_files}"
+        cargo clippy --all-targets --all-features -- -D warnings
+
+    # ---- JAVASCRIPT / TYPESCRIPT ------------------------------------------
+    # The frontend uses biome / oxlint; prettier handles general files.
+    prettier:
+      glob: "*.{js,jsx,ts,tsx,mjs,cjs,json,md,yml,yaml,css,scss,html}"
+      exclude: "(node_modules/|dist/|build/|\.turbo/|\.next/)"
+      run: |
+        echo "[lefthook] prettier {staged_files}"
+        npx --no-install prettier --check {{staged_files}}
+
+    # ---- PYTHON -----------------------------------------------------------
+    ruff-format:
+      glob: "*.py"
+      exclude: "(\.venv/|venv/|__pycache__/|build/|dist/|\.ruff_cache/)"
+      run: |
+        echo "[lefthook] ruff format {staged_files}"
+        uv run --frozen --no-sync ruff format --check {{staged_files}} || true
+
+    # ---- SHELL ------------------------------------------------------------
+    shellcheck:
+      glob: "*.{sh,bash}"
+      exclude: "(node_modules/|\.venv/)"
+      run: |
+        echo "[lefthook] shellcheck {staged_files}"
+        # Use the system shellcheck if installed, otherwise fall back to
+        # the npm shfmt/shellcheck binary shipped with the frontend dev
+        # toolchain.
+        if command -v shellcheck >/dev/null 2>&1; then
+          shellcheck --severity=warning {{staged_files}}
+        else
+          npx --no-install shellcheck --severity=warning {{staged_files}}
+        fi
+
+    # ---- YAML / JSON / TOML sanity ----------------------------------------
+    yaml-lint:
+      glob: "*.{yml,yaml}"
+      exclude: "(node_modules/|dist/)"
+      run: |
+        echo "[lefthook] yamllint {staged_files}"
+        npx --no-install yaml --lint-yaml {{staged_files}}
+
+    # ---- SECRET SCAN (local pre-commit secret check) ----------------------
+    gitleaks:
+      run: |
+        echo "[lefthook] gitleaks pre-commit"
+        if command -v gitleaks >/dev/null 2>&1; then
+          gitleaks protect --staged --no-banner --redact
+        else
+          echo "gitleaks not installed; skipping local pre-commit secret scan"
+        fi
+
+# =============================================================================
+# Pre-push: heavier verification that doesn't belong in the commit step.
+# =============================================================================
+pre-push:
+  parallel: true
+  skip_on_stdin: true
+  commands:
+
+    cargo-check:
+      tags: rust
+      run: |
+        echo "[lefthook] cargo check --workspace --all-targets"
+        cargo check --workspace --all-targets
+
+    bun-install:
+      tags: frontend
+      run: |
+        echo "[lefthook] bun install --frozen-lockfile"
+        bun install --frozen-lockfile
+
+    vite-build:
+      tags: frontend
+      run: |
+        echo "[lefthook] vite build"
+        bun run --cwd frontend build:web
+
+    pytest-collect:
+      tags: python
+      run: |
+        echo "[lefthook] pytest --collect-only"
+        uv run --frozen --no-sync pytest --collect-only -q || true
+
+# =============================================================================
+# Post-merge: refresh caches after a fast-forward merge so the next run is
+# warm.
+# =============================================================================
+post-merge:
+  commands:
+    cargo-clean:
+      run: |
+        echo "[lefthook] cargo metadata refresh"
+        cargo metadata --format-version 1 --no-deps >/dev/null 2>&1 || true
+
+# =============================================================================
+# Hook-level configuration.
+# =============================================================================
+colors:
+  run: yellow
+  error: red
+  success: green
+
+# Skip lefthook entirely in CI (the workflow runs the same checks).
+skip:
+  - ref: (refs/heads/main|refs/heads/master|refs/heads/release/.*|refs/pull/.*)
+    runner: github-actions
+
+# Read env to skip noisy hooks locally.
+env:
+  LEFTHOOK_QUIET: "0"

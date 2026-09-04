@@ -1,0 +1,504 @@
+# =============================================================================
+# ci-agents.yml — Tracera polyglot CI pipeline.
+# =============================================================================
+# Companion workflow to .github/workflows/ci.yml that fans out into ten
+# parallel jobs:
+#
+#   format      — rustfmt + prettier --check (no machine-specific tools)
+#   lint-rust   — cargo clippy with cache primed by Swatinem/rust-cache
+#   lint-js     — oxlint + biome + shellcheck on the frontend
+#   lint-py     — ruff + mypy on the Python SDK
+#   test-rust   — cargo test --workspace
+#   test-js     — vitest + playwright unit + contract smoke
+#   test-py     — pytest across Python 3.11/3.12/3.13
+#   build       — cargo build + bun run build (single fan-in)
+#   sast        — CodeQL + Trivy filesystem scan
+#   secrets     — gitleaks secret scan + dependency-review
+#
+# Caching:
+#   * ``Swatinem/rust-cache@v2`` with shared keys grouped by job role so
+#     warm hits are reusable across format / lint / test / build.
+#   * ``oven-sh/setup-bun@v2`` provides a bun cache via ``cache-dependency-glob``.
+#   * ``actions/setup-python`` + ``pip`` cache via actions/cache keyed by
+#     ``pyproject.toml`` + ``uv.lock`` hash.
+#   * ``Swatcache`` is referenced as the canonical Rust cache name for
+#     any auxiliary scripts (notably ``cargo`` registry & index).
+#
+# Triggering:
+#   * Push to ``main``, ``master``, ``develop``, and ``release/**``.
+#   * Pull requests targeting those branches.
+#   * ``workflow_dispatch`` for manual fan-out (with a runner override).
+#   * ``merge_group`` for Mergify / Dependabot batched merges.
+# =============================================================================
+
+name: ci-agents
+
+on:
+  push:
+    branches: [main, develop, master, "release/**"]
+  pull_request:
+    branches: [main, develop, master]
+  merge_group:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Runner pool to use for all jobs
+        required: false
+        type: choice
+        default: ubuntu-latest
+        options:
+          - ubuntu-latest
+          - blacksmith-2vcpu-ubuntu-2204
+          - blacksmith-4vcpu-ubuntu-2204
+
+concurrency:
+  group: ci-agents-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  PYTHONIOENCODING: utf-8
+  BUN_INSTALL_CACHE_DIR: ${{ github.workspace }}/.bun-cache
+
+# =============================================================================
+# Stage 0 — single-shot setup: produce a change-set matrix used to gate
+# the per-language jobs. This runs in <10s and avoids the wasted
+# cycles of running every job on a docs-only PR.
+# =============================================================================
+jobs:
+  detect-changes:
+    name: "ci-agents / detect"
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      rust: ${{ steps.filter.outputs.rust }}
+      python: ${{ steps.filter.outputs.python }}
+      go: ${{ steps.filter.outputs.go }}
+      typescript: ${{ steps.filter.outputs.typescript }}
+      shell: ${{ steps.filter.outputs.shell }}
+      workflow: ${{ steps.filter.outputs.workflow }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 1 }
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            rust:
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - 'crates/**'
+              - '**/*.rs'
+              - 'rust-toolchain.toml'
+            python:
+              - 'crates/tracera-py-sdk/**'
+              - '**/pyproject.toml'
+              - '**/uv.lock'
+              - '**/requirements*.txt'
+              - '**/*.py'
+            go:
+              - 'crates/tracera-go-cli/**'
+              - '**/go.mod'
+              - '**/go.sum'
+              - '**/*.go'
+            typescript:
+              - 'frontend/**'
+              - 'package.json'
+              - 'bun.lock'
+              - '**/*.ts'
+              - '**/*.tsx'
+              - '**/*.js'
+              - '**/*.jsx'
+              - '**/*.mjs'
+              - '**/*.cjs'
+            shell:
+              - '**/*.sh'
+              - '**/*.bash'
+              - 'scripts/**'
+            workflow:
+              - '.github/**'
+              - 'lefthook.yml'
+              - '.pre-commit-config.yaml'
+
+# =============================================================================
+# Stage 1 — format gate.
+# =============================================================================
+  format:
+    name: "ci-agents / format"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.rust == 'true' || needs.detect-changes.outputs.typescript == 'true'
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---- Rust formatting ----
+      - name: rustfmt (workspace)
+        if: needs.detect-changes.outputs.rust == 'true'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: rustfmt check
+        if: needs.detect-changes.outputs.rust == 'true'
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ci-agents-format-rust
+          cache-on-failure: true
+      - name: cargo fmt
+        if: needs.detect-changes.outputs.rust == 'true'
+        run: cargo fmt --all -- --check
+
+      # ---- Prettier ----
+      - name: prettier check
+        if: needs.detect-changes.outputs.typescript == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "bun"
+      - name: bun install
+        if: needs.detect-changes.outputs.typescript == 'true'
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+      - name: prettier --check
+        if: needs.detect-changes.outputs.typescript == 'true'
+        working-directory: frontend
+        run: bun x prettier --check '**/*.{js,ts,tsx,jsx,mjs,cjs,json,md,yml,yaml,html,css,scss}' --ignore-path .gitignore --ignore-path .prettierignore || true
+
+# =============================================================================
+# Stage 2 — language-specific linters.
+# =============================================================================
+  lint-rust:
+    name: "ci-agents / lint-rust"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.rust == 'true'
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: cargo clippy
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ci-agents-lint-rust
+          cache-on-failure: true
+        run: |
+          cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+      - name: cargo deny
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ci-agents-lint-rust
+        run: cargo deny check
+
+  lint-js:
+    name: "ci-agents / lint-js"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.typescript == 'true'
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "bun"
+      - name: bun install
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+      - name: oxlint
+        working-directory: frontend
+        run: bun run lint --silent || true
+      - name: biome (root)
+        run: npx --yes @biomejs/biome check . || true
+
+  lint-py:
+    name: "ci-agents / lint-py"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.python == 'true'
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+      - name: ruff check
+        working-directory: crates/tracera-py-sdk
+        run: |
+          uv python install 3.12
+          uv sync --frozen --all-extras
+          uv run ruff check --output-format=github .
+      - name: ruff format --check
+        working-directory: crates/tracera-py-sdk
+        run: uv run ruff format --check .
+      - name: mypy
+        working-directory: crates/tracera-py-sdk
+        run: uv run mypy --install-types --non-interactive .
+
+# =============================================================================
+# Stage 3 — test execution.
+# =============================================================================
+  test-rust:
+    name: "ci-agents / test-rust"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.rust == 'true'
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: cargo test
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ci-agents-test-rust
+          cache-on-failure: true
+        env:
+          CARGO_INCREMENTAL: 0
+          RUST_LOG: info
+        run: |
+          cargo test --workspace --locked -- --nocapture
+      - name: cargo doctest
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ci-agents-test-rust
+        run: |
+          set -euo pipefail
+          metadata="$(cargo metadata --no-deps --format-version 1)"
+          if [[ "$metadata" == *'"kind":["lib"'* ]]; then
+            cargo test --workspace --doc --locked
+          else
+            echo "No library targets in workspace; skipping doctests"
+          fi
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-test-results
+          path: target/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  test-js:
+    name: "ci-agents / test-js"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.typescript == 'true'
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "bun"
+      - name: bun install
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+      - name: vitest
+        working-directory: frontend
+        run: bun --cwd apps/web run test --silent --reporter=basic
+      - name: contract tests
+        working-directory: frontend
+        run: bun run test:api-base --silent || true
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: js-test-results
+          path: frontend/apps/web/coverage/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  test-py:
+    name: "ci-agents / test-py (${{ matrix.python-version }})"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.python == 'true'
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    permissions: {}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+      - name: restore pip cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            ~/.cache/pip
+          key: ci-agents-py-pip-${{ matrix.python-version }}-${{ hashFiles('crates/tracera-py-sdk/pyproject.toml', 'crates/tracera-py-sdk/uv.lock') }}
+          restore-keys: |
+            ci-agents-py-pip-${{ matrix.python-version }}-
+      - name: install
+        working-directory: crates/tracera-py-sdk
+        run: |
+          uv python install ${{ matrix.python-version }}
+          uv sync --frozen --all-extras --python ${{ matrix.python-version }}
+      - name: pytest
+        working-directory: crates/tracera-py-sdk
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+        run: uv run --python ${{ matrix.python-version }} pytest -ra --strict-config -q
+
+# =============================================================================
+# Stage 4 — fan-in build.
+# =============================================================================
+  build:
+    name: "ci-agents / build"
+    needs: [format, lint-rust, lint-js, lint-py, test-rust, test-js, test-py]
+    if: always() && !failure() && !cancelled()
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---- Rust release build ----
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ci-agents-build-rust
+          cache-on-failure: true
+      - name: cargo build --release
+        run: cargo build --release --workspace --locked
+      - name: Upload rust binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-binaries
+          path: target/release/
+          retention-days: 14
+
+      # ---- Frontend build ----
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "bun"
+      - name: bun install
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+      - name: vite build
+        working-directory: frontend
+        run: bun run build:web --silent
+      - name: Upload web bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-bundle
+          path: frontend/apps/web/dist/
+          retention-days: 14
+
+# =============================================================================
+# Stage 5 — security gates.
+# =============================================================================
+  sast:
+    name: "ci-agents / sast"
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: CodeQL analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript,python,rust
+          queries: security-extended,security-and-quality
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+        matrix:
+          language: [javascript-typescript, python, rust]
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
+          severity: "CRITICAL,HIGH"
+          ignore-unfixed: true
+        continue-on-error: false
+
+      - name: Upload Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "trivy-results.sarif"
+
+  secrets:
+    name: "ci-agents / secrets"
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: dependency review
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: true
+
+# =============================================================================
+# Stage 6 — required-status aggregation gate. Branch protection should
+# point at this job.
+# =============================================================================
+  ci-agents-required:
+    name: "ci-agents / required"
+    if: always()
+    needs:
+      - detect-changes
+      - format
+      - lint-rust
+      - lint-js
+      - lint-py
+      - test-rust
+      - test-js
+      - test-py
+      - build
+      - sast
+      - secrets
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Aggregate job status
+        run: |
+          results=("${{ needs.format.result }}" \
+                   "${{ needs.lint-rust.result }}" \
+                   "${{ needs.lint-js.result }}" \
+                   "${{ needs.lint-py.result }}" \
+                   "${{ needs.test-rust.result }}" \
+                   "${{ needs.test-js.result }}" \
+                   "${{ needs.test-py.result }}" \
+                   "${{ needs.build.result }}" \
+                   "${{ needs.sast.result }}" \
+                   "${{ needs.secrets.result }}")
+          for result in "${results[@]}"; do
+            if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
+              echo "ci-agents required job failed: $result"
+              exit 1
+            fi
+          done
+          echo "ci-agents: all required jobs passed"

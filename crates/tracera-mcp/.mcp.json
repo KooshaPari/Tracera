@@ -1,0 +1,39 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schema/mcp.json",
+  "name": "Tracera MCP",
+  "description": "Model Context Protocol server for the Tracera SWEE evidence graph (read, write, navigate, propose).",
+  "version": "0.1.0",
+  "servers": {
+    "tracera": {
+      "type": "stdio",
+      "command": "tracera-mcp",
+      "args": [],
+      "env": {
+        "RUST_LOG": "info,tracera_mcp=info,rmcp=info",
+        "TRACERA_DB_URL": "sqlite://./tracera.db"
+      },
+      "metadata": {
+        "tracera": {
+          "tools": [
+            "read_node",
+            "read_edge",
+            "read_subgraph",
+            "search",
+            "query",
+            "create_node",
+            "update_node",
+            "create_edge",
+            "propose_change",
+            "neighbors",
+            "path",
+            "impact",
+            "coverage",
+            "propose_decision",
+            "propose_spec_change"
+          ],
+          "protocol_version": "2025-06-18"
+        }
+      }
+    }
+  }
+}

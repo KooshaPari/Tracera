@@ -1,0 +1,38 @@
+[package]
+name = "tracera-workos"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.82"
+description = "WorkOS integration: AuthKit hosted login, webhook handling, directory sync, audit log ingest"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[lib]
+name = "tracera_workos"
+path = "src/lib.rs"
+
+[[bin]]
+name = "workos-mock"
+path = "src/bin/workos-mock.rs"
+
+[dependencies]
+axum = { version = "0.8", features = ["http2"] }
+base64 = { workspace = true }
+chrono = { workspace = true }
+# hmac-sha256 verification of WorkOS webhook signatures
+hmac = "0.12"
+# JWT verification for hosted login callback tokens
+jsonwebtoken = "9"
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+subtle = "2" # constant-time comparison for webhook signatures
+thiserror = { workspace = true }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
+tracing = { workspace = true }
+# async reqwest for token exchange against WorkOS
+reqwest = { version = "0.13", features = ["json", "rustls", "rustls-native-certs"], default-features = false }
+uuid = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

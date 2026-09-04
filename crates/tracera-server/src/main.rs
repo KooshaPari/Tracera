@@ -829,6 +829,47 @@ async fn prom_metrics_handler() -> impl IntoResponse {
     )
 }
 
+/// Build the `/auth/workos/*` sub-router.
+///
+/// Reads `WORKOS_*` env vars at startup. If they are missing the route group
+/// still mounts but every handler returns 503 Service Unavailable with a
+/// structured JSON error — this keeps the existing auth/test surface stable
+/// when WorkOS isn't configured.
+fn build_workos_router() -> axum::Router {
+    use axum::response::IntoResponse;
+    match tracera_workos::WorkOSConfig::from_env() {
+        Ok(cfg) => {
+            tracing::info!(
+                "WorkOS integration enabled (client_id={}, api_base={})",
+                cfg.client_id,
+                cfg.api_base,
+            );
+            let client = tracera_workos::WorkOSClient::new(cfg);
+            tracera_workos::router::router(client)
+        }
+        Err(err) => {
+            tracing::warn!(
+                "WorkOS integration disabled (config error: {err}); \
+                 /auth/workos/* will return 503"
+            );
+            // Inert fallback: every path returns a clear 503. We mount it on
+            // `/` so the nest covers every sub-path uniformly.
+            async fn not_configured() -> impl IntoResponse {
+                (
+                    axum::http::StatusCode::SERVICE_UNAVAILABLE,
+                    axum::Json(serde_json::json!({
+                        "error": "workos_not_configured",
+                        "message":
+                            "set WORKOS_API_KEY, WORKOS_CLIENT_ID, WORKOS_WEBHOOK_SECRET, \
+                             WORKOS_REDIRECT_URI to enable the WorkOS auth surface",
+                    })),
+                )
+            }
+            axum::Router::new().fallback(not_configured)
+        }
+    }
+}
+
 /// Stub handler for Tier-2 endpoints not yet implemented.
 /// Returns 501 Not Implemented with a structured JSON error payload.
 async fn not_implemented() -> impl axum::response::IntoResponse {
@@ -844,6 +885,10 @@ fn build_router(state: AppState) -> Router {
 }
 
 fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Router {
+    // WorkOS integration: build the client + nested router once. If the
+    // required env vars are absent we still mount an inert sub-router that
+    // returns 503, so legacy auth surface (and tests) continue to work.
+    let workos_router = build_workos_router();
     Router::new()
         .route("/healthz", get(health::healthz))
         .route("/health", get(health::health))
@@ -946,6 +991,8 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/api/v1/auth/refresh", any(not_implemented))
         .route("/api/v1/auth/verify", any(not_implemented))
         .route("/api/v1/auth/me", any(not_implemented))
+        // WorkOS AuthKit hosted login — sibling group under /auth/workos/*
+        .nest("/auth/workos", workos_router.clone())
         // Equivalences
         .route("/api/v1/equivalences", any(not_implemented))
         .route("/api/v1/equivalences/{id}", any(not_implemented))

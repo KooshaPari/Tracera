@@ -1,0 +1,45 @@
+{
+  // VS Code MCP server configuration for Tracera.
+  //
+  // Drop this file at .vscode/mcp.json (relative to your workspace root)
+  // and VS Code 1.95+ will offer "tracera" in the MCP server picker.
+  //
+  // You can also place it at the user-global path
+  //   %USERPROFILE%\.vscode\mcp.json   (Windows)
+  //   ~/.config/Code/User/mcp.json    (Linux)
+  //   ~/Library/Application Support/Code/User/mcp.json  (macOS)
+  // to enable it for every workspace.
+  //
+  // The `servers` key shape follows the VS Code MCP server schema
+  // (see https://code.visualstudio.com/docs/copilot/chat/mcp-servers).
+  "servers": {
+    "tracera": {
+      "type": "stdio",
+      "command": "tracera-mcp",
+      "args": [],
+      "env": {
+        "RUST_LOG": "info,tracera_mcp=info,rmcp=info",
+        "TRACERA_DB_URL": "sqlite://./tracera.db"
+      }
+    },
+    "tracera-postgres": {
+      "type": "stdio",
+      "command": "tracera-mcp",
+      "args": [],
+      "env": {
+        "RUST_LOG": "info,tracera_mcp=info,rmcp=info",
+        "TRACERA_DB_URL": "postgres://tracera:tracera@127.0.0.1:5432/tracera"
+      }
+    },
+    "tracera-demo": {
+      // In-memory stub for local development / smoke tests. No DB required.
+      "type": "stdio",
+      "command": "tracera-mcp",
+      "args": [],
+      "env": {
+        "RUST_LOG": "info,tracera_mcp=info,rmcp=info",
+        "TRACERA_DEMO": "1"
+      }
+    }
+  }
+}
