@@ -22,7 +22,7 @@ chrono = { workspace = true }
 # hmac-sha256 verification of WorkOS webhook signatures
 hmac = "0.12"
 # JWT verification for hosted login callback tokens
-jsonwebtoken = "9"
+jsonwebtoken = "10"
 serde = { workspace = true }
 serde_json = { workspace = true }
 sha2 = { workspace = true }
