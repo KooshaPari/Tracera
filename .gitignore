@@ -18,6 +18,65 @@ __pycache__/
 # artifacts, not committed from a developer worktree.
 /release-manifest.json
 
+# Transient deploy / debugging artifacts (created by forge/deploy scripts;
+# never commit). Includes Render API response captures, GHCR / Render log
+# dumps, AGI/AgCord runtime logs, and any *.json/*-log.txt created from
+# ad-hoc API probing during a deploy session.
+bl.txt
+blueprint_create.json
+builds.json
+deleted_svc.json
+dep_status.json
+deploy.json
+deploy2.json
+deploy3.json
+deploy_status.json
+deploys.json
+env_update.json
+ev.json
+events.json
+logs.json
+mock-agcord.log
+owners.json
+patch.json
+pg_create.json
+render_create*.json
+render_create.json
+render_payload*.json
+render_img_create.json
+deleted_svc.json
+flowsvc.json
+del.json
+dep.json
+pg_create.json
+tracera_build_log.txt
+Tracera_*.json
+Tracera_*.txt
+Tracera_*.log
+deploy_*.log
+deploy_*.txt
+build_log*.txt
+build_run.json
+vercel_*.json
+vercel_*.log
+job*.json
+job*.txt
+deploys.json
+services.json
+sf.json
+*.deploy.json
+*.deploy.txt
+.vault.local.env
+render_list.json
+render_openapi.yaml
+services_full.json
+svc.json
+ws_create.json
+render_*.json
+mock-agcord.log
+*.flowsvc.json
+*_flowsvc.json
+
 # Runtime data directory (SQLite DBs, uploaded artifacts). Always local-only.
 /data/
 /data/*
