@@ -41,3 +41,11 @@ sqlx = { version = "0.9", optional = true, default-features = false }
 
 [dev-dependencies]
 chrono = { workspace = true, features = ["clock"] }
+
+# The atlas-server HTTP binary requires axum; only build it when the
+# `server` feature is enabled so a plain `cargo check -p tracera-atlas`
+# doesn't need the (optional) HTTP deps to be present in the graph.
+[[bin]]
+name = "atlas-server"
+path = "src/bin/atlas-server.rs"
+required-features = ["server"]

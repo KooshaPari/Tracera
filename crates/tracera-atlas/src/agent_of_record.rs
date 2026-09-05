@@ -430,7 +430,7 @@ impl<'a> AgentOfRecord<'a> {
         self.delegation.record_event(SdlcEvent::work_item_transition(
             &item,
             SdlcEventKind::SignOffRecorded {
-                signer: signer_id.0.clone(),
+                signer: AgentId(signer_id.0.clone()),
             },
         ));
 
