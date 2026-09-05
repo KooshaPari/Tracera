@@ -309,7 +309,7 @@ fn parse_session_cookie(cookie_header: &str) -> Option<String> {
 // Re-export the tolerance constants under their canonical names so callers
 // don't have to import them from `webhooks` / `auth`.
 pub use crate::webhooks::DEFAULT_TOLERANCE_SECONDS as DEFAULT_WEBHOOK_TOLERANCE_SECONDS;
-pub use crate::auth::DEFAULT_TOLERANCE_SECONDS as DEFAULT_AUTH_TOLERANCE_SECONDS;
+pub use crate::webhooks::DEFAULT_TOLERANCE_SECONDS as DEFAULT_AUTH_TOLERANCE_SECONDS;
 
 #[cfg(test)]
 mod tests {

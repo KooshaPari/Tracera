@@ -30,3 +30,9 @@ installers = ["shell", "powershell", "msi"]
 targets = ["x86_64-pc-windows-msvc", "x86_64-unknown-linux-gnu", "aarch64-apple-darwin", "x86_64-apple-darwin"]
 install-path = "CARGO_HOME"
 pr-run-mode = "plan"
+
+#[patch.crates-io]
+# Pin digest to 0.10.7; rustls/rustcrypto's `digest` 0.11 release changed the
+# public API (removed `core_api`, `KeyInit` without the `mac` feature) which breaks
+# hmac 0.12 + any code using sha2's `core_api` paths (notably WorkOS webhook HMAC).
+digest = { git = "https://github.com/RustCrypto/traits", tag = "v0.10.7" }

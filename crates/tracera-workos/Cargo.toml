@@ -19,12 +19,11 @@ path = "src/bin/workos-mock.rs"
 axum = { version = "0.8", features = ["http2"] }
 base64 = { workspace = true }
 chrono = { workspace = true }
-# hmac-sha256 verification of WorkOS webhook signatures
-hmac = "0.12"
 # JWT verification for hosted login callback tokens
 jsonwebtoken = "10"
 serde = { workspace = true }
 serde_json = { workspace = true }
+# sha2 used directly for HMAC-SHA256 verification (avoids hmac crate digest version conflict)
 sha2 = { workspace = true }
 subtle = "2" # constant-time comparison for webhook signatures
 thiserror = { workspace = true }

@@ -23,7 +23,7 @@
 //! Listens on `0.0.0.0:$PORT` so docker / dev tunnels work out of the box.
 
 use axum::{
-    extract::State,
+    extract::{Query, State},
     http::{HeaderMap, StatusCode},
     response::IntoResponse,
     routing::{get, post},
@@ -31,15 +31,14 @@ use axum::{
 };
 use base64::Engine;
 use chrono::{Duration, Utc};
-use hmac::{Hmac, Mac};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use sha2::Sha256;
+use sha2::{Digest, Sha256};
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-type HmacSha256 = Hmac<Sha256>;
+type HmacSha256 = ();
 
 #[derive(Clone)]
 struct MockState {
@@ -88,17 +87,52 @@ fn mint_token(state: &MockState, claims: &MockClaims) -> String {
 }
 
 // ---------------------------------------------------------------------------
-// Webhook signing (mirrors the verifier in `tracera-workos::webhooks`)
-// ---------------------------------------------------------------------------
+// Webhook signing (mirrors the verifier in `tracera-workos::webhooks`).
+//
+// Implemented as a fully self-contained HMAC-SHA256 (RFC 2104) that only depends
+// on `sha2::Sha256` for the underlying hash function. No `digest` trait imports,
+// no `KeyInit`, no `core_api`. This sidesteps the `digest 0.10` vs `0.11` version
+// conflict in the workspace.
+fn hmac_sha256(key: &[u8], msg: &[u8]) -> [u8; 32] {
+    const BLOCK_SIZE: usize = 64;
+    // 1. K' = K if len(K) == B; K' = H(K) if len(K) > B; K' = K || 0..0 if len(K) < B
+    let key_block: [u8; BLOCK_SIZE] = if key.len() > BLOCK_SIZE {
+        let mut h = sha2::Sha256::default();
+        sha2::Digest::update(&mut h, key);
+        let mut b = [0u8; BLOCK_SIZE];
+        let out = sha2::Digest::finalize(h);
+        b[..32].copy_from_slice(&out);
+        b
+    } else {
+        let mut b = [0u8; BLOCK_SIZE];
+        b[..key.len()].copy_from_slice(key);
+        b
+    };
+    // 2. ipad = K' XOR 0x36 repeated; opad = K' XOR 0x5c repeated
+    let mut ipad = [0x36u8; BLOCK_SIZE];
+    let mut opad = [0x5cu8; BLOCK_SIZE];
+    for i in 0..BLOCK_SIZE {
+        ipad[i] ^= key_block[i];
+        opad[i] ^= key_block[i];
+    }
+    // 3. H(opad || H(ipad || msg))
+    let mut h1 = sha2::Sha256::default();
+    sha2::Digest::update(&mut h1, &ipad);
+    sha2::Digest::update(&mut h1, msg);
+    let inner = sha2::Digest::finalize(h1);
+    let mut h2 = sha2::Sha256::default();
+    sha2::Digest::update(&mut h2, &opad);
+    sha2::Digest::update(&mut h2, &inner);
+    sha2::Digest::finalize(h2).into()
+}
 
 fn sign_webhook(secret: &str, ts: i64, body: &[u8]) -> String {
-    let mut mac = HmacSha256::new_from_slice(secret.as_bytes())
-        .expect("HMAC accepts any key length");
-    mac.update(ts.to_string().as_bytes());
-    mac.update(b".");
-    mac.update(body);
-    let bytes = mac.finalize().into_bytes();
-    let hex: String = bytes.iter().map(|b| format!("{b:02x}")).collect();
+    let mut msg = Vec::with_capacity(20 + body.len());
+    msg.extend_from_slice(ts.to_string().as_bytes());
+    msg.push(b'.');
+    msg.extend_from_slice(body);
+    let mac = hmac_sha256(secret.as_bytes(), &msg);
+    let hex: String = mac.iter().map(|b| format!("{b:02x}")).collect();
     format!("t={ts},v1={hex}")
 }
 

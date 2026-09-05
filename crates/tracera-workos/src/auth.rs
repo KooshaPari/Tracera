@@ -26,6 +26,25 @@ use uuid::Uuid;
 use crate::error::{WorkOSError, WorkOSResult};
 use crate::{WorkOSConfig, WorkOSUser};
 
+/// Minimal form-URL-encoder: percent-encode everything except `A-Z a-z 0-9 - _ . ~`.
+/// reqwest 0.12 removed the built-in `.form()` for `(&str, &str)` tuples, so we
+/// pre-encode the body ourselves.
+fn urlencoding(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() * 3);
+    for byte in s.as_bytes() {
+        match byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                out.push(*byte as char);
+            }
+            other => {
+                out.push('%');
+                out.push_str(&format!("{:02X}", other));
+            }
+        }
+    }
+    out
+}
+
 /// Default AuthKit `/sso/authorize` host. Override via [`authorize_url`] if
 /// pointing at the local mock.
 pub const DEFAULT_AUTHORIZE_HOST: &str = "https://api.workos.com/sso/authorize";
@@ -304,13 +323,14 @@ pub async fn exchange_code_for_token(
     let response = client
         .post(&url)
         .bearer_auth(cfg.api_key.as_ref())
-        .form(&[
-            ("client_id", cfg.client_id.as_ref()),
-            ("client_secret", cfg.api_key.as_ref()),
-            ("grant_type", "authorization_code"),
-            ("code", code),
-            ("redirect_uri", cfg.redirect_uri.as_ref()),
-        ])
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body(format!(
+            "client_id={}&client_secret={}&grant_type=authorization_code&code={}&redirect_uri={}",
+            urlencoding(&cfg.client_id),
+            urlencoding(&cfg.api_key),
+            urlencoding(code),
+            urlencoding(&cfg.redirect_uri),
+        ))
         .send()
         .await?;
     if !response.status().is_success() {
