@@ -1,7 +1,7 @@
 //! WorkOS integration for Tracera.
 //!
 //! This crate wires WorkOS (AuthKit hosted login + Directory Sync + Webhooks +
-! Audit Logs) into the Tracera server's `/auth/workos/*` route group.
+//! Audit Logs) into the Tracera server's `/auth/workos/*` route group.
 //!
 //! It is deliberately framework-agnostic at the API surface — the modules here
 //! expose pure functions (`auth::build_authorize_url`, `auth::verify_id_token`,
