@@ -73,7 +73,7 @@ fn parse_args() -> Result<Args> {
                     .parse()
                     .with_context(|| format!("invalid --batch value `{value}`"))?;
                 if args.batch_size == 0 {
-                    anyhow::anyhow!("--batch must be > 0");
+                    anyhow::bail!("--batch must be > 0");
                 }
             }
             "--dry-run" => args.dry_run = true,
@@ -85,7 +85,7 @@ fn parse_args() -> Result<Args> {
                 println!("events-ingest {}", env!("CARGO_PKG_VERSION"));
                 std::process::exit(0);
             }
-            other => anyhow::anyhow!("unknown argument: {other}"),
+            other => return Err(anyhow::anyhow!("unknown argument: {other}")),
         }
     }
     Ok(args)
