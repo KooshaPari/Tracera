@@ -10,8 +10,9 @@
 //! and compare in constant time against any of the `v1=` values. Also enforce a
 //! timestamp tolerance (default 5 minutes) to defeat replay.
 
+#[cfg(test)]
 use chrono::Utc;
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, KeyInit, Mac};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use std::collections::HashSet;
@@ -42,9 +43,7 @@ impl SignatureHeader {
                 continue;
             }
             let (key, value) = part.split_once('=').ok_or_else(|| {
-                WorkOSError::WebhookSignatureHeader(format!(
-                    "missing '=' in segment {part:?}"
-                ))
+                WorkOSError::WebhookSignatureHeader(format!("missing '=' in segment {part:?}"))
             })?;
             match key.trim() {
                 "t" => {
@@ -101,8 +100,8 @@ pub fn verify_signature(
 }
 
 fn compute_signature(secret: &str, timestamp: i64, body: &[u8]) -> String {
-    let mut mac = HmacSha256::new_from_slice(secret.as_bytes())
-        .expect("HMAC accepts any key length");
+    let mut mac =
+        HmacSha256::new_from_slice(secret.as_bytes()).expect("HMAC accepts any key length");
     mac.update(timestamp.to_string().as_bytes());
     mac.update(b".");
     mac.update(body);
@@ -205,10 +204,7 @@ pub fn known_directory_event_types() -> &'static [&'static str] {
 
 /// List of audit-log event types we know about.
 pub fn known_audit_event_types() -> &'static [&'static str] {
-    &[
-        "audit.log.created",
-        "audit.log.updated",
-    ]
+    &["audit.log.created", "audit.log.updated"]
 }
 
 fn known_event_set() -> HashSet<&'static str> {
@@ -279,7 +275,13 @@ mod tests {
         let now = Utc::now().timestamp();
         let header = signed_header(SECRET, body, now);
         let tampered = br#"{"event":"dsync.user.deleted"}"#;
-        let result = verify_signature(SECRET, &header, tampered, DEFAULT_TOLERANCE_SECONDS, Utc::now());
+        let result = verify_signature(
+            SECRET,
+            &header,
+            tampered,
+            DEFAULT_TOLERANCE_SECONDS,
+            Utc::now(),
+        );
         assert!(matches!(result, Err(WorkOSError::WebhookSignatureInvalid)));
     }
 
@@ -288,7 +290,13 @@ mod tests {
         let body = br#"{"event":"dsync.user.created"}"#;
         let now = Utc::now().timestamp();
         let header = signed_header(SECRET, body, now);
-        let result = verify_signature("not-the-secret", &header, body, DEFAULT_TOLERANCE_SECONDS, Utc::now());
+        let result = verify_signature(
+            "not-the-secret",
+            &header,
+            body,
+            DEFAULT_TOLERANCE_SECONDS,
+            Utc::now(),
+        );
         assert!(matches!(result, Err(WorkOSError::WebhookSignatureInvalid)));
     }
 

@@ -117,7 +117,7 @@ pub struct DirectoryUser {
 
 /// `dsync.group.*` payload (embedded inside user payloads as a reference,
 /// or top-level for group events).
-#[derive(Clone, Debug, Serialize, Deserialize, Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DirectoryGroupRef {
     pub id: String,
     #[serde(default)]
@@ -155,7 +155,10 @@ pub struct DirectoryDomain {
 ///
 /// Returns [`WorkOSError::UnsupportedDirectoryEvent`] if the event type is in
 /// the `dsync.*` family but not one we recognise.
-pub fn provision(envelope: &WebhookEnvelope, received_at: DateTime<Utc>) -> WorkOSResult<ProvisionOutcome> {
+pub fn provision(
+    envelope: &WebhookEnvelope,
+    received_at: DateTime<Utc>,
+) -> WorkOSResult<ProvisionOutcome> {
     let (action, family) = parse_action(&envelope.event_type)?;
     let data = envelope.data.clone();
     match family {
@@ -171,9 +174,7 @@ pub fn provision(envelope: &WebhookEnvelope, received_at: DateTime<Utc>) -> Work
 
 fn parse_action(event_type: &str) -> WorkOSResult<(SyncAction, &'static str)> {
     let rest = event_type.strip_prefix("dsync.").ok_or_else(|| {
-        WorkOSError::UnsupportedDirectoryEvent(format!(
-            "{event_type:?} is not a dsync.* event"
-        ))
+        WorkOSError::UnsupportedDirectoryEvent(format!("{event_type:?} is not a dsync.* event"))
     })?;
     let (resource, suffix) = rest.split_once('.').ok_or_else(|| {
         WorkOSError::UnsupportedDirectoryEvent(format!(
@@ -219,7 +220,10 @@ fn provision_user(
         .unwrap_or_else(|| format!("User {}", user.id));
     let mut metadata = serde_json::Map::new();
     metadata.insert("workos_id".into(), Value::String(user.id.clone()));
-    metadata.insert("source".into(), Value::String("workos.directory_sync".into()));
+    metadata.insert(
+        "source".into(),
+        Value::String("workos.directory_sync".into()),
+    );
     metadata.insert("event_id".into(), Value::String(event_id.into()));
     if let Some(email) = &user.email {
         metadata.insert("email".into(), Value::String(email.clone()));
@@ -238,10 +242,7 @@ fn provision_user(
         Value::String(received_at.to_rfc3339()),
     );
     if let Some(org_id) = &user.organization_id {
-        metadata.insert(
-            "organization_id".into(),
-            Value::String(org_id.clone()),
-        );
+        metadata.insert("organization_id".into(), Value::String(org_id.clone()));
     }
     if !user.custom_attributes.is_null() {
         metadata.insert("custom_attributes".into(), user.custom_attributes.clone());
@@ -314,10 +315,16 @@ fn provision_group(
 ) -> WorkOSResult<ProvisionOutcome> {
     let group: DirectoryGroup = serde_json::from_value(data.clone())?;
     let node_id = format!("workos-team-{}", group.id);
-    let label = group.name.clone().unwrap_or_else(|| format!("Group {}", group.id));
+    let label = group
+        .name
+        .clone()
+        .unwrap_or_else(|| format!("Group {}", group.id));
     let mut metadata = serde_json::Map::new();
     metadata.insert("workos_id".into(), Value::String(group.id.clone()));
-    metadata.insert("source".into(), Value::String("workos.directory_sync".into()));
+    metadata.insert(
+        "source".into(),
+        Value::String("workos.directory_sync".into()),
+    );
     metadata.insert("event_id".into(), Value::String(event_id.into()));
     metadata.insert(
         "received_at".into(),
@@ -350,10 +357,16 @@ fn provision_organization(
 ) -> WorkOSResult<ProvisionOutcome> {
     let org: DirectoryOrganization = serde_json::from_value(data.clone())?;
     let node_id = format!("workos-org-{}", org.id);
-    let label = org.name.clone().unwrap_or_else(|| format!("Org {}", org.id));
+    let label = org
+        .name
+        .clone()
+        .unwrap_or_else(|| format!("Org {}", org.id));
     let mut metadata = serde_json::Map::new();
     metadata.insert("workos_id".into(), Value::String(org.id.clone()));
-    metadata.insert("source".into(), Value::String("workos.directory_sync".into()));
+    metadata.insert(
+        "source".into(),
+        Value::String("workos.directory_sync".into()),
+    );
     metadata.insert("event_id".into(), Value::String(event_id.into()));
     metadata.insert(
         "received_at".into(),
@@ -377,12 +390,7 @@ fn provision_organization(
         metadata: Value::Object(metadata),
         tombstone,
     };
-    let summary = format!(
-        "organization {} {} -> {}",
-        org.id,
-        action.as_str(),
-        node_id
-    );
+    let summary = format!("organization {} {} -> {}", org.id, action.as_str(), node_id);
     Ok(ProvisionOutcome {
         nodes: vec![node],
         edges: vec![],
@@ -437,11 +445,7 @@ mod tests {
 
         // 2 group edges + 1 org edge = 3 total
         assert_eq!(outcome.edges.len(), 3);
-        let targets: Vec<&str> = outcome
-            .edges
-            .iter()
-            .map(|e| e.target_id.as_str())
-            .collect();
+        let targets: Vec<&str> = outcome.edges.iter().map(|e| e.target_id.as_str()).collect();
         assert!(targets.contains(&"workos-team-group_eng"));
         assert!(targets.contains(&"workos-team-group_arch"));
         assert!(targets.contains(&"workos-org-org_01"));
@@ -474,10 +478,7 @@ mod tests {
         );
         let outcome = provision(&env, Utc::now()).unwrap();
         assert!(!outcome.nodes[0].tombstone);
-        assert_eq!(
-            outcome.nodes[0].metadata["email"],
-            "ada-new@example.com"
-        );
+        assert_eq!(outcome.nodes[0].metadata["email"], "ada-new@example.com");
         assert_eq!(outcome.nodes[0].metadata["state"], "inactive");
     }
 
@@ -509,28 +510,19 @@ mod tests {
         let outcome = provision(&env, Utc::now()).unwrap();
         assert_eq!(outcome.nodes[0].node_type, NODE_KIND_ORGANIZATION);
         assert_eq!(outcome.nodes[0].metadata["is_organization"], true);
-        assert_eq!(
-            outcome.nodes[0].metadata["domains"][0],
-            "acme.example.com"
-        );
+        assert_eq!(outcome.nodes[0].metadata["domains"][0], "acme.example.com");
     }
 
     #[test]
     fn unknown_suffix_yields_unsupported_error() {
-        let env = envelope(
-            "dsync.user.archived",
-            json!({"id": "user_1"}),
-        );
+        let env = envelope("dsync.user.archived", json!({"id": "user_1"}));
         let err = provision(&env, Utc::now()).unwrap_err();
         assert!(matches!(err, WorkOSError::UnsupportedDirectoryEvent(_)));
     }
 
     #[test]
     fn non_dsync_event_yields_unsupported_error() {
-        let env = envelope(
-            "audit.log.created",
-            json!({"id": "evt_1"}),
-        );
+        let env = envelope("audit.log.created", json!({"id": "evt_1"}));
         let err = provision(&env, Utc::now()).unwrap_err();
         assert!(matches!(err, WorkOSError::UnsupportedDirectoryEvent(_)));
     }

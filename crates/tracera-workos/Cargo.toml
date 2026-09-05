@@ -20,7 +20,7 @@ axum = { version = "0.8", features = ["http2"] }
 base64 = { workspace = true }
 chrono = { workspace = true }
 # hmac-sha256 verification of WorkOS webhook signatures
-hmac = "0.12"
+hmac = "0.13"
 # JWT verification for hosted login callback tokens
 jsonwebtoken = "10"
 serde = { workspace = true }
@@ -31,7 +31,7 @@ thiserror = { workspace = true }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
 tracing = { workspace = true }
 # async reqwest for token exchange against WorkOS
-reqwest = { version = "0.13", features = ["json", "rustls", "rustls-native-certs"], default-features = false }
+reqwest = { version = "0.13", features = ["json", "form", "rustls", "rustls-native-certs"], default-features = false }
 uuid = { workspace = true }
 
 [dev-dependencies]

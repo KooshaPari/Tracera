@@ -30,6 +30,9 @@ use crate::{WorkOSConfig, WorkOSUser};
 /// pointing at the local mock.
 pub const DEFAULT_AUTHORIZE_HOST: &str = "https://api.workos.com/sso/authorize";
 
+/// Default replay-protection window for AuthKit callbacks, in seconds.
+pub const DEFAULT_TOLERANCE_SECONDS: i64 = 300;
+
 /// Parameters carried in the WorkOS authorize URL.
 #[derive(Clone, Debug)]
 pub struct AuthorizeParams<'a> {
@@ -92,10 +95,13 @@ pub fn build_authorize_url(
         if value.is_empty() {
             continue;
         }
-        if !value
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.' | ':' | '/' | ',' | ' ' | '|' | '=' | '~' | '+' | '%'))
-        {
+        if !value.chars().all(|c| {
+            c.is_ascii_alphanumeric()
+                || matches!(
+                    c,
+                    '-' | '_' | '.' | ':' | '/' | ',' | ' ' | '|' | '=' | '~' | '+' | '%'
+                )
+        }) {
             return Err(WorkOSError::AuthorizeRequest(format!(
                 "{name} contains invalid characters"
             )));
@@ -150,7 +156,12 @@ fn rand_bytes<const N: usize>() -> [u8; N] {
     let mut out = [0u8; N];
     let a = Uuid::new_v4();
     let b = Uuid::new_v4();
-    let bytes: Vec<u8> = a.as_bytes().iter().chain(b.as_bytes().iter()).copied().collect();
+    let bytes: Vec<u8> = a
+        .as_bytes()
+        .iter()
+        .chain(b.as_bytes().iter())
+        .copied()
+        .collect();
     let len = bytes.len().min(N);
     out[..len].copy_from_slice(&bytes[..len]);
     out
@@ -255,11 +266,7 @@ pub fn verify_id_token(cfg: &WorkOSConfig, token: &str) -> WorkOSResult<IdTokenC
 
     let key = DecodingKey::from_secret(cfg.mock_jwt_secret.as_bytes());
     let data = decode::<IdTokenClaims>(token, &key, &validation).map_err(|e| {
-        WorkOSError::IdTokenInvalid(format!(
-            "decode failed: kind={:?} detail={}",
-            e.kind(),
-            e
-        ))
+        WorkOSError::IdTokenInvalid(format!("decode failed: kind={:?} detail={}", e.kind(), e))
     })?;
     Ok(data.claims)
 }
@@ -294,10 +301,7 @@ pub async fn exchange_code_for_token(
             "authorization code is empty".into(),
         ));
     }
-    let url = format!(
-        "{}/sso/token",
-        cfg.api_base.trim_end_matches('/')
-    );
+    let url = format!("{}/sso/token", cfg.api_base.trim_end_matches('/'));
     let client = reqwest::Client::builder()
         .build()
         .map_err(|e| WorkOSError::Http(e.to_string()))?;
@@ -381,9 +385,9 @@ mod tests {
                 ..Default::default()
             },
         );
-        // '?' is in the allow-list — check that '&' and '=' are also handled.
-        // We only fail on truly out-of-band characters.
-        assert!(url.is_ok());
+        // Query delimiters are rejected so a redirect URI cannot inject
+        // additional authorization parameters.
+        assert!(url.is_err());
     }
 
     #[test]
