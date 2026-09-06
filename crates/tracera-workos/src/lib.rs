@@ -60,6 +60,21 @@ pub struct WorkOSConfig {
     pub mock_jwt_secret: Arc<str>,
 }
 
+impl Default for WorkOSConfig {
+    /// Default config used only by the `Router<()>` placeholder in
+    /// `router::router()`. Real configs are built by `WorkOSConfig::from_env`.
+    fn default() -> Self {
+        Self {
+            api_key: Arc::from(""),
+            client_id: Arc::from(""),
+            webhook_secret: Arc::from(""),
+            redirect_uri: Arc::from(""),
+            api_base: Arc::from("https://api.workos.com"),
+            mock_jwt_secret: Arc::from(""),
+        }
+    }
+}
+
 impl WorkOSConfig {
     /// Load config from environment variables. Missing values produce a clear
     /// error instead of silently defaulting to empty strings.
@@ -165,6 +180,20 @@ impl WorkOSClient {
     /// Borrow the inner config (needed by every public function in the module).
     pub fn config(&self) -> &WorkOSConfig {
         &self.config
+    }
+
+    /// Construct a placeholder client used only by the `Router<()>` builder.
+    ///
+    /// The real client (with secrets and an api_base) is built by
+    /// `WorkOSConfig::from_env` and injected via `with_state` at mount time.
+    /// This default is what `tracera_workos::router::router()` uses so the
+    /// router can be constructed without any environment context (used for
+    /// the `Router<()>` shape needed for `nest` into a parent that already
+    /// has its own state).
+    pub fn default_for_router() -> Self {
+        Self {
+            config: Arc::new(WorkOSConfig::default()),
+        }
     }
 
     /// Convenience: base64url-encode a string slice (used in JWT segmenting

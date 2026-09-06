@@ -36,8 +36,28 @@ pub const SESSION_COOKIE_NAME: &str = "tracera_workos_session";
 /// the session cookie.
 const SESSION_COOKIE_ATTRS: &str = "Path=/; HttpOnly; SameSite=Lax; Max-Age=3600";
 
-/// Build the WorkOS sub-router. Pass the result to `Router::nest("/auth/workos", ...)`.
-pub fn router(client: WorkOSClient) -> Router {
+/// Build the WorkOS sub-router. The returned router is `Router<()>` (no
+/// state). The caller mounts it under their parent router via
+/// `Router::nest("/auth/workos", workos_router)` after first converting it
+/// with `with_state(WorkOSClient)`. Axum requires the nested router to
+/// have `()` state when the parent uses `with_state`, so we expose the
+/// inner conversion via [`router_with_state`].
+/// Build a router that can be nested into any parent `Router<S>` as long as
+/// `S` contains a `WorkOSClient` (via `FromRef`).
+pub fn router<S>() -> Router<S>
+where
+    S: Clone + Send + Sync + 'static,
+    WorkOSClient: axum::extract::FromRef<S>,
+{
+    router_with_state(WorkOSClient::default_for_router())
+}
+
+/// Build the WorkOS sub-router with the given client baked in as state.
+/// This is the version you should mount directly with `Router::nest(...)`.
+pub fn router_with_state<S>(client: WorkOSClient) -> Router<S>
+where
+    S: Clone + Send + Sync + 'static,
+{
     Router::new()
         .route("/login", get(login_handler))
         .route("/callback", get(callback_handler))
@@ -359,8 +379,17 @@ mod tests {
 
     #[test]
     fn router_builds_with_all_four_routes() {
-        let r = router(client());
-        // Just verify it constructs without panic.
+        let _r = router();
+    }
+
+    #[test]
+    fn router_with_state_works_with_arbitrary_s() {
+        // S = () — nested into a Router<()>
+        let r: axum::Router<()> = router_with_state(client());
+        let _ = r;
+
+        // S = WorkOSClient — when there's no parent state and client is also state
+        let r: axum::Router<WorkOSClient> = router_with_state(client());
         let _ = r;
     }
 }

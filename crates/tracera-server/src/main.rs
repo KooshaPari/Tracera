@@ -79,6 +79,13 @@ struct AppState {
     backend: &'static str,
     started_at: Instant,
     store: Arc<dyn Store>,
+    workos_client: tracera_workos::WorkOSClient,
+}
+
+impl axum::extract::FromRef<AppState> for tracera_workos::WorkOSClient {
+    fn from_ref(state: &AppState) -> Self {
+        state.workos_client.clone()
+    }
 }
 
 /// Reject non-loopback listeners unless a bearer token is configured. Network
@@ -630,6 +637,7 @@ async fn main() {
         backend,
         started_at: Instant::now(),
         store,
+        workos_client: tracera_workos::WorkOSClient::default_for_router(),
     };
 
     let auth_token = env::var(AUTH_TOKEN_ENV)
@@ -835,7 +843,10 @@ async fn prom_metrics_handler() -> impl IntoResponse {
 /// still mounts but every handler returns 503 Service Unavailable with a
 /// structured JSON error — this keeps the existing auth/test surface stable
 /// when WorkOS isn't configured.
-fn build_workos_router() -> axum::Router {
+fn build_workos_router<S>() -> axum::Router<S>
+where
+    S: Clone + Send + Sync + 'static,
+{
     use axum::response::IntoResponse;
     match tracera_workos::WorkOSConfig::from_env() {
         Ok(cfg) => {
@@ -844,8 +855,11 @@ fn build_workos_router() -> axum::Router {
                 cfg.client_id,
                 cfg.api_base,
             );
-            let client = tracera_workos::WorkOSClient::new(cfg);
-            tracera_workos::router::router(client)
+            let _client = tracera_workos::WorkOSClient::new(cfg);
+            // WorkOS sub-router is generic over the parent's state. The inner
+            // routes use WorkOSClient::default_for_router() so the parent
+            // must impl FromRef<WorkOSClient> for AppState below.
+            tracera_workos::router::router::<S>()
         }
         Err(err) => {
             tracing::warn!(
@@ -888,7 +902,7 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
     // WorkOS integration: build the client + nested router once. If the
     // required env vars are absent we still mount an inert sub-router that
     // returns 503, so legacy auth surface (and tests) continue to work.
-    let workos_router = build_workos_router();
+    let workos_router = build_workos_router::<AppState>();
     Router::new()
         .route("/healthz", get(health::healthz))
         .route("/health", get(health::health))
@@ -992,7 +1006,9 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/api/v1/auth/verify", any(not_implemented))
         .route("/api/v1/auth/me", any(not_implemented))
         // WorkOS AuthKit hosted login — sibling group under /auth/workos/*
-        .nest("/auth/workos", workos_router.clone())
+        // The workos router is generic over S, so it nests into Router<AppState>
+        // directly (axum's FromRef<AppState> for WorkOSClient extracts the client).
+        .nest("/auth/workos", workos_router)
         // Equivalences
         .route("/api/v1/equivalences", any(not_implemented))
         .route("/api/v1/equivalences/{id}", any(not_implemented))
@@ -2672,7 +2688,7 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: Arc::new(store),
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
         });
 
         let response = app
@@ -2703,7 +2719,7 @@ mod tests {
                 version: env!("CARGO_PKG_VERSION").to_string(),
                 backend: "sqlite",
                 started_at: Instant::now(),
-                store: Arc::new(store),
+                workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
             },
             Some(Arc::<str>::from("secret")),
         );
@@ -2754,7 +2770,7 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: Arc::new(store),
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
         });
 
         let response = app
@@ -2784,7 +2800,7 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: Arc::new(store),
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
         });
 
         let response = app
@@ -2816,7 +2832,7 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: Arc::new(store),
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
         });
 
         let response = app
@@ -2854,7 +2870,7 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: Arc::new(store),
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
         });
         let payload = r#"{"links":[{"source_id":"FR-1","target_id":"T-1","relationship":"verifies","confidence":0.95}]}"#;
 
@@ -2947,7 +2963,7 @@ mod tests {
                 version: env!("CARGO_PKG_VERSION").to_string(),
                 backend: "sqlite",
                 started_at: Instant::now(),
-                store: Arc::new(store),
+                workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
             },
             Some(Arc::<str>::from("secret")),
         );
@@ -2987,7 +3003,7 @@ mod tests {
             backend: "sqlite",
             started_at: Instant::now(),
             store,
-        });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(), });
 
         let response = app
             .oneshot(
@@ -3037,7 +3053,7 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: Arc::new(store),
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
         });
 
         let response = app
@@ -3074,7 +3090,7 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: Arc::new(store),
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
         });
         let csrf_token = browser_csrf_token(&app).await;
 
@@ -3144,7 +3160,7 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: Arc::new(store),
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
         });
         let csrf_token = browser_csrf_token(&app).await;
 
@@ -3179,7 +3195,7 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: Arc::new(store),
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
         });
 
         let response = app
@@ -3207,7 +3223,7 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: Arc::new(store),
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
         });
 
         let response = app
@@ -3235,7 +3251,7 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: Arc::new(store),
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
         });
 
         for (uri, error) in [
@@ -3290,7 +3306,7 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: Arc::new(make_sqlite_store().await),
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(make_sqlite_store().await),
         });
         let csrf_token = browser_csrf_token(&app).await;
 
@@ -3396,7 +3412,7 @@ mod tests {
             backend: "sqlite",
             started_at: Instant::now(),
             store,
-        };
+            workos_client: tracera_workos::WorkOSClient::default_for_router(), };
         let ready = match health::readyz(axum::extract::State(state)).await {
             Ok(response) => response.0,
             Err(_) => panic!("healthy store is ready"),
@@ -4663,7 +4679,7 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            store: store.clone(),
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: store.clone(),
         });
 
         let csrf = issue_csrf_token().await;
@@ -4868,7 +4884,7 @@ mod tests {
             backend: "sqlite",
             started_at: Instant::now(),
             store,
-        });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(), });
 
         let csrf = issue_csrf_token().await;
 
@@ -4899,7 +4915,7 @@ mod tests {
             backend: "sqlite",
             started_at: Instant::now(),
             store,
-        });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(), });
 
         let csrf = issue_csrf_token().await;
         let resp = app
