@@ -12,7 +12,7 @@
 //!
 //! | Variable          | Default        | Purpose                                       |
 //! |-------------------|----------------|-----------------------------------------------|
-//! | `TRACERA_DB_URL`  | (none)         | Database connection URL. `postgres://…` for PgStore, `sqlite://…` for SqliteStore. Required unless `--demo` is passed. |
+//! | `TRACERA_DB_URL`  | (none)         | Database URL: `postgres://…` or `postgresql://…` for PgStore; `sqlite:…` or `sqlite://…` for SqliteStore. Required unless `--demo` is passed. |
 //! | `RUST_LOG`        | `info`         | `tracing` log level filter.                   |
 //! | `TRACERA_DEMO`    | (unset)        | If set to `1`, use an in-memory stub store (for local dev). |
 //!
@@ -29,7 +29,6 @@
 
 use std::sync::Arc;
 
-use rmcp::ServiceExt;
 use tracing_subscriber::EnvFilter;
 
 use tracera_mcp::{McpServer, StoreT};
@@ -74,7 +73,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///
 /// Resolution order:
 /// 1. `TRACERA_DEMO=1`  → in-memory stub (for local dev / smoke tests).
-/// 2. `TRACERA_DB_URL`  → `postgres://…` or `sqlite://…`.
+/// 2. `TRACERA_DB_URL`  → `postgres://…`, `postgresql://…`, `sqlite:…`, or `sqlite://…`.
 /// 3. Otherwise          → error.
 async fn build_store() -> Result<Arc<dyn StoreT>, String> {
     if std::env::var("TRACERA_DEMO").as_deref() == Ok("1") {
@@ -90,33 +89,25 @@ async fn build_store() -> Result<Arc<dyn StoreT>, String> {
 ///
 /// We dispatch on the scheme prefix:
 ///   - `postgres://` or `postgresql://` → `PgStore`
-///   - `sqlite://`                      → `SqliteStore`
+///   - `sqlite:` or `sqlite://`         → `SqliteStore`
 ///   - anything else                    → error
 async fn build_store_from_url(url: &str) -> Result<Arc<dyn StoreT>, String> {
-    // We re-export the concrete types through `tracera_mcp::stores::*`
-    // when wired in a follow-up. For now the dispatcher is feature-gated
-    // and returns a friendly error so the binary still compiles.
-    #[cfg(feature = "postgres")]
-    {
-        if url.starts_with("postgres://") || url.starts_with("postgresql://") {
-            return tracera_mcp::stores::pg::PgStore::connect(url)
-                .await
-                .map(|s| Arc::new(s) as Arc<dyn StoreT>)
-                .map_err(|e| format!("PgStore::connect: {e}"));
-        }
+    if url.starts_with("postgres://") || url.starts_with("postgresql://") {
+        return tracera_server::datastore::connect_postgres(url)
+            .await
+            .map(|store| Arc::new(store) as Arc<dyn StoreT>)
+            .map_err(|e| e.to_string());
     }
-    #[cfg(feature = "sqlite")]
-    {
-        if let Some(path) = url.strip_prefix("sqlite://") {
-            return tracera_mcp::stores::sqlite::SqliteStore::connect(path)
-                .await
-                .map(|s| Arc::new(s) as Arc<dyn StoreT>)
-                .map_err(|e| format!("SqliteStore::connect: {e}"));
-        }
+    if url.starts_with("sqlite://") || url.starts_with("sqlite:") {
+        return tracera_server::datastore::connect_sqlite(url)
+            .await
+            .map(|store| Arc::new(store) as Arc<dyn StoreT>)
+            .map_err(|e| e.to_string());
     }
     Err(format!(
         "unrecognized TRACERA_DB_URL scheme `{url}`; \
-         expected `postgres://…` or `sqlite://…` (or set TRACERA_DEMO=1)"
+         expected `postgres://…`, `postgresql://…`, `sqlite:…`, or `sqlite://…` \
+         (or set TRACERA_DEMO=1)"
     ))
 }
 
@@ -138,18 +129,12 @@ async fn build_store_from_url(url: &str) -> Result<Arc<dyn StoreT>, String> {
 // stub is only a placeholder for the demo binary path.
 
 mod demo {
-    use std::future::Future;
-    use std::pin::Pin;
-
     use chrono::{DateTime, Utc};
     use serde_json::Value;
     use tracera_server::store::{
         BoxFuture, EvidenceItem, ListParams, Problem, Store, StoreError, StoreResult,
     };
 
-    /// Compile-time check: `DemoStore` only exists for the demo path.
-    /// When the `postgres` / `sqlite` features are off, this is the only
-    /// `Store` impl available to the binary.
     pub struct DemoStore;
 
     impl Store for DemoStore {
@@ -366,3 +351,40 @@ mod demo {
 }
 
 use demo::DemoStore;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn sqlite_memory_url_builds_a_migrated_ready_store() {
+        let store = build_store_from_url("sqlite::memory:")
+            .await
+            .expect("SQLite URL should construct a store");
+
+        tracera_server::store::Store::check_readiness(store.as_ref())
+            .await
+            .expect("SQLite migrations should make the store ready");
+    }
+
+    #[tokio::test]
+    async fn sqlite_url_memory_spelling_builds_a_migrated_ready_store() {
+        let store = build_store_from_url("sqlite://:memory:")
+            .await
+            .expect("documented SQLite URL should construct a store");
+
+        tracera_server::store::Store::check_readiness(store.as_ref())
+            .await
+            .expect("SQLite migrations should make the store ready");
+    }
+
+    #[tokio::test]
+    async fn postgres_url_reaches_the_postgres_connector() {
+        let error = match build_store_from_url("postgres://127.0.0.1:1/tracera").await {
+            Ok(_) => panic!("an unreachable Postgres server should fail connection"),
+            Err(error) => error,
+        };
+
+        assert!(error.starts_with("database connection failed:"), "{error}");
+    }
+}
