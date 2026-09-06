@@ -20,7 +20,7 @@ use crate::{ClickHouseClient, Error};
 fn client_new_applies_url_and_database() {
     let cfg = ClickHouseConfig::new("http://localhost:8123")
         .with_database("tracera_test")
-        .with_credentials(Credentials::new("default".into(), "secret".into()));
+        .with_credentials(Credentials::new("default", "secret"));
     let client = ClickHouseClient::new(cfg);
     assert_eq!(client.database(), "tracera_test");
     assert_eq!(client.timeout(), Duration::from_secs(30));

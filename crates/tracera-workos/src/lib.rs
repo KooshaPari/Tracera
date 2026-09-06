@@ -1,8 +1,8 @@
 //! WorkOS integration for Tracera.
 //!
 //! This crate wires WorkOS (AuthKit hosted login + Directory Sync + Webhooks +
-! Audit Logs) into the Tracera server's `/auth/workos/*` route group.
-//!
+//! This crate wires WorkOS — AuthKit hosted login, Directory Sync, Webhooks,
+//! and Audit Logs — into the Tracera server's `/auth/workos/*` route group.
 //! It is deliberately framework-agnostic at the API surface — the modules here
 //! expose pure functions (`auth::build_authorize_url`, `auth::verify_id_token`,
 //! `webhooks::verify_signature`, etc.) plus thin axum handlers in
@@ -58,6 +58,21 @@ pub struct WorkOSConfig {
     /// Production tokens are RS256-signed by AuthKit and verified with a JWKS
     /// fetch; we keep a symmetric fallback so the dev mock can round-trip.
     pub mock_jwt_secret: Arc<str>,
+}
+
+impl Default for WorkOSConfig {
+    /// Default config used only by the `Router<()>` placeholder in
+    /// `router::router()`. Real configs are built by `WorkOSConfig::from_env`.
+    fn default() -> Self {
+        Self {
+            api_key: Arc::from(""),
+            client_id: Arc::from(""),
+            webhook_secret: Arc::from(""),
+            redirect_uri: Arc::from(""),
+            api_base: Arc::from("https://api.workos.com"),
+            mock_jwt_secret: Arc::from(""),
+        }
+    }
 }
 
 impl WorkOSConfig {
@@ -165,6 +180,20 @@ impl WorkOSClient {
     /// Borrow the inner config (needed by every public function in the module).
     pub fn config(&self) -> &WorkOSConfig {
         &self.config
+    }
+
+    /// Construct a placeholder client used only by the `Router<()>` builder.
+    ///
+    /// The real client (with secrets and an api_base) is built by
+    /// `WorkOSConfig::from_env` and injected via `with_state` at mount time.
+    /// This default is what `tracera_workos::router::router()` uses so the
+    /// router can be constructed without any environment context (used for
+    /// the `Router<()>` shape needed for `nest` into a parent that already
+    /// has its own state).
+    pub fn default_for_router() -> Self {
+        Self {
+            config: Arc::new(WorkOSConfig::default()),
+        }
     }
 
     /// Convenience: base64url-encode a string slice (used in JWT segmenting

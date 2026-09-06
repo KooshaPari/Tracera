@@ -779,7 +779,7 @@ mod tests {
         assert_eq!(out.outcome, AssignmentOutcome::Assigned);
         assert_eq!(out.work_item.status, WorkItemStatus::InProgress);
         assert_eq!(
-            out.work_item.assigned_agent.as_deref().unwrap().0,
+            out.work_item.assigned_agent.as_ref().unwrap().0,
             "agent-1"
         );
 
@@ -808,7 +808,7 @@ mod tests {
         let second = view.assign(&work.id, "agent-2").unwrap();
         assert_eq!(second.outcome, AssignmentOutcome::Reassigned);
         assert_eq!(
-            second.work_item.assigned_agent.as_deref().unwrap().0,
+            second.work_item.assigned_agent.as_ref().unwrap().0,
             "agent-2"
         );
     }

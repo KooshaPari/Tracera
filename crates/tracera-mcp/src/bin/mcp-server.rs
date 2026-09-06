@@ -32,7 +32,8 @@ use std::sync::Arc;
 use rmcp::ServiceExt;
 use tracing_subscriber::EnvFilter;
 
-use tracera_mcp::{McpServer, StoreT};
+use tracera_mcp::McpServer;
+use tracera_server::store::Store;
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 2)]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -53,7 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // -- 3) Build the store -----------------------------------------------
-    let store: Arc<dyn StoreT> = match build_store().await {
+    let store: Arc<dyn Store> = match build_store().await {
         Ok(s) => s,
         Err(e) => {
             eprintln!("fatal: failed to construct store: {e}");
@@ -63,20 +64,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // -- 4) Run ------------------------------------------------------------
     let server = McpServer::new(store);
-    if let Err(e) = server.serve_stdio().await {
+    // rmcp 3.2 removed `serve_stdio()`. Use `ServiceExt::serve(...)` with
+    // an explicit `(AsyncRead, AsyncWrite)` transport tuple from
+    // `tokio::io::{stdin, stdout}`. The `IntoTransport` impl lives in
+    // `rmcp::transport::async_rw` and is auto-selected by type inference.
+    let transport = (tokio::io::stdin(), tokio::io::stdout());
+    if let Err(e) = server.serve(transport).await {
         eprintln!("fatal: stdio server exited with error: {e}");
         std::process::exit(1);
     }
     Ok(())
 }
 
-/// Build the [`tracera_mcp::StoreT`] implementation from environment.
+/// Build the [`tracera_mcp::Store`] implementation from environment.
 ///
 /// Resolution order:
 /// 1. `TRACERA_DEMO=1`  → in-memory stub (for local dev / smoke tests).
 /// 2. `TRACERA_DB_URL`  → `postgres://…` or `sqlite://…`.
 /// 3. Otherwise          → error.
-async fn build_store() -> Result<Arc<dyn StoreT>, String> {
+async fn build_store() -> Result<Arc<dyn Store>, String> {
     if std::env::var("TRACERA_DEMO").as_deref() == Ok("1") {
         eprintln!("tracera-mcp: using in-memory demo store (TRACERA_DEMO=1)");
         return Ok(Arc::new(DemoStore));
@@ -92,7 +98,7 @@ async fn build_store() -> Result<Arc<dyn StoreT>, String> {
 ///   - `postgres://` or `postgresql://` → `PgStore`
 ///   - `sqlite://`                      → `SqliteStore`
 ///   - anything else                    → error
-async fn build_store_from_url(url: &str) -> Result<Arc<dyn StoreT>, String> {
+async fn build_store_from_url(url: &str) -> Result<Arc<dyn Store>, String> {
     // We re-export the concrete types through `tracera_mcp::stores::*`
     // when wired in a follow-up. For now the dispatcher is feature-gated
     // and returns a friendly error so the binary still compiles.
@@ -101,7 +107,7 @@ async fn build_store_from_url(url: &str) -> Result<Arc<dyn StoreT>, String> {
         if url.starts_with("postgres://") || url.starts_with("postgresql://") {
             return tracera_mcp::stores::pg::PgStore::connect(url)
                 .await
-                .map(|s| Arc::new(s) as Arc<dyn StoreT>)
+                .map(|s| Arc::new(s) as Arc<dyn Store>)
                 .map_err(|e| format!("PgStore::connect: {e}"));
         }
     }
@@ -110,7 +116,7 @@ async fn build_store_from_url(url: &str) -> Result<Arc<dyn StoreT>, String> {
         if let Some(path) = url.strip_prefix("sqlite://") {
             return tracera_mcp::stores::sqlite::SqliteStore::connect(path)
                 .await
-                .map(|s| Arc::new(s) as Arc<dyn StoreT>)
+                .map(|s| Arc::new(s) as Arc<dyn Store>)
                 .map_err(|e| format!("SqliteStore::connect: {e}"));
         }
     }

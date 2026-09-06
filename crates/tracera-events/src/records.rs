@@ -90,9 +90,8 @@ pub use naive_date as day;
 // ---------------------------------------------------------------------------
 
 /// Lifecycle status for an `agent_runs` row.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Row)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[clickhouse(crate = "clickhouse")]
 #[repr(u8)]
 pub enum AgentRunStatus {
     /// Agent run was created but execution has not started.
@@ -165,9 +164,8 @@ pub struct Decision {
 // ---------------------------------------------------------------------------
 
 /// Target environment for a deploy.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Row)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[clickhouse(crate = "clickhouse")]
 #[repr(u8)]
 pub enum DeployEnvironment {
     /// Local developer workstation.

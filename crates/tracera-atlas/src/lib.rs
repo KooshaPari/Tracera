@@ -33,7 +33,7 @@
 //! let assigned = engine.delegation()
 //!     .assign(&item.id, "agent-7")
 //!     .unwrap();
-//! assert_eq!(assigned.assigned_agent.as_deref(), Some("agent-7"));
+//! assert_eq!(assigned.assigned_agent.as_ref().map(|a| a.0.as_str()), Some("agent-7"));
 //! ```
 
 #![forbid(unsafe_code)]
@@ -152,15 +152,16 @@ mod tests {
             .assign(&work.id, "agent-9")
             .expect("assign");
         assert_eq!(assigned.outcome, AssignmentOutcome::Assigned);
-        assert_eq!(assigned.work_item.assigned_agent.as_deref(), Some("agent-9"));
+        assert_eq!(assigned.work_item.assigned_agent.as_ref().map(|a| a.0.as_str()), Some("agent-9"));
         assert_eq!(assigned.work_item.status, WorkItemStatus::InProgress);
     }
 
     #[test]
     fn event_bus_records_stage_transition() {
+        use crate::observability::RecordingSink;
         let engine = AtlasEngine::in_memory();
-        let bag: Arc<dyn EventSubscriber> = Arc::new(observability::RecordingSink::default());
-        let _id = engine.subscribe(bag.clone());
+        let sink = Arc::new(RecordingSink::default());
+        let _id = engine.subscribe(sink.clone());
 
         let work = engine
             .delegation()
@@ -169,11 +170,7 @@ mod tests {
         engine.delegation().assign(&work.id, "agent-1").unwrap();
         engine.delegation().start(&work.id, "agent-1").unwrap();
 
-        let events = bag
-            .as_any()
-            .downcast_ref::<observability::RecordingSink>()
-            .unwrap()
-            .snapshot();
+        let events = sink.snapshot();
         assert!(events
             .iter()
             .any(|e| matches!(e.kind, SdlcEventKind::Started { .. })));

@@ -5,11 +5,11 @@ on:
   push:
     branches: [main]
     paths:
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - 'crates/**'
-      - 'Dockerfile.rust.slim'
-      - '.github/workflows/build-push-image.yml'
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "crates/**"
+      - "Dockerfile.rust.slim"
+      - ".github/workflows/build-push-image.yml"
 
 concurrency:
   group: image-${{ github.ref }}
@@ -57,3 +57,75 @@ jobs:
           # plenty of RAM so this finishes well before hitting any limit.
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Flip GHCR package to public
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          PACKAGE_NAME=tracera-server
+          for i in 1 2 3 4 5; do
+            RESP=$(curl -sS -X PATCH \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              -H "Content-Type: application/json" \
+              "https://api.github.com/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${PACKAGE_NAME}" \
+              -d '{"visibility":"public"}' -w "\n%{http_code}")
+            CODE=$(echo "$RESP" | tail -1)
+            BODY=$(echo "$RESP" | sed '$d')
+            echo "Attempt $i: HTTP $CODE"
+            echo "$BODY" | head -c 200
+            echo ""
+            if [ "$CODE" = "200" ]; then
+              echo "✅ ${PACKAGE_NAME} is now public"
+              exit 0
+            fi
+            # PATCH on /user/packages/container/X returns 404 when the user has no
+            # admin scope on the org-owned package. Try the org endpoint next.
+            if [ "$CODE" = "404" ]; then
+              echo "Package not visible via user endpoint; trying /user/ retry..."
+              RESP=$(curl -sS -X PATCH \
+                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                -H "Accept: application/vnd.github+json" \
+                -H "Content-Type: application/json" \
+                "https://api.github.com/user/packages/container/${PACKAGE_NAME}" \
+                -d '{"visibility":"public"}' -w "\n%{http_code}")
+              CODE=$(echo "$RESP" | tail -1)
+              BODY=$(echo "$RESP" | sed '$d')
+              echo "User-retry $i: HTTP $CODE"
+              echo "$BODY" | head -c 200
+              echo ""
+              if [ "$CODE" = "200" ]; then
+                echo "✅ ${PACKAGE_NAME} is now public"
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo "⚠️  Could not auto-flip package visibility (HTTP $CODE after retries)"
+          echo "    Action required: https://github.com/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${PACKAGE_NAME}/settings"
+          exit 0
+
+      - name: Trigger Render redeploy
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+        run: |
+          if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID" ]; then
+            echo "⏭️  RENDER_API_KEY or RENDER_SERVICE_ID not set — skipping"
+            exit 0
+          fi
+          HTTP_CODE=$(curl -sS -o /tmp/render_resp.json -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${RENDER_API_KEY}" \
+            -H "Accept: application/json" \
+            "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys")
+          echo "Render trigger HTTP ${HTTP_CODE}"
+          cat /tmp/render_resp.json | head -c 400
+          echo ""
+          if [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Render redeploy triggered"
+          else
+            echo "⚠️  Render trigger returned HTTP ${HTTP_CODE} (manual deploy may be needed)"
+          fi

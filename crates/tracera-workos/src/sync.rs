@@ -117,7 +117,7 @@ pub struct DirectoryUser {
 
 /// `dsync.group.*` payload (embedded inside user payloads as a reference,
 /// or top-level for group events).
-#[derive(Clone, Debug, Serialize, Deserialize, Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DirectoryGroupRef {
     pub id: String,
     #[serde(default)]

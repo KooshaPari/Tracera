@@ -131,7 +131,7 @@ impl ClickHouseClient {
 
     /// Insert rows of any single record type. Dispatches to the matching table
     /// based on the type marker.
-    #[instrument(skip(self, rows))]
+    #[instrument(skip(self, event))]
     pub async fn insert_event(&self, event: &Event) -> Result<()> {
         match event {
             Event::AgentRun(row) => self.insert_agent_run(std::slice::from_ref(row)).await,
@@ -146,12 +146,15 @@ impl ClickHouseClient {
     // Internals
     // -----------------------------------------------------------------------
 
-    async fn insert_rows<T: clickhouse::Row>(&self, table: &str, rows: &[T]) -> Result<()> {
+    async fn insert_rows<T>(&self, table: &str, rows: &[T]) -> Result<()>
+    where
+        T: clickhouse::RowOwned + serde::Serialize,
+    {
         if rows.is_empty() {
             debug!(table, "skipping insert (empty batch)");
             return Ok(());
         }
-        let mut insert = self.inner.insert(table).await?;
+        let mut insert: clickhouse::insert::Insert<T> = self.inner.insert(table).await?;
         for row in rows {
             insert.write(row).await?;
         }
@@ -354,9 +357,9 @@ impl AnalyticsClient {
     /// Run [`analytics::summary`] and return the aggregated result.
     pub async fn summary(&self) -> Result<Vec<AnalyticsSummaryRow>> {
         let sql = analytics::summary();
-        let mut cursor = self.client.query(&sql).fetch::<AnalyticsSummaryRow>().await?;
+        let mut cursor = self.client.query(&sql).fetch::<AnalyticsSummaryRow>()?;
         let mut out = Vec::new();
-        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("summary", e))? {
+        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("summary", e.to_string()))? {
             out.push(row);
         }
         Ok(out)
@@ -368,10 +371,9 @@ impl AnalyticsClient {
         let mut cursor = self
             .client
             .query(&sql)
-            .fetch::<AgentOutcomeRow>()
-            .await?;
+            .fetch::<AgentOutcomeRow>()?;
         let mut out = Vec::new();
-        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("agent_outcomes", e))? {
+        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("agent_outcomes", e.to_string()))? {
             out.push(row);
         }
         Ok(out)
@@ -380,9 +382,9 @@ impl AnalyticsClient {
     /// Run [`analytics::llm_daily`] for the given lookback window.
     pub async fn llm_daily(&self, days: Option<u32>) -> Result<Vec<LlmDailyRow>> {
         let sql = analytics::llm_daily(days);
-        let mut cursor = self.client.query(&sql).fetch::<LlmDailyRow>().await?;
+        let mut cursor = self.client.query(&sql).fetch::<LlmDailyRow>()?;
         let mut out = Vec::new();
-        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("llm_daily", e))? {
+        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("llm_daily", e.to_string()))? {
             out.push(row);
         }
         Ok(out)
@@ -391,9 +393,9 @@ impl AnalyticsClient {
     /// Run [`analytics::recent_deploys`].
     pub async fn recent_deploys(&self, n: u32) -> Result<Vec<DeploySummaryRow>> {
         let sql = analytics::recent_deploys(n);
-        let mut cursor = self.client.query(&sql).fetch::<DeploySummaryRow>().await?;
+        let mut cursor = self.client.query(&sql).fetch::<DeploySummaryRow>()?;
         let mut out = Vec::new();
-        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("recent_deploys", e))? {
+        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("recent_deploys", e.to_string()))? {
             out.push(row);
         }
         Ok(out)
@@ -402,9 +404,9 @@ impl AnalyticsClient {
     /// Run [`analytics::trace_by_id`] for a single trace.
     pub async fn trace_by_id(&self, trace_id: &str) -> Result<Vec<TraceSpan>> {
         let sql = analytics::trace_by_id(trace_id);
-        let mut cursor = self.client.query(&sql).fetch::<TraceSpan>().await?;
+        let mut cursor = self.client.query(&sql).fetch::<TraceSpan>()?;
         let mut out = Vec::new();
-        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("traces", e))? {
+        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("traces", e.to_string()))? {
             out.push(row);
         }
         Ok(out)
@@ -419,10 +421,9 @@ impl AnalyticsClient {
         let mut cursor = self
             .client
             .query(&sql)
-            .fetch::<TraceLatencyRow>()
-            .await?;
+            .fetch::<TraceLatencyRow>()?;
         let mut out = Vec::new();
-        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("trace_latency", e))? {
+        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("trace_latency", e.to_string()))? {
             out.push(row);
         }
         Ok(out)

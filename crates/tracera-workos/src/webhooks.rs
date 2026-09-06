@@ -11,15 +11,12 @@
 //! timestamp tolerance (default 5 minutes) to defeat replay.
 
 use chrono::Utc;
-use hmac::{Hmac, Mac};
 use serde::{Deserialize, Serialize};
-use sha2::Sha256;
+use sha2::{Digest, Sha256};
 use std::collections::HashSet;
 use subtle::ConstantTimeEq;
 
 use crate::error::{WorkOSError, WorkOSResult};
-
-type HmacSha256 = Hmac<Sha256>;
 
 /// Default replay-protection window. Production tenants should keep this ≤ 300s.
 pub const DEFAULT_TOLERANCE_SECONDS: i64 = 300;
@@ -101,13 +98,38 @@ pub fn verify_signature(
 }
 
 fn compute_signature(secret: &str, timestamp: i64, body: &[u8]) -> String {
-    let mut mac = HmacSha256::new_from_slice(secret.as_bytes())
-        .expect("HMAC accepts any key length");
-    mac.update(timestamp.to_string().as_bytes());
-    mac.update(b".");
-    mac.update(body);
-    let bytes = mac.finalize().into_bytes();
-    bytes.iter().map(|b| format!("{b:02x}")).collect()
+    // HMAC-SHA256(secret, "<ts>.<body>") — implemented directly on sha2 to
+    // avoid pulling hmac + an extra digest version into the dep graph.
+    const BLOCK_SIZE: usize = 64;
+    let key = secret.as_bytes();
+    let mut key_block = [0u8; BLOCK_SIZE];
+    if key.len() > BLOCK_SIZE {
+        let mut h = Sha256::new();
+        h.update(key);
+        let digest = h.finalize();
+        key_block[..digest.len()].copy_from_slice(&digest);
+    } else {
+        key_block[..key.len()].copy_from_slice(key);
+    }
+    // ipad = K' XOR 0x36 ; opad = K' XOR 0x5c
+    let mut ipad = [0u8; BLOCK_SIZE];
+    let mut opad = [0u8; BLOCK_SIZE];
+    for i in 0..BLOCK_SIZE {
+        ipad[i] = key_block[i] ^ 0x36;
+        opad[i] = key_block[i] ^ 0x5c;
+    }
+    // inner = SHA256(ipad || "<ts>.<body>")
+    let mut inner_h = Sha256::new();
+    inner_h.update(&ipad);
+    inner_h.update(timestamp.to_string().as_bytes());
+    inner_h.update(b".");
+    inner_h.update(body);
+    let inner_hash = inner_h.finalize();
+    // outer = SHA256(opad || inner_hash)
+    let mut outer_h = Sha256::new();
+    outer_h.update(&opad);
+    outer_h.update(&inner_hash);
+    outer_h.finalize().iter().map(|b| format!("{b:02x}")).collect()
 }
 
 fn constant_time_hex_eq(left: &[u8], right: &[u8]) -> bool {
