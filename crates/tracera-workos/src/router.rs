@@ -36,24 +36,15 @@ pub const SESSION_COOKIE_NAME: &str = "tracera_workos_session";
 /// the session cookie.
 const SESSION_COOKIE_ATTRS: &str = "Path=/; HttpOnly; SameSite=Lax; Max-Age=3600";
 
-/// Build the WorkOS sub-router. The returned router is `Router<()>` (no
-/// state). The caller mounts it under their parent router via
-/// `Router::nest("/auth/workos", workos_router)` after first converting it
-/// with `with_state(WorkOSClient)`. Axum requires the nested router to
-/// have `()` state when the parent uses `with_state`, so we expose the
-/// inner conversion via [`router_with_state`].
-/// Build a router that can be nested into any parent `Router<S>` as long as
-/// `S` contains a `WorkOSClient` (via `FromRef`).
-pub fn router<S>() -> Router<S>
-where
-    S: Clone + Send + Sync + 'static,
-    WorkOSClient: axum::extract::FromRef<S>,
-{
-    router_with_state(WorkOSClient::default_for_router())
-}
-
-/// Build the WorkOS sub-router with the given client baked in as state.
-/// This is the version you should mount directly with `Router::nest(...)`.
+/// Build the WorkOS sub-router. The returned router is `Router<S>`. The
+/// caller mounts it under their parent router via
+/// `Router::nest("/auth/workos", tracera_workos::router::router_with_state::<AppState>(workos_client))`
+/// after first wrapping with `.with_state(app_state.clone())` so the inner
+/// router's `WorkOSClient` state matches the parent's `AppState` state.
+/// Note: this router is **not** `Router<()>` — the inner handlers extract
+/// `State<WorkOSClient>`, so the parent MUST supply `WorkOSClient` (via
+/// `FromRef<AppState> for WorkOSClient`) for the nested router to bind
+/// correctly.
 pub fn router_with_state<S>(client: WorkOSClient) -> Router<S>
 where
     S: Clone + Send + Sync + 'static,
@@ -379,7 +370,7 @@ mod tests {
 
     #[test]
     fn router_builds_with_all_four_routes() {
-        let _r = router();
+        let _r: axum::Router<()> = router_with_state(client());
     }
 
     #[test]

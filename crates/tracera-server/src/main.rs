@@ -38,7 +38,6 @@ use tower_http::{
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 use uuid::Uuid;
-use tracera_workos::WorkOSClient;
 
 static PROM_HANDLE: std::sync::OnceLock<metrics_exporter_prometheus::PrometheusHandle> =
     std::sync::OnceLock::new();
@@ -844,46 +843,37 @@ async fn prom_metrics_handler() -> impl IntoResponse {
 /// still mounts but every handler returns 503 Service Unavailable with a
 /// structured JSON error — this keeps the existing auth/test surface stable
 /// when WorkOS isn't configured.
-fn build_workos_router<S>() -> axum::Router<S>
+fn build_workos_router<S>(client: tracera_workos::WorkOSClient) -> axum::Router<S>
 where
     S: Clone + Send + Sync + 'static,
-    WorkOSClient: axum::extract::FromRef<S>,
+{
+    if tracera_workos::WorkOSConfig::from_env().is_ok() {
+        tracing::info!("WorkOS integration enabled");
+        return tracera_workos::router::router_with_state::<S>(client);
+    }
+    fallback_inert_workos_router::<S>()
+}
+
+/// Inert `/auth/workos/*` router used when WorkOS env vars are not configured.
+/// Returns 503 Service Unavailable with a structured JSON error so existing
+/// auth/test paths stay observable.
+fn fallback_inert_workos_router<S>() -> axum::Router<S>
+where
+    S: Clone + Send + Sync + 'static,
 {
     use axum::response::IntoResponse;
-    match tracera_workos::WorkOSConfig::from_env() {
-        Ok(cfg) => {
-            tracing::info!(
-                "WorkOS integration enabled (client_id={}, api_base={})",
-                cfg.client_id,
-                cfg.api_base,
-            );
-            let _client = tracera_workos::WorkOSClient::new(cfg);
-            // WorkOS sub-router is generic over the parent's state. The inner
-            // routes use WorkOSClient::default_for_router() so the parent
-            // must impl FromRef<WorkOSClient> for AppState below.
-            tracera_workos::router::router::<S>()
-        }
-        Err(err) => {
-            tracing::warn!(
-                "WorkOS integration disabled (config error: {err}); \
-                 /auth/workos/* will return 503"
-            );
-            // Inert fallback: every path returns a clear 503. We mount it on
-            // `/` so the nest covers every sub-path uniformly.
-            async fn not_configured() -> impl IntoResponse {
-                (
-                    axum::http::StatusCode::SERVICE_UNAVAILABLE,
-                    axum::Json(serde_json::json!({
-                        "error": "workos_not_configured",
-                        "message":
-                            "set WORKOS_API_KEY, WORKOS_CLIENT_ID, WORKOS_WEBHOOK_SECRET, \
-                             WORKOS_REDIRECT_URI to enable the WorkOS auth surface",
-                    })),
-                )
-            }
-            axum::Router::new().fallback(not_configured)
-        }
+    async fn not_configured() -> impl IntoResponse {
+        (
+            axum::http::StatusCode::SERVICE_UNAVAILABLE,
+            axum::Json(serde_json::json!({
+                "error": "workos_not_configured",
+                "message":
+                    "set WORKOS_API_KEY, WORKOS_CLIENT_ID, WORKOS_WEBHOOK_SECRET, \
+                     WORKOS_REDIRECT_URI to enable the WorkOS auth surface",
+            })),
+        )
     }
+    axum::Router::new().fallback(not_configured)
 }
 
 /// Stub handler for Tier-2 endpoints not yet implemented.
@@ -904,7 +894,7 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
     // WorkOS integration: build the client + nested router once. If the
     // required env vars are absent we still mount an inert sub-router that
     // returns 503, so legacy auth surface (and tests) continue to work.
-    let workos_router = build_workos_router::<AppState>();
+    let workos_router = build_workos_router::<AppState>(state.workos_client.clone());
     Router::new()
         .route("/healthz", get(health::healthz))
         .route("/health", get(health::health))
