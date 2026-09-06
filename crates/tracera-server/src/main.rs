@@ -38,6 +38,7 @@ use tower_http::{
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 use uuid::Uuid;
+use tracera_workos::WorkOSClient;
 
 static PROM_HANDLE: std::sync::OnceLock<metrics_exporter_prometheus::PrometheusHandle> =
     std::sync::OnceLock::new();
@@ -846,6 +847,7 @@ async fn prom_metrics_handler() -> impl IntoResponse {
 fn build_workos_router<S>() -> axum::Router<S>
 where
     S: Clone + Send + Sync + 'static,
+    WorkOSClient: axum::extract::FromRef<S>,
 {
     use axum::response::IntoResponse;
     match tracera_workos::WorkOSConfig::from_env() {
