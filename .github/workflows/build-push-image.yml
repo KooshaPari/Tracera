@@ -5,11 +5,11 @@ on:
   push:
     branches: [main]
     paths:
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - 'crates/**'
-      - 'Dockerfile.rust.slim'
-      - '.github/workflows/build-push-image.yml'
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "crates/**"
+      - "Dockerfile.rust.slim"
+      - ".github/workflows/build-push-image.yml"
 
 concurrency:
   group: image-${{ github.ref }}
