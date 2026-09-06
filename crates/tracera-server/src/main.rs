@@ -653,9 +653,18 @@ async fn main() {
     let serve_dir = ServeDir::new(&frontend_dist).fallback(ServeFile::new(&index_html));
     let app = app.fallback_service(serve_dir);
 
+    // Platform convention: Render passes a `PORT` env var (e.g. "10000") that
+    // points at the container port its health checks + proxy forward to. We fall
+    // back to the loopback default for local dev when neither is set.
     let addr = env::var("TRACERA_BIND_ADDR")
         .ok()
         .and_then(|v| v.parse().ok())
+        .or_else(|| {
+            env::var("PORT")
+                .ok()
+                .and_then(|p| p.parse().ok())
+                .map(|port| SocketAddr::from(([0, 0, 0, 0], port)))
+        })
         .unwrap_or_else(|| SocketAddr::from(([127, 0, 0, 1], 8080)));
 
     let public_bind_mode = env::var(PUBLIC_BIND_MODE_ENV).ok();
