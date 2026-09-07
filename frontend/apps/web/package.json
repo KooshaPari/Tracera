@@ -212,7 +212,7 @@
     "vite": "^8.2.1",
     "vite-plugin-image-optimizer": "^2.0.3",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.10"
+    "vitest": "^5.0.0"
   },
   "msw": {
     "workerDirectory": [
