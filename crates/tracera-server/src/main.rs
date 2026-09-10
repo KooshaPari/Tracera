@@ -642,7 +642,7 @@ async fn main() {
         store,
         workos_client: tracera_workos::WorkOSClient::default_for_router(),
         cache: tracera_server::cache::CacheClient::from_env().map(Arc::new),
-        neo4j: tracera_server::neo4j::Neo4jSync::from_env().map(Arc::new),
+        neo4j: tracera_server::neo4j::Neo4jSync::from_env().await.map(Arc::new),
         r2: tracera_server::r2::R2Client::from_env().map(Arc::new),
     };
 

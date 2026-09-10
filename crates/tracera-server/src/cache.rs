@@ -92,10 +92,12 @@ impl CacheClient {
         match &*self.inner {
             CacheInner::Disabled => {}
             CacheInner::Upstash { base_url, token, client } => {
-                let mut cmd = vec!["SET", urlencoded(key).as_str(), urlencoded(value).as_str()];
+                let key_enc = urlencoded(key);
+                let val_enc = urlencoded(value);
+                let mut cmd: Vec<String> = vec!["SET".to_string(), key_enc, val_enc];
                 if let Some(ttl) = ttl_secs {
-                    cmd.push("EX");
-                    cmd.push(&ttl.to_string());
+                    cmd.push("EX".to_string());
+                    cmd.push(ttl.to_string());
                 }
                 let body: Vec<serde_json::Value> = cmd
                     .iter()
