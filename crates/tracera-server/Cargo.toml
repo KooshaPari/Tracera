@@ -36,6 +36,10 @@ tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
 tracera-workos = { path = "../tracera-workos" }
 uuid = { workspace = true }
 
+# Optional integrations (activated by env vars: CACHE_URL, NEO4J_URL, R2_*, DATABASE_URL)
+aws-sdk-s3 = { version = "1", default-features = false, features = ["behavior-version-latest", "rustls", "sigv4a"] }
+neo4rs = { version = "0.7", default-features = false }
+
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 tower = { version = "0.5", features = ["util"] }

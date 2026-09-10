@@ -80,6 +80,9 @@ struct AppState {
     started_at: Instant,
     store: Arc<dyn Store>,
     workos_client: tracera_workos::WorkOSClient,
+    cache: Option<Arc<tracera_server::cache::CacheClient>>,
+    neo4j: Option<Arc<tracera_server::neo4j::Neo4jSync>>,
+    r2: Option<Arc<tracera_server::r2::R2Client>>,
 }
 
 impl axum::extract::FromRef<AppState> for tracera_workos::WorkOSClient {
@@ -593,7 +596,7 @@ async fn main() {
                     );
                     std::process::exit(1);
                 });
-            sqlx::migrate!("./migrations")
+            sqlx::migrate!("./migrations-postgres")
                 .run(&pool)
                 .await
                 .unwrap_or_else(|e| {
@@ -638,6 +641,9 @@ async fn main() {
         started_at: Instant::now(),
         store,
         workos_client: tracera_workos::WorkOSClient::default_for_router(),
+        cache: tracera_server::cache::CacheClient::from_env().map(Arc::new),
+        neo4j: tracera_server::neo4j::Neo4jSync::from_env().map(Arc::new),
+        r2: tracera_server::r2::R2Client::from_env().map(Arc::new),
     };
 
     let auth_token = env::var(AUTH_TOKEN_ENV)
