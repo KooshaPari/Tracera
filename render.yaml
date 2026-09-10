@@ -24,6 +24,11 @@ services:
         port: 8080
         name: http1
     autoDeploy: true
+    # GitHub OIDC keyless auth — Render auto-mints a short-lived OIDC token
+    # for each deploy via the GitHub Actions workflow that calls
+    # POST /v1/services/{id}/deploys with the OIDC JWT.
+    # Removes the need for RENDER_API_KEY as a long-lived repo secret.
+    oauth: github
 
 databases:
   - name: tracera-postgres
