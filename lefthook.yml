@@ -108,8 +108,9 @@ pre-push:
     stack-up:
       tags: devops
       run: |
-        echo "[lefthook] make stack (compose up local dev stack)"
-        command -v docker >/dev/null 2>&1 && make stack || echo "[lefthook] docker not installed; skipping"
+        echo "[lefthook] task dev:stack (bring up local dev stack + tailnet check)"
+        command -v task >/dev/null 2>&1 && task dev:stack || echo "[lefthook] task not installed; skipping"
+        command -v tailscale >/dev/null 2>&1 && tailscale status >/dev/null 2>&1 || echo "[lefthook] tailscale not active; CF tunnel will be fallback"
 
     cloudflared-check:
       tags: devops

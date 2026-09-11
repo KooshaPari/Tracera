@@ -11,7 +11,7 @@ use tracing::{debug, info, warn};
 use neo4rs::{Graph, Query};
 
 #[derive(Clone)]
-pub struct Neo4jSync {
+pub struct Neo4jClient {
     inner: Arc<Neo4jInner>,
 }
 
@@ -20,13 +20,16 @@ enum Neo4jInner {
     Enabled { graph: Graph },
 }
 
-impl Neo4jSync {
-    pub async fn from_env() -> Self {
+impl Neo4jClient {
+    /// Construct from `NEO4J_URL` / `NEO4J_USER` / `NEO4J_PASSWORD` env vars,
+    /// or return `None` if any required var is missing or the driver fails
+    /// to initialise.  When `None` is returned, sync is a no-op.
+    pub async fn from_env() -> Option<Self> {
         let url = match std::env::var("NEO4J_URL").ok().filter(|u| !u.is_empty()) {
             Some(u) => u,
             None => {
                 debug!("NEO4J_URL not set; neo4j sync disabled (no-op)");
-                return Self { inner: Arc::new(Neo4jInner::Disabled) };
+                return None;
             }
         };
         let user = std::env::var("NEO4J_USER").unwrap_or_else(|_| "neo4j".to_string());
@@ -34,7 +37,7 @@ impl Neo4jSync {
             Some(p) => p,
             None => {
                 warn!("NEO4J_URL set but NEO4J_PASSWORD missing; neo4j sync disabled");
-                return Self { inner: Arc::new(Neo4jInner::Disabled) };
+                return None;
             }
         };
 
@@ -44,11 +47,11 @@ impl Neo4jSync {
         match graph_result {
             Ok(graph) => {
                 info!("Neo4j Bolt sync enabled (endpoint {})", url_for_log);
-                Self { inner: Arc::new(Neo4jInner::Enabled { graph }) }
+                Some(Self { inner: Arc::new(Neo4jInner::Enabled { graph }) })
             }
             Err(e) => {
                 warn!("Neo4j driver init failed ({:?}); sync disabled", e);
-                Self { inner: Arc::new(Neo4jInner::Disabled) }
+                None
             }
         }
     }

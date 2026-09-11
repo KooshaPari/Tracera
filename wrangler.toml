@@ -11,7 +11,12 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ENVIRONMENT = "production"
-TRACERA_API = "https://tracera-server.onrender.com"
+# Canonical Tracera URI (Sep-2026): all production traffic goes to
+# tracera.pheno.studio.  This worker (tracera-edge) lives at
+# tracera-edge.pheno.studio and proxies/aggregates to TRACERA_API.
+TRACERA_API = "https://tracera.pheno.studio/api"
+# Optional fallback (image-deploy from GHCR) — set only if needed.
+# TRACERA_FALLBACK = "https://tracera-server.onrender.com"
 
 [[kv_namespaces]]
 binding = "TRACERA_KV"

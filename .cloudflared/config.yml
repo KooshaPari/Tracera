@@ -1,29 +1,43 @@
-# Cloudflare Tunnel config — exposes the local Tracera backend to the
-# public internet at `tracera.pheno.studio/api/*` and
-# `mcp.tracera.pheno.studio` (and any other ingresses) WITHOUT opening
-# any port on the operator's Windows firewall.
+# =============================================================================
+# Tracera hybrid ingress map
+# =============================================================================
+# Public DNS (Cloudflare-managed, exposed via Cloudflare Tunnel):
+#   https://tracera.pheno.studio/api/*   -> localhost:8080  (tracera-server)
+#   https://api.tracera.pheno.studio     -> localhost:8080  (tracera-server)
+#   https://mcp.tracera.pheno.studio    -> localhost:8081  (tracera-mcp streamable-HTTP)
+#
+# Private DNS (Tailnet, served ONLY to devices on the same tailnet
+# when the operator prefers to skip CF for personal-device callers):
+#   http://tracera.tail-net/                  -> localhost:8080  (MagicDNS)
+#   http://100.x.y.z:8080/api                -> localhost:8080  (raw IP)
+#
+# This file is read by `cloudflared` (CF tunnel) AND is the source of
+# truth that `start-tunnel.sh` reflects in its activation echo.
+# =============================================================================
 #
 # Pre-requisites (one-time setup):
-#   1. Login:        `cloudflared tunnel login`  (opens browser to add your
-#                    account to the cert.pem file in this dir)
-#   2. Create tunnel: `cloudflared tunnel create tracera`  (writes
-#                    credentials JSON to .cloudflared/<UUID>.json)
-#   3. DNS:          `cloudflared tunnel route dns tracera tracera.pheno.studio`
-#                    and repeat for `api.tracera.pheno.studio`,
-#                    `mcp.tracera.pheno.studio` (or use the
-#                    `ingress:` block below + auto-DNS).
-#   4. Run:          `./scripts/start-tunnel.sh`  (or `cloudflared tunnel
-#                    run tracera` for a foreground process).
+#   Tailnet (PRIMARY, preferred):
+#     1. Install Tailscale:    https://tailscale.com/download/windows
+#     2. `tailscale up`        (browser sign-in)
+#     3. Enable MagicDNS so `tracera` resolves inside the tailnet
+#   Cloudflare (FALLBACK, public-internet):
+#     1. `cloudflared tunnel login`           (browser cert flow)
+#     2. `cloudflared tunnel create tracera`  (writes UUID.json)
+#     3. DNS:
+#         cloudflared tunnel route dns tracera tracera.pheno.studio
+#         cloudflared tunnel route dns tracera api.tracera.pheno.studio
+#         cloudflared tunnel route dns tracera mcp.tracera.pheno.studio
+#     4. Run via `task tunnel-bg` (or `cloudflared tunnel run tracera`).
+#   Optional Windows service:
+#     cloudflared service install && sc start cloudflared
 #
-# Optional: install as a Windows service so it auto-starts on boot:
-#   cloudflared service install
-#   sc start cloudflared
-#   sc config cloudflared start=auto
+# Switching the order: the script `scripts/start-tunnel.sh` checks Tailscale
+# first and prints the preferred routing for the operator.
 
 tunnel: tracera
 credentials-file: .cloudflared/<UUID>.json
 
-# ingress rules: route DNS names to local services
+# Public-internet ingresses (Cloudflare Tunnel)
 ingress:
   # Public API (tracera-server Rust binary on :8080)
   - hostname: tracera.pheno.studio
@@ -32,14 +46,29 @@ ingress:
   - hostname: api.tracera.pheno.studio
     service: http://localhost:8080
 
-  # MCP server (stdio normally, but if we run a streamable-HTTP wrapper
-  # on :8081 for IDE clients, expose it here)
+  # MCP server (tracera-mcp streamable-HTTP on :8081, for IDE clients)
   - hostname: mcp.tracera.pheno.studio
     service: http://localhost:8081
 
-  # Catch-all (required): return 404 for any unmatched hostname
+  # Catch-all (required): 404 for any unmatched hostname
   - service: http_status:404
 
 # Optional: logfile for debugging
 logfile: .cloudflared/tunnel.log
 loglevel: info
+
+# =============================================================================
+# Notes on the hybrid Tailnet + CF setup (Sep-2026 architecture):
+# =============================================================================
+# * CF tunnel is the "public" ingress — anyone with the URL can hit it.
+# * Tailnet is the "private" ingress — only operators' personal devices
+#   on the same tailnet can reach `tracera:8080` directly (no CF hop).
+# * Both run side-by-side; the public DNS resolves to the CF edge,
+#   the tailnet DNS resolves to the local device IP. No conflict.
+# * To prefer Tailnet: set the client to use `http://tracera:8080`
+#   (MagicDNS) when on the tailnet; the public URL otherwise.
+# * To remove CF entirely (private-only):
+#     1. `task tunnel-stop`
+#     2. uninstall the cloudflared service
+#     3. delete the credentials JSON + cert.pem
+#   The stack remains fully reachable via Tailnet MagicDNS.

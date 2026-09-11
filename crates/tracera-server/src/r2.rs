@@ -22,7 +22,10 @@ enum R2Inner {
 }
 
 impl R2Client {
-    pub fn from_env() -> Self {
+    /// Construct from `R2_ACCOUNT_ID` / `R2_ACCESS_KEY_ID` /
+    /// `R2_SECRET_ACCESS_KEY` / `R2_BUCKET` env vars.  Returns `None` if
+    /// any required var is missing (no-op storage).
+    pub fn from_env() -> Option<Self> {
         let account = std::env::var("R2_ACCOUNT_ID").ok();
         let access = std::env::var("R2_ACCESS_KEY_ID").ok();
         let secret = std::env::var("R2_SECRET_ACCESS_KEY").ok();
@@ -30,7 +33,7 @@ impl R2Client {
 
         if account.is_none() || access.is_none() || secret.is_none() || bucket.is_none() {
             debug!("R2 env vars incomplete; artifact storage disabled (no-op)");
-            return Self { inner: Arc::new(R2Inner::Disabled) };
+            return None;
         }
 
         let account = account.unwrap();
@@ -58,9 +61,9 @@ impl R2Client {
         let client = aws_sdk_s3::Client::from_conf(cfg);
 
         info!("R2 artifact storage enabled (bucket: {})", bucket);
-        Self {
+        Some(Self {
             inner: Arc::new(R2Inner::Enabled { client, bucket }),
-        }
+        })
     }
 
     pub fn is_enabled(&self) -> bool {

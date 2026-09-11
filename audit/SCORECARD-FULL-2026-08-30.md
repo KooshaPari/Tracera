@@ -2690,3 +2690,103 @@ make mcp-server          # listens on :8081
 This 4-way redundancy (local+Render+Vercel+CF-edge) means no single point of failure.
 
 ---
+
+
+## Appendix L: Canonical Architecture & Global Rules (2026-09-10)
+
+This appendix documents three global rules that govern **all** Tracera deliverables, code, and tooling from this commit forward.
+
+### L.1 — `task` replaces `make` (global rule)
+
+**Rule:** All entry-point scripts in this repo use **`task`** (https://taskfile.dev) instead of `make`. The legacy `Makefile` is retained as a thin wrapper that forwards every target to `task` so any existing developer muscle-memory still works, but every new documentation, script, CI step, and lefthook hook uses `task`.
+
+**Rationale:** `task` is cross-platform (Windows / macOS / Linux without `/bin/sh` semantics), has first-class YAML, supports Go-template expressions, and has built-in includes and dependencies. It is the single canonical command-runner across all pheno.* / phenotype.* projects, so any developer familiar with one repo is immediately productive in another.
+
+**Migration map (the canonical entrypoints):**
+
+| Old `make` target | New `task` target | What it does |
+|---|---|---|
+| `make stack` | `task dev:stack` | `podman compose -f docker-compose.dev.yml up -d` (25 local services) |
+| `make run-server` | `task dev:run-server` | Native Rust binary on `:8080` |
+| `make mcp-server` | `task dev:mcp-server` | Native Rust binary on `:8081` |
+| `make tunnel` | `task tunnel:up` | Bring up Tailscale + Cloudflared hybrid tunnel |
+| `make tunnel-stop` | `task tunnel:down` | Stop both tunnels |
+| `make deploy` | `task deploy:all` | Push + OIDC redeploy (Render fallback) |
+| `make reset` | `task dev:reset` | `podman compose down -v` |
+
+### L.2 — Canonical domain architecture
+
+**Rule:** All Tracera services, sub-domains, and path-prefixes resolve under the **`tracera.pheno.studio`** parent domain. The legacy `pheno.studio`, `tracera.phenotype.studio`, and `*.kooshapari.workers.dev` hosts are retained only as transitional aliases.
+
+**Canonical URI map:**
+
+| Surface | Canonical URI | Backend | Notes |
+|---|---|---|---|
+| Marketing root | `https://tracera.pheno.studio` | Cloudflare Pages | Landing page for the product |
+| Backend API | `https://api.tracera.pheno.studio` | CF tunnel → `:8080` (local Rust) | Public REST + WS |
+| MCP server | `https://mcp.tracera.pheno.studio` | CF tunnel → `:8081` (local Rust) | AI-agent bridge |
+| Edge cache | `https://edge.tracera.pheno.studio` | CF Worker | WASM trace-link cache |
+| Frontend SPA | `https://app.tracera.pheno.studio` | Vercel | React/Vite/Svelte |
+| Docs | `https://docs.tracera.pheno.studio` | CF Pages | Static site |
+| Tracing dashboard | `https://traces.tracera.pheno.studio` | Grafana | Optional |
+
+**Path-prefix convention:** every surface under the `tracera.pheno.studio` parent has its own subdomain (`api`, `mcp`, `edge`, `app`, `docs`, `traces`). Bare-domain requests (e.g. `GET /`) serve the marketing root.
+
+### L.3 — Tailnet primary, Cloudflare tunnel fallback (hybrid)
+
+**Rule:** All Tracera services on this device are reachable via your **Tailscale tailnet** (100.x address space) as the **primary** access method. The Cloudflare Tunnel is a **fallback** for when a device is off-net and not on the tailnet.
+
+**Connectivity diagram:**
+
+```
+       +--------------------------+        +-------------------------+
+       |  Tailnet device          |        |  Public internet        |
+       |  (any node with TS key)  |        |  (CF tunnel fallback)  |
+       +--------------------------+        +-------------------------+
+                  ^                                      ^
+                  |                                      |
+                  |  direct 100.x IP                     |  tracera.pheno.studio/api/*
+                  |                                      |
+                  +--------------+-----------------------+
+                                 |
+                       +---------v----------+
+                       |  this Windows host  |
+                       |  (64 GB RAM)       |
+                       |                   |
+                       |  Rust server      |  :8080
+                       |  Rust MCP server  |  :8081
+                       |  cloudflared      |  ingress
+                       |  tailscaled       |  100.x.y.z
+                       |  CF tunnel        |  tracera.pheno.studio/api
+                       +-------------------+
+```
+
+**How they connect:**
+
+1. `task tunnel:up` brings up both `tailscaled` (via `tailscale up`) and `cloudflared` (via the `tracera` tunnel) in a single command.
+2. The bash launcher (`scripts/start-tunnel.sh`) detects whether tailscale is reachable and:
+   - If YES, prints the 100.x IP of this host so any tailnet node can directly connect (preferred path).
+   - If NO, falls back to the CF tunnel ingress so public users get `tracera.pheno.studio/api/*` via the same backend.
+3. Both transports terminate at the same `tracera-server` binary on `:8080` (and the `mcp-server` on `:8081` for the MCP surface), so the binary has zero awareness of which transport delivered the request — the routing is entirely at the cloudflared / tailscale layer.
+4. Switching is automatic: the launcher picks whichever transport can reach the host and falls back on the other on failure.
+
+### L.4 — Landing page is a separate repo (`phenotype.space`)
+
+**Rule:** The Tracera marketing root (`https://tracera.pheno.studio/`) does **NOT** redirect to `phenotype.space`. `phenotype.space` is a **separate portfolio-style repository** that aggregates *all* pheno.* / phenotype.* / kooshapari.com projects (Tracera, AuthKit, the desktop OS service, future ones). It is the single entry point to `projects.kooshapari.com`.
+
+**Tracera home page behaviour:**
+- `https://tracera.pheno.studio/` → Tracera product marketing (this repo).
+- `https://phenotype.space/` → Portfolio of all projects (different repo).
+- `https://projects.kooshapari.com/` → Same portfolio (alternate DNS alias).
+
+There is **no alias or redirect** between Tracera home and the portfolio entry — they are independent surfaces with their own content. A visitor landing on `tracera.pheno.studio` should never be silently sent to `phenotype.space`.
+
+### L.5 — Cross-references
+
+- Appendix J (wiring playbook) — unaffected by this change.
+- Appendix K (local-desktop-as-backend) — the architecture described here remains valid; this appendix is the URI/domain/glue layer above it.
+- `wrangler.toml` `TRACERA_API` now points at `https://api.tracera.pheno.studio` (matches L.2).
+- `frontend/apps/web/.env.production` `VITE_API_URL` now points at `https://api.tracera.pheno.studio` (matches L.2).
+- `Makefile` is now a `task` shim (see L.1).
+- `scripts/start-tunnel.sh` is now a hybrid tailnet+CF launcher (L.3).
+- `.cloudflared/config.yml` ingress routes all paths under the `tracera.pheno.studio` parent (matches L.2).

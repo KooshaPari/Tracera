@@ -8,7 +8,7 @@
 
 use std::sync::Arc;
 use std::time::Duration;
-use tracing::{debug, warn};
+use tracing::{debug, info, warn};
 
 #[derive(Clone)]
 pub struct CacheClient {
@@ -26,28 +26,32 @@ enum CacheInner {
 
 impl CacheClient {
     /// Construct from `CACHE_URL` env var.
+    /// Construct from `CACHE_URL` env var.
     /// Expected formats:
     /// - `redis://<endpoint>.upstash.io:<port>` + `CACHE_TOKEN=...` (ignored if URL embeds token)
     /// - `upstash://:<token>@<host>`
     /// - `https://<endpoint>.upstash.io` + `CACHE_TOKEN=...` (REST, primary path)
-    pub fn from_env() -> Self {
+    /// Construct from `CACHE_URL` env var, or return `None` if it is not configured.
+    /// When the constructor receives a URL but no usable token, it returns
+    /// `None` (disabled) rather than a stub client.
+    pub fn from_env() -> Option<Self> {
         let url = std::env::var("CACHE_URL").ok();
-        let token = std::env::var("CACHE_TOKEN").ok();
 
         if url.is_none() {
             debug!("CACHE_URL not set; cache layer disabled (no-op)");
-            return Self { inner: Arc::new(CacheInner::Disabled) };
+            return None;
         }
 
         let url = url.unwrap();
         let (base_url, embedded_token) = parse_redis_url(&url);
+        let token = std::env::var("CACHE_TOKEN").ok();
         let token = token.or(embedded_token);
 
         let token = match token {
             Some(t) if !t.is_empty() => t,
             _ => {
                 warn!("CACHE_URL set but CACHE_TOKEN missing or empty; cache disabled");
-                return Self { inner: Arc::new(CacheInner::Disabled) };
+                return None;
             }
         };
 
@@ -55,10 +59,9 @@ impl CacheClient {
             .timeout(Duration::from_millis(500))
             .build()
             .expect("reqwest client build");
-
-        Self {
+        Some(Self {
             inner: Arc::new(CacheInner::Upstash { base_url, token, client }),
-        }
+        })
     }
 
     pub fn is_enabled(&self) -> bool {
@@ -153,38 +156,36 @@ fn parse_redis_url(s: &str) -> (String, Option<String>) {
         .or_else(|| s.strip_prefix("http://"))
         .unwrap_or(s);
 
-    // `:<token>@<host>` (Upstash CLI format)
+    // `:<token>@<host>` (Upstash CLI format — REST endpoints are HTTPS/443, strip :6379)
     if let Some(at_idx) = stripped.find('@') {
         let token = stripped[..at_idx].trim_start_matches(':').to_string();
-        let host = &stripped[at_idx + 1..];
-        let base = if s.starts_with("https://") || s.starts_with("http://") {
-            format!("https://{}", host)
-        } else {
-            format!("https://{}", host)
-        };
+        let host = stripped[at_idx + 1..].trim_end_matches(":6379");
+        let base = format!("https://{}", host);
         return (base, Some(token));
     }
 
-    // Plain host[:port]
+    // Plain host[:port] — keep the port (local Redis on :6379)
     let host = stripped.trim_end_matches('/');
     (format!("https://{}", host), None)
 }
 
 fn urlencoded(s: &str) -> String {
     // Minimal URL-encoding for Redis command parts (no space, no special chars except -._).
-    // Upstash REST actually decodes raw — but we encode reserved chars defensively.
-    s.chars()
-        .map(|c| match c {
-            ':' => "%3A",
-            '/' => "%2F",
-            '@' => "%40",
-            '?' => "%3F",
-            '#' => "%23",
-            ' ' => "%20",
-            _ if c.is_ascii_alphanumeric() || "-_.~".contains(c) => c.to_string(),
-            other => format!("%{:02X}", other as u32),
-        })
-        .collect()
+    // Upstash REST actually decodes raw -- but we encode reserved chars defensively.
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            ':' => out.push_str("%3A"),
+            '/' => out.push_str("%2F"),
+            '@' => out.push_str("%40"),
+            '?' => out.push_str("%3F"),
+            '#' => out.push_str("%23"),
+            ' ' => out.push_str("%20"),
+            _ if c.is_ascii_alphanumeric() || "-_.~".contains(c) => out.push(c),
+            other => out.push_str(&format!("%{:02X}", other as u32)),
+        }
+    }
+    out
 }
 
 #[cfg(test)]
@@ -209,15 +210,13 @@ mod tests {
     fn disabled_when_no_env() {
         std::env::remove_var("CACHE_URL");
         std::env::remove_var("CACHE_TOKEN");
-        let c = CacheClient::from_env();
-        assert!(!c.is_enabled());
+        assert!(CacheClient::from_env().is_none());
     }
 
     #[test]
     fn disabled_when_url_but_no_token() {
         std::env::set_var("CACHE_URL", "redis://localhost:6379");
         std::env::remove_var("CACHE_TOKEN");
-        let c = CacheClient::from_env();
-        assert!(!c.is_enabled());
+        assert!(CacheClient::from_env().is_none());
     }
 }
