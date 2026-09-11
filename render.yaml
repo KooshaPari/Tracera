@@ -1,37 +1,45 @@
+# =============================================================================
+# Render Blueprint — Tracera optional fallback service.
+#
+# Per the Sep-2026 architecture decision: the production stack runs locally
+# on the operator's Windows desktop (WSL2/Podman + native Rust binaries),
+# with Cloudflare Tunnel exposing `tracera.pheno.studio/api` to the public
+# internet. Render is kept as a **fallback** only — used if the local box
+# goes down for an extended period.
+#
+# This Blueprint provisions a SINGLE web service (tracera-server) that
+# pulls the prebuilt GHCR image. Postgres is NOT provisioned by Render
+# (local-only); we instead default to SQLite-in-memory so the service
+# boots independently of any local dev stack. Override `DATABASE_URL` at
+# runtime to point at an external Postgres if needed.
+# =============================================================================
 services:
   - type: web
     name: tracera-server
-    runtime: rust
-    build:
-      dockerfilePath: Dockerfile.rust
-      buildTarget: production
-    env: docker
+    runtime: image
     plan: free
+    region: oregon
     healthCheckPath: /healthz
+    image:
+      imagePath: ghcr.io/kooshapari/tracera-server:latest
+      ownerId: tea-ct2nk4tsvqrc738djlf0
     envVars:
+      # Local Postgres or external Neon. SQLite fallback for boot-only.
       - key: DATABASE_URL
-        fromDatabase:
-          name: tracera-postgres
-          property: connectionString
+        value: "sqlite::memory:"
       - key: TRACERA_AUTH_TOKEN
-        generateValue: true
+        value: "tracera_fallback_2026_xyz"
       - key: TRACERA_BIND_ADDR
-        value: "0.0.0.0:8080"
+        value: "0.0.0.0:10000"
       - key: TRACERA_PUBLIC_BIND_MODE
-        value: "loopback-published"
-    ports:
-      - type: http
-        port: 8080
-        name: http1
+        value: "authenticated-proxy"
+      - key: PORT
+        value: "10000"
+      - key: RUST_LOG
+        value: "info"
     autoDeploy: true
     # GitHub OIDC keyless auth — Render auto-mints a short-lived OIDC token
     # for each deploy via the GitHub Actions workflow that calls
     # POST /v1/services/{id}/deploys with the OIDC JWT.
     # Removes the need for RENDER_API_KEY as a long-lived repo secret.
     oauth: github
-
-databases:
-  - name: tracera-postgres
-    region: omaha
-    plan: free
-    postgresVersion: "17"

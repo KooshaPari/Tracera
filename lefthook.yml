@@ -29,14 +29,14 @@ pre-commit:
     # ---- RUST -------------------------------------------------------------
     rustfmt:
       glob: "*.rs"
-      exclude: "(target/|\.cargo/|crates/tracera-tauri/|frontend/apps/tauri-desktop/src-tauri/)"
+      exclude: "(target/|\\.cargo/|crates/tracera-tauri/|frontend/apps/tauri-desktop/src-tauri/)"
       run: |
         echo "[lefthook] rustfmt {staged_files}"
         cargo fmt --all -- --check
 
     clippy:
       glob: "*.rs"
-      exclude: "(target/|\.cargo/|crates/tracera-tauri/|frontend/apps/tauri-desktop/src-tauri/)"
+      exclude: "(target/|\\.cargo/|crates/tracera-tauri/|frontend/apps/tauri-desktop/src-tauri/)"
       run: |
         echo "[lefthook] clippy {staged_files}"
         cargo clippy --all-targets --all-features -- -D warnings
@@ -45,7 +45,7 @@ pre-commit:
     # The frontend uses biome / oxlint; prettier handles general files.
     prettier:
       glob: "*.{js,jsx,ts,tsx,mjs,cjs,json,md,yml,yaml,css,scss,html}"
-      exclude: "(node_modules/|dist/|build/|\.turbo/|\.next/)"
+      exclude: "(node_modules/|dist/|build/|\\.turbo/|\\.next/)"
       run: |
         echo "[lefthook] prettier {staged_files}"
         npx --no-install prettier --check {{staged_files}}
@@ -53,7 +53,7 @@ pre-commit:
     # ---- PYTHON -----------------------------------------------------------
     ruff-format:
       glob: "*.py"
-      exclude: "(\.venv/|venv/|__pycache__/|build/|dist/|\.ruff_cache/)"
+      exclude: "(\\.venv/|venv/|__pycache__/|build/|dist/|\\.ruff_cache/)"
       run: |
         echo "[lefthook] ruff format {staged_files}"
         uv run --frozen --no-sync ruff format --check {{staged_files}} || true
@@ -61,7 +61,7 @@ pre-commit:
     # ---- SHELL ------------------------------------------------------------
     shellcheck:
       glob: "*.{sh,bash}"
-      exclude: "(node_modules/|\.venv/)"
+      exclude: "(node_modules/|\\.venv/)"
       run: |
         echo "[lefthook] shellcheck {staged_files}"
         # Use the system shellcheck if installed, otherwise fall back to
@@ -104,6 +104,24 @@ pre-push:
       run: |
         echo "[lefthook] cargo check --workspace --all-targets"
         cargo check --workspace --all-targets
+
+    stack-up:
+      tags: devops
+      run: |
+        echo "[lefthook] make stack (compose up local dev stack)"
+        command -v docker >/dev/null 2>&1 && make stack || echo "[lefthook] docker not installed; skipping"
+
+    cloudflared-check:
+      tags: devops
+      run: |
+        echo "[lefthook] cloudflared binary"
+        command -v cloudflared >/dev/null 2>&1 && cloudflared --version || echo "[lefthook] cloudflared not installed; skipping tunnel pre-push"
+
+    rustfmt:
+      tags: rust
+      run: |
+        echo "[lefthook] cargo fmt --all"
+        cargo fmt --all
 
     bun-install:
       tags: frontend

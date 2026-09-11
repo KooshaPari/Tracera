@@ -1,0 +1,45 @@
+# Cloudflare Tunnel config — exposes the local Tracera backend to the
+# public internet at `tracera.pheno.studio/api/*` and
+# `mcp.tracera.pheno.studio` (and any other ingresses) WITHOUT opening
+# any port on the operator's Windows firewall.
+#
+# Pre-requisites (one-time setup):
+#   1. Login:        `cloudflared tunnel login`  (opens browser to add your
+#                    account to the cert.pem file in this dir)
+#   2. Create tunnel: `cloudflared tunnel create tracera`  (writes
+#                    credentials JSON to .cloudflared/<UUID>.json)
+#   3. DNS:          `cloudflared tunnel route dns tracera tracera.pheno.studio`
+#                    and repeat for `api.tracera.pheno.studio`,
+#                    `mcp.tracera.pheno.studio` (or use the
+#                    `ingress:` block below + auto-DNS).
+#   4. Run:          `./scripts/start-tunnel.sh`  (or `cloudflared tunnel
+#                    run tracera` for a foreground process).
+#
+# Optional: install as a Windows service so it auto-starts on boot:
+#   cloudflared service install
+#   sc start cloudflared
+#   sc config cloudflared start=auto
+
+tunnel: tracera
+credentials-file: .cloudflared/<UUID>.json
+
+# ingress rules: route DNS names to local services
+ingress:
+  # Public API (tracera-server Rust binary on :8080)
+  - hostname: tracera.pheno.studio
+    path: ^/api(/.*)?$
+    service: http://localhost:8080
+  - hostname: api.tracera.pheno.studio
+    service: http://localhost:8080
+
+  # MCP server (stdio normally, but if we run a streamable-HTTP wrapper
+  # on :8081 for IDE clients, expose it here)
+  - hostname: mcp.tracera.pheno.studio
+    service: http://localhost:8081
+
+  # Catch-all (required): return 404 for any unmatched hostname
+  - service: http_status:404
+
+# Optional: logfile for debugging
+logfile: .cloudflared/tunnel.log
+loglevel: info
