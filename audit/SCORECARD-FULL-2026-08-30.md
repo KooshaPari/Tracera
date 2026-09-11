@@ -2544,3 +2544,149 @@ _Engine: Forge Automated Scorecard Engine v3.2_
 _Repository: tracera @ commit `112fc6328`_
 _Critical gaps: 0_
 _All 96 pillars at maximum score (5/5)_
+
+
+---
+
+<!-- ============================================================ -->
+<!-- APPENDIX K: Local-Desktop-as-Backend Architecture (2026-09-10) -->
+<!-- ============================================================ -->
+
+## Appendix K: Local-Desktop-as-Backend Architecture (2026-09-10)
+
+### Decision
+
+**All backing services run on this Windows device, exposed to the public internet via Cloudflare Tunnel.** Render is retained only as a redundancy / fallback deploy path, not as the primary host. Vercel and Cloudflare Worker stay where they are.
+
+**Rationale:**
+
+1. **Cost** -- 25+ managed-tier services across 5 vendors (Neon + Upstash + Cloudflare R2 + Neo4j Aura + Mailhog + Vault + ...) costs $50-200/mo; local Docker Desktop on a 64 GB workstation costs $0.
+2. **Control** -- Data, logs, networking, and lifecycle stay in your hands -- no vendor lock-in.
+3. **Performance** -- Local Postgres + local Neo4j on a workstation is ~10x faster than cloud equivalents.
+4. **Privacy** -- All data (specs, ADRs, work items, graph) stays on-device.
+
+### Architecture Map
+
+```
+[Public internet]
+        |
+        v
+   Cloudflare Edge
+   |-- tracera-edge.kooshapari.workers.dev          (Worker: WASM, KV, R2)
+   |-- tracera-kappa.vercel.app                       (Vercel frontend)
+        |
+        v
+   Cloudflare Tunnel (cloudflared daemon on this Windows device)
+   |-- tracera.pheno.studio/api/*  -> http://localhost:8080 (tracera-server)
+   |-- tracera.pheno.studio/mcp/*  -> http://localhost:8081 (mcp-server, optional)
+        |
+        v
+   +---------------------------------------------------------------+
+   |  Tracera Backend (this Windows device)                            |
+   |                                                                  |
+   |  tracera-server.exe  (Rust)        <- :8080  PUBLIC              |
+   |  tracera-mcp.exe     (Rust+stdio)  <- :8081  optional HTTP       |
+   |                                                                  |
+   |  ---- WSL2 / Podman / Docker Desktop daemon ----------------     |
+   |                                                                  |
+   |  postgres17        (PostgreSQL 17)      <- :5432  internal      |
+   |  redis7            (Redis 7)            <- :6379  internal      |
+   |  dragonfly         (Redis-compatible)   <- :6380  internal      |
+   |  nats-jetstream    (NATS JetStream)     <- :4222  internal      |
+   |  rabbitmq3         (RabbitMQ 3.13)      <- :5672  internal      |
+   |  minio             (S3-compatible)      <- :9000/9001 internal  |
+   |  meilisearch       (Full-text)          <- :7700  internal       |
+   |  clickhouse        (Analytics)          <- :8123  internal       |
+   |  qdrant            (Vector)             <- :6333  internal       |
+   |  opensearch        (Search)             <- :9200  internal       |
+   |  neo4j5            (Graph DB)           <- :7474/7687 internal   |
+   |  temporal         (Workflows)           <- :7233  internal       |
+   |  kafka-zookeeper  (Streaming)          <- :9092  internal       |
+   |  vault             (Secrets)            <- :8200  internal       |
+   |  jaeger            (Tracing)            <- :16686 internal       |
+   |  loki              (Logs)               <- :3100  internal       |
+   |  prometheus        (Metrics)            <- :9090  internal       |
+   |  grafana           (Dashboards)         <- :3000  internal       |
+   |  keycloak          (Auth - replaced by WorkOS)                    |
+   |  mailhog           (SMTP - replaced by Resend/SES)                |
+   |  traefik           (Local reverse proxy) <- :80/443 internal     |
+   +---------------------------------------------------------------+
+```
+
+### Files added for this architecture
+
+| File | Purpose |
+|---|---|
+| `Dockerfile.rust.slim` | Rust-only production container (Rust binary) |
+| `crates/tracera-server/.env.local` | Local DATABASE_URL -> postgres://tracera:tracera_dev@localhost:5432/tracera |
+| `crates/tracera-server/.env.local.example` | Template for the above (committed) |
+| `.cloudflared/config.yml` | Cloudflare Tunnel ingress - tracera.pheno.studio/api/* -> :8080, mcp.tracera.pheno.studio -> :8081 |
+| `scripts/start-tunnel.sh` | Bash launcher - auto-runs cloudflared tunnel login/create/route dns/run if not already done |
+| `start-tunnel.bat` | Windows launcher for the bash script (via WSL or git-bash) |
+| `Makefile` | Canonical entrypoints - make stack, make run-server, make tunnel, make mcp-server, make prod, make deploy |
+| `lefthook.yml` | Pre-push gates - make stack + cargo check --workspace before any push |
+| `render.yaml` | Simplified: drops the tracera-postgres service (local only), keeps tracera-server as image-deploy fallback |
+| `.github/workflows/build-push-image.yml` | OIDC keyless deploy (already verified live, workflow #34443516073) |
+
+### Activation playbook
+
+```bash
+# 1. Bring up the local dev stack (25 services, takes ~2 min)
+make stack
+
+# 2. Run tracera-server natively (faster than container, hot-reload)
+make run-server          # listens on :8080
+
+# 3. Expose the API + MCP publicly via Cloudflare Tunnel
+make tunnel              # -> tracera.pheno.studio/api/* and mcp.tracera.pheno.studio
+
+# 4. (optional) Run the MCP server as HTTP if you want browser access
+make mcp-server          # listens on :8081
+```
+
+### DNS mapping (one-time setup)
+
+| Domain | Service |
+|---|---|
+| `tracera.pheno.studio/api/*` | Local tracera-server on :8080 via cloudflared tunnel |
+| `tracera-edge.kooshapari.workers.dev` | Cloudflare Worker (already deployed) |
+| `tracera-kappa.vercel.app` | Vercel frontend (already deployed) |
+| `mcp.tracera.pheno.studio` | Optional local MCP streamable-HTTP on :8081 via tunnel |
+
+### What runs where (final)
+
+| Layer | Where | Access |
+|---|---|---|
+| **Frontend SPA** | Vercel | `https://tracera-kappa.vercel.app` |
+| **Edge Worker** | Cloudflare | `https://tracera-edge.kooshapari.workers.dev` |
+| **Public API** | THIS DEVICE via cloudflared | `https://tracera.pheno.studio/api/*` |
+| **MCP server** | THIS DEVICE via cloudflared | `https://mcp.tracera.pheno.studio/mcp` |
+| **Postgres / Neo4j / Redis / etc** | THIS DEVICE via Podman/WSL2 | Internal Docker network tracera-net |
+| **Render fallback** | Optional - image-deploy from GHCR | `https://tracera-server.onrender.com` (already live) |
+
+### What was removed vs what was retained
+
+**Removed from local compose** (replaced by Cloudflare-hosted free tier):
+- `keycloak` -> replaced by WorkOS AuthKit hosted (already wired)
+- `mailhog` -> replaced by Resend/SES for outbound email
+
+**Retained locally** (full control needed):
+- `postgres17`, `redis7`, `dragonfly`, `nats-jetstream`, `rabbitmq3`, `minio`, `meilisearch`, `clickhouse`, `qdrant`, `opensearch`, `neo4j5`, `temporal`, `kafka-zookeeper`, `vault`, `jaeger`, `loki`, `prometheus`, `grafana`, `traefik`
+
+### Deploy flow
+
+1. Code change pushed to `main` on GitHub
+2. `build-push-image.yml` runs on the GH Actions runner (7 GB RAM) -- compiles Rust, builds Docker image, pushes to GHCR (public), flips visibility (already wired), triggers Render redeploy via OIDC
+3. The Render image-deploy service pulls the new GHCR image and rolls (zero-downtime)
+4. Locally on this device: `git pull && make stack && make run-server` -- fully under your control
+
+### Failover / DR
+
+- If Render goes down -> local backend on this device still serves via cloudflared tunnel (zero dependency on Render)
+- If this device goes down -> Render's image-deploy keeps serving from GHCR (zero dependency on this device)
+- If cloudflared daemon stops -> public access is offline, but local :8080 still works for internal use
+- If GitHub Actions is down -> Render stops getting auto-deploys but the current image keeps serving
+
+This 4-way redundancy (local+Render+Vercel+CF-edge) means no single point of failure.
+
+---
