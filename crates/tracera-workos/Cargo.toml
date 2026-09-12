@@ -20,7 +20,7 @@ axum = { version = "0.8", features = ["http2"] }
 base64 = { workspace = true }
 chrono = { workspace = true }
 # JWT verification for hosted login callback tokens
-jsonwebtoken = "10"
+jsonwebtoken = "11"
 serde = { workspace = true }
 serde_json = { workspace = true }
 # sha2 used directly for HMAC-SHA256 verification (avoids hmac crate digest version conflict)
