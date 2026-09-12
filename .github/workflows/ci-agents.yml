@@ -79,9 +79,9 @@ jobs:
       shell: ${{ steps.filter.outputs.shell }}
       workflow: ${{ steps.filter.outputs.workflow }}
     steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 1 }
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: { fetch-depth: 1, persist-credentials: false }
+      - uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3
         id: filter
         with:
           filters: |
@@ -131,17 +131,19 @@ jobs:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       # ---- Rust formatting ----
       - name: rustfmt (workspace)
         if: needs.detect-changes.outputs.rust == 'true'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         with:
           components: rustfmt
       - name: rustfmt check
         if: needs.detect-changes.outputs.rust == 'true'
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           shared-key: ci-agents-format-rust
           cache-on-failure: true
@@ -152,7 +154,7 @@ jobs:
       # ---- Prettier ----
       - name: prettier check
         if: needs.detect-changes.outputs.typescript == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
           cache: "bun"
@@ -175,19 +177,21 @@ jobs:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         with:
           components: clippy, rustfmt
       - name: cargo clippy
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           shared-key: ci-agents-lint-rust
           cache-on-failure: true
         run: |
           cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
       - name: cargo deny
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           shared-key: ci-agents-lint-rust
         run: cargo deny check
@@ -199,8 +203,10 @@ jobs:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
           cache: "bun"
@@ -220,8 +226,10 @@ jobs:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
         with:
           version: "latest"
       - name: ruff check
@@ -247,12 +255,14 @@ jobs:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         with:
           components: clippy, rustfmt
       - name: cargo test
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           shared-key: ci-agents-test-rust
           cache-on-failure: true
@@ -262,7 +272,7 @@ jobs:
         run: |
           cargo test --workspace --locked -- --nocapture
       - name: cargo doctest
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           shared-key: ci-agents-test-rust
         run: |
@@ -275,7 +285,7 @@ jobs:
           fi
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: rust-test-results
           path: target/test-results/
@@ -289,8 +299,10 @@ jobs:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
           cache: "bun"
@@ -305,7 +317,7 @@ jobs:
         run: bun run test:api-base --silent || true
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: js-test-results
           path: frontend/apps/web/coverage/
@@ -323,12 +335,14 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
         with:
           version: "latest"
       - name: restore pip cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.cache/uv
@@ -357,25 +371,27 @@ jobs:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       # ---- Rust release build ----
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           shared-key: ci-agents-build-rust
           cache-on-failure: true
       - name: cargo build --release
         run: cargo build --release --workspace --locked
       - name: Upload rust binaries
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: rust-binaries
           path: target/release/
           retention-days: 14
 
       # ---- Frontend build ----
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
           cache: "bun"
@@ -386,7 +402,7 @@ jobs:
         working-directory: frontend
         run: bun run build:web --silent
       - name: Upload web bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: web-bundle
           path: frontend/apps/web/dist/
@@ -404,24 +420,24 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: { fetch-depth: 0, persist-credentials: false }
 
       - name: CodeQL analysis
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@faaca9a8f6edddba5725ffe5adefdab6669a2eca # v3
         with:
           languages: javascript-typescript,python,rust
           queries: security-extended,security-and-quality
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@faaca9a8f6edddba5725ffe5adefdab6669a2eca # v3
         with:
           category: "/language:${{ matrix.language }}"
         matrix:
           language: [javascript-typescript, python, rust]
 
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # master
         with:
           scan-type: "fs"
           scan-ref: "."
@@ -433,7 +449,7 @@ jobs:
 
       - name: Upload Trivy SARIF
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@faaca9a8f6edddba5725ffe5adefdab6669a2eca # v3
         with:
           sarif_file: "trivy-results.sarif"
 
@@ -445,18 +461,18 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: { fetch-depth: 0, persist-credentials: false }
 
       - name: gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
       - name: dependency review
         if: github.event_name == 'pull_request'
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4
         with:
           fail-on-severity: high
           comment-summary-in-pr: true
