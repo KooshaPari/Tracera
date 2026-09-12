@@ -6,7 +6,7 @@ const SQLITE_MAX_CONNECTIONS: u32 = 8;
 const ACQUIRE_TIMEOUT: Duration = Duration::from_secs(5);
 const IDLE_TIMEOUT: Duration = Duration::from_secs(600);
 
-pub(crate) async fn connect_postgres(url: &str) -> Result<PgPool, sqlx::Error> {
+pub async fn connect_postgres(url: &str) -> Result<PgPool, sqlx::Error> {
     PgPoolOptions::new()
         .max_connections(POSTGRES_MAX_CONNECTIONS)
         .acquire_timeout(ACQUIRE_TIMEOUT)
@@ -15,7 +15,7 @@ pub(crate) async fn connect_postgres(url: &str) -> Result<PgPool, sqlx::Error> {
         .await
 }
 
-pub(crate) async fn connect_sqlite(url: &str) -> Result<SqlitePool, sqlx::Error> {
+pub async fn connect_sqlite(url: &str) -> Result<SqlitePool, sqlx::Error> {
     let max_connections = if url.contains(":memory:") {
         1
     } else {

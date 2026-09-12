@@ -25,3 +25,9 @@ pub mod swee;
 pub mod cache;
 pub mod neo4j;
 pub mod r2;
+
+// Database connectivity (re-exported for non-HTTP consumers)
+pub mod db;
+pub mod pg_store;
+pub mod sqlite_store;
+pub mod datastore;
