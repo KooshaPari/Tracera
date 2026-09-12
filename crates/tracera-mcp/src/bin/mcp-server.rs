@@ -99,30 +99,22 @@ async fn build_store() -> Result<Arc<dyn Store>, String> {
 ///   - `sqlite://`                      → `SqliteStore`
 ///   - anything else                    → error
 async fn build_store_from_url(url: &str) -> Result<Arc<dyn Store>, String> {
-    // We re-export the concrete types through `tracera_mcp::stores::*`
-    // when wired in a follow-up. For now the dispatcher is feature-gated
-    // and returns a friendly error so the binary still compiles.
-    #[cfg(feature = "postgres")]
-    {
-        if url.starts_with("postgres://") || url.starts_with("postgresql://") {
-            return tracera_mcp::stores::pg::PgStore::connect(url)
-                .await
-                .map(|s| Arc::new(s) as Arc<dyn Store>)
-                .map_err(|e| format!("PgStore::connect: {e}"));
-        }
+    if url.starts_with("postgres://") || url.starts_with("postgresql://") {
+        return tracera_server::datastore::connect_postgres(url)
+            .await
+            .map(|store| Arc::new(store) as Arc<dyn Store>)
+            .map_err(|e| e.to_string());
     }
-    #[cfg(feature = "sqlite")]
-    {
-        if let Some(path) = url.strip_prefix("sqlite://") {
-            return tracera_mcp::stores::sqlite::SqliteStore::connect(path)
-                .await
-                .map(|s| Arc::new(s) as Arc<dyn Store>)
-                .map_err(|e| format!("SqliteStore::connect: {e}"));
-        }
+    if url.starts_with("sqlite://") || url.starts_with("sqlite:") {
+        return tracera_server::datastore::connect_sqlite(url)
+            .await
+            .map(|store| Arc::new(store) as Arc<dyn Store>)
+            .map_err(|e| e.to_string());
     }
     Err(format!(
         "unrecognized TRACERA_DB_URL scheme `{url}`; \
-         expected `postgres://…` or `sqlite://…` (or set TRACERA_DEMO=1)"
+         expected `postgres://…`, `postgresql://…`, `sqlite:…`, or `sqlite://…` \
+         (or set TRACERA_DEMO=1)"
     ))
 }
 
