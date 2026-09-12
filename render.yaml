@@ -1,5 +1,5 @@
 # =============================================================================
-# Render Blueprint — Tracera optional fallback service.
+# Render Blueprint — Tracera dev + prod fallback services.
 #
 # Per the Sep-2026 architecture decision: the production stack runs locally
 # on the operator's Windows desktop (WSL2/Podman + native Rust binaries),
@@ -7,13 +7,39 @@
 # internet. Render is kept as a **fallback** only — used if the local box
 # goes down for an extended period.
 #
-# This Blueprint provisions a SINGLE web service (tracera-server) that
-# pulls the prebuilt GHCR image. Postgres is NOT provisioned by Render
-# (local-only); we instead default to SQLite-in-memory so the service
-# boots independently of any local dev stack. Override `DATABASE_URL` at
-# runtime to point at an external Postgres if needed.
+# Two services in one blueprint:
+#   - tracera-server-dev: 8hr nightly deploy from main (lenient CI, no approval)
+#   - tracera-server:     manual prod fallback (strict CI + manual approval)
 # =============================================================================
 services:
+  # ---- DEV SERVICE (nightly, every 8h from main, lenient CI) ----
+  - type: web
+    name: tracera-server-dev
+    runtime: image
+    plan: free
+    region: oregon
+    healthCheckPath: /healthz
+    image:
+      imagePath: ghcr.io/kooshapari/tracera-server:latest
+      ownerId: tea-ct2nk4tsvqrc738djlf0
+    envVars:
+      - key: DATABASE_URL
+        value: "sqlite::memory:"
+      - key: TRACERA_AUTH_TOKEN
+        value: "tracera_dev_fallback_2026_xyz"
+      - key: TRACERA_BIND_ADDR
+        value: "0.0.0.0:10000"
+      - key: TRACERA_PUBLIC_BIND_MODE
+        value: "authenticated-proxy"
+      - key: PORT
+        value: "10000"
+      - key: RUST_LOG
+        value: "info"
+    autoDeploy: false
+    # Dev service does NOT autoDeploy; it's driven by the nightly-dev-deploy.yml
+    # workflow which calls the Render API directly with commit-aware idempotency.
+
+  # ---- PROD FALLBACK SERVICE (manual, strict CI + approval) ----
   - type: web
     name: tracera-server
     runtime: image

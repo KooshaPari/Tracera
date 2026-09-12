@@ -622,7 +622,7 @@ impl Store for PgStore {
     ) -> BoxFuture<'_, StoreResult<String>> {
         Box::pin(async move {
             let row: (i64,) = sqlx::query_as(
-                "INSERT INTO swee_nodes (type, name, metadata, created_at, updated_at) \
+                "INSERT INTO swee_nodes (node_type, label, metadata, created_at, updated_at) \
                  VALUES ($1, $2, $3::jsonb, $4, $5) \
                  RETURNING id",
             )
@@ -655,7 +655,7 @@ impl Store for PgStore {
             let tgt_id: i64 = target_id.parse().unwrap_or(0);
 
             let row: (i64,) = sqlx::query_as(
-                "INSERT INTO swee_edges (source_id, target_id, type, weight, metadata, created_at) \
+                "INSERT INTO swee_edges (source_id, target_id, edge_type, confidence, metadata, created_at) \
                  VALUES ($1, $2, $3, $4, $5::jsonb, $6) \
                  RETURNING id",
             )
@@ -681,8 +681,8 @@ impl Store for PgStore {
             let rows = match node_type {
                 Some(ref nt) => {
                     sqlx::query(
-                        "SELECT id, type, name, metadata::text, created_at, updated_at \
-                         FROM swee_nodes WHERE type = $1 ORDER BY created_at DESC",
+                        "SELECT id, node_type, label, metadata::text, created_at, updated_at \
+                         FROM swee_nodes WHERE node_type = $1 ORDER BY created_at DESC",
                     )
                     .bind(nt)
                     .fetch_all(&self.pool)
@@ -691,7 +691,7 @@ impl Store for PgStore {
                 }
                 None => {
                     sqlx::query(
-                        "SELECT id, type, name, metadata::text, created_at, updated_at \
+                        "SELECT id, node_type, label, metadata::text, created_at, updated_at \
                          FROM swee_nodes ORDER BY created_at DESC",
                     )
                     .fetch_all(&self.pool)
@@ -709,8 +709,8 @@ impl Store for PgStore {
                     let id: i64 = r.try_get("id").unwrap_or_default();
                     serde_json::json!({
                         "id": id.to_string(),
-                        "node_type": r.try_get::<String, _>("type").unwrap_or_default(),
-                        "label": r.try_get::<String, _>("name").unwrap_or_default(),
+                        "node_type": r.try_get::<String, _>("node_type").unwrap_or_default(),
+                        "label": r.try_get::<String, _>("label").unwrap_or_default(),
                         "metadata": metadata,
                         "created_at": r.try_get::<String, _>("created_at").unwrap_or_default(),
                         "updated_at": r.try_get::<String, _>("updated_at").unwrap_or_default(),
@@ -728,8 +728,8 @@ impl Store for PgStore {
             let rows = match edge_type {
                 Some(ref et) => {
                     sqlx::query(
-                        "SELECT id, source_id, target_id, type, weight, metadata::text, created_at \
-                         FROM swee_edges WHERE type = $1 ORDER BY created_at DESC",
+                        "SELECT id, source_id, target_id, edge_type, confidence, metadata::text, created_at \
+                         FROM swee_edges WHERE edge_type = $1 ORDER BY created_at DESC",
                     )
                     .bind(et)
                     .fetch_all(&self.pool)
@@ -738,7 +738,7 @@ impl Store for PgStore {
                 }
                 None => {
                     sqlx::query(
-                        "SELECT id, source_id, target_id, type, weight, metadata::text, created_at \
+                        "SELECT id, source_id, target_id, edge_type, confidence, metadata::text, created_at \
                          FROM swee_edges ORDER BY created_at DESC",
                     )
                     .fetch_all(&self.pool)
@@ -760,8 +760,8 @@ impl Store for PgStore {
                         "id": id.to_string(),
                         "source_id": src_id.to_string(),
                         "target_id": tgt_id.to_string(),
-                        "edge_type": r.try_get::<String, _>("type").unwrap_or_default(),
-                        "weight": r.try_get::<f64, _>("weight").unwrap_or(1.0),
+                        "edge_type": r.try_get::<String, _>("edge_type").unwrap_or_default(),
+                        "weight": r.try_get::<f64, _>("confidence").unwrap_or(1.0),
                         "metadata": metadata,
                         "created_at": r.try_get::<String, _>("created_at").unwrap_or_default(),
                     })
@@ -773,7 +773,7 @@ impl Store for PgStore {
     fn get_swee_node(&self, id: String) -> BoxFuture<'_, StoreResult<Option<Value>>> {
         Box::pin(async move {
             let row = sqlx::query(
-                "SELECT id, type, name, metadata::text, created_at, updated_at \
+                "SELECT id, node_type, label, metadata::text, created_at, updated_at \
                  FROM swee_nodes WHERE id = $1",
             )
             .bind(&id)
@@ -788,8 +788,8 @@ impl Store for PgStore {
                 let db_id: i64 = r.try_get("id").unwrap_or_default();
                 serde_json::json!({
                     "id": db_id.to_string(),
-                    "node_type": r.try_get::<String, _>("type").unwrap_or_default(),
-                    "label": r.try_get::<String, _>("name").unwrap_or_default(),
+                    "node_type": r.try_get::<String, _>("node_type").unwrap_or_default(),
+                    "label": r.try_get::<String, _>("label").unwrap_or_default(),
                     "metadata": metadata,
                     "created_at": r.try_get::<String, _>("created_at").unwrap_or_default(),
                     "updated_at": r.try_get::<String, _>("updated_at").unwrap_or_default(),
@@ -807,7 +807,7 @@ impl Store for PgStore {
             let rows = match direction.as_str() {
                 "forward" => {
                     sqlx::query(
-                        "SELECT e.id, e.source_id, e.target_id, e.type, e.weight, e.metadata::text, e.created_at \
+                        "SELECT e.id, e.source_id, e.target_id, e.edge_type, e.confidence, e.metadata::text, e.created_at \
                          FROM swee_edges e WHERE e.source_id = $1::bigint ORDER BY e.created_at DESC",
                     )
                     .bind(&id)
@@ -817,7 +817,7 @@ impl Store for PgStore {
                 }
                 "reverse" => {
                     sqlx::query(
-                        "SELECT e.id, e.source_id, e.target_id, e.type, e.weight, e.metadata::text, e.created_at \
+                        "SELECT e.id, e.source_id, e.target_id, e.edge_type, e.confidence, e.metadata::text, e.created_at \
                          FROM swee_edges e WHERE e.target_id = $1::bigint ORDER BY e.created_at DESC",
                     )
                     .bind(&id)
@@ -828,7 +828,7 @@ impl Store for PgStore {
                 _ => {
                     // "both" or any other value
                     sqlx::query(
-                        "SELECT e.id, e.source_id, e.target_id, e.type, e.weight, e.metadata::text, e.created_at \
+                        "SELECT e.id, e.source_id, e.target_id, e.edge_type, e.confidence, e.metadata::text, e.created_at \
                          FROM swee_edges e WHERE e.source_id = $1::bigint OR e.target_id = $1::bigint ORDER BY e.created_at DESC",
                     )
                     .bind(&id)
@@ -851,8 +851,8 @@ impl Store for PgStore {
                         "id": eid.to_string(),
                         "source_id": src_id.to_string(),
                         "target_id": tgt_id.to_string(),
-                        "edge_type": r.try_get::<String, _>("type").unwrap_or_default(),
-                        "weight": r.try_get::<f64, _>("weight").unwrap_or(1.0),
+                        "edge_type": r.try_get::<String, _>("edge_type").unwrap_or_default(),
+                        "weight": r.try_get::<f64, _>("confidence").unwrap_or(1.0),
                         "metadata": metadata,
                         "created_at": r.try_get::<String, _>("created_at").unwrap_or_default(),
                     })

@@ -136,6 +136,42 @@ fn bad_request(field: &'static str) -> (axum::http::StatusCode, Json<ErrorRespon
     )
 }
 
+// ---------------------------------------------------------------------------
+// /api/v1/auth/me — returns the authenticated session user for the frontend.
+// In dev/local mode (no WorkOS) we synthesize a local user from the bearer
+// token (TRACERA_AUTH_TOKEN); in prod the WorkOS middleware replaces this.
+// ---------------------------------------------------------------------------
+#[derive(Serialize)]
+struct AuthMeUser {
+    id: String,
+    email: String,
+    name: String,
+    role: String,
+}
+
+// Build trigger 2026-09-11
+async fn auth_me(
+    axum_extra::typed_header::TypedHeader(authorization): axum_extra::typed_header::TypedHeader<
+        headers::Authorization<headers::authorization::Bearer>,
+    >,
+) -> Json<AuthMeUser> {
+    // Use a stable hash of the bearer token as the synthetic user id so
+    // repeated runs of the e2e suite resolve to the same fixture user.
+    let token = authorization.token();
+    let mut hash: u64 = 1469598103934665603; // FNV-1a offset basis
+    for b in token.as_bytes() {
+        hash ^= u64::from(*b);
+        hash = hash.wrapping_mul(1099511628211);
+    }
+    let user_id = format!("local-dev-{:016x}", hash);
+    Json(AuthMeUser {
+        id: user_id,
+        email: "local-dev@tracera.local".to_string(),
+        name: "Local Dev User".to_string(),
+        role: "admin".to_string(),
+    })
+}
+
 fn validate_evidence(payload: &EvidenceCreate) -> Result<(), &'static str> {
     validate_text(
         &payload.artifact_id,
@@ -905,6 +941,47 @@ fn build_router(state: AppState) -> Router {
     build_router_with_auth(state, None)
 }
 
+/// Browser origins permitted to call this server's API cross-origin.
+///
+/// Overridable via `TRACERA_ALLOWED_ORIGINS` (comma-separated list). When
+/// unset, a curated default is used that covers the canonical loopback origin,
+/// the Vercel frontend, and the `tracera.pheno.studio` tunneled surfaces so
+/// both local dev and production browser calls are permitted.
+fn cors_allowed_origins() -> tower_http::cors::AllowOrigin {
+    use std::collections::HashSet;
+    let mut origins: Vec<HeaderValue> = Vec::new();
+    if let Some(raw) = std::env::var("TRACERA_ALLOWED_ORIGINS")
+        .ok()
+        .filter(|s| !s.trim().is_empty())
+    {
+        for part in raw.split(',') {
+            let o = part.trim();
+            if !o.is_empty() {
+                if let Ok(hv) = HeaderValue::try_from(o) {
+                    origins.push(hv);
+                }
+            }
+        }
+    } else {
+        let mut set = HashSet::new();
+        for o in [
+            CANONICAL_BROWSER_ORIGIN,
+            "https://tracera-kappa.vercel.app",
+            "https://tracera.pheno.studio",
+            "https://api.tracera.pheno.studio",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        ] {
+            if set.insert(o) {
+                if let Ok(hv) = HeaderValue::try_from(o) {
+                    origins.push(hv);
+                }
+            }
+        }
+    }
+    tower_http::cors::AllowOrigin::list(origins)
+}
+
 fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Router {
     // WorkOS integration: build the client + nested router once. If the
     // required env vars are absent we still mount an inert sub-router that
@@ -1011,7 +1088,7 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
         .route("/api/v1/auth/logout", any(not_implemented))
         .route("/api/v1/auth/refresh", any(not_implemented))
         .route("/api/v1/auth/verify", any(not_implemented))
-        .route("/api/v1/auth/me", any(not_implemented))
+        .route("/api/v1/auth/me", get(auth_me))
         // WorkOS AuthKit hosted login — sibling group under /auth/workos/*
         // The workos router is generic over S, so it nests into Router<AppState>
         // directly (axum's FromRef<AppState> for WorkOSClient extracts the client).
@@ -1288,7 +1365,12 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
                     header::CONTENT_TYPE,
                     http::HeaderName::from_static("x-csrf-token"),
                 ])
-                .allow_credentials(true),
+                .allow_credentials(true)
+                // Allow the set of browser origins this server may be called
+                // from. Configurable via TRACERA_ALLOWED_ORIGINS (comma
+                // separated); defaults to the canonical loopback origin plus
+                // the Vercel/tunneled frontend surfaces.
+                .allow_origin(cors_allowed_origins()),
         )
         .with_state(state)
 }

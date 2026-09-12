@@ -16,9 +16,20 @@ import { expect, test } from "./global-setup";
 
 test.describe("Dashboard - Live Data with 5,686 Items", () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to home dashboard
+    // Inject auth token when running against a real backend
+    // (E2E_AUTH_TOKEN must match the backend's TRACERA_AUTH_TOKEN)
+    const token = process.env.E2E_AUTH_TOKEN;
+    if (token) {
+      await page.addInitScript((t) => {
+        window.localStorage.setItem("auth_token", t);
+      }, token);
+    }
+    // Navigate to home dashboard. Live mode (VITE_USE_MOCK_DATA=false) polls the
+    // backend readiness gate + Vite HMR keep a connection open, so "load"
+    // never settles here. The real-data assertion is gated on waitForResponse
+    // below, so a lighter load-wait is sufficient and stable.
     await page.goto("/home");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
   });
 
   test("should load dashboard with real API data", async ({ page }) => {
@@ -47,7 +58,7 @@ test.describe("Dashboard - Live Data with 5,686 Items", () => {
 
   test("should display SwiftRide project with real data", async ({ page }) => {
     // Wait for projects to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Look for SwiftRide project name
     const swiftRideCard = page.locator("text=SwiftRide");
@@ -57,7 +68,7 @@ test.describe("Dashboard - Live Data with 5,686 Items", () => {
   });
 
   test("should show item count metrics", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Look for item statistics
     // The real dashboard should show actual counts from database
@@ -66,13 +77,13 @@ test.describe("Dashboard - Live Data with 5,686 Items", () => {
   });
 
   test("should respond to user interactions", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Try to navigate to projects
     const projectsLink = page.getByRole("link", { name: /projects/i }).first();
     await expect(projectsLink).toBeVisible({ timeout: 2000 });
     await projectsLink.click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Should navigate to projects page
     await expect(page).toHaveURL(/\/projects/);
@@ -85,7 +96,7 @@ test.describe("Dashboard - Performance with Large Dataset", () => {
     const startTime = Date.now();
 
     await page.goto("/home");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const loadTime = Date.now() - startTime;
     console.log(`📊 Dashboard load time: ${loadTime}ms`);
@@ -101,7 +112,7 @@ test.describe("Dashboard - Performance with Large Dataset", () => {
 
   test("should handle scrolling through projects list", async ({ page }) => {
     await page.goto("/home");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // Find projects list
     const projectsList = page.locator('[class*="grid"], [class*="list"]').first();
@@ -121,7 +132,7 @@ test.describe("Dashboard - Performance with Large Dataset", () => {
 test.describe("Dashboard - Data Validation", () => {
   test("should display correct project count", async ({ page }) => {
     await page.goto("/home");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // When using live data, we should see actual projects
     // SwiftRide should be present
@@ -140,7 +151,7 @@ test.describe("Dashboard - Data Validation", () => {
     });
 
     await page.goto("/home");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     // In live mode, should have real API calls
     const hasDashboardCall = apiCalls.some((url) => url.includes("/api/v1/dashboard/summary"));
