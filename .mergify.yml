@@ -22,7 +22,6 @@ pull_request_rules:
           trailers:
             - co-authored-by
 
-
   # Auto-merge owner PRs when CI passes (no self-review required)
   - name: Auto-merge owner PRs + CI green
     conditions:
