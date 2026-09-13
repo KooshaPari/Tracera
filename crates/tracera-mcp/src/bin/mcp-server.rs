@@ -360,6 +360,11 @@ mod demo {
         ) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
             Box::pin(async { Ok(vec![]) })
         }
+        fn dashboard_status_counts(
+            &self,
+        ) -> BoxFuture<'_, StoreResult<Vec<(String, String, i64)>>> {
+            Box::pin(async { Ok(vec![]) })
+        }
     }
 }
 
