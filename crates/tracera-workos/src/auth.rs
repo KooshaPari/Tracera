@@ -99,7 +99,10 @@ pub fn build_authorize_url(
 ) -> WorkOSResult<AuthorizeUrl> {
     let redirect_uri = params.redirect_uri.unwrap_or(cfg.redirect_uri.as_ref());
     // Reject characters that would let an attacker break out of the query
-    // string and inject their own `state` or `redirect_uri`.
+    // string and inject their own `state` or `redirect_uri`. The allow-list
+    // covers RFC 3986 unreserved + reserved sub-delims used by OAuth
+    // redirect callbacks: `?` (query start), `&` (param sep), `=` (kv sep),
+    // `#` (fragment start), `:` `/` `@` `+` `.` `_` `~` `-` `%`-escaped.
     for (name, value) in [
         ("redirect_uri", redirect_uri),
         ("client_id", cfg.client_id.as_ref()),
@@ -113,7 +116,7 @@ pub fn build_authorize_url(
         }
         if !value
             .chars()
-            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.' | ':' | '/' | ',' | ' ' | '|' | '=' | '~' | '+' | '%'))
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.' | ':' | '/' | ',' | ' ' | '|' | '=' | '~' | '+' | '%' | '?' | '&' | '#'))
         {
             return Err(WorkOSError::AuthorizeRequest(format!(
                 "{name} contains invalid characters"
