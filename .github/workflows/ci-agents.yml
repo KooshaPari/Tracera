@@ -179,17 +179,19 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
-      - name: cargo clippy
+      - name: rust-cache (clippy)
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: ci-agents-lint-rust
           cache-on-failure: true
+      - name: cargo clippy
         run: |
           cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
-      - name: cargo deny
+      - name: rust-cache (deny)
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: ci-agents-lint-rust
+      - name: cargo deny
         run: cargo deny check
 
   lint-js:
@@ -251,20 +253,22 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
-      - name: cargo test
+      - name: rust-cache (test)
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: ci-agents-test-rust
           cache-on-failure: true
+      - name: cargo test
         env:
           CARGO_INCREMENTAL: 0
           RUST_LOG: info
         run: |
           cargo test --workspace --locked -- --nocapture
-      - name: cargo doctest
+      - name: rust-cache (doctest)
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: ci-agents-test-rust
+      - name: cargo doctest
         run: |
           set -euo pipefail
           metadata="$(cargo metadata --no-deps --format-version 1)"
@@ -396,13 +400,17 @@ jobs:
 # Stage 5 — security gates.
 # =============================================================================
   sast:
-    name: "ci-agents / sast"
+    name: "ci-agents / sast (${{ matrix.language }})"
     needs: detect-changes
     runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
       security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript, python, rust]
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -410,15 +418,13 @@ jobs:
       - name: CodeQL analysis
         uses: github/codeql-action/init@v3
         with:
-          languages: javascript-typescript,python,rust
+          languages: ${{ matrix.language }}
           queries: security-extended,security-and-quality
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
-        matrix:
-          language: [javascript-typescript, python, rust]
 
       - name: Trivy filesystem scan
         uses: aquasecurity/trivy-action@master
