@@ -1,0 +1,97 @@
+# =============================================================================
+# Tracera — canonical `task` entrypoints (GLOBAL RULE: task > make, Sep-2026)
+#
+# The host-level Docker Desktop WSL2 socket and podman-machine-default are both
+# broken on this device. The VERIFIED working container runtime is ROOTFUL
+# podman-compose running inside WSL distro `FedoraLinux-44`:
+#     wsl -d FedoraLinux-44 -- sh -c "cd /mnt/c/Users/koosh/Tracera && podman-compose -f docker-compose.dev.yml up -d ..."
+#
+# Verified 2026-09-14: postgres17, redis7, neo4j5 all "Up (healthy)" via that path.
+# (minio is Docker-Hub rate-limited; it and the remaining 20+ services come up
+# once the rate limit clears or a daemon with cached images is used.)
+# =============================================================================
+
+version: "3"
+
+vars:
+  COMPOSE_FILE: docker-compose.dev.yml
+  WSL_DISTRO: FedoraLinux-44
+  # Native path of the repo inside WSL (9pmt auto-mount of C:\Users\koosh)
+  REPO_WSL: /mnt/c/Users/koosh/Tracera
+  PODMAN_COMPOSE: podman-compose
+  # fallback if podman-compose is not on root PATH inside WSL
+  PODMAN_COMPOSE_FULL: /usr/sbin/podman-compose
+
+tasks:
+  default:
+    desc: List all tasks
+    cmds:
+      - task --list
+
+  # ---- stack management (runs in WSL, the only working runtime) -------------
+  stack:
+    desc: Bring up local dev compose stack (postgres/redis/neo4j/minio) in WSL FedoraLinux-44
+    cmds:
+      - wsl -d {{.WSL_DISTRO}} -- sh -c 'mkdir -p /etc/containers/registries.conf.d && printf "unqualified-search-registries = [\"docker.io\"]\n" > /etc/containers/registries.conf.d/shortnames.conf'
+      - wsl -d {{.WSL_DISTRO}} -- sh -c 'cd {{.REPO_WSL}} && {{.PODMAN_COMPOSE_FULL}} -f {{.COMPOSE_FILE}} up -d postgres17 redis7 neo4j5 minio'
+      - task: stack-ps
+
+  stack-all:
+    desc: Bring up the full 27-service compose (may hit Docker Hub rate limit)
+    cmds:
+      - wsl -d {{.WSL_DISTRO}} -- sh -c 'cd {{.REPO_WSL}} && {{.PODMAN_COMPOSE_FULL}} -f {{.COMPOSE_FILE}} up -d'
+
+  stack-ps:
+    desc: List compose containers
+    cmds:
+      - wsl -d {{.WSL_DISTRO}} -- sh -c 'podman ps --format "{{.Names}} {{.Status}}" | grep tracker_type'
+
+  stack-down:
+    desc: Stop compose containers
+    cmds:
+      - wsl -d {{.WSL_DISTRO}} -- sh -c 'cd {{.REPO_WSL}} && {{.PODMAN_COMPOSE_FULL}} -f {{.COMPOSE_FILE}} down'
+
+  stack-reset:
+    desc: Stop + remove compose containers and volumes
+    cmds:
+      - wsl -d {{.WSL_DISTRO}} -- sh -c 'cd {{.REPO_WSL}} && {{.PODMAN_COMPOSE_FULL}} -f {{.COMPOSE_FILE}} down -v'
+
+  stack-seed:
+    desc: Run the dev-stack seed script (fixtures)
+    cmds:
+      - wsl -d {{.WSL_DISTRO}} -- sh -c 'cd {{.REPO_WSL}} && bash scripts/dev-stack-seed.sh'
+
+  # ---- runtime ---------------------------------------------------------------
+  run-server:
+    desc: Run native tracera-server on :8080 against the local stack
+    cmds:
+      - cmd: powershell -NoProfile -Command "$env:DATABASE_URL='postgres://tracera:tracera_dev@localhost:5432/tracera'; $env:TRACERA_BIND_ADDR='0.0.0.0:8080'; $env:TRACERA_PUBLIC_BIND_MODE='authenticated-proxy'; $env:TRACERA_AUTH_TOKEN='tracera_local_dev_2026_abc'; cargo run -p tracera-server --bin tracera-server"
+
+  mcp-server:
+    desc: Run the MCP server binary (stdio)
+    cmds:
+      - cmd: cargo run -p tracera-mcp --bin mcp-server
+
+  # ---- tunnel ----------------------------------------------------------------
+  tunnel:
+    desc: Hybrid tunnel (Tailnet primary, Cloudflare fallback) -> tracera.pheno.studio/api
+    cmds:
+      - cmd: bash scripts/start-tunnel.sh
+
+  tunnel-bg:
+    desc: Hybrid tunnel in background
+    cmds:
+      - cmd: bash scripts/start-tunnel.sh --bg
+
+  # ---- meta ------------------------------------------------------------------
+  prod:
+    desc: One-shot go-live locally (stack + run + tunnel)
+    cmds:
+      - task: stack
+      - task: run-server
+      - task: tunnel
+
+  deploy:
+    desc: Render fallback deploy (only when local box offline long-term)
+    cmds:
+      - cmd: gh workflow run build-push-image.yml --repo KooshaPari/Tracera --ref main
