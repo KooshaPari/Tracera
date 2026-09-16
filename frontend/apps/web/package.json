@@ -156,7 +156,7 @@
   "devDependencies": {
     "@axe-core/react": "^4.11.0",
     "@percy/playwright": "^1.0.10",
-    "@playwright/test": "^1.62.1",
+    "@playwright/test": "^1.63.0",
     "@rollup/plugin-commonjs": "^29.0.0",
     "@storybook/addon-a11y": "8.6.17",
     "@storybook/addon-coverage": "3.0.2",
