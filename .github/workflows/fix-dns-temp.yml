@@ -1,0 +1,105 @@
+name: Fix DNS - t.tracera.pheno.studio
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action to perform"
+        required: false
+        default: list-and-create
+        type: choice
+        options: [list-and-create, list-only, create-only]
+permissions:
+  contents: read
+jobs:
+  dns-fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Verify credentials
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID"
+            exit 1
+          fi
+          echo "Credentials present."
+
+      - name: Find pheno.studio zone
+        id: zone
+        run: |
+          ZONE_JSON=$(curl -sf \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            "https://api.cloudflare.com/client/v4/zones?name=pheno.studio")
+          echo "Zone response:"
+          echo "$ZONE_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(json.dumps(d, indent=2))"
+          ZONE_ID=$(echo "$ZONE_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['result'][0]['id'])")
+          echo "ZONE_ID=$ZONE_ID" >> $GITHUB_OUTPUT
+          echo "Found zone ID: $ZONE_ID"
+
+      - name: List tracera DNS records
+        run: |
+          echo "=== All DNS records matching tracera.pheno.studio ==="
+          RECORDS=$(curl -sf \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/zones/${{ steps.zone.outputs.ZONE_ID }}/dns_records?name=tracera.pheno.studio")
+          echo "$RECORDS" | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          for r in d.get('result', []):
+              print(f\"  {r['type']} {r['name']} -> {r['content']} (proxied={r.get('proxied','?')}, ttl={r.get('ttl','?')})\")
+          if not d.get('result'):
+              print('  (no records found)')
+          "
+
+          echo ""
+          echo "=== All DNS records matching t.tracera.pheno.studio ==="
+          T_RECORDS=$(curl -sf \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/zones/${{ steps.zone.outputs.ZONE_ID }}/dns_records?name=t.tracera.pheno.studio")
+          echo "$T_RECORDS" | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          for r in d.get('result', []):
+              print(f\"  {r['type']} {r['name']} -> {r['content']} (proxied={r.get('proxied','?')}, ttl={r.get('ttl','?')})\")
+          if not d.get('result'):
+              print('  (no records found)')
+          "
+
+      - name: Create CNAME for t.tracera.pheno.studio
+        if: inputs.action != 'list-only'
+        run: |
+          echo "Creating CNAME: t.tracera.pheno.studio -> f5e8e18c-2bae-47b1-8715-9b6845cc8bb0.cfargotunnel.com"
+          CREATE_JSON=$(curl -sf -X POST \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "type": "CNAME",
+              "name": "t.tracera",
+              "content": "f5e8e18c-2bae-47b1-8715-9b6845cc8bb0.cfargotunnel.com",
+              "proxied": true
+            }' \
+            "https://api.cloudflare.com/client/v4/zones/${{ steps.zone.outputs.ZONE_ID }}/dns_records")
+          echo "Create response:"
+          echo "$CREATE_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(json.dumps(d, indent=2))"
+
+          SUCCESS=$(echo "$CREATE_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('success', False))")
+          if [ "$SUCCESS" = "True" ]; then
+            echo ""
+            echo "SUCCESS: CNAME record created for t.tracera.pheno.studio"
+          else
+            ERRORS=$(echo "$CREATE_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('errors', 'unknown error'))")
+            echo ""
+            echo "::error::Failed to create CNAME: $ERRORS"
+          fi
+
+      - name: Verify DNS propagation
+        if: inputs.action != 'list-only'
+        run: |
+          echo "Waiting 5 seconds for DNS propagation..."
+          sleep 5
+          echo "Checking DNS resolution:"
+          nslookup t.tracera.pheno.studio 8.8.8.8 || true
+          dig t.tracera.pheno.studio +short || true
