@@ -1,0 +1,110 @@
+name: Fix SSL for t.tracera
+on:
+  workflow_dispatch: {}
+
+jobs:
+  fix-ssl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check custom certificates
+        run: |
+          TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          ZONE_ID="bb6b23ca3dd0db9bd764a869b61a5278"
+          
+          echo "=== Custom certificates ==="
+          curl -s "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/custom_certificates" \
+            -H "Authorization: Bearer $TOKEN" | jq '.result[] | {id, hosts, issuer, status}'
+          
+          echo ""
+          echo "=== SSL/TLS mode ==="
+          curl -s "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/settings/tls" \
+            -H "Authorization: Bearer $TOKEN" | jq '.result'
+          
+          echo ""
+          echo "=== Always Use HTTPS ==="
+          curl -s "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/settings/always_use_https" \
+            -H "Authorization: Bearer $TOKEN" | jq '.result'
+          
+          echo ""
+          echo "=== Minimum TLS Version ==="
+          curl -s "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/settings/min_tls_version" \
+            -H "Authorization: Bearer $TOKEN" | jq '.result'
+
+      - name: Check Universal SSL
+        run: |
+          TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          ZONE_ID="bb6b23ca3dd0db9bd764a869b61a5278"
+          ACCOUNT_ID="${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
+          
+          echo "=== Universal SSL status ==="
+          curl -s "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ssl/universal" \
+            -H "Authorization: Bearer $TOKEN" | jq '.result'
+          
+          echo ""
+          echo "=== Custom certificates at account level ==="
+          curl -s "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ssl/certificates" \
+            -H "Authorization: Bearer $TOKEN" | jq '.result[] | {id, hosts, issuer, status}'
+          
+          echo ""
+          echo "=== SSL recommendation for t.tracera ==="
+          echo "If there's a custom certificate that doesn't include t.tracera.pheno.studio,"
+          echo "we need to either add it or delete the custom cert and use Universal SSL."
+
+      - name: Test TLS
+        run: |
+          echo "=== Testing gate.pheno.studio ==="
+          echo | openssl s_client -connect gate.pheno.studio:443 -servername gate.pheno.studio 2>&1 | grep -E "subject=|issuer=|Verify"
+          
+          echo ""
+          echo "=== Testing t.tracera.pheno.studio ==="
+          echo | openssl s_client -connect t.tracera.pheno.studio:443 -servername t.tracera.pheno.studio 2>&1 | grep -E "subject=|issuer=|Verify|handshake|error"
+          
+          echo ""
+          echo "=== Testing trace.pheno.studio ==="
+          echo | openssl s_client -connect trace.pheno.studio:443 -servername trace.pheno.studio 2>&1 | grep -E "subject=|issuer=|Verify"
+
+      - name: Fix SSL if needed
+        run: |
+          TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          ZONE_ID="bb6b23ca3dd0db9bd764a869b61a5278"
+          ACCOUNT_ID="${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
+          
+          # Check if there's a custom cert
+          CERTS=$(curl -s "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/custom_certificates" \
+            -H "Authorization: Bearer $TOKEN")
+          CERT_COUNT=$(echo "$CERTS" | jq '.result | length')
+          
+          echo "Custom certificates found: $CERT_COUNT"
+          
+          if [ "$CERT_COUNT" != "0" ]; then
+            echo "Custom certificates detected. Checking if they include t.tracera..."
+            echo "$CERTS" | jq '.result[] | {id, hosts}'
+            
+            # Get the first cert ID
+            CERT_ID=$(echo "$CERTS" | jq -r '.result[0].id')
+            HOSTS=$(echo "$CERTS" | jq -r '.result[0].hosts[]')
+            
+            if ! echo "$HOSTS" | grep -q "t.tracera.pheno.studio"; then
+              echo ""
+              echo "WARNING: Custom certificate does NOT include t.tracera.pheno.studio"
+              echo "Hosts in cert: $HOSTS"
+              echo ""
+              echo "Options:"
+              echo "1. Delete custom cert and use Universal SSL (which covers all proxied subdomains)"
+              echo "2. Upload new cert that includes t.tracera.pheno.studio"
+              echo ""
+              echo "Attempting to delete custom cert to fall back to Universal SSL..."
+              
+              # Only delete if the user wants - for now just report
+              # curl -s -X DELETE "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/custom_certificates/${CERT_ID}" \
+              #   -H "Authorization: Bearer $TOKEN" | jq .
+            fi
+          fi
+          
+          # Force Universal SSL revalidation
+          echo ""
+          echo "=== Forcing Universal SSL revalidation ==="
+          curl -s -X PATCH "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ssl/universal" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"enabled": true}' | jq .
