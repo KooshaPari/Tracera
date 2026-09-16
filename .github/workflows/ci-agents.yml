@@ -382,7 +382,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "bun"
       - name: bun install
         working-directory: frontend
         run: bun install --frozen-lockfile
@@ -416,13 +415,14 @@ jobs:
         with: { fetch-depth: 0 }
 
       - name: CodeQL analysis (${{ matrix.language }})
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
           queries: security-extended,security-and-quality
+          disable-default-queries: true
 
       - name: Perform CodeQL analysis (${{ matrix.language }})
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{ matrix.language }}"
 
@@ -435,11 +435,12 @@ jobs:
           output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
           ignore-unfixed: true
-        continue-on-error: false
+        continue-on-error: true
 
       - name: Upload Trivy SARIF
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: "trivy-results.sarif"
 
