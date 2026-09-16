@@ -133,7 +133,7 @@
     "lucide-react": "^0.563.0",
     "monaco-editor": "^0.56.0",
     "openapi-fetch": "^0.15.0",
-    "openapi-typescript-helpers": "^0.0.15",
+    "openapi-typescript-helpers": "^0.1.0",
     "prop-types": "^15.8.1",
     "rbush": "^4.0.1",
     "react": "^19.2.8",
