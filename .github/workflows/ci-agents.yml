@@ -179,17 +179,19 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
-      - name: cargo clippy
+      - name: rust-cache (lint-rust)
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: ci-agents-lint-rust
           cache-on-failure: true
+      - name: cargo clippy
         run: |
           cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
-      - name: cargo deny
+      - name: cargo deny (cache)
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: ci-agents-lint-rust
+      - name: cargo deny
         run: cargo deny check
 
   lint-js:
