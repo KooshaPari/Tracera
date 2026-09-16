@@ -27,7 +27,7 @@ use serde_json::Value;
 use uuid::Uuid;
 
 use crate::store::Store;
-use crate::BulkIngestionResult;
+use crate::handlers::ingest_api::BulkIngestionResult;
 
 // ---------------------------------------------------------------------------
 // Error type
