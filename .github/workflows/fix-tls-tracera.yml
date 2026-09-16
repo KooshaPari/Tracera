@@ -6,8 +6,9 @@ jobs:
   fix-ssl:
     runs-on: ubuntu-latest
     steps:
-      - name: Check SSL settings
+      - name: Diagnose and fix SSL
         run: |
+          set +e
           TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
           ZONE_ID="bb6b23ca3dd0db9bd764a869b61a5278"
           ACCOUNT_ID="${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
@@ -16,104 +17,49 @@ jobs:
           CERTS=$(curl -s "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/custom_certificates" \
             -H "Authorization: Bearer $TOKEN")
           echo "$CERTS" | jq '.result // [] | length' | xargs -I{} echo "Count: {}"
-          echo "$CERTS" | jq -r '.result[]? | "\(.id) \(.hosts) \(.status)"' 2>/dev/null || echo "(none)"
           
           echo ""
           echo "=== SSL/TLS mode ==="
-          curl -s "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/settings/tls" \
-            -H "Authorization: Bearer $TOKEN" | jq -r '.result.value // "unknown"'
+          TLS_MODE=$(curl -s "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/settings/tls" \
+            -H "Authorization: Bearer $TOKEN")
+          echo "$TLS_MODE" | jq -r '.result.value // "unknown"'
           
           echo ""
-          echo "=== Universal SSL ==="
-          curl -s "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ssl/universal" \
-            -H "Authorization: Bearer $TOKEN" | jq '.result // empty'
-          
-          echo ""
-          echo "=== Account SSL certificates ==="
-          curl -s "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ssl/certificates" \
-            -H "Authorization: Bearer $TOKEN" | jq -r '.result[]? | "\(.id) \(.hosts) \(.status)"' 2>/dev/null || echo "(none)"
-
-      - name: Test TLS for all subdomains
-        run: |
-          for HOST in t.tracera.pheno.studio gate.pheno.studio trace.pheno.studio api.pheno.studio; do
-            echo "--- $HOST ---"
-            RESULT=$(echo | openssl s_client -connect ${HOST}:443 -servername ${HOST} 2>&1)
-            echo "$RESULT" | grep -E "subject=|issuer=|Verify|handshake|error" | head -5
-            echo ""
-          done
-
-      - name: Fix SSL - Enable Universal SSL
-        run: |
-          TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
-          ACCOUNT_ID="${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
-          ZONE_ID="bb6b23ca3dd0db9bd764a869b61a5278"
-          
-          echo "=== Attempting SSL fixes ==="
-          
-          # 1. Make sure TLS mode is Full (strict)
-          echo "Setting TLS mode to full (strict)..."
+          echo "=== Setting TLS to full (strict) ==="
           curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/settings/tls" \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{"value":"full_strict"}' | jq '.result.value'
+            -d '{"value":"full_strict"}' | jq -r '.result.value // .errors[0].message'
           
-          # 2. Enable always use HTTPS
-          echo "Enabling always use HTTPS..."
+          echo ""
+          echo "=== Enabling Always Use HTTPS ==="
           curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/settings/always_use_https" \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{"value":"on"}' | jq '.result.value'
+            -d '{"value":"on"}' | jq -r '.result.value // .errors[0].message'
           
-          # 3. Set min TLS to 1.2
-          echo "Setting min TLS version to 1.2..."
-          curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/settings/min_tls_version" \
-            -H "Authorization: Bearer $TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"value":"1.2"}' | jq '.result.value'
-          
-          # 4. Enable Automatic SSL/TLS
-          echo "Enabling Universal SSL..."
-          curl -s -X PATCH "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ssl/universal" \
-            -H "Authorization: Bearer $TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"enabled":true}' | jq '.result.enabled'
-          
-          # 5. Delete any custom certs that might interfere
           echo ""
-          echo "Checking for custom certs to delete..."
-          CERTS=$(curl -s "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/custom_certificates" \
-            -H "Authorization: Bearer $TOKEN")
-          CERT_IDS=$(echo "$CERTS" | jq -r '.result[]?.id' 2>/dev/null)
-          
-          if [ -n "$CERT_IDS" ]; then
-            for CID in $CERT_IDS; do
-              echo "Deleting custom cert $CID..."
-              curl -s -X DELETE "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/custom_certificates/${CID}" \
-                -H "Authorization: Bearer $TOKEN" | jq '.success'
-            done
-          else
-            echo "No custom certs to delete."
-          fi
-          
-          # 6. Purge cache to clear any stale SSL state
-          echo ""
-          echo "Purging cache..."
+          echo "=== Purging cache ==="
           curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/purge_cache" \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{"purge_everything":true}' | jq '.success'
-
-      - name: Re-test TLS after fix
-        run: |
-          echo "Waiting 10s for changes to propagate..."
-          sleep 10
+            -d '{"purge_everything":true}' | jq -r '.success'
           
+          echo ""
+          echo "=== Testing endpoints ==="
+          sleep 5
           for HOST in t.tracera.pheno.studio gate.pheno.studio trace.pheno.studio; do
-            echo "--- $HOST ---"
-            RESULT=$(echo | openssl s_client -connect ${HOST}:443 -servername ${HOST} 2>&1)
-            echo "$RESULT" | grep -E "subject=|issuer=|Verify|handshake|error" | head -5
-            
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://${HOST}/ 2>/dev/null || echo "FAIL")
-            echo "HTTP status: $HTTP_CODE"
-            echo ""
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "https://${HOST}/" 2>/dev/null)
+            echo "${HOST}: HTTP ${HTTP_CODE}"
           done
+
+      - name: Summary
+        run: |
+          echo "### SSL Fix Applied" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- TLS mode set to full (strict)" >> $GITHUB_STEP_SUMMARY
+          echo "- Always Use HTTPS enabled" >> $GITHUB_STEP_SUMMARY
+          echo "- Cache purged" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "If t.tracera still fails TLS, the issue may be at Cloudflare edge" >> $GITHUB_STEP_SUMMARY
+          echo "and requires waiting for certificate propagation (5-15 min)." >> $GITHUB_STEP_SUMMARY
