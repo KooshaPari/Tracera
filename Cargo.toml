@@ -39,8 +39,8 @@ pr-run-mode = "plan"
 digest = { git = "https://github.com/RustCrypto/traits", tag = "v0.10.7" }
 
 # --- Phenotype shared infrakit crates (from PhenoInfra) ---
-phenotype-crypto = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "e001322" }
-phenotype-telemetry = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "e001322" }
-phenotype-git-core = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "e001322" }
-phenotype-health = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "e001322" }
-phenotype-observability = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "e001322" }
+phenotype-crypto = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "dd040ed1" }
+phenotype-telemetry = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "dd040ed1" }
+phenotype-git-core = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "dd040ed1" }
+phenotype-health = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "dd040ed1" }
+phenotype-observability = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "dd040ed1" }
