@@ -121,9 +121,9 @@ jobs:
               - 'lefthook.yml'
               - '.pre-commit-config.yaml'
 
-# =============================================================================
-# Stage 1 — format gate.
-# =============================================================================
+  # =============================================================================
+  # Stage 1 — format gate.
+  # =============================================================================
   format:
     name: "ci-agents / format"
     needs: detect-changes
@@ -165,9 +165,9 @@ jobs:
         working-directory: frontend
         run: bun x prettier --check '**/*.{js,ts,tsx,jsx,mjs,cjs,json,md,yml,yaml,html,css,scss}' --ignore-path .gitignore --ignore-path .prettierignore || true
 
-# =============================================================================
-# Stage 2 — language-specific linters.
-# =============================================================================
+  # =============================================================================
+  # Stage 2 — language-specific linters.
+  # =============================================================================
   lint-rust:
     name: "ci-agents / lint-rust"
     needs: detect-changes
@@ -239,9 +239,9 @@ jobs:
         working-directory: crates/tracera-py-sdk
         run: uv run mypy --install-types --non-interactive .
 
-# =============================================================================
-# Stage 3 — test execution.
-# =============================================================================
+  # =============================================================================
+  # Stage 3 — test execution.
+  # =============================================================================
   test-rust:
     name: "ci-agents / test-rust"
     needs: detect-changes
@@ -351,9 +351,9 @@ jobs:
           PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
         run: uv run --python ${{ matrix.python-version }} pytest -ra --strict-config -q
 
-# =============================================================================
-# Stage 4 — fan-in build.
-# =============================================================================
+  # =============================================================================
+  # Stage 4 — fan-in build.
+  # =============================================================================
   build:
     name: "ci-agents / build"
     needs: [format, lint-rust, lint-js, lint-py, test-rust, test-js, test-py]
@@ -398,9 +398,9 @@ jobs:
           path: frontend/apps/web/dist/
           retention-days: 14
 
-# =============================================================================
-# Stage 5 — security gates.
-# =============================================================================
+  # =============================================================================
+  # Stage 5 — security gates.
+  # =============================================================================
   sast:
     name: "ci-agents / sast"
     needs: detect-changes
@@ -459,10 +459,10 @@ jobs:
           fail-on-severity: high
           comment-summary-in-pr: true
 
-# =============================================================================
-# Stage 6 — required-status aggregation gate. Branch protection should
-# point at this job.
-# =============================================================================
+  # =============================================================================
+  # Stage 6 — required-status aggregation gate. Branch protection should
+  # point at this job.
+  # =============================================================================
   ci-agents-required:
     name: "ci-agents / required"
     if: always()
