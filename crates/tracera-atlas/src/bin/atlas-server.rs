@@ -37,9 +37,7 @@ use serde::Deserialize;
 use tracing::{error, info, warn};
 
 use tracera_atlas::observability::{SdlcEvent, SdlcEventKind, SdlcStage};
-use tracera_atlas::{
-    publish_ci_event, AoRQuery, AtlasEngine, ChangeKind, CiBridge, WorkItemId,
-};
+use tracera_atlas::{publish_ci_event, AoRQuery, AtlasEngine, ChangeKind, CiBridge, WorkItemId};
 
 #[cfg(not(feature = "server"))]
 compile_error!(
@@ -105,7 +103,10 @@ impl IntoResponse for ApiError {
             Self::Ci(c) => (StatusCode::BAD_REQUEST, c.to_string()),
             Self::Internal(m) => {
                 error!(error = %m, "internal server error");
-                (StatusCode::INTERNAL_SERVER_ERROR, "internal_error".to_string())
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "internal_error".to_string(),
+                )
             }
         };
         (status, Json(serde_json::json!({"error": message}))).into_response()
@@ -207,11 +208,7 @@ async fn get_work_item(
     Path(id): Path<uuid::Uuid>,
 ) -> Result<Json<serde_json::Value>, ApiError> {
     let wid = WorkItemId(id);
-    let item = s
-        .engine
-        .delegation()
-        .get(&wid)
-        .ok_or(ApiError::NotFound)?;
+    let item = s.engine.delegation().get(&wid).ok_or(ApiError::NotFound)?;
     Ok(Json(serde_json::json!({"work_item": item})))
 }
 
@@ -334,8 +331,11 @@ async fn ci_webhook(
     State(s): State<AppState>,
     Json(req): Json<CiWebhookRequest>,
 ) -> Result<Json<serde_json::Value>, ApiError> {
-    let raw_str = serde_json::to_string(&req.raw).map_err(|e| ApiError::BadRequest(e.to_string()))?;
-    let normalised = s.ci.detect_and_normalise(&raw_str).map_err(ApiError::from)?;
+    let raw_str =
+        serde_json::to_string(&req.raw).map_err(|e| ApiError::BadRequest(e.to_string()))?;
+    let normalised =
+        s.ci.detect_and_normalise(&raw_str)
+            .map_err(ApiError::from)?;
     let work_item_id = req.work_item_id.clone().unwrap_or_else(WorkItemId::new);
     let event = publish_ci_event(&normalised, work_item_id);
     publish_event(&s, event.clone());
@@ -378,7 +378,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = Router::new()
         .route("/healthz", get(healthz))
-        .route("/v1/work-items", get(list_work_items).post(create_work_item))
+        .route(
+            "/v1/work-items",
+            get(list_work_items).post(create_work_item),
+        )
         .route("/v1/work-items/{id}", get(get_work_item))
         .route("/v1/work-items/{id}/assign", post(assign_work_item))
         .route("/v1/work-items/{id}/start", post(start_work_item))

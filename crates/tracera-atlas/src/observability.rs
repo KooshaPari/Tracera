@@ -406,7 +406,9 @@ impl InMemoryEventBus {
         }
         // Always emit a tracing event so the host's log subscriber sees it.
         match &event.kind {
-            SdlcEventKind::CiRunCompleted { provider, outcome, .. } => {
+            SdlcEventKind::CiRunCompleted {
+                provider, outcome, ..
+            } => {
                 info!(
                     event_id = %event.id,
                     work_item_id = %event.work_item_id,
@@ -486,10 +488,7 @@ impl RecordingSink {
     /// Snapshot the events received so far.
     #[must_use]
     pub fn snapshot(&self) -> Vec<SdlcEvent> {
-        self.events
-            .lock()
-            .map(|g| g.clone())
-            .unwrap_or_default()
+        self.events.lock().map(|g| g.clone()).unwrap_or_default()
     }
 
     /// Number of events received.

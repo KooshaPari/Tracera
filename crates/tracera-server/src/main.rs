@@ -1,8 +1,10 @@
 mod auth;
 mod db;
+mod events;
 mod health;
 mod ingest;
 mod memory;
+mod observability;
 mod pg_store;
 #[cfg(feature = "phenodag-queue")]
 mod queue;
@@ -11,8 +13,6 @@ mod store;
 mod swee;
 mod traceability;
 mod validation;
-mod events;
-mod observability;
 
 use axum::{
     extract::DefaultBodyLimit,
@@ -708,7 +708,9 @@ async fn main() {
         store,
         workos_client: tracera_workos::WorkOSClient::default_for_router(),
         cache: tracera_server::cache::CacheClient::from_env().map(Arc::new),
-        neo4j: tracera_server::neo4j::Neo4jClient::from_env().await.map(Arc::new),
+        neo4j: tracera_server::neo4j::Neo4jClient::from_env()
+            .await
+            .map(Arc::new),
         r2: tracera_server::r2::R2Client::from_env().map(Arc::new),
     };
 
@@ -1346,10 +1348,7 @@ fn build_router_with_auth(state: AppState, auth_token: auth::AuthToken) -> Route
             "/api/v1/graph/nodes",
             post(create_swee_node_handler).get(list_swee_nodes_handler),
         )
-        .route(
-            "/api/v1/graph/nodes/{id}",
-            get(get_swee_node_handler),
-        )
+        .route("/api/v1/graph/nodes/{id}", get(get_swee_node_handler))
         .route(
             "/api/v1/graph/edges",
             post(create_swee_edge_handler).get(list_swee_edges_handler),
@@ -2405,17 +2404,14 @@ async fn ingest_agileplus(
             total_processed: 0,
             requirements_created: 0,
             trace_links_created: 0,
-            errors: vec![
-                "no ingest source configured: set AGCORD_URL, \
+            errors: vec!["no ingest source configured: set AGCORD_URL, \
                  or supply items[] in the request body"
-                    .to_string(),
-            ],
+                .to_string()],
         };
         return (axum::http::StatusCode::UNPROCESSABLE_ENTITY, Json(result));
     }
 
-    let result =
-        ingest::ingest_from_payload(&req.items, "id", "agcord", &state.store).await;
+    let result = ingest::ingest_from_payload(&req.items, "id", "agcord", &state.store).await;
     (axum::http::StatusCode::OK, Json(result))
 }
 
@@ -2455,10 +2451,7 @@ fn default_edge_source_manual() -> String {
 async fn create_swee_node_handler(
     axum::extract::State(state): axum::extract::State<AppState>,
     Json(payload): Json<SweeNodeCreate>,
-) -> Result<
-    (axum::http::StatusCode, Json<Value>),
-    (axum::http::StatusCode, Json<ErrorResponse>),
-> {
+) -> Result<(axum::http::StatusCode, Json<Value>), (axum::http::StatusCode, Json<ErrorResponse>)> {
     use crate::swee::NodeKind;
     if NodeKind::from_str(&payload.node_type).is_none() {
         return Err(bad_request("invalid node_type"));
@@ -2466,12 +2459,7 @@ async fn create_swee_node_handler(
     let now = Utc::now();
     let id = state
         .store
-        .create_swee_node(
-            payload.node_type,
-            payload.label,
-            payload.metadata,
-            now,
-        )
+        .create_swee_node(payload.node_type, payload.label, payload.metadata, now)
         .await
         .map_err(|e| {
             tracing::error!("create_swee_node failed: {e}");
@@ -2534,10 +2522,7 @@ async fn get_swee_node_handler(
 async fn create_swee_edge_handler(
     axum::extract::State(state): axum::extract::State<AppState>,
     Json(payload): Json<SweeEdgeCreate>,
-) -> Result<
-    (axum::http::StatusCode, Json<Value>),
-    (axum::http::StatusCode, Json<ErrorResponse>),
-> {
+) -> Result<(axum::http::StatusCode, Json<Value>), (axum::http::StatusCode, Json<ErrorResponse>)> {
     use crate::swee::EdgeKind;
     if EdgeKind::from_str(&payload.edge_type).is_none() {
         return Err(bad_request("invalid edge_type"));
@@ -2888,8 +2873,12 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
-         cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            store: Arc::new(store),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
 
         let response = app
             .oneshot(
@@ -2919,8 +2908,12 @@ mod tests {
                 version: env!("CARGO_PKG_VERSION").to_string(),
                 backend: "sqlite",
                 started_at: Instant::now(),
-                workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
-             cache: None, neo4j: None, r2: None, },
+                workos_client: tracera_workos::WorkOSClient::default_for_router(),
+                store: Arc::new(store),
+                cache: None,
+                neo4j: None,
+                r2: None,
+            },
             Some(Arc::<str>::from("secret")),
         );
 
@@ -2970,8 +2963,12 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
-         cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            store: Arc::new(store),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
 
         let response = app
             .oneshot(
@@ -3000,8 +2997,12 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
-         cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            store: Arc::new(store),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
 
         let response = app
             .clone()
@@ -3032,8 +3033,12 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
-         cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            store: Arc::new(store),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
 
         let response = app
             .oneshot(
@@ -3070,8 +3075,12 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
-         cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            store: Arc::new(store),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
         let payload = r#"{"links":[{"source_id":"FR-1","target_id":"T-1","relationship":"verifies","confidence":0.95}]}"#;
 
         let missing_token = app
@@ -3163,8 +3172,12 @@ mod tests {
                 version: env!("CARGO_PKG_VERSION").to_string(),
                 backend: "sqlite",
                 started_at: Instant::now(),
-                workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
-             cache: None, neo4j: None, r2: None, },
+                workos_client: tracera_workos::WorkOSClient::default_for_router(),
+                store: Arc::new(store),
+                cache: None,
+                neo4j: None,
+                r2: None,
+            },
             Some(Arc::<str>::from("secret")),
         );
 
@@ -3203,7 +3216,11 @@ mod tests {
             backend: "sqlite",
             started_at: Instant::now(),
             store,
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),  cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
 
         let response = app
             .oneshot(
@@ -3253,8 +3270,12 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
-         cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            store: Arc::new(store),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
 
         let response = app
             .oneshot(
@@ -3290,8 +3311,12 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
-         cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            store: Arc::new(store),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
         let csrf_token = browser_csrf_token(&app).await;
 
         let malformed = app
@@ -3360,8 +3385,12 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
-         cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            store: Arc::new(store),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
         let csrf_token = browser_csrf_token(&app).await;
 
         let response = app
@@ -3395,8 +3424,12 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
-         cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            store: Arc::new(store),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
 
         let response = app
             .oneshot(
@@ -3423,8 +3456,12 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
-         cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            store: Arc::new(store),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
 
         let response = app
             .oneshot(
@@ -3451,8 +3488,12 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(store),
-         cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            store: Arc::new(store),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
 
         for (uri, error) in [
             ("/evidence", "evidence listing failed"),
@@ -3506,8 +3547,12 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: Arc::new(make_sqlite_store().await),
-         cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            store: Arc::new(make_sqlite_store().await),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
         let csrf_token = browser_csrf_token(&app).await;
 
         let created = app
@@ -3612,7 +3657,11 @@ mod tests {
             backend: "sqlite",
             started_at: Instant::now(),
             store,
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),  cache: None, neo4j: None, r2: None, };
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        };
         let ready = match health::readyz(axum::extract::State(state)).await {
             Ok(response) => response.0,
             Err(_) => panic!("healthy store is ready"),
@@ -4879,8 +4928,12 @@ mod tests {
             version: env!("CARGO_PKG_VERSION").to_string(),
             backend: "sqlite",
             started_at: Instant::now(),
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),store: store.clone(),
-         cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            store: store.clone(),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
 
         let csrf = issue_csrf_token().await;
 
@@ -4899,8 +4952,7 @@ mod tests {
         let body_a = axum::body::to_bytes(resp_a.into_body(), 4096)
             .await
             .expect("node A body");
-        let id_a = serde_json::from_slice::<serde_json::Value>(&body_a)
-            .expect("node A json")["id"]
+        let id_a = serde_json::from_slice::<serde_json::Value>(&body_a).expect("node A json")["id"]
             .as_str()
             .expect("id field")
             .to_string();
@@ -4926,7 +4978,10 @@ mod tests {
         let node_a: serde_json::Value =
             serde_json::from_slice(&body_a_get).expect("node A GET json");
         assert_eq!(node_a["node_type"], "requirement");
-        assert_eq!(node_a["id"].as_str().unwrap().parse::<i64>().unwrap(), numeric_id_a);
+        assert_eq!(
+            node_a["id"].as_str().unwrap().parse::<i64>().unwrap(),
+            numeric_id_a
+        );
         assert!(node_a["created_at"].is_string());
 
         // 2. POST /api/v1/graph/nodes — create source_file node
@@ -4944,8 +4999,7 @@ mod tests {
         let body_b = axum::body::to_bytes(resp_b.into_body(), 4096)
             .await
             .expect("node B body");
-        let node_b: serde_json::Value =
-            serde_json::from_slice(&body_b).expect("node B json");
+        let node_b: serde_json::Value = serde_json::from_slice(&body_b).expect("node B json");
         let id_b = node_b["id"].as_str().expect("id field").to_string();
         assert_ne!(id_a, id_b);
 
@@ -4974,17 +5028,19 @@ mod tests {
         let body_list = axum::body::to_bytes(resp_list.into_body(), 16384)
             .await
             .expect("list body");
-        let list: serde_json::Value =
-            serde_json::from_slice(&body_list).expect("list json");
+        let list: serde_json::Value = serde_json::from_slice(&body_list).expect("list json");
         let nodes = list["items"].as_array().expect("items is array");
-        assert!(
-            nodes.iter().any(|n| n["id"].as_str().unwrap_or("").parse::<i64>().ok() == Some(numeric_id_a) && n["label"] == "REQ-001: user login"),
-            "node A must appear in list: {nodes:?}",
-        );
         assert!(
             nodes
                 .iter()
-                .any(|n| n["node_type"] == "source_file"),
+                .any(
+                    |n| n["id"].as_str().unwrap_or("").parse::<i64>().ok() == Some(numeric_id_a)
+                        && n["label"] == "REQ-001: user login"
+                ),
+            "node A must appear in list: {nodes:?}",
+        );
+        assert!(
+            nodes.iter().any(|n| n["node_type"] == "source_file"),
             "node B must appear in list: {nodes:?}",
         );
 
@@ -5026,7 +5082,9 @@ mod tests {
             serde_json::from_slice(&body_filtered).expect("filtered json");
         let filtered_nodes = filtered["items"].as_array().expect("items is array");
         assert!(
-            filtered_nodes.iter().all(|n| n["node_type"] == "requirement"),
+            filtered_nodes
+                .iter()
+                .all(|n| n["node_type"] == "requirement"),
             "all filtered nodes must have type=requirement: {filtered_nodes:?}",
         );
         assert!(
@@ -5084,7 +5142,11 @@ mod tests {
             backend: "sqlite",
             started_at: Instant::now(),
             store,
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),  cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
 
         let csrf = issue_csrf_token().await;
 
@@ -5099,7 +5161,8 @@ mod tests {
             .await
             .expect("malformed response");
         assert!(
-            resp.status() == StatusCode::BAD_REQUEST || resp.status() == StatusCode::UNPROCESSABLE_ENTITY,
+            resp.status() == StatusCode::BAD_REQUEST
+                || resp.status() == StatusCode::UNPROCESSABLE_ENTITY,
             "missing node_type must 400 or 422, got {}",
             resp.status(),
         );
@@ -5115,7 +5178,11 @@ mod tests {
             backend: "sqlite",
             started_at: Instant::now(),
             store,
-            workos_client: tracera_workos::WorkOSClient::default_for_router(),  cache: None, neo4j: None, r2: None, });
+            workos_client: tracera_workos::WorkOSClient::default_for_router(),
+            cache: None,
+            neo4j: None,
+            r2: None,
+        });
 
         let csrf = issue_csrf_token().await;
         let resp = app

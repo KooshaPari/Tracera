@@ -51,8 +51,8 @@ pub use ci_bridge::{
     GitHubActionsEvent, NormalizedCiEvent,
 };
 pub use delegation::{
-    AgentAssignment, AgentId, AssignmentOutcome, Delegation, DelegationError, WorkItem,
-    WorkItemId, WorkItemStatus, WorkItemSummary,
+    AgentAssignment, AgentId, AssignmentOutcome, Delegation, DelegationError, WorkItem, WorkItemId,
+    WorkItemStatus, WorkItemSummary,
 };
 pub use observability::{
     EventBus, EventSubscriber, InMemoryEventBus, SdlcEvent, SdlcEventKind, SdlcStage, StageLog,
@@ -88,10 +88,7 @@ impl AtlasEngine {
         let events = InMemoryEventBus::default();
         let delegation = delegation::DelegationStore::with_sink(events.clone());
         Self {
-            inner: Arc::new(EngineInner {
-                delegation,
-                events,
-            }),
+            inner: Arc::new(EngineInner { delegation, events }),
         }
     }
 
@@ -152,7 +149,14 @@ mod tests {
             .assign(&work.id, "agent-9")
             .expect("assign");
         assert_eq!(assigned.outcome, AssignmentOutcome::Assigned);
-        assert_eq!(assigned.work_item.assigned_agent.as_ref().map(|a| a.0.as_str()), Some("agent-9"));
+        assert_eq!(
+            assigned
+                .work_item
+                .assigned_agent
+                .as_ref()
+                .map(|a| a.0.as_str()),
+            Some("agent-9")
+        );
         assert_eq!(assigned.work_item.status, WorkItemStatus::InProgress);
     }
 

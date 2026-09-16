@@ -20,12 +20,12 @@
 //! The HTTP layer (`main.rs`) stays a binary-only crate: it glues this lib
 //! to axum/axum-extra but contributes no types that other crates need.
 
+pub mod cache;
+pub mod datastore;
+pub mod db;
+pub mod neo4j;
+pub mod pg_store;
+pub mod r2;
+pub mod sqlite_store;
 pub mod store;
 pub mod swee;
-pub mod cache;
-pub mod neo4j;
-pub mod r2;
-pub mod db;
-pub mod pg_store;
-pub mod sqlite_store;
-pub mod datastore;

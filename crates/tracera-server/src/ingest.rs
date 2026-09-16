@@ -651,9 +651,7 @@ pub async fn fetch_agcord_agents(cfg: &AgcordConfig) -> Result<Vec<NormalisedIss
                         .join(", ")
                 })
                 .unwrap_or_default();
-            let body = format!(
-                "type={agent_type}; status={status}; capabilities={capabilities}"
-            );
+            let body = format!("type={agent_type}; status={status}; capabilities={capabilities}");
             Some(NormalisedIssue {
                 external_id: format!("agcord-agent-{id}"),
                 title: format!("[agent] {name}"),
@@ -726,9 +724,7 @@ pub async fn fetch_agcord_tasks(cfg: &AgcordConfig) -> Result<Vec<NormalisedIssu
                 .and_then(|a| a.as_str())
                 .unwrap_or("")
                 .to_string();
-            let body = format!(
-                "priority={priority}; status={status}; assigned={assigned}"
-            );
+            let body = format!("priority={priority}; status={status}; assigned={assigned}");
             Some(NormalisedIssue {
                 external_id: format!("agcord-task-{id}"),
                 title: format!("[task] {name}"),

@@ -169,9 +169,7 @@ mod demo {
                 ))
             })
         }
-        fn list_sprints(
-            &self,
-        ) -> BoxFuture<'_, StoreResult<Vec<tracera_server::store::Sprint>>> {
+        fn list_sprints(&self) -> BoxFuture<'_, StoreResult<Vec<tracera_server::store::Sprint>>> {
             Box::pin(async { Ok(vec![]) })
         }
         fn create_sprint(
@@ -189,9 +187,7 @@ mod demo {
                 ))
             })
         }
-        fn list_stories(
-            &self,
-        ) -> BoxFuture<'_, StoreResult<Vec<tracera_server::store::Story>>> {
+        fn list_stories(&self) -> BoxFuture<'_, StoreResult<Vec<tracera_server::store::Story>>> {
             Box::pin(async { Ok(vec![]) })
         }
         fn create_story(
@@ -247,8 +243,7 @@ mod demo {
         fn get_project(
             &self,
             _id: String,
-        ) -> BoxFuture<'_, StoreResult<Option<tracera_server::store::ProjectSummary>>>
-        {
+        ) -> BoxFuture<'_, StoreResult<Option<tracera_server::store::ProjectSummary>>> {
             Box::pin(async { Ok(None) })
         }
         fn count_evidence(&self) -> BoxFuture<'_, StoreResult<i64>> {
@@ -335,22 +330,13 @@ mod demo {
                 ))
             })
         }
-        fn list_swee_nodes(
-            &self,
-            _t: Option<String>,
-        ) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
+        fn list_swee_nodes(&self, _t: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
             Box::pin(async { Ok(vec![]) })
         }
-        fn list_swee_edges(
-            &self,
-            _t: Option<String>,
-        ) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
+        fn list_swee_edges(&self, _t: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
             Box::pin(async { Ok(vec![]) })
         }
-        fn get_swee_node(
-            &self,
-            _id: String,
-        ) -> BoxFuture<'_, StoreResult<Option<Value>>> {
+        fn get_swee_node(&self, _id: String) -> BoxFuture<'_, StoreResult<Option<Value>>> {
             Box::pin(async { Ok(None) })
         }
         fn get_swee_neighbors(

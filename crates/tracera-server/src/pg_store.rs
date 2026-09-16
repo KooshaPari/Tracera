@@ -698,31 +698,24 @@ impl Store for PgStore {
         })
     }
 
-    fn list_swee_nodes(
-        &self,
-        node_type: Option<String>,
-    ) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
+    fn list_swee_nodes(&self, node_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
         Box::pin(async move {
             let rows = match node_type {
-                Some(ref nt) => {
-                    sqlx::query(
-                        "SELECT id, node_type, label, metadata::text, created_at, updated_at \
+                Some(ref nt) => sqlx::query(
+                    "SELECT id, node_type, label, metadata::text, created_at, updated_at \
                          FROM swee_nodes WHERE node_type = $1 ORDER BY created_at DESC",
-                    )
-                    .bind(nt)
-                    .fetch_all(&self.pool)
-                    .await
-                    .map_err(StoreError::from)?
-                }
-                None => {
-                    sqlx::query(
-                        "SELECT id, node_type, label, metadata::text, created_at, updated_at \
+                )
+                .bind(nt)
+                .fetch_all(&self.pool)
+                .await
+                .map_err(StoreError::from)?,
+                None => sqlx::query(
+                    "SELECT id, node_type, label, metadata::text, created_at, updated_at \
                          FROM swee_nodes ORDER BY created_at DESC",
-                    )
-                    .fetch_all(&self.pool)
-                    .await
-                    .map_err(StoreError::from)?
-                }
+                )
+                .fetch_all(&self.pool)
+                .await
+                .map_err(StoreError::from)?,
             };
 
             Ok(rows
@@ -745,10 +738,7 @@ impl Store for PgStore {
         })
     }
 
-    fn list_swee_edges(
-        &self,
-        edge_type: Option<String>,
-    ) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
+    fn list_swee_edges(&self, edge_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
         Box::pin(async move {
             let rows = match edge_type {
                 Some(ref et) => {
@@ -808,8 +798,8 @@ impl Store for PgStore {
 
             Ok(row.map(|r| {
                 let meta_str: String = r.try_get("metadata").unwrap_or_default();
-                let metadata: Value = serde_json::from_str(&meta_str)
-                    .unwrap_or(Value::Object(Default::default()));
+                let metadata: Value =
+                    serde_json::from_str(&meta_str).unwrap_or(Value::Object(Default::default()));
                 let db_id: i64 = r.try_get("id").unwrap_or_default();
                 serde_json::json!({
                     "id": db_id.to_string(),

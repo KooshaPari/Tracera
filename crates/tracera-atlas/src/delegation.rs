@@ -426,11 +426,7 @@ impl<'a> Delegation<'a> {
     }
 
     /// Create a new work item in the [`Ready`](WorkItemStatus::Ready) stage.
-    pub fn create_work(
-        &self,
-        title: &str,
-        stage: SdlcStage,
-    ) -> Result<WorkItem, DelegationError> {
+    pub fn create_work(&self, title: &str, stage: SdlcStage) -> Result<WorkItem, DelegationError> {
         self.create_work_with(title, stage, None, None)
     }
 
@@ -480,11 +476,7 @@ impl<'a> Delegation<'a> {
     ///   replaced and [`AssignmentOutcome::Reassigned`] is returned. The
     ///   assigned-agent event is emitted but the status stays `InProgress`.
     /// - All other states return [`DelegationError::InvalidTransition`].
-    pub fn assign(
-        &self,
-        id: &WorkItemId,
-        agent: &str,
-    ) -> Result<AgentAssignment, DelegationError> {
+    pub fn assign(&self, id: &WorkItemId, agent: &str) -> Result<AgentAssignment, DelegationError> {
         let agent_id = AgentId::new(agent);
         if agent_id.as_str().is_empty() {
             return Err(DelegationError::EmptyAgent);
@@ -524,11 +516,13 @@ impl<'a> Delegation<'a> {
             }
             AssignmentOutcome::Assigned => {
                 info!(%id, agent = %agent_id, "work item assigned");
-                self.store.record_event(SdlcEvent::work_item_assigned(&item, &agent_id));
+                self.store
+                    .record_event(SdlcEvent::work_item_assigned(&item, &agent_id));
             }
             AssignmentOutcome::Reassigned => {
                 info!(%id, agent = %agent_id, "work item reassigned");
-                self.store.record_event(SdlcEvent::work_item_assigned(&item, &agent_id));
+                self.store
+                    .record_event(SdlcEvent::work_item_assigned(&item, &agent_id));
             }
         }
 
@@ -552,7 +546,8 @@ impl<'a> Delegation<'a> {
             item.updated_at = Utc::now();
             Ok(item.clone())
         })?;
-        self.store.record_event(SdlcEvent::work_item_started(&item, &agent_id));
+        self.store
+            .record_event(SdlcEvent::work_item_started(&item, &agent_id));
         Ok(item)
     }
 
@@ -569,8 +564,10 @@ impl<'a> Delegation<'a> {
             transition(item, WorkItemStatus::Review)?;
             Ok(item.clone())
         })?;
-        self.store
-            .record_event(SdlcEvent::work_item_transition(&item, SdlcEventKind::ReviewSubmitted));
+        self.store.record_event(SdlcEvent::work_item_transition(
+            &item,
+            SdlcEventKind::ReviewSubmitted,
+        ));
         Ok(item)
     }
 
@@ -581,11 +578,7 @@ impl<'a> Delegation<'a> {
     /// detailed audit record (reviewer, sign-off time, optional note) is
     /// written by [`AgentOfRecord::sign_off`](crate::agent_of_record::AgentOfRecord::sign_off);
     /// this method only drives the state machine.
-    pub fn approve(
-        &self,
-        id: &WorkItemId,
-        reviewer: &str,
-    ) -> Result<WorkItem, DelegationError> {
+    pub fn approve(&self, id: &WorkItemId, reviewer: &str) -> Result<WorkItem, DelegationError> {
         let reviewer = AgentId::new(reviewer);
         if reviewer.as_str().is_empty() {
             return Err(DelegationError::EmptyAgent);
@@ -624,8 +617,10 @@ impl<'a> Delegation<'a> {
             }
             Ok(item.clone())
         })?;
-        self.store
-            .record_event(SdlcEvent::work_item_transition(&item, SdlcEventKind::Blocked));
+        self.store.record_event(SdlcEvent::work_item_transition(
+            &item,
+            SdlcEventKind::Blocked,
+        ));
         Ok(item)
     }
 
@@ -642,8 +637,10 @@ impl<'a> Delegation<'a> {
             transition(item, WorkItemStatus::Cancelled)?;
             Ok(item.clone())
         })?;
-        self.store
-            .record_event(SdlcEvent::work_item_transition(&item, SdlcEventKind::Cancelled));
+        self.store.record_event(SdlcEvent::work_item_transition(
+            &item,
+            SdlcEventKind::Cancelled,
+        ));
         Ok(item)
     }
 
@@ -778,10 +775,7 @@ mod tests {
         let out = view.assign(&work.id, "agent-1").unwrap();
         assert_eq!(out.outcome, AssignmentOutcome::Assigned);
         assert_eq!(out.work_item.status, WorkItemStatus::InProgress);
-        assert_eq!(
-            out.work_item.assigned_agent.as_ref().unwrap().0,
-            "agent-1"
-        );
+        assert_eq!(out.work_item.assigned_agent.as_ref().unwrap().0, "agent-1");
 
         let events = sink.snapshot();
         assert!(events

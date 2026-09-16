@@ -43,9 +43,7 @@ pub mod dt_nanos_opt {
         clickhouse::serde::chrono::datetime64::nanos::option::serialize(dt, s)
     }
 
-    pub fn deserialize<'de, D: Deserializer<'de>>(
-        d: D,
-    ) -> Result<Option<DateTime<Utc>>, D::Error> {
+    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Option<DateTime<Utc>>, D::Error> {
         clickhouse::serde::chrono::datetime64::nanos::option::deserialize(d)
     }
 }
@@ -81,8 +79,8 @@ pub mod naive_date {
 // Convenience re-exports with semantically meaningful names so other modules
 // (e.g. analytics result rows) can attach a ClickHouse-friendly serde adapter
 // without needing to declare their own.
-pub use id_uuid as uuid_deploy;
 pub use dt_nanos as dt_deploy;
+pub use id_uuid as uuid_deploy;
 pub use naive_date as day;
 
 // ---------------------------------------------------------------------------

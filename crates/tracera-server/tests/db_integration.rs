@@ -34,7 +34,12 @@ fn now() -> chrono::DateTime<Utc> {
 async fn swee_node_roundtrip() {
     let store = mem_store().await;
     let id = store
-        .create_swee_node("requirement".into(), "REQ-001".into(), json!({"owner":"alice"}), now())
+        .create_swee_node(
+            "requirement".into(),
+            "REQ-001".into(),
+            json!({"owner":"alice"}),
+            now(),
+        )
         .await
         .expect("create node");
     assert!(!id.is_empty());
@@ -62,7 +67,15 @@ async fn swee_edge_roundtrip_and_neighbors() {
         .expect("node b");
 
     let eid = store
-        .create_swee_edge("implements".into(), a.clone(), b.clone(), 1.0, "test".into(), Value::Null, now())
+        .create_swee_edge(
+            "implements".into(),
+            a.clone(),
+            b.clone(),
+            1.0,
+            "test".into(),
+            Value::Null,
+            now(),
+        )
         .await
         .expect("create edge");
     assert!(!eid.is_empty());

@@ -761,31 +761,24 @@ impl Store for SqliteStore {
         })
     }
 
-    fn list_swee_nodes(
-        &self,
-        node_type: Option<String>,
-    ) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
+    fn list_swee_nodes(&self, node_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
         Box::pin(async move {
             let rows = match node_type {
-                Some(ref nt) => {
-                    sqlx::query(
-                        "SELECT id, type, name, metadata, created_at, updated_at \
+                Some(ref nt) => sqlx::query(
+                    "SELECT id, type, name, metadata, created_at, updated_at \
                          FROM swee_nodes WHERE type = ?1 ORDER BY created_at DESC",
-                    )
-                    .bind(nt)
-                    .fetch_all(&self.pool)
-                    .await
-                    .map_err(StoreError::from)?
-                }
-                None => {
-                    sqlx::query(
-                        "SELECT id, type, name, metadata, created_at, updated_at \
+                )
+                .bind(nt)
+                .fetch_all(&self.pool)
+                .await
+                .map_err(StoreError::from)?,
+                None => sqlx::query(
+                    "SELECT id, type, name, metadata, created_at, updated_at \
                          FROM swee_nodes ORDER BY created_at DESC",
-                    )
-                    .fetch_all(&self.pool)
-                    .await
-                    .map_err(StoreError::from)?
-                }
+                )
+                .fetch_all(&self.pool)
+                .await
+                .map_err(StoreError::from)?,
             };
 
             Ok(rows
@@ -808,31 +801,24 @@ impl Store for SqliteStore {
         })
     }
 
-    fn list_swee_edges(
-        &self,
-        edge_type: Option<String>,
-    ) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
+    fn list_swee_edges(&self, edge_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
         Box::pin(async move {
             let rows = match edge_type {
-                Some(ref et) => {
-                    sqlx::query(
-                        "SELECT id, source_id, target_id, type, weight, metadata, created_at \
+                Some(ref et) => sqlx::query(
+                    "SELECT id, source_id, target_id, type, weight, metadata, created_at \
                          FROM swee_edges WHERE type = ?1 ORDER BY created_at DESC",
-                    )
-                    .bind(et)
-                    .fetch_all(&self.pool)
-                    .await
-                    .map_err(StoreError::from)?
-                }
-                None => {
-                    sqlx::query(
-                        "SELECT id, source_id, target_id, type, weight, metadata, created_at \
+                )
+                .bind(et)
+                .fetch_all(&self.pool)
+                .await
+                .map_err(StoreError::from)?,
+                None => sqlx::query(
+                    "SELECT id, source_id, target_id, type, weight, metadata, created_at \
                          FROM swee_edges ORDER BY created_at DESC",
-                    )
-                    .fetch_all(&self.pool)
-                    .await
-                    .map_err(StoreError::from)?
-                }
+                )
+                .fetch_all(&self.pool)
+                .await
+                .map_err(StoreError::from)?,
             };
 
             Ok(rows
@@ -871,8 +857,8 @@ impl Store for SqliteStore {
 
             Ok(row.map(|r| {
                 let meta_str: String = r.try_get("metadata").unwrap_or_default();
-                let metadata: Value = serde_json::from_str(&meta_str)
-                    .unwrap_or(Value::Object(Default::default()));
+                let metadata: Value =
+                    serde_json::from_str(&meta_str).unwrap_or(Value::Object(Default::default()));
                 let db_id: i64 = r.try_get("id").unwrap_or_default();
                 serde_json::json!({
                     "id": db_id.to_string(),

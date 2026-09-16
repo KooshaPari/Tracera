@@ -218,7 +218,9 @@ impl CiBridge {
     /// us having to model them all up front.
     pub fn from_github_actions(&self, raw_json: &str) -> Result<NormalizedCiEvent, CiEventError> {
         let event: GitHubActionsEvent = serde_json::from_str(raw_json)?;
-        let run = event.workflow_run.ok_or(CiEventError::MissingField("workflow_run"))?;
+        let run = event
+            .workflow_run
+            .ok_or(CiEventError::MissingField("workflow_run"))?;
         let status = run.status.as_deref().unwrap_or("");
         let kind = map_github_status_to_kind(status, run.conclusion.as_deref())?;
 
@@ -229,7 +231,8 @@ impl CiBridge {
             .and_then(parse_github_timestamp)
             .unwrap_or_else(Utc::now);
 
-        let raw: serde_json::Value = serde_json::from_str(raw_json).unwrap_or(serde_json::Value::Null);
+        let raw: serde_json::Value =
+            serde_json::from_str(raw_json).unwrap_or(serde_json::Value::Null);
 
         Ok(NormalizedCiEvent {
             provider: CiProvider::GithubActions,
@@ -325,10 +328,7 @@ fn parse_github_timestamp(s: &str) -> Option<DateTime<Utc>> {
 /// specific work item pass its id here so the event lands in the right
 /// per-work-item timeline. Otherwise the event is emitted against a
 /// zero-uuid "unscoped" placeholder that subscribers can recognise.
-pub fn publish_ci_event(
-    event: &NormalizedCiEvent,
-    work_item_id: WorkItemId,
-) -> SdlcEvent {
+pub fn publish_ci_event(event: &NormalizedCiEvent, work_item_id: WorkItemId) -> SdlcEvent {
     let outcome = event.kind.as_str();
     let provider_str = match event.provider {
         CiProvider::GithubActions => "github_actions",
@@ -500,9 +500,15 @@ mod tests {
             sdlc.kind,
             SdlcEventKind::CiRunCompleted { ref outcome, .. } if outcome == "run_succeeded"
         ));
-        assert_eq!(sdlc.tags.get("provider").map(String::as_str), Some("github_actions"));
+        assert_eq!(
+            sdlc.tags.get("provider").map(String::as_str),
+            Some("github_actions")
+        );
         assert_eq!(sdlc.tags.get("branch").map(String::as_str), Some("main"));
-        assert_eq!(sdlc.tags.get("commit").map(String::as_str), Some("abc1234567890"));
+        assert_eq!(
+            sdlc.tags.get("commit").map(String::as_str),
+            Some("abc1234567890")
+        );
         assert_eq!(sdlc.tags.get("actor").map(String::as_str), Some("koosh"));
         assert_eq!(sdlc.stage, SdlcStage::InProgress);
     }

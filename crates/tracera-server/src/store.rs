@@ -150,7 +150,9 @@ pub fn project_display_name(project_id: &str) -> String {
         let n = lower.len();
         let is_slug = n >= 5
             && &lower[..5] == "proj_"
-            && lower[5..].chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
+            && lower[5..]
+                .chars()
+                .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
             && (lower.ends_with('s') == false || lower.len() > 6);
         is_slug
     };
@@ -385,9 +387,7 @@ pub trait Store: Send + Sync {
     /// `migrations-postgres/0006` and `migrations/0007`), so this query is
     /// schema-compatible across PgStore and SqliteStore without depending on
     /// the divergent ITIL column set.
-    fn dashboard_status_counts(
-        &self,
-    ) -> BoxFuture<'_, StoreResult<Vec<(String, String, i64)>>>;
+    fn dashboard_status_counts(&self) -> BoxFuture<'_, StoreResult<Vec<(String, String, i64)>>>;
 
     // -----------------------------------------------------------------------
     // SWEE Graph operations
@@ -416,7 +416,11 @@ pub trait Store: Send + Sync {
     fn list_swee_nodes(&self, node_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
     fn list_swee_edges(&self, edge_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
     fn get_swee_node(&self, id: String) -> BoxFuture<'_, StoreResult<Option<Value>>>;
-    fn get_swee_neighbors(&self, id: String, direction: String) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
+    fn get_swee_neighbors(
+        &self,
+        id: String,
+        direction: String,
+    ) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
 }
 
 #[cfg(test)]
