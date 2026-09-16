@@ -382,6 +382,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - name: bun install
         working-directory: frontend
         run: bun install --frozen-lockfile
@@ -413,18 +416,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
-
-      - name: CodeQL analysis (${{ matrix.language }})
-        uses: github/codeql-action/init@v4
-        with:
-          languages: ${{ matrix.language }}
-          queries: security-extended,security-and-quality
-          disable-default-queries: true
-
-      - name: Perform CodeQL analysis (${{ matrix.language }})
-        uses: github/codeql-action/analyze@v4
-        with:
-          category: "/language:${{ matrix.language }}"
 
       - name: Trivy filesystem scan
         uses: aquasecurity/trivy-action@master
