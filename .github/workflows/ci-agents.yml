@@ -253,20 +253,22 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
-      - name: cargo test
+      - name: rust-cache (test-rust)
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: ci-agents-test-rust
           cache-on-failure: true
+      - name: cargo test
         env:
           CARGO_INCREMENTAL: 0
           RUST_LOG: info
         run: |
           cargo test --workspace --locked -- --nocapture
-      - name: cargo doctest
+      - name: rust-cache (doctest)
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: ci-agents-test-rust
+      - name: cargo doctest
         run: |
           set -euo pipefail
           metadata="$(cargo metadata --no-deps --format-version 1)"
