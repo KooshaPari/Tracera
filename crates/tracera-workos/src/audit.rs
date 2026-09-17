@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::error::WorkOSResult;
-use crate::sync::{GraphEdge, GraphNode, ProvisionOutcome};
+use crate::sync::{GraphEdge, GraphNode};
 use crate::webhooks::WebhookEnvelope;
 
 /// Node-kind string for an audit event node.

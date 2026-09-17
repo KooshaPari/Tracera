@@ -2,11 +2,16 @@ use chrono::Utc;
 use serde_json::Value;
 use sqlx::{Row, SqlitePool};
 
-use crate::store::{project_display_name, BoxFuture, ListParams, ProjectSummary, StoreError, StoreResult};
+use crate::store::{
+    project_display_name, BoxFuture, ListParams, ProjectSummary, StoreError, StoreResult,
+};
 
 use super::str_to_ts;
 
-pub(super) fn list_projects(pool: &SqlitePool, params: ListParams) -> BoxFuture<'_, StoreResult<Vec<ProjectSummary>>> {
+pub(super) fn list_projects(
+    pool: &SqlitePool,
+    params: ListParams,
+) -> BoxFuture<'_, StoreResult<Vec<ProjectSummary>>> {
     Box::pin(async move {
         let rows = sqlx::query(
             "SELECT project_id, COUNT(*) AS problem_count, MIN(created_at) AS created_at, MAX(updated_at) AS updated_at

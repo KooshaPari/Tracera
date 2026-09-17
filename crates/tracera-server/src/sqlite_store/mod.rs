@@ -12,8 +12,8 @@ use serde_json::Value;
 use sqlx::{Row, SqlitePool};
 
 use crate::store::{
-    BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint,
-    Store, StoreError, StoreResult, Story, TeamRow, TraceLink,
+    BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint, Store, StoreError,
+    StoreResult, Story, TeamRow, TraceLink,
 };
 
 #[derive(Clone)]
@@ -98,7 +98,16 @@ impl Store for SqliteStore {
         story_points: Option<i64>,
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<Story>> {
-        stories::create_story(&self.pool, id, sprint_id, title, description, status, story_points, now)
+        stories::create_story(
+            &self.pool,
+            id,
+            sprint_id,
+            title,
+            description,
+            status,
+            story_points,
+            now,
+        )
     }
 
     fn create_trace_link(
@@ -111,7 +120,16 @@ impl Store for SqliteStore {
         source: String,
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<TraceLink>> {
-        trace_links::create_trace_link(&self.pool, id, source_id, target_id, relationship, confidence, source, now)
+        trace_links::create_trace_link(
+            &self.pool,
+            id,
+            source_id,
+            target_id,
+            relationship,
+            confidence,
+            source,
+            now,
+        )
     }
 
     fn list_trace_links_for_artifact(
@@ -212,10 +230,29 @@ impl Store for SqliteStore {
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<Problem>> {
         problems::create_problem(
-            &self.pool, id, project_id, problem_number, title, description, status,
-            resolution_type, category, sub_category, tags, impact_level, urgency, priority,
-            rca_performed, root_cause_identified, workaround_available, permanent_fix_available,
-            assigned_to, assigned_team, owner, known_error_id, now,
+            &self.pool,
+            id,
+            project_id,
+            problem_number,
+            title,
+            description,
+            status,
+            resolution_type,
+            category,
+            sub_category,
+            tags,
+            impact_level,
+            urgency,
+            priority,
+            rca_performed,
+            root_cause_identified,
+            workaround_available,
+            permanent_fix_available,
+            assigned_to,
+            assigned_team,
+            owner,
+            known_error_id,
+            now,
         )
     }
 
@@ -256,7 +293,9 @@ impl Store for SqliteStore {
         metadata: Value,
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<String>> {
-        swee::create_swee_edge(&self.pool, edge_type, source_id, target_id, confidence, source, metadata, now)
+        swee::create_swee_edge(
+            &self.pool, edge_type, source_id, target_id, confidence, source, metadata, now,
+        )
     }
 
     fn list_swee_nodes(&self, node_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>> {

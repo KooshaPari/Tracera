@@ -10,7 +10,6 @@
 //! and compare in constant time against any of the `v1=` values. Also enforce a
 //! timestamp tolerance (default 5 minutes) to defeat replay.
 
-use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::HashSet;
@@ -118,15 +117,15 @@ fn compute_signature(secret: &str, timestamp: i64, body: &[u8]) -> String {
     }
     // inner = SHA256(ipad || "<ts>.<body>")
     let mut inner_h = Sha256::new();
-    inner_h.update(&ipad);
+    inner_h.update(ipad);
     inner_h.update(timestamp.to_string().as_bytes());
     inner_h.update(b".");
     inner_h.update(body);
     let inner_hash = inner_h.finalize();
     // outer = SHA256(opad || inner_hash)
     let mut outer_h = Sha256::new();
-    outer_h.update(&opad);
-    outer_h.update(&inner_hash);
+    outer_h.update(opad);
+    outer_h.update(inner_hash);
     outer_h
         .finalize()
         .iter()

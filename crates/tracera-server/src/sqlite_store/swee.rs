@@ -67,7 +67,10 @@ pub(super) fn create_swee_edge(
     })
 }
 
-pub(super) fn list_swee_nodes(pool: &SqlitePool, node_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
+pub(super) fn list_swee_nodes(
+    pool: &SqlitePool,
+    node_type: Option<String>,
+) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
     Box::pin(async move {
         let rows = match node_type {
             Some(ref nt) => sqlx::query(
@@ -91,8 +94,8 @@ pub(super) fn list_swee_nodes(pool: &SqlitePool, node_type: Option<String>) -> B
             .into_iter()
             .map(|r| {
                 let meta_str: String = r.try_get("metadata").unwrap_or_default();
-                let metadata: Value = serde_json::from_str(&meta_str)
-                    .unwrap_or(Value::Object(Default::default()));
+                let metadata: Value =
+                    serde_json::from_str(&meta_str).unwrap_or(Value::Object(Default::default()));
                 let id: i64 = r.try_get("id").unwrap_or_default();
                 serde_json::json!({
                     "id": id.to_string(),
@@ -107,7 +110,10 @@ pub(super) fn list_swee_nodes(pool: &SqlitePool, node_type: Option<String>) -> B
     })
 }
 
-pub(super) fn list_swee_edges(pool: &SqlitePool, edge_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
+pub(super) fn list_swee_edges(
+    pool: &SqlitePool,
+    edge_type: Option<String>,
+) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
     Box::pin(async move {
         let rows = match edge_type {
             Some(ref et) => sqlx::query(
@@ -131,8 +137,8 @@ pub(super) fn list_swee_edges(pool: &SqlitePool, edge_type: Option<String>) -> B
             .into_iter()
             .map(|r| {
                 let meta_str: String = r.try_get("metadata").unwrap_or_default();
-                let metadata: Value = serde_json::from_str(&meta_str)
-                    .unwrap_or(Value::Object(Default::default()));
+                let metadata: Value =
+                    serde_json::from_str(&meta_str).unwrap_or(Value::Object(Default::default()));
                 let id: i64 = r.try_get("id").unwrap_or_default();
                 let src_id: i64 = r.try_get("source_id").unwrap_or_default();
                 let tgt_id: i64 = r.try_get("target_id").unwrap_or_default();
@@ -150,7 +156,10 @@ pub(super) fn list_swee_edges(pool: &SqlitePool, edge_type: Option<String>) -> B
     })
 }
 
-pub(super) fn get_swee_node(pool: &SqlitePool, id: String) -> BoxFuture<'_, StoreResult<Option<Value>>> {
+pub(super) fn get_swee_node(
+    pool: &SqlitePool,
+    id: String,
+) -> BoxFuture<'_, StoreResult<Option<Value>>> {
     Box::pin(async move {
         let row = sqlx::query(
             "SELECT id, type, name, metadata, created_at, updated_at \
@@ -221,8 +230,8 @@ pub(super) fn get_swee_neighbors(
             .into_iter()
             .map(|r| {
                 let meta_str: String = r.try_get("metadata").unwrap_or_default();
-                let metadata: Value = serde_json::from_str(&meta_str)
-                    .unwrap_or(Value::Object(Default::default()));
+                let metadata: Value =
+                    serde_json::from_str(&meta_str).unwrap_or(Value::Object(Default::default()));
                 let eid: i64 = r.try_get("id").unwrap_or_default();
                 let src_id: i64 = r.try_get("source_id").unwrap_or_default();
                 let tgt_id: i64 = r.try_get("target_id").unwrap_or_default();

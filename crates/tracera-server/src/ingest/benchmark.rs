@@ -97,9 +97,10 @@ mod benchmark_contract_tests {
 
     #[test]
     fn pheno_harness_fixture_replays_through_tracera_mapper() {
-        let envelope: Value =
-            serde_json::from_str(include_str!("../../testdata/pheno-harness-benchmark-run.json"))
-                .expect("fixture JSON");
+        let envelope: Value = serde_json::from_str(include_str!(
+            "../../testdata/pheno-harness-benchmark-run.json"
+        ))
+        .expect("fixture JSON");
         let issue = benchmark_run_to_issue(&envelope).expect("valid pheno-harness fixture");
         assert_eq!(issue.status, "passed");
         assert_eq!(

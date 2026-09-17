@@ -153,7 +153,7 @@ pub fn project_display_name(project_id: &str) -> String {
             && lower[5..]
                 .chars()
                 .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
-            && (lower.ends_with('s') == false || lower.len() > 6);
+            && (!lower.ends_with('s') || lower.len() > 6);
         is_slug
     };
     if slug_re {

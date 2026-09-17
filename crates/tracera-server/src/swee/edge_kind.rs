@@ -122,6 +122,7 @@ impl EdgeKind {
         }
     }
 
+    #[allow(clippy::should_implement_trait)]
     /// Parse an `EdgeKind` from its SQL string discriminant.
     pub fn from_str(s: &str) -> Option<Self> {
         match s {

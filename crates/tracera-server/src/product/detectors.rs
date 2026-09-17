@@ -153,6 +153,12 @@ impl FreshnessDetector {
 #[derive(Debug, Clone)]
 pub struct CoverageDetector;
 
+impl Default for CoverageDetector {
+    fn default() -> Self {
+        Self
+    }
+}
+
 impl CoverageDetector {
     /// Create a new coverage detector.
     pub fn new() -> Self {
@@ -209,6 +215,12 @@ impl CoverageDetector {
 /// at the same baseline revision.
 #[derive(Debug, Clone)]
 pub struct ContradictionDetector;
+
+impl Default for ContradictionDetector {
+    fn default() -> Self {
+        Self
+    }
+}
 
 impl ContradictionDetector {
     /// Create a new contradiction detector.
@@ -471,8 +483,10 @@ mod tests {
         };
         let fd = FreshnessDetector::new(86_400);
         let cd = ContradictionDetector::new();
-        assert!(fd.detect(&[fresh_obs.clone()]).is_empty());
-        assert!(cd.detect(&[fresh_obs]).is_empty());
+        // Call contradiction first (borrows), then freshness (consumes via clone avoided)
+        let slice = [fresh_obs];
+        assert!(fd.detect(&slice).is_empty());
+        assert!(cd.detect(&slice).is_empty());
     }
 
     #[test]

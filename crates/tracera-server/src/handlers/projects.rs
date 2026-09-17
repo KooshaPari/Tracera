@@ -1,6 +1,5 @@
 use axum::http::StatusCode;
 
-
 pub(crate) async fn create_project_stub() -> StatusCode {
     StatusCode::CREATED
 }

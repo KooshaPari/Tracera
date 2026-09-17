@@ -14,10 +14,15 @@ mod graph_input;
 mod memory;
 mod pattern;
 
+#[allow(unused_imports)]
 pub use config::DistillationConfig;
+#[allow(unused_imports)]
 pub use distiller::MemoryDistiller;
+#[allow(unused_imports)]
 pub use graph_input::{GraphEdge, GraphNode, GraphSnapshot};
+#[allow(unused_imports)]
 pub use memory::MemoryEntry;
+#[allow(unused_imports)]
 pub use pattern::{
     count_patterns, distill_patterns, extract_paths, fingerprint_path, pattern_confidence,
 };

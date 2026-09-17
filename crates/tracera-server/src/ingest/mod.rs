@@ -20,7 +20,6 @@
 /// # Crate wrappers
 /// // wraps: octocrab 0.38
 /// // wraps: reqwest 0.13
-
 mod agcord;
 mod benchmark;
 mod github;
@@ -34,7 +33,6 @@ pub use self::agcord::AgcordConfig;
 pub use self::github::GitHubConfig;
 pub use self::jira::JiraConfig;
 pub use self::persist::{ingest_from_payload, ingest_live};
-
 
 // ---------------------------------------------------------------------------
 // Error type

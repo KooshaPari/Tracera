@@ -1,155 +1,185 @@
+#![allow(dead_code)]
+
 //! Product-aware observation ingestion pipeline (WP-08).
 //!
-//! This module provides an in-memory observation store with idempotent
-//! ingestion, provenance tracking, and validation. It bridges external
-//! verifier outputs (test results, measurements, findings) with the
-//! product model.
+//! This module provides the write-side ingestion pipeline for [`Observation`]
+//! values into the product model.  It validates each incoming observation,
+//! enforces idempotency at both the observation-ID and batch-key level, and
+//! stores accepted observations in an in-memory [`ObservationStore`] that will
+//! be wired to a persistent backend in a future work package.
 //!
-//! # Design
+//! Part of WP-08 (Product-aware observation ingestion pipeline):
 //!
-//! Ingestion is **append-only** — observations are never mutated after
-//! recording. Idempotency is enforced at two levels:
-//!
-//! 1. **Observation ID** — duplicate IDs are rejected (exact dedup).
-//! 2. **Idempotency key** — a caller-supplied key that rejects an entire
-//!    batch if the key was previously seen.
-//!
-//! Validation rejects observations with empty IDs, empty product IDs, or
-//! timestamps significantly in the future.
+//! - **R15** — Ingestion must be idempotent: re-submitting the same batch
+//!   (identified by an optional idempotency key) must not create duplicates.
+//! - **R16** — Observations with empty IDs or product IDs must be rejected.
+//! - **R17** — Observations with timestamps in the far future must be rejected.
+//! - **R18** — The store must support lookup by product ID and capability ID.
 
 use std::collections::HashSet;
+
+use chrono::{Duration, Utc};
 
 use super::observation::Observation;
 
 // ---------------------------------------------------------------------------
-// Request / Response
+// Constants
 // ---------------------------------------------------------------------------
 
-/// Input for ingesting a batch of observations.
+/// Maximum number of minutes into the future a `recorded_at` timestamp may be
+/// before the observation is rejected as implausible (R17).
+const FUTURE_TOLERANCE_MINUTES: i64 = 5;
+
+// ---------------------------------------------------------------------------
+// ObservationIngestRequest
+// ---------------------------------------------------------------------------
+
+/// Input payload for the observation ingestion pipeline.
+///
+/// Contains a batch of [`Observation`] values and an optional idempotency key.
+/// If the key matches a previously accepted batch, the entire batch is
+/// rejected (R15).
 #[derive(Debug, Clone)]
 pub struct ObservationIngestRequest {
-    /// Observations to ingest.
+    /// The observations to ingest.
     pub observations: Vec<Observation>,
-    /// Optional idempotency key — if this key was previously used, the
-    /// entire batch is rejected.
+    /// Optional idempotency key for batch-level deduplication.
     pub idempotency_key: Option<String>,
 }
 
-/// Outcome of an ingestion attempt.
+// ---------------------------------------------------------------------------
+// IngestResult
+// ---------------------------------------------------------------------------
+
+/// Outcome of a single ingestion call.
+///
+/// Reports how many observations were accepted, how many were rejected, and
+/// which observation IDs were stored.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct IngestResult {
-    /// Number of new observations accepted.
+    /// Number of new observations accepted and stored.
     pub accepted: usize,
-    /// Number rejected (duplicates, invalid, or batch-rejected).
+    /// Number of observations rejected (duplicates, invalid, or batch-level
+    /// idempotency failure).
     pub rejected: usize,
-    /// Human-readable error messages for rejected observations.
+    /// Human-readable error messages for each rejected observation.
     pub errors: Vec<String>,
-    /// IDs of observations that were accepted.
+    /// IDs of the observations that were accepted.
     pub observation_ids: Vec<String>,
-}
-
-// ---------------------------------------------------------------------------
-// Validation errors
-// ---------------------------------------------------------------------------
-
-/// Reasons an individual observation may be rejected.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum IngestError {
-    /// The observation has an empty ID.
-    EmptyId,
-    /// The observation has an empty product ID.
-    EmptyProductId,
-    /// The observation's `recorded_at` is more than 5 minutes in the future.
-    FutureTimestamp,
-    /// The observation ID already exists in the store.
-    DuplicateId(String),
-    /// The entire batch was rejected because the idempotency key was seen before.
-    DuplicateBatch,
-}
-
-impl std::fmt::Display for IngestError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::EmptyId => write!(f, "observation has empty ID"),
-            Self::EmptyProductId => write!(f, "observation has empty product ID"),
-            Self::FutureTimestamp => write!(f, "observation timestamp is in the future"),
-            Self::DuplicateId(id) => write!(f, "duplicate observation ID: {id}"),
-            Self::DuplicateBatch => write!(f, "batch rejected: idempotency key already seen"),
-        }
-    }
 }
 
 // ---------------------------------------------------------------------------
 // ObservationStore
 // ---------------------------------------------------------------------------
 
-/// In-memory store for product observations.
+/// In-memory store for validated observations.
 ///
-/// Thread-safety is left to the caller (wrap in `Arc<Mutex<…>>` or similar
-/// for concurrent access).
+/// Provides idempotent ingestion, validation, and lookup by product or
+/// capability.  The store will be backed by a persistent database in a
+/// future work package.
 #[derive(Debug, Default)]
 pub struct ObservationStore {
+    /// All stored observations, keyed by their unique ID.
     observations: Vec<Observation>,
-    seen_ids: HashSet<String>,
+    /// Set of observation IDs already stored (fast duplicate check).
+    id_index: HashSet<String>,
+    /// Set of idempotency keys already consumed.
     idempotency_keys: HashSet<String>,
 }
 
-/// Maximum allowed future skew: 5 minutes.
-const MAX_FUTURE_SKEW_SECS: i64 = 300;
-
 impl ObservationStore {
-    /// Create a new empty store.
+    /// Create an empty store.
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Ingest a batch of observations.
+    /// Ingest a batch of observations from the given [`ObservationIngestRequest`].
     ///
-    /// Returns an [`IngestResult`] describing how many were accepted,
-    /// rejected, and any error messages. Duplicate observation IDs and
-    /// previously-seen idempotency keys cause rejection.
+    /// Each observation is individually validated:
+    ///
+    /// - Empty `id` → rejected.
+    /// - Empty `product_id` → rejected.
+    /// - Duplicate `id` (already stored) → rejected.
+    /// - `recorded_at` more than 5 minutes in the future → rejected.
+    ///
+    /// If the request carries an `idempotency_key` that was seen in a
+    /// previous ingest call, **all** observations in the batch are rejected.
     pub fn ingest(&mut self, request: &ObservationIngestRequest) -> IngestResult {
-        // Check batch-level idempotency
+        let mut accepted = 0usize;
+        let mut rejected = 0usize;
+        let mut errors = Vec::new();
+        let mut observation_ids = Vec::new();
+
+        // --- Batch-level idempotency check (R15) ---
         if let Some(ref key) = request.idempotency_key {
-            if self.idempotency_keys.contains(key) {
+            if self.idempotency_keys.contains(key.as_str()) {
+                let count = request.observations.len();
+                rejected += count;
+                errors.push(format!(
+                    "Batch idempotency key '{}' was already consumed; \
+                     all {count} observation(s) rejected.",
+                    key
+                ));
                 return IngestResult {
-                    accepted: 0,
-                    rejected: request.observations.len(),
-                    errors: vec![IngestError::DuplicateBatch.to_string()],
-                    observation_ids: Vec::new(),
+                    accepted,
+                    rejected,
+                    errors,
+                    observation_ids,
                 };
             }
         }
 
-        let mut accepted_ids = Vec::new();
-        let mut errors = Vec::new();
-        let mut accepted = 0;
-        let mut rejected = 0;
-        let now = chrono::Utc::now();
+        let now = Utc::now();
+        let tolerance = Duration::minutes(FUTURE_TOLERANCE_MINUTES);
 
         for obs in &request.observations {
-            match self.validate(obs, &now) {
-                Ok(()) => {
-                    // Check duplicate ID
-                    if self.seen_ids.contains(&obs.id) {
-                        errors.push(IngestError::DuplicateId(obs.id.clone()).to_string());
-                        rejected += 1;
-                        continue;
-                    }
-                    // Accept
-                    self.seen_ids.insert(obs.id.clone());
-                    self.observations.push(obs.clone());
-                    accepted_ids.push(obs.id.clone());
-                    accepted += 1;
-                }
-                Err(e) => {
-                    errors.push(e.to_string());
-                    rejected += 1;
-                }
+            // R16 — Empty ID.
+            if obs.id.is_empty() {
+                rejected += 1;
+                errors.push("Observation has an empty ID and was rejected.".to_string());
+                continue;
             }
+
+            // R16 — Empty product_id.
+            if obs.product_id.as_str().is_empty() {
+                rejected += 1;
+                errors.push(format!(
+                    "Observation '{}' has an empty product_id and was rejected.",
+                    obs.id
+                ));
+                continue;
+            }
+
+            // Duplicate detection (R15 — observation-level).
+            if self.id_index.contains(obs.id.as_str()) {
+                rejected += 1;
+                errors.push(format!(
+                    "Observation '{}' is a duplicate and was rejected.",
+                    obs.id
+                ));
+                continue;
+            }
+
+            // R17 — Future timestamp.
+            if obs.recorded_at > now + tolerance {
+                rejected += 1;
+                errors.push(format!(
+                    "Observation '{}' has a recorded_at timestamp in the \
+                     future (beyond {}-minute tolerance) and was rejected.",
+                    obs.id, FUTURE_TOLERANCE_MINUTES
+                ));
+                continue;
+            }
+
+            // All checks passed — store the observation.
+            observation_ids.push(obs.id.clone());
+            self.id_index.insert(obs.id.clone());
+            self.observations.push(obs.clone());
+            accepted += 1;
         }
 
-        // Record idempotency key only if at least one observation was accepted
+        // Record the idempotency key only if at least one observation was
+        // accepted (otherwise a fully-rejected batch does not "consume" the key).
         if accepted > 0 {
             if let Some(ref key) = request.idempotency_key {
                 self.idempotency_keys.insert(key.clone());
@@ -160,7 +190,7 @@ impl ObservationStore {
             accepted,
             rejected,
             errors,
-            observation_ids: accepted_ids,
+            observation_ids,
         }
     }
 
@@ -172,44 +202,22 @@ impl ObservationStore {
             .collect()
     }
 
-    /// Retrieve observations whose product ID matches the given capability ID.
-    ///
-    /// In the Tracera model, capabilities are identified by their intent ID
-    /// which maps to the `product_id` field on observations.
+    /// Retrieve all observations associated with a given capability ID.
     pub fn get_observations_for_capability(&self, capability_id: &str) -> Vec<&Observation> {
         self.observations
             .iter()
-            .filter(|o| o.product_id.as_str() == capability_id)
+            .filter(|o| o.capability_id.as_deref() == Some(capability_id))
             .collect()
     }
 
-    /// Check if an observation ID has already been stored.
+    /// Returns `true` if the given observation ID is already stored.
     pub fn is_duplicate(&self, observation_id: &str) -> bool {
-        self.seen_ids.contains(observation_id)
+        self.id_index.contains(observation_id)
     }
 
     /// Total number of stored observations.
     pub fn count(&self) -> usize {
         self.observations.len()
-    }
-
-    /// Validate an observation before ingestion.
-    fn validate(
-        &self,
-        obs: &Observation,
-        now: &chrono::DateTime<chrono::Utc>,
-    ) -> Result<(), IngestError> {
-        if obs.id.is_empty() {
-            return Err(IngestError::EmptyId);
-        }
-        if obs.product_id.as_str().is_empty() {
-            return Err(IngestError::EmptyProductId);
-        }
-        let skew = (obs.recorded_at - *now).num_seconds();
-        if skew > MAX_FUTURE_SKEW_SECS {
-            return Err(IngestError::FutureTimestamp);
-        }
-        Ok(())
     }
 }
 
@@ -223,301 +231,328 @@ mod tests {
     use crate::product::identity::{BaselineRevision, ProductId};
     use crate::product::observation::{ObservationKind, ObservationResult, ObservationSource};
 
-    fn ts(secs: i64) -> chrono::DateTime<chrono::Utc> {
-        chrono::DateTime::from_timestamp(secs, 0).unwrap()
-    }
-
-    fn make_obs(id: &str, product: &str) -> Observation {
+    /// Helper to build a valid observation with sensible defaults.
+    fn make_obs(id: &str, product_id: &str) -> Observation {
         Observation {
             id: id.to_string(),
-            product_id: ProductId::new(product),
+            product_id: ProductId::new(product_id),
             baseline: BaselineRevision(1),
             kind: ObservationKind::TestResult,
             result: ObservationResult::Passed,
             source: ObservationSource {
-                collector: "test".to_string(),
+                collector: "cargo-test".to_string(),
                 version: "0.1.0".to_string(),
                 artifact_ref: None,
             },
-            recorded_at: ts(1_000_000),
+            recorded_at: Utc::now(),
             capability_id: None,
         }
     }
 
-    #[test]
-    fn ingest_happy_path() {
-        let mut store = ObservationStore::new();
-        let req = ObservationIngestRequest {
-            observations: vec![make_obs("o1", "p1"), make_obs("o2", "p1")],
+    /// Build a request with no idempotency key.
+    fn simple_request(observations: Vec<Observation>) -> ObservationIngestRequest {
+        ObservationIngestRequest {
+            observations,
             idempotency_key: None,
-        };
+        }
+    }
+
+    // ----- Happy path -----
+
+    #[test]
+    fn ingest_single_valid_observation() {
+        let mut store = ObservationStore::new();
+        let req = simple_request(vec![make_obs("obs-1", "prod-a")]);
         let result = store.ingest(&req);
-        assert_eq!(result.accepted, 2);
+
+        assert_eq!(result.accepted, 1);
         assert_eq!(result.rejected, 0);
         assert!(result.errors.is_empty());
-        assert_eq!(store.count(), 2);
+        assert_eq!(result.observation_ids, vec!["obs-1"]);
+        assert_eq!(store.count(), 1);
     }
+
+    #[test]
+    fn ingest_multiple_valid_observations() {
+        let mut store = ObservationStore::new();
+        let req = simple_request(vec![
+            make_obs("obs-1", "prod-a"),
+            make_obs("obs-2", "prod-a"),
+            make_obs("obs-3", "prod-b"),
+        ]);
+        let result = store.ingest(&req);
+
+        assert_eq!(result.accepted, 3);
+        assert_eq!(result.rejected, 0);
+        assert!(result.errors.is_empty());
+        assert_eq!(store.count(), 3);
+    }
+
+    // ----- Duplicate detection -----
 
     #[test]
     fn duplicate_observation_id_rejected() {
         let mut store = ObservationStore::new();
-        let req = ObservationIngestRequest {
-            observations: vec![make_obs("o1", "p1")],
-            idempotency_key: None,
-        };
-        store.ingest(&req);
+        let req1 = simple_request(vec![make_obs("obs-1", "prod-a")]);
+        store.ingest(&req1);
 
-        let req2 = ObservationIngestRequest {
-            observations: vec![make_obs("o1", "p1")],
-            idempotency_key: None,
-        };
+        let req2 = simple_request(vec![make_obs("obs-1", "prod-a")]);
         let result = store.ingest(&req2);
+
         assert_eq!(result.accepted, 0);
         assert_eq!(result.rejected, 1);
-        assert!(!result.errors.is_empty());
+        assert_eq!(result.errors.len(), 1);
+        assert!(result.errors[0].contains("duplicate"));
+        assert_eq!(store.count(), 1);
     }
 
     #[test]
-    fn idempotency_key_rejects_batch() {
+    fn is_duplicate_returns_true_for_stored_obs() {
         let mut store = ObservationStore::new();
-        let req = ObservationIngestRequest {
-            observations: vec![make_obs("o1", "p1")],
-            idempotency_key: Some("key-1".to_string()),
-        };
+        assert!(!store.is_duplicate("obs-1"));
+
+        let req = simple_request(vec![make_obs("obs-1", "prod-a")]);
         store.ingest(&req);
 
-        let req2 = ObservationIngestRequest {
-            observations: vec![make_obs("o2", "p1")],
-            idempotency_key: Some("key-1".to_string()),
+        assert!(store.is_duplicate("obs-1"));
+        assert!(!store.is_duplicate("obs-2"));
+    }
+
+    // ----- Idempotency key -----
+
+    #[test]
+    fn same_idempotency_key_rejects_batch() {
+        let mut store = ObservationStore::new();
+
+        let req1 = ObservationIngestRequest {
+            observations: vec![make_obs("obs-1", "prod-a")],
+            idempotency_key: Some("key-abc".to_string()),
         };
-        let result = store.ingest(&req2);
-        assert_eq!(result.accepted, 0);
-        assert_eq!(result.rejected, 1);
-        assert!(result.errors.iter().any(|e| e.contains("idempotency")));
+        let result1 = store.ingest(&req1);
+        assert_eq!(result1.accepted, 1);
+
+        // Re-submit with the same key — all observations should be rejected.
+        let req2 = ObservationIngestRequest {
+            observations: vec![make_obs("obs-2", "prod-a")],
+            idempotency_key: Some("key-abc".to_string()),
+        };
+        let result2 = store.ingest(&req2);
+        assert_eq!(result2.accepted, 0);
+        assert_eq!(result2.rejected, 1);
+        assert!(result2.errors[0].contains("key-abc"));
+        assert_eq!(store.count(), 1);
     }
 
     #[test]
     fn different_idempotency_key_accepted() {
         let mut store = ObservationStore::new();
-        let req = ObservationIngestRequest {
-            observations: vec![make_obs("o1", "p1")],
+
+        let req1 = ObservationIngestRequest {
+            observations: vec![make_obs("obs-1", "prod-a")],
             idempotency_key: Some("key-1".to_string()),
         };
-        store.ingest(&req);
+        store.ingest(&req1);
 
         let req2 = ObservationIngestRequest {
-            observations: vec![make_obs("o2", "p1")],
+            observations: vec![make_obs("obs-2", "prod-a")],
             idempotency_key: Some("key-2".to_string()),
         };
+        let result2 = store.ingest(&req2);
+        assert_eq!(result2.accepted, 1);
+        assert_eq!(store.count(), 2);
+    }
+
+    #[test]
+    fn no_idempotency_key_allows_reingest_of_different_obs() {
+        let mut store = ObservationStore::new();
+        let req1 = simple_request(vec![make_obs("obs-1", "prod-a")]);
+        store.ingest(&req1);
+
+        let req2 = simple_request(vec![make_obs("obs-2", "prod-a")]);
         let result = store.ingest(&req2);
         assert_eq!(result.accepted, 1);
     }
 
+    // ----- Validation: empty ID -----
+
     #[test]
-    fn empty_id_rejected() {
+    fn empty_observation_id_rejected() {
         let mut store = ObservationStore::new();
-        let obs = Observation {
-            id: String::new(),
-            product_id: ProductId::new("p1"),
-            baseline: BaselineRevision(1),
-            kind: ObservationKind::TestResult,
-            result: ObservationResult::Passed,
-            source: ObservationSource {
-                collector: "test".to_string(),
-                version: "0.1.0".to_string(),
-                artifact_ref: None,
-            },
-            recorded_at: ts(1_000_000),
-            capability_id: None,
-        };
-        let req = ObservationIngestRequest {
-            observations: vec![obs],
-            idempotency_key: None,
-        };
+        let obs = make_obs("", "prod-a");
+        let req = simple_request(vec![obs]);
         let result = store.ingest(&req);
+
         assert_eq!(result.accepted, 0);
         assert_eq!(result.rejected, 1);
+        assert!(result.errors[0].contains("empty ID"));
     }
+
+    // ----- Validation: empty product_id -----
 
     #[test]
     fn empty_product_id_rejected() {
         let mut store = ObservationStore::new();
-        let obs = Observation {
-            id: "o1".to_string(),
-            product_id: ProductId::new(""),
-            baseline: BaselineRevision(1),
-            kind: ObservationKind::TestResult,
-            result: ObservationResult::Passed,
-            source: ObservationSource {
-                collector: "test".to_string(),
-                version: "0.1.0".to_string(),
-                artifact_ref: None,
-            },
-            recorded_at: ts(1_000_000),
-            capability_id: None,
-        };
-        let req = ObservationIngestRequest {
-            observations: vec![obs],
-            idempotency_key: None,
-        };
+        let obs = make_obs("obs-1", "");
+        let req = simple_request(vec![obs]);
         let result = store.ingest(&req);
+
         assert_eq!(result.accepted, 0);
         assert_eq!(result.rejected, 1);
+        assert!(result.errors[0].contains("empty product_id"));
     }
+
+    // ----- Validation: future timestamp -----
 
     #[test]
     fn future_timestamp_rejected() {
         let mut store = ObservationStore::new();
-        let obs = Observation {
-            id: "o1".to_string(),
-            product_id: ProductId::new("p1"),
-            baseline: BaselineRevision(1),
-            kind: ObservationKind::TestResult,
-            result: ObservationResult::Passed,
-            source: ObservationSource {
-                collector: "test".to_string(),
-                version: "0.1.0".to_string(),
-                artifact_ref: None,
-            },
-            // Far in the future
-            recorded_at: chrono::Utc::now() + chrono::Duration::hours(1),
-            capability_id: None,
-        };
-        let req = ObservationIngestRequest {
-            observations: vec![obs],
-            idempotency_key: None,
-        };
+        let mut obs = make_obs("obs-future", "prod-a");
+        obs.recorded_at = Utc::now() + Duration::minutes(10);
+        let req = simple_request(vec![obs]);
         let result = store.ingest(&req);
+
         assert_eq!(result.accepted, 0);
         assert_eq!(result.rejected, 1);
+        assert!(result.errors[0].contains("future"));
     }
 
     #[test]
-    fn retrieval_by_product() {
+    fn timestamp_within_tolerance_accepted() {
         let mut store = ObservationStore::new();
-        let req = ObservationIngestRequest {
-            observations: vec![
-                make_obs("o1", "p1"),
-                make_obs("o2", "p2"),
-                make_obs("o3", "p1"),
-            ],
-            idempotency_key: None,
-        };
-        store.ingest(&req);
-        assert_eq!(store.get_observations_for_product("p1").len(), 2);
-        assert_eq!(store.get_observations_for_product("p2").len(), 1);
-        assert!(store.get_observations_for_product("p3").is_empty());
-    }
-
-    #[test]
-    fn retrieval_by_capability() {
-        let mut store = ObservationStore::new();
-        let req = ObservationIngestRequest {
-            observations: vec![make_obs("o1", "cap-a"), make_obs("o2", "cap-b")],
-            idempotency_key: None,
-        };
-        store.ingest(&req);
-        assert_eq!(store.get_observations_for_capability("cap-a").len(), 1);
-        assert!(store.get_observations_for_capability("cap-c").is_empty());
-    }
-
-    #[test]
-    fn is_duplicate_works() {
-        let mut store = ObservationStore::new();
-        assert!(!store.is_duplicate("o1"));
-        let req = ObservationIngestRequest {
-            observations: vec![make_obs("o1", "p1")],
-            idempotency_key: None,
-        };
-        store.ingest(&req);
-        assert!(store.is_duplicate("o1"));
-        assert!(!store.is_duplicate("o2"));
-    }
-
-    #[test]
-    fn empty_batch_accepted() {
-        let mut store = ObservationStore::new();
-        let req = ObservationIngestRequest {
-            observations: vec![],
-            idempotency_key: None,
-        };
+        let mut obs = make_obs("obs-ok", "prod-a");
+        obs.recorded_at = Utc::now() + Duration::minutes(3);
+        let req = simple_request(vec![obs]);
         let result = store.ingest(&req);
-        assert_eq!(result.accepted, 0);
+
+        assert_eq!(result.accepted, 1);
         assert_eq!(result.rejected, 0);
     }
 
+    // ----- Retrieval: by product -----
+
     #[test]
-    fn mixed_valid_invalid_batch() {
+    fn get_observations_for_product() {
         let mut store = ObservationStore::new();
-        let good = make_obs("o-good", "p1");
-        let bad = Observation {
-            id: String::new(),
-            product_id: ProductId::new("p1"),
-            baseline: BaselineRevision(1),
-            kind: ObservationKind::TestResult,
-            result: ObservationResult::Passed,
-            source: ObservationSource {
-                collector: "test".to_string(),
-                version: "0.1.0".to_string(),
-                artifact_ref: None,
-            },
-            recorded_at: ts(1_000_000),
-            capability_id: None,
-        };
-        let req = ObservationIngestRequest {
-            observations: vec![good, bad],
-            idempotency_key: None,
-        };
-        let result = store.ingest(&req);
-        assert_eq!(result.accepted, 1);
-        assert_eq!(result.rejected, 1);
+        let req = simple_request(vec![
+            make_obs("obs-1", "prod-a"),
+            make_obs("obs-2", "prod-a"),
+            make_obs("obs-3", "prod-b"),
+        ]);
+        store.ingest(&req);
+
+        let a = store.get_observations_for_product("prod-a");
+        assert_eq!(a.len(), 2);
+
+        let b = store.get_observations_for_product("prod-b");
+        assert_eq!(b.len(), 1);
+
+        let c = store.get_observations_for_product("prod-c");
+        assert!(c.is_empty());
     }
 
-    #[test]
-    fn rejected_batch_does_not_record_idempotency_key() {
-        let mut store = ObservationStore::new();
-        let bad = Observation {
-            id: String::new(),
-            product_id: ProductId::new("p1"),
-            baseline: BaselineRevision(1),
-            kind: ObservationKind::TestResult,
-            result: ObservationResult::Passed,
-            source: ObservationSource {
-                collector: "test".to_string(),
-                version: "0.1.0".to_string(),
-                artifact_ref: None,
-            },
-            recorded_at: ts(1_000_000),
-            capability_id: None,
-        };
-        let req = ObservationIngestRequest {
-            observations: vec![bad],
-            idempotency_key: Some("key-1".to_string()),
-        };
-        let result = store.ingest(&req);
-        assert_eq!(result.accepted, 0);
+    // ----- Retrieval: by capability -----
 
-        // Key should NOT be recorded since nothing was accepted
-        // Re-ingest with the same key and a valid observation should succeed
+    #[test]
+    fn get_observations_for_capability() {
+        let mut store = ObservationStore::new();
+
+        let mut obs1 = make_obs("obs-1", "prod-a");
+        obs1.capability_id = Some("cap-storage".to_string());
+        let mut obs2 = make_obs("obs-2", "prod-a");
+        obs2.capability_id = Some("cap-storage".to_string());
+        let mut obs3 = make_obs("obs-3", "prod-a");
+        obs3.capability_id = Some("cap-auth".to_string());
+        let obs4 = make_obs("obs-4", "prod-a"); // no capability
+
+        let req = simple_request(vec![obs1, obs2, obs3, obs4]);
+        store.ingest(&req);
+
+        let storage = store.get_observations_for_capability("cap-storage");
+        assert_eq!(storage.len(), 2);
+
+        let auth = store.get_observations_for_capability("cap-auth");
+        assert_eq!(auth.len(), 1);
+
+        let unknown = store.get_observations_for_capability("cap-missing");
+        assert!(unknown.is_empty());
+    }
+
+    // ----- Roundtrip: ingest then query -----
+
+    #[test]
+    fn roundtrip_ingest_then_query_by_product() {
+        let mut store = ObservationStore::new();
+        let mut obs = make_obs("obs-roundtrip", "prod-x");
+        obs.kind = ObservationKind::Measurement;
+        obs.result = ObservationResult::Failed;
+        obs.capability_id = Some("cap-perf".to_string());
+
+        let req = simple_request(vec![obs]);
+        let result = store.ingest(&req);
+        assert_eq!(result.accepted, 1);
+
+        let stored = store.get_observations_for_product("prod-x");
+        assert_eq!(stored.len(), 1);
+        assert_eq!(stored[0].kind, ObservationKind::Measurement);
+        assert_eq!(stored[0].result, ObservationResult::Failed);
+        assert_eq!(stored[0].capability_id.as_deref(), Some("cap-perf"));
+    }
+
+    // ----- Mixed batch: some valid, some invalid -----
+
+    #[test]
+    fn mixed_valid_and_invalid_batch() {
+        let mut store = ObservationStore::new();
+
+        let valid = make_obs("obs-valid", "prod-a");
+        let mut invalid_future = make_obs("obs-future", "prod-a");
+        invalid_future.recorded_at = Utc::now() + Duration::minutes(20);
+
+        let req = simple_request(vec![valid, invalid_future]);
+        let result = store.ingest(&req);
+
+        assert_eq!(result.accepted, 1);
+        assert_eq!(result.rejected, 1);
+        assert_eq!(result.observation_ids, vec!["obs-valid"]);
+        assert_eq!(store.count(), 1);
+    }
+
+    // ----- Empty batch -----
+
+    #[test]
+    fn empty_batch_accepted_with_no_counts() {
+        let mut store = ObservationStore::new();
+        let req = simple_request(vec![]);
+        let result = store.ingest(&req);
+
+        assert_eq!(result.accepted, 0);
+        assert_eq!(result.rejected, 0);
+        assert!(result.errors.is_empty());
+        assert!(result.observation_ids.is_empty());
+    }
+
+    // ----- Idempotency key not consumed on full rejection -----
+
+    #[test]
+    fn idempotency_key_not_consumed_on_full_rejection() {
+        let mut store = ObservationStore::new();
+
+        // First batch — all observations are invalid (empty ID).
+        let req1 = ObservationIngestRequest {
+            observations: vec![make_obs("", "prod-a")],
+            idempotency_key: Some("key-reject".to_string()),
+        };
+        let result1 = store.ingest(&req1);
+        assert_eq!(result1.accepted, 0);
+        assert_eq!(result1.rejected, 1);
+
+        // Second batch with same key but valid observation — should succeed
+        // because the key was never "consumed" (no accepts in first batch).
         let req2 = ObservationIngestRequest {
-            observations: vec![make_obs("o1", "p1")],
-            idempotency_key: Some("key-1".to_string()),
+            observations: vec![make_obs("obs-ok", "prod-a")],
+            idempotency_key: Some("key-reject".to_string()),
         };
         let result2 = store.ingest(&req2);
         assert_eq!(result2.accepted, 1);
-    }
-
-    #[test]
-    fn observation_result_roundtrip() {
-        let mut store = ObservationStore::new();
-        let obs = make_obs("o1", "p1");
-        let req = ObservationIngestRequest {
-            observations: vec![obs.clone()],
-            idempotency_key: None,
-        };
-        store.ingest(&req);
-        let retrieved = store.get_observations_for_product("p1");
-        assert_eq!(retrieved[0].id, "o1");
-        assert_eq!(retrieved[0].result, ObservationResult::Passed);
     }
 }

@@ -52,7 +52,13 @@ impl Store for PgStore {
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<EvidenceItem>> {
         Box::pin(evidence::create_evidence(
-            &self.pool, id, artifact_id, kind, url, metadata, now,
+            &self.pool,
+            id,
+            artifact_id,
+            kind,
+            url,
+            metadata,
+            now,
         ))
     }
 
@@ -93,7 +99,14 @@ impl Store for PgStore {
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<Story>> {
         Box::pin(stories::create_story(
-            &self.pool, id, sprint_id, title, description, status, story_points, now,
+            &self.pool,
+            id,
+            sprint_id,
+            title,
+            description,
+            status,
+            story_points,
+            now,
         ))
     }
 
@@ -108,7 +121,14 @@ impl Store for PgStore {
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<TraceLink>> {
         Box::pin(trace_links::create_trace_link(
-            &self.pool, id, source_id, target_id, relationship, confidence, source, now,
+            &self.pool,
+            id,
+            source_id,
+            target_id,
+            relationship,
+            confidence,
+            source,
+            now,
         ))
     }
 
@@ -116,7 +136,10 @@ impl Store for PgStore {
         &self,
         artifact_id: String,
     ) -> BoxFuture<'_, StoreResult<Vec<TraceLink>>> {
-        Box::pin(trace_links::list_trace_links_for_artifact(&self.pool, artifact_id))
+        Box::pin(trace_links::list_trace_links_for_artifact(
+            &self.pool,
+            artifact_id,
+        ))
     }
 
     fn list_teams(&self) -> BoxFuture<'_, StoreResult<Vec<TeamRow>>> {
@@ -181,7 +204,12 @@ impl Store for PgStore {
         status_filter: Option<String>,
         params: ListParams,
     ) -> BoxFuture<'_, StoreResult<Vec<Problem>>> {
-        Box::pin(problems::list_problems(&self.pool, project_id, status_filter, params))
+        Box::pin(problems::list_problems(
+            &self.pool,
+            project_id,
+            status_filter,
+            params,
+        ))
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -211,10 +239,29 @@ impl Store for PgStore {
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<Problem>> {
         Box::pin(problems::create_problem(
-            &self.pool, id, project_id, problem_number, title, description, status,
-            resolution_type, category, sub_category, tags, impact_level, urgency, priority,
-            rca_performed, root_cause_identified, workaround_available, permanent_fix_available,
-            assigned_to, assigned_team, owner, known_error_id, now,
+            &self.pool,
+            id,
+            project_id,
+            problem_number,
+            title,
+            description,
+            status,
+            resolution_type,
+            category,
+            sub_category,
+            tags,
+            impact_level,
+            urgency,
+            priority,
+            rca_performed,
+            root_cause_identified,
+            workaround_available,
+            permanent_fix_available,
+            assigned_to,
+            assigned_team,
+            owner,
+            known_error_id,
+            now,
         ))
     }
 
@@ -227,7 +274,11 @@ impl Store for PgStore {
         project_id: String,
         status_filter: Option<String>,
     ) -> BoxFuture<'_, StoreResult<i64>> {
-        Box::pin(problems::count_problems_filtered(&self.pool, project_id, status_filter))
+        Box::pin(problems::count_problems_filtered(
+            &self.pool,
+            project_id,
+            status_filter,
+        ))
     }
 
     fn dashboard_status_counts(&self) -> BoxFuture<'_, StoreResult<Vec<(String, String, i64)>>> {
@@ -245,7 +296,9 @@ impl Store for PgStore {
         metadata: Value,
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<String>> {
-        Box::pin(swee::create_swee_node(&self.pool, node_type, label, metadata, now))
+        Box::pin(swee::create_swee_node(
+            &self.pool, node_type, label, metadata, now,
+        ))
     }
 
     #[allow(clippy::too_many_arguments)]

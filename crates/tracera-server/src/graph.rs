@@ -21,7 +21,9 @@ pub(crate) fn neighbors_of(links: &[TraceLinkInput], id: &str, forward: bool) ->
 }
 
 /// Build an adjacency list from trace links.
-pub(crate) fn build_adjacency(links: &[TraceLinkInput]) -> std::collections::HashMap<String, Vec<String>> {
+pub(crate) fn build_adjacency(
+    links: &[TraceLinkInput],
+) -> std::collections::HashMap<String, Vec<String>> {
     let mut adj: std::collections::HashMap<String, Vec<String>> = std::collections::HashMap::new();
     for l in links {
         adj.entry(l.source_id.clone())

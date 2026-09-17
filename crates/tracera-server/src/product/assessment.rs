@@ -294,7 +294,7 @@ impl AssessmentEngine {
         let mut findings = Vec::new();
         let mut worst_status = AssessmentStatus::Satisfied;
 
-        for (cap_id, _cap_obs) in &capability_map {
+        for cap_id in capability_map.keys() {
             let mut finding = self.assess_capability(cap_id, observations);
             finding.product_id = product_id.to_string();
             if finding.status.worse_than(worst_status) {

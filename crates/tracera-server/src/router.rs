@@ -1,6 +1,7 @@
 use axum::{
     extract::DefaultBodyLimit,
-    routing::{any, get, post}, Router,
+    routing::{any, get, post},
+    Router,
 };
 use http::{header, HeaderValue, Method};
 use std::collections::HashSet;
@@ -15,7 +16,7 @@ use crate::handlers::{
     stories::{create_story, create_trace_link, list_stories, list_stories_api},
 };
 use crate::handlers::{governance, swee};
-use crate::middleware::{CANONICAL_BROWSER_ORIGIN, csrf_protection};
+use crate::middleware::{csrf_protection, CANONICAL_BROWSER_ORIGIN};
 use crate::AppState;
 
 const MAX_REQUEST_BODY_BYTES: usize = 10 * 1024 * 1024;
@@ -100,7 +101,10 @@ where
     axum::Router::new().fallback(not_configured)
 }
 
-pub(crate) fn build_router_with_auth(state: AppState, auth_token: crate::auth::AuthToken) -> Router {
+pub(crate) fn build_router_with_auth(
+    state: AppState,
+    auth_token: crate::auth::AuthToken,
+) -> Router {
     let workos_router = build_workos_router::<AppState>(state.workos_client.clone());
     Router::new()
         .route("/healthz", get(crate::health::healthz))
@@ -187,14 +191,8 @@ pub(crate) fn build_router_with_auth(state: AppState, auth_token: crate::auth::A
         .route("/api/v1/graph/analysis/dependents", any(not_implemented))
         .route("/api/v1/graph/analysis/impact", any(not_implemented))
         .route("/api/v1/graph/analysis/metrics", any(not_implemented))
-        .route(
-            "/api/v1/graph/analysis/shortest-path",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/graph/cache/invalidate",
-            any(not_implemented),
-        )
+        .route("/api/v1/graph/analysis/shortest-path", any(not_implemented))
+        .route("/api/v1/graph/cache/invalidate", any(not_implemented))
         // Search
         .route("/api/v1/search", any(not_implemented))
         .route("/api/v1/search/suggest", any(not_implemented))
@@ -204,14 +202,8 @@ pub(crate) fn build_router_with_auth(state: AppState, auth_token: crate::auth::A
         .route("/api/v1/search/stats", any(not_implemented))
         .route("/api/v1/search/health", any(not_implemented))
         // Projects extended
-        .route(
-            "/api/v1/projects/{project_id}/export",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/import",
-            any(not_implemented),
-        )
+        .route("/api/v1/projects/{project_id}/export", any(not_implemented))
+        .route("/api/v1/projects/{project_id}/import", any(not_implemented))
         .route(
             "/api/v1/projects/{project_id}/versions/compare",
             any(not_implemented),
@@ -296,20 +288,11 @@ pub(crate) fn build_router_with_auth(state: AppState, auth_token: crate::auth::A
         // Component library
         .route("/api/v1/libraries", any(not_implemented))
         .route("/api/v1/libraries/{id}", any(not_implemented))
-        .route(
-            "/api/v1/libraries/{id}/components",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/libraries/{id}/tokens",
-            any(not_implemented),
-        )
+        .route("/api/v1/libraries/{id}/components", any(not_implemented))
+        .route("/api/v1/libraries/{id}/tokens", any(not_implemented))
         .route("/api/v1/components", any(not_implemented))
         .route("/api/v1/components/{id}", any(not_implemented))
-        .route(
-            "/api/v1/components/{id}/usage",
-            any(not_implemented),
-        )
+        .route("/api/v1/components/{id}/usage", any(not_implemented))
         .route("/api/v1/tokens", any(not_implemented))
         // Codex / Docs / AI
         .route(
@@ -341,10 +324,7 @@ pub(crate) fn build_router_with_auth(state: AppState, auth_token: crate::auth::A
             "/api/v1/swee/nodes",
             post(swee::create_swee_node_handler).get(swee::list_swee_nodes_handler),
         )
-        .route(
-            "/api/v1/swee/nodes/{id}",
-            get(swee::get_swee_node_handler),
-        )
+        .route("/api/v1/swee/nodes/{id}", get(swee::get_swee_node_handler))
         .route(
             "/api/v1/swee/edges",
             post(swee::create_swee_edge_handler).get(swee::list_swee_edges_handler),
@@ -372,22 +352,30 @@ pub(crate) fn build_router_with_auth(state: AppState, auth_token: crate::auth::A
             crate::auth::require_bearer,
         ))
         .layer(DefaultBodyLimit::max(MAX_REQUEST_BODY_BYTES))
-        .layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
-            header::X_CONTENT_TYPE_OPTIONS,
-            HeaderValue::from_static("nosniff"),
-        ))
-        .layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
-            header::X_FRAME_OPTIONS,
-            HeaderValue::from_static("DENY"),
-        ))
-        .layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
-            header::REFERRER_POLICY,
-            HeaderValue::from_static("no-referrer"),
-        ))
-        .layer(tower_http::set_header::SetResponseHeaderLayer::if_not_present(
-            header::CACHE_CONTROL,
-            HeaderValue::from_static("no-store"),
-        ))
+        .layer(
+            tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+                header::X_CONTENT_TYPE_OPTIONS,
+                HeaderValue::from_static("nosniff"),
+            ),
+        )
+        .layer(
+            tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+                header::X_FRAME_OPTIONS,
+                HeaderValue::from_static("DENY"),
+            ),
+        )
+        .layer(
+            tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+                header::REFERRER_POLICY,
+                HeaderValue::from_static("no-referrer"),
+            ),
+        )
+        .layer(
+            tower_http::set_header::SetResponseHeaderLayer::if_not_present(
+                header::CACHE_CONTROL,
+                HeaderValue::from_static("no-store"),
+            ),
+        )
         .layer(axum::middleware::from_fn(csrf_protection))
         .layer(
             tower_http::cors::CorsLayer::new()

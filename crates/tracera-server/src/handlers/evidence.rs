@@ -3,11 +3,11 @@ use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{bad_request, ErrorResponse};
 use crate::store::EvidenceItem;
 use crate::validation::{
     validate_text, MAX_ID_CHARS, MAX_METADATA_BYTES, MAX_SHORT_TEXT_CHARS, MAX_URL_CHARS,
 };
+use crate::{bad_request, ErrorResponse};
 
 use super::super::AppState;
 
@@ -83,8 +83,8 @@ pub(crate) async fn create_evidence(
     validate_evidence(&payload).map_err(bad_request)?;
     let now = Utc::now();
     let id = format!("ev-{}", Uuid::new_v4());
-    let meta =
-        serde_json::to_value(&payload.metadata).unwrap_or(serde_json::Value::Object(serde_json::Map::new()));
+    let meta = serde_json::to_value(&payload.metadata)
+        .unwrap_or(serde_json::Value::Object(serde_json::Map::new()));
 
     let item = state
         .store

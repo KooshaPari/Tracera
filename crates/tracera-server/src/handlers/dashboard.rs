@@ -3,8 +3,8 @@ use chrono::DateTime;
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::{bad_request, ErrorResponse};
 use crate::store::{ListParams, TeamRow};
+use crate::{bad_request, ErrorResponse};
 
 use super::super::AppState;
 
