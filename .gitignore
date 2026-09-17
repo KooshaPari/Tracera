@@ -116,3 +116,12 @@ dev_server*.log
 .vercel
 .env*.local
 .vault.local.env
+
+# Trunk local cache. `.trunk/trunk.yaml` is tracked; everything else trunk
+# writes under `.trunk/` is machine-local (plugins, tools, logs, results).
+.trunk/actions
+.trunk/logs
+.trunk/notifications
+.trunk/out
+.trunk/plugins
+.trunk/tools
