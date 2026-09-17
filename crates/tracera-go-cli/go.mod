@@ -1,4 +1,4 @@
-module github.com/<REDACTED>/tracera/go-cli
+module github.com/kooshapari/tracera/go-cli
 
 go 1.22
 
@@ -7,7 +7,7 @@ go 1.22
 //
 // Install (after release):
 //
-//	go install github.com/<REDACTED>/tracera/go-cli/cmd/tracera@latest
+//	go install github.com/kooshapari/tracera/go-cli/cmd/tracera@latest
 //
 // Or build from source:
 //

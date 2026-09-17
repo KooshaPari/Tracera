@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/<REDACTED>/tracera-sidecar/internal/config"
+	"github.com/kooshapari/tracera-sidecar/internal/config"
 )
 
 func main() {
