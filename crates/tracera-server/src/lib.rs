@@ -28,4 +28,5 @@ pub mod pg_store;
 pub mod r2;
 pub mod sqlite_store;
 pub mod store;
+pub mod product;
 pub mod swee;
