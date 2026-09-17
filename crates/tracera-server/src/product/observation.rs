@@ -88,6 +88,9 @@ pub struct Observation {
     pub source: ObservationSource,
     /// UTC timestamp when this observation was recorded.
     pub recorded_at: DateTime<Utc>,
+    /// Optional capability this observation is associated with.
+    #[serde(default)]
+    pub capability_id: Option<String>,
 }
 
 #[cfg(test)]
@@ -109,6 +112,7 @@ mod tests {
             recorded_at: chrono::DateTime::parse_from_rfc3339("2026-09-17T12:00:00Z")
                 .unwrap()
                 .to_utc(),
+            capability_id: Some("cap-storage".to_string()),
         }
     }
 

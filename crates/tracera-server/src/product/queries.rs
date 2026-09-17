@@ -474,6 +474,7 @@ mod tests {
                     artifact_ref: None,
                 },
                 recorded_at: ts(1000),
+                capability_id: None,
             },
             Observation {
                 id: "obs-2".to_string(),
@@ -487,6 +488,7 @@ mod tests {
                     artifact_ref: None,
                 },
                 recorded_at: ts(2000),
+                capability_id: None,
             },
         ]
     }
@@ -701,6 +703,7 @@ mod tests {
                 },
                 // Observed BEFORE the baseline was finalized.
                 recorded_at: ts(100),
+                capability_id: None,
             },
             Observation {
                 id: "obs-fresh".to_string(),
@@ -715,6 +718,7 @@ mod tests {
                 },
                 // Observed AFTER the baseline was finalized.
                 recorded_at: ts(10000),
+                capability_id: None,
             },
         ];
 
