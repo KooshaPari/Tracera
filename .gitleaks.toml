@@ -1,0 +1,81 @@
+# Gitleaks configuration for the Tracera monorepo.
+#
+# `useDefault = true` keeps the full upstream rule set. The entries below only
+# suppress content that has been reviewed and is provably not a credential:
+#
+#   * published API documentation and archived copies of it
+#   * test suites and fixtures
+#   * vendored / generated dependency trees committed by accident
+#   * a small set of literal placeholder values used in stubs and manifests
+#
+# Anything else — including every real-looking credential — is still reported
+# and still fails CI. Prefer the narrowest entry that covers the case, and add
+# a comment saying what was reviewed.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documentation, archives, tests, vendored trees, and reviewed placeholders"
+
+paths = [
+  # Published API reference / guides that intentionally show example
+  # `Authorization:` headers and sample keys.
+  '''(^|/)docs(-site)?/''',
+  '''(^|/)ARCHIVE/''',
+  '''(^|/)\.archive/''',
+  '''\.mdx?$''',
+
+  # Test suites and fixtures use obviously fake tokens.
+  '''(^|/)__tests__/''',
+  '''(^|/)tests?/''',
+  '''(^|/)fixtures?/''',
+  '''(^|/)testdata/''',
+  '''_test\.go$''',
+  '''\.test\.[tj]sx?$''',
+  '''\.spec\.[tj]sx?$''',
+
+  # Vendored dependency dumps that were committed by accident (pnpm store
+  # copies under `default/`, extractions under `frontend/disable/`), plus
+  # generated build output. These contain third-party tokens belonging to the
+  # upstream packages, not to this repository.
+  '''^default/''',
+  '''^frontend/disable/''',
+  '''(^|/)node_modules/''',
+  '''(^|/)storybook-static/''',
+  '''@types/node@''',
+  '''(^|/)\.hypothesis/''',
+  '''(^|/)\.bmad/''',
+
+  # Non-source artefacts.
+  '''ruff-complexity-baseline\.txt$''',
+  '''\.csv$''',
+  '''\.map$''',
+  '''checksums\.json$''',
+]
+
+# Literal values verified by hand to be placeholders, documentation tokens, or
+# third-party strings. Matching on the value (not the path) keeps the
+# suppression from spreading to real credentials added later.
+regexes = [
+  # Local-only development credentials from the docker-compose bootstrap.
+  '''tracera_meili_dev''',
+  # Stub API-key validator in the in-progress tracertm service package.
+  '''sk_test_placeholder''',
+  # `REPLACE_WITH_*` markers in the k8s manifests.
+  '''REPLACE_WITH_[A-Z0-9_]+''',
+  # Documentation templates: the `YOUR_TOKEN` placeholder in generated curl
+  # examples and the "bad example" snippet in templates/api/AGENTS.md.
+  '''YOUR_TOKEN''',
+  '''sk-1234567890''',
+  # Sample MCP client config shipped for local setup instructions.
+  '''sk_live_abcdef123456''',
+  # Third-party values copied in with vendored packages: Storybook's own
+  # chromatic project token, the `debug` package's coveralls token, a
+  # react-syntax-highlighter workflow token, and the RFC 6455 example
+  # WebSocket nonce.
+  '''chpt_d0c5927e55681dd''',
+  '''SIAeZjKYlHK74rbcFvNHMUzjRiMpflxve''',
+  '''d37b4f28-c0ae-4546-81c9-0487a264db20''',
+  '''dGhlIHNhbXBsZSBub25jZQ==''',
+]

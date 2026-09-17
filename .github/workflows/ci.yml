@@ -202,8 +202,9 @@ jobs:
       - run: uv python install ${{ matrix.python-version }}
       - run: uv sync --all-extras
       # Keep CI deterministic: third-party pytest entrypoints (notably
-      # schemathesis/jsonschema_rs) can stall collection on constrained runners.
-      - run: PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 uv run pytest --cov --cov-report=xml --cov-report=term-missing -v
+      # schemathesis/jsonschema_rs) can stall collection. Autoload stays off,
+      # so plugins we actually rely on must be named explicitly.
+      - run: PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 uv run pytest -p pytest_cov --cov --cov-report=xml --cov-report=term-missing -v
       - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
         if: matrix.python-version == '3.12'
         with:
@@ -295,6 +296,9 @@ jobs:
         uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Explicit so the scan is deterministic instead of relying on
+          # config auto-discovery.
+          GITLEAKS_CONFIG: ${{ github.workspace }}/.gitleaks.toml
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # master
         with:
