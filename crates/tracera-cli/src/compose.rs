@@ -248,13 +248,6 @@ mod tests {
     use super::*;
     #[cfg(unix)]
     use std::os::unix::fs::symlink;
-    #[cfg(not(unix))]
-    fn symlink<P: AsRef<std::path::Path>, Q: AsRef<std::path::Path>>(
-        _original: P,
-        _link: Q,
-    ) -> std::io::Result<()> {
-        Ok(())
-    }
 
     #[test]
     fn compose_argv_locks_project_name_and_env_file() {
