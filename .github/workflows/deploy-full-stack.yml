@@ -90,9 +90,11 @@ jobs:
 
       - name: Summary
         run: |
-          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "| Service | Platform | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------|----------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Backend | Render | ${{ needs.deploy-backend.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend | Vercel | ${{ needs.deploy-frontend.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Edge | Cloudflare | ${{ needs.deploy-edge.result }} |" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Deployment Summary"
+            echo "| Service | Platform | Status |"
+            echo "|---------|----------|--------|"
+            echo "| Backend | Render | ${{ needs.deploy-backend.result }} |"
+            echo "| Frontend | Vercel | ${{ needs.deploy-frontend.result }} |"
+            echo "| Edge | Cloudflare | ${{ needs.deploy-edge.result }} |"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -402,7 +402,7 @@ jobs:
   # Stage 5 — security gates.
   # =============================================================================
   sast:
-    name: "ci-agents / sast"
+    name: "ci-agents / sast (${{ matrix.language }})"
     needs: detect-changes
     runs-on: ubuntu-latest
     permissions:
@@ -416,6 +416,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
+
+      - name: CodeQL analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
 
       - name: Trivy filesystem scan
         uses: aquasecurity/trivy-action@master
