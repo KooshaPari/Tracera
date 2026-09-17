@@ -224,10 +224,25 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version: "stable"
-      - uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 # v6
+      # golangci-lint v1.x binaries are built with go1.24 and refuse to lint
+      # modules that declare a newer Go (sidecar/go targets go 1.25.13).
+      # The v7 action supports golangci-lint v2; v2.4.0 is the first release
+      # whose official binary is built with go1.25, so pin it explicitly and
+      # run once per module.
+      - uses: golangci/golangci-lint-action@9fae48acfc02a90574d7c304a1758ef9895495fa # v7
         with:
-          version: latest
-      - run: go vet ./...
+          version: v2.4.0
+          working-directory: sidecar/go
+      - uses: golangci/golangci-lint-action@9fae48acfc02a90574d7c304a1758ef9895495fa # v7
+        with:
+          version: v2.4.0
+          working-directory: crates/tracera-go-cli
+      - name: Vet sidecar/go
+        working-directory: sidecar/go
+        run: go vet ./...
+      - name: Vet crates/tracera-go-cli
+        working-directory: crates/tracera-go-cli
+        run: go vet ./...
 
   go-test:
     name: Go Test
@@ -241,10 +256,15 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version: "stable"
-      - run: go test -v -race -coverprofile=coverage.out ./...
+      - name: Test sidecar/go
+        working-directory: sidecar/go
+        run: go test -v -race -coverprofile=coverage.out ./...
+      - name: Test crates/tracera-go-cli
+        working-directory: crates/tracera-go-cli
+        run: go test -v -race -coverprofile=coverage.out ./...
       - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
         with:
-          file: coverage.out
+          files: sidecar/go/coverage.out,crates/tracera-go-cli/coverage.out
           fail_ci_if_error: false
 
   # --- TYPESCRIPT ---
