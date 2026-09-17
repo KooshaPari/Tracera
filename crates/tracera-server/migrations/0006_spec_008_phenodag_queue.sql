@@ -4,7 +4,7 @@
 -- the atomic-claim / heartbeat / lifecycle operations ported in this PR.
 --
 -- See: docs/specs/008-phenodag-absorption.md (P1)
--- Source: github.com/KooshaPari/phenodag/blob/main/phenodag.go (schema)
+-- Source: github.com/<REDACTED>/phenodag/blob/main/phenodag.go (schema)
 
 CREATE TABLE IF NOT EXISTS tasks (
     id              TEXT PRIMARY KEY,

@@ -49,7 +49,7 @@ Permissions required:
 Set **Account Resources** to *Include → Specific account → your CF account ID*.
 
 ```bash
-gh secret set CLOUDFLARE_API_TOKEN --repo KooshaPari/Tracera --body "<new_cf_token>"
+gh secret set CLOUDFLARE_API_TOKEN --repo <REDACTED>/Tracera --body "<new_cf_token>"
 ```
 
 ### 2. `INFISICAL_TOKEN` (GitHub repo secret)
@@ -71,7 +71,7 @@ Two ways to fix:
 3. Set both `INFISICAL_CLIENT_ID` and add `INFISICAL_CLIENT_SECRET`
 
 ```bash
-gh secret set INFISICAL_TOKEN --repo KooshaPari/Tracera --body "stk_..."
+gh secret set INFISICAL_TOKEN --repo <REDACTED>/Tracera --body "stk_..."
 ```
 
 ### 3. Render Credentials (live in Infisical `prod` env)
@@ -82,7 +82,7 @@ Render uses `rnd_…` API keys.
 Set up Render Blueprint first:
 
 1. Go to <https://dashboard.render.com> → **New** → **Blueprint**
-2. Connect GitHub → select `KooshaPari/Tracera` → branch `main`
+2. Connect GitHub → select `<REDACTED>/Tracera` → branch `main`
 3. Render auto-detects `render.yaml` and provisions:
    - `tracera-postgres` (PostgreSQL 17, free tier)
    - `tracera-server` (Rust, Docker, free tier)
@@ -103,7 +103,7 @@ service. Vercel uses `vercel_…` tokens. Create one at
 <https://vercel.com/account/tokens> and set:
 
 ```bash
-gh secret set VERCEL_TOKEN --repo KooshaPari/Tracera --body "vercel_..."
+gh secret set VERCEL_TOKEN --repo <REDACTED>/Tracera --body "vercel_..."
 ```
 
 ## Graceful-Skip Behavior
@@ -123,13 +123,13 @@ After replacing the 4 tokens above:
 
 ```bash
 # 1. Trigger deploys (no force needed - on main they run automatically)
-gh workflow run "Deploy Cloudflare Worker (tracera-edge)" --repo KooshaPari/Tracera --ref main
-gh workflow run "Deploy Render Backend"              --repo KooshaPari/Tracera --ref main
-gh workflow run "Deploy Tracera to Vercel"            --repo KooshaPari/Tracera --ref main
+gh workflow run "Deploy Cloudflare Worker (tracera-edge)" --repo <REDACTED>/Tracera --ref main
+gh workflow run "Deploy Render Backend"              --repo <REDACTED>/Tracera --ref main
+gh workflow run "Deploy Tracera to Vercel"            --repo <REDACTED>/Tracera --ref main
 
 # 2. Watch
-gh run list --repo KooshaPari/Tracera --workflow "Deploy Cloudflare Worker (tracera-edge)" --limit 3
-gh run list --repo KooshaPari/Tracera --workflow "Deploy Render Backend"              --limit 3
+gh run list --repo <REDACTED>/Tracera --workflow "Deploy Cloudflare Worker (tracera-edge)" --limit 3
+gh run list --repo <REDACTED>/Tracera --workflow "Deploy Render Backend"              --limit 3
 
 # 3. Verify live
 curl https://api.pheno.studio/healthz

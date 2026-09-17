@@ -2,11 +2,11 @@
 name = "tracera-desktop"
 version = "0.1.0"
 description = "Tauri 2 desktop shell for the Tracera web UI (hosts the Svelte app, system tray, native menu)."
-authors = ["kooshapari"]
+authors = ["<REDACTED>"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
 rust-version = "1.82"
-repository = "https://github.com/kooshapari/Tracera"
+repository = "https://github.com/<REDACTED>/Tracera"
 publish = false
 
 # IMPORTANT: this crate intentionally lives outside the Tracera workspace at

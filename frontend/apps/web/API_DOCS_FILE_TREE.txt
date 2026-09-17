@@ -174,7 +174,7 @@ API Key:
 Quick Start
 ===========
 1. Start server:
-   cd /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web
+   cd /Users/<REDACTED>/temp-PRODVERCEL/485/kush/trace/frontend/apps/web
    bun run dev
 
 2. Visit documentation:

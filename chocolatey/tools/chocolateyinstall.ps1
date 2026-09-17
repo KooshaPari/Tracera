@@ -2,8 +2,8 @@ $ErrorActionPreference = 'Stop'
 
 $packageName = 'tracera'
 $toolsDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
-$url64 = 'https://github.com/KooshaPari/Tracera/releases/download/v2.2.0/tracera-server-x86_64-pc-windows-msvc.exe'
-$url = 'https://github.com/KooshaPari/Tracera/releases/download/v2.2.0/tracera-server-i686-pc-windows-msvc.exe'
+$url64 = 'https://github.com/<REDACTED>/Tracera/releases/download/v2.2.0/tracera-server-x86_64-pc-windows-msvc.exe'
+$url = 'https://github.com/<REDACTED>/Tracera/releases/download/v2.2.0/tracera-server-i686-pc-windows-msvc.exe'
 
 $packageArgs = @{
   packageName    = $packageName

@@ -50,7 +50,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with: { workspaces: ./crates/gateway -> target }
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with: { repository: KooshaPari/OmniRoute, path: ../OmniRoute-pr232-policyfix-20260703, ref: main }
+        with: { repository: <REDACTED>/OmniRoute, path: ../OmniRoute-pr232-policyfix-20260703, ref: main }
       - run: cargo fmt --all -- --check
       - run: cargo clippy -p omniroute-gateway --all-targets -- -D warnings
       - run: cargo test -p omniroute-gateway

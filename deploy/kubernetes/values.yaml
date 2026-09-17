@@ -5,7 +5,7 @@ tracera:
   autoscaling:
     enabled: false
   image:
-    repository: ghcr.io/kooshapari/tracera
+    repository: ghcr.io/<REDACTED>/tracera
     pullPolicy: IfNotPresent
     tag: "v0.1.0-native-exe"
   service:

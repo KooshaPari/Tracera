@@ -2344,7 +2344,7 @@ The CI is **honest** — graceful-skip patterns now emit clear `::notice::` with
 |---|---|---|---|
 | `rnd_oUCwKqGKRoxXaYeRNsuPDLI0kx3t` | Render | `api.render.com/v1/services` → 200 + service list | ✅ **WORKS** — I created `tracera-server` (`srv-dacj32mq1p3s738brce0`) with it |
 | `cfut_qy88...` | Cloudflare | `/user/tokens/verify` → "valid and active" (id `0ecfaec6...`) | ✅ Valid, but **Zone-scope** — cannot deploy Workers/KV/R2 |
-| `vcp_1UB5d...` | Vercel | `api.vercel.com/v2/user` → 200 (user `kooshapari@gmail.com`, team `team_uMfxKsua6PPiWqtcD93kzO5r`) | ✅ **WORKS** — set as `VERCEL_TOKEN` |
+| `vcp_1UB5d...` | Vercel | `api.vercel.com/v2/user` → 200 (user `<REDACTED>@gmail.com`, team `team_uMfxKsua6PPiWqtcD93kzO5r`) | ✅ **WORKS** — set as `VERCEL_TOKEN` |
 | `github_pat_11AKEPESQ0...` | GitHub Packages | — | ✅ Set as `GHCR_PUBLISH_TOKEN` for GHCR image flip-to-public |
 | `client_01K4KYZR...` | WorkOS | — | ✅ Set as `WORKOS_CLIENT_ID` |
 | `sk_test_a2V5...` | WorkOS | — | ✅ Set as `WORKOS_API_KEY` |
@@ -2572,7 +2572,7 @@ _All 96 pillars at maximum score (5/5)_
         |
         v
    Cloudflare Edge
-   |-- tracera-edge.kooshapari.workers.dev          (Worker: WASM, KV, R2)
+   |-- tracera-edge.<REDACTED>.workers.dev          (Worker: WASM, KV, R2)
    |-- tracera-kappa.vercel.app                       (Vercel frontend)
         |
         v
@@ -2649,7 +2649,7 @@ make mcp-server          # listens on :8081
 | Domain | Service |
 |---|---|
 | `tracera.pheno.studio/api/*` | Local tracera-server on :8080 via cloudflared tunnel |
-| `tracera-edge.kooshapari.workers.dev` | Cloudflare Worker (already deployed) |
+| `tracera-edge.<REDACTED>.workers.dev` | Cloudflare Worker (already deployed) |
 | `tracera-kappa.vercel.app` | Vercel frontend (already deployed) |
 | `mcp.tracera.pheno.studio` | Optional local MCP streamable-HTTP on :8081 via tunnel |
 
@@ -2658,7 +2658,7 @@ make mcp-server          # listens on :8081
 | Layer | Where | Access |
 |---|---|---|
 | **Frontend SPA** | Vercel | `https://tracera-kappa.vercel.app` |
-| **Edge Worker** | Cloudflare | `https://tracera-edge.kooshapari.workers.dev` |
+| **Edge Worker** | Cloudflare | `https://tracera-edge.<REDACTED>.workers.dev` |
 | **Public API** | THIS DEVICE via cloudflared | `https://tracera.pheno.studio/api/*` |
 | **MCP server** | THIS DEVICE via cloudflared | `https://mcp.tracera.pheno.studio/mcp` |
 | **Postgres / Neo4j / Redis / etc** | THIS DEVICE via Podman/WSL2 | Internal Docker network tracera-net |
@@ -2716,7 +2716,7 @@ This appendix documents three global rules that govern **all** Tracera deliverab
 
 ### L.2 — Canonical domain architecture
 
-**Rule:** All Tracera services, sub-domains, and path-prefixes resolve under the **`tracera.pheno.studio`** parent domain. The legacy `pheno.studio`, `tracera.phenotype.studio`, and `*.kooshapari.workers.dev` hosts are retained only as transitional aliases.
+**Rule:** All Tracera services, sub-domains, and path-prefixes resolve under the **`tracera.pheno.studio`** parent domain. The legacy `pheno.studio`, `tracera.phenotype.studio`, and `*.<REDACTED>.workers.dev` hosts are retained only as transitional aliases.
 
 **Canonical URI map:**
 
@@ -2772,12 +2772,12 @@ This appendix documents three global rules that govern **all** Tracera deliverab
 
 ### L.4 — Landing page is a separate repo (`phenotype.space`)
 
-**Rule:** The Tracera marketing root (`https://tracera.pheno.studio/`) does **NOT** redirect to `phenotype.space`. `phenotype.space` is a **separate portfolio-style repository** that aggregates *all* pheno.* / phenotype.* / kooshapari.com projects (Tracera, AuthKit, the desktop OS service, future ones). It is the single entry point to `projects.kooshapari.com`.
+**Rule:** The Tracera marketing root (`https://tracera.pheno.studio/`) does **NOT** redirect to `phenotype.space`. `phenotype.space` is a **separate portfolio-style repository** that aggregates *all* pheno.* / phenotype.* / <REDACTED>.com projects (Tracera, AuthKit, the desktop OS service, future ones). It is the single entry point to `projects.<REDACTED>.com`.
 
 **Tracera home page behaviour:**
 - `https://tracera.pheno.studio/` → Tracera product marketing (this repo).
 - `https://phenotype.space/` → Portfolio of all projects (different repo).
-- `https://projects.kooshapari.com/` → Same portfolio (alternate DNS alias).
+- `https://projects.<REDACTED>.com/` → Same portfolio (alternate DNS alias).
 
 There is **no alias or redirect** between Tracera home and the portfolio entry — they are independent surfaces with their own content. A visitor landing on `tracera.pheno.studio` should never be silently sent to `phenotype.space`.
 

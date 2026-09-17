@@ -199,20 +199,20 @@ In API Hooks:
 ================================================================================
 
 Configuration Files:
-  ✓ /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/package.json
+  ✓ /Users/<REDACTED>/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/package.json
 
 Source OpenAPI Spec:
-  ✓ /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/public/specs/openapi.json
+  ✓ /Users/<REDACTED>/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/public/specs/openapi.json
 
 Generated Schema:
-  ✓ /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/src/api/schema.ts (1227 lines)
+  ✓ /Users/<REDACTED>/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/src/api/schema.ts (1227 lines)
 
 Type Utilities:
-  ✓ /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/src/api/types.ts
+  ✓ /Users/<REDACTED>/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/src/api/types.ts
 
 Documentation:
-  ✓ /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/TYPE_GENERATION.md
-  ✓ /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/GENERATION_REPORT.md
+  ✓ /Users/<REDACTED>/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/TYPE_GENERATION.md
+  ✓ /Users/<REDACTED>/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/GENERATION_REPORT.md
 
 ================================================================================
 12. NEXT STEPS FOR DEVELOPERS

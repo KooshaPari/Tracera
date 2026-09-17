@@ -2,7 +2,7 @@
 
 - **Status**: Accepted
 - **Date**: 2026-08-30
-- **Authors**: KooshaPari
+- **Authors**: <REDACTED>
 - **Supersedes**: none
 - **Related**:
   - [`ADR-SERVER-001-endpoint-regression-audit.md`](../policy/ADR-SERVER-001-endpoint-regression-audit.md)

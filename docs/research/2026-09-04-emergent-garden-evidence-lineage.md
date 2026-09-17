@@ -2,7 +2,7 @@
 
 Status: research dossier, proposed only. No runtime schema or existing ADR is changed.
 
-Work tracking: [AgilePlus #1073](https://github.com/KooshaPari/AgilePlus/issues/1073). Canonical source/claim authority: [ResearchLedger Wave 3](https://github.com/KooshaPari/ResearchLedger/blob/8c271fd6765b01c6a6a6339d7273199a48e06334/docs/corpora/emergent-garden/research/WAVE-3-COMMENTS-AND-SYNTHESIS.md).
+Work tracking: [AgilePlus #1073](https://github.com/<REDACTED>/AgilePlus/issues/1073). Canonical source/claim authority: [ResearchLedger Wave 3](https://github.com/<REDACTED>/ResearchLedger/blob/8c271fd6765b01c6a6a6339d7273199a48e06334/docs/corpora/emergent-garden/research/WAVE-3-COMMENTS-AND-SYNTHESIS.md).
 
 ## Audited authority
 

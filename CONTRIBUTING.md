@@ -30,7 +30,7 @@ the `wasm32-unknown-unknown` target for edge builds).
 ### Clone and Build
 
 ```bash
-git clone https://github.com/kooshapari/Tracera.git
+git clone https://github.com/<REDACTED>/Tracera.git
 cd Tracera
 
 # Rust workspace

@@ -17,7 +17,7 @@ async function globalSetup(): Promise<void> {
   // Set test user environment variables
   // These will be available to all tests via process.env
   const testUser = {
-    email: process.env.TEST_USER_EMAIL ?? "kooshapari@kooshapari.com",
+    email: process.env.TEST_USER_EMAIL ?? "<REDACTED>@<REDACTED>.com",
     password: process.env.TEST_USER_PASSWORD ?? "testAdmin123",
     firstName: "Test",
     lastName: "Admin",

@@ -7,7 +7,7 @@
 ## Goal
 
 Stand up the argismonitor (formerly OmniRoute) v4 monorepo at
-`/Users/kooshapari/CodeProjects/Phenotype/repos/omniroute-monorepo` and replace the
+`/Users/<REDACTED>/CodeProjects/Phenotype/repos/omniroute-monorepo` and replace the
 legacy Next.js + Electron stack with SvelteKit 2 + Svelte 5 runes + Hono 4 + Tauri 2.
 
 ## Stack

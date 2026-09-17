@@ -3,7 +3,7 @@
 > vitest
 
 
-[1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web[39m
+[1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/<REDACTED>/temp-PRODVERCEL/485/kush/trace/frontend/apps/web[39m
 
 (node:1342) Warning: `--localstorage-file` was provided without a valid path
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -111,8 +111,8 @@
 
 npm error Lifecycle script `test` failed with error:
 npm error code 1
-npm error path /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web
+npm error path /Users/<REDACTED>/temp-PRODVERCEL/485/kush/trace/frontend/apps/web
 npm error workspace @tracertm/web@0.1.0
-npm error location /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web
+npm error location /Users/<REDACTED>/temp-PRODVERCEL/485/kush/trace/frontend/apps/web
 npm error command failed
 npm error command sh -c vitest

@@ -123,7 +123,7 @@ task-prod: stack task-run-server task-tunnel ## Canonical "go live locally" comb
 # =============================================================================
 task-deploy: ## Trigger the Render fallback deploy via OIDC
 	@echo "[deploy] Triggering Render fallback via OIDC..."
-	gh workflow run build-push-image.yml --repo KooshaPari/Tracera --ref main || \
+	gh workflow run build-push-image.yml --repo <REDACTED>/Tracera --ref main || \
 	  echo "[deploy] gh CLI not authed; trigger manually in the GitHub UI"
 
 # =============================================================================

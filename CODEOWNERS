@@ -2,28 +2,28 @@
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # Default owner for everything
-*                           @KooshaPari
+*                           @<REDACTED>
 
 # Rust crates
-crates/                     @KooshaPari
+crates/                     @<REDACTED>
 
 # Frontend (Electrobun desktop, web, design tokens)
-frontend/                   @KooshaPari
+frontend/                   @<REDACTED>
 
 # CI / GitHub configuration
-.github/                    @KooshaPari
+.github/                    @<REDACTED>
 
 # Database migrations
-migrations/                 @KooshaPari
+migrations/                 @<REDACTED>
 
 # Documentation
-docs/                       @KooshaPari
+docs/                       @<REDACTED>
 
 # Audit tooling and reports
-audit/                      @KooshaPari
+audit/                      @<REDACTED>
 
 # Load / performance tests
-loadtest/                   @KooshaPari
+loadtest/                   @<REDACTED>
 
 # Fuzz targets
-fuzz/                       @KooshaPari
+fuzz/                       @<REDACTED>

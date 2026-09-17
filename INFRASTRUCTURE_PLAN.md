@@ -68,7 +68,7 @@
 - **phenotype.studio** - Main product dashboard (Vercel)
 - **phenotype.space** - Public documentation and community
 - **pheno.shop** - Marketplace for templates/plugins
-- **kooshapari.com** - Personal blog/portfolio
+- **<REDACTED>.com** - Personal blog/portfolio
 
 ### API Endpoints
 - **Production API**: https://api.tracera.phenotype.studio

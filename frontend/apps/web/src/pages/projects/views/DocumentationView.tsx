@@ -22,7 +22,7 @@ const docs: Doc[] = [
     type: "guide",
   },
   {
-    author: "KooshaPari",
+    author: "<REDACTED>",
     id: "2",
     lastUpdated: "2024-11-27",
     linkedItems: 48,
@@ -40,7 +40,7 @@ const docs: Doc[] = [
     type: "guide",
   },
   {
-    author: "KooshaPari",
+    author: "<REDACTED>",
     id: "4",
     lastUpdated: "2024-11-29",
     linkedItems: 12,

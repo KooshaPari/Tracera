@@ -6,7 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Tracera CLI — manages the bundled/local Tracera Compose stack across docker, podman, apple-container, and WSL2 runtimes."
-authors = ["Phenotype <kooshapari@gmail.com>"]
+authors = ["Phenotype <<REDACTED>@gmail.com>"]
 
 [[bin]]
 name = "tracera"

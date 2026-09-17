@@ -2,13 +2,13 @@
 
 - **Status**: Accepted
 - **Date**: 2026-08-21
-- **Authors**: KooshaPari (audit performed against `HEAD` of `Tracera`, branch `feat/install-scripts`, SHA `8a22353ed`)
+- **Authors**: <REDACTED> (audit performed against `HEAD` of `Tracera`, branch `feat/install-scripts`, SHA `8a22353ed`)
 - **Supersedes**: none
 - **Related**:
   - [`docs/FEATURE_INVENTORY.md`](../../../docs/FEATURE_INVENTORY.md) — migration safety oracle
   - [`endpoint_traceability_map.md`](endpoint_traceability_map.md) — current governance slice
   - [`coverage_matrix_self_application.md`](coverage_matrix_self_application.md) — control coverage map
-  - [Python original (commit `2ece64691f`)](https://github.com/KooshaPari/Tracera/commit/2ece64691f40c11fd6a08f8480ce3b35a8c7395b) — `/src/tracertm/api/routers/`
+  - [Python original (commit `2ece64691f`)](https://github.com/<REDACTED>/Tracera/commit/2ece64691f40c11fd6a08f8480ce3b35a8c7395b) — `/src/tracertm/api/routers/`
   - Recovery PRs: `#661`, `#660`, `#677`, `#709`, `#713`, `#717`, `#737`, `#799`
 
 ## Context and problem statement

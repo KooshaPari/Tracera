@@ -1,7 +1,7 @@
 //! TRC-PHENO-001: Atomic SQLite claim.
 //!
 //! Ported from phenodag v0.3.0 `cmdClaim` (Go).
-//! Reference: github.com/KooshaPari/phenodag/blob/main/phenodag.go (cmdClaim, line 1313)
+//! Reference: github.com/<REDACTED>/phenodag/blob/main/phenodag.go (cmdClaim, line 1313)
 
 use chrono::Utc;
 use sqlx::{Pool, Sqlite, Transaction};

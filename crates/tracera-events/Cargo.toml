@@ -6,7 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Tracera events/analytics crate — ClickHouse-backed ingest and analytics for agent_runs, decisions, deploys, traces, and llm_calls."
-authors = ["Phenotype <kooshapari@gmail.com>"]
+authors = ["Phenotype <<REDACTED>@gmail.com>"]
 
 [[bin]]
 name = "events-ingest"

@@ -1,12 +1,12 @@
 # Tracera Desktop
 
-A native desktop wrapper for the [Tracera](https://kooshapari.github.io/Tracera/)
+A native desktop wrapper for the [Tracera](https://<REDACTED>.github.io/Tracera/)
 web UI. Ships as a real installable app via **Electrobun** — the Phenotype org
 standard desktop shell.
 
 ## What this is
 
-The web app at `https://kooshapari.github.io/Tracera/` is a Vite-built
+The web app at `https://<REDACTED>.github.io/Tracera/` is a Vite-built
 React SPA. This Electrobun app wraps that SPA in a native WKWebView window
 with a system tray icon — giving you a real desktop application experience.
 

@@ -6,7 +6,7 @@ Multi-view requirements traceability and project management system for AI agents
 
 ### One-liner (Windows PowerShell)
 ```powershell
-irm https://raw.githubusercontent.com/KooshaPari/Tracera/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/<REDACTED>/Tracera/main/install.ps1 | iex
 ```
 
 ### Chocolatey
@@ -16,12 +16,12 @@ choco install tracera
 
 ### WinGet
 ```powershell
-winget install KooshaPari.Tracera
+winget install <REDACTED>.Tracera
 ```
 
 ### From Source
 ```bash
-git clone https://github.com/KooshaPari/Tracera
+git clone https://github.com/<REDACTED>/Tracera
 cd Tracera
 cargo build --release -p tracera-server -p tracera-cli
 ./target/release/tracera-server --port 8080
@@ -39,14 +39,14 @@ tracera status               # Check status
 ## Uninstall
 
 ```powershell
-irm https://raw.githubusercontent.com/KooshaPari/Tracera/main/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/<REDACTED>/Tracera/main/uninstall.ps1 | iex
 ```
 
 ## Links
 
-- [GitHub](https://github.com/KooshaPari/Tracera)
-- [Releases](https://github.com/KooshaPari/Tracera/releases)
-- [Documentation](https://github.com/KooshaPari/Tracera/blob/main/README.md)
+- [GitHub](https://github.com/<REDACTED>/Tracera)
+- [Releases](https://github.com/<REDACTED>/Tracera/releases)
+- [Documentation](https://github.com/<REDACTED>/Tracera/blob/main/README.md)
 
 ## License
 

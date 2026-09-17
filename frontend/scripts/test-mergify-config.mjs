@@ -17,5 +17,5 @@ assert.match(
   /author ~= \^\(\?:trunk-io\\\[bot\\\]\|mergify\\\[bot\\\]\|github-actions\\\[bot\\\]\)\$/,
 );
 assert.match(config, /updated-at < 30 days ago/);
-assert.match(config, /\n        users:\n          - KooshaPari/);
+assert.match(config, /\n        users:\n          - <REDACTED>/);
 assert.doesNotMatch(config, /post_merge:|github_accounts:|age>=30d/);

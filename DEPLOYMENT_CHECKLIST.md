@@ -9,7 +9,7 @@
 
 | # | Item | Where to Get | Status |
 |---|------|-------------|--------|
-| 0.1 | **GitHub account** | github.com | ✅ (KooshaPari) |
+| 0.1 | **GitHub account** | github.com | ✅ (<REDACTED>) |
 | 0.2 | **Render account** | render.com (free tier) | ☐ |
 | 0.3 | **Vercel account** | vercel.com (free tier) | ✅ |
 | 0.4 | **Cloudflare account** | cloudflare.com (free tier) | ☐ |
@@ -128,7 +128,7 @@ certbot certonly --standalone -d phenotype.studio -d api.phenotype.studio
 # 1. Login to Render (via browser)
 # 2. Go to https://render.com/dashboard
 # 3. Click "New +" → "Web Service"
-# 4. Connect GitHub repo: KooshaPari/Tracera
+# 4. Connect GitHub repo: <REDACTED>/Tracera
 # 5. Select branch: main
 # 6. Render will auto-detect render.yaml
 
@@ -535,7 +535,7 @@ cat audit/SCORECARD-FULL-2026-08-30.md | grep "TOTAL"
 
 ```bash
 # 1. Clone repo
-git clone https://github.com/KooshaPari/Tracera.git
+git clone https://github.com/<REDACTED>/Tracera.git
 cd Tracera
 
 # 2. Install tools

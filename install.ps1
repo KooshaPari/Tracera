@@ -1,12 +1,12 @@
 #!/usr/bin/env pwsh
 # Tracera One-line Installer (Windows)
-# Usage: irm https://raw.githubusercontent.com/KooshaPari/Tracera/main/install.ps1 | iex
+# Usage: irm https://raw.githubusercontent.com/<REDACTED>/Tracera/main/install.ps1 | iex
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
 # Configuration
-$Repo = 'KooshaPari/Tracera'
+$Repo = '<REDACTED>/Tracera'
 $InstallDir = if ($env:TRACERA_HOME) { $env:TRACERA_HOME } else { "$env:LOCALAPPDATA\Tracera" }
 $Version = if ($env:TRACERA_VERSION) { $env:TRACERA_VERSION } else { 'latest' }
 $RepoRoot = "$env:TEMP\tracera-install-$(Get-Random)"

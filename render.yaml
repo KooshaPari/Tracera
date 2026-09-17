@@ -20,7 +20,7 @@ services:
     region: oregon
     healthCheckPath: /healthz
     image:
-      imagePath: ghcr.io/kooshapari/tracera-server:latest
+      imagePath: ghcr.io/<REDACTED>/tracera-server:latest
       ownerId: tea-ct2nk4tsvqrc738djlf0
     envVars:
       - key: DATABASE_URL
@@ -47,7 +47,7 @@ services:
     region: oregon
     healthCheckPath: /healthz
     image:
-      imagePath: ghcr.io/kooshapari/tracera-server:latest
+      imagePath: ghcr.io/<REDACTED>/tracera-server:latest
       ownerId: tea-ct2nk4tsvqrc738djlf0
     envVars:
       # Local Postgres or external Neon. SQLite fallback for boot-only.

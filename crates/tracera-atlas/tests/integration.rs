@@ -92,7 +92,7 @@ fn ci_bridge_round_trip_publishes_event() {
             "created_at": "2026-09-01T00:00:00Z",
             "updated_at": "2026-09-01T00:01:00Z"
         },
-        "repository": {"full_name": "kooshapari/Tracera"},
+        "repository": {"full_name": "<REDACTED>/Tracera"},
         "sender": {"login": "koosh"}
     }"#;
 

@@ -15,7 +15,7 @@ FILES CREATED (5 FILES - 91KB TOTAL)
    - 947 lines of TypeScript code
    - 7 test suites (describe blocks)
    - Ready for Playwright execution
-   - Location: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/e2e/auth-flow.spec.ts
+   - Location: /Users/<REDACTED>/temp-PRODVERCEL/485/kush/trace/frontend/apps/web/e2e/auth-flow.spec.ts
 
 2. AUTH_FLOW_TEST_GUIDE.md (17KB)
    - Complete test documentation

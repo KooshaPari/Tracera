@@ -1,6 +1,6 @@
 # Spec 008: phenodag absorption (DAG/queue/atomic-claim/lease/dedup)
 
-> Absorbs: phenodag v0.3.0 (https://github.com/KooshaPari/phenodag)
+> Absorbs: phenodag v0.3.0 (https://github.com/<REDACTED>/phenodag)
 > Sponsor decision: D3 = YES (thin redirector for 1 release, then archive phenodag).
 > Date: 2026-07-05
 > Source: `docs/sessions/2026-07-05-polyrepo-portfolio-strategy/03-audits/03-phenodag-absorption-spec.md`
@@ -50,8 +50,8 @@ spec 008.
 ## Cross-references
 
 - AgilePlus spec 008: phenodag absorption (PM/cockpit/portfolio concerns)
-- phenodag repo: https://github.com/KooshaPari/phenodag (will be archived)
-- phenodag ADR-dag-superset-merge: https://github.com/KooshaPari/phenodag/blob/main/docs/adr/ADR-dag-superset-merge.md
+- phenodag repo: https://github.com/<REDACTED>/phenodag (will be archived)
+- phenodag ADR-dag-superset-merge: https://github.com/<REDACTED>/phenodag/blob/main/docs/adr/ADR-dag-superset-merge.md
   (dagctl was already absorbed into phenodag; Tracera is the next absorption)
 - polyrepo portfolio strategy session: `docs/sessions/2026-07-05-polyrepo-portfolio-strategy/`
 

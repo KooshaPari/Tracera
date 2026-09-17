@@ -1,4 +1,4 @@
-# Migrated content from `KooshaPari/omniroute-monorepo-archive`
+# Migrated content from `<REDACTED>/omniroute-monorepo-archive`
 
 **Generated:** 2026-08-11 (UTC, autonomous Forge run)
 **Operator task:** `[ADD]` migrate truly-unique content via semantic merge
@@ -10,11 +10,11 @@
 
 ### Source repository
 
-- **Repo:** [`KooshaPari/omniroute-monorepo-archive`](https://github.com/KooshaPari/omniroute-monorepo-archive) (PUBLIC)
+- **Repo:** [`<REDACTED>/omniroute-monorepo-archive`](https://github.com/<REDACTED>/omniroute-monorepo-archive) (PUBLIC)
 - **Visibility:** public archive
 - **Description:** "Archive of `repos/omniroute-monorepo` — restored 2026-07-14 (no original remote ever existed)"
-- **Local bare clone:** `/Users/kooshapari/CodeProjects/Phenotype/repos/_clone_target/omniroute-monorepo-archive.git`
-- **Local working tree:** `/Users/kooshapari/CodeProjects/Phenotype/repos/_clone_target/omniroute-monorepo-archive`
+- **Local bare clone:** `/Users/<REDACTED>/CodeProjects/Phenotype/repos/_clone_target/omniroute-monorepo-archive.git`
+- **Local working tree:** `/Users/<REDACTED>/CodeProjects/Phenotype/repos/_clone_target/omniroute-monorepo-archive`
 - **Backups (safety rail):**
   - `/tmp/gh-backup-2026-07-28-omniroute-monorepo-archive.bundle` (initial)
   - `/tmp/gh-backup-2026-08-10-omniroute-monorepo-archive.bundle` (121,864 bytes, SHA `27000263…`, PASS)
@@ -116,8 +116,8 @@ git cat-file -p <blob-sha>
 
 ```bash
 # If the local backup is also lost, restore from GitHub:
-gh repo unarchive KooshaPari/omniroute-monorepo-archive
-git clone git@github.com:KooshaPari/omniroute-monorepo-archive.git
+gh repo unarchive <REDACTED>/omniroute-monorepo-archive
+git clone git@github.com:<REDACTED>/omniroute-monorepo-archive.git
 # Then re-run this migration (it is idempotent over blob SHAs).
 ```
 

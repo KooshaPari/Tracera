@@ -90,7 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - recharts upgrade from 2.15.4 to 3.10.1 (#817)
 - immer upgrade from 10.2.0 to 11.1.16 (#815)
 - web-vitals upgrade from 4.2.4 to 6.0.1 (#759)
-- `.mailmap` canonicalizing bot identities to KooshaPari
+- `.mailmap` canonicalizing bot identities to <REDACTED>
 
 ### Fixed
 

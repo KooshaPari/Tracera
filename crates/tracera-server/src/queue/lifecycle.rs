@@ -1,7 +1,7 @@
 //! TRC-PHENO-003: Release / done / fail lifecycle.
 //!
 //! Ported from phenodag v0.3.0 `cmdRelease`, `cmdDone`, `cmdFail` (Go).
-//! Reference: github.com/KooshaPari/phenodag/blob/main/phenodag.go
+//! Reference: github.com/<REDACTED>/phenodag/blob/main/phenodag.go
 
 use chrono::Utc;
 use sqlx::{Pool, Sqlite};

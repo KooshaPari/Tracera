@@ -6,12 +6,12 @@ description: |
 type: application
 version: 0.1.0
 appVersion: "0.1.0"
-home: https://github.com/KooshaPari/Tracera
+home: https://github.com/<REDACTED>/Tracera
 sources:
-  - https://github.com/KooshaPari/Tracera
+  - https://github.com/<REDACTED>/Tracera
 maintainers:
-  - name: KooshaPari
-    email: kooshapari@gmail.com
+  - name: <REDACTED>
+    email: <REDACTED>@gmail.com
 keywords:
   - tracera
   - graph

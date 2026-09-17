@@ -3,7 +3,7 @@ import type { ElectrobunConfig } from "electrobun/bun";
 const config: ElectrobunConfig = {
   app: {
     name: "Tracera",
-    identifier: "ai.kooshapari.tracera",
+    identifier: "ai.<REDACTED>.tracera",
     version: "0.1.0",
     description: "Tracera — traceability analysis desktop shell",
   },

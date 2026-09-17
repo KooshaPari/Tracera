@@ -1,3 +1,3 @@
-module github.com/kooshapari/tracera-sidecar
+module github.com/<REDACTED>/tracera-sidecar
 
 go 1.25.13

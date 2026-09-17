@@ -1,7 +1,7 @@
 //! TRC-PHENO-002: Heartbeat + reclaim.
 //!
 //! Ported from phenodag v0.3.0 `cmdHeartbeat` and `cmdReclaim` (Go).
-//! Reference: github.com/KooshaPari/phenodag/blob/main/phenodag.go (cmdHeartbeat line 1385, cmdReclaim line 1410)
+//! Reference: github.com/<REDACTED>/phenodag/blob/main/phenodag.go (cmdHeartbeat line 1385, cmdReclaim line 1410)
 
 use chrono::{DateTime, Duration, Utc};
 use sqlx::{Pool, Sqlite};

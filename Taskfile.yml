@@ -94,4 +94,4 @@ tasks:
   deploy:
     desc: Render fallback deploy (only when local box offline long-term)
     cmds:
-      - cmd: gh workflow run build-push-image.yml --repo KooshaPari/Tracera --ref main
+      - cmd: gh workflow run build-push-image.yml --repo <REDACTED>/Tracera --ref main
