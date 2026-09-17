@@ -63,7 +63,7 @@ class TraceraAPIError(TraceraError):
         super().__init__(f"Tracera API error {status_code} for {url}: {msg}")
 
 
-class _MissingAsyncDependency(TraceraError, ImportError):
+class _MissingAsyncDependencyError(TraceraError, ImportError):
     """Raised when the async client is used without the ``[async]`` extra."""
 
 
@@ -87,9 +87,7 @@ class TraceraConfig:
         timeout: float = 30.0,
     ) -> None:
         self.base_url = (
-            base_url
-            or os.environ.get("TRACERA_BASE_URL")
-            or "http://127.0.0.1:8080"
+            base_url or os.environ.get("TRACERA_BASE_URL") or "http://127.0.0.1:8080"
         ).rstrip("/")
         self.token = token or os.environ.get("TRACERA_TOKEN")
         self.timeout = float(timeout)
@@ -131,9 +129,7 @@ class Tracera:
         timeout: float = 30.0,
         config: TraceraConfig | None = None,
     ) -> None:
-        self.config = config or TraceraConfig(
-            base_url=base_url, token=token, timeout=timeout
-        )
+        self.config = config or TraceraConfig(base_url=base_url, token=token, timeout=timeout)
 
     # ---- request primitives -------------------------------------------------
 
@@ -262,9 +258,7 @@ class Tracera:
                 json_body={"depth": depth, "direction": direction},
             )
         if op == "full":
-            return self._request(
-                "POST", "/api/v1/graph/full", json_body={"max_depth": depth}
-            )
+            return self._request("POST", "/api/v1/graph/full", json_body={"max_depth": depth})
         if op in ("cycles", "orphans"):
             return self._request("POST", f"/api/v1/graph/{op}", json_body={})
         # path
@@ -292,7 +286,7 @@ class Tracera:
         """Return the body of ``/healthz`` — used to check server reachability."""
         return self._request("GET", "/healthz")
 
-    def __enter__(self) -> "Tracera":
+    def __enter__(self) -> Tracera:
         return self
 
     def __exit__(self, *exc: object) -> None:
@@ -326,13 +320,11 @@ class AsyncTracera:
         client: httpx.AsyncClient | None = None,
     ) -> None:
         if httpx is None:
-            raise _MissingAsyncDependency(
+            raise _MissingAsyncDependencyError(
                 "AsyncTracera requires the 'httpx' package. "
                 "Install with: pip install 'tracera[async]'"
             )
-        self.config = config or TraceraConfig(
-            base_url=base_url, token=token, timeout=timeout
-        )
+        self.config = config or TraceraConfig(base_url=base_url, token=token, timeout=timeout)
         self._owns_client = client is None
         self._client = client or self._build_client()
 
@@ -350,7 +342,7 @@ class AsyncTracera:
         if self._owns_client:
             await self._client.aclose()
 
-    async def __aenter__(self) -> "AsyncTracera":
+    async def __aenter__(self) -> AsyncTracera:
         return self
 
     async def __aexit__(self, *exc: object) -> None:
@@ -458,9 +450,7 @@ class AsyncTracera:
                 json_body={"depth": depth, "direction": direction},
             )
         if op == "full":
-            return await self._request(
-                "POST", "/api/v1/graph/full", json_body={"max_depth": depth}
-            )
+            return await self._request("POST", "/api/v1/graph/full", json_body={"max_depth": depth})
         if op in ("cycles", "orphans"):
             return await self._request("POST", f"/api/v1/graph/{op}", json_body={})
         if source is None or target is None:

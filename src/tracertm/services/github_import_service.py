@@ -97,7 +97,9 @@ class GitHubImportService:
         )
         return requirement, trace_link
 
-    def import_issues(self, repo: str, issues: list[dict[str, Any]]) -> BulkIngestionResult:
+    def import_issues(
+        self, repo: str, issues: list[dict[str, Any]]
+    ) -> BulkIngestionResult:
         project_id = self._project_id_for_repo(repo)
         requirements: list[Requirement] = []
         trace_links: list[TraceLink] = []

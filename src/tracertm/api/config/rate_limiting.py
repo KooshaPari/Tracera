@@ -35,15 +35,26 @@ class RateLimitConfig:
     def from_env(cls) -> RateLimitConfig:
         """Load and validate ``TRACERA_RATE_LIMIT_*`` settings."""
         limit = int(os.getenv("TRACERA_RATE_LIMIT_REQUESTS", str(cls.limit)))
-        window = float(os.getenv("TRACERA_RATE_LIMIT_WINDOW_SECONDS", str(cls.window_seconds)))
-        max_buckets = int(os.getenv("TRACERA_RATE_LIMIT_MAX_BUCKETS", str(cls.max_buckets)))
-        prefixes = tuple(
-            item.strip()
-            for item in os.getenv("TRACERA_RATE_LIMIT_SENSITIVE_PREFIXES", "").split(",")
-            if item.strip()
-        ) or DEFAULT_SENSITIVE_PREFIXES
+        window = float(
+            os.getenv("TRACERA_RATE_LIMIT_WINDOW_SECONDS", str(cls.window_seconds))
+        )
+        max_buckets = int(
+            os.getenv("TRACERA_RATE_LIMIT_MAX_BUCKETS", str(cls.max_buckets))
+        )
+        prefixes = (
+            tuple(
+                item.strip()
+                for item in os.getenv(
+                    "TRACERA_RATE_LIMIT_SENSITIVE_PREFIXES", ""
+                ).split(",")
+                if item.strip()
+            )
+            or DEFAULT_SENSITIVE_PREFIXES
+        )
         if limit < 1 or window <= 0 or max_buckets < 1 or not prefixes:
-            raise ValueError("Rate-limit settings must be positive and include sensitive routes")
+            raise ValueError(
+                "Rate-limit settings must be positive and include sensitive routes"
+            )
         return cls(limit, window, max_buckets, prefixes)
 
 
@@ -66,7 +77,10 @@ class RateLimiter:
             return
         principal = claims.get("sub")
         if not isinstance(principal, str) or not principal.strip():
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authenticated principal required")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authenticated principal required",
+            )
         now = time.monotonic()
         with self._lock:
             timestamps = self._buckets.get(principal)
@@ -81,7 +95,9 @@ class RateLimiter:
             while timestamps and timestamps[0] <= cutoff:
                 timestamps.popleft()
             if len(timestamps) >= self.config.limit:
-                retry_after = max(1, ceil(timestamps[0] + self.config.window_seconds - now))
+                retry_after = max(
+                    1, ceil(timestamps[0] + self.config.window_seconds - now)
+                )
                 raise HTTPException(
                     status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                     detail="Rate limit exceeded",

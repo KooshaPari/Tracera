@@ -52,11 +52,15 @@ def validate_base(raw: str) -> str:
         try:
             address = ipaddress.ip_address(hostname)
         except ValueError as error:
-            raise ValueError("API base must target localhost or a loopback address") from error
+            raise ValueError(
+                "API base must target localhost or a loopback address"
+            ) from error
         if not address.is_loopback:
             raise ValueError("API base must target localhost or a loopback address")
     if parsed.port != 18000:
-        raise ValueError(f"API base must target oracle gateway port 18000 (got {parsed.port})")
+        raise ValueError(
+            f"API base must target oracle gateway port 18000 (got {parsed.port})"
+        )
     if parsed.path not in {"", "/"} or parsed.query or parsed.fragment:
         raise ValueError("API base must not contain a path, query, or fragment")
     return raw.rstrip("/")
@@ -73,15 +77,27 @@ def probe(base: str, path: str, timeout: float) -> Probe:
         status = "reachable" if error.code in {401, 403, 405} else "unavailable"
         return Probe(path, status, error.code, error.reason)
     except (TimeoutError, URLError, OSError) as error:
-        return Probe(path, "skipped", detail=str(error.reason if isinstance(error, URLError) else error))
+        return Probe(
+            path,
+            "skipped",
+            detail=str(error.reason if isinstance(error, URLError) else error),
+        )
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--base-url", default=DEFAULT_BASE, help="gateway origin (must use port 18000)")
-    parser.add_argument("--timeout", type=float, default=10.0, help="per-request timeout in seconds")
-    parser.add_argument("--live", action="store_true", help="probe the gateway; default is static-only")
-    parser.add_argument("--json", action="store_true", help="emit machine-readable output")
+    parser.add_argument(
+        "--base-url", default=DEFAULT_BASE, help="gateway origin (must use port 18000)"
+    )
+    parser.add_argument(
+        "--timeout", type=float, default=10.0, help="per-request timeout in seconds"
+    )
+    parser.add_argument(
+        "--live", action="store_true", help="probe the gateway; default is static-only"
+    )
+    parser.add_argument(
+        "--json", action="store_true", help="emit machine-readable output"
+    )
     args = parser.parse_args()
     if not 0.1 <= args.timeout <= 10:
         parser.error("--timeout must be between 0.1 and 10 seconds")
@@ -94,7 +110,12 @@ def main() -> int:
     results = [Probe(path, "contract") for path in CORE_PATHS]
     if args.live:
         results = [probe(base, path, args.timeout) for path in CORE_PATHS]
-    payload = {"base_url": base, "gateway_port": 18000, "live": args.live, "probes": [asdict(item) for item in results]}
+    payload = {
+        "base_url": base,
+        "gateway_port": 18000,
+        "live": args.live,
+        "probes": [asdict(item) for item in results],
+    }
     if args.json:
         print(json.dumps(payload, indent=2))
     else:

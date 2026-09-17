@@ -2,6 +2,7 @@
 
 Centralized request-time checks for auth headers and optional scope requirements.
 """
+
 from __future__ import annotations
 
 from fastapi import HTTPException, status
@@ -114,9 +115,13 @@ class ApiAuthzMiddleware(BaseHTTPMiddleware):
 
         # All non-public API calls are currently subject to token checks.
         try:
-            claims = await auth_guard(authorization=request.headers.get("Authorization"))
+            claims = await auth_guard(
+                authorization=request.headers.get("Authorization")
+            )
         except HTTPException as exc:
-            return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+            return JSONResponse(
+                status_code=exc.status_code, content={"detail": exc.detail}
+            )
 
         request.state.claims = claims
 

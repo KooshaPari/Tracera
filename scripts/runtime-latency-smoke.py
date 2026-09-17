@@ -36,15 +36,21 @@ class Sample:
 def fetch(base_url: str, path: str, timeout: float) -> Sample:
     started = time.perf_counter()
     try:
-        request = Request(f"{base_url.rstrip('/')}{path}", headers={"Accept": "application/json"})
+        request = Request(
+            f"{base_url.rstrip('/')}{path}", headers={"Accept": "application/json"}
+        )
         with urlopen(request, timeout=timeout) as response:
             response.read(4096)
             status = response.status
         return Sample(path, (time.perf_counter() - started) * 1000, status)
     except HTTPError as exc:
-        return Sample(path, (time.perf_counter() - started) * 1000, exc.code, f"http_{exc.code}")
+        return Sample(
+            path, (time.perf_counter() - started) * 1000, exc.code, f"http_{exc.code}"
+        )
     except (URLError, TimeoutError, OSError) as exc:
-        return Sample(path, (time.perf_counter() - started) * 1000, None, type(exc).__name__)
+        return Sample(
+            path, (time.perf_counter() - started) * 1000, None, type(exc).__name__
+        )
 
 
 def percentile(values: list[float], fraction: float) -> float:
@@ -79,8 +85,14 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     elapsed_s = time.perf_counter() - started
 
     latencies = [sample.elapsed_ms for sample in samples]
-    failures = [sample for sample in samples if sample.status is None or sample.status >= 500]
-    client_errors = [sample for sample in samples if sample.status is not None and 400 <= sample.status < 500]
+    failures = [
+        sample for sample in samples if sample.status is None or sample.status >= 500
+    ]
+    client_errors = [
+        sample
+        for sample in samples
+        if sample.status is not None and 400 <= sample.status < 500
+    ]
     return {
         "base_url": args.base_url,
         "requests": len(samples),
@@ -96,7 +108,9 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         "failures": len(failures),
         "client_errors": len(client_errors),
         "status_counts": dict(Counter(str(sample.status) for sample in samples)),
-        "error_counts": dict(Counter(sample.error for sample in samples if sample.error)),
+        "error_counts": dict(
+            Counter(sample.error for sample in samples if sample.error)
+        ),
         "paths": list(paths),
         "thresholds": {
             "p95_ms": args.p95_threshold_ms,
@@ -107,7 +121,9 @@ def run(args: argparse.Namespace) -> dict[str, object]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--base-url", default=os.environ.get("BASE_URL", "http://127.0.0.1:8080"))
+    parser.add_argument(
+        "--base-url", default=os.environ.get("BASE_URL", "http://127.0.0.1:8080")
+    )
     parser.add_argument("--concurrency", type=int, default=4)
     parser.add_argument("--requests", type=int, default=80)
     parser.add_argument("--warmup", type=float, default=1.0)
@@ -124,11 +140,20 @@ def main() -> int:
         default=float(os.environ.get("TRACERA_LATENCY_MAX_MS", "0")),
         help="fail when max latency exceeds this value; 0 disables the threshold",
     )
-    parser.add_argument("--path", dest="paths", action="append", help="path to exercise (repeatable)")
-    parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    parser.add_argument(
+        "--path", dest="paths", action="append", help="path to exercise (repeatable)"
+    )
+    parser.add_argument(
+        "--json", action="store_true", help="emit machine-readable JSON"
+    )
     args = parser.parse_args()
     parsed = urlparse(args.base_url)
-    if parsed.scheme not in {"http", "https"} or not parsed.netloc or parsed.username or parsed.password:
+    if (
+        parsed.scheme not in {"http", "https"}
+        or not parsed.netloc
+        or parsed.username
+        or parsed.password
+    ):
         parser.error("base-url must be an http(s) URL without embedded credentials")
     if any(char in args.base_url for char in ("\n", "\r", "\t")):
         parser.error("base-url contains control characters")
@@ -140,7 +165,9 @@ def main() -> int:
         or args.p95_threshold_ms < 0
         or args.max_threshold_ms < 0
     ):
-        parser.error("concurrency/requests must be positive; warmup and thresholds must be non-negative")
+        parser.error(
+            "concurrency/requests must be positive; warmup and thresholds must be non-negative"
+        )
     result = run(args)
     latency = result["latency_ms"]
     threshold_failures = []
@@ -164,7 +191,10 @@ def main() -> int:
             f"4xx={result['client_errors']}"
         )
         if threshold_failures:
-            print("latency threshold: FAIL: " + "; ".join(threshold_failures), file=sys.stderr)
+            print(
+                "latency threshold: FAIL: " + "; ".join(threshold_failures),
+                file=sys.stderr,
+            )
     return 1 if result["failures"] or threshold_failures else 0
 
 

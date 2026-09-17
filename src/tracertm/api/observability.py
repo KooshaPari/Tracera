@@ -106,7 +106,9 @@ def configure_api_logging() -> None:
     _LOGGING_CONFIGURED = True
 
 
-def log_request_metrics(logger: logging.Logger, *, method: str, path: str, status: int, elapsed_ms: float) -> None:
+def log_request_metrics(
+    logger: logging.Logger, *, method: str, path: str, status: int, elapsed_ms: float
+) -> None:
     """Log a single request completion event with timing metadata."""
     logger.info(
         "request_complete",
@@ -117,4 +119,3 @@ def log_request_metrics(logger: logging.Logger, *, method: str, path: str, statu
             "elapsed_ms": round(elapsed_ms, 2),
         },
     )
-
