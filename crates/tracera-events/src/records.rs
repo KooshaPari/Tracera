@@ -23,12 +23,14 @@ use uuid::Uuid;
 /// Ser/de `chrono::DateTime<Utc>` ↔ `DateTime64(9)` (nanoseconds).
 pub mod dt_nanos {
     use chrono::{DateTime, Utc};
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use serde::{Deserializer, Serializer};
 
+    /// Serialize a `DateTime<Utc>` as ClickHouse `DateTime64(9)` nanoseconds.
     pub fn serialize<S: Serializer>(dt: &DateTime<Utc>, s: S) -> Result<S::Ok, S::Error> {
         clickhouse::serde::chrono::datetime64::nanos::serialize(dt, s)
     }
 
+    /// Deserialize a `DateTime<Utc>` from ClickHouse `DateTime64(9)` nanoseconds.
     pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<DateTime<Utc>, D::Error> {
         clickhouse::serde::chrono::datetime64::nanos::deserialize(d)
     }
@@ -37,12 +39,14 @@ pub mod dt_nanos {
 /// Ser/de `Option<chrono::DateTime<Utc>>` ↔ `Nullable(DateTime64(9))`.
 pub mod dt_nanos_opt {
     use chrono::{DateTime, Utc};
-    use serde::{Deserialize, Deserializer, Serializer};
+    use serde::{Deserializer, Serializer};
 
+    /// Serialize an optional timestamp as nullable `DateTime64(9)`.
     pub fn serialize<S: Serializer>(dt: &Option<DateTime<Utc>>, s: S) -> Result<S::Ok, S::Error> {
         clickhouse::serde::chrono::datetime64::nanos::option::serialize(dt, s)
     }
 
+    /// Deserialize a nullable `DateTime64(9)` column into an optional timestamp.
     pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Option<DateTime<Utc>>, D::Error> {
         clickhouse::serde::chrono::datetime64::nanos::option::deserialize(d)
     }
@@ -50,13 +54,15 @@ pub mod dt_nanos_opt {
 
 /// Ser/de `uuid::Uuid` ↔ `UUID`.
 pub mod id_uuid {
-    use serde::{Deserialize, Deserializer, Serializer};
+    use serde::{Deserializer, Serializer};
     use uuid::Uuid;
 
+    /// Serialize a `Uuid` as a ClickHouse `UUID` column.
     pub fn serialize<S: Serializer>(id: &Uuid, s: S) -> Result<S::Ok, S::Error> {
         clickhouse::serde::uuid::serialize(id, s)
     }
 
+    /// Deserialize a ClickHouse `UUID` column into a `Uuid`.
     pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Uuid, D::Error> {
         clickhouse::serde::uuid::deserialize(d)
     }
@@ -65,12 +71,14 @@ pub mod id_uuid {
 /// Ser/de `chrono::NaiveDate` ↔ `Date`.
 pub mod naive_date {
     use chrono::NaiveDate;
-    use serde::{Deserialize, Deserializer, Serializer};
+    use serde::{Deserializer, Serializer};
 
+    /// Serialize a `NaiveDate` as a ClickHouse `Date` column.
     pub fn serialize<S: Serializer>(d: &NaiveDate, s: S) -> Result<S::Ok, S::Error> {
         clickhouse::serde::chrono::date::serialize(d, s)
     }
 
+    /// Deserialize a ClickHouse `Date` column into a `NaiveDate`.
     pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<NaiveDate, D::Error> {
         clickhouse::serde::chrono::date::deserialize(d)
     }

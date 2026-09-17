@@ -249,15 +249,19 @@ fn event_bus_clone_is_cheap_and_shared() {
     let engine = AtlasEngine::in_memory();
     let bus1: InMemoryEventBus = engine.events().clone();
     let bus2: InMemoryEventBus = engine.events().clone();
-    // Both clones refer to the same underlying bus, so a subscriber added
-    // to one sees events published through the other.
-    let sink = Arc::new(RecordingSink::default());
-    let _id = bus1.subscribe(sink.clone());
 
+    // Create the work item before subscribing: `create_work` publishes a
+    // `work_item_created` event of its own, and this test wants the sink to
+    // observe only the explicit publish routed through the other clone.
     let item = engine
         .delegation()
         .create_work("x", SdlcStage::Ready)
         .unwrap();
+
+    // Both clones refer to the same underlying bus, so a subscriber added
+    // to one sees events published through the other.
+    let sink = Arc::new(RecordingSink::default());
+    let _id = bus1.subscribe(sink.clone());
     bus2.publish(SdlcEvent::work_item_created(&item));
 
     assert_eq!(sink.len(), 1);
