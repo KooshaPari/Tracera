@@ -26,7 +26,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -91,7 +90,7 @@ func (c *client) do(ctx context.Context, method, path string, body any, out any)
 	if err != nil {
 		return fmt.Errorf("request %s %s: %w", method, path, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -141,7 +140,7 @@ func writeJSON(v any) error {
 			_, err := os.Stdout.Write(b)
 			return err
 		}
-		fmt.Fprintln(os.Stdout, v)
+		_, _ = fmt.Fprintln(os.Stdout, v)
 	}
 	return nil
 }
@@ -194,7 +193,7 @@ func cmdServe(args []string) error {
 			http.Error(w, "upstream: "+err.Error(), http.StatusBadGateway)
 			return
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		for k, vs := range resp.Header {
 			for _, v := range vs {
 				w.Header().Add(k, v)
@@ -389,10 +388,9 @@ func cmdNode(args []string) error {
 		return errors.New("usage: tracera node <id>")
 	}
 	id := rest[0]
-	if _, err := strconv.Atoi(id); err != nil {
-		// allow non-numeric IDs by URL-escaping via the path builder.
-		// net/http will not escape for us so we trust the caller for non-numeric IDs.
-	}
+	// Non-numeric IDs are allowed: the request path is built by simple
+	// concatenation, and net/http will not escape it for us, so we trust the
+	// caller to pass something already URL-safe.
 
 	var out json.RawMessage
 	if err := newClient().do(context.Background(), http.MethodGet, "/api/v1/items/"+id, nil, &out); err != nil {

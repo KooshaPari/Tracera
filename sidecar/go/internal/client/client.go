@@ -93,7 +93,7 @@ func (c *Client) Dispatch(ctx context.Context, method, path string, body any, re
 	if err != nil {
 		return Response{}, fmt.Errorf("dispatch %s %s: %w", method, path, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	data, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseBytes+1))
 	if err != nil {
 		return Response{}, fmt.Errorf("read response: %w", err)
