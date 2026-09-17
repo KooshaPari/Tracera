@@ -45,7 +45,9 @@ pub mod ci_bridge;
 pub mod delegation;
 pub mod observability;
 
-pub use agent_of_record::{ActorId, AgentOfRecord, AoRQuery, ChangeKind, SignOff, SignOffId};
+pub use agent_of_record::{
+    ActorId, AgentOfRecord, AoRError, AoRQuery, ChangeKind, SignOff, SignOffId,
+};
 pub use ci_bridge::{
     publish_ci_event, CiBridge, CiEventError, CiEventKind, CiProvider, CiProviderAdapter,
     GitHubActionsEvent, NormalizedCiEvent,

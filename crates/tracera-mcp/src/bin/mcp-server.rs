@@ -136,9 +136,6 @@ async fn build_store_from_url(url: &str) -> Result<Arc<dyn Store>, String> {
 // stub is only a placeholder for the demo binary path.
 
 mod demo {
-    use std::future::Future;
-    use std::pin::Pin;
-
     use chrono::{DateTime, Utc};
     use serde_json::Value;
     use tracera_server::store::{

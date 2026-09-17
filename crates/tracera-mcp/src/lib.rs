@@ -26,7 +26,6 @@
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
-// Relaxed for MCP arg structs (rmcp derives schemars docs from the field names).
 
 pub mod tools;
 
@@ -37,7 +36,7 @@ use rmcp::handler::server::ServerHandler;
 use rmcp::model::InitializeResult;
 use rmcp::ErrorData as McpError;
 // rmcp 3.2 re-exports the macros when feature="macros" is enabled.
-use rmcp::{tool_handler, tool_router};
+use rmcp::tool_handler;
 use tracera_server::store::Store;
 
 /// A type alias for our JSON tool output. The macro serializes whatever this
