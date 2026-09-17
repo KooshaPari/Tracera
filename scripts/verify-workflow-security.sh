@@ -13,9 +13,9 @@ vercel="$workflows/deploy-vercel.yml"
 [[ -f "$vercel" ]] || fail "deploy-vercel workflow is missing"
 grep -qE '^permissions:' "$vercel" || fail "Vercel workflow must declare explicit permissions"
 grep -qE '^  contents: read$' "$vercel" || fail "Vercel workflow must restrict contents to read"
-grep -qE '(if:.*secrets\.VERCEL_TOKEN|HAS_VERCEL_TOKEN:.*secrets\.VERCEL_TOKEN)' "$vercel" \
+grep -qE '(if:.*(secrets|vars)\.VERCEL_TOKEN|HAS_VERCEL_TOKEN:.*(secrets|vars)\.VERCEL_TOKEN)' "$vercel" \
   || fail "Vercel deployment must be gated on a configured token"
-grep -qE '(if:.*secrets\.VERCEL_ORG_ID|HAS_VERCEL_ORG:.*secrets\.VERCEL_ORG_ID)' "$vercel" \
+grep -qE '(if:.*(secrets|vars)\.VERCEL_ORG_ID|HAS_VERCEL_ORG:.*(secrets|vars)\.VERCEL_ORG_ID)' "$vercel" \
   || fail "Vercel deployment must be gated on a configured org id"
 # Vercel production must be gated on secrets. Either an explicit fail-closed
 # step ("Fail production deployment when Vercel secrets are unavailable")

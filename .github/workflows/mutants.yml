@@ -72,9 +72,10 @@ jobs:
         if: always()
         run: |
           if [ -f mutants-report.json ]; then
-            echo "## Mutation Testing Results" >> $GITHUB_STEP_SUMMARY
-            echo '```json' >> $GITHUB_STEP_SUMMARY
-            python3 -c "
+            {
+              echo "## Mutation Testing Results"
+              echo '```json'
+              python3 -c "
           import json, sys
           with open('mutants-report.json') as f:
               data = json.load(f)
@@ -89,8 +90,9 @@ jobs:
           if total - unviable > 0:
               rate = caught / (total - unviable) * 100
               print(f'Score:          {rate:.1f}%')
-          " >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
+          "
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload mutants report

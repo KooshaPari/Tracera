@@ -65,8 +65,7 @@ impl ClickHouseConfig {
         }
         Ok(Self {
             url,
-            database: env::var("CLICKHOUSE_DATABASE")
-                .unwrap_or_else(|_| "tracera".to_string()),
+            database: env::var("CLICKHOUSE_DATABASE").unwrap_or_else(|_| "tracera".to_string()),
             credentials: Credentials {
                 user: env::var("CLICKHOUSE_USER").ok(),
                 password: env::var("CLICKHOUSE_PASSWORD").ok(),

@@ -25,7 +25,8 @@ use serde::{Deserialize, Serialize};
 use crate::auth::{build_authorize_url, exchange_code_for_token, verify_id_token, AuthorizeParams};
 use crate::error::WorkOSError;
 use crate::webhooks::{
-    is_known_event, verify_signature, WebhookEnvelope, DEFAULT_TOLERANCE_SECONDS as WEBHOOK_TOLERANCE,
+    is_known_event, verify_signature, WebhookEnvelope,
+    DEFAULT_TOLERANCE_SECONDS as WEBHOOK_TOLERANCE,
 };
 use crate::WorkOSClient;
 
@@ -167,16 +168,26 @@ async fn callback_handler(
         expires_at,
     });
 
-    let session_payload = serde_json::to_string(&user)
-        .map_err(|err| error_response(StatusCode::INTERNAL_SERVER_ERROR, "session_serialize_failed", format!("{err}")))?;
+    let session_payload = serde_json::to_string(&user).map_err(|err| {
+        error_response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "session_serialize_failed",
+            format!("{err}"),
+        )
+    })?;
     let encoded = WorkOSClient::b64url_encode(session_payload.as_bytes());
 
     let cookie = format!("{SESSION_COOKIE_NAME}={encoded}; {SESSION_COOKIE_ATTRS}");
     let mut response = body.into_response();
     response.headers_mut().insert(
         axum::http::header::SET_COOKIE,
-        axum::http::HeaderValue::from_str(&cookie)
-            .map_err(|err| error_response(StatusCode::INTERNAL_SERVER_ERROR, "session_cookie_failed", format!("{err}")))?,
+        axum::http::HeaderValue::from_str(&cookie).map_err(|err| {
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "session_cookie_failed",
+                format!("{err}"),
+            )
+        })?,
     );
     Ok(response)
 }
@@ -217,12 +228,22 @@ async fn webhook_handler(
     )
     .map_err(|err| match &err {
         WorkOSError::WebhookSignatureInvalid | WorkOSError::WebhookSignatureHeader(_) => {
-            error_response(StatusCode::UNAUTHORIZED, "signature_invalid", format!("{err}"))
+            error_response(
+                StatusCode::UNAUTHORIZED,
+                "signature_invalid",
+                format!("{err}"),
+            )
         }
-        WorkOSError::WebhookTimestampSkew(_) => {
-            error_response(StatusCode::UNAUTHORIZED, "stale_signature", format!("{err}"))
-        }
-        _ => error_response(StatusCode::INTERNAL_SERVER_ERROR, "signature_check_failed", format!("{err}")),
+        WorkOSError::WebhookTimestampSkew(_) => error_response(
+            StatusCode::UNAUTHORIZED,
+            "stale_signature",
+            format!("{err}"),
+        ),
+        _ => error_response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "signature_check_failed",
+            format!("{err}"),
+        ),
     })?;
 
     let envelope: WebhookEnvelope = serde_json::from_slice(&body).map_err(|err| {
@@ -275,9 +296,7 @@ struct UserInfoResponse {
     authenticated: bool,
 }
 
-async fn userinfo_handler(
-    headers: HeaderMap,
-) -> Result<Response, Response> {
+async fn userinfo_handler(headers: HeaderMap) -> Result<Response, Response> {
     let cookie_header = headers
         .get(axum::http::header::COOKIE)
         .and_then(|v| v.to_str().ok());
@@ -344,9 +363,8 @@ mod tests {
             organization_id: None,
             connection_id: None,
         };
-        let encoded = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(
-            serde_json::to_string(&user).unwrap().as_bytes(),
-        );
+        let encoded = base64::engine::general_purpose::URL_SAFE_NO_PAD
+            .encode(serde_json::to_string(&user).unwrap().as_bytes());
         let cookie = format!("tracera_workos_session={encoded}; Path=/; HttpOnly");
         let parsed = parse_session_cookie(&cookie).unwrap();
         let back: WorkOSUser = serde_json::from_str(&parsed).unwrap();
@@ -361,10 +379,7 @@ mod tests {
 
     #[test]
     fn parse_session_cookie_returns_none_for_garbage_payload() {
-        let cookie = format!(
-            "{}=not_base64; Path=/",
-            SESSION_COOKIE_NAME
-        );
+        let cookie = format!("{}=not_base64; Path=/", SESSION_COOKIE_NAME);
         assert!(parse_session_cookie(&cookie).is_none());
     }
 

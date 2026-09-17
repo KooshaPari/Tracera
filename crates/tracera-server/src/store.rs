@@ -133,6 +133,36 @@ pub struct ProjectSummary {
     pub problem_count: i64,
 }
 
+/// Derives a human-readable project name from a persisted `project_id`.
+///
+/// The frontend's `getProjectDisplayName` (`project-name-utils.ts`) renders a
+/// project's `name` verbatim unless it matches a `proj_*` slug. Projects are
+/// derived from persisted `problems.project_id` (no dedicated `projects` table),
+/// so the display name is the `project_id` itself when it is already a
+/// human-readable label (e.g. `"SwiftRide"`); otherwise it falls back to a
+/// conventional `"Project <id>"` placeholder.
+pub fn project_display_name(project_id: &str) -> String {
+    let slug_re = {
+        // Matches `proj_...` / `Proj_...` (case-insensitive) with optional
+        // trailing `s`, mirroring `slugToDisplayName` in the frontend.
+        let trimmed = project_id.trim();
+        let lower = trimmed.to_ascii_lowercase();
+        let n = lower.len();
+        let is_slug = n >= 5
+            && &lower[..5] == "proj_"
+            && lower[5..]
+                .chars()
+                .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
+            && (lower.ends_with('s') == false || lower.len() > 6);
+        is_slug
+    };
+    if slug_re {
+        format!("Project {project_id}")
+    } else {
+        project_id.trim().to_string()
+    }
+}
+
 /// A persistent directed trace-link between two artifact IDs.
 ///
 /// Populated by the real ingest pipeline (GitHub / Jira) and also
@@ -350,6 +380,15 @@ pub trait Store: Send + Sync {
         status_filter: Option<String>,
     ) -> BoxFuture<'_, StoreResult<i64>>;
 
+    /// Aggregated (project_id, status) buckets for every non-tombstoned problem.
+    ///
+    /// Powers the dashboard summary `statusDistribution` and per-project
+    /// `statusCounts`. Both backends expose a `status` column (see
+    /// `migrations-postgres/0006` and `migrations/0007`), so this query is
+    /// schema-compatible across PgStore and SqliteStore without depending on
+    /// the divergent ITIL column set.
+    fn dashboard_status_counts(&self) -> BoxFuture<'_, StoreResult<Vec<(String, String, i64)>>>;
+
     // -----------------------------------------------------------------------
     // SWEE Graph operations
     // -----------------------------------------------------------------------
@@ -377,7 +416,11 @@ pub trait Store: Send + Sync {
     fn list_swee_nodes(&self, node_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
     fn list_swee_edges(&self, edge_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
     fn get_swee_node(&self, id: String) -> BoxFuture<'_, StoreResult<Option<Value>>>;
-    fn get_swee_neighbors(&self, id: String, direction: String) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
+    fn get_swee_neighbors(
+        &self,
+        id: String,
+        direction: String,
+    ) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
 }
 
 #[cfg(test)]

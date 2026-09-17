@@ -76,7 +76,10 @@ pub struct AuditOutcome {
 }
 
 /// Convert a `audit.log.created` envelope into a graph event + edges.
-pub fn ingest(envelope: &WebhookEnvelope, received_at: DateTime<Utc>) -> WorkOSResult<AuditOutcome> {
+pub fn ingest(
+    envelope: &WebhookEnvelope,
+    received_at: DateTime<Utc>,
+) -> WorkOSResult<AuditOutcome> {
     let event: AuditLogEvent = serde_json::from_value(envelope.data.clone())?;
     let node_id = format!("workos-audit-{}", event.id);
 
@@ -99,7 +102,11 @@ pub fn ingest(envelope: &WebhookEnvelope, received_at: DateTime<Utc>) -> WorkOSR
         metadata.insert("payload".into(), event.metadata.clone());
     }
     let label = if let Some(target) = &event.target {
-        format!("{} on {}", event.action, target.name.clone().unwrap_or_else(|| target.id.clone()))
+        format!(
+            "{} on {}",
+            event.action,
+            target.name.clone().unwrap_or_else(|| target.id.clone())
+        )
     } else {
         event.action.clone()
     };
@@ -120,7 +127,11 @@ pub fn ingest(envelope: &WebhookEnvelope, received_at: DateTime<Utc>) -> WorkOSR
         edges.push(GraphEdge {
             edge_type: EDGE_KIND_AUDIT_BY.to_string(),
             source_id: node_id.clone(),
-            target_id: format!("workos-{}-{}", singularize_kind(&actor.actor_type), actor.id),
+            target_id: format!(
+                "workos-{}-{}",
+                singularize_kind(&actor.actor_type),
+                actor.id
+            ),
             confidence: 1.0,
             source: "workos.audit".into(),
             metadata: Value::Object({
@@ -134,12 +145,19 @@ pub fn ingest(envelope: &WebhookEnvelope, received_at: DateTime<Utc>) -> WorkOSR
         edges.push(GraphEdge {
             edge_type: EDGE_KIND_AUDIT_ABOUT.to_string(),
             source_id: node_id.clone(),
-            target_id: format!("workos-{}-{}", singularize_kind(&target.target_type), target.id),
+            target_id: format!(
+                "workos-{}-{}",
+                singularize_kind(&target.target_type),
+                target.id
+            ),
             confidence: 1.0,
             source: "workos.audit".into(),
             metadata: Value::Object({
                 let mut m = serde_json::Map::new();
-                m.insert("target_type".into(), Value::String(target.target_type.clone()));
+                m.insert(
+                    "target_type".into(),
+                    Value::String(target.target_type.clone()),
+                );
                 m
             }),
         });

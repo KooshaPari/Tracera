@@ -43,13 +43,7 @@ impl R2Client {
 
         let endpoint = format!("https://{}.r2.cloudflarestorage.com", account);
 
-        let creds = aws_sdk_s3::config::Credentials::new(
-            access,
-            secret,
-            None,
-            None,
-            "tracera-r2",
-        );
+        let creds = aws_sdk_s3::config::Credentials::new(access, secret, None, None, "tracera-r2");
 
         let cfg = aws_sdk_s3::config::Builder::default()
             .endpoint_url(endpoint)

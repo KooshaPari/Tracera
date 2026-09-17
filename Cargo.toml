@@ -37,3 +37,10 @@ pr-run-mode = "plan"
 # public API (removed `core_api`, `KeyInit` without the `mac` feature) which breaks
 # hmac 0.12 + any code using sha2's `core_api` paths (notably WorkOS webhook HMAC).
 digest = { git = "https://github.com/RustCrypto/traits", tag = "v0.10.7" }
+
+# --- Phenotype shared infrakit crates (from PhenoInfra) ---
+phenotype-crypto = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "dd040ed1" }
+phenotype-telemetry = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "dd040ed1" }
+phenotype-git-core = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "dd040ed1" }
+phenotype-health = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "dd040ed1" }
+phenotype-observability = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "dd040ed1" }

@@ -1,5 +1,6 @@
 name: Deploy Cloudflare Worker (tracera-edge)
 on:
+  workflow_call:
   push:
     branches: [main, ci/infisical-deploys]
     paths:
@@ -14,6 +15,7 @@ on:
         default: production
         type: choice
         options: [production, staging]
+  workflow_call:
 permissions:
   contents: read
 jobs:
@@ -34,11 +36,11 @@ jobs:
         continue-on-error: true
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
-            echo "cf_creds_ok=false" >> $GITHUB_OUTPUT
+            echo "cf_creds_ok=false" >> "$GITHUB_OUTPUT"
             echo "::notice::CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID not set in repo secrets."
             exit 0
           fi
-          echo "cf_creds_ok=pending" >> $GITHUB_OUTPUT
+          echo "cf_creds_ok=pending" >> "$GITHUB_OUTPUT"
           exit 0
 
       - uses: actions/checkout@v4
@@ -80,7 +82,7 @@ jobs:
             "$CF_API_BASE/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/__tracera_probe__")
           echo "Probe status: $HTTP_CODE"
           if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "202" ]; then
-            echo "cf_creds_ok=true" >> $GITHUB_OUTPUT
+            echo "cf_creds_ok=true" >> "$GITHUB_OUTPUT"
             echo "Cloudflare token can deploy workers (HTTP $HTTP_CODE)."
             # Clean up the probe script
             curl -sS -X DELETE \
@@ -89,10 +91,10 @@ jobs:
           elif [ "$HTTP_CODE" = "400" ]; then
             # 400 = token has permission, but request body was rejected.
             # This is still a valid Account-scoped token.
-            echo "cf_creds_ok=true" >> $GITHUB_OUTPUT
+            echo "cf_creds_ok=true" >> "$GITHUB_OUTPUT"
             echo "Cloudflare token has Account-scope (400 = permission OK, bad probe payload)."
           else
-            echo "cf_creds_ok=false" >> $GITHUB_OUTPUT
+            echo "cf_creds_ok=false" >> "$GITHUB_OUTPUT"
             echo "::notice::Cloudflare token lacks Account.Workers Scripts:Edit (HTTP $HTTP_CODE on worker PUT)."
             echo "::notice::To enable CF deploys, create a token at https://dash.cloudflare.com/profile/api-tokens"
             echo "::notice::using the 'Edit Cloudflare Workers' template (Account scope):"
@@ -115,7 +117,7 @@ jobs:
           set -e
           if [ -n "${{ vars.CF_KV_ID }}" ]; then
             echo "Using CF_KV_ID from repo vars"
-            echo "KV_ID=${{ vars.CF_KV_ID }}" >> $GITHUB_ENV
+            echo "KV_ID=${{ vars.CF_KV_ID }}" >> "$GITHUB_ENV"
             exit 0
           fi
           # List existing KV namespaces via REST API
@@ -124,7 +126,7 @@ jobs:
             | python3 -c "import json,sys;d=json.load(sys.stdin);print(next((n['id'] for n in d.get('result',[]) if n.get('title')=='TRACERA_KV'),''))" 2>/dev/null || echo "")
           if [ -n "$EXISTING" ]; then
             echo "Found existing TRACERA_KV namespace id=$EXISTING"
-            echo "KV_ID=$EXISTING" >> $GITHUB_ENV
+            echo "KV_ID=$EXISTING" >> "$GITHUB_ENV"
             echo "Set CF_KV_ID=$EXISTING as a repo var to skip future list calls."
             exit 0
           fi
@@ -141,7 +143,7 @@ jobs:
           fi
           echo "Created TRACERA_KV namespace id=$CREATED"
           echo "Set CF_KV_ID=$CREATED as a repo var to skip future create calls."
-          echo "KV_ID=$CREATED" >> $GITHUB_ENV
+          echo "KV_ID=$CREATED" >> "$GITHUB_ENV"
 
       - name: Build WASM worker
         if: steps.cf_scope_check.outputs.cf_creds_ok == 'true'

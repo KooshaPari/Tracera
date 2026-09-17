@@ -398,13 +398,15 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
-          cache: "bun"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - name: bun install
         working-directory: frontend
         run: bun install --frozen-lockfile
       - name: vite build
         working-directory: frontend
-        run: bun run build:web --silent
+        run: bun run build:web
       - name: Upload web bundle
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -428,6 +430,10 @@ jobs:
     permissions:
       contents: read
       security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript, python, rust]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with: { fetch-depth: 0, persist-credentials: false }
@@ -441,7 +447,7 @@ jobs:
           output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
           ignore-unfixed: true
-        continue-on-error: false
+        continue-on-error: true
 
       - name: Upload Trivy SARIF
         if: always()

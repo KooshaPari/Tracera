@@ -44,6 +44,9 @@ export default defineConfig({
     // Base URL to use in actions like `await page.goto('/')`
     baseURL: "http://localhost:5173",
 
+    // Allow cross-origin fetch to the local :8080 backend during live e2e
+    bypassCSP: true,
+
     // Run tests in headless mode (default for CI and local)
     headless: true,
 

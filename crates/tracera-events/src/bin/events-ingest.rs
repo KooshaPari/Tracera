@@ -29,9 +29,7 @@ use anyhow::{Context, Result};
 use tracing::{error, info};
 use tracing_subscriber::{fmt, EnvFilter};
 
-use tracera_events::{
-    AgentRun, ClickHouseClient, Decision, Deploy, Event, LlmCall, TraceSpan,
-};
+use tracera_events::{AgentRun, ClickHouseClient, Decision, Deploy, Event, LlmCall, TraceSpan};
 
 /// Parsed CLI arguments.
 #[derive(Debug)]

@@ -9,20 +9,20 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use rmcp::{
-    ErrorData,
     handler::server::wrapper::Parameters,
     model::{CallToolResult, ContentBlock},
+    ErrorData,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use tracera_server::{
     store::{Store, StoreResult},
     swee::{EdgeKind, NodeKind},
 };
 
-use std::str::FromStr as _;
 use crate::TraceraMcpServer;
+use std::str::FromStr as _;
 
 /// Unique server-side tool namespace (used in tool `name` for collisions).
 pub const SERVER_NAME: &str = "tracera-mcp";
@@ -214,30 +214,31 @@ impl TraceraMcpServer {
         Parameters(args): Parameters<CreateNodeArgs>,
     ) -> Result<CallToolResult, ErrorData> {
         NodeKind::from_str(&args.node_type).ok_or_else(|| {
-            ErrorData::invalid_params(
-                format!("unknown node_type '{}'", args.node_type),
-                None,
-            )
+            ErrorData::invalid_params(format!("unknown node_type '{}'", args.node_type), None)
         })?;
         let now: DateTime<Utc> = Utc::now();
         let new_id = self
             .store
-            .create_swee_node(args.node_type, args.label, args.metadata.unwrap_or(Value::Null), now)
+            .create_swee_node(
+                args.node_type,
+                args.label,
+                args.metadata.unwrap_or(Value::Null),
+                now,
+            )
             .await
             .map_err(internal_error)?;
         ok_text(serde_json::to_string_pretty(&json!({ "id": new_id })).unwrap_or_default())
     }
 
-    #[rmcp::tool(description = "Create a new edge between two existing nodes; returns the new edge's id")]
+    #[rmcp::tool(
+        description = "Create a new edge between two existing nodes; returns the new edge's id"
+    )]
     async fn create_edge(
         &self,
         Parameters(args): Parameters<CreateEdgeArgs>,
     ) -> Result<CallToolResult, ErrorData> {
         EdgeKind::from_str(&args.edge_type).ok_or_else(|| {
-            ErrorData::invalid_params(
-                format!("unknown edge_type '{}'", args.edge_type),
-                None,
-            )
+            ErrorData::invalid_params(format!("unknown edge_type '{}'", args.edge_type), None)
         })?;
         let now: DateTime<Utc> = Utc::now();
         let new_id = self
@@ -258,7 +259,9 @@ impl TraceraMcpServer {
 
     // ---------- NAVIGATE / PROPOSE tools ----------
 
-    #[rmcp::tool(description = "Return a 1-hop subgraph rooted at the given node id (node + neighbours)")]
+    #[rmcp::tool(
+        description = "Return a 1-hop subgraph rooted at the given node id (node + neighbours)"
+    )]
     async fn subgraph(
         &self,
         Parameters(args): Parameters<NeighborsArgs>,
@@ -283,7 +286,9 @@ impl TraceraMcpServer {
         )
     }
 
-    #[rmcp::tool(description = "Submit a natural-language proposal describing an intended graph change (no mutation)")]
+    #[rmcp::tool(
+        description = "Submit a natural-language proposal describing an intended graph change (no mutation)"
+    )]
     async fn propose(
         &self,
         Parameters(args): Parameters<ProposeArgs>,

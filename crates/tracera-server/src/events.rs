@@ -49,22 +49,81 @@ pub struct NormalisedEvent {
 pub fn normalize_event(event: &RawEvent) -> NormalisedEvent {
     let id = format!("evt-{}", uuid::Uuid::new_v4());
     let (node_type, label) = match &event.event_type {
-        EventType::CiRun => ("build".to_string(), event.payload["name"].as_str().unwrap_or("CI run").to_string()),
-        EventType::TestResult => ("test".to_string(), event.payload["test_name"].as_str().unwrap_or("test").to_string()),
-        EventType::CoverageChange => ("metric".to_string(), format!("coverage {}%", event.payload["coverage"].as_f64().unwrap_or(0.0))),
-        EventType::AdrCreated => ("specification".to_string(), event.payload["title"].as_str().unwrap_or("ADR").to_string()),
-        EventType::SpecChange => ("specification".to_string(), event.payload["title"].as_str().unwrap_or("spec").to_string()),
-        EventType::Commit => ("commit".to_string(), event.payload["message"].as_str().unwrap_or("commit").to_string()),
-        EventType::PullRequest => ("pull_request".to_string(), event.payload["title"].as_str().unwrap_or("PR").to_string()),
-        EventType::Review => ("evidence".to_string(), format!("review by {}", event.payload["reviewer"].as_str().unwrap_or("unknown"))),
-        EventType::Deployment => ("deployment".to_string(), event.payload["environment"].as_str().unwrap_or("prod").to_string()),
-        EventType::Incident => ("incident".to_string(), event.payload["title"].as_str().unwrap_or("incident").to_string()),
+        EventType::CiRun => (
+            "build".to_string(),
+            event.payload["name"]
+                .as_str()
+                .unwrap_or("CI run")
+                .to_string(),
+        ),
+        EventType::TestResult => (
+            "test".to_string(),
+            event.payload["test_name"]
+                .as_str()
+                .unwrap_or("test")
+                .to_string(),
+        ),
+        EventType::CoverageChange => (
+            "metric".to_string(),
+            format!(
+                "coverage {}%",
+                event.payload["coverage"].as_f64().unwrap_or(0.0)
+            ),
+        ),
+        EventType::AdrCreated => (
+            "specification".to_string(),
+            event.payload["title"].as_str().unwrap_or("ADR").to_string(),
+        ),
+        EventType::SpecChange => (
+            "specification".to_string(),
+            event.payload["title"]
+                .as_str()
+                .unwrap_or("spec")
+                .to_string(),
+        ),
+        EventType::Commit => (
+            "commit".to_string(),
+            event.payload["message"]
+                .as_str()
+                .unwrap_or("commit")
+                .to_string(),
+        ),
+        EventType::PullRequest => (
+            "pull_request".to_string(),
+            event.payload["title"].as_str().unwrap_or("PR").to_string(),
+        ),
+        EventType::Review => (
+            "evidence".to_string(),
+            format!(
+                "review by {}",
+                event.payload["reviewer"].as_str().unwrap_or("unknown")
+            ),
+        ),
+        EventType::Deployment => (
+            "deployment".to_string(),
+            event.payload["environment"]
+                .as_str()
+                .unwrap_or("prod")
+                .to_string(),
+        ),
+        EventType::Incident => (
+            "incident".to_string(),
+            event.payload["title"]
+                .as_str()
+                .unwrap_or("incident")
+                .to_string(),
+        ),
     };
-    
-    let source_refs = event.payload["refs"].as_array()
-        .map(|a| a.iter().filter_map(|v| v.as_str().map(String::from)).collect())
+
+    let source_refs = event.payload["refs"]
+        .as_array()
+        .map(|a| {
+            a.iter()
+                .filter_map(|v| v.as_str().map(String::from))
+                .collect()
+        })
         .unwrap_or_default();
-    
+
     NormalisedEvent {
         id,
         event_type: event.event_type.clone(),
@@ -79,7 +138,7 @@ pub fn normalize_event(event: &RawEvent) -> NormalisedEvent {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn normalize_ci_run_event() {
         let event = RawEvent {
@@ -92,7 +151,7 @@ mod tests {
         assert_eq!(normalised.node_type, "build");
         assert_eq!(normalised.label, "build-and-test");
     }
-    
+
     #[test]
     fn normalize_commit_event() {
         let event = RawEvent {

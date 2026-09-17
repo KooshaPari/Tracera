@@ -1,5 +1,6 @@
 name: Deploy Render Backend
 on:
+  workflow_call:
   push:
     branches: [main, ci/infisical-deploys]
     paths:
@@ -14,6 +15,7 @@ on:
         required: false
         default: "false"
         type: boolean
+  workflow_call:
 permissions:
   contents: read
 jobs:
@@ -49,8 +51,8 @@ jobs:
           RENDER_SERVICE_ID=$(infisical secrets get RENDER_SERVICE_ID \
             --projectId "$INFISICAL_PROJECT_ID" --env prod \
             --token "$INFISICAL_TOKEN" --plain)
-          echo "RENDER_API_KEY=$RENDER_API_KEY" >> $GITHUB_ENV
-          echo "RENDER_SERVICE_ID=$RENDER_SERVICE_ID" >> $GITHUB_ENV
+          echo "RENDER_API_KEY=$RENDER_API_KEY" >> "$GITHUB_ENV"
+          echo "RENDER_SERVICE_ID=$RENDER_SERVICE_ID" >> "$GITHUB_ENV"
           exit 0
 
       - name: Pre-flight - verify Render credentials
@@ -59,16 +61,16 @@ jobs:
         run: |
           set +e
           if [ -z "$RENDER_API_KEY" ]; then
-            echo "render_creds_ok=false" >> $GITHUB_OUTPUT
+            echo "render_creds_ok=false" >> "$GITHUB_OUTPUT"
             echo "::notice::RENDER_API_KEY missing from Infisical prod env (or INFISICAL_TOKEN rejected)."
             echo "::notice::If INFISICAL_TOKEN is set, verify it has 'read' scope on env=prod."
             echo "::notice::If INFISICAL_TOKEN is a Universal Auth Client ID, see DEPLOY_CREDENTIALS.md."
           elif [[ "$RENDER_API_KEY" != rnd_* ]]; then
-            echo "render_creds_ok=false" >> $GITHUB_OUTPUT
+            echo "render_creds_ok=false" >> "$GITHUB_OUTPUT"
             echo "::notice::RENDER_API_KEY does not start with 'rnd_' (got prefix '${RENDER_API_KEY:0:4}')."
             echo "::notice::Generate a Render API key at https://dashboard.render.com/api-keys"
           elif [ -z "$RENDER_SERVICE_ID" ]; then
-            echo "render_creds_ok=false" >> $GITHUB_OUTPUT
+            echo "render_creds_ok=false" >> "$GITHUB_OUTPUT"
             echo "::notice::RENDER_SERVICE_ID missing from Infisical prod env."
             echo "::notice::Connect the Render Blueprint first: https://render.com -> New -> Blueprint"
             echo "::notice::then copy the service ID (srv-XXXX) into Infisical prod as RENDER_SERVICE_ID."
@@ -78,10 +80,10 @@ jobs:
               "https://api.render.com/v1/services/$RENDER_SERVICE_ID" \
               -H "Authorization: Bearer $RENDER_API_KEY" 2>/tmp/render_err.txt)
             if [ "$PROBE" = "200" ]; then
-              echo "render_creds_ok=true" >> $GITHUB_OUTPUT
+              echo "render_creds_ok=true" >> "$GITHUB_OUTPUT"
               echo "Render API key + service ID validated."
             else
-              echo "render_creds_ok=false" >> $GITHUB_OUTPUT
+              echo "render_creds_ok=false" >> "$GITHUB_OUTPUT"
               echo "::notice::Render API probe returned HTTP $PROBE for service $RENDER_SERVICE_ID."
               echo "::notice::Check that the API key has access to that service in Render Dashboard."
             fi
@@ -104,7 +106,7 @@ jobs:
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             DEPLOY_ID=$(echo "$BODY" | jq -r '.id // "unknown"')
             echo "Deploy triggered: $DEPLOY_ID"
-            echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
+            echo "DEPLOY_ID=$DEPLOY_ID" >> "$GITHUB_ENV"
           else
             echo "::error::Render deploy failed (HTTP $HTTP_CODE): $BODY"
             exit 1

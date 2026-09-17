@@ -16,8 +16,10 @@ phenodag-queue = []
 
 [dependencies]
 axum = { version = "0.8", features = ["ws"] }
+axum-extra = { version = "0.12", features = ["typed-header"] }
 base64 = { workspace = true }
 chrono = { workspace = true, features = ["clock"] }
+headers = "0.4"
 http = "1"
 # wraps: reqwest 0.13
 reqwest = { version = "0.13", features = ["json", "rustls", "rustls-native-certs"], default-features = false }
@@ -37,8 +39,8 @@ tracera-workos = { path = "../tracera-workos" }
 uuid = { workspace = true }
 
 # Optional integrations (activated by env vars: CACHE_URL, NEO4J_URL, R2_*, DATABASE_URL)
-aws-sdk-s3 = { version = "1", default-features = false, features = ["behavior-version-latest", "rustls", "sigv4a"] }
-neo4rs = { version = "0.7", default-features = false }
+aws-sdk-s3 = { version = "1", default-features = false, features = ["behavior-version-latest", "sigv4a"] }
+neo4rs = { version = "0.8", default-features = false }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

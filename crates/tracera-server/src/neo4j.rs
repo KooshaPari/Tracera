@@ -33,7 +33,10 @@ impl Neo4jClient {
             }
         };
         let user = std::env::var("NEO4J_USER").unwrap_or_else(|_| "neo4j".to_string());
-        let pass = match std::env::var("NEO4J_PASSWORD").ok().filter(|p| !p.is_empty()) {
+        let pass = match std::env::var("NEO4J_PASSWORD")
+            .ok()
+            .filter(|p| !p.is_empty())
+        {
             Some(p) => p,
             None => {
                 warn!("NEO4J_URL set but NEO4J_PASSWORD missing; neo4j sync disabled");
@@ -47,7 +50,9 @@ impl Neo4jClient {
         match graph_result {
             Ok(graph) => {
                 info!("Neo4j Bolt sync enabled (endpoint {})", url_for_log);
-                Some(Self { inner: Arc::new(Neo4jInner::Enabled { graph }) })
+                Some(Self {
+                    inner: Arc::new(Neo4jInner::Enabled { graph }),
+                })
             }
             Err(e) => {
                 warn!("Neo4j driver init failed ({:?}); sync disabled", e);
@@ -78,7 +83,15 @@ impl Neo4jClient {
     }
 
     /// Sync a SWEE edge as `(:SWEE)-[r:EDGE {type, confidence}]->(:SWEE)`.
-    pub async fn sync_swee_edge(&self, id: i64, edge_type: &str, source: i64, target: i64, confidence: f64, metadata_json: &str) {
+    pub async fn sync_swee_edge(
+        &self,
+        id: i64,
+        edge_type: &str,
+        source: i64,
+        target: i64,
+        confidence: f64,
+        metadata_json: &str,
+    ) {
         if let Neo4jInner::Enabled { graph } = &*self.inner {
             let q_str = "MATCH (a:SWEE {id: $src}), (b:SWEE {id: $dst}) MERGE (a)-[r:EDGE {id: $id}]->(b) SET r.type = $type, r.confidence = $conf, r.metadata = $metadata";
             let q = Query::new(q_str.to_string())

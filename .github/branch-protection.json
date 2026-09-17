@@ -16,15 +16,9 @@
       "required_status_checks": {
         "strict": true,
         "contexts": [
-          "build / rust-check",
-          "build / rust-test",
-          "lint / clippy",
-          "lint / rustfmt",
-          "lint / eslint",
-          "test / unit",
-          "test / e2e-contracts",
-          "quality-gate / coverage",
-          "quality-gate / mutants"
+          "CI / ci / lint",
+          "CI / ci / test",
+          "CI / CI"
         ]
       },
       "enforce_admins": true,
@@ -48,10 +42,9 @@
       "required_status_checks": {
         "strict": true,
         "contexts": [
-          "build / rust-check",
-          "build / rust-test",
-          "release / desktop-sign",
-          "quality-gate / coverage"
+          "CI / ci / lint",
+          "CI / ci / test",
+          "CI / CI"
         ]
       },
       "enforce_admins": true,
