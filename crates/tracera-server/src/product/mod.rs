@@ -16,7 +16,17 @@
 pub mod baseline;
 pub mod identity;
 pub mod observation;
+pub mod traversal;
+pub mod queries;
 
 pub use baseline::{BaselineDelta, BaselineProposal, ProductBaseline, ProposalStatus};
 pub use identity::{AcceptedIntent, BaselineRevision, IntentKind, IntentStatus, ProductId};
 pub use observation::{Observation, ObservationKind, ObservationResult, ObservationSource};
+pub use traversal::{
+    build_adjacency, GraphTraversal, TraversalBudget, TraversalNode, TraversalResult,
+};
+pub use queries::{
+    build_invalidation_index, build_product_view, compute_product_stats, query_intents,
+    InvalidationIndex, ProductQuery, ProductStats, ProductView, DEFAULT_QUERY_LIMIT,
+    MAX_QUERY_LIMIT,
+};
