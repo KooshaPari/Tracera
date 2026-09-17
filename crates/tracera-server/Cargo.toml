@@ -35,7 +35,7 @@ tracing = { workspace = true }
 metrics = "0.24"
 metrics-exporter-prometheus = "0.18"
 tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
-tracera-workos = { path = "../tracera-workos" }
+tracera-workos = { path = "../tracera-workos", version = "0.1.0" }
 uuid = { workspace = true }
 
 # Optional integrations (activated by env vars: CACHE_URL, NEO4J_URL, R2_*, DATABASE_URL)
