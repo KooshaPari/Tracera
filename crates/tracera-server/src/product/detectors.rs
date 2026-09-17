@@ -34,22 +34,12 @@ impl DetectorVersion {
 }
 
 // ---------------------------------------------------------------------------
-// Severity
-// ---------------------------------------------------------------------------
-
-/// Severity of a detector finding.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
-pub enum FindingSeverity {
-    Critical,
-    High,
-    Medium,
-    Low,
-    Info,
-}
-
-// ---------------------------------------------------------------------------
 // Finding kind
 // ---------------------------------------------------------------------------
+
+/// Severity of a detector finding — re-exported from the assessment module
+/// to avoid duplicate enum definitions.
+pub use super::assessment::FindingSeverity;
 
 /// Which detector produced this finding.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]

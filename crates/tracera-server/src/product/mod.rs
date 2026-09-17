@@ -29,8 +29,8 @@ pub use assessment::{
 };
 pub use baseline::{BaselineDelta, BaselineProposal, ProductBaseline, ProposalStatus};
 pub use detectors::{
-    DetectorFinding, DetectorResult, DetectorVersion, FindingKind,
-    FindingSeverity as DetectorSeverity, FreshnessDetector, ProductDetectorSuite,
+    DetectorFinding, DetectorResult, DetectorVersion, FindingKind, FreshnessDetector,
+    ProductDetectorSuite,
 };
 pub use identity::{AcceptedIntent, BaselineRevision, IntentKind, IntentStatus, ProductId};
 pub use ingest::{IngestResult, ObservationIngestRequest, ObservationStore};
