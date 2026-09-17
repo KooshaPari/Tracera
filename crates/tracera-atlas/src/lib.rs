@@ -33,7 +33,10 @@
 //! let assigned = engine.delegation()
 //!     .assign(&item.id, "agent-7")
 //!     .unwrap();
-//! assert_eq!(assigned.assigned_agent.as_ref().map(|a| a.0.as_str()), Some("agent-7"));
+//! assert_eq!(
+//!     assigned.work_item.assigned_agent.as_ref().map(|a| a.0.as_str()),
+//!     Some("agent-7")
+//! );
 //! ```
 
 #![forbid(unsafe_code)]

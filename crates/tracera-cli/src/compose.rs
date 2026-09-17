@@ -304,6 +304,9 @@ mod tests {
         assert_eq!(args_without_distro[1], "compose");
     }
 
+    // Symlink semantics only exist on unix: the `#[cfg(windows)]` branch of
+    // `sync_bundle_env_symlink` copies the env file instead of linking it.
+    #[cfg(unix)]
     #[test]
     fn sync_bundle_env_symlink_creates_link_when_missing() {
         let tmp = std::env::temp_dir().join(format!("tracera-test-{}", std::process::id()));
@@ -349,6 +352,7 @@ mod tests {
         std::fs::remove_dir_all(&tmp).unwrap();
     }
 
+    #[cfg(unix)]
     #[test]
     fn sync_bundle_env_symlink_updates_stale_symlink() {
         let tmp = std::env::temp_dir().join(format!("tracera-test-stale-{}", std::process::id()));
