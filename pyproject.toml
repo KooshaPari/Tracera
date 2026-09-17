@@ -8,9 +8,18 @@ version = "0.1.0"
 description = "Phenotype fleet module"
 requires-python = ">=3.10"
 license = { text = "MIT" }
+# Imported directly by src/tracertm (api, repositories). These were previously
+# undeclared, so `uv sync` produced an environment where the package could not
+# be imported and `pytest` failed during collection.
+dependencies = [
+    "fastapi>=0.110",
+    "pyjwt>=2.8",
+    "sqlalchemy>=2.0",
+    "starlette>=0.36",
+]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src"]
+packages = ["src/tracertm"]
 
 [project.optional-dependencies]
 dev = [
