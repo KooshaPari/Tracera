@@ -140,7 +140,9 @@ fn sign_webhook(secret: &str, ts: i64, body: &[u8]) -> String {
 // Handlers
 // ---------------------------------------------------------------------------
 
-async fn authorize(Query(params): axum::extract::Query<std::collections::HashMap<String, String>>) -> Json<Value> {
+async fn authorize(
+    Query(params): axum::extract::Query<std::collections::HashMap<String, String>>,
+) -> Json<Value> {
     Json(json!({
         "kind": "mock_authorize",
         "received_query": params,
@@ -158,10 +160,16 @@ async fn token(
     let claims = MockClaims {
         iss: "https://api.workos.com".into(),
         sub: req.sub.clone().unwrap_or_else(|| "user_mock".into()),
-        aud: req.client_id.clone().unwrap_or_else(|| "client_mock".into()),
+        aud: req
+            .client_id
+            .clone()
+            .unwrap_or_else(|| "client_mock".into()),
         exp: (now + Duration::hours(1)).timestamp(),
         iat: now.timestamp(),
-        email: req.email.clone().unwrap_or_else(|| "mock@workos.test".into()),
+        email: req
+            .email
+            .clone()
+            .unwrap_or_else(|| "mock@workos.test".into()),
         email_verified: true,
         given_name: "Mock".into(),
         family_name: "User".into(),
@@ -207,9 +215,7 @@ async fn fire_dsync(
             "custom_attributes": {}
         })
     });
-    let event_type = req
-        .event
-        .unwrap_or_else(|| "dsync.user.created".into());
+    let event_type = req.event.unwrap_or_else(|| "dsync.user.created".into());
     let body = json!({
         "id": format!("evt_{}", uuid::Uuid::new_v4()),
         "event": event_type,
@@ -247,9 +253,7 @@ async fn fire_audit(
             "metadata": {}
         })
     });
-    let event_type = req
-        .event
-        .unwrap_or_else(|| "audit.log.created".into());
+    let event_type = req.event.unwrap_or_else(|| "audit.log.created".into());
     let body = json!({
         "id": format!("evt_{}", uuid::Uuid::new_v4()),
         "event": event_type,
@@ -313,10 +317,12 @@ async fn main() {
         &webhook_secret.chars().take(8).collect::<String>(),
     );
 
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap_or_else(|e| {
-        eprintln!("FATAL: cannot bind workos-mock to {addr}: {e}");
-        std::process::exit(1);
-    });
+    let listener = tokio::net::TcpListener::bind(addr)
+        .await
+        .unwrap_or_else(|e| {
+            eprintln!("FATAL: cannot bind workos-mock to {addr}: {e}");
+            std::process::exit(1);
+        });
 
     if let Err(e) = axum::serve(listener, app).await {
         eprintln!("FATAL: workos-mock stopped unexpectedly: {e}");

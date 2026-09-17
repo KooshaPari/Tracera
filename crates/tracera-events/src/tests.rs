@@ -59,13 +59,7 @@ fn from_env_fails_without_url() {
 #[test]
 fn analytics_summary_query_targets_every_table() {
     let q = analytics::summary();
-    for table in [
-        "agent_runs",
-        "decisions",
-        "deploys",
-        "traces",
-        "llm_calls",
-    ] {
+    for table in ["agent_runs", "decisions", "deploys", "traces", "llm_calls"] {
         assert!(q.contains(table), "summary query missing `{table}`: {q}");
     }
 }
@@ -148,13 +142,7 @@ fn schema_file_contains_all_five_tables() {
     // Embed the schema file at compile time so the test fails fast if it
     // gets out of sync with the source of truth.
     const SCHEMA: &str = include_str!("schema.sql");
-    for table in [
-        "agent_runs",
-        "decisions",
-        "deploys",
-        "traces",
-        "llm_calls",
-    ] {
+    for table in ["agent_runs", "decisions", "deploys", "traces", "llm_calls"] {
         assert!(
             SCHEMA.contains(&format!("CREATE TABLE IF NOT EXISTS tracera.{table}")),
             "schema.sql missing CREATE TABLE for `{table}`"

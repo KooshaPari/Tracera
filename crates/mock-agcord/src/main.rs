@@ -141,10 +141,12 @@ async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     println!("mock-agcord listening on http://{addr}");
 
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap_or_else(|e| {
-        eprintln!("FATAL: cannot bind mock-agcord to {addr}: {e}");
-        std::process::exit(1);
-    });
+    let listener = tokio::net::TcpListener::bind(addr)
+        .await
+        .unwrap_or_else(|e| {
+            eprintln!("FATAL: cannot bind mock-agcord to {addr}: {e}");
+            std::process::exit(1);
+        });
 
     if let Err(e) = axum::serve(listener, app).await {
         eprintln!("FATAL: mock-agcord stopped unexpectedly: {e}");

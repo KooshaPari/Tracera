@@ -36,9 +36,7 @@ pub mod error;
 #[cfg(test)]
 mod tests;
 
-pub use clickhouse::{
-    AnalyticsClient, AnalyticsSummary, AnalyticsSummaryRow, ClickHouseClient,
-};
+pub use clickhouse::{AnalyticsClient, AnalyticsSummary, AnalyticsSummaryRow, ClickHouseClient};
 pub use config::{ClickHouseConfig, Credentials};
 pub use error::{Error, Result};
 pub use records::{

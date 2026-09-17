@@ -24,9 +24,7 @@ use tracing::{debug, instrument};
 
 use crate::config::ClickHouseConfig;
 use crate::error::{Error, Result};
-use crate::records::{
-    AgentRun, Decision, Deploy, Event, LlmCall, TraceSpan,
-};
+use crate::records::{AgentRun, Decision, Deploy, Event, LlmCall, TraceSpan};
 
 // Re-export the driver error type under a stable alias so that downstream
 // crates can match on `tracera_events::clickhouse::error::Error` without
@@ -359,7 +357,11 @@ impl AnalyticsClient {
         let sql = analytics::summary();
         let mut cursor = self.client.query(&sql).fetch::<AnalyticsSummaryRow>()?;
         let mut out = Vec::new();
-        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("summary", e.to_string()))? {
+        while let Some(row) = cursor
+            .next()
+            .await
+            .map_err(|e| Error::decode("summary", e.to_string()))?
+        {
             out.push(row);
         }
         Ok(out)
@@ -368,12 +370,13 @@ impl AnalyticsClient {
     /// Run [`analytics::agent_outcomes`] and return one row per agent/environment.
     pub async fn agent_outcomes(&self) -> Result<Vec<AgentOutcomeRow>> {
         let sql = analytics::agent_outcomes();
-        let mut cursor = self
-            .client
-            .query(&sql)
-            .fetch::<AgentOutcomeRow>()?;
+        let mut cursor = self.client.query(&sql).fetch::<AgentOutcomeRow>()?;
         let mut out = Vec::new();
-        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("agent_outcomes", e.to_string()))? {
+        while let Some(row) = cursor
+            .next()
+            .await
+            .map_err(|e| Error::decode("agent_outcomes", e.to_string()))?
+        {
             out.push(row);
         }
         Ok(out)
@@ -384,7 +387,11 @@ impl AnalyticsClient {
         let sql = analytics::llm_daily(days);
         let mut cursor = self.client.query(&sql).fetch::<LlmDailyRow>()?;
         let mut out = Vec::new();
-        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("llm_daily", e.to_string()))? {
+        while let Some(row) = cursor
+            .next()
+            .await
+            .map_err(|e| Error::decode("llm_daily", e.to_string()))?
+        {
             out.push(row);
         }
         Ok(out)
@@ -395,7 +402,11 @@ impl AnalyticsClient {
         let sql = analytics::recent_deploys(n);
         let mut cursor = self.client.query(&sql).fetch::<DeploySummaryRow>()?;
         let mut out = Vec::new();
-        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("recent_deploys", e.to_string()))? {
+        while let Some(row) = cursor
+            .next()
+            .await
+            .map_err(|e| Error::decode("recent_deploys", e.to_string()))?
+        {
             out.push(row);
         }
         Ok(out)
@@ -406,24 +417,26 @@ impl AnalyticsClient {
         let sql = analytics::trace_by_id(trace_id);
         let mut cursor = self.client.query(&sql).fetch::<TraceSpan>()?;
         let mut out = Vec::new();
-        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("traces", e.to_string()))? {
+        while let Some(row) = cursor
+            .next()
+            .await
+            .map_err(|e| Error::decode("traces", e.to_string()))?
+        {
             out.push(row);
         }
         Ok(out)
     }
 
     /// Run [`analytics::trace_latency_quantiles`].
-    pub async fn trace_latency_quantiles(
-        &self,
-        hours: u32,
-    ) -> Result<Vec<TraceLatencyRow>> {
+    pub async fn trace_latency_quantiles(&self, hours: u32) -> Result<Vec<TraceLatencyRow>> {
         let sql = analytics::trace_latency_quantiles(hours);
-        let mut cursor = self
-            .client
-            .query(&sql)
-            .fetch::<TraceLatencyRow>()?;
+        let mut cursor = self.client.query(&sql).fetch::<TraceLatencyRow>()?;
         let mut out = Vec::new();
-        while let Some(row) = cursor.next().await.map_err(|e| Error::decode("trace_latency", e.to_string()))? {
+        while let Some(row) = cursor
+            .next()
+            .await
+            .map_err(|e| Error::decode("trace_latency", e.to_string()))?
+        {
             out.push(row);
         }
         Ok(out)
@@ -437,10 +450,7 @@ impl AnalyticsClient {
         let rows = self.summary().await?;
         let mut summary = AnalyticsSummary::default();
         for row in rows {
-            let entry = summary
-                .streams
-                .entry(row.stream.clone())
-                .or_default();
+            let entry = summary.streams.entry(row.stream.clone()).or_default();
             entry.insert(row.status.clone(), row.count);
             summary.total += row.count;
         }

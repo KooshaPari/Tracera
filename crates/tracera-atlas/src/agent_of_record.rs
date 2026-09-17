@@ -18,9 +18,7 @@ use thiserror::Error;
 use tracing::info;
 use uuid::Uuid;
 
-use crate::delegation::{
-    AgentId, DelegationError, DelegationStore, WorkItemId, WorkItemStatus,
-};
+use crate::delegation::{AgentId, DelegationError, DelegationStore, WorkItemId, WorkItemStatus};
 use crate::observability::{SdlcEvent, SdlcEventKind};
 
 // ---------- Identifiers ----------
@@ -356,7 +354,10 @@ impl<'a> AgentOfRecord<'a> {
         };
         self.aor.append(rec.clone());
         self.delegation
-            .record_event(SdlcEvent::work_item_transition(&item, SdlcEventKind::ChangeRecorded));
+            .record_event(SdlcEvent::work_item_transition(
+                &item,
+                SdlcEventKind::ChangeRecorded,
+            ));
         Ok(rec)
     }
 
@@ -427,12 +428,13 @@ impl<'a> AgentOfRecord<'a> {
         };
         self.aor.append(rec);
 
-        self.delegation.record_event(SdlcEvent::work_item_transition(
-            &item,
-            SdlcEventKind::SignOffRecorded {
-                signer: AgentId(signer_id.0.clone()),
-            },
-        ));
+        self.delegation
+            .record_event(SdlcEvent::work_item_transition(
+                &item,
+                SdlcEventKind::SignOffRecorded {
+                    signer: AgentId(signer_id.0.clone()),
+                },
+            ));
 
         info!(
             work_item_id = %item.id,
@@ -466,9 +468,18 @@ mod tests {
             .create_work("ship MVP", SdlcStage::Ready)
             .unwrap();
         let author = AgentId::new("author-1");
-        engine.delegation().assign(&item.id, author.as_str()).unwrap();
-        engine.delegation().start(&item.id, author.as_str()).unwrap();
-        engine.delegation().submit_for_review(&item.id, author.as_str()).unwrap();
+        engine
+            .delegation()
+            .assign(&item.id, author.as_str())
+            .unwrap();
+        engine
+            .delegation()
+            .start(&item.id, author.as_str())
+            .unwrap();
+        engine
+            .delegation()
+            .submit_for_review(&item.id, author.as_str())
+            .unwrap();
         (engine, item.id, author)
     }
 
@@ -539,8 +550,14 @@ mod tests {
             .delegation()
             .create_work("x", SdlcStage::Ready)
             .unwrap();
-        let _a = engine.agent_of_record().annotate(&item.id, "alice", "n1").unwrap();
-        let b = engine.agent_of_record().annotate(&item.id, "bob", "n2").unwrap();
+        let _a = engine
+            .agent_of_record()
+            .annotate(&item.id, "alice", "n1")
+            .unwrap();
+        let b = engine
+            .agent_of_record()
+            .annotate(&item.id, "bob", "n2")
+            .unwrap();
         let q = AoRQuery {
             actor: Some(ActorId::new("bob")),
             ..Default::default()

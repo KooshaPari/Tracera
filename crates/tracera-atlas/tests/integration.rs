@@ -10,7 +10,7 @@ use tracera_atlas::observability::{
     InMemoryEventBus, RecordingSink, SdlcEvent, SdlcEventKind, SdlcStage,
 };
 use tracera_atlas::{
-    AoRQuery, ActorId, AgentId, AtlasEngine, ChangeKind, CiBridge, WorkItemId, WorkItemStatus,
+    ActorId, AgentId, AoRQuery, AtlasEngine, ChangeKind, CiBridge, WorkItemId, WorkItemStatus,
 };
 
 /// Drive a work item through `Ready → InProgress → Review` so we can test
@@ -22,9 +22,18 @@ fn reviewable_item(engine: &AtlasEngine) -> WorkItemId {
         .create_work("ship MVP", SdlcStage::Ready)
         .unwrap();
     let author = AgentId::new("author-1");
-    engine.delegation().assign(&item.id, author.as_str()).unwrap();
-    engine.delegation().start(&item.id, author.as_str()).unwrap();
-    engine.delegation().submit_for_review(&item.id, author.as_str()).unwrap();
+    engine
+        .delegation()
+        .assign(&item.id, author.as_str())
+        .unwrap();
+    engine
+        .delegation()
+        .start(&item.id, author.as_str())
+        .unwrap();
+    engine
+        .delegation()
+        .submit_for_review(&item.id, author.as_str())
+        .unwrap();
     item.id
 }
 
@@ -40,7 +49,10 @@ fn full_lifecycle_emits_expected_events() {
         .unwrap();
     engine.delegation().assign(&work.id, "agent-1").unwrap();
     engine.delegation().start(&work.id, "agent-1").unwrap();
-    engine.delegation().submit_for_review(&work.id, "agent-1").unwrap();
+    engine
+        .delegation()
+        .submit_for_review(&work.id, "agent-1")
+        .unwrap();
     let done = engine.delegation().approve(&work.id, "reviewer-1").unwrap();
 
     assert_eq!(done.status, WorkItemStatus::Done);
@@ -183,15 +195,15 @@ fn blocked_work_item_can_be_unblocked() {
         .create_work("ship gamma", SdlcStage::Ready)
         .unwrap();
     engine.delegation().assign(&item.id, "agent-1").unwrap();
-    engine.delegation().block(&item.id, "waiting on legal").unwrap();
+    engine
+        .delegation()
+        .block(&item.id, "waiting on legal")
+        .unwrap();
     let after_block = engine.delegation().get(&item.id).unwrap();
     assert_eq!(after_block.status, WorkItemStatus::Blocked);
 
     // Block → Ready (reopen)
-    let reopen = engine
-        .delegation()
-        .start(&item.id, "agent-1")
-        .unwrap_err();
+    let reopen = engine.delegation().start(&item.id, "agent-1").unwrap_err();
     // We expect either InvalidTransition or WrongActor depending on whether
     // the helper allows the Blocked → InProgress edge. The current state
     // machine permits Blocked → InProgress, so start() from Blocked should

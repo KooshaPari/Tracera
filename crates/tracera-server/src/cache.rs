@@ -60,7 +60,11 @@ impl CacheClient {
             .build()
             .expect("reqwest client build");
         Some(Self {
-            inner: Arc::new(CacheInner::Upstash { base_url, token, client }),
+            inner: Arc::new(CacheInner::Upstash {
+                base_url,
+                token,
+                client,
+            }),
         })
     }
 
@@ -72,7 +76,11 @@ impl CacheClient {
     pub async fn get(&self, key: &str) -> Option<String> {
         match &*self.inner {
             CacheInner::Disabled => None,
-            CacheInner::Upstash { base_url, token, client } => {
+            CacheInner::Upstash {
+                base_url,
+                token,
+                client,
+            } => {
                 let resp = client
                     .post(format!("{}/get/{}", base_url, urlencoded(key)))
                     .bearer_auth(token)
@@ -80,7 +88,9 @@ impl CacheClient {
                     .await
                     .ok()?;
                 let body: UpstashResponse = resp.json().await.ok()?;
-                if !body.ok { return None; }
+                if !body.ok {
+                    return None;
+                }
                 body.result.and_then(|v| match v {
                     serde_json::Value::String(s) => Some(s),
                     serde_json::Value::Null => None,
@@ -94,7 +104,11 @@ impl CacheClient {
     pub async fn set(&self, key: &str, value: &str, ttl_secs: Option<u64>) {
         match &*self.inner {
             CacheInner::Disabled => {}
-            CacheInner::Upstash { base_url, token, client } => {
+            CacheInner::Upstash {
+                base_url,
+                token,
+                client,
+            } => {
                 let key_enc = urlencoded(key);
                 let val_enc = urlencoded(value);
                 let mut cmd: Vec<String> = vec!["SET".to_string(), key_enc, val_enc];
@@ -105,7 +119,13 @@ impl CacheClient {
                 let body: Vec<serde_json::Value> = cmd
                     .iter()
                     .enumerate()
-                    .map(|(i, s)| if i == 0 { serde_json::json!(s) } else { serde_json::json!(s) })
+                    .map(|(i, s)| {
+                        if i == 0 {
+                            serde_json::json!(s)
+                        } else {
+                            serde_json::json!(s)
+                        }
+                    })
                     .collect();
                 let _ = client
                     .post(format!("{}/pipeline", base_url))
@@ -121,7 +141,11 @@ impl CacheClient {
     pub async fn del(&self, key: &str) {
         match &*self.inner {
             CacheInner::Disabled => {}
-            CacheInner::Upstash { base_url, token, client } => {
+            CacheInner::Upstash {
+                base_url,
+                token,
+                client,
+            } => {
                 let _ = client
                     .post(format!("{}/del/{}", base_url, urlencoded(key)))
                     .bearer_auth(token)
@@ -194,7 +218,8 @@ mod tests {
 
     #[test]
     fn parse_redis_url_with_token() {
-        let (base, tok) = parse_redis_url("redis://:ABC123@us1-aware-kangaroo-12345.upstash.io:6379");
+        let (base, tok) =
+            parse_redis_url("redis://:ABC123@us1-aware-kangaroo-12345.upstash.io:6379");
         assert_eq!(base, "https://us1-aware-kangaroo-12345.upstash.io");
         assert_eq!(tok, Some("ABC123".to_string()));
     }

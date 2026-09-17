@@ -39,9 +39,7 @@ impl SignatureHeader {
                 continue;
             }
             let (key, value) = part.split_once('=').ok_or_else(|| {
-                WorkOSError::WebhookSignatureHeader(format!(
-                    "missing '=' in segment {part:?}"
-                ))
+                WorkOSError::WebhookSignatureHeader(format!("missing '=' in segment {part:?}"))
             })?;
             match key.trim() {
                 "t" => {
@@ -129,7 +127,11 @@ fn compute_signature(secret: &str, timestamp: i64, body: &[u8]) -> String {
     let mut outer_h = Sha256::new();
     outer_h.update(&opad);
     outer_h.update(&inner_hash);
-    outer_h.finalize().iter().map(|b| format!("{b:02x}")).collect()
+    outer_h
+        .finalize()
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
 }
 
 fn constant_time_hex_eq(left: &[u8], right: &[u8]) -> bool {
@@ -227,10 +229,7 @@ pub fn known_directory_event_types() -> &'static [&'static str] {
 
 /// List of audit-log event types we know about.
 pub fn known_audit_event_types() -> &'static [&'static str] {
-    &[
-        "audit.log.created",
-        "audit.log.updated",
-    ]
+    &["audit.log.created", "audit.log.updated"]
 }
 
 fn known_event_set() -> HashSet<&'static str> {
@@ -301,7 +300,13 @@ mod tests {
         let now = Utc::now().timestamp();
         let header = signed_header(SECRET, body, now);
         let tampered = br#"{"event":"dsync.user.deleted"}"#;
-        let result = verify_signature(SECRET, &header, tampered, DEFAULT_TOLERANCE_SECONDS, Utc::now());
+        let result = verify_signature(
+            SECRET,
+            &header,
+            tampered,
+            DEFAULT_TOLERANCE_SECONDS,
+            Utc::now(),
+        );
         assert!(matches!(result, Err(WorkOSError::WebhookSignatureInvalid)));
     }
 
@@ -310,7 +315,13 @@ mod tests {
         let body = br#"{"event":"dsync.user.created"}"#;
         let now = Utc::now().timestamp();
         let header = signed_header(SECRET, body, now);
-        let result = verify_signature("not-the-secret", &header, body, DEFAULT_TOLERANCE_SECONDS, Utc::now());
+        let result = verify_signature(
+            "not-the-secret",
+            &header,
+            body,
+            DEFAULT_TOLERANCE_SECONDS,
+            Utc::now(),
+        );
         assert!(matches!(result, Err(WorkOSError::WebhookSignatureInvalid)));
     }
 

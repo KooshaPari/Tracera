@@ -103,6 +103,16 @@ Tracera/worktrees/
 **/worktrees/
 frontend/packages/**/build/
 
+# Live dev-server logs (rootless deploy runner + local dev) — held open by process, re-spawn on restart.
+server.err.log
+server.log
+server.out.log
+vite.err
+vite.log
+vite.out.log
+e2e_run.log
+dev_server*.log
+
 .vercel
 .env*.local
 .vault.local.env
