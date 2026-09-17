@@ -52,6 +52,19 @@ paths = [
   '''\.csv$''',
   '''\.map$''',
   '''checksums\.json$''',
+
+  # `backend/cmd/**` was deleted wholesale by commit 7ce6a2cbf
+  # ("fix(security): require secrets from env, drop hardcoded dev fallbacks",
+  # #554). The remaining findings there are the dev fallback values that commit
+  # removed from the working tree: each was an `os.Getenv` whose literal default
+  # only took effect when the env var was unset, inside throwaway NATS test
+  # commands. Nothing at this path exists in the current tree, so this entry
+  # cannot suppress a live credential.
+  #
+  # Tradeoff, stated plainly: if someone re-adds files under this path, findings
+  # in them would not be reported. Rotate the two nkey seeds and the user JWT
+  # from #554 rather than relying on this entry.
+  '''^backend/cmd/''',
 ]
 
 # Literal values verified by hand to be placeholders, documentation tokens, or
