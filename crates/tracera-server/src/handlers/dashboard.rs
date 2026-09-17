@@ -1,10 +1,10 @@
-use axum::{response::IntoResponse, Json};
+use axum::Json;
 use chrono::DateTime;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_json::Value;
 
 use crate::{bad_request, ErrorResponse};
-use crate::store::{Store, ListParams, TeamRow};
+use crate::store::{ListParams, TeamRow};
 
 use super::super::AppState;
 

@@ -12,7 +12,7 @@ use serde_json::Value;
 use sqlx::{Row, SqlitePool};
 
 use crate::store::{
-    project_display_name, BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint,
+    BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint,
     Store, StoreError, StoreResult, Story, TeamRow, TraceLink,
 };
 
@@ -38,6 +38,7 @@ pub(super) fn str_to_ts(s: &str) -> DateTime<Utc> {
         .unwrap_or_else(|_| Utc::now())
 }
 
+#[allow(dead_code)]
 pub(super) fn opt_ts_to_str(dt: Option<DateTime<Utc>>) -> Option<String> {
     dt.map(ts_to_str)
 }

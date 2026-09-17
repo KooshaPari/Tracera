@@ -4,7 +4,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{bad_request, ErrorResponse};
-use crate::store::{Sprint, Store};
+use crate::store::Sprint;
 use crate::validation::{validate_text, MAX_LONG_TEXT_CHARS, MAX_SHORT_TEXT_CHARS};
 
 use super::super::AppState;

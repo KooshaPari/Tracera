@@ -13,6 +13,7 @@ pub struct R2Client {
     inner: Arc<R2Inner>,
 }
 
+#[allow(dead_code)]
 enum R2Inner {
     Disabled,
     Enabled {

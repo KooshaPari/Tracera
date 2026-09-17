@@ -2,9 +2,7 @@ use axum::Json;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::{bad_request, ErrorResponse};
 use crate::ingest;
-use crate::store::Store;
 use crate::validation::MAX_INGEST_ISSUES;
 
 use super::super::AppState;

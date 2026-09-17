@@ -1,6 +1,5 @@
 use axum::http::StatusCode;
 
-use crate::ErrorResponse;
 
 pub(crate) async fn create_project_stub() -> StatusCode {
     StatusCode::CREATED

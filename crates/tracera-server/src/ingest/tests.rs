@@ -1,4 +1,6 @@
 use super::*;
+use super::trace_refs::extract_req_refs;
+use super::jira::{validate_jira_base_url, redact_upstream_body, JIRA_ERROR_BODY_LIMIT};
 
 #[test]
 fn extract_req_refs_finds_req_and_spec() {

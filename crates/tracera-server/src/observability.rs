@@ -5,6 +5,7 @@
 use tracing_subscriber::EnvFilter;
 
 /// Initialize tracing with optional OpenTelemetry export.
+#[allow(dead_code)]
 pub fn init_tracing() {
     let filter = EnvFilter::try_from_default_env()
         .unwrap_or_else(|_| EnvFilter::new("tracera_server=info,tower_http=info"));
@@ -19,6 +20,7 @@ pub fn init_tracing() {
 }
 
 /// Check if OpenTelemetry is configured via environment variables.
+#[allow(dead_code)]
 pub fn is_otel_configured() -> bool {
     std::env::var("OTEL_EXPORTER_OTLP_ENDPOINT").is_ok()
 }

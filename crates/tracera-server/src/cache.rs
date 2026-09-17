@@ -8,13 +8,14 @@
 
 use std::sync::Arc;
 use std::time::Duration;
-use tracing::{debug, info, warn};
+use tracing::{debug, warn};
 
 #[derive(Clone)]
 pub struct CacheClient {
     inner: Arc<CacheInner>,
 }
 
+#[allow(dead_code)]
 enum CacheInner {
     Disabled,
     Upstash {
@@ -168,6 +169,7 @@ struct UpstashResponse {
     #[serde(default)]
     result: Option<serde_json::Value>,
     #[serde(default)]
+    #[allow(dead_code)]
     error: Option<String>,
 }
 

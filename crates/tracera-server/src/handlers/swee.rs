@@ -4,7 +4,7 @@ use serde::Deserialize;
 use serde_json::Value;
 
 use crate::{bad_request, ErrorResponse};
-use crate::store::Store;
+
 use crate::swee::{NodeKind, EdgeKind};
 
 use super::super::AppState;

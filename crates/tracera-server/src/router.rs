@@ -1,8 +1,6 @@
 use axum::{
     extract::DefaultBodyLimit,
-    response::IntoResponse,
-    routing::{any, get, post},
-    Json, Router,
+    routing::{any, get, post}, Router,
 };
 use http::{header, HeaderValue, Method};
 use std::collections::HashSet;
@@ -30,6 +28,7 @@ async fn not_implemented() -> impl axum::response::IntoResponse {
     )
 }
 
+#[allow(dead_code)]
 pub(crate) fn build_router(state: AppState) -> Router {
     build_router_with_auth(state, None)
 }

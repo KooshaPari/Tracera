@@ -15,6 +15,7 @@ pub struct Neo4jClient {
     inner: Arc<Neo4jInner>,
 }
 
+#[allow(dead_code)]
 enum Neo4jInner {
     Disabled,
     Enabled { graph: Graph },

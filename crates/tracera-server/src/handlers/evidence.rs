@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{bad_request, ErrorResponse};
-use crate::store::{EvidenceItem, Store};
+use crate::store::EvidenceItem;
 use crate::validation::{
     validate_text, MAX_ID_CHARS, MAX_METADATA_BYTES, MAX_SHORT_TEXT_CHARS, MAX_URL_CHARS,
 };

@@ -30,14 +30,11 @@ mod persist;
 mod tests;
 mod trace_refs;
 
-pub use self::agcord::{fetch_agcord_agents, fetch_agcord_tasks, AgcordConfig};
-pub use self::benchmark::benchmark_run_to_issue;
-pub use self::github::{fetch_github_issues, GitHubConfig};
-pub use self::jira::{fetch_jira_issues, JiraConfig};
-pub use self::persist::{ingest_from_payload, ingest_live, persist_issues};
-pub use self::trace_refs::extract_req_refs;
+pub use self::agcord::AgcordConfig;
+pub use self::github::GitHubConfig;
+pub use self::jira::JiraConfig;
+pub use self::persist::{ingest_from_payload, ingest_live};
 
-pub(crate) use self::jira::{redact_upstream_body, validate_jira_base_url, JIRA_ERROR_BODY_LIMIT};
 
 // ---------------------------------------------------------------------------
 // Error type

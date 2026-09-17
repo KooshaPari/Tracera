@@ -20,7 +20,6 @@ mod validation;
 
 use axum::response::IntoResponse;
 use axum::Json;
-use chrono::Utc;
 use std::env;
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -39,13 +38,13 @@ const AUTHENTICATED_PROXY_MODE: &str = "authenticated-proxy";
 const LOOPBACK_PUBLISHED_MODE: &str = "loopback-published";
 const PRIVATE_NETWORK_MODE: &str = "private-network";
 
-use validation::{validate_text, MAX_ID_CHARS, MAX_LONG_TEXT_CHARS, MAX_METADATA_BYTES, MAX_SHORT_TEXT_CHARS, MAX_URL_CHARS};
-use store::{EvidenceItem, ListParams, Problem, Sprint, Store, Story, TeamRow, TraceLink};
+use store::Store;
 
 // ---------------------------------------------------------------------------
 // App state
 // ---------------------------------------------------------------------------
 #[derive(Clone)]
+#[allow(dead_code)]
 pub(crate) struct AppState {
     pub(crate) version: String,
     pub(crate) backend: &'static str,

@@ -11,6 +11,7 @@ use serde_json::Value;
 /// Types of events that can be ingested.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[allow(dead_code)]
 pub enum EventType {
     CiRun,
     TestResult,
@@ -26,6 +27,7 @@ pub enum EventType {
 
 /// A raw event from any source.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct RawEvent {
     pub event_type: EventType,
     pub source: String,
@@ -35,6 +37,7 @@ pub struct RawEvent {
 
 /// Normalised event ready for graph ingestion.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct NormalisedEvent {
     pub id: String,
     pub event_type: EventType,
@@ -46,6 +49,7 @@ pub struct NormalisedEvent {
 }
 
 /// Normalize a raw event into graph-ready form.
+#[allow(dead_code)]
 pub fn normalize_event(event: &RawEvent) -> NormalisedEvent {
     let id = format!("evt-{}", uuid::Uuid::new_v4());
     let (node_type, label) = match &event.event_type {

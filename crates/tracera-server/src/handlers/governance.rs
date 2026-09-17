@@ -3,17 +3,14 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::{bad_request, ErrorResponse};
-use crate::store::Store;
 use crate::validation::{
-    validate_text, MAX_ID_CHARS, MAX_LONG_TEXT_CHARS, MAX_SHORT_TEXT_CHARS, MAX_URL_CHARS,
-    MAX_METADATA_BYTES,
+    validate_text, MAX_ID_CHARS,
 };
 use crate::graph::{
-    build_adjacency, bfs_distances, build_coverage_matrix, classify_coverage,
+    build_adjacency, bfs_distances, build_coverage_matrix,
     neighbors_of,
 };
 
-use super::super::AppState;
 
 // ---------------------------------------------------------------------------
 // Trace-link types (coverage-matrix / impact / blast-radius / spec-check)
