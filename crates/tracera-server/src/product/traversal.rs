@@ -119,10 +119,7 @@ impl GraphTraversal {
     ///
     /// * `adjacency` — maps `source_id` → list of `(target_id, edge_type)`.
     /// * `budget`    — traversal constraints.
-    pub fn new(
-        adjacency: HashMap<String, Vec<(String, String)>>,
-        budget: TraversalBudget,
-    ) -> Self {
+    pub fn new(adjacency: HashMap<String, Vec<(String, String)>>, budget: TraversalBudget) -> Self {
         Self {
             adjacency,
             budget,
@@ -235,8 +232,7 @@ impl GraphTraversal {
                                 continue;
                             }
 
-                            stack
-                                .push_back(Entry::Visit(target_id.clone(), depth + 1));
+                            stack.push_back(Entry::Visit(target_id.clone(), depth + 1));
                         }
                     }
                 }
@@ -259,7 +255,9 @@ impl GraphTraversal {
 // ---------------------------------------------------------------------------
 
 /// Build an adjacency map from a list of `(source_id, target_id, edge_type)`.
-pub fn build_adjacency(edges: &[(String, String, String)]) -> HashMap<String, Vec<(String, String)>> {
+pub fn build_adjacency(
+    edges: &[(String, String, String)],
+) -> HashMap<String, Vec<(String, String)>> {
     let mut adj: HashMap<String, Vec<(String, String)>> = HashMap::new();
     for (source, target, edge_type) in edges {
         adj.entry(source.clone())
@@ -326,11 +324,7 @@ mod tests {
     #[test]
     fn test_cycle_detection_simple() {
         // A -> B -> C -> A  (cycle)
-        let adjacency = adj(&[
-            ("A", "B", "next"),
-            ("B", "C", "next"),
-            ("C", "A", "next"),
-        ]);
+        let adjacency = adj(&[("A", "B", "next"), ("B", "C", "next"), ("C", "A", "next")]);
         let budget = TraversalBudget {
             max_nodes: 100,
             max_depth: 100,
@@ -572,11 +566,7 @@ mod tests {
     #[test]
     fn test_edges_followed_count() {
         // A -> B -> C, A -> D
-        let adjacency = adj(&[
-            ("A", "B", "has"),
-            ("A", "D", "has"),
-            ("B", "C", "has"),
-        ]);
+        let adjacency = adj(&[("A", "B", "has"), ("A", "D", "has"), ("B", "C", "has")]);
         let budget = TraversalBudget {
             max_nodes: 100,
             max_depth: 10,
@@ -591,11 +581,7 @@ mod tests {
 
     #[test]
     fn test_edges_followed_with_filter() {
-        let adjacency = adj(&[
-            ("A", "B", "has"),
-            ("A", "C", "observe"),
-            ("B", "D", "has"),
-        ]);
+        let adjacency = adj(&[("A", "B", "has"), ("A", "C", "observe"), ("B", "D", "has")]);
         let budget = TraversalBudget {
             max_nodes: 100,
             max_depth: 10,
