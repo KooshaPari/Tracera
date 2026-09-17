@@ -82,6 +82,14 @@ function runTsc(pkg) {
 }
 
 /**
+ * tsc writes diagnostics to stdout; stderr carries only fatal errors, so both
+ * streams have to be inspected when asserting on reported diagnostics.
+ */
+function tscOutput(result) {
+  return `${result.stdout ?? ""}${result.stderr ?? ""}`;
+}
+
+/**
  * Inject a deliberate type error, verify tsc catches it, clean up.
  * Proves this specific project is actually being scanned.
  */
@@ -91,19 +99,24 @@ async function proveProjectTypecheckFails(pkg) {
 
   await writeFile(probeFile, probeContent, "utf8");
 
-  const result = runTsc(pkg);
-  assert.notEqual(
-    result.status,
-    0,
-    `tsc -p packages/${pkg} must FAIL with deliberate type error (exit=${result.status}):\n${(result.stderr ?? "").slice(0, 200)}`,
-  );
-  assert.ok(
-    (result.stderr ?? "").includes("_probe_tc_gate"),
-    `tsc stderr for packages/${pkg} must reference the injected probe:\n${result.stderr.slice(0, 300)}`,
-  );
-
-  // Cleanup: error file, plus any .tsbuildinfo that may have been written
-  try { await unlink(probeFile); } catch { /* ok */ }
+  try {
+    const result = runTsc(pkg);
+    const diagnostics = tscOutput(result);
+    assert.notEqual(
+      result.status,
+      0,
+      `tsc -p packages/${pkg} must FAIL with deliberate type error (exit=${result.status}):\n${diagnostics.slice(0, 200)}`,
+    );
+    assert.ok(
+      diagnostics.includes("_probe_tc_gate"),
+      `tsc output for packages/${pkg} must reference the injected probe:\n${diagnostics.slice(0, 300)}`,
+    );
+  } finally {
+    // Cleanup: error file, plus any .tsbuildinfo that may have been written.
+    // Runs even when an assertion above throws, so a failed run never leaves
+    // the probe behind in the workspace.
+    try { await unlink(probeFile); } catch { /* ok */ }
+  }
 }
 
 /**
@@ -114,7 +127,7 @@ function assertProjectTypecheckPasses(pkg) {
   assert.equal(
     result.status,
     0,
-    `tsc -p packages/${pkg} must pass cleanly (exit=${result.status}):\n${(result.stderr ?? "").slice(0, 300)}`,
+    `tsc -p packages/${pkg} must pass cleanly (exit=${result.status}):\n${tscOutput(result).slice(0, 300)}`,
   );
 }
 
