@@ -10,6 +10,8 @@
 //! and compare in constant time against any of the `v1=` values. Also enforce a
 //! timestamp tolerance (default 5 minutes) to defeat replay.
 
+#[cfg(test)]
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::HashSet;

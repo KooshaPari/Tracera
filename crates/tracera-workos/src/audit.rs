@@ -11,6 +11,8 @@ use serde_json::Value;
 
 use crate::error::WorkOSResult;
 use crate::sync::{GraphEdge, GraphNode};
+#[cfg(test)]
+use crate::sync::ProvisionOutcome;
 use crate::webhooks::WebhookEnvelope;
 
 /// Node-kind string for an audit event node.
