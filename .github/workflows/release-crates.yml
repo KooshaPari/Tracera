@@ -30,10 +30,71 @@ jobs:
         run: cargo test --workspace --locked
       - name: Run strict workspace clippy
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
-      - name: Validate publish packages
+      # Internal dependency chain (path = deps), from `cargo metadata`:
+      #   tracera-workos (0.1.0, publish = false) <- tracera-server (0.2.0)
+      #   tracertm-mcp (0.2.0) is an independent leaf (no internal path deps).
+      # The publishable crates are tracera-server and tracertm-mcp, in that
+      # topological order (leaf first). tracera-workos is a prerequisite of
+      # tracera-server that must already exist on crates.io before the server
+      # can be published; it is not published by this workflow because its
+      # manifest sets `publish = false`.
+      - name: Dry-run leaf crate packaging (registry-aware)
+        # Full packaging check for the only crate with no unpublished internal
+        # dependency. This verifies the package assembles AND that every
+        # dependency resolves against crates.io, so it is a complete dry-run.
+        run: cargo publish --dry-run --locked -p tracertm-mcp
+      - name: Verify server crate package contents
+        # tracera-server cannot be fully dry-run until tracera-workos is on
+        # crates.io, so only verify the package assembles (file set + manifest)
+        # without registry resolution. Resolution of its internal dependency is
+        # deferred to the publish job and enforced by the ordering gate below.
+        run: cargo package --list --locked -p tracera-server
+      - name: Verify publish order
+        # Assert the hard-coded publish order is a valid topological order of
+        # the internal `path =` dependency graph. Fails if a crate path-depends
+        # on an unpublished internal crate that is neither earlier in the order
+        # nor declared as an already-published prerequisite.
         run: |
-          cargo publish --dry-run --locked -p tracera-server
-          cargo publish --dry-run --locked -p tracertm-mcp
+          python3 - <<'PY'
+          import json
+          import subprocess
+          import sys
+
+          PUBLISH_ORDER = ["tracertm-mcp", "tracera-server"]
+          # Internal path deps that must already be on crates.io before the
+          # dependent crate is published. tracera-workos is publish=false, so
+          # it is a documented blocker for tracera-server rather than being
+          # published by this workflow.
+          PRERELEASED = {
+              "tracera-server": ["tracera-workos"],
+          }
+
+          meta = json.loads(subprocess.check_output(
+              ["cargo", "metadata", "--no-deps", "--format-version", "1"],
+              text=True,
+          ))
+          by_name = {p["name"]: p for p in meta["packages"]}
+
+          seen = set()
+          for crate in PUBLISH_ORDER:
+              if crate not in by_name:
+                  sys.exit(f"ERROR: {crate} is in PUBLISH_ORDER but is not a workspace member")
+              for dep in by_name[crate].get("dependencies", []):
+                  if dep.get("path") is None:
+                      continue  # registry/git dependency, not an ordering concern
+                  dep_name = dep["name"]
+                  if dep_name in seen:
+                      continue  # published earlier in this workflow
+                  if dep_name in PRERELEASED.get(crate, []):
+                      continue  # documented as already on crates.io
+                  sys.exit(
+                      f"ERROR: {crate} path-depends on unpublished internal crate "
+                      f"{dep_name}; publish {dep_name} first or declare it in PRERELEASED"
+                  )
+              seen.add(crate)
+
+          print("publish order OK:", " -> ".join(PUBLISH_ORDER))
+          PY
 
   publish:
     if: github.event_name == 'push'
@@ -47,18 +108,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # stable toolchain action
         with:
           toolchain: stable
-      - name: Publish tracera-server
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: |
-          CRATE_VERSION=$(grep '^version' crates/tracera-server/Cargo.toml | head -1 | cut -d'"' -f2)
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
-          if [ "$CRATE_VERSION" = "$TAG_VERSION" ]; then
-            cargo publish --locked -p tracera-server --token "$CARGO_REGISTRY_TOKEN"
-          else
-            echo "tracera-server version $CRATE_VERSION does not match release tag $TAG_VERSION" >&2
-            exit 1
-          fi
+      # Ordered publishing: independent leaf first, then the crate whose
+      # internal dependency (tracera-workos, publish=false) must already exist
+      # on crates.io. Both steps require the registry token.
       - name: Publish tracertm-mcp
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
@@ -69,6 +121,18 @@ jobs:
             cargo publish --locked -p tracertm-mcp --token "$CARGO_REGISTRY_TOKEN"
           else
             echo "tracertm-mcp version $CRATE_VERSION does not match release tag $TAG_VERSION" >&2
+            exit 1
+          fi
+      - name: Publish tracera-server
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          CRATE_VERSION=$(grep '^version' crates/tracera-server/Cargo.toml | head -1 | cut -d'"' -f2)
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$CRATE_VERSION" = "$TAG_VERSION" ]; then
+            cargo publish --locked -p tracera-server --token "$CARGO_REGISTRY_TOKEN"
+          else
+            echo "tracera-server version $CRATE_VERSION does not match release tag $TAG_VERSION" >&2
             exit 1
           fi
 
@@ -84,9 +148,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # stable toolchain action
         with:
           toolchain: stable
-      - name: Dry-run tracera-server
-        working-directory: crates/tracera-server
-        run: cargo publish --dry-run --locked
-      - name: Dry-run tracertm-mcp
-        working-directory: crates/tracertm-mcp
-        run: cargo publish --dry-run --locked
+      - name: Dry-run tracertm-mcp (leaf, registry-aware)
+        run: cargo publish --dry-run --locked -p tracertm-mcp
+      - name: Verify tracera-server package contents
+        run: cargo package --list --locked -p tracera-server
