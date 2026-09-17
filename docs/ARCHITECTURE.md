@@ -67,14 +67,16 @@ until its HTTP/service wiring is complete (see ADR-DEP-001).
 
 | Workspace | Purpose |
 |-----------|---------|
-| `apps/web` | Svelte/Vite web app; OpenAPI types generated from `public/specs/openapi.json` via `openapi-typescript`. |
-| `apps/desktop`, `apps/tauri-desktop` | Desktop shells (Electrobun / Tauri). |
-| `apps/os-service` | OS-level service integration. |
+| `apps/web` | React 19 + TanStack Router SPA (Vite; OpenAPI types generated from `public/specs/openapi.json` via `openapi-typescript`). |
+| `apps/desktop` | Electrobun desktop viewer (`tracera-desktop`). |
+| `apps/tauri-desktop` | Tauri desktop shell (Rust `Cargo.toml` + `src-tauri/` + `tauri.conf.json`). |
+| `apps/os-service` | Rust crate for OS-level service integration. |
 | `packages/api-client`, `packages/config`, `packages/env-manager`, `packages/state`, `packages/tokens`, `packages/types`, `packages/ui` | Shared client, config, state, design tokens, and UI library. |
 
 Tooling: **oxlint** (+ oxlint-tsgolint) and **oxfmt** for lint/format,
-stylelint for CSS, Vitest for unit tests, Playwright for e2e, Storybook +
-Chromatic for visual review, bun as package manager/runtime.
+stylelint for CSS, Vitest for unit tests, Playwright for e2e/visual tests,
+Storybook + Chromatic (and Percy) for visual review, bun as package manager and
+runtime, Turborepo for task orchestration.
 
 ### 2.3 Local platform (`docker-compose.dev.yml`)
 
@@ -132,8 +134,9 @@ Deployment surfaces (canonical URIs):
 - ClickHouse (analytics), Neo4j (SWEE graph), Qdrant/pgvector (RAG),
   Redis/Dragonfly (cache), NATS/Temporal/Kafka (events/queue).
 - WorkOS (AuthKit + directory sync + audit logs); Cloudflare Workers (edge).
-- Frontend: bun, Turborepo, Vite, openapi-typescript, Vitest/Playwright,
-  Storybook/Chromatic, oxlint/oxfmt.
+- Frontend: bun, Turborepo, Vite, React 19 + TanStack Router, openapi-typescript,
+  Vitest/Playwright, Storybook/Chromatic, oxlint/oxfmt; Electrobun desktop;
+  Tauri shell.
 
 ## 5. Build / Run Topology
 

@@ -106,7 +106,8 @@ frontend assets, ruff-format on Python, and commit-msg validation.
   `docs/governance/ADR-ARCH-001-hexagonal-architecture.md`. Keep the dual-store
   strategy intact (`ADR-DATA-001-dual-store-strategy.md`): SQLite for local,
   Postgres for hosted — do not bypass the `Store` trait.
-- **TypeScript/Svelte**: oxlint + oxfmt conventions; typed API access goes
+- **TypeScript/React**: oxlint + oxfmt conventions (React 19 + TanStack Router
+  in `apps/web`); typed API access goes
   through `packages/api-client` with types generated from the OpenAPI spec
   (`bun run generate:types`). Don't hand-edit `src/api/schema.ts`.
 - **Python**: ruff-format; treat as migration material, not the supported runtime.
