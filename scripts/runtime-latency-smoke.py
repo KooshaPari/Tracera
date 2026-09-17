@@ -170,6 +170,8 @@ def main() -> int:
         )
     result = run(args)
     latency = result["latency_ms"]
+    if not isinstance(latency, dict):
+        raise TypeError("run() must return a 'latency_ms' mapping")
     threshold_failures = []
     if args.p95_threshold_ms and latency["p95"] > args.p95_threshold_ms:
         threshold_failures.append(
