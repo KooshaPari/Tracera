@@ -1,0 +1,27 @@
+# Paths oxfmt must not rewrite.
+#
+# Mirrors the `ignorePatterns` block in .oxlintrc.json (so lint and format agree
+# on what is generated) and adds the build / cache output that is never
+# hand-edited. `package.json`'s `format:check` script passes this path
+# explicitly with --ignore-path, so the file must exist for the gate to run.
+
+# Vendored dependencies and build output.
+**/node_modules/**
+**/dist/**
+**/build/**
+**/.turbo/**
+**/.next/**
+**/.wrangler/**
+**/coverage/**
+**/storybook-static/**
+
+# Generated sources: re-emitted by codegen, so formatting them here would be
+# undone the next time the generator runs.
+**/routeTree.gen.ts
+**/api/*.gen.ts
+**/*.generated.*
+**/public/mockServiceWorker.js
+
+# Lockfiles and package-manager output.
+bun.lock
+package-lock.json
