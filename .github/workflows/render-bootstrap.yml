@@ -108,7 +108,10 @@ jobs:
           api=https://api.render.com/v1
           auth=(-H "Authorization: Bearer $RENDER_API_KEY" -H "Accept: application/json")
 
-          existing=$(curl -sS "${auth[@]}" "$api/services?name=$SERVICE_NAME&limit=1" \
+          # Render's list endpoint does not filter by name, so scan and match.
+          # A ?name= filter returns the unfiltered list, which made this lookup
+          # come back empty and the create below fail with "name already in use".
+          existing=$(curl -sS "${auth[@]}" "$api/services?limit=100" \
             | jq -r --arg n "$SERVICE_NAME" '.[] | select(.service.name == $n) | .service.id' | head -1)
 
           if [ -n "$existing" ]; then
