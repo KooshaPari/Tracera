@@ -77,15 +77,14 @@ Notes that matter when debugging a hostname:
 - **The Render credential is currently unusable from CI, which is the real
   blocker for `dev`.** Two independent faults, both confirmed against the live
   Infisical project from a logged-in CLI session:
-
   1. `INFISICAL_TOKEN` **has been fixed** - it used to hold an Infisical
      Universal Auth Client ID, not a
      service token, which the CLI rejected as `403 The provided access token is
 malformed` (see `DEPLOY_CREDENTIALS.md`). It now carries a read-scoped service
-token (`st.…`, one-year expiry) created for CI, and it authenticates: a dry run
-of `render-bootstrap.yml` reaches the missing-secret check below instead of
-failing auth. Store it with `gh secret set -f <file>`; piping on Windows appends
-CRLF and Infisical then rejects the value as malformed.
+     token (`st.…`, one-year expiry) created for CI, and it authenticates: a dry run
+     of `render-bootstrap.yml` reaches the missing-secret check below instead of
+     failing auth. Store it with `gh secret set -f <file>`; piping on Windows appends
+     CRLF and Infisical then rejects the value as malformed.
   2. **The project does not contain the deploy secrets at all.** Project
      `8efe392e-…` (`INFISICAL_PROJECT_ID`) holds AI-tooling values -
      `OPENAI_API_KEY`, `LANGFUSE_*`, `LANGSMITH_*`, `NIAH_*`, `HARBOR_*`,
