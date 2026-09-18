@@ -35,7 +35,9 @@ sha2 = { workspace = true }
 thiserror = { workspace = true }
 
 # Delegation into tracera-server Store trait
-tracera-server = { path = "../tracera-server" }
+# `wildcards = "deny"` in deny.toml rejects a path dependency with no version
+# requirement, and `cargo package` needs one to publish this crate.
+tracera-server = { path = "../tracera-server", version = "0.2.0" }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
