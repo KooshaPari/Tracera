@@ -79,7 +79,9 @@ jobs:
       # skipped while still reporting success. Prefer the direct secret and keep
       # Infisical as the fallback for whenever it is the configured source.
       REPO_RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-      REPO_RENDER_SERVICE_ID: ${{ vars.RENDER_SERVICE_ID }}
+      # Pick the service that matches the target. A single shared id meant a dev
+      # deploy would have triggered the production fallback service.
+      REPO_RENDER_SERVICE_ID: ${{ needs.plan.outputs.env == 'prod' && vars.RENDER_SERVICE_ID || vars.RENDER_SERVICE_ID_DEV || vars.RENDER_SERVICE_ID }}
       HAS_REPO_CREDS: ${{ secrets.RENDER_API_KEY != '' && vars.RENDER_SERVICE_ID != '' }}
       INFISICAL_ENV: ${{ needs.plan.outputs.env == 'prod' && 'prod' || 'dev' }}
       INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
