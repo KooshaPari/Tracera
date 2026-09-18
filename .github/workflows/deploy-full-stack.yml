@@ -30,6 +30,9 @@ on:
       - "render.yaml"
       - "wrangler.toml"
       - "vercel.json"
+      # Include this workflow itself, as the sibling deploy workflows do, so a
+      # change to the orchestrator is exercised rather than merged untested.
+      - ".github/workflows/deploy-full-stack.yml"
 permissions:
   contents: read
 jobs:
