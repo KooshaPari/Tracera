@@ -63,13 +63,12 @@ jobs:
           if ! key=$(infisical secrets get RENDER_API_KEY \
                  --projectId "$INFISICAL_PROJECT_ID" --env "$INFISICAL_ENV" \
                  --token "$INFISICAL_TOKEN" --plain 2>/tmp/infisical.err); then
-            # The CLI prints a multi-line package-repository migration banner to
-            # stderr ahead of any real error, so filtering it out matters: taking
-            # the first N characters reported only the banner and hid the cause.
-            detail=$(grep -v -e 'Cloudsmith' -e "What's happening" -e 'What to do' \
-                        -e 'Migration steps' -e '^Important:' /tmp/infisical.err \
+            # Keep only the response lines. The CLI interleaves a package-repository
+            # migration banner and the full request URL, so neither a head nor a
+            # tail window reliably surfaces the status code and message.
+            detail=$(grep -E 'Response Code|Message:|error:|not found|Forbidden' /tmp/infisical.err \
                      | tr '\n' ' ' | tr -s ' ')
-            echo "::error title='Could not read RENDER_API_KEY'::Infisical env '$INFISICAL_ENV'. Real error: ${detail:0:300}"
+            echo "::error title='Could not read RENDER_API_KEY'::Infisical env '$INFISICAL_ENV'. Response: ${detail:0:400}"
             exit 1
           fi
           if [ -z "$key" ]; then
