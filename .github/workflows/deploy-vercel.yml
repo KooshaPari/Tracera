@@ -8,7 +8,7 @@ name: Deploy Tracera to Vercel
 on:
   push:
     branches: [main]
-    tags: ['v*']
+    tags: ["v*"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -25,7 +25,7 @@ on:
         description: Target environment; empty derives it from the caller's event
         required: false
         type: string
-        default: ''
+        default: ""
     secrets:
       VERCEL_TOKEN:
         required: false
@@ -82,11 +82,21 @@ jobs:
       # production base keeps this correct while no dev override is configured.
       VITE_API_URL: ${{ needs.plan.outputs.env == 'prod' && vars.TRACERA_API_BASE || vars.TRACERA_API_BASE_DEV || vars.TRACERA_API_BASE }}
     steps:
-      - name: Skip when Vercel credentials are unavailable
-        if: ${{ env.HAS_VERCEL_TOKEN == '' || env.HAS_VERCEL_ORG == '' || env.HAS_VERCEL_PROJECT == '' }}
+      # Production fails closed: a missing credential must be loud, not a silent
+      # success. This step name is part of the contract enforced by
+      # scripts/verify-workflow-security.sh.
+      - name: Fail production deployment when Vercel secrets are unavailable
+        if: ${{ needs.plan.outputs.env == 'prod' && (env.HAS_VERCEL_TOKEN == '' || env.HAS_VERCEL_ORG == '' || env.HAS_VERCEL_PROJECT == '') }}
         run: |
-          echo "::notice title='Vercel deploy skipped'::VERCEL_TOKEN, VERCEL_ORG_ID, or VERCEL_PROJECT_ID is missing. Add them in https://github.com/KooshaPari/Tracera/settings/secrets/actions"
+          echo "::error title='Vercel production deploy blocked'::VERCEL_TOKEN, VERCEL_ORG_ID, or VERCEL_PROJECT_ID is missing."
+          echo "Add them in https://github.com/KooshaPari/Tracera/settings/secrets/actions"
           echo "Get a token at https://vercel.com/account/tokens"
+          exit 1
+
+      - name: Skip non-production when Vercel credentials are unavailable
+        if: ${{ needs.plan.outputs.env != 'prod' && (env.HAS_VERCEL_TOKEN == '' || env.HAS_VERCEL_ORG == '' || env.HAS_VERCEL_PROJECT == '') }}
+        run: |
+          echo "::notice title='Vercel deploy skipped'::VERCEL_TOKEN, VERCEL_ORG_ID, or VERCEL_PROJECT_ID is missing; the $DEPLOY_ENV deploy was skipped."
 
       - uses: actions/checkout@v4
         if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}

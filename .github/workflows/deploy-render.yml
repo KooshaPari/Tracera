@@ -8,7 +8,7 @@ name: Deploy Render Backend
 on:
   push:
     branches: [main, ci/infisical-deploys]
-    tags: ['v*']
+    tags: ["v*"]
     paths:
       - "crates/tracera-server/**"
       - "Dockerfile.rust"
@@ -33,7 +33,7 @@ on:
         description: "Target environment; empty derives it from the caller's event"
         required: false
         type: string
-        default: ''
+        default: ""
 permissions:
   contents: read
 jobs:

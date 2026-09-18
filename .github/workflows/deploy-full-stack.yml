@@ -22,7 +22,7 @@ on:
         type: boolean
   push:
     branches: [main]
-    tags: ['v*']
+    tags: ["v*"]
     paths:
       - "crates/**"
       - "frontend/**"

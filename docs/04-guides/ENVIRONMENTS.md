@@ -6,11 +6,11 @@ own hostname so a URL always identifies which system you are talking to.
 
 ## The model
 
-| Environment | Trigger | GitHub environment | Approval | Purpose |
-| --- | --- | --- | --- | --- |
-| `preview` | `pull_request` against `main` | `vercel-preview` / `render-preview` / `cloudflare-preview` | none | Per-PR build, reaches a non-production backend |
-| `dev` | push to `main`; nightly `schedule` | `vercel-dev` / `render-dev` / `cloudflare-dev` | none | Continuous delivery and the nightly validation run |
-| `prod` | push of a `v*` tag; `workflow_dispatch` with `environment: prod` | `vercel-production` / `render-production` / `cloudflare-production` | required reviewers | Public production |
+| Environment | Trigger                                                          | GitHub environment                                                  | Approval           | Purpose                                            |
+| ----------- | ---------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------ | -------------------------------------------------- |
+| `preview`   | `pull_request` against `main`                                    | `vercel-preview` / `render-preview` / `cloudflare-preview`          | none               | Per-PR build, reaches a non-production backend     |
+| `dev`       | push to `main`; nightly `schedule`                               | `vercel-dev` / `render-dev` / `cloudflare-dev`                      | none               | Continuous delivery and the nightly validation run |
+| `prod`      | push of a `v*` tag; `workflow_dispatch` with `environment: prod` | `vercel-production` / `render-production` / `cloudflare-production` | required reviewers | Public production                                  |
 
 `workflow_dispatch` takes an explicit `environment` input (`dev`, `preview`,
 `prod`) defaulting to `dev`, so a manual run never lands in production by
@@ -19,24 +19,24 @@ accident.
 Each deploy workflow derives that environment in a single `plan` job from the
 event and passes it on, rather than re-deriving it per step:
 
-| Event | Derived environment |
-| --- | --- |
-| `pull_request` | `preview` |
-| ref starts with `refs/tags/` | `prod` |
-| `workflow_dispatch` | the `environment` input |
-| anything else (push to `main`, `schedule`) | `dev` |
+| Event                                      | Derived environment     |
+| ------------------------------------------ | ----------------------- |
+| `pull_request`                             | `preview`               |
+| ref starts with `refs/tags/`               | `prod`                  |
+| `workflow_dispatch`                        | the `environment` input |
+| anything else (push to `main`, `schedule`) | `dev`                   |
 
 ## DNS and hostnames
 
 Each environment owns a distinct hostname. Verified against the live services;
 re-verify before relying on any of it.
 
-| Environment | Frontend | API | Edge worker |
-| --- | --- | --- | --- |
-| `prod` | `https://tracera.pheno.studio` | `https://tracera.pheno.studio/api` | `https://tracera-edge.pheno.studio` |
-| `prod` (fallback) | — | `https://tracera-server.onrender.com` | — |
-| `dev` | `https://tracera-kappa.vercel.app` | `https://tracera-server-dev.onrender.com` | worker deployed with dev vars |
-| `preview` | Vercel-generated URL per PR | same as `dev` | not deployed |
+| Environment       | Frontend                           | API                                       | Edge worker                         |
+| ----------------- | ---------------------------------- | ----------------------------------------- | ----------------------------------- |
+| `prod`            | `https://tracera.pheno.studio`     | `https://tracera.pheno.studio/api`        | `https://tracera-edge.pheno.studio` |
+| `prod` (fallback) | —                                  | `https://tracera-server.onrender.com`     | —                                   |
+| `dev`             | `https://tracera-kappa.vercel.app` | `https://tracera-server-dev.onrender.com` | worker deployed with dev vars       |
+| `preview`         | Vercel-generated URL per PR        | same as `dev`                             | not deployed                        |
 
 Notes that matter when debugging a hostname:
 
@@ -58,10 +58,10 @@ Notes that matter when debugging a hostname:
 
 ## Repository variables
 
-| Variable | Used for | Current value |
-| --- | --- | --- |
-| `TRACERA_API_BASE` | production API base, baked into the frontend build and used by the parity smokes | `https://tracera-server.onrender.com` |
-| `TRACERA_API_BASE_DEV` | overrides the API base for `dev` and `preview`; falls back to `TRACERA_API_BASE` when unset | unset |
+| Variable               | Used for                                                                                    | Current value                         |
+| ---------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `TRACERA_API_BASE`     | production API base, baked into the frontend build and used by the parity smokes            | `https://tracera-server.onrender.com` |
+| `TRACERA_API_BASE_DEV` | overrides the API base for `dev` and `preview`; falls back to `TRACERA_API_BASE` when unset | unset                                 |
 
 Set `TRACERA_API_BASE` to `https://tracera.pheno.studio` once Cloudflare Access
 is fronting a build that should be smoked without a service token, otherwise CI

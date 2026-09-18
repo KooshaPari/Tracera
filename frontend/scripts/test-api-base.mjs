@@ -10,8 +10,17 @@ function run(raw, extra = {}) {
   try {
     execFileSync(process.execPath, [script], {
       // Keep ordinary policy cases independent from the caller's deployment
-      // environment; the production rule is covered explicitly below.
-      env: { ...process.env, PRODUCTION_DEPLOY: '', VITE_API_URL: raw, ...extra },
+      // environment. Both deployment switches are cleared here because callers
+      // set them - the deploy workflows export ALLOW_INSECURE_API_BASE=1 for the
+      // dev and preview targets - and inheriting either one silently changes what
+      // these cases assert. Each switch gets an explicit case below.
+      env: {
+        ...process.env,
+        PRODUCTION_DEPLOY: '',
+        ALLOW_INSECURE_API_BASE: '',
+        VITE_API_URL: raw,
+        ...extra,
+      },
       stdio: 'pipe',
     })
     return { ok: true, output: '' }
@@ -36,6 +45,13 @@ test('still rejects insecure non-loopback bases', () => {
   const result = run(`${http}api.example.com`)
   assert.equal(result.ok, false)
   assert.match(result.output, /refusing insecure non-loopback API base/)
+})
+
+test('ALLOW_INSECURE_API_BASE=1 admits an insecure non-loopback base', () => {
+  // The dev and preview deploy targets rely on this escape hatch to build
+  // against a loopback or plain-HTTP stack without weakening production.
+  const result = run(`${http}api.example.com`, { ALLOW_INSECURE_API_BASE: '1' })
+  assert.equal(result.ok, true)
 })
 
 test('uses VITE_API_URL as the canonical variable', () => {
