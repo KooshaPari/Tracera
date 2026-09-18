@@ -73,8 +73,14 @@ jobs:
       name: render-${{ needs.plan.outputs.env }}
     env:
       DEPLOY_ENV: ${{ needs.plan.outputs.env }}
-      # render.yaml keeps the dev service and the production fallback in separate
-      # Infisical environments, so the credentials follow the target.
+      # The repository holds these directly. It also carries an Infisical
+      # indirection, but that project contains no Render credentials (see
+      # docs/04-guides/ENVIRONMENTS.md), so reading only from it meant every run
+      # skipped while still reporting success. Prefer the direct secret and keep
+      # Infisical as the fallback for whenever it is the configured source.
+      REPO_RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      REPO_RENDER_SERVICE_ID: ${{ vars.RENDER_SERVICE_ID }}
+      HAS_REPO_CREDS: ${{ secrets.RENDER_API_KEY != '' && vars.RENDER_SERVICE_ID != '' }}
       INFISICAL_ENV: ${{ needs.plan.outputs.env == 'prod' && 'prod' || 'dev' }}
       INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
       INFISICAL_PROJECT_ID: ${{ vars.INFISICAL_PROJECT_ID }}
@@ -90,21 +96,28 @@ jobs:
           curl -1sLf "https://artifacts-cli.infisical.com/setup.deb.sh" | sudo -E bash
           sudo apt-get install -y infisical
 
-      - name: Pull Render credentials from Infisical
+      - name: Resolve Render credentials
         id: pull_creds
-        # Uses service token via INFISICAL_TOKEN. continue-on-error so a bad
-        # token doesn't abort the workflow before the pre-flight check.
-        # The pre-flight step below reads $RENDER_API_KEY from the env and
-        # decides whether to actually deploy or skip with instructions.
+        # Prefers the repository's own secret and variable; falls back to
+        # Infisical. continue-on-error so a bad credential doesn't abort the
+        # workflow before the pre-flight check, which decides whether to deploy
+        # or to stop with instructions.
         continue-on-error: true
         run: |
           set +e
-          RENDER_API_KEY=$(infisical secrets get RENDER_API_KEY \
-            --projectId "$INFISICAL_PROJECT_ID" --env "$INFISICAL_ENV" \
-            --token "$INFISICAL_TOKEN" --plain)
-          RENDER_SERVICE_ID=$(infisical secrets get RENDER_SERVICE_ID \
-            --projectId "$INFISICAL_PROJECT_ID" --env "$INFISICAL_ENV" \
-            --token "$INFISICAL_TOKEN" --plain)
+          RENDER_API_KEY="$REPO_RENDER_API_KEY"
+          RENDER_SERVICE_ID="$REPO_RENDER_SERVICE_ID"
+
+          if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID" ]; then
+            echo "Repo secret/variable absent; falling back to Infisical env '$INFISICAL_ENV'."
+            RENDER_API_KEY=$(infisical secrets get RENDER_API_KEY \
+              --projectId "$INFISICAL_PROJECT_ID" --env "$INFISICAL_ENV" \
+              --token "$INFISICAL_TOKEN" --plain)
+            RENDER_SERVICE_ID=$(infisical secrets get RENDER_SERVICE_ID \
+              --projectId "$INFISICAL_PROJECT_ID" --env "$INFISICAL_ENV" \
+              --token "$INFISICAL_TOKEN" --plain)
+          fi
+
           echo "RENDER_API_KEY=$RENDER_API_KEY" >> "$GITHUB_ENV"
           echo "RENDER_SERVICE_ID=$RENDER_SERVICE_ID" >> "$GITHUB_ENV"
           exit 0

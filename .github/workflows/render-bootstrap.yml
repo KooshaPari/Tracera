@@ -48,16 +48,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Infisical CLI
+      - name: Install Infisical CLI (fallback credential source)
+        if: env.HAS_REPO_KEY != 'true'
         run: |
           curl -1sLf "https://artifacts-cli.infisical.com/setup.deb.sh" | sudo -E bash
           sudo apt-get install -y infisical
 
-      - name: Pull the Render API key
+      - name: Resolve the Render API key
         run: |
           set -euo pipefail
+          if [ -n "${REPO_RENDER_API_KEY:-}" ]; then
+            echo "Using the RENDER_API_KEY repository secret."
+            echo "::add-mask::$REPO_RENDER_API_KEY"
+            echo "RENDER_API_KEY=$REPO_RENDER_API_KEY" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
           if [ -z "${INFISICAL_TOKEN:-}" ]; then
-            echo "::error title='INFISICAL_TOKEN is not set'::Add the INFISICAL_TOKEN repository secret. Without it neither this workflow nor deploy-render.yml can reach Render, which is why deploy-render skips instead of deploying."
+            echo "::error title='No Render credential available'::Neither the RENDER_API_KEY repository secret nor INFISICAL_TOKEN is set, so the Render API cannot be reached."
             exit 1
           fi
           if ! key=$(infisical secrets get RENDER_API_KEY \
