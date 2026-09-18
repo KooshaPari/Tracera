@@ -34,3 +34,50 @@ bucket_name = "tracera-artifacts"
 [observability]
 enabled = true
 head_sampling_rate = 0.5
+
+# ---------------------------------------------------------------------------
+# Non-production workers.
+#
+# The top-level configuration above is production (`tracera-edge`, served at
+# tracera-edge.pheno.studio). These environments give dev and preview their own
+# worker names and API targets so a main-branch or pull-request deploy can never
+# promote itself over the production worker.
+#
+# See docs/04-guides/ENVIRONMENTS.md for the trigger and hostname matrix.
+# ---------------------------------------------------------------------------
+
+[env.dev]
+name = "tracera-edge-dev"
+
+# KV and R2 are not inherited by wrangler environments, so they are restated
+# here. They currently resolve to the same namespace/bucket as production
+# because the deploy workflow resolves a single KV id; give dev its own once
+# that workflow can resolve a second one.
+[[env.dev.kv_namespaces]]
+binding = "TRACERA_KV"
+id = "placeholder-kv-id"
+preview_id = "placeholder-kv-preview-id"
+
+[[env.dev.r2_buckets]]
+binding = "TRACERA_R2"
+bucket_name = "tracera-artifacts"
+
+[env.dev.vars]
+ENVIRONMENT = "dev"
+TRACERA_API = "https://tracera-server-dev.onrender.com/api"
+
+[env.preview]
+name = "tracera-edge-preview"
+
+[[env.preview.kv_namespaces]]
+binding = "TRACERA_KV"
+id = "placeholder-kv-id"
+preview_id = "placeholder-kv-preview-id"
+
+[[env.preview.r2_buckets]]
+binding = "TRACERA_R2"
+bucket_name = "tracera-artifacts"
+
+[env.preview.vars]
+ENVIRONMENT = "preview"
+TRACERA_API = "https://tracera-server-dev.onrender.com/api"

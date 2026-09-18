@@ -1,8 +1,14 @@
 name: Deploy Cloudflare Worker (tracera-edge)
+
+# Environment delineation: docs/04-guides/ENVIRONMENTS.md
+#
+# main deploys the `dev` worker (tracera-edge-dev); only a v* tag, or an explicit
+# workflow_dispatch with environment: prod, deploys the production worker.
+
 on:
-  workflow_call:
   push:
     branches: [main, ci/infisical-deploys]
+    tags: ['v*']
     paths:
       - "crates/tracera-edge/**"
       - ".github/workflows/deploy-cloudflare.yml"
@@ -11,20 +17,57 @@ on:
     inputs:
       environment:
         description: "Target environment"
-        required: false
-        default: production
+        required: true
         type: choice
-        options: [production, staging]
+        default: dev
+        options: [dev, preview, prod]
+  workflow_call:
+    inputs:
+      environment:
+        description: "Target environment; empty derives it from the caller's event"
+        required: false
+        type: string
+        default: ''
 permissions:
   contents: read
 jobs:
+  # Single derivation point for the target environment, shared by the job that
+  # needs it for its GitHub environment name and for the wrangler --env flag.
+  plan:
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      env: ${{ steps.derive.outputs.env }}
+    steps:
+      - id: derive
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            target=preview
+          elif [ "${GITHUB_REF#refs/tags/}" != "${GITHUB_REF}" ]; then
+            # A release tag is always production; an input must not downgrade it.
+            target=prod
+          elif [ -n "${{ inputs.environment }}" ]; then
+            target="${{ inputs.environment }}"
+          else
+            target=dev
+          fi
+          case "$target" in
+            dev|preview|prod) ;;
+            *) echo "::error::unsupported environment '$target'"; exit 1 ;;
+          esac
+          echo "env=$target" >> "$GITHUB_OUTPUT"
+          echo "Target environment: $target"
+
   deploy:
     name: Deploy to Cloudflare Workers
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
-      name: ${{ inputs.environment || 'cloudflare-production' }}
+      name: cloudflare-${{ needs.plan.outputs.env }}
     env:
+      DEPLOY_ENV: ${{ needs.plan.outputs.env }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
@@ -160,7 +203,17 @@ jobs:
         # red CI run, not a silent skip. The pre-flight probe above is the
         # only place that may exit gracefully on missing scope.
         run: |
-          npx wrangler deploy \
+          set -euo pipefail
+          # Production is the top-level worker (tracera-edge). dev and preview
+          # deploy their own named workers from the [env.*] blocks in
+          # wrangler.toml, so a main-branch deploy cannot overwrite production.
+          if [ "$DEPLOY_ENV" = "prod" ]; then
+            env_flag=""
+          else
+            env_flag="--env $DEPLOY_ENV"
+          fi
+          # shellcheck disable=SC2086  # deliberate word splitting: empty or --env <name>
+          npx wrangler deploy $env_flag \
             --config wrangler.deploy.toml \
             --compatibility-date 2025-04-01 \
             --minify
@@ -172,6 +225,10 @@ jobs:
           set +e
           sleep 10
           BASE="${CF_ZONE:-tracera-edge.workers.dev}"
+          # dev and preview publish their own worker names, so probe that one.
+          if [ "$DEPLOY_ENV" != "prod" ]; then
+            BASE="tracera-edge-$DEPLOY_ENV.workers.dev"
+          fi
           STATUS=$(curl -sS -o /dev/null -w "%{http_code}" "https://$BASE/healthz" 2>/dev/null || echo "000")
           if [ "$STATUS" = "200" ]; then
             echo "Worker health check passed: $BASE/healthz -> 200"

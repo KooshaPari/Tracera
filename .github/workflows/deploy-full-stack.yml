@@ -1,13 +1,20 @@
 name: Deploy Full Stack (Backend + Frontend + Edge)
+
+# Environment delineation: docs/04-guides/ENVIRONMENTS.md
+#
+# This orchestrator passes the target environment down to the three reusable
+# deploy workflows. On a v* tag the environment is prod; on a push to main it is
+# dev; a manual run chooses explicitly.
+
 on:
   workflow_dispatch:
     inputs:
       environment:
         description: "Target environment"
-        required: false
-        default: production
+        required: true
+        default: dev
         type: choice
-        options: [production, staging]
+        options: [dev, preview, prod]
       skip_tests:
         description: "Skip test suite"
         required: false
@@ -15,6 +22,7 @@ on:
         type: boolean
   push:
     branches: [main]
+    tags: ['v*']
     paths:
       - "crates/**"
       - "frontend/**"
@@ -68,6 +76,8 @@ jobs:
     needs: [test]
     if: ${{ inputs.skip_tests || needs.test.result == 'success' }}
     uses: ./.github/workflows/deploy-cloudflare.yml
+    with:
+      environment: ${{ inputs.environment }}
     secrets: inherit
     permissions:
       contents: read

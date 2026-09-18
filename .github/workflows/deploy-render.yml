@@ -1,8 +1,14 @@
 name: Deploy Render Backend
+
+# Environment delineation: docs/04-guides/ENVIRONMENTS.md
+#
+# main deploys the `tracera-server-dev` service; only a v* tag, or an explicit
+# workflow_dispatch with environment: prod, deploys the production fallback.
+
 on:
-  workflow_call:
   push:
     branches: [main, ci/infisical-deploys]
+    tags: ['v*']
     paths:
       - "crates/tracera-server/**"
       - "Dockerfile.rust"
@@ -10,21 +16,66 @@ on:
       - ".github/workflows/deploy-render.yml"
   workflow_dispatch:
     inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        default: dev
+        options: [dev, preview, prod]
       force_deploy:
         description: "Force redeploy even without code changes"
         required: false
         default: "false"
         type: boolean
+  workflow_call:
+    inputs:
+      environment:
+        description: "Target environment; empty derives it from the caller's event"
+        required: false
+        type: string
+        default: ''
 permissions:
   contents: read
 jobs:
+  # Single derivation point for the target environment.
+  plan:
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      env: ${{ steps.derive.outputs.env }}
+    steps:
+      - id: derive
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            target=preview
+          elif [ "${GITHUB_REF#refs/tags/}" != "${GITHUB_REF}" ]; then
+            # A release tag is always production; an input must not downgrade it.
+            target=prod
+          elif [ -n "${{ inputs.environment }}" ]; then
+            target="${{ inputs.environment }}"
+          else
+            target=dev
+          fi
+          case "$target" in
+            dev|preview|prod) ;;
+            *) echo "::error::unsupported environment '$target'"; exit 1 ;;
+          esac
+          echo "env=$target" >> "$GITHUB_OUTPUT"
+          echo "Target environment: $target"
+
   deploy:
     name: Deploy to Render
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
-      name: render-production
+      name: render-${{ needs.plan.outputs.env }}
     env:
+      DEPLOY_ENV: ${{ needs.plan.outputs.env }}
+      # render.yaml keeps the dev service and the production fallback in separate
+      # Infisical environments, so the credentials follow the target.
+      INFISICAL_ENV: ${{ needs.plan.outputs.env == 'prod' && 'prod' || 'dev' }}
       INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
       INFISICAL_PROJECT_ID: ${{ vars.INFISICAL_PROJECT_ID }}
     steps:
@@ -49,10 +100,10 @@ jobs:
         run: |
           set +e
           RENDER_API_KEY=$(infisical secrets get RENDER_API_KEY \
-            --projectId "$INFISICAL_PROJECT_ID" --env prod \
+            --projectId "$INFISICAL_PROJECT_ID" --env "$INFISICAL_ENV" \
             --token "$INFISICAL_TOKEN" --plain)
           RENDER_SERVICE_ID=$(infisical secrets get RENDER_SERVICE_ID \
-            --projectId "$INFISICAL_PROJECT_ID" --env prod \
+            --projectId "$INFISICAL_PROJECT_ID" --env "$INFISICAL_ENV" \
             --token "$INFISICAL_TOKEN" --plain)
           echo "RENDER_API_KEY=$RENDER_API_KEY" >> "$GITHUB_ENV"
           echo "RENDER_SERVICE_ID=$RENDER_SERVICE_ID" >> "$GITHUB_ENV"
