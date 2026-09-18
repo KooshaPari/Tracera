@@ -7,13 +7,13 @@ deploy time by `.github/workflows/deploy-*.yml`.
 
 ## Already Provisioned
 
-| Variable / Secret | Where stored | Notes |
-|---|---|---|
-| `CLOUDFLARE_ACCOUNT_ID` | GitHub repo secret | (numeric account ID) |
-| `WORKOS_CLIENT_ID` | GitHub repo secret | (WorkOS project client id) |
-| `WORKOS_API_KEY` | GitHub repo secret | test key, ok for staging |
-| `TRACERA_API_BASE` | GitHub repo variable | `https://tracera-server.onrender.com` |
-| `INFISICAL_PROJECT_ID` | GitHub repo variable | (UUID) |
+| Variable / Secret       | Where stored         | Notes                                 |
+| ----------------------- | -------------------- | ------------------------------------- |
+| `CLOUDFLARE_ACCOUNT_ID` | GitHub repo secret   | (numeric account ID)                  |
+| `WORKOS_CLIENT_ID`      | GitHub repo secret   | (WorkOS project client id)            |
+| `WORKOS_API_KEY`        | GitHub repo secret   | test key, ok for staging              |
+| `TRACERA_API_BASE`      | GitHub repo variable | `https://tracera-server.onrender.com` |
+| `INFISICAL_PROJECT_ID`  | GitHub repo variable | (UUID)                                |
 
 > **Note:** This document intentionally uses placeholders rather than
 > literal token values. To inject secrets, use the
@@ -38,15 +38,15 @@ Replace with an **Account-scoped** token created at
 
 Permissions required:
 
-| Scope | Permission |
-|---|---|
-| Account | Workers Scripts: Edit |
+| Scope   | Permission               |
+| ------- | ------------------------ |
+| Account | Workers Scripts: Edit    |
 | Account | Workers KV Storage: Edit |
 | Account | Workers R2 Storage: Edit |
-| Account | Account Settings: Read |
-| Account | Workers Tail: Read |
+| Account | Account Settings: Read   |
+| Account | Workers Tail: Read       |
 
-Set **Account Resources** to *Include → Specific account → your CF account ID*.
+Set **Account Resources** to _Include → Specific account → your CF account ID_.
 
 ```bash
 gh secret set CLOUDFLARE_API_TOKEN --repo <REDACTED>/Tracera --body "<new_cf_token>"
@@ -61,11 +61,13 @@ service token. The Infisical CLI rejects it as "malformed access token"
 Two ways to fix:
 
 **Option A — Service Token (preferred, simplest):**
+
 1. <https://app.infisical.com> → Project → Settings → Machine Identities
 2. Create service token → env: `prod` → scopes: read
 3. Copy `stk_…` value → set as `INFISICAL_TOKEN`
 
 **Option B — Universal Auth Client Secret:**
+
 1. <https://app.infisical.com> → Project → Machine Identities → existing client
 2. Copy the matching **Client Secret**
 3. Set both `INFISICAL_CLIENT_ID` and add `INFISICAL_CLIENT_SECRET`
@@ -91,10 +93,10 @@ Set up Render Blueprint first:
 
 Then add to Infisical `prod` env:
 
-| Key | Value |
-|---|---|
-| `RENDER_API_KEY` | (from <https://dashboard.render.com/api-keys>) |
-| `RENDER_SERVICE_ID` | (e.g. `srv-XXXXXXXX`) |
+| Key                 | Value                                          |
+| ------------------- | ---------------------------------------------- |
+| `RENDER_API_KEY`    | (from <https://dashboard.render.com/api-keys>) |
+| `RENDER_SERVICE_ID` | (e.g. `srv-XXXXXXXX`)                          |
 
 ### 4. `VERCEL_TOKEN` (GitHub repo secret)
 
@@ -109,7 +111,7 @@ gh secret set VERCEL_TOKEN --repo <REDACTED>/Tracera --body "vercel_..."
 ## Graceful-Skip Behavior
 
 Both `deploy-cloudflare.yml` and `deploy-render.yml` now validate
-token scope *before* attempting any deploy. If permissions are
+token scope _before_ attempting any deploy. If permissions are
 insufficient, the workflow:
 
 1. Exits **0** (success) instead of failing the run
@@ -142,13 +144,13 @@ curl https://tracera-kappa.vercel.app                   # dev frontend -> 200
 
 ## Cost Summary
 
-| Service | Tier | Cost |
-|---|---|---|
-| Cloudflare Workers + KV + R2 | Free | $0 |
-| Vercel | Free | $0 |
-| Render (free PostgreSQL + free Docker) | Free | $0 |
-| Domain `pheno.studio` | Annual | ~$10/yr |
-| **Total** | | **~$10/year** |
+| Service                                | Tier   | Cost          |
+| -------------------------------------- | ------ | ------------- |
+| Cloudflare Workers + KV + R2           | Free   | $0            |
+| Vercel                                 | Free   | $0            |
+| Render (free PostgreSQL + free Docker) | Free   | $0            |
+| Domain `pheno.studio`                  | Annual | ~$10/yr       |
+| **Total**                              |        | **~$10/year** |
 
 ## Files Referenced
 
