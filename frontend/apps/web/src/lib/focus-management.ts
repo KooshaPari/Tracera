@@ -176,6 +176,14 @@ export function announceToScreenReader(
   message: string,
   priority: "polite" | "assertive" = "polite",
 ): void {
+  // Live-region announcements are a browser-only affordance, and callers can
+  // schedule them from timers that outlive a component - or, under test, the
+  // jsdom environment itself. Treat the absence of a document as "nothing to
+  // announce" instead of throwing an uncaught ReferenceError.
+  if (typeof document === "undefined") {
+    return;
+  }
+
   // Create or get announcement region
   let announcer = document.getElementById("aria-announcer");
 
