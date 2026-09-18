@@ -11,7 +11,6 @@ from tracertm.models.trace_link import (
     TraceLink,
     TraceLinkType,
 )
-
 from tracertm.services.github_import_service import BulkIngestionResult
 
 

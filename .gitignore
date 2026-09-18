@@ -125,3 +125,10 @@ dev_server*.log
 .trunk/out
 .trunk/plugins
 .trunk/tools
+
+# Python coverage artifacts. `pytest --cov` writes .coverage locally and CI
+# uploads coverage.xml as a Codecov artifact; neither belongs in the tree.
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
