@@ -112,9 +112,19 @@ jobs:
             | jq -r --arg n "$SERVICE_NAME" '.[] | select(.service.name == $n) | .service.id' | head -1)
 
           if [ -n "$existing" ]; then
-            echo "PASS: $SERVICE_NAME already exists (id=$existing)"
-            echo "SERVICE_ID=$existing" >> "$GITHUB_ENV"
-            exit 0
+            echo "FOUND: $SERVICE_NAME exists (id=$existing)"
+            if [ "$APPLY" != "true" ]; then
+              echo "REPORT: re-run with apply=true to recreate it with the corrected payload."
+              echo "SERVICE_ID=$existing" >> "$GITHUB_ENV"
+              exit 0
+            fi
+            # Every deploy of this service failed with update_failed because the
+            # payload it was created from was invalid (envVars nested under
+            # serviceDetails, image.ownerId not matching the owner), and Render
+            # cannot repair that in place. Recreate it.
+            code=$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE "${auth[@]}" "$api/services/$existing")
+            echo "Deleted the previous service (HTTP $code); recreating with the corrected payload."
+            sleep 5
           fi
 
           if [ "$APPLY" != "true" ]; then
@@ -129,30 +139,38 @@ jobs:
             exit 1
           fi
 
+          # Schema per https://api-docs.render.com/reference/create-service.
+          # Three things the previous payload got wrong, which is why every
+          # deploy failed with update_failed within seconds:
+          #   - envVars belongs on the service, not under serviceDetails
+          #   - autoDeploy likewise
+          #   - image.ownerId "should match the owner of the service", not the
+          #     stale team id carried over from render.yaml
+          # and serviceDetails.runtime is required for a web service.
           payload=$(jq -n \
             --arg name "$SERVICE_NAME" \
             --arg owner "$owner_id" \
             --arg image "$IMAGE_PATH" \
-            --arg imageOwner "$IMAGE_OWNER_ID" \
             '{
               type: "web_service",
               name: $name,
               ownerId: $owner,
-              image: { imagePath: $image, ownerId: $imageOwner },
+              autoDeploy: "no",
+              image: { imagePath: $image, ownerId: $owner },
+              envVars: [
+                { key: "DATABASE_URL", value: "sqlite::memory:" },
+                { key: "TRACERA_AUTH_TOKEN", value: "tracera_dev_fallback_2026_xyz" },
+                { key: "TRACERA_BIND_ADDR", value: "0.0.0.0:10000" },
+                { key: "TRACERA_PUBLIC_BIND_MODE", value: "authenticated-proxy" },
+                { key: "PORT", value: "10000" },
+                { key: "RUST_LOG", value: "info" }
+              ],
               serviceDetails: {
                 env: "image",
+                runtime: "image",
                 plan: "free",
                 region: "oregon",
-                healthCheckPath: "/healthz",
-                autoDeploy: "no",
-                envVars: [
-                  { key: "DATABASE_URL", value: "sqlite::memory:" },
-                  { key: "TRACERA_AUTH_TOKEN", value: "tracera_dev_fallback_2026_xyz" },
-                  { key: "TRACERA_BIND_ADDR", value: "0.0.0.0:10000" },
-                  { key: "TRACERA_PUBLIC_BIND_MODE", value: "authenticated-proxy" },
-                  { key: "PORT", value: "10000" },
-                  { key: "RUST_LOG", value: "info" }
-                ]
+                healthCheckPath: "/healthz"
               }
             }')
 
