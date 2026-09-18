@@ -12,7 +12,7 @@ deploy time by `.github/workflows/deploy-*.yml`.
 | `CLOUDFLARE_ACCOUNT_ID` | GitHub repo secret | (numeric account ID) |
 | `WORKOS_CLIENT_ID` | GitHub repo secret | (WorkOS project client id) |
 | `WORKOS_API_KEY` | GitHub repo secret | test key, ok for staging |
-| `TRACERA_API_BASE` | GitHub repo variable | `https://api.pheno.studio` |
+| `TRACERA_API_BASE` | GitHub repo variable | `https://tracera-server.onrender.com` |
 | `INFISICAL_PROJECT_ID` | GitHub repo variable | (UUID) |
 
 > **Note:** This document intentionally uses placeholders rather than
