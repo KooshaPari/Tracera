@@ -3,7 +3,11 @@ name: release-crates
 on:
   push:
     tags:
-      - "v*"
+      # Crates version independently of the app: tracera-server and tracertm-mcp
+      # are 0.2.0 while app releases are v2.x. Tagging an app release must not
+      # attempt a crates.io publish, so crate releases use their own namespace
+      # and the tags below derive the expected version from it.
+      - "crates-v*"
   pull_request:
     paths:
       - "crates/tracera-server/**"
@@ -108,6 +112,17 @@ jobs:
       - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # stable toolchain action
         with:
           toolchain: stable
+      - name: Verify the registry token is configured
+        # The v2.4.0 run showed CARGO_REGISTRY_TOKEN evaluating to empty. Without
+        # this check a crate release tagged before the secret exists fails deep
+        # inside `cargo publish` with a much less obvious error.
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          if [ -z "${CARGO_REGISTRY_TOKEN}" ]; then
+            echo "::error::CARGO_REGISTRY_TOKEN is not set. Add it as a repository secret before pushing a crates-v* tag."
+            exit 1
+          fi
       # Ordered publishing: independent leaf first, then the crate whose
       # internal dependency (tracera-workos, publish=false) must already exist
       # on crates.io. Both steps require the registry token.
@@ -116,7 +131,7 @@ jobs:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: |
           CRATE_VERSION=$(grep '^version' crates/tracertm-mcp/Cargo.toml | head -1 | cut -d'"' -f2)
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TAG_VERSION="${GITHUB_REF_NAME#crates-v}"
           if [ "$CRATE_VERSION" = "$TAG_VERSION" ]; then
             cargo publish --locked -p tracertm-mcp --token "$CARGO_REGISTRY_TOKEN"
           else
@@ -128,7 +143,7 @@ jobs:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: |
           CRATE_VERSION=$(grep '^version' crates/tracera-server/Cargo.toml | head -1 | cut -d'"' -f2)
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TAG_VERSION="${GITHUB_REF_NAME#crates-v}"
           if [ "$CRATE_VERSION" = "$TAG_VERSION" ]; then
             cargo publish --locked -p tracera-server --token "$CARGO_REGISTRY_TOKEN"
           else
