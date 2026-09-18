@@ -82,7 +82,10 @@ jobs:
       # Pick the service that matches the target. A single shared id meant a dev
       # deploy would have triggered the production fallback service.
       REPO_RENDER_SERVICE_ID: ${{ needs.plan.outputs.env == 'prod' && vars.RENDER_SERVICE_ID || vars.RENDER_SERVICE_ID_DEV || vars.RENDER_SERVICE_ID }}
-      HAS_REPO_CREDS: ${{ secrets.RENDER_API_KEY != '' && vars.RENDER_SERVICE_ID != '' }}
+      # Testing only vars.RENDER_SERVICE_ID meant a workspace with just the dev
+      # service id configured was treated as having no repo credentials and fell
+      # back to Infisical, which does not hold the Render key.
+      HAS_REPO_CREDS: ${{ secrets.RENDER_API_KEY != '' && (vars.RENDER_SERVICE_ID != '' || vars.RENDER_SERVICE_ID_DEV != '') }}
       INFISICAL_ENV: ${{ needs.plan.outputs.env == 'prod' && 'prod' || 'dev' }}
       INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
       INFISICAL_PROJECT_ID: ${{ vars.INFISICAL_PROJECT_ID }}

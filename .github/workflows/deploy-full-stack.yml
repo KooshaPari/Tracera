@@ -71,6 +71,11 @@ jobs:
     needs: [test]
     if: inputs.skip_tests == 'true' || needs.test.result == 'success'
     uses: ./.github/workflows/deploy-render.yml
+    # Without this the reusable workflow received an empty workflow_call input,
+    # saw workflow_dispatch, and fell through to dev, so a dispatch asking for
+    # prod deployed the backend as dev.
+    with:
+      environment: ${{ inputs.environment }}
     secrets: inherit
     permissions:
       contents: read
@@ -80,6 +85,10 @@ jobs:
     needs: [test]
     if: inputs.skip_tests == 'true' || needs.test.result == 'success'
     uses: ./.github/workflows/deploy-vercel.yml
+    # Same defect as deploy-backend: the environment has to be forwarded or the
+    # frontend deploys to preview rather than the requested environment.
+    with:
+      environment: ${{ inputs.environment }}
     secrets: inherit
     permissions:
       contents: read
@@ -101,17 +110,36 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      # Follow the environment that was actually deployed. Probing the production
+      # hosts unconditionally meant a dev run reported on services it had not
+      # touched, and the previous edge URL was built from the worker name rather
+      # than a real workers.dev hostname, so it could never have passed.
+      TARGET_ENV: ${{ github.event_name == 'pull_request' && 'preview' || (startsWith(github.ref, 'refs/tags/') && 'prod' || (inputs.environment != '' && inputs.environment || 'dev')) }}
     steps:
       - name: Verify all services
         run: |
+          set -uo pipefail
+          case "$TARGET_ENV" in
+            prod)
+              backend="https://tracera-server.onrender.com/healthz"
+              frontend="https://tracera.pheno.studio"
+              ;;
+            *)
+              backend="https://tracera-server-dev.onrender.com/healthz"
+              frontend="https://tracera-kappa.vercel.app"
+              ;;
+          esac
+          echo "Target environment: $TARGET_ENV"
+
           echo "=== Backend ==="
-          curl -sf https://${{ vars.RENDER_SERVICE_ID || 'tracera-server' }}.onrender.com/healthz || echo "BACKEND: pending"
+          curl -sf "$backend" || echo "BACKEND: pending"
 
           echo "=== Frontend ==="
-          curl -sf -o /dev/null https://tracera-kappa.vercel.app || echo "FRONTEND: pending"
+          curl -sf -o /dev/null "$frontend" || echo "FRONTEND: pending"
 
           echo "=== Edge ==="
-          curl -sf -o /dev/null https://tracera-edge.workers.dev/healthz || echo "EDGE: pending"
+          echo "The edge worker is environment-scoped; deploy-edge above verifies it."
 
           echo "=== All deployments triggered ==="
 

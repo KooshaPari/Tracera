@@ -13,6 +13,15 @@ on:
       - "crates/tracera-edge/**"
       - ".github/workflows/deploy-cloudflare.yml"
       - "wrangler.toml"
+  # Without this the preview branch in the plan step below was unreachable, so
+  # cloudflare-preview could never be produced despite ENVIRONMENTS.md describing
+  # it. Fork PRs simply have no credentials and are skipped by the guard.
+  pull_request:
+    branches: [main]
+    paths:
+      - "crates/tracera-edge/**"
+      - ".github/workflows/deploy-cloudflare.yml"
+      - "wrangler.toml"
   workflow_dispatch:
     inputs:
       environment:

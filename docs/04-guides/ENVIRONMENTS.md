@@ -6,18 +6,22 @@ own hostname so a URL always identifies which system you are talking to.
 
 ## The model
 
-| Environment | Trigger                                                          | GitHub environment                                                  | Approval           | Purpose                                            |
-| ----------- | ---------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------ | -------------------------------------------------- |
-| `preview`   | `pull_request` against `main`                                    | `vercel-preview` / `render-preview` / `cloudflare-preview`          | none               | Per-PR build, reaches a non-production backend     |
-| `dev`       | push to `main`; nightly `schedule`                               | `vercel-dev` / `render-dev` / `cloudflare-dev`                      | none               | Continuous delivery and the nightly validation run |
-| `prod`      | push of a `v*` tag; `workflow_dispatch` with `environment: prod` | `vercel-production` / `render-production` / `cloudflare-production` | required reviewers | Public production                                  |
+| Environment | Trigger                                                              | GitHub environment                                                  | Approval           | Purpose                                            |
+| ----------- | -------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------ | -------------------------------------------------- |
+| `preview`   | `pull_request` against `main` (`deploy-vercel`, `deploy-cloudflare`) | `vercel-preview` / `cloudflare-preview`                             | none               | Per-PR build, reaches a non-production backend     |
+| `dev`       | push to `main`; nightly `schedule`                                   | `vercel-dev` / `render-dev` / `cloudflare-dev`                      | none               | Continuous delivery and the nightly validation run |
+| `prod`      | push of a `v*` tag; `workflow_dispatch` with `environment: prod`     | `vercel-production` / `render-production` / `cloudflare-production` | required reviewers | Public production                                  |
 
 `workflow_dispatch` takes an explicit `environment` input (`dev`, `preview`,
 `prod`) defaulting to `dev`, so a manual run never lands in production by
 accident.
 
-Each deploy workflow derives that environment in a single `plan` job from the
-event and passes it on, rather than re-deriving it per step:
+`deploy-render`, `deploy-vercel` and `deploy-cloudflare` each derive that
+environment in a single `plan` job from the event and pass it on, rather than
+re-deriving it per step. `deploy-full-stack` has no `plan` job of its own; it
+forwards its `environment` input to the three workflows it calls, so a dispatch
+asking for `prod` reaches the backend and frontend as `prod` instead of falling
+through to `dev`:
 
 | Event                                      | Derived environment     |
 | ------------------------------------------ | ----------------------- |
@@ -36,7 +40,7 @@ re-verify before relying on any of it.
 | `prod`            | `https://tracera.pheno.studio`     | `https://tracera.pheno.studio/api`        | `https://tracera-edge.pheno.studio` |
 | `prod` (fallback) | —                                  | `https://tracera-server.onrender.com`     | —                                   |
 | `dev`             | `https://tracera-kappa.vercel.app` | `https://tracera-server-dev.onrender.com` | worker deployed with dev vars       |
-| `preview`         | Vercel-generated URL per PR        | same as `dev`                             | not deployed                        |
+| `preview`         | Vercel-generated URL per PR        | same as `dev` (no separate service)       | `tracera-edge-preview` worker       |
 
 Notes that matter when debugging a hostname:
 
@@ -63,9 +67,13 @@ Notes that matter when debugging a hostname:
      called `/orgs/<owner>/packages/...` for a repository owned by a _user_, so
      the flip 404'd on every run and the image stayed private.
 
-  `tracera-server-dev` **now exists** (`srv-damfhogu01pc73a39jt0`, created by the
+  `tracera-server-dev` **serves** (`srv-damigk5bedkc73bspbm0`, created by the
   Bootstrap Render dev service workflow, recorded as the `RENDER_SERVICE_ID_DEV`
-  repository variable). It does not serve yet, and the remaining cause is (2):
+  repository variable), and `/healthz` returns 200. The remaining cause was **not**
+  (2) below: the private-package theory was wrong, because the working production
+  fallback pulls the same private image. Every deploy was instead rejected
+  (`update_failed` after about five seconds) because the create payload was
+  schema-invalid. The numbered items below are kept as history:
   the GHCR package is private, so Render cannot pull it. The bootstrap run shows
   this as `attempt N: …/healthz -> 000` and warns that the registry credential
   (`image.ownerId` in `render.yaml`) must be configured. Either configure that
@@ -76,8 +84,8 @@ Notes that matter when debugging a hostname:
   over package visibility for a user-owned package and both endpoints 404. Set a
   `GHCR_ADMIN_TOKEN` secret (a PAT with package admin) and the step will do it.
 
-  Until the service serves, `dev` and `preview` fall back to `TRACERA_API_BASE`
-  rather than being pointed at a dead host.
+  `TRACERA_API_BASE_DEV` now points at the dev service, so `dev` and `preview`
+  no longer fall back to `TRACERA_API_BASE`.
 
 - **Render no longer depends on Infisical.** `deploy-render.yml` and
   `render-bootstrap.yml` now read the repository's own `RENDER_API_KEY` secret
@@ -118,7 +126,7 @@ malformed` (see `DEPLOY_CREDENTIALS.md`). It now carries a read-scoped service
 | Variable               | Used for                                                                                    | Current value                         |
 | ---------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------- |
 | `TRACERA_API_BASE`     | production API base, baked into the frontend build and used by the parity smokes            | `https://tracera-server.onrender.com` |
-| `TRACERA_API_BASE_DEV` | overrides the API base for `dev` and `preview`; falls back to `TRACERA_API_BASE` when unset | unset                                 |
+| `TRACERA_API_BASE_DEV` | overrides the API base for `dev` and `preview`; falls back to `TRACERA_API_BASE` when unset | `https://tracera-server-dev.onrender.com` |
 
 Set `TRACERA_API_BASE` to `https://tracera.pheno.studio` once Cloudflare Access
 is fronting a build that should be smoked without a service token, otherwise CI

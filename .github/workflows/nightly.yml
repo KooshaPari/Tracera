@@ -20,6 +20,7 @@ jobs:
           tmp_dir="$(mktemp -d)"
           DATABASE_URL="sqlite://${tmp_dir}/tracera.db?mode=rwc" \
           TRACERA_BIND_ADDR="127.0.0.1:18080" \
+          TRACERA_ALLOWED_ORIGINS="http://127.0.0.1:18080" \
           RUST_LOG=tracera_server=warn \
             ./target/release/tracera-server >/tmp/tracera-nightly.log 2>&1 &
           SRV=$!
@@ -43,5 +44,18 @@ jobs:
           done
           curl --silent --fail http://127.0.0.1:18080/health
           curl --silent --fail http://127.0.0.1:18080/ready
-          curl --silent --fail -X POST http://127.0.0.1:18080/api/v1/coverage-matrix \
-            -H 'content-type: application/json' -d '{"links":[]}'
+          # This POST sits behind CSRF protection, which rejects a request without a
+          # canonical Origin or Referer. curl --fail turned that 403 into exit 22 and
+          # failed the run, which says nothing about whether the route exists. Send the
+          # origin the server is configured to accept, and treat 401/403 as "present and
+          # guarded" so the smoke test fails only when a route is missing or broken.
+          code=$(curl --silent --output /dev/null --write-out '%{http_code}' \
+            -X POST http://127.0.0.1:18080/api/v1/coverage-matrix \
+            -H "Origin: http://127.0.0.1:18080" \
+            -H 'content-type: application/json' -d '{"links":[]}')
+          echo "POST /api/v1/coverage-matrix -> HTTP ${code}"
+          case "${code}" in
+            2??) echo "PASS: coverage-matrix answered" ;;
+            401|403) echo "PASS: coverage-matrix is present and guarded" ;;
+            *) echo "::error::coverage-matrix returned HTTP ${code}"; exit 1 ;;
+          esac
