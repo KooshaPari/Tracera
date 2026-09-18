@@ -12,6 +12,8 @@ import {
   filterNDJSON,
   mapNDJSON,
   calculateThroughput,
+  fetchNDJSON,
+  createCancellableNDJSONStream,
   type NDJSONProgressEvent,
   type NDJSONCompleteEvent,
   type NDJSONErrorEvent,
