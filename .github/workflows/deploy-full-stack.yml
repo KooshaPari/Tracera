@@ -27,7 +27,11 @@ permissions:
 jobs:
   test:
     name: Run tests
-    if: inputs.skip_tests != 'true'
+    # `skip_tests` is declared `type: boolean`, so the inputs context yields a
+    # boolean. Comparing it to the string 'true' coerces to a number, making
+    # `true != 'true'` evaluate true and run the tests that were meant to be
+    # skipped. Negate the value directly instead.
+    if: ${{ !inputs.skip_tests }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -62,7 +66,7 @@ jobs:
   deploy-edge:
     name: Deploy Edge (Cloudflare)
     needs: [test]
-    if: inputs.skip_tests == 'true' || needs.test.result == 'success'
+    if: ${{ inputs.skip_tests || needs.test.result == 'success' }}
     uses: ./.github/workflows/deploy-cloudflare.yml
     secrets: inherit
     permissions:
