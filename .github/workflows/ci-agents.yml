@@ -152,12 +152,15 @@ jobs:
         run: cargo fmt --all -- --check
 
       # ---- Prettier ----
-      - name: prettier check
+      # bun, not node: actions/setup-node rejects `cache: "bun"` with
+      # "Caching for 'bun' is not supported", which killed this job before any
+      # formatting ran. Prettier runs through bun here, and setup-bun brings its
+      # own dependency cache.
+      - name: setup bun
         if: needs.detect-changes.outputs.typescript == 'true'
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: "22"
-          cache: "bun"
+          bun-version: latest
       - name: bun install
         if: needs.detect-changes.outputs.typescript == 'true'
         working-directory: frontend
@@ -211,7 +214,9 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
-          cache: "bun"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - name: bun install
         working-directory: frontend
         run: bun install --frozen-lockfile
@@ -306,16 +311,18 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: "22"
-          cache: "bun"
+          bun-version: latest
       - name: bun install
         working-directory: frontend
         run: bun install --frozen-lockfile
       - name: vitest
         working-directory: frontend
-        run: bun --cwd apps/web run test --silent --reporter=basic
+        # No --reporter here: the web package's test script already selects one,
+        # and this used to override it with `basic`, which vitest 4 removed
+        # ("Failed to load custom Reporter from basic").
+        run: bun --cwd apps/web run test --silent
       - name: contract tests
         working-directory: frontend
         run: bun run test:api-base --silent || true
