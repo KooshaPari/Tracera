@@ -75,12 +75,32 @@ Notes that matter when debugging a hostname:
   rather than being pointed at a dead host.
 
 - **The Render credential is currently unusable from CI, which is the real
-  blocker for `dev`.** `INFISICAL_TOKEN` is unset or malformed: Infisical answers
-  `403 The provided access token is malformed`. Every `deploy-render` run
-  therefore reaches `render_creds_ok=false` and skips, reporting success without
-  deploying anything. Any such run carries an
-  `::error title='Render deploy skipped'` annotation saying so. Fix
-  `INFISICAL_TOKEN` first; creating the dev service is the step after that.
+  blocker for `dev`.** Two independent faults, both confirmed against the live
+  Infisical project from a logged-in CLI session:
+
+  1. `INFISICAL_TOKEN` holds an Infisical **Universal Auth Client ID**, not a
+     service token, so the CLI rejects it: `403 The provided access token is
+malformed`. `DEPLOY_CREDENTIALS.md` already documents this.
+  2. **The project does not contain the deploy secrets at all.** Project
+     `8efe392e-…` (`INFISICAL_PROJECT_ID`) holds AI-tooling values -
+     `OPENAI_API_KEY`, `LANGFUSE_*`, `LANGSMITH_*`, `NIAH_*`, `HARBOR_*`,
+     `MERGIFY_*`, `PORTAGE_ROOT`, plus Apple signing certs and `SONAR_TOKEN` in
+     `prod`. It has **no `RENDER_API_KEY`, no `RENDER_SERVICE_ID`, no
+     `CLOUDFLARE_API_TOKEN`, and no `WORKOS_*`** in `dev`, `prod` or `staging`.
+
+  So fixing the token alone is not enough: `deploy-render` and the bootstrap
+  would still find nothing to pull. Either add the deploy secrets to
+  `8efe392e-…` under `dev` and `prod`, or point `INFISICAL_PROJECT_ID` at the
+  project that actually holds them. The keys these workflows read are:
+
+  | Key                                             | Read by                                          |
+  | ----------------------------------------------- | ------------------------------------------------ |
+  | `RENDER_API_KEY`, `RENDER_SERVICE_ID`           | `deploy-render.yml`, `render-bootstrap.yml`      |
+  | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | `deploy-cloudflare.yml` (secrets, not Infisical) |
+  | `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`            | WorkOS integration                               |
+
+  Until then every `deploy-render` run skips and reports success, carrying an
+  `::error title='Render deploy skipped'` annotation that says so.
 
 ## Repository variables
 
