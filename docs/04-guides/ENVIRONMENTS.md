@@ -63,20 +63,27 @@ Notes that matter when debugging a hostname:
      called `/orgs/<owner>/packages/...` for a repository owned by a _user_, so
      the flip 404'd on every run and the image stayed private.
 
-  To bring dev up, run the **Bootstrap Render dev service** workflow with
-  `apply=true`. It resolves the Render key from Infisical, creates
-  `tracera-server-dev` from the corrected image when it is missing, and waits for
-  `/healthz`. If the image is still private it names the registry credential
-  (`image.ownerId` in `render.yaml`) that Render needs, or you can flip the
-  package once at
+  `tracera-server-dev` **now exists** (`srv-damfhogu01pc73a39jt0`, created by the
+  Bootstrap Render dev service workflow, recorded as the `RENDER_SERVICE_ID_DEV`
+  repository variable). It does not serve yet, and the remaining cause is (2):
+  the GHCR package is private, so Render cannot pull it. The bootstrap run shows
+  this as `attempt N: …/healthz -> 000` and warns that the registry credential
+  (`image.ownerId` in `render.yaml`) must be configured. Either configure that
+  credential, or flip the package once at
   `https://github.com/users/KooshaPari/packages/container/tracera-server/settings`.
 
-  Until the service exists, `dev` and `preview` fall back to `TRACERA_API_BASE`
+  Note that `build-push-image.yml` cannot flip it: `GITHUB_TOKEN` has no authority
+  over package visibility for a user-owned package and both endpoints 404. Set a
+  `GHCR_ADMIN_TOKEN` secret (a PAT with package admin) and the step will do it.
+
+  Until the service serves, `dev` and `preview` fall back to `TRACERA_API_BASE`
   rather than being pointed at a dead host.
 
-- **The Render credential is currently unusable from CI, which is the real
-  blocker for `dev`.** Two independent faults, both confirmed against the live
-  Infisical project from a logged-in CLI session:
+- **Render no longer depends on Infisical.** `deploy-render.yml` and
+  `render-bootstrap.yml` now read the repository's own `RENDER_API_KEY` secret
+  first and keep Infisical only as a fallback, so the two facts below are
+  background rather than blockers. They were confirmed against the live Infisical
+  project from a logged-in CLI session:
   1. `INFISICAL_TOKEN` **has been fixed** - it used to hold an Infisical
      Universal Auth Client ID, not a
      service token, which the CLI rejected as `403 The provided access token is
