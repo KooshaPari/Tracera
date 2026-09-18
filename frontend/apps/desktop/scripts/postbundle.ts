@@ -18,7 +18,10 @@ import { existsSync, mkdirSync, rmSync, copyFileSync, cpSync, chmodSync, writeFi
 
 const DESKTOP_DIR = import.meta.dir.replace(/[/\\]scripts$/, "");
 const REPO_ROOT = join(DESKTOP_DIR, "..", "..", "..");
-const CLI_SRC = join(REPO_ROOT, "target", "release", "tracera");
+// Cargo appends `.exe` on Windows, so a POSIX-only name made the existence
+// check below fail there and aborted the whole desktop build.
+const CLI_NAME = process.platform === "win32" ? "tracera.exe" : "tracera";
+const CLI_SRC = join(REPO_ROOT, "target", "release", CLI_NAME);
 const FRONTEND_DIST = join(REPO_ROOT, "frontend", "dist");
 
 function log(...args: unknown[]): void {
@@ -27,12 +30,18 @@ function log(...args: unknown[]): void {
 
 function findApp(): string | null {
   const buildDir = join(DESKTOP_DIR, "build");
-  const platform = process.platform === "darwin"
-    ? `dev-${process.arch === "arm64" ? "macos-arm64" : "macos-x64"}`
-    : `dev-${process.platform}-${process.arch}`;
+  // Electrobun names the output directory per platform: dev-macos-<arch>,
+  // dev-win-<arch>, dev-linux-<arch>. Note win32 maps to "win", not "windows".
+  const arch = process.arch === "arm64" ? "arm64" : "x64";
+  const label = process.platform === "darwin" ? "macos" : process.platform === "win32" ? "win" : "linux";
+  const platform = `dev-${label}-${arch}`;
   const candidates = [
     join(buildDir, platform, "Tracera.app"),
     join(buildDir, platform, "Tracera-dev.app"),
+    // Windows and Linux emit an unpacked directory with the same inner layout
+    // (bin/, Resources/, Info.plist) instead of a macOS .app bundle.
+    join(buildDir, platform, "Tracera"),
+    join(buildDir, platform, "Tracera-dev"),
   ];
   for (const c of candidates) {
     if (existsSync(c)) return c;
@@ -189,8 +198,12 @@ async function main(): Promise<void> {
     }
   }
 
-  const bundle = join(finalApp, "Contents", "Resources", "tracera-bundle");
-  const resources = join(finalApp, "Contents", "Resources");
+  // macOS nests resources under Contents/; the Windows and Linux output roots
+  // hold Resources/ directly.
+  const resources = process.platform === "darwin"
+    ? join(finalApp, "Contents", "Resources")
+    : join(finalApp, "Resources");
+  const bundle = join(resources, "tracera-bundle");
   const binDir = join(bundle, "bin");
   const scriptsDir = join(bundle, "scripts");
 
@@ -208,9 +221,12 @@ async function main(): Promise<void> {
   log(`bundled frontend → ${resources}`);
 
   // CLI binary
-  copyFileSync(CLI_SRC, join(binDir, "tracera"));
-  chmodSync(join(binDir, "tracera"), 0o755);
-  log(`bundled CLI → ${join(binDir, "tracera")}`);
+  const cliDest = join(binDir, CLI_NAME);
+  copyFileSync(CLI_SRC, cliDest);
+  if (process.platform !== "win32") {
+    chmodSync(cliDest, 0o755);
+  }
+  log(`bundled CLI → ${cliDest}`);
 
   // Compose file (image-based)
   writeFileSync(join(bundle, "docker-compose.bundle.yml"), COMPOSE_BUNDLE, { mode: 0o644 });

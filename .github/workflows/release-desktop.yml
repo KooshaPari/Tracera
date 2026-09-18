@@ -3,7 +3,10 @@ name: Release Tracera Desktop
 # Builds cross-platform installers for the Tracera Electrobun desktop app.
 # Triggered on v* tags (release) or manual dispatch (test build).
 #
-# Output per platform:
+# Output per platform. Each archive contains the app bundle (a .app on macOS,
+# an unpacked directory on Windows and Linux) with the built SPA and the native
+# `tracera` CLI embedded under Resources/tracera-bundle/ by
+# frontend/apps/desktop/scripts/postbundle.ts:
 #   - macOS:   tracera-desktop-<ver>-macos-<arch>.zip  (zipped .app bundle)
 #   - Windows: tracera-desktop-<ver>-windows-<arch>.zip
 #   - Linux:   tracera-desktop-<ver>-linux-<arch>.tar.gz
@@ -35,23 +38,31 @@ jobs:
         include:
           # Pin the Apple runner; macos-latest may switch to a beta Xcode and
           # produce proc-macro dylibs with LINKEDIT layouts rejected by dyld.
+          #
+          # artifact_subdir mirrors electrobun's own output naming:
+          # dev-macos-<arch>, dev-win-<arch>, dev-linux-<arch> (note "win", not
+          # "windows"). app_dir/app_dir_alt name the produced bundle: a .app on
+          # macOS, an unpacked directory on Windows and Linux.
           - os: macos-14
             platform: macos
             arch: arm64
             artifact_subdir: dev-macos-arm64
-            package_ext: app
+            app_dir: Tracera.app
+            app_dir_alt: Tracera-dev.app
             archive_format: zip
           - os: windows-latest
             platform: windows
             arch: x64
-            artifact_subdir: dev-windows-x64
-            package_ext: exe
+            artifact_subdir: dev-win-x64
+            app_dir: Tracera-dev
+            app_dir_alt: Tracera
             archive_format: zip
           - os: ubuntu-latest
             platform: linux
             arch: x64
             artifact_subdir: dev-linux-x64
-            package_ext: AppImage
+            app_dir: Tracera-dev
+            app_dir_alt: Tracera
             archive_format: tar.gz
 
     steps:
@@ -87,6 +98,16 @@ jobs:
       - name: Build native CLI for desktop bundle
         run: cargo build --locked --release -p tracera-cli
 
+      - name: Build web bundle
+        # The desktop shell embeds the built SPA. scripts/postbundle.ts copies
+        # frontend/dist into the .app and exits non-zero when it is absent
+        # ("frontend build missing at .../frontend/dist; run the web build
+        # first"). The web workspace builds into exactly that path
+        # (apps/web/vite.config.mjs sets outDir: "../../dist"), but no step ran
+        # it, so every platform's postbundle failed on every tag.
+        working-directory: frontend
+        run: bun run build
+
       - name: Build with Electrobun
         working-directory: frontend/apps/desktop
         run: bun run build
@@ -97,22 +118,20 @@ jobs:
         shell: bash
         run: |
           set -e
-          case "${{ matrix.platform }}:${{ matrix.arch }}:${{ matrix.package_ext }}:${{ matrix.archive_format }}:${{ matrix.artifact_subdir }}" in
-            macos:arm64:app:zip:dev-macos-arm64|windows:x64:exe:zip:dev-windows-x64|linux:x64:AppImage:tar.gz:dev-linux-x64) ;;
-            *) echo "::error::Unsupported desktop packaging tuple"; exit 1 ;;
-          esac
           SUB="${{ matrix.artifact_subdir }}"
-          EXT="${{ matrix.package_ext }}"
-          if [ "$EXT" = "app" ]; then
-            ARTIFACT="build/${SUB}/Tracera.app"
-            if [ ! -d "$ARTIFACT" ]; then
-              ARTIFACT="build/${SUB}/Tracera-dev.app"
+          # macOS gets a .app bundle; Windows and Linux get an unpacked directory.
+          # Both are directories, so this only ever looks for directories - the
+          # previous file glob for *.exe/*.AppImage never matched anything on
+          # Windows or Linux, where electrobun produces a directory instead.
+          ARTIFACT=""
+          for name in "${{ matrix.app_dir }}" "${{ matrix.app_dir_alt }}"; do
+            if [ -d "build/${SUB}/${name}" ]; then
+              ARTIFACT="build/${SUB}/${name}"
+              break
             fi
-          else
-            ARTIFACT=$(find "build/${SUB}" -maxdepth 2 -type f -name "*.${EXT}" | head -1)
-          fi
-          if [ -z "$ARTIFACT" ] || [ ! -e "$ARTIFACT" ]; then
-            echo "::error::Built artifact not found (looked for build/${SUB}/Tracera-dev.${EXT})"
+          done
+          if [ -z "$ARTIFACT" ]; then
+            echo "::error::Built artifact not found under build/${SUB} (looked for ${{ matrix.app_dir }} or ${{ matrix.app_dir_alt }})"
             ls -la "build/${SUB}/" || true
             exit 1
           fi
@@ -130,16 +149,28 @@ jobs:
           APP_NAME=$(node -p "require('./package.json').name")
           APP_VERSION=$(node -p "require('./package.json').version")
           OUT="${APP_NAME}-${APP_VERSION}-${{ matrix.platform }}-${{ matrix.arch }}.${FMT}"
+          OUT_ABS="$(pwd)/${OUT}"
+          rm -f "$OUT"
+          BASE="$(basename "$ARTIFACT")"
+          DIR="$(dirname "$ARTIFACT")"
           case "$FMT" in
             zip)
-              if [ -d "$ARTIFACT" ]; then
-                (cd "$(dirname "$ARTIFACT")" && zip -r "$OLDPWD/$OUT" "$(basename "$ARTIFACT")")
+              # macOS ships zip(1); the Git-for-Windows bash that runs this step
+              # on windows-latest does not, but the runner image has 7-Zip,
+              # which also writes standards-compliant (forward-slash) entries.
+              if command -v zip >/dev/null 2>&1; then
+                (cd "$DIR" && zip -qr "$OUT_ABS" "$BASE")
               else
-                zip "$OUT" "$ARTIFACT"
+                SEVENZ="/c/Program Files/7-Zip/7z.exe"
+                if [ ! -x "$SEVENZ" ]; then
+                  echo "::error::neither zip(1) nor 7-Zip ($SEVENZ) is available to archive the bundle"
+                  exit 1
+                fi
+                (cd "$DIR" && "$SEVENZ" a -tzip -mx1 "$OUT_ABS" "$BASE" > /dev/null)
               fi
               ;;
             tar.gz)
-              tar -czf "$OUT" -C "$(dirname "$ARTIFACT")" "$(basename "$ARTIFACT")"
+              tar -czf "$OUT" -C "$DIR" "$BASE"
               ;;
           esac
           echo "Archived to: ${OUT}"
