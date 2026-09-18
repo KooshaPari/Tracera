@@ -36,6 +36,11 @@ jobs:
     environment:
       name: render-dev
     env:
+      # The repository's own Render secret is the primary source. Infisical is
+      # consulted only when it is absent, because the project it reads contains
+      # no Render credentials (docs/04-guides/ENVIRONMENTS.md).
+      REPO_RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      HAS_REPO_KEY: ${{ secrets.RENDER_API_KEY != '' }}
       INFISICAL_ENV: dev
       INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
       INFISICAL_PROJECT_ID: ${{ vars.INFISICAL_PROJECT_ID }}

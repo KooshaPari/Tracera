@@ -87,7 +87,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Infisical CLI
+      - name: Install Infisical CLI (fallback credential source)
+        if: env.HAS_REPO_CREDS != 'true'
         # The Cloudsmith repository this used to point at
         # (dl.cloudsmith.io/public/infisical/infisical-cli) now returns 404, so
         # `curl -f` failed and the job died before it could pull any credential.
