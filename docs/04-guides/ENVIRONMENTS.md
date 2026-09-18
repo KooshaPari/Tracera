@@ -55,7 +55,6 @@ Notes that matter when debugging a hostname:
 - `tracera-server-dev.onrender.com` returns `404` on `/healthz`: the service is
   defined in `render.yaml` but has never been created. Two things blocked it, and
   both are now fixed in the repo:
-
   1. The blueprint's image reference carried a redacted org name, so it resolved
      to no image at all. A blueprint sync therefore could not create the dev
      service, and would equally have tried to repoint the working production
