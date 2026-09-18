@@ -47,11 +47,21 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Cargo test
         run: cargo test -p tracera-server
-      - name: Frontend typecheck
+      - name: Setup bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - run: cd frontend && bun install --ignore-scripts && bun run typecheck
+      - name: Frontend build, then typecheck
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          bun install --frozen-lockfile --ignore-scripts
+          # The typecheck contract checks composite project references, so the
+          # packages they point at must be built first or tsc fails with TS6305
+          # ("output file has not been built from source"). frontend-contract-checks.yml
+          # builds before typechecking for the same reason.
+          bun run build
+          bun run typecheck
 
   deploy-backend:
     name: Deploy Backend (Render)
