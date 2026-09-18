@@ -171,6 +171,21 @@ jobs:
           echo "SERVICE_ID=$service_id" >> "$GITHUB_ENV"
           echo "::notice title='Service created'::Store $service_id as RENDER_SERVICE_ID in Infisical env '$INFISICAL_ENV' so deploy-render.yml can deploy it."
 
+      - name: Report the service's deploy status
+        if: env.SERVICE_ID != ''
+        # The health poll can only say "000"; this says why. Render knows whether
+        # the image failed to pull or the app failed to boot.
+        run: |
+          set -uo pipefail
+          api=https://api.render.com/v1
+          auth=(-H "Authorization: Bearer $RENDER_API_KEY" -H "Accept: application/json")
+          echo "service $SERVICE_NAME ($SERVICE_ID)"
+          curl -sS "${auth[@]}" "$api/services/$SERVICE_ID" \
+            | jq -r '"  type=\(.serviceDetails.env // "?") suspended=\(.service.suspended) image=\(.service.imagePath // "-")"'
+          echo "recent deploys:"
+          curl -sS "${auth[@]}" "$api/services/$SERVICE_ID/deploys?limit=3" \
+            | jq -r '.[] | "  \(.deploy.id)  status=\(.deploy.status)  created=\(.deploy.createdAt)  finished=\(.deploy.finishedAt // "-")"'
+
       - name: Wait for the service to become healthy
         if: env.SERVICE_ID != ''
         run: |
