@@ -52,9 +52,28 @@ Notes that matter when debugging a hostname:
 - **`api.pheno.studio` is not Tracera.** It serves the AgilePlus home page. It
   was previously wired into `TRACERA_API_BASE`, which is why the parity smoke
   spent its life reporting `404` on every route. Do not point anything here.
-- `tracera-server-dev.onrender.com` currently returns `404` on `/healthz`: the
-  `tracera-server-dev` service in `render.yaml` is defined but not deployed.
-  `dev` deployments are blocked on that service existing, not on this repo.
+- `tracera-server-dev.onrender.com` returns `404` on `/healthz`: the service is
+  defined in `render.yaml` but has never been created. Two things blocked it, and
+  both are now fixed in the repo:
+
+  1. The blueprint's image reference carried a redacted org name, so it resolved
+     to no image at all. A blueprint sync therefore could not create the dev
+     service, and would equally have tried to repoint the working production
+     fallback at that dead path.
+  2. The GHCR package was never actually made public. `build-push-image.yml`
+     called `/orgs/<owner>/packages/...` for a repository owned by a _user_, so
+     the flip 404'd on every run and the image stayed private.
+
+  To bring dev up, run the **Bootstrap Render dev service** workflow with
+  `apply=true`. It resolves the Render key from Infisical, creates
+  `tracera-server-dev` from the corrected image when it is missing, and waits for
+  `/healthz`. If the image is still private it names the registry credential
+  (`image.ownerId` in `render.yaml`) that Render needs, or you can flip the
+  package once at
+  `https://github.com/users/KooshaPari/packages/container/tracera-server/settings`.
+
+  Until the service exists, `dev` and `preview` fall back to `TRACERA_API_BASE`
+  rather than being pointed at a dead host.
 
 ## Repository variables
 

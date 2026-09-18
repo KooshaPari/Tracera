@@ -1,0 +1,163 @@
+# =============================================================================
+# Bootstrap the Render dev service (tracera-server-dev).
+# =============================================================================
+# render.yaml defines tracera-server-dev, but a blueprint sync never created it:
+# its image reference read `ghcr.io/<REDACTED>/tracera-server`, which resolves to
+# nothing. Fixing that path is necessary but not sufficient, because a blueprint
+# sync is a dashboard action and CI holds the only Render API key the repo can
+# reach (Infisical).
+#
+# This workflow closes that loop: it reports what exists, and creates the service
+# when asked. It is dispatch-only and dry-run by default - a push must never
+# create cloud resources.
+#
+# Run it with apply=true once, then confirm the health check at the end.
+# =============================================================================
+
+name: Bootstrap Render dev service
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Create tracera-server-dev when it is missing
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # A dev target, so no approval gate: this must stay easy to run.
+    environment:
+      name: render-dev
+    env:
+      INFISICAL_ENV: dev
+      INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
+      INFISICAL_PROJECT_ID: ${{ vars.INFISICAL_PROJECT_ID }}
+      APPLY: ${{ inputs.apply }}
+      SERVICE_NAME: tracera-server-dev
+      IMAGE_PATH: ghcr.io/kooshapari/tracera-server:latest
+      # Render's id for the registry credential that may pull the GHCR image.
+      # Matches image.ownerId in render.yaml.
+      IMAGE_OWNER_ID: tea-ct2nk4tsvqrc738djlf0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Infisical CLI
+        run: |
+          curl -1sLf "https://artifacts-cli.infisical.com/setup.deb.sh" | sudo -E bash
+          sudo apt-get install -y infisical
+
+      - name: Pull the Render API key
+        run: |
+          set -euo pipefail
+          key=$(infisical secrets get RENDER_API_KEY \
+            --projectId "$INFISICAL_PROJECT_ID" --env "$INFISICAL_ENV" \
+            --token "$INFISICAL_TOKEN" --plain)
+          if [ -z "$key" ]; then
+            echo "::error::RENDER_API_KEY is not available in Infisical env '$INFISICAL_ENV'."
+            exit 1
+          fi
+          echo "::add-mask::$key"
+          echo "RENDER_API_KEY=$key" >> "$GITHUB_ENV"
+
+      - name: Verify the image is publicly pullable
+        run: |
+          set -euo pipefail
+          url="https://ghcr.io/v2/kooshapari/tracera-server/tags/list"
+          code=$(curl -s -o /dev/null -w '%{http_code}' "$url")
+          if [ "$code" != "200" ]; then
+            echo "::warning title='Image is not publicly pullable'::GHCR returned HTTP $code for $url. Render can only pull this image if the registry credential ${IMAGE_OWNER_ID} is configured for the account, otherwise the service will fail to start."
+          else
+            echo "Image is publicly pullable."
+          fi
+
+      - name: Report or create the dev service
+        run: |
+          set -euo pipefail
+          api=https://api.render.com/v1
+          auth=(-H "Authorization: Bearer $RENDER_API_KEY" -H "Accept: application/json")
+
+          existing=$(curl -sS "${auth[@]}" "$api/services?name=$SERVICE_NAME&limit=1" \
+            | jq -r --arg n "$SERVICE_NAME" '.[] | select(.service.name == $n) | .service.id' | head -1)
+
+          if [ -n "$existing" ]; then
+            echo "PASS: $SERVICE_NAME already exists (id=$existing)"
+            echo "SERVICE_ID=$existing" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          if [ "$APPLY" != "true" ]; then
+            echo "REPORT: $SERVICE_NAME does not exist. Re-run with apply=true to create it."
+            echo "::notice title='Dry run'::$SERVICE_NAME is missing; nothing was created."
+            exit 0
+          fi
+
+          owner_id=$(curl -sS "${auth[@]}" "$api/owners?limit=1" | jq -r '.[0].owner.id')
+          if [ -z "$owner_id" ] || [ "$owner_id" = "null" ]; then
+            echo "::error::Could not resolve a Render owner id to create the service under."
+            exit 1
+          fi
+
+          payload=$(jq -n \
+            --arg name "$SERVICE_NAME" \
+            --arg owner "$owner_id" \
+            --arg image "$IMAGE_PATH" \
+            --arg imageOwner "$IMAGE_OWNER_ID" \
+            '{
+              type: "web_service",
+              name: $name,
+              ownerId: $owner,
+              image: { imagePath: $image, ownerId: $imageOwner },
+              serviceDetails: {
+                env: "image",
+                plan: "free",
+                region: "oregon",
+                healthCheckPath: "/healthz",
+                autoDeploy: "no",
+                envVars: [
+                  { key: "DATABASE_URL", value: "sqlite::memory:" },
+                  { key: "TRACERA_AUTH_TOKEN", value: "tracera_dev_fallback_2026_xyz" },
+                  { key: "TRACERA_BIND_ADDR", value: "0.0.0.0:10000" },
+                  { key: "TRACERA_PUBLIC_BIND_MODE", value: "authenticated-proxy" },
+                  { key: "PORT", value: "10000" },
+                  { key: "RUST_LOG", value: "info" }
+                ]
+              }
+            }')
+
+          echo "Creating $SERVICE_NAME from $IMAGE_PATH ..."
+          response=$(curl -sS -w '\n%{http_code}' -X POST "${auth[@]}" \
+            -H "Content-Type: application/json" -d "$payload" "$api/services")
+          code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | sed '$d')
+          if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+            echo "::error::Render rejected the create request (HTTP $code): $body"
+            exit 1
+          fi
+
+          service_id=$(echo "$body" | jq -r '.service.id // empty')
+          echo "PASS: created $SERVICE_NAME (id=$service_id)"
+          echo "SERVICE_ID=$service_id" >> "$GITHUB_ENV"
+          echo "::notice title='Service created'::Store $service_id as RENDER_SERVICE_ID in Infisical env '$INFISICAL_ENV' so deploy-render.yml can deploy it."
+
+      - name: Wait for the service to become healthy
+        if: env.SERVICE_ID != ''
+        run: |
+          set -uo pipefail
+          url="https://${SERVICE_NAME}.onrender.com/healthz"
+          for attempt in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$url" || true)
+            echo "attempt ${attempt}: $url -> $code"
+            if [ "$code" = "200" ]; then
+              echo "PASS: $SERVICE_NAME is healthy"
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "::warning title='Dev service not healthy yet'::$url did not return 200. A first image-backed deploy can take several minutes; re-run this workflow to check again."

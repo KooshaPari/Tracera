@@ -59,51 +59,53 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Flip GHCR package to public
+      - name: Ensure the GHCR package is publicly pullable
         if: github.ref == 'refs/heads/main'
         shell: bash
+        env:
+          # GITHUB_TOKEN cannot change package visibility for a user-owned
+          # package (this repository is owned by a user, not an org, and both the
+          # /user/ and /orgs/ endpoints returned 404 for it). A PAT with package
+          # admin can, so use one when it is configured.
+          PACKAGE_ADMIN_TOKEN: ${{ secrets.GHCR_ADMIN_TOKEN }}
         run: |
+          set -uo pipefail
           PACKAGE_NAME=tracera-server
-          for i in 1 2 3 4 5; do
-            RESP=$(curl -sS -X PATCH \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Accept: application/vnd.github+json" \
-              -H "Content-Type: application/json" \
-              "https://api.github.com/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${PACKAGE_NAME}" \
-              -d '{"visibility":"public"}' -w "\n%{http_code}")
-            CODE=$(echo "$RESP" | tail -1)
-            BODY=$(echo "$RESP" | sed '$d')
-            echo "Attempt $i: HTTP $CODE"
-            echo "$BODY" | head -c 200
-            echo ""
-            if [ "$CODE" = "200" ]; then
-              echo "✅ ${PACKAGE_NAME} is now public"
-              exit 0
-            fi
-            # PATCH on /user/packages/container/X returns 404 when the user has no
-            # admin scope on the org-owned package. Try the org endpoint next.
-            if [ "$CODE" = "404" ]; then
-              echo "Package not visible via user endpoint; trying /user/ retry..."
-              RESP=$(curl -sS -X PATCH \
-                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          OWNER_LC="$(echo "$OWNER" | tr '[:upper:]' '[:lower:]')"
+          TAGS_URL="https://ghcr.io/v2/${OWNER_LC}/${PACKAGE_NAME}/tags/list"
+
+          # An anonymous tag listing only succeeds for a public package, so this
+          # is both the precondition check and the success check - which makes
+          # the step idempotent instead of retrying a no-op PATCH.
+          if [ "$(curl -s -o /dev/null -w '%{http_code}' "$TAGS_URL")" = "200" ]; then
+            echo "${PACKAGE_NAME} is already publicly pullable."
+            exit 0
+          fi
+
+          if [ -z "${PACKAGE_ADMIN_TOKEN}" ]; then
+            echo "::warning title='GHCR package is private'::${PACKAGE_NAME} is not publicly pullable and no GHCR_ADMIN_TOKEN secret is set, so CI cannot change its visibility. A private image also cannot be pulled by Render without a configured registry credential. Flip it once at https://github.com/users/${OWNER}/packages/container/${PACKAGE_NAME}/settings, or add GHCR_ADMIN_TOKEN (a PAT with package admin)."
+            exit 0
+          fi
+
+          for endpoint in "user" "orgs/${OWNER}"; do
+            for attempt in 1 2 3; do
+              CODE=$(curl -sS -o /tmp/package-visibility.json -w '%{http_code}' -X PATCH \
+                -H "Authorization: Bearer ${PACKAGE_ADMIN_TOKEN}" \
                 -H "Accept: application/vnd.github+json" \
                 -H "Content-Type: application/json" \
-                "https://api.github.com/user/packages/container/${PACKAGE_NAME}" \
-                -d '{"visibility":"public"}' -w "\n%{http_code}")
-              CODE=$(echo "$RESP" | tail -1)
-              BODY=$(echo "$RESP" | sed '$d')
-              echo "User-retry $i: HTTP $CODE"
-              echo "$BODY" | head -c 200
-              echo ""
+                "https://api.github.com/${endpoint}/packages/container/${PACKAGE_NAME}" \
+                -d '{"visibility":"public"}')
+              echo "${endpoint} attempt ${attempt}: HTTP ${CODE}"
               if [ "$CODE" = "200" ]; then
-                echo "✅ ${PACKAGE_NAME} is now public"
+                echo "${PACKAGE_NAME} is now public."
                 exit 0
               fi
-            fi
-            sleep 5
+              sleep 3
+            done
           done
-          echo "⚠️  Could not auto-flip package visibility (HTTP $CODE after retries)"
-          echo "    Action required: https://github.com/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${PACKAGE_NAME}/settings"
+
+          echo "::warning title='Could not flip GHCR visibility'::Set it at https://github.com/users/${OWNER}/packages/container/${PACKAGE_NAME}/settings"
           exit 0
 
       - name: Exchange GitHub OIDC token for Render JWT (keyless)

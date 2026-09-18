@@ -20,7 +20,13 @@ services:
     region: oregon
     healthCheckPath: /healthz
     image:
-      imagePath: ghcr.io/<REDACTED>/tracera-server:latest
+      # Must match what build-push-image.yml publishes (and what
+      # .github/workflows/build-push-image.yml flips to public). This read
+      # `ghcr.io/<REDACTED>/tracera-server`, so the blueprint referenced an image
+      # that does not exist - which is why a sync could never create
+      # tracera-server-dev, and why a sync today would repoint the working
+      # production fallback at the same dead path.
+      imagePath: ghcr.io/kooshapari/tracera-server:latest
       ownerId: tea-ct2nk4tsvqrc738djlf0
     envVars:
       - key: DATABASE_URL
@@ -47,7 +53,10 @@ services:
     region: oregon
     healthCheckPath: /healthz
     image:
-      imagePath: ghcr.io/<REDACTED>/tracera-server:latest
+      # Same correction as the dev service above: a redacted org made this path
+      # unresolvable. The running service was created before the redaction, so a
+      # blueprint sync would otherwise try to move it onto a dead image.
+      imagePath: ghcr.io/kooshapari/tracera-server:latest
       ownerId: tea-ct2nk4tsvqrc738djlf0
     envVars:
       # Local Postgres or external Neon. SQLite fallback for boot-only.
