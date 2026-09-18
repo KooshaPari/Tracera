@@ -116,8 +116,11 @@ jobs:
           set +e
           if [ -z "$RENDER_API_KEY" ]; then
             echo "render_creds_ok=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::RENDER_API_KEY missing from Infisical prod env (or INFISICAL_TOKEN rejected)."
-            echo "::notice::If INFISICAL_TOKEN is set, verify it has 'read' scope on env=prod."
+            # An error annotation, not a notice: this run did NOT deploy, and a
+            # green job that quietly skipped is how the Render path stayed inert
+            # without anyone noticing.
+            echo "::error title='Render deploy skipped'::RENDER_API_KEY is unavailable from Infisical env '$INFISICAL_ENV' (or INFISICAL_TOKEN was rejected), so this run did not deploy. Fix the credential and re-run."
+            echo "::notice::If INFISICAL_TOKEN is set, verify it has 'read' scope on env '$INFISICAL_ENV'."
             echo "::notice::If INFISICAL_TOKEN is a Universal Auth Client ID, see DEPLOY_CREDENTIALS.md."
           elif [[ "$RENDER_API_KEY" != rnd_* ]]; then
             echo "render_creds_ok=false" >> "$GITHUB_OUTPUT"

@@ -56,11 +56,18 @@ jobs:
       - name: Pull the Render API key
         run: |
           set -euo pipefail
-          key=$(infisical secrets get RENDER_API_KEY \
-            --projectId "$INFISICAL_PROJECT_ID" --env "$INFISICAL_ENV" \
-            --token "$INFISICAL_TOKEN" --plain)
+          if [ -z "${INFISICAL_TOKEN:-}" ]; then
+            echo "::error title='INFISICAL_TOKEN is not set'::Add the INFISICAL_TOKEN repository secret. Without it neither this workflow nor deploy-render.yml can reach Render, which is why deploy-render skips instead of deploying."
+            exit 1
+          fi
+          if ! key=$(infisical secrets get RENDER_API_KEY \
+                 --projectId "$INFISICAL_PROJECT_ID" --env "$INFISICAL_ENV" \
+                 --token "$INFISICAL_TOKEN" --plain 2>/tmp/infisical.err); then
+            echo "::error title='Infisical rejected the token'::Could not read RENDER_API_KEY from env '$INFISICAL_ENV'. Infisical said: $(head -c 300 /tmp/infisical.err | tr '\n' ' ')"
+            exit 1
+          fi
           if [ -z "$key" ]; then
-            echo "::error::RENDER_API_KEY is not available in Infisical env '$INFISICAL_ENV'."
+            echo "::error title='RENDER_API_KEY missing'::Infisical env '$INFISICAL_ENV' has no RENDER_API_KEY secret."
             exit 1
           fi
           echo "::add-mask::$key"

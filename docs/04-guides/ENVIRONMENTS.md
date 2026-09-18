@@ -75,6 +75,14 @@ Notes that matter when debugging a hostname:
   Until the service exists, `dev` and `preview` fall back to `TRACERA_API_BASE`
   rather than being pointed at a dead host.
 
+- **The Render credential is currently unusable from CI, which is the real
+  blocker for `dev`.** `INFISICAL_TOKEN` is unset or malformed: Infisical answers
+  `403 The provided access token is malformed`. Every `deploy-render` run
+  therefore reaches `render_creds_ok=false` and skips, reporting success without
+  deploying anything. Any such run carries an
+  `::error title='Render deploy skipped'` annotation saying so. Fix
+  `INFISICAL_TOKEN` first; creating the dev service is the step after that.
+
 ## Repository variables
 
 | Variable               | Used for                                                                                    | Current value                         |
