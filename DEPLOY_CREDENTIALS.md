@@ -132,8 +132,12 @@ gh run list --repo <REDACTED>/Tracera --workflow "Deploy Cloudflare Worker (trac
 gh run list --repo <REDACTED>/Tracera --workflow "Deploy Render Backend"              --limit 3
 
 # 3. Verify live
-curl https://api.pheno.studio/healthz
-curl https://tracera-kappa.vercel.app
+# api.pheno.studio is NOT Tracera: it serves AgilePlus, so a 200 there says
+# nothing about this project. Hosts per docs/04-guides/ENVIRONMENTS.md.
+curl https://tracera-server.onrender.com/healthz        # prod fallback API -> 200 {"status":"ok"}
+curl https://tracera-server-dev.onrender.com/healthz    # dev API -> 200
+curl -o /dev/null -w "%{http_code}\n" https://tracera.pheno.studio   # behind Cloudflare Access -> 302
+curl https://tracera-kappa.vercel.app                   # dev frontend -> 200
 ```
 
 ## Cost Summary
