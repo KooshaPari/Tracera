@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [2.4.0] - 2026-09-17
+
 ### Added
 
 - In-memory rate limiting via tower-governor for the Rust server (#964)
@@ -33,6 +37,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Server: revert to `tower_governor` (correct crate name) (#888)
 - Deps: restore tracertm MCP lock resolution (#907)
 - CLI: make WSL compose argv coverage deterministic (#908)
+- CI: load `pytest-cov` explicitly so `--cov` works with plugin autoload disabled
+- CI: declare the Python runtime dependencies and point hatchling at `src/tracertm`, so `uv sync` produced an environment the package could actually import
+- CI: run the Go jobs per module; there is no `go.mod` at the repository root
+- CI: reduce gitleaks findings from 3118 to the handful that need a human decision, and allowlist the `backend/cmd` tree that #554 removed
+- CI: satisfy `clippy::result_large_err` for the axum handlers on current stable
+- Release: archive the real CLI binary name (`tracera`, not `tracera-cli`), which would have failed three of the four `release-dist` matrix legs
+- Go: restore the redacted org in both module paths, which had made both modules unbuildable
+- Frontend: refresh `bun.lock` and assert on tsc's real output stream in the typecheck contract
 
 ### Changed
 

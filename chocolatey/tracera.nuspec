@@ -4,17 +4,17 @@
   <metadata>
     <id>tracera</id>
     <title>Tracera</title>
-    <version>2.2.0</version>
-    <authors><REDACTED></authors>
-    <owners><REDACTED></owners>
-    <projectUrl>https://github.com/<REDACTED>/Tracera</projectUrl>
-    <iconUrl>https://raw.githubusercontent.com/<REDACTED>/Tracera/main/packaging/icons/tracera-icon.png</iconUrl>
-    <docsUrl>https://github.com/<REDACTED>/Tracera/blob/main/README.md</docsUrl>
-    <bugTrackerUrl>https://github.com/<REDACTED>/Tracera/issues</bugTrackerUrl>
-    <licenseUrl>https://github.com/<REDACTED>/Tracera/blob/main/LICENSE-MIT</licenseUrl>
-    <projectSourceUrl>https://github.com/<REDACTED>/Tracera</projectSourceUrl>
-    <packageSourceUrl>https://github.com/<REDACTED>/Tracera</packageSourceUrl>
-    <docs>Multi-view requirements traceability and project management system for AI agents</docs>
+    <!-- Keep in sync with $releaseTag in tools/chocolateyinstall.ps1 (the single bump point). -->
+    <version>2.4.0</version>
+    <authors>KooshaPari</authors>
+    <owners>KooshaPari</owners>
+    <projectUrl>https://github.com/KooshaPari/Tracera</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/KooshaPari/Tracera/main/frontend/apps/desktop/assets/icons/Tracera.iconset/icon_512x512.png</iconUrl>
+    <docsUrl>https://github.com/KooshaPari/Tracera/blob/main/README.md</docsUrl>
+    <bugTrackerUrl>https://github.com/KooshaPari/Tracera/issues</bugTrackerUrl>
+    <licenseUrl>https://github.com/KooshaPari/Tracera/blob/main/LICENSE</licenseUrl>
+    <projectSourceUrl>https://github.com/KooshaPari/Tracera</projectSourceUrl>
+    <packageSourceUrl>https://github.com/KooshaPari/Tracera</packageSourceUrl>
     <summary>Requirements traceability + project management — like Jira/Lattice but for AI agents</summary>
     <description><![CDATA[Tracera is an agent-native multi-view requirements traceability and project management system. It provides:
 
@@ -27,11 +27,11 @@
 
 Use Tracera to give your AI agents a structured place to file issues, link requirements, and verify coverage.
 ]]></description>
-    <releaseNotes>https://github.com/<REDACTED>/Tracera/releases/tag/v2.2.0</releaseNotes>
-    <tags>tracability project-management ai-agents spec-driven governance requirements</tags>
-    <license type="expression">MIT</license>
+    <releaseNotes>https://github.com/KooshaPari/Tracera/releases/tag/v2.4.0</releaseNotes>
+    <tags>traceability project-management ai-agents spec-driven governance requirements</tags>
+    <!-- MIT; see licenseUrl. The 2010/07 nuspec schema declared above has no
+         <license> element, so choco pack rejects it on this Chocolatey version. -->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <projectSourceUrl>https://github.com/<REDACTED>/Tracera</projectSourceUrl>
     <dependencies>
       <dependency id="git" version="2.39.0" />
     </dependencies>
