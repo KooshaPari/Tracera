@@ -9,6 +9,17 @@ main = "crates/tracera-edge/build/index.js"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Attach this Worker to its documented production hostname. Without a route the
+# hostname keeps resolving to whatever DNS record already exists - here a
+# tunnel-backed origin - which is why tracera-edge.pheno.studio answered 530
+# for months while the Worker itself was healthy at
+# tracera-edge.kooshapari.workers.dev. custom_domain makes Cloudflare create and
+# manage the DNS record and certificate for the Worker, so the attachment is
+# declared here rather than clicked into a dashboard.
+routes = [
+  { pattern = "tracera-edge.pheno.studio", custom_domain = true }
+]
+
 [vars]
 ENVIRONMENT = "production"
 # Canonical Tracera URI (Sep-2026): all production traffic goes to

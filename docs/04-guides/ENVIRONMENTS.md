@@ -49,10 +49,14 @@ assumed:
   deploy log says so directly: `To deploy to production (tracera-kappa.vercel.app),
 run 'vercel --prod'`. A push to `main` deploys a _preview_, so this alias keeps
   serving the last production deployment until a `v*` tag is pushed.
-- **It currently serves a placeholder, not the app.** The body is the tracked
-  repo-root `public/index.html` ("Frontend scaffolding coming soon."), 157 bytes.
-  The real SPA builds to `frontend/dist`, which matches `vercel.json`'s
-  `outputDirectory` and vite's `outDir`. Verify by body, never by status alone.
+- **It served a placeholder, not the app.** The body was the tracked repo-root
+  `public/index.html` ("Frontend scaffolding coming soon."), 157 bytes. That file
+  has been **deleted**: it was the fallback Vercel serves when a deployment has no
+  build output, so a broken frontend build answered 200 with a convincing page
+  instead of failing. The real SPA builds to `frontend/dist`, matching
+  `vercel.json`'s `outputDirectory` and vite's `outDir`. Verify by body,
+  never by status alone - and note that a deployment with no output now returns
+  an error rather than a placeholder.
 - **Worker hosts are `<worker>.<account-subdomain>.workers.dev`.** The subdomain
   is per account (`kooshapari` here) and cannot be assumed away: a host built as
   `tracera-edge-dev.workers.dev` does not resolve at all.

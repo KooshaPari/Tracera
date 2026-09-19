@@ -148,6 +148,11 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          # Optional. Create Protection Bypass for Automation in the Vercel
+          # project and store it as this repository secret. Without it, preview
+          # deployments sit behind Vercel Authentication and CI cannot read them
+          # to verify what was actually published.
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
           set -uo pipefail
           # A 200 proves nothing here. The repo-root public/index.html placeholder
@@ -156,8 +161,11 @@ jobs:
           # instead of the app. Read the body and assert it is the SPA. `vercel
           # curl` is used because dev and preview deployments sit behind Vercel
           # Authentication, where a plain fetch returns the SSO login page.
-          body=$(npx vercel@59.19.0 curl "$DEPLOY_URL" --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" 2>/dev/null || true)
-          if [ -z "$body" ]; then
+          if [ -n "${VERCEL_AUTOMATION_BYPASS_SECRET:-}" ]; then
+            body=$(curl -sSL --max-time 30 \
+              -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
+              "$DEPLOY_URL" 2>/dev/null || true)
+          else
             body=$(curl -sSL --max-time 30 "$DEPLOY_URL" 2>/dev/null || true)
           fi
           if [ -z "$body" ]; then
