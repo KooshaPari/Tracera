@@ -27,6 +27,7 @@
       ],
       "outputs": [
         "dist/**",
+        "../../dist/**",
         ".next/**",
         "!.next/cache/**",
         "storybook-static/**",
@@ -47,7 +48,7 @@
         "!**/*.test.*",
         "!**/*.spec.*"
       ],
-      "outputs": ["dist/**"],
+      "outputs": ["dist/**", "../../dist/**"],
       "outputLogs": "hash-only",
       "env": ["NODE_ENV", "VITE_*", "NEXT_PUBLIC_*"]
     },
@@ -154,3 +155,5 @@
     }
   }
 }
+
+
