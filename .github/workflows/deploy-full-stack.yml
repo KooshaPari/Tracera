@@ -66,6 +66,27 @@ jobs:
           bun run build
           bun run typecheck
 
+      - name: Assert the frontend build produced the SPA
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          # A placeholder page is committed at the repo root, and Vercel serves it
+          # whenever a deployment has no build output, so a broken build can still
+          # look like a successful deploy. Assert the build produced the real app.
+          test -f dist/index.html || {
+            echo "::error::dist/index.html is missing: the frontend build produced no output"
+            exit 1
+          }
+          if grep -qi "scaffolding coming soon" dist/index.html; then
+            echo "::error::the build output is the placeholder page, not the SPA"
+            exit 1
+          fi
+          grep -q 'id="root"' dist/index.html || {
+            echo "::error::the build output has no #root element"
+            exit 1
+          }
+          echo "PASS: the build produced the SPA ($(wc -c < dist/index.html) bytes)"
+
   deploy-backend:
     name: Deploy Backend (Render)
     needs: [test]
