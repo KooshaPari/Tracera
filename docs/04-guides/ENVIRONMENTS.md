@@ -35,12 +35,27 @@ through to `dev`:
 Each environment owns a distinct hostname. Verified against the live services;
 re-verify before relying on any of it.
 
-| Environment       | Frontend                           | API                                       | Edge worker                         |
-| ----------------- | ---------------------------------- | ----------------------------------------- | ----------------------------------- |
-| `prod`            | `https://tracera.pheno.studio`     | `https://tracera.pheno.studio/api`        | `https://tracera-edge.pheno.studio` |
-| `prod` (fallback) | —                                  | `https://tracera-server.onrender.com`     | —                                   |
-| `dev`             | `https://tracera-kappa.vercel.app` | `https://tracera-server-dev.onrender.com` | worker deployed with dev vars       |
-| `preview`         | Vercel-generated URL per PR        | same as `dev` (no separate service)       | `tracera-edge-preview` worker       |
+| Environment       | Frontend                                                           | API                                       | Edge worker                                             |
+| ----------------- | ------------------------------------------------------------------ | ----------------------------------------- | ------------------------------------------------------- |
+| `prod`            | `https://tracera.pheno.studio` (Cloudflare Access)                 | `https://tracera.pheno.studio/api`        | `https://tracera-edge.pheno.studio` (not attached, 530) |
+| `prod` (fallback) | `https://tracera-kappa.vercel.app` (Vercel production alias, stub) | `https://tracera-server.onrender.com`     | `https://tracera-edge.kooshapari.workers.dev`           |
+| `dev`             | per-deploy Vercel URL, behind Vercel Authentication                | `https://tracera-server-dev.onrender.com` | `https://tracera-edge-dev.kooshapari.workers.dev`       |
+| `preview`         | per-deploy Vercel URL, behind Vercel Authentication                | same as `dev` (no separate service)       | `https://tracera-edge-preview.kooshapari.workers.dev`   |
+
+Three corrections to what this table used to say, each observed rather than
+assumed:
+
+- **`tracera-kappa.vercel.app` is the Vercel _production_ alias, not dev.** The
+  deploy log says so directly: `To deploy to production (tracera-kappa.vercel.app),
+run 'vercel --prod'`. A push to `main` deploys a _preview_, so this alias keeps
+  serving the last production deployment until a `v*` tag is pushed.
+- **It currently serves a placeholder, not the app.** The body is the tracked
+  repo-root `public/index.html` ("Frontend scaffolding coming soon."), 157 bytes.
+  The real SPA builds to `frontend/dist`, which matches `vercel.json`'s
+  `outputDirectory` and vite's `outDir`. Verify by body, never by status alone.
+- **Worker hosts are `<worker>.<account-subdomain>.workers.dev`.** The subdomain
+  is per account (`kooshapari` here) and cannot be assumed away: a host built as
+  `tracera-edge-dev.workers.dev` does not resolve at all.
 
 Notes that matter when debugging a hostname:
 
@@ -123,9 +138,9 @@ malformed` (see `DEPLOY_CREDENTIALS.md`). It now carries a read-scoped service
 
 ## Repository variables
 
-| Variable               | Used for                                                                                    | Current value                         |
-| ---------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------- |
-| `TRACERA_API_BASE`     | production API base, baked into the frontend build and used by the parity smokes            | `https://tracera-server.onrender.com` |
+| Variable               | Used for                                                                                    | Current value                             |
+| ---------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `TRACERA_API_BASE`     | production API base, baked into the frontend build and used by the parity smokes            | `https://tracera-server.onrender.com`     |
 | `TRACERA_API_BASE_DEV` | overrides the API base for `dev` and `preview`; falls back to `TRACERA_API_BASE` when unset | `https://tracera-server-dev.onrender.com` |
 
 Set `TRACERA_API_BASE` to `https://tracera.pheno.studio` once Cloudflare Access
