@@ -137,6 +137,43 @@ jobs:
             prod_flag=""
           fi
           # shellcheck disable=SC2086  # deliberate word splitting: empty or --prod
-          npx vercel@59.19.0 deploy $prod_flag --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" \
+          url=$(npx vercel@59.19.0 deploy $prod_flag --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" \
             --build-env "VITE_API_URL=$VITE_API_URL" \
-            --env "VITE_API_URL=$VITE_API_URL"
+            --env "VITE_API_URL=$VITE_API_URL" | tail -n 1)
+          echo "DEPLOY_URL=$url" >> "$GITHUB_ENV"
+          echo "Deployed: $url"
+
+      - name: Verify the deployment serves the app
+        if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' && env.DEPLOY_URL != '' }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+        run: |
+          set -uo pipefail
+          # A 200 proves nothing here. The repo-root public/index.html placeholder
+          # ("Frontend scaffolding coming soon.") is served whenever a deployment
+          # has no build output, so the site answers 200 while showing the stub
+          # instead of the app. Read the body and assert it is the SPA. `vercel
+          # curl` is used because dev and preview deployments sit behind Vercel
+          # Authentication, where a plain fetch returns the SSO login page.
+          body=$(npx vercel@59.19.0 curl "$DEPLOY_URL" --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" 2>/dev/null || true)
+          if [ -z "$body" ]; then
+            body=$(curl -sSL --max-time 30 "$DEPLOY_URL" 2>/dev/null || true)
+          fi
+          if [ -z "$body" ]; then
+            echo "::warning::Could not fetch $DEPLOY_URL to verify its contents."
+            exit 0
+          fi
+          if printf %s "$body" | grep -qi "scaffolding coming soon"; then
+            echo "::error::$DEPLOY_URL is serving the public/index.html placeholder, not the built app."
+            exit 1
+          fi
+          if printf %s "$body" | grep -qi "vercel.com/login\|sso-api"; then
+            echo "::notice::$DEPLOY_URL is behind Vercel Authentication, so its contents could not be verified without a bypass token."
+            exit 0
+          fi
+          if ! printf %s "$body" | grep -q "id=\"root\""; then
+            echo "::error::$DEPLOY_URL does not look like the SPA build (no #root element in the body)."
+            exit 1
+          fi
+          echo "PASS: $DEPLOY_URL serves the app build."
