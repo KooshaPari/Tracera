@@ -9,18 +9,16 @@ main = "crates/tracera-edge/build/index.js"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Attach this Worker to its documented production hostname. Without a route the
-# hostname keeps resolving to whatever DNS record already exists - here a
-# tunnel-backed origin - which is why tracera-edge.pheno.studio answered 530
-# for months while the Worker itself was healthy at
-# tracera-edge.kooshapari.workers.dev. custom_domain makes Cloudflare create and
-# manage the DNS record and certificate for the Worker, so the attachment is
-# declared here rather than clicked into a dashboard.
-routes = [
-  { pattern = "tracera-edge.pheno.studio", custom_domain = true }
-]
+# Top-level (no name override) is no longer the production worker. The
+# production custom domain lives on [env.prod] below; without this empty
+# `routes` array, env.dev and env.preview would inherit it and reassign the
+# prod hostname on every non-prod deploy.
+routes = []
 
 [vars]
+# Top-level vars are only seen by the dry-run default; production deploys
+# use [env.prod]. The values here are placeholders that mirror production
+# so `wrangler dev` (no --env) still has something to talk to.
 ENVIRONMENT = "production"
 # Canonical Tracera URI (Sep-2026): all production traffic goes to
 # tracera.pheno.studio.  This worker (tracera-edge) lives at
@@ -59,6 +57,10 @@ head_sampling_rate = 0.5
 
 [env.dev]
 name = "tracera-edge-dev"
+# Empty routes block prevents inheritance from the (now-empty) top-level
+# routes. Without it, env.dev inherits whatever the top-level routes array
+# contains, which used to include the production custom domain.
+routes = []
 
 # KV and R2 are not inherited by wrangler environments, so they are restated
 # here. They currently resolve to the same namespace/bucket as production
@@ -79,6 +81,8 @@ TRACERA_API = "https://tracera-server-dev.onrender.com/api"
 
 [env.preview]
 name = "tracera-edge-preview"
+# Empty routes block prevents inheritance from the (now-empty) top-level routes.
+routes = []
 
 [[env.preview.kv_namespaces]]
 binding = "TRACERA_KV"
@@ -92,3 +96,30 @@ bucket_name = "tracera-artifacts"
 [env.preview.vars]
 ENVIRONMENT = "preview"
 TRACERA_API = "https://tracera-server-dev.onrender.com/api"
+
+# ---------------------------------------------------------------------------
+# Production environment.
+#
+# This block owns the production custom domain. The deploy workflow selects
+# it via `--env prod` for v* tags (see .github/workflows/deploy-cloudflare.yml).
+# KV and R2 are restated because wrangler does not inherit bindings across
+# env blocks.
+# ---------------------------------------------------------------------------
+[env.prod]
+name = "tracera-edge"
+routes = [
+  { pattern = "tracera-edge.pheno.studio", custom_domain = true }
+]
+
+[[env.prod.kv_namespaces]]
+binding = "TRACERA_KV"
+id = "placeholder-kv-id"
+preview_id = "placeholder-kv-preview-id"
+
+[[env.prod.r2_buckets]]
+binding = "TRACERA_R2"
+bucket_name = "tracera-artifacts"
+
+[env.prod.vars]
+ENVIRONMENT = "production"
+TRACERA_API = "https://tracera.pheno.studio/api"
