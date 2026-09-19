@@ -1,0 +1,89 @@
+name: Live service smoke
+
+# Pings every publicly reachable Tracera surface once a day so a cold-sleeping
+# Render service, a stale Vercel alias, or a Cloudflare worker failure shows up
+# here instead of surprising the next person who loads the app. The local
+# nightly workflow exercises the binary itself; this one exercises the deploys.
+
+# The Render free tier sleeps a service after ~15 minutes of no traffic. A
+# cold start can take 30+ seconds, which is longer than the default curl
+# timeout. 60s is comfortably above that and short enough that a true outage
+# still fails the run quickly.
+
+on:
+  schedule:
+    # Stagger from nightly.yml (06:17 UTC) so the two cron jobs don't collide
+    # on the same runner pool and starve each other.
+    - cron: "37 6 * * *"
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Which surface to probe
+        required: false
+        default: all
+        type: choice
+        options: [all, prod, dev, frontend]
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: ping-live-services
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PROD_API: https://tracera-server.onrender.com
+      DEV_API: https://tracera-server-dev.onrender.com
+      PROD_FRONTEND: https://tracera-kappa.vercel.app
+      CURL_TIMEOUT: "60"
+    steps:
+      - name: Probe prod API
+        if: ${{ inputs.target == 'all' || inputs.target == 'prod' }}
+        run: |
+          set -euo pipefail
+          body=$(curl --silent --show-error --fail-with-body \
+            --max-time "${CURL_TIMEOUT}" "${PROD_API}/healthz")
+          echo "prod /healthz -> ${body}"
+          printf %s "${body}" | grep -q '"status":"ok"' || {
+            echo "::error::prod API did not report status:ok"
+            exit 1
+          }
+
+      - name: Probe dev API
+        if: ${{ inputs.target == 'all' || inputs.target == 'dev' }}
+        run: |
+          set -euo pipefail
+          body=$(curl --silent --show-error --fail-with-body \
+            --max-time "${CURL_TIMEOUT}" "${DEV_API}/healthz")
+          echo "dev /healthz -> ${body}"
+          printf %s "${body}" | grep -q '"status":"ok"' || {
+            echo "::error::dev API did not report status:ok"
+            exit 1
+          }
+
+      - name: Probe prod frontend
+        if: ${{ inputs.target == 'all' || inputs.target == 'frontend' }}
+        run: |
+          set -euo pipefail
+          # A 200 proves nothing on its own: the SPA may be missing while the
+          # Vercel placeholder answers 200. Read the body and check for the
+          # retired "scaffolding coming soon" stub and the SPA's root element.
+          code=$(curl --silent --output /tmp/prod_frontend.html \
+            --write-out '%{http_code}' \
+            --max-time "${CURL_TIMEOUT}" "${PROD_FRONTEND}/")
+          echo "prod frontend -> HTTP ${code}"
+          case "${code}" in
+            2??) ;;
+            *) echo "::error::prod frontend returned HTTP ${code}"; exit 1 ;;
+          esac
+          if grep -qi 'scaffolding coming soon' /tmp/prod_frontend.html; then
+            echo "::error::prod frontend is serving the placeholder, not the SPA"
+            exit 1
+          fi
+          if ! grep -q 'id="root"' /tmp/prod_frontend.html \
+            && ! grep -q 'data-server-rendered' /tmp/prod_frontend.html; then
+            echo "::error::prod frontend body does not look like the SPA build"
+            exit 1
+          fi
+          echo "PASS: prod frontend serves the SPA build."

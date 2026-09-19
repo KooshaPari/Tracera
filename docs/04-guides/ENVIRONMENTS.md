@@ -162,3 +162,20 @@ keeps addressing the fallback host.
   pretending an unauthenticated client can reach guarded routes.
 - `nightly.yml` builds the server and smokes it on loopback. It is the scheduled
   `dev` validation: it never touches `prod`.
+
+## Fleet-wide monitors
+
+These run regardless of which environment was deployed and exist to catch the
+thing the per-environment checks above cannot: a deployed surface that quietly
+stops serving. The `Render` free tier sleeps a service after ~15 minutes of no
+traffic and a cold start can take 30+ seconds; nothing in the deploy workflows
+notices a service that wakes up broken or never wakes up at all.
+
+- `live-service-smoke.yml` — daily at 06:37 UTC, plus on demand with a `target`
+  input (`all`, `prod`, `dev`, `frontend`). Pings `tracera-server.onrender.com`,
+  `tracera-server-dev.onrender.com`, and the `tracera-kappa.vercel.app` alias.
+  Uses `curl --max-time 60` so a cold sleep doesn't trip the run, then reads
+  the body: `/healthz` must report `"status":"ok"`, and the Vercel alias must
+  serve the SPA rather than the retired `scaffolding coming soon` placeholder.
+  Pairs with `deploy-vercel.yml`'s body-as-content verify step so a broken
+  preview can't pass locally and a broken prod can't pass here.
