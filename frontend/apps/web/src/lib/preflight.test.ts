@@ -55,9 +55,11 @@ describe("frontend preflight", () => {
 
     await expect(runFrontendPreflight()).resolves.toEqual({ errors: [], ok: true });
 
-    expect(fetchMock.mock.calls.map(([url]) => url).slice(0, 2)).toEqual([
-      "http://127.0.0.1:18000/ready",
-      "http://127.0.0.1:18000/health",
+    // Assert the probe order, not the resolved origin: the base host comes from
+    // window.location, which differs between a local run and CI.
+    expect(fetchMock.mock.calls.slice(0, 2).map(([url]) => new URL(String(url)).pathname)).toEqual([
+      "/ready",
+      "/health",
     ]);
   });
 
