@@ -46,6 +46,21 @@ describe("frontend preflight", () => {
     expect(document.querySelector("[data-infra-list]")).not.toHaveTextContent("Checking");
   });
 
+  it("falls back to the next health path after a non-ok response", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 404 }))
+      .mockResolvedValueOnce(new Response(null, { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(runFrontendPreflight()).resolves.toEqual({ errors: [], ok: true });
+
+    expect(fetchMock.mock.calls.map(([url]) => url).slice(0, 2)).toEqual([
+      "http://127.0.0.1:18000/ready",
+      "http://127.0.0.1:18000/health",
+    ]);
+  });
+
   it("uses a failure color with WCAG AA contrast against the preflight card", async () => {
     vi.stubGlobal(
       "fetch",
@@ -62,6 +77,79 @@ describe("frontend preflight", () => {
     }
     expect(status).toHaveTextContent("Down");
     expect(contrastRatio(status.style.color, "#211b23")).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("reports the final probe path for a CORS or network TypeError", async () => {
+    const fetchMock = vi.fn(() => Promise.reject(new TypeError("Failed to fetch")));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await runFrontendPreflight();
+
+    expect(result.ok).toBe(false);
+    expect(result.errors[0]).toContain("Health check failed for /api/v1/health");
+    expect(document.querySelector("[data-hint]")).toHaveTextContent("CORS or network error");
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("reports a timeout with the final probe path", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.reject(new DOMException("The operation timed out", "AbortError"))),
+    );
+
+    const result = await runFrontendPreflight();
+
+    expect(result.errors[0]).toContain("Health check failed for /api/v1/health");
+    expect(document.querySelector("[data-hint]")).toHaveTextContent("timed out");
+  });
+
+  it("reports the HTTP status and final probe path for non-ok responses", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(new Response(null, { status: 404 }))),
+    );
+
+    const result = await runFrontendPreflight();
+
+    expect(result.errors[0]).toContain("Health check failed for /api/v1/health (HTTP 404)");
+    expect(document.querySelector("[data-hint]")).toHaveTextContent("returned HTTP 404");
+  });
+
+  it.each([401, 403])("keeps the guarded-route early return for HTTP %i", async (status) => {
+    const fetchMock = vi.fn(() => Promise.resolve(new Response(null, { status })));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await runFrontendPreflight();
+
+    expect(result.errors[0]).toContain(`Health check failed for /ready (HTTP ${status})`);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(document.querySelector("[data-hint]")).toHaveTextContent("guarded by auth");
+  });
+
+  it("stops probing once the shared budget is exhausted", async () => {
+    // Without a shared budget a host that never answers costs one timeout per
+    // path. Simulate the clock jumping past the budget after the first probe and
+    // assert the fallbacks are skipped instead of each paying the full timeout.
+    const fetchMock = vi.fn(() =>
+      Promise.reject(new DOMException("The operation timed out", "AbortError")),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    // Date.now is read once to arm the deadline and once per loop iteration, so
+    // two reads at t=0 admit the first probe and the jump past 10s ends the loop.
+    const nowSpy = vi
+      .spyOn(Date, "now")
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0)
+      .mockReturnValue(30_000);
+
+    try {
+      const result = await runFrontendPreflight();
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(result.ok).toBe(false);
+    } finally {
+      nowSpy.mockRestore();
+    }
   });
 });
 

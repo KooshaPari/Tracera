@@ -36,6 +36,10 @@ interface InfraProbe {
 }
 
 const DEFAULT_TIMEOUT_MS = Number("8000");
+// Total wall-clock budget shared by every `/ready` -> `/health` -> `/api/v1/health`
+// fallback probe, so a host that never answers cannot multiply the freeze by the
+// number of paths. Each probe is additionally capped at DEFAULT_TIMEOUT_MS.
+const HEALTH_PROBE_BUDGET_MS = Number("10000");
 const FULL_PERCENT = Number("100");
 const RELOAD_DELAY_MS = Number("240");
 const HTTP_UNAUTHORIZED = Number("401");
@@ -484,6 +488,32 @@ const fadeOutAndReload = (): void => {
   setTimeout(() => window.location.reload(), RELOAD_DELAY_MS);
 };
 
+const getProbeLabel = (normalized: string, path: string): string => path || normalized;
+
+const getHealthFailure = (
+  normalized: string,
+  path: string,
+  kind: "network" | "timeout" | "unknown",
+): HealthCheckResult => {
+  const probe = getProbeLabel(normalized, path);
+  if (kind === "timeout") {
+    return {
+      error: `Health check failed for ${probe}`,
+      hint: `${probe} timed out. Service may be slow or blocked by the browser.`,
+    };
+  }
+  if (kind === "unknown") {
+    return {
+      error: `Health check failed for ${probe}`,
+      hint: `${probe} failed before returning a response. Check the service URL and browser console for details.`,
+    };
+  }
+  return {
+    error: `Health check failed for ${probe}`,
+    hint: `${probe} could not be reached (CORS or network error). Check the service URL, firewall, and Access-Control-Allow-Origin settings.`,
+  };
+};
+
 const checkHealth = async (target: string): Promise<HealthCheckResult> => {
   const normalized = target.replace(/\/$/, "");
   const explicit = normalized.includes("/api/");
@@ -491,42 +521,63 @@ const checkHealth = async (target: string): Promise<HealthCheckResult> => {
   // proves the process is alive; `/ready` gates the UI on its dependencies.
   // Keep the health fallbacks for older adapters that have not published ready.
   const paths = explicit ? [""] : ["/ready", "/health", "/api/v1/health"];
+  // All fallback probes share one budget. Without it a host that never answers
+  // costs paths x DEFAULT_TIMEOUT_MS - three probes at 8s each is a 24s freeze
+  // before the operator sees the failure panel, which reads as a hung app.
+  const deadline = Date.now() + HEALTH_PROBE_BUDGET_MS;
+  let lastFailure: HealthCheckResult | null = null;
 
   for (const path of paths) {
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) {
+      break;
+    }
     const url = `${normalized}${path}`;
     try {
-      const response = await fetchWithTimeout(url);
+      const response = await fetchWithTimeout(url, Math.min(remaining, DEFAULT_TIMEOUT_MS));
       if (response.ok) {
         return { error: null };
       }
       if (response.status === HTTP_UNAUTHORIZED || response.status === HTTP_FORBIDDEN) {
         return {
-          error: `Health check failed for ${normalized}`,
-          hint: "Blocked by auth; verify health endpoints allow public GET.",
+          error: `Health check failed for ${getProbeLabel(normalized, path)} (HTTP ${response.status})`,
+          hint: `${getProbeLabel(normalized, path)} is guarded by auth; verify health endpoints allow public GET.`,
         };
       }
       if (response.type === "opaque") {
         return {
-          error: `Health check failed for ${normalized}`,
-          hint: "Blocked by CORS. Check allowed origins for this service.",
+          error: `Health check failed for ${getProbeLabel(normalized, path)}`,
+          hint: `${getProbeLabel(normalized, path)} returned an opaque response. Check allowed origins for this service.`,
         };
       }
+      lastFailure = {
+        error: `Health check failed for ${getProbeLabel(normalized, path)} (HTTP ${response.status})`,
+        hint: `${getProbeLabel(normalized, path)} returned HTTP ${response.status}.`,
+      };
     } catch (error) {
-      const message = error instanceof DOMException ? error.name : String(error);
-      if (message === "AbortError") {
-        return {
-          error: `Health check failed for ${normalized}`,
-          hint: "Timed out. Service may be slow or blocked by the browser.",
-        };
+      const errorName =
+        error instanceof Error
+          ? error.name
+          : typeof error === "object" && error !== null && "name" in error
+            ? String(error.name)
+            : String(error);
+      if (errorName === "AbortError") {
+        lastFailure = getHealthFailure(normalized, path, "timeout");
+      } else if (error instanceof TypeError || errorName === "TypeError") {
+        lastFailure = getHealthFailure(normalized, path, "network");
+      } else {
+        lastFailure = getHealthFailure(normalized, path, "unknown");
       }
-      // Try next path
+      // Try the next path in case this service exposes an older health contract.
     }
   }
 
-  return {
-    error: `Health check failed for ${normalized}`,
-    hint: "Check service URL and local firewall/CORS settings.",
-  };
+  return (
+    lastFailure || {
+      error: `Health check failed for ${normalized}`,
+      hint: "No health endpoint returned a response. Check the service URL.",
+    }
+  );
 };
 
 const normalizeInfraStatus = (value?: string | null): InfraStatus | null => {

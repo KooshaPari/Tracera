@@ -41,6 +41,8 @@ services:
         value: "10000"
       - key: RUST_LOG
         value: "info"
+      - key: TRACERA_ALLOWED_ORIGINS
+        value: "http://127.0.0.1:18000"
     autoDeploy: false
     # Dev service does NOT autoDeploy; it's driven by the nightly-dev-deploy.yml
     # workflow which calls the Render API directly with commit-aware idempotency.
@@ -72,6 +74,8 @@ services:
         value: "10000"
       - key: RUST_LOG
         value: "info"
+      - key: TRACERA_ALLOWED_ORIGINS
+        value: "http://127.0.0.1:18000"
     autoDeploy: true
     # GitHub OIDC keyless auth — Render auto-mints a short-lived OIDC token
     # for each deploy via the GitHub Actions workflow that calls
