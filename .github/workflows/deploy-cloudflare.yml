@@ -233,11 +233,23 @@ jobs:
         run: |
           set +e
           sleep 10
-          BASE="${CF_ZONE:-tracera-edge.workers.dev}"
-          # dev and preview publish their own worker names, so probe that one.
+          # A workers.dev host is <worker>.<account-subdomain>.workers.dev. The
+          # subdomain is per account, so it must be read from the API. Assuming it
+          # was absent produced a host like tracera-edge-dev.workers.dev, which does
+          # not resolve, so this step reported 000 on every run and - because it is
+          # continue-on-error - verified nothing while appearing to run.
+          WORKER="tracera-edge"
           if [ "$DEPLOY_ENV" != "prod" ]; then
-            BASE="tracera-edge-$DEPLOY_ENV.workers.dev"
+            WORKER="tracera-edge-$DEPLOY_ENV"
           fi
+          subdomain=$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" \
+            2>/dev/null | jq -r '.result.subdomain // empty' 2>/dev/null)
+          if [ -z "$subdomain" ]; then
+            echo "::warning::Could not read the workers.dev subdomain; skipping the probe."
+            exit 0
+          fi
+          BASE="$WORKER.$subdomain.workers.dev"
           STATUS=$(curl -sS -o /dev/null -w "%{http_code}" "https://$BASE/healthz" 2>/dev/null || echo "000")
           if [ "$STATUS" = "200" ]; then
             echo "Worker health check passed: $BASE/healthz -> 200"
