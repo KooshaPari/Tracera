@@ -25,7 +25,6 @@ on:
 
 permissions:
   contents: read
-  secrets: write
 
 jobs:
   setup:
@@ -120,14 +119,10 @@ jobs:
           echo "no_new_token=false" >> "$GITHUB_OUTPUT"
           python3 -c "import re; log=open('/tmp/access-setup.log').read(); cid=re.search(r\"CF_ACCESS_CLIENT_ID --repo .* --body '([^']+)'\", log); sec=re.search(r\"CF_ACCESS_CLIENT_SECRET --repo .* --body '([^']+)'\", log); assert cid and sec; open('/tmp/token.env','w').write(f\"CF_ACCESS_CLIENT_ID={cid.group(1)}\\nCF_ACCESS_CLIENT_SECRET={sec.group(1)}\\n\")"
 
-      - name: Store Access credentials in GitHub secrets
+      - name: Print new service token credentials (manual store)
         if: steps.capture.outputs.no_new_token == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          # shellcheck disable=SC1091
-          source /tmp/token.env
-          gh secret set CF_ACCESS_CLIENT_ID --body "$CF_ACCESS_CLIENT_ID"
-          gh secret set CF_ACCESS_CLIENT_SECRET --body "$CF_ACCESS_CLIENT_SECRET"
-          echo "Stored CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET"
+          echo "New service token created. Store manually as repo secrets:"
+          echo "  CF_ACCESS_CLIENT_ID / CF_ACCESS_CLIENT_SECRET"
+          echo "(values written to /tmp/token.env on this runner only)"
