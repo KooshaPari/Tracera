@@ -1,10 +1,14 @@
-name: Deploy Full Stack (Backend + Frontend + Edge)
+name: Deploy Full Stack (Frontend + Edge)
 
 # Environment delineation: docs/04-guides/ENVIRONMENTS.md
 #
-# This orchestrator passes the target environment down to the three reusable
+# This orchestrator passes the target environment down to the frontend and edge
 # deploy workflows. On a v* tag the environment is prod; on a push to main it is
 # dev; a manual run chooses explicitly.
+#
+# The Rust backend is self-hosted (Cloudflare Tunnel to the operator box); see
+# deploy/selfhost/README.md. CI builds and pushes the container image via
+# build-push-image.yml but does not deploy the backend here.
 
 on:
   workflow_dispatch:
@@ -27,7 +31,6 @@ on:
       - "crates/**"
       - "frontend/**"
       - "Dockerfile.rust"
-      - "render.yaml"
       - "wrangler.toml"
       - "vercel.json"
       # Include this workflow itself, as the sibling deploy workflows do, so a
@@ -87,27 +90,14 @@ jobs:
           }
           echo "PASS: the build produced the SPA ($(wc -c < dist/index.html) bytes)"
 
-  deploy-backend:
-    name: Deploy Backend (Render)
-    needs: [test]
-    if: inputs.skip_tests == 'true' || needs.test.result == 'success'
-    uses: ./.github/workflows/deploy-render.yml
-    # Without this the reusable workflow received an empty workflow_call input,
-    # saw workflow_dispatch, and fell through to dev, so a dispatch asking for
-    # prod deployed the backend as dev.
-    with:
-      environment: ${{ inputs.environment }}
-    secrets: inherit
-    permissions:
-      contents: read
-
   deploy-frontend:
     name: Deploy Frontend (Vercel)
     needs: [test]
     if: inputs.skip_tests == 'true' || needs.test.result == 'success'
     uses: ./.github/workflows/deploy-vercel.yml
-    # Same defect as deploy-backend: the environment has to be forwarded or the
-    # frontend deploys to preview rather than the requested environment.
+    # Without this the reusable workflow received an empty workflow_call input,
+    # saw workflow_dispatch, and fell through to dev, so a dispatch asking for
+    # prod deployed the frontend as dev.
     with:
       environment: ${{ inputs.environment }}
     secrets: inherit
@@ -125,9 +115,52 @@ jobs:
     permissions:
       contents: read
 
+  publish-fleet-state:
+    name: Publish fleet desired-state
+    needs: [test, deploy-frontend, deploy-edge]
+    if: ${{ always() && needs.test.result == 'success' && needs.deploy-edge.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Push desired state to the fleet control plane
+        env:
+          # Base URL of the deployed edge worker (tracera-edge or
+          # tracera-edge-dev / -preview depending on the target environment).
+          FLEET_BASE_URL: ${{ vars.FLEET_BASE_URL }}
+          FLEET_ENROLL_TOKEN: ${{ secrets.FLEET_ENROLL_TOKEN }}
+          TRACERA_IMAGE: ghcr.io/kooshapari/tracera-server:${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "$FLEET_BASE_URL" ] || [ -z "$FLEET_ENROLL_TOKEN" ]; then
+            echo "::notice::FLEET_BASE_URL or FLEET_ENROLL_TOKEN not set; no enrolled nodes to notify."
+            exit 0
+          fi
+          # Desired state: every node that has services declared gets the
+          # newly built image for the canonical service name. Phase 1 keeps
+          # the assignment flat (all nodes get the same image); per-node
+          # overrides arrive when the control plane grows an assignment UI.
+          body=$(printf '{"services":{"tracera-server":"%s"}}' "$TRACERA_IMAGE")
+          # Bump the generation by POSTing the same desired state; the
+          # control plane increments generation per PUT.
+          http_code=$(curl -sS -o /tmp/fleet.json -w "%{http_code}" \
+            -X PUT \
+            -H "Authorization: Bearer $FLEET_ENROLL_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$body" \
+            "$FLEET_BASE_URL/fleet/desired/all")
+          if [ "$http_code" = "200" ] || [ "$http_code" = "201" ]; then
+            echo "Fleet desired state published (HTTP $http_code)."
+          elif [ "$http_code" = "404" ]; then
+            echo "::notice::No fleet endpoint yet at $FLEET_BASE_URL; skipping (404)."
+            exit 0
+          else
+            echo "::warning::Fleet publish returned HTTP $http_code; continuing without failing the deploy."
+          fi
+          exit 0
+
   post-deploy:
     name: Post-deploy verification
-    needs: [deploy-backend, deploy-frontend, deploy-edge]
+    needs: [deploy-frontend, deploy-edge]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -143,18 +176,18 @@ jobs:
           set -uo pipefail
           case "$TARGET_ENV" in
             prod)
-              backend="https://tracera-server.onrender.com/healthz"
+              backend="https://api.tracera.pheno.studio/healthz"
               frontend="https://tracera.pheno.studio"
               ;;
             *)
-              backend="https://tracera-server-dev.onrender.com/healthz"
+              backend="https://api.tracera.pheno.studio/healthz"
               frontend="https://tracera-kappa.vercel.app"
               ;;
           esac
           echo "Target environment: $TARGET_ENV"
 
-          echo "=== Backend ==="
-          curl -sf "$backend" || echo "BACKEND: pending"
+          echo "=== Backend (self-hosted via Cloudflare Tunnel) ==="
+          curl -sf "$backend" || echo "BACKEND: pending or behind Access"
 
           echo "=== Frontend ==="
           curl -sf -o /dev/null "$frontend" || echo "FRONTEND: pending"
@@ -170,7 +203,7 @@ jobs:
             echo "## Deployment Summary"
             echo "| Service | Platform | Status |"
             echo "|---------|----------|--------|"
-            echo "| Backend | Render | ${{ needs.deploy-backend.result }} |"
+            echo "| Backend | Self-hosted (tunnel) | operator-managed |"
             echo "| Frontend | Vercel | ${{ needs.deploy-frontend.result }} |"
             echo "| Edge | Cloudflare | ${{ needs.deploy-edge.result }} |"
           } >> "$GITHUB_STEP_SUMMARY"
