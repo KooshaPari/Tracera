@@ -1,12 +1,12 @@
 # Minimal Dockerfile for tracera-server only (frontend is deployed separately on Vercel).
-# Optimized for Render's free/starter tier (512 MB RAM) — no parallel frontend build.
+# Sized for constrained hosts (512 MB RAM) — no parallel frontend build.
 FROM rust:1.94-bookworm AS build
 
 WORKDIR /workspace
 COPY Cargo.toml Cargo.lock ./
 COPY crates ./crates
 
-# Use only 1 job to fit in Render's 512 MB limit. Release build with stripped debug.
+# Use only 1 job to fit in a 512 MB build budget. Release build with stripped debug.
 RUN CARGO_BUILD_JOBS=1 cargo build --locked --release -p tracera-server \
     && strip /workspace/target/release/tracera-server
 

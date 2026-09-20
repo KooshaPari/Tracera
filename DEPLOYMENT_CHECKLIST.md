@@ -10,9 +10,9 @@
 | # | Item | Where to Get | Status |
 |---|------|-------------|--------|
 | 0.1 | **GitHub account** | github.com | ✅ (<REDACTED>) |
-| 0.2 | **Render account** | render.com (free tier) | ☐ |
-| 0.3 | **Vercel account** | vercel.com (free tier) | ✅ |
-| 0.4 | **Cloudflare account** | cloudflare.com (free tier) | ☐ |
+| 0.2 | **Vercel account** | vercel.com (free tier) | ✅ |
+| 0.3 | **Cloudflare account** | cloudflare.com (free tier) | ☐ |
+| 0.4 | **cloudflared** | cloudflare.com/products/tunnel | ☐ |
 | 0.5 | **Domain registered** | phenotype.studio (or similar) | ☐ |
 | 0.6 | **Git installed** | git-scm.com | ✅ |
 | 0.7 | **Rust toolchain** | rustup.rs | ✅ |
@@ -60,12 +60,11 @@ vercel login
 # Save: VERCEL_TOKEN (auto-managed by CLI)
 ```
 
-### 1.5 — Render CLI Auth
+### 1.5 — Cloudflare Tunnel Token
 ```bash
-# Render doesn't have a CLI, use API token
-# Go to: https://render.com/dashboard/settings/api
-# Generate API token
-# Save as: RENDER_API_TOKEN
+# Create a tunnel in the Cloudflare Zero Trust dashboard
+# Copy the tunnel token for the named tunnel
+# Save as: CF_TUNNEL_TOKEN (used by deploy/selfhost/docker-compose.selfhost.yml)
 ```
 
 ### 1.6 — GPG Commit Signing Key
@@ -91,18 +90,18 @@ ssh-keygen -t ed25519 -C "deploy@tracera" -f ~/.ssh/deploy_tracera
 | Domain | Purpose | DNS Provider | Status |
 |--------|---------|-------------|--------|
 | `phenotype.studio` | Main dashboard | Cloudflare | ☐ |
-| `api.phenotype.studio` | API gateway (Render) | Cloudflare | ☐ |
-| `ws.phenotype.studio` | WebSocket (Render) | Cloudflare | ☐ |
+| `api.tracera.pheno.studio` | API (self-hosted via tunnel) | Cloudflare | ☐ |
+| `tracera.pheno.studio` | Web app + `/api` path prefix | Cloudflare | ☐ |
 | `worker.phenotype.studio` | Cloudflare Worker | Cloudflare | ☐ |
 | `docs.phenotype.studio` | Documentation (Vercel) | Cloudflare | ☐ |
 
 ### 2.2 — DNS Records (Cloudflare)
 ```
-A       @       <Render external IP>        TTL Auto
-CNAME   api     @                           TTL Auto (point to Render)
-CNAME   www     @                           TTL Auto (point to Vercel)
-TXT     @       v=spf1 include:vercel.com   TTL Auto
-TXT     _dmarc  v=DMARC1; p=none            TTL Auto
+CNAME   tracera           <tunnel-id>.cfargotunnel.com   TTL Auto
+CNAME   api.tracera       <tunnel-id>.cfargotunnel.com   TTL Auto
+CNAME   www               cname.vercel-dns.com           TTL Auto (point to Vercel)
+TXT     @                 v=spf1 include:vercel.com      TTL Auto
+TXT     _dmarc            v=DMARC1; p=none               TTL Auto
 ```
 
 ### 2.3 — SSL/TLS Certificates
@@ -114,60 +113,49 @@ certbot certonly --standalone -d phenotype.studio -d api.phenotype.studio
 
 ---
 
-## 3. Backend Deployment (Render)
+## 3. Backend Deployment (Self-hosted)
 
 ### 3.1 — Prerequisites
-- [ ] Render account created
-- [ ] GitHub repo connected to Render
-- [ ] `render.yaml` exists in repo root ✅
+- [ ] Docker Desktop or Docker Engine on the operator machine
+- [ ] Cloudflare Tunnel created for `tracera.pheno.studio`
+- [ ] `deploy/selfhost/docker-compose.selfhost.yml` reviewed ✅
 - [ ] `Dockerfile.rust` exists ✅
 - [ ] `Cargo.toml` workspace configured ✅
 
-### 3.2 — Render Setup Steps
+### 3.2 — Self-host Setup Steps
 ```bash
-# 1. Login to Render (via browser)
-# 2. Go to https://render.com/dashboard
-# 3. Click "New +" → "Web Service"
-# 4. Connect GitHub repo: <REDACTED>/Tracera
-# 5. Select branch: main
-# 6. Render will auto-detect render.yaml
+# From the repo root (see deploy/selfhost/README.md for full runbook):
+export CF_TUNNEL_TOKEN="<tunnel-token>"
+export TRACERA_PUBLIC_HOSTNAME="tracera.pheno.studio"
+export TRACERA_AUTH_TOKEN="<from §1.1>"
 
-# OR use Render API:
-curl -X POST https://api.render.com/v1/services \
-  -H "Authorization: Bearer $RENDER_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d @render.yaml
+docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
 ```
 
-### 3.3 — Environment Variables (Render)
+### 3.3 — Environment Variables (Operator Box)
 | Variable | Value | Source |
 |----------|-------|--------|
-| `DATABASE_URL` | Auto-provided by Render PostgreSQL | Render DB |
+| `DATABASE_URL` | PostgreSQL connection string | Local compose or host DB |
 | `TRACERA_AUTH_TOKEN` | From §1.1 | Generated |
 | `TRACERA_BIND_ADDR` | `0.0.0.0:8080` | Hardcoded |
-| `TRACERA_PUBLIC_BIND_MODE` | `loopback-published` | Hardcoded |
+| `TRACERA_PUBLIC_BIND_MODE` | `authenticated-proxy` when ingress auth is active | Operator choice |
+| `CF_TUNNEL_TOKEN` | From §1.5 | Cloudflare Zero Trust |
 | `RUST_LOG` | `info` | Hardcoded |
 | `RUST_BACKTRACE` | `1` | Hardcoded |
 
-### 3.4 — PostgreSQL Database (Render)
+### 3.4 — PostgreSQL Database
 ```bash
-# Create via render.yaml (auto-provisioned)
-# Or manually:
-# Render Dashboard → Databases → New PostgreSQL
-# Plan: Free (256MB RAM, 1GB disk)
-# Region: Closest to you
+# Use the PostgreSQL service in docker-compose.selfhost.yml
+# or point DATABASE_URL at an existing local instance.
 ```
 
 ### 3.5 — Verify Backend
 ```bash
-# After deploy, get the URL:
-# https://tracera-server.onrender.com
-
-curl https://tracera-server.onrender.com/healthz
+curl https://api.tracera.pheno.studio/healthz
 # Expected: {"status":"ok","service":"tracera-server"}
 
-curl https://tracera-server.onrender.com/readyz
-# Expected: {"status":"ready","version":"0.1.3","backend":"postgres"}
+curl https://api.tracera.pheno.studio/readyz
+# Expected: {"status":"ready",...}
 ```
 
 ---
@@ -184,7 +172,7 @@ curl https://tracera-server.onrender.com/readyz
 ```bash
 # Set production API URL
 vercel env add VITE_API_URL production
-# Value: https://api.phenotype.studio (or your Render URL)
+# Value: https://tracera.pheno.studio/api
 
 vercel env add VITE_WS_URL production
 # Value: wss://api.phenotype.studio
@@ -459,7 +447,7 @@ git push origin v0.1.0
 ### 12.3 — CI Triggers on Tag
 - [ ] Build all binaries (Rust + Frontend + Desktop)
 - [ ] Run all tests
-- [ ] Deploy to Render (backend)
+- [ ] Restart self-hosted backend (operator box)
 - [ ] Deploy to Vercel (frontend)
 - [ ] Deploy Cloudflare Worker
 - [ ] Publish to npm/Cargo
@@ -573,7 +561,7 @@ tracera --version
 □ 0. Prerequisites (all tools installed)
 □ 1. Secrets & Credentials (all tokens generated)
 □ 2. Domain & DNS (all records configured)
-□ 3. Backend on Render (deployed and healthy)
+□ 3. Backend self-hosted (tunnel up and healthy)
 □ 4. Frontend on Vercel (deployed and healthy)
 □ 5. Cloudflare Worker (deployed and healthy)
 □ 6. Desktop Client (built, signed, published)

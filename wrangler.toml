@@ -24,8 +24,6 @@ ENVIRONMENT = "production"
 # tracera.pheno.studio.  This worker (tracera-edge) lives at
 # tracera-edge.pheno.studio and proxies/aggregates to TRACERA_API.
 TRACERA_API = "https://tracera.pheno.studio/api"
-# Optional fallback (image-deploy from GHCR) — set only if needed.
-# TRACERA_FALLBACK = "https://tracera-server.onrender.com"
 
 [[kv_namespaces]]
 binding = "TRACERA_KV"
@@ -77,7 +75,7 @@ bucket_name = "tracera-artifacts"
 
 [env.dev.vars]
 ENVIRONMENT = "dev"
-TRACERA_API = "https://tracera-server-dev.onrender.com/api"
+TRACERA_API = "https://tracera.pheno.studio/api"
 
 [env.preview]
 name = "tracera-edge-preview"
@@ -95,7 +93,7 @@ bucket_name = "tracera-artifacts"
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
-TRACERA_API = "https://tracera-server-dev.onrender.com/api"
+TRACERA_API = "https://tracera.pheno.studio/api"
 
 # ---------------------------------------------------------------------------
 # Production environment.

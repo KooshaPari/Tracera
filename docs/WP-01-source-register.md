@@ -226,7 +226,7 @@ Pinned to git rev `dd040ed1` from [KooshaPari/PhenoInfra](https://github.com/Koo
 | `build-push-image.yml` | **unknown** | Not yet inspected |
 | `deploy-cloudflare.yml` | **unknown** | Not yet inspected |
 | `deploy-full-stack.yml` | **unknown** | Not yet inspected |
-| `deploy-render.yml` | **unknown** | Not yet inspected |
+| `deploy-full-stack.yml` | **active** | Orchestrates Vercel + Cloudflare deploys (backend is self-hosted) |
 | `deploy-vercel.yml` | **unknown** | Not yet inspected |
 | `deploy-pages.yml` | **unknown** | Not yet inspected |
 | `release.yml` | **unknown** | Not yet inspected |

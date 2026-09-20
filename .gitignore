@@ -40,10 +40,6 @@ mock-agcord.log
 owners.json
 patch.json
 pg_create.json
-render_create*.json
-render_create.json
-render_payload*.json
-render_img_create.json
 deleted_svc.json
 flowsvc.json
 del.json
@@ -67,12 +63,9 @@ sf.json
 *.deploy.json
 *.deploy.txt
 .vault.local.env
-render_list.json
-render_openapi.yaml
 services_full.json
 svc.json
 ws_create.json
-render_*.json
 mock-agcord.log
 *.flowsvc.json
 *_flowsvc.json

@@ -43,6 +43,10 @@ ingress:
   - hostname: tracera.pheno.studio
     path: ^/api(/.*)?$
     service: http://localhost:8080
+  # Liveness routes for smoke checks behind Access (service token auth at the edge).
+  - hostname: tracera.pheno.studio
+    path: ^/(healthz|readyz?|metrics)$
+    service: http://localhost:8080
   - hostname: api.tracera.pheno.studio
     service: http://localhost:8080
 

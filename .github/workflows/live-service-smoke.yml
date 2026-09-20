@@ -1,14 +1,9 @@
 name: Live service smoke
 
-# Pings every publicly reachable Tracera surface once a day so a cold-sleeping
-# Render service, a stale Vercel alias, or a Cloudflare worker failure shows up
-# here instead of surprising the next person who loads the app. The local
-# nightly workflow exercises the binary itself; this one exercises the deploys.
-
-# The Render free tier sleeps a service after ~15 minutes of no traffic. A
-# cold start can take 30+ seconds, which is longer than the default curl
-# timeout. 60s is comfortably above that and short enough that a true outage
-# still fails the run quickly.
+# Pings every publicly reachable Tracera surface once a day so a stale Vercel
+# alias, a down self-hosted tunnel, or a Cloudflare worker failure shows up here
+# instead of surprising the next person who loads the app. The local nightly
+# workflow exercises the binary itself; this one exercises the deploys.
 
 on:
   schedule:
@@ -33,37 +28,50 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      PROD_API: https://tracera-server.onrender.com
-      DEV_API: https://tracera-server-dev.onrender.com
+      # Prefer the dedicated API hostname once tunnel DNS exists; fall back to the
+      # path-prefixed ingress on the Access-protected parent domain.
+      PROD_API: https://api.tracera.pheno.studio
+      PROD_API_FALLBACK: https://tracera.pheno.studio/api
       PROD_FRONTEND: https://tracera-kappa.vercel.app
       CURL_TIMEOUT: "60"
+      # Scheduled runs have no workflow_dispatch input; treat them as `all`.
+      SMOKE_TARGET: ${{ github.event_name == 'schedule' && 'all' || inputs.target }}
+      CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+      CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
     steps:
       - name: Probe prod API
-        if: ${{ inputs.target == 'all' || inputs.target == 'prod' }}
+        if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'dev' }}
         run: |
           set -euo pipefail
-          body=$(curl --silent --show-error --fail-with-body \
-            --max-time "${CURL_TIMEOUT}" "${PROD_API}/healthz")
-          echo "prod /healthz -> ${body}"
-          printf %s "${body}" | grep -q '"status":"ok"' || {
-            echo "::error::prod API did not report status:ok"
-            exit 1
+          curl_args=(--silent --show-error --fail-with-body --max-time "${CURL_TIMEOUT}")
+          if [ -n "${CF_ACCESS_CLIENT_ID:-}" ] && [ -n "${CF_ACCESS_CLIENT_SECRET:-}" ]; then
+            curl_args+=(-H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}")
+            curl_args+=(-H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}")
+          fi
+
+          probe_health() {
+            base="$1"
+            for path in /healthz /api/v1/health; do
+              if body=$(curl "${curl_args[@]}" "${base}${path}" 2>/dev/null); then
+                echo "prod ${path} @ ${base} -> ${body}"
+                printf %s "${body}" | grep -q '"status":"ok"' && return 0
+              fi
+            done
+            return 1
           }
 
-      - name: Probe dev API
-        if: ${{ inputs.target == 'all' || inputs.target == 'dev' }}
-        run: |
-          set -euo pipefail
-          body=$(curl --silent --show-error --fail-with-body \
-            --max-time "${CURL_TIMEOUT}" "${DEV_API}/healthz")
-          echo "dev /healthz -> ${body}"
-          printf %s "${body}" | grep -q '"status":"ok"' || {
-            echo "::error::dev API did not report status:ok"
-            exit 1
-          }
+          if probe_health "${PROD_API}"; then
+            exit 0
+          fi
+          if probe_health "${PROD_API_FALLBACK}"; then
+            echo "::notice::api.tracera.pheno.studio unreachable; fell back to ${PROD_API_FALLBACK}"
+            exit 0
+          fi
+          echo "::error::prod API did not report status:ok on ${PROD_API} or ${PROD_API_FALLBACK}"
+          exit 1
 
       - name: Probe CORS for the deployed frontend origin
-        if: ${{ inputs.target == 'all' || inputs.target == 'prod' || inputs.target == 'dev' }}
+        if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'dev' }}
         run: |
           set -euo pipefail
           # A browser accepts a cross-origin response only when
@@ -72,11 +80,17 @@ jobs:
           # request, so it looked healthy to curl while blocking every deployed
           # frontend - the app reported a generic "service down". Assert the echo,
           # not the header's presence.
+          curl_args=(--silent --show-error --dump-header - --output /dev/null \
+            --max-time "${CURL_TIMEOUT}")
+          if [ -n "${CF_ACCESS_CLIENT_ID:-}" ] && [ -n "${CF_ACCESS_CLIENT_SECRET:-}" ]; then
+            curl_args+=(-H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}")
+            curl_args+=(-H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}")
+          fi
+
           check_origin() {
             host="$1"
             origin="$2"
-            headers=$(curl --silent --show-error --dump-header - --output /dev/null \
-              --max-time "${CURL_TIMEOUT}" -H "Origin: ${origin}" "${host}/ready")
+            headers=$(curl "${curl_args[@]}" -H "Origin: ${origin}" "${host}/ready")
             allowed=$(printf '%s' "${headers}" \
               | tr -d '\r' \
               | awk 'tolower($1) == "access-control-allow-origin:" { print $2 }')
@@ -87,17 +101,13 @@ jobs:
             echo "PASS: ${host} allows ${origin}"
           }
 
-          case "${{ inputs.target }}" in
-            dev) check_origin "${DEV_API}" "https://tracera-kappa.vercel.app" ;;
-            prod) check_origin "${PROD_API}" "https://tracera-kappa.vercel.app" ;;
-            *)
-              check_origin "${PROD_API}" "https://tracera-kappa.vercel.app"
-              check_origin "${DEV_API}" "https://tracera-kappa.vercel.app"
-              ;;
-          esac
+          if check_origin "${PROD_API}" "https://tracera-kappa.vercel.app"; then
+            exit 0
+          fi
+          check_origin "${PROD_API_FALLBACK}" "https://tracera-kappa.vercel.app"
 
       - name: Probe prod frontend
-        if: ${{ inputs.target == 'all' || inputs.target == 'frontend' }}
+        if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'frontend' }}
         run: |
           set -euo pipefail
           # A 200 proves nothing on its own: the SPA may be missing while the

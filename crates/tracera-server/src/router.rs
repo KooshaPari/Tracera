@@ -37,7 +37,7 @@ pub(crate) fn build_router(state: AppState) -> Router {
 /// Browser origins that must always be permitted, even when `TRACERA_ALLOWED_ORIGINS` is set.
 ///
 /// The env var is treated as additive (extra deploy-specific origins), not a replacement list.
-/// Render and other hosts often set `TRACERA_ALLOWED_ORIGINS` to a single local origin for
+/// Some deployment hosts often set `TRACERA_ALLOWED_ORIGINS` to a single local origin for
 /// smoke tests; replacing the built-in list caused production to echo only
 /// `http://127.0.0.1:18000` and blocked the deployed Vercel frontend.
 const CANONICAL_CORS_ORIGINS: &[&str] = &[
