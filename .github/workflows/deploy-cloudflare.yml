@@ -223,6 +223,17 @@ jobs:
             --compatibility-date 2025-04-01 \
             --minify
 
+      - name: Sync FLEET_ENROLL_TOKEN secret
+        if: steps.cf_scope_check.outputs.cf_creds_ok == 'true'
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.FLEET_ENROLL_TOKEN }}" ]; then
+            printf '%s' "${{ secrets.FLEET_ENROLL_TOKEN }}" | \
+              npx wrangler secret put FLEET_ENROLL_TOKEN $( [ "$DEPLOY_ENV" = "prod" ] && echo --name tracera-edge || echo --name tracera-edge-$DEPLOY_ENV )
+          else
+            echo "::notice::FLEET_ENROLL_TOKEN repo secret not set; fleet endpoints stay 401 (fail-closed)."
+          fi
+
       - name: Verify deployment
         if: steps.cf_scope_check.outputs.cf_creds_ok == 'true'
         continue-on-error: true
