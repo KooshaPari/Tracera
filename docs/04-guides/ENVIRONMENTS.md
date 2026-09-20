@@ -124,10 +124,13 @@ unchanged.
 | `/api/v1/projects/{id}/export`                  | `api/v1/projects/[project_id]/export.ts`                                                                                                 | `501 export-stub`                                            |
 
 The functions are configured via `vercel.json`'s `functions.api/**/*.ts`
-block (runtime `nodejs20.x`, 128MB, 10s). `@vercel/node` is a root-level
-devDep declared in `package.json`; `tsconfig.json` is the build root for
-typechecking the functions in isolation, scoped to `api/**/*.ts` only so
-it never collides with the Vite app's TS project.
+block (`maxDuration: 10s`; the official Node.js runtime is auto-detected
+when `runtime` is unset, and the Vercel CLI rejects `runtime: "nodejs20.x"`
+because that field is for community runtimes that need a `name@version`).
+`@vercel/node` is a root-level devDep declared in `package.json`;
+`tsconfig.json` is the build root for typechecking the functions in
+isolation, scoped to `api/**/*.ts` only so it never collides with the
+Vite app's TS project.
 
 When the Cloudflare Tunnel to the local Rust backend is restored, swap
 `VITE_API_URL=/api` in `.env.production` back to
