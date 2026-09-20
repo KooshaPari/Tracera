@@ -105,7 +105,7 @@ pull_request_rules:
     actions:
       comment:
         message: >
-          **Large PR Alert**: This PR touches { number } files.
+          **Large PR Alert**: This PR touches {{ number }} files.
           Consider splitting into smaller PRs for easier review.
 
   # Add ready-to-merge label when all checks pass
