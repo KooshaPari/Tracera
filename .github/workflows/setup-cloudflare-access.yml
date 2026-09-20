@@ -1,0 +1,126 @@
+name: Setup Cloudflare Access (tracera.pheno.studio)
+
+# Idempotent Access configuration for production hostnames:
+# - default: CI service token + Service Auth on tracera.pheno.studio
+# - public_bypass: Bypass/everyone policy on access_hostname (e.g. tracera-edge.pheno.studio)
+#
+# Requires CLOUDFLARE_API_TOKEN with Zero Trust: Edit on the account.
+
+on:
+  workflow_dispatch:
+    inputs:
+      access_hostname:
+        description: Hostname protected by the Access application
+        required: false
+        type: string
+        default: tracera.pheno.studio
+      public_bypass:
+        description: Add a Bypass/everyone policy (public, no login)
+        required: false
+        type: boolean
+        default: false
+      operator_email:
+        description: Optional email to add to an Allow policy (human login)
+        required: false
+        type: string
+      rotate_service_token:
+        description: Delete and recreate the CI service token (rotates secrets)
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  secrets: write
+
+jobs:
+  setup:
+    name: Configure Access for ${{ inputs.access_hostname }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: cloudflare-production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ACCESS_HOSTNAME: ${{ inputs.access_hostname }}
+      PUBLIC_BYPASS: ${{ inputs.public_bypass && '1' || '0' }}
+      OPERATOR_EMAIL: ${{ inputs.operator_email }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify Cloudflare token
+        run: |
+          set -euo pipefail
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID must be set"
+            exit 1
+          fi
+          code=$(curl -sS -o /tmp/cf_verify.json -w '%{http_code}' \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            https://api.cloudflare.com/client/v4/user/tokens/verify)
+          if [ "$code" != "200" ]; then
+            echo "::error::Cloudflare token verify failed (HTTP $code)"
+            cat /tmp/cf_verify.json
+            exit 1
+          fi
+
+      - name: Optionally rotate CI service token
+        if: inputs.rotate_service_token && !inputs.public_bypass
+        run: |
+          set -euo pipefail
+          tokens=$(curl -fsS \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/access/service_tokens?per_page=100")
+          id=$(printf '%s' "$tokens" | python3 -c '
+import json,sys
+for t in json.load(sys.stdin).get("result", []):
+    if t.get("name") == "tracera-ci-smoke":
+        print(t["id"])
+        break
+')
+          if [ -n "$id" ]; then
+            curl -fsS -X DELETE \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/access/service_tokens/$id"
+            echo "Deleted existing tracera-ci-smoke token $id"
+          fi
+
+      - name: Apply Access policies and service token
+        id: access
+        run: |
+          set -euo pipefail
+          bash scripts/setup-cloudflare-access.sh | tee /tmp/access-setup.log
+
+      - name: Capture new service token credentials
+        if: ${{ !inputs.public_bypass }}
+        id: capture
+        run: |
+          set -euo pipefail
+          if ! grep -q "gh secret set CF_ACCESS_CLIENT_ID" /tmp/access-setup.log; then
+            echo "no_new_token=true" >> "$GITHUB_OUTPUT"
+            echo "Reused existing service token; skipping secret rotation."
+            exit 0
+          fi
+          echo "no_new_token=false" >> "$GITHUB_OUTPUT"
+          python3 - <<'PY' > /tmp/token.env
+import re
+log = open("/tmp/access-setup.log").read()
+client_id = re.search(r"CF_ACCESS_CLIENT_ID --repo .* --body '([^']+)'", log)
+client_secret = re.search(r"CF_ACCESS_CLIENT_SECRET --repo .* --body '([^']+)'", log)
+if not client_id or not client_secret:
+    raise SystemExit("could not parse service token credentials from setup log")
+print(f"CF_ACCESS_CLIENT_ID={client_id.group(1)}")
+print(f"CF_ACCESS_CLIENT_SECRET={client_secret.group(1)}")
+PY
+
+      - name: Store Access credentials in GitHub secrets
+        if: steps.capture.outputs.no_new_token == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC1091
+          source /tmp/token.env
+          gh secret set CF_ACCESS_CLIENT_ID --body "$CF_ACCESS_CLIENT_ID"
+          gh secret set CF_ACCESS_CLIENT_SECRET --body "$CF_ACCESS_CLIENT_SECRET"
+          echo "Stored CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET"
