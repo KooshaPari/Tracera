@@ -38,7 +38,7 @@ jobs:
     name: Configure Access for ${{ inputs.access_hostname }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment: cloudflare-production
+    environment: cloudflare-prod
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -63,6 +63,37 @@ jobs:
             cat /tmp/cf_verify.json
             exit 1
           fi
+
+      - name: List Cloudflare Tunnels (inspect only)
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          echo "=== Cloudflare Tunnels ==="
+          npx wrangler tunnel list || true
+          echo "=== Access applications (first page) ==="
+          curl -fsS \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/access/apps?per_page=100" \
+            | python3 -c '
+import json, sys
+data = json.load(sys.stdin)
+for app in data.get("result", []):
+    print(f"{app.get(\"domain\", \"?\")}\t{app.get(\"name\", \"\")}\t{app.get(\"id\", \"\")}")
+'
+
+      - name: List Access applications (inspect)
+        run: |
+          set -euo pipefail
+          curl -fsS \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/access/apps?per_page=100" \
+            | python3 - <<'PY'
+import json, sys
+data = json.load(sys.stdin)
+print("Access applications:")
+for app in data.get("result", []):
+    print(f"  - id={app.get('id')} domain={app.get('domain')} name={app.get('name')}")
+PY
 
       - name: Optionally rotate CI service token
         if: inputs.rotate_service_token && !inputs.public_bypass
