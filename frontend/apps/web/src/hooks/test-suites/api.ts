@@ -10,6 +10,7 @@ import { client } from "@/api/client";
 
 import { asJsonObject, getOptionalArray, getOptionalNumber, getString } from "./decoders";
 import {
+import { API_ORIGIN } from "@/config/api-origin";
   decodeTestSuite,
   decodeTestSuiteActivity,
   decodeTestSuiteStats,
@@ -18,7 +19,7 @@ import {
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = API_ORIGIN;
 
 interface TestSuiteFilters {
   projectId: string;

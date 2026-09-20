@@ -38,7 +38,7 @@ const getStorage = (): StorageAdapter => {
   return localStorage;
 };
 
-const getApiBaseUrl = (): string => import.meta.env.VITE_API_URL || API_BASE_URL_DEFAULT;
+const getApiBaseUrl = (): string => API_BASE_URL_DEFAULT;
 
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
   Object.prototype.toString.call(value) === "[object Object]";

@@ -10,6 +10,7 @@ import type {
 
 import { client } from "@/api/client";
 import {
+import { API_ORIGIN } from "@/config/api-origin";
   asArray,
   asBoolean,
   asNumber,
@@ -22,7 +23,7 @@ import {
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL ?? "";
+const API_URL = API_ORIGIN;
 
 interface ProblemFilters {
   projectId: string;

@@ -3,6 +3,8 @@ interface PreflightResult {
   ok: boolean;
 }
 
+import { API_ORIGIN } from "@/config/api-origin";
+
 interface PreflightCheck {
   name: string;
   url: string;
@@ -673,7 +675,10 @@ const getDevHost = (): string =>
 
 const buildChecks = (): PreflightCheck[] => {
   const checks: PreflightCheck[] = [];
-  const configuredApiUrl = (import.meta.env?.VITE_API_URL ?? "").trim().replace(/\/$/, "");
+  // API_ORIGIN already handles relative -> origin and absolute verbatim.
+  // Reading VITE_API_URL directly would re-introduce /api/api/... path doubling
+  // for same-origin deploys.
+  const configuredApiUrl = API_ORIGIN;
   if (import.meta.env.PROD) {
     const baseUrl = configuredApiUrl || window.location.origin;
     checks.push({ name: "backend", url: baseUrl });

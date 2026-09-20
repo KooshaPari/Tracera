@@ -7,8 +7,9 @@ import type { Item, TypedItem, ViewType, ItemStatus } from "@tracertm/types";
 import itemsUtils from "@/hooks/use-items/items-utils";
 import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
 import { useAuthStore } from "@/stores/authStore";
+import { API_ORIGIN } from "@/config/api-origin";
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = API_ORIGIN;
 
 interface ItemFilters {
   projectId?: string | undefined;

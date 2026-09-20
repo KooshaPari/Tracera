@@ -11,10 +11,11 @@ import { client } from "@/api/client";
 import { buildSystemPrompt } from "@/lib/ai/systemPrompt";
 import { logger } from "@/lib/logger";
 import { useChatStore } from "@/stores/chat-store";
+import { API_ORIGIN } from "@/config/api-origin";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = API_ORIGIN;
 
 interface SendMessageOptions {
   onChunk?: (chunk: string) => void;

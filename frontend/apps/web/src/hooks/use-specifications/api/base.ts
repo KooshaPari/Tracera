@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL ?? "";
+const API_URL = API_ORIGIN;
 
 const setOptionalParam = (
   params: URLSearchParams,
