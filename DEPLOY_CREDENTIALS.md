@@ -7,15 +7,15 @@ deploy time by `.github/workflows/deploy-*.yml`.
 
 ## Already Provisioned
 
-| Variable / Secret       | Where stored         | Notes                                 |
-| ----------------------- | -------------------- | ------------------------------------- |
-| `CLOUDFLARE_ACCOUNT_ID` | GitHub repo secret   | (numeric account ID)                  |
-| `WORKOS_CLIENT_ID`      | GitHub repo secret   | (WorkOS project client id)            |
-| `WORKOS_API_KEY`        | GitHub repo secret   | test key, ok for staging              |
-| `TRACERA_API_BASE`      | GitHub repo variable | `https://tracera.pheno.studio/api`    |
-| `INFISICAL_PROJECT_ID`  | GitHub repo variable | (UUID)                                |
-| `CF_ACCESS_CLIENT_ID`   | GitHub repo secret   | set by `setup-cloudflare-access.yml`    |
-| `CF_ACCESS_CLIENT_SECRET` | GitHub repo secret | set by `setup-cloudflare-access.yml`  |
+| Variable / Secret         | Where stored         | Notes                                |
+| ------------------------- | -------------------- | ------------------------------------ |
+| `CLOUDFLARE_ACCOUNT_ID`   | GitHub repo secret   | (numeric account ID)                 |
+| `WORKOS_CLIENT_ID`        | GitHub repo secret   | (WorkOS project client id)           |
+| `WORKOS_API_KEY`          | GitHub repo secret   | test key, ok for staging             |
+| `TRACERA_API_BASE`        | GitHub repo variable | `https://tracera.pheno.studio/api`   |
+| `INFISICAL_PROJECT_ID`    | GitHub repo variable | (UUID)                               |
+| `CF_ACCESS_CLIENT_ID`     | GitHub repo secret   | set by `setup-cloudflare-access.yml` |
+| `CF_ACCESS_CLIENT_SECRET` | GitHub repo secret   | set by `setup-cloudflare-access.yml` |
 
 > **Note:** This document intentionally uses placeholders rather than
 > literal token values. To inject secrets, use the
@@ -40,13 +40,13 @@ Replace with an **Account-scoped** token created at
 
 Permissions required:
 
-| Scope   | Permission               |
-| ------- | ------------------------ |
-| Account | Workers Scripts: Edit    |
-| Account | Workers KV Storage: Edit |
-| Account | Workers R2 Storage: Edit |
-| Account | Account Settings: Read   |
-| Account | Workers Tail: Read       |
+| Scope   | Permission                      |
+| ------- | ------------------------------- |
+| Account | Workers Scripts: Edit           |
+| Account | Workers KV Storage: Edit        |
+| Account | Workers R2 Storage: Edit        |
+| Account | Account Settings: Read          |
+| Account | Workers Tail: Read              |
 | Account | Access: Apps and Policies: Edit |
 | Account | Access: Service Tokens: Edit    |
 

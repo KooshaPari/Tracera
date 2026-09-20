@@ -60,7 +60,6 @@ ingress:
 # Optional: logfile for debugging
 logfile: .cloudflared/tunnel.log
 loglevel: info
-
 # =============================================================================
 # Notes on the hybrid Tailnet + CF setup (Sep-2026 architecture):
 # =============================================================================

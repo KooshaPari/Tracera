@@ -3,12 +3,14 @@
 ## Current State Analysis
 
 ### What's Working
+
 - ✅ **Frontend**: Deployed on Vercel (tracera-kappa.vercel.app)
 - ✅ **Backend**: Rust server compiles and runs locally
 - ✅ **Cloudflare Worker**: wrangler.toml configured (needs deployment)
 - ✅ **Docker Compose**: PostgreSQL + tracera-server config exists
 
 ### What Needs Work
+
 - ❌ **Backend Deployment**: No production deployment
 - ❌ **Frontend API URL**: Hardcoded to localhost:8080
 - ❌ **Cloudflare Worker**: Not deployed (API token permission issue)
@@ -19,44 +21,50 @@
 ## Infrastructure Decision Matrix
 
 ### Backend Options
-| Option | Cost | Setup | Performance | Recommendation |
-|--------|------|-------|-------------|----------------|
-| Self-hosted + CF Tunnel | $0 | Medium | Excellent | ✅ SELECTED |
-| Fly.io (Free) | $0 | Medium | Good | Alternative |
-| Railway (Free) | $0 | Easy | Good | Alternative |
-| Managed VPS | $5+/mo | Medium | Excellent | Alternative |
+
+| Option                  | Cost   | Setup  | Performance | Recommendation |
+| ----------------------- | ------ | ------ | ----------- | -------------- |
+| Self-hosted + CF Tunnel | $0     | Medium | Excellent   | ✅ SELECTED    |
+| Fly.io (Free)           | $0     | Medium | Good        | Alternative    |
+| Railway (Free)          | $0     | Easy   | Good        | Alternative    |
+| Managed VPS             | $5+/mo | Medium | Excellent   | Alternative    |
 
 ### Frontend Options
-| Option | Cost | Setup | CDN | Recommendation |
-|--------|------|-------|-----|----------------|
-| Vercel (Current) | $0 | Easy | Excellent | ✅ KEEP |
-| Netlify | $0 | Easy | Excellent | Alternative |
-| Cloudflare Pages | $0 | Easy | Excellent | Alternative |
+
+| Option           | Cost | Setup | CDN       | Recommendation |
+| ---------------- | ---- | ----- | --------- | -------------- |
+| Vercel (Current) | $0   | Easy  | Excellent | ✅ KEEP        |
+| Netlify          | $0   | Easy  | Excellent | Alternative    |
+| Cloudflare Pages | $0   | Easy  | Excellent | Alternative    |
 
 ### Edge/Worker Options
-| Option | Cost | Setup | Use Case | Recommendation |
-|--------|------|-------|----------|----------------|
-| Cloudflare Workers | $0 | Medium | Edge caching | ✅ REPURPOSE |
-| Vercel Edge Functions | $0 | Easy | API edge | Alternative |
-| AWS Lambda@Edge | $$$ | Complex | Global CDN | Overkill |
+
+| Option                | Cost | Setup   | Use Case     | Recommendation |
+| --------------------- | ---- | ------- | ------------ | -------------- |
+| Cloudflare Workers    | $0   | Medium  | Edge caching | ✅ REPURPOSE   |
+| Vercel Edge Functions | $0   | Easy    | API edge     | Alternative    |
+| AWS Lambda@Edge       | $$$  | Complex | Global CDN   | Overkill       |
 
 ### Database Options
-| Option | Cost | Setup | Features | Recommendation |
-|--------|------|-------|----------|----------------|
-| Self-hosted PostgreSQL | $ | Medium | Full control | ✅ SELECTED |
-| Supabase (Free) | $0 | Easy | Auth + Storage | Alternative |
-| Neon (Free) | $0 | Easy | Branching | Alternative |
+
+| Option                 | Cost | Setup  | Features       | Recommendation |
+| ---------------------- | ---- | ------ | -------------- | -------------- |
+| Self-hosted PostgreSQL | $    | Medium | Full control   | ✅ SELECTED    |
+| Supabase (Free)        | $0   | Easy   | Auth + Storage | Alternative    |
+| Neon (Free)            | $0   | Easy   | Branching      | Alternative    |
 
 ### Client Storage Options
-| Option | Size | Setup | Sync | Recommendation |
-|--------|------|-------|------|----------------|
-| SQLite | <100MB | Easy | Manual | ✅ SELECTED (client) |
-| Beads/LanceDB | <50MB | Easy | Manual | Alternative |
-| IndexedDB | <10MB | Easy | Auto | Alternative (web) |
+
+| Option        | Size   | Setup | Sync   | Recommendation       |
+| ------------- | ------ | ----- | ------ | -------------------- |
+| SQLite        | <100MB | Easy  | Manual | ✅ SELECTED (client) |
+| Beads/LanceDB | <50MB  | Easy  | Manual | Alternative          |
+| IndexedDB     | <10MB  | Easy  | Auto   | Alternative (web)    |
 
 ## Selected Architecture
 
 ### Production Stack
+
 - **Backend**: Self-hosted Rust server + PostgreSQL, exposed via Cloudflare Tunnel
 - **Frontend**: Vercel (Free tier) - React/Vite app
 - **Edge**: Cloudflare Workers (Free) - KV cache + R2 asset storage
@@ -64,12 +72,14 @@
 - **DNS**: Cloudflare (Free) - Domain management
 
 ### Domain Architecture
+
 - **phenotype.studio** - Main product dashboard (Vercel)
 - **phenotype.space** - Public documentation and community
 - **pheno.shop** - Marketplace for templates/plugins
 - **<REDACTED>.com** - Personal blog/portfolio
 
 ### API Endpoints
+
 - **Production API**: https://api.tracera.phenotype.studio
 - **Edge Cache**: https://tracera.phenotype.studio (Cloudflare)
 - **Worker Scripts**: tracera-edge.workers.dev (development)
@@ -77,27 +87,32 @@
 ## Implementation Plan
 
 ### Phase 1: Backend Deployment (Self-hosted)
+
 1. Follow `deploy/selfhost/README.md`
 2. Configure Cloudflare Tunnel ingress (`.cloudflared/config.yml`)
 3. Set environment variables on the operator box
 4. Pull `tracera-server` from GHCR or build locally
 
 ### Phase 2: Frontend Fix (Vercel)
+
 1. Update vercel.json to use production API URL
 2. Redeploy to Vercel
 3. Verify API connectivity
 
 ### Phase 3: Edge Deployment (Cloudflare)
+
 1. Fix wrangler.toml with correct API URL
 2. Provision KV namespace and R2 bucket
 3. Deploy worker with proper permissions
 
 ### Phase 4: Client Strategy
+
 1. Document SQLite usage for desktop installs
 2. Create installation scripts
 3. Plan auto-update strategy
 
 ### Phase 5: Test Strategy
+
 1. Hot: Production monitoring with alerts
 2. Cold: Staging environment with realistic data
 3. Dry: Local development with seeded test data
@@ -105,6 +120,7 @@
 ## Environment Variables Required
 
 ### Backend (Self-hosted)
+
 - `POSTGRES_PASSWORD` - Secure random password
 - `TRACERA_AUTH_TOKEN` - Secure random token for API auth
 - `DATABASE_URL` - PostgreSQL connection string on the operator box
@@ -113,16 +129,19 @@
 - `CF_TUNNEL_TOKEN` - Cloudflare Tunnel token for public ingress
 
 ### Frontend (Vercel)
+
 - `NEXT_PUBLIC_API_URL` - https://api.tracera.phenotype.studio
 - `NEXT_PUBLIC_WS_URL` - wss://api.tracera.phenotype.studio
 
 ### Cloudflare Worker
+
 - `TRACERA_API` - https://api.tracera.phenotype.studio
 - `ENVIRONMENT` - "production"
 
 ## Hot/Cold/Dry Test Strategy
 
 ### Hot (Production Monitoring)
+
 - Real-time health checks every 30s
 - Error rate alerts (<1% threshold)
 - Latency alerts (p95 < 500ms)
@@ -130,6 +149,7 @@
 - Disk space and memory usage
 
 ### Cold (Staging Environment)
+
 - Exact replica of production
 - Seeded with anonymized production-like data
 - Used for pre-release testing
@@ -137,6 +157,7 @@
 - Access: staging.tracera.phenotype.studio
 
 ### Dry (Local Development)
+
 - SQLite in-memory for fast tests
 - Seeded test data in tests/fixtures/
 - Mock external services when needed
