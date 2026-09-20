@@ -111,7 +111,7 @@ jobs:
         id: capture
         run: |
           set -euo pipefail
-          if ! grep -q "gh secret set CF_ACCESS_CLIENT_ID" /tmp/access-setup.log; then
+          if ! grep -q "CF_ACCESS_CLIENT_ID --repo" /tmp/access-setup.log; then
             echo "no_new_token=true" >> "$GITHUB_OUTPUT"
             echo "Reused existing service token; skipping secret rotation."
             exit 0
