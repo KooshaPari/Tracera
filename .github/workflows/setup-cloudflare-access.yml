@@ -1,10 +1,4 @@
-name: Setup Cloudflare Access (tracera.pheno.studio)
-
-# Idempotent Access configuration for production hostnames:
-# - default: CI service token + Service Auth on tracera.pheno.studio
-# - public_bypass: Bypass/everyone policy on access_hostname (e.g. tracera-edge.pheno.studio)
-#
-# Requires CLOUDFLARE_API_TOKEN with Zero Trust: Edit on the account.
+name: Setup Cloudflare Access
 
 on:
   workflow_dispatch:
@@ -43,7 +37,7 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       ACCESS_HOSTNAME: ${{ inputs.access_hostname }}
-      PUBLIC_BYPASS: ${{ inputs.public_bypass == true && '1' || '0' }}
+      PUBLIC_BYPASS: ${{ inputs.public_bypass && '1' || '0' }}
       OPERATOR_EMAIL: ${{ inputs.operator_email }}
     steps:
       - uses: actions/checkout@v4
@@ -70,16 +64,6 @@ jobs:
           set -euo pipefail
           echo "=== Cloudflare Tunnels ==="
           npx wrangler tunnel list || true
-          echo "=== Access applications (first page) ==="
-          curl -fsS \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/access/apps?per_page=100" \
-            | python3 -c '
-import json, sys
-data = json.load(sys.stdin)
-for app in data.get("result", []):
-    print(f"{app.get(\"domain\", \"?\")}\t{app.get(\"name\", \"\")}\t{app.get(\"id\", \"\")}")
-'
 
       - name: List Access applications (inspect)
         run: |
@@ -87,28 +71,16 @@ for app in data.get("result", []):
           curl -fsS \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/access/apps?per_page=100" \
-            | python3 - <<'PY'
-import json, sys
-data = json.load(sys.stdin)
-print("Access applications:")
-for app in data.get("result", []):
-    print(f"  - id={app.get('id')} domain={app.get('domain')} name={app.get('name')}")
-PY
+            | python3 -c "import json,sys; data=json.load(sys.stdin); print('Access applications:'); [print(f\"  - id={a.get('id')} domain={a.get('domain')} name={a.get('name')}\") for a in data.get('result', [])]"
 
       - name: Optionally rotate CI service token
-        if: inputs.rotate_service_token && !inputs.public_bypass
+        if: ${{ inputs.rotate_service_token && inputs.public_bypass != true }}
         run: |
           set -euo pipefail
           tokens=$(curl -fsS \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/access/service_tokens?per_page=100")
-          id=$(printf '%s' "$tokens" | python3 -c '
-import json,sys
-for t in json.load(sys.stdin).get("result", []):
-    if t.get("name") == "tracera-ci-smoke":
-        print(t["id"])
-        break
-')
+          id=$(printf '%s' "$tokens" | python3 -c "import json,sys; print(next((t['id'] for t in json.load(sys.stdin).get('result', []) if t.get('name')=='tracera-ci-smoke'), ''))")
           if [ -n "$id" ]; then
             curl -fsS -X DELETE \
               -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
@@ -122,6 +94,19 @@ for t in json.load(sys.stdin).get("result", []):
           set -euo pipefail
           bash scripts/setup-cloudflare-access.sh | tee /tmp/access-setup.log
 
+      - name: Smoke curl target hostname
+        if: inputs.public_bypass
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/smoke_body.txt -w '%{http_code}' -L --max-time 30 "https://${ACCESS_HOSTNAME}/")
+          echo "curl https://${ACCESS_HOSTNAME}/ -> HTTP ${code}"
+          if grep -Eiq 'cf-access|sign in|cloudflareaccess' /tmp/smoke_body.txt; then
+            echo "::error::response still looks Access-gated"
+            head -c 500 /tmp/smoke_body.txt
+            exit 1
+          fi
+          echo "PASS: no Access login markers in body"
+
       - name: Capture new service token credentials
         if: ${{ !inputs.public_bypass }}
         id: capture
@@ -133,16 +118,7 @@ for t in json.load(sys.stdin).get("result", []):
             exit 0
           fi
           echo "no_new_token=false" >> "$GITHUB_OUTPUT"
-          python3 - <<'PY' > /tmp/token.env
-import re
-log = open("/tmp/access-setup.log").read()
-client_id = re.search(r"CF_ACCESS_CLIENT_ID --repo .* --body '([^']+)'", log)
-client_secret = re.search(r"CF_ACCESS_CLIENT_SECRET --repo .* --body '([^']+)'", log)
-if not client_id or not client_secret:
-    raise SystemExit("could not parse service token credentials from setup log")
-print(f"CF_ACCESS_CLIENT_ID={client_id.group(1)}")
-print(f"CF_ACCESS_CLIENT_SECRET={client_secret.group(1)}")
-PY
+          python3 -c "import re; log=open('/tmp/access-setup.log').read(); cid=re.search(r\"CF_ACCESS_CLIENT_ID --repo .* --body '([^']+)'\", log); sec=re.search(r\"CF_ACCESS_CLIENT_SECRET --repo .* --body '([^']+)'\", log); assert cid and sec; open('/tmp/token.env','w').write(f\"CF_ACCESS_CLIENT_ID={cid.group(1)}\\nCF_ACCESS_CLIENT_SECRET={sec.group(1)}\\n\")"
 
       - name: Store Access credentials in GitHub secrets
         if: steps.capture.outputs.no_new_token == 'false'
