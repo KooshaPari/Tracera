@@ -114,14 +114,15 @@ unchanged.
 | `/api/v1/health`                                | `api/v1/health.ts`                                                                                                                       | `200 {"status":"ok"}`                                        |
 | `/api/v1/csrf-token`                            | `api/v1/csrf-token.ts`                                                                                                                   | `200 {"csrf_token":"...stub...","header":"x-csrf-token"}`    |
 | `/api/v1/dashboard/summary`                     | `api/v1/dashboard/summary.ts`                                                                                                            | `200 {"total_artifacts":0,"coverage_ratio":0,"open_gaps":0}` |
-| `/api/v1/projects`, `/projects/{id}`            | `api/v1/projects/{index,[id]}.ts`                                                                                                        | `200 {total:0, projects:[]}` (GET) / `501` (write)           |
-| `/api/v1/items`, `/items/{id}`                  | `api/v1/items/{index,[id],summary,bulk-update,pivot*}.ts`                                                                                | `200 {total:0, items:[]}` (GET) / `501` (write)              |
+| `/api/v1/projects`, `/projects/{id}`            | `api/v1/projects/index.ts`, `api/v1/projects/[id].ts`                                                                                    | `200 {total:0, projects:[]}` (GET) / `501` (write)           |
+| `/api/v1/items`, `/items/{id}`                  | `api/v1/items/{index,[id],summary,bulk-update}.ts`                                                                                       | `200 {total:0, items:[]}` (GET) / `501` (write)              |
+| `/api/v1/items/pivot-targets/{id}`              | `api/v1/items/pivot-targets/[item_id].ts`                                                                                                | `501 pivot-stub`                                             |
 | `/api/v1/links`, `/links/{id}`                  | `api/v1/links/{index,[id]}.ts`                                                                                                           | `200 []` (GET) / `501` (write)                               |
 | `/api/v1/graph/**`                              | `api/v1/graph/{ancestors/[id],descendants/[id],path,paths,full,cycles,topo-sort,orphans,impact/[id],dependencies/[id],traverse/[id]}.ts` | `501 graph-stub`                                             |
 | `/api/v1/search/**`                             | `api/v1/search/{index,index/[id],suggest,stats,reindex,batch-index}.ts`                                                                  | `501 search-stub` (only `/health` returns 200)               |
 | `/api/v1/auth/{me,login,logout,refresh,verify}` | `api/v1/auth/*.ts`                                                                                                                       | `200 {status:"ok"}` (logout) / `501` (others)                |
-| `/api/v1/import`, `/projects/{id}/import`       | `api/v1/import.ts`, `api/v1/projects/[project_id]/import.ts`                                                                             | `501 import-stub`                                            |
-| `/api/v1/projects/{id}/export`                  | `api/v1/projects/[project_id]/export.ts`                                                                                                 | `501 export-stub`                                            |
+| `/api/v1/import`, `/projects/{id}/import`       | `api/v1/import.ts`, `api/v1/projects/[id]/import.ts`                                                                                     | `501 import-stub`                                            |
+| `/api/v1/projects/{id}/export`                  | `api/v1/projects/[id]/export.ts`                                                                                                         | `501 export-stub`                                            |
 
 The functions are configured via `vercel.json`'s `functions.api/**/*.ts`
 block (`maxDuration: 10s`; the official Node.js runtime is auto-detected
@@ -136,6 +137,15 @@ When the Cloudflare Tunnel to the local Rust backend is restored, swap
 `VITE_API_URL=/api` in `.env.production` back to
 `https://tracera.pheno.studio/api` and the Functions fall out of the
 path; Render never comes back.
+
+A path-segment constraint that bit once and is worth recording: Vercel
+treats every dynamic `[param]` directly under the same directory as a
+named parameter, and two different names collide. So `items/[id].ts` and
+`items/[item_id]/pivot.ts` cannot coexist (the Vercel build fails with
+"Two or more files have conflicting paths or names"). The current tree
+uses the same `[id]` name everywhere it appears in the same directory
+level; per-resource sub-actions live under a sibling `[id]/` directory
+rather than under a differently-named dynamic segment.
 
 ## Repository variables
 
