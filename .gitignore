@@ -69,6 +69,14 @@ ws_create.json
 mock-agcord.log
 *.flowsvc.json
 *_flowsvc.json
+# Loose log/cmd debug artifacts at repo root (created during ad-hoc
+# deploy probes; safe to delete).
+/*.log
+/_run_*.cmd
+/probe_health.txt
+/build_out.log
+/s*.log
+/_run_push.cmd
 
 # Runtime data directory (SQLite DBs, uploaded artifacts). Always local-only.
 /data/

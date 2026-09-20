@@ -8,6 +8,14 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 // matches the same routes the Rust backend served when Render was alive and
 // returns the same envelope the frontend expects, so the contract is unchanged.
 //
+// Proxy-or-stub mode:
+//   When TRACERA_BACKEND_URL is set (e.g. on Vercel production once the live
+//   Rust server is reachable through the Cloudflare Tunnel), this router
+//   forwards every /api/* path to that URL and streams the response back.
+//   The frontend sees the same envelope; the only difference is where the
+//   data comes from. When TRACERA_BACKEND_URL is not set, the router falls
+//   back to the in-line stub handlers below.
+//
 // Routing summary (matches docs/04-guides/ENVIRONMENTS.md):
 //   * /health, /healthz, /ready, /readyz                   → 200 {status: ok|ready}
 //   * /api/v1/health                                       → 200 {status: ok}
@@ -251,6 +259,11 @@ async function route(req: VercelRequest, res: VercelResponse): Promise<void> {
 
   const segs = rawSegments.map((s) => decodeURIComponent(s)).filter(Boolean);
 
+  // If a live backend is configured, try to forward first. On any failure
+  // (timeout, network, 5xx that fetch still resolved, etc.) we fall through
+  // to the stub handlers below.
+  if (await tryProxy(req, res, segs)) return;
+
   // Top-level routes (no /api prefix).
   if (segs.length === 0) {
     notFound(res);
@@ -399,6 +412,127 @@ async function route(req: VercelRequest, res: VercelResponse): Promise<void> {
 
 function notFound(res: VercelResponse): void {
   res.status(404).json({ status: "not_found" });
+}
+
+// ==============================================================================
+// Proxy-or-stub
+// ==============================================================================
+//
+// When TRACERA_BACKEND_URL is set, this router forwards /api/* to that URL
+// and streams the response back. Otherwise it falls through to the stub
+// handlers above. The frontend sees the same envelope either way.
+//
+// Why this exists: the live Rust server is the real source of truth. Once
+// it's reachable through the Cloudflare Tunnel (e.g.
+// https://tracera.pheno.studio/api), set TRACERA_BACKEND_URL on Vercel and
+// the catch-all becomes a thin pass-through. Until then, the stub handlers
+// keep the frontend functional during the build-deploy wait.
+
+const BACKEND_URL = process.env.TRACERA_BACKEND_URL?.replace(/\/$/, "") ?? "";
+const BACKEND_TIMEOUT_MS = 8_000;
+
+// Headers we forward from the incoming request to the backend. Everything
+// else is either hop-by-hop (host, content-length) or set by fetch itself.
+const FORWARDED_REQUEST_HEADERS = [
+  "authorization",
+  "cookie",
+  "x-csrf-token",
+  "x-request-id",
+  "x-tracera-workspace",
+  "accept",
+  "accept-language",
+  "user-agent",
+] as const;
+
+// Headers we copy from the backend response to the Vercel response.
+// We deliberately skip transfer-encoding, content-encoding (Vercel handles
+// compression), and connection.
+const FORWARDED_RESPONSE_HEADERS = [
+  "content-type",
+  "cache-control",
+  "etag",
+  "x-tracera-deprecated",
+  "x-tracera-trace-id",
+] as const;
+
+type ProxyResult = "forwarded" | "fallthrough";
+
+async function tryProxy(
+  req: VercelRequest,
+  res: VercelResponse,
+  segs: string[],
+): Promise<ProxyResult> {
+  if (!BACKEND_URL) return "fallthrough";
+
+  const path = segs.join("/");
+  const qs = originalQueryString(req);
+  const target = `${BACKEND_URL}/${path}${qs}`;
+
+  const headers: Record<string, string> = {};
+  for (const name of FORWARDED_REQUEST_HEADERS) {
+    const v = req.headers[name];
+    if (typeof v === "string" && v.length > 0) headers[name] = v;
+    else if (Array.isArray(v) && v.length > 0) headers[name] = v.join(", ");
+  }
+  // Body forward: Vercel may have parsed it; for raw fidelity we prefer
+  // the raw body when present.
+  const rawBody = await readRawBody(req);
+  const init: RequestInit = {
+    method: req.method ?? "GET",
+    headers,
+    redirect: "manual",
+  };
+  if (rawBody && req.method !== "GET" && req.method !== "HEAD") {
+    // Buffer is a Uint8Array; fetch accepts it directly.
+    init.body = new Uint8Array(rawBody);
+  }
+
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), BACKEND_TIMEOUT_MS);
+  let upstream: Response;
+  try {
+    upstream = await fetch(target, { ...init, signal: ac.signal });
+  } catch {
+    clearTimeout(timer);
+    // Backend unreachable — fall through to stubs.
+    return "fallthrough";
+  }
+  clearTimeout(timer);
+
+  for (const name of FORWARDED_RESPONSE_HEADERS) {
+    const v = upstream.headers.get(name);
+    if (v !== null) res.setHeader(name, v);
+  }
+  res.status(upstream.status);
+  const buf = Buffer.from(await upstream.arrayBuffer());
+  res.send(buf);
+  return "forwarded";
+}
+
+// Vercel hands us the URL in `req.url` as the path-with-query. We pull
+// the query string out so we can re-attach it to the upstream request.
+function originalQueryString(req: VercelRequest): string {
+  const url = req.url ?? "";
+  const q = url.indexOf("?");
+  return q >= 0 ? url.slice(q) : "";
+}
+
+// Read the raw body if any. Vercel may have already parsed JSON, but for
+// proxy fidelity we want bytes.
+async function readRawBody(req: VercelRequest): Promise<Buffer | undefined> {
+  // Vercel exposes the raw body in non-JSON scenarios; for content-type
+  // application/json the parsed body is on `req.body`, which we re-stringify
+  // here. That preserves the same wire shape the backend expects.
+  const ctype = (req.headers["content-type"] ?? "").toString();
+  if (typeof req.body === "string") return Buffer.from(req.body);
+  if (Buffer.isBuffer(req.body)) return req.body;
+  if (req.body !== undefined && req.body !== null) {
+    if (ctype.includes("application/json")) {
+      return Buffer.from(JSON.stringify(req.body));
+    }
+    return Buffer.from(String(req.body));
+  }
+  return undefined;
 }
 
 export default route;
