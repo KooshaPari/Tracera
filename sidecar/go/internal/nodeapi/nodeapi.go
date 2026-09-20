@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -115,7 +116,7 @@ func (c *Client) do(ctx context.Context, method, path string, body any, out any)
 // Enroll registers or re-acknowledges this node with the control plane.
 func (c *Client) Enroll(ctx context.Context, req EnrollRequest) (*EnrollResponse, error) {
 	var out EnrollResponse
-	if err := c.do(ctx, http.MethodPost, "/node/enroll", req, &out); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/fleet/enroll", req, &out); err != nil {
 		return nil, err
 	}
 	if !out.Accepted {
@@ -127,7 +128,7 @@ func (c *Client) Enroll(ctx context.Context, req EnrollRequest) (*EnrollResponse
 // FetchDesired pulls the service set this node should be running.
 func (c *Client) FetchDesired(ctx context.Context, nodeID string) (*DesiredState, error) {
 	var out DesiredState
-	if err := c.do(ctx, http.MethodGet, "/node/desired?node_id="+nodeID, nil, &out); err != nil {
+	if err := c.do(ctx, http.MethodGet, "/fleet/desired?node_id="+url.QueryEscape(nodeID), nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -135,5 +136,5 @@ func (c *Client) FetchDesired(ctx context.Context, nodeID string) (*DesiredState
 
 // Report posts convergence results back to the control plane.
 func (c *Client) Report(ctx context.Context, status Status) error {
-	return c.do(ctx, http.MethodPost, "/node/report", status, nil)
+	return c.do(ctx, http.MethodPost, "/fleet/report", status, nil)
 }

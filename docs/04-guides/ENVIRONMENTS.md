@@ -98,6 +98,42 @@ There is no hosted dev API: `dev` and `preview` frontends talk to the same
 self-hosted backend unless overridden locally (for example
 `frontend/apps/web/.env.local` with `VITE_API_URL=http://localhost:8080`).
 
+## Vercel Functions (Render replacement)
+
+Render is dead; the Vercel deployment serves same-origin API stubs from
+`api/` at the repo root so the frontend does not 404 on `/api/v1/*`. Each
+file is a one-route TypeScript function under `nodejs20.x`, returning a
+valid envelope (empty list, `{status:"ok"}`, or `501 "graph-stub"`). The
+shape and status codes mirror the `501`/`{items:[]}` set that the Rust
+backend returned when Render was alive, so the frontend contract is
+unchanged.
+
+| Route surface                                   | Source                                                                                                                                   | Returns today                                                |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `/health`, `/healthz`, `/ready`, `/readyz`      | `api/{health,healthz,ready,readyz}.ts`                                                                                                   | `200 {"status":"ok"\|"ready"}`                               |
+| `/api/v1/health`                                | `api/v1/health.ts`                                                                                                                       | `200 {"status":"ok"}`                                        |
+| `/api/v1/csrf-token`                            | `api/v1/csrf-token.ts`                                                                                                                   | `200 {"csrf_token":"...stub...","header":"x-csrf-token"}`    |
+| `/api/v1/dashboard/summary`                     | `api/v1/dashboard/summary.ts`                                                                                                            | `200 {"total_artifacts":0,"coverage_ratio":0,"open_gaps":0}` |
+| `/api/v1/projects`, `/projects/{id}`            | `api/v1/projects/{index,[id]}.ts`                                                                                                        | `200 {total:0, projects:[]}` (GET) / `501` (write)           |
+| `/api/v1/items`, `/items/{id}`                  | `api/v1/items/{index,[id],summary,bulk-update,pivot*}.ts`                                                                                | `200 {total:0, items:[]}` (GET) / `501` (write)              |
+| `/api/v1/links`, `/links/{id}`                  | `api/v1/links/{index,[id]}.ts`                                                                                                           | `200 []` (GET) / `501` (write)                               |
+| `/api/v1/graph/**`                              | `api/v1/graph/{ancestors/[id],descendants/[id],path,paths,full,cycles,topo-sort,orphans,impact/[id],dependencies/[id],traverse/[id]}.ts` | `501 graph-stub`                                             |
+| `/api/v1/search/**`                             | `api/v1/search/{index,index/[id],suggest,stats,reindex,batch-index}.ts`                                                                  | `501 search-stub` (only `/health` returns 200)               |
+| `/api/v1/auth/{me,login,logout,refresh,verify}` | `api/v1/auth/*.ts`                                                                                                                       | `200 {status:"ok"}` (logout) / `501` (others)                |
+| `/api/v1/import`, `/projects/{id}/import`       | `api/v1/import.ts`, `api/v1/projects/[project_id]/import.ts`                                                                             | `501 import-stub`                                            |
+| `/api/v1/projects/{id}/export`                  | `api/v1/projects/[project_id]/export.ts`                                                                                                 | `501 export-stub`                                            |
+
+The functions are configured via `vercel.json`'s `functions.api/**/*.ts`
+block (runtime `nodejs20.x`, 128MB, 10s). `@vercel/node` is a root-level
+devDep declared in `package.json`; `tsconfig.json` is the build root for
+typechecking the functions in isolation, scoped to `api/**/*.ts` only so
+it never collides with the Vite app's TS project.
+
+When the Cloudflare Tunnel to the local Rust backend is restored, swap
+`VITE_API_URL=/api` in `.env.production` back to
+`https://tracera.pheno.studio/api` and the Functions fall out of the
+path; Render never comes back.
+
 ## Repository variables
 
 | Variable               | Used for                                                                                    | Current value                      |
