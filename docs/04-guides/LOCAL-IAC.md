@@ -6,12 +6,12 @@ whole fleet as easily as it deploys to Vercel.
 
 ## The pieces
 
-| Piece | Location | Role |
-|---|---|---|
-| Node daemon (sidecar) | `sidecar/go/` | Runs on each node. Enrolls with the control plane, polls for desired state, runs `docker compose`, reports results. |
-| Control plane | `crates/tracera-edge/` (the CF Worker) | Registry + desired-state store, backed by Workers KV. Free tier. |
-| CI hook | `.github/workflows/deploy-full-stack.yml` → `publish-fleet-state` | After a successful edge deploy, publishes the new image to all enrolled nodes. |
-| Per-node compose projects | `$TRACERA_NODE_STATE_DIR/<service>/docker-compose.yml` | One minimal compose file per service, written by the daemon. |
+| Piece                     | Location                                                          | Role                                                                                                                |
+| ------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Node daemon (sidecar)     | `sidecar/go/`                                                     | Runs on each node. Enrolls with the control plane, polls for desired state, runs `docker compose`, reports results. |
+| Control plane             | `crates/tracera-edge/` (the CF Worker)                            | Registry + desired-state store, backed by Workers KV. Free tier.                                                    |
+| CI hook                   | `.github/workflows/deploy-full-stack.yml` → `publish-fleet-state` | After a successful edge deploy, publishes the new image to all enrolled nodes.                                      |
+| Per-node compose projects | `$TRACERA_NODE_STATE_DIR/<service>/docker-compose.yml`            | One minimal compose file per service, written by the daemon.                                                        |
 
 ## Node lifecycle
 
@@ -42,15 +42,15 @@ whole fleet as easily as it deploys to Vercel.
 
 ## Node configuration
 
-| Env var | Required | Default | Meaning |
-|---|---|---|---|
-| `TRACERA_SIDE_CAR_ENABLED` | yes | `false` | Master switch |
-| `TRACERA_CONTROL_PLANE_URL` | for node mode | — | e.g. `https://tracera-edge.kooshapari.workers.dev` |
-| `TRACERA_NODE_ID` | for node mode | — | Unique name, 1..=128 chars |
-| `TRACERA_ENROLL_TOKEN` | for node mode | — | Shared secret set as `FLEET_ENROLL_TOKEN` on the worker |
-| `TRACERA_NODE_STATE_DIR` | no | `/var/lib/tracera-node` | Where compose projects live |
-| `TRACERA_NODE_CONVERGE_TIMEOUT` | no | `5m` | Per-invocation docker timeout |
-| `TRACERA_SIDE_CAR_POLL_INTERVAL` | no | `5s` | Poll interval |
+| Env var                          | Required      | Default                 | Meaning                                                 |
+| -------------------------------- | ------------- | ----------------------- | ------------------------------------------------------- |
+| `TRACERA_SIDE_CAR_ENABLED`       | yes           | `false`                 | Master switch                                           |
+| `TRACERA_CONTROL_PLANE_URL`      | for node mode | —                       | e.g. `https://tracera-edge.kooshapari.workers.dev`      |
+| `TRACERA_NODE_ID`                | for node mode | —                       | Unique name, 1..=128 chars                              |
+| `TRACERA_ENROLL_TOKEN`           | for node mode | —                       | Shared secret set as `FLEET_ENROLL_TOKEN` on the worker |
+| `TRACERA_NODE_STATE_DIR`         | no            | `/var/lib/tracera-node` | Where compose projects live                             |
+| `TRACERA_NODE_CONVERGE_TIMEOUT`  | no            | `5m`                    | Per-invocation docker timeout                           |
+| `TRACERA_SIDE_CAR_POLL_INTERVAL` | no            | `5s`                    | Poll interval                                           |
 
 If any of the three "node mode" vars are missing, the daemon falls back to
 its original heartbeat-only behavior (inert, backward compatible).

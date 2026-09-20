@@ -6,11 +6,11 @@ own hostname so a URL always identifies which system you are talking to.
 
 ## The model
 
-| Environment | Trigger                                                              | GitHub environment                                                  | Approval           | Purpose                                            |
-| ----------- | -------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------ | -------------------------------------------------- |
-| `preview`   | `pull_request` against `main` (`deploy-vercel`, `deploy-cloudflare`) | `vercel-preview` / `cloudflare-preview`                             | none               | Per-PR build, reaches a non-production backend     |
-| `dev`       | push to `main`; nightly `schedule`                                   | `vercel-dev` / `cloudflare-dev`                                     | none               | Continuous delivery and the nightly validation run |
-| `prod`      | push of a `v*` tag; `workflow_dispatch` with `environment: prod`     | `vercel-production` / `cloudflare-production`                       | required reviewers | Public production                                  |
+| Environment | Trigger                                                              | GitHub environment                            | Approval           | Purpose                                            |
+| ----------- | -------------------------------------------------------------------- | --------------------------------------------- | ------------------ | -------------------------------------------------- |
+| `preview`   | `pull_request` against `main` (`deploy-vercel`, `deploy-cloudflare`) | `vercel-preview` / `cloudflare-preview`       | none               | Per-PR build, reaches a non-production backend     |
+| `dev`       | push to `main`; nightly `schedule`                                   | `vercel-dev` / `cloudflare-dev`               | none               | Continuous delivery and the nightly validation run |
+| `prod`      | push of a `v*` tag; `workflow_dispatch` with `environment: prod`     | `vercel-production` / `cloudflare-production` | required reviewers | Public production                                  |
 
 `workflow_dispatch` takes an explicit `environment` input (`dev`, `preview`,
 `prod`) defaulting to `dev`, so a manual run never lands in production by
@@ -34,12 +34,12 @@ input to the frontend and edge workflows it calls, so a dispatch asking for
 Each environment owns a distinct hostname. Verified against the live services;
 re-verify before relying on any of it.
 
-| Environment | Frontend                                                           | API                                       | Edge worker                                             |
-| ----------- | ------------------------------------------------------------------ | ----------------------------------------- | ------------------------------------------------------- |
-| `prod`      | `https://tracera.pheno.studio` (Cloudflare Access)                 | `https://tracera.pheno.studio/api`        | `https://tracera-edge.pheno.studio` (not attached, 530) |
-| `prod` (fleet nodes)  | —                                                          | any enrolled node's tunnel/origin         | `GET /fleet/nodes` on the edge worker lists them        |
-| `dev`       | per-deploy Vercel URL, behind Vercel Authentication                | `https://tracera.pheno.studio/api` (shared self-host) | `https://tracera-edge-dev.kooshapari.workers.dev`       |
-| `preview`   | per-deploy Vercel URL, behind Vercel Authentication                | same as `dev` (no separate service)       | `https://tracera-edge-preview.kooshapari.workers.dev`   |
+| Environment          | Frontend                                            | API                                                   | Edge worker                                             |
+| -------------------- | --------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------- |
+| `prod`               | `https://tracera.pheno.studio` (Cloudflare Access)  | `https://tracera.pheno.studio/api`                    | `https://tracera-edge.pheno.studio` (not attached, 530) |
+| `prod` (fleet nodes) | —                                                   | any enrolled node's tunnel/origin                     | `GET /fleet/nodes` on the edge worker lists them        |
+| `dev`                | per-deploy Vercel URL, behind Vercel Authentication | `https://tracera.pheno.studio/api` (shared self-host) | `https://tracera-edge-dev.kooshapari.workers.dev`       |
+| `preview`            | per-deploy Vercel URL, behind Vercel Authentication | same as `dev` (no separate service)                   | `https://tracera-edge-preview.kooshapari.workers.dev`   |
 
 ## Fleet compute nodes
 
@@ -100,10 +100,10 @@ self-hosted backend unless overridden locally (for example
 
 ## Repository variables
 
-| Variable               | Used for                                                                                    | Current value                             |
-| ---------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| `TRACERA_API_BASE`     | production API base, baked into the frontend build and used by the parity smokes              | `https://tracera.pheno.studio/api`        |
-| `TRACERA_API_BASE_DEV` | overrides the API base for `dev` and `preview`; falls back to `TRACERA_API_BASE` when unset | `https://tracera.pheno.studio/api`        |
+| Variable               | Used for                                                                                    | Current value                      |
+| ---------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `TRACERA_API_BASE`     | production API base, baked into the frontend build and used by the parity smokes            | `https://tracera.pheno.studio/api` |
+| `TRACERA_API_BASE_DEV` | overrides the API base for `dev` and `preview`; falls back to `TRACERA_API_BASE` when unset | `https://tracera.pheno.studio/api` |
 
 Set these in GitHub repository variables so deploy workflows and contract checks
 point at the self-hosted tunnel rather than a retired third-party host.
