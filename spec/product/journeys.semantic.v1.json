@@ -1,0 +1,204 @@
+{
+  "schema_version": "0.2.0",
+  "status": "source_backed_in_progress",
+  "product_id": "PRD-TRACERA",
+  "journeys": [
+    {
+      "id": "TRC-J-CVP-01",
+      "name": "Model and re-open accepted product truth",
+      "actor": "operator_or_agent",
+      "outcome": "Create or import a stable product with accepted typed intent, persist it, restart/reopen, and recover the same product/baseline without identity drift.",
+      "requires": [
+        "TRC-R-STABLE-ID",
+        "TRC-R-BASELINE-IMMUTABLE",
+        "TRC-R-INTENT-TYPED",
+        "TRC-R-PRODUCT-GRAPH",
+        "TRC-R-OFFLINE-CORE"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-CVP-02",
+      "name": "Bind evidence and derive truthful dissatisfaction",
+      "actor": "operator_or_agent",
+      "outcome": "Record scoped attributable evidence against accepted intent, derive truthful assessment, and surface an explainable missing/stale/failed/contradictory state without false green.",
+      "requires": [
+        "TRC-R-OBS-SCOPE",
+        "TRC-R-OBS-PROVENANCE",
+        "TRC-R-OBS-APPEND",
+        "TRC-R-ASSESS-STATUS",
+        "TRC-R-ASSESS-MISSING",
+        "TRC-R-ASSESS-CONFLICT",
+        "TRC-R-DETECT-FRESH",
+        "TRC-R-DETECT-COVER",
+        "TRC-R-DETECT-CONTRA",
+        "TRC-R-FINDING-EXPLAIN",
+        "TRC-R-COLLECTOR-FAIL"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-CVP-03",
+      "name": "Navigate intent to engineering evidence",
+      "actor": "operator_or_agent",
+      "outcome": "Starting from accepted product intent, boundedly navigate to linked engineering artifacts/evidence and back to the obligations they support.",
+      "requires": [
+        "TRC-R-SWEE-TYPED",
+        "TRC-R-TRACE-BIDIR",
+        "TRC-R-TRAVERSE-BOUND",
+        "TRC-R-SEARCH"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-CVP-04",
+      "name": "Resolve externally and re-verify",
+      "actor": "operator_or_agent",
+      "outcome": "Reference resolution work owned outside Tracera, observe work completion without accepting the product, then ingest qualifying proof and reassess.",
+      "requires": [
+        "TRC-R-WORK-BOUNDARY",
+        "TRC-R-EXTERNAL-WORK",
+        "TRC-R-EVIDENCE-EXACT",
+        "TRC-R-OBS-SCOPE",
+        "TRC-R-ASSESS-STATUS"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-CVP-05",
+      "name": "Understand what partial Tracera actually is",
+      "actor": "operator",
+      "outcome": "Inspect mature completeness, stage readiness, journey/feature closure, shape and transition debt without reducing them to one percent.",
+      "requires": [
+        "TRC-R-STATUS-SHAPE",
+        "TRC-R-STAGE-PROJECTION",
+        "TRC-R-STUB-SURVIVE",
+        "TRC-R-TRACE-GRADE-SEPARATE",
+        "TRC-R-NO-EMPTY-GREEN",
+        "TRC-R-JOURNEY-CLOSURE",
+        "TRC-R-AUX-SEPARATE"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MVP-01",
+      "name": "Change accepted product contract with historical continuity",
+      "actor": "authorized_operator",
+      "outcome": "Propose and accept a contract change, preserve prior baseline/history, report scope delta, invalidate/re-evaluate affected proof, and query both old and new states.",
+      "requires": [
+        "TRC-R-PROPOSE-NOMUT",
+        "TRC-R-BASELINE-IMMUTABLE",
+        "TRC-R-QUERY-HISTORY",
+        "TRC-R-SCOPE-DELTA",
+        "TRC-R-ACCEPT-INDEPENDENT"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MVP-02",
+      "name": "Use equivalent human and agent product semantics",
+      "actor": "human_and_agent",
+      "outcome": "Inspect the same canonical product/finding through human and machine surfaces with matching identities/status semantics and enforced mutation authority.",
+      "requires": [
+        "TRC-R-MACHINE-PARITY",
+        "TRC-R-AUTH-MUTATE",
+        "TRC-R-ERROR-TRUTH"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MVP-03",
+      "name": "Use derived knowledge without corrupting product truth",
+      "actor": "operator_or_agent",
+      "outcome": "Distill/source knowledge with provenance, use it for navigation/proposals, and keep accepted intent unchanged until explicit acceptance.",
+      "requires": [
+        "TRC-R-MEM-PROVENANCE",
+        "TRC-R-MEM-NOT-INTENT"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-GA-01",
+      "name": "Migrate and recover canonical product state",
+      "actor": "operator",
+      "outcome": "Upgrade a populated supported deployment while preserving identities/relations/evidence and demonstrate documented recovery.",
+      "requires": [
+        "TRC-R-STORE-PARITY",
+        "TRC-R-MIGRATE-SAFE",
+        "TRC-R-RETENTION-ID"
+      ],
+      "stages": [
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MVP-04",
+      "name": "Explain change impact",
+      "actor": "operator_or_agent",
+      "outcome": "Given a changed obligation/artifact, identify bounded affected entities and show the trace paths supporting the impact.",
+      "requires": [
+        "TRC-R-IMPACT",
+        "TRC-R-TRACE-BIDIR",
+        "TRC-R-TRAVERSE-BOUND"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MVP-05",
+      "name": "Project canonical status to registry",
+      "actor": "system_or_operator",
+      "outcome": "Publish a revision-bound summary to PhenoRegistry without duplicating or overriding repo-local product truth.",
+      "requires": [
+        "TRC-R-REGISTRY-PROJECTION",
+        "TRC-R-STATUS-SHAPE"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    }
+  ]
+}
