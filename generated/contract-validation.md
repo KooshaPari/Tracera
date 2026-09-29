@@ -1,22 +1,9 @@
-# TRC-MATURE-V1 Generation / Validation Receipt
+# Correction of the first catalogue validation claim
 
-**Generated:** 2026-09-29  
-**Base revision:** `17eef2379d4a673e1c8cc71ed7663fae9e94309b`
+The earlier receipt checked generated quantities and reference construction. That was not semantic validation and did not establish comprehensive functional requirements or a usable grading contract. The 25 x 8 x 5 construction was itself the defect, not a success criterion.
 
-Generator pre-write assertions:
-- 25 pillar records
-- 200 feature records (8 per pillar)
-- 1,000 FR records (5 atomic grading dimensions per feature)
-- sequential unique FR IDs `TRC-FR-0001` through `TRC-FR-1000`
-- every generated FR receives a known pillar and feature ID
-- every FR receives CVP/MVP/GA/Mature applicability metadata
-- every FR receives growth semantics
-- every FR receives two acceptance IDs, positive/negative oracle intent, and two future test IDs
-- test generation remains explicitly deferred
-- current implementation/evidence grade remains null/unassessed
+The size/read-back limitation was secondary. Even a successful parse would not validate generic obligations, array-position stage assignments, unsubstantiated compatibility booleans, missing source bindings or underspecified oracles.
 
-## Connector limitation
+The first catalogue is invalidated, its contents remain in Git history, and current completion/readiness counts are withdrawn. No production source, existing source-native requirement or historical evidence has been deleted by this correction. No runtime tests were executed.
 
-The GitHub connector accepted the generated `mature-contract.v1.json` write (~2.1 MB), but its file-read response truncates content of this size. Therefore this pass does **not** claim a complete post-write JSON round-trip parse through the connector.
-
-The later local/CI validation step should parse the repository file directly and enforce schema/reference checks before merge. This limitation is recorded as a validation gap, not silently treated as green.
+This correction does not complete the comprehensive replacement. Its governing process is `governance/COUNT_INDEPENDENT_SPECIFICATION.md`; quantitative summaries are outputs only.

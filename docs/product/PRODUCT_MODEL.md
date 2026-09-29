@@ -1,97 +1,15 @@
-# Tracera Mature Product Model
+# Tracera product model — specification under reconstruction
 
-**Contract:** `TRC-MATURE-V1`  
-**Canonical product:** Tracera (`PRD-TRACERA`)  
-**Source snapshot:** `17eef2379d4a673e1c8cc71ed7663fae9e94309b`
+**Status:** count-driven first draft invalidated; mature product definition remains in force. See [the controlling method](../../governance/COUNT_INDEPENDENT_SPECIFICATION.md).
 
-## Product identity
+Tracera is the persistent canonical product/system model: accepted intent, product hierarchy, bounded graph navigation, relations to implementation and evidence, assessment, dissatisfaction discovery and truthful stage/product-state projection. Trace/session observability and memory can support this role; they do not replace it. AgilePlus remains the owner of work execution.
 
-Tracera is the persistent canonical product/system model for describing accepted product intent, connecting that intent to implementation and evidence, traversing the resulting graph with bounded semantics, detecting dissatisfaction, and presenting truthful product state to humans and agents.
+The mature horizon is specified before viable-stage work is selected. Hierarchy depth and branch sizes follow actual product semantics, not a fixed number of pillars, features or requirements. Parent features aggregate distinct leaf obligations without duplicate credit. Core, supporting, enabling, differentiating and auxiliary roles need product-specific justification.
 
-Trace/session observability, memory, SWEE, ingestion, analytics, and external integrations are subordinate capabilities. They do not redefine Tracera as a generic APM, work tracker, agent runtime, or source-code search engine.
+Stages project the same canonical identities into useful, closed product forms. A narrow usable product, scaffolding and a disconnected husk must not share an unexplained '% done'. Behavior, trace completeness, journey closure, stage readiness and external validation remain distinct.
 
-**AgilePlus owns work execution. Tracera owns product identity, accepted intent, product relations, evidence interpretation, assessment, dissatisfaction, and product-state projection.**
+Stub breadth behind stable mature-shaped interfaces while building real end-to-end behavior. Compatibility, survivability and replacement cost require evidence or labelled estimates; they are not automatically true for every row.
 
-## Hierarchy
+## Catalogue disposition
 
-```text
-Product
-  -> Pillar / Domain
-    -> Core/Supporting/Enabling Feature
-      -> Feature
-        -> Atomic FR
-          -> Acceptance Criterion
-            -> Verification Case / Oracle
-              -> Implementation / Test / Evidence
-```
-
-Parent nodes aggregate descendants and never earn duplicate completion credit.
-
-## Product roles
-
-- `core`: fundamentally defines the product.
-- `supporting`: makes core behavior practical.
-- `enabling`: technical prerequisite.
-- `differentiator`: material advantage beyond minimum viability.
-- `enhancement`: improves an existing capability.
-- `convenience`: useful polish.
-- `operational`: run/support/deploy behavior.
-- `auxiliary`: valuable but does not expand canonical functional completion.
-- `experimental`: hypothesis, not accepted core scope.
-
-## Structural shape
-
-A raw completion percentage is insufficient. Derive independently:
-
-- mature-contract completeness;
-- VP-stage readiness;
-- feature closure;
-- journey closure;
-- structural shape;
-- implementation survivability;
-- mature-contract compatibility;
-- transition burden.
-
-Supported structural-shape vocabulary:
-
-`scaffold | primitive_system | product_husk | vertical_slice | narrow_functional_product | broad_product`
-
-Shape is not a maturity stage. A low-percentage vertical slice may be more usable than a higher-percentage husk.
-
-## Stub-first growth invariant
-
-> **Stub the breadth; mature the spine.**
-
-Early stages SHOULD expose mature-shaped boundaries and implement the smallest real closed journey through them. Prefer additive/enriching evolution. Replacement-only implementations are allowed only when replacement and migration cost are explicitly bounded and trivial.
-
-Growth dispositions:
-
-`permanent_spine | progressive | stub | adapter | replaceable | prototype_only | retiring`
-
-## Working baseline
-
-`spec/product/mature-contract.v1.json` currently contains:
-
-- 25 pillars;
-- 200 features;
-- 1,000 atomic FR records;
-- stage projections for CVP, MVP, GA and Mature;
-- verification intent and positive/negative oracle descriptions;
-- future test identities.
-
-The number 1,000 is not a quota and is not itself evidence of completeness. Future reconciliation may split, merge, add or retire requirements through explicit baseline amendments.
-
-## Existing-source reconciliation
-
-Older repository and registry documents describe Tracera as trace/session observability and memory infrastructure. Those capabilities remain represented, but the controlling product definition is the canonical product/system graph and dissatisfaction model. Historical documents remain useful evidence and migration oracles; they are not allowed to silently shrink the accepted product horizon.
-
-## Explicit non-ownership
-
-Tracera does not become:
-- the canonical work-execution state machine (AgilePlus);
-- an agent runtime;
-- a generic source-code search product;
-- a generic cross-org analytics dashboard;
-- a duplicate Git store.
-
-External systems may be represented, observed and linked without Tracera taking ownership of their native facts.
+`spec/product/mature-contract.v1.json` is now an invalidation manifest, not an accepted baseline. The old 25-by-8-by-5 catalogue and its completion/readiness claims are withdrawn. Useful topics may be re-derived from source; none earn acceptance merely by surviving generation. The comprehensive source-backed replacement is not complete.
