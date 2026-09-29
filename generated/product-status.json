@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "product_id": "PRD-TRACERA",
+  "contract": "TRC-MATURE-V1",
+  "contract_path": "spec/product/mature-contract.v1.json",
+  "source_revision": "17eef2379d4a673e1c8cc71ed7663fae9e94309b",
+  "assessed_at": "2026-09-29",
+  "specification": {
+    "pillars": 25,
+    "features": 200,
+    "functional_requirements": 1000,
+    "test_generation": "deferred",
+    "verification_intent": "specified",
+    "implementation_trace_mapping": "pending",
+    "evidence_mapping": "pending"
+  },
+  "grade": {
+    "mature_contract_completeness": null,
+    "highest_achieved_stage": "not_assessed",
+    "stage_readiness": {
+      "cvp": null,
+      "mvp": null,
+      "ga": null,
+      "mature": null
+    },
+    "structural_shape": "not_assessed",
+    "feature_closure": null,
+    "journey_closure": null,
+    "implementation_survivability": null,
+    "mature_contract_compatibility": null,
+    "transition_burden": null
+  },
+  "reason_ungraded": "The mature contract has been specified but has not yet been exhaustively mapped to current implementation and admissible evidence. Null is intentional; specification count is not implementation progress.",
+  "next_frontier": [
+    "map 1000 FRs to current source/components without inferring support from file presence",
+    "define concrete first-class journeys and bind FR subsets",
+    "reconcile existing tests to future test IDs without generating missing tests yet",
+    "derive first evidence-backed structural shape and VP readiness"
+  ]
+}
