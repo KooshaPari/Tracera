@@ -1,0 +1,275 @@
+{
+  "schema_version": "1.0.0",
+  "product_id": "PRD-TRACERA",
+  "contract": "TRC-MATURE-V1",
+  "journeys": [
+    {
+      "id": "TRC-J-001",
+      "name": "Model a product from accepted intent",
+      "actor": "operator",
+      "outcome": "Create/reconcile stable product identity, hierarchy, requirements and accepted baseline, then retrieve the same model after restart",
+      "pillar_keys": [
+        "identity",
+        "intent",
+        "hierarchy",
+        "graph",
+        "storage"
+      ],
+      "required_for": [
+        "cvp",
+        "mvp",
+        "ga",
+        "mature"
+      ],
+      "closure": {
+        "requires_mapped_stage_required_FRs": true,
+        "requires_admissible_evidence": true,
+        "e2e_test_generation": "deferred"
+      }
+    },
+    {
+      "id": "TRC-J-002",
+      "name": "Traverse product to implementation and evidence",
+      "actor": "operator_or_agent",
+      "outcome": "Start from product/capability/requirement and boundedly reach linked implementation, tests and evidence with provenance",
+      "pillar_keys": [
+        "graph",
+        "swee",
+        "traceability",
+        "search"
+      ],
+      "required_for": [
+        "cvp",
+        "mvp",
+        "ga",
+        "mature"
+      ],
+      "closure": {
+        "requires_mapped_stage_required_FRs": true,
+        "requires_admissible_evidence": true,
+        "e2e_test_generation": "deferred"
+      }
+    },
+    {
+      "id": "TRC-J-003",
+      "name": "Detect product dissatisfaction",
+      "actor": "operator_or_agent",
+      "outcome": "Ingest scoped evidence, assess against accepted intent, and surface a correctly classified dissatisfaction finding",
+      "pillar_keys": [
+        "evidence",
+        "assessment",
+        "dissatisfaction"
+      ],
+      "required_for": [
+        "cvp",
+        "mvp",
+        "ga",
+        "mature"
+      ],
+      "closure": {
+        "requires_mapped_stage_required_FRs": true,
+        "requires_admissible_evidence": true,
+        "e2e_test_generation": "deferred"
+      }
+    },
+    {
+      "id": "TRC-J-004",
+      "name": "Resolve and re-verify dissatisfaction",
+      "actor": "operator_or_agent",
+      "outcome": "Link a finding to external resolution work, ingest new evidence, and update product state without conflating work completion with acceptance",
+      "pillar_keys": [
+        "dissatisfaction",
+        "workbridge",
+        "evidence",
+        "assessment"
+      ],
+      "required_for": [
+        "cvp",
+        "mvp",
+        "ga",
+        "mature"
+      ],
+      "closure": {
+        "requires_mapped_stage_required_FRs": true,
+        "requires_admissible_evidence": true,
+        "e2e_test_generation": "deferred"
+      }
+    },
+    {
+      "id": "TRC-J-005",
+      "name": "Measure VP-stage readiness",
+      "actor": "operator",
+      "outcome": "Select a VP stage and derive FR completion, blockers, feature/journey closure and truthful readiness",
+      "pillar_keys": [
+        "stages",
+        "hierarchy",
+        "quality",
+        "portfolio"
+      ],
+      "required_for": [
+        "cvp",
+        "mvp",
+        "ga",
+        "mature"
+      ],
+      "closure": {
+        "requires_mapped_stage_required_FRs": true,
+        "requires_admissible_evidence": true,
+        "e2e_test_generation": "deferred"
+      }
+    },
+    {
+      "id": "TRC-J-006",
+      "name": "Explain what 'percent done' means",
+      "actor": "operator",
+      "outcome": "Decompose raw mature completeness into stage readiness, structural shape, closure, survivability and transition burden",
+      "pillar_keys": [
+        "portfolio",
+        "stages",
+        "journeys",
+        "quality"
+      ],
+      "required_for": [
+        "cvp",
+        "mvp",
+        "ga",
+        "mature"
+      ],
+      "closure": {
+        "requires_mapped_stage_required_FRs": true,
+        "requires_admissible_evidence": true,
+        "e2e_test_generation": "deferred"
+      }
+    },
+    {
+      "id": "TRC-J-007",
+      "name": "Assess a changed baseline",
+      "actor": "operator_or_agent",
+      "outcome": "Propose/accept a baseline change, invalidate affected evidence, compute impact and reassess only admissible proof",
+      "pillar_keys": [
+        "intent",
+        "impact",
+        "history",
+        "assessment"
+      ],
+      "required_for": [
+        "mvp",
+        "ga",
+        "mature"
+      ],
+      "closure": {
+        "requires_mapped_stage_required_FRs": true,
+        "requires_admissible_evidence": true,
+        "e2e_test_generation": "deferred"
+      }
+    },
+    {
+      "id": "TRC-J-008",
+      "name": "Represent externally managed work without owning it",
+      "actor": "operator_or_agent",
+      "outcome": "Project AgilePlus/external work references into product context while preserving external work authority",
+      "pillar_keys": [
+        "workbridge",
+        "traceability",
+        "history"
+      ],
+      "required_for": [
+        "mvp",
+        "ga",
+        "mature"
+      ],
+      "closure": {
+        "requires_mapped_stage_required_FRs": true,
+        "requires_admissible_evidence": true,
+        "e2e_test_generation": "deferred"
+      }
+    },
+    {
+      "id": "TRC-J-009",
+      "name": "Use Tracera locally and offline",
+      "actor": "operator",
+      "outcome": "Install/start a durable local workspace, complete core product journeys, restart and retain canonical state without mandatory cloud dependency",
+      "pillar_keys": [
+        "runtime",
+        "storage",
+        "human"
+      ],
+      "required_for": [
+        "cvp",
+        "mvp",
+        "ga",
+        "mature"
+      ],
+      "closure": {
+        "requires_mapped_stage_required_FRs": true,
+        "requires_admissible_evidence": true,
+        "e2e_test_generation": "deferred"
+      }
+    },
+    {
+      "id": "TRC-J-010",
+      "name": "Use Tracera through an agent interface",
+      "actor": "agent",
+      "outcome": "Query bounded product context, propose changes and inspect grade/finding state without bypassing mutation authority",
+      "pillar_keys": [
+        "agent",
+        "security",
+        "search",
+        "portfolio"
+      ],
+      "required_for": [
+        "mvp",
+        "ga",
+        "mature"
+      ],
+      "closure": {
+        "requires_mapped_stage_required_FRs": true,
+        "requires_admissible_evidence": true,
+        "e2e_test_generation": "deferred"
+      }
+    },
+    {
+      "id": "TRC-J-011",
+      "name": "Audit historical product state",
+      "actor": "operator_or_agent",
+      "outcome": "Select a prior baseline/time window and replay intent, evidence, findings and decisions without rewriting history",
+      "pillar_keys": [
+        "history",
+        "evidence",
+        "intent",
+        "search"
+      ],
+      "required_for": [
+        "mvp",
+        "ga",
+        "mature"
+      ],
+      "closure": {
+        "requires_mapped_stage_required_FRs": true,
+        "requires_admissible_evidence": true,
+        "e2e_test_generation": "deferred"
+      }
+    },
+    {
+      "id": "TRC-J-012",
+      "name": "Publish a release proof",
+      "actor": "operator",
+      "outcome": "Bind exact source/artifact/environment/verifier evidence to release obligations and prevent promotion on missing or mismatched proof",
+      "pillar_keys": [
+        "quality",
+        "runtime",
+        "security",
+        "portfolio"
+      ],
+      "required_for": [
+        "ga",
+        "mature"
+      ],
+      "closure": {
+        "requires_mapped_stage_required_FRs": true,
+        "requires_admissible_evidence": true,
+        "e2e_test_generation": "deferred"
+      }
+    }
+  ]
+}
