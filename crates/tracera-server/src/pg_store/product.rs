@@ -4,7 +4,7 @@ use sqlx::Row;
 
 use crate::product::persistence::{
     PersistedBaseline, PersistedEntity, PersistedEntityRevision, PersistedObservation,
-    PersistedProduct, ProductPersistence, ProductPersistenceError,
+    PersistedProduct, ProductPersistence, ProductPersistenceError, EvidenceReuseDecision, InvalidationEvent,
 };
 
 use super::PgStore;
@@ -63,4 +63,20 @@ impl ProductPersistence for PgStore {
             .bind(pid).bind(bid).bind(subject).bind(i64::from(limit.min(1000))).fetch_all(&self.pool).await.map_err(backend)?;
         Ok(rows.into_iter().map(|r|PersistedObservation{observation_id:r.get("observation_id"),product_id:r.get("product_id"),baseline_id:r.get("baseline_id"),subject_entity_id:r.get("subject_entity_id"),subject_local_id:r.get("subject_local_id"),candidate_ref:r.get("candidate_ref"),configuration:r.get("configuration"),result:r.get("result"),verifier_id:r.get("verifier_id"),verifier_version:r.get("verifier_version"),recorded_at:r.get("recorded_at"),raw_evidence_ref:r.get("raw_evidence_ref"),metadata:r.get("metadata")}).collect())
     }
+    async fn append_reuse_decision(&self,d:&EvidenceReuseDecision)->Result<(),ProductPersistenceError>{
+        sqlx::query("INSERT INTO evidence_reuse_decisions_v1 (reuse_decision_id,observation_id,target_baseline_id,target_candidate_ref,criterion_ref,applicability_state,compatibility_certificate_ref,policy_version,reason,decided_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)")
+            .bind(&d.reuse_decision_id).bind(&d.observation_id).bind(&d.target_baseline_id).bind(&d.target_candidate_ref).bind(&d.criterion_ref).bind(&d.applicability_state).bind(&d.compatibility_certificate_ref).bind(&d.policy_version).bind(&d.reason).bind(d.decided_at)
+            .execute(&self.pool).await.map_err(backend)?;Ok(())
+    }
+    async fn append_invalidation(&self,e:&InvalidationEvent)->Result<(),ProductPersistenceError>{
+        sqlx::query("INSERT INTO invalidation_events_v1 (invalidation_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)")
+            .bind(&e.invalidation_id).bind(&e.trigger_kind).bind(&e.trigger_ref).bind(&e.target_kind).bind(&e.target_ref).bind(&e.prior_state).bind(&e.new_state).bind(&e.reason).bind(e.occurred_at)
+            .execute(&self.pool).await.map_err(backend)?;Ok(())
+    }
+    async fn list_invalidations(&self,kind:&str,target:&str,limit:u32)->Result<Vec<InvalidationEvent>,ProductPersistenceError>{
+        let rows=sqlx::query("SELECT invalidation_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at FROM invalidation_events_v1 WHERE target_kind=$1 AND target_ref=$2 ORDER BY occurred_at,invalidation_id LIMIT $3")
+            .bind(kind).bind(target).bind(i64::from(limit.min(1000))).fetch_all(&self.pool).await.map_err(backend)?;
+        Ok(rows.into_iter().map(|r|InvalidationEvent{invalidation_id:r.get("invalidation_id"),trigger_kind:r.get("trigger_kind"),trigger_ref:r.get("trigger_ref"),target_kind:r.get("target_kind"),target_ref:r.get("target_ref"),prior_state:r.get("prior_state"),new_state:r.get("new_state"),reason:r.get("reason"),occurred_at:r.get("occurred_at")}).collect())
+    }
+
 }
