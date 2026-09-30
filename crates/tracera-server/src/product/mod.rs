@@ -21,6 +21,7 @@ pub mod detectors;
 pub mod identity;
 pub mod ingest;
 pub mod observation;
+pub mod persistence;
 pub mod queries;
 pub mod traversal;
 
@@ -35,6 +36,7 @@ pub use detectors::{
 pub use identity::{AcceptedIntent, BaselineRevision, IntentKind, IntentStatus, ProductId};
 pub use ingest::{IngestResult, ObservationIngestRequest, ObservationStore};
 pub use observation::{Observation, ObservationKind, ObservationResult, ObservationSource};
+pub use persistence::{PersistedBaseline, PersistedEntity, PersistedEntityRevision, PersistedObservation, PersistedProduct, ProductPersistence, ProductPersistenceError};
 pub use queries::{
     build_invalidation_index, build_product_view, compute_product_stats, query_intents,
     InvalidationIndex, ProductQuery, ProductStats, ProductView, DEFAULT_QUERY_LIMIT,
