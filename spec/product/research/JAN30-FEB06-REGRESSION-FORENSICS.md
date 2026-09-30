@@ -423,3 +423,138 @@ The best current working hypothesis is:
 > Tracera's "core hand" did not fail because graph performance work was intrinsically the wrong idea. The request triggered a whole-product optimization/rearchitecture campaign without preserving the already-usable product as a continuously runnable oracle. An immediate graph regression appeared on Jan 30, then graph/model changes, infrastructure work, mass lint rewrites, and WebGL/test-framework changes compounded the blast radius. By Feb 5 the repository explicitly had blocked test infrastructure and dozens of TypeScript build errors. From there agent changes could no longer reliably distinguish improvement from regression.
 
 This hypothesis should remain falsifiable until historical builds and journeys are reproduced.
+
+
+## Critical update — d5296270 is the primary forensic pivot
+
+Further paginated GitHub commit inspection shows that `d5296270` is far larger and broader than the commit title suggests.
+
+GitHub stats:
+- **1,855,953 changed lines**;
+- **1,737,255 additions**;
+- **118,698 deletions**;
+- commit file listing extends well beyond 1,000 files; the standard API response is capped and requires pagination.
+
+The commit is titled:
+> "Implement virtual scrolling in ItemsTableView"
+
+but paginated file history shows that the same transaction also contains or first introduces major portions of:
+
+### Product/domain schema
+- `006_add_priority_owner_to_items.py`
+- `007_add_problems_and_processes.py`
+- `008_add_graph_views_and_kinds.py`
+- `009_add_graphs_and_graph_nodes.py`
+- graph integrity/denormalization migrations;
+- execution system;
+- specification tables;
+- accounts;
+- provider user IDs;
+- GitHub/Linear integrations;
+- canonical concepts;
+- canonical projections;
+- perspective configs;
+- component libraries;
+- equivalence links;
+- derived journeys;
+- versions/milestones;
+- performance indexes.
+
+### User/account/auth surface
+- authentication implementation/docs;
+- account migration;
+- WorkOS/AuthKit work;
+- auth routes/store;
+- account/user-related database migrations.
+
+### Problem/process surface
+- problem/process migration;
+- problem-management research;
+- `CreateProblemForm`;
+- `CreateProcessForm`;
+- `useProblems`;
+- `ProblemView`;
+- `ProcessView`;
+- project problem/process routes.
+
+### Graph/product UI
+- EnhancedGraphView;
+- FlowGraphView;
+- VirtualizedGraphView;
+- PageDecompositionView;
+- JourneyExplorer;
+- equivalence UI;
+- dimension filters;
+- pivot navigation;
+- UI-code trace;
+- component library;
+- graph worker/virtualization hooks;
+- graph cache;
+- many graph E2E/unit tests.
+
+### Specification/traceability expansion
+- ADR UI;
+- BDD/Gherkin UI;
+- contracts/state-machine UI;
+- prioritization;
+- analytics/quality;
+- item specification cards;
+- specification dashboards/APIs/hooks.
+
+### Repository contamination / generated state
+The commit also includes:
+- Hypothesis generated constants;
+- local/test databases;
+- exported graph snapshots;
+- backup files;
+- very large volumes of generated documentation;
+- session/trace artifacts.
+
+### Forensic implication
+
+This transaction collapses several logically independent initiatives into one commit:
+
+```text
+table virtualization
++ graph performance
++ problem/process model
++ graph schema
++ user/account/auth model
++ specifications
++ journeys
++ execution
++ canonical/equivalence model
++ integration work
++ generated/test artifacts
+```
+
+This makes `d5296270` the **primary forensic pivot**.
+
+The owner's memory that the performance request was followed by problem/user/model expansion is not merely chronological: Git shows those changes were committed together in the same enormous transaction.
+
+### Revised causal confidence
+
+- `27262fa4` progressive-loading migration: **HIGH confidence initial destabilization trigger**.
+- `d5296270` mega-commit: **VERY HIGH confidence scope-collapse / recoverability failure point**.
+- `33545b1b` + `7016ae18`: **VERY HIGH confidence later regression amplifiers**.
+
+The strongest current hypothesis is that the product lost a meaningful transaction boundary at `d5296270`: after that commit it became difficult to isolate whether any break came from rendering, graph schema, domain model, account/auth changes, specifications, or unrelated generated state.
+
+## d5296270 recovery decomposition
+
+Treat the mega-commit as a bundle of independent recovery packages:
+
+1. **R-GRAPH-RENDER** — progressive loading, virtualization, culling, renderer work.
+2. **R-GRAPH-MODEL** — graph views/kinds, graph_nodes, integrity, canonical/equivalence model.
+3. **R-PROBLEM-PROCESS** — problem/process entities, routes, forms, services.
+4. **R-USER-ACCOUNT** — account/user/provider identity/auth changes.
+5. **R-SPEC** — specification entities, item specs, BDD/contracts/analytics.
+6. **R-JOURNEY** — journeys/derived journeys and UI.
+7. **R-EXECUTION** — execution/workflow system.
+8. **R-INTEGRATIONS** — GitHub/Linear/webhooks/etc.
+9. **R-GENERATED-NOISE** — snapshots, test DBs, generated docs, caches, backups.
+
+Each package must be independently classified:
+`PRESERVE / RECOVER / ADAPT / SUPERSEDE / RETIRE / GENERATED-NOISE`.
+
+Do not treat the mega-commit as a single valid historical feature unit.
