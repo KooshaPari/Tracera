@@ -285,3 +285,27 @@ async fn product_v1_revocation_invalidates_reuse_not_observation_history() {
     let reuse_count:i64=sqlx::query_scalar("SELECT COUNT(*) FROM evidence_reuse_decisions_v1 WHERE reuse_decision_id='r1'").fetch_one(pool).await.unwrap();
     assert_eq!(reuse_count,1);
 }
+
+
+#[tokio::test]
+async fn product_v1_file_restart_preserves_baseline_and_observation_history() {
+    let path = std::env::temp_dir().join(format!("tracera-product-v1-{}.db", uuid::Uuid::new_v4()));
+    {
+        let store = SqliteStore::connect(&path).await.expect("first open");
+        let pool = store.pool();
+        let t = now().to_rfc3339();
+        sqlx::query("INSERT INTO product_baselines_v1 (baseline_id,product_id,revision_number,accepted_at,metadata) VALUES ('restart-b1','restart-product',1,?1,'{}')")
+            .bind(&t).execute(pool).await.unwrap();
+        sqlx::query("INSERT INTO product_observations_v1 (observation_id,product_id,baseline_id,subject_local_id,candidate_ref,configuration,result,verifier_id,verifier_version,recorded_at,metadata) VALUES ('restart-o1','restart-product','restart-b1','search','git:restart','{}','passed','suite','1',?1,'{}')")
+            .bind(&t).execute(pool).await.unwrap();
+    }
+    {
+        let store = SqliteStore::connect(&path).await.expect("reopen");
+        let pool = store.pool();
+        let revision:i64=sqlx::query_scalar("SELECT revision_number FROM product_baselines_v1 WHERE baseline_id='restart-b1'").fetch_one(pool).await.unwrap();
+        let result:String=sqlx::query_scalar("SELECT result FROM product_observations_v1 WHERE observation_id='restart-o1'").fetch_one(pool).await.unwrap();
+        assert_eq!(revision,1);
+        assert_eq!(result,"passed");
+    }
+    let _ = std::fs::remove_file(path);
+}
