@@ -159,7 +159,19 @@ impl AssessmentEngine {
         capability_id: &str,
         observations: &[Observation],
     ) -> AssessmentFinding {
-        let now = Utc::now();
+        self.assess_capability_at(capability_id, observations, Utc::now())
+    }
+
+    /// Assess a capability at an explicit evaluation time.
+    ///
+    /// Binding the evaluation clock makes freshness decisions reproducible
+    /// and prevents tests from accidentally proving only wall-clock behavior.
+    pub fn assess_capability_at(
+        &self,
+        capability_id: &str,
+        observations: &[Observation],
+        now: DateTime<Utc>,
+    ) -> AssessmentFinding {
         let obs = observations;
         let obs_ids: Vec<String> = obs.iter().map(|o| o.id.clone()).collect();
 
@@ -248,6 +260,29 @@ impl AssessmentEngine {
             };
         }
 
+        // Explicit non-green results must never fall through to Satisfied.
+        if obs.iter().any(|o| o.result == ObservationResult::Stale) {
+            return AssessmentFinding {
+                product_id: String::new(),
+                capability_id: Some(capability_id.to_string()),
+                status: AssessmentStatus::Stale,
+                explanation: format!("Capability '{capability_id}' has explicitly stale observations."),
+                observation_ids: obs_ids,
+                severity: FindingSeverity::from_status(AssessmentStatus::Stale),
+            };
+        }
+
+        if obs.iter().any(|o| o.result == ObservationResult::Unknown) {
+            return AssessmentFinding {
+                product_id: String::new(),
+                capability_id: Some(capability_id.to_string()),
+                status: AssessmentStatus::Unknown,
+                explanation: format!("Capability '{capability_id}' has observations with unknown outcome."),
+                observation_ids: obs_ids,
+                severity: FindingSeverity::from_status(AssessmentStatus::Unknown),
+            };
+        }
+
         // All relevant observations passed
         AssessmentFinding {
             product_id: String::new(),
@@ -268,19 +303,13 @@ impl AssessmentEngine {
         product_id: &str,
         observations: &[Observation],
     ) -> AssessmentResult {
-        // Group observations by product_id (which maps to capability in our model)
-        let mut capability_map: std::collections::HashMap<String, Vec<&Observation>> =
-            std::collections::HashMap::new();
-        for obs in observations {
-            if obs.product_id.as_str() == product_id {
-                capability_map
-                    .entry(obs.product_id.as_str().to_string())
-                    .or_default()
-                    .push(obs);
-            }
-        }
+        let product_observations: Vec<Observation> = observations
+            .iter()
+            .filter(|o| o.product_id.as_str() == product_id)
+            .cloned()
+            .collect();
 
-        if capability_map.is_empty() {
+        if product_observations.is_empty() {
             return AssessmentResult {
                 product_id: product_id.to_string(),
                 baseline: BaselineRevision(0),
@@ -291,11 +320,29 @@ impl AssessmentEngine {
             };
         }
 
-        let mut findings = Vec::new();
-        let mut worst_status = AssessmentStatus::Satisfied;
+        // Capability identity is distinct from product identity. Observations
+        // without a capability remain product-level evidence and do not get
+        // silently reinterpreted as a capability.
+        let mut capability_map: std::collections::HashMap<String, Vec<Observation>> =
+            std::collections::HashMap::new();
+        for obs in &product_observations {
+            if let Some(capability_id) = &obs.capability_id {
+                capability_map
+                    .entry(capability_id.clone())
+                    .or_default()
+                    .push(obs.clone());
+            }
+        }
 
-        for cap_id in capability_map.keys() {
-            let mut finding = self.assess_capability(cap_id, observations);
+        let mut findings = Vec::new();
+        let mut worst_status = if capability_map.is_empty() {
+            AssessmentStatus::Unknown
+        } else {
+            AssessmentStatus::Satisfied
+        };
+
+        for (cap_id, cap_observations) in capability_map {
+            let mut finding = self.assess_capability(&cap_id, &cap_observations);
             finding.product_id = product_id.to_string();
             if finding.status.worse_than(worst_status) {
                 worst_status = finding.status;
@@ -303,8 +350,7 @@ impl AssessmentEngine {
             findings.push(finding);
         }
 
-        // Determine baseline from most recent observation
-        let baseline = observations
+        let baseline = product_observations
             .iter()
             .map(|o| o.baseline)
             .max()
@@ -316,7 +362,7 @@ impl AssessmentEngine {
             status: worst_status,
             findings,
             assessed_at: Utc::now(),
-            observation_count: observations.len(),
+            observation_count: product_observations.len(),
         }
     }
 
