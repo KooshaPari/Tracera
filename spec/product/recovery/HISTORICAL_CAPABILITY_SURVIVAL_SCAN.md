@@ -242,3 +242,58 @@ The unresolved question is harder and more important:
 > Are these surviving implementation surfaces coherently wired into a usable product, or are they a large source footprint around broken or unreachable journeys?
 
 Until runtime/journey evidence answers that question, the correct state is **SOURCE_PRESENT, RECOVERY UNKNOWN**.
+
+
+## Route reachability update
+
+Source-level route tracing closes part of **HG-02** without implying runtime success.
+
+### Confirmed production entry paths
+
+- **Graph:** `projects.$projectId.views.$viewType.tsx` maps `graph` to a lazy import of `@/pages/projects/views/GraphView`; that view imports and renders `UnifiedGraphView`.  
+  **Classification:** SOURCE_PRESENT / ROUTE_PRESENT / RUNTIME UNKNOWN.
+- **Problem:** `projects.$projectId.views.problem.tsx` renders `ProblemView`, and the dynamic project-view router maps `problem` to that route component.  
+  **Classification:** SOURCE_PRESENT / ROUTE_PRESENT / RUNTIME UNKNOWN.
+- **Process:** `projects.$projectId.views.process.tsx` renders `ProcessView`, and the dynamic project-view router maps `process` to that route component.  
+  **Classification:** SOURCE_PRESENT / ROUTE_PRESENT / RUNTIME UNKNOWN.
+- **Journey:** `projects.$projectId.views.journey.tsx` is a live route, but it renders `ItemsTableView projectId={projectId} view="journey"`.  
+  **Classification:** JOURNEY ROUTE_PRESENT / CURRENT TOPOLOGY DIFFERS / RUNTIME UNKNOWN.
+
+### Specialized historical UI with no production entry found
+
+#### PageDecompositionView
+
+Repository code search currently finds:
+- `PageDecompositionView.tsx`;
+- `PageDecompositionView.test.tsx`;
+
+but no production import or route reference.
+
+**Classification:** SOURCE_PRESENT / TEST_PRESENT / ENTRYPOINT_NOT_FOUND / RUNTIME UNKNOWN.
+
+This is not proof that the capability is impossible to reach through some indirect mechanism. It is, however, evidence that the specialized component is not wired through an ordinary production import path visible to repository code search.
+
+#### JourneyExplorer
+
+Repository code search currently finds:
+- `JourneyExplorer.tsx`;
+- unit tests;
+- integration tests;
+
+but no production route/component import. The current journey route instead uses the generic `ItemsTableView` journey projection.
+
+**Classification:** SOURCE_PRESENT / TEST_PRESENT / SPECIALIZED_ENTRYPOINT_NOT_FOUND / JOURNEY_ROUTE_PRESENT_VIA_DIFFERENT_UI / RUNTIME UNKNOWN.
+
+This creates a concrete recovery question rather than a presumed regression:
+
+> Was `JourneyExplorer` intentionally superseded by the generic journey projection, or did a richer historical journey UI become stranded during later refactors?
+
+That question must be answered from historical intent and runtime comparison before assigning PRESERVED, CHANGED_INTENTIONALLY, or REGRESSED.
+
+### HG-02 status
+
+**HG-02 is now PARTIALLY CLOSED.**
+
+Confirmed source-level production entry paths exist for graph, problem, process, and a journey projection. Page decomposition and the specialized JourneyExplorer do not currently have a production entrypoint identified.
+
+No state in this section is equivalent to RUNTIME_VERIFIED.
