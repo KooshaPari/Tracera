@@ -9,6 +9,7 @@ mod memory;
 mod middleware;
 mod observability;
 mod pg_store;
+mod product;
 #[cfg(feature = "phenodag-queue")]
 mod queue;
 mod router;
