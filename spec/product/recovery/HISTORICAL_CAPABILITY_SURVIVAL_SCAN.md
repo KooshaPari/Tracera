@@ -226,7 +226,7 @@ A current capability may not be reported as recovered merely because its files, 
 ## Immediate next work
 
 1. Prove route reachability for graph/page-decomposition/problem/process/journey/specification surfaces.
-2. Create a historical-journey manifest from the Jan-29 E2E suite and pre-pivot UI.
+2. Create a historical-journey manifest from pre-pivot UI/source history; use the d529 81-test suite only as intent evidence, not as a pre-pivot oracle.
 3. Bind each journey to current route/component/API/test evidence.
 4. Reproduce selected historical builds where tool/environment archaeology permits.
 5. Independently execute the current journeys; only then promote UNKNOWN to a stronger status.
@@ -297,3 +297,12 @@ That question must be answered from historical intent and runtime comparison bef
 Confirmed source-level production entry paths exist for graph, problem, process, and a journey projection. Page decomposition and the specialized JourneyExplorer do not currently have a production entrypoint identified.
 
 No state in this section is equivalent to RUNTIME_VERIFIED.
+
+
+### D529 Playwright-suite provenance correction
+
+The five multi-dimensional Playwright specs and `TEST_SUMMARY.txt` first appear in Git at `d5296270`; they are absent from the `0e8b0bdd` pre-performance tree.
+
+Because the suite explicitly tolerates unavailable/unimplemented optional features, it cannot be used as a strict historical green oracle.
+
+**Classification:** HISTORICAL INTENT EVIDENCE / ORACLE STRENGTH WEAK / PRE-PIVOT PROVENANCE FALSE.

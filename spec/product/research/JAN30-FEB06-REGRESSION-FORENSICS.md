@@ -558,3 +558,40 @@ Each package must be independently classified:
 `PRESERVE / RECOVER / ADAPT / SUPERSEDE / RETIRE / GENERATED-NOISE`.
 
 Do not treat the mega-commit as a single valid historical feature unit.
+
+
+## Forensic correction — provenance of the “81 Playwright tests”
+
+A previous recovery note treated `frontend/apps/web/e2e/TEST_SUMMARY.txt` as pre-optimization evidence because the file says “Created: January 29, 2026.”
+
+Git ancestry contradicts that interpretation.
+
+Path history shows that:
+- `frontend/apps/web/e2e/TEST_SUMMARY.txt`;
+- `multi-perspective.spec.ts`;
+- `dimension-filters.spec.ts`;
+- `equivalence.spec.ts`;
+- `journey-overlay.spec.ts`;
+- `component-library.spec.ts`;
+
+first entered the committed repository in **`d5296270`**, the ~1.86M-line mega-transaction.
+
+The `0e8b0bdd` pre-performance tree contains no non-archive E2E/Playwright files.
+
+The test summary itself also states:
+- optional features may be swallowed with `.catch()`;
+- “No test failures for unimplemented features”;
+- a next step is “Implement Features.”
+
+Therefore these 81 tests are useful as **intent / desired-journey evidence captured in the d529 working tree**, but they are **not proof that the Jan-29 pre-pivot product had 81 committed browser tests or that all those journeys worked**.
+
+This correction strengthens, rather than weakens, the d529 scope-collapse finding: the mega-transaction appears to have swept substantial previously-uncommitted product/test work into Git at once.
+
+Recovery rule:
+
+```text
+d529 Playwright suite
+= historical intent evidence
+≠ pre-pivot executable oracle
+≠ proof of historical runtime success
+```

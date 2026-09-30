@@ -13,15 +13,15 @@ A green current build that is functionally below the Jan/Feb product is a regres
 
 ## Evidence already recovered
 
-### Pre-pivot evidence
+### Previously misclassified E2E evidence — corrected
 
-`frontend/apps/web/e2e/TEST_SUMMARY.txt` states:
-- created January 29, 2026;
-- multi-dimensional traceability graph E2E suite;
-- 5 files;
-- 81 Playwright tests.
+`frontend/apps/web/e2e/TEST_SUMMARY.txt` says it was “Created: January 29, 2026” and describes 5 files / 81 Playwright tests.
 
-This is strong evidence that a substantial browser-level product/test surface existed immediately before the suspected regression window.
+Git ancestry shows those files were **not present in the `0e8b0bdd` pre-performance tree**. Path history places their first committed appearance in **`d5296270`**, the mega-transaction.
+
+The suite is therefore evidence of product intent captured during d529, not proof of a committed pre-pivot browser oracle. Its own documentation further says unimplemented optional features can degrade without failing tests.
+
+**Correct classification:** D529 INTENT EVIDENCE / PRE-PIVOT RUNTIME PROOF = UNKNOWN.
 
 ### Performance pivot 1 — bounded/drop-in optimization
 
@@ -123,7 +123,7 @@ The likely failure was not "performance optimization is inherently bad."
 
 A more precise hypothesis is:
 
-1. Jan 29–31 had a coherent ReactFlow/browser product with meaningful E2E coverage.
+1. Jan 29–31 had a coherent ReactFlow/browser product according to owner recollection and source history; committed pre-pivot E2E coverage has **not** been established.
 2. Initial viewport culling was a bounded optimization.
 3. Optimization scope expanded from rendering into graph data semantics and every graph projection.
 4. The rendering architecture expanded again into hybrid ReactFlow/Sigma/WebGL/LOD/workers/GPU/spatial indexing.
@@ -142,7 +142,7 @@ Search Jan 29–31 ancestry for the strongest commit that can demonstrate:
 - nodes + edges visible;
 - project navigation works;
 - traceability interactions work;
-- the 81-test E2E suite corresponds to the product;
+- a strict historical oracle can be recovered independently of the d529 81-test intent suite;
 - backend/frontend contract aligns.
 
 Do not choose by date alone.
@@ -217,7 +217,7 @@ Current Tracera is not "historically recovered" until:
 ## Immediate evidence tasks
 
 1. enumerate commits in Jan 29–Feb 6 ancestry, not keyword search only;
-2. locate commit that introduced the Jan-29 81-test summary;
+2. preserve the finding that d529 first committed the 81-test suite, and reconstruct pre-pivot journeys from source/UI history plus stronger evidence;
 3. map graph-performance commits in topological order;
 4. map DG/problem/user-model commits in same interval;
 5. inspect build/package/lockfile changes in the interval;
