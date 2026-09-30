@@ -2,7 +2,7 @@
 
 use sqlx::Row;
 
-use crate::product::persistence::{
+use tracera_server::product::persistence::{
     PersistedBaseline, PersistedEntity, PersistedEntityRevision, PersistedObservation,
     PersistedProduct, ProductPersistence, ProductPersistenceError, EvidenceReuseDecision, InvalidationEvent,
 };
