@@ -17,6 +17,7 @@
 
 pub mod assessment;
 pub mod baseline;
+pub mod dependencies;
 pub mod detectors;
 pub mod identity;
 pub mod ingest;
