@@ -20,6 +20,7 @@ pub mod baseline;
 pub mod detectors;
 pub mod identity;
 pub mod ingest;
+pub mod invalidation;
 pub mod observation;
 pub mod persistence;
 pub mod queries;
@@ -35,6 +36,7 @@ pub use detectors::{
 };
 pub use identity::{AcceptedIntent, BaselineRevision, IntentKind, IntentStatus, ProductId};
 pub use ingest::{IngestResult, ObservationIngestRequest, ObservationStore};
+pub use invalidation::{propagate_bounded, reduce_applicability, ApplicabilityProjection, PropagationResult};
 pub use observation::{Observation, ObservationKind, ObservationResult, ObservationSource};
 pub use persistence::{PersistedBaseline, PersistedEntity, PersistedEntityRevision, PersistedObservation, PersistedProduct, ProductPersistence, ProductPersistenceError, EvidenceReuseDecision, InvalidationEvent};
 pub use queries::{
