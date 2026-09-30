@@ -62,6 +62,34 @@ pub struct PersistedObservation {
     pub metadata: Value,
 }
 
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EvidenceReuseDecision {
+    pub reuse_decision_id: String,
+    pub observation_id: String,
+    pub target_baseline_id: String,
+    pub target_candidate_ref: String,
+    pub criterion_ref: String,
+    pub applicability_state: String,
+    pub compatibility_certificate_ref: Option<String>,
+    pub policy_version: String,
+    pub reason: String,
+    pub decided_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct InvalidationEvent {
+    pub invalidation_id: String,
+    pub trigger_kind: String,
+    pub trigger_ref: String,
+    pub target_kind: String,
+    pub target_ref: String,
+    pub prior_state: Option<String>,
+    pub new_state: String,
+    pub reason: String,
+    pub occurred_at: DateTime<Utc>,
+}
+
 /// Product persistence errors remain backend-neutral at the application boundary.
 #[derive(Debug, thiserror::Error)]
 pub enum ProductPersistenceError {
@@ -131,4 +159,21 @@ pub trait ProductPersistence: Send + Sync {
         subject_local_id: Option<&str>,
         limit: u32,
     ) -> impl std::future::Future<Output = Result<Vec<PersistedObservation>, ProductPersistenceError>> + Send;
+
+    fn append_reuse_decision(
+        &self,
+        decision: &EvidenceReuseDecision,
+    ) -> impl std::future::Future<Output = Result<(), ProductPersistenceError>> + Send;
+
+    fn append_invalidation(
+        &self,
+        event: &InvalidationEvent,
+    ) -> impl std::future::Future<Output = Result<(), ProductPersistenceError>> + Send;
+
+    fn list_invalidations(
+        &self,
+        target_kind: &str,
+        target_ref: &str,
+        limit: u32,
+    ) -> impl std::future::Future<Output = Result<Vec<InvalidationEvent>, ProductPersistenceError>> + Send;
 }
