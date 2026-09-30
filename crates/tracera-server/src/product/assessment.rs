@@ -593,6 +593,66 @@ mod tests {
     }
 
     #[test]
+    fn explicit_unknown_never_satisfies() {
+        let engine = AssessmentEngine::new(86_400);
+        let obs = vec![make_obs("o-unknown", "product-a", ObservationResult::Unknown, 0)];
+        let finding = engine.assess_capability("search", &obs);
+        assert_eq!(finding.status, AssessmentStatus::Unknown);
+    }
+
+    #[test]
+    fn explicit_stale_never_satisfies_even_when_timestamp_is_fresh() {
+        let engine = AssessmentEngine::new(86_400);
+        let obs = vec![make_obs("o-stale", "product-a", ObservationResult::Stale, 0)];
+        let finding = engine.assess_capability("search", &obs);
+        assert_eq!(finding.status, AssessmentStatus::Stale);
+    }
+
+    #[test]
+    fn assessment_time_can_be_frozen() {
+        let engine = AssessmentEngine::new(10);
+        let recorded = DateTime::from_timestamp(100, 0).unwrap();
+        let now = DateTime::from_timestamp(105, 0).unwrap();
+        let mut obs = make_obs("o-pass", "product-a", ObservationResult::Passed, 0);
+        obs.recorded_at = recorded;
+        let finding = engine.assess_capability_at("search", &[obs], now);
+        assert_eq!(finding.status, AssessmentStatus::Satisfied);
+    }
+
+    #[test]
+    fn assess_product_isolates_products_and_capabilities() {
+        let engine = AssessmentEngine::new(86_400);
+
+        let mut a = make_obs("a-pass", "product-a", ObservationResult::Passed, 0);
+        a.capability_id = Some("search".to_string());
+        a.baseline = BaselineRevision(1);
+
+        let mut b = make_obs("b-fail", "product-b", ObservationResult::Failed, 0);
+        b.capability_id = Some("search".to_string());
+        b.baseline = BaselineRevision(99);
+
+        let result = engine.assess_product("product-a", &[a, b]);
+        assert_eq!(result.product_id, "product-a");
+        assert_eq!(result.baseline, BaselineRevision(1));
+        assert_eq!(result.observation_count, 1);
+        assert_eq!(result.status, AssessmentStatus::Satisfied);
+        assert_eq!(result.findings.len(), 1);
+        assert_eq!(result.findings[0].capability_id.as_deref(), Some("search"));
+        assert_eq!(result.findings[0].status, AssessmentStatus::Satisfied);
+        assert_eq!(result.findings[0].observation_ids, vec!["a-pass"]);
+    }
+
+    #[test]
+    fn product_level_observation_is_not_recast_as_capability() {
+        let engine = AssessmentEngine::new(86_400);
+        let obs = make_obs("product-proof", "product-a", ObservationResult::Passed, 0);
+        let result = engine.assess_product("product-a", &[obs]);
+        assert_eq!(result.observation_count, 1);
+        assert_eq!(result.status, AssessmentStatus::Unknown);
+        assert!(result.findings.is_empty());
+    }
+
+    #[test]
     fn assessment_deterministic() {
         let engine = AssessmentEngine::new(86_400);
         let obs = vec![
