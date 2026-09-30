@@ -259,3 +259,29 @@ async fn product_v1_observation_is_append_only_history_across_invalidation() {
     .unwrap();
     assert_eq!(result, "passed");
 }
+
+
+#[tokio::test]
+async fn product_v1_revocation_invalidates_reuse_not_observation_history() {
+    let store = mem_store().await;
+    let pool = store.pool();
+    let t = now().to_rfc3339();
+
+    sqlx::query("INSERT INTO product_baselines_v1 (baseline_id,product_id,revision_number,accepted_at,metadata) VALUES ('b1','p',1,?1,'{}'),('b2','p',2,?1,'{}')")
+        .bind(&t).execute(pool).await.unwrap();
+    sqlx::query("INSERT INTO product_observations_v1 (observation_id,product_id,baseline_id,subject_local_id,candidate_ref,configuration,result,verifier_id,verifier_version,recorded_at,metadata) VALUES ('o1','p','b1','search','git:abc','{}','passed','suite','1',?1,'{}')")
+        .bind(&t).execute(pool).await.unwrap();
+    sqlx::query("INSERT INTO evidence_reuse_decisions_v1 (reuse_decision_id,observation_id,target_baseline_id,target_candidate_ref,criterion_ref,applicability_state,compatibility_certificate_ref,policy_version,reason,decided_at) VALUES ('r1','o1','b2','git:def','search-compatible','current_valid','cert:c1','reuse-v1','compatible',?1)")
+        .bind(&t).execute(pool).await.unwrap();
+    sqlx::query("INSERT INTO invalidation_events_v1 (invalidation_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at) VALUES ('i1','certificate_revoked','cert:c1','reuse_decision','r1','current_valid','suspect','certificate revoked',?1)")
+        .bind(&t).execute(pool).await.unwrap();
+
+    let observation_result:String=sqlx::query_scalar("SELECT result FROM product_observations_v1 WHERE observation_id='o1'").fetch_one(pool).await.unwrap();
+    assert_eq!(observation_result,"passed");
+
+    let new_state:String=sqlx::query_scalar("SELECT new_state FROM invalidation_events_v1 WHERE target_kind='reuse_decision' AND target_ref='r1' ORDER BY occurred_at DESC,invalidation_id DESC LIMIT 1").fetch_one(pool).await.unwrap();
+    assert_eq!(new_state,"suspect");
+
+    let reuse_count:i64=sqlx::query_scalar("SELECT COUNT(*) FROM evidence_reuse_decisions_v1 WHERE reuse_decision_id='r1'").fetch_one(pool).await.unwrap();
+    assert_eq!(reuse_count,1);
+}
