@@ -39,7 +39,7 @@ pub use detectors::{
 pub use identity::{AcceptedIntent, BaselineRevision, IntentKind, IntentStatus, ProductId};
 pub use ingest::{IngestResult, ObservationIngestRequest, ObservationStore};
 pub use invalidation::{propagate_bounded, reduce_applicability, ApplicabilityProjection, PropagationResult};
-pub use invalidation_service::{plan_certificate_revocation, plan_dependency_invalidation, InvalidationPlan};
+pub use invalidation_service::{execute_certificate_revocation, execute_dependency_invalidation, plan_certificate_revocation, plan_dependency_invalidation, InvalidationPlan, PersistedInvalidationResult};
 pub use observation::{Observation, ObservationKind, ObservationResult, ObservationSource};
 pub use persistence::{PersistedBaseline, PersistedEntity, PersistedEntityRevision, PersistedObservation, PersistedProduct, ProductPersistence, ProductPersistenceError, EvidenceReuseDecision, InvalidationEvent};
 pub use queries::{
