@@ -313,6 +313,80 @@ async fn product_persistence_port_roundtrip_preserves_history_and_invalidation()
 }
 
 #[tokio::test]
+async fn product_persistence_rejects_cross_product_baseline_membership_atomically() {
+    let store = mem_store().await;
+    let t = now();
+
+    for product_id in ["product-a", "product-b"] {
+        ProductPersistence::create_product(
+            &store,
+            &PersistedProduct {
+                product_id: product_id.into(),
+                display_name: product_id.into(),
+                created_at: t,
+            },
+        )
+        .await
+        .expect("create product");
+    }
+
+    let foreign_entity = PersistedEntity {
+        entity_id: "entity-b-search".into(),
+        product_id: "product-b".into(),
+        local_id: "search".into(),
+        entity_kind: "capability".into(),
+        created_at: t,
+    };
+    ProductPersistence::create_entity(&store, &foreign_entity)
+        .await
+        .expect("create foreign entity");
+    let foreign_revision = PersistedEntityRevision {
+        entity_revision_id: "entity-b-search-r1".into(),
+        entity_id: foreign_entity.entity_id.clone(),
+        content_revision: 1,
+        title: "Foreign search".into(),
+        description: String::new(),
+        status: "accepted".into(),
+        metadata: json!({}),
+        created_at: t,
+    };
+    ProductPersistence::append_entity_revision(&store, &foreign_revision)
+        .await
+        .expect("create foreign revision");
+
+    let baseline = PersistedBaseline {
+        baseline_id: "a-bad".into(),
+        product_id: "product-a".into(),
+        revision_number: 1,
+        parent_baseline_id: None,
+        accepted_at: t,
+        metadata: json!({}),
+    };
+    let err = ProductPersistence::accept_baseline(
+        &store,
+        &baseline,
+        &[(
+            foreign_entity.entity_id.clone(),
+            foreign_revision.entity_revision_id.clone(),
+        )],
+    )
+    .await
+    .expect_err("cross-product membership must fail");
+    assert!(
+        matches!(err, tracera_server::product::ProductPersistenceError::Invalid(_)),
+        "expected invalid membership error, got {err:?}"
+    );
+
+    let persisted = ProductPersistence::get_baseline(&store, "product-a", "a-bad")
+        .await
+        .expect("query baseline");
+    assert!(
+        persisted.is_none(),
+        "failed membership validation must roll back baseline creation"
+    );
+}
+
+#[tokio::test]
 async fn product_v1_schema_supports_scoped_ids_and_immutable_baselines() {
     let store = mem_store().await;
     let pool = &store.pool;
