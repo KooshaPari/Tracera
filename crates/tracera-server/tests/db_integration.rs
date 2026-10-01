@@ -6,7 +6,7 @@
 
 use chrono::{TimeZone, Utc};
 use serde_json::{json, Value};
-use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
+use sqlx::{sqlite::{SqliteConnectOptions, SqlitePoolOptions}, SqlitePool};
 
 use tracera_server::sqlite_store::SqliteStore;
 use tracera_server::store::Store;
@@ -19,6 +19,22 @@ async fn mem_store() -> SqliteStore {
         .await
         .expect("open in-memory sqlite");
     // Apply the real migration DDL (same files the server uses).
+    sqlx::migrate!("./migrations-sqlite")
+        .run(&pool)
+        .await
+        .expect("apply sqlite migrations");
+    SqliteStore::new(pool)
+}
+
+async fn file_store(path: &std::path::Path) -> SqliteStore {
+    let options = SqliteConnectOptions::new()
+        .filename(path)
+        .create_if_missing(true);
+    let pool = SqlitePoolOptions::new()
+        .max_connections(1)
+        .connect_with(options)
+        .await
+        .expect("open file-backed sqlite");
     sqlx::migrate!("./migrations-sqlite")
         .run(&pool)
         .await
@@ -136,7 +152,7 @@ async fn sprint_roundtrip() {
 #[tokio::test]
 async fn product_v1_schema_supports_scoped_ids_and_immutable_baselines() {
     let store = mem_store().await;
-    let pool = store.pool();
+    let pool = &store.pool;
 
     // Two products may use the same human/local identity.
     for (entity_id, product_id) in [("entity-a-search", "product-a"), ("entity-b-search", "product-b")] {
@@ -217,7 +233,7 @@ async fn product_v1_schema_supports_scoped_ids_and_immutable_baselines() {
 #[tokio::test]
 async fn product_v1_observation_is_append_only_history_across_invalidation() {
     let store = mem_store().await;
-    let pool = store.pool();
+    let pool = &store.pool;
 
     sqlx::query(
         "INSERT INTO product_baselines_v1
@@ -264,7 +280,7 @@ async fn product_v1_observation_is_append_only_history_across_invalidation() {
 #[tokio::test]
 async fn product_v1_revocation_invalidates_reuse_not_observation_history() {
     let store = mem_store().await;
-    let pool = store.pool();
+    let pool = &store.pool;
     let t = now().to_rfc3339();
 
     sqlx::query("INSERT INTO product_baselines_v1 (baseline_id,product_id,revision_number,accepted_at,metadata) VALUES ('b1','p',1,?1,'{}'),('b2','p',2,?1,'{}')")
@@ -291,8 +307,8 @@ async fn product_v1_revocation_invalidates_reuse_not_observation_history() {
 async fn product_v1_file_restart_preserves_baseline_and_observation_history() {
     let path = std::env::temp_dir().join(format!("tracera-product-v1-{}.db", uuid::Uuid::new_v4()));
     {
-        let store = SqliteStore::connect(&path).await.expect("first open");
-        let pool = store.pool();
+        let store = file_store(&path).await;
+        let pool = &store.pool;
         let t = now().to_rfc3339();
         sqlx::query("INSERT INTO product_baselines_v1 (baseline_id,product_id,revision_number,accepted_at,metadata) VALUES ('restart-b1','restart-product',1,?1,'{}')")
             .bind(&t).execute(pool).await.unwrap();
@@ -300,8 +316,8 @@ async fn product_v1_file_restart_preserves_baseline_and_observation_history() {
             .bind(&t).execute(pool).await.unwrap();
     }
     {
-        let store = SqliteStore::connect(&path).await.expect("reopen");
-        let pool = store.pool();
+        let store = file_store(&path).await;
+        let pool = &store.pool;
         let revision:i64=sqlx::query_scalar("SELECT revision_number FROM product_baselines_v1 WHERE baseline_id='restart-b1'").fetch_one(pool).await.unwrap();
         let result:String=sqlx::query_scalar("SELECT result FROM product_observations_v1 WHERE observation_id='restart-o1'").fetch_one(pool).await.unwrap();
         assert_eq!(revision,1);
