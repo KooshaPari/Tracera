@@ -24,8 +24,8 @@ impl ProductPersistence for SqliteStore {
         // A product with no baseline/entity has no persisted row yet.
         sqlx::query(
             "INSERT OR IGNORE INTO product_nodes
-             (id, product_id, intent_kind, title, description, status, baseline_revision, metadata, created_at, updated_at)
-             VALUES (?1, ?1, 'product', ?2, '', 'accepted', 0, '{}', ?3, ?3)"
+             (id, product_id, intent_kind, title, description, status, baseline_revision, created_at, updated_at)
+             VALUES (?1, ?1, 'product', ?2, '', 'accepted', 0, ?3, ?3)"
         )
         .bind(&product.product_id)
         .bind(&product.display_name)
