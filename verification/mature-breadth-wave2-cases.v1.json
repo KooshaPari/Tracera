@@ -1,0 +1,464 @@
+{
+  "schema_version": "0.1.0",
+  "product_id": "PRD-TRACERA",
+  "status": "specified_not_executed",
+  "scope": "mature_breadth_wave_2",
+  "cases": [
+    {
+      "id": "TRC-MVC2-001",
+      "requirement_id": "TRC-R-API-PARITY",
+      "title": "Transport-independent canonical semantics",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Supported HTTP/MCP/CLI/GraphQL surfaces use the same canonical IDs, applicability/status semantics and mutation authority.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Transport-independent canonical semantics' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-002",
+      "requirement_id": "TRC-R-API-PAGE",
+      "title": "Bounded pagination and continuation",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "List/graph APIs expose deterministic bounds, continuation and incomplete-state semantics; truncation cannot masquerade as complete data.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Bounded pagination and continuation' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-003",
+      "requirement_id": "TRC-R-API-IDEMP",
+      "title": "Idempotent/replay-safe mutations where required",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Create/import/proposal operations define replay/idempotency behavior and do not create duplicate canonical truth on retry.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Idempotent/replay-safe mutations where required' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-004",
+      "requirement_id": "TRC-R-API-VERSION",
+      "title": "Versioned machine contracts",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Public machine contracts expose version/compatibility behavior sufficient for clients to distinguish breaking semantic changes.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Versioned machine contracts' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-005",
+      "requirement_id": "TRC-R-API-DISCOVER",
+      "title": "Capability discovery",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Clients can determine supported optional capabilities/projections/integrations rather than assuming every adapter is mounted.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Capability discovery' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-006",
+      "requirement_id": "TRC-R-SEC-TENANT",
+      "title": "Product/project authorization boundaries",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Authenticated identities cannot read or mutate product/project scopes outside granted authority.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Product/project authorization boundaries' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-007",
+      "requirement_id": "TRC-R-SEC-SECRET",
+      "title": "Secrets and credentials are not product evidence",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Secrets/credentials are handled through bounded secret mechanisms and are never stored/exposed as ordinary graph/evidence payloads.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Secrets and credentials are not product evidence' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-008",
+      "requirement_id": "TRC-R-SEC-UNTRUST",
+      "title": "Untrusted content cannot grant authority",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Imported text, documents, model output or prompt content cannot self-authorize mutations, evidence admission or policy changes.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Import content instructing the system/agent to grant mutation or acceptance authority; authority must remain unchanged.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-009",
+      "requirement_id": "TRC-R-SEC-REDACT",
+      "title": "Redaction preserves explainability",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Sensitive payload redaction removes protected content while retaining permitted identity/provenance/tombstone links needed for historical explanation.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Redaction preserves explainability' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-010",
+      "requirement_id": "TRC-R-PERSIST-TXN",
+      "title": "Atomic canonical mutations",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Multi-record canonical changes either commit coherently or expose failure without partially accepted product truth.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Fail midway through a multi-record baseline mutation; no half-accepted baseline may become visible.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-011",
+      "requirement_id": "TRC-R-PERSIST-CONCUR",
+      "title": "Concurrent mutation conflict semantics",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Concurrent writes use explicit conflict/version rules and cannot silently lose accepted product changes.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Apply conflicting concurrent accepted-state writes; conflict must be detected rather than last-write-wins.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-012",
+      "requirement_id": "TRC-R-PERSIST-BACKUP",
+      "title": "Backup and restore preserve canonical history",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Supported backup/restore recovers product identities, baselines, relations, observations, reuse/invalidation history and required provenance.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Backup and restore preserve canonical history' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-013",
+      "requirement_id": "TRC-R-PERSIST-CRASH",
+      "title": "Crash/restart consistency",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Interrupted writes/restarts cannot produce a silently accepted half-baseline or orphan evidence state.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Crash/restart consistency' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-014",
+      "requirement_id": "TRC-R-PERF-TRUTH",
+      "title": "Performance optimization cannot change truth semantics",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Caching, virtualization, culling, indexing, progressive loading and alternate renderers may change latency/resource use but not canonical product meaning.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Enable progressive loading/culling/cache and compare canonical query truth to unoptimized reference.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-015",
+      "requirement_id": "TRC-R-PERF-BENCH",
+      "title": "Performance claims bind benchmark profile",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Scale/latency/resource claims identify candidate, dataset shape/size, environment, operation and metric rather than using context-free percentages.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Performance claims bind benchmark profile' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-016",
+      "requirement_id": "TRC-R-PERF-DEGRADE",
+      "title": "Explicit degradation/fallback",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "When scale/resource limits prevent full rendering/query, interfaces expose degraded/partial state and a recovery/continuation path instead of false completeness.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Explicit degradation/fallback' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-017",
+      "requirement_id": "TRC-R-PERF-DETERMINISM",
+      "title": "Continuation is semantically stable",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Paginated/progressive traversal over a stable baseline yields deterministic non-duplicated/non-missing canonical coverage under its declared ordering/snapshot rules.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Traverse all continuation pages twice on stable snapshot; canonical IDs must have no unexplained gaps/duplicates.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-018",
+      "requirement_id": "TRC-R-EXT-REPLACE",
+      "title": "Optional adapters are replaceable",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Collectors, graph stores, caches, object stores, analytics and ML integrations sit behind semantic boundaries so replacement does not redefine product truth.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Optional adapters are replaceable' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-019",
+      "requirement_id": "TRC-R-EXT-FAIL",
+      "title": "Optional integration failure is isolated",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Failure of an optional integration is surfaced with bounded impact and does not corrupt core local product truth.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Disable/fail optional adapter; core local product assessment remains usable and failure is explicit.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-020",
+      "requirement_id": "TRC-R-EXT-PROV",
+      "title": "External facts retain source provenance",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Facts imported from external services retain source identity/time/version/confidence as applicable and can be invalidated/reconciled.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'External facts retain source provenance' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-021",
+      "requirement_id": "TRC-R-FED-VERSION",
+      "title": "Versioned AgilePlus federation contract",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "AgilePlus handoff identifies work/assignment/candidate/evaluation/evidence revisions and contract version so Tracera can independently admit applicability.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Versioned AgilePlus federation contract' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-022",
+      "requirement_id": "TRC-R-FED-FAIL",
+      "title": "Federation failure preserves both authorities",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Tracera or AgilePlus unavailability does not silently mutate the other system's canonical truth; pending/retry state is explicit.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Make peer system unavailable during handoff; neither side may infer success or mutate the other's truth.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-023",
+      "requirement_id": "TRC-R-REG-REV",
+      "title": "Registry projection is revision-bound",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "PhenoRegistry projection identifies the Tracera contract/status revision it summarizes so stale projection can be detected.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Violate 'Registry projection is revision-bound' under an otherwise healthy fixture; the system must expose the defect rather than infer success.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    },
+    {
+      "id": "TRC-MVC2-024",
+      "requirement_id": "TRC-R-REG-NOAUTH",
+      "title": "Registry cannot override repo-local truth",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "exact accepted product/baseline/configuration",
+        "isolated deterministic fixture"
+      ],
+      "stimulus": "Registry edits/summaries cannot silently replace a newer accepted repo-local Tracera baseline/contract.",
+      "expected": "Obligation holds with explicit status/authority/partiality semantics.",
+      "adversarial": "Present a stale/conflicting registry summary; repo-local accepted revision remains authoritative.",
+      "evidence_contract": [
+        "exact candidate/baseline/configuration",
+        "operation/transport/profile identity",
+        "verifier identity/version",
+        "raw observable/result"
+      ]
+    }
+  ]
+}
