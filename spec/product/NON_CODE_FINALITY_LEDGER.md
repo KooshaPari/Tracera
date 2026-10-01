@@ -18,12 +18,12 @@
 | Mature-first/count-independent doctrine | CLOSED | governance documents |
 | Durable memory doctrine | CLOSED | layered dossier policy |
 | Git/history preservation doctrine | CLOSED | recovery/forensic policy |
-| Source coverage denominator | PARTIAL | SOURCE_COVERAGE_LEDGER still has pending/reviewing rows |
+| Source coverage denominator | PARTIAL | SOURCE_COVERAGE_LEDGER still contains historical/current implementation sources needing final normative classification; this is documentation/source-audit debt, not unresolved core product semantics |
 | Spine requirements | CLOSED | 45 source-backed atomic requirements |
 | Spine journey bindings | CLOSED | all 45 bound after deterministic-assessment correction |
 | Spine oracle design | CLOSED | 45 machine-readable positive/adversarial verification cases |
 | Mature domain denominator | CLOSED | MATURE_DOMAIN_COVERAGE_MAP |
-| Full mature atomic decomposition | PARTIAL | domains B/C/D/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/U/V require further atomics/dispositions |
+| Mature semantic domain decomposition | CLOSED | 120 derived obligations across all mature-domain rows; no PARTIAL/UNDERDECOMPOSED domains remain |
 | Semantic CVP/MVP/GA journeys | CLOSED for spine | 11 semantic journeys |
 | Historical journey recovery | CLOSED as archaeology; EXECUTION-GATE for runtime parity | HISTORICAL_JOURNEY_MANIFEST |
 | Jan30–Feb06 regression forensics | PARTIAL | causal anchors strong; historical runnable witnesses/mass-rewrite damage sampling remain |
@@ -39,14 +39,14 @@
 
 ## Non-code finality blockers
 
-The repository is **not yet at absolute mature-spec finality** because:
-1. the source ledger is not fully resolved;
-2. mature breadth is not atomically decomposed beyond the spine;
-3. the canonical mature-contract manifest remains invalidated until that decomposition is complete;
-4. historical d529 package dispositions are not all adjudicated;
-5. several historical surfaces need preserve/adapt/supersede/retire decisions.
+The mature **semantic** contract is now closed across the domain denominator, with every accepted requirement bound to a journey and a concrete non-runtime oracle design.
 
-These are non-code tasks and remain in scope for continued work.
+Absolute repository non-code finality still requires:
+1. final source-ledger normative classification of remaining historical/current implementation sources;
+2. fresh-context documentation authority cleanup so stale implementation-era docs cannot masquerade as current product authority;
+3. optional finer feature/UI/API behavioral contracts as source archaeology reveals independently gradable obligations.
+
+These remaining tasks may increase the natural requirement denominator. They must not be filled by quota or generic dimensions.
 
 ## Forbidden closure shortcuts
 
