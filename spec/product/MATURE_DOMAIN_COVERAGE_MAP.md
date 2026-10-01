@@ -12,7 +12,7 @@ Identity, aliases, typed accepted intent, immutable baselines, proposals, scope 
 
 Current source-backed requirements include stable identity, baseline immutability, typed intent, proposal non-mutation and history.
 
-## B. Product structure and ontology — PARTIAL
+## B. Product structure and ontology — DECOMPOSED
 
 Mature scope:
 - product/system/component/ecosystem hierarchy;
@@ -28,7 +28,7 @@ Mature scope:
 
 Current spine covers product graph distinction but not this breadth.
 
-## C. Multi-projection product graph — PARTIAL
+## C. Multi-projection product graph — DECOMPOSED
 
 Mature scope:
 - traceability;
@@ -44,7 +44,7 @@ Mature scope:
 
 Historical source establishes substantial intent; atomic mature obligations remain to decompose.
 
-## D. Traceability and engineering evidence — SPINE DECOMPOSED / BREADTH PARTIAL
+## D. Traceability and engineering evidence — DECOMPOSED
 
 Typed nodes/edges, bidirectional traversal, search, impact, exact evidence, provenance, bounded traversal.
 
@@ -60,7 +60,7 @@ Additional mature breadth:
 
 Exact scope, provenance, append-only history, reuse/admission decisions, candidate/configuration binding, stale/suspect/invalid/historical semantics, dependency-driven invalidation, conservative uncertainty and continuation semantics.
 
-## F. Assessment and dissatisfaction — PARTIAL
+## F. Assessment and dissatisfaction — DECOMPOSED
 
 Current spine covers evidence freshness, missing coverage and contradictions.
 
@@ -79,13 +79,13 @@ Mature dissatisfaction includes:
 
 Findings must be explainable, attributable, scoped and never silently mutate accepted truth.
 
-## G. Product change control — PARTIAL
+## G. Product change control — DECOMPOSED
 
 Proposal, review/authority, baseline acceptance, impact, scope delta, invalidation, rollback/supersession, history and comparison.
 
 Needs atomic decomposition for graph-edit/change workflows and human/machine approval surfaces.
 
-## H. Lifecycle / PLM / SDLC projection — UNDERDECOMPOSED
+## H. Lifecycle / PLM / SDLC projection — DECOMPOSED
 
 Mature scope:
 - releases/versions/milestones;
@@ -98,7 +98,7 @@ Mature scope:
 - release evidence projection;
 - distinction between product lifecycle and AgilePlus work lifecycle.
 
-## I. Journeys and usable product shape — PARTIAL
+## I. Journeys and usable product shape — DECOMPOSED
 
 Semantic CVP/MVP/GA journeys exist. Historical user journeys have been recovered separately.
 
@@ -112,7 +112,7 @@ Needs mature journey model:
 - journey versioning;
 - journey closure as independent progress dimension.
 
-## J. Human UX and navigation — HISTORICALLY RICH / UNDERDECOMPOSED
+## J. Human UX and navigation — DECOMPOSED
 
 Projects, product selection, item inventory/detail, relationship management, graph modes, matrix, typed project views, search, page decomposition, problems/processes, specifications, journeys, dashboards.
 
@@ -131,13 +131,13 @@ HTTP, MCP, optional GraphQL, CLI/automation where applicable:
 - exact canonical IDs;
 - transport-independent semantics.
 
-## L. Ingestion/import/export/interoperability — UNDERDECOMPOSED
+## L. Ingestion/import/export/interoperability — DECOMPOSED
 
 GitHub/Jira/other ingestion; ReqIF/OSLC/SysML/SBOM/SARIF/SLSA/in-toto/OpenTelemetry and other applicable interchange/provenance formats; import identity reconciliation; idempotency; conflict policy; export fidelity; round-trip limits.
 
 Not every standard is mandatory. Each receives explicit applicability/disposition.
 
-## M. Knowledge/memory/derived intelligence — PARTIAL
+## M. Knowledge/memory/derived intelligence — DECOMPOSED
 
 Distillation/provenance and no-silent-intent-mutation are covered.
 
@@ -204,17 +204,17 @@ Optional collectors, stores, caches, analytics, ML, integrations and plugins:
 - no optional dependency required for core truth;
 - provenance for externally sourced facts.
 
-## R. Configuration/variants/effectivity — UNDERDECOMPOSED
+## R. Configuration/variants/effectivity — DECOMPOSED
 
 A product obligation/evidence/finding may apply to only specific version, variant, platform, deployment, customer or configuration.
 
 Mature contract requires explicit applicability/effectivity rather than global truth leakage.
 
-## S. Collaboration and multi-actor authority — UNDERDECOMPOSED
+## S. Collaboration and multi-actor authority — DECOMPOSED
 
 Human/operator/agent roles, proposal/review/accept authority, concurrent edits, conflicts, attribution, subscriptions/notifications where justified, and machine-generated proposal boundaries.
 
-## T. Progress, grading and recovery quality — SPINE DECOMPOSED / RECOVERY PARTIAL
+## T. Progress, grading and recovery quality — DECOMPOSED
 
 Separate mature completeness, stage readiness, journey closure, implementation realization, evidence coverage/freshness, uncertainty, regression, external validation and recovery quality.
 
