@@ -16,7 +16,7 @@ fn backend(error: impl std::fmt::Display) -> ProductPersistenceError {
 
 impl ProductPersistence for PgStore {
     async fn create_product(&self, p: &PersistedProduct) -> Result<(), ProductPersistenceError> {
-        sqlx::query("INSERT INTO product_nodes (id,product_id,intent_kind,title,description,status,baseline_revision,metadata,created_at,updated_at) VALUES ($1,$1,'product',$2,'','accepted',0,'{}'::jsonb,$3,$3) ON CONFLICT (id) DO NOTHING")
+        sqlx::query("INSERT INTO product_nodes (id,product_id,intent_kind,title,description,status,baseline_revision,created_at,updated_at) VALUES ($1,$1,'product',$2,'','accepted',0,$3,$3) ON CONFLICT (id) DO NOTHING")
             .bind(&p.product_id).bind(&p.display_name).bind(p.created_at).execute(&self.pool).await.map_err(backend)?;
         Ok(())
     }
