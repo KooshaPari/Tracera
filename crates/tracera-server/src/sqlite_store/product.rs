@@ -167,6 +167,21 @@ impl ProductPersistence for SqliteStore {
     }
 
     async fn create_entity(&self, entity: &PersistedEntity) -> Result<(), ProductPersistenceError> {
+        let product_exists: Option<i64> = sqlx::query_scalar(
+            "SELECT 1 FROM product_nodes
+             WHERE id=?1 AND product_id=?1 AND intent_kind='product'"
+        )
+        .bind(&entity.product_id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(backend)?;
+        if product_exists.is_none() {
+            return Err(ProductPersistenceError::Invalid(format!(
+                "entity {} references unknown product {}",
+                entity.entity_id, entity.product_id
+            )));
+        }
+
         sqlx::query(
             "INSERT INTO product_entities_v1 (entity_id, product_id, local_id, entity_kind, created_at)
              VALUES (?1,?2,?3,?4,?5)"
