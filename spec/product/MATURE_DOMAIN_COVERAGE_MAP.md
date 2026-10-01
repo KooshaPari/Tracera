@@ -118,7 +118,7 @@ Projects, product selection, item inventory/detail, relationship management, gra
 
 Need explicit disposition for historical surfaces: preserve/adapt/supersede/retire.
 
-## K. Machine/API surfaces — PARTIAL
+## K. Machine/API surfaces — DECOMPOSED
 
 HTTP, MCP, optional GraphQL, CLI/automation where applicable:
 - semantic parity;
@@ -150,7 +150,7 @@ Needs:
 - optional ML/RAG boundaries;
 - deterministic fallback/core operation.
 
-## N. Security, authority, privacy, retention — PARTIAL
+## N. Security, authority, privacy, retention — DECOMPOSED
 
 Mutation authority, truthful errors and retention identity exist.
 
@@ -166,7 +166,7 @@ Needs:
 - untrusted-content/prompt-injection boundary;
 - least privilege for agents.
 
-## O. Persistence, migration, recovery and offline operation — PARTIAL
+## O. Persistence, migration, recovery and offline operation — DECOMPOSED
 
 Store parity, safe migration, offline core exist.
 
@@ -180,7 +180,7 @@ Needs:
 - import recovery;
 - historical snapshot integrity.
 
-## P. Performance and scale semantics — UNDERDECOMPOSED
+## P. Performance and scale semantics — DECOMPOSED
 
 Performance must never change truth semantics.
 
@@ -194,7 +194,7 @@ Mature obligations include:
 - degradation/fallback semantics;
 - performance evidence tied to exact candidate/environment.
 
-## Q. Extensibility/integrations — UNDERDECOMPOSED
+## Q. Extensibility/integrations — DECOMPOSED
 
 Optional collectors, stores, caches, analytics, ML, integrations and plugins:
 - replaceable boundaries;
@@ -220,11 +220,11 @@ Separate mature completeness, stage readiness, journey closure, implementation r
 
 No unknown denominator receives a fabricated percentage.
 
-## U. AgilePlus federation — SPINE DECOMPOSED / CONTRACT PARTIAL
+## U. AgilePlus federation — DECOMPOSED
 
 External work references, work/product authority split, evidence handoff, candidate/evaluation identity, no Done→Satisfied shortcut, failure isolation and versioned federation contract.
 
-## V. Registry/ecosystem projection — PARTIAL
+## V. Registry/ecosystem projection — DECOMPOSED
 
 PhenoRegistry projects repo-local identity/status/revision without becoming a competing detailed authority.
 
