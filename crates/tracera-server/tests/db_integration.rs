@@ -393,6 +393,96 @@ async fn product_persistence_rejects_cross_product_baseline_membership_atomicall
 }
 
 #[tokio::test]
+async fn product_persistence_rejects_cross_product_evidence_reuse() {
+    let store = mem_store().await;
+    let t = now();
+
+    for product_id in ["reuse-a", "reuse-b"] {
+        ProductPersistence::create_product(
+            &store,
+            &PersistedProduct {
+                product_id: product_id.into(),
+                display_name: product_id.into(),
+                created_at: t,
+            },
+        )
+        .await
+        .expect("create product");
+    }
+
+    let baseline_a = PersistedBaseline {
+        baseline_id: "reuse-a-b1".into(),
+        product_id: "reuse-a".into(),
+        revision_number: 1,
+        parent_baseline_id: None,
+        accepted_at: t,
+        metadata: json!({}),
+    };
+    let baseline_b = PersistedBaseline {
+        baseline_id: "reuse-b-b1".into(),
+        product_id: "reuse-b".into(),
+        revision_number: 1,
+        parent_baseline_id: None,
+        accepted_at: t,
+        metadata: json!({}),
+    };
+    ProductPersistence::accept_baseline(&store, &baseline_a, &[])
+        .await
+        .expect("accept baseline a");
+    ProductPersistence::accept_baseline(&store, &baseline_b, &[])
+        .await
+        .expect("accept baseline b");
+
+    let observation = PersistedObservation {
+        observation_id: "reuse-a-o1".into(),
+        product_id: "reuse-a".into(),
+        baseline_id: baseline_a.baseline_id.clone(),
+        subject_entity_id: None,
+        subject_local_id: Some("search".into()),
+        candidate_ref: "git:a".into(),
+        configuration: json!({}),
+        result: "passed".into(),
+        verifier_id: "suite".into(),
+        verifier_version: "1".into(),
+        recorded_at: t,
+        raw_evidence_ref: None,
+        metadata: json!({}),
+    };
+    ProductPersistence::append_observation(&store, &observation)
+        .await
+        .expect("append observation");
+
+    let decision = EvidenceReuseDecision {
+        reuse_decision_id: "reuse-cross-product".into(),
+        observation_id: observation.observation_id.clone(),
+        target_baseline_id: baseline_b.baseline_id.clone(),
+        target_candidate_ref: "git:b".into(),
+        criterion_ref: "search-compatible".into(),
+        applicability_state: "current_valid".into(),
+        compatibility_certificate_ref: Some("cert:cross".into()),
+        policy_version: "reuse-v1".into(),
+        reason: "must be rejected".into(),
+        decided_at: t,
+    };
+
+    let err = ProductPersistence::append_reuse_decision(&store, &decision)
+        .await
+        .expect_err("cross-product reuse must fail");
+    assert!(matches!(
+        err,
+        tracera_server::product::ProductPersistenceError::Invalid(_)
+    ));
+
+    let leaked: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM evidence_reuse_decisions_v1 WHERE reuse_decision_id='reuse-cross-product'",
+    )
+    .fetch_one(&store.pool)
+    .await
+    .expect("count rejected reuse");
+    assert_eq!(leaked, 0, "rejected reuse decision must not be persisted");
+}
+
+#[tokio::test]
 async fn product_persistence_rejects_cross_product_parent_and_observation_scope() {
     let store = mem_store().await;
     let t = now();
