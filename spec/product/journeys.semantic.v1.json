@@ -1,6 +1,6 @@
 {
-  "schema_version": "0.3.0",
-  "status": "accepted_spine_and_mature_breadth_wave_1",
+  "schema_version": "0.4.0",
+  "status": "accepted_spine_and_mature_breadth_waves_1_2",
   "product_id": "PRD-TRACERA",
   "journeys": [
     {
@@ -300,6 +300,85 @@
       "requires": [
         "TRC-R-COLLAB-AUTH",
         "TRC-R-COLLAB-CONFLICT"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-06",
+      "name": "Use equivalent secure machine interfaces",
+      "actor": "operator_or_agent",
+      "outcome": "Use supported machine surfaces with semantic parity, bounded pagination/version discovery and enforced authority against untrusted content.",
+      "requires": [
+        "TRC-R-API-PARITY",
+        "TRC-R-API-PAGE",
+        "TRC-R-API-IDEMP",
+        "TRC-R-API-VERSION",
+        "TRC-R-API-DISCOVER",
+        "TRC-R-SEC-TENANT",
+        "TRC-R-SEC-SECRET",
+        "TRC-R-SEC-UNTRUST",
+        "TRC-R-SEC-REDACT"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-07",
+      "name": "Recover canonical truth across failure and concurrency",
+      "actor": "operator_or_agent",
+      "outcome": "Perform canonical changes, concurrency/conflict, crash/restart and backup/restore while preserving coherent accepted history.",
+      "requires": [
+        "TRC-R-PERSIST-TXN",
+        "TRC-R-PERSIST-CONCUR",
+        "TRC-R-PERSIST-BACKUP",
+        "TRC-R-PERSIST-CRASH"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-08",
+      "name": "Operate at scale without semantic degradation",
+      "actor": "operator_or_agent",
+      "outcome": "Use large product graphs/inventories under benchmarked scale, explicit partiality and stable continuation without false absence.",
+      "requires": [
+        "TRC-R-PERF-TRUTH",
+        "TRC-R-PERF-BENCH",
+        "TRC-R-PERF-DEGRADE",
+        "TRC-R-PERF-DETERMINISM"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-09",
+      "name": "Use optional integrations without coupling core truth",
+      "actor": "operator_or_agent",
+      "outcome": "Enable/disable/fail external adapters while preserving local truth and source provenance.",
+      "requires": [
+        "TRC-R-EXT-REPLACE",
+        "TRC-R-EXT-FAIL",
+        "TRC-R-EXT-PROV"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-10",
+      "name": "Federate work and registry projections without authority inversion",
+      "actor": "operator_or_agent",
+      "outcome": "Exchange versioned AgilePlus evidence and PhenoRegistry summaries while repo-local Tracera remains product authority.",
+      "requires": [
+        "TRC-R-FED-VERSION",
+        "TRC-R-FED-FAIL",
+        "TRC-R-REG-REV",
+        "TRC-R-REG-NOAUTH"
       ],
       "stages": [
         "MATURE"
