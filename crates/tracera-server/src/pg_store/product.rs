@@ -38,6 +38,26 @@ impl ProductPersistence for PgStore {
         members: &[(String, String)],
     ) -> Result<(), ProductPersistenceError> {
         let mut tx = self.pool.begin().await.map_err(backend)?;
+        for (entity_id, revision_id) in members {
+            let valid: Option<i64> = sqlx::query_scalar(
+                "SELECT 1
+                 FROM product_entities_v1 e
+                 JOIN product_entity_revisions_v1 r ON r.entity_id = e.entity_id
+                 WHERE e.entity_id=$1 AND e.product_id=$2 AND r.entity_revision_id=$3"
+            )
+            .bind(entity_id)
+            .bind(&b.product_id)
+            .bind(revision_id)
+            .fetch_optional(&mut *tx)
+            .await
+            .map_err(backend)?;
+            if valid.is_none() {
+                return Err(ProductPersistenceError::Invalid(format!(
+                    "baseline {} cannot include entity {} revision {} outside product {} or with mismatched revision ownership",
+                    b.baseline_id, entity_id, revision_id, b.product_id
+                )));
+            }
+        }
         sqlx::query("INSERT INTO product_baselines_v1 (baseline_id,product_id,revision_number,parent_baseline_id,accepted_at,metadata) VALUES ($1,$2,$3,$4,$5,$6)")
             .bind(&b.baseline_id).bind(&b.product_id).bind(b.revision_number).bind(&b.parent_baseline_id).bind(b.accepted_at).bind(&b.metadata)
             .execute(&mut *tx).await.map_err(backend)?;
