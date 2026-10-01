@@ -330,6 +330,39 @@ impl ProductPersistence for SqliteStore {
         &self,
         d: &EvidenceReuseDecision,
     ) -> Result<(), ProductPersistenceError> {
+        let scopes: Option<(String, String)> = sqlx::query_as(
+            "SELECT o.product_id, b.product_id
+             FROM product_observations_v1 o
+             JOIN product_baselines_v1 b ON b.baseline_id=?2
+             WHERE o.observation_id=?1",
+        )
+        .bind(&d.observation_id)
+        .bind(&d.target_baseline_id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(backend)?;
+
+        match scopes {
+            Some((observation_product, target_product))
+                if observation_product == target_product => {}
+            Some((observation_product, target_product)) => {
+                return Err(ProductPersistenceError::Invalid(format!(
+                    "reuse decision {} cannot bind observation {} from product {} to baseline {} from product {}",
+                    d.reuse_decision_id,
+                    d.observation_id,
+                    observation_product,
+                    d.target_baseline_id,
+                    target_product
+                )));
+            }
+            None => {
+                return Err(ProductPersistenceError::Invalid(format!(
+                    "reuse decision {} references missing observation {} or target baseline {}",
+                    d.reuse_decision_id, d.observation_id, d.target_baseline_id
+                )));
+            }
+        }
+
         sqlx::query("INSERT INTO evidence_reuse_decisions_v1 (reuse_decision_id,observation_id,target_baseline_id,target_candidate_ref,criterion_ref,applicability_state,compatibility_certificate_ref,policy_version,reason,decided_at) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)")
             .bind(&d.reuse_decision_id).bind(&d.observation_id).bind(&d.target_baseline_id).bind(&d.target_candidate_ref).bind(&d.criterion_ref).bind(&d.applicability_state).bind(&d.compatibility_certificate_ref).bind(&d.policy_version).bind(&d.reason).bind(ts_to_str(d.decided_at))
             .execute(&self.pool).await.map_err(backend)?;
