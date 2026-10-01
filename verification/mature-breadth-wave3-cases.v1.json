@@ -1,0 +1,388 @@
+{
+  "schema_version": "0.1.0",
+  "product_id": "PRD-TRACERA",
+  "status": "specified_not_executed",
+  "scope": "mature_breadth_wave_3",
+  "cases": [
+    {
+      "id": "TRC-MVC3-001",
+      "requirement_id": "TRC-R-CHANGE-PROPOSE",
+      "title": "Product changes begin as proposals",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Human/agent product changes are represented as proposals/deltas before accepted-state mutation.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Product changes begin as proposals' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-002",
+      "requirement_id": "TRC-R-CHANGE-REVIEW",
+      "title": "Material product changes expose review rationale",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Acceptance/rejection records actor/authority, rationale and affected baseline/scope for material changes.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Material product changes expose review rationale' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-003",
+      "requirement_id": "TRC-R-CHANGE-COMPARE",
+      "title": "Baseline comparison is semantic",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Users/agents can compare accepted baselines by added/changed/retired entities/obligations/relations, not only raw storage diffs.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Baseline comparison is semantic' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-004",
+      "requirement_id": "TRC-R-CHANGE-ROLLBACK",
+      "title": "Rollback creates explicit historical state",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Rollback/reversion preserves the intervening accepted history and produces an explicit later baseline rather than rewriting history.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Revert to earlier semantics; history must show a new accepted baseline rather than deleting intervening baselines.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-005",
+      "requirement_id": "TRC-R-PLM-MILESTONE",
+      "title": "Milestones/releases project product state",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Milestone/release records reference exact product baseline/configuration and may aggregate readiness without becoming independent truth.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Milestones/releases project product state' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-006",
+      "requirement_id": "TRC-R-PLM-DEPRECATE",
+      "title": "Deprecation and replacement are explicit",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Deprecated product entities/capabilities identify status, replacement/supersession and effectivity where applicable.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Deprecation and replacement are explicit' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-007",
+      "requirement_id": "TRC-R-JOURNEY-VERSION",
+      "title": "Journey revisions preserve historical meaning",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Changing journey steps/outcomes/requirements creates explicit revision/supersession semantics so prior evidence remains interpretable.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Journey revisions preserve historical meaning' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-008",
+      "requirement_id": "TRC-R-JOURNEY-FAIL",
+      "title": "Journey failure and recovery are modeled",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Required journeys can declare failure/recovery branches and terminal non-success rather than only happy-path steps.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Journey failure and recovery are modeled' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-009",
+      "requirement_id": "TRC-R-JOURNEY-CONFIG",
+      "title": "Journey applicability is configuration-bound",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Journey closure is assessed against the exact applicable product version/variant/configuration.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Journey applicability is configuration-bound' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-010",
+      "requirement_id": "TRC-R-UX-PRODUCT",
+      "title": "Product selection never silently changes scope",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Human navigation keeps the selected product/project/configuration explicit and cannot silently fall back to another product's data.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Navigate from product A into a view with missing query state; data must not silently switch to product B.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-011",
+      "requirement_id": "TRC-R-UX-INVENTORY",
+      "title": "Complete inventory has explicit completeness semantics",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Human inventory views expose whether the selected product/entity set is complete, filtered, paginated or partial.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Show first page/filtered subset; interface must not label it complete inventory.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-012",
+      "requirement_id": "TRC-R-UX-DETAIL",
+      "title": "Entity detail explains canonical context",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Detail views expose canonical identity/type/baseline/applicability and relevant relations/evidence/findings sufficient to orient the user.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Entity detail explains canonical context' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-013",
+      "requirement_id": "TRC-R-UX-REL",
+      "title": "Relationship editing respects typed semantics and authority",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Human relationship creation/change validates relation type/endpoints/authority and preserves history where accepted truth changes.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Relationship editing respects typed semantics and authority' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-014",
+      "requirement_id": "TRC-R-UX-SEARCH",
+      "title": "Search results preserve scope and canonical identity",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Search identifies product/baseline/entity context and cannot merge same-named entities across products/configurations.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Search results preserve scope and canonical identity' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-015",
+      "requirement_id": "TRC-R-MEM-FRESH",
+      "title": "Derived knowledge has freshness/applicability",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Memory/recommendation/derived knowledge can become stale or invalid for a later baseline/configuration and this is explicit.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Derived knowledge has freshness/applicability' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-016",
+      "requirement_id": "TRC-R-MEM-CONFLICT",
+      "title": "Derived knowledge conflicts are represented",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Conflicting derived claims preserve sources/confidence and cannot silently select the more convenient claim as truth.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Provide two conflicting derived claims; neither becomes accepted truth by last-write/highest-confidence alone.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-017",
+      "requirement_id": "TRC-R-MEM-REPRO",
+      "title": "Derived intelligence is reproducibly attributable",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "Where practical, derived findings retain method/model/version/inputs sufficient to explain or re-run the derivation.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Derived intelligence is reproducibly attributable' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-018",
+      "requirement_id": "TRC-R-RECOVERY-QUALITY",
+      "title": "Recovery quality is independently graded",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "A recovered product reports whether intent, requirements, journeys, implementation mapping, evidence and historical rationale are recoverable, separate from runtime feature completion.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Construct a counterexample to 'Recovery quality is independently graded' and verify the defect remains explicit rather than being hidden by adjacent healthy state.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-019",
+      "requirement_id": "TRC-R-RECOVERY-FRESH",
+      "title": "Fresh-agent recovery is an oracle",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "A fresh authorized agent can locate canonical thesis, contract, decisions, journeys, current state and blockers without owner replay or treating stale docs as authority.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Give a fresh agent only canonical repository entrypoints; it must identify current authority and stale/proposed docs without owner replay.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    },
+    {
+      "id": "TRC-MVC3-020",
+      "requirement_id": "TRC-R-EXT-VALID",
+      "title": "External validation remains separate",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted product/baseline/configuration fixture",
+        "authorized actor where mutation applies"
+      ],
+      "stimulus": "User/adoption/external validation evidence is represented separately from internal implementation/evidence completion and is never fabricated when absent.",
+      "expected": "The stated lifecycle/UX/knowledge/recovery obligation is observably preserved.",
+      "adversarial": "Provide complete internal verification but no external users; external validation must remain unknown/absent.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "actor/authority or derivation method as applicable",
+        "raw observable/result",
+        "verifier identity/version"
+      ]
+    }
+  ]
+}
