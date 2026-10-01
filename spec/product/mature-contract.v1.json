@@ -1,30 +1,44 @@
 {
-  "schema_version": "1.1.0",
-  "record_type": "invalidated_contract_manifest",
+  "schema_version": "2.0.0",
+  "record_type": "mature_contract_recovery_manifest",
   "product_id": "PRD-TRACERA",
   "canonical_name": "Tracera",
-  "repository": "KooshaPari/Tracera",
-  "status": "invalidated_requires_source_backed_replacement",
-  "accepted": false,
-  "grading_eligible": false,
-  "test_generation_ready": false,
+  "status": "accepted_spine_broader_mature_decomposition_in_progress",
+  "accepted": true,
+  "mature_complete": false,
+  "grading_eligible_for_spine": true,
+  "grading_eligible_for_full_mature_contract": false,
   "requirement_count_policy": "derived_only_no_target_floor_ceiling_or_range",
-  "rejection_reason": "The previous generator multiplied 25 domains by 8 features by 5 generic dimensions. Its 1000 rows were not independently derived atomic functional requirements. Stage assignments used feature array positions. Generic oracle text and reserved test IDs did not make the records test-generation ready.",
-  "rejected_artifact": {
-    "commit": "ba8f5d8ba845ee5b2b14b30ba947b9c56ef73947",
-    "path": "spec/product/mature-contract.v1.json",
-    "claimed_baseline": "TRC-MATURE-V1",
-    "generated_id_range": ["TRC-FR-0001", "TRC-FR-1000"],
-    "disposition": "retained_in_git_history_for_audit_not_a_product_baseline",
-    "id_policy": "Do not silently reuse these generated IDs; explicitly map any salvageable statement after semantic review. Source-native requirement IDs are unaffected."
+  "canonical_spine": {
+    "requirement_files": [
+      "spec/product/requirements/01-product-truth.json",
+      "spec/product/requirements/02-graph-knowledge.json",
+      "spec/product/requirements/03-boundaries-proof-runtime.json",
+      "spec/product/requirements/04-grading-stages.json"
+    ],
+    "derived_requirement_count": 45
   },
-  "current_contract": null,
-  "requirements": [],
-  "stage_projections": [],
-  "catalogued_requirement_count": null,
-  "empty_inventory_semantics": "invalidated_catalog_not_zero_product_scope_and_never_100_percent",
-  "governing_method": "governance/COUNT_INDEPENDENT_SPECIFICATION.md",
-  "coverage_review_status": "incomplete",
-  "test_generation": "deferred_by_user",
-  "runtime_verification": "not_performed"
+  "journeys": {
+    "path": "spec/product/journeys.semantic.v1.json",
+    "status": "accepted_spine_journeys",
+    "count": 11
+  },
+  "verification": {
+    "path": "verification/spine-verification-cases.v1.json",
+    "status": "specified_not_executed",
+    "case_count": 45
+  },
+  "mature_domain_denominator": "spec/product/MATURE_DOMAIN_COVERAGE_MAP.md",
+  "historical_recovery": [
+    "spec/product/recovery/HISTORICAL_JOURNEY_MANIFEST.md",
+    "spec/product/recovery/HISTORICAL_PRODUCT_SURFACE_DISPOSITION.md",
+    "spec/product/recovery/JAN30_FEB06_REGRESSION_FORENSICS.md"
+  ],
+  "specification_acceptance": "verification/SPECIFICATION_ACCEPTANCE_CONTRACT.md",
+  "finality_ledger": "spec/product/NON_CODE_FINALITY_LEDGER.md",
+  "invalidated_predecessor": {
+    "commit": "ba8f5d8ba845ee5b2b14b30ba947b9c56ef73947",
+    "reason": "quota-shaped generated 1000-row catalogue"
+  },
+  "closure_rule": "Full mature acceptance requires every mature-domain row decomposed/N-A/deferred-mature with atomic obligations, journey/oracle bindings, source-ledger closure and specification acceptance."
 }
