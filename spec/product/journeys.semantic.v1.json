@@ -1,6 +1,6 @@
 {
-  "schema_version": "0.4.1",
-  "status": "accepted_spine_and_mature_breadth_waves_1_2",
+  "schema_version": "0.5.0",
+  "status": "accepted_mature_semantic_journeys",
   "product_id": "PRD-TRACERA",
   "journeys": [
     {
@@ -380,6 +380,81 @@
         "TRC-R-FED-FAIL",
         "TRC-R-REG-REV",
         "TRC-R-REG-NOAUTH"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-11",
+      "name": "Govern product change and lifecycle history",
+      "actor": "operator_or_agent",
+      "outcome": "Propose/review/accept/compare/revert product changes and project them into milestones/releases/deprecations without rewriting history.",
+      "requires": [
+        "TRC-R-CHANGE-PROPOSE",
+        "TRC-R-CHANGE-REVIEW",
+        "TRC-R-CHANGE-COMPARE",
+        "TRC-R-CHANGE-ROLLBACK",
+        "TRC-R-PLM-MILESTONE",
+        "TRC-R-PLM-DEPRECATE"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-12",
+      "name": "Use versioned configuration-bound product journeys",
+      "actor": "operator_or_agent",
+      "outcome": "Author/revise a journey with failure/recovery and assess closure against an exact applicable product configuration.",
+      "requires": [
+        "TRC-R-JOURNEY-VERSION",
+        "TRC-R-JOURNEY-FAIL",
+        "TRC-R-JOURNEY-CONFIG"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-13",
+      "name": "Navigate the human product surface without losing scope",
+      "actor": "operator_or_agent",
+      "outcome": "Select a product, inspect inventory/search/detail/relations, and retain explicit canonical scope/completeness/authority.",
+      "requires": [
+        "TRC-R-UX-PRODUCT",
+        "TRC-R-UX-INVENTORY",
+        "TRC-R-UX-DETAIL",
+        "TRC-R-UX-REL",
+        "TRC-R-UX-SEARCH"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-14",
+      "name": "Use derived knowledge without confusing it with truth",
+      "actor": "operator_or_agent",
+      "outcome": "Inspect stale/conflicting/reproducibly attributable derived knowledge and keep accepted intent unchanged.",
+      "requires": [
+        "TRC-R-MEM-FRESH",
+        "TRC-R-MEM-CONFLICT",
+        "TRC-R-MEM-REPRO"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-15",
+      "name": "Recover and externally validate product state honestly",
+      "actor": "operator_or_agent",
+      "outcome": "A fresh agent recovers canonical product memory and reports recovery/external-validation dimensions separately from implementation completion.",
+      "requires": [
+        "TRC-R-RECOVERY-QUALITY",
+        "TRC-R-RECOVERY-FRESH",
+        "TRC-R-EXT-VALID"
       ],
       "stages": [
         "MATURE"
