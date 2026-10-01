@@ -62,7 +62,7 @@ impl ProductPersistence for SqliteStore {
 
         let product_exists: Option<i64> = sqlx::query_scalar(
             "SELECT 1 FROM product_nodes
-             WHERE id=?1 AND product_id=?1 AND intent_kind='product'"
+             WHERE id=?1 AND product_id=?1 AND intent_kind='product'",
         )
         .bind(&baseline.product_id)
         .fetch_optional(&mut *tx)
@@ -77,7 +77,7 @@ impl ProductPersistence for SqliteStore {
 
         if let Some(parent_id) = &baseline.parent_baseline_id {
             let parent_product: Option<String> = sqlx::query_scalar(
-                "SELECT product_id FROM product_baselines_v1 WHERE baseline_id=?1"
+                "SELECT product_id FROM product_baselines_v1 WHERE baseline_id=?1",
             )
             .bind(parent_id)
             .fetch_optional(&mut *tx)
@@ -105,7 +105,7 @@ impl ProductPersistence for SqliteStore {
                 "SELECT 1
                  FROM product_entities_v1 e
                  JOIN product_entity_revisions_v1 r ON r.entity_id = e.entity_id
-                 WHERE e.entity_id=?1 AND e.product_id=?2 AND r.entity_revision_id=?3"
+                 WHERE e.entity_id=?1 AND e.product_id=?2 AND r.entity_revision_id=?3",
             )
             .bind(entity_id)
             .bind(&baseline.product_id)
@@ -169,7 +169,7 @@ impl ProductPersistence for SqliteStore {
     async fn create_entity(&self, entity: &PersistedEntity) -> Result<(), ProductPersistenceError> {
         let product_exists: Option<i64> = sqlx::query_scalar(
             "SELECT 1 FROM product_nodes
-             WHERE id=?1 AND product_id=?1 AND intent_kind='product'"
+             WHERE id=?1 AND product_id=?1 AND intent_kind='product'",
         )
         .bind(&entity.product_id)
         .fetch_optional(&self.pool)
@@ -239,13 +239,12 @@ impl ProductPersistence for SqliteStore {
         &self,
         o: &PersistedObservation,
     ) -> Result<(), ProductPersistenceError> {
-        let baseline_product: Option<String> = sqlx::query_scalar(
-            "SELECT product_id FROM product_baselines_v1 WHERE baseline_id=?1"
-        )
-        .bind(&o.baseline_id)
-        .fetch_optional(&self.pool)
-        .await
-        .map_err(backend)?;
+        let baseline_product: Option<String> =
+            sqlx::query_scalar("SELECT product_id FROM product_baselines_v1 WHERE baseline_id=?1")
+                .bind(&o.baseline_id)
+                .fetch_optional(&self.pool)
+                .await
+                .map_err(backend)?;
         match baseline_product {
             Some(product_id) if product_id == o.product_id => {}
             Some(product_id) => {
@@ -263,13 +262,12 @@ impl ProductPersistence for SqliteStore {
         }
 
         if let Some(subject_entity_id) = &o.subject_entity_id {
-            let subject_product: Option<String> = sqlx::query_scalar(
-                "SELECT product_id FROM product_entities_v1 WHERE entity_id=?1"
-            )
-            .bind(subject_entity_id)
-            .fetch_optional(&self.pool)
-            .await
-            .map_err(backend)?;
+            let subject_product: Option<String> =
+                sqlx::query_scalar("SELECT product_id FROM product_entities_v1 WHERE entity_id=?1")
+                    .bind(subject_entity_id)
+                    .fetch_optional(&self.pool)
+                    .await
+                    .map_err(backend)?;
             if subject_product.as_deref() != Some(o.product_id.as_str()) {
                 return Err(ProductPersistenceError::Invalid(format!(
                     "observation {} subject entity {} is missing or outside product {}",

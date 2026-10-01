@@ -210,7 +210,10 @@ async fn product_persistence_port_roundtrip_preserves_history_and_invalidation()
     ProductPersistence::accept_baseline(
         &store,
         &baseline,
-        &[(entity.entity_id.clone(), revision.entity_revision_id.clone())],
+        &[(
+            entity.entity_id.clone(),
+            revision.entity_revision_id.clone(),
+        )],
     )
     .await
     .expect("accept baseline");
@@ -373,7 +376,10 @@ async fn product_persistence_rejects_cross_product_baseline_membership_atomicall
     .await
     .expect_err("cross-product membership must fail");
     assert!(
-        matches!(err, tracera_server::product::ProductPersistenceError::Invalid(_)),
+        matches!(
+            err,
+            tracera_server::product::ProductPersistenceError::Invalid(_)
+        ),
         "expected invalid membership error, got {err:?}"
     );
 
