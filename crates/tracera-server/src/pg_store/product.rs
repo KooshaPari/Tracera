@@ -40,7 +40,7 @@ impl ProductPersistence for PgStore {
         let mut tx = self.pool.begin().await.map_err(backend)?;
         for (entity_id, revision_id) in members {
             let valid: Option<i64> = sqlx::query_scalar(
-                "SELECT 1
+                "SELECT 1::BIGINT
                  FROM product_entities_v1 e
                  JOIN product_entity_revisions_v1 r ON r.entity_id = e.entity_id
                  WHERE e.entity_id=$1 AND e.product_id=$2 AND r.entity_revision_id=$3"
