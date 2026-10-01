@@ -11,6 +11,10 @@ use sqlx::{
     SqlitePool,
 };
 
+use tracera_server::product::{
+    EvidenceReuseDecision, InvalidationEvent, PersistedBaseline, PersistedEntity,
+    PersistedEntityRevision, PersistedObservation, PersistedProduct, ProductPersistence,
+};
 use tracera_server::sqlite_store::SqliteStore;
 use tracera_server::store::Store;
 
@@ -149,6 +153,163 @@ async fn sprint_roundtrip() {
     let sprints = store.list_sprints().await.expect("list sprints");
     assert_eq!(sprints.len(), 1);
     assert_eq!(sprints[0].name, "Sprint 1");
+}
+
+#[tokio::test]
+async fn product_persistence_port_roundtrip_preserves_history_and_invalidation() {
+    let store = mem_store().await;
+    let t = now();
+
+    let product = PersistedProduct {
+        product_id: "port-product".into(),
+        display_name: "Port Product".into(),
+        created_at: t,
+    };
+    ProductPersistence::create_product(&store, &product)
+        .await
+        .expect("create product");
+    let got = ProductPersistence::get_product(&store, "port-product")
+        .await
+        .expect("get product")
+        .expect("product exists");
+    assert_eq!(got, product);
+
+    let entity = PersistedEntity {
+        entity_id: "port-entity-search".into(),
+        product_id: product.product_id.clone(),
+        local_id: "search".into(),
+        entity_kind: "capability".into(),
+        created_at: t,
+    };
+    ProductPersistence::create_entity(&store, &entity)
+        .await
+        .expect("create entity");
+
+    let revision = PersistedEntityRevision {
+        entity_revision_id: "port-entity-search-r1".into(),
+        entity_id: entity.entity_id.clone(),
+        content_revision: 1,
+        title: "Search".into(),
+        description: "Accepted search capability".into(),
+        status: "accepted".into(),
+        metadata: json!({"source":"test"}),
+        created_at: t,
+    };
+    ProductPersistence::append_entity_revision(&store, &revision)
+        .await
+        .expect("append revision");
+
+    let baseline = PersistedBaseline {
+        baseline_id: "port-b1".into(),
+        product_id: product.product_id.clone(),
+        revision_number: 1,
+        parent_baseline_id: None,
+        accepted_at: t,
+        metadata: json!({"stage":"test"}),
+    };
+    ProductPersistence::accept_baseline(
+        &store,
+        &baseline,
+        &[(entity.entity_id.clone(), revision.entity_revision_id.clone())],
+    )
+    .await
+    .expect("accept baseline");
+
+    let members = ProductPersistence::list_baseline_entities(
+        &store,
+        &product.product_id,
+        &baseline.baseline_id,
+        10,
+    )
+    .await
+    .expect("list members");
+    assert_eq!(members, vec![revision.clone()]);
+
+    let observation = PersistedObservation {
+        observation_id: "port-o1".into(),
+        product_id: product.product_id.clone(),
+        baseline_id: baseline.baseline_id.clone(),
+        subject_entity_id: Some(entity.entity_id.clone()),
+        subject_local_id: Some(entity.local_id.clone()),
+        candidate_ref: "git:abc".into(),
+        configuration: json!({"platform":"test"}),
+        result: "passed".into(),
+        verifier_id: "suite".into(),
+        verifier_version: "1".into(),
+        recorded_at: t,
+        raw_evidence_ref: Some("artifact:test".into()),
+        metadata: json!({}),
+    };
+    ProductPersistence::append_observation(&store, &observation)
+        .await
+        .expect("append observation");
+
+    let observations = ProductPersistence::list_observations(
+        &store,
+        &product.product_id,
+        &baseline.baseline_id,
+        Some("search"),
+        10,
+    )
+    .await
+    .expect("list observations");
+    assert_eq!(observations, vec![observation.clone()]);
+
+    let reuse = EvidenceReuseDecision {
+        reuse_decision_id: "port-r1".into(),
+        observation_id: observation.observation_id.clone(),
+        target_baseline_id: baseline.baseline_id.clone(),
+        target_candidate_ref: "git:def".into(),
+        criterion_ref: "search-compatible".into(),
+        applicability_state: "current_valid".into(),
+        compatibility_certificate_ref: Some("cert:1".into()),
+        policy_version: "reuse-v1".into(),
+        reason: "compatible".into(),
+        decided_at: t,
+    };
+    ProductPersistence::append_reuse_decision(&store, &reuse)
+        .await
+        .expect("append reuse");
+
+    let invalidation = InvalidationEvent {
+        invalidation_id: "port-i1".into(),
+        trigger_kind: "certificate_revoked".into(),
+        trigger_ref: "cert:1".into(),
+        target_kind: "reuse_decision".into(),
+        target_ref: reuse.reuse_decision_id.clone(),
+        prior_state: Some("current_valid".into()),
+        new_state: "suspect".into(),
+        reason: "certificate revoked".into(),
+        occurred_at: t,
+    };
+    ProductPersistence::append_invalidation(&store, &invalidation)
+        .await
+        .expect("append invalidation");
+
+    let invalidations = ProductPersistence::list_invalidations(
+        &store,
+        "reuse_decision",
+        &reuse.reuse_decision_id,
+        10,
+    )
+    .await
+    .expect("list invalidations");
+    assert_eq!(invalidations, vec![invalidation]);
+
+    let observations_after = ProductPersistence::list_observations(
+        &store,
+        &product.product_id,
+        &baseline.baseline_id,
+        Some("search"),
+        10,
+    )
+    .await
+    .expect("list observations after invalidation");
+    assert_eq!(
+        observations_after,
+        vec![observation],
+        "invalidation must not delete historical observation"
+    );
 }
 
 #[tokio::test]
