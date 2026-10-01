@@ -126,6 +126,21 @@ impl ProductPersistence for PgStore {
         }))
     }
     async fn create_entity(&self, e: &PersistedEntity) -> Result<(), ProductPersistenceError> {
+        let product_exists: Option<i64> = sqlx::query_scalar(
+            "SELECT 1::BIGINT FROM product_nodes
+             WHERE id=$1 AND product_id=$1 AND intent_kind='product'"
+        )
+        .bind(&e.product_id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(backend)?;
+        if product_exists.is_none() {
+            return Err(ProductPersistenceError::Invalid(format!(
+                "entity {} references unknown product {}",
+                e.entity_id, e.product_id
+            )));
+        }
+
         sqlx::query("INSERT INTO product_entities_v1 (entity_id,product_id,local_id,entity_kind,created_at) VALUES ($1,$2,$3,$4,$5)")
             .bind(&e.entity_id).bind(&e.product_id).bind(&e.local_id).bind(&e.entity_kind).bind(e.created_at).execute(&self.pool).await.map_err(backend)?;
         Ok(())
