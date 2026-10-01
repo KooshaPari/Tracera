@@ -18,7 +18,7 @@
 | Mature-first/count-independent doctrine | CLOSED | governance documents |
 | Durable memory doctrine | CLOSED | layered dossier policy |
 | Git/history preservation doctrine | CLOSED | recovery/forensic policy |
-| Source coverage denominator | PARTIAL | SOURCE_COVERAGE_LEDGER still contains historical/current implementation sources needing final normative classification; this is documentation/source-audit debt, not unresolved core product semantics |
+| Source coverage denominator | CLOSED | SOURCE_COVERAGE_LEDGER semantic review resolved; runtime evidence remains separate |
 | Spine requirements | CLOSED | 45 source-backed atomic requirements |
 | Spine journey bindings | CLOSED | all 45 bound after deterministic-assessment correction |
 | Spine oracle design | CLOSED | 45 machine-readable positive/adversarial verification cases |
@@ -41,12 +41,9 @@
 
 The mature **semantic** contract is now closed across the domain denominator, with every accepted requirement bound to a journey and a concrete non-runtime oracle design.
 
-Absolute repository non-code finality still requires:
-1. final source-ledger normative classification of remaining historical/current implementation sources;
-2. fresh-context documentation authority cleanup so stale implementation-era docs cannot masquerade as current product authority;
-3. optional finer feature/UI/API behavioral contracts as source archaeology reveals independently gradable obligations.
+The defined non-code semantic/recovery layers are now closed: mature-domain decomposition, source disposition, authority ordering, journeys, oracle designs and runtime evidence handoff are explicit.
 
-These remaining tasks may increase the natural requirement denominator. They must not be filled by quota or generic dimensions.
+Future archaeology may still reveal genuinely independent product behavior and expand the natural denominator through an accepted contract revision. That is normal specification evolution, not a current known non-code blocker. Remaining known gates require implementation/runtime/external evidence.
 
 ## Forbidden closure shortcuts
 
