@@ -59,6 +59,47 @@ impl ProductPersistence for SqliteStore {
         members: &[(String, String)],
     ) -> Result<(), ProductPersistenceError> {
         let mut tx = self.pool.begin().await.map_err(backend)?;
+
+        let product_exists: Option<i64> = sqlx::query_scalar(
+            "SELECT 1 FROM product_nodes
+             WHERE id=?1 AND product_id=?1 AND intent_kind='product'"
+        )
+        .bind(&baseline.product_id)
+        .fetch_optional(&mut *tx)
+        .await
+        .map_err(backend)?;
+        if product_exists.is_none() {
+            return Err(ProductPersistenceError::Invalid(format!(
+                "baseline {} references unknown product {}",
+                baseline.baseline_id, baseline.product_id
+            )));
+        }
+
+        if let Some(parent_id) = &baseline.parent_baseline_id {
+            let parent_product: Option<String> = sqlx::query_scalar(
+                "SELECT product_id FROM product_baselines_v1 WHERE baseline_id=?1"
+            )
+            .bind(parent_id)
+            .fetch_optional(&mut *tx)
+            .await
+            .map_err(backend)?;
+            match parent_product {
+                Some(parent_product) if parent_product == baseline.product_id => {}
+                Some(parent_product) => {
+                    return Err(ProductPersistenceError::Invalid(format!(
+                        "baseline {} for product {} cannot parent baseline {} from product {}",
+                        baseline.baseline_id, baseline.product_id, parent_id, parent_product
+                    )));
+                }
+                None => {
+                    return Err(ProductPersistenceError::Invalid(format!(
+                        "baseline {} references missing parent baseline {}",
+                        baseline.baseline_id, parent_id
+                    )));
+                }
+            }
+        }
+
         for (entity_id, revision_id) in members {
             let valid: Option<i64> = sqlx::query_scalar(
                 "SELECT 1
@@ -183,6 +224,45 @@ impl ProductPersistence for SqliteStore {
         &self,
         o: &PersistedObservation,
     ) -> Result<(), ProductPersistenceError> {
+        let baseline_product: Option<String> = sqlx::query_scalar(
+            "SELECT product_id FROM product_baselines_v1 WHERE baseline_id=?1"
+        )
+        .bind(&o.baseline_id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(backend)?;
+        match baseline_product {
+            Some(product_id) if product_id == o.product_id => {}
+            Some(product_id) => {
+                return Err(ProductPersistenceError::Invalid(format!(
+                    "observation {} claims product {} but baseline {} belongs to {}",
+                    o.observation_id, o.product_id, o.baseline_id, product_id
+                )));
+            }
+            None => {
+                return Err(ProductPersistenceError::Invalid(format!(
+                    "observation {} references missing baseline {}",
+                    o.observation_id, o.baseline_id
+                )));
+            }
+        }
+
+        if let Some(subject_entity_id) = &o.subject_entity_id {
+            let subject_product: Option<String> = sqlx::query_scalar(
+                "SELECT product_id FROM product_entities_v1 WHERE entity_id=?1"
+            )
+            .bind(subject_entity_id)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(backend)?;
+            if subject_product.as_deref() != Some(o.product_id.as_str()) {
+                return Err(ProductPersistenceError::Invalid(format!(
+                    "observation {} subject entity {} is missing or outside product {}",
+                    o.observation_id, subject_entity_id, o.product_id
+                )));
+            }
+        }
+
         sqlx::query(
             "INSERT INTO product_observations_v1
              (observation_id,product_id,baseline_id,subject_entity_id,subject_local_id,candidate_ref,configuration,result,verifier_id,verifier_version,recorded_at,raw_evidence_ref,metadata)
