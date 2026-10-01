@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.4.0",
+  "schema_version": "0.4.1",
   "status": "accepted_spine_and_mature_breadth_waves_1_2",
   "product_id": "PRD-TRACERA",
   "journeys": [
@@ -223,7 +223,8 @@
         "TRC-R-PROJ-ADV",
         "TRC-R-PROJ-VIEW",
         "TRC-R-UI-DECOMP",
-        "TRC-R-PROCESS"
+        "TRC-R-PROCESS",
+        "TRC-R-JOURNEY-MODEL"
       ],
       "stages": [
         "MATURE"
