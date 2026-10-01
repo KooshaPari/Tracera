@@ -1,32 +1,28 @@
 {
-  "schema_version": "2.0.0",
+  "schema_version": "2.1.0",
   "record_type": "mature_contract_recovery_manifest",
   "product_id": "PRD-TRACERA",
   "canonical_name": "Tracera",
-  "status": "accepted_spine_broader_mature_decomposition_in_progress",
+  "status": "accepted_mature_semantic_contract_runtime_evidence_pending",
   "accepted": true,
   "mature_complete": false,
   "grading_eligible_for_spine": true,
   "grading_eligible_for_full_mature_contract": false,
   "requirement_count_policy": "derived_only_no_target_floor_ceiling_or_range",
-  "canonical_spine": {
-    "requirement_files": [
-      "spec/product/requirements/01-product-truth.json",
-      "spec/product/requirements/02-graph-knowledge.json",
-      "spec/product/requirements/03-boundaries-proof-runtime.json",
-      "spec/product/requirements/04-grading-stages.json"
-    ],
-    "derived_requirement_count": 45
-  },
   "journeys": {
     "path": "spec/product/journeys.semantic.v1.json",
-    "status": "accepted_spine_journeys",
-    "count": 11
+    "status": "accepted_mature_semantic_journeys",
+    "count": 26
   },
   "verification": {
-    "path": "verification/spine-verification-cases.v1.json",
+    "catalogues": [
+      "verification/spine-verification-cases.v1.json",
+      "verification/mature-breadth-wave1-cases.v1.json",
+      "verification/mature-breadth-wave2-cases.v1.json",
+      "verification/mature-breadth-wave3-cases.v1.json"
+    ],
     "status": "specified_not_executed",
-    "case_count": 45
+    "requirement_case_count": 120
   },
   "mature_domain_denominator": "spec/product/MATURE_DOMAIN_COVERAGE_MAP.md",
   "historical_recovery": [
@@ -40,5 +36,21 @@
     "commit": "ba8f5d8ba845ee5b2b14b30ba947b9c56ef73947",
     "reason": "quota-shaped generated 1000-row catalogue"
   },
-  "closure_rule": "Full mature acceptance requires every mature-domain row decomposed/N-A/deferred-mature with atomic obligations, journey/oracle bindings, source-ledger closure and specification acceptance."
+  "closure_rule": "Mature semantic specification accepted. Full product completion remains false until implementation/runtime evidence, historical parity witnesses and external validation are independently established. Newly recovered independently gradable behavior may expand the natural contract denominator through explicit accepted revisions.",
+  "mature_semantic_complete": true,
+  "grading_eligible_for_semantic_contract": true,
+  "grading_eligible_for_runtime_completion": false,
+  "canonical_contract": {
+    "requirement_files": [
+      "spec/product/requirements/01-product-truth.json",
+      "spec/product/requirements/02-graph-knowledge.json",
+      "spec/product/requirements/03-boundaries-proof-runtime.json",
+      "spec/product/requirements/04-grading-stages.json",
+      "spec/product/requirements/05-product-structure-projections-lifecycle.json",
+      "spec/product/requirements/06-interfaces-security-persistence-scale.json",
+      "spec/product/requirements/07-change-plm-journey-ux-memory-recovery.json"
+    ],
+    "derived_requirement_count": 120
+  },
+  "authority_index": "spec/product/AUTHORITY_INDEX.md"
 }
