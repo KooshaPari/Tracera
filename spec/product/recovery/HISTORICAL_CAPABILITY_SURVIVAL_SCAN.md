@@ -73,8 +73,8 @@ It does **not** yet prove that `27262fa4` alone was the sole first-bad transacti
 | UI perspective | `GraphViewConfig.ts` | SOURCE_PRESENT | UNKNOWN | UNKNOWN | UNKNOWN |
 | Security perspective | `GraphViewConfig.ts` | SOURCE_PRESENT | UNKNOWN | UNKNOWN | UNKNOWN |
 | Performance perspective | `GraphViewConfig.ts` | SOURCE_PRESENT | UNKNOWN | UNKNOWN | UNKNOWN |
-| Page decomposition | `PageDecompositionView.tsx` (~873 lines) | SOURCE_PRESENT | UNKNOWN | `PageDecompositionView.test.tsx` | UNKNOWN |
-| Journey exploration / derived journeys | `JourneyExplorer.tsx` (~871 lines), journeys API | SOURCE_PRESENT | ROUTE_PRESENT | unit + integration + E2E journey-overlay tests | UNKNOWN |
+| Page decomposition | `PageDecompositionView.tsx` (~873 lines) | SOURCE_PRESENT | **NO PRODUCTION IMPORT FOUND** | `PageDecompositionView.test.tsx` | UNKNOWN |
+| Journey exploration / derived journeys | `JourneyExplorer.tsx` (~871 lines), journeys API | SOURCE_PRESENT | **NO PRODUCTION IMPORT FOUND for JourneyExplorer**; `/journey` currently renders generic `ItemsTableView view="journey"` | unit + integration + E2E journey-overlay tests | UNKNOWN |
 | Problem model | problem migrations, server handlers/stores, form, hook, `ProblemView.tsx` | SOURCE_PRESENT | ROUTE_PRESENT | contract E2E YAMLs present | UNKNOWN |
 | Process model | process form/hooks, `ProcessView.tsx` | SOURCE_PRESENT | ROUTE_PRESENT | UNKNOWN | UNKNOWN |
 | Items table virtualization | wrapper + `items-table/ItemsTableViewImpl.tsx` | SOURCE_PRESENT | UNKNOWN | virtual + comprehensive + a11y tests | UNKNOWN |
@@ -156,7 +156,9 @@ Evidence:
 - project journey route;
 - unit, integration and E2E journey tests.
 
-Classification: **SOURCE_PRESENT / ROUTE_PRESENT / TEST_PRESENT / RUNTIME UNKNOWN**
+Classification: **SOURCE_PRESENT / TEST_PRESENT / CURRENT JourneyExplorer REACHABILITY GAP / RUNTIME UNKNOWN**
+
+The generic journey table route may be an intentional later projection, a partial replacement, or a regression. Product-intent archaeology must decide before changing it.
 
 ### R-EXECUTION
 Not yet assessed deeply in this scan.
@@ -183,7 +185,13 @@ For each Jan-30 user-visible capability, identify a current implementation surfa
 ### HG-02 — current route reachability
 For each source-present capability, prove there is an actual route/entry path where one is required.
 
-**State:** open.
+**State:** open, with concrete findings:
+- Problem and Process are explicitly mounted in the dynamic project-view route map.
+- Graph is mounted through the lazy project GraphView and reaches `UnifiedGraphView`.
+- `PageDecompositionView` has no production import in the current indexed tree; only its source and test were found.
+- `JourneyExplorer` has no production import in the current indexed tree. The current `/projects/$projectId/views/journey` route renders `ItemsTableView projectId={projectId} view="journey"`, not `JourneyExplorer`.
+
+The last two are **reachability gaps**, not yet proof that the underlying capabilities should be restored exactly as their historical components.
 
 ### HG-03 — behavior parity
 Exercise each historical journey against the current candidate and classify:
