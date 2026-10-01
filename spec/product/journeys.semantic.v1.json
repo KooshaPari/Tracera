@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.2.0",
+  "schema_version": "0.2.1",
   "status": "source_backed_in_progress",
   "product_id": "PRD-TRACERA",
   "journeys": [
@@ -32,6 +32,7 @@
         "TRC-R-OBS-PROVENANCE",
         "TRC-R-OBS-APPEND",
         "TRC-R-ASSESS-STATUS",
+        "TRC-R-ASSESS-DETERMINISTIC",
         "TRC-R-ASSESS-MISSING",
         "TRC-R-ASSESS-CONFLICT",
         "TRC-R-DETECT-FRESH",
