@@ -148,14 +148,11 @@ pub async fn execute_dependency_invalidation<P: ProductPersistence>(
         trigger_ref,
         target_kind,
     );
-    let mut persisted = 0;
-    for event in &plan.events {
-        persistence.append_invalidation(event).await?;
-        persisted += 1;
-    }
+    persistence.append_invalidations(&plan.events).await?;
+    let persisted_events = plan.events.len();
     Ok(PersistedInvalidationResult {
         plan,
-        persisted_events: persisted,
+        persisted_events,
     })
 }
 
@@ -165,13 +162,10 @@ pub async fn execute_certificate_revocation<P: ProductPersistence>(
     reuse_decision_ids: &[String],
 ) -> Result<PersistedInvalidationResult, ProductPersistenceError> {
     let plan = plan_certificate_revocation(certificate_ref, reuse_decision_ids);
-    let mut persisted = 0;
-    for event in &plan.events {
-        persistence.append_invalidation(event).await?;
-        persisted += 1;
-    }
+    persistence.append_invalidations(&plan.events).await?;
+    let persisted_events = plan.events.len();
     Ok(PersistedInvalidationResult {
         plan,
-        persisted_events: persisted,
+        persisted_events,
     })
 }

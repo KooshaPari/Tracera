@@ -483,6 +483,110 @@ async fn product_persistence_rejects_cross_product_evidence_reuse() {
 }
 
 #[tokio::test]
+async fn invalidation_batch_is_atomic_on_conflicting_replay() {
+    let store = mem_store().await;
+    let t = now();
+
+    let existing = InvalidationEvent {
+        invalidation_id: "batch-i2".into(),
+        trigger_kind: "dependency_changed".into(),
+        trigger_ref: "change:1".into(),
+        target_kind: "criterion".into(),
+        target_ref: "c2".into(),
+        prior_state: Some("current_valid".into()),
+        new_state: "suspect".into(),
+        reason: "existing".into(),
+        occurred_at: t,
+    };
+    ProductPersistence::append_invalidation(&store, &existing)
+        .await
+        .expect("seed existing invalidation");
+
+    let first = InvalidationEvent {
+        invalidation_id: "batch-i1".into(),
+        trigger_kind: "dependency_changed".into(),
+        trigger_ref: "change:1".into(),
+        target_kind: "criterion".into(),
+        target_ref: "c1".into(),
+        prior_state: Some("current_valid".into()),
+        new_state: "suspect".into(),
+        reason: "new".into(),
+        occurred_at: t,
+    };
+    let conflicting = InvalidationEvent {
+        reason: "different immutable content".into(),
+        ..existing.clone()
+    };
+
+    let err = ProductPersistence::append_invalidations(
+        &store,
+        &[first.clone(), conflicting],
+    )
+    .await
+    .expect_err("divergent replay must fail the whole batch");
+    assert!(matches!(
+        err,
+        tracera_server::product::ProductPersistenceError::Conflict(_)
+    ));
+
+    let first_count: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM invalidation_events_v1 WHERE invalidation_id='batch-i1'",
+    )
+    .fetch_one(&store.pool)
+    .await
+    .expect("count rolled-back event");
+    assert_eq!(
+        first_count, 0,
+        "earlier batch events must roll back when a later event conflicts"
+    );
+}
+
+#[tokio::test]
+async fn invalidation_batch_exact_replay_is_idempotent() {
+    let store = mem_store().await;
+    let t = now();
+    let events = vec![
+        InvalidationEvent {
+            invalidation_id: "retry-i1".into(),
+            trigger_kind: "dependency_changed".into(),
+            trigger_ref: "change:retry".into(),
+            target_kind: "criterion".into(),
+            target_ref: "c1".into(),
+            prior_state: Some("current_valid".into()),
+            new_state: "suspect".into(),
+            reason: "retry-safe".into(),
+            occurred_at: t,
+        },
+        InvalidationEvent {
+            invalidation_id: "retry-i2".into(),
+            trigger_kind: "dependency_changed".into(),
+            trigger_ref: "change:retry".into(),
+            target_kind: "criterion".into(),
+            target_ref: "c2".into(),
+            prior_state: Some("current_valid".into()),
+            new_state: "suspect".into(),
+            reason: "retry-safe".into(),
+            occurred_at: t,
+        },
+    ];
+
+    ProductPersistence::append_invalidations(&store, &events)
+        .await
+        .expect("first batch");
+    ProductPersistence::append_invalidations(&store, &events)
+        .await
+        .expect("exact replay");
+
+    let count: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM invalidation_events_v1 WHERE trigger_ref='change:retry'",
+    )
+    .fetch_one(&store.pool)
+    .await
+    .expect("count replay rows");
+    assert_eq!(count, 2, "exact retry must not duplicate invalidation history");
+}
+
+#[tokio::test]
 async fn product_persistence_rejects_cross_product_parent_and_observation_scope() {
     let store = mem_store().await;
     let t = now();

@@ -174,6 +174,13 @@ pub trait ProductPersistence: Send + Sync {
         event: &InvalidationEvent,
     ) -> impl std::future::Future<Output = Result<(), ProductPersistenceError>> + Send;
 
+    /// Persist an invalidation batch atomically. Exact replay is idempotent;
+    /// reusing an invalidation_id for different immutable content is a conflict.
+    fn append_invalidations(
+        &self,
+        events: &[InvalidationEvent],
+    ) -> impl std::future::Future<Output = Result<(), ProductPersistenceError>> + Send;
+
     fn list_invalidations(
         &self,
         target_kind: &str,

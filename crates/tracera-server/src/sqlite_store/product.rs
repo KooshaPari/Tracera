@@ -373,9 +373,62 @@ impl ProductPersistence for SqliteStore {
         &self,
         e: &InvalidationEvent,
     ) -> Result<(), ProductPersistenceError> {
-        sqlx::query("INSERT INTO invalidation_events_v1 (invalidation_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)")
-            .bind(&e.invalidation_id).bind(&e.trigger_kind).bind(&e.trigger_ref).bind(&e.target_kind).bind(&e.target_ref).bind(&e.prior_state).bind(&e.new_state).bind(&e.reason).bind(ts_to_str(e.occurred_at))
-            .execute(&self.pool).await.map_err(backend)?;
+        self.append_invalidations(std::slice::from_ref(e)).await
+    }
+
+    async fn append_invalidations(
+        &self,
+        events: &[InvalidationEvent],
+    ) -> Result<(), ProductPersistenceError> {
+        let mut tx = self.pool.begin().await.map_err(backend)?;
+        for e in events {
+            let inserted = sqlx::query(
+                "INSERT OR IGNORE INTO invalidation_events_v1
+                 (invalidation_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at)
+                 VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+            )
+            .bind(&e.invalidation_id)
+            .bind(&e.trigger_kind)
+            .bind(&e.trigger_ref)
+            .bind(&e.target_kind)
+            .bind(&e.target_ref)
+            .bind(&e.prior_state)
+            .bind(&e.new_state)
+            .bind(&e.reason)
+            .bind(ts_to_str(e.occurred_at))
+            .execute(&mut *tx)
+            .await
+            .map_err(backend)?;
+
+            if inserted.rows_affected() == 0 {
+                let row = sqlx::query(
+                    "SELECT invalidation_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at
+                     FROM invalidation_events_v1 WHERE invalidation_id=?1",
+                )
+                .bind(&e.invalidation_id)
+                .fetch_one(&mut *tx)
+                .await
+                .map_err(backend)?;
+                let existing = InvalidationEvent {
+                    invalidation_id: row.get("invalidation_id"),
+                    trigger_kind: row.get("trigger_kind"),
+                    trigger_ref: row.get("trigger_ref"),
+                    target_kind: row.get("target_kind"),
+                    target_ref: row.get("target_ref"),
+                    prior_state: row.get("prior_state"),
+                    new_state: row.get("new_state"),
+                    reason: row.get("reason"),
+                    occurred_at: str_to_ts(&row.get::<String, _>("occurred_at")),
+                };
+                if existing != *e {
+                    return Err(ProductPersistenceError::Conflict(format!(
+                        "invalidation {} already exists with different immutable content",
+                        e.invalidation_id
+                    )));
+                }
+            }
+        }
+        tx.commit().await.map_err(backend)?;
         Ok(())
     }
 
