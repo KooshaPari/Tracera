@@ -495,6 +495,35 @@ async fn product_persistence_rejects_cross_product_parent_and_observation_scope(
 }
 
 #[tokio::test]
+async fn product_persistence_rejects_entity_for_unknown_product() {
+    let store = mem_store().await;
+    let err = ProductPersistence::create_entity(
+        &store,
+        &PersistedEntity {
+            entity_id: "orphan-entity".into(),
+            product_id: "missing-product".into(),
+            local_id: "orphan".into(),
+            entity_kind: "capability".into(),
+            created_at: now(),
+        },
+    )
+    .await
+    .expect_err("canonical port must reject orphan product entities");
+    assert!(matches!(
+        err,
+        tracera_server::product::ProductPersistenceError::Invalid(_)
+    ));
+
+    let count: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM product_entities_v1 WHERE entity_id='orphan-entity'",
+    )
+    .fetch_one(&store.pool)
+    .await
+    .expect("count orphan entity");
+    assert_eq!(count, 0);
+}
+
+#[tokio::test]
 async fn product_v1_schema_supports_scoped_ids_and_immutable_baselines() {
     let store = mem_store().await;
     let pool = &store.pool;
