@@ -1,0 +1,228 @@
+{
+  "schema_version": "0.1.0",
+  "product_id": "PRD-TRACERA",
+  "catalog_status": "accepted_mature_breadth_wave_3",
+  "count_policy": "derived_only",
+  "requirements": [
+    {
+      "id": "TRC-R-CHANGE-PROPOSE",
+      "title": "Product changes begin as proposals",
+      "statement": "Human/agent product changes are represented as proposals/deltas before accepted-state mutation.",
+      "domain": "G",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-CHANGE-REVIEW",
+      "title": "Material product changes expose review rationale",
+      "statement": "Acceptance/rejection records actor/authority, rationale and affected baseline/scope for material changes.",
+      "domain": "G",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-CHANGE-COMPARE",
+      "title": "Baseline comparison is semantic",
+      "statement": "Users/agents can compare accepted baselines by added/changed/retired entities/obligations/relations, not only raw storage diffs.",
+      "domain": "G",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-CHANGE-ROLLBACK",
+      "title": "Rollback creates explicit historical state",
+      "statement": "Rollback/reversion preserves the intervening accepted history and produces an explicit later baseline rather than rewriting history.",
+      "domain": "G",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-PLM-MILESTONE",
+      "title": "Milestones/releases project product state",
+      "statement": "Milestone/release records reference exact product baseline/configuration and may aggregate readiness without becoming independent truth.",
+      "domain": "H",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-PLM-DEPRECATE",
+      "title": "Deprecation and replacement are explicit",
+      "statement": "Deprecated product entities/capabilities identify status, replacement/supersession and effectivity where applicable.",
+      "domain": "H",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-JOURNEY-VERSION",
+      "title": "Journey revisions preserve historical meaning",
+      "statement": "Changing journey steps/outcomes/requirements creates explicit revision/supersession semantics so prior evidence remains interpretable.",
+      "domain": "I",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-JOURNEY-FAIL",
+      "title": "Journey failure and recovery are modeled",
+      "statement": "Required journeys can declare failure/recovery branches and terminal non-success rather than only happy-path steps.",
+      "domain": "I",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-JOURNEY-CONFIG",
+      "title": "Journey applicability is configuration-bound",
+      "statement": "Journey closure is assessed against the exact applicable product version/variant/configuration.",
+      "domain": "I",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-UX-PRODUCT",
+      "title": "Product selection never silently changes scope",
+      "statement": "Human navigation keeps the selected product/project/configuration explicit and cannot silently fall back to another product's data.",
+      "domain": "J",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-UX-INVENTORY",
+      "title": "Complete inventory has explicit completeness semantics",
+      "statement": "Human inventory views expose whether the selected product/entity set is complete, filtered, paginated or partial.",
+      "domain": "J",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-UX-DETAIL",
+      "title": "Entity detail explains canonical context",
+      "statement": "Detail views expose canonical identity/type/baseline/applicability and relevant relations/evidence/findings sufficient to orient the user.",
+      "domain": "J",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-UX-REL",
+      "title": "Relationship editing respects typed semantics and authority",
+      "statement": "Human relationship creation/change validates relation type/endpoints/authority and preserves history where accepted truth changes.",
+      "domain": "J",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-UX-SEARCH",
+      "title": "Search results preserve scope and canonical identity",
+      "statement": "Search identifies product/baseline/entity context and cannot merge same-named entities across products/configurations.",
+      "domain": "J",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-MEM-FRESH",
+      "title": "Derived knowledge has freshness/applicability",
+      "statement": "Memory/recommendation/derived knowledge can become stale or invalid for a later baseline/configuration and this is explicit.",
+      "domain": "M",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-MEM-CONFLICT",
+      "title": "Derived knowledge conflicts are represented",
+      "statement": "Conflicting derived claims preserve sources/confidence and cannot silently select the more convenient claim as truth.",
+      "domain": "M",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-MEM-REPRO",
+      "title": "Derived intelligence is reproducibly attributable",
+      "statement": "Where practical, derived findings retain method/model/version/inputs sufficient to explain or re-run the derivation.",
+      "domain": "M",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-RECOVERY-QUALITY",
+      "title": "Recovery quality is independently graded",
+      "statement": "A recovered product reports whether intent, requirements, journeys, implementation mapping, evidence and historical rationale are recoverable, separate from runtime feature completion.",
+      "domain": "T",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-RECOVERY-FRESH",
+      "title": "Fresh-agent recovery is an oracle",
+      "statement": "A fresh authorized agent can locate canonical thesis, contract, decisions, journeys, current state and blockers without owner replay or treating stale docs as authority.",
+      "domain": "T",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    },
+    {
+      "id": "TRC-R-EXT-VALID",
+      "title": "External validation remains separate",
+      "statement": "User/adoption/external validation evidence is represented separately from internal implementation/evidence completion and is never fabricated when absent.",
+      "domain": "T",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "specified_not_executed"
+    }
+  ]
+}
