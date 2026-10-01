@@ -6,7 +6,10 @@
 
 use chrono::{TimeZone, Utc};
 use serde_json::{json, Value};
-use sqlx::{sqlite::{SqliteConnectOptions, SqlitePoolOptions}, SqlitePool};
+use sqlx::{
+    sqlite::{SqliteConnectOptions, SqlitePoolOptions},
+    SqlitePool,
+};
 
 use tracera_server::sqlite_store::SqliteStore;
 use tracera_server::store::Store;
@@ -148,14 +151,16 @@ async fn sprint_roundtrip() {
     assert_eq!(sprints[0].name, "Sprint 1");
 }
 
-
 #[tokio::test]
 async fn product_v1_schema_supports_scoped_ids_and_immutable_baselines() {
     let store = mem_store().await;
     let pool = &store.pool;
 
     // Two products may use the same human/local identity.
-    for (entity_id, product_id) in [("entity-a-search", "product-a"), ("entity-b-search", "product-b")] {
+    for (entity_id, product_id) in [
+        ("entity-a-search", "product-a"),
+        ("entity-b-search", "product-b"),
+    ] {
         sqlx::query(
             "INSERT INTO product_entities_v1 (entity_id, product_id, local_id, entity_kind, created_at)
              VALUES (?1, ?2, 'search', 'capability', ?3)"
@@ -183,7 +188,7 @@ async fn product_v1_schema_supports_scoped_ids_and_immutable_baselines() {
         "INSERT INTO product_baselines_v1
          (baseline_id, product_id, revision_number, parent_baseline_id, accepted_at, metadata)
          VALUES ('a-b1','product-a',1,NULL,?1,'{}'),
-                ('a-b2','product-a',2,'a-b1',?1,'{}')"
+                ('a-b2','product-a',2,'a-b1',?1,'{}')",
     )
     .bind(now().to_rfc3339())
     .execute(pool)
@@ -193,7 +198,7 @@ async fn product_v1_schema_supports_scoped_ids_and_immutable_baselines() {
     sqlx::query(
         "INSERT INTO baseline_entity_membership_v1 (baseline_id, entity_id, entity_revision_id)
          VALUES ('a-b1','entity-a-search','a-search-r1'),
-                ('a-b2','entity-a-search','a-search-r2')"
+                ('a-b2','entity-a-search','a-search-r2')",
     )
     .execute(pool)
     .await
@@ -203,7 +208,7 @@ async fn product_v1_schema_supports_scoped_ids_and_immutable_baselines() {
         "SELECT r.title
          FROM baseline_entity_membership_v1 m
          JOIN product_entity_revisions_v1 r ON r.entity_revision_id=m.entity_revision_id
-         WHERE m.baseline_id='a-b1' AND m.entity_id='entity-a-search'"
+         WHERE m.baseline_id='a-b1' AND m.entity_id='entity-a-search'",
     )
     .fetch_one(pool)
     .await
@@ -212,7 +217,7 @@ async fn product_v1_schema_supports_scoped_ids_and_immutable_baselines() {
         "SELECT r.title
          FROM baseline_entity_membership_v1 m
          JOIN product_entity_revisions_v1 r ON r.entity_revision_id=m.entity_revision_id
-         WHERE m.baseline_id='a-b2' AND m.entity_id='entity-a-search'"
+         WHERE m.baseline_id='a-b2' AND m.entity_id='entity-a-search'",
     )
     .fetch_one(pool)
     .await
@@ -221,12 +226,11 @@ async fn product_v1_schema_supports_scoped_ids_and_immutable_baselines() {
     assert_eq!(b1_title, "Search v1");
     assert_eq!(b2_title, "Search v2");
 
-    let scoped_count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM product_entities_v1 WHERE local_id='search'"
-    )
-    .fetch_one(pool)
-    .await
-    .expect("count scoped identities");
+    let scoped_count: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM product_entities_v1 WHERE local_id='search'")
+            .fetch_one(pool)
+            .await
+            .expect("count scoped identities");
     assert_eq!(scoped_count, 2);
 }
 
@@ -238,7 +242,7 @@ async fn product_v1_observation_is_append_only_history_across_invalidation() {
     sqlx::query(
         "INSERT INTO product_baselines_v1
          (baseline_id, product_id, revision_number, accepted_at, metadata)
-         VALUES ('a-b1','product-a',1,?1,'{}')"
+         VALUES ('a-b1','product-a',1,?1,'{}')",
     )
     .bind(now().to_rfc3339())
     .execute(pool)
@@ -250,7 +254,7 @@ async fn product_v1_observation_is_append_only_history_across_invalidation() {
          (observation_id, product_id, baseline_id, subject_local_id, candidate_ref,
           configuration, result, verifier_id, verifier_version, recorded_at, metadata)
          VALUES ('obs-1','product-a','a-b1','search','git:abc','{}','passed',
-                 'test-suite','1',?1,'{}')"
+                 'test-suite','1',?1,'{}')",
     )
     .bind(now().to_rfc3339())
     .execute(pool)
@@ -258,7 +262,7 @@ async fn product_v1_observation_is_append_only_history_across_invalidation() {
     .expect("observation");
 
     let before: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM product_observations_v1 WHERE observation_id='obs-1'"
+        "SELECT COUNT(*) FROM product_observations_v1 WHERE observation_id='obs-1'",
     )
     .fetch_one(pool)
     .await
@@ -268,14 +272,13 @@ async fn product_v1_observation_is_append_only_history_across_invalidation() {
     // Later invalidation/reuse state must be represented separately; the
     // original observation row remains historically queryable.
     let result: String = sqlx::query_scalar(
-        "SELECT result FROM product_observations_v1 WHERE observation_id='obs-1'"
+        "SELECT result FROM product_observations_v1 WHERE observation_id='obs-1'",
     )
     .fetch_one(pool)
     .await
     .unwrap();
     assert_eq!(result, "passed");
 }
-
 
 #[tokio::test]
 async fn product_v1_revocation_invalidates_reuse_not_observation_history() {
@@ -292,16 +295,24 @@ async fn product_v1_revocation_invalidates_reuse_not_observation_history() {
     sqlx::query("INSERT INTO invalidation_events_v1 (invalidation_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at) VALUES ('i1','certificate_revoked','cert:c1','reuse_decision','r1','current_valid','suspect','certificate revoked',?1)")
         .bind(&t).execute(pool).await.unwrap();
 
-    let observation_result:String=sqlx::query_scalar("SELECT result FROM product_observations_v1 WHERE observation_id='o1'").fetch_one(pool).await.unwrap();
-    assert_eq!(observation_result,"passed");
+    let observation_result: String =
+        sqlx::query_scalar("SELECT result FROM product_observations_v1 WHERE observation_id='o1'")
+            .fetch_one(pool)
+            .await
+            .unwrap();
+    assert_eq!(observation_result, "passed");
 
     let new_state:String=sqlx::query_scalar("SELECT new_state FROM invalidation_events_v1 WHERE target_kind='reuse_decision' AND target_ref='r1' ORDER BY occurred_at DESC,invalidation_id DESC LIMIT 1").fetch_one(pool).await.unwrap();
-    assert_eq!(new_state,"suspect");
+    assert_eq!(new_state, "suspect");
 
-    let reuse_count:i64=sqlx::query_scalar("SELECT COUNT(*) FROM evidence_reuse_decisions_v1 WHERE reuse_decision_id='r1'").fetch_one(pool).await.unwrap();
-    assert_eq!(reuse_count,1);
+    let reuse_count: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM evidence_reuse_decisions_v1 WHERE reuse_decision_id='r1'",
+    )
+    .fetch_one(pool)
+    .await
+    .unwrap();
+    assert_eq!(reuse_count, 1);
 }
-
 
 #[tokio::test]
 async fn product_v1_file_restart_preserves_baseline_and_observation_history() {
@@ -318,10 +329,20 @@ async fn product_v1_file_restart_preserves_baseline_and_observation_history() {
     {
         let store = file_store(&path).await;
         let pool = &store.pool;
-        let revision:i64=sqlx::query_scalar("SELECT revision_number FROM product_baselines_v1 WHERE baseline_id='restart-b1'").fetch_one(pool).await.unwrap();
-        let result:String=sqlx::query_scalar("SELECT result FROM product_observations_v1 WHERE observation_id='restart-o1'").fetch_one(pool).await.unwrap();
-        assert_eq!(revision,1);
-        assert_eq!(result,"passed");
+        let revision: i64 = sqlx::query_scalar(
+            "SELECT revision_number FROM product_baselines_v1 WHERE baseline_id='restart-b1'",
+        )
+        .fetch_one(pool)
+        .await
+        .unwrap();
+        let result: String = sqlx::query_scalar(
+            "SELECT result FROM product_observations_v1 WHERE observation_id='restart-o1'",
+        )
+        .fetch_one(pool)
+        .await
+        .unwrap();
+        assert_eq!(revision, 1);
+        assert_eq!(result, "passed");
     }
     let _ = std::fs::remove_file(path);
 }

@@ -266,7 +266,9 @@ impl AssessmentEngine {
                 product_id: String::new(),
                 capability_id: Some(capability_id.to_string()),
                 status: AssessmentStatus::Stale,
-                explanation: format!("Capability '{capability_id}' has explicitly stale observations."),
+                explanation: format!(
+                    "Capability '{capability_id}' has explicitly stale observations."
+                ),
                 observation_ids: obs_ids,
                 severity: FindingSeverity::from_status(AssessmentStatus::Stale),
             };
@@ -277,7 +279,9 @@ impl AssessmentEngine {
                 product_id: String::new(),
                 capability_id: Some(capability_id.to_string()),
                 status: AssessmentStatus::Unknown,
-                explanation: format!("Capability '{capability_id}' has observations with unknown outcome."),
+                explanation: format!(
+                    "Capability '{capability_id}' has observations with unknown outcome."
+                ),
                 observation_ids: obs_ids,
                 severity: FindingSeverity::from_status(AssessmentStatus::Unknown),
             };
@@ -595,7 +599,12 @@ mod tests {
     #[test]
     fn explicit_unknown_never_satisfies() {
         let engine = AssessmentEngine::new(86_400);
-        let obs = vec![make_obs("o-unknown", "product-a", ObservationResult::Unknown, 0)];
+        let obs = vec![make_obs(
+            "o-unknown",
+            "product-a",
+            ObservationResult::Unknown,
+            0,
+        )];
         let finding = engine.assess_capability("search", &obs);
         assert_eq!(finding.status, AssessmentStatus::Unknown);
     }
@@ -603,7 +612,12 @@ mod tests {
     #[test]
     fn explicit_stale_never_satisfies_even_when_timestamp_is_fresh() {
         let engine = AssessmentEngine::new(86_400);
-        let obs = vec![make_obs("o-stale", "product-a", ObservationResult::Stale, 0)];
+        let obs = vec![make_obs(
+            "o-stale",
+            "product-a",
+            ObservationResult::Stale,
+            0,
+        )];
         let finding = engine.assess_capability("search", &obs);
         assert_eq!(finding.status, AssessmentStatus::Stale);
     }

@@ -62,7 +62,6 @@ pub struct PersistedObservation {
     pub metadata: Value,
 }
 
-
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct EvidenceReuseDecision {
     pub reuse_decision_id: String,
@@ -116,7 +115,8 @@ pub trait ProductPersistence: Send + Sync {
     fn get_product(
         &self,
         product_id: &str,
-    ) -> impl std::future::Future<Output = Result<Option<PersistedProduct>, ProductPersistenceError>> + Send;
+    ) -> impl std::future::Future<Output = Result<Option<PersistedProduct>, ProductPersistenceError>>
+           + Send;
 
     fn accept_baseline(
         &self,
@@ -128,7 +128,8 @@ pub trait ProductPersistence: Send + Sync {
         &self,
         product_id: &str,
         baseline_id: &str,
-    ) -> impl std::future::Future<Output = Result<Option<PersistedBaseline>, ProductPersistenceError>> + Send;
+    ) -> impl std::future::Future<Output = Result<Option<PersistedBaseline>, ProductPersistenceError>>
+           + Send;
 
     fn create_entity(
         &self,
@@ -145,7 +146,9 @@ pub trait ProductPersistence: Send + Sync {
         product_id: &str,
         baseline_id: &str,
         limit: u32,
-    ) -> impl std::future::Future<Output = Result<Vec<PersistedEntityRevision>, ProductPersistenceError>> + Send;
+    ) -> impl std::future::Future<
+        Output = Result<Vec<PersistedEntityRevision>, ProductPersistenceError>,
+    > + Send;
 
     fn append_observation(
         &self,
@@ -158,7 +161,8 @@ pub trait ProductPersistence: Send + Sync {
         baseline_id: &str,
         subject_local_id: Option<&str>,
         limit: u32,
-    ) -> impl std::future::Future<Output = Result<Vec<PersistedObservation>, ProductPersistenceError>> + Send;
+    ) -> impl std::future::Future<Output = Result<Vec<PersistedObservation>, ProductPersistenceError>>
+           + Send;
 
     fn append_reuse_decision(
         &self,

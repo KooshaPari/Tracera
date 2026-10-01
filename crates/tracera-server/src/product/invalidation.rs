@@ -1,7 +1,7 @@
 //! Current applicability reduction and bounded invalidation traversal.
 
-use std::collections::{HashMap, HashSet, VecDeque};
 use super::persistence::InvalidationEvent;
+use std::collections::{HashMap, HashSet, VecDeque};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ApplicabilityProjection {
@@ -9,14 +9,20 @@ pub struct ApplicabilityProjection {
     pub last_event_id: Option<String>,
 }
 
-pub fn reduce_applicability(initial_state: &str, events: &[InvalidationEvent]) -> ApplicabilityProjection {
+pub fn reduce_applicability(
+    initial_state: &str,
+    events: &[InvalidationEvent],
+) -> ApplicabilityProjection {
     let mut state = initial_state.to_string();
     let mut last = None;
     for event in events {
         state = event.new_state.clone();
         last = Some(event.invalidation_id.clone());
     }
-    ApplicabilityProjection { state, last_event_id: last }
+    ApplicabilityProjection {
+        state,
+        last_event_id: last,
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -60,7 +66,11 @@ pub fn propagate_bounded(
         }
     }
 
-    PropagationResult { affected, continuation: Vec::new(), complete: true }
+    PropagationResult {
+        affected,
+        continuation: Vec::new(),
+        complete: true,
+    }
 }
 
 #[cfg(test)]
@@ -84,7 +94,10 @@ mod tests {
 
     #[test]
     fn no_events_preserves_initial_state() {
-        assert_eq!(reduce_applicability("current_valid", &[]).state, "current_valid");
+        assert_eq!(
+            reduce_applicability("current_valid", &[]).state,
+            "current_valid"
+        );
     }
 
     #[test]
