@@ -63,3 +63,16 @@ Agent/alternate CI reports broad Python lint/test failures while the primary Pyt
 **Not promotable.**
 
 The mature semantic contract remains accepted, but runtime/product completion remains false. Rust formatting is a concrete branch-local defect; Rust-test semantics and browser/historical evidence remain open.
+
+
+## Formatter recovery and current execution candidate
+
+A branch-only temporary formatter eventually produced:
+
+- `f5e92d44d443b3c700f2ef3451e552fb37f76d36` — `style(rust): apply cargo fmt`
+
+This clears the previously observed branch-local `cargo fmt --check` defect for the source state included in that commit.
+
+GitHub generated PR workflows for the bot-authored formatter commit, but the core CI run `36912569682` completed with `action_required` and **zero jobs** because the triggering actor was `github-actions[bot]`. This is an execution-policy/approval state, not a test result.
+
+The next user-authored branch commit intentionally preserves the formatted source and exists to obtain executable native CI evidence on the same code state plus this evidence note.
