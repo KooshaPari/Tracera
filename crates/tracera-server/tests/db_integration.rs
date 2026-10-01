@@ -518,12 +518,9 @@ async fn invalidation_batch_is_atomic_on_conflicting_replay() {
         ..existing.clone()
     };
 
-    let err = ProductPersistence::append_invalidations(
-        &store,
-        &[first.clone(), conflicting],
-    )
-    .await
-    .expect_err("divergent replay must fail the whole batch");
+    let err = ProductPersistence::append_invalidations(&store, &[first.clone(), conflicting])
+        .await
+        .expect_err("divergent replay must fail the whole batch");
     assert!(matches!(
         err,
         tracera_server::product::ProductPersistenceError::Conflict(_)
@@ -583,7 +580,10 @@ async fn invalidation_batch_exact_replay_is_idempotent() {
     .fetch_one(&store.pool)
     .await
     .expect("count replay rows");
-    assert_eq!(count, 2, "exact retry must not duplicate invalidation history");
+    assert_eq!(
+        count, 2,
+        "exact retry must not duplicate invalidation history"
+    );
 }
 
 #[tokio::test]
