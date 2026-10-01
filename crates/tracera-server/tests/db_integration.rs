@@ -387,6 +387,114 @@ async fn product_persistence_rejects_cross_product_baseline_membership_atomicall
 }
 
 #[tokio::test]
+async fn product_persistence_rejects_cross_product_parent_and_observation_scope() {
+    let store = mem_store().await;
+    let t = now();
+
+    for product_id in ["scope-a", "scope-b"] {
+        ProductPersistence::create_product(
+            &store,
+            &PersistedProduct {
+                product_id: product_id.into(),
+                display_name: product_id.into(),
+                created_at: t,
+            },
+        )
+        .await
+        .expect("create product");
+    }
+
+    let b_parent = PersistedBaseline {
+        baseline_id: "scope-b-parent".into(),
+        product_id: "scope-b".into(),
+        revision_number: 1,
+        parent_baseline_id: None,
+        accepted_at: t,
+        metadata: json!({}),
+    };
+    ProductPersistence::accept_baseline(&store, &b_parent, &[])
+        .await
+        .expect("accept b parent");
+
+    let a_bad_child = PersistedBaseline {
+        baseline_id: "scope-a-child".into(),
+        product_id: "scope-a".into(),
+        revision_number: 1,
+        parent_baseline_id: Some(b_parent.baseline_id.clone()),
+        accepted_at: t,
+        metadata: json!({}),
+    };
+    let err = ProductPersistence::accept_baseline(&store, &a_bad_child, &[])
+        .await
+        .expect_err("cross-product parent must fail");
+    assert!(matches!(
+        err,
+        tracera_server::product::ProductPersistenceError::Invalid(_)
+    ));
+    assert!(
+        ProductPersistence::get_baseline(&store, "scope-a", "scope-a-child")
+            .await
+            .expect("query child")
+            .is_none(),
+        "failed parent validation must not persist child baseline"
+    );
+
+    let a_baseline = PersistedBaseline {
+        baseline_id: "scope-a-b1".into(),
+        product_id: "scope-a".into(),
+        revision_number: 2,
+        parent_baseline_id: None,
+        accepted_at: t,
+        metadata: json!({}),
+    };
+    ProductPersistence::accept_baseline(&store, &a_baseline, &[])
+        .await
+        .expect("accept a baseline");
+
+    let b_entity = PersistedEntity {
+        entity_id: "scope-b-entity".into(),
+        product_id: "scope-b".into(),
+        local_id: "foreign".into(),
+        entity_kind: "capability".into(),
+        created_at: t,
+    };
+    ProductPersistence::create_entity(&store, &b_entity)
+        .await
+        .expect("create b entity");
+
+    let bad_observation = PersistedObservation {
+        observation_id: "scope-o-bad".into(),
+        product_id: "scope-a".into(),
+        baseline_id: a_baseline.baseline_id.clone(),
+        subject_entity_id: Some(b_entity.entity_id.clone()),
+        subject_local_id: Some(b_entity.local_id.clone()),
+        candidate_ref: "git:bad".into(),
+        configuration: json!({}),
+        result: "passed".into(),
+        verifier_id: "suite".into(),
+        verifier_version: "1".into(),
+        recorded_at: t,
+        raw_evidence_ref: None,
+        metadata: json!({}),
+    };
+    let err = ProductPersistence::append_observation(&store, &bad_observation)
+        .await
+        .expect_err("cross-product subject must fail");
+    assert!(matches!(
+        err,
+        tracera_server::product::ProductPersistenceError::Invalid(_)
+    ));
+
+    let leaked: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM product_observations_v1 WHERE observation_id='scope-o-bad'",
+    )
+    .fetch_one(&store.pool)
+    .await
+    .expect("count bad observation");
+    assert_eq!(leaked, 0, "invalid observation must not be persisted");
+}
+
+#[tokio::test]
 async fn product_v1_schema_supports_scoped_ids_and_immutable_baselines() {
     let store = mem_store().await;
     let pool = &store.pool;
