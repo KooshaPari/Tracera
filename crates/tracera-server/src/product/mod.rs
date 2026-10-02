@@ -1,4 +1,3 @@
-pub mod application;
 //! Product identity, baseline, observation, assessment, and detection (WP-02..11).
 //!
 //! This module introduces the stable identity and assessment layer that sits
@@ -16,6 +15,7 @@ pub mod application;
 //! - **Assessment** (`assessment`) — deterministic product health assessment.
 //! - **Detectors** (`detectors`) — freshness, coverage, and contradiction detectors.
 
+pub mod application;
 pub mod assessment;
 pub mod baseline;
 pub mod dependencies;

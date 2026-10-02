@@ -9,9 +9,7 @@ use std::sync::Arc;
 
 pub(crate) type AuthToken = Option<Arc<str>>;
 
-/// Protect every application route when a public listener is enabled. Health
-/// probes remain unauthenticated so orchestrators can determine liveness and
-/// readiness without carrying application credentials.
+/// Protect application routes. Only explicitly registered probe routes are public.
 pub(crate) async fn require_bearer(
     State(expected): State<AuthToken>,
     request: Request<Body>,
@@ -45,9 +43,17 @@ pub(crate) async fn require_bearer(
 fn is_health_route(path: &str) -> bool {
     matches!(
         path,
-        "/health" | "/healthz" | "/ready" | "/readyz" | "/api/v1/health" | "/api/v1/csrf-token"
-    ) || path.ends_with("/health")
-        || path.ends_with("/healthz")
+        "/health"
+            | "/healthz"
+            | "/ready"
+            | "/readyz"
+            | "/api/v1/health"
+            | "/api/v1/csrf-token"
+            | "/evidence/health"
+            | "/sdlc-pm/health"
+            | "/problems/health"
+            | "/org-intel/health"
+    )
 }
 
 fn constant_time_equal(left: &[u8], right: &[u8]) -> bool {
@@ -71,19 +77,20 @@ mod tests {
     }
 
     #[test]
-    fn health_probe_routes_are_public_but_application_routes_are_not() {
+    fn only_registered_probes_are_public() {
         for path in [
-            "/health",
-            "/healthz",
-            "/ready",
-            "/readyz",
-            "/evidence/health",
-            "/api/v1/health",
-            "/api/v1/csrf-token",
+            "/health", "/healthz", "/ready", "/readyz", "/api/v1/health",
+            "/api/v1/csrf-token", "/evidence/health", "/sdlc-pm/health",
+            "/problems/health", "/org-intel/health",
         ] {
             assert!(is_health_route(path), "{path} should be a probe route");
         }
-        assert!(!is_health_route("/evidence"));
-        assert!(!is_health_route("/api/v1/projects"));
+        for path in [
+            "/evidence", "/api/v1/projects", "/api/v1/products/health",
+            "/api/v1/products/healthz", "/api/v1/product-invalidations/health",
+            "/api/v1/projects/health", "/api/v1/items/healthz",
+        ] {
+            assert!(!is_health_route(path), "{path} is an application route");
+        }
     }
 }

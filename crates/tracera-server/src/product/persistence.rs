@@ -169,6 +169,17 @@ pub trait ProductPersistence: Send + Sync {
         decision: &EvidenceReuseDecision,
     ) -> impl std::future::Future<Output = Result<(), ProductPersistenceError>> + Send;
 
+    /// Read historical reuse decisions, not their current applicability projection.
+    /// Both the observation and target baseline must belong to product_id.
+    fn list_reuse_decisions_for_target(
+        &self,
+        product_id: &str,
+        target_baseline_id: &str,
+        target_candidate_ref: &str,
+        limit: u32,
+    ) -> impl std::future::Future<Output = Result<Vec<EvidenceReuseDecision>, ProductPersistenceError>>
+           + Send;
+
     fn append_invalidation(
         &self,
         event: &InvalidationEvent,

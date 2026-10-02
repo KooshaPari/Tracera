@@ -38,7 +38,6 @@ impl ProductPersistence for PgStore {
         members: &[(String, String)],
     ) -> Result<(), ProductPersistenceError> {
         let mut tx = self.pool.begin().await.map_err(backend)?;
-
         let product_exists: Option<i64> = sqlx::query_scalar(
             "SELECT 1::BIGINT FROM product_nodes
              WHERE id=$1 AND product_id=$1 AND intent_kind='product'",
@@ -53,7 +52,6 @@ impl ProductPersistence for PgStore {
                 b.baseline_id, b.product_id
             )));
         }
-
         if let Some(parent_id) = &b.parent_baseline_id {
             let parent_product: Option<String> = sqlx::query_scalar(
                 "SELECT product_id FROM product_baselines_v1 WHERE baseline_id=$1",
@@ -78,7 +76,6 @@ impl ProductPersistence for PgStore {
                 }
             }
         }
-
         for (entity_id, revision_id) in members {
             let valid: Option<i64> = sqlx::query_scalar(
                 "SELECT 1::BIGINT
@@ -140,7 +137,6 @@ impl ProductPersistence for PgStore {
                 e.entity_id, e.product_id
             )));
         }
-
         sqlx::query("INSERT INTO product_entities_v1 (entity_id,product_id,local_id,entity_kind,created_at) VALUES ($1,$2,$3,$4,$5)")
             .bind(&e.entity_id).bind(&e.product_id).bind(&e.local_id).bind(&e.entity_kind).bind(e.created_at).execute(&self.pool).await.map_err(backend)?;
         Ok(())
@@ -162,19 +158,16 @@ impl ProductPersistence for PgStore {
     ) -> Result<Vec<PersistedEntityRevision>, ProductPersistenceError> {
         let rows=sqlx::query("SELECT r.entity_revision_id,r.entity_id,r.content_revision,r.title,r.description,r.status,r.metadata,r.created_at FROM baseline_entity_membership_v1 m JOIN product_entities_v1 e ON e.entity_id=m.entity_id JOIN product_entity_revisions_v1 r ON r.entity_revision_id=m.entity_revision_id WHERE m.baseline_id=$1 AND e.product_id=$2 ORDER BY e.local_id LIMIT $3")
             .bind(bid).bind(pid).bind(i64::from(limit.min(1000))).fetch_all(&self.pool).await.map_err(backend)?;
-        Ok(rows
-            .into_iter()
-            .map(|r| PersistedEntityRevision {
-                entity_revision_id: r.get("entity_revision_id"),
-                entity_id: r.get("entity_id"),
-                content_revision: r.get("content_revision"),
-                title: r.get("title"),
-                description: r.get("description"),
-                status: r.get("status"),
-                metadata: r.get("metadata"),
-                created_at: r.get("created_at"),
-            })
-            .collect())
+        Ok(rows.into_iter().map(|r| PersistedEntityRevision {
+            entity_revision_id: r.get("entity_revision_id"),
+            entity_id: r.get("entity_id"),
+            content_revision: r.get("content_revision"),
+            title: r.get("title"),
+            description: r.get("description"),
+            status: r.get("status"),
+            metadata: r.get("metadata"),
+            created_at: r.get("created_at"),
+        }).collect())
     }
     async fn append_observation(
         &self,
@@ -182,10 +175,7 @@ impl ProductPersistence for PgStore {
     ) -> Result<(), ProductPersistenceError> {
         let baseline_product: Option<String> =
             sqlx::query_scalar("SELECT product_id FROM product_baselines_v1 WHERE baseline_id=$1")
-                .bind(&o.baseline_id)
-                .fetch_optional(&self.pool)
-                .await
-                .map_err(backend)?;
+                .bind(&o.baseline_id).fetch_optional(&self.pool).await.map_err(backend)?;
         match baseline_product {
             Some(product_id) if product_id == o.product_id => {}
             Some(product_id) => {
@@ -201,14 +191,10 @@ impl ProductPersistence for PgStore {
                 )));
             }
         }
-
         if let Some(subject_entity_id) = &o.subject_entity_id {
             let subject_product: Option<String> =
                 sqlx::query_scalar("SELECT product_id FROM product_entities_v1 WHERE entity_id=$1")
-                    .bind(subject_entity_id)
-                    .fetch_optional(&self.pool)
-                    .await
-                    .map_err(backend)?;
+                    .bind(subject_entity_id).fetch_optional(&self.pool).await.map_err(backend)?;
             if subject_product.as_deref() != Some(o.product_id.as_str()) {
                 return Err(ProductPersistenceError::Invalid(format!(
                     "observation {} subject entity {} is missing or outside product {}",
@@ -216,7 +202,6 @@ impl ProductPersistence for PgStore {
                 )));
             }
         }
-
         sqlx::query("INSERT INTO product_observations_v1 (observation_id,product_id,baseline_id,subject_entity_id,subject_local_id,candidate_ref,configuration,result,verifier_id,verifier_version,recorded_at,raw_evidence_ref,metadata) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)")
             .bind(&o.observation_id).bind(&o.product_id).bind(&o.baseline_id).bind(&o.subject_entity_id).bind(&o.subject_local_id).bind(&o.candidate_ref).bind(&o.configuration).bind(&o.result).bind(&o.verifier_id).bind(&o.verifier_version).bind(o.recorded_at).bind(&o.raw_evidence_ref).bind(&o.metadata)
             .execute(&self.pool).await.map_err(backend)?;
@@ -231,25 +216,53 @@ impl ProductPersistence for PgStore {
     ) -> Result<Vec<PersistedObservation>, ProductPersistenceError> {
         let rows=sqlx::query("SELECT * FROM product_observations_v1 WHERE product_id=$1 AND baseline_id=$2 AND ($3::text IS NULL OR subject_local_id=$3) ORDER BY recorded_at,observation_id LIMIT $4")
             .bind(pid).bind(bid).bind(subject).bind(i64::from(limit.min(1000))).fetch_all(&self.pool).await.map_err(backend)?;
-        Ok(rows
-            .into_iter()
-            .map(|r| PersistedObservation {
-                observation_id: r.get("observation_id"),
-                product_id: r.get("product_id"),
-                baseline_id: r.get("baseline_id"),
-                subject_entity_id: r.get("subject_entity_id"),
-                subject_local_id: r.get("subject_local_id"),
-                candidate_ref: r.get("candidate_ref"),
-                configuration: r.get("configuration"),
-                result: r.get("result"),
-                verifier_id: r.get("verifier_id"),
-                verifier_version: r.get("verifier_version"),
-                recorded_at: r.get("recorded_at"),
-                raw_evidence_ref: r.get("raw_evidence_ref"),
-                metadata: r.get("metadata"),
-            })
-            .collect())
+        Ok(rows.into_iter().map(|r| PersistedObservation {
+            observation_id: r.get("observation_id"),
+            product_id: r.get("product_id"),
+            baseline_id: r.get("baseline_id"),
+            subject_entity_id: r.get("subject_entity_id"),
+            subject_local_id: r.get("subject_local_id"),
+            candidate_ref: r.get("candidate_ref"),
+            configuration: r.get("configuration"),
+            result: r.get("result"),
+            verifier_id: r.get("verifier_id"),
+            verifier_version: r.get("verifier_version"),
+            recorded_at: r.get("recorded_at"),
+            raw_evidence_ref: r.get("raw_evidence_ref"),
+            metadata: r.get("metadata"),
+        }).collect())
     }
+
+    async fn list_reuse_decisions_for_target(
+        &self,
+        product_id: &str,
+        target_baseline_id: &str,
+        target_candidate_ref: &str,
+        limit: u32,
+    ) -> Result<Vec<EvidenceReuseDecision>, ProductPersistenceError> {
+        if self.get_baseline(product_id, target_baseline_id).await?.is_none() {
+            return Err(ProductPersistenceError::NotFound(
+                "baseline not found in product scope".into(),
+            ));
+        }
+        let rows = sqlx::query(include_str!("../product/sql/reuse_for_target.postgres.sql"))
+            .bind(product_id).bind(target_baseline_id).bind(target_candidate_ref)
+            .bind(i64::from(limit.min(1000)))
+            .fetch_all(&self.pool).await.map_err(backend)?;
+        Ok(rows.into_iter().map(|r| EvidenceReuseDecision {
+            reuse_decision_id: r.get("reuse_decision_id"),
+            observation_id: r.get("observation_id"),
+            target_baseline_id: r.get("target_baseline_id"),
+            target_candidate_ref: r.get("target_candidate_ref"),
+            criterion_ref: r.get("criterion_ref"),
+            applicability_state: r.get("applicability_state"),
+            compatibility_certificate_ref: r.get("compatibility_certificate_ref"),
+            policy_version: r.get("policy_version"),
+            reason: r.get("reason"),
+            decided_at: r.get("decided_at"),
+        }).collect())
+    }
+
     async fn append_reuse_decision(
         &self,
         d: &EvidenceReuseDecision,
@@ -260,23 +273,16 @@ impl ProductPersistence for PgStore {
              JOIN product_baselines_v1 b ON b.baseline_id=$2
              WHERE o.observation_id=$1",
         )
-        .bind(&d.observation_id)
-        .bind(&d.target_baseline_id)
-        .fetch_optional(&self.pool)
-        .await
-        .map_err(backend)?;
-
+        .bind(&d.observation_id).bind(&d.target_baseline_id)
+        .fetch_optional(&self.pool).await.map_err(backend)?;
         match scopes {
             Some((observation_product, target_product))
                 if observation_product == target_product => {}
             Some((observation_product, target_product)) => {
                 return Err(ProductPersistenceError::Invalid(format!(
                     "reuse decision {} cannot bind observation {} from product {} to baseline {} from product {}",
-                    d.reuse_decision_id,
-                    d.observation_id,
-                    observation_product,
-                    d.target_baseline_id,
-                    target_product
+                    d.reuse_decision_id, d.observation_id, observation_product,
+                    d.target_baseline_id, target_product
                 )));
             }
             None => {
@@ -286,7 +292,6 @@ impl ProductPersistence for PgStore {
                 )));
             }
         }
-
         sqlx::query("INSERT INTO evidence_reuse_decisions_v1 (reuse_decision_id,observation_id,target_baseline_id,target_candidate_ref,criterion_ref,applicability_state,compatibility_certificate_ref,policy_version,reason,decided_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)")
             .bind(&d.reuse_decision_id).bind(&d.observation_id).bind(&d.target_baseline_id).bind(&d.target_candidate_ref).bind(&d.criterion_ref).bind(&d.applicability_state).bind(&d.compatibility_certificate_ref).bind(&d.policy_version).bind(&d.reason).bind(d.decided_at)
             .execute(&self.pool).await.map_err(backend)?;
@@ -298,7 +303,6 @@ impl ProductPersistence for PgStore {
     ) -> Result<(), ProductPersistenceError> {
         self.append_invalidations(std::slice::from_ref(e)).await
     }
-
     async fn append_invalidations(
         &self,
         events: &[InvalidationEvent],
@@ -311,28 +315,16 @@ impl ProductPersistence for PgStore {
                  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
                  ON CONFLICT (invalidation_id) DO NOTHING",
             )
-            .bind(&e.invalidation_id)
-            .bind(&e.trigger_kind)
-            .bind(&e.trigger_ref)
-            .bind(&e.target_kind)
-            .bind(&e.target_ref)
-            .bind(&e.prior_state)
-            .bind(&e.new_state)
-            .bind(&e.reason)
-            .bind(e.occurred_at)
-            .execute(&mut *tx)
-            .await
-            .map_err(backend)?;
-
+            .bind(&e.invalidation_id).bind(&e.trigger_kind).bind(&e.trigger_ref)
+            .bind(&e.target_kind).bind(&e.target_ref).bind(&e.prior_state)
+            .bind(&e.new_state).bind(&e.reason).bind(e.occurred_at)
+            .execute(&mut *tx).await.map_err(backend)?;
             if inserted.rows_affected() == 0 {
                 let row = sqlx::query(
                     "SELECT invalidation_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at
                      FROM invalidation_events_v1 WHERE invalidation_id=$1",
                 )
-                .bind(&e.invalidation_id)
-                .fetch_one(&mut *tx)
-                .await
-                .map_err(backend)?;
+                .bind(&e.invalidation_id).fetch_one(&mut *tx).await.map_err(backend)?;
                 let existing = InvalidationEvent {
                     invalidation_id: row.get("invalidation_id"),
                     trigger_kind: row.get("trigger_kind"),
@@ -363,19 +355,16 @@ impl ProductPersistence for PgStore {
     ) -> Result<Vec<InvalidationEvent>, ProductPersistenceError> {
         let rows=sqlx::query("SELECT invalidation_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at FROM invalidation_events_v1 WHERE target_kind=$1 AND target_ref=$2 ORDER BY occurred_at,invalidation_id LIMIT $3")
             .bind(kind).bind(target).bind(i64::from(limit.min(1000))).fetch_all(&self.pool).await.map_err(backend)?;
-        Ok(rows
-            .into_iter()
-            .map(|r| InvalidationEvent {
-                invalidation_id: r.get("invalidation_id"),
-                trigger_kind: r.get("trigger_kind"),
-                trigger_ref: r.get("trigger_ref"),
-                target_kind: r.get("target_kind"),
-                target_ref: r.get("target_ref"),
-                prior_state: r.get("prior_state"),
-                new_state: r.get("new_state"),
-                reason: r.get("reason"),
-                occurred_at: r.get("occurred_at"),
-            })
-            .collect())
+        Ok(rows.into_iter().map(|r| InvalidationEvent {
+            invalidation_id: r.get("invalidation_id"),
+            trigger_kind: r.get("trigger_kind"),
+            trigger_ref: r.get("trigger_ref"),
+            target_kind: r.get("target_kind"),
+            target_ref: r.get("target_ref"),
+            prior_state: r.get("prior_state"),
+            new_state: r.get("new_state"),
+            reason: r.get("reason"),
+            occurred_at: r.get("occurred_at"),
+        }).collect())
     }
 }

@@ -19,9 +19,7 @@ impl ProductPersistence for SqliteStore {
         &self,
         product: &PersistedProduct,
     ) -> Result<(), ProductPersistenceError> {
-        // v1 deliberately reuses product_baselines/entities as product ownership
-        // storage until a dedicated product registry table is justified.
-        // A product with no baseline/entity has no persisted row yet.
+        // Product registry identity remains in the additive compatibility table.
         sqlx::query(
             "INSERT OR IGNORE INTO product_nodes
              (id, product_id, intent_kind, title, description, status, baseline_revision, created_at, updated_at)
@@ -59,7 +57,6 @@ impl ProductPersistence for SqliteStore {
         members: &[(String, String)],
     ) -> Result<(), ProductPersistenceError> {
         let mut tx = self.pool.begin().await.map_err(backend)?;
-
         let product_exists: Option<i64> = sqlx::query_scalar(
             "SELECT 1 FROM product_nodes
              WHERE id=?1 AND product_id=?1 AND intent_kind='product'",
@@ -74,7 +71,6 @@ impl ProductPersistence for SqliteStore {
                 baseline.baseline_id, baseline.product_id
             )));
         }
-
         if let Some(parent_id) = &baseline.parent_baseline_id {
             let parent_product: Option<String> = sqlx::query_scalar(
                 "SELECT product_id FROM product_baselines_v1 WHERE baseline_id=?1",
@@ -99,7 +95,6 @@ impl ProductPersistence for SqliteStore {
                 }
             }
         }
-
         for (entity_id, revision_id) in members {
             let valid: Option<i64> = sqlx::query_scalar(
                 "SELECT 1
@@ -120,7 +115,6 @@ impl ProductPersistence for SqliteStore {
                 )));
             }
         }
-
         sqlx::query(
             "INSERT INTO product_baselines_v1
              (baseline_id, product_id, revision_number, parent_baseline_id, accepted_at, metadata)
@@ -135,7 +129,6 @@ impl ProductPersistence for SqliteStore {
         .execute(&mut *tx)
         .await
         .map_err(backend)?;
-
         for (entity_id, revision_id) in members {
             sqlx::query(
                 "INSERT INTO baseline_entity_membership_v1 (baseline_id, entity_id, entity_revision_id)
@@ -181,7 +174,6 @@ impl ProductPersistence for SqliteStore {
                 entity.entity_id, entity.product_id
             )));
         }
-
         sqlx::query(
             "INSERT INTO product_entities_v1 (entity_id, product_id, local_id, entity_kind, created_at)
              VALUES (?1,?2,?3,?4,?5)"
@@ -260,7 +252,6 @@ impl ProductPersistence for SqliteStore {
                 )));
             }
         }
-
         if let Some(subject_entity_id) = &o.subject_entity_id {
             let subject_product: Option<String> =
                 sqlx::query_scalar("SELECT product_id FROM product_entities_v1 WHERE entity_id=?1")
@@ -275,7 +266,6 @@ impl ProductPersistence for SqliteStore {
                 )));
             }
         }
-
         sqlx::query(
             "INSERT INTO product_observations_v1
              (observation_id,product_id,baseline_id,subject_entity_id,subject_local_id,candidate_ref,configuration,result,verifier_id,verifier_version,recorded_at,raw_evidence_ref,metadata)
@@ -326,6 +316,41 @@ impl ProductPersistence for SqliteStore {
             })
             .collect())
     }
+
+    async fn list_reuse_decisions_for_target(
+        &self,
+        product_id: &str,
+        target_baseline_id: &str,
+        target_candidate_ref: &str,
+        limit: u32,
+    ) -> Result<Vec<EvidenceReuseDecision>, ProductPersistenceError> {
+        if self.get_baseline(product_id, target_baseline_id).await?.is_none() {
+            return Err(ProductPersistenceError::NotFound(
+                "baseline not found in product scope".into(),
+            ));
+        }
+        let rows = sqlx::query(include_str!("../product/sql/reuse_for_target.sqlite.sql"))
+            .bind(product_id)
+            .bind(target_baseline_id)
+            .bind(target_candidate_ref)
+            .bind(i64::from(limit.min(1000)))
+            .fetch_all(&self.pool)
+            .await
+            .map_err(backend)?;
+        Ok(rows.into_iter().map(|r| EvidenceReuseDecision {
+            reuse_decision_id: r.get("reuse_decision_id"),
+            observation_id: r.get("observation_id"),
+            target_baseline_id: r.get("target_baseline_id"),
+            target_candidate_ref: r.get("target_candidate_ref"),
+            criterion_ref: r.get("criterion_ref"),
+            applicability_state: r.get("applicability_state"),
+            compatibility_certificate_ref: r.get("compatibility_certificate_ref"),
+            policy_version: r.get("policy_version"),
+            reason: r.get("reason"),
+            decided_at: str_to_ts(&r.get::<String, _>("decided_at")),
+        }).collect())
+    }
+
     async fn append_reuse_decision(
         &self,
         d: &EvidenceReuseDecision,
@@ -341,18 +366,14 @@ impl ProductPersistence for SqliteStore {
         .fetch_optional(&self.pool)
         .await
         .map_err(backend)?;
-
         match scopes {
             Some((observation_product, target_product))
                 if observation_product == target_product => {}
             Some((observation_product, target_product)) => {
                 return Err(ProductPersistenceError::Invalid(format!(
                     "reuse decision {} cannot bind observation {} from product {} to baseline {} from product {}",
-                    d.reuse_decision_id,
-                    d.observation_id,
-                    observation_product,
-                    d.target_baseline_id,
-                    target_product
+                    d.reuse_decision_id, d.observation_id, observation_product,
+                    d.target_baseline_id, target_product
                 )));
             }
             None => {
@@ -362,7 +383,6 @@ impl ProductPersistence for SqliteStore {
                 )));
             }
         }
-
         sqlx::query("INSERT INTO evidence_reuse_decisions_v1 (reuse_decision_id,observation_id,target_baseline_id,target_candidate_ref,criterion_ref,applicability_state,compatibility_certificate_ref,policy_version,reason,decided_at) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)")
             .bind(&d.reuse_decision_id).bind(&d.observation_id).bind(&d.target_baseline_id).bind(&d.target_candidate_ref).bind(&d.criterion_ref).bind(&d.applicability_state).bind(&d.compatibility_certificate_ref).bind(&d.policy_version).bind(&d.reason).bind(ts_to_str(d.decided_at))
             .execute(&self.pool).await.map_err(backend)?;
@@ -399,7 +419,6 @@ impl ProductPersistence for SqliteStore {
             .execute(&mut *tx)
             .await
             .map_err(backend)?;
-
             if inserted.rows_affected() == 0 {
                 let row = sqlx::query(
                     "SELECT invalidation_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at

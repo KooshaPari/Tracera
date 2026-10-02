@@ -5,45 +5,62 @@ use axum::{
 };
 use serde::Deserialize;
 
-use crate::{product::ProductPersistenceError, AppState};
+use crate::{
+    product::{application::MAX_PRODUCT_READ_LIMIT, ProductPersistenceError},
+    AppState,
+};
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct LimitQuery {
     #[serde(default = "default_limit")]
-    limit: usize,
+    limit: u32,
 }
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct ObservationQuery {
     #[serde(default = "default_limit")]
-    limit: usize,
+    limit: u32,
     subject_local_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct InvalidationQuery {
     #[serde(default = "default_limit")]
-    limit: usize,
+    limit: u32,
     target_ref: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct ReuseQuery {
     #[serde(default = "default_limit")]
-    limit: usize,
+    limit: u32,
     candidate_ref: String,
 }
 
-fn default_limit() -> usize {
+fn default_limit() -> u32 {
     100
 }
 
-fn bounded_limit(limit: usize) -> usize {
-    limit.clamp(1, 1000)
+fn bounded_limit(limit: u32) -> u32 {
+    limit.clamp(1, MAX_PRODUCT_READ_LIMIT)
+}
+
+/// These are bounded reads, not cursor APIs. Reaching the limit leaves
+/// completeness unproven, even when the true count happens to equal the limit.
+fn page_info(count: usize, limit: u32) -> serde_json::Value {
+    let complete = count < limit as usize;
+    serde_json::json!({
+        "limit": limit,
+        "returned": count,
+        "complete": complete,
+        "completeness": if complete { "complete" } else { "unknown_at_limit" },
+        "pagination_supported": false,
+        "continuation": null
+    })
 }
 
 fn persistence_error(error: ProductPersistenceError) -> (StatusCode, Json<serde_json::Value>) {
-    let (status, kind) = match error {
+    let (status, kind) = match &error {
         ProductPersistenceError::NotFound(_) => (StatusCode::NOT_FOUND, "not_found"),
         ProductPersistenceError::Conflict(_) => (StatusCode::CONFLICT, "conflict"),
         ProductPersistenceError::Invalid(_) => (StatusCode::BAD_REQUEST, "invalid"),
@@ -51,10 +68,13 @@ fn persistence_error(error: ProductPersistenceError) -> (StatusCode, Json<serde_
             (StatusCode::INTERNAL_SERVER_ERROR, "persistence_error")
         }
     };
-    (
-        status,
-        Json(serde_json::json!({"error": kind, "message": error.to_string()})),
-    )
+    let message = if matches!(&error, ProductPersistenceError::Backend(_)) {
+        tracing::error!(error = %error, "product persistence request failed");
+        "product persistence unavailable".to_string()
+    } else {
+        error.to_string()
+    };
+    (status, Json(serde_json::json!({"error": kind, "message": message})))
 }
 
 pub(crate) async fn get_product(
@@ -80,16 +100,19 @@ pub(crate) async fn list_baseline_entities(
     Path((product_id, baseline_id)): Path<(String, String)>,
     Query(query): Query<LimitQuery>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, Json<serde_json::Value>)> {
+    let limit = bounded_limit(query.limit);
     let entities = state
         .product
-        .list_baseline_entities(&product_id, &baseline_id, bounded_limit(query.limit))
+        .list_baseline_entities(&product_id, &baseline_id, limit)
         .await
         .map_err(persistence_error)?;
+    let count = entities.len();
     Ok(Json(serde_json::json!({
         "product_id": product_id,
         "baseline_id": baseline_id,
         "entities": entities,
-        "count": entities.len()
+        "count": count,
+        "page": page_info(count, limit)
     })))
 }
 
@@ -98,22 +121,20 @@ pub(crate) async fn list_observations(
     Path((product_id, baseline_id)): Path<(String, String)>,
     Query(query): Query<ObservationQuery>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, Json<serde_json::Value>)> {
+    let limit = bounded_limit(query.limit);
     let observations = state
         .product
-        .list_observations(
-            &product_id,
-            &baseline_id,
-            query.subject_local_id.as_deref(),
-            bounded_limit(query.limit),
-        )
+        .list_observations(&product_id, &baseline_id, query.subject_local_id.as_deref(), limit)
         .await
         .map_err(persistence_error)?;
+    let count = observations.len();
     Ok(Json(serde_json::json!({
         "product_id": product_id,
         "baseline_id": baseline_id,
         "subject_local_id": query.subject_local_id,
         "observations": observations,
-        "count": observations.len()
+        "count": count,
+        "page": page_info(count, limit)
     })))
 }
 
@@ -122,30 +143,21 @@ pub(crate) async fn list_reuse_decisions(
     Path((product_id, baseline_id)): Path<(String, String)>,
     Query(query): Query<ReuseQuery>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, Json<serde_json::Value>)> {
-    // Baseline membership is product-scoped in the persistence port. Resolve it
-    // first so a path that names product A cannot project reuse decisions for a
-    // baseline owned by product B.
-    state
-        .product
-        .list_baseline_entities(&product_id, &baseline_id, 1)
-        .await
-        .map_err(persistence_error)?;
-
+    let limit = bounded_limit(query.limit);
+    // Product scope is part of the application/port call, not an empty-list probe.
     let decisions = state
         .product
-        .list_reuse_decisions_for_target(
-            &baseline_id,
-            &query.candidate_ref,
-            bounded_limit(query.limit),
-        )
+        .list_reuse_decisions_for_target(&product_id, &baseline_id, &query.candidate_ref, limit)
         .await
         .map_err(persistence_error)?;
+    let count = decisions.len();
     Ok(Json(serde_json::json!({
         "product_id": product_id,
         "baseline_id": baseline_id,
         "candidate_ref": query.candidate_ref,
         "reuse_decisions": decisions,
-        "count": decisions.len()
+        "count": count,
+        "page": page_info(count, limit)
     })))
 }
 
@@ -154,48 +166,21 @@ pub(crate) async fn list_invalidations(
     Path(target_kind): Path<String>,
     Query(query): Query<InvalidationQuery>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, Json<serde_json::Value>)> {
+    let limit = bounded_limit(query.limit);
     let invalidations = state
         .product
-        .list_invalidations(
-            &target_kind,
-            &query.target_ref,
-            bounded_limit(query.limit),
-        )
+        .list_invalidations(&target_kind, &query.target_ref, limit)
         .await
         .map_err(persistence_error)?;
+    let count = invalidations.len();
     Ok(Json(serde_json::json!({
         "target_kind": target_kind,
         "target_ref": query.target_ref,
         "invalidations": invalidations,
-        "count": invalidations.len()
+        "count": count,
+        "page": page_info(count, limit)
     })))
 }
 
-
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn product_query_limits_are_bounded() {
-        assert_eq!(bounded_limit(0), 1);
-        assert_eq!(bounded_limit(1), 1);
-        assert_eq!(bounded_limit(100), 100);
-        assert_eq!(bounded_limit(10_000), 1000);
-    }
-
-    #[test]
-    fn product_persistence_errors_map_truthfully_to_http_status() {
-        let (status, _) = persistence_error(ProductPersistenceError::NotFound("x".into()));
-        assert_eq!(status, StatusCode::NOT_FOUND);
-
-        let (status, _) = persistence_error(ProductPersistenceError::Conflict("x".into()));
-        assert_eq!(status, StatusCode::CONFLICT);
-
-        let (status, _) = persistence_error(ProductPersistenceError::Invalid("x".into()));
-        assert_eq!(status, StatusCode::BAD_REQUEST);
-
-        let (status, _) = persistence_error(ProductPersistenceError::Backend("x".into()));
-        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
-    }
-}
+mod tests;

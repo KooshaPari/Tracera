@@ -1,3 +1,5 @@
+//! Backend-neutral application boundary for product reads and baseline acceptance.
+
 use std::{future::Future, pin::Pin, sync::Arc};
 
 use super::{
@@ -5,22 +7,23 @@ use super::{
     PersistedObservation, PersistedProduct, ProductPersistence, ProductPersistenceError,
 };
 
-type ProductFuture<'a, T> =
+pub const MAX_PRODUCT_READ_LIMIT: u32 = 1000;
+
+pub type ProductFuture<'a, T> =
     Pin<Box<dyn Future<Output = Result<T, ProductPersistenceError>> + Send + 'a>>;
 
-/// Object-safe application boundary for mature product persistence.
-///
-/// HTTP/MCP transports depend on this façade rather than concrete SQLite/Postgres
-/// stores or the legacy monolithic Store trait.
+/// Object-safe application boundary. The legacy Store is deliberately separate.
 pub trait ProductApplicationService: Send + Sync {
-    fn get_product<'a>(&'a self, product_id: &'a str)
-        -> ProductFuture<'a, Option<PersistedProduct>>;
+    fn get_product<'a>(
+        &'a self,
+        product_id: &'a str,
+    ) -> ProductFuture<'a, Option<PersistedProduct>>;
 
     fn list_baseline_entities<'a>(
         &'a self,
         product_id: &'a str,
         baseline_id: &'a str,
-        limit: usize,
+        limit: u32,
     ) -> ProductFuture<'a, Vec<PersistedEntityRevision>>;
 
     fn list_observations<'a>(
@@ -28,21 +31,22 @@ pub trait ProductApplicationService: Send + Sync {
         product_id: &'a str,
         baseline_id: &'a str,
         subject_local_id: Option<&'a str>,
-        limit: usize,
+        limit: u32,
     ) -> ProductFuture<'a, Vec<PersistedObservation>>;
 
     fn list_reuse_decisions_for_target<'a>(
         &'a self,
+        product_id: &'a str,
         target_baseline_id: &'a str,
         target_candidate_ref: &'a str,
-        limit: usize,
+        limit: u32,
     ) -> ProductFuture<'a, Vec<EvidenceReuseDecision>>;
 
     fn list_invalidations<'a>(
         &'a self,
         target_kind: &'a str,
         target_ref: &'a str,
-        limit: usize,
+        limit: u32,
     ) -> ProductFuture<'a, Vec<InvalidationEvent>>;
 
     fn accept_baseline<'a>(
@@ -62,9 +66,39 @@ impl<P> ProductApplication<P> {
     }
 }
 
+fn validate_limit(limit: u32) -> Result<(), ProductPersistenceError> {
+    if !(1..=MAX_PRODUCT_READ_LIMIT).contains(&limit) {
+        return Err(ProductPersistenceError::Invalid(format!(
+            "read limit must be between 1 and {MAX_PRODUCT_READ_LIMIT}"
+        )));
+    }
+    Ok(())
+}
+
+impl<P: ProductPersistence> ProductApplication<P> {
+    async fn require_baseline(
+        &self,
+        product_id: &str,
+        baseline_id: &str,
+    ) -> Result<(), ProductPersistenceError> {
+        // An empty membership list can mean either a valid empty baseline or
+        // a missing/foreign baseline. It is never an ownership certificate.
+        self.persistence
+            .get_baseline(product_id, baseline_id)
+            .await?
+            .filter(|baseline| {
+                baseline.product_id == product_id && baseline.baseline_id == baseline_id
+            })
+            .ok_or_else(|| {
+                ProductPersistenceError::NotFound("baseline not found in product scope".into())
+            })?;
+        Ok(())
+    }
+}
+
 impl<P> ProductApplicationService for ProductApplication<P>
 where
-    P: ProductPersistence + Send + Sync + 'static,
+    P: ProductPersistence + 'static,
 {
     fn get_product<'a>(
         &'a self,
@@ -77,9 +111,11 @@ where
         &'a self,
         product_id: &'a str,
         baseline_id: &'a str,
-        limit: usize,
+        limit: u32,
     ) -> ProductFuture<'a, Vec<PersistedEntityRevision>> {
         Box::pin(async move {
+            validate_limit(limit)?;
+            self.require_baseline(product_id, baseline_id).await?;
             self.persistence
                 .list_baseline_entities(product_id, baseline_id, limit)
                 .await
@@ -91,9 +127,11 @@ where
         product_id: &'a str,
         baseline_id: &'a str,
         subject_local_id: Option<&'a str>,
-        limit: usize,
+        limit: u32,
     ) -> ProductFuture<'a, Vec<PersistedObservation>> {
         Box::pin(async move {
+            validate_limit(limit)?;
+            self.require_baseline(product_id, baseline_id).await?;
             self.persistence
                 .list_observations(product_id, baseline_id, subject_local_id, limit)
                 .await
@@ -102,13 +140,17 @@ where
 
     fn list_reuse_decisions_for_target<'a>(
         &'a self,
+        product_id: &'a str,
         target_baseline_id: &'a str,
         target_candidate_ref: &'a str,
-        limit: usize,
+        limit: u32,
     ) -> ProductFuture<'a, Vec<EvidenceReuseDecision>> {
         Box::pin(async move {
+            validate_limit(limit)?;
+            self.require_baseline(product_id, target_baseline_id).await?;
             self.persistence
                 .list_reuse_decisions_for_target(
+                    product_id,
                     target_baseline_id,
                     target_candidate_ref,
                     limit,
@@ -121,9 +163,10 @@ where
         &'a self,
         target_kind: &'a str,
         target_ref: &'a str,
-        limit: usize,
+        limit: u32,
     ) -> ProductFuture<'a, Vec<InvalidationEvent>> {
         Box::pin(async move {
+            validate_limit(limit)?;
             self.persistence
                 .list_invalidations(target_kind, target_ref, limit)
                 .await
@@ -143,12 +186,17 @@ where
 mod tests {
     use super::*;
 
-    fn assert_object_safe(_: Arc<dyn ProductApplicationService>) {}
-
     #[test]
     fn product_application_service_is_object_safe() {
-        fn accepts(_: &dyn ProductApplicationService) {}
+        fn accepts(_: Arc<dyn ProductApplicationService>) {}
         let _ = accepts;
-        let _ = assert_object_safe;
+    }
+
+    #[test]
+    fn direct_application_calls_cannot_request_unbounded_reads() {
+        assert!(validate_limit(0).is_err());
+        assert!(validate_limit(1).is_ok());
+        assert!(validate_limit(MAX_PRODUCT_READ_LIMIT).is_ok());
+        assert!(validate_limit(u32::MAX).is_err());
     }
 }
