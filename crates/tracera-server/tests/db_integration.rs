@@ -12,8 +12,9 @@ use sqlx::{
 };
 
 use tracera_server::product::{
-    EvidenceReuseDecision, InvalidationEvent, PersistedBaseline, PersistedEntity,
-    PersistedEntityRevision, PersistedObservation, PersistedProduct, ProductPersistence,
+    DependencyAuthority, DependencyEdge, EvidenceReuseDecision, InvalidationEvent,
+    PersistedBaseline, PersistedEntity, PersistedEntityRevision, PersistedObservation,
+    PersistedProduct, ProductPersistence, execute_dependency_invalidation,
 };
 use tracera_server::sqlite_store::SqliteStore;
 use tracera_server::store::Store;
@@ -153,6 +154,68 @@ async fn sprint_roundtrip() {
     let sprints = store.list_sprints().await.expect("list sprints");
     assert_eq!(sprints.len(), 1);
     assert_eq!(sprints[0].name, "Sprint 1");
+}
+
+#[tokio::test]
+async fn persistence_backed_invalidation_preserves_partial_continuation_and_event_count() {
+    let store = mem_store().await;
+    let edges = vec![
+        DependencyEdge {
+            dependency: "schema".into(),
+            dependent: "criterion-a".into(),
+            authority: DependencyAuthority::Accepted,
+            revision: "r1".into(),
+            active: true,
+        },
+        DependencyEdge {
+            dependency: "criterion-a".into(),
+            dependent: "criterion-b".into(),
+            authority: DependencyAuthority::Accepted,
+            revision: "r1".into(),
+            active: true,
+        },
+    ];
+
+    let result = execute_dependency_invalidation(
+        &store,
+        &["schema".into()],
+        &edges,
+        "r1",
+        2,
+        "change:bounded",
+        "criterion",
+    )
+    .await
+    .expect("execute bounded invalidation");
+
+    assert!(!result.plan.propagation.complete);
+    assert_eq!(result.plan.propagation.affected, vec!["schema", "criterion-a"]);
+    assert_eq!(result.plan.propagation.continuation, vec!["criterion-b"]);
+    assert_eq!(result.persisted_events, 1);
+
+    let persisted = ProductPersistence::list_invalidations(
+        &store,
+        "criterion",
+        "criterion-a",
+        10,
+    )
+    .await
+    .expect("list persisted invalidations");
+    assert_eq!(persisted.len(), 1);
+    assert_eq!(persisted[0].trigger_ref, "change:bounded");
+
+    let not_yet_visited = ProductPersistence::list_invalidations(
+        &store,
+        "criterion",
+        "criterion-b",
+        10,
+    )
+    .await
+    .expect("list continuation target invalidations");
+    assert!(
+        not_yet_visited.is_empty(),
+        "continuation target must not be falsely persisted as already invalidated"
+    );
 }
 
 #[tokio::test]
