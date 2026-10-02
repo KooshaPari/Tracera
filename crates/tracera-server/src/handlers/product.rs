@@ -112,9 +112,18 @@ pub(crate) async fn list_observations(
 
 pub(crate) async fn list_reuse_decisions(
     State(state): State<AppState>,
-    Path((_product_id, baseline_id)): Path<(String, String)>,
+    Path((product_id, baseline_id)): Path<(String, String)>,
     Query(query): Query<ReuseQuery>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, Json<serde_json::Value>)> {
+    // Baseline membership is product-scoped in the persistence port. Resolve it
+    // first so a path that names product A cannot project reuse decisions for a
+    // baseline owned by product B.
+    state
+        .product
+        .list_baseline_entities(&product_id, &baseline_id, 1)
+        .await
+        .map_err(persistence_error)?;
+
     let decisions = state
         .product
         .list_reuse_decisions_for_target(
@@ -125,6 +134,7 @@ pub(crate) async fn list_reuse_decisions(
         .await
         .map_err(persistence_error)?;
     Ok(Json(serde_json::json!({
+        "product_id": product_id,
         "baseline_id": baseline_id,
         "candidate_ref": query.candidate_ref,
         "reuse_decisions": decisions,
