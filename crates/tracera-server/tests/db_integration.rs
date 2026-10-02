@@ -217,9 +217,10 @@ async fn certificate_revocation_persists_reuse_invalidation_without_deleting_obs
         .await
         .expect("append reuse");
 
-    let result = execute_certificate_revocation(&store, "cert:1", &[reuse.reuse_decision_id.clone()])
-        .await
-        .expect("execute certificate revocation");
+    let result =
+        execute_certificate_revocation(&store, "cert:1", &[reuse.reuse_decision_id.clone()])
+            .await
+            .expect("execute certificate revocation");
     assert!(result.plan.propagation.complete);
     assert_eq!(result.persisted_events, 1);
 
