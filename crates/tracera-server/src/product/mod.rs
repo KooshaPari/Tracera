@@ -1,3 +1,4 @@
+pub mod application;
 //! Product identity, baseline, observation, assessment, and detection (WP-02..11).
 //!
 //! This module introduces the stable identity and assessment layer that sits
