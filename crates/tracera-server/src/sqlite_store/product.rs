@@ -324,7 +324,11 @@ impl ProductPersistence for SqliteStore {
         target_candidate_ref: &str,
         limit: u32,
     ) -> Result<Vec<EvidenceReuseDecision>, ProductPersistenceError> {
-        if self.get_baseline(product_id, target_baseline_id).await?.is_none() {
+        if self
+            .get_baseline(product_id, target_baseline_id)
+            .await?
+            .is_none()
+        {
             return Err(ProductPersistenceError::NotFound(
                 "baseline not found in product scope".into(),
             ));
@@ -337,18 +341,21 @@ impl ProductPersistence for SqliteStore {
             .fetch_all(&self.pool)
             .await
             .map_err(backend)?;
-        Ok(rows.into_iter().map(|r| EvidenceReuseDecision {
-            reuse_decision_id: r.get("reuse_decision_id"),
-            observation_id: r.get("observation_id"),
-            target_baseline_id: r.get("target_baseline_id"),
-            target_candidate_ref: r.get("target_candidate_ref"),
-            criterion_ref: r.get("criterion_ref"),
-            applicability_state: r.get("applicability_state"),
-            compatibility_certificate_ref: r.get("compatibility_certificate_ref"),
-            policy_version: r.get("policy_version"),
-            reason: r.get("reason"),
-            decided_at: str_to_ts(&r.get::<String, _>("decided_at")),
-        }).collect())
+        Ok(rows
+            .into_iter()
+            .map(|r| EvidenceReuseDecision {
+                reuse_decision_id: r.get("reuse_decision_id"),
+                observation_id: r.get("observation_id"),
+                target_baseline_id: r.get("target_baseline_id"),
+                target_candidate_ref: r.get("target_candidate_ref"),
+                criterion_ref: r.get("criterion_ref"),
+                applicability_state: r.get("applicability_state"),
+                compatibility_certificate_ref: r.get("compatibility_certificate_ref"),
+                policy_version: r.get("policy_version"),
+                reason: r.get("reason"),
+                decided_at: str_to_ts(&r.get::<String, _>("decided_at")),
+            })
+            .collect())
     }
 
     async fn append_reuse_decision(

@@ -74,7 +74,10 @@ fn persistence_error(error: ProductPersistenceError) -> (StatusCode, Json<serde_
     } else {
         error.to_string()
     };
-    (status, Json(serde_json::json!({"error": kind, "message": message})))
+    (
+        status,
+        Json(serde_json::json!({"error": kind, "message": message})),
+    )
 }
 
 pub(crate) async fn get_product(
@@ -124,7 +127,12 @@ pub(crate) async fn list_observations(
     let limit = bounded_limit(query.limit);
     let observations = state
         .product
-        .list_observations(&product_id, &baseline_id, query.subject_local_id.as_deref(), limit)
+        .list_observations(
+            &product_id,
+            &baseline_id,
+            query.subject_local_id.as_deref(),
+            limit,
+        )
         .await
         .map_err(persistence_error)?;
     let count = observations.len();

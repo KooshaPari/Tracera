@@ -147,7 +147,8 @@ where
     ) -> ProductFuture<'a, Vec<EvidenceReuseDecision>> {
         Box::pin(async move {
             validate_limit(limit)?;
-            self.require_baseline(product_id, target_baseline_id).await?;
+            self.require_baseline(product_id, target_baseline_id)
+                .await?;
             self.persistence
                 .list_reuse_decisions_for_target(
                     product_id,

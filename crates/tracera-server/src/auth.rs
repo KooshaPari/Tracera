@@ -79,16 +79,27 @@ mod tests {
     #[test]
     fn only_registered_probes_are_public() {
         for path in [
-            "/health", "/healthz", "/ready", "/readyz", "/api/v1/health",
-            "/api/v1/csrf-token", "/evidence/health", "/sdlc-pm/health",
-            "/problems/health", "/org-intel/health",
+            "/health",
+            "/healthz",
+            "/ready",
+            "/readyz",
+            "/api/v1/health",
+            "/api/v1/csrf-token",
+            "/evidence/health",
+            "/sdlc-pm/health",
+            "/problems/health",
+            "/org-intel/health",
         ] {
             assert!(is_health_route(path), "{path} should be a probe route");
         }
         for path in [
-            "/evidence", "/api/v1/projects", "/api/v1/products/health",
-            "/api/v1/products/healthz", "/api/v1/product-invalidations/health",
-            "/api/v1/projects/health", "/api/v1/items/healthz",
+            "/evidence",
+            "/api/v1/projects",
+            "/api/v1/products/health",
+            "/api/v1/products/healthz",
+            "/api/v1/product-invalidations/health",
+            "/api/v1/projects/health",
+            "/api/v1/items/healthz",
         ] {
             assert!(!is_health_route(path), "{path} is an application route");
         }
