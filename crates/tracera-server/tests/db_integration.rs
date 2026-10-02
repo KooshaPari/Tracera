@@ -158,6 +158,100 @@ async fn sprint_roundtrip() {
 }
 
 #[tokio::test]
+async fn certificate_revocation_persists_reuse_invalidation_without_deleting_observation() {
+    let store = mem_store().await;
+    let t = now();
+
+    ProductPersistence::create_product(
+        &store,
+        &PersistedProduct {
+            product_id: "cert-product".into(),
+            display_name: "Certificate Product".into(),
+            created_at: t,
+        },
+    )
+    .await
+    .expect("create product");
+    let baseline = PersistedBaseline {
+        baseline_id: "cert-b1".into(),
+        product_id: "cert-product".into(),
+        revision_number: 1,
+        parent_baseline_id: None,
+        accepted_at: t,
+        metadata: json!({}),
+    };
+    ProductPersistence::accept_baseline(&store, &baseline, &[])
+        .await
+        .expect("accept baseline");
+    let observation = PersistedObservation {
+        observation_id: "cert-o1".into(),
+        product_id: "cert-product".into(),
+        baseline_id: baseline.baseline_id.clone(),
+        subject_entity_id: None,
+        subject_local_id: Some("search".into()),
+        candidate_ref: "git:observed".into(),
+        configuration: json!({}),
+        result: "passed".into(),
+        verifier_id: "suite".into(),
+        verifier_version: "1".into(),
+        recorded_at: t,
+        raw_evidence_ref: Some("artifact:original".into()),
+        metadata: json!({}),
+    };
+    ProductPersistence::append_observation(&store, &observation)
+        .await
+        .expect("append observation");
+    let reuse = EvidenceReuseDecision {
+        reuse_decision_id: "cert-r1".into(),
+        observation_id: observation.observation_id.clone(),
+        target_baseline_id: baseline.baseline_id.clone(),
+        target_candidate_ref: "git:target".into(),
+        criterion_ref: "search-compatible".into(),
+        applicability_state: "current_valid".into(),
+        compatibility_certificate_ref: Some("cert:1".into()),
+        policy_version: "reuse-v1".into(),
+        reason: "compatible".into(),
+        decided_at: t,
+    };
+    ProductPersistence::append_reuse_decision(&store, &reuse)
+        .await
+        .expect("append reuse");
+
+    let result = execute_certificate_revocation(&store, "cert:1", &[reuse.reuse_decision_id.clone()])
+        .await
+        .expect("execute certificate revocation");
+    assert!(result.plan.propagation.complete);
+    assert_eq!(result.persisted_events, 1);
+
+    let invalidations = ProductPersistence::list_invalidations(
+        &store,
+        "reuse_decision",
+        &reuse.reuse_decision_id,
+        10,
+    )
+    .await
+    .expect("list reuse invalidations");
+    assert_eq!(invalidations.len(), 1);
+    assert_eq!(invalidations[0].new_state, "suspect");
+    assert_eq!(invalidations[0].trigger_ref, "cert:1");
+
+    let observations = ProductPersistence::list_observations(
+        &store,
+        "cert-product",
+        &baseline.baseline_id,
+        Some("search"),
+        10,
+    )
+    .await
+    .expect("list observations");
+    assert_eq!(
+        observations,
+        vec![observation],
+        "certificate revocation must preserve the original historical observation"
+    );
+}
+
+#[tokio::test]
 async fn invalidation_batch_replay_is_idempotent_and_conflict_rolls_back() {
     let store = mem_store().await;
     let t = now();
