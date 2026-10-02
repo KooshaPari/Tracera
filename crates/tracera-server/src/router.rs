@@ -12,6 +12,10 @@ use crate::handlers::{
     governance::{blast_radius, confidence, coverage_matrix, impact, spec_check},
     ingest_api::{ingest_agileplus, ingest_github, ingest_jira},
     problems::{create_problem, list_problems},
+    product::{
+        get_product as get_product_v1, list_baseline_entities, list_invalidations,
+        list_observations as list_product_observations, list_reuse_decisions,
+    },
     sprints::{create_sprint, list_sprints},
     stories::{create_story, create_trace_link, list_stories, list_stories_api},
 };
@@ -129,6 +133,23 @@ pub(crate) fn build_router_with_auth(
         .route("/api/v1/coverage-matrix", post(coverage_matrix))
         .route("/api/v1/health", get(crate::health::health))
         .route("/api/v1/csrf-token", get(crate::csrf_token))
+        .route("/api/v1/products/{product_id}", get(get_product_v1))
+        .route(
+            "/api/v1/products/{product_id}/baselines/{baseline_id}/entities",
+            get(list_baseline_entities),
+        )
+        .route(
+            "/api/v1/products/{product_id}/baselines/{baseline_id}/observations",
+            get(list_product_observations),
+        )
+        .route(
+            "/api/v1/products/{product_id}/baselines/{baseline_id}/reuse-decisions",
+            get(list_reuse_decisions),
+        )
+        .route(
+            "/api/v1/product-invalidations/{target_kind}/{target_ref}",
+            get(list_invalidations),
+        )
         .route("/api/v1/impact", post(impact))
         .route("/api/v1/confidence", post(confidence))
         .route("/api/v1/blast-radius", post(blast_radius))
