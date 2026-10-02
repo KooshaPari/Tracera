@@ -21,6 +21,13 @@ pub(crate) struct ObservationQuery {
 }
 
 #[derive(Debug, Deserialize)]
+pub(crate) struct InvalidationQuery {
+    #[serde(default = "default_limit")]
+    limit: usize,
+    target_ref: String,
+}
+
+#[derive(Debug, Deserialize)]
 pub(crate) struct ReuseQuery {
     #[serde(default = "default_limit")]
     limit: usize,
@@ -144,17 +151,21 @@ pub(crate) async fn list_reuse_decisions(
 
 pub(crate) async fn list_invalidations(
     State(state): State<AppState>,
-    Path((target_kind, target_ref)): Path<(String, String)>,
-    Query(query): Query<LimitQuery>,
+    Path(target_kind): Path<String>,
+    Query(query): Query<InvalidationQuery>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, Json<serde_json::Value>)> {
     let invalidations = state
         .product
-        .list_invalidations(&target_kind, &target_ref, bounded_limit(query.limit))
+        .list_invalidations(
+            &target_kind,
+            &query.target_ref,
+            bounded_limit(query.limit),
+        )
         .await
         .map_err(persistence_error)?;
     Ok(Json(serde_json::json!({
         "target_kind": target_kind,
-        "target_ref": target_ref,
+        "target_ref": query.target_ref,
         "invalidations": invalidations,
         "count": invalidations.len()
     })))
