@@ -11,10 +11,11 @@ use sqlx::{
     SqlitePool,
 };
 
+use tracera_server::product::dependencies::{DependencyAuthority, DependencyEdge};
 use tracera_server::product::{
-    DependencyAuthority, DependencyEdge, EvidenceReuseDecision, InvalidationEvent,
-    PersistedBaseline, PersistedEntity, PersistedEntityRevision, PersistedObservation,
-    PersistedProduct, ProductPersistence, execute_dependency_invalidation,
+    EvidenceReuseDecision, InvalidationEvent, PersistedBaseline, PersistedEntity,
+    PersistedEntityRevision, PersistedObservation, PersistedProduct, ProductPersistence,
+    execute_dependency_invalidation,
 };
 use tracera_server::sqlite_store::SqliteStore;
 use tracera_server::store::Store;
