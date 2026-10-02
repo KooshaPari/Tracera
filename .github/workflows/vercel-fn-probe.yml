@@ -1,0 +1,44 @@
+name: Vercel FN Probe
+
+# One-shot diagnostic (dispatch-only, side branch): exercise the production
+# alias THROUGH Vercel's authenticated curl (bypasses Deployment Protection)
+# and pull runtime logs for the crashing /api/healthz invocation.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: authenticated curl of production alias paths
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          set -uo pipefail
+          for p in /api/healthz /api/v1/auth/me /api/v1/projects /api/v1/dashboard/summary; do
+            echo "=================== $p"
+            npx -y vercel@59.19.0 curl "https://tracera-kappa.vercel.app${p}" \
+              --token "$VERCEL_TOKEN" || echo "curl-failed rc=$?"
+          done
+
+      - name: production deployment listing
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          set -uo pipefail
+          npx -y vercel@59.19.0 ls --scope team_uMfxKsua6PPiWqtcD93kzO5r \
+            --token "$VERCEL_TOKEN" || true
+
+      - name: runtime logs for production alias
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          set -uo pipefail
+          npx -y vercel@59.19.0 logs "https://tracera-kappa.vercel.app" \
+            --token "$VERCEL_TOKEN" || true
