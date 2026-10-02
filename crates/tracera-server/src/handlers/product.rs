@@ -170,3 +170,32 @@ pub(crate) async fn list_invalidations(
         "count": invalidations.len()
     })))
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn product_query_limits_are_bounded() {
+        assert_eq!(bounded_limit(0), 1);
+        assert_eq!(bounded_limit(1), 1);
+        assert_eq!(bounded_limit(100), 100);
+        assert_eq!(bounded_limit(10_000), 1000);
+    }
+
+    #[test]
+    fn product_persistence_errors_map_truthfully_to_http_status() {
+        let (status, _) = persistence_error(ProductPersistenceError::NotFound("x".into()));
+        assert_eq!(status, StatusCode::NOT_FOUND);
+
+        let (status, _) = persistence_error(ProductPersistenceError::Conflict("x".into()));
+        assert_eq!(status, StatusCode::CONFLICT);
+
+        let (status, _) = persistence_error(ProductPersistenceError::Invalid("x".into()));
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+
+        let (status, _) = persistence_error(ProductPersistenceError::Backend("x".into()));
+        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    }
+}
