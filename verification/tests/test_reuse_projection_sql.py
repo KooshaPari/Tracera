@@ -3,10 +3,10 @@
 This is SQL-layer evidence only. It is not a Rust, HTTP, or Postgres test.
 Run: python3 -m unittest discover -s verification/tests -p test_reuse_projection_sql.py -v
 """
-from pathlib import Path
 import re
 import sqlite3
 import unittest
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SERVER = ROOT / "crates/tracera-server"
@@ -93,13 +93,19 @@ class ReuseProjectionSqlTests(unittest.TestCase):
         self.assertEqual(self.ids(candidate=candidate), ["r-special"])
 
     def test_queries_do_not_rewrite_observation_history(self):
-        before = [tuple(row) for row in self.db.execute(
-            "SELECT * FROM product_observations_v1 ORDER BY observation_id"
-        )]
+        before = [
+            tuple(row)
+            for row in self.db.execute(
+                "SELECT * FROM product_observations_v1 ORDER BY observation_id"
+            )
+        ]
         self.ids()
-        after = [tuple(row) for row in self.db.execute(
-            "SELECT * FROM product_observations_v1 ORDER BY observation_id"
-        )]
+        after = [
+            tuple(row)
+            for row in self.db.execute(
+                "SELECT * FROM product_observations_v1 ORDER BY observation_id"
+            )
+        ]
         self.assertEqual(before, after)
 
     def test_previous_empty_membership_probe_was_not_an_ownership_check(self):
@@ -107,12 +113,14 @@ class ReuseProjectionSqlTests(unittest.TestCase):
             "SELECT r.entity_revision_id FROM baseline_entity_membership_v1 m "
             "JOIN product_entities_v1 e ON e.entity_id=m.entity_id "
             "JOIN product_entity_revisions_v1 r ON r.entity_revision_id=m.entity_revision_id "
-            "WHERE m.baseline_id=? AND e.product_id=? LIMIT 1", ("b-b", "p-a")
+            "WHERE m.baseline_id=? AND e.product_id=? LIMIT 1",
+            ("b-b", "p-a"),
         ).fetchall()
         self.assertEqual(members, [])
         unscoped = self.db.execute(
             "SELECT reuse_decision_id FROM evidence_reuse_decisions_v1 "
-            "WHERE target_baseline_id=? AND target_candidate_ref=?", ("b-b", "git:target")
+            "WHERE target_baseline_id=? AND target_candidate_ref=?",
+            ("b-b", "git:target"),
         ).fetchall()
         self.assertEqual([row[0] for row in unscoped], ["r-b"])
         self.assertEqual(self.ids("p-a", "b-b"), [])
