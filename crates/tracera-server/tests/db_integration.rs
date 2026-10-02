@@ -158,6 +158,70 @@ async fn sprint_roundtrip() {
 }
 
 #[tokio::test]
+async fn invalidation_batch_replay_is_idempotent_and_conflict_rolls_back() {
+    let store = mem_store().await;
+    let t = now();
+    let first = InvalidationEvent {
+        invalidation_id: "batch-i1".into(),
+        trigger_kind: "dependency_changed".into(),
+        trigger_ref: "change:1".into(),
+        target_kind: "criterion".into(),
+        target_ref: "criterion-a".into(),
+        prior_state: Some("current_valid".into()),
+        new_state: "suspect".into(),
+        reason: "test".into(),
+        occurred_at: t,
+    };
+
+    ProductPersistence::append_invalidations(&store, std::slice::from_ref(&first))
+        .await
+        .expect("initial batch");
+    ProductPersistence::append_invalidations(&store, std::slice::from_ref(&first))
+        .await
+        .expect("exact replay is idempotent");
+
+    let conflicting = InvalidationEvent {
+        target_ref: "criterion-b".into(),
+        ..first.clone()
+    };
+    let new_event = InvalidationEvent {
+        invalidation_id: "batch-i2".into(),
+        target_ref: "criterion-c".into(),
+        ..first.clone()
+    };
+    let err = ProductPersistence::append_invalidations(&store, &[new_event.clone(), conflicting])
+        .await
+        .expect_err("conflicting immutable ID must fail the whole batch");
+    assert!(matches!(
+        err,
+        tracera_server::product::ProductPersistenceError::Conflict(_)
+    ));
+
+    let first_rows = ProductPersistence::list_invalidations(
+        &store,
+        "criterion",
+        "criterion-a",
+        10,
+    )
+    .await
+    .expect("list first event");
+    assert_eq!(first_rows, vec![first]);
+
+    let rolled_back = ProductPersistence::list_invalidations(
+        &store,
+        "criterion",
+        "criterion-c",
+        10,
+    )
+    .await
+    .expect("list rolled back event");
+    assert!(
+        rolled_back.is_empty(),
+        "earlier inserts in a conflicting batch must roll back atomically"
+    );
+}
+
+#[tokio::test]
 async fn persistence_backed_invalidation_preserves_partial_continuation_and_event_count() {
     let store = mem_store().await;
     let edges = vec![
