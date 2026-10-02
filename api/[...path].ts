@@ -243,19 +243,38 @@ const apiImport: Handler = (req, res) => {
 // Router
 // -----------------------------------------------------------------------------
 
+// Parse /api/<segments> out of the original request URL (query stripped).
+function segmentsFromRequestUrl(req: VercelRequest): string[] {
+  const url = req.url ?? "";
+  const q = url.indexOf("?");
+  const pathOnly = (q >= 0 ? url.slice(0, q) : url).replace(/^\/+/, "");
+  const withoutPrefix = pathOnly.startsWith("api/")
+    ? pathOnly.slice("api/".length)
+    : pathOnly;
+  return withoutPrefix.split("/").filter(Boolean);
+}
+
 // `path` is the catch-all under /api/, e.g. ["v1", "projects", "abc", "export"].
 // We normalize: empty segments, query, etc.
 async function route(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (handleCors(req, res)) return;
 
-  // Pull the path from the request URL or from the catch-all param.
-  // Vercel sets `req.query` for dynamic segments; when this file is
-  // /api/[...path].ts, `req.query.path` is a string[] of segments.
-  const rawSegments = Array.isArray(req.query.path)
-    ? (req.query.path as string[])
-    : typeof req.query.path === "string"
-      ? [req.query.path]
-      : [];
+  // Segments come from the REQUEST URL first. Filesystem-routed requests
+  // populate req.query.path, but requests that arrive via the vercel.json
+  // rewrite (/api/:path* -> /api/[...path]) do NOT carry the catch-all
+  // param (observed live: every multi-segment route fell through to
+  // notFound with an empty/foreign path param). req.url is the original
+  // request path in both cases, so it is the single source of truth.
+  const fromUrl = segmentsFromRequestUrl(req);
+  const queryPath = req.query.path;
+  const rawSegments =
+    fromUrl.length > 0
+      ? fromUrl
+      : Array.isArray(queryPath)
+        ? (queryPath as string[])
+        : typeof queryPath === "string" && queryPath.length > 0
+          ? [queryPath]
+          : [];
 
   const segs = rawSegments.map((s) => decodeURIComponent(s)).filter(Boolean);
 
