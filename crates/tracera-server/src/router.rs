@@ -147,7 +147,7 @@ pub(crate) fn build_router_with_auth(
             get(list_reuse_decisions),
         )
         .route(
-            "/api/v1/product-invalidations/{target_kind}/{target_ref}",
+            "/api/v1/product-invalidations/{target_kind}",
             get(list_invalidations),
         )
         .route("/api/v1/impact", post(impact))
