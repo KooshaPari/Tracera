@@ -1,0 +1,628 @@
+{
+  "schema_version": "0.1.0",
+  "product_id": "PRD-TRACERA",
+  "status": "specified_not_executed",
+  "scope": "mature_breadth_wave_1",
+  "cases": [
+    {
+      "id": "TRC-MVC-001",
+      "requirement_id": "TRC-R-STRUCT-HIER",
+      "title": "Hierarchical product structure",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Canonical product structure supports typed containment/decomposition across product, subsystem/component and other accepted structural levels without requiring every entity to share one generic type.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Hierarchical product structure' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-002",
+      "requirement_id": "TRC-R-STRUCT-BOUND",
+      "title": "Bounded expansion and collapse",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "A caller can expand/collapse product structure to a declared bound and receives explicit continuation/partiality when more structure exists.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Bounded expansion and collapse' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-003",
+      "requirement_id": "TRC-R-STRUCT-TYPED",
+      "title": "Typed structural entities",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Product structure distinguishes applicable concepts such as capability, feature, requirement, page, component, service, API, data, policy, process, problem and decision rather than erasing semantics into labels.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Typed structural entities' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-004",
+      "requirement_id": "TRC-R-REL-TYPED",
+      "title": "Typed product relations",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Canonical product relations use registered semantics such as contains, depends-on, implements, verifies, satisfies, derives, conflicts, equivalent-to and supersedes with validation appropriate to each relation.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Typed product relations' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-005",
+      "requirement_id": "TRC-R-REL-CONFLICT",
+      "title": "Relation conflicts are explicit",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Conflicting/equivalent/duplicate relation claims are represented and reconciled explicitly rather than silently overwriting one another.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Relation conflicts are explicit' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-006",
+      "requirement_id": "TRC-R-PROJ-IDENTITY",
+      "title": "Projection preserves canonical identity",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Every human/machine graph projection preserves canonical entity/relation identity even when it filters, groups, lays out or hides elements.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Switch/filter/group projections and verify canonical IDs remain stable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-007",
+      "requirement_id": "TRC-R-PROJ-PARTIAL",
+      "title": "Projection exposes incompleteness",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Progressive loading, pagination, culling or filtering cannot masquerade as a complete product graph; partiality and continuation are explicit.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Load only a subset of graph data and verify the UI/API cannot present absence as complete truth.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-008",
+      "requirement_id": "TRC-R-PROJ-MODES",
+      "title": "Core graph projections",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "The product supports traceability, page-flow, component hierarchy and accepted product/business/technical/UI/security/performance projections over the same canonical truth.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Core graph projections' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-009",
+      "requirement_id": "TRC-R-PROJ-ADV",
+      "title": "Advanced graph projections",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Applicable dependency, hierarchy, impact, journey and other accepted projections derive from canonical product truth without becoming competing truth stores.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Advanced graph projections' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-010",
+      "requirement_id": "TRC-R-PROJ-VIEW",
+      "title": "Saved view identity",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "User-defined or system-defined views/perspectives can retain stable identity/configuration independently of the underlying canonical entities.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Saved view identity' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-011",
+      "requirement_id": "TRC-R-UI-DECOMP",
+      "title": "UI/page decomposition",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Accepted UI structure can be decomposed and navigated across site/page/layout/section/component/element or equivalent typed levels while preserving links to requirements, code and evidence.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'UI/page decomposition' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-012",
+      "requirement_id": "TRC-R-JOURNEY-MODEL",
+      "title": "First-class product journeys",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Journeys are versioned product structures with actors, steps/branches, preconditions, outcomes and links to product entities/requirements/evidence.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'First-class product journeys' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-013",
+      "requirement_id": "TRC-R-PROBLEM",
+      "title": "First-class product problems/dissatisfaction subjects",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Product problems/gaps can be represented independently of execution tickets and linked to affected product structure, observations and findings.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'First-class product problems/dissatisfaction subjects' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-014",
+      "requirement_id": "TRC-R-PROCESS",
+      "title": "First-class product/process structure",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Business/product/system processes may be modeled and linked to product entities without conflating them with AgilePlus work execution lifecycle.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'First-class product/process structure' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-015",
+      "requirement_id": "TRC-R-LIFE-RELEASE",
+      "title": "Release/version identity",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Releases/versions/milestones have stable identity and can reference exact accepted product baselines/configurations/evidence.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Release/version identity' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-016",
+      "requirement_id": "TRC-R-LIFE-EFFECT",
+      "title": "Configuration and effectivity",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Product entities, obligations, evidence and findings can declare applicability/effectivity by version, variant, platform, deployment, customer or other accepted configuration dimensions.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Configuration and effectivity' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-017",
+      "requirement_id": "TRC-R-LIFE-NOLEAK",
+      "title": "No cross-configuration truth leakage",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Evidence/findings for one configuration/effectivity scope cannot silently satisfy or condemn another scope.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Provide passing evidence for configuration A and failing/absent evidence for B; B must not become green.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-018",
+      "requirement_id": "TRC-R-LIFE-RETIRE",
+      "title": "Lifecycle retirement preserves history",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Deprecated/retired/superseded product entities and obligations remain historically queryable with effective ranges/status rather than deletion from product memory.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Lifecycle retirement preserves history' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-019",
+      "requirement_id": "TRC-R-DISS-BUG",
+      "title": "Violation/bug dissatisfaction",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Observed violation of accepted product behavior can produce an attributable dissatisfaction finding scoped to the affected product/configuration.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Violation/bug dissatisfaction' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-020",
+      "requirement_id": "TRC-R-DISS-MISSING",
+      "title": "Missing-capability dissatisfaction",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Absence of an accepted required capability can produce a finding distinct from missing verification evidence.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Remove an accepted capability while retaining unrelated passing evidence; finding must identify missing capability rather than merely missing tests.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-021",
+      "requirement_id": "TRC-R-DISS-PERF",
+      "title": "Performance dissatisfaction",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Measured failure of an accepted performance target can produce a target/candidate/environment-bound finding.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Performance dissatisfaction' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-022",
+      "requirement_id": "TRC-R-DISS-USABILITY",
+      "title": "Usability/accessibility dissatisfaction",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Accepted usability/accessibility obligations can produce findings from qualifying evidence without reducing them to generic test failure.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Usability/accessibility dissatisfaction' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-023",
+      "requirement_id": "TRC-R-DISS-ORPHAN",
+      "title": "Structural dissatisfaction",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Orphaned/unreachable/inconsistent accepted product entities or broken required journeys can produce explainable findings.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Structural dissatisfaction' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-024",
+      "requirement_id": "TRC-R-DISS-PREDICT",
+      "title": "Predictive/simulated dissatisfaction is uncertain derived knowledge",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Predictive or simulated-user findings retain model/method/version/confidence/provenance and cannot be represented as observed fact.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Produce a high-confidence simulated finding; it must remain derived/uncertain and not become an observed violation.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-025",
+      "requirement_id": "TRC-R-INTEROP-IMPORT",
+      "title": "Identity-preserving import",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Applicable external product/spec/evidence formats are imported with source identity/provenance, alias mapping, idempotency and conflict reporting.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Replay the same import and then import a conflicting alias; no duplicate canonical identity and conflict is explicit.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-026",
+      "requirement_id": "TRC-R-INTEROP-EXPORT",
+      "title": "Fidelity-declared export",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Exports declare represented scope/version and known fidelity/loss; exported projections cannot silently claim complete round-trip fidelity.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Fidelity-declared export' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-027",
+      "requirement_id": "TRC-R-ASSET-BREADTH",
+      "title": "Broad artifact/evidence assets",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Traceability can reference code, tests, contracts, APIs, schemas, SBOMs, telemetry, research, policy, data, models and release artifacts without making those native payload stores mandatory.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Broad artifact/evidence assets' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-028",
+      "requirement_id": "TRC-R-LINK-CONFIDENCE",
+      "title": "Inferred link confidence",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Inferred/declared/accepted/deterministic relationships retain authority/confidence sufficient for conservative impact and invalidation semantics.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Mark dependency inferred/uncertain; impact/invalidation must not treat missing proof of dependency as proof of independence.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-029",
+      "requirement_id": "TRC-R-LINK-STALE",
+      "title": "Stale link detection",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Tracera can surface links whose source/target/revision basis is stale or no longer applicable without deleting historical relation evidence.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Construct a counterexample that violates 'Stale link detection' while adjacent product capabilities remain healthy; the violation must remain visible and attributable.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-030",
+      "requirement_id": "TRC-R-COLLAB-AUTH",
+      "title": "Multi-actor proposal and acceptance authority",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Human and agent actors have explicit read/propose/accept/mutate authority; generated proposals never self-authorize accepted product truth.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Inject text instructing an agent to accept its own proposal; accepted baseline must remain unchanged.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    },
+    {
+      "id": "TRC-MVC-031",
+      "requirement_id": "TRC-R-COLLAB-CONFLICT",
+      "title": "Concurrent product changes reconcile explicitly",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted exact product/baseline/configuration fixture",
+        "relevant source/authority known"
+      ],
+      "stimulus": "Concurrent/conflicting proposals are detected and require explicit reconciliation/acceptance rather than last-write-wins mutation.",
+      "expected": "The stated obligation is observably satisfied without changing unrelated canonical truth.",
+      "adversarial": "Submit conflicting concurrent proposals; neither may silently overwrite the other.",
+      "evidence_contract": [
+        "exact product/baseline/configuration",
+        "canonical entity/relation IDs",
+        "verifier identity/version",
+        "raw observable",
+        "declared projection/import/model authority where applicable"
+      ]
+    }
+  ]
+}

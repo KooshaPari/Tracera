@@ -9,6 +9,7 @@ mod memory;
 mod middleware;
 mod observability;
 mod pg_store;
+mod product;
 #[cfg(feature = "phenodag-queue")]
 mod queue;
 mod router;
@@ -38,6 +39,7 @@ const AUTHENTICATED_PROXY_MODE: &str = "authenticated-proxy";
 const LOOPBACK_PUBLISHED_MODE: &str = "loopback-published";
 const PRIVATE_NETWORK_MODE: &str = "private-network";
 
+use product::application::{ProductApplication, ProductApplicationService};
 use store::Store;
 
 // ---------------------------------------------------------------------------
@@ -50,6 +52,7 @@ pub(crate) struct AppState {
     pub(crate) backend: &'static str,
     pub(crate) started_at: Instant,
     pub(crate) store: Arc<dyn Store>,
+    pub(crate) product: Arc<dyn ProductApplicationService>,
     pub(crate) workos_client: tracera_workos::WorkOSClient,
     pub(crate) cache: Option<Arc<tracera_server::cache::CacheClient>>,
     pub(crate) neo4j: Option<Arc<tracera_server::neo4j::Neo4jClient>>,
@@ -188,52 +191,66 @@ async fn main() {
         std::process::exit(1);
     });
 
-    let (store, backend): (Arc<dyn Store>, &'static str) =
-        if database_url.starts_with("postgres://") || database_url.starts_with("postgresql://") {
-            info!("Backend: Postgres (server tier)");
-            let pool = db::connect_postgres(&database_url)
-                .await
-                .unwrap_or_else(|e| {
-                    eprintln!("FATAL: Cannot connect to Postgres: {e}");
-                    std::process::exit(1);
-                });
-            sqlx::migrate!("./migrations-postgres")
-                .run(&pool)
-                .await
-                .unwrap_or_else(|e| {
-                    eprintln!("FATAL: Postgres migration failed: {e}");
-                    std::process::exit(1);
-                });
-            info!("Postgres migrations applied successfully");
-            (Arc::new(pg_store::PgStore::new(pool)), "postgres")
-        } else if database_url.starts_with("sqlite://")
-            || database_url.starts_with("sqlite:")
-            || database_url.ends_with(".db")
-        {
-            info!("Backend: SQLite (on-device tier)");
-            let pool = db::connect_sqlite(&database_url).await.unwrap_or_else(|e| {
-                eprintln!("FATAL: Cannot open SQLite: {e}");
+    let (store, product, backend): (
+        Arc<dyn Store>,
+        Arc<dyn ProductApplicationService>,
+        &'static str,
+    ) = if database_url.starts_with("postgres://") || database_url.starts_with("postgresql://") {
+        info!("Backend: Postgres (server tier)");
+        let pool = db::connect_postgres(&database_url)
+            .await
+            .unwrap_or_else(|e| {
+                eprintln!("FATAL: Cannot connect to Postgres: {e}");
                 std::process::exit(1);
             });
-            sqlx::migrate!("./migrations-sqlite")
-                .run(&pool)
-                .await
-                .unwrap_or_else(|e| {
-                    eprintln!("FATAL: SQLite migration failed: {e}");
-                    std::process::exit(1);
-                });
-            info!("SQLite migrations applied successfully");
-            (Arc::new(sqlite_store::SqliteStore::new(pool)), "sqlite")
-        } else {
-            eprintln!("FATAL: Unrecognised DATABASE_URL scheme.");
+        sqlx::migrate!("./migrations-postgres")
+            .run(&pool)
+            .await
+            .unwrap_or_else(|e| {
+                eprintln!("FATAL: Postgres migration failed: {e}");
+                std::process::exit(1);
+            });
+        info!("Postgres migrations applied successfully");
+        let concrete = Arc::new(pg_store::PgStore::new(pool));
+        (
+            concrete.clone() as Arc<dyn Store>,
+            Arc::new(ProductApplication::new(concrete)) as Arc<dyn ProductApplicationService>,
+            "postgres",
+        )
+    } else if database_url.starts_with("sqlite://")
+        || database_url.starts_with("sqlite:")
+        || database_url.ends_with(".db")
+    {
+        info!("Backend: SQLite (on-device tier)");
+        let pool = db::connect_sqlite(&database_url).await.unwrap_or_else(|e| {
+            eprintln!("FATAL: Cannot open SQLite: {e}");
             std::process::exit(1);
-        };
+        });
+        sqlx::migrate!("./migrations-sqlite")
+            .run(&pool)
+            .await
+            .unwrap_or_else(|e| {
+                eprintln!("FATAL: SQLite migration failed: {e}");
+                std::process::exit(1);
+            });
+        info!("SQLite migrations applied successfully");
+        let concrete = Arc::new(sqlite_store::SqliteStore::new(pool));
+        (
+            concrete.clone() as Arc<dyn Store>,
+            Arc::new(ProductApplication::new(concrete)) as Arc<dyn ProductApplicationService>,
+            "sqlite",
+        )
+    } else {
+        eprintln!("FATAL: Unrecognised DATABASE_URL scheme.");
+        std::process::exit(1);
+    };
 
     let state = AppState {
         version: env!("CARGO_PKG_VERSION").to_string(),
         backend,
         started_at: Instant::now(),
         store,
+        product,
         workos_client: tracera_workos::WorkOSClient::default_for_router(),
         cache: tracera_server::cache::CacheClient::from_env().map(Arc::new),
         neo4j: tracera_server::neo4j::Neo4jClient::from_env()

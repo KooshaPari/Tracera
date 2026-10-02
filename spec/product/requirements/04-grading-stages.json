@@ -1,0 +1,207 @@
+{
+  "schema_version": "0.2.0",
+  "product_id": "PRD-TRACERA",
+  "catalog_status": "source_backed_in_progress",
+  "domain": "grading_stages_and_asset_state",
+  "count_policy": "derived_only",
+  "requirements": [
+    {
+      "id": "TRC-R-STATUS-SHAPE",
+      "title": "Progress separates completeness from usable shape",
+      "statement": "Product status separately reports mature-contract completeness, stage readiness, and usable feature/journey closure or shape.",
+      "positive": "Two fixtures with equal raw obligation ratio but different journey closure produce distinct shape/readiness outputs.",
+      "negative": "A single percent-done field is insufficient as the sole product-state representation.",
+      "sources": [
+        "SRC-001",
+        "SRC-030"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "product status model"
+      ]
+    },
+    {
+      "id": "TRC-R-STAGE-PROJECTION",
+      "title": "VP stages are semantic projections",
+      "statement": "CVP/MVP/other stages select requirements, features, and journeys from the mature contract by coherent outcome/dependency rules.",
+      "positive": "Every required stage obligation is justified by an outcome/dependency and blockers derive from that projection.",
+      "negative": "Fixed percentages, requirement counts, or array positions must not determine stage membership.",
+      "sources": [
+        "SRC-001",
+        "SRC-035"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "contract/stage model"
+      ]
+    },
+    {
+      "id": "TRC-R-STUB-SURVIVE",
+      "title": "Stage implementations expose transition debt",
+      "statement": "Early usable stages prefer mature-shaped boundaries and explicitly classify temporary implementations whose later replacement/migration burden is nontrivial.",
+      "positive": "Stage-critical stubs/adapters record disposition, consumers, and replacement/migration burden.",
+      "negative": "Healthy transition readiness cannot be claimed while hiding required rewrites of the core spine.",
+      "sources": [
+        "SRC-001",
+        "SRC-030"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "contract/status model"
+      ]
+    },
+    {
+      "id": "TRC-R-TRACE-GRADE-SEPARATE",
+      "title": "Behavioral grade and trace completeness remain separate",
+      "statement": "A requirement's behavioral result and completeness of specification/design/implementation/test/evidence trace links are independently represented.",
+      "positive": "Represent a behaviorally failed but fully traced requirement and a verified but incompletely traced requirement without conflating states.",
+      "negative": "Missing trace links must not fabricate a behavioral failure, and a passing behavior must not imply complete traceability.",
+      "sources": [
+        "SRC-001",
+        "SRC-029"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "autograder/trace model"
+      ]
+    },
+    {
+      "id": "TRC-R-NO-EMPTY-GREEN",
+      "title": "Empty grading denominator is undefined",
+      "statement": "A stage or requirement selection with no applicable graded obligations cannot produce a successful completion percentage or stage achievement.",
+      "positive": "Grade an empty projection and receive undefined/not-assessable with explanation.",
+      "negative": "0/0 becoming 100% or achieved is prohibited.",
+      "sources": [
+        "SRC-001",
+        "SRC-030"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "autograder"
+      ]
+    },
+    {
+      "id": "TRC-R-ACCEPT-INDEPENDENT",
+      "title": "Implementation cannot silently weaken its own acceptance policy",
+      "statement": "Changes to behavior cannot silently remove or weaken the acceptance policy used to grade that same behavior without separately authorized contract change.",
+      "positive": "Modify implementation while retaining prior accepted criterion; failure remains visible until an independently accepted criterion revision exists.",
+      "negative": "Deleting/fuzzing the failing check in the same implementation change must not manufacture green.",
+      "sources": [
+        "SRC-002",
+        "SRC-027",
+        "SRC-030"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "contract governance",
+        "autograder"
+      ]
+    },
+    {
+      "id": "TRC-R-SCOPE-DELTA",
+      "title": "Scope delta reported separately from engineering progress",
+      "statement": "Adding, retiring, or changing accepted obligations is reported independently from implementation/verification progress.",
+      "positive": "Add a requirement to a new baseline and show scope increase separately from unchanged verified-work amount.",
+      "negative": "Retiring requirements must not be reported as implementation work completed.",
+      "sources": [
+        "SRC-001",
+        "SRC-006"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "baseline/status model"
+      ]
+    },
+    {
+      "id": "TRC-R-AUX-SEPARATE",
+      "title": "Auxiliary improvements do not inflate core functional completion",
+      "statement": "Useful quality, UX, performance, maintenance, or optional-integration work is valued separately unless it satisfies an accepted functional obligation.",
+      "positive": "Record a non-required UX improvement as auxiliary value with no core FR completion delta.",
+      "negative": "Adding polish/integrations cannot increase core completion merely because work was substantial.",
+      "sources": [
+        "SRC-001"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "contract/status model"
+      ]
+    },
+    {
+      "id": "TRC-R-JOURNEY-CLOSURE",
+      "title": "Usability derives from closed journeys",
+      "statement": "Product usability/stage claims incorporate closure of declared actor-to-outcome journeys rather than inferring usability from primitive/file presence.",
+      "positive": "A complete narrow end-to-end journey can yield vertical-slice shape even with limited mature breadth.",
+      "negative": "Broad scaffolding with zero closed journeys must not be classified as an equivalent usable product.",
+      "sources": [
+        "SRC-001",
+        "SRC-020"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "journey/status model"
+      ]
+    },
+    {
+      "id": "TRC-R-REGISTRY-PROJECTION",
+      "title": "Central registry projects repo-local truth",
+      "statement": "PhenoRegistry summarizes and links Tracera's canonical repo-local contract/status without becoming a competing detailed source of truth.",
+      "positive": "Update repo-local accepted contract then project identity/status/linkage into registry with revision reference.",
+      "negative": "A stale registry summary must not override a newer accepted repo-local contract.",
+      "sources": [
+        "SRC-001",
+        "SRC-034"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "PhenoRegistry integration"
+      ]
+    }
+  ]
+}

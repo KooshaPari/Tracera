@@ -1,0 +1,213 @@
+{
+  "schema_version": "0.2.0",
+  "product_id": "PRD-TRACERA",
+  "catalog_status": "source_backed_in_progress",
+  "domain": "boundaries_proof_runtime",
+  "count_policy": "derived_only",
+  "requirements": [
+    {
+      "id": "TRC-R-WORK-BOUNDARY",
+      "title": "Work completion separated from product acceptance",
+      "statement": "External/AgilePlus work state may be linked as context, but completion cannot itself satisfy product obligations without admissible re-verification.",
+      "positive": "Mark linked work complete while required product proof is absent; assessment remains non-green. Add qualifying evidence; reassessment may change.",
+      "negative": "Done/merged/closed work directly flipping a product requirement to satisfied is prohibited.",
+      "sources": [
+        "SRC-001",
+        "SRC-026",
+        "SRC-030"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "integration boundary"
+      ]
+    },
+    {
+      "id": "TRC-R-EXTERNAL-WORK",
+      "title": "Represent external work without owning its lifecycle",
+      "statement": "Tracera can link externally managed work while remaining independent of and not duplicating that system's execution state machine.",
+      "positive": "Link/retrieve an external work reference without creating native duplicate execution transitions.",
+      "negative": "External work-system outage must not corrupt accepted product truth.",
+      "sources": [
+        "SRC-001",
+        "SRC-026"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "integration"
+      ]
+    },
+    {
+      "id": "TRC-R-OFFLINE-CORE",
+      "title": "Core operation without optional cloud integrations",
+      "statement": "Canonical identity, intent, graph, observations, and assessment remain usable when optional graph/cache/object/analytics/ML integrations are disabled.",
+      "positive": "Start a supported local configuration without optional credentials and complete the core product assessment journey.",
+      "negative": "Missing optional integration config must not block core local product use.",
+      "sources": [
+        "SRC-023",
+        "SRC-031"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "SQLite",
+        "server runtime"
+      ]
+    },
+    {
+      "id": "TRC-R-STORE-PARITY",
+      "title": "Supported storage semantic parity",
+      "statement": "Supported SQLite and PostgreSQL stores preserve the same canonical product/graph semantics for supported operations.",
+      "positive": "Run one canonical CRUD/query fixture against both stores and compare observable semantics modulo backend metadata.",
+      "negative": "Backend selection must not change product status or relation meaning.",
+      "sources": [
+        "SRC-011",
+        "SRC-014",
+        "SRC-013"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "sqlite_store",
+        "pg_store"
+      ]
+    },
+    {
+      "id": "TRC-R-MIGRATE-SAFE",
+      "title": "Migration preserves canonical state",
+      "statement": "Schema migration has a defined compatibility/recovery path and does not silently lose product identities, relations, or evidence.",
+      "positive": "Migrate a populated fixture and verify canonical data/relations plus documented rollback/restore or forward recovery.",
+      "negative": "Structural migration success while orphaning trace/evidence identities is failure.",
+      "sources": [
+        "SRC-002",
+        "SRC-011",
+        "SRC-031"
+      ],
+      "stages": [
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "migrations"
+      ]
+    },
+    {
+      "id": "TRC-R-AUTH-MUTATE",
+      "title": "Mutation authority enforced",
+      "statement": "Untrusted content or unauthenticated callers cannot obtain product/graph mutation authority; read, propose, and mutate authority remain distinguishable.",
+      "positive": "Attempt unauthorized mutation and receive rejection while allowed read/proposal behavior remains available.",
+      "negative": "Text inside an ingested artifact must not grant itself mutation authority.",
+      "sources": [
+        "SRC-002",
+        "SRC-017",
+        "SRC-025"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "MCP",
+        "HTTP auth",
+        "WorkOS"
+      ]
+    },
+    {
+      "id": "TRC-R-ERROR-TRUTH",
+      "title": "Bounded truthful interface errors",
+      "statement": "Public interfaces distinguish invalid input, unauthorized action, missing entity, dependency failure, and internal failure enough for callers not to infer success.",
+      "positive": "Exercise representative failures and receive non-success machine-readable classes with bounded safe detail.",
+      "negative": "Success payloads hiding errors or secret/stack leakage are prohibited.",
+      "sources": [
+        "SRC-002",
+        "SRC-018",
+        "SRC-017"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "HTTP",
+        "MCP"
+      ]
+    },
+    {
+      "id": "TRC-R-EVIDENCE-EXACT",
+      "title": "Verification evidence binds exact candidate and expectation",
+      "statement": "Product proof identifies exact product/baseline/expectation and candidate artifact/source revision plus verifier context.",
+      "positive": "Evidence for build A is recorded with candidate identity and cannot silently validate changed build B.",
+      "negative": "A generic CI green badge without candidate/baseline binding is insufficient product proof.",
+      "sources": [
+        "SRC-002",
+        "SRC-027",
+        "SRC-030"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "observation/evidence model"
+      ]
+    },
+    {
+      "id": "TRC-R-COLLECTOR-FAIL",
+      "title": "Required collector failure cannot yield green",
+      "statement": "Failure/unavailability of a required evidence collector produces unknown, inconclusive, or blocked semantics rather than satisfied.",
+      "positive": "Make a required collector fail before evidence production and observe non-green assessment with failure explanation.",
+      "negative": "Collector error treated as empty-success or skipped-success is prohibited.",
+      "sources": [
+        "SRC-002",
+        "SRC-027",
+        "SRC-030"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "assessment",
+        "collectors"
+      ]
+    },
+    {
+      "id": "TRC-R-RETENTION-ID",
+      "title": "Retention/redaction preserves referential integrity",
+      "statement": "When governed payloads are redacted/retained, stable identities and necessary provenance links remain sufficient to explain historical state without exposing removed content.",
+      "positive": "Redact a governed payload and retain resolvable tombstoned/redacted identity links.",
+      "negative": "Deletion that silently breaks assessment/trace history is prohibited.",
+      "sources": [
+        "SRC-002",
+        "SRC-025"
+      ],
+      "stages": [
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "security/retention"
+      ]
+    }
+  ]
+}

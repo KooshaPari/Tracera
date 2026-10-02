@@ -1,0 +1,220 @@
+{
+  "schema_version": "0.2.0",
+  "product_id": "PRD-TRACERA",
+  "catalog_status": "source_backed_in_progress",
+  "domain": "graph_trace_and_knowledge",
+  "count_policy": "derived_only",
+  "requirements": [
+    {
+      "id": "TRC-R-SWEE-TYPED",
+      "title": "Typed engineering evidence graph",
+      "statement": "Engineering evidence uses constrained node and edge taxonomies so invalid graph mutations can be rejected or surfaced.",
+      "positive": "Create valid typed nodes/edges and traverse them; invalid discriminants are rejected.",
+      "negative": "Arbitrary unregistered node/edge type strings must not silently enter canonical evidence.",
+      "sources": [
+        "SRC-012",
+        "SRC-013"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/swee/node_kind.rs",
+        "crates/tracera-server/src/swee/edge_kind.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-TRACE-BIDIR",
+      "title": "Bidirectional trace traversal",
+      "statement": "Callers can traverse from accepted product intent toward implementation/tests/evidence and reverse from artifacts/evidence toward the obligations they support.",
+      "positive": "For a linked requirement→implementation→test/evidence fixture, queries in both directions recover the same relationship chain.",
+      "negative": "A forward-only matrix with no reverse justification path is incomplete.",
+      "sources": [
+        "SRC-004",
+        "SRC-012",
+        "SRC-029"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "product queries",
+        "SWEE store"
+      ]
+    },
+    {
+      "id": "TRC-R-TRAVERSE-BOUND",
+      "title": "Bounded graph expansion",
+      "statement": "Graph traversal supports explicit direction and bounded expansion so useful context can be requested without unbounded graph explosion.",
+      "positive": "Query a root with a bound and receive only the allowed neighborhood with explicit truncation/continuation semantics where supported.",
+      "negative": "A bounded request must not silently expand the entire reachable graph.",
+      "sources": [
+        "SRC-001",
+        "SRC-010",
+        "SRC-017"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/queries.rs",
+        "crates/tracera-mcp/src/tools.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-SEARCH",
+      "title": "Search canonical product and evidence entities",
+      "statement": "Users and agents can locate accepted product intent and relevant evidence by stable identity and supported textual/structured filters without storage-backend knowledge.",
+      "positive": "Search known product/intent/evidence fixtures by ID and supported filters and recover canonical entities.",
+      "negative": "Search must not silently substitute a stale historical alias for current canonical identity.",
+      "sources": [
+        "SRC-001",
+        "SRC-010",
+        "SRC-020"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "product queries",
+        "frontend"
+      ]
+    },
+    {
+      "id": "TRC-R-IMPACT",
+      "title": "Explainable change impact",
+      "statement": "Given a product-intent or engineering-evidence change, Tracera can identify bounded affected obligations/artifacts using explicit trace relations and explain the supporting paths.",
+      "positive": "Change a linked fixture and query affected upstream/downstream nodes with paths.",
+      "negative": "An impact score with no traversable supporting path must not be presented as certain impact.",
+      "sources": [
+        "SRC-004",
+        "SRC-012",
+        "SRC-029"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "graph queries"
+      ]
+    },
+    {
+      "id": "TRC-R-QUERY-HISTORY",
+      "title": "Historical product-state query",
+      "statement": "Historical accepted baselines and observations remain queryable so state can be interpreted against the contract that produced it.",
+      "positive": "After a later baseline is accepted, query the prior baseline and its observations unchanged.",
+      "negative": "Only-current-state storage that destroys prior accepted meaning is insufficient.",
+      "sources": [
+        "SRC-006",
+        "SRC-007",
+        "SRC-013"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "product queries",
+        "storage"
+      ]
+    },
+    {
+      "id": "TRC-R-FINDING-EXPLAIN",
+      "title": "Explainable dissatisfaction findings",
+      "statement": "Every dissatisfaction finding exposes affected product/baseline/subject, detector/rule identity, source observations, and reason sufficient to understand why it exists.",
+      "positive": "Trigger a detector and inspect a finding containing subject, rule/version, evidence references, and reason.",
+      "negative": "A severity/status alone with no causal evidence is not an explainable finding.",
+      "sources": [
+        "SRC-009",
+        "SRC-001"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "product/detectors.rs",
+        "future finding projection"
+      ]
+    },
+    {
+      "id": "TRC-R-MACHINE-PARITY",
+      "title": "Human and machine semantic parity",
+      "statement": "Human and machine interfaces expose the same canonical identities, baseline/status meanings, and finding semantics even when presentation differs.",
+      "positive": "Inspect one product/baseline/finding through machine and human surfaces and match canonical IDs/status/explanation.",
+      "negative": "A UI green state while canonical machine assessment is unknown/failed is prohibited.",
+      "sources": [
+        "SRC-002",
+        "SRC-017",
+        "SRC-020"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "MCP",
+        "HTTP",
+        "frontend"
+      ]
+    },
+    {
+      "id": "TRC-R-MEM-PROVENANCE",
+      "title": "Distilled memory provenance",
+      "statement": "Enabled memory/pattern distillation retains source graph identities and confidence sufficient for audit and re-evaluation.",
+      "positive": "Distill a known graph pattern and retrieve memory with source IDs and confidence.",
+      "negative": "A generated memory statement with no source linkage must not be treated as canonical product intent.",
+      "sources": [
+        "SRC-022",
+        "SRC-013"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/memory/distillation"
+      ]
+    },
+    {
+      "id": "TRC-R-MEM-NOT-INTENT",
+      "title": "Derived memory cannot silently revise intent",
+      "statement": "Distilled or ML-derived knowledge is observational/proposed information and cannot mutate accepted intent without the explicit baseline-change workflow.",
+      "positive": "Produce a high-confidence memory/recommendation and confirm accepted baseline remains unchanged.",
+      "negative": "Confidence threshold alone must never authorize accepted-intent mutation.",
+      "sources": [
+        "SRC-022",
+        "SRC-006",
+        "SRC-024"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "memory",
+        "product/baseline"
+      ]
+    }
+  ]
+}
