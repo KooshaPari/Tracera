@@ -13,9 +13,9 @@ use sqlx::{
 
 use tracera_server::product::dependencies::{DependencyAuthority, DependencyEdge};
 use tracera_server::product::{
-    EvidenceReuseDecision, InvalidationEvent, PersistedBaseline, PersistedEntity,
-    PersistedEntityRevision, PersistedObservation, PersistedProduct, ProductPersistence,
-    execute_dependency_invalidation,
+    execute_dependency_invalidation, EvidenceReuseDecision, InvalidationEvent, PersistedBaseline,
+    PersistedEntity, PersistedEntityRevision, PersistedObservation, PersistedProduct,
+    ProductPersistence,
 };
 use tracera_server::sqlite_store::SqliteStore;
 use tracera_server::store::Store;
@@ -197,24 +197,15 @@ async fn invalidation_batch_replay_is_idempotent_and_conflict_rolls_back() {
         tracera_server::product::ProductPersistenceError::Conflict(_)
     ));
 
-    let first_rows = ProductPersistence::list_invalidations(
-        &store,
-        "criterion",
-        "criterion-a",
-        10,
-    )
-    .await
-    .expect("list first event");
+    let first_rows = ProductPersistence::list_invalidations(&store, "criterion", "criterion-a", 10)
+        .await
+        .expect("list first event");
     assert_eq!(first_rows, vec![first]);
 
-    let rolled_back = ProductPersistence::list_invalidations(
-        &store,
-        "criterion",
-        "criterion-c",
-        10,
-    )
-    .await
-    .expect("list rolled back event");
+    let rolled_back =
+        ProductPersistence::list_invalidations(&store, "criterion", "criterion-c", 10)
+            .await
+            .expect("list rolled back event");
     assert!(
         rolled_back.is_empty(),
         "earlier inserts in a conflicting batch must roll back atomically"
@@ -254,29 +245,23 @@ async fn persistence_backed_invalidation_preserves_partial_continuation_and_even
     .expect("execute bounded invalidation");
 
     assert!(!result.plan.propagation.complete);
-    assert_eq!(result.plan.propagation.affected, vec!["schema", "criterion-a"]);
+    assert_eq!(
+        result.plan.propagation.affected,
+        vec!["schema", "criterion-a"]
+    );
     assert_eq!(result.plan.propagation.continuation, vec!["criterion-b"]);
     assert_eq!(result.persisted_events, 1);
 
-    let persisted = ProductPersistence::list_invalidations(
-        &store,
-        "criterion",
-        "criterion-a",
-        10,
-    )
-    .await
-    .expect("list persisted invalidations");
+    let persisted = ProductPersistence::list_invalidations(&store, "criterion", "criterion-a", 10)
+        .await
+        .expect("list persisted invalidations");
     assert_eq!(persisted.len(), 1);
     assert_eq!(persisted[0].trigger_ref, "change:bounded");
 
-    let not_yet_visited = ProductPersistence::list_invalidations(
-        &store,
-        "criterion",
-        "criterion-b",
-        10,
-    )
-    .await
-    .expect("list continuation target invalidations");
+    let not_yet_visited =
+        ProductPersistence::list_invalidations(&store, "criterion", "criterion-b", 10)
+            .await
+            .expect("list continuation target invalidations");
     assert!(
         not_yet_visited.is_empty(),
         "continuation target must not be falsely persisted as already invalidated"
