@@ -1,57 +1,55 @@
-use std::sync::Arc;
-
-use async_trait::async_trait;
+use std::{future::Future, pin::Pin, sync::Arc};
 
 use super::{
     EvidenceReuseDecision, InvalidationEvent, PersistedBaseline, PersistedEntityRevision,
     PersistedObservation, PersistedProduct, ProductPersistence, ProductPersistenceError,
 };
 
+type ProductFuture<'a, T> =
+    Pin<Box<dyn Future<Output = Result<T, ProductPersistenceError>> + Send + 'a>>;
+
 /// Object-safe application boundary for mature product persistence.
 ///
 /// HTTP/MCP transports depend on this façade rather than concrete SQLite/Postgres
 /// stores or the legacy monolithic Store trait.
-#[async_trait]
 pub trait ProductApplicationService: Send + Sync {
-    async fn get_product(
-        &self,
-        product_id: &str,
-    ) -> Result<Option<PersistedProduct>, ProductPersistenceError>;
+    fn get_product<'a>(&'a self, product_id: &'a str)
+        -> ProductFuture<'a, Option<PersistedProduct>>;
 
-    async fn list_baseline_entities(
-        &self,
-        product_id: &str,
-        baseline_id: &str,
+    fn list_baseline_entities<'a>(
+        &'a self,
+        product_id: &'a str,
+        baseline_id: &'a str,
         limit: usize,
-    ) -> Result<Vec<PersistedEntityRevision>, ProductPersistenceError>;
+    ) -> ProductFuture<'a, Vec<PersistedEntityRevision>>;
 
-    async fn list_observations(
-        &self,
-        product_id: &str,
-        baseline_id: &str,
-        subject_local_id: Option<&str>,
+    fn list_observations<'a>(
+        &'a self,
+        product_id: &'a str,
+        baseline_id: &'a str,
+        subject_local_id: Option<&'a str>,
         limit: usize,
-    ) -> Result<Vec<PersistedObservation>, ProductPersistenceError>;
+    ) -> ProductFuture<'a, Vec<PersistedObservation>>;
 
-    async fn list_reuse_decisions_for_target(
-        &self,
-        target_baseline_id: &str,
-        target_candidate_ref: &str,
+    fn list_reuse_decisions_for_target<'a>(
+        &'a self,
+        target_baseline_id: &'a str,
+        target_candidate_ref: &'a str,
         limit: usize,
-    ) -> Result<Vec<EvidenceReuseDecision>, ProductPersistenceError>;
+    ) -> ProductFuture<'a, Vec<EvidenceReuseDecision>>;
 
-    async fn list_invalidations(
-        &self,
-        target_kind: &str,
-        target_ref: &str,
+    fn list_invalidations<'a>(
+        &'a self,
+        target_kind: &'a str,
+        target_ref: &'a str,
         limit: usize,
-    ) -> Result<Vec<InvalidationEvent>, ProductPersistenceError>;
+    ) -> ProductFuture<'a, Vec<InvalidationEvent>>;
 
-    async fn accept_baseline(
-        &self,
-        baseline: &PersistedBaseline,
-        members: &[(String, String)],
-    ) -> Result<(), ProductPersistenceError>;
+    fn accept_baseline<'a>(
+        &'a self,
+        baseline: &'a PersistedBaseline,
+        members: &'a [(String, String)],
+    ) -> ProductFuture<'a, ()>;
 }
 
 pub struct ProductApplication<P> {
@@ -64,69 +62,80 @@ impl<P> ProductApplication<P> {
     }
 }
 
-#[async_trait]
 impl<P> ProductApplicationService for ProductApplication<P>
 where
     P: ProductPersistence + Send + Sync + 'static,
 {
-    async fn get_product(
-        &self,
-        product_id: &str,
-    ) -> Result<Option<PersistedProduct>, ProductPersistenceError> {
-        self.persistence.get_product(product_id).await
+    fn get_product<'a>(
+        &'a self,
+        product_id: &'a str,
+    ) -> ProductFuture<'a, Option<PersistedProduct>> {
+        Box::pin(async move { self.persistence.get_product(product_id).await })
     }
 
-    async fn list_baseline_entities(
-        &self,
-        product_id: &str,
-        baseline_id: &str,
+    fn list_baseline_entities<'a>(
+        &'a self,
+        product_id: &'a str,
+        baseline_id: &'a str,
         limit: usize,
-    ) -> Result<Vec<PersistedEntityRevision>, ProductPersistenceError> {
-        self.persistence
-            .list_baseline_entities(product_id, baseline_id, limit)
-            .await
+    ) -> ProductFuture<'a, Vec<PersistedEntityRevision>> {
+        Box::pin(async move {
+            self.persistence
+                .list_baseline_entities(product_id, baseline_id, limit)
+                .await
+        })
     }
 
-    async fn list_observations(
-        &self,
-        product_id: &str,
-        baseline_id: &str,
-        subject_local_id: Option<&str>,
+    fn list_observations<'a>(
+        &'a self,
+        product_id: &'a str,
+        baseline_id: &'a str,
+        subject_local_id: Option<&'a str>,
         limit: usize,
-    ) -> Result<Vec<PersistedObservation>, ProductPersistenceError> {
-        self.persistence
-            .list_observations(product_id, baseline_id, subject_local_id, limit)
-            .await
+    ) -> ProductFuture<'a, Vec<PersistedObservation>> {
+        Box::pin(async move {
+            self.persistence
+                .list_observations(product_id, baseline_id, subject_local_id, limit)
+                .await
+        })
     }
 
-    async fn list_reuse_decisions_for_target(
-        &self,
-        target_baseline_id: &str,
-        target_candidate_ref: &str,
+    fn list_reuse_decisions_for_target<'a>(
+        &'a self,
+        target_baseline_id: &'a str,
+        target_candidate_ref: &'a str,
         limit: usize,
-    ) -> Result<Vec<EvidenceReuseDecision>, ProductPersistenceError> {
-        self.persistence
-            .list_reuse_decisions_for_target(target_baseline_id, target_candidate_ref, limit)
-            .await
+    ) -> ProductFuture<'a, Vec<EvidenceReuseDecision>> {
+        Box::pin(async move {
+            self.persistence
+                .list_reuse_decisions_for_target(
+                    target_baseline_id,
+                    target_candidate_ref,
+                    limit,
+                )
+                .await
+        })
     }
 
-    async fn list_invalidations(
-        &self,
-        target_kind: &str,
-        target_ref: &str,
+    fn list_invalidations<'a>(
+        &'a self,
+        target_kind: &'a str,
+        target_ref: &'a str,
         limit: usize,
-    ) -> Result<Vec<InvalidationEvent>, ProductPersistenceError> {
-        self.persistence
-            .list_invalidations(target_kind, target_ref, limit)
-            .await
+    ) -> ProductFuture<'a, Vec<InvalidationEvent>> {
+        Box::pin(async move {
+            self.persistence
+                .list_invalidations(target_kind, target_ref, limit)
+                .await
+        })
     }
 
-    async fn accept_baseline(
-        &self,
-        baseline: &PersistedBaseline,
-        members: &[(String, String)],
-    ) -> Result<(), ProductPersistenceError> {
-        self.persistence.accept_baseline(baseline, members).await
+    fn accept_baseline<'a>(
+        &'a self,
+        baseline: &'a PersistedBaseline,
+        members: &'a [(String, String)],
+    ) -> ProductFuture<'a, ()> {
+        Box::pin(async move { self.persistence.accept_baseline(baseline, members).await })
     }
 }
 
