@@ -259,10 +259,13 @@ async function route(req: VercelRequest, res: VercelResponse): Promise<void> {
 
   const segs = rawSegments.map((s) => decodeURIComponent(s)).filter(Boolean);
 
-  // If a live backend is configured, try to forward first. On any failure
-  // (timeout, network, 5xx that fetch still resolved, etc.) we fall through
-  // to the stub handlers below.
-  if (await tryProxy(req, res, segs)) return;
+  // If a live backend is configured and the request was forwarded, we are
+  // done. On any failure (timeout, network, 5xx that fetch still resolved,
+  // etc.) we fall through to the stub handlers below. NOTE: the result is a
+  // string union — compare explicitly; truthiness would treat the literal
+  // "fallthrough" as handled and end the response with nothing written
+  // (observed live as FUNCTION_INVOCATION_FAILED 500s).
+  if ((await tryProxy(req, res, segs)) === "forwarded") return;
 
   // Top-level routes (no /api prefix).
   if (segs.length === 0) {
@@ -301,12 +304,55 @@ async function route(req: VercelRequest, res: VercelResponse): Promise<void> {
         return notFound(res);
       case "import":
         return apiImport(req, res);
+      // List roots are TWO segments (/api/v1/projects), not three.
+      case "projects":
+        return projectsIndex(req, res);
+      case "items":
+        return itemsIndex(req, res);
+      case "links":
+        return linksIndex(req, res);
     }
   }
 
   if (segs.length === 3) {
-    const [, , leaf] = segs;
-    switch (leaf) {
+    const [, section, third] = segs;
+
+    // Section-aware routes: these are /api/v1/<section>/<leaf> — THREE
+    // segments. Auth verbs and dashboard summary previously lived only in
+    // the four-segment branch (an off-by-one), so every documented auth
+    // route 404'd. Section first, then the action-leaf switch below.
+    if (section === "auth") {
+      switch (third) {
+        case "me":
+          return authMe(req, res);
+        case "login":
+          return authLogin(req, res);
+        case "logout":
+          return authLogout(req, res);
+        case "refresh":
+          return authRefresh(req, res);
+        case "verify":
+          return authVerify(req, res);
+        default:
+          return notFound(res);
+      }
+    }
+    if (section === "dashboard") {
+      if (third === "summary") return dashboardSummary(req, res);
+      return notFound(res);
+    }
+    if (section === "projects") return projectById(req, res);
+    if (section === "links") return linkById(req, res);
+    if (section === "graph") return graphRoute(req, res);
+    if (section === "search") {
+      if (third === "health") return searchHealth(req, res);
+      return searchRoute(req, res);
+    }
+    if (section === "items" && third !== "summary" && third !== "bulk-update") {
+      return itemById(req, res);
+    }
+
+    switch (third) {
       case "projects":
         return projectsIndex(req, res);
       case "items":
