@@ -1,90 +1,95 @@
-# Tracera self-host stack
+# Tracera desktop-hosted backend
 
-This stack runs Tracera on your desktop, publishes it through Caddy, and exposes it globally with a Cloudflare Tunnel.
+Canonical network doctrine:
+`docs/architecture/NETWORK_DEPLOYMENT_DOCTRINE.md`
 
-## Layout
+## Default private/operator topology
 
-- `docker-compose.selfhost.yml`: Tracera server, Caddy, and cloudflared tunnel
-- `Caddyfile`: TLS reverse proxy plus security headers
-- `README.md`: runbook and environment variables
+- Frontend: Vercel Hobby.
+- Private network: Tailscale tailnet.
+- Backend: `tracera-server` on the owner's desktop.
+- Service identity: prefer stable tailnet service naming over a physical node.
+- Host edge: one host-level Caddy.
+- DNS: owned product names resolved privately for tailnet-only API services.
+- Incremental hosting spend: $0.
 
-## Prerequisites
+Cloudflare Tunnel is not required for the private/operator release. It remains
+an optional future public-ingress profile.
 
-- Docker Desktop or a compatible Docker Engine
-- A Cloudflare Tunnel already created for your hostname
-- `cloudflared` tunnel token for that tunnel
-- Optional: Tailscale installed on the desktop for private tailnet access
+## Runtime protection
 
-## Environment variables
+The Rust gateway retains bearer-token protection as a defense-in-depth/operator
+API mechanism. Do not embed `TRACERA_AUTH_TOKEN` in a public frontend bundle.
+The browser release needs an identity-aware path before it can call protected
+backend operations directly.
 
-Set these before starting the stack:
+## Bootstrap
 
-- `CF_TUNNEL_TOKEN`: Cloudflare Tunnel token for the named tunnel
-- `TRACERA_PUBLIC_HOSTNAME`: public hostname served by the tunnel, for example `tracera.pheno.studio`
-- `TRACERA_PUBLIC_BIND_MODE`: must be exactly `authenticated-proxy`; set it
-  only after Caddy has an active authentication directive. The Rust gateway
-  otherwise refuses non-loopback binding at startup.
-- `TRACERA_AUTH_TOKEN`: non-empty bearer token supplied to the Rust gateway;
-  every non-health route requires `Authorization: Bearer <token>`.
+Uncommitted environment:
 
-WorkOS AuthKit is not wired in yet, but these placeholders show where its settings would live:
-
-- `WORKOS_API_KEY`
-- `WORKOS_CLIENT_ID`
-- `WORKOS_COOKIE_SECRET`
-- `WORKOS_REDIRECT_URI`
-- `WORKOS_BASE_URL`
-- Any other `WORKOS_*` values required by your AuthKit middleware
-
-## Ingress security gate
-
-The server is intentionally bound to `0.0.0.0:8080` only inside the compose
-network; Caddy is the ingress boundary and port 8080 must not be published.
-The compose stack publishes Caddy's HTTP/HTTPS ports (`80` and `443`); Caddy
-obtains a certificate automatically for `TRACERA_PUBLIC_HOSTNAME`.
-Run the secret-free private-boundary check before every deployment:
-
-```sh
-./scripts/verify-deployment-security.sh --mode private
-
-# Validate build inputs, ports, probes, and secret-free manifests
-./scripts/verify-deployment-manifests.sh
+```env
+TRACERA_PUBLIC_HOSTNAME=api.tracera.pheno.studio
+TRACERA_PUBLIC_BIND_MODE=private
+TRACERA_AUTH_TOKEN=
 ```
 
-The checked-in Caddyfile contains an AuthKit insertion point, but its
-`forward_auth` block is commented and therefore does **not** protect public
-traffic. Before enabling a Cloudflare Tunnel or public DNS, configure an active
-`forward_auth`, `basic_auth`, or JWT directive, then set
-`TRACERA_PUBLIC_BIND_MODE=authenticated-proxy` and run the strict gate:
+Optional public-ingress profile only:
 
-```sh
-./scripts/verify-deployment-security.sh --mode public
+```env
+CF_TUNNEL_TOKEN=
 ```
 
-The strict gate fails closed until authentication and an HTTPS listener are
-present. It does not inspect or require credentials, so it is safe to run in CI.
-
-## Run
-
-From the repo root (macOS/Linux):
+Bootstrap packaging:
 
 ```sh
-docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
+docker compose -f deploy/selfhost/docker-compose.selfhost.yml up -d
 ```
 
-The stack does three things:
+Compose is not the required long-term host architecture. Prefer native process
+supervision for tailscaled, Caddy, tracera-server and justified shared services
+once the private alpha is established.
 
-1. Builds and runs `tracera-server` from the repo on `0.0.0.0:8080` with the
-   required in-process bearer token
-2. Lets Caddy reverse proxy `http://tracera.pheno.studio` to `tracera-server:8080`
-3. Attaches cloudflared to the tunnel token so the hostname is reachable globally through Cloudflare
+## Tailnet route
 
-## Public and private access
+Logical private path:
 
-- Public access: Cloudflare Tunnel exposes the hostname you set in `TRACERA_PUBLIC_HOSTNAME`
-- Private access: Tailscale can reach the same desktop and Caddy listener over the tailnet, so you can keep a private path even if the public tunnel is disabled
+```
+api.tracera.pheno.studio
+ -> split DNS
+ -> Tailscale service/tailnet address
+ -> host-level Caddy
+ -> tracera-server
+```
 
-## WorkOS AuthKit
+Do not expose a physical `.ts.net` device name as Tracera's product identity.
 
-The `Caddyfile` includes a commented `forward_auth` block as the insertion point for WorkOS AuthKit middleware.
-When you are ready to enforce auth, replace the placeholder with the actual upstream service and headers for your AuthKit deployment.
+## Security verification
+
+Run the existing secret-free deployment checks and keep non-health application
+routes authenticated. Public-ingress mode requires stronger browser/user
+authentication and must not be enabled merely because a tunnel token exists.
+
+## Optional future public ingress
+
+When non-tailnet users become a release requirement:
+
+```sh
+docker compose -f deploy/selfhost/docker-compose.selfhost.yml \
+  --profile public-ingress up -d
+```
+
+The public-ingress layer must terminate in the same host edge; adding it must
+not change Tracera product semantics or backend identity.
+
+## Release gates
+
+1. native product persistence/application tests execute and pass;
+2. product API naming resolves over the tailnet;
+3. Caddy routes the owned hostname to the real backend;
+4. browser contains no operator bearer secret;
+5. HJ-PRE-001 product open/select closes remotely;
+6. HJ-PRE-002 inventory closes remotely;
+7. HJ-PRE-003 graph fixture is correct remotely;
+8. restart persistence works;
+9. backup/restore works;
+10. no stub/fallback data is presented as real product state.
