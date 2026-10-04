@@ -6,12 +6,14 @@ Date: 2026-10-04
 
 - Static/web frontend: Vercel Hobby.
 - Stateful Rust backend and databases: owner's desktop.
-- Public backend ingress: Cloudflare Tunnel; no inbound router port required.
-- Reverse proxy/security boundary: Caddy.
+- Private backend transport: Tailscale tailnet with split DNS/stable service identity.
+- Host edge/security boundary: one host-level Caddy.
+- Public ingress: optional later layer; Cloudflare Tunnel is one candidate, not the private-network foundation.
 - Incremental hosting spend: $0.
 
-The existing Vercel catch-all can proxy to `TRACERA_BACKEND_URL`. The desktop
-self-host stack already contains tracera-server, Caddy and cloudflared.
+The existing Vercel catch-all can proxy to `TRACERA_BACKEND_URL`. The private/operator
+release is tailnet-first. The desktop stack contains tracera-server and Caddy;
+cloudflared is an optional public-ingress profile.
 
 ## Release definition
 
@@ -21,7 +23,7 @@ The next deployed release is not “a Vercel URL renders.” It requires:
 2. frontend points to the live authenticated backend/proxy, not fallback stubs;
 3. desktop backend survives restart and has persistent data;
 4. strict public deployment security gate passes;
-5. Cloudflare Tunnel health/readiness passes;
+5. tailnet service naming/routing and health/readiness pass from an authorized remote device;
 6. HJ-PRE-001 product open/select closes in the deployed environment;
 7. HJ-PRE-002 inventory closes;
 8. HJ-PRE-003 unified graph renders correct fixture truth;
