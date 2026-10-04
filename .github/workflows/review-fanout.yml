@@ -3,7 +3,9 @@ name: Review Fanout
 # Proactive PR review: triggered on every PR open/synchronize, dispatches to
 # the smart-provider queue (CodeRabbit -> Copilot -> Cursor -> Forge) with
 # health-aware fallback. Requires the review-surface service to be reachable
-# (set REVIEW_SURFACE_URL to its deployed endpoint).
+# (set REVIEW_SURFACE_URL to its deployed endpoint). When REVIEW_SURFACE_URL
+# is unset or falls back to the operator-internal host, the dispatch step is
+# skipped with a ::notice:: instead of failing on unresolvable DNS.
 
 on:
   pull_request:
@@ -50,8 +52,28 @@ jobs:
           EOF
           echo "payload_file=/tmp/payload.json" >> "$GITHUB_OUTPUT"
 
+      - name: Gate dispatch on a reachable surface
+        id: gate
+        env:
+          REVIEW_URL: ${{ env.REVIEW_SURFACE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${REVIEW_URL:-}" ]; then
+            echo "should_dispatch=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Review fanout dispatch skipped: REVIEW_SURFACE_URL is not configured."
+          elif [ "$REVIEW_URL" = "https://review.phenotype.internal" ]; then
+            # Operator-internal fallback: .internal DNS never resolves from the
+            # GitHub-hosted runner (runs-on: ubuntu-latest), so a dispatch attempt
+            # would only fail. Skip explicitly until a reachable endpoint is set.
+            echo "should_dispatch=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Review fanout dispatch skipped: REVIEW_SURFACE_URL falls back to the operator-internal surface (https://review.phenotype.internal), which GitHub-hosted runners cannot resolve. Set the REVIEW_SURFACE_URL repository variable to a reachable endpoint to enable dispatch."
+          else
+            echo "should_dispatch=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Dispatch via smart queue
         id: dispatch
+        if: steps.gate.outputs.should_dispatch == 'true'
         env:
           REVIEW_URL: ${{ env.REVIEW_SURFACE_URL }}
           REVIEW_TOKEN: ${{ env.REVIEW_SURFACE_TOKEN }}
