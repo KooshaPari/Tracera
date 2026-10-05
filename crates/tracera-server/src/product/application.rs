@@ -229,7 +229,8 @@ where
                     "reuse decision target baseline must match request path".into(),
                 ));
             }
-            self.require_baseline(product_id, target_baseline_id).await?;
+            self.require_baseline(product_id, target_baseline_id)
+                .await?;
             // Persistence verifies that the source observation belongs to the
             // same product; the application boundary must not infer ownership
             // from an observation identifier.

@@ -149,8 +149,6 @@ pub(crate) async fn list_observations(
     })))
 }
 
-
-
 pub(crate) async fn append_observation(
     State(state): State<AppState>,
     Path((product_id, baseline_id)): Path<(String, String)>,
