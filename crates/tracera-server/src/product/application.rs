@@ -44,6 +44,7 @@ pub trait ProductApplicationService: Send + Sync {
 
     fn list_invalidations<'a>(
         &'a self,
+        product_id: &'a str,
         target_kind: &'a str,
         target_ref: &'a str,
         limit: u32,
@@ -76,6 +77,15 @@ fn validate_limit(limit: u32) -> Result<(), ProductPersistenceError> {
 }
 
 impl<P: ProductPersistence> ProductApplication<P> {
+    async fn require_product(&self, product_id: &str) -> Result<(), ProductPersistenceError> {
+        self.persistence
+            .get_product(product_id)
+            .await?
+            .filter(|product| product.product_id == product_id)
+            .ok_or_else(|| ProductPersistenceError::NotFound("product not found".into()))?;
+        Ok(())
+    }
+
     async fn require_baseline(
         &self,
         product_id: &str,
@@ -162,14 +172,16 @@ where
 
     fn list_invalidations<'a>(
         &'a self,
+        product_id: &'a str,
         target_kind: &'a str,
         target_ref: &'a str,
         limit: u32,
     ) -> ProductFuture<'a, Vec<InvalidationEvent>> {
         Box::pin(async move {
             validate_limit(limit)?;
+            self.require_product(product_id).await?;
             self.persistence
-                .list_invalidations(target_kind, target_ref, limit)
+                .list_invalidations(product_id, target_kind, target_ref, limit)
                 .await
         })
     }
