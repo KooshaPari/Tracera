@@ -450,9 +450,16 @@ impl ProductPersistence for SqliteStore {
                 .fetch_one(&mut *tx)
                 .await
                 .map_err(backend)?;
+                let existing_product: Option<String> = row.get("product_id");
+                if existing_product.as_deref() != Some(e.product_id.as_str()) {
+                    return Err(ProductPersistenceError::Conflict(format!(
+                        "invalidation {} already exists without matching product scope",
+                        e.invalidation_id
+                    )));
+                }
                 let existing = InvalidationEvent {
                     invalidation_id: row.get("invalidation_id"),
-                    product_id: row.get("product_id"),
+                    product_id: existing_product.expect("scope checked above"),
                     trigger_kind: row.get("trigger_kind"),
                     trigger_ref: row.get("trigger_ref"),
                     target_kind: row.get("target_kind"),
