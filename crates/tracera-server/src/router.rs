@@ -13,6 +13,7 @@ use crate::handlers::{
     ingest_api::{ingest_agileplus, ingest_github, ingest_jira},
     problems::{create_problem, list_problems},
     product::{
+        append_observation as append_product_observation, append_reuse_decision,
         get_product as get_product_v1, list_baseline_entities, list_invalidations,
         list_observations as list_product_observations, list_reuse_decisions,
     },
@@ -140,11 +141,11 @@ pub(crate) fn build_router_with_auth(
         )
         .route(
             "/api/v1/products/{product_id}/baselines/{baseline_id}/observations",
-            get(list_product_observations),
+            get(list_product_observations).post(append_product_observation),
         )
         .route(
             "/api/v1/products/{product_id}/baselines/{baseline_id}/reuse-decisions",
-            get(list_reuse_decisions),
+            get(list_reuse_decisions).post(append_reuse_decision),
         )
         .route(
             "/api/v1/products/{product_id}/invalidations/{target_kind}",
