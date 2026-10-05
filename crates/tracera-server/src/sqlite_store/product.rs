@@ -5,8 +5,7 @@ use sqlx::Row;
 use crate::product::persistence::{
     EvidenceReuseDecision, InvalidationEvent, PersistedBaseline, PersistedDependencyEdge,
     PersistedEntity, PersistedEntityRevision, PersistedObservation, PersistedProduct,
-    ProductPersistence,
-    ProductPersistenceError,
+    ProductPersistence, ProductPersistenceError,
 };
 
 use super::{str_to_ts, ts_to_str, SqliteStore};

@@ -570,15 +570,11 @@ async fn mounted_baseline_acceptance_uses_product_path_as_authority() {
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
 
-
 #[tokio::test]
 async fn mounted_dependency_invalidation_preserves_partiality_and_persists_frontier() {
     let app = fixture().await;
 
-    for (id, dependency, dependent) in [
-        ("dep-1", "a", "b"),
-        ("dep-2", "b", "c"),
-    ] {
+    for (id, dependency, dependent) in [("dep-1", "a", "b"), ("dep-2", "b", "c")] {
         let response = post_json(
             &app,
             "/api/v1/products/p-a/dependencies",
@@ -627,10 +623,7 @@ async fn mounted_dependency_invalidation_preserves_partiality_and_persists_front
     assert_eq!(response.status(), StatusCode::OK);
     let value = body(response).await;
     assert_eq!(value["count"], 1);
-    assert_eq!(
-        value["invalidations"][0]["trigger_ref"],
-        "change-mounted"
-    );
+    assert_eq!(value["invalidations"][0]["trigger_ref"], "change-mounted");
 }
 
 #[tokio::test]

@@ -13,7 +13,6 @@ use crate::{
     AppState,
 };
 
-
 #[derive(Debug, Deserialize)]
 pub(crate) struct DependencyInvalidationRequest {
     changed: Vec<String>,
@@ -123,7 +122,6 @@ pub(crate) async fn get_product(
         })?;
     Ok(Json(serde_json::json!({"product": product})))
 }
-
 
 pub(crate) async fn append_dependency_edge(
     State(state): State<AppState>,

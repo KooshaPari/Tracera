@@ -256,7 +256,10 @@ where
                     "max_nodes must be between 1 and 100000".into(),
                 ));
             }
-            if revision.trim().is_empty() || trigger_ref.trim().is_empty() || target_kind.trim().is_empty() {
+            if revision.trim().is_empty()
+                || trigger_ref.trim().is_empty()
+                || target_kind.trim().is_empty()
+            {
                 return Err(ProductPersistenceError::Invalid(
                     "revision, trigger_ref, and target_kind are required".into(),
                 ));

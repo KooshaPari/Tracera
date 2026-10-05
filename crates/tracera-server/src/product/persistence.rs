@@ -172,8 +172,9 @@ pub trait ProductPersistence: Send + Sync {
         &self,
         product_id: &str,
         revision: &str,
-    ) -> impl std::future::Future<Output = Result<Vec<PersistedDependencyEdge>, ProductPersistenceError>>
-           + Send;
+    ) -> impl std::future::Future<
+        Output = Result<Vec<PersistedDependencyEdge>, ProductPersistenceError>,
+    > + Send;
 
     fn append_observation(
         &self,
