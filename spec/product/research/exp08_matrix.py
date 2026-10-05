@@ -8,17 +8,17 @@ import json
 from itertools import product
 
 CONFIGS = [
-    dict(
-        platform=p,
-        browser=b,
-        browser_version=v,
-        feature_flag=f,
-        api_schema=a,
-        db_schema=d,
-        dependency_version=dep,
-        environment=e,
-        region=r,
-    )
+    {
+        "platform": p,
+        "browser": b,
+        "browser_version": v,
+        "feature_flag": f,
+        "api_schema": a,
+        "db_schema": d,
+        "dependency_version": dep,
+        "environment": e,
+        "region": r,
+    }
     for p, b, v, f, a, d, dep, e, r in product(
         ["linux", "windows"],
         ["chromium", "firefox"],
@@ -85,9 +85,11 @@ def intended(pred, target):
         if key == "browser_version":
             if not value[0] <= target_value <= value[1]:
                 return False
-        elif key == "api_schema" and value == 12 and target_value in (12, 13):
-            continue
-        elif key == "db_schema" and value == 18 and target_value in (18, 19):
+        elif (
+            key == "api_schema" and value == 12 and target_value in (12, 13)
+        ) or (
+            key == "db_schema" and value == 18 and target_value in (18, 19)
+        ):
             continue
         elif value != target_value:
             return False
