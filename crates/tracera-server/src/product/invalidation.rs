@@ -81,6 +81,7 @@ mod tests {
     fn event(id: &str, state: &str) -> InvalidationEvent {
         InvalidationEvent {
             invalidation_id: id.into(),
+            product_id: "test-product".into(),
             trigger_kind: "dependency".into(),
             trigger_ref: "dep".into(),
             target_kind: "reuse_decision".into(),
