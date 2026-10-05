@@ -12,8 +12,10 @@ use crate::handlers::{
     ingest_api::{ingest_agileplus, ingest_github, ingest_jira},
     problems::{create_problem, list_problems},
     product::{
-        accept_baseline, append_observation as append_product_observation, append_reuse_decision,
-        get_product as get_product_v1, list_baseline_entities, list_invalidations,
+        accept_baseline, append_dependency_edge,
+        append_observation as append_product_observation, append_reuse_decision,
+        execute_dependency_invalidation, get_product as get_product_v1, list_baseline_entities,
+        list_invalidations,
         list_observations as list_product_observations, list_reuse_decisions,
     },
     sprints::{create_sprint, list_sprints},
@@ -96,6 +98,14 @@ pub(crate) fn build_router_with_auth(
         .route("/api/v1/health", get(crate::health::health))
         .route("/api/v1/csrf-token", get(crate::csrf_token))
         .route("/api/v1/products/{product_id}", get(get_product_v1))
+        .route(
+            "/api/v1/products/{product_id}/dependencies",
+            post(append_dependency_edge),
+        )
+        .route(
+            "/api/v1/products/{product_id}/invalidations/dependency",
+            post(execute_dependency_invalidation),
+        )
         .route(
             "/api/v1/products/{product_id}/baselines",
             post(accept_baseline),
