@@ -171,17 +171,18 @@ pub(crate) async fn list_reuse_decisions(
 
 pub(crate) async fn list_invalidations(
     State(state): State<AppState>,
-    Path(target_kind): Path<String>,
+    Path((product_id, target_kind)): Path<(String, String)>,
     Query(query): Query<InvalidationQuery>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, Json<serde_json::Value>)> {
     let limit = bounded_limit(query.limit);
     let invalidations = state
         .product
-        .list_invalidations(&target_kind, &query.target_ref, limit)
+        .list_invalidations(&product_id, &target_kind, &query.target_ref, limit)
         .await
         .map_err(persistence_error)?;
     let count = invalidations.len();
     Ok(Json(serde_json::json!({
+        "product_id": product_id,
         "target_kind": target_kind,
         "target_ref": query.target_ref,
         "invalidations": invalidations,
