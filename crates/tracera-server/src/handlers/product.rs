@@ -13,6 +13,20 @@ use crate::{
     AppState,
 };
 
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct BaselineMemberRequest {
+    entity_id: String,
+    entity_revision_id: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct AcceptBaselineRequest {
+    baseline: crate::product::PersistedBaseline,
+    #[serde(default)]
+    members: Vec<BaselineMemberRequest>,
+}
+
 #[derive(Debug, Deserialize)]
 pub(crate) struct LimitQuery {
     #[serde(default = "default_limit")]
@@ -99,6 +113,25 @@ pub(crate) async fn get_product(
             )
         })?;
     Ok(Json(serde_json::json!({"product": product})))
+}
+
+
+pub(crate) async fn accept_baseline(
+    State(state): State<AppState>,
+    Path(product_id): Path<String>,
+    Json(request): Json<AcceptBaselineRequest>,
+) -> Result<StatusCode, (StatusCode, Json<serde_json::Value>)> {
+    let members = request
+        .members
+        .into_iter()
+        .map(|member| (member.entity_id, member.entity_revision_id))
+        .collect::<Vec<_>>();
+    state
+        .product
+        .accept_baseline(&product_id, &request.baseline, &members)
+        .await
+        .map_err(persistence_error)?;
+    Ok(StatusCode::CREATED)
 }
 
 pub(crate) async fn list_baseline_entities(
