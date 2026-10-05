@@ -79,6 +79,7 @@ pub struct EvidenceReuseDecision {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct InvalidationEvent {
     pub invalidation_id: String,
+    pub product_id: String,
     pub trigger_kind: String,
     pub trigger_ref: String,
     pub target_kind: String,
@@ -194,6 +195,7 @@ pub trait ProductPersistence: Send + Sync {
 
     fn list_invalidations(
         &self,
+        product_id: &str,
         target_kind: &str,
         target_ref: &str,
         limit: u32,
