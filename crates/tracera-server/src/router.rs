@@ -405,7 +405,10 @@ mod cors_tests {
     fn trusted_origin_policy_contains_deployed_and_local_origins() {
         let origins = trusted_browser_origins(None);
         for canonical in TRUSTED_BROWSER_ORIGINS {
-            assert!(origins.contains(&canonical.to_string()), "missing {canonical}");
+            assert!(
+                origins.contains(&canonical.to_string()),
+                "missing {canonical}"
+            );
         }
         assert!(origins.contains(&"https://tracera.pheno.studio".to_string()));
         assert!(origins.contains(&"http://127.0.0.1:18000".to_string()));

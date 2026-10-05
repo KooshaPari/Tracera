@@ -413,7 +413,6 @@ async fn missing_query_fields_and_negative_limits_are_rejected() {
     }
 }
 
-
 #[tokio::test]
 async fn mounted_observation_write_is_product_and_baseline_scoped() {
     let app = fixture().await;
@@ -462,13 +461,11 @@ async fn mounted_observation_write_is_product_and_baseline_scoped() {
     .await;
     assert_eq!(response.status(), StatusCode::OK);
     let value = body(response).await;
-    assert!(
-        value["observations"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|item| item["observation_id"] == "observation-new-a")
-    );
+    assert!(value["observations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|item| item["observation_id"] == "observation-new-a"));
 
     let mut foreign = value["observations"][0].clone();
     foreign["observation_id"] = json!("observation-foreign-body");
