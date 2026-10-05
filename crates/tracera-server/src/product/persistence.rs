@@ -46,6 +46,18 @@ pub struct PersistedEntityRevision {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PersistedDependencyEdge {
+    pub dependency_edge_id: String,
+    pub product_id: String,
+    pub dependency_ref: String,
+    pub dependent_ref: String,
+    pub authority: String,
+    pub revision: String,
+    pub active: bool,
+    pub recorded_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PersistedObservation {
     pub observation_id: String,
     pub product_id: String,
@@ -150,6 +162,18 @@ pub trait ProductPersistence: Send + Sync {
     ) -> impl std::future::Future<
         Output = Result<Vec<PersistedEntityRevision>, ProductPersistenceError>,
     > + Send;
+
+    fn append_dependency_edge(
+        &self,
+        edge: &PersistedDependencyEdge,
+    ) -> impl std::future::Future<Output = Result<(), ProductPersistenceError>> + Send;
+
+    fn list_dependency_edges(
+        &self,
+        product_id: &str,
+        revision: &str,
+    ) -> impl std::future::Future<Output = Result<Vec<PersistedDependencyEdge>, ProductPersistenceError>>
+           + Send;
 
     fn append_observation(
         &self,
