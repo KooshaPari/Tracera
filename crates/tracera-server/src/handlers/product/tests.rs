@@ -569,3 +569,88 @@ async fn mounted_baseline_acceptance_uses_product_path_as_authority() {
     .await;
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
+
+
+#[tokio::test]
+async fn mounted_dependency_invalidation_preserves_partiality_and_persists_frontier() {
+    let app = fixture().await;
+
+    for (id, dependency, dependent) in [
+        ("dep-1", "a", "b"),
+        ("dep-2", "b", "c"),
+    ] {
+        let response = post_json(
+            &app,
+            "/api/v1/products/p-a/dependencies",
+            json!({
+                "dependency_edge_id": id,
+                "product_id": "p-a",
+                "dependency_ref": dependency,
+                "dependent_ref": dependent,
+                "authority": "accepted",
+                "revision": "r-dep",
+                "active": true,
+                "recorded_at": "2025-10-03T02:00:00Z"
+            }),
+            true,
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::CREATED);
+    }
+
+    let response = post_json(
+        &app,
+        "/api/v1/products/p-a/invalidations/dependency",
+        json!({
+            "changed": ["a"],
+            "revision": "r-dep",
+            "max_nodes": 2,
+            "trigger_ref": "change-mounted",
+            "target_kind": "criterion"
+        }),
+        true,
+    )
+    .await;
+    assert_eq!(response.status(), StatusCode::OK);
+    let value = body(response).await;
+    assert_eq!(value["complete"], false);
+    assert_eq!(value["persisted_event_count"], 1);
+    assert_eq!(value["affected"], json!(["a", "b"]));
+    assert_eq!(value["continuation"], json!(["c"]));
+
+    let response = request(
+        &app,
+        "/api/v1/products/p-a/invalidations/criterion?target_ref=b",
+        true,
+    )
+    .await;
+    assert_eq!(response.status(), StatusCode::OK);
+    let value = body(response).await;
+    assert_eq!(value["count"], 1);
+    assert_eq!(
+        value["invalidations"][0]["trigger_ref"],
+        "change-mounted"
+    );
+}
+
+#[tokio::test]
+async fn dependency_write_rejects_body_product_outside_path_scope() {
+    let app = fixture().await;
+    let response = post_json(
+        &app,
+        "/api/v1/products/p-a/dependencies",
+        json!({
+            "dependency_edge_id": "dep-cross-product",
+            "product_id": "p-b",
+            "dependency_ref": "a",
+            "dependent_ref": "b",
+            "authority": "accepted",
+            "revision": "r-dep",
+            "active": true,
+            "recorded_at": "2025-10-03T02:10:00Z"
+        }),
+        true,
+    )
+    .await;
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+}
