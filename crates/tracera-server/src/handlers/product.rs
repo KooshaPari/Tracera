@@ -7,11 +7,21 @@ use serde::Deserialize;
 
 use crate::{
     product::{
-        application::MAX_PRODUCT_READ_LIMIT, EvidenceReuseDecision, PersistedObservation,
-        ProductPersistenceError,
+        application::MAX_PRODUCT_READ_LIMIT, EvidenceReuseDecision, PersistedDependencyEdge,
+        PersistedObservation, ProductPersistenceError,
     },
     AppState,
 };
+
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct DependencyInvalidationRequest {
+    changed: Vec<String>,
+    revision: String,
+    max_nodes: usize,
+    trigger_ref: String,
+    target_kind: String,
+}
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct BaselineMemberRequest {
@@ -112,6 +122,46 @@ pub(crate) async fn get_product(
             )
         })?;
     Ok(Json(serde_json::json!({"product": product})))
+}
+
+
+pub(crate) async fn append_dependency_edge(
+    State(state): State<AppState>,
+    Path(product_id): Path<String>,
+    Json(edge): Json<PersistedDependencyEdge>,
+) -> Result<StatusCode, (StatusCode, Json<serde_json::Value>)> {
+    state
+        .product
+        .append_dependency_edge(&product_id, &edge)
+        .await
+        .map_err(persistence_error)?;
+    Ok(StatusCode::CREATED)
+}
+
+pub(crate) async fn execute_dependency_invalidation(
+    State(state): State<AppState>,
+    Path(product_id): Path<String>,
+    Json(request): Json<DependencyInvalidationRequest>,
+) -> Result<Json<serde_json::Value>, (StatusCode, Json<serde_json::Value>)> {
+    let result = state
+        .product
+        .execute_dependency_invalidation(
+            &product_id,
+            &request.changed,
+            &request.revision,
+            request.max_nodes,
+            &request.trigger_ref,
+            &request.target_kind,
+        )
+        .await
+        .map_err(persistence_error)?;
+    Ok(Json(serde_json::json!({
+        "product_id": product_id,
+        "affected": result.plan.propagation.affected,
+        "continuation": result.plan.propagation.continuation,
+        "complete": result.plan.propagation.complete,
+        "persisted_event_count": result.persisted_events
+    })))
 }
 
 pub(crate) async fn accept_baseline(
