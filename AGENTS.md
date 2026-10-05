@@ -4,7 +4,7 @@ For the active mature-first recovery branch, future ChatGPT chats, ChatGPT Work
 sessions, coding agents and humans should recover current state in this order:
 
 1. `spec/product/mature-contract.v1.json` — accepted mature semantic contract.
-2. `verification/FORWARD_WBS_2026-10-04.md` — current execution/release WBS.
+2. `verification/FORWARD_WBS_2026-10-04.md`\n- `verification/FORWARD_DELTA_2026-10-04.md` — current execution/release WBS.
 3. `docs/architecture/NETWORK_DEPLOYMENT_DOCTRINE.md` — tailnet-first network/deployment doctrine.
 4. `verification/NEXT_DEPLOYABLE_RELEASE_2026-10-04.md` — deployed-release gate.
 5. Current Git/CI evidence.
