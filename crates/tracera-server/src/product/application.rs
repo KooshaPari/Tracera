@@ -66,6 +66,7 @@ pub trait ProductApplicationService: Send + Sync {
 
     fn accept_baseline<'a>(
         &'a self,
+        product_id: &'a str,
         baseline: &'a PersistedBaseline,
         members: &'a [(String, String)],
     ) -> ProductFuture<'a, ()>;
@@ -240,10 +241,19 @@ where
 
     fn accept_baseline<'a>(
         &'a self,
+        product_id: &'a str,
         baseline: &'a PersistedBaseline,
         members: &'a [(String, String)],
     ) -> ProductFuture<'a, ()> {
-        Box::pin(async move { self.persistence.accept_baseline(baseline, members).await })
+        Box::pin(async move {
+            if baseline.product_id != product_id {
+                return Err(ProductPersistenceError::Invalid(
+                    "baseline product must match request path".into(),
+                ));
+            }
+            self.require_product(product_id).await?;
+            self.persistence.accept_baseline(baseline, members).await
+        })
     }
 }
 
