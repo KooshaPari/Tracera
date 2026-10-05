@@ -22,6 +22,7 @@ pub struct InvalidationPlan {
 /// is incomplete, returned events cover only the visited frontier and
 /// propagation.complete=false tells the caller more work remains.
 pub fn plan_dependency_invalidation(
+    product_id: &str,
     changed: &[String],
     edges: &[DependencyEdge],
     revision: &str,
@@ -37,7 +38,8 @@ pub fn plan_dependency_invalidation(
         .filter(|target| !changed.contains(target))
         .enumerate()
         .map(|(i, target)| InvalidationEvent {
-            invalidation_id: format!("inv:{}:{}:{}", trigger_ref, target, i),
+            invalidation_id: format!("inv:{}:{}:{}:{}", product_id, trigger_ref, target, i),
+            product_id: product_id.into(),
             trigger_kind: "dependency_changed".into(),
             trigger_ref: trigger_ref.into(),
             target_kind: target_kind.into(),
@@ -55,6 +57,7 @@ pub fn plan_dependency_invalidation(
 }
 
 pub fn plan_certificate_revocation(
+    product_id: &str,
     certificate_ref: &str,
     reuse_decision_ids: &[String],
 ) -> InvalidationPlan {
@@ -63,7 +66,8 @@ pub fn plan_certificate_revocation(
         .iter()
         .enumerate()
         .map(|(i, id)| InvalidationEvent {
-            invalidation_id: format!("inv:cert:{}:{i}", certificate_ref),
+            invalidation_id: format!("inv:{}:cert:{}:{i}", product_id, certificate_ref),
+            product_id: product_id.into(),
             trigger_kind: "certificate_revoked".into(),
             trigger_ref: certificate_ref.into(),
             target_kind: "reuse_decision".into(),
@@ -107,14 +111,23 @@ mod tests {
             },
         ];
         let plan =
-            plan_dependency_invalidation(&["a".into()], &edges, "r1", 2, "change-1", "criterion");
+            plan_dependency_invalidation(
+            "product-a",
+            &["a".into()],
+            &edges,
+            "r1",
+            2,
+            "change-1",
+            "criterion",
+        );
         assert!(!plan.propagation.complete);
         assert_eq!(plan.events.len(), 1);
         assert_eq!(plan.events[0].target_ref, "b");
     }
     #[test]
     fn certificate_revocation_targets_reuse_not_observation() {
-        let plan = plan_certificate_revocation("cert:c1", &["reuse:r1".into()]);
+        let plan =
+            plan_certificate_revocation("product-a", "cert:c1", &["reuse:r1".into()]);
         assert_eq!(plan.events[0].target_kind, "reuse_decision");
         assert_eq!(plan.events[0].new_state, "suspect");
     }
@@ -133,6 +146,7 @@ pub struct PersistedInvalidationResult {
 /// a partial plan to complete.
 pub async fn execute_dependency_invalidation<P: ProductPersistence>(
     persistence: &P,
+    product_id: &str,
     changed: &[String],
     edges: &[DependencyEdge],
     revision: &str,
@@ -141,6 +155,7 @@ pub async fn execute_dependency_invalidation<P: ProductPersistence>(
     target_kind: &str,
 ) -> Result<PersistedInvalidationResult, ProductPersistenceError> {
     let plan = plan_dependency_invalidation(
+        product_id,
         changed,
         edges,
         revision,
@@ -158,10 +173,11 @@ pub async fn execute_dependency_invalidation<P: ProductPersistence>(
 
 pub async fn execute_certificate_revocation<P: ProductPersistence>(
     persistence: &P,
+    product_id: &str,
     certificate_ref: &str,
     reuse_decision_ids: &[String],
 ) -> Result<PersistedInvalidationResult, ProductPersistenceError> {
-    let plan = plan_certificate_revocation(certificate_ref, reuse_decision_ids);
+    let plan = plan_certificate_revocation(product_id, certificate_ref, reuse_decision_ids);
     persistence.append_invalidations(&plan.events).await?;
     let persisted_events = plan.events.len();
     Ok(PersistedInvalidationResult {
