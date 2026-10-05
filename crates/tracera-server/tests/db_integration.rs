@@ -794,6 +794,65 @@ async fn invalidation_batch_exact_replay_is_idempotent() {
 }
 
 #[tokio::test]
+async fn legacy_unscoped_invalidation_id_cannot_be_reused_as_scoped_truth() {
+    let store = mem_store().await;
+    seed_product(&store, "scope-product").await;
+    let t = now();
+
+    sqlx::query(
+        "INSERT INTO invalidation_events_v1
+         (invalidation_id,product_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at)
+         VALUES (?1,NULL,?2,?3,?4,?5,?6,?7,?8,?9)",
+    )
+    .bind("legacy-unscoped")
+    .bind("dependency_changed")
+    .bind("legacy-change")
+    .bind("criterion")
+    .bind("same-local-ref")
+    .bind("current_valid")
+    .bind("suspect")
+    .bind("legacy row")
+    .bind(t.to_rfc3339())
+    .execute(&store.pool)
+    .await
+    .expect("seed legacy unscoped row");
+
+    let scoped = InvalidationEvent {
+        invalidation_id: "legacy-unscoped".into(),
+        product_id: "scope-product".into(),
+        trigger_kind: "dependency_changed".into(),
+        trigger_ref: "legacy-change".into(),
+        target_kind: "criterion".into(),
+        target_ref: "same-local-ref".into(),
+        prior_state: Some("current_valid".into()),
+        new_state: "suspect".into(),
+        reason: "legacy row".into(),
+        occurred_at: t,
+    };
+    let error = ProductPersistence::append_invalidation(&store, &scoped)
+        .await
+        .expect_err("legacy unscoped identity cannot be silently adopted by a product");
+    assert!(matches!(
+        error,
+        tracera_server::product::ProductPersistenceError::Conflict(_)
+    ));
+
+    let visible = ProductPersistence::list_invalidations(
+        &store,
+        "scope-product",
+        "criterion",
+        "same-local-ref",
+        10,
+    )
+    .await
+    .expect("scoped read");
+    assert!(
+        visible.is_empty(),
+        "legacy ambiguous rows must not become product-scoped truth"
+    );
+}
+
+#[tokio::test]
 async fn invalidation_history_is_partitioned_by_product_even_for_same_target_ref() {
     let store = mem_store().await;
     let t = now();
