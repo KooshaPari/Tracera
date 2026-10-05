@@ -183,7 +183,7 @@ for name, target, criterion, certs, expected in cases:
 
 # Demonstrate source-only mutant.
 mutants = []
-for name, target, criterion, certs, expected in cases:
+for name, target, _criterion, _certs, expected in cases:
     if expected:
         continue
     bad = base.source == target.source
