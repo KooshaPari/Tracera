@@ -1200,7 +1200,6 @@ async fn product_v1_file_restart_preserves_baseline_and_observation_history() {
     let _ = std::fs::remove_file(path);
 }
 
-
 #[tokio::test]
 async fn dependency_ledger_is_product_scoped_idempotent_and_immutable() {
     let store = mem_store().await;
