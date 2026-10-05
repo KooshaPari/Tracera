@@ -3,7 +3,7 @@ use std::{sync::Arc, time::Instant};
 
 use axum::{
     body::{to_bytes, Body},
-    http::Request,
+    http::{Method, Request},
     Router,
 };
 use chrono::{TimeZone, Utc};
@@ -176,6 +176,28 @@ async fn request(app: &Router, path: &str, authenticated: bool) -> axum::respons
     }
     app.clone()
         .oneshot(request.body(Body::empty()).unwrap())
+        .await
+        .unwrap()
+}
+
+async fn post_json(
+    app: &Router,
+    path: &str,
+    value: Value,
+    authenticated: bool,
+) -> axum::response::Response {
+    let csrf = crate::middleware::issue_csrf_token().await;
+    let mut request = Request::builder()
+        .method(Method::POST)
+        .uri(path)
+        .header("content-type", "application/json")
+        .header("origin", "https://tracera.pheno.studio")
+        .header("x-csrf-token", csrf);
+    if authenticated {
+        request = request.header("authorization", format!("Bearer {TOKEN}"));
+    }
+    app.clone()
+        .oneshot(request.body(Body::from(value.to_string())).unwrap())
         .await
         .unwrap()
 }
@@ -389,4 +411,119 @@ async fn missing_query_fields_and_negative_limits_are_rejected() {
             "{path}"
         );
     }
+}
+
+
+#[tokio::test]
+async fn mounted_observation_write_is_product_and_baseline_scoped() {
+    let app = fixture().await;
+    let base = json!({
+        "observation_id": "observation-new-a",
+        "product_id": "p-a",
+        "baseline_id": "b-a",
+        "subject_entity_id": null,
+        "subject_local_id": "search",
+        "candidate_ref": "git:new",
+        "configuration": {},
+        "result": "passed",
+        "verifier_id": "http-suite",
+        "verifier_version": "1",
+        "recorded_at": "2025-10-03T00:00:00Z",
+        "raw_evidence_ref": null,
+        "metadata": {}
+    });
+
+    assert_eq!(
+        post_json(
+            &app,
+            "/api/v1/products/p-a/baselines/b-a/observations",
+            base.clone(),
+            false,
+        )
+        .await
+        .status(),
+        StatusCode::UNAUTHORIZED
+    );
+
+    let response = post_json(
+        &app,
+        "/api/v1/products/p-a/baselines/b-a/observations",
+        base,
+        true,
+    )
+    .await;
+    assert_eq!(response.status(), StatusCode::CREATED);
+
+    let response = request(
+        &app,
+        "/api/v1/products/p-a/baselines/b-a/observations?subject_local_id=search",
+        true,
+    )
+    .await;
+    assert_eq!(response.status(), StatusCode::OK);
+    let value = body(response).await;
+    assert!(
+        value["observations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["observation_id"] == "observation-new-a")
+    );
+
+    let mut foreign = value["observations"][0].clone();
+    foreign["observation_id"] = json!("observation-foreign-body");
+    foreign["product_id"] = json!("p-b");
+    let response = post_json(
+        &app,
+        "/api/v1/products/p-a/baselines/b-a/observations",
+        foreign,
+        true,
+    )
+    .await;
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+}
+
+#[tokio::test]
+async fn mounted_reuse_write_cannot_cross_product_observation_scope() {
+    let app = fixture().await;
+
+    let response = post_json(
+        &app,
+        "/api/v1/products/p-a/baselines/b-a/reuse-decisions",
+        json!({
+            "reuse_decision_id": "reuse-new-a",
+            "observation_id": "observation-p-a",
+            "target_baseline_id": "b-a",
+            "target_candidate_ref": "git:new-target",
+            "criterion_ref": "search",
+            "applicability_state": "current_valid",
+            "compatibility_certificate_ref": null,
+            "policy_version": "1",
+            "reason": "mounted write witness",
+            "decided_at": "2025-10-03T00:01:00Z"
+        }),
+        true,
+    )
+    .await;
+    assert_eq!(response.status(), StatusCode::CREATED);
+
+    let response = post_json(
+        &app,
+        "/api/v1/products/p-a/baselines/b-a/reuse-decisions",
+        json!({
+            "reuse_decision_id": "reuse-cross-product",
+            "observation_id": "observation-p-b",
+            "target_baseline_id": "b-a",
+            "target_candidate_ref": "git:new-target",
+            "criterion_ref": "search",
+            "applicability_state": "current_valid",
+            "compatibility_certificate_ref": null,
+            "policy_version": "1",
+            "reason": "must fail",
+            "decided_at": "2025-10-03T00:02:00Z"
+        }),
+        true,
+    )
+    .await;
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
