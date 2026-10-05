@@ -3,8 +3,11 @@
 use std::{future::Future, pin::Pin, sync::Arc};
 
 use super::{
-    EvidenceReuseDecision, InvalidationEvent, PersistedBaseline, PersistedEntityRevision,
-    PersistedObservation, PersistedProduct, ProductPersistence, ProductPersistenceError,
+    dependencies::{DependencyAuthority, DependencyEdge},
+    invalidation_service::{execute_dependency_invalidation, PersistedInvalidationResult},
+    EvidenceReuseDecision, InvalidationEvent, PersistedBaseline, PersistedDependencyEdge,
+    PersistedEntityRevision, PersistedObservation, PersistedProduct, ProductPersistence,
+    ProductPersistenceError,
 };
 
 pub const MAX_PRODUCT_READ_LIMIT: u32 = 1000;
@@ -49,6 +52,22 @@ pub trait ProductApplicationService: Send + Sync {
         target_ref: &'a str,
         limit: u32,
     ) -> ProductFuture<'a, Vec<InvalidationEvent>>;
+
+    fn append_dependency_edge<'a>(
+        &'a self,
+        product_id: &'a str,
+        edge: &'a PersistedDependencyEdge,
+    ) -> ProductFuture<'a, ()>;
+
+    fn execute_dependency_invalidation<'a>(
+        &'a self,
+        product_id: &'a str,
+        changed: &'a [String],
+        revision: &'a str,
+        max_nodes: usize,
+        trigger_ref: &'a str,
+        target_kind: &'a str,
+    ) -> ProductFuture<'a, PersistedInvalidationResult>;
 
     fn append_observation<'a>(
         &'a self,
@@ -198,6 +217,90 @@ where
             self.persistence
                 .list_invalidations(product_id, target_kind, target_ref, limit)
                 .await
+        })
+    }
+
+    fn append_dependency_edge<'a>(
+        &'a self,
+        product_id: &'a str,
+        edge: &'a PersistedDependencyEdge,
+    ) -> ProductFuture<'a, ()> {
+        Box::pin(async move {
+            if edge.product_id != product_id {
+                return Err(ProductPersistenceError::Invalid(
+                    "dependency edge product must match request path".into(),
+                ));
+            }
+            self.require_product(product_id).await?;
+            self.persistence.append_dependency_edge(edge).await
+        })
+    }
+
+    fn execute_dependency_invalidation<'a>(
+        &'a self,
+        product_id: &'a str,
+        changed: &'a [String],
+        revision: &'a str,
+        max_nodes: usize,
+        trigger_ref: &'a str,
+        target_kind: &'a str,
+    ) -> ProductFuture<'a, PersistedInvalidationResult> {
+        Box::pin(async move {
+            if changed.is_empty() {
+                return Err(ProductPersistenceError::Invalid(
+                    "dependency invalidation requires at least one changed reference".into(),
+                ));
+            }
+            if max_nodes == 0 || max_nodes > 100_000 {
+                return Err(ProductPersistenceError::Invalid(
+                    "max_nodes must be between 1 and 100000".into(),
+                ));
+            }
+            if revision.trim().is_empty() || trigger_ref.trim().is_empty() || target_kind.trim().is_empty() {
+                return Err(ProductPersistenceError::Invalid(
+                    "revision, trigger_ref, and target_kind are required".into(),
+                ));
+            }
+
+            self.require_product(product_id).await?;
+            let persisted = self
+                .persistence
+                .list_dependency_edges(product_id, revision)
+                .await?;
+            let mut edges = Vec::with_capacity(persisted.len());
+            for edge in persisted {
+                let authority = match edge.authority.as_str() {
+                    "deterministic" => DependencyAuthority::Deterministic,
+                    "accepted" => DependencyAuthority::Accepted,
+                    "declared" => DependencyAuthority::Declared,
+                    "inferred" => DependencyAuthority::Inferred,
+                    other => {
+                        return Err(ProductPersistenceError::Backend(format!(
+                            "persisted dependency edge {} has unknown authority {}",
+                            edge.dependency_edge_id, other
+                        )));
+                    }
+                };
+                edges.push(DependencyEdge {
+                    dependency: edge.dependency_ref,
+                    dependent: edge.dependent_ref,
+                    authority,
+                    revision: edge.revision,
+                    active: edge.active,
+                });
+            }
+
+            execute_dependency_invalidation(
+                self.persistence.as_ref(),
+                product_id,
+                changed,
+                &edges,
+                revision,
+                max_nodes,
+                trigger_ref,
+                target_kind,
+            )
+            .await
         })
     }
 
