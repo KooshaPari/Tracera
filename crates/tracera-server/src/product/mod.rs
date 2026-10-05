@@ -48,7 +48,8 @@ pub use invalidation_service::{
 };
 pub use observation::{Observation, ObservationKind, ObservationResult, ObservationSource};
 pub use persistence::{
-    EvidenceReuseDecision, InvalidationEvent, PersistedBaseline, PersistedEntity,
+    EvidenceReuseDecision, InvalidationEvent, PersistedBaseline, PersistedDependencyEdge,
+    PersistedEntity,
     PersistedEntityRevision, PersistedObservation, PersistedProduct, ProductPersistence,
     ProductPersistenceError,
 };
