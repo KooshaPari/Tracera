@@ -12,8 +12,8 @@ use sqlx::{
 use tracera_server::product::dependencies::{DependencyAuthority, DependencyEdge};
 use tracera_server::product::{
     execute_certificate_revocation, execute_dependency_invalidation, EvidenceReuseDecision,
-    InvalidationEvent, PersistedBaseline, PersistedEntity, PersistedEntityRevision,
-    PersistedObservation, PersistedProduct, ProductPersistence,
+    InvalidationEvent, PersistedBaseline, PersistedDependencyEdge, PersistedEntity,
+    PersistedEntityRevision, PersistedObservation, PersistedProduct, ProductPersistence,
 };
 use tracera_server::sqlite_store::SqliteStore;
 use tracera_server::store::Store;
@@ -1198,4 +1198,121 @@ async fn product_v1_file_restart_preserves_baseline_and_observation_history() {
         assert_eq!(result, "passed");
     }
     let _ = std::fs::remove_file(path);
+}
+
+
+#[tokio::test]
+async fn dependency_ledger_is_product_scoped_idempotent_and_immutable() {
+    let store = mem_store().await;
+    let t = now();
+    for product_id in ["deps-a", "deps-b"] {
+        seed_product(&store, product_id).await;
+    }
+
+    let edge = PersistedDependencyEdge {
+        dependency_edge_id: "dep:a:1".into(),
+        product_id: "deps-a".into(),
+        dependency_ref: "schema".into(),
+        dependent_ref: "criterion".into(),
+        authority: "accepted".into(),
+        revision: "r1".into(),
+        active: true,
+        recorded_at: t,
+    };
+    ProductPersistence::append_dependency_edge(&store, &edge)
+        .await
+        .expect("append dependency");
+    ProductPersistence::append_dependency_edge(&store, &edge)
+        .await
+        .expect("exact replay");
+
+    let listed = ProductPersistence::list_dependency_edges(&store, "deps-a", "r1")
+        .await
+        .expect("list product A dependencies");
+    assert_eq!(listed, vec![edge.clone()]);
+    assert!(
+        ProductPersistence::list_dependency_edges(&store, "deps-b", "r1")
+            .await
+            .expect("list product B dependencies")
+            .is_empty(),
+        "same revision name in another product must not leak dependency edges"
+    );
+
+    let conflicting = PersistedDependencyEdge {
+        dependent_ref: "different-criterion".into(),
+        ..edge.clone()
+    };
+    let error = ProductPersistence::append_dependency_edge(&store, &conflicting)
+        .await
+        .expect_err("immutable dependency identity cannot be rewritten");
+    assert!(matches!(
+        error,
+        tracera_server::product::ProductPersistenceError::Conflict(_)
+    ));
+
+    let foreign_product = PersistedDependencyEdge {
+        dependency_edge_id: "dep:foreign".into(),
+        product_id: "missing-product".into(),
+        ..edge
+    };
+    let error = ProductPersistence::append_dependency_edge(&store, &foreign_product)
+        .await
+        .expect_err("dependency edge must reference an existing product");
+    assert!(matches!(
+        error,
+        tracera_server::product::ProductPersistenceError::Invalid(_)
+    ));
+}
+
+#[tokio::test]
+async fn persisted_dependency_graph_drives_bounded_invalidation_without_caller_supplied_edges() {
+    use std::sync::Arc;
+    use tracera_server::product::application::{ProductApplication, ProductApplicationService};
+
+    let store = Arc::new(mem_store().await);
+    seed_product(store.as_ref(), "deps-run").await;
+    for edge in [
+        PersistedDependencyEdge {
+            dependency_edge_id: "dep:run:1".into(),
+            product_id: "deps-run".into(),
+            dependency_ref: "a".into(),
+            dependent_ref: "b".into(),
+            authority: "accepted".into(),
+            revision: "r1".into(),
+            active: true,
+            recorded_at: now(),
+        },
+        PersistedDependencyEdge {
+            dependency_edge_id: "dep:run:2".into(),
+            product_id: "deps-run".into(),
+            dependency_ref: "b".into(),
+            dependent_ref: "c".into(),
+            authority: "accepted".into(),
+            revision: "r1".into(),
+            active: true,
+            recorded_at: now(),
+        },
+    ] {
+        ProductPersistence::append_dependency_edge(store.as_ref(), &edge)
+            .await
+            .expect("append persisted dependency");
+    }
+
+    let app = ProductApplication::new(store.clone());
+    let result = ProductApplicationService::execute_dependency_invalidation(
+        &app,
+        "deps-run",
+        &["a".into()],
+        "r1",
+        2,
+        "change:persisted",
+        "criterion",
+    )
+    .await
+    .expect("execute from persisted dependency graph");
+
+    assert!(!result.plan.propagation.complete);
+    assert_eq!(result.plan.propagation.affected, vec!["a", "b"]);
+    assert_eq!(result.plan.propagation.continuation, vec!["c"]);
+    assert_eq!(result.persisted_events, 1);
 }
