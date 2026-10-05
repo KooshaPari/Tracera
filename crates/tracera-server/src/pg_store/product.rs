@@ -335,24 +335,39 @@ impl ProductPersistence for PgStore {
     ) -> Result<(), ProductPersistenceError> {
         let mut tx = self.pool.begin().await.map_err(backend)?;
         for e in events {
+            let product_exists: Option<i64> = sqlx::query_scalar(
+                "SELECT 1::BIGINT FROM product_nodes
+                 WHERE id=$1 AND product_id=$1 AND intent_kind='product'",
+            )
+            .bind(&e.product_id)
+            .fetch_optional(&mut *tx)
+            .await
+            .map_err(backend)?;
+            if product_exists.is_none() {
+                return Err(ProductPersistenceError::Invalid(format!(
+                    "invalidation {} references unknown product {}",
+                    e.invalidation_id, e.product_id
+                )));
+            }
             let inserted = sqlx::query(
                 "INSERT INTO invalidation_events_v1
-                 (invalidation_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at)
-                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+                 (invalidation_id,product_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at)
+                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
                  ON CONFLICT (invalidation_id) DO NOTHING",
             )
-            .bind(&e.invalidation_id).bind(&e.trigger_kind).bind(&e.trigger_ref)
+            .bind(&e.invalidation_id).bind(&e.product_id).bind(&e.trigger_kind).bind(&e.trigger_ref)
             .bind(&e.target_kind).bind(&e.target_ref).bind(&e.prior_state)
             .bind(&e.new_state).bind(&e.reason).bind(e.occurred_at)
             .execute(&mut *tx).await.map_err(backend)?;
             if inserted.rows_affected() == 0 {
                 let row = sqlx::query(
-                    "SELECT invalidation_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at
+                    "SELECT invalidation_id,product_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at
                      FROM invalidation_events_v1 WHERE invalidation_id=$1",
                 )
                 .bind(&e.invalidation_id).fetch_one(&mut *tx).await.map_err(backend)?;
                 let existing = InvalidationEvent {
                     invalidation_id: row.get("invalidation_id"),
+                    product_id: row.get("product_id"),
                     trigger_kind: row.get("trigger_kind"),
                     trigger_ref: row.get("trigger_ref"),
                     target_kind: row.get("target_kind"),
@@ -375,16 +390,18 @@ impl ProductPersistence for PgStore {
     }
     async fn list_invalidations(
         &self,
+        product_id: &str,
         kind: &str,
         target: &str,
         limit: u32,
     ) -> Result<Vec<InvalidationEvent>, ProductPersistenceError> {
-        let rows=sqlx::query("SELECT invalidation_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at FROM invalidation_events_v1 WHERE target_kind=$1 AND target_ref=$2 ORDER BY occurred_at,invalidation_id LIMIT $3")
-            .bind(kind).bind(target).bind(i64::from(limit.min(1000))).fetch_all(&self.pool).await.map_err(backend)?;
+        let rows=sqlx::query("SELECT invalidation_id,product_id,trigger_kind,trigger_ref,target_kind,target_ref,prior_state,new_state,reason,occurred_at FROM invalidation_events_v1 WHERE product_id=$1 AND target_kind=$2 AND target_ref=$3 ORDER BY occurred_at,invalidation_id LIMIT $4")
+            .bind(product_id).bind(kind).bind(target).bind(i64::from(limit.min(1000))).fetch_all(&self.pool).await.map_err(backend)?;
         Ok(rows
             .into_iter()
             .map(|r| InvalidationEvent {
                 invalidation_id: r.get("invalidation_id"),
+                product_id: r.get("product_id"),
                 trigger_kind: r.get("trigger_kind"),
                 trigger_ref: r.get("trigger_ref"),
                 target_kind: r.get("target_kind"),
