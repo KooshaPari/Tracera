@@ -128,6 +128,7 @@ async fn fixture() -> Router {
     store
         .append_invalidation(&InvalidationEvent {
             invalidation_id: "inv-1".into(),
+            product_id: "p-a".into(),
             trigger_kind: "dependency_changed".into(),
             trigger_ref: "change-1".into(),
             target_kind: "criterion".into(),
@@ -139,6 +140,21 @@ async fn fixture() -> Router {
         })
         .await
         .expect("invalidation");
+    store
+        .append_invalidation(&InvalidationEvent {
+            invalidation_id: "inv-2".into(),
+            product_id: "p-b".into(),
+            trigger_kind: "dependency_changed".into(),
+            trigger_ref: "change-2".into(),
+            target_kind: "criterion".into(),
+            target_ref: "criterion:a/b".into(),
+            prior_state: Some("current_valid".into()),
+            new_state: "suspect".into(),
+            reason: "foreign fixture".into(),
+            occurred_at: now,
+        })
+        .await
+        .expect("foreign invalidation");
     let state = AppState {
         version: "test".into(),
         backend: "sqlite",
@@ -318,14 +334,45 @@ async fn invalidation_reference_survives_query_encoding() {
     let app = fixture().await;
     let response = request(
         &app,
-        "/api/v1/product-invalidations/criterion?target_ref=criterion%3Aa%2Fb",
+        "/api/v1/products/p-a/invalidations/criterion?target_ref=criterion%3Aa%2Fb",
         true,
     )
     .await;
     assert_eq!(response.status(), StatusCode::OK);
     let value = body(response).await;
+    assert_eq!(value["product_id"], "p-a");
     assert_eq!(value["target_ref"], "criterion:a/b");
+    assert_eq!(value["invalidations"].as_array().unwrap().len(), 1);
     assert_eq!(value["invalidations"][0]["invalidation_id"], "inv-1");
+    assert_eq!(value["invalidations"][0]["product_id"], "p-a");
+}
+
+#[tokio::test]
+async fn invalidation_history_isolated_by_product() {
+    let app = fixture().await;
+    for (product_id, expected_id) in [("p-a", "inv-1"), ("p-b", "inv-2")] {
+        let path = format!(
+            "/api/v1/products/{product_id}/invalidations/criterion?target_ref=criterion%3Aa%2Fb"
+        );
+        let response = request(&app, &path, true).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        let value = body(response).await;
+        assert_eq!(value["count"], 1);
+        assert_eq!(value["invalidations"][0]["invalidation_id"], expected_id);
+        assert_eq!(value["invalidations"][0]["product_id"], product_id);
+    }
+}
+
+#[tokio::test]
+async fn invalidation_history_rejects_missing_product_scope() {
+    let app = fixture().await;
+    let response = request(
+        &app,
+        "/api/v1/products/missing/invalidations/criterion?target_ref=criterion%3Aa%2Fb",
+        true,
+    )
+    .await;
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
 }
 
 #[tokio::test]
@@ -334,7 +381,7 @@ async fn missing_query_fields_and_negative_limits_are_rejected() {
     for path in [
         "/api/v1/products/p-a/baselines/b-a/reuse-decisions",
         "/api/v1/products/p-a/baselines/b-a/entities?limit=-1",
-        "/api/v1/product-invalidations/criterion",
+        "/api/v1/products/p-a/invalidations/criterion",
     ] {
         assert_eq!(
             request(&app, path, true).await.status(),
