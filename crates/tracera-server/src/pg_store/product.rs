@@ -3,8 +3,9 @@
 use sqlx::Row;
 
 use crate::product::persistence::{
-    EvidenceReuseDecision, InvalidationEvent, PersistedBaseline, PersistedEntity,
-    PersistedEntityRevision, PersistedObservation, PersistedProduct, ProductPersistence,
+    EvidenceReuseDecision, InvalidationEvent, PersistedBaseline, PersistedDependencyEdge,
+    PersistedEntity, PersistedEntityRevision, PersistedObservation, PersistedProduct,
+    ProductPersistence,
     ProductPersistenceError,
 };
 
@@ -172,6 +173,110 @@ impl ProductPersistence for PgStore {
             })
             .collect())
     }
+    async fn append_dependency_edge(
+        &self,
+        edge: &PersistedDependencyEdge,
+    ) -> Result<(), ProductPersistenceError> {
+        if !matches!(
+            edge.authority.as_str(),
+            "deterministic" | "accepted" | "declared" | "inferred"
+        ) {
+            return Err(ProductPersistenceError::Invalid(format!(
+                "dependency edge {} has invalid authority {}",
+                edge.dependency_edge_id, edge.authority
+            )));
+        }
+        let product_exists: Option<i64> = sqlx::query_scalar(
+            "SELECT 1::BIGINT FROM product_nodes
+             WHERE id=$1 AND product_id=$1 AND intent_kind='product'",
+        )
+        .bind(&edge.product_id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(backend)?;
+        if product_exists.is_none() {
+            return Err(ProductPersistenceError::Invalid(format!(
+                "dependency edge {} references unknown product {}",
+                edge.dependency_edge_id, edge.product_id
+            )));
+        }
+        let inserted = sqlx::query(
+            "INSERT INTO product_dependency_edges_v1
+             (dependency_edge_id,product_id,dependency_ref,dependent_ref,authority,revision,active,recorded_at)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+             ON CONFLICT (dependency_edge_id) DO NOTHING",
+        )
+        .bind(&edge.dependency_edge_id)
+        .bind(&edge.product_id)
+        .bind(&edge.dependency_ref)
+        .bind(&edge.dependent_ref)
+        .bind(&edge.authority)
+        .bind(&edge.revision)
+        .bind(edge.active)
+        .bind(edge.recorded_at)
+        .execute(&self.pool)
+        .await
+        .map_err(backend)?;
+        if inserted.rows_affected() == 0 {
+            let row = sqlx::query(
+                "SELECT dependency_edge_id,product_id,dependency_ref,dependent_ref,authority,revision,active,recorded_at
+                 FROM product_dependency_edges_v1 WHERE dependency_edge_id=$1",
+            )
+            .bind(&edge.dependency_edge_id)
+            .fetch_one(&self.pool)
+            .await
+            .map_err(backend)?;
+            let existing = PersistedDependencyEdge {
+                dependency_edge_id: row.get("dependency_edge_id"),
+                product_id: row.get("product_id"),
+                dependency_ref: row.get("dependency_ref"),
+                dependent_ref: row.get("dependent_ref"),
+                authority: row.get("authority"),
+                revision: row.get("revision"),
+                active: row.get("active"),
+                recorded_at: row.get("recorded_at"),
+            };
+            if existing != *edge {
+                return Err(ProductPersistenceError::Conflict(format!(
+                    "dependency edge {} already exists with different immutable content",
+                    edge.dependency_edge_id
+                )));
+            }
+        }
+        Ok(())
+    }
+
+    async fn list_dependency_edges(
+        &self,
+        product_id: &str,
+        revision: &str,
+    ) -> Result<Vec<PersistedDependencyEdge>, ProductPersistenceError> {
+        let rows = sqlx::query(
+            "SELECT dependency_edge_id,product_id,dependency_ref,dependent_ref,authority,revision,active,recorded_at
+             FROM product_dependency_edges_v1
+             WHERE product_id=$1 AND revision=$2
+             ORDER BY dependency_edge_id",
+        )
+        .bind(product_id)
+        .bind(revision)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(backend)?;
+        Ok(rows
+            .into_iter()
+            .map(|row| PersistedDependencyEdge {
+                dependency_edge_id: row.get("dependency_edge_id"),
+                product_id: row.get("product_id"),
+                dependency_ref: row.get("dependency_ref"),
+                dependent_ref: row.get("dependent_ref"),
+                authority: row.get("authority"),
+                revision: row.get("revision"),
+                active: row.get("active"),
+                recorded_at: row.get("recorded_at"),
+            })
+            .collect())
+    }
+
     async fn append_observation(
         &self,
         o: &PersistedObservation,
