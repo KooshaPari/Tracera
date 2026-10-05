@@ -50,6 +50,20 @@ pub trait ProductApplicationService: Send + Sync {
         limit: u32,
     ) -> ProductFuture<'a, Vec<InvalidationEvent>>;
 
+    fn append_observation<'a>(
+        &'a self,
+        product_id: &'a str,
+        baseline_id: &'a str,
+        observation: &'a PersistedObservation,
+    ) -> ProductFuture<'a, ()>;
+
+    fn append_reuse_decision<'a>(
+        &'a self,
+        product_id: &'a str,
+        target_baseline_id: &'a str,
+        decision: &'a EvidenceReuseDecision,
+    ) -> ProductFuture<'a, ()>;
+
     fn accept_baseline<'a>(
         &'a self,
         baseline: &'a PersistedBaseline,
@@ -183,6 +197,43 @@ where
             self.persistence
                 .list_invalidations(product_id, target_kind, target_ref, limit)
                 .await
+        })
+    }
+
+    fn append_observation<'a>(
+        &'a self,
+        product_id: &'a str,
+        baseline_id: &'a str,
+        observation: &'a PersistedObservation,
+    ) -> ProductFuture<'a, ()> {
+        Box::pin(async move {
+            if observation.product_id != product_id || observation.baseline_id != baseline_id {
+                return Err(ProductPersistenceError::Invalid(
+                    "observation scope must match product/baseline path".into(),
+                ));
+            }
+            self.require_baseline(product_id, baseline_id).await?;
+            self.persistence.append_observation(observation).await
+        })
+    }
+
+    fn append_reuse_decision<'a>(
+        &'a self,
+        product_id: &'a str,
+        target_baseline_id: &'a str,
+        decision: &'a EvidenceReuseDecision,
+    ) -> ProductFuture<'a, ()> {
+        Box::pin(async move {
+            if decision.target_baseline_id != target_baseline_id {
+                return Err(ProductPersistenceError::Invalid(
+                    "reuse decision target baseline must match request path".into(),
+                ));
+            }
+            self.require_baseline(product_id, target_baseline_id).await?;
+            // Persistence verifies that the source observation belongs to the
+            // same product; the application boundary must not infer ownership
+            // from an observation identifier.
+            self.persistence.append_reuse_decision(decision).await
         })
     }
 
