@@ -13,7 +13,6 @@ use crate::{
     AppState,
 };
 
-
 #[derive(Debug, Deserialize)]
 pub(crate) struct BaselineMemberRequest {
     entity_id: String,
@@ -114,7 +113,6 @@ pub(crate) async fn get_product(
         })?;
     Ok(Json(serde_json::json!({"product": product})))
 }
-
 
 pub(crate) async fn accept_baseline(
     State(state): State<AppState>,

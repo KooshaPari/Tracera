@@ -525,7 +525,6 @@ async fn mounted_reuse_write_cannot_cross_product_observation_scope() {
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
 
-
 #[tokio::test]
 async fn mounted_baseline_acceptance_uses_product_path_as_authority() {
     let app = fixture().await;
@@ -548,12 +547,7 @@ async fn mounted_baseline_acceptance_uses_product_path_as_authority() {
     .await;
     assert_eq!(response.status(), StatusCode::CREATED);
 
-    let response = request(
-        &app,
-        "/api/v1/products/p-a/baselines/b-new/entities",
-        true,
-    )
-    .await;
+    let response = request(&app, "/api/v1/products/p-a/baselines/b-new/entities", true).await;
     assert_eq!(response.status(), StatusCode::OK);
 
     let response = post_json(
