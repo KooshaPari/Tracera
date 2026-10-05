@@ -524,3 +524,54 @@ async fn mounted_reuse_write_cannot_cross_product_observation_scope() {
     .await;
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
+
+
+#[tokio::test]
+async fn mounted_baseline_acceptance_uses_product_path_as_authority() {
+    let app = fixture().await;
+    let response = post_json(
+        &app,
+        "/api/v1/products/p-a/baselines",
+        json!({
+            "baseline": {
+                "baseline_id": "b-new",
+                "product_id": "p-a",
+                "revision_number": 2,
+                "parent_baseline_id": "b-a",
+                "accepted_at": "2025-10-03T01:00:00Z",
+                "metadata": {}
+            },
+            "members": []
+        }),
+        true,
+    )
+    .await;
+    assert_eq!(response.status(), StatusCode::CREATED);
+
+    let response = request(
+        &app,
+        "/api/v1/products/p-a/baselines/b-new/entities",
+        true,
+    )
+    .await;
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let response = post_json(
+        &app,
+        "/api/v1/products/p-a/baselines",
+        json!({
+            "baseline": {
+                "baseline_id": "b-foreign-body",
+                "product_id": "p-b",
+                "revision_number": 2,
+                "parent_baseline_id": "b-b",
+                "accepted_at": "2025-10-03T01:01:00Z",
+                "metadata": {}
+            },
+            "members": []
+        }),
+        true,
+    )
+    .await;
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+}
