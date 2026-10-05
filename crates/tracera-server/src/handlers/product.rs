@@ -6,7 +6,10 @@ use axum::{
 use serde::Deserialize;
 
 use crate::{
-    product::{application::MAX_PRODUCT_READ_LIMIT, ProductPersistenceError},
+    product::{
+        application::MAX_PRODUCT_READ_LIMIT, EvidenceReuseDecision, PersistedObservation,
+        ProductPersistenceError,
+    },
     AppState,
 };
 
@@ -144,6 +147,34 @@ pub(crate) async fn list_observations(
         "count": count,
         "page": page_info(count, limit)
     })))
+}
+
+
+
+pub(crate) async fn append_observation(
+    State(state): State<AppState>,
+    Path((product_id, baseline_id)): Path<(String, String)>,
+    Json(observation): Json<PersistedObservation>,
+) -> Result<StatusCode, (StatusCode, Json<serde_json::Value>)> {
+    state
+        .product
+        .append_observation(&product_id, &baseline_id, &observation)
+        .await
+        .map_err(persistence_error)?;
+    Ok(StatusCode::CREATED)
+}
+
+pub(crate) async fn append_reuse_decision(
+    State(state): State<AppState>,
+    Path((product_id, baseline_id)): Path<(String, String)>,
+    Json(decision): Json<EvidenceReuseDecision>,
+) -> Result<StatusCode, (StatusCode, Json<serde_json::Value>)> {
+    state
+        .product
+        .append_reuse_decision(&product_id, &baseline_id, &decision)
+        .await
+        .map_err(persistence_error)?;
+    Ok(StatusCode::CREATED)
 }
 
 pub(crate) async fn list_reuse_decisions(
