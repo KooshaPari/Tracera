@@ -51,6 +51,19 @@ fn now() -> chrono::DateTime<Utc> {
     Utc.timestamp_opt(1_752_000_000, 0).unwrap()
 }
 
+async fn seed_product(store: &SqliteStore, product_id: &str) {
+    ProductPersistence::create_product(
+        store,
+        &PersistedProduct {
+            product_id: product_id.into(),
+            display_name: product_id.into(),
+            created_at: now(),
+        },
+    )
+    .await
+    .expect("seed product");
+}
+
 #[tokio::test]
 async fn swee_node_roundtrip() {
     let store = mem_store().await;
@@ -206,6 +219,7 @@ async fn certificate_revocation_persists_reuse_invalidation_without_deleting_obs
         .expect("append reuse");
     let result = execute_certificate_revocation(
         &store,
+        "cert-product",
         "cert:1",
         std::slice::from_ref(&reuse.reuse_decision_id),
     )
@@ -215,6 +229,7 @@ async fn certificate_revocation_persists_reuse_invalidation_without_deleting_obs
     assert_eq!(result.persisted_events, 1);
     let invalidations = ProductPersistence::list_invalidations(
         &store,
+        "cert-product",
         "reuse_decision",
         &reuse.reuse_decision_id,
         10,
@@ -244,8 +259,10 @@ async fn certificate_revocation_persists_reuse_invalidation_without_deleting_obs
 async fn invalidation_batch_replay_is_idempotent_and_conflict_rolls_back() {
     let store = mem_store().await;
     let t = now();
+    seed_product(&store, "batch-product").await;
     let first = InvalidationEvent {
         invalidation_id: "batch-i1".into(),
+        product_id: "batch-product".into(),
         trigger_kind: "dependency_changed".into(),
         trigger_ref: "change:1".into(),
         target_kind: "criterion".into(),
@@ -277,13 +294,25 @@ async fn invalidation_batch_replay_is_idempotent_and_conflict_rolls_back() {
         err,
         tracera_server::product::ProductPersistenceError::Conflict(_)
     ));
-    let first_rows = ProductPersistence::list_invalidations(&store, "criterion", "criterion-a", 10)
-        .await
+    let first_rows = ProductPersistence::list_invalidations(
+        &store,
+        "batch-product",
+        "criterion",
+        "criterion-a",
+        10,
+    )
+    .await
         .expect("list first event");
     assert_eq!(first_rows, vec![first]);
     let rolled_back =
-        ProductPersistence::list_invalidations(&store, "criterion", "criterion-c", 10)
-            .await
+        ProductPersistence::list_invalidations(
+            &store,
+            "batch-product",
+            "criterion",
+            "criterion-c",
+            10,
+        )
+        .await
             .expect("list rolled back event");
     assert!(
         rolled_back.is_empty(),
@@ -294,6 +323,7 @@ async fn invalidation_batch_replay_is_idempotent_and_conflict_rolls_back() {
 #[tokio::test]
 async fn persistence_backed_invalidation_preserves_partial_continuation_and_event_count() {
     let store = mem_store().await;
+    seed_product(&store, "bounded-product").await;
     let edges = vec![
         DependencyEdge {
             dependency: "schema".into(),
@@ -312,6 +342,7 @@ async fn persistence_backed_invalidation_preserves_partial_continuation_and_even
     ];
     let result = execute_dependency_invalidation(
         &store,
+        "bounded-product",
         &["schema".into()],
         &edges,
         "r1",
@@ -328,14 +359,26 @@ async fn persistence_backed_invalidation_preserves_partial_continuation_and_even
     );
     assert_eq!(result.plan.propagation.continuation, vec!["criterion-b"]);
     assert_eq!(result.persisted_events, 1);
-    let persisted = ProductPersistence::list_invalidations(&store, "criterion", "criterion-a", 10)
-        .await
+    let persisted = ProductPersistence::list_invalidations(
+        &store,
+        "bounded-product",
+        "criterion",
+        "criterion-a",
+        10,
+    )
+    .await
         .expect("list persisted invalidations");
     assert_eq!(persisted.len(), 1);
     assert_eq!(persisted[0].trigger_ref, "change:bounded");
     let not_yet_visited =
-        ProductPersistence::list_invalidations(&store, "criterion", "criterion-b", 10)
-            .await
+        ProductPersistence::list_invalidations(
+            &store,
+            "bounded-product",
+            "criterion",
+            "criterion-b",
+            10,
+        )
+        .await
             .expect("list continuation target invalidations");
     assert!(
         not_yet_visited.is_empty(),
@@ -455,6 +498,7 @@ async fn product_persistence_port_roundtrip_preserves_history_and_invalidation()
         .expect("append reuse");
     let invalidation = InvalidationEvent {
         invalidation_id: "port-i1".into(),
+        product_id: product.product_id.clone(),
         trigger_kind: "certificate_revoked".into(),
         trigger_ref: "cert:1".into(),
         target_kind: "reuse_decision".into(),
@@ -469,6 +513,7 @@ async fn product_persistence_port_roundtrip_preserves_history_and_invalidation()
         .expect("append invalidation");
     let invalidations = ProductPersistence::list_invalidations(
         &store,
+        &product.product_id,
         "reuse_decision",
         &reuse.reuse_decision_id,
         10,
@@ -650,8 +695,10 @@ async fn product_persistence_rejects_cross_product_evidence_reuse() {
 async fn invalidation_batch_is_atomic_on_conflicting_replay() {
     let store = mem_store().await;
     let t = now();
+    seed_product(&store, "batch-atomic-product").await;
     let existing = InvalidationEvent {
         invalidation_id: "batch-i2".into(),
+        product_id: "batch-atomic-product".into(),
         trigger_kind: "dependency_changed".into(),
         trigger_ref: "change:1".into(),
         target_kind: "criterion".into(),
@@ -666,6 +713,7 @@ async fn invalidation_batch_is_atomic_on_conflicting_replay() {
         .expect("seed existing invalidation");
     let first = InvalidationEvent {
         invalidation_id: "batch-i1".into(),
+        product_id: "batch-atomic-product".into(),
         trigger_kind: "dependency_changed".into(),
         trigger_ref: "change:1".into(),
         target_kind: "criterion".into(),
@@ -702,9 +750,11 @@ async fn invalidation_batch_is_atomic_on_conflicting_replay() {
 async fn invalidation_batch_exact_replay_is_idempotent() {
     let store = mem_store().await;
     let t = now();
+    seed_product(&store, "retry-product").await;
     let events = vec![
         InvalidationEvent {
             invalidation_id: "retry-i1".into(),
+            product_id: "retry-product".into(),
             trigger_kind: "dependency_changed".into(),
             trigger_ref: "change:retry".into(),
             target_kind: "criterion".into(),
@@ -716,6 +766,7 @@ async fn invalidation_batch_exact_replay_is_idempotent() {
         },
         InvalidationEvent {
             invalidation_id: "retry-i2".into(),
+            product_id: "retry-product".into(),
             trigger_kind: "dependency_changed".into(),
             trigger_ref: "change:retry".into(),
             target_kind: "criterion".into(),
@@ -742,6 +793,57 @@ async fn invalidation_batch_exact_replay_is_idempotent() {
         count, 2,
         "exact retry must not duplicate invalidation history"
     );
+}
+
+#[tokio::test]
+async fn invalidation_history_is_partitioned_by_product_even_for_same_target_ref() {
+    let store = mem_store().await;
+    let t = now();
+    for product_id in ["isolation-a", "isolation-b"] {
+        seed_product(&store, product_id).await;
+        ProductPersistence::append_invalidation(
+            &store,
+            &InvalidationEvent {
+                invalidation_id: format!("inv:{product_id}:shared"),
+                product_id: product_id.into(),
+                trigger_kind: "dependency_changed".into(),
+                trigger_ref: format!("change:{product_id}"),
+                target_kind: "criterion".into(),
+                target_ref: "shared-local-ref".into(),
+                prior_state: Some("current_valid".into()),
+                new_state: "suspect".into(),
+                reason: "product-scoped witness".into(),
+                occurred_at: t,
+            },
+        )
+        .await
+        .expect("append scoped invalidation");
+    }
+
+    let a = ProductPersistence::list_invalidations(
+        &store,
+        "isolation-a",
+        "criterion",
+        "shared-local-ref",
+        10,
+    )
+    .await
+    .expect("list product A");
+    let b = ProductPersistence::list_invalidations(
+        &store,
+        "isolation-b",
+        "criterion",
+        "shared-local-ref",
+        10,
+    )
+    .await
+    .expect("list product B");
+
+    assert_eq!(a.len(), 1);
+    assert_eq!(b.len(), 1);
+    assert_eq!(a[0].product_id, "isolation-a");
+    assert_eq!(b[0].product_id, "isolation-b");
+    assert_ne!(a[0].invalidation_id, b[0].invalidation_id);
 }
 
 #[tokio::test]
