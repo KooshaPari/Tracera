@@ -110,8 +110,7 @@ mod tests {
                 active: true,
             },
         ];
-        let plan =
-            plan_dependency_invalidation(
+        let plan = plan_dependency_invalidation(
             "product-a",
             &["a".into()],
             &edges,
@@ -126,8 +125,7 @@ mod tests {
     }
     #[test]
     fn certificate_revocation_targets_reuse_not_observation() {
-        let plan =
-            plan_certificate_revocation("product-a", "cert:c1", &["reuse:r1".into()]);
+        let plan = plan_certificate_revocation("product-a", "cert:c1", &["reuse:r1".into()]);
         assert_eq!(plan.events[0].target_kind, "reuse_decision");
         assert_eq!(plan.events[0].new_state, "suspect");
     }
