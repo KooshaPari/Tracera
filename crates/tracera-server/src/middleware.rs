@@ -9,6 +9,56 @@ pub(crate) static CSRF_TOKENS: std::sync::OnceLock<tokio::sync::Mutex<VecDeque<S
 pub(crate) const MAX_CSRF_TOKENS: usize = 1024;
 pub(crate) const CANONICAL_BROWSER_ORIGIN: &str = "http://127.0.0.1:18000";
 
+pub(crate) const TRUSTED_BROWSER_ORIGINS: &[&str] = &[
+    "https://tracera-kappa.vercel.app",
+    "https://tracera.pheno.studio",
+    "http://127.0.0.1:18000",
+    "http://localhost:18000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+];
+
+pub(crate) fn trusted_browser_origins(extra_from_env: Option<&str>) -> Vec<String> {
+    use std::collections::HashSet;
+
+    let mut seen = HashSet::new();
+    let mut origins = Vec::new();
+    let mut push = |value: &str| {
+        let trimmed = value.trim().trim_end_matches('/');
+        if trimmed.is_empty() {
+            return;
+        }
+        let Ok(uri) = trimmed.parse::<Uri>() else {
+            return;
+        };
+        if !matches!(uri.scheme_str(), Some("http" | "https"))
+            || uri.authority().is_none()
+            || uri.path() != "/"
+            || uri.query().is_some()
+        {
+            return;
+        }
+        let normalized = format!(
+            "{}://{}",
+            uri.scheme_str().expect("validated scheme"),
+            uri.authority().expect("validated authority")
+        );
+        if seen.insert(normalized.clone()) {
+            origins.push(normalized);
+        }
+    };
+
+    for origin in TRUSTED_BROWSER_ORIGINS {
+        push(origin);
+    }
+    if let Some(raw) = extra_from_env {
+        for origin in raw.split(',') {
+            push(origin);
+        }
+    }
+    origins
+}
+
 /// CSRF protection middleware.
 ///
 /// For state-mutating requests (POST/PUT/DELETE/PATCH), verifies that the
@@ -68,10 +118,21 @@ pub(crate) fn is_canonical_browser_origin(value: &str) -> bool {
     let Ok(uri) = value.parse::<Uri>() else {
         return false;
     };
-    uri.scheme_str() == Some("http")
-        && uri
-            .authority()
-            .is_some_and(|authority| authority.as_str() == "127.0.0.1:18000")
+    if !matches!(uri.scheme_str(), Some("http" | "https")) {
+        return false;
+    }
+    let Some(authority) = uri.authority() else {
+        return false;
+    };
+    let origin = format!(
+        "{}://{}",
+        uri.scheme_str().expect("validated scheme"),
+        authority
+    );
+    let extra = std::env::var("TRACERA_ALLOWED_ORIGINS").ok();
+    trusted_browser_origins(extra.as_deref())
+        .iter()
+        .any(|allowed| allowed == &origin)
 }
 
 pub(crate) fn csrf_tokens() -> &'static tokio::sync::Mutex<VecDeque<String>> {

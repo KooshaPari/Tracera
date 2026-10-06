@@ -5,8 +5,8 @@ services:
     command: sh -lc "cargo run --release -p tracera-server"
     environment:
       TRACERA_BIND_ADDR: 0.0.0.0:8080
-      TRACERA_PUBLIC_BIND_MODE: ${TRACERA_PUBLIC_BIND_MODE:?TRACERA_PUBLIC_BIND_MODE=authenticated-proxy is required after ingress auth is enabled}
-      TRACERA_AUTH_TOKEN: ${TRACERA_AUTH_TOKEN:?TRACERA_AUTH_TOKEN is required for in-process API protection}
+      TRACERA_PUBLIC_BIND_MODE: ${TRACERA_PUBLIC_BIND_MODE:-private}
+      TRACERA_AUTH_TOKEN: ${TRACERA_AUTH_TOKEN:?TRACERA_AUTH_TOKEN is required}
     volumes:
       - ../..:/workspace
       - tracera-cargo-cache:/usr/local/cargo/registry
@@ -20,7 +20,7 @@ services:
     depends_on:
       - tracera-server
     environment:
-      TRACERA_PUBLIC_HOSTNAME: ${TRACERA_PUBLIC_HOSTNAME:-tracera.pheno.studio}
+      TRACERA_PUBLIC_HOSTNAME: ${TRACERA_PUBLIC_HOSTNAME:-api.tracera.pheno.studio}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
@@ -30,8 +30,10 @@ services:
       - "443:443"
     restart: unless-stopped
 
+  # Optional future public ingress. Private/operator releases use the tailnet.
   cloudflared:
     image: cloudflare/cloudflared:latest
+    profiles: ["public-ingress"]
     depends_on:
       - caddy
     command:
@@ -39,9 +41,7 @@ services:
       - --no-autoupdate
       - run
       - --token
-      - ${CF_TUNNEL_TOKEN:?CF_TUNNEL_TOKEN is required}
-    environment:
-      CF_TUNNEL_TOKEN: ${CF_TUNNEL_TOKEN}
+      - ${CF_TUNNEL_TOKEN:?CF_TUNNEL_TOKEN is required for public-ingress profile}
     restart: unless-stopped
 
 volumes:

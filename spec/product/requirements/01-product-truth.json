@@ -1,0 +1,315 @@
+{
+  "schema_version": "0.2.0",
+  "product_id": "PRD-TRACERA",
+  "catalog_status": "source_backed_in_progress",
+  "domain": "canonical_product_truth",
+  "count_policy": "derived_only",
+  "requirements": [
+    {
+      "id": "TRC-R-STABLE-ID",
+      "title": "Stable product identity",
+      "statement": "Product identity remains stable across repository rename, alias, transport, and UI representation.",
+      "positive": "Represent one product through two aliases/transports; both resolve to one ProductId and prior observations remain addressable.",
+      "negative": "A repository rename must not create a second product identity or orphan prior observations.",
+      "sources": [
+        "SRC-001",
+        "SRC-005"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/identity.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-BASELINE-IMMUTABLE",
+      "title": "Accepted baseline immutability",
+      "statement": "Changing accepted product intent creates a distinct accepted baseline revision through an explicit change workflow; prior accepted revisions remain unchanged.",
+      "positive": "Accept a baseline, accept a proposal changing intent, and observe a later revision while the prior revision remains queryable unchanged.",
+      "negative": "Draft/rejected proposals or in-place edits must not alter an accepted baseline.",
+      "sources": [
+        "SRC-005",
+        "SRC-006",
+        "SRC-030"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/baseline.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-INTENT-TYPED",
+      "title": "Typed accepted intent",
+      "statement": "Accepted intent distinguishes requirements, obligations, capabilities, and measurable targets and retains lifecycle status.",
+      "positive": "Persist/retrieve each intent kind and lifecycle status at the exact baseline.",
+      "negative": "Do not collapse all intent into an untyped description or erase deferred/retired history.",
+      "sources": [
+        "SRC-004",
+        "SRC-005"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/identity.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-OBS-SCOPE",
+      "title": "Observation scope binding",
+      "statement": "Every observation binds to an exact product and baseline; capability-scoped observations also bind to the intended capability.",
+      "positive": "Evidence for product A/baseline 1 affects only that assessment.",
+      "negative": "Evidence from another product, baseline, or capability must not change the target assessment.",
+      "sources": [
+        "SRC-007",
+        "SRC-008"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/observation.rs",
+        "crates/tracera-server/src/product/assessment.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-OBS-PROVENANCE",
+      "title": "Observation provenance",
+      "statement": "Observations retain collector identity/version, recording time, result, and source artifact reference when available.",
+      "positive": "Retrieve an observation and explain who/what produced it and from which artifact.",
+      "negative": "A bare pass/fail with no attributable producer must not be treated as equivalent evidence.",
+      "sources": [
+        "SRC-007",
+        "SRC-030"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/observation.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-OBS-APPEND",
+      "title": "Append-only observations",
+      "statement": "Recording later observations does not mutate accepted intent or rewrite earlier observations.",
+      "positive": "Append a later observation and confirm the prior observation and baseline remain unchanged/addressable.",
+      "negative": "Updating an old failure in place to become a pass is prohibited.",
+      "sources": [
+        "SRC-007",
+        "SRC-002"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/observation.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-ASSESS-STATUS",
+      "title": "Truthful assessment states",
+      "statement": "Assessment distinguishes satisfied, violated, stale, unknown, and inconclusive according to admissible evidence.",
+      "positive": "Passing, failing, absent, stale, and conflicting fixtures produce distinct expected states.",
+      "negative": "Unknown, stale, missing, or conflicting proof must never fall through to Satisfied.",
+      "sources": [
+        "SRC-008",
+        "SRC-002"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/assessment.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-ASSESS-DETERMINISTIC",
+      "title": "Deterministic assessment",
+      "statement": "Identical accepted intent, observations, baseline, evaluation time, and configuration produce the same assessment and explanation.",
+      "positive": "Run a fixed fixture twice and compare status/counts/findings.",
+      "negative": "Uncontrolled wall-clock or unrelated observations must not alter the same scoped fixture.",
+      "sources": [
+        "SRC-008",
+        "SRC-030"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/assessment.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-ASSESS-MISSING",
+      "title": "Missing proof is not success",
+      "statement": "Required accepted intent without admissible proof evaluates to an explicit non-green state.",
+      "positive": "Assess accepted required intent with zero qualifying observations and receive Unknown/non-green with explanation.",
+      "negative": "Empty observations or empty selected checks returning Satisfied is prohibited.",
+      "sources": [
+        "SRC-008",
+        "SRC-030"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/assessment.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-ASSESS-CONFLICT",
+      "title": "Conflicting proof is explicit",
+      "statement": "Conflicting admissible evidence is represented as inconclusive/contradictory rather than arbitrarily selecting green.",
+      "positive": "Contemporaneous qualifying pass+fail evidence yields a non-green conflict state/finding.",
+      "negative": "Last-write-wins selection of a pass while hiding a failure is prohibited.",
+      "sources": [
+        "SRC-008",
+        "SRC-009"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/assessment.rs",
+        "crates/tracera-server/src/product/detectors.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-DETECT-FRESH",
+      "title": "Freshness dissatisfaction",
+      "statement": "Tracera identifies accepted capabilities whose available evidence exceeds the configured freshness threshold and explains the stale source.",
+      "positive": "An old qualifying observation produces a freshness finding tied to product/capability/baseline/source.",
+      "negative": "Collector absence is missing/unknown, not fabricated stale evidence.",
+      "sources": [
+        "SRC-009",
+        "SRC-007"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/detectors.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-DETECT-COVER",
+      "title": "Coverage dissatisfaction",
+      "statement": "Tracera identifies accepted capabilities lacking qualifying observations without overstating the claim beyond missing proof.",
+      "positive": "Accepted capability with no qualifying observation produces a coverage/missing-proof finding.",
+      "negative": "A capability with qualifying proof must not receive the finding because unrelated evidence is absent.",
+      "sources": [
+        "SRC-009",
+        "SRC-008"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/detectors.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-DETECT-CONTRA",
+      "title": "Contradiction dissatisfaction",
+      "statement": "Tracera detects contradictory passed/failed observations scoped to the same accepted capability and baseline and preserves both sources.",
+      "positive": "Qualifying pass+fail observations produce an explainable contradiction finding.",
+      "negative": "Observations from different products/baselines must not be combined into a contradiction.",
+      "sources": [
+        "SRC-009",
+        "SRC-007"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/detectors.rs"
+      ]
+    },
+    {
+      "id": "TRC-R-PRODUCT-GRAPH",
+      "title": "Product intent graph distinct from evidence graph",
+      "statement": "Product/capability/obligation/target concepts and typed relations are represented separately from engineering evidence while explicit links can connect the layers.",
+      "positive": "Create/query product-intent relations then traverse an explicit link to supporting engineering evidence.",
+      "negative": "Encoding product identity only as a generic SWEE requirement/work item is insufficient.",
+      "sources": [
+        "SRC-004",
+        "SRC-011",
+        "SRC-012"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/queries.rs",
+        "product-model migrations"
+      ]
+    },
+    {
+      "id": "TRC-R-PROPOSE-NOMUT",
+      "title": "Proposal without accepted-state mutation",
+      "statement": "A proposal records intended graph/baseline change without directly applying it to accepted product truth.",
+      "positive": "Submit proposal; accepted baseline remains unchanged until authorized acceptance.",
+      "negative": "Calling propose must not mutate accepted intent as a side effect.",
+      "sources": [
+        "SRC-006",
+        "SRC-017"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ],
+      "surfaces": [
+        "crates/tracera-server/src/product/baseline.rs",
+        "crates/tracera-mcp/src/tools.rs"
+      ]
+    }
+  ]
+}

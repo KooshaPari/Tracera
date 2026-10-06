@@ -4,7 +4,6 @@ use axum::{
     Router,
 };
 use http::{header, HeaderValue, Method};
-use std::collections::HashSet;
 
 use crate::handlers::{
     dashboard::{dashboard_summary, get_project, list_projects, list_teams, org_metrics},
@@ -12,11 +11,17 @@ use crate::handlers::{
     governance::{blast_radius, confidence, coverage_matrix, impact, spec_check},
     ingest_api::{ingest_agileplus, ingest_github, ingest_jira},
     problems::{create_problem, list_problems},
+    product::{
+        accept_baseline, append_dependency_edge, append_observation as append_product_observation,
+        append_reuse_decision, execute_dependency_invalidation, get_product as get_product_v1,
+        list_baseline_entities, list_invalidations, list_observations as list_product_observations,
+        list_reuse_decisions,
+    },
     sprints::{create_sprint, list_sprints},
     stories::{create_story, create_trace_link, list_stories, list_stories_api},
 };
 use crate::handlers::{governance, swee};
-use crate::middleware::{csrf_protection, CANONICAL_BROWSER_ORIGIN};
+use crate::middleware::{csrf_protection, trusted_browser_origins, CANONICAL_BROWSER_ORIGIN};
 use crate::AppState;
 
 const MAX_REQUEST_BODY_BYTES: usize = 10 * 1024 * 1024;
@@ -34,53 +39,15 @@ pub(crate) fn build_router(state: AppState) -> Router {
     build_router_with_auth(state, None)
 }
 
-/// Browser origins that must always be permitted, even when `TRACERA_ALLOWED_ORIGINS` is set.
-///
-/// The env var is treated as additive (extra deploy-specific origins), not a replacement list.
-/// Some deployment hosts often set `TRACERA_ALLOWED_ORIGINS` to a single local origin for
-/// smoke tests; replacing the built-in list caused production to echo only
-/// `http://127.0.0.1:18000` and blocked the deployed Vercel frontend.
-const CANONICAL_CORS_ORIGINS: &[&str] = &[
-    "https://tracera-kappa.vercel.app",
-    "https://tracera.pheno.studio",
-    "http://127.0.0.1:18000",
-    "http://localhost:18000",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-];
-
-fn collect_cors_allowed_origins(extra_from_env: Option<&str>) -> Vec<HeaderValue> {
-    let mut seen = HashSet::<String>::new();
-    let mut origins = Vec::new();
-
-    let mut push_origin = |origin: &str| {
-        if seen.insert(origin.to_string()) {
-            if let Ok(header_value) = HeaderValue::try_from(origin) {
-                origins.push(header_value);
-            }
-        }
-    };
-
-    for origin in CANONICAL_CORS_ORIGINS {
-        push_origin(origin);
-    }
-
-    if let Some(raw) = extra_from_env.filter(|value| !value.trim().is_empty()) {
-        for part in raw.split(',') {
-            let origin = part.trim();
-            if !origin.is_empty() {
-                push_origin(origin);
-            }
-        }
-    }
-
-    origins
-}
-
 /// Browser origins permitted to call this server's API cross-origin.
+/// The env var is additive and shares the exact same source of truth as CSRF.
 pub(crate) fn cors_allowed_origins() -> tower_http::cors::AllowOrigin {
     let extra = std::env::var("TRACERA_ALLOWED_ORIGINS").ok();
-    tower_http::cors::AllowOrigin::list(collect_cors_allowed_origins(extra.as_deref()))
+    let origins = trusted_browser_origins(extra.as_deref())
+        .into_iter()
+        .filter_map(|origin| HeaderValue::try_from(origin).ok())
+        .collect::<Vec<_>>();
+    tower_http::cors::AllowOrigin::list(origins)
 }
 
 /// Build the `/auth/workos/*` sub-router.
@@ -129,6 +96,35 @@ pub(crate) fn build_router_with_auth(
         .route("/api/v1/coverage-matrix", post(coverage_matrix))
         .route("/api/v1/health", get(crate::health::health))
         .route("/api/v1/csrf-token", get(crate::csrf_token))
+        .route("/api/v1/products/{product_id}", get(get_product_v1))
+        .route(
+            "/api/v1/products/{product_id}/dependencies",
+            post(append_dependency_edge),
+        )
+        .route(
+            "/api/v1/products/{product_id}/invalidations/dependency",
+            post(execute_dependency_invalidation),
+        )
+        .route(
+            "/api/v1/products/{product_id}/baselines",
+            post(accept_baseline),
+        )
+        .route(
+            "/api/v1/products/{product_id}/baselines/{baseline_id}/entities",
+            get(list_baseline_entities),
+        )
+        .route(
+            "/api/v1/products/{product_id}/baselines/{baseline_id}/observations",
+            get(list_product_observations).post(append_product_observation),
+        )
+        .route(
+            "/api/v1/products/{product_id}/baselines/{baseline_id}/reuse-decisions",
+            get(list_reuse_decisions).post(append_reuse_decision),
+        )
+        .route(
+            "/api/v1/products/{product_id}/invalidations/{target_kind}",
+            get(list_invalidations),
+        )
         .route("/api/v1/impact", post(impact))
         .route("/api/v1/confidence", post(confidence))
         .route("/api/v1/blast-radius", post(blast_radius))
@@ -415,77 +411,31 @@ pub(crate) fn build_router_with_auth(
 
 #[cfg(test)]
 mod cors_tests {
-    use super::{collect_cors_allowed_origins, CANONICAL_CORS_ORIGINS};
-    use http::HeaderValue;
-
-    fn origin_strings(origins: &[HeaderValue]) -> Vec<String> {
-        origins
-            .iter()
-            .map(|value| {
-                value
-                    .to_str()
-                    .expect("origin must be valid UTF-8")
-                    .to_string()
-            })
-            .collect()
-    }
+    use super::cors_allowed_origins;
+    use crate::middleware::{trusted_browser_origins, TRUSTED_BROWSER_ORIGINS};
 
     #[test]
-    fn unset_env_allows_canonical_origins_only() {
-        let origins = collect_cors_allowed_origins(None);
-        let strings = origin_strings(&origins);
-
-        assert_eq!(origins.len(), CANONICAL_CORS_ORIGINS.len());
-        for canonical in CANONICAL_CORS_ORIGINS {
+    fn trusted_origin_policy_contains_deployed_and_local_origins() {
+        let origins = trusted_browser_origins(None);
+        for canonical in TRUSTED_BROWSER_ORIGINS {
             assert!(
-                strings.contains(&(*canonical).to_string()),
-                "missing canonical origin {canonical}"
+                origins.contains(&canonical.to_string()),
+                "missing {canonical}"
             );
         }
+        assert!(origins.contains(&"https://tracera.pheno.studio".to_string()));
+        assert!(origins.contains(&"http://127.0.0.1:18000".to_string()));
     }
 
     #[test]
-    fn production_regression_local_env_does_not_drop_deployed_frontends() {
-        let origins = collect_cors_allowed_origins(Some("http://127.0.0.1:18000"));
-        let strings = origin_strings(&origins);
-
-        assert!(strings.contains(&"https://tracera-kappa.vercel.app".to_string()));
-        assert!(strings.contains(&"https://tracera.pheno.studio".to_string()));
-        assert!(strings.contains(&"http://127.0.0.1:18000".to_string()));
-        assert_eq!(
-            strings
-                .iter()
-                .filter(|origin| *origin == "http://127.0.0.1:18000")
-                .count(),
-            1,
-            "duplicate local origin should be removed"
-        );
-    }
-
-    #[test]
-    fn env_adds_comma_separated_origins() {
-        let origins =
-            collect_cors_allowed_origins(Some("https://staging.example, https://preview.example"));
-        let strings = origin_strings(&origins);
-
-        assert!(strings.contains(&"https://tracera-kappa.vercel.app".to_string()));
-        assert!(strings.contains(&"https://staging.example".to_string()));
-        assert!(strings.contains(&"https://preview.example".to_string()));
-    }
-
-    #[test]
-    fn invalid_env_origin_is_skipped_without_panicking() {
-        let origins = collect_cors_allowed_origins(Some(
-            "https://extra.example, bad\norigin, https://another.example",
+    fn extra_origins_are_additive_and_invalid_values_are_ignored() {
+        let origins = trusted_browser_origins(Some(
+            "https://staging.example, bad\norigin, https://preview.example/",
         ));
-        let strings = origin_strings(&origins);
-
-        assert!(strings.contains(&"https://tracera-kappa.vercel.app".to_string()));
-        assert!(strings.contains(&"https://extra.example".to_string()));
-        assert!(strings.contains(&"https://another.example".to_string()));
-        assert!(
-            !strings.iter().any(|origin| origin.contains('\n')),
-            "invalid origin must not appear in allow list"
-        );
+        assert!(origins.contains(&"https://tracera.pheno.studio".to_string()));
+        assert!(origins.contains(&"https://staging.example".to_string()));
+        assert!(origins.contains(&"https://preview.example".to_string()));
+        assert!(!origins.iter().any(|origin| origin.contains('\n')));
+        let _ = cors_allowed_origins();
     }
 }

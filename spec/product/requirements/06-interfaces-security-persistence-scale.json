@@ -1,0 +1,272 @@
+{
+  "schema_version": "0.1.0",
+  "product_id": "PRD-TRACERA",
+  "catalog_status": "accepted_mature_breadth_wave_2",
+  "count_policy": "derived_only",
+  "requirements": [
+    {
+      "id": "TRC-R-API-PARITY",
+      "title": "Transport-independent canonical semantics",
+      "statement": "Supported HTTP/MCP/CLI/GraphQL surfaces use the same canonical IDs, applicability/status semantics and mutation authority.",
+      "domain": "K",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-API-PAGE",
+      "title": "Bounded pagination and continuation",
+      "statement": "List/graph APIs expose deterministic bounds, continuation and incomplete-state semantics; truncation cannot masquerade as complete data.",
+      "domain": "K",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-API-IDEMP",
+      "title": "Idempotent/replay-safe mutations where required",
+      "statement": "Create/import/proposal operations define replay/idempotency behavior and do not create duplicate canonical truth on retry.",
+      "domain": "K",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-API-VERSION",
+      "title": "Versioned machine contracts",
+      "statement": "Public machine contracts expose version/compatibility behavior sufficient for clients to distinguish breaking semantic changes.",
+      "domain": "K",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-API-DISCOVER",
+      "title": "Capability discovery",
+      "statement": "Clients can determine supported optional capabilities/projections/integrations rather than assuming every adapter is mounted.",
+      "domain": "K",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-SEC-TENANT",
+      "title": "Product/project authorization boundaries",
+      "statement": "Authenticated identities cannot read or mutate product/project scopes outside granted authority.",
+      "domain": "N",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-SEC-SECRET",
+      "title": "Secrets and credentials are not product evidence",
+      "statement": "Secrets/credentials are handled through bounded secret mechanisms and are never stored/exposed as ordinary graph/evidence payloads.",
+      "domain": "N",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-SEC-UNTRUST",
+      "title": "Untrusted content cannot grant authority",
+      "statement": "Imported text, documents, model output or prompt content cannot self-authorize mutations, evidence admission or policy changes.",
+      "domain": "N",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-SEC-REDACT",
+      "title": "Redaction preserves explainability",
+      "statement": "Sensitive payload redaction removes protected content while retaining permitted identity/provenance/tombstone links needed for historical explanation.",
+      "domain": "N",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-PERSIST-TXN",
+      "title": "Atomic canonical mutations",
+      "statement": "Multi-record canonical changes either commit coherently or expose failure without partially accepted product truth.",
+      "domain": "O",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-PERSIST-CONCUR",
+      "title": "Concurrent mutation conflict semantics",
+      "statement": "Concurrent writes use explicit conflict/version rules and cannot silently lose accepted product changes.",
+      "domain": "O",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-PERSIST-BACKUP",
+      "title": "Backup and restore preserve canonical history",
+      "statement": "Supported backup/restore recovers product identities, baselines, relations, observations, reuse/invalidation history and required provenance.",
+      "domain": "O",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-PERSIST-CRASH",
+      "title": "Crash/restart consistency",
+      "statement": "Interrupted writes/restarts cannot produce a silently accepted half-baseline or orphan evidence state.",
+      "domain": "O",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-PERF-TRUTH",
+      "title": "Performance optimization cannot change truth semantics",
+      "statement": "Caching, virtualization, culling, indexing, progressive loading and alternate renderers may change latency/resource use but not canonical product meaning.",
+      "domain": "P",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-PERF-BENCH",
+      "title": "Performance claims bind benchmark profile",
+      "statement": "Scale/latency/resource claims identify candidate, dataset shape/size, environment, operation and metric rather than using context-free percentages.",
+      "domain": "P",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-PERF-DEGRADE",
+      "title": "Explicit degradation/fallback",
+      "statement": "When scale/resource limits prevent full rendering/query, interfaces expose degraded/partial state and a recovery/continuation path instead of false completeness.",
+      "domain": "P",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-PERF-DETERMINISM",
+      "title": "Continuation is semantically stable",
+      "statement": "Paginated/progressive traversal over a stable baseline yields deterministic non-duplicated/non-missing canonical coverage under its declared ordering/snapshot rules.",
+      "domain": "P",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-EXT-REPLACE",
+      "title": "Optional adapters are replaceable",
+      "statement": "Collectors, graph stores, caches, object stores, analytics and ML integrations sit behind semantic boundaries so replacement does not redefine product truth.",
+      "domain": "Q",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-EXT-FAIL",
+      "title": "Optional integration failure is isolated",
+      "statement": "Failure of an optional integration is surfaced with bounded impact and does not corrupt core local product truth.",
+      "domain": "Q",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-EXT-PROV",
+      "title": "External facts retain source provenance",
+      "statement": "Facts imported from external services retain source identity/time/version/confidence as applicable and can be invalidated/reconciled.",
+      "domain": "Q",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-FED-VERSION",
+      "title": "Versioned AgilePlus federation contract",
+      "statement": "AgilePlus handoff identifies work/assignment/candidate/evaluation/evidence revisions and contract version so Tracera can independently admit applicability.",
+      "domain": "U",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-FED-FAIL",
+      "title": "Federation failure preserves both authorities",
+      "statement": "Tracera or AgilePlus unavailability does not silently mutate the other system's canonical truth; pending/retry state is explicit.",
+      "domain": "U",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-REG-REV",
+      "title": "Registry projection is revision-bound",
+      "statement": "PhenoRegistry projection identifies the Tracera contract/status revision it summarizes so stale projection can be detected.",
+      "domain": "V",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    },
+    {
+      "id": "TRC-R-REG-NOAUTH",
+      "title": "Registry cannot override repo-local truth",
+      "statement": "Registry edits/summaries cannot silently replace a newer accepted repo-local Tracera baseline/contract.",
+      "domain": "V",
+      "status": "accepted_mature_requirement",
+      "stages": [
+        "MATURE"
+      ],
+      "verification_status": "design_required"
+    }
+  ]
+}

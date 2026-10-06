@@ -1,0 +1,1465 @@
+{
+  "schema_version": "0.1.0",
+  "product_id": "PRD-TRACERA",
+  "catalog_scope": "spine_contract_only",
+  "status": "specified_not_executed",
+  "note": "Concrete non-runtime verification designs for the 45 source-backed spine requirements. This catalogue does not imply the broader mature domain decomposition is complete.",
+  "cases": [
+    {
+      "id": "TRC-VC-001",
+      "requirement_id": "TRC-R-STABLE-ID",
+      "title": "Stable product identity",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Represent one product through two aliases/transports; both resolve to one ProductId and prior observations remain addressable.",
+      "expected": "Product identity remains stable across repository rename, alias, transport, and UI representation.",
+      "adversarial": "A repository rename must not create a second product identity or orphan prior observations.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001",
+        "SRC-005"
+      ]
+    },
+    {
+      "id": "TRC-VC-002",
+      "requirement_id": "TRC-R-BASELINE-IMMUTABLE",
+      "title": "Accepted baseline immutability",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Accept a baseline, accept a proposal changing intent, and observe a later revision while the prior revision remains queryable unchanged.",
+      "expected": "Changing accepted product intent creates a distinct accepted baseline revision through an explicit change workflow; prior accepted revisions remain unchanged.",
+      "adversarial": "Draft/rejected proposals or in-place edits must not alter an accepted baseline.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-005",
+        "SRC-006",
+        "SRC-030"
+      ]
+    },
+    {
+      "id": "TRC-VC-003",
+      "requirement_id": "TRC-R-INTENT-TYPED",
+      "title": "Typed accepted intent",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Persist/retrieve each intent kind and lifecycle status at the exact baseline.",
+      "expected": "Accepted intent distinguishes requirements, obligations, capabilities, and measurable targets and retains lifecycle status.",
+      "adversarial": "Do not collapse all intent into an untyped description or erase deferred/retired history.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-004",
+        "SRC-005"
+      ]
+    },
+    {
+      "id": "TRC-VC-004",
+      "requirement_id": "TRC-R-OBS-SCOPE",
+      "title": "Observation scope binding",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Evidence for product A/baseline 1 affects only that assessment.",
+      "expected": "Every observation binds to an exact product and baseline; capability-scoped observations also bind to the intended capability.",
+      "adversarial": "Evidence from another product, baseline, or capability must not change the target assessment.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-007",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "TRC-VC-005",
+      "requirement_id": "TRC-R-OBS-PROVENANCE",
+      "title": "Observation provenance",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Retrieve an observation and explain who/what produced it and from which artifact.",
+      "expected": "Observations retain collector identity/version, recording time, result, and source artifact reference when available.",
+      "adversarial": "A bare pass/fail with no attributable producer must not be treated as equivalent evidence.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-007",
+        "SRC-030"
+      ]
+    },
+    {
+      "id": "TRC-VC-006",
+      "requirement_id": "TRC-R-OBS-APPEND",
+      "title": "Append-only observations",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Append a later observation and confirm the prior observation and baseline remain unchanged/addressable.",
+      "expected": "Recording later observations does not mutate accepted intent or rewrite earlier observations.",
+      "adversarial": "Updating an old failure in place to become a pass is prohibited.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-007",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "TRC-VC-007",
+      "requirement_id": "TRC-R-ASSESS-STATUS",
+      "title": "Truthful assessment states",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Passing, failing, absent, stale, and conflicting fixtures produce distinct expected states.",
+      "expected": "Assessment distinguishes satisfied, violated, stale, unknown, and inconclusive according to admissible evidence.",
+      "adversarial": "Unknown, stale, missing, or conflicting proof must never fall through to Satisfied.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-008",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "TRC-VC-008",
+      "requirement_id": "TRC-R-ASSESS-DETERMINISTIC",
+      "title": "Deterministic assessment",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Run a fixed fixture twice and compare status/counts/findings.",
+      "expected": "Identical accepted intent, observations, baseline, evaluation time, and configuration produce the same assessment and explanation.",
+      "adversarial": "Uncontrolled wall-clock or unrelated observations must not alter the same scoped fixture.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-008",
+        "SRC-030"
+      ]
+    },
+    {
+      "id": "TRC-VC-009",
+      "requirement_id": "TRC-R-ASSESS-MISSING",
+      "title": "Missing proof is not success",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Assess accepted required intent with zero qualifying observations and receive Unknown/non-green with explanation.",
+      "expected": "Required accepted intent without admissible proof evaluates to an explicit non-green state.",
+      "adversarial": "Empty observations or empty selected checks returning Satisfied is prohibited.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-008",
+        "SRC-030"
+      ]
+    },
+    {
+      "id": "TRC-VC-010",
+      "requirement_id": "TRC-R-ASSESS-CONFLICT",
+      "title": "Conflicting proof is explicit",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Contemporaneous qualifying pass+fail evidence yields a non-green conflict state/finding.",
+      "expected": "Conflicting admissible evidence is represented as inconclusive/contradictory rather than arbitrarily selecting green.",
+      "adversarial": "Last-write-wins selection of a pass while hiding a failure is prohibited.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-008",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "TRC-VC-011",
+      "requirement_id": "TRC-R-DETECT-FRESH",
+      "title": "Freshness dissatisfaction",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "An old qualifying observation produces a freshness finding tied to product/capability/baseline/source.",
+      "expected": "Tracera identifies accepted capabilities whose available evidence exceeds the configured freshness threshold and explains the stale source.",
+      "adversarial": "Collector absence is missing/unknown, not fabricated stale evidence.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-009",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "TRC-VC-012",
+      "requirement_id": "TRC-R-DETECT-COVER",
+      "title": "Coverage dissatisfaction",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Accepted capability with no qualifying observation produces a coverage/missing-proof finding.",
+      "expected": "Tracera identifies accepted capabilities lacking qualifying observations without overstating the claim beyond missing proof.",
+      "adversarial": "A capability with qualifying proof must not receive the finding because unrelated evidence is absent.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-009",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "TRC-VC-013",
+      "requirement_id": "TRC-R-DETECT-CONTRA",
+      "title": "Contradiction dissatisfaction",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Qualifying pass+fail observations produce an explainable contradiction finding.",
+      "expected": "Tracera detects contradictory passed/failed observations scoped to the same accepted capability and baseline and preserves both sources.",
+      "adversarial": "Observations from different products/baselines must not be combined into a contradiction.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-009",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "TRC-VC-014",
+      "requirement_id": "TRC-R-PRODUCT-GRAPH",
+      "title": "Product intent graph distinct from evidence graph",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Create/query product-intent relations then traverse an explicit link to supporting engineering evidence.",
+      "expected": "Product/capability/obligation/target concepts and typed relations are represented separately from engineering evidence while explicit links can connect the layers.",
+      "adversarial": "Encoding product identity only as a generic SWEE requirement/work item is insufficient.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-004",
+        "SRC-011",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "TRC-VC-015",
+      "requirement_id": "TRC-R-PROPOSE-NOMUT",
+      "title": "Proposal without accepted-state mutation",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Submit proposal; accepted baseline remains unchanged until authorized acceptance.",
+      "expected": "A proposal records intended graph/baseline change without directly applying it to accepted product truth.",
+      "adversarial": "Calling propose must not mutate accepted intent as a side effect.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-006",
+        "SRC-017"
+      ]
+    },
+    {
+      "id": "TRC-VC-016",
+      "requirement_id": "TRC-R-SWEE-TYPED",
+      "title": "Typed engineering evidence graph",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Create valid typed nodes/edges and traverse them; invalid discriminants are rejected.",
+      "expected": "Engineering evidence uses constrained node and edge taxonomies so invalid graph mutations can be rejected or surfaced.",
+      "adversarial": "Arbitrary unregistered node/edge type strings must not silently enter canonical evidence.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-012",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "TRC-VC-017",
+      "requirement_id": "TRC-R-TRACE-BIDIR",
+      "title": "Bidirectional trace traversal",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "For a linked requirement→implementation→test/evidence fixture, queries in both directions recover the same relationship chain.",
+      "expected": "Callers can traverse from accepted product intent toward implementation/tests/evidence and reverse from artifacts/evidence toward the obligations they support.",
+      "adversarial": "A forward-only matrix with no reverse justification path is incomplete.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-004",
+        "SRC-012",
+        "SRC-029"
+      ]
+    },
+    {
+      "id": "TRC-VC-018",
+      "requirement_id": "TRC-R-TRAVERSE-BOUND",
+      "title": "Bounded graph expansion",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Query a root with a bound and receive only the allowed neighborhood with explicit truncation/continuation semantics where supported.",
+      "expected": "Graph traversal supports explicit direction and bounded expansion so useful context can be requested without unbounded graph explosion.",
+      "adversarial": "A bounded request must not silently expand the entire reachable graph.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001",
+        "SRC-010",
+        "SRC-017"
+      ]
+    },
+    {
+      "id": "TRC-VC-019",
+      "requirement_id": "TRC-R-SEARCH",
+      "title": "Search canonical product and evidence entities",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Search known product/intent/evidence fixtures by ID and supported filters and recover canonical entities.",
+      "expected": "Users and agents can locate accepted product intent and relevant evidence by stable identity and supported textual/structured filters without storage-backend knowledge.",
+      "adversarial": "Search must not silently substitute a stale historical alias for current canonical identity.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001",
+        "SRC-010",
+        "SRC-020"
+      ]
+    },
+    {
+      "id": "TRC-VC-020",
+      "requirement_id": "TRC-R-IMPACT",
+      "title": "Explainable change impact",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Change a linked fixture and query affected upstream/downstream nodes with paths.",
+      "expected": "Given a product-intent or engineering-evidence change, Tracera can identify bounded affected obligations/artifacts using explicit trace relations and explain the supporting paths.",
+      "adversarial": "An impact score with no traversable supporting path must not be presented as certain impact.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-004",
+        "SRC-012",
+        "SRC-029"
+      ]
+    },
+    {
+      "id": "TRC-VC-021",
+      "requirement_id": "TRC-R-QUERY-HISTORY",
+      "title": "Historical product-state query",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "After a later baseline is accepted, query the prior baseline and its observations unchanged.",
+      "expected": "Historical accepted baselines and observations remain queryable so state can be interpreted against the contract that produced it.",
+      "adversarial": "Only-current-state storage that destroys prior accepted meaning is insufficient.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-006",
+        "SRC-007",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "TRC-VC-022",
+      "requirement_id": "TRC-R-FINDING-EXPLAIN",
+      "title": "Explainable dissatisfaction findings",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Trigger a detector and inspect a finding containing subject, rule/version, evidence references, and reason.",
+      "expected": "Every dissatisfaction finding exposes affected product/baseline/subject, detector/rule identity, source observations, and reason sufficient to understand why it exists.",
+      "adversarial": "A severity/status alone with no causal evidence is not an explainable finding.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-009",
+        "SRC-001"
+      ]
+    },
+    {
+      "id": "TRC-VC-023",
+      "requirement_id": "TRC-R-MACHINE-PARITY",
+      "title": "Human and machine semantic parity",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Inspect one product/baseline/finding through machine and human surfaces and match canonical IDs/status/explanation.",
+      "expected": "Human and machine interfaces expose the same canonical identities, baseline/status meanings, and finding semantics even when presentation differs.",
+      "adversarial": "A UI green state while canonical machine assessment is unknown/failed is prohibited.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-002",
+        "SRC-017",
+        "SRC-020"
+      ]
+    },
+    {
+      "id": "TRC-VC-024",
+      "requirement_id": "TRC-R-MEM-PROVENANCE",
+      "title": "Distilled memory provenance",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Distill a known graph pattern and retrieve memory with source IDs and confidence.",
+      "expected": "Enabled memory/pattern distillation retains source graph identities and confidence sufficient for audit and re-evaluation.",
+      "adversarial": "A generated memory statement with no source linkage must not be treated as canonical product intent.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-022",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "TRC-VC-025",
+      "requirement_id": "TRC-R-MEM-NOT-INTENT",
+      "title": "Derived memory cannot silently revise intent",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Produce a high-confidence memory/recommendation and confirm accepted baseline remains unchanged.",
+      "expected": "Distilled or ML-derived knowledge is observational/proposed information and cannot mutate accepted intent without the explicit baseline-change workflow.",
+      "adversarial": "Confidence threshold alone must never authorize accepted-intent mutation.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-022",
+        "SRC-006",
+        "SRC-024"
+      ]
+    },
+    {
+      "id": "TRC-VC-026",
+      "requirement_id": "TRC-R-WORK-BOUNDARY",
+      "title": "Work completion separated from product acceptance",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Mark linked work complete while required product proof is absent; assessment remains non-green. Add qualifying evidence; reassessment may change.",
+      "expected": "External/AgilePlus work state may be linked as context, but completion cannot itself satisfy product obligations without admissible re-verification.",
+      "adversarial": "Done/merged/closed work directly flipping a product requirement to satisfied is prohibited.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001",
+        "SRC-026",
+        "SRC-030"
+      ]
+    },
+    {
+      "id": "TRC-VC-027",
+      "requirement_id": "TRC-R-EXTERNAL-WORK",
+      "title": "Represent external work without owning its lifecycle",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Link/retrieve an external work reference without creating native duplicate execution transitions.",
+      "expected": "Tracera can link externally managed work while remaining independent of and not duplicating that system's execution state machine.",
+      "adversarial": "External work-system outage must not corrupt accepted product truth.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001",
+        "SRC-026"
+      ]
+    },
+    {
+      "id": "TRC-VC-028",
+      "requirement_id": "TRC-R-OFFLINE-CORE",
+      "title": "Core operation without optional cloud integrations",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Start a supported local configuration without optional credentials and complete the core product assessment journey.",
+      "expected": "Canonical identity, intent, graph, observations, and assessment remain usable when optional graph/cache/object/analytics/ML integrations are disabled.",
+      "adversarial": "Missing optional integration config must not block core local product use.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-023",
+        "SRC-031"
+      ]
+    },
+    {
+      "id": "TRC-VC-029",
+      "requirement_id": "TRC-R-STORE-PARITY",
+      "title": "Supported storage semantic parity",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Run one canonical CRUD/query fixture against both stores and compare observable semantics modulo backend metadata.",
+      "expected": "Supported SQLite and PostgreSQL stores preserve the same canonical product/graph semantics for supported operations.",
+      "adversarial": "Backend selection must not change product status or relation meaning.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-011",
+        "SRC-014",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "TRC-VC-030",
+      "requirement_id": "TRC-R-MIGRATE-SAFE",
+      "title": "Migration preserves canonical state",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Migrate a populated fixture and verify canonical data/relations plus documented rollback/restore or forward recovery.",
+      "expected": "Schema migration has a defined compatibility/recovery path and does not silently lose product identities, relations, or evidence.",
+      "adversarial": "Structural migration success while orphaning trace/evidence identities is failure.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-002",
+        "SRC-011",
+        "SRC-031"
+      ]
+    },
+    {
+      "id": "TRC-VC-031",
+      "requirement_id": "TRC-R-AUTH-MUTATE",
+      "title": "Mutation authority enforced",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Attempt unauthorized mutation and receive rejection while allowed read/proposal behavior remains available.",
+      "expected": "Untrusted content or unauthenticated callers cannot obtain product/graph mutation authority; read, propose, and mutate authority remain distinguishable.",
+      "adversarial": "Text inside an ingested artifact must not grant itself mutation authority.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-002",
+        "SRC-017",
+        "SRC-025"
+      ]
+    },
+    {
+      "id": "TRC-VC-032",
+      "requirement_id": "TRC-R-ERROR-TRUTH",
+      "title": "Bounded truthful interface errors",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Exercise representative failures and receive non-success machine-readable classes with bounded safe detail.",
+      "expected": "Public interfaces distinguish invalid input, unauthorized action, missing entity, dependency failure, and internal failure enough for callers not to infer success.",
+      "adversarial": "Success payloads hiding errors or secret/stack leakage are prohibited.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-002",
+        "SRC-018",
+        "SRC-017"
+      ]
+    },
+    {
+      "id": "TRC-VC-033",
+      "requirement_id": "TRC-R-EVIDENCE-EXACT",
+      "title": "Verification evidence binds exact candidate and expectation",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Evidence for build A is recorded with candidate identity and cannot silently validate changed build B.",
+      "expected": "Product proof identifies exact product/baseline/expectation and candidate artifact/source revision plus verifier context.",
+      "adversarial": "A generic CI green badge without candidate/baseline binding is insufficient product proof.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-002",
+        "SRC-027",
+        "SRC-030"
+      ]
+    },
+    {
+      "id": "TRC-VC-034",
+      "requirement_id": "TRC-R-COLLECTOR-FAIL",
+      "title": "Required collector failure cannot yield green",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Make a required collector fail before evidence production and observe non-green assessment with failure explanation.",
+      "expected": "Failure/unavailability of a required evidence collector produces unknown, inconclusive, or blocked semantics rather than satisfied.",
+      "adversarial": "Collector error treated as empty-success or skipped-success is prohibited.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-002",
+        "SRC-027",
+        "SRC-030"
+      ]
+    },
+    {
+      "id": "TRC-VC-035",
+      "requirement_id": "TRC-R-RETENTION-ID",
+      "title": "Retention/redaction preserves referential integrity",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Redact a governed payload and retain resolvable tombstoned/redacted identity links.",
+      "expected": "When governed payloads are redacted/retained, stable identities and necessary provenance links remain sufficient to explain historical state without exposing removed content.",
+      "adversarial": "Deletion that silently breaks assessment/trace history is prohibited.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-002",
+        "SRC-025"
+      ]
+    },
+    {
+      "id": "TRC-VC-036",
+      "requirement_id": "TRC-R-STATUS-SHAPE",
+      "title": "Progress separates completeness from usable shape",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Two fixtures with equal raw obligation ratio but different journey closure produce distinct shape/readiness outputs.",
+      "expected": "Product status separately reports mature-contract completeness, stage readiness, and usable feature/journey closure or shape.",
+      "adversarial": "A single percent-done field is insufficient as the sole product-state representation.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001",
+        "SRC-030"
+      ]
+    },
+    {
+      "id": "TRC-VC-037",
+      "requirement_id": "TRC-R-STAGE-PROJECTION",
+      "title": "VP stages are semantic projections",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Every required stage obligation is justified by an outcome/dependency and blockers derive from that projection.",
+      "expected": "CVP/MVP/other stages select requirements, features, and journeys from the mature contract by coherent outcome/dependency rules.",
+      "adversarial": "Fixed percentages, requirement counts, or array positions must not determine stage membership.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001",
+        "SRC-035"
+      ]
+    },
+    {
+      "id": "TRC-VC-038",
+      "requirement_id": "TRC-R-STUB-SURVIVE",
+      "title": "Stage implementations expose transition debt",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Stage-critical stubs/adapters record disposition, consumers, and replacement/migration burden.",
+      "expected": "Early usable stages prefer mature-shaped boundaries and explicitly classify temporary implementations whose later replacement/migration burden is nontrivial.",
+      "adversarial": "Healthy transition readiness cannot be claimed while hiding required rewrites of the core spine.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001",
+        "SRC-030"
+      ]
+    },
+    {
+      "id": "TRC-VC-039",
+      "requirement_id": "TRC-R-TRACE-GRADE-SEPARATE",
+      "title": "Behavioral grade and trace completeness remain separate",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Represent a behaviorally failed but fully traced requirement and a verified but incompletely traced requirement without conflating states.",
+      "expected": "A requirement's behavioral result and completeness of specification/design/implementation/test/evidence trace links are independently represented.",
+      "adversarial": "Missing trace links must not fabricate a behavioral failure, and a passing behavior must not imply complete traceability.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001",
+        "SRC-029"
+      ]
+    },
+    {
+      "id": "TRC-VC-040",
+      "requirement_id": "TRC-R-NO-EMPTY-GREEN",
+      "title": "Empty grading denominator is undefined",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Grade an empty projection and receive undefined/not-assessable with explanation.",
+      "expected": "A stage or requirement selection with no applicable graded obligations cannot produce a successful completion percentage or stage achievement.",
+      "adversarial": "0/0 becoming 100% or achieved is prohibited.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001",
+        "SRC-030"
+      ]
+    },
+    {
+      "id": "TRC-VC-041",
+      "requirement_id": "TRC-R-ACCEPT-INDEPENDENT",
+      "title": "Implementation cannot silently weaken its own acceptance policy",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Modify implementation while retaining prior accepted criterion; failure remains visible until an independently accepted criterion revision exists.",
+      "expected": "Changes to behavior cannot silently remove or weaken the acceptance policy used to grade that same behavior without separately authorized contract change.",
+      "adversarial": "Deleting/fuzzing the failing check in the same implementation change must not manufacture green.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-002",
+        "SRC-027",
+        "SRC-030"
+      ]
+    },
+    {
+      "id": "TRC-VC-042",
+      "requirement_id": "TRC-R-SCOPE-DELTA",
+      "title": "Scope delta reported separately from engineering progress",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Add a requirement to a new baseline and show scope increase separately from unchanged verified-work amount.",
+      "expected": "Adding, retiring, or changing accepted obligations is reported independently from implementation/verification progress.",
+      "adversarial": "Retiring requirements must not be reported as implementation work completed.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001",
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "TRC-VC-043",
+      "requirement_id": "TRC-R-AUX-SEPARATE",
+      "title": "Auxiliary improvements do not inflate core functional completion",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Record a non-required UX improvement as auxiliary value with no core FR completion delta.",
+      "expected": "Useful quality, UX, performance, maintenance, or optional-integration work is valued separately unless it satisfies an accepted functional obligation.",
+      "adversarial": "Adding polish/integrations cannot increase core completion merely because work was substantial.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001"
+      ]
+    },
+    {
+      "id": "TRC-VC-044",
+      "requirement_id": "TRC-R-JOURNEY-CLOSURE",
+      "title": "Usability derives from closed journeys",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "A complete narrow end-to-end journey can yield vertical-slice shape even with limited mature breadth.",
+      "expected": "Product usability/stage claims incorporate closure of declared actor-to-outcome journeys rather than inferring usability from primitive/file presence.",
+      "adversarial": "Broad scaffolding with zero closed journeys must not be classified as an equivalent usable product.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001",
+        "SRC-020"
+      ]
+    },
+    {
+      "id": "TRC-VC-045",
+      "requirement_id": "TRC-R-REGISTRY-PROJECTION",
+      "title": "Central registry projects repo-local truth",
+      "status": "specified_not_executed",
+      "preconditions": [
+        "accepted requirement revision is selected",
+        "fixture uses exact applicable product/baseline/configuration"
+      ],
+      "stimulus": "Update repo-local accepted contract then project identity/status/linkage into registry with revision reference.",
+      "expected": "PhenoRegistry summarizes and links Tracera's canonical repo-local contract/status without becoming a competing detailed source of truth.",
+      "adversarial": "A stale registry summary must not override a newer accepted repo-local contract.",
+      "isolation": "fresh deterministic fixture; no unrelated product/baseline evidence may influence result",
+      "evidence_contract": [
+        "exact candidate/source revision",
+        "verifier identity/version",
+        "raw observable/result",
+        "fixture/environment identity",
+        "evaluation timestamp when time semantics apply"
+      ],
+      "non_pass_states": [
+        "unsatisfied",
+        "inconclusive",
+        "unknown",
+        "not_configured",
+        "stale"
+      ],
+      "sources": [
+        "SRC-001",
+        "SRC-034"
+      ]
+    }
+  ]
+}

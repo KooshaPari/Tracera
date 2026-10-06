@@ -15,12 +15,17 @@
 //! - **Assessment** (`assessment`) — deterministic product health assessment.
 //! - **Detectors** (`detectors`) — freshness, coverage, and contradiction detectors.
 
+pub mod application;
 pub mod assessment;
 pub mod baseline;
+pub mod dependencies;
 pub mod detectors;
 pub mod identity;
 pub mod ingest;
+pub mod invalidation;
+pub mod invalidation_service;
 pub mod observation;
+pub mod persistence;
 pub mod queries;
 pub mod traversal;
 
@@ -34,7 +39,19 @@ pub use detectors::{
 };
 pub use identity::{AcceptedIntent, BaselineRevision, IntentKind, IntentStatus, ProductId};
 pub use ingest::{IngestResult, ObservationIngestRequest, ObservationStore};
+pub use invalidation::{
+    propagate_bounded, reduce_applicability, ApplicabilityProjection, PropagationResult,
+};
+pub use invalidation_service::{
+    execute_certificate_revocation, execute_dependency_invalidation, plan_certificate_revocation,
+    plan_dependency_invalidation, InvalidationPlan, PersistedInvalidationResult,
+};
 pub use observation::{Observation, ObservationKind, ObservationResult, ObservationSource};
+pub use persistence::{
+    EvidenceReuseDecision, InvalidationEvent, PersistedBaseline, PersistedDependencyEdge,
+    PersistedEntity, PersistedEntityRevision, PersistedObservation, PersistedProduct,
+    ProductPersistence, ProductPersistenceError,
+};
 pub use queries::{
     build_invalidation_index, build_product_view, compute_product_stats, query_intents,
     InvalidationIndex, ProductQuery, ProductStats, ProductView, DEFAULT_QUERY_LIMIT,

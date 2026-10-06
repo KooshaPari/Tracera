@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.1.0",
+  "product_id": "PRD-TRACERA",
+  "record_type": "specification_correction_status_not_runtime_assessment",
+  "recorded_on": "2026-09-29",
+  "source_snapshot": "17eef2379d4a673e1c8cc71ed7663fae9e94309b",
+  "specification_pass_complete": false,
+  "catalog_status": "invalidated_requires_source_backed_replacement",
+  "requirement_count": null,
+  "count_policy": "derived_only",
+  "grading_eligible": false,
+  "test_generation_ready": false,
+  "test_generation": "deferred",
+  "mature_contract_completeness": null,
+  "highest_achieved_stage": null,
+  "stage_readiness": null,
+  "structural_shape": null,
+  "feature_closure": null,
+  "journey_closure": null,
+  "implementation_survivability": null,
+  "mature_contract_compatibility": null,
+  "transition_burden": null,
+  "blockers": [
+    "Replace generic multiplicative records with independently justified product obligations.",
+    "Reconcile current source and accepted intent; preserve unresolved coverage gaps.",
+    "Derive feature boundaries and stage/journey dependency closure semantically.",
+    "Complete concrete verification design without generating the deferred product test suite."
+  ]
+}

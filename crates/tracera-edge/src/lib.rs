@@ -110,6 +110,10 @@ struct FleetNodeSummary {
     node_id: String,
     generation: i64,
     services: std::collections::HashMap<String, String>,
+    #[serde(default)]
+    caps: std::collections::HashMap<String, String>,
+    #[serde(default)]
+    sidecar_version: String,
     last_seen: Option<DateTime<Utc>>,
 }
 
@@ -134,8 +138,10 @@ fn fleet_authorized(req: &Request, env: &Env) -> bool {
 }
 
 fn fleet_unauthorized() -> Result<Response> {
-    Response::from_json(&ApiErrorResponse { error: "unauthorized" })
-        .map(|r| r.with_status(401))
+    Response::from_json(&ApiErrorResponse {
+        error: "unauthorized",
+    })
+    .map(|r| r.with_status(401))
 }
 
 /// POST /fleet/enroll — register or re-acknowledge a node.
@@ -154,7 +160,7 @@ async fn fleet_enroll(mut req: Request, ctx: RouteContext<()>) -> Result<Respons
         .map(|r| r.with_status(400));
     }
 
-    let kv = ctx.env.kv(KV_BINDING).map_err(worker::Error::from)?;
+    let kv = ctx.env.kv(KV_BINDING)?;
     let key = format!("{FLEET_NODE_PREFIX}{node_id}");
     let generation = match kv.get(&key).json::<FleetNodeSummary>().await? {
         Some(existing) => existing.generation,
@@ -164,10 +170,12 @@ async fn fleet_enroll(mut req: Request, ctx: RouteContext<()>) -> Result<Respons
         node_id,
         generation,
         services: std::collections::HashMap::new(),
+        caps: body.caps,
+        sidecar_version: body.sidecar_version,
         last_seen: Some(Utc::now()),
     };
-    let payload = serde_json::to_string(&record)
-        .map_err(|e| worker::Error::RustError(e.to_string()))?;
+    let payload =
+        serde_json::to_string(&record).map_err(|e| worker::Error::RustError(e.to_string()))?;
     kv.put(&key, payload)?.execute().await?;
 
     Response::from_json(&FleetEnrollResponse {
@@ -182,15 +190,20 @@ async fn fleet_desired(req: Request, ctx: RouteContext<()>) -> Result<Response> 
     if !fleet_authorized(&req, &ctx.env) {
         return fleet_unauthorized();
     }
-    let node_id = req.url()?.query_pairs().into_owned()
+    let node_id = req
+        .url()?
+        .query_pairs()
+        .into_owned()
         .find(|(k, _)| k == "node_id")
         .map(|(_, v)| v)
         .unwrap_or_default();
     if node_id.is_empty() {
-        return Response::from_json(&ApiErrorResponse { error: "node_id required" })
-            .map(|r| r.with_status(400));
+        return Response::from_json(&ApiErrorResponse {
+            error: "node_id required",
+        })
+        .map(|r| r.with_status(400));
     }
-    let kv = ctx.env.kv(KV_BINDING).map_err(worker::Error::from)?;
+    let kv = ctx.env.kv(KV_BINDING)?;
     let key = format!("{FLEET_NODE_PREFIX}{node_id}");
     let state = match kv.get(&key).json::<FleetNodeSummary>().await? {
         Some(existing) => FleetDesiredState {
@@ -214,8 +227,12 @@ async fn fleet_desired_put(mut req: Request, ctx: RouteContext<()>) -> Result<Re
     }
     let body = req.json::<FleetDesiredState>().await?;
 
-    let kv = ctx.env.kv(KV_BINDING).map_err(worker::Error::from)?;
-    let list = kv.list().prefix(FLEET_NODE_PREFIX.to_string()).execute().await?;
+    let kv = ctx.env.kv(KV_BINDING)?;
+    let list = kv
+        .list()
+        .prefix(FLEET_NODE_PREFIX.to_string())
+        .execute()
+        .await?;
     let mut updated = 0usize;
     for key in &list.keys {
         let Some(existing) = kv.get(&key.name).json::<FleetNodeSummary>().await? else {
@@ -225,10 +242,12 @@ async fn fleet_desired_put(mut req: Request, ctx: RouteContext<()>) -> Result<Re
             node_id: existing.node_id.clone(),
             generation: existing.generation + 1,
             services: body.services.clone(),
+            caps: existing.caps,
+            sidecar_version: existing.sidecar_version,
             last_seen: existing.last_seen,
         };
-        let payload = serde_json::to_string(&record)
-            .map_err(|e| worker::Error::RustError(e.to_string()))?;
+        let payload =
+            serde_json::to_string(&record).map_err(|e| worker::Error::RustError(e.to_string()))?;
         kv.put(&key.name, payload)?.execute().await?;
         updated += 1;
     }
@@ -241,26 +260,34 @@ async fn fleet_report(mut req: Request, ctx: RouteContext<()>) -> Result<Respons
         return fleet_unauthorized();
     }
     let report = req.json::<FleetStatusReport>().await?;
-    let kv = ctx.env.kv(KV_BINDING).map_err(worker::Error::from)?;
+    let kv = ctx.env.kv(KV_BINDING)?;
     let key = format!("{FLEET_NODE_PREFIX}{}", report.node_id);
     let existing = kv.get(&key).json::<FleetNodeSummary>().await?;
+    let (caps, sidecar_version) = existing
+        .map(|node| (node.caps, node.sidecar_version))
+        .unwrap_or_default();
     let record = FleetNodeSummary {
         node_id: report.node_id,
         generation: report.generation,
         services: report.services,
+        caps,
+        sidecar_version,
         last_seen: Some(Utc::now()),
     };
-    let _ = existing; // Reserved for conflict detection in a later phase.
-    let payload = serde_json::to_string(&record)
-        .map_err(|e| worker::Error::RustError(e.to_string()))?;
+    let payload =
+        serde_json::to_string(&record).map_err(|e| worker::Error::RustError(e.to_string()))?;
     kv.put(&key, payload)?.execute().await?;
     Response::from_json(&StatusResponse { status: "ok" })
 }
 
 /// GET /fleet/nodes — operator-facing list of enrolled nodes.
 async fn fleet_nodes(_req: Request, ctx: RouteContext<()>) -> Result<Response> {
-    let kv = ctx.env.kv(KV_BINDING).map_err(worker::Error::from)?;
-    let list = kv.list().prefix(FLEET_NODE_PREFIX.to_string()).execute().await?;
+    let kv = ctx.env.kv(KV_BINDING)?;
+    let list = kv
+        .list()
+        .prefix(FLEET_NODE_PREFIX.to_string())
+        .execute()
+        .await?;
     let mut out = Vec::new();
     for key in &list.keys {
         if let Some(record) = kv.get(&key.name).json::<FleetNodeSummary>().await? {

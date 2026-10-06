@@ -1,0 +1,24 @@
+{
+  "experiment": "TRC-EXP-08-MATRIX-01",
+  "research_only": true,
+  "configurations": 512,
+  "criteria": 6,
+  "evidence_seeds": 28,
+  "models": {
+    "exact": {"targets":3072,"reused":28,"unsafe_reuse":0,"unknown":0,"forced_rechecks":3044},
+    "typed": {"targets":3072,"reused":2304,"unsafe_reuse":0,"unknown":768,"forced_rechecks":768},
+    "certified": {"targets":3072,"reused":3072,"unsafe_reuse":0,"unknown":0,"forced_rechecks":0}
+  },
+  "mutation_summary": {
+    "omitted_required_dimension_mutants": 17,
+    "all_detected": true,
+    "wildcard_mutant_false_admissions_total": 3648
+  },
+  "limitations": [
+    "Compatibility truth is constructed, not empirically measured.",
+    "Only conjunctive typed dimensions are modeled.",
+    "Certificates are assumed admitted/trusted.",
+    "No candidate-artifact equivalence or criterion-version compatibility.",
+    "No Tracera runtime code is executed."
+  ]
+}

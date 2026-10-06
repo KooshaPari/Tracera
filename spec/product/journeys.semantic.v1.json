@@ -1,0 +1,464 @@
+{
+  "schema_version": "0.5.0",
+  "status": "accepted_mature_semantic_journeys",
+  "product_id": "PRD-TRACERA",
+  "journeys": [
+    {
+      "id": "TRC-J-CVP-01",
+      "name": "Model and re-open accepted product truth",
+      "actor": "operator_or_agent",
+      "outcome": "Create or import a stable product with accepted typed intent, persist it, restart/reopen, and recover the same product/baseline without identity drift.",
+      "requires": [
+        "TRC-R-STABLE-ID",
+        "TRC-R-BASELINE-IMMUTABLE",
+        "TRC-R-INTENT-TYPED",
+        "TRC-R-PRODUCT-GRAPH",
+        "TRC-R-OFFLINE-CORE"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-CVP-02",
+      "name": "Bind evidence and derive truthful dissatisfaction",
+      "actor": "operator_or_agent",
+      "outcome": "Record scoped attributable evidence against accepted intent, derive truthful assessment, and surface an explainable missing/stale/failed/contradictory state without false green.",
+      "requires": [
+        "TRC-R-OBS-SCOPE",
+        "TRC-R-OBS-PROVENANCE",
+        "TRC-R-OBS-APPEND",
+        "TRC-R-ASSESS-STATUS",
+        "TRC-R-ASSESS-DETERMINISTIC",
+        "TRC-R-ASSESS-MISSING",
+        "TRC-R-ASSESS-CONFLICT",
+        "TRC-R-DETECT-FRESH",
+        "TRC-R-DETECT-COVER",
+        "TRC-R-DETECT-CONTRA",
+        "TRC-R-FINDING-EXPLAIN",
+        "TRC-R-COLLECTOR-FAIL"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-CVP-03",
+      "name": "Navigate intent to engineering evidence",
+      "actor": "operator_or_agent",
+      "outcome": "Starting from accepted product intent, boundedly navigate to linked engineering artifacts/evidence and back to the obligations they support.",
+      "requires": [
+        "TRC-R-SWEE-TYPED",
+        "TRC-R-TRACE-BIDIR",
+        "TRC-R-TRAVERSE-BOUND",
+        "TRC-R-SEARCH"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-CVP-04",
+      "name": "Resolve externally and re-verify",
+      "actor": "operator_or_agent",
+      "outcome": "Reference resolution work owned outside Tracera, observe work completion without accepting the product, then ingest qualifying proof and reassess.",
+      "requires": [
+        "TRC-R-WORK-BOUNDARY",
+        "TRC-R-EXTERNAL-WORK",
+        "TRC-R-EVIDENCE-EXACT",
+        "TRC-R-OBS-SCOPE",
+        "TRC-R-ASSESS-STATUS"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-CVP-05",
+      "name": "Understand what partial Tracera actually is",
+      "actor": "operator",
+      "outcome": "Inspect mature completeness, stage readiness, journey/feature closure, shape and transition debt without reducing them to one percent.",
+      "requires": [
+        "TRC-R-STATUS-SHAPE",
+        "TRC-R-STAGE-PROJECTION",
+        "TRC-R-STUB-SURVIVE",
+        "TRC-R-TRACE-GRADE-SEPARATE",
+        "TRC-R-NO-EMPTY-GREEN",
+        "TRC-R-JOURNEY-CLOSURE",
+        "TRC-R-AUX-SEPARATE"
+      ],
+      "stages": [
+        "CVP",
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MVP-01",
+      "name": "Change accepted product contract with historical continuity",
+      "actor": "authorized_operator",
+      "outcome": "Propose and accept a contract change, preserve prior baseline/history, report scope delta, invalidate/re-evaluate affected proof, and query both old and new states.",
+      "requires": [
+        "TRC-R-PROPOSE-NOMUT",
+        "TRC-R-BASELINE-IMMUTABLE",
+        "TRC-R-QUERY-HISTORY",
+        "TRC-R-SCOPE-DELTA",
+        "TRC-R-ACCEPT-INDEPENDENT"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MVP-02",
+      "name": "Use equivalent human and agent product semantics",
+      "actor": "human_and_agent",
+      "outcome": "Inspect the same canonical product/finding through human and machine surfaces with matching identities/status semantics and enforced mutation authority.",
+      "requires": [
+        "TRC-R-MACHINE-PARITY",
+        "TRC-R-AUTH-MUTATE",
+        "TRC-R-ERROR-TRUTH"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MVP-03",
+      "name": "Use derived knowledge without corrupting product truth",
+      "actor": "operator_or_agent",
+      "outcome": "Distill/source knowledge with provenance, use it for navigation/proposals, and keep accepted intent unchanged until explicit acceptance.",
+      "requires": [
+        "TRC-R-MEM-PROVENANCE",
+        "TRC-R-MEM-NOT-INTENT"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-GA-01",
+      "name": "Migrate and recover canonical product state",
+      "actor": "operator",
+      "outcome": "Upgrade a populated supported deployment while preserving identities/relations/evidence and demonstrate documented recovery.",
+      "requires": [
+        "TRC-R-STORE-PARITY",
+        "TRC-R-MIGRATE-SAFE",
+        "TRC-R-RETENTION-ID"
+      ],
+      "stages": [
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MVP-04",
+      "name": "Explain change impact",
+      "actor": "operator_or_agent",
+      "outcome": "Given a changed obligation/artifact, identify bounded affected entities and show the trace paths supporting the impact.",
+      "requires": [
+        "TRC-R-IMPACT",
+        "TRC-R-TRACE-BIDIR",
+        "TRC-R-TRAVERSE-BOUND"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MVP-05",
+      "name": "Project canonical status to registry",
+      "actor": "system_or_operator",
+      "outcome": "Publish a revision-bound summary to PhenoRegistry without duplicating or overriding repo-local product truth.",
+      "requires": [
+        "TRC-R-REGISTRY-PROJECTION",
+        "TRC-R-STATUS-SHAPE"
+      ],
+      "stages": [
+        "MVP",
+        "GA",
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-01",
+      "name": "Traverse one product across structural scales and projections",
+      "actor": "operator_or_agent",
+      "outcome": "Start from a product, boundedly expand/collapse typed structure, switch among accepted projections, and retain canonical identity/declared partiality throughout.",
+      "domains": [
+        "B",
+        "C",
+        "J"
+      ],
+      "requires": [
+        "TRC-R-STRUCT-HIER",
+        "TRC-R-STRUCT-BOUND",
+        "TRC-R-STRUCT-TYPED",
+        "TRC-R-REL-TYPED",
+        "TRC-R-REL-CONFLICT",
+        "TRC-R-PROJ-IDENTITY",
+        "TRC-R-PROJ-PARTIAL",
+        "TRC-R-PROJ-MODES",
+        "TRC-R-PROJ-ADV",
+        "TRC-R-PROJ-VIEW",
+        "TRC-R-UI-DECOMP",
+        "TRC-R-PROCESS",
+        "TRC-R-JOURNEY-MODEL"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-02",
+      "name": "Assess one exact product configuration without truth leakage",
+      "actor": "operator_or_agent",
+      "outcome": "Select an exact version/variant/platform/deployment configuration, inspect applicable obligations/evidence/findings, and keep other configurations from affecting the result.",
+      "domains": [
+        "H",
+        "R"
+      ],
+      "requires": [
+        "TRC-R-LIFE-RELEASE",
+        "TRC-R-LIFE-EFFECT",
+        "TRC-R-LIFE-NOLEAK",
+        "TRC-R-LIFE-RETIRE"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-03",
+      "name": "Discover and explain product dissatisfaction beyond test coverage",
+      "actor": "operator_or_agent",
+      "outcome": "Surface attributable bugs, missing capabilities, performance/usability/structural gaps, while keeping predictive findings explicitly uncertain.",
+      "domains": [
+        "F"
+      ],
+      "requires": [
+        "TRC-R-PROBLEM",
+        "TRC-R-DISS-BUG",
+        "TRC-R-DISS-MISSING",
+        "TRC-R-DISS-PERF",
+        "TRC-R-DISS-USABILITY",
+        "TRC-R-DISS-ORPHAN",
+        "TRC-R-DISS-PREDICT"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-04",
+      "name": "Import external product knowledge without corrupting canonical truth",
+      "actor": "operator_or_agent",
+      "outcome": "Import supported external product/evidence artifacts with provenance, aliases and conflicts, link broad asset types, and export a fidelity-declared projection.",
+      "domains": [
+        "L",
+        "D"
+      ],
+      "requires": [
+        "TRC-R-INTEROP-IMPORT",
+        "TRC-R-INTEROP-EXPORT",
+        "TRC-R-ASSET-BREADTH",
+        "TRC-R-LINK-CONFIDENCE",
+        "TRC-R-LINK-STALE"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-05",
+      "name": "Collaboratively change product truth under explicit authority",
+      "actor": "human_and_agent",
+      "outcome": "Create concurrent human/agent proposals, detect conflict, and accept an authorized reconciled change without generated content self-authorizing mutation.",
+      "domains": [
+        "S"
+      ],
+      "requires": [
+        "TRC-R-COLLAB-AUTH",
+        "TRC-R-COLLAB-CONFLICT"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-06",
+      "name": "Use equivalent secure machine interfaces",
+      "actor": "operator_or_agent",
+      "outcome": "Use supported machine surfaces with semantic parity, bounded pagination/version discovery and enforced authority against untrusted content.",
+      "requires": [
+        "TRC-R-API-PARITY",
+        "TRC-R-API-PAGE",
+        "TRC-R-API-IDEMP",
+        "TRC-R-API-VERSION",
+        "TRC-R-API-DISCOVER",
+        "TRC-R-SEC-TENANT",
+        "TRC-R-SEC-SECRET",
+        "TRC-R-SEC-UNTRUST",
+        "TRC-R-SEC-REDACT"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-07",
+      "name": "Recover canonical truth across failure and concurrency",
+      "actor": "operator_or_agent",
+      "outcome": "Perform canonical changes, concurrency/conflict, crash/restart and backup/restore while preserving coherent accepted history.",
+      "requires": [
+        "TRC-R-PERSIST-TXN",
+        "TRC-R-PERSIST-CONCUR",
+        "TRC-R-PERSIST-BACKUP",
+        "TRC-R-PERSIST-CRASH"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-08",
+      "name": "Operate at scale without semantic degradation",
+      "actor": "operator_or_agent",
+      "outcome": "Use large product graphs/inventories under benchmarked scale, explicit partiality and stable continuation without false absence.",
+      "requires": [
+        "TRC-R-PERF-TRUTH",
+        "TRC-R-PERF-BENCH",
+        "TRC-R-PERF-DEGRADE",
+        "TRC-R-PERF-DETERMINISM"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-09",
+      "name": "Use optional integrations without coupling core truth",
+      "actor": "operator_or_agent",
+      "outcome": "Enable/disable/fail external adapters while preserving local truth and source provenance.",
+      "requires": [
+        "TRC-R-EXT-REPLACE",
+        "TRC-R-EXT-FAIL",
+        "TRC-R-EXT-PROV"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-10",
+      "name": "Federate work and registry projections without authority inversion",
+      "actor": "operator_or_agent",
+      "outcome": "Exchange versioned AgilePlus evidence and PhenoRegistry summaries while repo-local Tracera remains product authority.",
+      "requires": [
+        "TRC-R-FED-VERSION",
+        "TRC-R-FED-FAIL",
+        "TRC-R-REG-REV",
+        "TRC-R-REG-NOAUTH"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-11",
+      "name": "Govern product change and lifecycle history",
+      "actor": "operator_or_agent",
+      "outcome": "Propose/review/accept/compare/revert product changes and project them into milestones/releases/deprecations without rewriting history.",
+      "requires": [
+        "TRC-R-CHANGE-PROPOSE",
+        "TRC-R-CHANGE-REVIEW",
+        "TRC-R-CHANGE-COMPARE",
+        "TRC-R-CHANGE-ROLLBACK",
+        "TRC-R-PLM-MILESTONE",
+        "TRC-R-PLM-DEPRECATE"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-12",
+      "name": "Use versioned configuration-bound product journeys",
+      "actor": "operator_or_agent",
+      "outcome": "Author/revise a journey with failure/recovery and assess closure against an exact applicable product configuration.",
+      "requires": [
+        "TRC-R-JOURNEY-VERSION",
+        "TRC-R-JOURNEY-FAIL",
+        "TRC-R-JOURNEY-CONFIG"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-13",
+      "name": "Navigate the human product surface without losing scope",
+      "actor": "operator_or_agent",
+      "outcome": "Select a product, inspect inventory/search/detail/relations, and retain explicit canonical scope/completeness/authority.",
+      "requires": [
+        "TRC-R-UX-PRODUCT",
+        "TRC-R-UX-INVENTORY",
+        "TRC-R-UX-DETAIL",
+        "TRC-R-UX-REL",
+        "TRC-R-UX-SEARCH"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-14",
+      "name": "Use derived knowledge without confusing it with truth",
+      "actor": "operator_or_agent",
+      "outcome": "Inspect stale/conflicting/reproducibly attributable derived knowledge and keep accepted intent unchanged.",
+      "requires": [
+        "TRC-R-MEM-FRESH",
+        "TRC-R-MEM-CONFLICT",
+        "TRC-R-MEM-REPRO"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    },
+    {
+      "id": "TRC-J-MATURE-15",
+      "name": "Recover and externally validate product state honestly",
+      "actor": "operator_or_agent",
+      "outcome": "A fresh agent recovers canonical product memory and reports recovery/external-validation dimensions separately from implementation completion.",
+      "requires": [
+        "TRC-R-RECOVERY-QUALITY",
+        "TRC-R-RECOVERY-FRESH",
+        "TRC-R-EXT-VALID"
+      ],
+      "stages": [
+        "MATURE"
+      ]
+    }
+  ]
+}

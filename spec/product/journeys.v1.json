@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.1.0",
+  "product_id": "PRD-TRACERA",
+  "status": "candidate_journey_map_requires_semantic_bindings",
+  "grading_eligible": false,
+  "accepted_journeys": [],
+  "prior_candidate_map": {
+    "commit": "e7d460391f43b2b148f65abae9caea9cf0b12f07",
+    "path": "spec/product/journeys.v1.json",
+    "disposition": "review_leads_only_not_validated_journey_closure"
+  },
+  "required_rework": [
+    "Derive actual actor, preconditions, entry point, observable outcome, steps and failure/recovery paths from product sources.",
+    "Bind each journey to explicit requirements and dependency closure rather than broad pillar keywords.",
+    "Justify stage applicability from coherent usable outcomes, not feature order or a count quota.",
+    "Specify concrete end-to-end verification intent; defer executable test generation."
+  ]
+}

@@ -8,7 +8,15 @@ import { useEffect } from "react";
 function GraphRedirectComponent() {
   const navigate = useNavigate();
 
-  useEffect(() => {}, [navigate]);
+  useEffect(() => {
+    const redirectTimer = globalThis.setTimeout(() => {
+      void navigate({ to: "/projects", replace: true });
+    }, 100);
+
+    return () => {
+      globalThis.clearTimeout(redirectTimer);
+    };
+  }, [navigate]);
 
   return (
     <div className="bg-background flex min-h-screen flex-col items-center justify-center">
