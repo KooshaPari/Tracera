@@ -3,7 +3,9 @@ name: Review Fanout
 # Proactive PR review: triggered on every PR open/synchronize, dispatches to
 # the smart-provider queue (CodeRabbit -> Copilot -> Cursor -> Forge) with
 # health-aware fallback. Requires the review-surface service to be reachable
-# (set REVIEW_SURFACE_URL to its deployed endpoint).
+# (set REVIEW_SURFACE_URL to its deployed endpoint). When the variable is unset
+# or its URL is not reachable from the runner, the dispatch step is skipped
+# with a ::warning:: instead of failing on unresolvable DNS.
 
 on:
   pull_request:
@@ -50,8 +52,35 @@ jobs:
           EOF
           echo "payload_file=/tmp/payload.json" >> "$GITHUB_OUTPUT"
 
+      - name: Gate dispatch on a reachable surface
+        id: gate
+        env:
+          # RAW repository variable, before the `|| fallback` in the env block:
+          # single-sources the fallback (it lives only there) and keeps this
+          # empty-check live whenever the variable is unset.
+          REVIEW_URL: ${{ vars.REVIEW_SURFACE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${REVIEW_URL:-}" ]; then
+            echo "should_dispatch=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Review fanout dispatch skipped: REVIEW_SURFACE_URL repository variable is not configured, so the smart queue is inactive. Set it to a reachable endpoint to enable dispatch."
+            exit 0
+          fi
+          # Probe the actual property (reachability) instead of string-matching
+          # URL spellings: any HTTP response (2xx/3xx/4xx/5xx) means the host
+          # answers and dispatch may proceed; 000 means DNS/connect/TLS/timeout
+          # failed, so dispatching would only reproduce the URLError failure.
+          http_code=$(curl -sI --max-time 5 -o /dev/null -w '%{http_code}' "$REVIEW_URL" 2>/dev/null || true)
+          if [ "$http_code" != "000" ]; then
+            echo "should_dispatch=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_dispatch=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Review fanout dispatch skipped: REVIEW_SURFACE_URL ($REVIEW_URL) is set but unreachable from this runner; no dispatch was attempted. Fix the repository variable to enable the smart queue."
+          fi
+
       - name: Dispatch via smart queue
         id: dispatch
+        if: steps.gate.outputs.should_dispatch == 'true'
         env:
           REVIEW_URL: ${{ env.REVIEW_SURFACE_URL }}
           REVIEW_TOKEN: ${{ env.REVIEW_SURFACE_TOKEN }}
