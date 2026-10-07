@@ -198,6 +198,11 @@ jobs:
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           shared-key: ci-agents-lint-rust
+      # cargo-deny is not preinstalled on GitHub runners; dependency-audit.yml
+      # installs it before use and this step mirrors that pinned install so
+      # `cargo deny check` below resolves to a real binary.
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --version 0.19.0 --locked
       - name: cargo deny
         run: cargo deny check
 
