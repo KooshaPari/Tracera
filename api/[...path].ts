@@ -243,26 +243,48 @@ const apiImport: Handler = (req, res) => {
 // Router
 // -----------------------------------------------------------------------------
 
+// Parse /api/<segments> out of the original request URL (query stripped).
+function segmentsFromRequestUrl(req: VercelRequest): string[] {
+  const url = req.url ?? "";
+  const q = url.indexOf("?");
+  const pathOnly = (q >= 0 ? url.slice(0, q) : url).replace(/^\/+/, "");
+  const withoutPrefix = pathOnly.startsWith("api/")
+    ? pathOnly.slice("api/".length)
+    : pathOnly;
+  return withoutPrefix.split("/").filter(Boolean);
+}
+
 // `path` is the catch-all under /api/, e.g. ["v1", "projects", "abc", "export"].
 // We normalize: empty segments, query, etc.
 async function route(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (handleCors(req, res)) return;
 
-  // Pull the path from the request URL or from the catch-all param.
-  // Vercel sets `req.query` for dynamic segments; when this file is
-  // /api/[...path].ts, `req.query.path` is a string[] of segments.
-  const rawSegments = Array.isArray(req.query.path)
-    ? (req.query.path as string[])
-    : typeof req.query.path === "string"
-      ? [req.query.path]
-      : [];
+  // Segments come from the REQUEST URL first. Filesystem-routed requests
+  // populate req.query.path, but requests that arrive via the vercel.json
+  // rewrite (/api/:path* -> /api/[...path]) do NOT carry the catch-all
+  // param (observed live: every multi-segment route fell through to
+  // notFound with an empty/foreign path param). req.url is the original
+  // request path in both cases, so it is the single source of truth.
+  const fromUrl = segmentsFromRequestUrl(req);
+  const queryPath = req.query.path;
+  const rawSegments =
+    fromUrl.length > 0
+      ? fromUrl
+      : Array.isArray(queryPath)
+        ? (queryPath as string[])
+        : typeof queryPath === "string" && queryPath.length > 0
+          ? [queryPath]
+          : [];
 
   const segs = rawSegments.map((s) => decodeURIComponent(s)).filter(Boolean);
 
-  // If a live backend is configured, try to forward first. On any failure
-  // (timeout, network, 5xx that fetch still resolved, etc.) we fall through
-  // to the stub handlers below.
-  if (await tryProxy(req, res, segs)) return;
+  // If a live backend is configured and the request was forwarded, we are
+  // done. On any failure (timeout, network, 5xx that fetch still resolved,
+  // etc.) we fall through to the stub handlers below. NOTE: the result is a
+  // string union — compare explicitly; truthiness would treat the literal
+  // "fallthrough" as handled and end the response with nothing written
+  // (observed live as FUNCTION_INVOCATION_FAILED 500s).
+  if ((await tryProxy(req, res, segs)) === "forwarded") return;
 
   // Top-level routes (no /api prefix).
   if (segs.length === 0) {
@@ -301,12 +323,55 @@ async function route(req: VercelRequest, res: VercelResponse): Promise<void> {
         return notFound(res);
       case "import":
         return apiImport(req, res);
+      // List roots are TWO segments (/api/v1/projects), not three.
+      case "projects":
+        return projectsIndex(req, res);
+      case "items":
+        return itemsIndex(req, res);
+      case "links":
+        return linksIndex(req, res);
     }
   }
 
   if (segs.length === 3) {
-    const [, , leaf] = segs;
-    switch (leaf) {
+    const [, section, third] = segs;
+
+    // Section-aware routes: these are /api/v1/<section>/<leaf> — THREE
+    // segments. Auth verbs and dashboard summary previously lived only in
+    // the four-segment branch (an off-by-one), so every documented auth
+    // route 404'd. Section first, then the action-leaf switch below.
+    if (section === "auth") {
+      switch (third) {
+        case "me":
+          return authMe(req, res);
+        case "login":
+          return authLogin(req, res);
+        case "logout":
+          return authLogout(req, res);
+        case "refresh":
+          return authRefresh(req, res);
+        case "verify":
+          return authVerify(req, res);
+        default:
+          return notFound(res);
+      }
+    }
+    if (section === "dashboard") {
+      if (third === "summary") return dashboardSummary(req, res);
+      return notFound(res);
+    }
+    if (section === "projects") return projectById(req, res);
+    if (section === "links") return linkById(req, res);
+    if (section === "graph") return graphRoute(req, res);
+    if (section === "search") {
+      if (third === "health") return searchHealth(req, res);
+      return searchRoute(req, res);
+    }
+    if (section === "items" && third !== "summary" && third !== "bulk-update") {
+      return itemById(req, res);
+    }
+
+    switch (third) {
       case "projects":
         return projectsIndex(req, res);
       case "items":

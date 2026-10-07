@@ -2,6 +2,7 @@
   "name": "tracera-monorepo",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Tracera monorepo: web, edge, sidecar, and vercel functions",
   "devDependencies": {
     "@vercel/node": "^5.10.2",
