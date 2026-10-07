@@ -73,10 +73,10 @@ impl TraceraMcpServer {
     }
 
     /// Convenience: the standard info advertised during `initialize`. The MCP
-    /// spec uses `ServerInfo` as a type alias for `InitializeResult` in rmcp 3.2.
+    /// spec uses `ServerConfig` as a type alias for `InitializeResult` in rmcp 3.5.
     pub fn server_info() -> InitializeResult {
-        use rmcp::model::{Implementation, ServerCapabilities, ServerInfo};
-        ServerInfo::new(ServerCapabilities::default()).with_server_info(Implementation::new(
+        use rmcp::model::{Implementation, ServerCapabilities, ServerConfig};
+        ServerConfig::new(ServerCapabilities::default()).with_server_info(Implementation::new(
             "tracera-mcp",
             env!("CARGO_PKG_VERSION"),
         ))
