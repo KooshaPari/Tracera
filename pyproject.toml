@@ -13,7 +13,8 @@ license = { text = "MIT" }
 # be imported and `pytest` failed during collection.
 dependencies = [
     "fastapi>=0.110",
-    "pyjwt>=2.8",
+    # GHSA-42vr-xj54-vc7v (CVE-2026-101918): affected >=2.0.0a1, <=2.14.0; 2.15.0 first patched.
+    "pyjwt>=2.15",
     "sqlalchemy>=2.0",
     "starlette>=0.36",
 ]
