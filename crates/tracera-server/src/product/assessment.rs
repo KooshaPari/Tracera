@@ -285,24 +285,20 @@ impl AssessmentEngine {
     }
 
     /// Assess an entire product by evaluating each capability intent.
+    /// Summarize observed capabilities for the latest observed product baseline.
+    ///
+    /// This is an observational summary, not a completeness verdict against
+    /// the product's accepted-intent requirements.
     pub fn assess_product(
         &self,
         product_id: &str,
         observations: &[Observation],
     ) -> AssessmentResult {
-        // Group observations by product_id (which maps to capability in our model)
-        let mut capability_map: std::collections::HashMap<String, Vec<&Observation>> =
-            std::collections::HashMap::new();
-        for obs in observations {
-            if obs.product_id.as_str() == product_id {
-                capability_map
-                    .entry(obs.product_id.as_str().to_string())
-                    .or_default()
-                    .push(obs);
-            }
-        }
-
-        if capability_map.is_empty() {
+        let relevant: Vec<&Observation> = observations
+            .iter()
+            .filter(|o| o.product_id.as_str() == product_id)
+            .collect();
+        let Some(baseline) = relevant.iter().map(|o| o.baseline).max() else {
             return AssessmentResult {
                 product_id: product_id.to_string(),
                 baseline: BaselineRevision(0),
@@ -311,13 +307,20 @@ impl AssessmentEngine {
                 assessed_at: Utc::now(),
                 observation_count: 0,
             };
+        };
+
+        let mut by_capability: std::collections::BTreeMap<String, Vec<Observation>> =
+            std::collections::BTreeMap::new();
+        for obs in relevant.into_iter().filter(|o| o.baseline == baseline) {
+            let key = obs.capability_id.clone().unwrap_or_else(|| product_id.to_string());
+            by_capability.entry(key).or_default().push(obs.clone());
         }
 
-        let mut findings = Vec::new();
+        let observation_count: usize = by_capability.values().map(Vec::len).sum();
+        let mut findings = Vec::with_capacity(by_capability.len());
         let mut worst_status = AssessmentStatus::Satisfied;
-
-        for cap_id in capability_map.keys() {
-            let mut finding = self.assess_capability(cap_id, observations);
+        for (capability_id, cap_observations) in &by_capability {
+            let mut finding = self.assess_capability(capability_id, cap_observations);
             finding.product_id = product_id.to_string();
             if finding.status.worse_than(worst_status) {
                 worst_status = finding.status;
@@ -325,20 +328,13 @@ impl AssessmentEngine {
             findings.push(finding);
         }
 
-        // Determine baseline from most recent observation
-        let baseline = observations
-            .iter()
-            .map(|o| o.baseline)
-            .max()
-            .unwrap_or(BaselineRevision(0));
-
         AssessmentResult {
             product_id: product_id.to_string(),
             baseline,
             status: worst_status,
             findings,
             assessed_at: Utc::now(),
-            observation_count: observations.len(),
+            observation_count,
         }
     }
 
