@@ -312,7 +312,10 @@ impl AssessmentEngine {
         let mut by_capability: std::collections::BTreeMap<String, Vec<Observation>> =
             std::collections::BTreeMap::new();
         for obs in relevant.into_iter().filter(|o| o.baseline == baseline) {
-            let key = obs.capability_id.clone().unwrap_or_else(|| product_id.to_string());
+            let key = obs
+                .capability_id
+                .clone()
+                .unwrap_or_else(|| product_id.to_string());
             by_capability.entry(key).or_default().push(obs.clone());
         }
 

@@ -39,10 +39,13 @@ fn fresh_stale_result_is_not_satisfied() {
 #[test]
 fn passing_and_unknown_evidence_is_inconclusive() {
     let e = AssessmentEngine::default_24h();
-    let result = e.assess_capability("cap-a", &[
-        observation("p", ObservationResult::Passed),
-        observation("u", ObservationResult::Unknown),
-    ]);
+    let result = e.assess_capability(
+        "cap-a",
+        &[
+            observation("p", ObservationResult::Passed),
+            observation("u", ObservationResult::Unknown),
+        ],
+    );
     assert_eq!(result.status, AssessmentStatus::Inconclusive);
 }
 
@@ -89,5 +92,8 @@ fn product_assessment_ignores_superseded_baseline() {
     assert_eq!(result.status, AssessmentStatus::Violated);
     assert_eq!(result.baseline, BaselineRevision(2));
     assert_eq!(result.observation_count, 1);
-    assert_eq!(result.findings[0].observation_ids, vec!["current".to_string()]);
+    assert_eq!(
+        result.findings[0].observation_ids,
+        vec!["current".to_string()]
+    );
 }
