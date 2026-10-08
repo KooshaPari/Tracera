@@ -28,7 +28,7 @@ const createWrapper = () => {
 
 describe(useLinks, () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    mockFetch.mockReset();
     useAuthStore.setState({ token: "link-contract-token" });
   });
 

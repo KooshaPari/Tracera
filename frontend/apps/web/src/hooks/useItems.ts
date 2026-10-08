@@ -8,6 +8,8 @@ import itemsUtils from "@/hooks/use-items/items-utils";
 import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
 import { useAuthStore } from "@/stores/authStore";
 import { API_ORIGIN } from "@/config/api-origin";
+import { getCSRFHeaders } from "@/lib/csrf";
+import { canonicalItemPayload, scopedGraphPath } from "@/lib/canonical-editing";
 
 const API_URL = API_ORIGIN;
 
@@ -99,19 +101,9 @@ async function fetchItem(id: string, token: string | undefined, projectId?: stri
 
 async function createItem(data: CreateItemData, token: string | undefined): Promise<Item> {
   const res = await fetch(`${API_URL}/api/v1/items`, {
-    body: JSON.stringify({
-      description: data["description"],
-      owner: data["owner"],
-      parent_id: data["parentId"],
-      priority: data["priority"],
-      project_id: data["projectId"],
-      status: data.status,
-      title: data["title"],
-      type: data.type,
-      view: data["view"],
-    }),
+    body: JSON.stringify(canonicalItemPayload({ ...data }, true)),
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...authHeaders(token) },
+    headers: { "Content-Type": "application/json", ...authHeaders(token), ...getCSRFHeaders("POST") },
     method: "POST",
   });
   if (res.ok) {
@@ -161,11 +153,12 @@ async function updateItem(
   id: string,
   data: Partial<Item>,
   token: string | undefined,
+  projectId: string,
 ): Promise<Item> {
-  const res = await fetch(`${API_URL}/api/v1/items/${id}`, {
-    body: JSON.stringify(data),
+  const res = await fetch(`${API_URL}${scopedGraphPath("items", id, projectId)}`, {
+    body: JSON.stringify(canonicalItemPayload({ ...data })),
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...authHeaders(token) },
+    headers: { "Content-Type": "application/json", ...authHeaders(token), ...getCSRFHeaders("PATCH") },
     method: "PATCH",
   });
   if (res.ok) {
@@ -178,10 +171,10 @@ async function updateItem(
   throw new Error("Failed to update item");
 }
 
-async function deleteItem(id: string, token: string | undefined): Promise<void> {
-  const res = await fetch(`${API_URL}/api/v1/items/${id}`, {
+async function deleteItem(id: string, token: string | undefined, projectId: string): Promise<void> {
+  const res = await fetch(`${API_URL}${scopedGraphPath("items", id, projectId)}`, {
     credentials: "include",
-    headers: authHeaders(token),
+    headers: { ...authHeaders(token), ...getCSRFHeaders("DELETE") },
     method: "DELETE",
   });
   if (res.ok) {
@@ -265,36 +258,48 @@ function useCreateItem(): ReturnType<typeof useMutation<Item, Error, CreateItemD
       return result;
     },
     onSuccess: async (): Promise<void> => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.items.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.links.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.graph.all }),
+      ]);
     },
   });
 }
 
 function useUpdateItem(): ReturnType<
-  typeof useMutation<Item, Error, { id: string; data: Partial<Item> }>
+  typeof useMutation<Item, Error, { id: string; data: Partial<Item>; projectId: string }>
 > {
   const queryClient = useQueryClient();
   const token = useAuthToken();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Item> }): Promise<Item> => {
-      const result = await updateItem(id, data, token);
+    mutationFn: async ({ id, data, projectId }: { id: string; data: Partial<Item>; projectId: string }): Promise<Item> => {
+      const result = await updateItem(id, data, token, projectId);
       return result;
     },
     onSuccess: async (): Promise<void> => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.items.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.links.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.graph.all }),
+      ]);
     },
   });
 }
 
-function useDeleteItem(): ReturnType<typeof useMutation<void, Error, string>> {
+function useDeleteItem(): ReturnType<typeof useMutation<void, Error, { id: string; projectId: string }>> {
   const queryClient = useQueryClient();
   const token = useAuthToken();
   return useMutation({
-    mutationFn: async (id: string): Promise<void> => {
-      await deleteItem(id, token);
+    mutationFn: async ({ id, projectId }: { id: string; projectId: string }): Promise<void> => {
+      await deleteItem(id, token, projectId);
     },
     onSuccess: async (): Promise<void> => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.items.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.links.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.graph.all }),
+      ]);
     },
   });
 }

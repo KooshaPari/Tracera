@@ -22,7 +22,9 @@ import { Card } from "@tracertm/ui/components/Card";
 import { Skeleton } from "@tracertm/ui/components/Skeleton";
 
 import { useItems } from "../hooks/useItems";
-import { useDeleteLink, useLinks } from "../hooks/useLinks";
+import { useCreateLink, useDeleteLink, useLinks } from "../hooks/useLinks";
+import { useProjects } from "../hooks/useProjects";
+import { CreateLinkForm } from "../components/forms/CreateLinkForm";
 
 function buildItemLink(
   itemId: string,
@@ -41,15 +43,19 @@ function buildItemLink(
 }
 
 export function LinksView() {
-  const { data: linksData, isLoading: linksLoading, error } = useLinks();
-  const { data: itemsData } = useItems();
+  const [projectId, setProjectId] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+  const { data: projects } = useProjects();
+  const createLink = useCreateLink();
+  const { data: linksData, isLoading: linksLoading, error } = useLinks({ projectId });
+  const { data: itemsData } = useItems({ projectId });
   const deleteLink = useDeleteLink();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
 
-  const links = linksData?.links ?? [];
-  const items = itemsData?.items ?? [];
+  const links = projectId ? linksData?.links ?? [] : [];
+  const items = projectId ? itemsData?.items ?? [] : [];
 
   const filteredLinks = useMemo(
     () =>
@@ -66,7 +72,7 @@ export function LinksView() {
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteLink.mutateAsync(id);
+      await deleteLink.mutateAsync({ id, projectId });
       toast.success("Relationship link dissolved");
     } catch {
       toast.error("Failed to delete link");
@@ -131,11 +137,23 @@ export function LinksView() {
         <Button
           size="sm"
           className="shadow-primary/20 gap-2 rounded-xl shadow-lg"
-          onClick={() => toast.info("Create a link by selecting source and target items")}
+          disabled={!projectId}
+          onClick={() => setShowCreate(true)}
         >
           <Plus className="h-4 w-4" /> Create Connection
         </Button>
       </div>
+
+      <label className="block text-sm font-medium">
+        Project
+        <select aria-label="Connection project" value={projectId} onChange={(event) => { setProjectId(event.target.value); setShowCreate(false); }} className="bg-background mt-1 rounded border p-2">
+          <option value="">Select a project...</option>
+          {(Array.isArray(projects) ? projects : []).map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+        </select>
+      </label>
+      {showCreate && <CreateLinkForm key={projectId} items={items} isLoading={createLink.isPending} onCancel={() => setShowCreate(false)} onSubmit={async (data) => {
+        try { await createLink.mutateAsync({ ...data, projectId }); setShowCreate(false); toast.success("Connection created"); } catch (error) { toast.error(error instanceof Error ? error.message : "Failed to create connection"); }
+      }} />}
 
       {/* Executive Summary */}
       <div className="stagger-children grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -281,6 +299,7 @@ export function LinksView() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label={`Delete connection ${link.sourceId} to ${link.targetId}`}
                       onClick={async () => handleDelete(link.id)}
                       className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-9 w-9 rounded-full"
                     >
