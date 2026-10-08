@@ -81,8 +81,9 @@ async function fetchItems(filters: ItemFilters = {}, token?: string): Promise<It
   throw new Error(`Failed to fetch items: ${res.status} ${errorText}`);
 }
 
-async function fetchItem(id: string, token: string | undefined): Promise<Item> {
-  const res = await fetch(`${API_URL}/api/v1/items/${id}`, {
+async function fetchItem(id: string, token: string | undefined, projectId?: string): Promise<Item> {
+  const query = projectId ? `?project_id=${encodeURIComponent(projectId)}` : "";
+  const res = await fetch(`${API_URL}/api/v1/items/${encodeURIComponent(id)}${query}`, {
     credentials: "include",
     headers: authHeaders(token),
   });
@@ -241,13 +242,13 @@ function useItems(filters?: ItemFilters): ReturnType<typeof useQuery<ItemsRespon
   });
 }
 
-function useItem(id: string): ReturnType<typeof useQuery<Item>> {
+function useItem(id: string, projectId?: string): ReturnType<typeof useQuery<Item>> {
   const token = useAuthToken();
   const enabled = id.trim() !== itemsUtils.EMPTY_STRING;
   return useQuery({
-    queryKey: [...queryKeys.items.detail(id), token ?? itemsUtils.EMPTY_STRING],
+    queryKey: [...queryKeys.items.detail(id), projectId ?? itemsUtils.EMPTY_STRING, token ?? itemsUtils.EMPTY_STRING],
     queryFn: async (): Promise<Item> => {
-      const result = await fetchItem(id, token);
+      const result = await fetchItem(id, token, projectId);
       return result;
     },
     enabled,

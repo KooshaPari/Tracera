@@ -45,6 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       rust: ${{ steps.filter.outputs.rust }}
+      postgres: ${{ steps.filter.outputs.postgres }}
       python: ${{ steps.filter.outputs.python }}
       go: ${{ steps.filter.outputs.go }}
       typescript: ${{ steps.filter.outputs.typescript }}
@@ -63,6 +64,12 @@ jobs:
               - 'crates/**'
               - '**/*.rs'
               - 'rust-toolchain.toml'
+            postgres:
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - 'crates/tracera-server/**'
+              - 'scripts/verify-postgres-canonical.py'
+              - '.github/workflows/ci.yml'
             python:
               - 'pyproject.toml'
               - 'uv.lock'
@@ -144,6 +151,40 @@ jobs:
           else
             echo "No library targets in workspace; skipping cargo doctest pass"
           fi
+
+  postgres-canonical-smoke:
+    name: PostgreSQL Canonical Smoke
+    needs: detect-changes
+    if: needs.detect-changes.outputs.postgres == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: tracera
+          POSTGRES_PASSWORD: tracera
+          POSTGRES_DB: tracera_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tracera -d tracera_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://tracera:tracera@127.0.0.1:5432/tracera_ci
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          shared-key: postgres-canonical-smoke
+      - run: cargo build --locked -p tracera-server
+      - name: Verify PostgreSQL canonical import, isolation, and restart
+        run: python3 scripts/verify-postgres-canonical.py --binary "$PWD/target/debug/tracera-server"
 
   rust-build:
     name: Rust Build
@@ -397,6 +438,7 @@ jobs:
     permissions: {}
     needs:
       - rust-test
+      - postgres-canonical-smoke
       - python-test
       - go-test
       - typescript-test
@@ -405,6 +447,7 @@ jobs:
       - name: Check test results
         run: |
           results=("${{ needs.rust-test.result }}" \
+                   "${{ needs.postgres-canonical-smoke.result }}" \
                    "${{ needs.python-test.result }}" \
                    "${{ needs.go-test.result }}" \
                    "${{ needs.typescript-test.result }}")
@@ -424,6 +467,7 @@ jobs:
       - detect-changes
       - rust-lint
       - rust-test
+      - postgres-canonical-smoke
       - python-lint
       - python-test
       - go-lint
@@ -440,6 +484,7 @@ jobs:
           # Fail if any required job failed (not skipped)
           results=("${{ needs.rust-lint.result }}" \
                    "${{ needs.rust-test.result }}" \
+                   "${{ needs.postgres-canonical-smoke.result }}" \
                    "${{ needs.python-lint.result }}" \
                    "${{ needs.python-test.result }}" \
                    "${{ needs.go-lint.result }}" \

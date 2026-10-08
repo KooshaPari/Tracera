@@ -422,6 +422,9 @@ export interface CanonicalExport {
     status: string;
     description?: string;
     version?: number;
+    source_url?: string;
+    source_repo?: string;
+    source_kind?: string;
   }>;
   links: Array<{ source_id: string; target_id: string; type: string }>;
 }

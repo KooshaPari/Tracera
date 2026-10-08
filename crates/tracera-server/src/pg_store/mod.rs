@@ -12,10 +12,12 @@ use std::time::Duration;
 use tokio::time::timeout;
 
 use crate::store::{
-    BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint, Store, StoreError,
-    StoreResult, Story, TeamRow, TraceLink,
+    BoxFuture, CanonicalExport, CanonicalItem, CanonicalLink, CanonicalProject, EvidenceItem,
+    ListParams, Problem, ProjectSummary, Sprint, Store, StoreError, StoreResult, Story, TeamRow,
+    TraceLink,
 };
 
+mod canonical;
 mod evidence;
 mod problems;
 mod projects;
@@ -38,6 +40,53 @@ impl PgStore {
 }
 
 impl Store for PgStore {
+    fn import_canonical(&self, export: CanonicalExport) -> BoxFuture<'_, StoreResult<()>> {
+        Box::pin(canonical::import(&self.pool, export))
+    }
+    fn append_canonical(
+        &self,
+        project_id: String,
+        items: Vec<CanonicalItem>,
+        links: Vec<CanonicalLink>,
+    ) -> BoxFuture<'_, StoreResult<()>> {
+        Box::pin(async move { canonical::append(&self.pool, &project_id, items, links).await })
+    }
+    fn canonical_project(
+        &self,
+        project_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<CanonicalProject>>> {
+        Box::pin(async move { canonical::project(&self.pool, &project_id).await })
+    }
+    fn canonical_items(
+        &self,
+        project_id: String,
+        limit: i64,
+        skip: i64,
+    ) -> BoxFuture<'_, StoreResult<(Vec<CanonicalItem>, i64)>> {
+        Box::pin(async move { canonical::items(&self.pool, &project_id, limit, skip).await })
+    }
+    fn canonical_item(
+        &self,
+        project_id: String,
+        item_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<CanonicalItem>>> {
+        Box::pin(async move { canonical::item(&self.pool, &project_id, &item_id).await })
+    }
+    fn canonical_links(
+        &self,
+        project_id: String,
+        limit: i64,
+        skip: i64,
+    ) -> BoxFuture<'_, StoreResult<(Vec<CanonicalLink>, i64)>> {
+        Box::pin(async move { canonical::links(&self.pool, &project_id, limit, skip).await })
+    }
+    fn canonical_export(
+        &self,
+        project_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<CanonicalExport>>> {
+        Box::pin(async move { canonical::export(&self.pool, &project_id).await })
+    }
+
     fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>> {
         Box::pin(evidence::list_evidence(&self.pool))
     }

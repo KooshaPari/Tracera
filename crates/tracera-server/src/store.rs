@@ -34,6 +34,52 @@ impl From<sqlx::Error> for StoreError {
 
 pub type StoreResult<T> = Result<T, StoreError>;
 
+/// Canonical import format used by the web client's full export/import flow.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct CanonicalProject {
+    pub id: String,
+    pub name: String,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct CanonicalItem {
+    pub id: String,
+    pub title: String,
+    pub view: String,
+    #[serde(rename = "type")]
+    pub item_type: String,
+    pub status: String,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub version: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_repo: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_kind: Option<String>,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct CanonicalLink {
+    pub source_id: String,
+    pub target_id: String,
+    #[serde(rename = "type")]
+    pub link_type: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct CanonicalExport {
+    pub project: CanonicalProject,
+    pub items: Vec<CanonicalItem>,
+    pub links: Vec<CanonicalLink>,
+}
+
 pub const DEFAULT_PAGE_SIZE: u32 = 50;
 pub const MAX_PAGE_SIZE: u32 = 500;
 
@@ -229,6 +275,38 @@ pub struct Problem {
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
 pub trait Store: Send + Sync {
+    fn import_canonical(&self, export: CanonicalExport) -> BoxFuture<'_, StoreResult<()>>;
+    fn append_canonical(
+        &self,
+        project_id: String,
+        items: Vec<CanonicalItem>,
+        links: Vec<CanonicalLink>,
+    ) -> BoxFuture<'_, StoreResult<()>>;
+    fn canonical_project(
+        &self,
+        project_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<CanonicalProject>>>;
+    fn canonical_items(
+        &self,
+        project_id: String,
+        limit: i64,
+        skip: i64,
+    ) -> BoxFuture<'_, StoreResult<(Vec<CanonicalItem>, i64)>>;
+    fn canonical_item(
+        &self,
+        project_id: String,
+        item_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<CanonicalItem>>>;
+    fn canonical_links(
+        &self,
+        project_id: String,
+        limit: i64,
+        skip: i64,
+    ) -> BoxFuture<'_, StoreResult<(Vec<CanonicalLink>, i64)>>;
+    fn canonical_export(
+        &self,
+        project_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<CanonicalExport>>>;
     // Evidence
     fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>>;
     fn create_evidence(

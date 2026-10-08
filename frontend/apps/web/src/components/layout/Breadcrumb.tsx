@@ -30,7 +30,7 @@ export const Breadcrumbs = function Breadcrumbs() {
   const { data: project, isLoading: projectLoading } = useProject(projectId ?? "");
 
   // Fetch item data if itemId exists
-  const { data: currentItem, isLoading: itemLoading } = useItem(itemId ?? "");
+  const { data: currentItem, isLoading: itemLoading } = useItem(itemId ?? "", projectId);
 
   // Generate breadcrumbs from matches with smart data fetching
   const breadcrumbs = useMemo(() => {

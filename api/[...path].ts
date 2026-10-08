@@ -140,6 +140,12 @@ const projectImport: Handler = (req, res) => {
 
 const itemsIndex: Handler = (req, res) => {
   if (req.method === "GET") {
+    // A project graph request must not mistake a gateway stub for an empty
+    // persisted project. The Rust backend must answer this collection.
+    if (new URL(req.url ?? "", "http://localhost").searchParams.has("project_id")) {
+      notImplemented(res, "item-stub");
+      return;
+    }
     ok(res, { total: 0, items: [] });
     return;
   }
@@ -169,6 +175,10 @@ const itemsPivotTargets: Handler = (req, res) => {
 
 const linksIndex: Handler = (req, res) => {
   if (req.method === "GET") {
+    if (new URL(req.url ?? "", "http://localhost").searchParams.has("project_id")) {
+      notImplemented(res, "link-stub");
+      return;
+    }
     ok(res, []);
     return;
   }
@@ -500,7 +510,12 @@ const BACKEND_TIMEOUT_MS = 8_000;
 // else is either hop-by-hop (host, content-length) or set by fetch itself.
 const FORWARDED_REQUEST_HEADERS = [
   "authorization",
+  "content-type",
   "cookie",
+  // The Rust CSRF middleware requires a browser Origin or Referer in addition
+  // to x-csrf-token on mutations. Forward both headers unchanged.
+  "origin",
+  "referer",
   "x-csrf-token",
   "x-request-id",
   "x-tracera-workspace",
