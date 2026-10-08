@@ -45,47 +45,41 @@ jobs:
           set -euo pipefail
           curl_args=(--silent --show-error --fail-with-body --max-time "${CURL_TIMEOUT}")
 
-          # 1) The same-origin Vercel API is the surface the deployed SPA
-          #    actually calls (VITE_API_URL=/api) and it is not Access-gated:
-          #    assert its status:ok envelope first. This directly detects a
-          #    stale Vercel alias, which this workflow exists to catch.
-          if body=$(curl "${curl_args[@]}" "${PROD_FRONTEND}/api/healthz" 2>/dev/null) \
-             && printf %s "${body}" | grep -q '"status":"ok"'; then
-            echo "vercel same-origin /api/healthz -> ${body}"
-            exit 0
-          fi
-
+          # Prove the actual Rust service and datastore-backed readiness.
+          # A Vercel stub can answer 200 with status:ok; Cloudflare Access can
+          # return a sign-in page. Neither is evidence of a working backend.
           if [ -n "${CF_ACCESS_CLIENT_ID:-}" ] && [ -n "${CF_ACCESS_CLIENT_SECRET:-}" ]; then
             curl_args+=(-H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}")
             curl_args+=(-H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}")
           fi
 
-          probe_health() {
+          probe_ready() {
             base="$1"
-            for path in /healthz /api/v1/health; do
-              if body=$(curl "${curl_args[@]}" "${base}${path}" 2>/dev/null); then
-                echo "prod ${path} @ ${base} -> ${body}"
-                printf %s "${body}" | grep -q '"status":"ok"' && return 0
-                # Cloudflare Access answers unauthenticated CI with its sign-in
-                # page; docs/04-guides/ENVIRONMENTS.md says automated checks
-                # must not treat the protected production tunnel as reachable.
-                if printf %s "${body}" | grep -qi "cloudflareaccess"; then
-                  echo "::notice::${base}${path} is behind Cloudflare Access (edge reachable, origin gated); strict JSON assertion skipped"
-                  return 0
-                fi
-              fi
-            done
-            return 1
+            path="$2"
+            if ! body=$(curl "${curl_args[@]}" "${base}${path}" 2>/dev/null); then
+              return 1
+            fi
+            printf '%s' "${body}" | jq -e '
+              .status == "ready" and .service == "tracera-server"
+              and (.backend | type == "string" and length > 0)
+            ' >/dev/null 2>&1
           }
 
-          if probe_health "${PROD_API}"; then
+          # The Vercel route is useful only when its response came from the
+          # upstream Rust service. Then check the dedicated and fallback hosts.
+          if probe_ready "${PROD_FRONTEND}" "/api/ready"; then
+            echo "PASS: Vercel same-origin API forwarded Rust readiness"
             exit 0
           fi
-          if probe_health "${PROD_API_FALLBACK}"; then
-            echo "::notice::api.tracera.pheno.studio unreachable; fell back to ${PROD_API_FALLBACK}"
+          if probe_ready "${PROD_API}" "/ready"; then
+            echo "PASS: dedicated Tracera API reported datastore readiness"
             exit 0
           fi
-          echo "::error::prod API did not report status:ok on ${PROD_FRONTEND}/api/healthz, ${PROD_API} or ${PROD_API_FALLBACK}"
+          if probe_ready "${PROD_API_FALLBACK}" "/ready"; then
+            echo "::notice::dedicated API unavailable; fallback reported Rust readiness"
+            exit 0
+          fi
+          echo "::error::no Tracera API reported datastore-backed Rust readiness"
           exit 1
 
       - name: Probe CORS for the deployed frontend origin
