@@ -28,7 +28,7 @@ metadata:
   description: Trace, observability, and audit ledger for agentic and LLM workflows.
   annotations:
     github.com/project-slug: KooshaPari/Tracera
-    backstage.io/source-location: url:https://github.com/KooshaPari/Tracera
+    backstage.io/source-location: url:https://github.com/KooshaPari/Tracera/
   tags:
     - rust
     - phenotype-pilot
