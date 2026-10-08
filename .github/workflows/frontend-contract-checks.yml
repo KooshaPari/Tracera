@@ -26,8 +26,8 @@ jobs:
       - name: Install frontend deps
         run: |
           bun install --ignore-scripts
-          git diff --numstat -- frontend/bun.lock
-          git diff -- frontend/bun.lock
+          git diff --numstat -- bun.lock
+          git diff -- bun.lock
           exit 1
         working-directory: frontend
 
