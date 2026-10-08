@@ -183,3 +183,20 @@ fn scoped_intents_duplicate_capability_is_inconclusive() {
     assert_eq!(result.observation_count, 1);
     assert_eq!(result.findings.len(), 2);
 }
+
+#[test]
+fn scoped_intents_cannot_ignore_accepted_requirements() {
+    use tracera_server::product::IntentKind;
+    let engine = AssessmentEngine::default_24h();
+    let mut requirement = capability_intent("req-1", 1);
+    requirement.kind = IntentKind::Requirement;
+    let result = engine.assess_scoped_intents(
+        "example-product",
+        BaselineRevision(1),
+        &[capability_intent("cap-a", 1), requirement],
+        &[observation("passing-capability", ObservationResult::Passed)],
+    );
+    assert_eq!(result.status, AssessmentStatus::Unknown);
+    assert_eq!(result.findings.len(), 2);
+    assert_eq!(result.observation_count, 1);
+}

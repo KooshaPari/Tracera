@@ -396,6 +396,30 @@ impl AssessmentEngine {
             findings.push(finding);
         }
 
+        // Non-capability accepted intents still impose product obligations.
+        // Until they have typed verifiers, never let passing capabilities
+        // silently turn the complete product assessment green.
+        for intent in intents.iter().filter(|i| {
+            i.status == IntentStatus::Accepted
+                && i.baseline == baseline
+                && i.kind != IntentKind::Capability
+        }) {
+            findings.push(AssessmentFinding {
+                product_id: product_id.to_string(),
+                capability_id: None,
+                status: AssessmentStatus::Unknown,
+                explanation: format!(
+                    "Accepted {:?} '{}' has no typed verifier in scoped assessment.",
+                    intent.kind, intent.id
+                ),
+                observation_ids: Vec::new(),
+                severity: FindingSeverity::from_status(AssessmentStatus::Unknown),
+            });
+            if AssessmentStatus::Unknown.worse_than(worst_status) {
+                worst_status = AssessmentStatus::Unknown;
+            }
+        }
+
         AssessmentResult {
             product_id: product_id.to_string(),
             baseline,
