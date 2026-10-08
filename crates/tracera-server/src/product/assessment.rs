@@ -248,6 +248,28 @@ impl AssessmentEngine {
             };
         }
 
+        // A fresh Unknown or Stale result is not passing evidence. Preserve
+        // the existing failure/conflict precedence above this branch.
+        let has_unknown = obs.iter().any(|o| o.result == ObservationResult::Unknown);
+        let has_stale_result = obs.iter().any(|o| o.result == ObservationResult::Stale);
+        if has_unknown || has_stale_result {
+            let status = if has_passed || (has_unknown && has_stale_result) {
+                AssessmentStatus::Inconclusive
+            } else if has_unknown {
+                AssessmentStatus::Unknown
+            } else {
+                AssessmentStatus::Stale
+            };
+            return AssessmentFinding {
+                product_id: String::new(),
+                capability_id: Some(capability_id.to_string()),
+                status,
+                explanation: format!("Capability '{capability_id}' has incomplete evidence."),
+                observation_ids: obs_ids,
+                severity: FindingSeverity::from_status(status),
+            };
+        }
+
         // All relevant observations passed
         AssessmentFinding {
             product_id: String::new(),
