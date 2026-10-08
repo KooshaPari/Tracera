@@ -108,3 +108,16 @@ test("Access login HTML and malformed or wrong JSON cannot claim readiness", asy
   assert.equal(ready.code, 200);
 });
 
+test("Rust root probes use origin root while versioned API requests retain /api", async () => {
+  for (const path of ["health", "healthz", "ready", "readyz"]) {
+    let target;
+    const status = path.startsWith("ready") ? "ready" : "ok";
+    const res = await invoke({ backend: "https://example.invalid/api/", url: `/api/${path}`,
+      fetcher: async (url) => { target = url; return new Response(JSON.stringify({
+        status, service: "tracera-server", backend: "sqlite", version: "0.1.0", uptime_seconds: 2,
+      }), { headers: { "content-type": "application/json" } }); } });
+    assert.equal(target, `https://example.invalid/${path}`);
+    assert.equal(res.code, 200);
+  }
+});
+

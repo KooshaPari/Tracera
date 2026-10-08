@@ -107,7 +107,11 @@ async function tryProxy(
 
   const path = segs.join("/");
   const qs = originalQueryString(req);
-  const target = `${BACKEND_URL}/${path}${qs}`;
+  // Rust exposes liveness/readiness at the origin root, while canonical API
+  // requests use the configured /api base. Do not append /ready to /api.
+  const rootProbe = segs.length === 1 && ["health", "healthz", "ready", "readyz"].includes(segs[0]);
+  const base = rootProbe ? BACKEND_URL.replace(/\/api$/, "") : BACKEND_URL;
+  const target = `${base}/${path}${qs}`;
 
   const headers: Record<string, string> = {};
   for (const name of FORWARDED_REQUEST_HEADERS) {

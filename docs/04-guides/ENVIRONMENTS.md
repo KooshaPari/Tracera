@@ -122,6 +122,10 @@ Function. The gateway does not bypass Cloudflare Access. A proxy health
 receipt establishes connectivity; canonical import, read, export and isolation
 still need separate acceptance evidence.
 
+The configured backend base ends in `/api` for versioned API requests.
+Root health/readiness probes remove that final `/api` before forwarding,
+because Rust serves `/healthz` and `/ready` at the origin root.
+
 `vercel.json` sets `maxDuration: 10s`; the gateway timeout is eight seconds.
 The root `@vercel/node` dependency provides Function types.
 
