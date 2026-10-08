@@ -97,3 +97,74 @@ fn product_assessment_ignores_superseded_baseline() {
         vec!["current".to_string()]
     );
 }
+
+fn capability_intent(id: &str, baseline: u64) -> tracera_server::product::AcceptedIntent {
+    use tracera_server::product::{IntentKind, IntentStatus};
+    tracera_server::product::AcceptedIntent {
+        id: id.to_string(),
+        kind: IntentKind::Capability,
+        title: id.to_string(),
+        description: String::new(),
+        status: IntentStatus::Accepted,
+        baseline: BaselineRevision(baseline),
+    }
+}
+
+#[test]
+fn scoped_intents_keep_product_identity_and_evidence_isolation() {
+    let engine = AssessmentEngine::default_24h();
+    let intent = capability_intent("cap-a", 1);
+    let passing = observation("correct", ObservationResult::Passed);
+    let mut other_product = observation("other", ObservationResult::Failed);
+    other_product.product_id = ProductId::new("other-product");
+    let result = engine.assess_scoped_intents(
+        "example-product",
+        BaselineRevision(1),
+        &[intent],
+        &[passing, other_product],
+    );
+    assert_eq!(result.product_id, "example-product");
+    assert_eq!(result.status, AssessmentStatus::Satisfied);
+    assert_eq!(result.observation_count, 1);
+}
+
+#[test]
+fn scoped_intents_do_not_reuse_old_baseline_evidence() {
+    let engine = AssessmentEngine::default_24h();
+    let result = engine.assess_scoped_intents(
+        "example-product",
+        BaselineRevision(2),
+        &[capability_intent("cap-a", 2)],
+        &[observation("old", ObservationResult::Passed)],
+    );
+    assert_eq!(result.status, AssessmentStatus::Unknown);
+    assert_eq!(result.observation_count, 0);
+}
+
+#[test]
+fn scoped_intents_missing_required_capability_is_unknown() {
+    let engine = AssessmentEngine::default_24h();
+    let result = engine.assess_scoped_intents(
+        "example-product",
+        BaselineRevision(1),
+        &[capability_intent("cap-a", 1), capability_intent("cap-b", 1)],
+        &[observation("a", ObservationResult::Passed)],
+    );
+    assert_eq!(result.status, AssessmentStatus::Unknown);
+    assert_eq!(result.findings.len(), 2);
+}
+
+#[test]
+fn scoped_intents_reject_capabilityless_legacy_evidence() {
+    let engine = AssessmentEngine::default_24h();
+    let mut legacy = observation("legacy", ObservationResult::Passed);
+    legacy.capability_id = None;
+    let result = engine.assess_scoped_intents(
+        "example-product",
+        BaselineRevision(1),
+        &[capability_intent("cap-a", 1)],
+        &[legacy],
+    );
+    assert_eq!(result.status, AssessmentStatus::Unknown);
+    assert_eq!(result.observation_count, 0);
+}

@@ -341,6 +341,56 @@ impl AssessmentEngine {
         }
     }
 
+    /// Assess accepted capabilities for an explicit product and baseline.
+    ///
+    /// Unlike the legacy `assess_with_intents`, this method never infers
+    /// product identity from an intent ID. Missing evidence is Unknown, and
+    /// unrelated products, baselines and capabilities cannot contribute.
+    pub fn assess_scoped_intents(
+        &self,
+        product_id: &str,
+        baseline: BaselineRevision,
+        intents: &[AcceptedIntent],
+        observations: &[Observation],
+    ) -> AssessmentResult {
+        use crate::product::identity::IntentStatus;
+        let mut findings = Vec::new();
+        let mut worst_status = AssessmentStatus::Unknown;
+        let mut observation_count = 0;
+
+        for intent in intents.iter().filter(|i| {
+            i.kind == IntentKind::Capability
+                && i.status == IntentStatus::Accepted
+                && i.baseline == baseline
+        }) {
+            let relevant: Vec<Observation> = observations
+                .iter()
+                .filter(|o| {
+                    o.product_id.as_str() == product_id
+                        && o.baseline == baseline
+                        && o.capability_id.as_deref() == Some(intent.id.as_str())
+                })
+                .cloned()
+                .collect();
+            observation_count += relevant.len();
+            let mut finding = self.assess_capability(&intent.id, &relevant);
+            finding.product_id = product_id.to_string();
+            if findings.is_empty() || finding.status.worse_than(worst_status) {
+                worst_status = finding.status;
+            }
+            findings.push(finding);
+        }
+
+        AssessmentResult {
+            product_id: product_id.to_string(),
+            baseline,
+            status: worst_status,
+            findings,
+            assessed_at: Utc::now(),
+            observation_count,
+        }
+    }
+
     /// Full assessment using accepted intents as the requirement set.
     ///
     /// Capabilities with no observations are flagged as Unknown.
