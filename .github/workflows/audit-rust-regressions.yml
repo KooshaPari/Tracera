@@ -18,3 +18,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Execute actual Tracera regression tests
         run: cargo test --locked -p tracera-server --test assessment_unknown_stale_regression -- --nocapture
+      - name: Execute existing Tracera server library tests
+        run: cargo test --locked -p tracera-server --lib
+      - name: Check formatting of modified Rust files
+        run: rustfmt --edition 2021 --check crates/tracera-server/src/product/assessment.rs crates/tracera-server/tests/assessment_unknown_stale_regression.rs
