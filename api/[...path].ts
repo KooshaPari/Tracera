@@ -81,25 +81,18 @@ function requireMethod(
   return false;
 }
 
-const health: Handler = (req, res) => {
+// A stub cannot prove the Rust service or its datastore is ready. Returning 503
+// keeps both browser preflight and synthetic monitoring honest until the
+// configured upstream answers through tryProxy.
+const backendUnavailable: Handler = (req, res) => {
   if (!requireMethod(req, res, ["GET"])) return;
-  ok(res, { status: "ok" });
+  res.status(503).json({ status: "backend_unavailable", service: "tracera-vercel-stub" });
 };
 
-const healthz: Handler = (req, res) => {
-  if (!requireMethod(req, res, ["GET"])) return;
-  ok(res, { status: "ok" });
-};
-
-const ready: Handler = (req, res) => {
-  if (!requireMethod(req, res, ["GET"])) return;
-  ok(res, { status: "ready" });
-};
-
-const readyz: Handler = (req, res) => {
-  if (!requireMethod(req, res, ["GET"])) return;
-  ok(res, { status: "ready" });
-};
+const health = backendUnavailable;
+const healthz = backendUnavailable;
+const ready = backendUnavailable;
+const readyz = backendUnavailable;
 
 const csrfToken: Handler = (req, res) => {
   if (!requireMethod(req, res, ["GET"])) return;
