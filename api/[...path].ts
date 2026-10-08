@@ -64,7 +64,25 @@ function unavailable(res: VercelResponse, reason: string): void {
 }
 
 const BACKEND_URL = process.env.TRACERA_BACKEND_URL?.replace(/\/$/, "") ?? "";
+// Optional server-only service authentication to the already configured Access
+// application. These names are project scoped; browser headers cannot replace
+// them. Configuring them does not grant policy permissions or Rust authorization.
+const ACCESS_CLIENT_ID = process.env.TRACERA_CF_ACCESS_CLIENT_ID ?? "";
+const ACCESS_CLIENT_SECRET = process.env.TRACERA_CF_ACCESS_CLIENT_SECRET ?? "";
 const BACKEND_TIMEOUT_MS = 8_000;
+
+function accessConfigurationValid(): boolean {
+  if (!ACCESS_CLIENT_ID && !ACCESS_CLIENT_SECRET) return true;
+  if (!ACCESS_CLIENT_ID.trim() || !ACCESS_CLIENT_SECRET.trim()
+      || /[\r\n]/.test(ACCESS_CLIENT_ID + ACCESS_CLIENT_SECRET)) return false;
+  try {
+    const backend = new URL(BACKEND_URL);
+    return backend.protocol === "https:" && !backend.username && !backend.password
+      && !backend.search && !backend.hash;
+  } catch {
+    return false;
+  }
+}
 
 // Headers we forward from the incoming request to the backend. Everything
 // else is either hop-by-hop (host, content-length) or set by fetch itself.
@@ -104,6 +122,10 @@ async function tryProxy(
     unavailable(res, "backend_not_configured");
     return;
   }
+  if (!accessConfigurationValid()) {
+    unavailable(res, "backend_access_configuration_invalid");
+    return;
+  }
 
   const path = segs.join("/");
   const qs = originalQueryString(req);
@@ -118,6 +140,10 @@ async function tryProxy(
     const v = req.headers[name];
     if (typeof v === "string" && v.length > 0) headers[name] = v;
     else if (Array.isArray(v) && v.length > 0) headers[name] = v.join(", ");
+  }
+  if (ACCESS_CLIENT_ID && ACCESS_CLIENT_SECRET) {
+    headers["cf-access-client-id"] = ACCESS_CLIENT_ID;
+    headers["cf-access-client-secret"] = ACCESS_CLIENT_SECRET;
   }
   // Body forward: Vercel may have parsed it; for raw fidelity we prefer
   // the raw body when present.

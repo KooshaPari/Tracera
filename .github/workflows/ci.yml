@@ -223,7 +223,9 @@ jobs:
       - run: uv sync --all-extras
       - run: uv run ruff check --output-format=github .
       - run: uv run ruff format --check .
-      - run: uv run mypy --install-types --non-interactive .
+      - name: Install declared SDK typecheck dependencies in the same environment
+        run: uv pip install --python .venv/bin/python -e './crates/tracera-py-sdk[async,dev]'
+      - run: uv run --no-sync mypy --install-types --non-interactive .
 
   python-test:
     name: Python Test
@@ -232,7 +234,7 @@ jobs:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -241,11 +243,14 @@ jobs:
         with:
           version: "latest"
       - run: uv python install ${{ matrix.python-version }}
-      - run: uv sync --all-extras
+      # Collection includes the SDK, whose declared minimum is Python 3.12.
+      - run: uv sync --all-extras --python ${{ matrix.python-version }}
+      - name: Install declared SDK test dependencies in the same environment
+        run: uv pip install --python .venv/bin/python -e './crates/tracera-py-sdk[async,dev]'
       # Keep CI deterministic: third-party pytest entrypoints (notably
       # schemathesis/jsonschema_rs) can stall collection. Autoload stays off,
       # so plugins we actually rely on must be named explicitly.
-      - run: PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 uv run pytest -p pytest_cov --cov --cov-report=xml --cov-report=term-missing -v
+      - run: PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 uv run --no-sync --python ${{ matrix.python-version }} pytest -p pytest_cov -p pytest_asyncio.plugin --asyncio-mode=auto --cov --cov-report=xml --cov-report=term-missing -v
       - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
         if: matrix.python-version == '3.12'
         with:
@@ -341,6 +346,7 @@ jobs:
       - name: Verify gateway availability and canonical source roundtrip
         run: |
           node --experimental-strip-types --test scripts/test-vercel-gateway.mjs
+          node --experimental-strip-types --test scripts/test-gateway-access.mjs
           node --test scripts/test-gateway-health-receipt.mjs
           node --experimental-strip-types --test tests/canonical-import-roundtrip.test.mjs
       - run: npm test || true
@@ -506,4 +512,5 @@ jobs:
           done
 
           echo "✅ All required checks passed"
+
 

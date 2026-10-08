@@ -65,9 +65,7 @@ def request(base, path, expected, payload=None, csrf=None, method=None):
         if status == expected == 404 and not raw:
             return None
         raise AssertionError(f"{path}: response was not JSON: {raw[:300]!r}") from error
-    require(
-        status == expected, f"{path}: expected HTTP {expected}, got {status}: {result}"
-    )
+    require(status == expected, f"{path}: expected HTTP {expected}, got {status}: {result}")
     return result
 
 
@@ -86,9 +84,7 @@ def start_server(binary, database_url, bind_addr, base, log):
     deadline = time.monotonic() + 40
     while time.monotonic() < deadline:
         if process.poll() is not None:
-            raise RuntimeError(
-                f"server exited during startup with status {process.returncode}"
-            )
+            raise RuntimeError(f"server exited during startup with status {process.returncode}")
         try:
             if request(base, "/health", 200).get("status") == "ok":
                 request(base, "/ready", 200)
@@ -116,16 +112,16 @@ def node_ids(graph):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--binary", required=True, help="built tracera-server executable"
-    )
+    parser.add_argument("--binary", required=True, help="built tracera-server executable")
     parser.add_argument("--database-url", default=os.environ.get("DATABASE_URL"))
     parser.add_argument("--backend", choices=("postgres", "sqlite"), default="postgres")
     parser.add_argument("--bind-addr", default="127.0.0.1:18384")
     args = parser.parse_args()
     require(
         args.database_url
-        and args.database_url.startswith(("postgres://", "postgresql://") if args.backend == "postgres" else ("sqlite://",)),
+        and args.database_url.startswith(
+            ("postgres://", "postgresql://") if args.backend == "postgres" else ("sqlite://",)
+        ),
         "DATABASE_URL must match the selected backend",
     )
     require(args.bind_addr.startswith("127.0.0.1:"), "bind address must be loopback")
@@ -145,8 +141,7 @@ def main():
         for i in range(20)
     ]
     full_links = [
-        {"source_id": source, "target_id": target, "type": kind}
-        for source, target, kind in LINKS
+        {"source_id": source, "target_id": target, "type": kind} for source, target, kind in LINKS
     ]
     valid_links = [link for link in full_links if link["target_id"] != "DANGLING"]
     require(
@@ -168,9 +163,7 @@ def main():
     with tempfile.TemporaryFile(mode="w+t") as log:
         process = None
         try:
-            process = start_server(
-                args.binary, args.database_url, args.bind_addr, base, log
-            )
+            process = start_server(args.binary, args.database_url, args.bind_addr, base, log)
             csrf = request(base, "/api/v1/csrf-token", 200)["token"]
 
             rejected = request(
@@ -203,12 +196,9 @@ def main():
             returned_links = request(
                 base, query("/api/v1/links", project_id=valid_id, limit=500), 200
             )
-            expected_links = {
-                (x["source_id"], x["target_id"], x["type"]) for x in valid_links
-            }
+            expected_links = {(x["source_id"], x["target_id"], x["type"]) for x in valid_links}
             actual_links = {
-                (x["source_id"], x["target_id"], x["type"])
-                for x in returned_links["links"]
+                (x["source_id"], x["target_id"], x["type"]) for x in returned_links["links"]
             }
             require(
                 returned_links["total"] == 7 and actual_links == expected_links,
@@ -256,26 +246,19 @@ def main():
                 node_ids(impact) == {"A0", "A1", "A2", "A3", "A4", "A6"},
                 f"valid component mismatch: {impact}",
             )
-            full_export = request(
-                base, project_path(valid_id, "/export?format=full"), 200
-            )
+            full_export = request(base, project_path(valid_id, "/export?format=full"), 200)
             require(
                 len(full_export["items"]) == 20 and len(full_export["links"]) == 7,
                 "export counts changed",
             )
             require(
-                {
-                    (x["source_id"], x["target_id"], x["type"])
-                    for x in full_export["links"]
-                }
+                {(x["source_id"], x["target_id"], x["type"]) for x in full_export["links"]}
                 == expected_links,
                 "export links changed",
             )
 
             other_items = [{**items[0], "title": "Other project A0"}, items[19]]
-            other_links = [
-                {"source_id": "A19", "target_id": "A0", "type": "depends_on"}
-            ]
+            other_links = [{"source_id": "A19", "target_id": "A0", "type": "depends_on"}]
             request(
                 base,
                 "/api/v1/import",
@@ -316,21 +299,14 @@ def main():
 
             stop_server(process)
             process = None
-            process = start_server(
-                args.binary, args.database_url, args.bind_addr, base, log
-            )
-            after_restart = request(
-                base, project_path(valid_id, "/export?format=full"), 200
-            )
+            process = start_server(args.binary, args.database_url, args.bind_addr, base, log)
+            after_restart = request(base, project_path(valid_id, "/export?format=full"), 200)
             require(
                 len(after_restart["items"]) == 20 and len(after_restart["links"]) == 7,
                 "project did not survive PostgreSQL server restart",
             )
             require(
-                {
-                    (x["source_id"], x["target_id"], x["type"])
-                    for x in after_restart["links"]
-                }
+                {(x["source_id"], x["target_id"], x["type"]) for x in after_restart["links"]}
                 == expected_links,
                 "link data changed after restart",
             )
@@ -352,30 +328,88 @@ def main():
             # the original 20-item/7-link fixture remains comparable.
             csrf = request(base, "/api/v1/csrf-token", 200)["token"]
             edit_id = f"pg-smoke-edit-{run}"
-            original = dict(items[0], source_url="https://github.com/KooshaPari/Tracera/issues/1", source_repo="KooshaPari/Tracera", source_kind="github_issue")
+            original = dict(
+                items[0],
+                source_url="https://github.com/KooshaPari/Tracera/issues/1",
+                source_repo="KooshaPari/Tracera",
+                source_kind="github_issue",
+            )
             request(base, "/api/v1/import", 201, export(edit_id, [original], []), csrf)
-            new_item = {"project_id": edit_id, "id": "new:node", "title": "Created", "view": "traceability", "type": "requirement", "status": "draft"}
+            new_item = {
+                "project_id": edit_id,
+                "id": "new:node",
+                "title": "Created",
+                "view": "traceability",
+                "type": "requirement",
+                "status": "draft",
+            }
             request(base, "/api/v1/items", 201, new_item, csrf)
             request(base, "/api/v1/items", 409, new_item, csrf)
             item_path = query("/api/v1/items/A0", project_id=edit_id)
-            updated = request(base, item_path, 200, {"title": "Edited", "description": None}, csrf, "PATCH")
-            require(updated["source_url"] == original["source_url"], "edit lost source provenance")
-            request(base, item_path, 400, {"source_url": "https://example.invalid/fabricated"}, csrf, "PATCH")
+            updated = request(
+                base,
+                item_path,
+                200,
+                {"title": "Edited", "description": None},
+                csrf,
+                "PATCH",
+            )
+            require(
+                updated["source_url"] == original["source_url"],
+                "edit lost source provenance",
+            )
+            request(
+                base,
+                item_path,
+                400,
+                {"source_url": "https://example.invalid/fabricated"},
+                csrf,
+                "PATCH",
+            )
             request(base, "/api/v1/items/A0", 400, {"title": "No scope"}, csrf, "PATCH")
-            require(request(base, query("/api/v1/items/A0", project_id=other_id), 200)["title"] != "Edited", "same-ID edit leaked across projects")
-            link = {"project_id": edit_id, "source_id": "A0", "target_id": "new:node", "type": "refines:typed"}
+            require(
+                request(base, query("/api/v1/items/A0", project_id=other_id), 200)["title"]
+                != "Edited",
+                "same-ID edit leaked across projects",
+            )
+            link = {
+                "project_id": edit_id,
+                "source_id": "A0",
+                "target_id": "new:node",
+                "type": "refines:typed",
+            }
             created_link = request(base, "/api/v1/links", 201, link, csrf)
             replace_path = query("/api/v1/links/" + created_link["id"], project_id=edit_id)
-            request(base, replace_path, 400, {"source_id":"A0", "target_id":"missing", "type":"refines:typed"}, csrf, "PUT")
-            created_link = request(base, replace_path, 200, {"source_id":"new:node", "target_id":"A0", "type":"verifies:typed"}, csrf, "PUT")
+            request(
+                base,
+                replace_path,
+                400,
+                {"source_id": "A0", "target_id": "missing", "type": "refines:typed"},
+                csrf,
+                "PUT",
+            )
+            created_link = request(
+                base,
+                replace_path,
+                200,
+                {"source_id": "new:node", "target_id": "A0", "type": "verifies:typed"},
+                csrf,
+                "PUT",
+            )
             before = request(base, project_path(edit_id, "/export?format=full"), 200)
             request(base, "/api/v1/links", 400, dict(link, target_id="missing"), csrf)
             request(base, "/api/v1/links", 400, dict(link, project_id=other_id), csrf)
-            require(before == request(base, project_path(edit_id, "/export?format=full"), 200), "rejected link changed persisted graph")
+            require(
+                before == request(base, project_path(edit_id, "/export?format=full"), 200),
+                "rejected link changed persisted graph",
+            )
             stop_server(process)
             process = None
             process = start_server(args.binary, args.database_url, args.bind_addr, base, log)
-            require(before == request(base, project_path(edit_id, "/export?format=full"), 200), "interactive edits did not survive restart")
+            require(
+                before == request(base, project_path(edit_id, "/export?format=full"), 200),
+                "interactive edits did not survive restart",
+            )
             csrf = request(base, "/api/v1/csrf-token", 200)["token"]
             link_path = query("/api/v1/links/" + created_link["id"], project_id=edit_id)
             request(base, link_path, 204, csrf=csrf, method="DELETE")
@@ -383,8 +417,14 @@ def main():
             request(base, "/api/v1/links", 201, link, csrf)
             request(base, item_path, 204, csrf=csrf, method="DELETE")
             remaining = request(base, project_path(edit_id, "/export?format=full"), 200)
-            require(len(remaining["items"]) == 1 and not remaining["links"], "item deletion did not cascade its incident links")
-            require(request(base, query("/api/v1/items/A0", project_id=other_id), 200)["id"] == "A0", "same-ID deletion leaked across projects")
+            require(
+                len(remaining["items"]) == 1 and not remaining["links"],
+                "item deletion did not cascade its incident links",
+            )
+            require(
+                request(base, query("/api/v1/items/A0", project_id=other_id), 200)["id"] == "A0",
+                "same-ID deletion leaked across projects",
+            )
             request(base, project_path(invalid_id), 404)
             print(
                 json.dumps(
