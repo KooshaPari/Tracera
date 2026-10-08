@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Exercise canonical HTTP behavior against the real PostgreSQL-backed server.
+"""Exercise canonical HTTP behavior against the real database-backed server.
+
+PostgreSQL is the required CI default; --backend sqlite supports local parity.
 
 The eight-link computation input deliberately contains A4 -> DANGLING. Canonical
 import must reject it atomically; the explicitly valid seven-link graph persists.
@@ -35,7 +37,7 @@ def require(condition, message):
         raise AssertionError(message)
 
 
-def request(base, path, expected, payload=None, csrf=None):
+def request(base, path, expected, payload=None, csrf=None, method=None):
     headers = {"Accept": "application/json"}
     body = None
     if payload is not None:
@@ -47,12 +49,16 @@ def request(base, path, expected, payload=None, csrf=None):
                 "X-CSRF-Token": csrf or "",
             }
         )
-    req = urllib.request.Request(base + path, body, headers)
+    if method and method != "GET":
+        headers.update({"Origin": "http://127.0.0.1:18000", "X-CSRF-Token": csrf or ""})
+    req = urllib.request.Request(base + path, body, headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=10) as response:
             status, raw = response.status, response.read()
     except urllib.error.HTTPError as error:
         status, raw = error.code, error.read()
+    if status == expected == 204 and not raw:
+        return None
     try:
         result = json.loads(raw)
     except json.JSONDecodeError as error:
@@ -114,12 +120,13 @@ def main():
         "--binary", required=True, help="built tracera-server executable"
     )
     parser.add_argument("--database-url", default=os.environ.get("DATABASE_URL"))
+    parser.add_argument("--backend", choices=("postgres", "sqlite"), default="postgres")
     parser.add_argument("--bind-addr", default="127.0.0.1:18384")
     args = parser.parse_args()
     require(
         args.database_url
-        and args.database_url.startswith(("postgres://", "postgresql://")),
-        "DATABASE_URL must point to PostgreSQL",
+        and args.database_url.startswith(("postgres://", "postgresql://") if args.backend == "postgres" else ("sqlite://",)),
+        "DATABASE_URL must match the selected backend",
     )
     require(args.bind_addr.startswith("127.0.0.1:"), "bind address must be loopback")
     base = "http://" + args.bind_addr
@@ -341,12 +348,49 @@ def main():
                 node_ids(restart_graph) == node_ids(impact),
                 "graph traversal changed after restart",
             )
+            # Interactive CRUD receipts use an isolated synthetic project, so
+            # the original 20-item/7-link fixture remains comparable.
+            csrf = request(base, "/api/v1/csrf-token", 200)["token"]
+            edit_id = f"pg-smoke-edit-{run}"
+            original = dict(items[0], source_url="https://github.com/KooshaPari/Tracera/issues/1", source_repo="KooshaPari/Tracera", source_kind="github_issue")
+            request(base, "/api/v1/import", 201, export(edit_id, [original], []), csrf)
+            new_item = {"project_id": edit_id, "id": "new:node", "title": "Created", "view": "traceability", "type": "requirement", "status": "draft"}
+            request(base, "/api/v1/items", 201, new_item, csrf)
+            request(base, "/api/v1/items", 409, new_item, csrf)
+            item_path = query("/api/v1/items/A0", project_id=edit_id)
+            updated = request(base, item_path, 200, {"title": "Edited", "description": None}, csrf, "PATCH")
+            require(updated["source_url"] == original["source_url"], "edit lost source provenance")
+            request(base, item_path, 400, {"source_url": "https://example.invalid/fabricated"}, csrf, "PATCH")
+            request(base, "/api/v1/items/A0", 400, {"title": "No scope"}, csrf, "PATCH")
+            require(request(base, query("/api/v1/items/A0", project_id=other_id), 200)["title"] != "Edited", "same-ID edit leaked across projects")
+            link = {"project_id": edit_id, "source_id": "A0", "target_id": "new:node", "type": "refines:typed"}
+            created_link = request(base, "/api/v1/links", 201, link, csrf)
+            replace_path = query("/api/v1/links/" + created_link["id"], project_id=edit_id)
+            request(base, replace_path, 400, {"source_id":"A0", "target_id":"missing", "type":"refines:typed"}, csrf, "PUT")
+            created_link = request(base, replace_path, 200, {"source_id":"new:node", "target_id":"A0", "type":"verifies:typed"}, csrf, "PUT")
+            before = request(base, project_path(edit_id, "/export?format=full"), 200)
+            request(base, "/api/v1/links", 400, dict(link, target_id="missing"), csrf)
+            request(base, "/api/v1/links", 400, dict(link, project_id=other_id), csrf)
+            require(before == request(base, project_path(edit_id, "/export?format=full"), 200), "rejected link changed persisted graph")
+            stop_server(process)
+            process = None
+            process = start_server(args.binary, args.database_url, args.bind_addr, base, log)
+            require(before == request(base, project_path(edit_id, "/export?format=full"), 200), "interactive edits did not survive restart")
+            csrf = request(base, "/api/v1/csrf-token", 200)["token"]
+            link_path = query("/api/v1/links/" + created_link["id"], project_id=edit_id)
+            request(base, link_path, 204, csrf=csrf, method="DELETE")
+            request(base, link_path, 404, csrf=csrf, method="DELETE")
+            request(base, "/api/v1/links", 201, link, csrf)
+            request(base, item_path, 204, csrf=csrf, method="DELETE")
+            remaining = request(base, project_path(edit_id, "/export?format=full"), 200)
+            require(len(remaining["items"]) == 1 and not remaining["links"], "item deletion did not cascade its incident links")
+            require(request(base, query("/api/v1/items/A0", project_id=other_id), 200)["id"] == "A0", "same-ID deletion leaked across projects")
             request(base, project_path(invalid_id), 404)
             print(
                 json.dumps(
                     {
                         "passed": True,
-                        "backend": "postgres",
+                        "backend": args.backend,
                         "fixture_sha256": fixture_sha256,
                         "run_id": run,
                         "valid_items": 20,
@@ -354,6 +398,10 @@ def main():
                         "dangling_link_rejected": True,
                         "cross_project_isolation": True,
                         "restart_readback": True,
+                        "interactive_crud_restart": True,
+                        "interactive_provenance_retained": True,
+                        "interactive_delete_cascade": True,
+                        "interactive_link_replace": True,
                     },
                     sort_keys=True,
                 )

@@ -12,9 +12,9 @@ use std::time::Duration;
 use tokio::time::timeout;
 
 use crate::store::{
-    BoxFuture, CanonicalExport, CanonicalItem, CanonicalLink, CanonicalProject, EvidenceItem,
-    ListParams, Problem, ProjectSummary, Sprint, Store, StoreError, StoreResult, Story, TeamRow,
-    TraceLink,
+    BoxFuture, CanonicalExport, CanonicalItem, CanonicalLink, CanonicalMutation, CanonicalProject,
+    EvidenceItem, ListParams, Problem, ProjectSummary, Sprint, Store, StoreError, StoreResult,
+    Story, TeamRow, TraceLink,
 };
 
 mod canonical;
@@ -40,6 +40,13 @@ impl PgStore {
 }
 
 impl Store for PgStore {
+    fn mutate_canonical(
+        &self,
+        project_id: String,
+        mutation: CanonicalMutation,
+    ) -> BoxFuture<'_, StoreResult<bool>> {
+        Box::pin(async move { canonical::mutate(&self.pool, &project_id, mutation).await })
+    }
     fn import_canonical(&self, export: CanonicalExport) -> BoxFuture<'_, StoreResult<()>> {
         Box::pin(canonical::import(&self.pool, export))
     }

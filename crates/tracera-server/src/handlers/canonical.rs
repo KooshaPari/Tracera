@@ -207,9 +207,10 @@ pub(crate) async fn list_links(
     require_project(&state, &id).await?;
     let (links, total) = state
         .store
-        .canonical_links(id, limit, skip)
+        .canonical_links(id.clone(), limit, skip)
         .await
         .map_err(db_error)?;
+    let links: Vec<Value> = links.iter().map(|link| link_value(&id, link)).collect();
     Ok(Json(json!({"links": links, "total": total})))
 }
 
@@ -306,4 +307,287 @@ pub(crate) async fn traverse(
         })
         .collect();
     Ok(Json(json!({"nodes":nodes,"edges":edges})))
+}
+
+fn scoped(query: ItemQuery) -> Result<String, ApiError> {
+    query
+        .project_id
+        .filter(|id| !id.trim().is_empty() && id.len() <= 256)
+        .ok_or_else(|| error(StatusCode::BAD_REQUEST, "project_id required"))
+}
+async fn edit(
+    state: &AppState,
+    project_id: &str,
+    mutation: crate::store::CanonicalMutation,
+) -> Result<(), ApiError> {
+    require_project(state, project_id).await?;
+    match state
+        .store
+        .mutate_canonical(project_id.to_owned(), mutation)
+        .await
+    {
+        Ok(true) => Ok(()),
+        Ok(false) => Err(error(StatusCode::NOT_FOUND, "item or link not found")),
+        Err(e) => {
+            tracing::warn!("canonical edit rejected: {e}");
+            Err(error(StatusCode::CONFLICT, "canonical edit conflict"))
+        }
+    }
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct CreateItem {
+    project_id: String,
+    #[serde(default)]
+    id: Option<String>,
+    title: String,
+    view: String,
+    #[serde(rename = "type")]
+    item_type: String,
+    status: String,
+    #[serde(default)]
+    description: Option<String>,
+}
+pub(crate) async fn create_item(
+    State(state): State<AppState>,
+    Json(body): Json<CreateItem>,
+) -> Result<(StatusCode, Json<Value>), ApiError> {
+    let project_id = scoped(ItemQuery {
+        project_id: Some(body.project_id),
+    })?;
+    let item = CanonicalItem {
+        id: body.id.unwrap_or_else(|| uuid::Uuid::new_v4().to_string()),
+        title: body.title,
+        view: body.view,
+        item_type: body.item_type,
+        status: body.status,
+        description: body.description,
+        version: None,
+        source_url: None,
+        source_repo: None,
+        source_kind: None,
+    };
+    if [
+        &item.id,
+        &item.title,
+        &item.view,
+        &item.item_type,
+        &item.status,
+    ]
+    .iter()
+    .any(|s| s.trim().is_empty())
+        || item.id.len() > 256
+    {
+        return Err(error(StatusCode::BAD_REQUEST, "invalid item"));
+    }
+    edit(
+        &state,
+        &project_id,
+        crate::store::CanonicalMutation::CreateItem(item.clone()),
+    )
+    .await?;
+    let mut value = serde_json::to_value(item).map_err(db_error)?;
+    value["project_id"] = json!(project_id);
+    Ok((StatusCode::CREATED, Json(value)))
+}
+pub(crate) async fn update_item(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Query(query): Query<ItemQuery>,
+    Json(patch): Json<Value>,
+) -> Result<Json<Value>, ApiError> {
+    let project_id = scoped(query)?;
+    let fields = patch
+        .as_object()
+        .filter(|o| !o.is_empty())
+        .ok_or_else(|| error(StatusCode::BAD_REQUEST, "nonempty item patch required"))?;
+    // Interactive edits cannot rewrite identity or source evidence. Omitted
+    // fields retain their current values inside the storage transaction.
+    for (key, value) in fields {
+        match key.as_str() {
+            "title" | "view" | "type" | "status"
+                if value.as_str().is_some_and(|s| !s.trim().is_empty()) => {}
+            "description" if value.is_null() || value.is_string() => {}
+            _ => {
+                return Err(error(
+                    StatusCode::BAD_REQUEST,
+                    "unsupported item field or value",
+                ))
+            }
+        }
+    }
+    edit(
+        &state,
+        &project_id,
+        crate::store::CanonicalMutation::UpdateItem {
+            id: id.clone(),
+            patch,
+        },
+    )
+    .await?;
+    get_item(
+        State(state),
+        Path(id),
+        Query(ItemQuery {
+            project_id: Some(project_id),
+        }),
+    )
+    .await
+}
+pub(crate) async fn delete_item(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Query(query): Query<ItemQuery>,
+) -> Result<StatusCode, ApiError> {
+    let project_id = scoped(query)?;
+    edit(
+        &state,
+        &project_id,
+        crate::store::CanonicalMutation::DeleteItem(id),
+    )
+    .await?;
+    Ok(StatusCode::NO_CONTENT)
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct CreateLink {
+    project_id: String,
+    source_id: String,
+    target_id: String,
+    #[serde(rename = "type")]
+    link_type: String,
+}
+fn link_id(link: &crate::store::CanonicalLink) -> String {
+    use base64::Engine;
+    // Encode the tuple rather than ambiguous colon-separated identifiers.
+    base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(
+        serde_json::to_vec(&(&link.source_id, &link.target_id, &link.link_type))
+            .expect("string tuple"),
+    )
+}
+fn link_value(project_id: &str, link: &crate::store::CanonicalLink) -> Value {
+    json!({"id": link_id(link), "project_id": project_id, "source_id": link.source_id, "target_id": link.target_id, "type": link.link_type})
+}
+pub(crate) async fn create_link(
+    State(state): State<AppState>,
+    Json(body): Json<CreateLink>,
+) -> Result<(StatusCode, Json<Value>), ApiError> {
+    let project_id = scoped(ItemQuery {
+        project_id: Some(body.project_id),
+    })?;
+    let link = crate::store::CanonicalLink {
+        source_id: body.source_id,
+        target_id: body.target_id,
+        link_type: body.link_type,
+    };
+    if [&link.source_id, &link.target_id, &link.link_type]
+        .iter()
+        .any(|s| s.trim().is_empty() || s.len() > 256)
+    {
+        return Err(error(StatusCode::BAD_REQUEST, "invalid link"));
+    }
+    require_project(&state, &project_id).await?;
+    for endpoint in [&link.source_id, &link.target_id] {
+        if state
+            .store
+            .canonical_item(project_id.clone(), endpoint.clone())
+            .await
+            .map_err(db_error)?
+            .is_none()
+        {
+            return Err(error(StatusCode::BAD_REQUEST, "dangling link endpoint"));
+        }
+    }
+    edit(
+        &state,
+        &project_id,
+        crate::store::CanonicalMutation::CreateLink(link.clone()),
+    )
+    .await?;
+    Ok((StatusCode::CREATED, Json(link_value(&project_id, &link))))
+}
+pub(crate) async fn delete_link(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Query(query): Query<ItemQuery>,
+) -> Result<StatusCode, ApiError> {
+    use base64::Engine;
+    let project_id = scoped(query)?;
+    let tuple: (String, String, String) = base64::engine::general_purpose::URL_SAFE_NO_PAD
+        .decode(id)
+        .ok()
+        .and_then(|bytes| serde_json::from_slice(&bytes).ok())
+        .ok_or_else(|| error(StatusCode::BAD_REQUEST, "invalid link identifier"))?;
+    edit(
+        &state,
+        &project_id,
+        crate::store::CanonicalMutation::DeleteLink(crate::store::CanonicalLink {
+            source_id: tuple.0,
+            target_id: tuple.1,
+            link_type: tuple.2,
+        }),
+    )
+    .await?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct ReplaceLink {
+    source_id: String,
+    target_id: String,
+    #[serde(rename = "type")]
+    link_type: String,
+}
+pub(crate) async fn update_link(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Query(query): Query<ItemQuery>,
+    Json(body): Json<ReplaceLink>,
+) -> Result<Json<Value>, ApiError> {
+    use base64::Engine;
+    let project_id = scoped(query)?;
+    let tuple: (String, String, String) = base64::engine::general_purpose::URL_SAFE_NO_PAD
+        .decode(id)
+        .ok()
+        .and_then(|bytes| serde_json::from_slice(&bytes).ok())
+        .ok_or_else(|| error(StatusCode::BAD_REQUEST, "invalid link identifier"))?;
+    let old = crate::store::CanonicalLink {
+        source_id: tuple.0,
+        target_id: tuple.1,
+        link_type: tuple.2,
+    };
+    let new = crate::store::CanonicalLink {
+        source_id: body.source_id,
+        target_id: body.target_id,
+        link_type: body.link_type,
+    };
+    if [&new.source_id, &new.target_id, &new.link_type]
+        .iter()
+        .any(|s| s.trim().is_empty() || s.len() > 256)
+    {
+        return Err(error(StatusCode::BAD_REQUEST, "invalid link"));
+    }
+    require_project(&state, &project_id).await?;
+    for endpoint in [&new.source_id, &new.target_id] {
+        if state
+            .store
+            .canonical_item(project_id.clone(), endpoint.clone())
+            .await
+            .map_err(db_error)?
+            .is_none()
+        {
+            return Err(error(StatusCode::BAD_REQUEST, "dangling link endpoint"));
+        }
+    }
+    edit(
+        &state,
+        &project_id,
+        crate::store::CanonicalMutation::ReplaceLink {
+            old,
+            new: new.clone(),
+        },
+    )
+    .await?;
+    Ok(Json(link_value(&project_id, &new)))
 }

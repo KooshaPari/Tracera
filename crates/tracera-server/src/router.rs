@@ -174,13 +174,19 @@ pub(crate) fn build_router_with_auth(
         // Items
         .route(
             "/api/v1/items",
-            get(canonical::list_items).fallback(not_implemented),
+            get(canonical::list_items)
+                .post(canonical::create_item)
+                .fallback(not_implemented),
         )
         .route("/api/v1/items/summary", any(not_implemented))
         .route("/api/v1/items/bulk-update", any(not_implemented))
         .route(
             "/api/v1/items/{id}",
-            get(canonical::get_item).fallback(not_implemented),
+            get(canonical::get_item)
+                .put(canonical::update_item)
+                .patch(canonical::update_item)
+                .delete(canonical::delete_item)
+                .fallback(not_implemented),
         )
         .route(
             "/api/v1/items/{item_id}/pivot-targets",
@@ -190,9 +196,16 @@ pub(crate) fn build_router_with_auth(
         // Links
         .route(
             "/api/v1/links",
-            get(canonical::list_links).fallback(not_implemented),
+            get(canonical::list_links)
+                .post(canonical::create_link)
+                .fallback(not_implemented),
         )
-        .route("/api/v1/links/{id}", any(not_implemented))
+        .route(
+            "/api/v1/links/{id}",
+            axum::routing::delete(canonical::delete_link)
+                .put(canonical::update_link)
+                .fallback(not_implemented),
+        )
         .route("/api/v1/links/grouped", any(not_implemented))
         .route("/api/v1/projects/{project_id}/links", any(not_implemented))
         // Graph

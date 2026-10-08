@@ -274,7 +274,33 @@ pub struct Problem {
 // ---------------------------------------------------------------------------
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
+/// One project-scoped edit. Stores execute it and update the project timestamp
+/// in one transaction; FK checks prevent dangling or cross-project endpoints.
+#[derive(Debug, Clone)]
+pub enum CanonicalMutation {
+    CreateItem(CanonicalItem),
+    UpdateItem {
+        id: String,
+        patch: Value,
+    },
+    DeleteItem(String),
+    CreateLink(CanonicalLink),
+    DeleteLink(CanonicalLink),
+    ReplaceLink {
+        old: CanonicalLink,
+        new: CanonicalLink,
+    },
+}
+
 pub trait Store: Send + Sync {
+    fn mutate_canonical(
+        &self,
+        _project_id: String,
+        _mutation: CanonicalMutation,
+    ) -> BoxFuture<'_, StoreResult<bool>> {
+        Box::pin(async { Err(StoreError::Database("canonical editing unsupported".into())) })
+    }
+
     fn import_canonical(&self, export: CanonicalExport) -> BoxFuture<'_, StoreResult<()>>;
     fn append_canonical(
         &self,
