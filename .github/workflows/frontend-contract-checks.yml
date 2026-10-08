@@ -24,7 +24,11 @@ jobs:
           bun-version: latest
 
       - name: Install frontend deps
-        run: bun install --frozen-lockfile --ignore-scripts
+        run: |
+          bun install --ignore-scripts
+          git diff --numstat -- frontend/bun.lock
+          git diff -- frontend/bun.lock
+          exit 1
         working-directory: frontend
 
       - name: Build web bundle
