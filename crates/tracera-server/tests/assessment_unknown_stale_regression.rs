@@ -168,3 +168,18 @@ fn scoped_intents_reject_capabilityless_legacy_evidence() {
     assert_eq!(result.status, AssessmentStatus::Unknown);
     assert_eq!(result.observation_count, 0);
 }
+
+#[test]
+fn scoped_intents_duplicate_capability_is_inconclusive() {
+    let engine = AssessmentEngine::default_24h();
+    let intent = capability_intent("cap-a", 1);
+    let result = engine.assess_scoped_intents(
+        "example-product",
+        BaselineRevision(1),
+        &[intent.clone(), intent],
+        &[observation("pass", ObservationResult::Passed)],
+    );
+    assert_eq!(result.status, AssessmentStatus::Inconclusive);
+    assert_eq!(result.observation_count, 1);
+    assert_eq!(result.findings.len(), 2);
+}

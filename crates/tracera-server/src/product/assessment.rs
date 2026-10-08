@@ -357,12 +357,27 @@ impl AssessmentEngine {
         let mut findings = Vec::new();
         let mut worst_status = AssessmentStatus::Unknown;
         let mut observation_count = 0;
+        let mut seen_capabilities = std::collections::BTreeSet::new();
 
         for intent in intents.iter().filter(|i| {
             i.kind == IntentKind::Capability
                 && i.status == IntentStatus::Accepted
                 && i.baseline == baseline
         }) {
+            if !seen_capabilities.insert(intent.id.as_str()) {
+                findings.push(AssessmentFinding {
+                    product_id: product_id.to_string(),
+                    capability_id: Some(intent.id.clone()),
+                    status: AssessmentStatus::Inconclusive,
+                    explanation: format!("Duplicate accepted capability '{}'.", intent.id),
+                    observation_ids: Vec::new(),
+                    severity: FindingSeverity::from_status(AssessmentStatus::Inconclusive),
+                });
+                if AssessmentStatus::Inconclusive.worse_than(worst_status) {
+                    worst_status = AssessmentStatus::Inconclusive;
+                }
+                continue;
+            }
             let relevant: Vec<Observation> = observations
                 .iter()
                 .filter(|o| {
