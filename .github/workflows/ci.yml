@@ -338,6 +338,11 @@ jobs:
         with:
           node-version: "22"
       - run: npm ci || true
+      - name: Verify gateway availability and canonical source roundtrip
+        run: |
+          node --experimental-strip-types --test scripts/test-vercel-gateway.mjs
+          node --test scripts/test-gateway-health-receipt.mjs
+          node --experimental-strip-types --test tests/canonical-import-roundtrip.test.mjs
       - run: npm test || true
 
   # ===========================================================================
@@ -501,3 +506,4 @@ jobs:
           done
 
           echo "✅ All required checks passed"
+
