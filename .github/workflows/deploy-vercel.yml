@@ -78,9 +78,9 @@ jobs:
       HAS_VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       HAS_VERCEL_ORG: ${{ vars.VERCEL_ORG_ID }}
       HAS_VERCEL_PROJECT: ${{ vars.VERCEL_PROJECT_ID }}
-      # dev and preview can point at a different API; falling back to the
-      # production base keeps this correct while no dev override is configured.
-      VITE_API_URL: ${{ needs.plan.outputs.env == 'prod' && vars.TRACERA_API_BASE || vars.TRACERA_API_BASE_DEV || vars.TRACERA_API_BASE }}
+      # Every Vercel deployment uses the same-origin catch-all API gateway.
+      # A loopback URL in a public preview resolves on the visitor's machine.
+      VITE_API_URL: /api
     steps:
       # Production fails closed: a missing credential must be loud, not a silent
       # success. This step name is part of the contract enforced by
@@ -106,20 +106,14 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Validate the API base for the target environment
+      - name: Validate the Vercel API base
         if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}
         run: |
           test -n "$VITE_API_URL" || {
             echo "The configured API URL repository variable is required for Vercel builds." >&2
             exit 1
           }
-          # Production must be a public HTTPS origin. dev and preview may address
-          # a loopback stack, so the insecure-base guard is relaxed for them.
-          if [ "$DEPLOY_ENV" = "prod" ]; then
-            PRODUCTION_DEPLOY=1 npm --prefix frontend run test:api-base
-          else
-            ALLOW_INSECURE_API_BASE=1 npm --prefix frontend run test:api-base
-          fi
+          node frontend/scripts/validate-vercel-api-base.mjs
 
       - name: Deploy to Vercel
         if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}

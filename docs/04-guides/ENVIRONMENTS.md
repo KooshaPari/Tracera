@@ -94,9 +94,11 @@ builds and pushes the `tracera-server` container image to GHCR via
 `build-push-image.yml`; pulling and restarting that image on the operator box is
 a manual step documented in `deploy/selfhost/README.md`.
 
-There is no hosted dev API: `dev` and `preview` frontends talk to the same
-self-hosted backend unless overridden locally (for example
-`frontend/apps/web/.env.local` with `VITE_API_URL=http://localhost:8080`).
+Vercel `dev` and `preview` builds use `VITE_API_URL=/api`, so browser requests
+stay on the deployment origin and reach the catch-all Function. That Function
+can forward to the self-hosted Rust backend when `TRACERA_BACKEND_URL` is
+configured and reachable. Local development can still override
+`frontend/apps/web/.env.local` with `VITE_API_URL=http://localhost:8080`.
 
 ## Vercel Functions (Render replacement)
 
@@ -133,10 +135,11 @@ because that field is for community runtimes that need a `name@version`).
 isolation, scoped to `api/**/*.ts` only so it never collides with the
 Vite app's TS project.
 
-When the Cloudflare Tunnel to the local Rust backend is restored, swap
-`VITE_API_URL=/api` in `.env.production` back to
-`https://tracera.pheno.studio/api` and the Functions fall out of the
-path; Render never comes back.
+When the Cloudflare Tunnel to the Rust backend is reachable, configure
+`TRACERA_BACKEND_URL` for the Vercel Function. Keep `VITE_API_URL=/api` for
+Vercel builds so the browser uses the same-origin gateway. A `200` from the
+gateway's stub health route alone does not prove canonical graph support;
+project-scoped graph routes require the Rust backend.
 
 A path-segment constraint that bit once and is worth recording: Vercel
 treats every dynamic `[param]` directly under the same directory as a
@@ -151,11 +154,12 @@ rather than under a differently-named dynamic segment.
 
 | Variable               | Used for                                                                                    | Current value                      |
 | ---------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------- |
-| `TRACERA_API_BASE`     | production API base, baked into the frontend build and used by the parity smokes            | `https://tracera.pheno.studio/api` |
-| `TRACERA_API_BASE_DEV` | overrides the API base for `dev` and `preview`; falls back to `TRACERA_API_BASE` when unset | `https://tracera.pheno.studio/api` |
+| `TRACERA_API_BASE`     | backend URL for Pages and parity smokes; Vercel browser builds use `/api` instead | `https://tracera.pheno.studio/api` |
+| `TRACERA_API_BASE_DEV` | backend URL for dev checks where referenced; Vercel browser builds use `/api` instead | `https://tracera.pheno.studio/api` |
 
-Set these in GitHub repository variables so deploy workflows and contract checks
-point at the self-hosted tunnel rather than a retired third-party host.
+Set these in GitHub repository variables for the workflows that check the
+self-hosted tunnel. The Vercel deploy workflow passes `/api` explicitly as
+both a build and runtime setting.
 
 ## What checks each environment
 
