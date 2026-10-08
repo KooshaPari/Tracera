@@ -522,7 +522,11 @@ const checkHealth = async (target: string): Promise<HealthCheckResult> => {
   // Prefer the readiness contract when the service exposes it.  `/health` only
   // proves the process is alive; `/ready` gates the UI on its dependencies.
   // Keep the health fallbacks for older adapters that have not published ready.
-  const paths = explicit ? [""] : ["/ready", "/health", "/api/v1/health"];
+  const paths = normalized.endsWith("/api")
+    ? ["/ready", "/health", "/v1/health"]
+    : explicit
+      ? [""]
+      : ["/ready", "/health", "/api/v1/health"];
   // All fallback probes share one budget. Without it a host that never answers
   // costs paths x DEFAULT_TIMEOUT_MS - three probes at 8s each is a 24s freeze
   // before the operator sees the failure panel, which reads as a hung app.
