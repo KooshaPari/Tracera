@@ -13,9 +13,8 @@ const linkTypes = [
 ] as const;
 
 const linkSchema = z.object({
-  description: z.string().max(1000).optional(),
-  sourceId: z.string().uuid("Select a source item"),
-  targetId: z.string().uuid("Select a target item"),
+  sourceId: z.string().min(1, "Select a source item"),
+  targetId: z.string().min(1, "Select a target item"),
   type: z.enum(linkTypes),
 });
 
@@ -82,6 +81,7 @@ export function CreateLinkForm({
                 Source Item <span className="text-red-500">*</span>
               </label>
               <select
+                aria-label="Source item"
                 {...register("sourceId")}
                 className="bg-background mt-1 w-full rounded-lg border px-3 py-2"
               >
@@ -106,6 +106,7 @@ export function CreateLinkForm({
                 Target Item <span className="text-red-500">*</span>
               </label>
               <select
+                aria-label="Target item"
                 {...register("targetId")}
                 className="bg-background mt-1 w-full rounded-lg border px-3 py-2"
               >
@@ -141,6 +142,7 @@ export function CreateLinkForm({
               Link Type <span className="text-red-500">*</span>
             </label>
             <select
+              aria-label="Connection type"
               {...register("type")}
               className="bg-background mt-1 w-full rounded-lg border px-3 py-2"
             >
@@ -152,15 +154,7 @@ export function CreateLinkForm({
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium">Description</label>
-            <textarea
-              {...register("description")}
-              rows={2}
-              placeholder="Why are these items linked?"
-              className="bg-background mt-1 w-full rounded-lg border px-3 py-2"
-            />
-          </div>
+          <p className="text-muted-foreground text-sm">Connections save their source, target, and type. Descriptions are unavailable.</p>
 
           <div className="flex gap-3 pt-4">
             <button

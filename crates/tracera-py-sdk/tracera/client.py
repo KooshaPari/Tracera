@@ -23,7 +23,7 @@ from urllib import error as urllib_error
 from urllib import parse, request
 
 try:  # pragma: no cover — only imported when the [async] extra is installed.
-    import httpx  # type: ignore[import-not-found]
+    import httpx
 except ImportError:  # pragma: no cover
     httpx = None  # type: ignore[assignment]
 
@@ -365,7 +365,7 @@ class AsyncTracera:
                 json=json_body,
                 params=params or None,
             )
-        except httpx.HTTPError as exc:  # type: ignore[misc]
+        except httpx.HTTPError as exc:
             raise TraceraError(f"connection error for {method} {path}: {exc}") from exc
 
         if resp.status_code >= 400:

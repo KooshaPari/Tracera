@@ -319,6 +319,7 @@ export function ItemsKanbanView() {
         await updateItem.mutateAsync({
           data: { status: newStatus },
           id: draggedItem.id,
+          projectId: draggedItem.projectId,
         });
         toast.success(`Moved to ${newStatus.replace("_", " ")}`);
         setDraggedItem(null);
