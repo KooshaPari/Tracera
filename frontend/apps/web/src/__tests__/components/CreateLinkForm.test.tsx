@@ -97,11 +97,10 @@ describe("CreateLinkForm Component", () => {
       expect(screen.getByText(/link type/i)).toBeInTheDocument();
     });
 
-    it("should render description textarea", () => {
+    it("should disclose that descriptions cannot be saved", () => {
       render(<CreateLinkForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} items={mockItems} />);
-
-      expect(screen.getByText(/description/i)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/why are these items linked/i)).toBeInTheDocument();
+      expect(screen.getByText(/Descriptions are unavailable/i)).toBeInTheDocument();
+      expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
     });
 
     it("should render Cancel button", () => {
@@ -211,7 +210,7 @@ describe("CreateLinkForm Component", () => {
       const targetOptions = targetSelect.querySelectorAll("option");
 
       // Should not include the source item
-      const hasSourceInTarget = [...targetOptions].some((opt) => opt.value === "1");
+      const hasSourceInTarget = [...targetOptions].some((opt) => opt.value === mockItems[0]!.id);
       expect(hasSourceInTarget).toBeFalsy();
     });
   });
@@ -320,14 +319,9 @@ describe("CreateLinkForm Component", () => {
   });
 
   describe("Description Field", () => {
-    it("should accept description input", async () => {
+    it("should not offer an unsupported description input", () => {
       render(<CreateLinkForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} items={mockItems} />);
-
-      const descriptionTextarea = screen.getByPlaceholderText(/why are these items linked/i);
-
-      await user.type(descriptionTextarea, "This is a test description");
-
-      expect(descriptionTextarea).toHaveValue("This is a test description");
+      expect(screen.queryByPlaceholderText(/why are these items linked/i)).not.toBeInTheDocument();
     });
 
     it("should be optional", async () => {
@@ -351,11 +345,11 @@ describe("CreateLinkForm Component", () => {
       });
     });
 
-    it("should have row attribute", () => {
+    it("should explain the fields that are persisted", () => {
       render(<CreateLinkForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} items={mockItems} />);
-
-      const descriptionTextarea = screen.getByPlaceholderText(/why are these items linked/i);
-      expect(descriptionTextarea).toHaveAttribute("rows", "2");
+      expect(
+        screen.getByText(/Connections save their source, target, and type/i),
+      ).toBeInTheDocument();
     });
   });
 
@@ -390,29 +384,11 @@ describe("CreateLinkForm Component", () => {
       });
     });
 
-    it("should validate description max length", async () => {
+    it("should block an incomplete connection without submitting", async () => {
       render(<CreateLinkForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} items={mockItems} />);
-
-      const sourceSelect = screen.getAllByRole("combobox")[0];
-      const targetSelect = screen.getAllByRole("combobox")[1];
-      const descriptionTextarea = screen.getByPlaceholderText(/why are these items linked/i);
-
-      fireEvent.change(sourceSelect, {
-        target: { value: "550e8400-e29b-41d4-a716-446655440001" },
-      });
-      fireEvent.change(targetSelect, {
-        target: { value: "550e8400-e29b-41d4-a716-446655440002" },
-      });
-
-      // Type more than 1000 characters
-      await user.type(descriptionTextarea, "A".repeat(1001));
-
       fireEvent.submit(screen.getByText("Create Link").closest("form")!);
-
-      // Form validation should fail
-      await waitFor(() => {
-        expect(mockOnSubmit).not.toHaveBeenCalled();
-      });
+      await waitFor(() => expect(screen.getByText(/select a source item/i)).toBeInTheDocument());
+      expect(mockOnSubmit).not.toHaveBeenCalled();
     });
   });
 
@@ -444,33 +420,20 @@ describe("CreateLinkForm Component", () => {
       });
     });
 
-    it("should submit form with description", async () => {
+    it("should submit only persisted connection fields", async () => {
       render(<CreateLinkForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} items={mockItems} />);
-
-      const sourceSelect = screen.getAllByRole("combobox")[0];
-      const targetSelect = screen.getAllByRole("combobox")[1];
-      const descriptionTextarea = screen.getByPlaceholderText(/why are these items linked/i);
-
-      fireEvent.change(sourceSelect, {
-        target: { value: "550e8400-e29b-41d4-a716-446655440001" },
+      fireEvent.change(screen.getAllByRole("combobox")[0], {
+        target: { value: mockItems[0]!.id },
       });
-      fireEvent.change(targetSelect, {
-        target: { value: "550e8400-e29b-41d4-a716-446655440003" },
+      fireEvent.change(screen.getAllByRole("combobox")[1], {
+        target: { value: mockItems[2]!.id },
       });
-      await user.type(descriptionTextarea, "Test relationship");
-
       fireEvent.submit(screen.getByText("Create Link").closest("form")!);
-
-      await waitFor(() => {
-        expect(mockOnSubmit).toHaveBeenCalledWith(
-          expect.objectContaining({
-            description: "Test relationship",
-            sourceId: "550e8400-e29b-41d4-a716-446655440001",
-            targetId: "550e8400-e29b-41d4-a716-446655440003",
-            type: "implements",
-          }),
-          expect.anything(), // SyntheticBaseEvent
-        );
+      await waitFor(() => expect(mockOnSubmit).toHaveBeenCalled());
+      expect(mockOnSubmit.mock.calls[0]![0]).toEqual({
+        sourceId: mockItems[0]!.id,
+        targetId: mockItems[2]!.id,
+        type: "implements",
       });
     });
 
