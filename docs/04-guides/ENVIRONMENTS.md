@@ -129,7 +129,6 @@ because Rust serves `/healthz` and `/ready` at the origin root.
 `vercel.json` sets `maxDuration: 10s`; the gateway timeout is eight seconds.
 The root `@vercel/node` dependency provides Function types.
 
-
 A path-segment constraint that bit once and is worth recording: Vercel
 treats every dynamic `[param]` directly under the same directory as a
 named parameter, and two different names collide. So `items/[id].ts` and
@@ -141,9 +140,9 @@ rather than under a differently-named dynamic segment.
 
 ## Repository variables
 
-| Variable               | Used for                                                                                    | Current value                      |
-| ---------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------- |
-| `TRACERA_API_BASE`     | backend URL for Pages and parity smokes; Vercel browser builds use `/api` instead | `https://tracera.pheno.studio/api` |
+| Variable               | Used for                                                                              | Current value                      |
+| ---------------------- | ------------------------------------------------------------------------------------- | ---------------------------------- |
+| `TRACERA_API_BASE`     | backend URL for Pages and parity smokes; Vercel browser builds use `/api` instead     | `https://tracera.pheno.studio/api` |
 | `TRACERA_API_BASE_DEV` | backend URL for dev checks where referenced; Vercel browser builds use `/api` instead | `https://tracera.pheno.studio/api` |
 
 Set these in GitHub repository variables for the workflows that check the
@@ -174,4 +173,3 @@ stops serving.
   `X-Tracera-Gateway-Mode: proxy`, and CORS allowing the deployed frontend.
   Cloudflare login pages, redirects, synthetic health and CORS headers on a
   failing response do not pass. The separate frontend check verifies SPA content.
-

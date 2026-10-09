@@ -5,15 +5,15 @@ read or mutation is explicitly scoped to a canonical project; an item ID alone
 never selects a project. These routes retain the existing canonical import,
 export, paging, and traversal contracts.
 
-| Route | Request | Result |
-| --- | --- | --- |
-| `POST /api/v1/items` | `project_id`, optional `id`, `title`, `view`, `type`, `status`, optional `description` | 201; canonical item and `project_id` |
-| `PATCH /api/v1/items/{id}?project_id=...` | Nonempty subset of `title`, `view`, `type`, `status`, `description` | 200; item detail; omitted fields retained |
-| `PUT /api/v1/items/{id}?project_id=...` | Same partial update contract as PATCH | 200; item detail |
-| `DELETE /api/v1/items/{id}?project_id=...` | No body | 204; incident links cascade only within this project |
-| `POST /api/v1/links` | `project_id`, `source_id`, `target_id`, `type` | 201; canonical link, `project_id`, opaque `id` |
-| `PUT /api/v1/links/{id}?project_id=...` | `source_id`, `target_id`, `type` | 200; atomically replaced link with its new opaque `id` |
-| `DELETE /api/v1/links/{id}?project_id=...` | No body | 204 |
+| Route                                      | Request                                                                                | Result                                                 |
+| ------------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `POST /api/v1/items`                       | `project_id`, optional `id`, `title`, `view`, `type`, `status`, optional `description` | 201; canonical item and `project_id`                   |
+| `PATCH /api/v1/items/{id}?project_id=...`  | Nonempty subset of `title`, `view`, `type`, `status`, `description`                    | 200; item detail; omitted fields retained              |
+| `PUT /api/v1/items/{id}?project_id=...`    | Same partial update contract as PATCH                                                  | 200; item detail                                       |
+| `DELETE /api/v1/items/{id}?project_id=...` | No body                                                                                | 204; incident links cascade only within this project   |
+| `POST /api/v1/links`                       | `project_id`, `source_id`, `target_id`, `type`                                         | 201; canonical link, `project_id`, opaque `id`         |
+| `PUT /api/v1/links/{id}?project_id=...`    | `source_id`, `target_id`, `type`                                                       | 200; atomically replaced link with its new opaque `id` |
+| `DELETE /api/v1/links/{id}?project_id=...` | No body                                                                                | 204                                                    |
 
 Link IDs returned by list/create/update encode the complete source/target/type
 tuple with URL-safe base64. Clients must use the returned ID rather than build

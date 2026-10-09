@@ -81,4 +81,3 @@ jobs:
             exit 1
           fi
           echo "PASS: prod frontend serves the SPA build."
-
