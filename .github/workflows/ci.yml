@@ -271,7 +271,7 @@ jobs:
         with:
           go-version: "stable"
       # golangci-lint v1.x binaries are built with go1.24 and refuse to lint
-      # modules that declare a newer Go (sidecar/go targets go 1.25.13).
+      # modules that declare a newer Go (sidecar/go pins its patched toolchain).
       # The v7 action supports golangci-lint v2; v2.4.0 is the first release
       # whose official binary is built with go1.25, so pin it explicitly and
       # run once per module.
