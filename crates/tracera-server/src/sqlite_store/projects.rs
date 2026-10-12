@@ -66,3 +66,49 @@ pub(super) fn get_project(
             .map(project_from_row))
     })
 }
+
+pub(super) fn create_project(
+    pool: &SqlitePool,
+    id: String,
+    name: String,
+    description: Option<String>,
+) -> BoxFuture<'_, StoreResult<ProjectSummary>> {
+    Box::pin(async move {
+        let now = chrono::Utc::now().to_rfc3339();
+        sqlx::query("INSERT INTO canonical_projects (id,name,description,created_at,updated_at) VALUES (?1,?2,?3,?4,?4)")
+            .bind(&id).bind(&name).bind(&description).bind(&now)
+            .execute(pool).await?;
+        let sql = format!("{PROJECTS} WHERE id=?1");
+        let row = sqlx::query(sqlx::AssertSqlSafe(&*sql)).bind(&id).fetch_one(pool).await?;
+        Ok(project_from_row(row))
+    })
+}
+
+pub(super) fn update_project(
+    pool: &SqlitePool,
+    id: String,
+    name: Option<String>,
+    description: Option<String>,
+) -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>> {
+    Box::pin(async move {
+        let now = chrono::Utc::now().to_rfc3339();
+        let res = sqlx::query("UPDATE canonical_projects SET name=COALESCE(?2,name),description=COALESCE(?3,description),updated_at=?4 WHERE id=?1")
+            .bind(&id).bind(&name).bind(&description).bind(&now)
+            .execute(pool).await?;
+        if res.rows_affected() == 0 {
+            return Ok(None);
+        }
+        let sql = format!("{PROJECTS} WHERE id=?1");
+        Ok(sqlx::query(sqlx::AssertSqlSafe(&*sql)).bind(&id).fetch_optional(pool).await?.map(project_from_row))
+    })
+}
+
+pub(super) fn delete_project(pool: &SqlitePool, id: String) -> BoxFuture<'_, StoreResult<bool>> {
+    Box::pin(async move {
+        let res = sqlx::query("DELETE FROM canonical_projects WHERE id=?1")
+            .bind(&id)
+            .execute(pool)
+            .await?;
+        Ok(res.rows_affected() > 0)
+    })
+}

@@ -225,6 +225,18 @@ impl Store for SqliteStore {
         projects::list_projects(&self.pool, params)
     }
 
+    fn create_project(&self, id: String, name: String, description: Option<String>) -> BoxFuture<'_, StoreResult<ProjectSummary>> {
+        projects::create_project(&self.pool, id, name, description)
+    }
+
+    fn update_project(&self, id: String, name: Option<String>, description: Option<String>) -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>> {
+        projects::update_project(&self.pool, id, name, description)
+    }
+
+    fn delete_project(&self, id: String) -> BoxFuture<'_, StoreResult<bool>> {
+        projects::delete_project(&self.pool, id)
+    }
+
     fn count_projects(&self) -> BoxFuture<'_, StoreResult<i64>> {
         projects::count_projects(&self.pool)
     }

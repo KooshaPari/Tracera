@@ -415,6 +415,26 @@ pub trait Store: Send + Sync {
     fn get_project(&self, project_id: String)
         -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>>;
 
+    fn create_project(
+        &self,
+        _id: String,
+        _name: String,
+        _description: Option<String>,
+    ) -> BoxFuture<'_, StoreResult<ProjectSummary>> {
+        Box::pin(async { Err(StoreError::Database("create_project unsupported by this backend".into())) })
+    }
+    fn update_project(
+        &self,
+        _id: String,
+        _name: Option<String>,
+        _description: Option<String>,
+    ) -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>> {
+        Box::pin(async { Err(StoreError::Database("update_project unsupported by this backend".into())) })
+    }
+    fn delete_project(&self, _id: String) -> BoxFuture<'_, StoreResult<bool>> {
+        Box::pin(async { Err(StoreError::Database("delete_project unsupported by this backend".into())) })
+    }
+
     // Metrics
     fn count_evidence(&self) -> BoxFuture<'_, StoreResult<i64>>;
 

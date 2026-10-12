@@ -157,14 +157,14 @@ pub(crate) fn build_router_with_auth(
         .route("/api/v1/trace", post(create_trace_link))
         .route(
             "/api/v1/projects",
-            get(list_projects).post(crate::handlers::projects::create_project_stub),
+            get(list_projects).post(crate::handlers::projects::create_project),
         )
         .route("/api/v1/dashboard/summary", get(dashboard_summary))
         .route(
             "/api/v1/projects/{project_id}",
             get(get_project)
-                .put(crate::handlers::projects::update_project_stub)
-                .delete(crate::handlers::projects::delete_project_stub),
+                .put(crate::handlers::projects::update_project)
+                .delete(crate::handlers::projects::delete_project),
         )
         .route("/problems", get(list_problems).post(create_problem))
         .route("/problems/health", get(crate::health::health))
