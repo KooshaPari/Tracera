@@ -166,3 +166,35 @@ jobs:
               --output "$body_path" --write-out '%{http_code}')
           fi
           node scripts/verify-deployed-app.mjs "$status" "$body_path"
+
+      - name: Verify deployed gateway reaches the Rust backend
+        if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' && env.DEPLOY_URL != '' }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -euo pipefail
+          node --test scripts/test-gateway-health-receipt.mjs
+          probe_dir=$(mktemp -d)
+          trap 'rm -rf "$probe_dir"' EXIT
+          failures=0
+          for check in '/api/v1/health ok' '/api/ready ready'; do
+            read -r path expected <<< "$check"
+            if status=$(npx vercel@59.19.0 --scope "$VERCEL_ORG_ID" \
+              curl "${DEPLOY_URL}${path}" -- \
+              --silent --show-error --location --max-time 30 \
+              --header "Origin: ${DEPLOY_URL}" \
+              --dump-header "$probe_dir/headers" --output "$probe_dir/body" \
+              --write-out '%{http_code}'); then
+              echo "$path -> HTTP $status"
+              node scripts/verify-gateway-health.mjs "$status" \
+                "$probe_dir/headers" "$probe_dir/body" "$expected" "$DEPLOY_URL" \
+                || failures=1
+            else
+              echo "::error::Could not read deployed gateway $path"
+              failures=1
+            fi
+          done
+          exit "$failures"
