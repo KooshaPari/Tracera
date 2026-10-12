@@ -158,8 +158,9 @@ jobs:
               -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
               --output "$body_path" --write-out '%{http_code}' "$DEPLOY_URL")
           else
-            status=$(npx vercel@59.19.0 curl "$DEPLOY_URL" \
-              --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" --non-interactive -- \
+            status=$(npx vercel@59.19.0 \
+              --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" --non-interactive \
+              curl "$DEPLOY_URL" -- \
               --silent --show-error --location --max-time 30 \
               --output "$body_path" --write-out '%{http_code}')
           fi
