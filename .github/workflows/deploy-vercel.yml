@@ -137,45 +137,30 @@ jobs:
           echo "DEPLOY_URL=$url" >> "$GITHUB_ENV"
           echo "Deployed: $url"
 
+      - name: Test deployment verification contract
+        if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}
+        run: node --test scripts/test-deployed-app.mjs
+
       - name: Verify the deployment serves the app
         if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' && env.DEPLOY_URL != '' }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
-          # Optional. Create Protection Bypass for Automation in the Vercel
-          # project and store it as this repository secret. Without it, preview
-          # deployments sit behind Vercel Authentication and CI cannot read them
-          # to verify what was actually published.
+          # Reuse an existing automation secret when configured; otherwise use
+          # the deployment owner's Vercel CLI authorization. Protection stays on.
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
-          set -uo pipefail
-          # A 200 proves nothing here. The repo-root public/index.html placeholder
-          # ("Frontend scaffolding coming soon.") is served whenever a deployment
-          # has no build output, so the site answers 200 while showing the stub
-          # instead of the app. Read the body and assert it is the SPA. `vercel
-          # curl` is used because dev and preview deployments sit behind Vercel
-          # Authentication, where a plain fetch returns the SSO login page.
+          set -euo pipefail
+          body_path=$(mktemp)
+          trap 'rm -f "$body_path"' EXIT
           if [ -n "${VERCEL_AUTOMATION_BYPASS_SECRET:-}" ]; then
-            body=$(curl -sSL --max-time 30 \
+            status=$(curl --silent --show-error --location --max-time 30 \
               -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
-              "$DEPLOY_URL" 2>/dev/null || true)
+              --output "$body_path" --write-out '%{http_code}' "$DEPLOY_URL")
           else
-            body=$(curl -sSL --max-time 30 "$DEPLOY_URL" 2>/dev/null || true)
+            status=$(npx vercel@59.19.0 curl "$DEPLOY_URL" \
+              --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" --non-interactive -- \
+              --silent --show-error --location --max-time 30 \
+              --output "$body_path" --write-out '%{http_code}')
           fi
-          if [ -z "$body" ]; then
-            echo "::warning::Could not fetch $DEPLOY_URL to verify its contents."
-            exit 0
-          fi
-          if printf %s "$body" | grep -qi "scaffolding coming soon"; then
-            echo "::error::$DEPLOY_URL is serving the public/index.html placeholder, not the built app."
-            exit 1
-          fi
-          if printf %s "$body" | grep -qi "vercel.com/login\|sso-api"; then
-            echo "::notice::$DEPLOY_URL is behind Vercel Authentication, so its contents could not be verified without a bypass token."
-            exit 0
-          fi
-          if ! printf %s "$body" | grep -q "id=\"root\""; then
-            echo "::error::$DEPLOY_URL does not look like the SPA build (no #root element in the body)."
-            exit 1
-          fi
-          echo "PASS: $DEPLOY_URL serves the app build."
+          node scripts/verify-deployed-app.mjs "$status" "$body_path"
