@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Outlet, createFileRoute, useLocation } from "@tanstack/react-router";
 import { Suspense, lazy } from "react";
 
 import { ChunkLoadingSkeleton } from "@/lib/lazy-loading";
@@ -23,6 +23,10 @@ const ProjectsListView = lazy(async () =>
 );
 
 function ProjectsComponent() {
+  const location = useLocation();
+  if (location.pathname.replace(/\/$/, "") !== "/projects") {
+    return <Outlet />;
+  }
   return (
     <Suspense fallback={<ChunkLoadingSkeleton message="Loading projects..." />}>
       <ProjectsListView />

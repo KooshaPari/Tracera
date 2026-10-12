@@ -5,10 +5,6 @@ import React from "react";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@tracertm/ui";
 import { Badge } from "@tracertm/ui/components/Badge";
 
-const MINUTE_IN_MS = Number("60000");
-const HOUR_IN_MS = Number("60") * MINUTE_IN_MS;
-const TASKS_DEFAULT = Number("0");
-
 type AgentStatus = "active" | "idle" | "running" | "offline";
 
 interface AgentSummary {
@@ -19,33 +15,6 @@ interface AgentSummary {
   status: AgentStatus;
   tasksCompleted?: number;
 }
-
-const fallbackAgents: AgentSummary[] = [
-  {
-    capabilities: ["sync", "dependency-check"],
-    id: "agent-1",
-    lastRun: new Date(Date.now() - HOUR_IN_MS).toISOString(),
-    name: "Sync Agent",
-    status: "active",
-    tasksCompleted: 24,
-  },
-  {
-    capabilities: ["validation", "quality-checks"],
-    id: "agent-2",
-    lastRun: new Date(Date.now() - 2 * HOUR_IN_MS).toISOString(),
-    name: "Validation Agent",
-    status: "idle",
-    tasksCompleted: 12,
-  },
-  {
-    capabilities: ["coverage-report", "test-execution"],
-    id: "agent-3",
-    lastRun: new Date(Date.now() - 15 * MINUTE_IN_MS).toISOString(),
-    name: "Coverage Agent",
-    status: "running",
-    tasksCompleted: 7,
-  },
-];
 
 const statusVariant = (status: AgentStatus): "default" | "outline" | "secondary" => {
   switch (status) {
@@ -82,10 +51,10 @@ const AgentCard = ({ agent }: { agent: AgentSummary }): ReactElement => (
         <CardTitle className="text-base">{agent.name}</CardTitle>
         <Badge variant={statusVariant(agent.status)}>{agent.status}</Badge>
       </div>
-      <p className="text-muted-foreground text-xs">
-        {agent.tasksCompleted ?? TASKS_DEFAULT} tasks completed
-      </p>
-      <p className="text-muted-foreground text-xs">{formatLastRun(agent.lastRun)}</p>
+      {agent.tasksCompleted === undefined ? null : (
+        <p className="text-muted-foreground text-xs">{agent.tasksCompleted} tasks completed</p>
+      )}
+      {agent.lastRun ? <p className="text-muted-foreground text-xs">{formatLastRun(agent.lastRun)}</p> : null}
     </CardHeader>
     <CardContent className="space-y-3">
       {agent.capabilities?.length ? (
@@ -106,14 +75,39 @@ const AgentCard = ({ agent }: { agent: AgentSummary }): ReactElement => (
 );
 
 export const AgentsView = (): ReactElement => {
-  const agents = fallbackAgents;
+  const [agents, setAgents] = React.useState<AgentSummary[]>([]);
+  const [note, setNote] = React.useState<string>("Loading live agents...");
+  React.useEffect(() => {
+    let alive = true;
+    const load = async (): Promise<void> => {
+      try {
+        const res = await fetch("/api/v1/agents", { credentials: "same-origin" });
+        const data = (await res.json()) as { agents?: AgentSummary[]; as_of?: string; source?: string };
+        if (!alive) {
+          return;
+        }
+        setAgents(Array.isArray(data.agents) ? data.agents : []);
+        setNote(res.ok ? `Live from ${data.source ?? "local daemon"} at ${data.as_of ?? ""}` : "Local agent daemon unavailable");
+      } catch {
+        if (alive) {
+          setNote("Local agent daemon unavailable");
+        }
+      }
+    };
+    void load();
+    const timer = globalThis.setInterval(() => void load(), Number("15000"));
+    return () => {
+      alive = false;
+      globalThis.clearInterval(timer);
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Agents</h1>
         <p className="text-muted-foreground text-sm">
-          Manage automation agents, status, and workflows.
+          Live agents from your local herdr sessions. {note}
         </p>
       </div>
 

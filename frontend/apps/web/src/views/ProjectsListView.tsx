@@ -1,5 +1,5 @@
 import { useSearch } from "@tanstack/react-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type {
   ProjectsListSortBy,
@@ -56,7 +56,10 @@ const getProjectCreatedAtTime = (createdAt: string | undefined): number => {
 };
 
 const buildEntries = (projects: Project[]): ProjectsListEntry[] =>
-  projects.map((project) => ({ itemCount: DEFAULT_ITEM_COUNT, project }));
+  projects.map((project) => ({
+    itemCount: (project as unknown as { __itemCount?: number }).__itemCount ?? DEFAULT_ITEM_COUNT,
+    project,
+  }));
 
 const compareEntries = (
   first: ProjectsListEntry,
@@ -97,12 +100,38 @@ interface ProjectsListData {
 
 function useProjectsListData(): ProjectsListData {
   const { data: projects, isLoading: projectsLoading } = useProjects();
-  const projectsArray = useMemo<Project[]>((): Project[] => {
+  const baseProjects = useMemo<Project[]>((): Project[] => {
     if (Array.isArray(projects)) {
       return projects;
     }
     return [];
   }, [projects]);
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  useEffect(() => {
+    let cancelled = false;
+    void Promise.all(
+      baseProjects.map(async (p) => {
+        try {
+          const r = await fetch(`/api/v1/items?project_id=${encodeURIComponent(p.id)}`, {
+            credentials: "same-origin",
+          });
+          const j = (await r.json()) as { total?: number };
+          return [p.id, j.total ?? 0] as const;
+        } catch {
+          return [p.id, 0] as const;
+        }
+      }),
+    ).then((pairs) => {
+      if (!cancelled) setCounts(Object.fromEntries(pairs));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [baseProjects]);
+  const projectsArray = useMemo<Project[]>(
+    () => baseProjects.map((p) => Object.assign({}, p, { __itemCount: counts[p.id] ?? 0 })),
+    [baseProjects, counts],
+  );
 
   return { projectsArray, projectsLoading };
 }

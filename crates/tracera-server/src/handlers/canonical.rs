@@ -122,7 +122,7 @@ fn page(query: &PageQuery) -> Result<(String, i64, i64), ApiError> {
         .as_ref()
         .filter(|s| !s.trim().is_empty())
         .ok_or_else(|| error(StatusCode::BAD_REQUEST, "project_id required"))?;
-    let limit = query.limit.unwrap_or(50);
+    let limit = query.limit.unwrap_or(500);
     let skip = query.skip.unwrap_or(0);
     if !(1..=500).contains(&limit) || skip < 0 {
         return Err(error(StatusCode::BAD_REQUEST, "invalid pagination"));
@@ -147,12 +147,29 @@ pub(crate) async fn list_items(
     Query(query): Query<PageQuery>,
 ) -> Result<Json<Value>, ApiError> {
     let (id, limit, skip) = page(&query)?;
-    require_project(&state, &id).await?;
+    let project = state
+        .store
+        .canonical_project(id.clone())
+        .await
+        .map_err(db_error)?
+        .ok_or_else(|| error(StatusCode::NOT_FOUND, "project not found"))?;
     let (items, total) = state
         .store
-        .canonical_items(id, limit, skip)
+        .canonical_items(id.clone(), limit, skip)
         .await
         .map_err(db_error)?;
+    // Legacy list views require project_id and timestamps on every item.
+    // Canonical items carry neither, so use the project baseline (same as get_item).
+    let items: Vec<Value> = items
+        .into_iter()
+        .map(|item| {
+            let mut v = serde_json::to_value(&item).unwrap_or_else(|_| json!({}));
+            v["project_id"] = json!(id);
+            v["created_at"] = json!(project.created_at);
+            v["updated_at"] = json!(project.created_at);
+            v
+        })
+        .collect();
     Ok(Json(json!({"items": items, "total": total})))
 }
 
