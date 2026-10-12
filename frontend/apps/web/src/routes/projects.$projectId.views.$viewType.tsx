@@ -14,6 +14,7 @@ import { DEPENDENCY_VIEW as DependencyView } from "@/routes/projects.$projectId.
 import { DOMAIN_VIEW as DomainView } from "@/routes/projects.$projectId.views.domain";
 import { FEATURE_VIEW as FeatureView } from "@/routes/projects.$projectId.views.feature";
 import { INFRASTRUCTURE_VIEW as InfrastructureView } from "@/routes/projects.$projectId.views.infrastructure";
+import { KanbanRoute, GanttRoute } from "@/views/artifacts/artifactRoutes";
 import { JOURNEY_VIEW as JourneyView } from "@/routes/projects.$projectId.views.journey";
 import { MONITORING_VIEW as MonitoringView } from "@/routes/projects.$projectId.views.monitoring";
 import { PERFORMANCE_VIEW as PerformanceView } from "@/routes/projects.$projectId.views.performance";
@@ -183,6 +184,8 @@ const staticViewMap: Readonly<Record<string, StaticViewComponent>> = {
   feature: FeatureView,
   infrastructure: InfrastructureView,
   journey: JourneyView,
+  kanban: KanbanRoute,
+  gantt: GanttRoute,
   monitoring: MonitoringView,
   performance: PerformanceView,
   problem: ProblemView,
