@@ -130,7 +130,7 @@ export const SidebarView = ({
               </div>
               {isCollapsed ? undefined : (
                 <span className="animate-in fade-in slide-in-from-left-2 text-center text-lg font-black tracking-tighter uppercase">
-                  Trace<span className="text-primary">RTM</span>
+                  Trace<span className="text-primary">ra</span>
                 </span>
               )}
             </div>

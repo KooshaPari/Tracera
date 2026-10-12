@@ -63,7 +63,7 @@ export const buildSidebarGroups = ({
     {
       collapsible: false,
       items: [
-        { badge: undefined, href: "/", icon: Icons.Home, title: "Dashboard" },
+        { badge: undefined, href: "/home", icon: Icons.Home, title: "Dashboard" },
         {
           badge: projectsBadge,
           href: "/projects",
