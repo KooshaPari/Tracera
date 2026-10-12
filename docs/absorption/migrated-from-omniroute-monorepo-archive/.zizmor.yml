@@ -1,6 +1,0 @@
-rules:
-  unpinned-images:
-    config: { registries: ['ghcr.io', 'docker.io'] }
-  github-env: { ignore: ['GITHUB_TOKEN'] }
-  excessive-permissions: { ignore: ['contents: write'] }
-  hardcoded-credentials: ignore
