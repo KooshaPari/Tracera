@@ -1,0 +1,33 @@
+# Tracera desk data plane. Podman only (podman compose / podman-compose in the Fedora WSL distro).
+# Names and volumes match the containers already running on the desk, so `up -d` adopts them.
+# Credentials live in ~/stack/*.env on the desk (never in git).
+name: tracera
+services:
+  postgres17:
+    image: docker.io/library/postgres:17-alpine
+    container_name: tracera_postgres17_1
+    restart: unless-stopped
+    env_file: ${HOME}/stack/tracera_postgres17_1.env
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: ["tracera_postgres17_data:/var/lib/postgresql/data"]
+  redis7:
+    image: docker.io/library/redis:7-alpine
+    container_name: tracera_redis7_1
+    restart: unless-stopped
+    env_file: ${HOME}/stack/tracera_redis7_1.env
+    ports: ["127.0.0.1:6379:6379"]
+    volumes: ["tracera_redis7_data:/data"]
+  # Neo4j is sequenced AFTER the Postgres+Redis cutover: `podman compose --profile graph up -d neo4j5`.
+  neo4j5:
+    profiles: ["graph"]
+    image: docker.io/library/neo4j:5-community
+    container_name: tracera_neo4j5_1
+    restart: unless-stopped
+    env_file: ${HOME}/stack/tracera_neo4j5_1.env
+    ports: ["127.0.0.1:7474:7474", "127.0.0.1:7687:7687"]
+    volumes: ["tracera_neo4j5_data:/data", "tracera_neo4j5_logs:/logs"]
+volumes:
+  tracera_postgres17_data: {external: true}
+  tracera_redis7_data: {external: true}
+  tracera_neo4j5_data: {external: true}
+  tracera_neo4j5_logs: {external: true}
