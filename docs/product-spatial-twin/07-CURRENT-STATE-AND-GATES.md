@@ -17,6 +17,12 @@
 | PhenoRegistry harmony | **PARTIAL** | Older dated CVP/intent persists; registry amendment must be reconciled with generator |
 | Independent acceptance | **BLOCKED** | No separate evidence/reviewer |
 
+## Engineering pilot addendum — 2026-10-13
+
+Tracera [PR #1122](https://github.com/KooshaPari/Tracera/pull/1122) now has proposed code for Rust semantic spatial IR, baseline-pinned scoped read adapters in SQLite/Postgres, a read-only spatial endpoint, correctness checks around product filtering/freshness/assessment, and an experimental browser CSS-depth viewer with parser tests. Source commits are **not** independent build or production acceptance. The repository-local AgilePlus work contract is in that branch under docs/agileplus/tracera-spatial-twin/ and has not been CLI registered.
+
+Still unverified: actual persistent end-to-end model load and restart, cross-store parity, GPU 3D rendering, real CAD geometry/units/license, temporal comparisons, cross-view integration, accessibility user trials, dense-graph benchmarks, Vercel deploy and independent acceptance. The gates below remain open.
+
 ## Ordered gates
 
 **G0 source coverage:** recover original intent/transcripts and hashes, full scoped implementation map and SOTA with pinned evidence; record contradictions.
