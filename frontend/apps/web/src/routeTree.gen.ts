@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as GraphRouteImport } from './routes/graph'
+import { Route as SpatialRouteImport } from './routes/spatial'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ItemsRouteImport } from './routes/items'
@@ -95,6 +96,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const GraphRoute = GraphRouteImport.update({
   id: '/graph',
   path: '/graph',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SpatialRoute = SpatialRouteImport.update({
+  id: '/spatial',
+  path: '/spatial',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeRoute = HomeRouteImport.update({
@@ -428,6 +434,7 @@ export interface FileRoutesByFullPath {
   '/agents': typeof AgentsRoute
   '/dashboard': typeof DashboardRoute
   '/graph': typeof GraphRoute
+  '/spatial': typeof SpatialRoute
   '/home': typeof HomeRoute
   '/index': typeof IndexRoute
   '/items': typeof ItemsRouteWithChildren
@@ -492,6 +499,7 @@ export interface FileRoutesByTo {
   '/agents': typeof AgentsRoute
   '/dashboard': typeof DashboardRoute
   '/graph': typeof GraphRoute
+  '/spatial': typeof SpatialRoute
   '/home': typeof HomeRoute
   '/index': typeof IndexRoute
   '/items': typeof ItemsRouteWithChildren
@@ -557,6 +565,7 @@ export interface FileRoutesById {
   '/agents': typeof AgentsRoute
   '/dashboard': typeof DashboardRoute
   '/graph': typeof GraphRoute
+  '/spatial': typeof SpatialRoute
   '/home': typeof HomeRoute
   '/index': typeof IndexRoute
   '/items': typeof ItemsRouteWithChildren
@@ -623,6 +632,7 @@ export interface FileRouteTypes {
     | '/agents'
     | '/dashboard'
     | '/graph'
+    | '/spatial'
     | '/home'
     | '/index'
     | '/items'
@@ -687,6 +697,7 @@ export interface FileRouteTypes {
     | '/agents'
     | '/dashboard'
     | '/graph'
+    | '/spatial'
     | '/home'
     | '/index'
     | '/items'
@@ -751,6 +762,7 @@ export interface FileRouteTypes {
     | '/agents'
     | '/dashboard'
     | '/graph'
+    | '/spatial'
     | '/home'
     | '/index'
     | '/items'
@@ -816,6 +828,7 @@ export interface RootRouteChildren {
   AgentsRoute: typeof AgentsRoute
   DashboardRoute: typeof DashboardRoute
   GraphRoute: typeof GraphRoute
+  SpatialRoute: typeof SpatialRoute
   HomeRoute: typeof HomeRoute
   IndexRoute: typeof IndexRoute
   ItemsRoute: typeof ItemsRouteWithChildren
@@ -864,6 +877,13 @@ declare module '@tanstack/react-router' {
       path: '/graph'
       fullPath: '/graph'
       preLoaderRoute: typeof GraphRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/spatial': {
+      id: '/spatial'
+      path: '/spatial'
+      fullPath: '/spatial'
+      preLoaderRoute: typeof SpatialRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home': {
@@ -1464,6 +1484,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgentsRoute: AgentsRoute,
   DashboardRoute: DashboardRoute,
   GraphRoute: GraphRoute,
+  SpatialRoute: SpatialRoute,
   HomeRoute: HomeRoute,
   IndexRoute: IndexRoute,
   ItemsRoute: ItemsRouteWithChildren,
