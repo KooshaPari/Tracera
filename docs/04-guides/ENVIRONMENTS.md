@@ -158,8 +158,13 @@ rather than under a differently-named dynamic segment.
 
 | Variable               | Used for                                                                                    | Current value                      |
 | ---------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------- |
-| `TRACERA_API_BASE`     | production API base, baked into the frontend build and used by the parity smokes            | `https://tracera.pheno.studio/api` |
-| `TRACERA_API_BASE_DEV` | overrides the API base for `dev` and `preview`; falls back to `TRACERA_API_BASE` when unset | `https://tracera.pheno.studio/api` |
+| `TRACERA_API_BASE`     | legacy GitHub Pages / contract-check browser base; not the machine backend and not used by Vercel production | repository setting; reconcile separately |
+| `TRACERA_API_BASE_DEV` | optional dev/preview browser API override; falls back to `TRACERA_API_BASE` when unset | repository setting |
+
+Vercel production is intentionally built with `VITE_API_URL=/api`, using same-origin
+Vercel Functions. The direct machine/backend route is
+`https://t.tracera.pheno.studio` and requires its own Cloudflare Access machine
+credential; never inject that credential into a `VITE_*` variable.
 
 Set these in GitHub repository variables so deploy workflows and contract checks
 point at the self-hosted tunnel rather than a retired third-party host.
