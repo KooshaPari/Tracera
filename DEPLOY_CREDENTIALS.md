@@ -60,7 +60,7 @@ creation is necessary, set `TOKEN_OUTPUT_FILE` to a protected path; the script
 writes the one-time client ID/secret there with mode 0600 and never prints them.
 Store those values as `CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET`, securely
 delete the temporary file, then dispatch **Setup Cloudflare Access** to attach or
-verify the Service Auth policy. The workflow reuses an existing token and fails
+verify the Service Auth policy on `t.tracera.pheno.studio`. The workflow reuses an existing token and fails
 closed when it is absent.
 
 ```bash
@@ -128,7 +128,7 @@ After replacing the tokens above:
 ```bash
 # 1. After securely provisioning/storing tracera-ci-smoke credentials, attach/verify policy
 gh workflow run "Setup Cloudflare Access" --repo <REDACTED>/Tracera --ref main \
-  -f access_hostname=tracera.pheno.studio
+  -f access_hostname=t.tracera.pheno.studio
 
 # 2. Trigger deploys (no force needed - on main they run automatically)
 gh workflow run "Deploy Cloudflare Worker (tracera-edge)" --repo <REDACTED>/Tracera --ref main
