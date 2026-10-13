@@ -15,7 +15,7 @@ set -euo pipefail
 echo "[tunnel] Tracera ingress status"
 
 if command -v tailscale >/dev/null 2>&1; then
-  TS_STATUS="$(tailscale status --json 2>/dev/null | grep -o '"BackendState":"[^"]*"' | head -n1 | cut -d'"' -f4 || echo unknown)"
+  TS_STATUS="$(tailscale status --json 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("BackendState","unknown"))' 2>/dev/null || echo unknown)"
   TS_IP="$(tailscale ip -4 2>/dev/null | head -n1 || true)"
   if [[ "$TS_STATUS" == "Running" && -n "$TS_IP" ]]; then
     echo "[tunnel] Tailnet ACTIVE:"
