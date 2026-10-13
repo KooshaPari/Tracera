@@ -15,7 +15,7 @@
 #   CLOUDFLARE_ACCOUNT_ID — Cloudflare account id
 #
 # Optional:
-#   ACCESS_HOSTNAME       — default tracera.pheno.studio
+#   ACCESS_HOSTNAME       — default t.tracera.pheno.studio
 #   SERVICE_TOKEN_NAME    — default tracera-ci-smoke
 #   TOKEN_OUTPUT_FILE     — secure file for one-time new-token credentials
 #   OPERATOR_EMAIL        — add an Allow policy for this email
@@ -33,7 +33,7 @@
 set -euo pipefail
 
 CF_API="${CF_API_BASE:-https://api.cloudflare.com/client/v4}"
-HOSTNAME="${ACCESS_HOSTNAME:-tracera.pheno.studio}"
+HOSTNAME="${ACCESS_HOSTNAME:-t.tracera.pheno.studio}"
 TOKEN_NAME="${SERVICE_TOKEN_NAME:-tracera-ci-smoke}"
 TOKEN_OUTPUT_FILE="${TOKEN_OUTPUT_FILE:-}"
 PUBLIC_BYPASS="${PUBLIC_BYPASS:-0}"
@@ -57,6 +57,11 @@ cf_post() {
   local path="$1"
   local body="$2"
   curl -fsS -X POST -H "$(auth_header)" -H 'Content-Type: application/json' --data "$body" "${CF_API}${path}"
+}
+
+cf_delete() {
+  local path="$1"
+  curl -fsS -X DELETE -H "$(auth_header)" -H 'Content-Type: application/json' "${CF_API}${path}"
 }
 
 echo "[access] verifying API token"
@@ -126,18 +131,48 @@ if [[ -z "$token_id" ]]; then
     exit 2
   fi
 
+  # Cloudflare returns the client secret only once. Prove the destination is
+  # usable BEFORE creating the token so a local path error cannot orphan an
+  # unrecoverable credential.
+  if [[ -e "$TOKEN_OUTPUT_FILE" ]]; then
+    echo "error: TOKEN_OUTPUT_FILE already exists; refusing to overwrite: $TOKEN_OUTPUT_FILE" >&2
+    exit 2
+  fi
+  output_parent=$(dirname -- "$TOKEN_OUTPUT_FILE")
+  if [[ ! -d "$output_parent" || ! -w "$output_parent" ]]; then
+    echo "error: TOKEN_OUTPUT_FILE parent is not an existing writable directory: $output_parent" >&2
+    exit 2
+  fi
   umask 077
-  created=$(cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/service_tokens"     "$(python3 -c 'import json,sys; print(json.dumps({"name":sys.argv[1]}))' "$TOKEN_NAME")")
+  if ! ( : >"$TOKEN_OUTPUT_FILE" && chmod 600 "$TOKEN_OUTPUT_FILE" ); then
+    echo "error: cannot securely create TOKEN_OUTPUT_FILE" >&2
+    rm -f -- "$TOKEN_OUTPUT_FILE"
+    exit 2
+  fi
+
+  if ! created=$(cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/service_tokens"     "$(python3 -c 'import json,sys; print(json.dumps({"name":sys.argv[1]}))' "$TOKEN_NAME")"); then
+    rm -f -- "$TOKEN_OUTPUT_FILE"
+    echo "error: service-token creation failed" >&2
+    exit 1
+  fi
   token_id=$(printf '%s' "$created" | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["id"])')
-  printf '%s' "$created" | python3 -c '
+
+  if ! printf '%s' "$created" | python3 -c '
 import json, os, sys
 dst = sys.argv[1]
 r = json.load(sys.stdin)["result"]
 with open(dst, "w", encoding="utf-8") as f:
     f.write("CF_ACCESS_CLIENT_ID=" + r["client_id"] + "\n")
     f.write("CF_ACCESS_CLIENT_SECRET=" + r["client_secret"] + "\n")
+    f.flush()
+    os.fsync(f.fileno())
 os.chmod(dst, 0o600)
-' "$TOKEN_OUTPUT_FILE"
+' "$TOKEN_OUTPUT_FILE"; then
+    echo "error: failed to persist one-time service-token credentials; rolling token back" >&2
+    rm -f -- "$TOKEN_OUTPUT_FILE"
+    cf_delete "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/service_tokens/${token_id}" >/dev/null ||       echo "error: token rollback failed; disable/delete token id=${token_id} immediately" >&2
+    exit 1
+  fi
   echo "[access] created service token id=${token_id}"
   echo "[access] one-time credentials written to TOKEN_OUTPUT_FILE (value not logged)"
 else
