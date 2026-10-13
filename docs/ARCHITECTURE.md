@@ -117,12 +117,16 @@ authoritative route inventory and mount status live in
 `docs/governance/policy/endpoint_traceability_map.md`; `docs/API_REFERENCE.md`
 is the audit-facing target contract, not a claim that every route is mounted.
 
-Deployment surfaces (canonical URIs):
-- API `https://tracera.pheno.studio/api/*`
-- MCP `https://mcp.tracera.pheno.studio`
+Deployment surfaces (observed/reconciled 2026-10-13):
+- Web/Auth `https://tracera.pheno.studio` (Cloudflare Access; shared tunnel)
+- Direct backend `https://t.tracera.pheno.studio` (Cloudflare Access; shared tunnel)
 - Edge `https://tracera-edge.pheno.studio`
-- Web app `https://app.tracera.pheno.studio`
+- Vercel frontend `https://tracera-kappa.vercel.app`
 - Landing `https://phenotype.space` (separate repo)
+
+`api.tracera.pheno.studio` and `mcp.tracera.pheno.studio` are historical/design
+names without live DNS in the 2026-10-13 reconciliation. Shared tunnel lifecycle
+belongs to shared infrastructure IaC, not this repository.
 
 ## 4. Key Dependencies
 
@@ -156,8 +160,9 @@ task stack          # docker compose -f docker-compose.dev.yml up -d
 task stack-seed     # seed fixtures
 task run-server     # cargo run -p tracera-server   (:8080)
 task mcp-server     # cargo run -p tracera-mcp --bin mcp-server
-task tunnel         # hybrid Tailnet-first, Cloudflare fallback
-task prod           # stack + run-server + tunnel
+task tunnel-status  # read-only Tailnet + shared Cloudflare ingress status
+task tunnel         # retired: shared tunnel lifecycle is managed externally
+task prod           # local stack + server; does not mutate shared ingress
 
 # Frontend
 cd frontend && bun install
