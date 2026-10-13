@@ -197,6 +197,12 @@ pub fn query_intents<'a>(
     intents: &'a [AcceptedIntent],
     query: &ProductQuery,
 ) -> Vec<&'a AcceptedIntent> {
+    // AcceptedIntent has no product_id. A scope-bearing query MUST fail closed
+    // rather than leak other products. Use query_scoped_intents with explicitly
+    // associated source product IDs for any product-scoped response.
+    if query.product_id.is_some() {
+        return Vec::new();
+    }
     let limit = query.limit.min(MAX_QUERY_LIMIT);
     let wanted_kind = query.intent_kind.as_deref().and_then(parse_intent_kind);
     let wanted_status = query.status.as_deref().and_then(parse_intent_status);
@@ -224,6 +230,51 @@ pub fn query_intents<'a>(
         })
         .skip(query.offset)
         .take(limit)
+        .collect()
+}
+
+/// An intent joined to its canonical product identity by the data adapter.
+///
+/// AcceptedIntent alone carries no product_id; this wrapper prevents falsely
+/// honoring scoped queries against an unscoped slice. Never assume an intent's
+/// id doubles as its parent product ID.
+#[derive(Clone, Copy, Debug)]
+pub struct ScopedIntent<'a> {
+    pub product_id: &'a str,
+    pub intent: &'a AcceptedIntent,
+}
+
+/// Filter a product-scoped and baseline-aware query without cross-product bleed.
+///
+/// Only a caller that has already checked read permissions may provide input.
+/// An unknown discriminator matches no records rather than silently widening.
+pub fn query_scoped_intents<'a>(
+    records: &'a [ScopedIntent<'a>],
+    query: &ProductQuery,
+) -> Vec<&'a AcceptedIntent> {
+    let limit = query.limit.min(MAX_QUERY_LIMIT);
+    let wanted_kind = match query.intent_kind.as_deref() {
+        Some(value) => match parse_intent_kind(value) {
+            Some(kind) => Some(kind),
+            None => return Vec::new(),
+        },
+        None => None,
+    };
+    let wanted_status = match query.status.as_deref() {
+        Some(value) => match parse_intent_status(value) {
+            Some(status) => Some(status),
+            None => return Vec::new(),
+        },
+        None => None,
+    };
+    records.iter()
+        .filter(|row| query.product_id.as_deref().is_none_or(|id| row.product_id == id))
+        .filter(|row| wanted_kind.as_ref().is_none_or(|kind| row.intent.kind == *kind))
+        .filter(|row| wanted_status.as_ref().is_none_or(|state| row.intent.status == *state))
+        .filter(|row| query.baseline.is_none_or(|rev| row.intent.baseline.0 >= rev))
+        .skip(query.offset)
+        .take(limit)
+        .map(|row| row.intent)
         .collect()
 }
 
@@ -326,53 +377,63 @@ pub fn compute_product_stats(
     }
 }
 
-/// Build an [`InvalidationIndex`] from intents and observations.
-///
-/// A capability is flagged as stale when its latest observation predates the
-/// most recent baseline change.
+/// Conservative compatibility function for consumers without an accepted
+/// baseline timestamp. Since revision numbers are NOT Unix timestamps, any
+/// capability must be treated as stale/unknown until baseline acceptance
+/// time is supplied by the authoritative baseline record.
 pub fn build_invalidation_index(
     intents: &[AcceptedIntent],
     observations: &[Observation],
 ) -> InvalidationIndex {
-    let last_baseline_change = intents
-        .iter()
-        .map(|i| i.baseline.0)
-        .max()
-        .map(|rev| {
-            // Synthesize a timestamp from the revision number; in production
-            // this would come from the baseline record itself.
-            DateTime::from_timestamp(rev as i64, 0).unwrap_or_default()
-        })
-        .unwrap_or_else(Utc::now);
-
     let last_observation = observations
         .iter()
         .map(|o| o.recorded_at)
         .max()
         .unwrap_or_else(Utc::now);
+    let mut stale_capabilities: Vec<String> = intents
+        .iter()
+        .filter(|i| i.kind == IntentKind::Capability)
+        .map(|i| i.id.clone())
+        .collect();
+    stale_capabilities.sort();
+    stale_capabilities.dedup();
+    InvalidationIndex {
+        last_baseline_change: Utc::now(),
+        last_observation,
+        stale_capabilities,
+    }
+}
 
-    // Find capability intents whose latest observation is older than the last
-    // baseline change.
+/// Calculate staleness against the *real* accepted-at timestamp, never a
+/// synthetic timestamp from a revision integer. Observations must have an
+/// explicit capability link and matching baseline revision; no inference from
+/// the product ID is allowed. Unlinked observations do not prove coverage.
+pub fn build_invalidation_index_at(
+    intents: &[AcceptedIntent],
+    observations: &[Observation],
+    baseline_accepted_at: DateTime<Utc>,
+) -> InvalidationIndex {
+    let last_observation = observations
+        .iter()
+        .map(|o| o.recorded_at)
+        .max()
+        .unwrap_or(baseline_accepted_at);
     let mut stale_capabilities = Vec::new();
     for intent in intents.iter().filter(|i| i.kind == IntentKind::Capability) {
         let latest_obs = observations
             .iter()
-            .filter(|o| o.product_id.as_str() == intent.id)
+            .filter(|o| o.capability_id.as_deref() == Some(intent.id.as_str())
+                && o.baseline == intent.baseline)
             .map(|o| o.recorded_at)
             .max();
-        if let Some(latest) = latest_obs {
-            if latest < last_baseline_change {
-                stale_capabilities.push(intent.id.clone());
-            }
-        } else {
-            // No observations at all for this capability — also stale.
+        if latest_obs.is_none_or(|latest| latest < baseline_accepted_at) {
             stale_capabilities.push(intent.id.clone());
         }
     }
     stale_capabilities.sort();
-
+    stale_capabilities.dedup();
     InvalidationIndex {
-        last_baseline_change,
+        last_baseline_change: baseline_accepted_at,
         last_observation,
         stale_capabilities,
     }
@@ -612,6 +673,32 @@ mod tests {
         assert_eq!(results[0].id, "cap-1");
     }
 
+    #[test]
+    fn unscoped_intents_fail_closed_on_product_filter() {
+        let q = ProductQuery { product_id: Some("prod-A".into()), ..Default::default() };
+        assert!(query_intents(&sample_intents(), &q).is_empty());
+    }
+
+    #[test]
+    fn scoped_queries_prevent_cross_product_bleed() {
+        let intents = sample_intents();
+        let scope = vec![
+            ScopedIntent { product_id: "prod-A", intent: &intents[0] },
+            ScopedIntent { product_id: "prod-B", intent: &intents[1] },
+        ];
+        let q = ProductQuery {
+            product_id: Some("prod-B".into()),
+            intent_kind: Some("capability".into()),
+            ..Default::default()
+        };
+        let matched = query_scoped_intents(&scope, &q);
+        assert_eq!(matched.len(), 1);
+        assert_eq!(matched[0].id, "cap-2");
+        assert!(query_scoped_intents(&scope, &ProductQuery {
+            product_id: Some("unknown".into()), ..Default::default()
+        }).is_empty());
+    }
+
     // ----- ProductView tests -----
 
     #[test]
@@ -703,7 +790,7 @@ mod tests {
                 },
                 // Observed BEFORE the baseline was finalized.
                 recorded_at: ts(100),
-                capability_id: None,
+                capability_id: Some("cap-old".to_string()),
             },
             Observation {
                 id: "obs-fresh".to_string(),
@@ -718,11 +805,11 @@ mod tests {
                 },
                 // Observed AFTER the baseline was finalized.
                 recorded_at: ts(10000),
-                capability_id: None,
+                capability_id: Some("cap-fresh".to_string()),
             },
         ];
 
-        let index = build_invalidation_index(&intents, &observations);
+        let index = build_invalidation_index_at(&intents, &observations, ts(500));
         assert!(index.is_stale("cap-old"));
         assert!(!index.is_stale("cap-fresh"));
         assert_eq!(index.stale_capabilities.len(), 1);
@@ -742,6 +829,23 @@ mod tests {
 
         let index = build_invalidation_index(&intents, &[]);
         assert!(index.is_stale("cap-never-observed"));
+    }
+
+    #[test]
+    fn missing_baseline_timestamp_never_infers_freshness_from_revision() {
+        let intents = sample_intents();
+        let observations = sample_observations();
+        let conservative = build_invalidation_index(&intents, &observations);
+        assert!(conservative.is_stale("cap-1"));
+        assert!(conservative.is_stale("cap-2"));
+    }
+
+    #[test]
+    fn unrelated_product_and_unlinked_observation_cannot_verify_capability() {
+        let intents = sample_intents();
+        let observations = sample_observations(); // legacy, no capability_id
+        let index = build_invalidation_index_at(&intents, &observations, ts(500));
+        assert!(index.is_stale("cap-1"));
     }
 
     #[test]
