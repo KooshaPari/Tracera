@@ -7,7 +7,7 @@
 | Date | 2026-10-12 |
 | Applies to | Product graph, projection APIs, front-end exploration, evidence links |
 | Decision | [ADR-VIZ-001](../governance/ADR-VIZ-001-spatial-product-projections.md) |
-| Ecosystem | [PhenoRegistry spatial boundary contract](https://github.com/KooshaPari/PhenoRegistry/blob/docs/spatial-product-twin-2026-10-12/docs/specs/spatial-product-twin-ecosystem-contract.md) |
+| Ecosystem | [PhenoRegistry spatial boundary contract](https://github.com/KooshaPari/PhenoRegistry/blob/main/docs/specs/spatial-product-twin-ecosystem-contract.md) |
 
 ## 1. Intent and non-goals
 
