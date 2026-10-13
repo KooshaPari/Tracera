@@ -98,16 +98,16 @@ ssh-keygen -t ed25519 -C "deploy@tracera" -f ~/.ssh/deploy_tracera
 | Domain                     | Purpose                      | DNS Provider | Status |
 | -------------------------- | ---------------------------- | ------------ | ------ |
 | `phenotype.studio`         | Main dashboard               | Cloudflare   | ☐      |
-| `api.tracera.pheno.studio` | API (self-hosted via tunnel) | Cloudflare   | ☐      |
-| `tracera.pheno.studio`     | Web app + `/api` path prefix | Cloudflare   | ☐      |
+| `t.tracera.pheno.studio`   | Direct backend (Access-protected shared tunnel) | Cloudflare | ✅ observed 2026-10-13 |
+| `tracera.pheno.studio`     | Web/Auth parent (Access-protected shared tunnel) | Cloudflare | ✅ observed 2026-10-13 |
 | `worker.phenotype.studio`  | Cloudflare Worker            | Cloudflare   | ☐      |
 | `docs.phenotype.studio`    | Documentation (Vercel)       | Cloudflare   | ☐      |
 
 ### 2.2 — DNS Records (Cloudflare)
 
 ```
-CNAME   tracera           <tunnel-id>.cfargotunnel.com   TTL Auto
-CNAME   api.tracera       <tunnel-id>.cfargotunnel.com   TTL Auto
+CNAME   tracera           <shared-tunnel-id>.cfargotunnel.com   TTL Auto
+CNAME   t.tracera         <shared-tunnel-id>.cfargotunnel.com   TTL Auto
 CNAME   www               cname.vercel-dns.com           TTL Auto (point to Vercel)
 TXT     @                 v=spf1 include:vercel.com      TTL Auto
 TXT     _dmarc            v=DMARC1; p=none               TTL Auto
@@ -129,7 +129,8 @@ certbot certonly --standalone -d phenotype.studio -d api.phenotype.studio
 ### 3.1 — Prerequisites
 
 - [ ] Docker Desktop or Docker Engine on the operator machine
-- [ ] Cloudflare Tunnel created for `tracera.pheno.studio`
+- [x] Shared `tracera-local` Cloudflare Tunnel observed healthy for Tracera routes (2026-10-13)
+- [ ] Shared-infra IaC/lifecycle ownership qualified separately; do not bootstrap it from Tracera
 - [ ] `deploy/selfhost/docker-compose.selfhost.yml` reviewed ✅
 - [ ] `Dockerfile.rust` exists ✅
 - [ ] `Cargo.toml` workspace configured ✅
@@ -167,10 +168,12 @@ docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
 ### 3.5 — Verify Backend
 
 ```bash
-curl https://api.tracera.pheno.studio/healthz
-# Expected: {"status":"ok","service":"tracera-server"}
+curl -H 'CF-Access-Client-Id: <id>' -H 'CF-Access-Client-Secret: <secret>' \
+  https://t.tracera.pheno.studio/healthz
+# Expected: {"status":"ok",...}
 
-curl https://api.tracera.pheno.studio/readyz
+curl -H 'CF-Access-Client-Id: <id>' -H 'CF-Access-Client-Secret: <secret>' \
+  https://t.tracera.pheno.studio/readyz
 # Expected: {"status":"ready",...}
 ```
 
@@ -188,9 +191,13 @@ curl https://api.tracera.pheno.studio/readyz
 ### 4.2 — Environment Variables (Vercel)
 
 ```bash
-# Set production API URL
+# The current Vercel frontend uses same-origin Functions.
 vercel env add VITE_API_URL production
-# Value: https://tracera.pheno.studio/api
+# Value: /api
+#
+# Do not put CF_ACCESS_CLIENT_SECRET in browser-visible VITE_* variables.
+# A future server-side proxy to t.tracera.pheno.studio must inject Access
+# machine credentials server-side.
 
 vercel env add VITE_WS_URL production
 # Value: wss://api.phenotype.studio
@@ -513,12 +520,14 @@ git push origin v0.1.0
 ### 13.1 — Smoke Tests
 
 ```bash
-# Backend:
-curl https://api.phenotype.studio/healthz
+# Backend (Access machine credential required):
+curl -H 'CF-Access-Client-Id: <id>' -H 'CF-Access-Client-Secret: <secret>' \
+  https://t.tracera.pheno.studio/healthz
 # → {"status":"ok"}
 
-curl https://api.phenotype.studio/readyz
-# → {"status":"ready","backend":"postgres"}
+curl -H 'CF-Access-Client-Id: <id>' -H 'CF-Access-Client-Secret: <secret>' \
+  https://t.tracera.pheno.studio/readyz
+# → {"status":"ready",...}
 
 # Frontend:
 curl -s -o /dev/null -w "%{http_code}" https://phenotype.studio
@@ -602,8 +611,8 @@ set DATABASE_URL=sqlite::memory: && tracera-server
 # d) Desktop: tag v0.1.0 → CI builds + signs
 
 # 6. Verify
-curl https://api.phenotype.studio/healthz
-curl https://phenotype.studio
+curl -H 'CF-Access-Client-Id: <id>' -H 'CF-Access-Client-Secret: <secret>' https://t.tracera.pheno.studio/healthz
+curl https://tracera-kappa.vercel.app
 curl https://tracera-edge.workers.dev
 tracera --version
 ```
