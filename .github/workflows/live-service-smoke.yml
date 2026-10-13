@@ -13,7 +13,7 @@ on:
         required: false
         default: all
         type: choice
-        options: [all, prod, dev, frontend, tunnel]
+        options: [all, prod, frontend, tunnel]
 
 permissions:
   contents: read
@@ -35,7 +35,7 @@ jobs:
 
     steps:
       - name: Probe Vercel same-origin API
-        if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'dev' || env.SMOKE_TARGET == 'frontend' }}
+        if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'frontend' }}
         run: |
           set -euo pipefail
           body=$(curl --silent --show-error --fail-with-body             --max-time "$CURL_TIMEOUT"             "$PROD_FRONTEND/api/healthz")
@@ -46,17 +46,17 @@ jobs:
           echo "PASS: Vercel same-origin API"
 
       - name: Require Cloudflare Access machine credentials
-        if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'dev' || env.SMOKE_TARGET == 'tunnel' }}
+        if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'tunnel' }}
         run: |
           set -euo pipefail
-          if [ -z "${CF_ACCESS_CLIENT_ID:-}" ] || [ -z "${CF_ACCESS_CLIENT_SECRET:-}" ]; then
+          if [[ -z "${CF_ACCESS_CLIENT_ID:-}" || -z "${CF_ACCESS_CLIENT_SECRET:-}" ]]; then
             echo "::error::CF_ACCESS_CLIENT_ID / CF_ACCESS_CLIENT_SECRET are required for the production tunnel smoke"
             echo "::error::A Vercel success is not evidence that the Access-protected self-hosted origin is reachable."
             exit 1
           fi
 
       - name: Probe authenticated self-hosted tunnel
-        if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'dev' || env.SMOKE_TARGET == 'tunnel' }}
+        if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'tunnel' }}
         run: |
           set -euo pipefail
           curl_args=(
@@ -77,20 +77,20 @@ jobs:
             fi
           done
 
-          if [ "$ok" -ne 1 ]; then
+          if [[ "$ok" -ne 1 ]]; then
             echo "::error::Access-authenticated Tracera tunnel did not report status:ok"
             exit 1
           fi
 
       - name: Probe tunnel CORS for deployed frontend
-        if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'dev' || env.SMOKE_TARGET == 'tunnel' }}
+        if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'tunnel' }}
         run: |
           set -euo pipefail
           headers=$(curl --silent --show-error --dump-header - --output /dev/null             --max-time "$CURL_TIMEOUT"             -H "CF-Access-Client-Id: $CF_ACCESS_CLIENT_ID"             -H "CF-Access-Client-Secret: $CF_ACCESS_CLIENT_SECRET"             -H "Origin: $PROD_FRONTEND"             "$TUNNEL_API/ready")
 
           allowed=$(printf '%s' "$headers"             | tr -d '\r'             | awk 'tolower($1) == "access-control-allow-origin:" { print $2 }')
 
-          if [ "$allowed" != "$PROD_FRONTEND" ] && [ "$allowed" != "*" ]; then
+          if [[ "$allowed" != "$PROD_FRONTEND" && "$allowed" != "*" ]]; then
             echo "::error::tunnel answered Origin $PROD_FRONTEND with ACAO '${allowed:-<absent>}'"
             exit 1
           fi
