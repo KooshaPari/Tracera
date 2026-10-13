@@ -9,6 +9,8 @@
 | Decision | [ADR-VIZ-001](../governance/ADR-VIZ-001-spatial-product-projections.md) |
 | Ecosystem | [PhenoRegistry spatial boundary contract](https://github.com/KooshaPari/PhenoRegistry/blob/main/docs/specs/spatial-product-twin-ecosystem-contract.md) |
 
+**Documentation dossier:** [source/intent/SOTA/ontology/implementation/evidence/gates](../product-spatial-twin/README.md). All requirement-level acceptance below remains proposed and unverified.
+
 ## 1. Intent and non-goals
 
 Build a traversable, searchable, inspectable **spatial product twin**: a product-first, skeuomorphic and optionally literal 3D representation of software, hardware, services, infrastructure, workflows and hybrids. Users should be able to understand a product as an explorable engineered object, follow functional/structural/runtime/evidence relationships and navigate back to canonical sources.

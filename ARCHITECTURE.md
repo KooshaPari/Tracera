@@ -1,5 +1,8 @@
 # Tracera Architecture
 
+> **Architecture scope amendment (2026-10-12, proposed):** The product-first, persistent Tracera model is the intended canonical product/system authority; the trace/observability architecture described below remains a real/historical supporting subsystem, not the complete desired product. The proposed semantic-to-spatial projection compiles *read-only* product/relationship/evidence views into reversible, inspectable 3D/2D/list representations. Neither its renderer nor its contract has been verified as implemented. See [spatial dossier](docs/product-spatial-twin/README.md), [WP-07](docs/WP-07-product-graph-design.md), and [ADR-VIZ-001](docs/governance/ADR-VIZ-001-spatial-product-projections.md).
+
+
 ## Overview
 
 Tracera is a trace-link matrix system for Agentic and LLM observability. It captures structured trace-links across runs, distills short-term and long-term memory, and serves an Electrobun desktop viewer over OKF-bundled session history.
