@@ -350,4 +350,31 @@ mod tests {
             ProjectionError::InvalidBudget
         );
     }
+    #[test]
+    fn dense_graph_is_bounded_with_visible_incompleteness() {
+        let nodes: Vec<SpatialNode> = (0..20_000)
+            .map(|i| node(&format!("capability-{i:05}")))
+            .collect();
+        let input = ProjectionScope {
+            max_nodes: 128, max_relations: 256, ..scope()
+        };
+        let scene = compile_spatial_projection(input, &nodes, &[], true).unwrap();
+        assert_eq!(scene.glyphs.len(), 128);
+        assert_eq!(scene.omitted_nodes, 19_872);
+        assert!(scene.truncated);
+        assert!(scene.input_complete);
+        assert!(scene.glyphs.windows(2).all(|w| w[0].entity_ref < w[1].entity_ref));
+    }
+
+    #[test]
+    fn invalid_metadata_never_renders_as_literal_geometry() {
+        let mut part = node("actuator");
+        part.geometry_truth = GeometryTruth::Measured;
+        part.geometry_source_ref = Some("  ".into());
+        assert!(matches!(
+            compile_spatial_projection(scope(), &[part], &[], false),
+            Err(ProjectionError::MissingGeometrySource(_))
+        ));
+    }
+
 }
