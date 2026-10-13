@@ -5,7 +5,7 @@ param([string]$Url='http://127.0.0.1:8080',[int]$ExpectProjects=6,[string]$Expec
 $fail = 0
 function Check($name,$ok,$detail){ if($ok){Write-Host "PASS $name $detail"}else{Write-Host "FAIL $name $detail"; $script:fail++} }
 try { $p = Invoke-RestMethod "$Url/api/v1/projects" -TimeoutSec 15
-  $n = if ($p.projects) { @($p.projects).Count } else { @($p).Count }
+  $n = if ($null -ne $p.count) { [int]$p.count } elseif ($p.items) { @($p.items).Count } else { @($p).Count }
   Check 'projects' ($n -eq $ExpectProjects) "got $n expected $ExpectProjects" } catch { Check 'projects' $false $_.Exception.Message }
 try { $r = Invoke-WebRequest "$Url/api/v1/__nope__" -UseBasicParsing -TimeoutSec 15 -SkipHttpErrorCheck
   Check 'no-html-for-unknown-api' ($r.Headers['Content-Type'] -notlike 'text/html*') "ct=$($r.Headers['Content-Type'])" } catch { Check 'no-html-for-unknown-api' $true 'non-2xx' }
