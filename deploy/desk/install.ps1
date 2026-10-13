@@ -12,11 +12,11 @@ if ($Backend -eq 'sqlite') {
 } else {
   # Compose the URL inside the container's own env; the password is written only to tracera.env (user ACL), never printed.
   $db = if ($Staging) { 'tracera_staging' } else { 'tracera' }
-  $url = Invoke-PgSh ('printf "postgres://%s:%s@host.containers.internal:5432/' + $db + '" "$POSTGRES_USER" "$POSTGRES_PASSWORD"')
+  $url = Invoke-PgSh ('printf "postgres://%s:%s@127.0.0.1:5432/' + $db + '" "$POSTGRES_USER" "$POSTGRES_PASSWORD"')
   $lines += "DATABASE_URL=$url"
   $lines += 'REDIS_URL=redis://127.0.0.1:6379'
 }
-if ($Staging) { $lines += 'TRACERA_BIND_ADDR=127.0.0.1:18080' }
+if ($Staging) { $lines += 'TRACERA_BIND_ADDR=127.0.0.1:18080'; $lines += 'TRACERA_LOG_FILE=C:\Users\koosh\agents\tracera\staging.log' }
 $lines | Set-Content -Encoding ascii $EnvFile
 icacls $EnvFile /inheritance:r /grant:r "$env:USERNAME`:F" | Out-Null
 $ps = (Get-Command powershell.exe).Source

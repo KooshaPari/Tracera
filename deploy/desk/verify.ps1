@@ -1,6 +1,6 @@
 <# Post-deploy verification. Usage: .\verify.ps1 [-Url http://127.0.0.1:8080] [-ExpectProjects 6] [-ExpectBackend postgres]
    Exits non-zero on any failure. Checks: API up, project count, no HTML for unknown /api paths (deploy pattern rule 3), and for postgres row counts. #>
-param([string]$Url='http://127.0.0.1:8080',[int]$ExpectProjects=6,[string]$ExpectBackend='')
+param([string]$Url='http://127.0.0.1:8080',[int]$ExpectProjects=6,[string]$ExpectBackend='',[string]$Db='tracera')
 . "$PSScriptRoot\common.ps1"
 $fail = 0
 function Check($name,$ok,$detail){ if($ok){Write-Host "PASS $name $detail"}else{Write-Host "FAIL $name $detail"; $script:fail++} }
@@ -10,7 +10,8 @@ try { $p = Invoke-RestMethod "$Url/api/v1/projects" -TimeoutSec 15
 try { $r = Invoke-WebRequest "$Url/api/v1/__nope__" -UseBasicParsing -TimeoutSec 15 -SkipHttpErrorCheck
   Check 'no-html-for-unknown-api' ($r.Headers['Content-Type'] -notlike 'text/html*') "ct=$($r.Headers['Content-Type'])" } catch { Check 'no-html-for-unknown-api' $true 'non-2xx' }
 if ($ExpectBackend -eq 'postgres') {
-  $c = Invoke-PgSh 'psql -U "$POSTGRES_USER" -d tracera -Atc "select (select count(*) from projects),(select count(*) from items),(select count(*) from links),(select count(*) from teams)"'
+  $q = 'psql -U "$POSTGRES_USER" -d DBNAME -Atc "select (select count(*) from canonical_projects),(select count(*) from canonical_items),(select count(*) from canonical_links),(select count(*) from teams)"'.Replace('DBNAME',$Db)
+  $c = Invoke-PgSh $q
   Check 'pg-counts' ($c -match '^\d+\|\d+\|\d+\|\d+$') $c
 }
 if ($fail) { exit 1 } else { Write-Host 'verify OK' }

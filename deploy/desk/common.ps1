@@ -9,5 +9,5 @@ $BackupDir = 'G:\backups\tracera'
 $LocalBackupDir = 'C:\Users\koosh\backups\tracera'
 function Invoke-Pod { param([string[]]$Args) & wsl.exe -d $Distro -- podman @Args }
 # Run a shell snippet inside the Postgres container so credentials never leave it.
-function Invoke-PgSh { param([string]$Cmd) & wsl.exe -d $Distro -- podman exec $PgCont sh -c $Cmd }
+function Invoke-PgSh { param([string]$Cmd) $b=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($Cmd)); & wsl.exe -d $Distro -- podman exec $PgCont sh -c "echo $b | base64 -d | sh" }
 function Read-EnvFile { $h=@{}; if (Test-Path $EnvFile) { Get-Content $EnvFile | ForEach-Object { if ($_ -match '^\s*([A-Za-z_][A-Za-z0-9_]*)=(.*)$') { $h[$Matches[1]]=$Matches[2] } } }; $h }
