@@ -49,8 +49,9 @@ cd frontend && bun run dev:desktop        # desktop shell
 # Runtime
 task run-server       # cargo run -p tracera-server   (:8080)
 task mcp-server       # cargo run -p tracera-mcp --bin mcp-server
-task tunnel           # expose local server (Tailnet-first, CF fallback)
-task prod             # stack + run-server + tunnel
+task tunnel-status    # read-only Tailnet + shared public-ingress status
+task tunnel           # retired: shared tunnel lifecycle is managed by shared infra
+task prod             # local stack + server; does not mutate shared ingress
 ```
 
 ## 3. Test
