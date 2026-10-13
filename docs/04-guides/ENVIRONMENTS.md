@@ -94,49 +94,40 @@ builds and pushes the `tracera-server` container image to GHCR via
 `build-push-image.yml`; pulling and restarting that image on the operator box is
 a manual step documented in `deploy/selfhost/README.md`.
 
-There is no hosted dev API: `dev` and `preview` frontends talk to the same
-self-hosted backend unless overridden locally (for example
-`frontend/apps/web/.env.local` with `VITE_API_URL=http://localhost:8080`).
+Vercel `dev` and `preview` builds use `VITE_API_URL=/api`, so browser requests
+stay on the deployment origin and reach the catch-all Function. That Function
+can forward to the self-hosted Rust backend when `TRACERA_BACKEND_URL` is
+configured and reachable. Local development can still override
+`frontend/apps/web/.env.local` with `VITE_API_URL=http://localhost:8080`.
 
-## Vercel Functions (Render replacement)
+## Vercel Functions gateway
 
-Render is dead; the Vercel deployment serves same-origin API stubs from
-`api/` at the repo root so the frontend does not 404 on `/api/v1/*`. Each
-file is a one-route TypeScript function under `nodejs20.x`, returning a
-valid envelope (empty list, `{status:"ok"}`, or `501 "graph-stub"`). The
-shape and status codes mirror the `501`/`{items:[]}` set that the Rust
-backend returned when Render was alive, so the frontend contract is
-unchanged.
+Render is retired. `api/[...path].ts` is a single same-origin gateway to
+the Rust backend configured by the server-only `TRACERA_BACKEND_URL`.
+Missing configuration, network failures, timeouts and broken response streams
+return `503 {status:"unavailable", reason:...}` with `Cache-Control: no-store`.
+There are no synthetic healthy or empty-data fallbacks.
 
-| Route surface                                   | Source                                                                                                                                   | Returns today                                                |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `/health`, `/healthz`, `/ready`, `/readyz`      | `api/{health,healthz,ready,readyz}.ts`                                                                                                   | `200 {"status":"ok"\|"ready"}`                               |
-| `/api/v1/health`                                | `api/v1/health.ts`                                                                                                                       | `200 {"status":"ok"}`                                        |
-| `/api/v1/csrf-token`                            | `api/v1/csrf-token.ts`                                                                                                                   | `200 {"csrf_token":"...stub...","header":"x-csrf-token"}`    |
-| `/api/v1/dashboard/summary`                     | `api/v1/dashboard/summary.ts`                                                                                                            | `200 {"total_artifacts":0,"coverage_ratio":0,"open_gaps":0}` |
-| `/api/v1/projects`, `/projects/{id}`            | `api/v1/projects/index.ts`, `api/v1/projects/[id].ts`                                                                                    | `200 {total:0, projects:[]}` (GET) / `501` (write)           |
-| `/api/v1/items`, `/items/{id}`                  | `api/v1/items/{index,[id],summary,bulk-update}.ts`                                                                                       | `200 {total:0, items:[]}` (GET) / `501` (write)              |
-| `/api/v1/items/pivot-targets/{id}`              | `api/v1/items/pivot-targets/[item_id].ts`                                                                                                | `501 pivot-stub`                                             |
-| `/api/v1/links`, `/links/{id}`                  | `api/v1/links/{index,[id]}.ts`                                                                                                           | `200 []` (GET) / `501` (write)                               |
-| `/api/v1/graph/**`                              | `api/v1/graph/{ancestors/[id],descendants/[id],path,paths,full,cycles,topo-sort,orphans,impact/[id],dependencies/[id],traverse/[id]}.ts` | `501 graph-stub`                                             |
-| `/api/v1/search/**`                             | `api/v1/search/{index,index/[id],suggest,stats,reindex,batch-index}.ts`                                                                  | `501 search-stub` (only `/health` returns 200)               |
-| `/api/v1/auth/{me,login,logout,refresh,verify}` | `api/v1/auth/*.ts`                                                                                                                       | `200 {status:"ok"}` (logout) / `501` (others)                |
-| `/api/v1/import`, `/projects/{id}/import`       | `api/v1/import.ts`, `api/v1/projects/[id]/import.ts`                                                                                     | `501 import-stub`                                            |
-| `/api/v1/projects/{id}/export`                  | `api/v1/projects/[id]/export.ts`                                                                                                         | `501 export-stub`                                            |
+The gateway forwards request bodies, authorization, cookies, workspace and
+browser CSRF headers; it preserves the upstream status and body, including
+authorization errors and server errors. `X-Tracera-Gateway-Mode: proxy`
+identifies a forwarded response; `unavailable` identifies a gateway failure.
+Successful core health and readiness responses must be JSON from
+`service:"tracera-server"` reporting `status:"ok"` or `status:"ready"`.
+A Cloudflare Access redirect or sign-in page cannot prove backend readiness.
 
-The functions are configured via `vercel.json`'s `functions.api/**/*.ts`
-block (`maxDuration: 10s`; the official Node.js runtime is auto-detected
-when `runtime` is unset, and the Vercel CLI rejects `runtime: "nodejs20.x"`
-because that field is for community runtimes that need a `name@version`).
-`@vercel/node` is a root-level devDep declared in `package.json`;
-`tsconfig.json` is the build root for typechecking the functions in
-isolation, scoped to `api/**/*.ts` only so it never collides with the
-Vite app's TS project.
+Vercel builds keep `VITE_API_URL=/api`. Configure `TRACERA_BACKEND_URL`
+only when the self-hosted Rust endpoint is reachable and authorized from the
+Function. The gateway does not bypass Cloudflare Access. A proxy health
+receipt establishes connectivity; canonical import, read, export and isolation
+still need separate acceptance evidence.
 
-When the Cloudflare Tunnel to the local Rust backend is restored, swap
-`VITE_API_URL=/api` in `.env.production` back to
-`https://tracera.pheno.studio/api` and the Functions fall out of the
-path; Render never comes back.
+The configured backend base ends in `/api` for versioned API requests.
+Root health/readiness probes remove that final `/api` before forwarding,
+because Rust serves `/healthz` and `/ready` at the origin root.
+
+`vercel.json` sets `maxDuration: 10s`; the gateway timeout is eight seconds.
+The root `@vercel/node` dependency provides Function types.
 
 A path-segment constraint that bit once and is worth recording: Vercel
 treats every dynamic `[param]` directly under the same directory as a
@@ -149,13 +140,14 @@ rather than under a differently-named dynamic segment.
 
 ## Repository variables
 
-| Variable               | Used for                                                                                    | Current value                      |
-| ---------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------- |
-| `TRACERA_API_BASE`     | production API base, baked into the frontend build and used by the parity smokes            | `https://tracera.pheno.studio/api` |
-| `TRACERA_API_BASE_DEV` | overrides the API base for `dev` and `preview`; falls back to `TRACERA_API_BASE` when unset | `https://tracera.pheno.studio/api` |
+| Variable               | Used for                                                                              | Current value                      |
+| ---------------------- | ------------------------------------------------------------------------------------- | ---------------------------------- |
+| `TRACERA_API_BASE`     | backend URL for Pages and parity smokes; Vercel browser builds use `/api` instead     | `https://tracera.pheno.studio/api` |
+| `TRACERA_API_BASE_DEV` | backend URL for dev checks where referenced; Vercel browser builds use `/api` instead | `https://tracera.pheno.studio/api` |
 
-Set these in GitHub repository variables so deploy workflows and contract checks
-point at the self-hosted tunnel rather than a retired third-party host.
+Set these in GitHub repository variables for the workflows that check the
+self-hosted tunnel. The Vercel deploy workflow passes `/api` explicitly as
+both a build and runtime setting.
 
 ## What checks each environment
 
@@ -175,10 +167,9 @@ These run regardless of which environment was deployed and exist to catch the
 thing the per-environment checks above cannot: a deployed surface that quietly
 stops serving.
 
-- `live-service-smoke.yml` — daily at 06:37 UTC, plus on demand with a `target`
-  input (`all`, `prod`, `dev`, `frontend`). Pings `api.tracera.pheno.studio`
-  and the `tracera-kappa.vercel.app` alias. Uses `curl --max-time 60` and reads
-  the body: `/healthz` must report `"status":"ok"`, and the Vercel alias must
-  serve the SPA rather than the retired `scaffolding coming soon` placeholder.
-  Pairs with `deploy-vercel.yml`'s body-as-content verify step so a broken
-  preview can't pass locally and a broken prod can't pass here.
+- `live-service-smoke.yml` runs daily at 06:37 UTC and on demand. API checks
+  require the deployed frontend's actual same-origin gateway to return 2xx,
+  JSON from `tracera-server`, the expected health/readiness status,
+  `X-Tracera-Gateway-Mode: proxy`, and CORS allowing the deployed frontend.
+  Cloudflare login pages, redirects, synthetic health and CORS headers on a
+  failing response do not pass. The separate frontend check verifies SPA content.

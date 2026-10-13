@@ -30,6 +30,7 @@ const createWrapper = () => {
 describe("useLinks - Comprehensive Coverage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockFetch.mockReset();
     useAuthStore.setState({ token: "link-contract-token" });
   });
 
@@ -156,43 +157,12 @@ describe("useLinks - Comprehensive Coverage", () => {
   });
 
   describe(useCreateLink, () => {
-    it("should create link with description", async () => {
-      const newLink = {
-        description: "Test description",
-        projectId: "proj-1",
-        sourceId: "item-1",
-        targetId: "item-2",
-        type: "depends_on" as const,
-      };
-
-      const createdLink = { id: "1", ...newLink };
-
-      mockFetch.mockResolvedValueOnce({
-        json: async () => createdLink,
-        ok: true,
-      });
-
-      const { result } = renderHook(() => useCreateLink(), {
-        wrapper: createWrapper(),
-      });
-
-      result.current.mutate(newLink);
-
-      await waitFor(() => {
-        expect(result.current.isSuccess).toBeTruthy();
-      });
-
-      expect(result.current.data).toEqual(createdLink);
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining("/api/v1/links"),
-        expect.objectContaining({
-          body: expect.stringContaining("description"),
-          headers: expect.objectContaining({
-            "Content-Type": "application/json",
-          }),
-          method: "POST",
-        }),
-      );
+    it("should reject unsupported descriptions before a request", async () => {
+      const { result } = renderHook(() => useCreateLink(), { wrapper: createWrapper() });
+      result.current.mutate({ projectId: "proj-1", sourceId: "item-1", targetId: "item-2", type: "depends_on", description: "Intent" });
+      await waitFor(() => expect(result.current.isError).toBeTruthy());
+      expect(result.current.error?.message).toContain("not supported");
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
     it("should invalidate queries on success", async () => {
@@ -230,7 +200,7 @@ describe("useLinks - Comprehensive Coverage", () => {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate("link-1");
+      result.current.mutate({ id: "link-1", projectId: "proj-1" });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBeTruthy();
@@ -254,7 +224,7 @@ describe("useLinks - Comprehensive Coverage", () => {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate("link-1");
+      result.current.mutate({ id: "link-1", projectId: "proj-1" });
 
       await waitFor(() => {
         expect(result.current.isError).toBeTruthy();
@@ -270,7 +240,7 @@ describe("useLinks - Comprehensive Coverage", () => {
         wrapper: createWrapper(),
       });
 
-      result.current.mutate("link-1");
+      result.current.mutate({ id: "link-1", projectId: "proj-1" });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBeTruthy();

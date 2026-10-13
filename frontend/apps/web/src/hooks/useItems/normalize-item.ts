@@ -264,8 +264,9 @@ function normalizeBaseItem(item: ApiItem): MutableItem {
     owner: readString(item["owner"]),
     metadata: readRecord(item["metadata"]),
     version: readNumber(item["version"]) ?? DEFAULT_VERSION,
-    createdAt: createdAt ?? requireStringField(item, "createdAt"),
-    updatedAt: updatedAt ?? requireStringField(item, "updatedAt"),
+    // Canonical graph items do not contain per-item timestamps. Empty means unknown.
+    createdAt: createdAt ?? "",
+    updatedAt: updatedAt ?? "",
     canonicalId: readString(item["canonicalId"]),
     dimensions: readItemDimensions(item["dimensions"]),
     codeRef: readCodeReference(item["codeRef"]),

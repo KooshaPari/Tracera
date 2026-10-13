@@ -19,21 +19,14 @@ interface ItemMutations {
   saveItem: (payload: SavePayload, onSuccess: () => void) => void;
 }
 
-function normalizeOwner(owner: string): string | undefined {
-  const trimmed = owner.trim();
-  if (trimmed.length === 0) {
-    return;
-  }
-  return trimmed;
-}
-
 export function useItemMutations(item: Item | undefined): ItemMutations {
   const deleteItemMutation = useDeleteItem();
   const updateItemMutation = useUpdateItem();
 
   const deleteItem = useCallback(
     (id: string, onSuccess: () => void): void => {
-      deleteItemMutation.mutate(id, {
+      if (!item?.projectId) { toast.error("Select a project before deleting a node."); return; }
+      deleteItemMutation.mutate({ id, projectId: item.projectId }, {
         onError: () => {
           toast.error("Failed to delete item");
         },
@@ -43,12 +36,12 @@ export function useItemMutations(item: Item | undefined): ItemMutations {
         },
       });
     },
-    [deleteItemMutation],
+    [deleteItemMutation, item],
   );
 
   const saveItem = useCallback(
     (payload: SavePayload, onSuccess: () => void): void => {
-      if (!item) {
+      if (!item?.projectId) {
         toast.error("Failed to update item");
         return;
       }
@@ -56,12 +49,13 @@ export function useItemMutations(item: Item | undefined): ItemMutations {
       updateItemMutation.mutate(
         {
           id: payload.id,
+          projectId: item.projectId,
           data: {
             title: payload.title,
             description: payload.description,
-            owner: normalizeOwner(payload.owner),
+
             status: payload.status,
-            priority: payload.priority,
+
           },
         },
         {

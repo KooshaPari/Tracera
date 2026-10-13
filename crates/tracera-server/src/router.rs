@@ -6,6 +6,7 @@ use axum::{
 use http::{header, HeaderValue, Method};
 use std::collections::HashSet;
 
+use crate::handlers::{canonical, governance, swee};
 use crate::handlers::{
     dashboard::{dashboard_summary, get_project, list_projects, list_teams, org_metrics},
     evidence::{create_evidence, list_evidence},
@@ -15,7 +16,6 @@ use crate::handlers::{
     sprints::{create_sprint, list_sprints},
     stories::{create_story, create_trace_link, list_stories, list_stories_api},
 };
-use crate::handlers::{governance, swee};
 use crate::middleware::{csrf_protection, CANONICAL_BROWSER_ORIGIN};
 use crate::AppState;
 
@@ -172,18 +172,40 @@ pub(crate) fn build_router_with_auth(
         .route("/org-intel/teams", get(list_teams))
         .route("/org-intel/metrics", get(org_metrics))
         // Items
-        .route("/api/v1/items", any(not_implemented))
+        .route(
+            "/api/v1/items",
+            get(canonical::list_items)
+                .post(canonical::create_item)
+                .fallback(not_implemented),
+        )
         .route("/api/v1/items/summary", any(not_implemented))
         .route("/api/v1/items/bulk-update", any(not_implemented))
-        .route("/api/v1/items/{id}", any(not_implemented))
+        .route(
+            "/api/v1/items/{id}",
+            get(canonical::get_item)
+                .put(canonical::update_item)
+                .patch(canonical::update_item)
+                .delete(canonical::delete_item)
+                .fallback(not_implemented),
+        )
         .route(
             "/api/v1/items/{item_id}/pivot-targets",
             any(not_implemented),
         )
         .route("/api/v1/items/{item_id}/pivot", any(not_implemented))
         // Links
-        .route("/api/v1/links", any(not_implemented))
-        .route("/api/v1/links/{id}", any(not_implemented))
+        .route(
+            "/api/v1/links",
+            get(canonical::list_links)
+                .post(canonical::create_link)
+                .fallback(not_implemented),
+        )
+        .route(
+            "/api/v1/links/{id}",
+            axum::routing::delete(canonical::delete_link)
+                .put(canonical::update_link)
+                .fallback(not_implemented),
+        )
         .route("/api/v1/links/grouped", any(not_implemented))
         .route("/api/v1/projects/{project_id}/links", any(not_implemented))
         // Graph
@@ -191,7 +213,10 @@ pub(crate) fn build_router_with_auth(
         .route("/api/v1/graph/descendants/{id}", any(not_implemented))
         .route("/api/v1/graph/impact/{id}", any(not_implemented))
         .route("/api/v1/graph/dependencies/{id}", any(not_implemented))
-        .route("/api/v1/graph/traverse/{id}", any(not_implemented))
+        .route(
+            "/api/v1/graph/traverse/{id}",
+            get(canonical::traverse).fallback(not_implemented),
+        )
         .route("/api/v1/graph/path", any(not_implemented))
         .route("/api/v1/graph/paths", any(not_implemented))
         .route("/api/v1/graph/full", any(not_implemented))
@@ -216,13 +241,19 @@ pub(crate) fn build_router_with_auth(
         .route("/api/v1/search/stats", any(not_implemented))
         .route("/api/v1/search/health", any(not_implemented))
         // Projects extended
-        .route("/api/v1/projects/{project_id}/export", any(not_implemented))
+        .route(
+            "/api/v1/projects/{project_id}/export",
+            get(canonical::export).fallback(not_implemented),
+        )
         .route("/api/v1/projects/{project_id}/import", any(not_implemented))
         .route(
             "/api/v1/projects/{project_id}/versions/compare",
             any(not_implemented),
         )
-        .route("/api/v1/import", any(not_implemented))
+        .route(
+            "/api/v1/import",
+            post(canonical::import).fallback(not_implemented),
+        )
         // Auth
         .route("/api/v1/auth/login", any(not_implemented))
         .route("/api/v1/auth/logout", any(not_implemented))

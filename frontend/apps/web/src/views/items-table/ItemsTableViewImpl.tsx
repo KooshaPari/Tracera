@@ -126,7 +126,8 @@ function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = {}): JS
 
   const handleDelete = React.useCallback(
     (id: string): void => {
-      deleteItem.mutate(id, {
+      if (!effectiveProjectId) { toast.error("Select a project before deleting a node."); return; }
+      deleteItem.mutate({ id, projectId: effectiveProjectId }, {
         onError: () => {
           toast.error("Purge failure");
         },
@@ -135,7 +136,7 @@ function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = {}): JS
         },
       });
     },
-    [deleteItem],
+    [deleteItem, effectiveProjectId],
   );
 
   const handleRefresh = React.useCallback((): void => {
@@ -187,7 +188,6 @@ function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = {}): JS
       createItem.mutate(
         {
           description: payload.description,
-          priority: payload.priority,
           projectId: projectIdValue,
           status: payload.status,
           title: payload.title,

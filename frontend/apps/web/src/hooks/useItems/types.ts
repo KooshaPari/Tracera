@@ -7,7 +7,7 @@ interface CreateItemData {
   title: string;
   description?: string | undefined;
   status: ItemStatus;
-  priority: Priority;
+  priority?: Priority | undefined;
   parentId?: string | undefined;
   owner?: string | undefined;
 }

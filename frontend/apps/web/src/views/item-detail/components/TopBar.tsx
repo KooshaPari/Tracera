@@ -59,7 +59,7 @@ export function TopBar({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <span>
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <Button aria-label="Item actions" variant="ghost" size="icon" className="rounded-full">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </span>

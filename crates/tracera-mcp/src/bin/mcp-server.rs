@@ -139,7 +139,8 @@ mod demo {
     use chrono::{DateTime, Utc};
     use serde_json::Value;
     use tracera_server::store::{
-        BoxFuture, EvidenceItem, ListParams, Problem, Store, StoreError, StoreResult,
+        BoxFuture, CanonicalExport, CanonicalItem, CanonicalLink, CanonicalProject, EvidenceItem,
+        ListParams, Problem, Store, StoreError, StoreResult,
     };
 
     /// Compile-time check: `DemoStore` only exists for the demo path.
@@ -148,6 +149,52 @@ mod demo {
     pub struct DemoStore;
 
     impl Store for DemoStore {
+        fn import_canonical(&self, _export: CanonicalExport) -> BoxFuture<'_, StoreResult<()>> {
+            Box::pin(async { Err(StoreError::Database("DemoStore is read-only".into())) })
+        }
+        fn append_canonical(
+            &self,
+            _project_id: String,
+            _items: Vec<CanonicalItem>,
+            _links: Vec<CanonicalLink>,
+        ) -> BoxFuture<'_, StoreResult<()>> {
+            Box::pin(async { Err(StoreError::Database("DemoStore is read-only".into())) })
+        }
+        fn canonical_project(
+            &self,
+            _project_id: String,
+        ) -> BoxFuture<'_, StoreResult<Option<CanonicalProject>>> {
+            Box::pin(async { Ok(None) })
+        }
+        fn canonical_items(
+            &self,
+            _project_id: String,
+            _limit: i64,
+            _skip: i64,
+        ) -> BoxFuture<'_, StoreResult<(Vec<CanonicalItem>, i64)>> {
+            Box::pin(async { Ok((vec![], 0)) })
+        }
+        fn canonical_item(
+            &self,
+            _project_id: String,
+            _item_id: String,
+        ) -> BoxFuture<'_, StoreResult<Option<CanonicalItem>>> {
+            Box::pin(async { Ok(None) })
+        }
+        fn canonical_links(
+            &self,
+            _project_id: String,
+            _limit: i64,
+            _skip: i64,
+        ) -> BoxFuture<'_, StoreResult<(Vec<CanonicalLink>, i64)>> {
+            Box::pin(async { Ok((vec![], 0)) })
+        }
+        fn canonical_export(
+            &self,
+            _project_id: String,
+        ) -> BoxFuture<'_, StoreResult<Option<CanonicalExport>>> {
+            Box::pin(async { Ok(None) })
+        }
         fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>> {
             Box::pin(async { Ok(vec![]) })
         }

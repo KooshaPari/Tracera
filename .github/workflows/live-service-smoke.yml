@@ -28,143 +28,33 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      # Prefer the dedicated API hostname once tunnel DNS exists; fall back to the
-      # path-prefixed ingress on the Access-protected parent domain.
-      PROD_API: https://api.tracera.pheno.studio
-      PROD_API_FALLBACK: https://tracera.pheno.studio/api
       PROD_FRONTEND: https://tracera-kappa.vercel.app
       CURL_TIMEOUT: "60"
       # Scheduled runs have no workflow_dispatch input; treat them as `all`.
       SMOKE_TARGET: ${{ github.event_name == 'schedule' && 'all' || inputs.target }}
-      CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-      CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
     steps:
-      - name: Probe prod API
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Probe the actual frontend gateway and backend readiness
         if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'dev' }}
         run: |
           set -euo pipefail
-          curl_args=(--silent --show-error --fail-with-body --max-time "${CURL_TIMEOUT}")
-
-          # 1) The same-origin Vercel API is the surface the deployed SPA
-          #    actually calls (VITE_API_URL=/api) and it is not Access-gated:
-          #    assert its status:ok envelope first. This directly detects a
-          #    stale Vercel alias, which this workflow exists to catch.
-          if body=$(curl "${curl_args[@]}" "${PROD_FRONTEND}/api/healthz" 2>/dev/null) \
-             && printf %s "${body}" | grep -q '"status":"ok"'; then
-            echo "vercel same-origin /api/healthz -> ${body}"
-            exit 0
-          fi
-
-          if [ -n "${CF_ACCESS_CLIENT_ID:-}" ] && [ -n "${CF_ACCESS_CLIENT_SECRET:-}" ]; then
-            curl_args+=(-H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}")
-            curl_args+=(-H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}")
-          fi
-
-          probe_health() {
-            base="$1"
-            for path in /healthz /api/v1/health; do
-              if body=$(curl "${curl_args[@]}" "${base}${path}" 2>/dev/null); then
-                echo "prod ${path} @ ${base} -> ${body}"
-                printf %s "${body}" | grep -q '"status":"ok"' && return 0
-                # Cloudflare Access answers unauthenticated CI with its sign-in
-                # page; docs/04-guides/ENVIRONMENTS.md says automated checks
-                # must not treat the protected production tunnel as reachable.
-                if printf %s "${body}" | grep -qi "cloudflareaccess"; then
-                  echo "::notice::${base}${path} is behind Cloudflare Access (edge reachable, origin gated); strict JSON assertion skipped"
-                  return 0
-                fi
-              fi
-            done
-            return 1
+          # No origin fallback can prove the SPA's gateway works. Access login,
+          # synthetic health and CORS headers on a 503 must all fail this check.
+          probe() {
+            path="$1"
+            expected="$2"
+            code=$(curl --silent --show-error --max-time "${CURL_TIMEOUT}" \
+              --dump-header /tmp/gateway-headers --output /tmp/gateway-body \
+              --write-out '%{http_code}' -H "Origin: ${PROD_FRONTEND}" \
+              "${PROD_FRONTEND}${path}")
+            node scripts/verify-gateway-health.mjs "$code" /tmp/gateway-headers \
+              /tmp/gateway-body "$expected" "${PROD_FRONTEND}"
           }
-
-          if probe_health "${PROD_API}"; then
-            exit 0
-          fi
-          if probe_health "${PROD_API_FALLBACK}"; then
-            echo "::notice::api.tracera.pheno.studio unreachable; fell back to ${PROD_API_FALLBACK}"
-            exit 0
-          fi
-          echo "::error::prod API did not report status:ok on ${PROD_FRONTEND}/api/healthz, ${PROD_API} or ${PROD_API_FALLBACK}"
-          exit 1
-
-      - name: Probe CORS for the deployed frontend origin
-        if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'dev' }}
-        run: |
-          set -euo pipefail
-          # A browser accepts a cross-origin response only when
-          # Access-Control-Allow-Origin equals the requesting origin. The
-          # production service once answered with a fixed local origin for every
-          # request, so it looked healthy to curl while blocking every deployed
-          # frontend - the app reported a generic "service down". Assert the echo,
-          # not the header's presence.
-          curl_args=(--silent --show-error --dump-header - --output /dev/null \
-            --max-time "${CURL_TIMEOUT}")
-          if [ -n "${CF_ACCESS_CLIENT_ID:-}" ] && [ -n "${CF_ACCESS_CLIENT_SECRET:-}" ]; then
-            curl_args+=(-H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}")
-            curl_args+=(-H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}")
-          fi
-
-          # rc: 0 = ACAO echoes the origin (or *), 1 = reachable but wrong
-          # (real regression), 2 = behind Cloudflare Access, 3 = unreachable.
-          check_origin() {
-            host="$1"
-            origin="$2"
-            path="${3:-/ready}"
-            headers=$(curl "${curl_args[@]}" -H "Origin: ${origin}" "${host}${path}" || true)
-            if [ -z "${headers}" ]; then
-              echo "::notice::${host}${path} unreachable from CI"
-              return 3
-            fi
-            allowed=$(printf '%s' "${headers}" \
-              | tr -d '\r' \
-              | awk 'tolower($1) == "access-control-allow-origin:" { print $2 }')
-            if [ "${allowed}" = "${origin}" ] || [ "${allowed}" = "*" ]; then
-              echo "PASS: ${host}${path} allows ${origin}"
-              return 0
-            fi
-            if printf '%s' "${headers}" | grep -qi "cloudflareaccess"; then
-              echo "::notice::${host}${path} is behind Cloudflare Access; CORS not verifiable from CI"
-              return 2
-            fi
-            echo "::error::${host}${path} answered Origin ${origin} with ACAO '${allowed:-<absent>}'; the browser will block this call"
-            return 1
-          }
-
-          # 1) The same-origin Vercel API is the surface the deployed SPA
-          #    actually calls and is not Access-gated: assert it first.
-          set +e
-          check_origin "${PROD_FRONTEND}" "${PROD_FRONTEND}" "/api/ready"
-          vercel_rc=$?
-          set -e
-          if [ "${vercel_rc}" = 0 ]; then exit 0; fi
-          if [ "${vercel_rc}" = 1 ]; then exit 1; fi
-
-          # 2) Self-hosted tunnel surfaces are only verifiable with Cloudflare
-          #    Access service credentials (ENVIRONMENTS.md: automated checks
-          #    must not treat the protected production tunnel as reachable).
-          if [ -z "${CF_ACCESS_CLIENT_ID:-}" ] || [ -z "${CF_ACCESS_CLIENT_SECRET:-}" ]; then
-            echo "::notice::no CF Access service credentials; tunnel CORS checks skipped"
-            if [ "${vercel_rc}" = 3 ]; then
-              echo "::error::neither the Vercel API nor the tunnel was reachable"
-              exit 1
-            fi
-            exit 0
-          fi
-
-          set +e
-          check_origin "${PROD_API}" "https://tracera-kappa.vercel.app"
-          rc=$?
-          set -e
-          if [ "${rc}" = 0 ] || [ "${rc}" = 2 ]; then exit 0; fi
-          if [ "${rc}" = 1 ]; then exit 1; fi
-
-          set +e
-          check_origin "${PROD_API_FALLBACK}" "https://tracera-kappa.vercel.app"
-          rc=$?
-          set -e
-          if [ "${rc}" = 0 ] || [ "${rc}" = 2 ]; then exit 0; fi
-          exit 1
+          probe /api/v1/health ok
+          probe /api/ready ready
 
       - name: Probe prod frontend
         if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'frontend' }}
