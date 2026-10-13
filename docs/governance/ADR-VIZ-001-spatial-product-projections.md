@@ -6,7 +6,7 @@
 | Date | 2026-10-12 |
 | Scope | Tracera product model and presentation adapters |
 | Related spec | [TRACERA-SPEC-015](../specs/015-spatial-product-twin.md) |
-| Ecosystem boundary | [PhenoRegistry ADR-ECO-024](https://github.com/KooshaPari/PhenoRegistry/blob/docs/spatial-product-twin-2026-10-12/docs/adrs/ADR-ECO-024-spatial-product-twin-boundary.md) |
+| Ecosystem boundary | [PhenoRegistry ADR-ECO-024](https://github.com/KooshaPari/PhenoRegistry/blob/main/docs/adrs/ADR-ECO-024-spatial-product-twin-boundary.md) |
 
 ## Context
 
