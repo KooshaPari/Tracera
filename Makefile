@@ -15,24 +15,24 @@ SCRIPT := scripts/dev-stack-seed.sh
 #   * `task stack` brings up the full 25-service local dev compose
 #   * `task run-server` runs tracera-server natively (port 8080) against
 #     the stack
-#   * `task tunnel` exposes localhost to `tracera.pheno.studio/api/*`
-#     with a hybrid preference: Tailnet (MagicDNS / 100.x) first,
-#     Cloudflare Quick Tunnel fallback when Tailnet is not reachable.
-#   * `task prod` is the one-shot: stack + run + tunnel
-#     (the canonical "go live locally" combo)
+#   * Shared Cloudflare tunnel lifecycle is owned by shared infra IaC.
+#     `task tunnel-status` is read-only; `task tunnel` / `task tunnel-bg`
+#     are retired fail-closed compatibility entrypoints.
+#   * `task prod` brings up the local stack/server and reports ingress status;
+#     it does not create, restart, or replace shared public ingress.
 #   * `task deploy` triggers the Render fallback (used only when the
 #     local box is offline for an extended period)
 #
 # URI mapping (canonical):
-#   API:        https://tracera.pheno.studio/api/*
-#   MCP:        https://mcp.tracera.pheno.studio
+#   Web/Auth:   https://tracera.pheno.studio
+#   API:        https://t.tracera.pheno.studio
 #   Edge:       https://tracera-edge.pheno.studio (worker)
 #   Web app:    https://app.tracera.pheno.studio (Vercel)
 #   Landing:    https://phenotype.space (separate repo, NOT aliased)
 # =============================================================================
 
 .PHONY: help task stack stack-down stack-logs stack-ps stack-reset stack-seed \
-        task-run-server task-mcp-server task-tunnel task-tunnel-bg task-tunnel-stop \
+        task-run-server task-mcp-server task-tunnel-status task-tunnel task-tunnel-bg task-tunnel-stop \
         task-prod task-deploy \
         build test check fmt clippy \
         up down logs ps reset seed \
@@ -73,11 +73,7 @@ stack-seed: ## Seed sample data into the local dev stack
 # Server: native Rust binaries against the local stack
 # =============================================================================
 task-run-server: ## Run tracera-server natively on :8080 against the local stack
-	@if [ -f .cloudflared/tunnel.pid ]; then \
-	  echo "[run-server] tunnel active on PID $$(cat .cloudflared/tunnel.pid)"; \
-	else \
-	  echo "[run-server] (no tunnel running) — start with 'task tunnel-bg'"; \
-	fi
+	@echo "[run-server] shared public ingress is managed externally; use 'task tunnel-status' to inspect it"
 	set -a && . crates/tracera-server/.env.local && set +a && \
 	  cargo run -p tracera-server
 
@@ -86,37 +82,28 @@ task-mcp-server: ## Run tracera-mcp natively on :8081 (streamable-HTTP wrapper a
 	  cargo run -p tracera-mcp --bin mcp-server
 
 # =============================================================================
-# Tunnel: hybrid Tailnet + Cloudflare fallback to tracera.pheno.studio/api
+# Ingress: shared Cloudflare tunnel is externally managed
 # =============================================================================
-task-tunnel: ## Expose local tracera-server to tracera.pheno.studio/api/* via Tailnet or CF tunnel
-	@mkdir -p .cloudflared
+task-tunnel-status: ## Read-only Tailnet/shared-Cloudflare ingress status
 	@bash scripts/start-tunnel.sh
 
-task-tunnel-bg: ## Run the tunnel in the background (writes PID to .cloudflared/tunnel.pid)
-	@mkdir -p .cloudflared
-	@bash scripts/start-tunnel.sh >.cloudflared/tunnel.log 2>&1 & \
-	  echo $$ >.cloudflared/tunnel.pid && \
-	  echo "[tunnel-bg] started (PID $$(cat .cloudflared/tunnel.pid)). Log: .cloudflared/tunnel.log"
+task-tunnel: ## RETIRED: shared tunnel lifecycle belongs to shared infra IaC
+	@echo "error: task tunnel is retired; use task tunnel-status for read-only status" >&2
+	@exit 2
 
-task-tunnel-stop: ## Stop the background tunnel
-	@if [ -f .cloudflared/tunnel.pid ]; then \
-	  kill $$(cat .cloudflared/tunnel.pid) 2>/dev/null && \
-	  rm .cloudflared/tunnel.pid && \
-	  echo "[tunnel-stop] stopped"; \
-	else \
-	  echo "[tunnel-stop] no PID file"; \
-	fi
+task-tunnel-bg: ## RETIRED: do not launch the shared Cloudflare tunnel from Tracera
+	@echo "error: task tunnel-bg is retired; shared tunnel lifecycle is externally managed" >&2
+	@exit 2
+
+task-tunnel-stop: ## RETIRED: do not stop shared Cloudflare infrastructure from Tracera
+	@echo "error: task tunnel-stop is retired; shared tunnel lifecycle is externally managed" >&2
+	@exit 2
 
 # =============================================================================
-# Prod: stack + run + tunnel (one-shot "go live locally")
+# Prod: local runtime only; shared public ingress is independently managed
 # =============================================================================
-task-prod: stack task-run-server task-tunnel ## Canonical "go live locally" combo
-	@echo "[prod] stack + tracera-server + tunnel are all up."
-	@echo "[prod] Local services on http://localhost:8080"
-	@echo "[prod] Exposed at  https://tracera.pheno.studio/api  (CF tunnel)"
-	@echo "[prod] Tailnet     http://100.x.y.z:8080  (if Tailnet up)"
-	@echo "[prod] Worker edge https://tracera-edge.pheno.studio"
-	@echo "[prod] Vercel      https://app.tracera.pheno.studio"
+task-prod: stack task-tunnel-status task-run-server ## Local go-live; does not mutate shared ingress
+	@echo "[prod] local stack + tracera-server are up; shared public ingress is externally managed."
 
 # =============================================================================
 # Deploy: Render fallback only (used when local box is offline)
