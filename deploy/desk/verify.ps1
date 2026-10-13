@@ -4,6 +4,7 @@ param([string]$Url='http://127.0.0.1:8080',[int]$ExpectProjects=6,[string]$Expec
 . "$PSScriptRoot\common.ps1"
 $fail = 0
 function Check($name,$ok,$detail){ if($ok){Write-Host "PASS $name $detail"}else{Write-Host "FAIL $name $detail"; $script:fail++} }
+try { $p = Invoke-RestMethod "$Url/api/v1/projects" -TimeoutSec 15
   $n = if ($p.projects) { @($p.projects).Count } else { @($p).Count }
   Check 'projects' ($n -eq $ExpectProjects) "got $n expected $ExpectProjects" } catch { Check 'projects' $false $_.Exception.Message }
 try { $r = Invoke-WebRequest "$Url/api/v1/__nope__" -UseBasicParsing -TimeoutSec 15 -SkipHttpErrorCheck
