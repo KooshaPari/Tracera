@@ -36,10 +36,10 @@ re-verify before relying on any of it.
 
 | Environment          | Frontend                                            | API                                                   | Edge worker                                             |
 | -------------------- | --------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------- |
-| `prod`               | `https://tracera.pheno.studio` (Cloudflare Access)  | `https://tracera.pheno.studio/api`                    | `https://tracera-edge.pheno.studio` (not attached, 530) |
+| `prod`               | `https://tracera.pheno.studio` (Cloudflare Access)  | `https://t.tracera.pheno.studio` (direct backend, Access) | `https://tracera-edge.pheno.studio` (not attached, 530) |
 | `prod` (fleet nodes) | —                                                   | any enrolled node's tunnel/origin                     | `GET /fleet/nodes` on the edge worker lists them        |
-| `dev`                | per-deploy Vercel URL, behind Vercel Authentication | `https://tracera.pheno.studio/api` (shared self-host) | `https://tracera-edge-dev.kooshapari.workers.dev`       |
-| `preview`            | per-deploy Vercel URL, behind Vercel Authentication | same as `dev` (no separate service)                   | `https://tracera-edge-preview.kooshapari.workers.dev`   |
+| `dev`                | per-deploy Vercel URL, behind Vercel Authentication | shared self-host unless explicitly overridden          | `https://tracera-edge-dev.kooshapari.workers.dev`       |
+| `preview`            | per-deploy Vercel URL, behind Vercel Authentication | same as `dev` (no separate service)                    | `https://tracera-edge-preview.kooshapari.workers.dev`   |
 
 ## Fleet compute nodes
 
@@ -76,12 +76,16 @@ Notes that matter when debugging a hostname:
   `401`. Automated checks must not treat production as reachable; CI instead
   smokes `dev`, where routes answer normally (public liveness routes `200`,
   guarded routes `401`/`403`).
-- **`tracera.pheno.studio/api` is the canonical production API**, served through
-  a Cloudflare Tunnel to the operator's box. See `deploy/selfhost/README.md` and
-  `.cloudflared/config.yml`.
-- **`api.tracera.pheno.studio` is the alternate API hostname** on the same
-  tunnel. Use it for `/healthz` and other root-level server routes; the
-  path-prefixed `tracera.pheno.studio/api/*` ingress does not expose them.
+- **`t.tracera.pheno.studio` is the directly observed production backend route**
+  on the shared `tracera-local` tunnel as of 2026-10-13. It is protected by its
+  own Cloudflare Access application and points to the Tracera backend on
+  `localhost:8080` at the connector.
+- **`tracera.pheno.studio` is the parent web/auth hostname.** The live tunnel
+  sends AuthKit/session paths to `localhost:8090` and remaining traffic to
+  `localhost:8091`; do not assume the old `/api -> :8080` mapping.
+- **`api.tracera.pheno.studio` and `mcp.tracera.pheno.studio` are not live DNS
+  routes in the 2026-10-13 reconciliation.** They remain design/history names,
+  not production endpoints.
 - **`api.pheno.studio` is not Tracera.** It serves the AgilePlus home page. It
   was previously wired into `TRACERA_API_BASE`, which is why the parity smoke
   spent its life reporting `404` on every route. Do not point anything here.
@@ -89,10 +93,13 @@ Notes that matter when debugging a hostname:
 ## Backend deployment
 
 The Rust backend is **self-hosted** on the operator's machine and published
-through a Cloudflare Tunnel (with optional Tailscale for private access). CI
-builds and pushes the `tracera-server` container image to GHCR via
-`build-push-image.yml`; pulling and restarting that image on the operator box is
-a manual step documented in `deploy/selfhost/README.md`.
+through the shared `tracera-local` Cloudflare Tunnel (with optional Tailscale for
+private access). The shared tunnel also carries non-Tracera Phenotype routes, so
+Tracera must not create, replace, or restart its full configuration from this
+repository. `.cloudflared/config.yml` records only the Tracera-owned route
+fragment observed on 2026-10-13; shared tunnel lifecycle belongs in shared infra
+IaC. CI builds and pushes the `tracera-server` image to GHCR, while host rollout
+remains separately controlled.
 
 There is no hosted dev API: `dev` and `preview` frontends talk to the same
 self-hosted backend unless overridden locally (for example
@@ -176,9 +183,10 @@ thing the per-environment checks above cannot: a deployed surface that quietly
 stops serving.
 
 - `live-service-smoke.yml` — daily at 06:37 UTC, plus on demand with a `target`
-  input (`all`, `prod`, `dev`, `frontend`). Pings `api.tracera.pheno.studio`
-  and the `tracera-kappa.vercel.app` alias. Uses `curl --max-time 60` and reads
-  the body: `/healthz` must report `"status":"ok"`, and the Vercel alias must
-  serve the SPA rather than the retired `scaffolding coming soon` placeholder.
-  Pairs with `deploy-vercel.yml`'s body-as-content verify step so a broken
-  preview can't pass locally and a broken prod can't pass here.
+  input (`all`, `prod`, `dev`, `frontend`, `tunnel`). It treats the Vercel
+  same-origin API and the Access-protected self-hosted tunnel as independent
+  assertions. The tunnel check requires `CF_ACCESS_CLIENT_ID` and
+  `CF_ACCESS_CLIENT_SECRET` and must receive a real `status:ok` response from
+  `t.tracera.pheno.studio`; an Access redirect, missing machine credential, or
+  healthy Vercel stub does not count as tunnel success. The frontend body is
+  still checked for the real SPA rather than the retired placeholder.
