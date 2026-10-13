@@ -28,5 +28,7 @@
 
 ## Planned (Not Yet Accepted)
 
+- [`ADR-VIZ-001-spatial-product-projections.md`](../ADR-VIZ-001-spatial-product-projections.md) — Proposed semantic-to-spatial product projection and geometry truth boundaries
+
 - `ADR-SEC-001`: API input-validation hardening and request-shape controls (planned)
 - `ADR-SEC-002`: Secret transport hardening and environment-only credentials (planned)
