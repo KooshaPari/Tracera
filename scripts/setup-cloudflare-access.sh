@@ -39,7 +39,7 @@ TOKEN_OUTPUT_FILE="${TOKEN_OUTPUT_FILE:-}"
 PUBLIC_BYPASS="${PUBLIC_BYPASS:-0}"
 PUBLIC_BYPASS_NAME="${PUBLIC_BYPASS_NAME:-Public Bypass}"
 
-if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+if [[ -z "${CLOUDFLARE_API_TOKEN:-}" || -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]]; then
   echo "error: set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID" >&2
   exit 1
 fi
@@ -49,11 +49,14 @@ auth_header() {
 }
 
 cf_get() {
-  curl -fsS -H "$(auth_header)" -H 'Content-Type: application/json'     "${CF_API}$1"
+  local path="$1"
+  curl -fsS -H "$(auth_header)" -H 'Content-Type: application/json' "${CF_API}${path}"
 }
 
 cf_post() {
-  curl -fsS -X POST -H "$(auth_header)" -H 'Content-Type: application/json'     --data "$2" "${CF_API}$1"
+  local path="$1"
+  local body="$2"
+  curl -fsS -X POST -H "$(auth_header)" -H 'Content-Type: application/json' --data "$body" "${CF_API}${path}"
 }
 
 echo "[access] verifying API token"
@@ -75,13 +78,13 @@ for app in data.get("result", []):
         break
 ' "$HOSTNAME")
 
-if [ -z "$app_id" ]; then
+if [[ -z "$app_id" ]]; then
   echo "error: no Access application found for ${HOSTNAME}" >&2
   exit 1
 fi
 echo "[access] found app id=${app_id}"
 
-if [ "$PUBLIC_BYPASS" = "1" ]; then
+if [[ "$PUBLIC_BYPASS" == "1" ]]; then
   echo "[access] ensuring public Bypass policy (${PUBLIC_BYPASS_NAME})"
   policies_json=$(cf_get "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/apps/${app_id}/policies?per_page=100")
   has_bypass=$(printf '%s' "$policies_json" | python3 -c '
@@ -94,7 +97,7 @@ for policy in json.load(sys.stdin).get("result", []):
         print("yes")
         break
 ' "$PUBLIC_BYPASS_NAME")
-  if [ "$has_bypass" != "yes" ]; then
+  if [[ "$has_bypass" != "yes" ]]; then
     cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/apps/${app_id}/policies"       "$(python3 -c 'import json,sys; print(json.dumps({"name":sys.argv[1],"decision":"bypass","include":[{"everyone":{}}],"precedence":1}))' "$PUBLIC_BYPASS_NAME")" >/dev/null
     echo "[access] attached public Bypass policy"
   else
@@ -114,8 +117,8 @@ for token in json.load(sys.stdin).get("result", []):
         break
 ' "$TOKEN_NAME")
 
-if [ -z "$token_id" ]; then
-  if [ -z "$TOKEN_OUTPUT_FILE" ]; then
+if [[ -z "$token_id" ]]; then
+  if [[ -z "$TOKEN_OUTPUT_FILE" ]]; then
     echo "error: service token '${TOKEN_NAME}' does not exist" >&2
     echo "error: refusing to create it because TOKEN_OUTPUT_FILE is unset." >&2
     echo "error: create it in an operator-controlled context with a secure output file," >&2
@@ -155,14 +158,14 @@ for policy in json.load(sys.stdin).get("result", []):
             raise SystemExit
 ' "$token_id")
 
-if [ "$has_service_policy" != "yes" ]; then
+if [[ "$has_service_policy" != "yes" ]]; then
   cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/apps/${app_id}/policies"     "$(python3 -c 'import json,sys; print(json.dumps({"name":"Service Auth ("+sys.argv[2]+")","decision":"non_identity","include":[{"service_token":{"token_id":sys.argv[1]}}],"precedence":1}))' "$token_id" "$TOKEN_NAME")" >/dev/null
   echo "[access] attached Service Auth policy"
 else
   echo "[access] Service Auth policy already present"
 fi
 
-if [ -n "${OPERATOR_EMAIL:-}" ]; then
+if [[ -n "${OPERATOR_EMAIL:-}" ]]; then
   has_email_policy=$(printf '%s' "$policies_json" | python3 -c '
 import json, sys
 email = sys.argv[1]
@@ -174,7 +177,7 @@ for policy in json.load(sys.stdin).get("result", []):
             print("yes")
             raise SystemExit
 ' "$OPERATOR_EMAIL")
-  if [ "$has_email_policy" != "yes" ]; then
+  if [[ "$has_email_policy" != "yes" ]]; then
     cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/apps/${app_id}/policies"       "$(python3 -c 'import json,sys; print(json.dumps({"name":"Allow "+sys.argv[1],"decision":"allow","include":[{"email":{"email":sys.argv[1]}}],"precedence":2}))' "$OPERATOR_EMAIL")" >/dev/null
     echo "[access] added Allow policy for ${OPERATOR_EMAIL}"
   fi
