@@ -1,7 +1,8 @@
 # Tracera Production Deploy — Required Credentials
 
-This document lists every credential Tracera needs for fully CI-driven
-production deploys. All values are sourced from [Infisical](https://app.infisical.com)
+This document lists the credentials and endpoint settings Tracera uses for CI-driven
+production deploys. Vercel production is explicitly same-origin (`VITE_API_URL=/api`);
+`TRACERA_API_BASE` no longer controls the production Vercel browser bundle. All values are sourced from [Infisical](https://app.infisical.com)
 project `<INFISICAL_PROJECT_ID>`, environment `prod`, and injected at
 deploy time by `.github/workflows/deploy-*.yml`.
 
@@ -12,7 +13,7 @@ deploy time by `.github/workflows/deploy-*.yml`.
 | `CLOUDFLARE_ACCOUNT_ID`   | GitHub repo secret   | (numeric account ID)                 |
 | `WORKOS_CLIENT_ID`        | GitHub repo secret   | (WorkOS project client id)           |
 | `WORKOS_API_KEY`          | GitHub repo secret   | test key, ok for staging             |
-| `TRACERA_API_BASE`        | GitHub repo variable | `https://tracera.pheno.studio/api`   |
+| `TRACERA_API_BASE`        | GitHub repo variable | legacy Pages/contract browser base; **not** the canonical machine backend |
 | `INFISICAL_PROJECT_ID`    | GitHub repo variable | (UUID)                               |
 
 ## Missing machine credential for the Access-protected backend
