@@ -14,8 +14,8 @@ deploy time by `.github/workflows/deploy-*.yml`.
 | `WORKOS_API_KEY`          | GitHub repo secret   | test key, ok for staging             |
 | `TRACERA_API_BASE`        | GitHub repo variable | `https://tracera.pheno.studio/api`   |
 | `INFISICAL_PROJECT_ID`    | GitHub repo variable | (UUID)                               |
-| `CF_ACCESS_CLIENT_ID`     | GitHub repo secret   | set by `setup-cloudflare-access.yml` |
-| `CF_ACCESS_CLIENT_SECRET` | GitHub repo secret   | set by `setup-cloudflare-access.yml` |
+| `CF_ACCESS_CLIENT_ID`     | GitHub repo secret   | required for authenticated tunnel smoke; not auto-created by CI |
+| `CF_ACCESS_CLIENT_SECRET` | GitHub repo secret   | required for authenticated tunnel smoke; not auto-created by CI |
 
 > **Note:** This document intentionally uses placeholders rather than
 > literal token values. To inject secrets, use the
@@ -52,11 +52,16 @@ Permissions required:
 
 Set **Account Resources** to _Include → Specific account → your CF account ID_.
 
-To unblock `tracera.pheno.studio` for CI and smoke checks, dispatch
-**Setup Cloudflare Access (tracera.pheno.studio)** after the token above has
-Zero Trust permissions. That workflow creates a `tracera-ci-smoke` service token,
-attaches a Service Auth policy to the Access app, and stores
-`CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET` in repo secrets.
+To qualify the Access-protected Tracera tunnel for machine callers, provision a
+`tracera-ci-smoke` service token in an operator-controlled context. The setup
+script refuses to mint a token in CI because Cloudflare returns the client secret
+only once and the workflow has no safe secret-persistence channel. When local
+creation is necessary, set `TOKEN_OUTPUT_FILE` to a protected path; the script
+writes the one-time client ID/secret there with mode 0600 and never prints them.
+Store those values as `CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET`, securely
+delete the temporary file, then dispatch **Setup Cloudflare Access** to attach or
+verify the Service Auth policy. The workflow reuses an existing token and fails
+closed when it is absent.
 
 ```bash
 gh secret set CLOUDFLARE_API_TOKEN --repo <REDACTED>/Tracera --body "<new_cf_token>"
@@ -121,9 +126,9 @@ If permissions are insufficient, the workflow:
 After replacing the tokens above:
 
 ```bash
-# 1. Unblock Cloudflare Access for prod smoke + CI
-gh workflow run "Setup Cloudflare Access (tracera.pheno.studio)" --repo <REDACTED>/Tracera --ref main \
-  -f operator_email=you@example.com
+# 1. After securely provisioning/storing tracera-ci-smoke credentials, attach/verify policy
+gh workflow run "Setup Cloudflare Access" --repo <REDACTED>/Tracera --ref main \
+  -f access_hostname=tracera.pheno.studio
 
 # 2. Trigger deploys (no force needed - on main they run automatically)
 gh workflow run "Deploy Cloudflare Worker (tracera-edge)" --repo <REDACTED>/Tracera --ref main
@@ -135,9 +140,10 @@ gh run list --repo <REDACTED>/Tracera --workflow "Deploy Cloudflare Worker (trac
 # 3. Verify live
 # api.pheno.studio is NOT Tracera: it serves AgilePlus, so a 200 there says
 # nothing about this project. Hosts per docs/04-guides/ENVIRONMENTS.md.
-curl https://api.tracera.pheno.studio/healthz              # self-hosted API -> 200 {"status":"ok"}
-curl -o /dev/null -w "%{http_code}\n" https://tracera.pheno.studio   # behind Cloudflare Access -> 302
-curl https://tracera-kappa.vercel.app                   # dev frontend -> 200
+curl -H 'CF-Access-Client-Id: <id>' -H 'CF-Access-Client-Secret: <secret>' \
+  https://t.tracera.pheno.studio/healthz                # authenticated self-hosted API -> status:ok
+curl -o /dev/null -w "%{http_code}\n" https://tracera.pheno.studio   # human Access edge; unauthenticated redirects
+curl https://tracera-kappa.vercel.app                    # Vercel frontend -> 200
 ```
 
 ## Cost Summary
@@ -152,7 +158,7 @@ curl https://tracera-kappa.vercel.app                   # dev frontend -> 200
 
 ## Files Referenced
 
-- `.github/workflows/setup-cloudflare-access.yml` — Access service token + policy
+- `.github/workflows/setup-cloudflare-access.yml` — reuses existing Access service token and applies policy; never mints/logs a new secret in CI
 - `.github/workflows/deploy-cloudflare.yml` — graceful-skip CF Worker deploy
 - `.github/workflows/deploy-full-stack.yml` — orchestrator (frontend + edge)
 - `.github/workflows/deploy-vercel.yml` — Vercel deploy
