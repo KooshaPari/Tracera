@@ -78,9 +78,10 @@ jobs:
       HAS_VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       HAS_VERCEL_ORG: ${{ vars.VERCEL_ORG_ID }}
       HAS_VERCEL_PROJECT: ${{ vars.VERCEL_PROJECT_ID }}
-      # dev and preview can point at a different API; falling back to the
-      # production base keeps this correct while no dev override is configured.
-      VITE_API_URL: ${{ needs.plan.outputs.env == 'prod' && vars.TRACERA_API_BASE || vars.TRACERA_API_BASE_DEV || vars.TRACERA_API_BASE }}
+      # Production is deliberately same-origin: Vercel Functions own /api and
+      # may proxy server-side later. Never expose Cloudflare service credentials
+      # in VITE_* browser variables. Dev/preview may use an explicit override.
+      VITE_API_URL: ${{ needs.plan.outputs.env == 'prod' && '/api' || vars.TRACERA_API_BASE_DEV || vars.TRACERA_API_BASE }}
     steps:
       # Production fails closed: a missing credential must be loud, not a silent
       # success. This step name is part of the contract enforced by
@@ -110,7 +111,7 @@ jobs:
         if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}
         run: |
           test -n "$VITE_API_URL" || {
-            echo "The configured API URL repository variable is required for Vercel builds." >&2
+            echo "An API URL is required for Vercel builds." >&2
             exit 1
           }
           # Production must be a public HTTPS origin. dev and preview may address
