@@ -128,6 +128,7 @@ pub(crate) fn build_router_with_auth(
         .route("/metrics", get(crate::prom_metrics_handler))
         .route("/api/v1/coverage-matrix", post(coverage_matrix))
         .route("/api/v1/health", get(crate::health::health))
+        .route("/api/v1/products/{product_id}/spatial", get(crate::handlers::product_spatial::get_spatial_projection))
         .route("/api/v1/csrf-token", get(crate::csrf_token))
         .route("/api/v1/impact", post(impact))
         .route("/api/v1/confidence", post(confidence))

@@ -220,7 +220,7 @@ pub fn compile_spatial_projection(
         conduits,
         omitted_nodes,
         omitted_relations,
-        truncated: omitted_nodes > 0 || omitted_relations > 0,
+        truncated: omitted_nodes > 0 || omitted_relations > 0 || !input_complete,
         input_complete,
         read_only: true,
     })
