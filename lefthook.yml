@@ -110,13 +110,13 @@ pre-push:
       run: |
         echo "[lefthook] task dev:stack (bring up local dev stack + tailnet check)"
         command -v task >/dev/null 2>&1 && task dev:stack || echo "[lefthook] task not installed; skipping"
-        command -v tailscale >/dev/null 2>&1 && tailscale status >/dev/null 2>&1 || echo "[lefthook] tailscale not active; CF tunnel will be fallback"
+        command -v tailscale >/dev/null 2>&1 && tailscale status >/dev/null 2>&1 || echo "[lefthook] tailscale not active; shared public ingress is managed independently"
 
     cloudflared-check:
       tags: devops
       run: |
-        echo "[lefthook] cloudflared binary"
-        command -v cloudflared >/dev/null 2>&1 && cloudflared --version || echo "[lefthook] cloudflared not installed; skipping tunnel pre-push"
+        echo "[lefthook] cloudflared binary (diagnostic only; shared tunnel lifecycle is external)"
+        command -v cloudflared >/dev/null 2>&1 && cloudflared --version || echo "[lefthook] cloudflared not installed; skipping diagnostic"
 
     rustfmt:
       tags: rust
