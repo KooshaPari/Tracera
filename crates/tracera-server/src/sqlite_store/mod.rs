@@ -11,6 +11,7 @@ use chrono::{DateTime, Utc};
 use serde_json::Value;
 use sqlx::{Row, SqlitePool};
 
+use tracera_server::product::{GeometryTruth, SpatialNode, SpatialRelation};
 use crate::store::{
     BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint, Store, StoreError,
     StoreResult, Story, TeamRow, TraceLink,
@@ -296,6 +297,66 @@ impl Store for SqliteStore {
         swee::create_swee_edge(
             &self.pool, edge_type, source_id, target_id, confidence, source, metadata, now,
         )
+    }
+
+    fn product_spatial_slice(
+        &self,
+        product_id: String,
+        baseline_revision: u64,
+        max_nodes: usize,
+        max_relations: usize,
+    ) -> BoxFuture<'_, StoreResult<(Vec<SpatialNode>, Vec<SpatialRelation>, bool)>> {
+        Box::pin(async move {
+            let revision = i64::try_from(baseline_revision)
+                .map_err(|_| StoreError::Database("baseline revision out of range".into()))?;
+            let node_rows = sqlx::query("SELECT id, intent_kind, title FROM product_nodes WHERE product_id = ?1 AND baseline_revision = ?2 ORDER BY id LIMIT ?3")
+                .bind(&product_id)
+                .bind(revision)
+                .bind((max_nodes.saturating_add(1).min(501)) as i64)
+                .fetch_all(&self.pool)
+                .await
+                .map_err(StoreError::from)?;
+            let node_truncated = node_rows.len() > max_nodes;
+            let nodes: Vec<SpatialNode> = node_rows.into_iter().take(max_nodes)
+                .map(|row| SpatialNode {
+                    id: row.get("id"),
+                    product_id: product_id.clone(),
+                    baseline_revision,
+                    kind: row.get("intent_kind"),
+                    label: row.get("title"),
+                    geometry_truth: GeometryTruth::Semantic,
+                    geometry_source_ref: None,
+                }).collect();
+            let visible: std::collections::HashSet<&str> =
+                nodes.iter().map(|node| node.id.as_str()).collect();
+            let edge_rows = sqlx::query("SELECT e.id, e.source_id, e.target_id, e.edge_type FROM product_edges e JOIN product_nodes s ON e.source_id=s.id JOIN product_nodes t ON e.target_id=t.id WHERE s.product_id=?1 AND t.product_id=?1 AND s.baseline_revision=?2 AND t.baseline_revision=?2 ORDER BY e.id LIMIT ?3")
+                .bind(&product_id)
+                .bind(revision)
+                .bind((max_relations.saturating_add(1).min(1501)) as i64)
+                .fetch_all(&self.pool)
+                .await
+                .map_err(StoreError::from)?;
+            let edge_truncated = edge_rows.len() > max_relations;
+            let mut clipped_relations = false;
+            let mut relations = Vec::new();
+            for row in edge_rows.into_iter().take(max_relations) {
+                let source_id: String = row.get("source_id");
+                let target_id: String = row.get("target_id");
+                if !visible.contains(source_id.as_str()) || !visible.contains(target_id.as_str()) {
+                    clipped_relations = true;
+                    continue;
+                }
+                let edge_id: i64 = row.get("id");
+                relations.push(SpatialRelation {
+                    id: edge_id.to_string(),
+                    source_id,
+                    target_id,
+                    kind: row.get("edge_type"),
+                    source_ref: None,
+                });
+            }
+            Ok((nodes, relations, !node_truncated && !edge_truncated && !clipped_relations))
+        })
     }
 
     fn list_swee_nodes(&self, node_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
