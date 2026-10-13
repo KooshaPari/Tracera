@@ -5,7 +5,7 @@ production deploys. All values are sourced from [Infisical](https://app.infisica
 project `<INFISICAL_PROJECT_ID>`, environment `prod`, and injected at
 deploy time by `.github/workflows/deploy-*.yml`.
 
-## Already Provisioned
+## Existing repository settings (verify before use)
 
 | Variable / Secret         | Where stored         | Notes                                |
 | ------------------------- | -------------------- | ------------------------------------ |
@@ -14,8 +14,14 @@ deploy time by `.github/workflows/deploy-*.yml`.
 | `WORKOS_API_KEY`          | GitHub repo secret   | test key, ok for staging             |
 | `TRACERA_API_BASE`        | GitHub repo variable | `https://tracera.pheno.studio/api`   |
 | `INFISICAL_PROJECT_ID`    | GitHub repo variable | (UUID)                               |
-| `CF_ACCESS_CLIENT_ID`     | GitHub repo secret   | required for authenticated tunnel smoke; not auto-created by CI |
-| `CF_ACCESS_CLIENT_SECRET` | GitHub repo secret   | required for authenticated tunnel smoke; not auto-created by CI |
+
+## Missing machine credential for the Access-protected backend
+
+Live Cloudflare reconciliation on 2026-10-13 found no `tracera-ci-smoke`
+service token and no Service Auth policy on `t.tracera.pheno.studio`. Therefore
+`CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET` must be treated as **not
+provisioned** until a secure operator-controlled creation and secret-store write
+has completed and the authenticated tunnel smoke passes.
 
 > **Note:** This document intentionally uses placeholders rather than
 > literal token values. To inject secrets, use the
