@@ -22,6 +22,7 @@ pub mod identity;
 pub mod ingest;
 pub mod observation;
 pub mod queries;
+pub mod spatial;
 pub mod traversal;
 
 pub use assessment::{
@@ -39,6 +40,10 @@ pub use queries::{
     build_invalidation_index, build_product_view, compute_product_stats, query_intents,
     InvalidationIndex, ProductQuery, ProductStats, ProductView, DEFAULT_QUERY_LIMIT,
     MAX_QUERY_LIMIT,
+};
+pub use spatial::{
+    compile_spatial_projection, GeometryTruth, ProjectionError, ProjectionScope, SpatialConduit,
+    SpatialGlyph, SpatialNode, SpatialProjection, SpatialRelation, ViewKind,
 };
 pub use traversal::{
     build_adjacency, GraphTraversal, TraversalBudget, TraversalNode, TraversalResult,
