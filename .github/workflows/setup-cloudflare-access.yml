@@ -7,7 +7,7 @@ on:
         description: Hostname protected by the Access application
         required: false
         type: string
-        default: tracera.pheno.studio
+        default: t.tracera.pheno.studio
       public_bypass:
         description: Add a Bypass/everyone policy (public, no login)
         required: false
@@ -41,14 +41,14 @@ jobs:
       - name: Verify Cloudflare token
         run: |
           set -euo pipefail
-          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+          if [[ -z "$CLOUDFLARE_API_TOKEN" || -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
             echo "::error::CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID must be set"
             exit 1
           fi
           code=$(curl -sS -o /tmp/cf_verify.json -w '%{http_code}' \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             https://api.cloudflare.com/client/v4/user/tokens/verify)
-          if [ "$code" != "200" ]; then
+          if [[ "$code" != "200" ]]; then
             echo "::error::Cloudflare token verify failed (HTTP $code)"
             exit 1
           fi
