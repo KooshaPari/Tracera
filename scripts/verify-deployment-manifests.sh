@@ -49,7 +49,7 @@ selfhost="deploy/selfhost/docker-compose.selfhost.yml"
 ! grep -q 'CF_TUNNEL_TOKEN' "$selfhost" \
   || fail "Tracera self-host compose must not consume a shared tunnel token"
 
-python3 "$ROOT_DIR/scripts/verify-selfhost-loopback-port.py" "$selfhost" \
+python3 "$ROOT_DIR/scripts/verify-selfhost-loopback-port.py" \
   || fail "self-host backend must publish exactly one mapping: 127.0.0.1:8080:8080"
 
 grep -q 'path: /ready' deploy/kubernetes/templates/tracera.yaml \
