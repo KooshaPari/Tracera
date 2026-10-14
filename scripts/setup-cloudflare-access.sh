@@ -134,8 +134,8 @@ if [[ -z "$token_id" ]]; then
   # Cloudflare returns the client secret only once. Prove the destination is
   # usable BEFORE creating the token so a local path error cannot orphan an
   # unrecoverable credential.
-  if [[ -e "$TOKEN_OUTPUT_FILE" ]]; then
-    echo "error: TOKEN_OUTPUT_FILE already exists; refusing to overwrite: $TOKEN_OUTPUT_FILE" >&2
+  if [[ -e "$TOKEN_OUTPUT_FILE" || -L "$TOKEN_OUTPUT_FILE" ]]; then
+    echo "error: TOKEN_OUTPUT_FILE already exists or is a symlink; refusing: $TOKEN_OUTPUT_FILE" >&2
     exit 2
   fi
   output_parent=$(dirname -- "$TOKEN_OUTPUT_FILE")
@@ -143,12 +143,43 @@ if [[ -z "$token_id" ]]; then
     echo "error: TOKEN_OUTPUT_FILE parent is not an existing writable directory: $output_parent" >&2
     exit 2
   fi
+
+  # The one-time Cloudflare secret must land in a directory private to this
+  # effective user. This closes the cross-user rename/symlink race during the
+  # network request. Root is still trusted as the host administrator.
+  if ! python3 -c '
+import os, stat, sys
+p = sys.argv[1]
+s = os.stat(p, follow_symlinks=False)
+if not stat.S_ISDIR(s.st_mode):
+    raise SystemExit(1)
+if s.st_uid != os.geteuid():
+    raise SystemExit(2)
+if stat.S_IMODE(s.st_mode) & 0o077:
+    raise SystemExit(3)
+' "$output_parent"; then
+    echo "error: TOKEN_OUTPUT_FILE parent must be owned by the current user and mode 0700 (or stricter): $output_parent" >&2
+    exit 2
+  fi
+
   umask 077
-  if ! ( : >"$TOKEN_OUTPUT_FILE" && chmod 600 "$TOKEN_OUTPUT_FILE" ); then
+  if ! python3 -c '
+import os, sys
+path = sys.argv[1]
+flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+flags |= getattr(os, "O_NOFOLLOW", 0)
+fd = os.open(path, flags, 0o600)
+os.close(fd)
+' "$TOKEN_OUTPUT_FILE"; then
     echo "error: cannot securely create TOKEN_OUTPUT_FILE" >&2
     rm -f -- "$TOKEN_OUTPUT_FILE"
     exit 2
   fi
+  output_identity=$(python3 -c '
+import os, sys
+s = os.lstat(sys.argv[1])
+print(f"{s.st_dev}:{s.st_ino}")
+' "$TOKEN_OUTPUT_FILE")
 
   if ! created=$(cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/service_tokens"     "$(python3 -c 'import json,sys; print(json.dumps({"name":sys.argv[1]}))' "$TOKEN_NAME")"); then
     rm -f -- "$TOKEN_OUTPUT_FILE"
@@ -158,16 +189,27 @@ if [[ -z "$token_id" ]]; then
   token_id=$(printf '%s' "$created" | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["id"])')
 
   if ! printf '%s' "$created" | python3 -c '
-import json, os, sys
-dst = sys.argv[1]
-r = json.load(sys.stdin)["result"]
-with open(dst, "w", encoding="utf-8") as f:
-    f.write("CF_ACCESS_CLIENT_ID=" + r["client_id"] + "\n")
-    f.write("CF_ACCESS_CLIENT_SECRET=" + r["client_secret"] + "\n")
-    f.flush()
-    os.fsync(f.fileno())
-os.chmod(dst, 0o600)
-' "$TOKEN_OUTPUT_FILE"; then
+import json, os, stat, sys
+dst, expected = sys.argv[1], sys.argv[2]
+expected_dev, expected_ino = map(int, expected.split(":"))
+flags = os.O_WRONLY | os.O_TRUNC
+flags |= getattr(os, "O_NOFOLLOW", 0)
+fd = os.open(dst, flags)
+try:
+    st = os.fstat(fd)
+    if not stat.S_ISREG(st.st_mode) or st.st_dev != expected_dev or st.st_ino != expected_ino:
+        raise RuntimeError("credential destination identity changed")
+    r = json.load(sys.stdin)["result"]
+    payload = (
+        "CF_ACCESS_CLIENT_ID=" + r["client_id"] + "\n"
+        "CF_ACCESS_CLIENT_SECRET=" + r["client_secret"] + "\n"
+    ).encode()
+    os.write(fd, payload)
+    os.fsync(fd)
+    os.fchmod(fd, 0o600)
+finally:
+    os.close(fd)
+' "$TOKEN_OUTPUT_FILE" "$output_identity"; then
     echo "error: failed to persist one-time service-token credentials; rolling token back" >&2
     rm -f -- "$TOKEN_OUTPUT_FILE"
     cf_delete "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/service_tokens/${token_id}" >/dev/null ||       echo "error: token rollback failed; disable/delete token id=${token_id} immediately" >&2
