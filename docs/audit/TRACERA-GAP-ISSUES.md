@@ -170,7 +170,7 @@ Every sidebar destination below exists as a navigation entry. Apart from separat
 | Journey Map | `/projects/{activeId}/views/journey` |
 | Process Flow | `/projects/{activeId}/views/process` |
 | Timeline | `/projects/{activeId}/views/monitoring` |
-| Performance (sidebar label: Reports) | `/projects/{activeId}/views/performance` |
+| Reports / Performance | `/projects/{activeId}/views/performance` |
 | Impact Analysis | `/projects/{activeId}/views/impact-analysis` |
 | Traceability Matrix | `/projects/{activeId}/views/traceability` |
 | Dependency Graph | `/projects/{activeId}/views/dependency` |
