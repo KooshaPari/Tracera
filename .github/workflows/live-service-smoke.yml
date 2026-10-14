@@ -1,8 +1,7 @@
 name: Live service smoke
 
-# Independently verifies the deployed frontend and the Access-protected
-# self-hosted tunnel. A healthy Vercel fallback MUST NOT satisfy the tunnel gate.
-
+# Independently verifies Vercel, the Access-protected direct backend, and the
+# primary Access-protected web/auth ingress. No surface may stand in for another.
 on:
   schedule:
     - cron: "37 6 * * *"
@@ -24,9 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      # 2026-10-13 live topology: t.tracera.pheno.studio is the direct
-      # Access-protected Tracera origin route on the shared tracera-local tunnel.
       TUNNEL_API: https://t.tracera.pheno.studio
+      PROD_WEB: https://tracera.pheno.studio
       PROD_FRONTEND: https://tracera-kappa.vercel.app
       CURL_TIMEOUT: "60"
       SMOKE_TARGET: ${{ github.event_name == 'schedule' && 'all' || inputs.target }}
@@ -38,7 +36,9 @@ jobs:
         if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'frontend' }}
         run: |
           set -euo pipefail
-          body=$(curl --silent --show-error --fail-with-body             --max-time "$CURL_TIMEOUT"             "$PROD_FRONTEND/api/healthz")
+          body=$(curl --silent --show-error --fail-with-body \
+            --max-time "$CURL_TIMEOUT" \
+            "$PROD_FRONTEND/api/healthz")
           printf '%s' "$body" | grep -q '"status":"ok"' || {
             echo "::error::Vercel same-origin API did not report status:ok"
             exit 1
@@ -50,12 +50,60 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "${CF_ACCESS_CLIENT_ID:-}" || -z "${CF_ACCESS_CLIENT_SECRET:-}" ]]; then
-            echo "::error::CF_ACCESS_CLIENT_ID / CF_ACCESS_CLIENT_SECRET are required for the production tunnel smoke"
-            echo "::error::A Vercel success is not evidence that the Access-protected self-hosted origin is reachable."
+            echo "::error::CF_ACCESS_CLIENT_ID / CF_ACCESS_CLIENT_SECRET are required for production ingress smoke"
+            echo "::error::Vercel success is not evidence that either Access-protected origin is reachable."
             exit 1
           fi
 
-      - name: Probe authenticated self-hosted tunnel
+      - name: Probe authenticated parent web and auth ingress
+        if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'tunnel' }}
+        run: |
+          set -euo pipefail
+          access_headers=(
+            -H "CF-Access-Client-Id: $CF_ACCESS_CLIENT_ID"
+            -H "CF-Access-Client-Secret: $CF_ACCESS_CLIENT_SECRET"
+          )
+
+          probe_parent() {
+            path="$1"
+            mode="$2"
+            body_file="/tmp/parent-${mode}.body"
+            header_file="/tmp/parent-${mode}.headers"
+            code=$(curl --silent --show-error \
+              --max-time "$CURL_TIMEOUT" \
+              --dump-header "$header_file" \
+              --output "$body_file" \
+              --write-out '%{http_code}' \
+              "${access_headers[@]}" \
+              "$PROD_WEB$path" || true)
+
+            if grep -Eiq '^location: .*\.cloudflareaccess\.com' "$header_file" \
+              || grep -Eiq 'cloudflareaccess\.com' "$body_file"; then
+              echo "::error::$PROD_WEB$path redirected to Cloudflare Access; machine policy is missing or invalid"
+              exit 1
+            fi
+
+            case "$mode:$code" in
+              web:2??)
+                echo "PASS: parent web ingress $path -> HTTP $code"
+                ;;
+              auth:2??|auth:401|auth:403)
+                echo "PASS: parent auth ingress $path reached application boundary -> HTTP $code"
+                ;;
+              *)
+                echo "::error::parent $mode ingress $path returned unexpected HTTP $code"
+                exit 1
+                ;;
+            esac
+          }
+
+          # Catch-all parent route -> localhost:8091.
+          probe_parent "/" web
+          # Auth/session path -> localhost:8090. App-level 401/403 is acceptable;
+          # a Cloudflare Access login redirect is not.
+          probe_parent "/api/v1/auth/me" auth
+
+      - name: Probe authenticated self-hosted backend
         if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'tunnel' }}
         run: |
           set -euo pipefail
@@ -70,7 +118,7 @@ jobs:
           for path in /healthz /api/v1/health; do
             if body=$(curl "${curl_args[@]}" "$TUNNEL_API$path" 2>/dev/null); then
               if printf '%s' "$body" | grep -q '"status":"ok"'; then
-                echo "PASS: authenticated tunnel $path"
+                echo "PASS: authenticated backend $path"
                 ok=1
                 break
               fi
@@ -78,29 +126,38 @@ jobs:
           done
 
           if [[ "$ok" -ne 1 ]]; then
-            echo "::error::Access-authenticated Tracera tunnel did not report status:ok"
+            echo "::error::Access-authenticated Tracera backend did not report status:ok"
             exit 1
           fi
 
-      - name: Probe tunnel CORS for deployed frontend
+      - name: Probe backend CORS for deployed frontend
         if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'prod' || env.SMOKE_TARGET == 'tunnel' }}
         run: |
           set -euo pipefail
-          headers=$(curl --silent --show-error --dump-header - --output /dev/null             --max-time "$CURL_TIMEOUT"             -H "CF-Access-Client-Id: $CF_ACCESS_CLIENT_ID"             -H "CF-Access-Client-Secret: $CF_ACCESS_CLIENT_SECRET"             -H "Origin: $PROD_FRONTEND"             "$TUNNEL_API/ready")
+          headers=$(curl --silent --show-error --dump-header - --output /dev/null \
+            --max-time "$CURL_TIMEOUT" \
+            -H "CF-Access-Client-Id: $CF_ACCESS_CLIENT_ID" \
+            -H "CF-Access-Client-Secret: $CF_ACCESS_CLIENT_SECRET" \
+            -H "Origin: $PROD_FRONTEND" \
+            "$TUNNEL_API/ready")
 
-          allowed=$(printf '%s' "$headers"             | tr -d '\r'             | awk 'tolower($1) == "access-control-allow-origin:" { print $2 }')
+          allowed=$(printf '%s' "$headers" \
+            | tr -d '\r' \
+            | awk 'tolower($1) == "access-control-allow-origin:" { print $2 }')
 
           if [[ "$allowed" != "$PROD_FRONTEND" && "$allowed" != "*" ]]; then
-            echo "::error::tunnel answered Origin $PROD_FRONTEND with ACAO '${allowed:-<absent>}'"
+            echo "::error::backend answered Origin $PROD_FRONTEND with ACAO '${allowed:-<absent>}'"
             exit 1
           fi
-          echo "PASS: tunnel CORS allows deployed frontend"
+          echo "PASS: backend CORS allows deployed frontend"
 
       - name: Probe prod frontend
         if: ${{ env.SMOKE_TARGET == 'all' || env.SMOKE_TARGET == 'frontend' || env.SMOKE_TARGET == 'prod' }}
         run: |
           set -euo pipefail
-          code=$(curl --silent --output /tmp/prod_frontend.html             --write-out '%{http_code}'             --max-time "$CURL_TIMEOUT" "$PROD_FRONTEND/")
+          code=$(curl --silent --output /tmp/prod_frontend.html \
+            --write-out '%{http_code}' \
+            --max-time "$CURL_TIMEOUT" "$PROD_FRONTEND/")
           echo "prod frontend -> HTTP $code"
           case "$code" in
             2??) ;;
@@ -110,7 +167,8 @@ jobs:
             echo "::error::prod frontend is serving the placeholder, not the SPA"
             exit 1
           fi
-          if ! grep -q 'id="root"' /tmp/prod_frontend.html             && ! grep -q 'data-server-rendered' /tmp/prod_frontend.html; then
+          if ! grep -q 'id="root"' /tmp/prod_frontend.html \
+            && ! grep -q 'data-server-rendered' /tmp/prod_frontend.html; then
             echo "::error::prod frontend body does not look like the SPA build"
             exit 1
           fi
