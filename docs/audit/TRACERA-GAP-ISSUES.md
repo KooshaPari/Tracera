@@ -46,7 +46,7 @@ Evidence: `frontend/apps/web/src/api/events.ts:51-61`.
 
 The active `TraceabilityMatrixView` builds its matrix from `useItems` and `useLinks`. The item hook requests the project-scoped item collection, which is not registered in the Rust router; the project-scoped links route is registered to the generic HTTP 501 handler. These active data paths prevent the view from establishing a complete matrix. The zero-valued fallback in `api/matrix.ts` belongs to `fetchMatrix`, which has no production callers and does not drive this view.
 
-Evidence: `frontend/apps/web/src/views/TraceabilityMatrixView.tsx:22-23,73-76`; `frontend/apps/web/src/hooks/useItems.ts`; `frontend/apps/web/src/api/queries-items.ts:50-132`; `crates/tracera-server/src/router.rs:175-188`.
+Evidence: `frontend/apps/web/src/views/TraceabilityMatrixView.tsx:22-23,73-76`; `frontend/apps/web/src/hooks/useItems.ts`; `frontend/apps/web/src/api/queries-items.ts:50-132`; `crates/tracera-server/src/router.rs:175-188`; `frontend/apps/web/src/api/matrix.ts:56-90`; a non-test search found no `fetchMatrix` callers under `frontend/apps/web/src`; remaining call sites are the API declaration/export and tests in `frontend/apps/web/src/__tests__/api/matrix.test.ts`.
 
 ### [Instinct] GAP-006 Matrix export fabricates an empty artifact
 
@@ -116,7 +116,7 @@ Evidence: `crates/tracera-server/src/router.rs:25,269-276`; `frontend/apps/web/s
 
 ### [Instinct] GAP-017 Current parity baseline is not a current per-view actual-data matrix
 
-The 20260726 matrix lists convergence acceptance gates and pending status, the 20260722 matrix compares the frontend shell with its candidate implementation and notes missing Rust routes/typed adapters, and `mcp-cli-api-matrix.md` identifies itself as historical/retired and describes the earlier Python stack. These sources do not attest every current project view/sidebar page against live, complete artifacts. Keep the baseline source replaceable: when Koosha's hand-built matrix CSV is supplied, select it as the active baseline input, retain this source set as provenance, and preserve the same CSV columns.
+The 20260726 matrix lists convergence acceptance gates and pending status, the 20260722 matrix compares the frontend shell with a candidate frontend implementation and notes missing Rust routes/typed adapters, and `mcp-cli-api-matrix.md` identifies itself as historical/retired and describes the earlier Python stack. These sources do not attest every current project view/sidebar page against live, complete artifacts. Keep the baseline source replaceable: when Koosha's hand-built matrix CSV is supplied, select it as the active baseline input, retain this source set as provenance, and preserve the same CSV columns.
 
 Current frontend route and view inventory includes dashboard, graph, item list/detail, project list, search, settings, agents/admin/auth; project ADRs, contracts, features, compliance, specifications, agents, equivalence, scenario activity, settings, and temporal; and generic project views API, architecture, code, configuration, coverage, dataflow, database, dependency, domain, feature, infrastructure, integrations, journey, monitoring, performance, problem, process, QA dashboard, security, test cases/runs/suites, test, webhooks, and wireframe. This is source route coverage only. The actual artifact and data completeness for every entry remains `Unknown` unless supported by a specific row in the CSV.
 
