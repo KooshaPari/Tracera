@@ -6,9 +6,10 @@ from __future__ import annotations
 import re
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 
-def die(message: str) -> "NoReturn":
+def die(message: str) -> NoReturn:
     print(f"self-host loopback validation failed: {message}", file=sys.stderr)
     raise SystemExit(1)
 
@@ -17,10 +18,11 @@ def indent(line: str) -> int:
     return len(line) - len(line.lstrip(" "))
 
 
-if len(sys.argv) != 2:
-    die("usage: verify-selfhost-loopback-port.py <compose-file>")
-
-path = Path(sys.argv[1])
+# Deliberately inspect only the repository-owned self-host manifest. Accepting an
+# arbitrary CLI path here turns a deployment gate into a path-traversal surface
+# and makes an LLM-supplied argument part of the security boundary.
+repo_root = Path(__file__).resolve().parent.parent
+path = repo_root / "deploy" / "selfhost" / "docker-compose.selfhost.yml"
 lines = path.read_text(encoding="utf-8").splitlines()
 
 starts = [i for i, line in enumerate(lines) if line.rstrip() == "  tracera-server:"]
@@ -61,7 +63,6 @@ entries = [
     for line in service[ports_start:ports_end]
     if line.strip() and not line.lstrip().startswith("#")
 ]
-
 if len(entries) != 1:
     die(f"expected exactly one published port entry, found {len(entries)}: {entries!r}")
 
@@ -79,7 +80,6 @@ if value != "127.0.0.1:8080:8080":
         f"got {value!r}. Extra IPs, long-form mappings, and broad binds are rejected."
     )
 
-# Reject a second ports key hidden deeper in the same service.
 if sum(1 for line in service if re.match(r"^\s+ports:\s*$", line)) != 1:
     die("multiple ports keys are not allowed in tracera-server")
 
