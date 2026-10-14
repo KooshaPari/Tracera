@@ -42,7 +42,7 @@ fail() {
 grep -qE '^      TRACERA_BIND_ADDR: 0\.0\.0\.0:8080$' "$compose" \
   || fail "self-host server must bind to container port 8080"
 
-python3 "$root/scripts/verify-selfhost-loopback-port.py" "$compose" \
+python3 "$root/scripts/verify-selfhost-loopback-port.py" \
   || fail "self-host backend must publish exactly one mapping: 127.0.0.1:8080:8080"
 
 grep -qE '^[[:space:]]*reverse_proxy[[:space:]]+tracera-server:8080$' "$caddy" \
