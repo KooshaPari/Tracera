@@ -204,7 +204,13 @@ try:
         "CF_ACCESS_CLIENT_ID=" + r["client_id"] + "\n"
         "CF_ACCESS_CLIENT_SECRET=" + r["client_secret"] + "\n"
     ).encode()
-    os.write(fd, payload)
+    view = memoryview(payload)
+    offset = 0
+    while offset < len(view):
+        written = os.write(fd, view[offset:])
+        if written <= 0:
+            raise OSError("short credential write")
+        offset += written
     os.fsync(fd)
     os.fchmod(fd, 0o600)
 finally:
