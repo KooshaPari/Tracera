@@ -8,13 +8,13 @@ deploy time by `.github/workflows/deploy-*.yml`.
 
 ## Existing repository settings (verify before use)
 
-| Variable / Secret         | Where stored         | Notes                                |
-| ------------------------- | -------------------- | ------------------------------------ |
-| `CLOUDFLARE_ACCOUNT_ID`   | GitHub repo secret   | (numeric account ID)                 |
-| `WORKOS_CLIENT_ID`        | GitHub repo secret   | (WorkOS project client id)           |
-| `WORKOS_API_KEY`          | GitHub repo secret   | test key, ok for staging             |
-| `TRACERA_API_BASE`        | GitHub repo variable | legacy Pages/contract browser base; **not** the canonical machine backend |
-| `INFISICAL_PROJECT_ID`    | GitHub repo variable | (UUID)                               |
+| Variable / Secret       | Where stored         | Notes                                                                     |
+| ----------------------- | -------------------- | ------------------------------------------------------------------------- |
+| `CLOUDFLARE_ACCOUNT_ID` | GitHub repo secret   | (numeric account ID)                                                      |
+| `WORKOS_CLIENT_ID`      | GitHub repo secret   | (WorkOS project client id)                                                |
+| `WORKOS_API_KEY`        | GitHub repo secret   | test key, ok for staging                                                  |
+| `TRACERA_API_BASE`      | GitHub repo variable | legacy Pages/contract browser base; **not** the canonical machine backend |
+| `INFISICAL_PROJECT_ID`  | GitHub repo variable | (UUID)                                                                    |
 
 ## Missing machine credential for the Access-protected backend
 

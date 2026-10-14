@@ -7,22 +7,22 @@
 
 ## 0. Prerequisites (What You Need Before Starting)
 
-| #    | Item                   | Where to Get                   | Status          |
-| ---- | ---------------------- | ------------------------------ | --------------- |
-| 0.1  | **GitHub account**     | github.com                     | ✅ (<REDACTED>) |
-| 0.2  | **Vercel account**     | vercel.com (free tier)         | ✅              |
-| 0.3  | **Cloudflare account** | cloudflare.com (free tier)     | ☐               |
-| 0.4  | **Shared ingress owner** | BytePort #438 / Cloudflare   | ☐               |
-| 0.5  | **Domain registered**  | phenotype.studio (or similar)  | ☐               |
-| 0.6  | **Git installed**      | git-scm.com                    | ✅              |
-| 0.7  | **Rust toolchain**     | rustup.rs                      | ✅              |
-| 0.8  | **Bun installed**      | bun.sh                         | ✅              |
-| 0.9  | **Node.js + npm**      | nodejs.org                     | ✅              |
-| 0.10 | **wrangler CLI**       | `npm install -g wrangler`      | ☐               |
-| 0.11 | **vercel CLI**         | `npm install -g vercel`        | ☐               |
-| 0.12 | **Docker Desktop**     | docker.com (for local)         | ☐               |
-| 0.13 | **SSH key**            | `ssh-keygen -t ed25519`        | ☐               |
-| 0.14 | **GPG key**            | `gpg --full-generate-key`      | ☐               |
+| #    | Item                     | Where to Get                  | Status          |
+| ---- | ------------------------ | ----------------------------- | --------------- |
+| 0.1  | **GitHub account**       | github.com                    | ✅ (<REDACTED>) |
+| 0.2  | **Vercel account**       | vercel.com (free tier)        | ✅              |
+| 0.3  | **Cloudflare account**   | cloudflare.com (free tier)    | ☐               |
+| 0.4  | **Shared ingress owner** | BytePort #438 / Cloudflare    | ☐               |
+| 0.5  | **Domain registered**    | phenotype.studio (or similar) | ☐               |
+| 0.6  | **Git installed**        | git-scm.com                   | ✅              |
+| 0.7  | **Rust toolchain**       | rustup.rs                     | ✅              |
+| 0.8  | **Bun installed**        | bun.sh                        | ✅              |
+| 0.9  | **Node.js + npm**        | nodejs.org                    | ✅              |
+| 0.10 | **wrangler CLI**         | `npm install -g wrangler`     | ☐               |
+| 0.11 | **vercel CLI**           | `npm install -g vercel`       | ☐               |
+| 0.12 | **Docker Desktop**       | docker.com (for local)        | ☐               |
+| 0.13 | **SSH key**              | `ssh-keygen -t ed25519`       | ☐               |
+| 0.14 | **GPG key**              | `gpg --full-generate-key`     | ☐               |
 
 ---
 
@@ -104,13 +104,13 @@ ssh-keygen -t ed25519 -C "deploy@tracera" -f ~/.ssh/deploy_tracera
 
 ### 2.1 — Register / Configure Domain
 
-| Domain                     | Purpose                      | DNS Provider | Status |
-| -------------------------- | ---------------------------- | ------------ | ------ |
-| `phenotype.studio`         | Main dashboard               | Cloudflare   | ☐      |
-| `t.tracera.pheno.studio`   | Direct backend (Access-protected shared tunnel) | Cloudflare | ✅ observed 2026-10-13 |
-| `tracera.pheno.studio`     | Web/Auth parent (Access-protected shared tunnel) | Cloudflare | ✅ observed 2026-10-13 |
-| `worker.phenotype.studio`  | Cloudflare Worker            | Cloudflare   | ☐      |
-| `docs.phenotype.studio`    | Documentation (Vercel)       | Cloudflare   | ☐      |
+| Domain                    | Purpose                                          | DNS Provider | Status                 |
+| ------------------------- | ------------------------------------------------ | ------------ | ---------------------- |
+| `phenotype.studio`        | Main dashboard                                   | Cloudflare   | ☐                      |
+| `t.tracera.pheno.studio`  | Direct backend (Access-protected shared tunnel)  | Cloudflare   | ✅ observed 2026-10-13 |
+| `tracera.pheno.studio`    | Web/Auth parent (Access-protected shared tunnel) | Cloudflare   | ✅ observed 2026-10-13 |
+| `worker.phenotype.studio` | Cloudflare Worker                                | Cloudflare   | ☐                      |
+| `docs.phenotype.studio`   | Documentation (Vercel)                           | Cloudflare   | ☐                      |
 
 ### 2.2 — DNS Records (Cloudflare)
 

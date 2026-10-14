@@ -7,15 +7,15 @@ material) over a 27-service local dev stack. Start with
 
 ## 1. Development Environment
 
-| Tool | Version / Source | Notes |
-|------|------------------|-------|
-| Rust | `rust-toolchain.toml`; MSRV 1.82 (`Cargo.toml` `rust-version`) | workspace edition 2021 |
-| bun | `frontend/bun.lock`, `frontend/bunfig.toml` | package manager + runtime for the frontend |
-| Node | for tooling invoked via `bun x` | Turborepo, Vite, Playwright, Storybook |
-| Go | `sidecar/go/go.mod` | only for `tracera-sidecar` |
-| Python | >= 3.10 (`pyproject.toml`) | migration/legacy material + formatting via ruff |
-| Container runtime | docker compose / podman-compose | see `Taskfile.yml` host notes |
-| task | `Taskfile.yml` | **canonical** entrypoint (make is a forwarder) |
+| Tool              | Version / Source                                               | Notes                                           |
+| ----------------- | -------------------------------------------------------------- | ----------------------------------------------- |
+| Rust              | `rust-toolchain.toml`; MSRV 1.82 (`Cargo.toml` `rust-version`) | workspace edition 2021                          |
+| bun               | `frontend/bun.lock`, `frontend/bunfig.toml`                    | package manager + runtime for the frontend      |
+| Node              | for tooling invoked via `bun x`                                | Turborepo, Vite, Playwright, Storybook          |
+| Go                | `sidecar/go/go.mod`                                            | only for `tracera-sidecar`                      |
+| Python            | >= 3.10 (`pyproject.toml`)                                     | migration/legacy material + formatting via ruff |
+| Container runtime | docker compose / podman-compose                                | see `Taskfile.yml` host notes                   |
+| task              | `Taskfile.yml`                                                 | **canonical** entrypoint (make is a forwarder)  |
 
 Bootstrap:
 
@@ -69,6 +69,7 @@ cd frontend && bun run test:client-server-parity
 ```
 
 Specialized suites and gates:
+
 - Mutation testing: `cargo-mutants.toml` + `.github/workflows/mutants.yml`.
 - Coverage: `.github/workflows/coverage.yml`; policy in
   `docs/governance/ADR-TEST-001-test-coverage-policy.md` and
@@ -139,7 +140,7 @@ PR flow:
 1. Branch from `main`; keep changes scoped (CI uses a `detect-changes` job to
    route rust/go/python/typescript lanes).
 2. Run local gates: `cargo fmt --all && cargo clippy --workspace --all-targets
-   -- -D warnings && cargo test --workspace` plus `cd frontend && bun run check`.
+-- -D warnings && cargo test --workspace` plus `cd frontend && bun run check`.
 3. Open the PR; required checks come from `.github/workflows/ci.yml`
    (`required-ci-lint`, `required-ci-test`, `ci`) plus coverage, e2e,
    dependency-review, and trunk-check.

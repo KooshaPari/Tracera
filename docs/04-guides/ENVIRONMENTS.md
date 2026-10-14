@@ -34,12 +34,12 @@ input to the frontend and edge workflows it calls, so a dispatch asking for
 Each environment owns a distinct hostname. Verified against the live services;
 re-verify before relying on any of it.
 
-| Environment          | Frontend                                            | API                                                   | Edge worker                                             |
-| -------------------- | --------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------- |
+| Environment          | Frontend                                            | API                                                       | Edge worker                                             |
+| -------------------- | --------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------- |
 | `prod`               | `https://tracera.pheno.studio` (Cloudflare Access)  | `https://t.tracera.pheno.studio` (direct backend, Access) | `https://tracera-edge.pheno.studio` (not attached, 530) |
-| `prod` (fleet nodes) | —                                                   | any enrolled node's tunnel/origin                     | `GET /fleet/nodes` on the edge worker lists them        |
-| `dev`                | per-deploy Vercel URL, behind Vercel Authentication | shared self-host unless explicitly overridden          | `https://tracera-edge-dev.kooshapari.workers.dev`       |
-| `preview`            | per-deploy Vercel URL, behind Vercel Authentication | same as `dev` (no separate service)                    | `https://tracera-edge-preview.kooshapari.workers.dev`   |
+| `prod` (fleet nodes) | —                                                   | any enrolled node's tunnel/origin                         | `GET /fleet/nodes` on the edge worker lists them        |
+| `dev`                | per-deploy Vercel URL, behind Vercel Authentication | shared self-host unless explicitly overridden             | `https://tracera-edge-dev.kooshapari.workers.dev`       |
+| `preview`            | per-deploy Vercel URL, behind Vercel Authentication | same as `dev` (no separate service)                       | `https://tracera-edge-preview.kooshapari.workers.dev`   |
 
 ## Fleet compute nodes
 
@@ -156,10 +156,10 @@ rather than under a differently-named dynamic segment.
 
 ## Repository variables
 
-| Variable               | Used for                                                                                    | Current value                      |
-| ---------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Variable               | Used for                                                                                                     | Current value                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
 | `TRACERA_API_BASE`     | legacy GitHub Pages / contract-check browser base; not the machine backend and not used by Vercel production | repository setting; reconcile separately |
-| `TRACERA_API_BASE_DEV` | optional dev/preview browser API override; falls back to `TRACERA_API_BASE` when unset | repository setting |
+| `TRACERA_API_BASE_DEV` | optional dev/preview browser API override; falls back to `TRACERA_API_BASE` when unset                       | repository setting                       |
 
 Vercel production is intentionally built with `VITE_API_URL=/api`, using same-origin
 Vercel Functions. The direct machine/backend route is
