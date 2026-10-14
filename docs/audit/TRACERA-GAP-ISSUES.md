@@ -138,48 +138,48 @@ Evidence: frontend route/view inventory; the three baselines above; specific fal
 
 Every sidebar destination below exists as a navigation entry. Apart from separately documented findings above, the API/artifact identity and record completeness for each destination were not independently proven in this static pass, so the corresponding `VIEW-*` CSV row is `Unknown`. These rows are coverage records, not claims that route presence proves parity.
 
-| Sidebar label | Destination |
-|---|---|
-| Dashboard | `/` |
-| Projects | `/projects` |
-| Items | `/items` |
-| Agents | `/agents` |
-| Overview | `/projects/{activeId}` |
-| Feature Layer / Features | `/projects/{activeId}/views/feature` |
-| Source Map / Code View | `/projects/{activeId}/views/code` |
-| Validation | `/projects/{activeId}/views/test` |
-| Workflow Runs | `/projects/{activeId}/views/workflows` |
-| Project Settings / Settings | `/projects/{activeId}/settings` |
-| Specifications Dashboard | `/projects/{activeId}/specifications` |
-| Scenario Activity | `/projects/{activeId}/scenario-activity` |
-| ADRs | `/projects/{activeId}/specifications?tab=adrs` |
-| Contracts | `/projects/{activeId}/specifications?tab=contracts` |
-| Compliance | `/projects/{activeId}/specifications?tab=compliance` |
-| Domain Model | `/projects/{activeId}/views/domain` |
-| Problem Analysis / Bug Tracking | `/projects/{activeId}/views/problem` |
-| Wireframes | `/projects/{activeId}/views/wireframe` |
-| Architecture | `/projects/{activeId}/views/architecture` |
-| API Documentation | `/projects/{activeId}/views/api` |
-| Database Schema | `/projects/{activeId}/views/database` |
-| Data Flow | `/projects/{activeId}/views/dataflow` |
-| Test Cases | `/projects/{activeId}/views/test-cases` |
-| Test Suites | `/projects/{activeId}/views/test-suites` |
-| Test Runs | `/projects/{activeId}/views/test-runs` |
-| QA Dashboard | `/projects/{activeId}/views/qa-dashboard` |
-| Coverage Report | `/projects/{activeId}/views/coverage` |
-| Journey Map | `/projects/{activeId}/views/journey` |
-| Process Flow | `/projects/{activeId}/views/process` |
-| Timeline | `/projects/{activeId}/views/monitoring` |
-| Reports / Performance | `/projects/{activeId}/views/performance` |
-| Impact Analysis | `/projects/{activeId}/views/impact-analysis` |
-| Traceability Matrix | `/projects/{activeId}/views/traceability` |
-| Dependency Graph | `/projects/{activeId}/views/dependency` |
-| Performance Metrics | `/projects/{activeId}/views/performance` |
-| Security Analysis | `/projects/{activeId}/views/security` |
-| Monitoring Dashboard | `/projects/{activeId}/views/monitoring` |
-| Integrations | `/projects/{activeId}/views/integrations` |
-| Webhooks | `/projects/{activeId}/views/webhooks` |
-| System Settings | `/settings` |
+| Sidebar label                   | Destination                                          |
+| ------------------------------- | ---------------------------------------------------- |
+| Dashboard                       | `/`                                                  |
+| Projects                        | `/projects`                                          |
+| Items                           | `/items`                                             |
+| Agents                          | `/agents`                                            |
+| Overview                        | `/projects/{activeId}`                               |
+| Feature Layer / Features        | `/projects/{activeId}/views/feature`                 |
+| Source Map / Code View          | `/projects/{activeId}/views/code`                    |
+| Validation                      | `/projects/{activeId}/views/test`                    |
+| Workflow Runs                   | `/projects/{activeId}/views/workflows`               |
+| Project Settings / Settings     | `/projects/{activeId}/settings`                      |
+| Specifications Dashboard        | `/projects/{activeId}/specifications`                |
+| Scenario Activity               | `/projects/{activeId}/scenario-activity`             |
+| ADRs                            | `/projects/{activeId}/specifications?tab=adrs`       |
+| Contracts                       | `/projects/{activeId}/specifications?tab=contracts`  |
+| Compliance                      | `/projects/{activeId}/specifications?tab=compliance` |
+| Domain Model                    | `/projects/{activeId}/views/domain`                  |
+| Problem Analysis / Bug Tracking | `/projects/{activeId}/views/problem`                 |
+| Wireframes                      | `/projects/{activeId}/views/wireframe`               |
+| Architecture                    | `/projects/{activeId}/views/architecture`            |
+| API Documentation               | `/projects/{activeId}/views/api`                     |
+| Database Schema                 | `/projects/{activeId}/views/database`                |
+| Data Flow                       | `/projects/{activeId}/views/dataflow`                |
+| Test Cases                      | `/projects/{activeId}/views/test-cases`              |
+| Test Suites                     | `/projects/{activeId}/views/test-suites`             |
+| Test Runs                       | `/projects/{activeId}/views/test-runs`               |
+| QA Dashboard                    | `/projects/{activeId}/views/qa-dashboard`            |
+| Coverage Report                 | `/projects/{activeId}/views/coverage`                |
+| Journey Map                     | `/projects/{activeId}/views/journey`                 |
+| Process Flow                    | `/projects/{activeId}/views/process`                 |
+| Timeline                        | `/projects/{activeId}/views/monitoring`              |
+| Reports / Performance           | `/projects/{activeId}/views/performance`             |
+| Impact Analysis                 | `/projects/{activeId}/views/impact-analysis`         |
+| Traceability Matrix             | `/projects/{activeId}/views/traceability`            |
+| Dependency Graph                | `/projects/{activeId}/views/dependency`              |
+| Performance Metrics             | `/projects/{activeId}/views/performance`             |
+| Security Analysis               | `/projects/{activeId}/views/security`                |
+| Monitoring Dashboard            | `/projects/{activeId}/views/monitoring`              |
+| Integrations                    | `/projects/{activeId}/views/integrations`            |
+| Webhooks                        | `/projects/{activeId}/views/webhooks`                |
+| System Settings                 | `/settings`                                          |
 
 Additional project routes found in `frontend/apps/web/src/routes/` include ADR/contract/feature detail and scenario routes; compliance; specifications; agents; equivalence; scenario activity; project settings; temporal; and generic project views for API, architecture, code, configuration, coverage, dataflow, database, dependency, domain, feature, infrastructure, integrations, journey, monitoring, performance, problem, process, QA dashboard, security, test cases, test runs, test suites, test, webhooks, and wireframe, including generic `$viewType` and `$viewType.$itemId`. Their individual response completeness remains `Unknown`; see GAP-017/GAP-019. Sidebar source: `frontend/apps/web/src/components/layout/sidebar-nav.ts:66-392`.
 
