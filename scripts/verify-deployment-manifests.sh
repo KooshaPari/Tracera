@@ -32,10 +32,10 @@ PY
 ! grep -qE '^[[:space:]]*-[[:space:]]*"?5432:5432' docker-compose.yml \
   || fail "postgres port 5432 must remain internal"
 
-grep -q -- '--token' deploy/selfhost/docker-compose.selfhost.yml \
-  || fail "self-host tunnel must pass a token to cloudflared"
-grep -q 'CF_TUNNEL_TOKEN:?CF_TUNNEL_TOKEN is required' deploy/selfhost/docker-compose.selfhost.yml \
-  || fail "self-host tunnel token must be required"
+! grep -qE '^[[:space:]]*cloudflared:' deploy/selfhost/docker-compose.selfhost.yml \
+  || fail "Tracera self-host compose must not launch the shared Cloudflare tunnel"
+! grep -q 'CF_TUNNEL_TOKEN' deploy/selfhost/docker-compose.selfhost.yml \
+  || fail "Tracera self-host compose must not consume a shared tunnel token"
 ! grep -qE '^[[:space:]]*-[[:space:]]*"?8080:' deploy/selfhost/docker-compose.selfhost.yml \
   || fail "self-host backend port 8080 must not be published"
 
