@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Static, secret-free deployment consistency gate. This intentionally does not
-# contact registries or expand credentials; it catches drift before deployment.
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
@@ -19,7 +17,6 @@ command -v rg >/dev/null 2>&1 \
 grep -q 'dockerfile: Dockerfile.rust' docker-compose.yml \
   || fail "docker-compose.yml must build the Rust server from Dockerfile.rust"
 
-# Bundled/local dashboard compose keeps its server on loopback :18000.
 python3 - <<'PY'
 from pathlib import Path
 import re
@@ -46,29 +43,24 @@ PY
 ! grep -qE '^[[:space:]]*-[[:space:]]*"?5432:5432' docker-compose.yml \
   || fail "postgres port 5432 must remain internal"
 
-# Self-host profile is origin-only. The shared cloudflared process is managed
-# outside this product repo and reaches the backend through host loopback.
 selfhost="deploy/selfhost/docker-compose.selfhost.yml"
 ! grep -qE '^[[:space:]]*cloudflared:' "$selfhost" \
   || fail "Tracera self-host compose must not launch the shared Cloudflare tunnel"
 ! grep -q 'CF_TUNNEL_TOKEN' "$selfhost" \
   || fail "Tracera self-host compose must not consume a shared tunnel token"
-grep -qE '^[[:space:]]*-[[:space:]]*"127\.0\.0\.1:8080:8080"$' "$selfhost" \
-  || fail "self-host backend must publish exactly 127.0.0.1:8080 for the host-local shared connector"
-! grep -qE '^[[:space:]]*-[[:space:]]*"(0\.0\.0\.0:)?8080:8080"$|^[[:space:]]*-[[:space:]]*"\[::\]:8080:8080"$' "$selfhost" \
-  || fail "self-host backend must not expose 8080 beyond host loopback"
+
+python3 "$ROOT_DIR/scripts/verify-selfhost-loopback-port.py" "$selfhost" \
+  || fail "self-host backend must publish exactly one mapping: 127.0.0.1:8080:8080"
 
 grep -q 'path: /ready' deploy/kubernetes/templates/tracera.yaml \
   || fail "Helm readiness probe must use the canonical /ready endpoint"
 grep -q 'path: /health' deploy/kubernetes/templates/tracera.yaml \
   || fail "Helm liveness probe must use the canonical /health endpoint"
 
-# Never allow a concrete database password in checked-in deployment material.
 ! rg -n 'POSTGRES_PASSWORD:[[:space:]]+tracera|postgres://[^:]+:tracera@' \
   docker-compose.yml deploy Dockerfile.rust >/dev/null \
   || fail "possible concrete database credential in deployment material"
 
-# Keep the Helm chart's pod security invariants in the same pre-deploy gate.
 "$ROOT_DIR/scripts/verify-kubernetes-security.sh" \
   || fail "Kubernetes security policy gate failed"
 
