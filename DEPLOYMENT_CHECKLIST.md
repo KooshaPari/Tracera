@@ -12,7 +12,7 @@
 | 0.1  | **GitHub account**     | github.com                     | ✅ (<REDACTED>) |
 | 0.2  | **Vercel account**     | vercel.com (free tier)         | ✅              |
 | 0.3  | **Cloudflare account** | cloudflare.com (free tier)     | ☐               |
-| 0.4  | **cloudflared**        | cloudflare.com/products/tunnel | ☐               |
+| 0.4  | **Shared ingress owner** | BytePort #438 / Cloudflare   | ☐               |
 | 0.5  | **Domain registered**  | phenotype.studio (or similar)  | ☐               |
 | 0.6  | **Git installed**      | git-scm.com                    | ✅              |
 | 0.7  | **Rust toolchain**     | rustup.rs                      | ✅              |
@@ -64,13 +64,22 @@ vercel login
 # Save: VERCEL_TOKEN (auto-managed by CLI)
 ```
 
-### 1.5 — Cloudflare Tunnel Token
+### 1.5 — Cloudflare Access Machine Credential
 
-```bash
-# Create a tunnel in the Cloudflare Zero Trust dashboard
-# Copy the tunnel token for the named tunnel
-# Save as: CF_TUNNEL_TOKEN (used by deploy/selfhost/docker-compose.selfhost.yml)
-```
+Tracked operationally in #1129. Do **not** create or copy the shared
+`tracera-local` tunnel credential into this product deployment.
+
+The machine caller credential for `t.tracera.pheno.studio` consists of the
+one-time Cloudflare Access service-token values stored only as GitHub Actions
+secrets:
+
+- `CF_ACCESS_CLIENT_ID`
+- `CF_ACCESS_CLIENT_SECRET`
+
+Provision them through the secure operator flow in #1129, attach the token to a
+Service Auth policy on the `t.tracera.pheno.studio` Access application, and
+verify with the strict `tunnel` live-service smoke. Never place either value in
+browser-visible `VITE_*` variables or repository files.
 
 ### 1.6 — GPG Commit Signing Key
 
@@ -139,10 +148,10 @@ certbot certonly --standalone -d phenotype.studio -d api.phenotype.studio
 
 ```bash
 # From the repo root (see deploy/selfhost/README.md for full runbook):
-export CF_TUNNEL_TOKEN="<tunnel-token>"
 export TRACERA_PUBLIC_HOSTNAME="tracera.pheno.studio"
 export TRACERA_AUTH_TOKEN="<from §1.1>"
 
+# Shared cloudflared lifecycle/token is NOT part of this Compose project.
 docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
 ```
 
@@ -154,7 +163,6 @@ docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
 | `TRACERA_AUTH_TOKEN`       | From §1.1                                         | Generated                |
 | `TRACERA_BIND_ADDR`        | `0.0.0.0:8080`                                    | Hardcoded                |
 | `TRACERA_PUBLIC_BIND_MODE` | `authenticated-proxy` when ingress auth is active | Operator choice          |
-| `CF_TUNNEL_TOKEN`          | From §1.5                                         | Cloudflare Zero Trust    |
 | `RUST_LOG`                 | `info`                                            | Hardcoded                |
 | `RUST_BACKTRACE`           | `1`                                               | Hardcoded                |
 
@@ -625,7 +633,7 @@ tracera --version
 □ 0. Prerequisites (all tools installed)
 □ 1. Secrets & Credentials (all tokens generated)
 □ 2. Domain & DNS (all records configured)
-□ 3. Backend self-hosted (tunnel up and healthy)
+□ 3. Backend self-hosted (loopback origin healthy; shared ingress separately qualified)
 □ 4. Frontend on Vercel (deployed and healthy)
 □ 5. Cloudflare Worker (deployed and healthy)
 □ 6. Desktop Client (built, signed, published)
