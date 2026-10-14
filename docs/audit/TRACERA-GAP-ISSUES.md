@@ -42,11 +42,11 @@ Evidence: `frontend/apps/web/src/api/events.ts:1,38-47`.
 
 Evidence: `frontend/apps/web/src/api/events.ts:51-61`.
 
-### [Instinct] GAP-005 Traceability Matrix cannot load its item and link artifacts
+### [Instinct] GAP-005 Traceability Matrix item and link queries hit registered 501 routes
 
-The active `TraceabilityMatrixView` builds its matrix from `useItems` and `useLinks`. The item hook requests the project-scoped item collection, which is not registered in the Rust router; the project-scoped links route is registered to the generic HTTP 501 handler. These active data paths prevent the view from establishing a complete matrix. The zero-valued fallback in `api/matrix.ts` belongs to `fetchMatrix`, which has no production callers and does not drive this view.
+The active `TraceabilityMatrixView` calls `useItems({projectId})` and `useLinks({projectId})`. Those hooks request the flat collection routes `/api/v1/items?project_id=...` and `/api/v1/links?project_id=...`; both are registered to the generic HTTP 501 handler. The project-scoped list/create path `/api/v1/projects/{project_id}/items` in `queries-items.ts` is a separate query path, not used by this view; its unregistered status remains recorded in GAP-010. The zero-valued fallback in `api/matrix.ts` belongs to `fetchMatrix`, which has no production callers and does not drive this view.
 
-Evidence: `frontend/apps/web/src/views/TraceabilityMatrixView.tsx:22-23,73-76`; `frontend/apps/web/src/hooks/useItems.ts`; `frontend/apps/web/src/api/queries-items.ts:50-132`; `crates/tracera-server/src/router.rs:175-188`; `frontend/apps/web/src/api/matrix.ts:56-90`; a non-test search found no `fetchMatrix` callers under `frontend/apps/web/src`; remaining call sites are the API declaration/export and tests in `frontend/apps/web/src/__tests__/api/matrix.test.ts`.
+Evidence: `frontend/apps/web/src/views/TraceabilityMatrixView.tsx:73-78`; `frontend/apps/web/src/hooks/useItems.ts:61-70,231`; `frontend/apps/web/src/hooks/useLinks.ts:26-52,113`; `crates/tracera-server/src/router.rs:175-188`; `frontend/apps/web/src/api/matrix.ts:56-90`; a non-test search found no `fetchMatrix` callers under `frontend/apps/web/src`; remaining call sites are the API declaration/export and tests in `frontend/apps/web/src/__tests__/api/matrix.test.ts`.
 
 ### [Instinct] GAP-006 Matrix export fabricates an empty artifact
 
