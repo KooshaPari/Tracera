@@ -36,10 +36,11 @@ WorkOS AuthKit is not wired in yet, but these placeholders show where its settin
 
 ## Ingress security gate
 
-The server is intentionally bound to `0.0.0.0:8080` only inside the compose
-network; Caddy is the ingress boundary and port 8080 must not be published.
-The compose stack publishes Caddy's HTTP/HTTPS ports (`80` and `443`); Caddy
-obtains a certificate automatically for `TRACERA_PUBLIC_HOSTNAME`.
+The server listens on container port 8080 and is published to the host **only**
+as `127.0.0.1:8080`. That loopback mapping is the origin used by the separately
+managed host-local `tracera-local` connector for `t.tracera.pheno.studio`;
+it must never be widened to a LAN/public bind. Caddy separately publishes
+HTTP/HTTPS (`80`/`443`) for its own listener and security-header path.
 Run the secret-free private-boundary check before every deployment:
 
 ```sh
@@ -72,17 +73,21 @@ docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
 
 The stack does two things:
 
-1. Builds and runs `tracera-server` from the repo on `0.0.0.0:8080` with the
-   required in-process bearer token.
-2. Lets Caddy reverse proxy to `tracera-server:8080`.
+1. Builds and runs `tracera-server` with the required in-process bearer token,
+   publishing it only as host-loopback `127.0.0.1:8080` for the external shared
+   connector.
+2. Lets Caddy reverse proxy to `tracera-server:8080` for its separate listener.
 
 It intentionally does **not** start, stop, create, or configure cloudflared. Public
 routing is a separate shared-infrastructure concern.
 
 ## Public and private access
 
-- Public access: only through the separately managed shared Cloudflare ingress after its route is explicitly configured.
-- Private access: Tailscale can reach the same desktop and Caddy listener over the tailnet.
+- Public access: only through the separately managed shared Cloudflare ingress.
+  The observed `t.tracera.pheno.studio` route terminates at Cloudflare Access,
+  then the host-local connector reaches `127.0.0.1:8080`.
+- Private access: Tailscale remains a separate private path; do not infer public
+  authorization from tailnet reachability.
 
 ## WorkOS AuthKit
 
