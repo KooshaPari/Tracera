@@ -6,7 +6,11 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-fail() { local message="$1"; printf 'deployment manifest check failed: %s\n' "$message" >&2; exit 1; }
+fail() {
+  local message="$1"
+  printf 'deployment manifest check failed: %s\n' "$message" >&2
+  exit 1
+}
 
 command -v rg >/dev/null 2>&1 \
   || fail "ripgrep (rg) is required for secret scanning"
@@ -14,63 +18,44 @@ command -v rg >/dev/null 2>&1 \
 [[ -f Dockerfile.rust ]] || fail "Dockerfile.rust is missing"
 grep -q 'dockerfile: Dockerfile.rust' docker-compose.yml \
   || fail "docker-compose.yml must build the Rust server from Dockerfile.rust"
+
+# Bundled/local dashboard compose keeps its server on loopback :18000.
 python3 - <<'PY'
 from pathlib import Path
 import re
 
 compose = Path("docker-compose.yml").read_text(encoding="utf-8")
-server = re.search(r"(?ms)^  tracera-server:\n(.*?)(?=^  [a-zA-Z0-9_-]+:|^volumes:|\Z)", compose)
+server = re.search(
+    r"(?ms)^  tracera-server:\n(.*?)(?=^  [a-zA-Z0-9_-]+:|^volumes:|\Z)",
+    compose,
+)
 if not server or '"127.0.0.1:${TRACERA_LOCAL_PORT:-18000}:8080"' not in server.group(1):
-    raise SystemExit("tracera-server must hard-bind the bundled rich dashboard to loopback :18000")
+    raise SystemExit(
+        "tracera-server must hard-bind the bundled rich dashboard to loopback :18000"
+    )
 if 'TRACERA_PUBLIC_BIND_MODE: "loopback-published"' not in server.group(1):
-    raise SystemExit("tracera-server must declare its loopback-published deployment boundary")
+    raise SystemExit(
+        "tracera-server must declare its loopback-published deployment boundary"
+    )
 if "TRACERA_LOCAL_BIND_ADDR" in server.group(1):
     raise SystemExit("tracera-server must not permit a local bind-address override")
 PY
+
 ! grep -qE '^[[:space:]]*-[[:space:]]*"?8080:8080' docker-compose.yml \
-  || fail "backend port 8080 must remain internal"
+  || fail "bundled backend port 8080 must remain internal"
 ! grep -qE '^[[:space:]]*-[[:space:]]*"?5432:5432' docker-compose.yml \
   || fail "postgres port 5432 must remain internal"
 
-! grep -qE '^[[:space:]]*cloudflared:' deploy/selfhost/docker-compose.selfhost.yml \
+# Self-host profile is origin-only. The shared cloudflared process is managed
+# outside this product repo and reaches the backend through host loopback.
+selfhost="deploy/selfhost/docker-compose.selfhost.yml"
+! grep -qE '^[[:space:]]*cloudflared:' "$selfhost" \
   || fail "Tracera self-host compose must not launch the shared Cloudflare tunnel"
-! grep -q 'CF_TUNNEL_TOKEN' deploy/selfhost/docker-compose.selfhost.yml \
+! grep -q 'CF_TUNNEL_TOKEN' "$selfhost" \
   || fail "Tracera self-host compose must not consume a shared tunnel token"
-grep -qE '^[[:space:]]*-[[:space:]]*"127\.0\.0\.1:8080:8080"
-grep -q 'path: /ready' deploy/kubernetes/templates/tracera.yaml \
-  || fail "Helm readiness probe must use the canonical /ready endpoint"
-grep -q 'path: /health' deploy/kubernetes/templates/tracera.yaml \
-  || fail "Helm liveness probe must use the canonical /health endpoint"
-
-# Never allow a concrete database password in checked-in deployment material.
-! rg -n 'POSTGRES_PASSWORD:[[:space:]]+tracera|postgres://[^:]+:tracera@' \
-  docker-compose.yml deploy Dockerfile.rust >/dev/null \
-  || fail "possible concrete database credential in deployment material"
-
-# Keep the Helm chart's pod security invariants in the same pre-deploy gate.
-"$ROOT_DIR/scripts/verify-kubernetes-security.sh" \
-  || fail "Kubernetes security policy gate failed"
-
-printf 'deployment manifest checks passed (secret-free static mode)\n'
- deploy/selfhost/docker-compose.selfhost.yml \
-  || fail "self-host backend must publish 8080 only on 127.0.0.1 for the host-local shared connector"
-! grep -qE '^[[:space:]]*-[[:space:]]*"(0\.0\.0\.0:)?8080:8080"$|^[[:space:]]*-[[:space:]]*"\[::\]:8080:8080"
-grep -q 'path: /ready' deploy/kubernetes/templates/tracera.yaml \
-  || fail "Helm readiness probe must use the canonical /ready endpoint"
-grep -q 'path: /health' deploy/kubernetes/templates/tracera.yaml \
-  || fail "Helm liveness probe must use the canonical /health endpoint"
-
-# Never allow a concrete database password in checked-in deployment material.
-! rg -n 'POSTGRES_PASSWORD:[[:space:]]+tracera|postgres://[^:]+:tracera@' \
-  docker-compose.yml deploy Dockerfile.rust >/dev/null \
-  || fail "possible concrete database credential in deployment material"
-
-# Keep the Helm chart's pod security invariants in the same pre-deploy gate.
-"$ROOT_DIR/scripts/verify-kubernetes-security.sh" \
-  || fail "Kubernetes security policy gate failed"
-
-printf 'deployment manifest checks passed (secret-free static mode)\n'
- deploy/selfhost/docker-compose.selfhost.yml \
+grep -qE '^[[:space:]]*-[[:space:]]*"127\.0\.0\.1:8080:8080"$' "$selfhost" \
+  || fail "self-host backend must publish exactly 127.0.0.1:8080 for the host-local shared connector"
+! grep -qE '^[[:space:]]*-[[:space:]]*"(0\.0\.0\.0:)?8080:8080"$|^[[:space:]]*-[[:space:]]*"\[::\]:8080:8080"$' "$selfhost" \
   || fail "self-host backend must not expose 8080 beyond host loopback"
 
 grep -q 'path: /ready' deploy/kubernetes/templates/tracera.yaml \
