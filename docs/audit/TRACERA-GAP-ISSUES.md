@@ -18,11 +18,11 @@ A view named `X` must render artifact `X` for the selected project, with all req
 
 ## Issues
 
-### [Instinct] GAP-001 Specifications Hub summary is a stub
+### [Instinct] GAP-001 Specifications summary route is an unused stub
 
-`GET /api/v1/projects/{id}/specifications/summary` is reported as returning `{"items":[],"data":[],"results":[],"total":0,"count":0,"stub":true}`. The UI summary hook feeds `SpecificationDashboard`; the expected `SpecificationSummary` includes ADR, contract, feature, health score, and health detail rollups. The operator reports existing ADR records (26 items), so the empty envelope does not represent the underlying artifact set. Implement a project-scoped aggregate from persisted ADR, contract, feature, and scenario data; remove `stub`; test representative non-empty and truly empty projects as a follow-up.
+`GET /api/v1/projects/{id}/specifications/summary` is reported as returning `{"items":[],"data":[],"results":[],"total":0,"count":0,"stub":true}`. Its declared `SpecificationSummary` contract includes ADR, contract, feature, health score, and health detail rollups. Static caller tracing found that `useSpecificationSummary` does not feed the active Specifications Dashboard: `useSpecificationsDashboardViewModel` loads dashboard data through its own queries. The route remains an API contract gap, but its response does not explain the active dashboard state. Implement the declared aggregate if the route is retained, or remove the unused route and hook; track dashboard completeness through the active queries.
 
-Evidence: `frontend/apps/web/src/hooks/use-specifications/summary-hooks.ts:6-19`; `frontend/apps/web/src/components/specifications/dashboard/SpecificationDashboard.tsx`; response and 26-ADR observation from operator task context.
+Evidence: `frontend/apps/web/src/hooks/use-specifications/summary-hooks.ts:6-19`; `frontend/apps/web/src/views/specifications-dashboard/useSpecificationsDashboardViewModel.ts:81-87`; `frontend/apps/web/src/views/SpecificationsDashboardView.tsx:5,30`; operator-reported response and 26-ADR count, not independently re-probed.
 
 ### [Instinct] GAP-002 System status fabricates healthy service state
 
@@ -42,11 +42,11 @@ Evidence: `frontend/apps/web/src/api/events.ts:1,38-47`.
 
 Evidence: `frontend/apps/web/src/api/events.ts:51-61`.
 
-### [Instinct] GAP-005 Traceability Matrix silently fabricates an empty matrix
+### [Instinct] GAP-005 Traceability Matrix cannot load its item and link artifacts
 
-The matrix wrapper defines a zero-valued empty matrix and returns it when `/api/v1/projects/{id}/matrix` returns an invalid payload or fails. The view can render synthetic zero coverage instead of a service error or complete project matrix.
+The active `TraceabilityMatrixView` builds its matrix from `useItems` and `useLinks`. The item hook requests the project-scoped item collection, which is not registered in the Rust router; the project-scoped links route is registered to the generic HTTP 501 handler. These active data paths prevent the view from establishing a complete matrix. The zero-valued fallback in `api/matrix.ts` belongs to `fetchMatrix`, which has no production callers and does not drive this view.
 
-Evidence: `frontend/apps/web/src/api/matrix.ts:21-28,56-69`.
+Evidence: `frontend/apps/web/src/views/TraceabilityMatrixView.tsx:22-23,73-76`; `frontend/apps/web/src/hooks/useItems.ts`; `frontend/apps/web/src/api/queries-items.ts:50-132`; `crates/tracera-server/src/router.rs:175-188`.
 
 ### [Instinct] GAP-006 Matrix export fabricates an empty artifact
 
@@ -74,9 +74,9 @@ Evidence: `frontend/apps/web/src/api/system.ts:1`; `search.ts:5`; `matrix.ts:3`;
 
 ### [Instinct] GAP-010 Item and link routes return generic 501 responses
 
-The Tracera server router registers the following paths with `any(not_implemented)`: `/api/v1/items`, `/api/v1/items/summary`, `/api/v1/items/bulk-update`, `/api/v1/items/{id}`, `/api/v1/items/{id}/history`, `/api/v1/items/{item_id}/pivot`, `/api/v1/links`, `/api/v1/links/{id}`, `/api/v1/links/grouped`, and `/api/v1/projects/{project_id}/links`. The handler returns HTTP 501 and `{"error":"not_implemented","message":"ADR-SERVER-001"}`. The frontend item query module directly calls item list/detail/create/update/delete paths. These endpoints do not satisfy persisted item/link behavior.
+The flat Axum router registers these item/link paths with `any(not_implemented)`: `/api/v1/items`, `/api/v1/items/summary`, `/api/v1/items/bulk-update`, `/api/v1/items/{id}`, `/api/v1/items/{item_id}/pivot-targets`, `/api/v1/items/{item_id}/pivot`, `/api/v1/links`, `/api/v1/links/{id}`, `/api/v1/links/grouped`, and `/api/v1/projects/{project_id}/links`. These handlers return HTTP 501 and `{"error":"not_implemented","message":"ADR-SERVER-001"}`. Separately, the frontend uses `GET` and `POST /api/v1/projects/{project_id}/items`, but that project-scoped collection is not registered and falls through instead of returning 501. The active item and traceability views cannot establish persisted, complete project item/link artifacts.
 
-Evidence: `crates/tracera-server/src/router.rs:25,175-188`; `frontend/apps/web/src/api/queries-items.ts:50-132`.
+Evidence: `crates/tracera-server/src/router.rs:25,175-188`; `frontend/apps/web/src/api/queries-items.ts:50-132`; `frontend/apps/web/src/views/TraceabilityMatrixView.tsx:73-76`.
 
 ### [Instinct] GAP-011 Graph routes return generic 501 responses
 
@@ -116,9 +116,9 @@ Evidence: `crates/tracera-server/src/router.rs:25,269-276`; `frontend/apps/web/s
 
 ### [Instinct] GAP-017 Current parity baseline is not a current per-view actual-data matrix
 
-The 20260726 matrix lists convergence acceptance gates and pending status, the 20260722 matrix compares shell/candidate convergence and notes missing Rust routes/typed adapters, and `mcp-cli-api-matrix.md` identifies itself as historical/retired and describes the earlier Python stack. These sources do not attest every current project view/sidebar page against live, complete artifacts. Keep the baseline source replaceable: when Koosha's hand-built matrix CSV is supplied, select it as the active baseline input, retain this source set as provenance, and preserve the same CSV columns.
+The 20260726 matrix lists convergence acceptance gates and pending status, the 20260722 matrix compares the frontend shell with its candidate implementation and notes missing Rust routes/typed adapters, and `mcp-cli-api-matrix.md` identifies itself as historical/retired and describes the earlier Python stack. These sources do not attest every current project view/sidebar page against live, complete artifacts. Keep the baseline source replaceable: when Koosha's hand-built matrix CSV is supplied, select it as the active baseline input, retain this source set as provenance, and preserve the same CSV columns.
 
-Current frontend route and view inventory includes dashboard, graph, item list/detail, project list, search, settings, agents/admin/auth; project ADRs/contracts/features/compliance/specifications/agents/equivalence/scenario activity/settings/temporal; and generic project views API, architecture, code, configuration, coverage, dataflow, database, dependency, domain, feature, infrastructure, integrations, journey, monitoring, performance, problem, process, QA dashboard, security, test cases/runs/suites, test, webhooks, and wireframe. This is source route coverage only. The actual artifact and data completeness for every entry remains `Unknown` unless supported by a specific row in the CSV.
+Current frontend route and view inventory includes dashboard, graph, item list/detail, project list, search, settings, agents/admin/auth; project ADRs, contracts, features, compliance, specifications, agents, equivalence, scenario activity, settings, and temporal; and generic project views API, architecture, code, configuration, coverage, dataflow, database, dependency, domain, feature, infrastructure, integrations, journey, monitoring, performance, problem, process, QA dashboard, security, test cases/runs/suites, test, webhooks, and wireframe. This is source route coverage only. The actual artifact and data completeness for every entry remains `Unknown` unless supported by a specific row in the CSV.
 
 Evidence: all three baseline paths listed in Baseline selection; route declarations under `frontend/apps/web/src/routes/`; dedicated views under `frontend/apps/web/src/pages/projects/views/`.
 
@@ -185,17 +185,16 @@ Additional project routes found in `frontend/apps/web/src/routes/` include ADR/c
 
 ## Backend 501 route ledger
 
-The Rust router helper at `crates/tracera-server/src/router.rs:25-29` emits HTTP 501 with `error=not_implemented`. Static route registrations confirmed in lines 175-334 include the following route families. Frontend caller mapping is proven only where a caller citation appears above; remaining route-to-view associations are `Unknown` and must be reconciled before claiming full frontend coverage.
+The route strings below are registered directly in the flat Axum router at `crates/tracera-server/src/router.rs:175-334`. They are recorded as written; no implicit `/api/v1` prefix is added within these registrations. Every listed stub route uses `any(not_implemented)` and returns HTTP 501. The project-scoped item collection is called by the frontend but is not registered, so it falls through rather than returning this 501 payload. This ledger does not establish that every route is called by the frontend.
 
-- Items: `/api/v1/items`, `/api/v1/items/summary`, `/api/v1/items/bulk-update`, `/api/v1/items/{id}`, `/api/v1/items/{id}/history`, `/api/v1/items/{item_id}/pivot`.
-- Links: `/api/v1/links`, `/api/v1/links/{id}`, `/api/v1/links/grouped`, `/api/v1/projects/{project_id}/links`.
-- Graph: `/api/v1/graph/ancestors/{id}`, `/descendants/{id}`, `/impact/{id}`, `/dependencies/{id}`, `/traverse/{id}`, `/path`, `/paths`, `/full`, `/cycles`, `/topo-sort`, `/orphans`, `/analysis/centrality`, `/analysis/coverage`, `/analysis/cycles`, `/analysis/dependencies`, `/analysis/dependents`, `/analysis/impact`, `/analysis/metrics`, `/analysis/shortest-path`, `/cache/invalidate`.
-- Search: `/api/v1/search`, `/search/suggest`, `/search/index/{id}`, `/search/batch-index`, `/search/reindex`, `/search/stats`, `/search/health`.
-- Import/export: `/api/v1/projects/{project_id}/export`, `/api/v1/projects/{project_id}/import`, `/api/v1/import`.
-- Auth: `/api/v1/auth/login`, `/logout`, `/refresh`, `/verify`. `/api/v1/auth/me` is handled separately and is not included as a stub.
-- Equivalences: `/api/v1/equivalences`, `/equivalences/{id}`, `/equivalences/confirm`, `/equivalences/reject`, `/equivalences/batch`, and project-scoped `/api/v1/projects/{project_id}/equivalences`, `/{id}`, `/canonical`, `/projections`, `/detect`, `/batch`, `/stats`.
-- Journeys: `/api/v1/journeys`, `/journeys/{id}`, `/journeys/{id}/steps`, `/journeys/{id}/steps/{step_id}`, `/journeys/{id}/detect`, `/journeys/{id}/visualize`, and project-scoped `/api/v1/projects/{project_id}/journeys`, `/{id}`, `/{id}/steps`, `/{id}/steps/{step_id}`, `/{id}/detect`, `/{id}/visualize`.
-- Libraries/components/tokens: `/api/v1/libraries`, `/libraries/{id}`, `/libraries/{id}/components`, `/libraries/{id}/tokens`, `/components`, `/components/{id}`, `/components/{id}/usage`, `/tokens`.
-- Codex/docs/AI: `/api/v1/projects/{project_id}/codex/auth-status`, `/codex/sessions`, `/codex/sessions/{session_id}`, `/docs/generate`, `/ai/summarize`, `/ai/classify`.
-
-This route ledger is an exhaustive transcription of the identified router segment, not proof that every route is called by the frontend. The exact frontend-to-handler intersection and all other frontend API fallbacks remain open where noted as `Unknown` in the CSV.
+- Items (registered 501): `/api/v1/items`, `/api/v1/items/summary`, `/api/v1/items/bulk-update`, `/api/v1/items/{id}`, `/api/v1/items/{item_id}/pivot-targets`, `/api/v1/items/{item_id}/pivot`.
+- Items (frontend-required, unregistered): `GET` and `POST /api/v1/projects/{project_id}/items` (list and create).
+- Links (registered 501): `/api/v1/links`, `/api/v1/links/{id}`, `/api/v1/links/grouped`, `/api/v1/projects/{project_id}/links`.
+- Graph (registered 501): `/api/v1/graph/ancestors/{id}`, `/api/v1/graph/descendants/{id}`, `/api/v1/graph/impact/{id}`, `/api/v1/graph/dependencies/{id}`, `/api/v1/graph/traverse/{id}`, `/api/v1/graph/path`, `/api/v1/graph/paths`, `/api/v1/graph/full`, `/api/v1/graph/cycles`, `/api/v1/graph/topo-sort`, `/api/v1/graph/orphans`, `/api/v1/graph/analysis/centrality`, `/api/v1/graph/analysis/coverage`, `/api/v1/graph/analysis/cycles`, `/api/v1/graph/analysis/dependencies`, `/api/v1/graph/analysis/dependents`, `/api/v1/graph/analysis/impact`, `/api/v1/graph/analysis/metrics`, `/api/v1/graph/analysis/shortest-path`, `/api/v1/graph/cache/invalidate`.
+- Search (registered 501): `/api/v1/search`, `/api/v1/search/suggest`, `/api/v1/search/index/{id}`, `/api/v1/search/batch-index`, `/api/v1/search/reindex`, `/api/v1/search/stats`, `/api/v1/search/health`.
+- Import/export and versions (registered 501): `/api/v1/projects/{project_id}/export`, `/api/v1/projects/{project_id}/import`, `/api/v1/projects/{project_id}/versions/compare`, `/api/v1/import`.
+- Auth (registered 501): `/api/v1/auth/login`, `/api/v1/auth/logout`, `/api/v1/auth/refresh`, `/api/v1/auth/verify`. `/api/v1/auth/me` is handled separately and is not a stub.
+- Equivalences (registered 501): `/api/v1/equivalences`, `/api/v1/equivalences/{id}`, `/api/v1/equivalences/confirm`, `/api/v1/equivalences/reject`, `/api/v1/equivalences/batch`, `/api/v1/projects/{project_id}/equivalences`, `/api/v1/projects/{project_id}/equivalences/{id}`, `/api/v1/projects/{project_id}/equivalences/canonical`, `/api/v1/projects/{project_id}/equivalences/projections`, `/api/v1/projects/{project_id}/equivalences/detect`, `/api/v1/projects/{project_id}/equivalences/batch`, `/api/v1/projects/{project_id}/equivalences/stats`.
+- Journeys (registered 501): `/api/v1/journeys`, `/api/v1/journeys/{id}`, `/api/v1/journeys/{id}/steps`, `/api/v1/journeys/{id}/steps/{step_id}`, `/api/v1/journeys/{id}/detect`, `/api/v1/journeys/{id}/visualize`, `/api/v1/projects/{project_id}/journeys`, `/api/v1/projects/{project_id}/journeys/{id}`, `/api/v1/projects/{project_id}/journeys/{id}/steps`, `/api/v1/projects/{project_id}/journeys/{id}/steps/{step_id}`, `/api/v1/projects/{project_id}/journeys/{id}/detect`, `/api/v1/projects/{project_id}/journeys/{id}/visualize`.
+- Libraries/components/tokens (registered 501): `/api/v1/libraries`, `/api/v1/libraries/{id}`, `/api/v1/libraries/{id}/components`, `/api/v1/libraries/{id}/tokens`, `/api/v1/components`, `/api/v1/components/{id}`, `/api/v1/components/{id}/usage`, `/api/v1/tokens`.
+- Codex/docs/AI (registered 501): `/api/v1/projects/{project_id}/codex/auth-status`, `/api/v1/projects/{project_id}/codex/sessions`, `/api/v1/projects/{project_id}/codex/sessions/{session_id}`, `/api/v1/projects/{project_id}/docs/generate`, `/api/v1/projects/{project_id}/ai/summarize`, `/api/v1/projects/{project_id}/ai/classify`.
