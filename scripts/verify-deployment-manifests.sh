@@ -36,8 +36,42 @@ PY
   || fail "Tracera self-host compose must not launch the shared Cloudflare tunnel"
 ! grep -q 'CF_TUNNEL_TOKEN' deploy/selfhost/docker-compose.selfhost.yml \
   || fail "Tracera self-host compose must not consume a shared tunnel token"
-! grep -qE '^[[:space:]]*-[[:space:]]*"?8080:' deploy/selfhost/docker-compose.selfhost.yml \
-  || fail "self-host backend port 8080 must not be published"
+grep -qE '^[[:space:]]*-[[:space:]]*"127\.0\.0\.1:8080:8080"
+grep -q 'path: /ready' deploy/kubernetes/templates/tracera.yaml \
+  || fail "Helm readiness probe must use the canonical /ready endpoint"
+grep -q 'path: /health' deploy/kubernetes/templates/tracera.yaml \
+  || fail "Helm liveness probe must use the canonical /health endpoint"
+
+# Never allow a concrete database password in checked-in deployment material.
+! rg -n 'POSTGRES_PASSWORD:[[:space:]]+tracera|postgres://[^:]+:tracera@' \
+  docker-compose.yml deploy Dockerfile.rust >/dev/null \
+  || fail "possible concrete database credential in deployment material"
+
+# Keep the Helm chart's pod security invariants in the same pre-deploy gate.
+"$ROOT_DIR/scripts/verify-kubernetes-security.sh" \
+  || fail "Kubernetes security policy gate failed"
+
+printf 'deployment manifest checks passed (secret-free static mode)\n'
+ deploy/selfhost/docker-compose.selfhost.yml \
+  || fail "self-host backend must publish 8080 only on 127.0.0.1 for the host-local shared connector"
+! grep -qE '^[[:space:]]*-[[:space:]]*"(0\.0\.0\.0:)?8080:8080"$|^[[:space:]]*-[[:space:]]*"\[::\]:8080:8080"
+grep -q 'path: /ready' deploy/kubernetes/templates/tracera.yaml \
+  || fail "Helm readiness probe must use the canonical /ready endpoint"
+grep -q 'path: /health' deploy/kubernetes/templates/tracera.yaml \
+  || fail "Helm liveness probe must use the canonical /health endpoint"
+
+# Never allow a concrete database password in checked-in deployment material.
+! rg -n 'POSTGRES_PASSWORD:[[:space:]]+tracera|postgres://[^:]+:tracera@' \
+  docker-compose.yml deploy Dockerfile.rust >/dev/null \
+  || fail "possible concrete database credential in deployment material"
+
+# Keep the Helm chart's pod security invariants in the same pre-deploy gate.
+"$ROOT_DIR/scripts/verify-kubernetes-security.sh" \
+  || fail "Kubernetes security policy gate failed"
+
+printf 'deployment manifest checks passed (secret-free static mode)\n'
+ deploy/selfhost/docker-compose.selfhost.yml \
+  || fail "self-host backend must not expose 8080 beyond host loopback"
 
 grep -q 'path: /ready' deploy/kubernetes/templates/tracera.yaml \
   || fail "Helm readiness probe must use the canonical /ready endpoint"
