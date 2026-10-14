@@ -2,7 +2,10 @@
   "version": 2,
   "buildCommand": "cd frontend && bun install --frozen-lockfile --ignore-scripts && bun run build",
   "outputDirectory": "frontend/dist",
-  "regions": ["iad1"],
+  "ignoreCommand": "bash scripts/vercel-ignore-build.sh",
+  "regions": [
+    "iad1"
+  ],
   "functions": {
     "api/**/*.ts": {
       "maxDuration": 10
