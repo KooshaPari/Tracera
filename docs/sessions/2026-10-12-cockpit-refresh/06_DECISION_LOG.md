@@ -130,7 +130,7 @@
   - Palette (monochrome ink + per-project accent)
   - Fonts (Inter / Space Grotesk / JetBrains Mono)
   - WCAG 2.2 AA (contrast, focus, touch targets, reduced-motion, skip-link)
-  - Bundle budget (<= 230 KB minified, currently 228.7 KB)
+  - Bundle budget (<= 230 KB minified; measured 212.3 KB on 2026-10-14, so ~17.7 KB headroom — the earlier 228.7 KB figure was stale)
   - Animation (transform + opacity only, 60fps)
   - Status pills (glyph-prefixed)
   - ASCII widgets (status widget, project spine, evidence chip recipes)

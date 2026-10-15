@@ -62,7 +62,7 @@ The cockpit refresh lands in **three repos**:
 - Palette: Obsidian `#0F1012` / Slate `#353A40` / Ceramic `#F6F5F5` / Teal `#7EBAB5` + per-project accent (Tracera = violet `#7C3AED`)
 - Fonts: Inter (body) + Space Grotesk (display) + JetBrains Mono (meta, evidence chips)
 - WCAG 2.2 AA: contrast >= 4.5:1, focus rings, 24px touch targets, reduced-motion, skip-link
-- Bundle <= 230 KB minified (current: 228.7 KB); 60fps parallax (transform + opacity only)
+- Bundle <= 230 KB minified (measured 212.3 KB on 2026-10-14, ~17.7 KB headroom; 70.7 KB gzipped); 60fps parallax (transform + opacity only)
 - Status pills: `o` historical, `D` current, `O` research
 - ASCII widgets allowed (status widget, project spine, evidence chip)
 

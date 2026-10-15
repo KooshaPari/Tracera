@@ -149,5 +149,14 @@ value and are recorded as decisions rather than left dangling:
 P1 design from constitution · P2 tag/label only · P3 reuse `:8081` · P4 `setInterval` ·
 P5 redirect `/` → `/parent/` · P6 live `/api/agents` with static fallback · P7 lazy-load.
 
+**P7 was subsequently corrected by measurement, so the recommendation above no longer stands as
+given.** The real bundle is **212.3 KB** (`bundled/app.bundle.*.js`, measured 2026-10-14 with
+zero source changes since that build), not 228.7 KB — so there is ~17.7 KB of headroom rather
+than a shortfall, and the premise that `/parent/` "will likely push over budget" is not
+supported. Lazy-load is still defensible for code-splitting and first paint, but it is no longer
+*required* by the budget, and the operator may reasonably prefer to spend the headroom instead.
+The 230 KB figure is a documented convention; no CI check enforces it. Corrected in `00`, `02`,
+`05`, and `06`.
+
 These are recommendations, not operator decisions. They must be labelled as such in
 `06_DECISION_LOG.md` if adopted.
