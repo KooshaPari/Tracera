@@ -131,9 +131,12 @@ subagent can be dispatched:
   - The tx-agent trailer template
   - **CRITICAL: read 00_SESSION_OVERVIEW.md "Reframed scope" first — the
     "naive tab system" the directive preemptively forbids does NOT exist in
-    the codebase (current top-nav is `Work | Resume | Contact`). Verify the
-    deployed top-nav via CF Access, then design `/parent/` as the richer
-    consolidated view. Do NOT hunt for a tab system to replace.**
+    the codebase (current top-nav is `Work | Resume | Contact`). Design
+    `/parent/` as the richer consolidated view. Do NOT hunt for a tab system
+    to replace. Inspecting the deployed top-nav through CF Access is
+    **optional, not a prerequisite\*\* — the wall is authenticated, so if access
+    is unavailable, fall back to operator-provided evidence or the documented
+    local state (the nav list in 02_CURRENT_STATE.md) and say which you used.
 
 ## PR review
 

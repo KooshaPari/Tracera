@@ -52,14 +52,17 @@ files (00–06 + MANIFEST, `.bak-*` excluded) copied byte-verified to
 `/Users/kooshapari/CodeProjects/docs/_archive/cockpit-refresh-backup-20261014/`.
 That backup predates `07_TAKEOVER_RECORD.md` and is NOT kept in sync with it.
 
-**New finding (2026-10-14):** all four branches referenced by this docset are
-absent from origin — `feature/cockpit-parent-view`, `feature/cockpit-appshell`,
-`feat/dimensional-layering`, `agent/cockpit-refresh`.
+**New finding (2026-10-14):** four branches are named across **two different repos**, which
+this manifest previously conflated. In **Tracera**'s origin: `feat/dimensional-layering`,
+`feature/cockpit-appshell`, `agent/cockpit-refresh` were all absent. The Phase 1 branch
+`feature/cockpit-parent-view` is not a Tracera branch at all — it belongs to **koosha-phenotype**
+(`KooshaPari/KooshaPari`), and its absence was observed on _that_ repo's origin.
 
-**Superseded (corrected 2026-10-15):** `feature/cockpit-parent-view` has since been
-recreated in `koosha-phenotype` and pushed at `e5f2a03`, then carried forward with review
-fixes on `fix/parent-view-review-findings` (`12d51c882`) — see `07_TAKEOVER_RECORD.md` and
-`08_SCOPE_CORRECTION.md`. Phase 1 is no longer blocked on branch availability. The other
-three were either superseded by revision 3's single-branch decision
-(`feature/cockpit-appshell`, `agent/cockpit-refresh`) or are unrelated operator work
-(`feat/dimensional-layering`, a visual-novelty branch).
+**Superseded (corrected 2026-10-15):** `feature/cockpit-parent-view` was recreated in
+**koosha-phenotype** from an exact `origin/main` match and pushed at `e5f2a03`, then carried
+forward with review fixes on `fix/parent-view-review-findings` (`12d51c882`) — see
+`07_TAKEOVER_RECORD.md` and `08_SCOPE_CORRECTION.md`. That branch is on **remote** origin for
+koosha-phenotype. Phase 1 is no longer blocked on branch availability. The other three were
+either superseded by revision 3's single-branch decision (`feature/cockpit-appshell`,
+`agent/cockpit-refresh`) or are unrelated operator work (`feat/dimensional-layering`, a
+visual-novelty branch).

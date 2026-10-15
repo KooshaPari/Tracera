@@ -52,7 +52,7 @@
 - `scripts/views/parent.js` (new, ~300-500 lines): the parent view — 9-agent strip, 15-min snapshot, feed; ASCII status widgets; design constitution palette
 - `scripts/views/parent-helpers.js` (new, ~200-400 lines): per-agent card renderer, snapshot fetcher, ASCII widget helpers
 - `scripts/components/shell.js`: add `['/parent', 'Parent']` to the `ROUTES` list — 1 line
-- `vercel.json`: add a rewrite rule for `/parent` → `/parent.html` (consistent with `/work` → `/work.html`)
+- `vercel.json`: add a rewrite rule for `/parent` → `/parent.html` (consistent with `/work` → `/work.html`). **This only works if `parent.html` is actually created and staged** — the SPA catch-all serves `index.html` for unknown routes, so a rewrite to a file that was never generated leaves `/parent` broken. See the file list and registration table in `03_PROPOSED_DESIGN.md`.
 - `scripts/app.js` (optional): change default landing to `/parent` (vs `/`) — 1 line if a redirect is preferred over a default-route swap
 
 ### Bundle + perf budget
