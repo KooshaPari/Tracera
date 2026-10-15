@@ -1,6 +1,6 @@
 # MANIFEST — canonical files vs superseded backups
 
-Last verified: 2026-10-15T01:23Z (takeover: `07_TAKEOVER_RECORD.md` added and indexed here; prior R11 round on 02+05 stands).
+Last verified: 2026-10-15T07:28Z (`08_SCOPE_CORRECTION.md` added and indexed here: PR #6 closed as misrouted; the /parent/ work belongs in job-cockpit per the operator, and that repo is a Python dashboard with no JS layer, so the SPA implementation cannot be moved as-is).
 
 ## Canonical (read these)
 
@@ -14,6 +14,7 @@ Last verified: 2026-10-15T01:23Z (takeover: `07_TAKEOVER_RECORD.md` added and in
 | `05_BLOCKERS.md` | original |
 | `06_DECISION_LOG.md` | 2026-10-14 (D14 entry: 23:48Z amendment traceability) |
 | `07_TAKEOVER_RECORD.md` | 2026-10-14 (new: takeover state of record; not a policy file) |
+| `08_SCOPE_CORRECTION.md` | 2026-10-15 (new: operator closed PR #6 as misrouted to koosha-phenotype; job-cockpit vs koosha-phenotype architecture split; 5 review findings to carry forward; DO-NOT-COMMIT redaction warning) |
 
 ## Superseded `.bak-*` snapshots — DO NOT use as current
 
