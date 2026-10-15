@@ -89,8 +89,19 @@ All four branches referenced by the cockpit docset are **absent from origin**:
 - `feat/dimensional-layering`
 - `agent/cockpit-refresh`
 
-Phase 1 as written points at a branch that no longer exists. A fresh
-`feature/cockpit-parent-view` must be created from current `main` before any Phase 1 work.
+**Repo correction (2026-10-14T18:45 PDT):** these are spread across two repos, and an earlier
+version of this record implied they were all in one. Phase 1's branch,
+`feature/cockpit-parent-view`, belongs to **`koosha-phenotype`** (the site source), not Tracera.
+
+**Resolved:** `feature/cockpit-parent-view` has been recreated in `koosha-phenotype` and pushed
+to origin at `e5f2a03`, based on an exact `origin/main` match with a clean working tree — so it
+inherits none of the operator's in-flight WIP, which is what `05_BLOCKERS.md` requires. Phase 1
+is no longer blocked on branch availability. `scripts/views/parent.js` is still absent, so no
+Phase 1 code exists yet.
+
+The remaining three names (`feature/cockpit-appshell`, `feat/dimensional-layering`,
+`agent/cockpit-refresh`) were superseded by revision 3's single-branch decision and have not
+been recreated.
 
 ## 7. Operator directives — still binding
 
