@@ -2,47 +2,47 @@
 
 ## `dash.kooshapari.com` = `koosha-phenotype` (revision 2 source-of-truth)
 
-| Aspect | Value | Notes |
-|--------|-------|-------|
-| Repo path | `/Users/kooshapari/CodeProjects/Phenotype/repos/koosha-phenotype` | Local clone |
-| Git remote | `git@github.com:KooshaPari/KooshaPari.git` | Public `KooshaPari` org repo |
-| Vercel project | `kooshapari-site` | projectId `prj_wVRCWLBwtZUg5DbPqfLpe9IbeaXt` |
-| Vercel team/org | `team_uMfxKsua6PPiWqtcD93kzO5r` | Owned by operator |
-| Custom domain | `dash.kooshapari.com` (and `kooshapari.com` apex) | Configured in Vercel dashboard, NOT in repo |
-| Cloudflare Access | 302 → `floral-moon-c604.cloudflareaccess.com` (login) | App is behind CF Access |
-| Current branch | `feat/dimensional-layering` (1 commit ahead of `main`) | Working tree clean |
-| Build command | `npm run stage:publication` | Stage + bundle via esbuild |
-| Output | `dist/` | Vercel `outputDirectory: "dist"` |
-| Stack | Vanilla JS + esbuild + Playwright (e2e + a11y) | NOT React; NOT a SPA framework |
-| Pages | `index.html`, `work.html`, `engineering.html`, `product.html`, `blog.html`, `contact.html`, `resume.html`, `archive.html`, `work/*.html` | Multi-page static, SPA on `index.html` |
-| Test framework | Playwright + `node --test` (unit) | `tests/*.test.js` + `tests/e2e/` |
-| Design system | `assets/styles/`, `styles/tokens.css`, governed by `.claude/skills/phenotype-design-constitution/SKILL.md` | |
-| Brand | "Technical Atelier" — Koosha Paridehpour, evidence-led, museum-quiet, designer-engineer | |
-| 15 projects in `data/projects.js` | Tracera is row 9 (developer-tools, violet `#7C3AED`, JetBrains Mono + IBM Plex Sans) | Full case studies per project |
-| Legal identity | `data/phenotype.js` — Phenotype is a USPTO-registered trademark held by MP Advance Solutions LLC, California | High-stakes: any change to the brand is a legal concern |
-| Public record | `data/phenotype-public-record.js` — citation-backed Resume vs Public-Record contrast table | |
+| Aspect                            | Value                                                                                                                                    | Notes                                                   |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Repo path                         | `/Users/kooshapari/CodeProjects/Phenotype/repos/koosha-phenotype`                                                                        | Local clone                                             |
+| Git remote                        | `git@github.com:KooshaPari/KooshaPari.git`                                                                                               | Public `KooshaPari` org repo                            |
+| Vercel project                    | `kooshapari-site`                                                                                                                        | projectId `prj_wVRCWLBwtZUg5DbPqfLpe9IbeaXt`            |
+| Vercel team/org                   | `team_uMfxKsua6PPiWqtcD93kzO5r`                                                                                                          | Owned by operator                                       |
+| Custom domain                     | `dash.kooshapari.com` (and `kooshapari.com` apex)                                                                                        | Configured in Vercel dashboard, NOT in repo             |
+| Cloudflare Access                 | 302 → `floral-moon-c604.cloudflareaccess.com` (login)                                                                                    | App is behind CF Access                                 |
+| Current branch                    | `feat/dimensional-layering` (1 commit ahead of `main`)                                                                                   | Working tree clean                                      |
+| Build command                     | `npm run stage:publication`                                                                                                              | Stage + bundle via esbuild                              |
+| Output                            | `dist/`                                                                                                                                  | Vercel `outputDirectory: "dist"`                        |
+| Stack                             | Vanilla JS + esbuild + Playwright (e2e + a11y)                                                                                           | NOT React; NOT a SPA framework                          |
+| Pages                             | `index.html`, `work.html`, `engineering.html`, `product.html`, `blog.html`, `contact.html`, `resume.html`, `archive.html`, `work/*.html` | Multi-page static, SPA on `index.html`                  |
+| Test framework                    | Playwright + `node --test` (unit)                                                                                                        | `tests/*.test.js` + `tests/e2e/`                        |
+| Design system                     | `assets/styles/`, `styles/tokens.css`, governed by `.claude/skills/phenotype-design-constitution/SKILL.md`                               |                                                         |
+| Brand                             | "Technical Atelier" — Koosha Paridehpour, evidence-led, museum-quiet, designer-engineer                                                  |                                                         |
+| 15 projects in `data/projects.js` | Tracera is row 9 (developer-tools, violet `#7C3AED`, JetBrains Mono + IBM Plex Sans)                                                     | Full case studies per project                           |
+| Legal identity                    | `data/phenotype.js` — Phenotype is a USPTO-registered trademark held by MP Advance Solutions LLC, California                             | High-stakes: any change to the brand is a legal concern |
+| Public record                     | `data/phenotype-public-record.js` — citation-backed Resume vs Public-Record contrast table                                               |                                                         |
 
 ## SPA architecture (the cockpit refresh lands here)
 
-| File | Lines | Role |
-|------|------:|------|
-| `index.html` | 69 | SPA root: `<div id="shell-root"></div>` + `<main id="view-root"></main>` + Three.js importmap |
-| `scripts/app.js` | 210 | SPA entry: imports `parseRoute`, `routeFromLocation`, `renderShell`, per-view renderers; sets page metadata; init scroll-reveal, transitions, magnetic, parallax, etc. |
-| `scripts/router.js` | 37 | DOM-bound orchestrator: `routeFromLocation`, `navigateTo`, listens for `hashchange`/`popstate`/`routechange` |
-| `scripts/router-helpers.js` | 165 | PURE route parser: `VIEW_ROUTES = Set('home','engineering','product','work','resume','contact','blog')`, `parseRoute`, `routeToPath`, `routeToHash`, `applyLens` |
-| `scripts/components/shell.js` | 136 | Per-view top-nav + lens control + reader toggle. Current `ROUTES` = `[ ['/work','Work'], ['/resume','Resume'], ['/contact','Contact'] ]` (blog commented out 2026-10-11) |
-| `scripts/views/home.js` | 242 | Home view: per-lens project priority, lens-specific identity profile |
-| `scripts/views/work.js` + `work-index.js` | varies | Work index + project catalog |
-| `scripts/views/project-detail.js` | varies | Individual project case study (per slug) |
-| `scripts/views/resume.js` | varies | Resume view |
-| `scripts/views/contact.js` | varies | Contact view |
-| `scripts/views/blog-index.js` | varies | Blog index |
-| `scripts/views/blog-post.js` | varies | Blog post detail |
-| `scripts/views/not-found.js` | varies | 404 view + canvas init |
-| `scripts/lens-state.js` | varies | Engineering/product lens state (localStorage-persisted) |
-| `scripts/reader-state.js` | varies | Reader mode toggle |
-| `scripts/construction-shell.js` | 29 | "Under construction" interstitial gate (NOT the AppShell; one-time modal) |
-| `scripts/views/parent.js` | **missing** | **The /parent/ view to be built in Phase 1** |
+| File                                      |       Lines | Role                                                                                                                                                                     |
+| ----------------------------------------- | ----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `index.html`                              |          69 | SPA root: `<div id="shell-root"></div>` + `<main id="view-root"></main>` + Three.js importmap                                                                            |
+| `scripts/app.js`                          |         210 | SPA entry: imports `parseRoute`, `routeFromLocation`, `renderShell`, per-view renderers; sets page metadata; init scroll-reveal, transitions, magnetic, parallax, etc.   |
+| `scripts/router.js`                       |          37 | DOM-bound orchestrator: `routeFromLocation`, `navigateTo`, listens for `hashchange`/`popstate`/`routechange`                                                             |
+| `scripts/router-helpers.js`               |         165 | PURE route parser: `VIEW_ROUTES = Set('home','engineering','product','work','resume','contact','blog')`, `parseRoute`, `routeToPath`, `routeToHash`, `applyLens`         |
+| `scripts/components/shell.js`             |         136 | Per-view top-nav + lens control + reader toggle. Current `ROUTES` = `[ ['/work','Work'], ['/resume','Resume'], ['/contact','Contact'] ]` (blog commented out 2026-10-11) |
+| `scripts/views/home.js`                   |         242 | Home view: per-lens project priority, lens-specific identity profile                                                                                                     |
+| `scripts/views/work.js` + `work-index.js` |      varies | Work index + project catalog                                                                                                                                             |
+| `scripts/views/project-detail.js`         |      varies | Individual project case study (per slug)                                                                                                                                 |
+| `scripts/views/resume.js`                 |      varies | Resume view                                                                                                                                                              |
+| `scripts/views/contact.js`                |      varies | Contact view                                                                                                                                                             |
+| `scripts/views/blog-index.js`             |      varies | Blog index                                                                                                                                                               |
+| `scripts/views/blog-post.js`              |      varies | Blog post detail                                                                                                                                                         |
+| `scripts/views/not-found.js`              |      varies | 404 view + canvas init                                                                                                                                                   |
+| `scripts/lens-state.js`                   |      varies | Engineering/product lens state (localStorage-persisted)                                                                                                                  |
+| `scripts/reader-state.js`                 |      varies | Reader mode toggle                                                                                                                                                       |
+| `scripts/construction-shell.js`           |          29 | "Under construction" interstitial gate (NOT the AppShell; one-time modal)                                                                                                |
+| `scripts/views/parent.js`                 | **missing** | **The /parent/ view to be built in Phase 1**                                                                                                                             |
 
 ### Adding `/parent/` (Phase 1 file-level plan)
 
@@ -93,27 +93,27 @@ All three are small visual-novelty PRs. Revision 3 conclusion: the directive is 
 
 ## Tracera repo (agent-facing surface, not the web app)
 
-| Aspect | Current | Notes |
-|--------|---------|-------|
-| Path | `/Users/kooshapari/CodeProjects/Phenotype/repos/Tracera` | Local clone |
-| Default branch | `main` | 2 ahead, 77 behind origin/main (operator in-flight work) |
-| Remote | `git@github.com:KooshaPari/Tracera.git` | GitHub-public |
-| Local mods (M-files) | 25 modified, 1 untracked (`.audit/`) | Operator in-flight; not ours to commit |
-| Backend | Rust + cargo + sqlx | `crates/tracera-server` |
-| Edge Worker | `crates/tracera-edge` → `tracera-edge.pheno.studio` | CF Worker (separate from `dash.kooshapari.com`) |
-| Main API | `https://tracera.pheno.studio/api` | wrangler.toml `TRACERA_API` |
-| Web app | `frontend/apps/web/` (React 19 + TanStack Router + Vite + Tailwind) | 29+ view files; NOT the source of `dash.kooshapari.com` |
-| Python SDK | `crates/tracera-py-sdk` | |
-| Go CLI | `crates/tracera-go-cli/` | |
-| Rust CLI | `crates/tracera-cli` | |
-| MCP servers | `crates/tracera-mcp`, `crates/tracertm-mcp` | Streamable-HTTP wrapper around stdio (port 8081). **Verified 2026-10-14:** `crates/tracera-mcp` exists on disk and `Makefile:84` defines the `task-mcp-server` target on :8081. The target is **not running** (nothing listening on :8081) — it must be started before use. |
-| Design system | `docs/specs/014-design-tokens-wcag.md` | WCAG-compliant tokens |
+| Aspect               | Current                                                             | Notes                                                                                                                                                                                                                                                                       |
+| -------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Path                 | `/Users/kooshapari/CodeProjects/Phenotype/repos/Tracera`            | Local clone                                                                                                                                                                                                                                                                 |
+| Default branch       | `main`                                                              | 2 ahead, 77 behind origin/main (operator in-flight work)                                                                                                                                                                                                                    |
+| Remote               | `git@github.com:KooshaPari/Tracera.git`                             | GitHub-public                                                                                                                                                                                                                                                               |
+| Local mods (M-files) | 25 modified, 1 untracked (`.audit/`)                                | Operator in-flight; not ours to commit                                                                                                                                                                                                                                      |
+| Backend              | Rust + cargo + sqlx                                                 | `crates/tracera-server`                                                                                                                                                                                                                                                     |
+| Edge Worker          | `crates/tracera-edge` → `tracera-edge.pheno.studio`                 | CF Worker (separate from `dash.kooshapari.com`)                                                                                                                                                                                                                             |
+| Main API             | `https://tracera.pheno.studio/api`                                  | wrangler.toml `TRACERA_API`                                                                                                                                                                                                                                                 |
+| Web app              | `frontend/apps/web/` (React 19 + TanStack Router + Vite + Tailwind) | 29+ view files; NOT the source of `dash.kooshapari.com`                                                                                                                                                                                                                     |
+| Python SDK           | `crates/tracera-py-sdk`                                             |                                                                                                                                                                                                                                                                             |
+| Go CLI               | `crates/tracera-go-cli/`                                            |                                                                                                                                                                                                                                                                             |
+| Rust CLI             | `crates/tracera-cli`                                                |                                                                                                                                                                                                                                                                             |
+| MCP servers          | `crates/tracera-mcp`, `crates/tracertm-mcp`                         | Streamable-HTTP wrapper around stdio (port 8081). **Verified 2026-10-14:** `crates/tracera-mcp` exists on disk and `Makefile:84` defines the `task-mcp-server` target on :8081. The target is **not running** (nothing listening on :8081) — it must be started before use. |
+| Design system        | `docs/specs/014-design-tokens-wcag.md`                              | WCAG-compliant tokens                                                                                                                                                                                                                                                       |
 
 ## Paperclip (issue model, orchestration)
 
 - **Local origin NOT running (2026-10-14):** `curl http://127.0.0.1:3180/` returns no response (HTTP 000); nothing listens on 3180.
 - **But the public endpoint IS live, behind Cloudflare Access (corrected 2026-10-14T18:55 PDT):** `https://paperclip.kooshapari.com/api/agents` returns HTTP 302 to a `cloudflareaccess.com` login for that app, and the `com.kooshapari.cloudflared-paperclip` launchd job is healthy (three registered Cloudflare edge connections in its log). `agentcom-inbox` is configured against `paperclip=http://127.0.0.1:3180` and ran as recently as 2026-10-12T21:22Z. `~/paperclip-workspace` exists but is empty; paperclip is not a repo, binary, or installed package on this machine.
-  - The infrastructure (tunnel + Access + hostname) is alive; only the local origin process is down. An earlier version of this docset said simply "deployed at localhost:3180", and a first check concluded "DOWN" — both imprecise. What is *not* proven is whether the origin behind the Access wall currently answers, since the 302 is an auth challenge and no authenticated read was possible.
+  - The infrastructure (tunnel + Access + hostname) is alive; only the local origin process is down. An earlier version of this docset said simply "deployed at localhost:3180", and a first check concluded "DOWN" — both imprecise. What is _not_ proven is whether the origin behind the Access wall currently answers, since the 302 is an auth challenge and no authenticated read was possible.
   - **Consequence for P6:** the live path is not architecturally blocked, but a public portfolio page cannot hold Access credentials in client-side JS, so an authenticated live fetch is not viable as-is (it needs a server-side proxy).
 - 9 agents registered: `jcode`, `hermes`, `vp`, `instinct`, `codex`, `kcode`, `winremote`, `engineer-general`, `engineer-specialist`. **Corroborated 2026-10-14, still not live-verified.** Two independent artifacts dated 2026-10-11 — `~/.jcode/scratch/2026-10-12-vp-autonomy/herdr-wiring.md.bak` and `deploy.sh.bak` — each contain exactly this set of 9 names, and a set-diff against this list is empty. That is meaningful independent evidence the roster is real rather than invented, but it is **not** a live `/api/agents` read, so treat it as corroborated rather than confirmed. It also cannot detect agents added or removed since 2026-10-11. Do not hardcode it into per-agent cards without re-reading the live source.
 - Issue model: `kind` (job/personal TBD), `assigneeAgentId`, `priority`, `status`, `id` (UUID).
@@ -121,11 +121,11 @@ All three are small visual-novelty PRs. Revision 3 conclusion: the directive is 
 
 ## CF Workers (`harness-ops/agent-comms/workers/`)
 
-| Worker | Status | Blocking |
-|--------|--------|----------|
-| `agentcom-inbox` (Resend → paperclip) | Code ready (worker.js 255 lines, wrangler.toml configured, deploy.sh 123 lines) | DNS for `inbox.kooshapari.com` + RESEND_WEBHOOK_SECRET (operator) |
-| `agentcom-discord` (Discord → paperclip) | Code ready (worker.js 140 lines, wrangler.toml configured, deploy.sh 75 lines) | DISCORD_BRIDGE_HMAC_SECRET + DISCORD_WEBHOOK_URL (operator vault) |
-| `agentcom-discord-inbound` (paperclip → Discord) | **Not designed** — operator said do NOT invent | Operator design input required |
+| Worker                                           | Status                                                                          | Blocking                                                          |
+| ------------------------------------------------ | ------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `agentcom-inbox` (Resend → paperclip)            | Code ready (worker.js 255 lines, wrangler.toml configured, deploy.sh 123 lines) | DNS for `inbox.kooshapari.com` + RESEND_WEBHOOK_SECRET (operator) |
+| `agentcom-discord` (Discord → paperclip)         | Code ready (worker.js 140 lines, wrangler.toml configured, deploy.sh 75 lines)  | DISCORD_BRIDGE_HMAC_SECRET + DISCORD_WEBHOOK_URL (operator vault) |
+| `agentcom-discord-inbound` (paperclip → Discord) | **Not designed** — operator said do NOT invent                                  | Operator design input required                                    |
 
 ## `cockpit-source` (NOT the cockpit, separate project)
 
@@ -144,4 +144,4 @@ All three are small visual-novelty PRs. Revision 3 conclusion: the directive is 
   "Design API key rotator proxy") — likely a workspace rotator to bypass quota
 - `/v1/usage` and `/v1/models` endpoints probed. 38-model catalog captured.
 - Until quota clears or wA:p4 lands, no subagent can be dispatched for
-  implementation work. The plan-first phase is *explicitly* unblocked.
+  implementation work. The plan-first phase is _explicitly_ unblocked.

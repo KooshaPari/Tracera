@@ -17,14 +17,14 @@ The transcript was never loaded whole. Four read-only subagents mined it in slic
 
 ## 2. Runtime state at takeover (verified)
 
-| Check | Result |
-|---|---|
-| Orphaned processes targeting pawprint | **none** |
-| Armed scheduled tasks targeting pawprint | **none** (old ticks consumed) |
-| Armed scheduled tasks overall | 3 — `sched_99904994` (HeliosLite streak-18), two weekly memory-maintenance |
-| Ambient queue location | `~/.jcode/ambient/queue.json` |
-| Live herdr panes | 16, all owned by other sessions |
-| Live `jcode --resume` TUI processes | 19 |
+| Check                                    | Result                                                                     |
+| ---------------------------------------- | -------------------------------------------------------------------------- |
+| Orphaned processes targeting pawprint    | **none**                                                                   |
+| Armed scheduled tasks targeting pawprint | **none** (old ticks consumed)                                              |
+| Armed scheduled tasks overall            | 3 — `sched_99904994` (HeliosLite streak-18), two weekly memory-maintenance |
+| Ambient queue location                   | `~/.jcode/ambient/queue.json`                                              |
+| Live herdr panes                         | 16, all owned by other sessions                                            |
+| Live `jcode --resume` TUI processes      | 19                                                                         |
 
 No cleanup was required. The old tick loop drained cleanly before the reload.
 
@@ -73,12 +73,12 @@ working backups were deliberately not copied.
 
 ## 5. Verified repo state
 
-| Repo | State |
-|---|---|
-| `Tracera` | `main` — 2 ahead, 77 behind origin. Docset untracked. |
+| Repo               | State                                                                                                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Tracera`          | `main` — 2 ahead, 77 behind origin. Docset untracked.                                                                                                                        |
 | `koosha-phenotype` | current site source for `dash.kooshapari.com`; nav confirmed `Work \| Resume \| Contact`; `scripts/views/parent.js` does **not** exist yet (that is the Phase 1 deliverable) |
-| `HeliosLab` | 1 unpushed commit (`2071c9c3`), **91 behind**, 13 uncommitted mods including 27 `<REDACTED>` username substitutions (working tree only, never committed) |
-| `PhenoShared` | 1 untracked session folder (`docs/sessions/2026-10-12-cleanup-and-release/`, 6 files) |
+| `HeliosLab`        | 1 unpushed commit (`2071c9c3`), **91 behind**, 13 uncommitted mods including 27 `<REDACTED>` username substitutions (working tree only, never committed)                     |
+| `PhenoShared`      | 1 untracked session folder (`docs/sessions/2026-10-12-cleanup-and-release/`, 6 files)                                                                                        |
 
 ## 6. Branch loss (new finding, not previously recorded)
 
@@ -171,7 +171,7 @@ given.** The real bundle is **212.3 KB** (`bundled/app.bundle.*.js`, measured 20
 zero source changes since that build), not 228.7 KB — so there is ~17.7 KB of headroom rather
 than a shortfall, and the premise that `/parent/` "will likely push over budget" is not
 supported. Lazy-load is still defensible for code-splitting and first paint, but it is no longer
-*required* by the budget, and the operator may reasonably prefer to spend the headroom instead.
+_required_ by the budget, and the operator may reasonably prefer to spend the headroom instead.
 The 230 KB figure is a documented convention; no CI check enforces it. Corrected in `00`, `02`,
 `05`, and `06`.
 

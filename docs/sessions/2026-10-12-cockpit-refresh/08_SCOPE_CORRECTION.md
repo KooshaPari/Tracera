@@ -15,19 +15,19 @@ if the work is ever wanted in the SPA.
 
 **Why the routing was wrong:** directive #1 says "`dash.kooshapari.com` must land on
 `/parent/` first", and I read the mention of that hostname as scoping the work to
-`koosha-phenotype`. The docset *also* contains the 2026-10-12T21:16Z instruction — "dash.
+`koosha-phenotype`. The docset _also_ contains the 2026-10-12T21:16Z instruction — "dash.
 kooshapari.com must refresh on event or at minimum every 15 min... **Do in job-cockpit on a
-branch**" — and that is the instruction that governs *where the work happens*. Both lines
+branch**" — and that is the instruction that governs _where the work happens_. Both lines
 were in front of me; the second one should have decided the repo.
 
 ## 2. The two repos are architecturally different — the work cannot simply move
 
-| | `koosha-phenotype` | `job-cockpit` |
-|---|---|---|
-| Remote | `KooshaPari/KooshaPari` | `KooshaPari/job-cockpit` (private) |
-| Local clone | `~/CodeProjects/Phenotype/repos/koosha-phenotype` | `~/CodeProjects/Phenotype/repos/cockpit-source` (renamed) |
-| Architecture | vanilla-JS esbuild SPA | **Python dashboard** (3 `.py`, 0 `.js`) |
-| `/parent` route | exists (added by the closed PR) | **does not exist** — grep hits on "parent" are Python `Path().parent` |
+|                 | `koosha-phenotype`                                | `job-cockpit`                                                         |
+| --------------- | ------------------------------------------------- | --------------------------------------------------------------------- |
+| Remote          | `KooshaPari/KooshaPari`                           | `KooshaPari/job-cockpit` (private)                                    |
+| Local clone     | `~/CodeProjects/Phenotype/repos/koosha-phenotype` | `~/CodeProjects/Phenotype/repos/cockpit-source` (renamed)             |
+| Architecture    | vanilla-JS esbuild SPA                            | **Python dashboard** (3 `.py`, 0 `.js`)                               |
+| `/parent` route | exists (added by the closed PR)                   | **does not exist** — grep hits on "parent" are Python `Path().parent` |
 
 The Phase 1 deliverable was `scripts/views/parent.js` + `styles/parent.css` +
 `parent.html` in an SPA. There is no JS layer in `job-cockpit` to receive it, so the work
@@ -37,11 +37,11 @@ would have to be **rewritten in Python**, which is a different task rather than 
 
 - **(a)** The `/parent/` view belongs in `job-cockpit` → rebuild it in Python there; the
   SPA route work is wrong in principle.
-- **(b)** The *refresh + per-agent surface* belongs in `job-cockpit`, while `/parent/`
+- **(b)** The _refresh + per-agent surface_ belongs in `job-cockpit`, while `/parent/`
   remains a route in `koosha-phenotype` → reopen PR #6 there, fix the findings in §3, and
   add the refresh to the dashboard separately.
 
-Evidence leans to **(b)**: the operator's sentence is about where to *do the work*, not
+Evidence leans to **(b)**: the operator's sentence is about where to _do the work_, not
 about relocating a route that only exists in the SPA; and `job-cockpit` already contains 7
 `agent`/`refresh` references. **Not decided here** — guessing wrong already cost one full
 build-and-PR cycle.
@@ -52,7 +52,7 @@ These are real defects found by review, not by inspection. They survive the repo
 should be fixed wherever this work lands.
 
 1. **`parent.html` copied but not in `TOP_LEVEL_ROUTES`** — prerendering leaves the view
-   root empty for crawlers and for users without JavaScript. *Incomplete implementation.*
+   root empty for crawlers and for users without JavaScript. _Incomplete implementation._
    A second registry exists beyond the one found by the repo's own drift test.
 2. **ASCII frame misalignment** — the agent-count row ends short of the frame's right
    border, so the table's closing edge does not line up.
@@ -62,7 +62,7 @@ should be fixed wherever this work lands.
    of the four: the freshness indicator does not reflect data freshness.
 4. **Duplicate render on append** — the view appends into the root without clearing it, so
    navigating within the route leaves the previous `Parent` view in place and duplicates
-   its content. *(A real bug introduced by this work.)*
+   its content. _(A real bug introduced by this work.)_
 5. **Weak contrast on the status pills** — fallback colours on white cards, worst on
    `historical`. Fails the WCAG 2.2 AA target the constitution sets.
 

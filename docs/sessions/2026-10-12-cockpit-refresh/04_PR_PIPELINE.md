@@ -2,12 +2,12 @@
 
 ## Source repos (in scope)
 
-| Repo | Domain | Branch base | Vercel/CF deploy |
-|------|--------|-------------|------------------|
-| `koosha-phenotype` (remote `KooshaPari/KooshaPari.git`) | Web app at `dash.kooshapari.com` | `main` (operator's in-flight is on `feat/dimensional-layering`) | Vercel `kooshapari-site` |
-| `Tracera` (remote `KooshaPari/Tracera.git`) | Agent-facing surface (MCP/CLI/skill) | `main` | Vercel + CF Worker `tracera-edge` |
-| `paperclip` (separate, in `~/CodeProjects/Phenotype/repos/...`) | Issue model + orchestration | `main` (TBD) | Local:3180 (dev) + `tracera.pheno.studio/api` (prod) |
-| `harness-ops` | CF Workers (inbox receiver, Discord bridge) | `main` | CF Workers (`agentcom-inbox`, `agentcom-discord`) |
+| Repo                                                            | Domain                                      | Branch base                                                     | Vercel/CF deploy                                     |
+| --------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------- |
+| `koosha-phenotype` (remote `KooshaPari/KooshaPari.git`)         | Web app at `dash.kooshapari.com`            | `main` (operator's in-flight is on `feat/dimensional-layering`) | Vercel `kooshapari-site`                             |
+| `Tracera` (remote `KooshaPari/Tracera.git`)                     | Agent-facing surface (MCP/CLI/skill)        | `main`                                                          | Vercel + CF Worker `tracera-edge`                    |
+| `paperclip` (separate, in `~/CodeProjects/Phenotype/repos/...`) | Issue model + orchestration                 | `main` (TBD)                                                    | Local:3180 (dev) + `tracera.pheno.studio/api` (prod) |
+| `harness-ops`                                                   | CF Workers (inbox receiver, Discord bridge) | `main`                                                          | CF Workers (`agentcom-inbox`, `agentcom-discord`)    |
 
 **Out of scope:** `cockpit-source` (local Python dashboard, separate project).
 

@@ -20,11 +20,11 @@ that honors the portfolio's design constitution.
 
 ## Three-repo scope (reconfirmed)
 
-| Repo | Phase 1 | Phase 2 | Phase 3 |
-|------|---------|---------|---------|
-| `koosha-phenotype` | `/parent/` view + AppShell + 15-min refresh + 9-agent state | (read-only) | `/parent/personal` subroute |
-| `Tracera` | (none) | MCP/CLI/skill surface for `/parent/` data sources | (none) |
-| `paperclip` | (none) | (none) | `kind: "personal"` schema + routing |
+| Repo               | Phase 1                                                     | Phase 2                                           | Phase 3                             |
+| ------------------ | ----------------------------------------------------------- | ------------------------------------------------- | ----------------------------------- |
+| `koosha-phenotype` | `/parent/` view + AppShell + 15-min refresh + 9-agent state | (read-only)                                       | `/parent/personal` subroute         |
+| `Tracera`          | (none)                                                      | MCP/CLI/skill surface for `/parent/` data sources | (none)                              |
+| `paperclip`        | (none)                                                      | (none)                                            | `kind: "personal"` schema + routing |
 
 The two are wired together: `koosha-phenotype` reads paperclip issues
 (via `tracera.pheno.studio/api`) and calls Tracera's MCP/CLI for
@@ -51,26 +51,27 @@ separate phase.
 
 **Files to modify:**
 
-| File | Change | Lines (est.) |
-|------|--------|-------------:|
-| `scripts/router-helpers.js` | Add `'parent'` to `VIEW_ROUTES`; add 2 if-branches in `parseRoute` and `routeToPath` | +6 |
-| `scripts/router.js` | No change | 0 |
-| `scripts/app.js` | Add `import { renderParent } from './views/parent.js'`; wire `route.view === 'parent'` in the render dispatch; (optionally) change default landing to `/parent` | +5 |
-| `scripts/components/shell.js` | Add `['/parent', 'Parent']` to `ROUTES` (the top nav) | +1 |
-| `vercel.json` | Add `{ "source": "/parent", "destination": "/parent.html" }` rewrite | +3 |
-| `styles/bundled/pages.css` (or new `parent.css`) | Per-view styles, ASCII status widget, 9-agent grid, 15-min refresh indicator | +150 |
-| `data/phenotype.js` | (optionally) extend `IDENTITY` with a 9-agent roster sourced from paperclip's `/api/agents` | +20 (or none, if data is fetched at runtime) |
+| File                                             | Change                                                                                                                                                          |                                 Lines (est.) |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------: |
+| `scripts/router-helpers.js`                      | Add `'parent'` to `VIEW_ROUTES`; add 2 if-branches in `parseRoute` and `routeToPath`                                                                            |                                           +6 |
+| `scripts/router.js`                              | No change                                                                                                                                                       |                                            0 |
+| `scripts/app.js`                                 | Add `import { renderParent } from './views/parent.js'`; wire `route.view === 'parent'` in the render dispatch; (optionally) change default landing to `/parent` |                                           +5 |
+| `scripts/components/shell.js`                    | Add `['/parent', 'Parent']` to `ROUTES` (the top nav)                                                                                                           |                                           +1 |
+| `vercel.json`                                    | Add `{ "source": "/parent", "destination": "/parent.html" }` rewrite                                                                                            |                                           +3 |
+| `styles/bundled/pages.css` (or new `parent.css`) | Per-view styles, ASCII status widget, 9-agent grid, 15-min refresh indicator                                                                                    |                                         +150 |
+| `data/phenotype.js`                              | (optionally) extend `IDENTITY` with a 9-agent roster sourced from paperclip's `/api/agents`                                                                     | +20 (or none, if data is fetched at runtime) |
 
 **Files to create:**
 
-| File | Role | Lines (est.) |
-|------|------|-------------:|
-| `scripts/views/parent.js` | The `/parent/` view: orchestrator (mounts the 9-agent strip, the 15-min snapshot, the feed) | 300-500 |
-| `scripts/views/parent-helpers.js` | Per-agent card renderer, snapshot fetcher, ASCII widget helpers | 200-400 |
-| `tests/parent.test.js` | Unit tests for the route parser and parent view helpers | 100-200 |
-| `tests/e2e/parent.spec.js` | E2E test: navigate to `/parent/`, verify 9 cards render, verify 15-min timer exists | 50-100 |
+| File                              | Role                                                                                        | Lines (est.) |
+| --------------------------------- | ------------------------------------------------------------------------------------------- | -----------: |
+| `scripts/views/parent.js`         | The `/parent/` view: orchestrator (mounts the 9-agent strip, the 15-min snapshot, the feed) |      300-500 |
+| `scripts/views/parent-helpers.js` | Per-agent card renderer, snapshot fetcher, ASCII widget helpers                             |      200-400 |
+| `tests/parent.test.js`            | Unit tests for the route parser and parent view helpers                                     |      100-200 |
+| `tests/e2e/parent.spec.js`        | E2E test: navigate to `/parent/`, verify 9 cards render, verify 15-min timer exists         |       50-100 |
 
 **Test additions:**
+
 - `tests/router.test.js`: add a `parseRoute('/parent')` test that returns `{ view: 'parent' }`
 - `tests/router.test.js`: add a `routeToPath({ view: 'parent' })` test that returns `/parent`
 
@@ -82,12 +83,12 @@ separate phase.
 - Status pills: `o` historical, `D` current, `O` research. The per-agent state pills use these glyphs.
 - ASCII status widgets: the 15-min snapshot frame uses the status widget recipe from `phenotype-design-constitution` § 8.1 (ramp blocks + status labels).
 - WCAG 2.2 AA: contrast, focus rings, 24px touch targets, reduced-motion respected for the 15-min refresh indicator.
-- Bundle: keep the total under the 230 KB convention. **Corrected 2026-10-15:** lazy-loading `parent.js` was originally specified as a *requirement*, on the premise that the bundle sat at 228.7 KB and the new view would push it over. Measured, the bundle is 212.3 KB and the new view adds ~2.5 KB, so lazy-loading is **not required for budget reasons**. It remains a reasonable code-splitting/first-paint choice, but the design no longer depends on it.
+- Bundle: keep the total under the 230 KB convention. **Corrected 2026-10-15:** lazy-loading `parent.js` was originally specified as a _requirement_, on the premise that the bundle sat at 228.7 KB and the new view would push it over. Measured, the bundle is 212.3 KB and the new view adds ~2.5 KB, so lazy-loading is **not required for budget reasons**. It remains a reasonable code-splitting/first-paint choice, but the design no longer depends on it.
 
 ### `/parent/` view structure (proposed)
 
 The `/parent/` view is a **consolidated dashboard for a single human
-operator (Koosha)**. It is the *parent of all context* in the platform.
+operator (Koosha)**. It is the _parent of all context_ in the platform.
 
 ```
 +----------------------------------------------------------+
@@ -117,6 +118,7 @@ operator (Koosha)**. It is the *parent of all context* in the platform.
 ```
 
 **Agent card content (per the 9 paperclip agents):**
+
 - Agent name (Inter, h3, with glyph-prefixed status pill)
 - Last activity timestamp (JetBrains Mono, mono caption)
 - Current task / focus (Inter, body)
@@ -124,6 +126,7 @@ operator (Koosha)**. It is the *parent of all context* in the platform.
 - ASCII status indicator (4-character ramp: `....` / `:::.` / `###.` / `###`)
 
 **Snapshot content (data sources):**
+
 - agentcom-inbox health → CF Worker health probe or paperclip issue count
 - herdr focused pane → herdr state API (operator's local TUI multiplexer)
 - paperclip open issues → `GET /api/issues?assigneeAgentId=...` (or all open)
@@ -131,6 +134,7 @@ operator (Koosha)**. It is the *parent of all context* in the platform.
 - CF Workers health → cloudflare API or paperclip-reported worker status
 
 **Feed content:**
+
 - Recent commits across all `KooshaPari/*` repos (last 7 days, public only)
 - Recent paperclip activity (issues filed, status changes)
 - Recent portfolio blog posts (already rendered in `/blog`)

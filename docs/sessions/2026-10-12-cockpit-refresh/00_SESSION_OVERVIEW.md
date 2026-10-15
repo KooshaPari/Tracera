@@ -39,21 +39,21 @@ commented out 2026-10-11) — no tabs. The operator's directive is
 
 The cockpit refresh lands in **three repos**:
 
-| Repo | Owns | Operator's directive |
-|------|------|---------------------|
-| `koosha-phenotype` | Web app at `dash.kooshapari.com` — `/parent/` view, AppShell, 15-min refresh, 9-agent state | (1), (2), (5) |
-| `Tracera` | Agent-facing surface (MCP/CLI/skill) | (3) |
-| `paperclip` | Issue model (kind=personal schema) | (4) |
-| `harness-ops` | CF Workers (out of refresh scope; in-flight) | n/a |
+| Repo               | Owns                                                                                        | Operator's directive |
+| ------------------ | ------------------------------------------------------------------------------------------- | -------------------- |
+| `koosha-phenotype` | Web app at `dash.kooshapari.com` — `/parent/` view, AppShell, 15-min refresh, 9-agent state | (1), (2), (5)        |
+| `Tracera`          | Agent-facing surface (MCP/CLI/skill)                                                        | (3)                  |
+| `paperclip`        | Issue model (kind=personal schema)                                                          | (4)                  |
+| `harness-ops`      | CF Workers (out of refresh scope; in-flight)                                                | n/a                  |
 
 ## Phase model (revision 3, merged)
 
-- **Phase 0** — *plan + state audit* (this document, revision 3)
-- **Phase 1** — *`/parent/` view + AppShell + 15-min refresh + per-agent state* (in `koosha-phenotype`)
+- **Phase 0** — _plan + state audit_ (this document, revision 3)
+- **Phase 1** — _`/parent/` view + AppShell + 15-min refresh + per-agent state_ (in `koosha-phenotype`)
   — directives (1), (2), (5); single phase, not split
-- **Phase 2** — *MCP + CLI + skill/plugin agent surface* (in `Tracera`)
+- **Phase 2** — _MCP + CLI + skill/plugin agent surface_ (in `Tracera`)
   — directive (3)
-- **Phase 3** — *personal-mode extensions* (`paperclip kind=personal` schema + `/parent/personal` subroute)
+- **Phase 3** — _personal-mode extensions_ (`paperclip kind=personal` schema + `/parent/personal` subroute)
   — directive (4)
 
 ## Visual foundation (binding, from `phenotype-design-constitution` skill)

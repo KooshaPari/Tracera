@@ -7,7 +7,7 @@
 - **What:** All subagent dispatches fail with HTTP 429 `GoUsageLimitError`.
 - **Auto-reset:** 2026-10-18T10:22:53Z (5.5 days from 2026-10-12T22:36Z).
 - **Operator work-around:** wA:p4 pane is "Design API key rotator proxy" — may unblock sooner than the auto-reset.
-- **Workaround for this plan-first phase:** proceed with VP-Eng reading code and writing docs (no subagent needed). The plan-first phase is *explicitly* unblocked.
+- **Workaround for this plan-first phase:** proceed with VP-Eng reading code and writing docs (no subagent needed). The plan-first phase is _explicitly_ unblocked.
 - **Resolution criteria:** `/v1/usage` returns `monthly.status=ok` (or the wA:p4 key proxy is live and rotates to a different workspace).
 
 ## Soft blockers (work can start, with caveats)
@@ -71,15 +71,15 @@
 Reply in any form — `P1=A P3=C ...`, or just "your defaults", or answer them one at a
 time. "skip" defers any item; unstated items fall back to the recommendation below.
 
-| # | Question | Options | Recommended if unstated |
-|---|---|---|---|
-| P1 | `/parent/` visual design | A mockup exists (paste it) · design from constitution · derive from an existing route | **Design from the constitution** |
-| P2 | Personal-mode issue fields | tag/label only · new fields · reuse job fields | **Tag/label only** (smallest change) |
-| P3 | MCP exposure | reuse `:8081` · also CF Worker at `/mcp` · Worker only | **Reuse `:8081`** (exists; just needs starting) |
-| P4 | 15-min refresh source | `setInterval` in AppShell · server cron · job queue | **`setInterval`** (simplest, survives deploys) |
-| P5 | `/parent/` as landing | redirect `/`→`/parent/` · separate nav entry · serve `/parent/` at `/` | **Redirect** (literal directive compliance) |
-| P6 | Agent data source | live `/api/agents` · static `data/phenotype.js` | **Static config + refresh** for the public site — an authenticated live fetch is not viable client-side (see caveat above) |
-| P7 | Bundle approach | lazy-load · inline and spend the 17.7 KB · raise the budget | **Lazy-load** for code-splitting (NOT required by budget — see above) |
+| #   | Question                   | Options                                                                               | Recommended if unstated                                                                                                    |
+| --- | -------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| P1  | `/parent/` visual design   | A mockup exists (paste it) · design from constitution · derive from an existing route | **Design from the constitution**                                                                                           |
+| P2  | Personal-mode issue fields | tag/label only · new fields · reuse job fields                                        | **Tag/label only** (smallest change)                                                                                       |
+| P3  | MCP exposure               | reuse `:8081` · also CF Worker at `/mcp` · Worker only                                | **Reuse `:8081`** (exists; just needs starting)                                                                            |
+| P4  | 15-min refresh source      | `setInterval` in AppShell · server cron · job queue                                   | **`setInterval`** (simplest, survives deploys)                                                                             |
+| P5  | `/parent/` as landing      | redirect `/`→`/parent/` · separate nav entry · serve `/parent/` at `/`                | **Redirect** (literal directive compliance)                                                                                |
+| P6  | Agent data source          | live `/api/agents` · static `data/phenotype.js`                                       | **Static config + refresh** for the public site — an authenticated live fetch is not viable client-side (see caveat above) |
+| P7  | Bundle approach            | lazy-load · inline and spend the 17.7 KB · raise the budget                           | **Lazy-load** for code-splitting (NOT required by budget — see above)                                                      |
 
 These are **recommendations, not decisions.** They are agent judgement recorded so that
 nothing dangles if an item goes unanswered; adopting any of them is still an operator choice

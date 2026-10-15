@@ -4,17 +4,17 @@ Last verified: 2026-10-15T07:28Z (`08_SCOPE_CORRECTION.md` added and indexed her
 
 ## Canonical (read these)
 
-| File | Last amendment-propagation edit |
-|---|---|
-| `00_SESSION_OVERVIEW.md` | 2026-10-14 (title-scoped-only correction, directive #7) |
-| `01_OPERATOR_DIRECTIVES.md` | 2026-10-13 (verbatim 23:48Z amendment + table row 9) |
-| `02_CURRENT_STATE.md` | 2026-10-14 (R11: tab-system hedge → preemptive conclusion) |
-| `03_PROPOSED_DESIGN.md` | 2026-10-14 (Phase 1/2 checklists amended) |
-| `04_PR_PIPELINE.md` | 2026-10-13 (title convention + PR-body template) |
-| `05_BLOCKERS.md` | original |
-| `06_DECISION_LOG.md` | 2026-10-14 (D14 entry: 23:48Z amendment traceability) |
-| `07_TAKEOVER_RECORD.md` | 2026-10-14 (new: takeover state of record; not a policy file) |
-| `08_SCOPE_CORRECTION.md` | 2026-10-15 (new: operator closed PR #6 as misrouted to koosha-phenotype; job-cockpit vs koosha-phenotype architecture split; 5 review findings to carry forward; DO-NOT-COMMIT redaction warning) |
+| File                        | Last amendment-propagation edit                                                                                                                                                                   |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `00_SESSION_OVERVIEW.md`    | 2026-10-14 (title-scoped-only correction, directive #7)                                                                                                                                           |
+| `01_OPERATOR_DIRECTIVES.md` | 2026-10-13 (verbatim 23:48Z amendment + table row 9)                                                                                                                                              |
+| `02_CURRENT_STATE.md`       | 2026-10-14 (R11: tab-system hedge → preemptive conclusion)                                                                                                                                        |
+| `03_PROPOSED_DESIGN.md`     | 2026-10-14 (Phase 1/2 checklists amended)                                                                                                                                                         |
+| `04_PR_PIPELINE.md`         | 2026-10-13 (title convention + PR-body template)                                                                                                                                                  |
+| `05_BLOCKERS.md`            | original                                                                                                                                                                                          |
+| `06_DECISION_LOG.md`        | 2026-10-14 (D14 entry: 23:48Z amendment traceability)                                                                                                                                             |
+| `07_TAKEOVER_RECORD.md`     | 2026-10-14 (new: takeover state of record; not a policy file)                                                                                                                                     |
+| `08_SCOPE_CORRECTION.md`    | 2026-10-15 (new: operator closed PR #6 as misrouted to koosha-phenotype; job-cockpit vs koosha-phenotype architecture split; 5 review findings to carry forward; DO-NOT-COMMIT redaction warning) |
 
 ## Superseded `.bak-*` snapshots — DO NOT use as current
 
