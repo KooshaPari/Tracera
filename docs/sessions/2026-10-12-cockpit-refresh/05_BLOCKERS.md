@@ -1,4 +1,4 @@
-# Blockers (revision 3)
+# Blockers (revision 3, 2026-10-15)
 
 ## Hard blockers (work cannot start)
 
@@ -18,7 +18,7 @@
 
 ### B5. Cannot see deployed `dash.kooshapari.com` (Cloudflare Access wall) — REFRAMED in revision 3
 
-- **Original framing (revision 2):** "I cannot inspect the deployed 'basic tab system' the operator references."
+- **Earlier framing (revision 2, superseded):** "I cannot inspect the deployed 'basic tab system' the operator references."
 - **Revised framing (revision 3):** The "basic tab system" does not exist in the current codebase. The current top-nav is just `Work | Resume | Contact` (3 links, no tabs). The operator's directive is **preemptive**: don't build a naive 4-tab default; build `/parent/` first.
 - **Remaining impact:** the deployed app's actual landing state is behind CF Access and cannot be inspected. If the operator has uncommitted work (in another clone, on another branch, in flight) that introduces tabs, I cannot see it. The local clone has no tabs and no `/parent/` route.
 - **Workaround:** the Phase 1 implementation starts from a clean `main` in `koosha-phenotype` and builds the `/parent/` view as a NEW view (not a replacement of an existing tab system). The CF Access wall doesn't block this because the new view is being added, not modified.

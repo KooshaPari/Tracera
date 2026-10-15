@@ -15,9 +15,7 @@ if the work is ever wanted in the SPA.
 
 **Why the routing was wrong:** directive #1 says "`dash.kooshapari.com` must land on
 `/parent/` first", and I read the mention of that hostname as scoping the work to
-`koosha-phenotype`. The docset _also_ contains the 2026-10-12T21:16Z instruction — "dash.
-kooshapari.com must refresh on event or at minimum every 15 min... **Do in job-cockpit on a
-branch**" — and that is the instruction that governs _where the work happens_. Both lines
+`koosha-phenotype`. The docset _also_ contains the 2026-10-12T21:16Z instruction — "dash.kooshapari.com must refresh on event or at minimum every 15 min... **Do in job-cockpit on a branch**" — and that is the instruction that governs _where the work happens_. Both lines
 were in front of me; the second one should have decided the repo.
 
 ## 2. The two repos are architecturally different — the work cannot simply move
