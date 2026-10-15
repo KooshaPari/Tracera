@@ -14,45 +14,38 @@ Status: proposed documentation, draft 2026-10-14. Builds on Tracera #1132 (gap i
 
 Columns: what the vendor page says it has, and what Tracera has now. "Tracera now" is based on #1132/#1128 only.
 
-| Capability | Polarion (Siemens) | Jama Connect | ATOMS (atoms.tech) | Trace.Space | Linear / Plane | Tracera now |
-|---|---|---|---|---|---|---|
-| Structured spec documents | LiveDocs: online structured specs, linked to work items | Requirements authoring, real-time collaboration | Requirements that live in AI agents (Claude, Cursor) | Requirements as graph nodes | n/a (issues/docs) | No document view; list of items |
-| Live traceability | Traceability matrix, impact and traceability analysis (edition-gated per Polarion 2404 feature sheet) | Live Traceability, Live Trace Explorer (auto-detects risk), upstream/downstream tracing, allocation | Trace requirements, tests, code, evidence | Single graph of requirements, tests, parameters, variants | Issue relations only | Empty baseline, 501 on item/link routes, matrix hook not wired |
-| Baselines / reuse | Baselines in feature sheet (UNVERIFIED detail) | Reuse and baseline management | UNVERIFIED | Variants/configurations in one structure | Cycles, milestones | Baselines pluggable in design only |
-| Review / approval | Document workflow | Review Center | UNVERIFIED | UNVERIFIED | PR-style n/a | None |
-| Test and quality | Requirements to test to release | Test and quality management, AI test case generation | Tests and evidence tracing | Tests as nodes | n/a | None |
-| Risk / hazard | UNVERIFIED | Risk and hazard analysis | Medical device / aircraft domains named | Regulated domains named | n/a | None |
-| AI / agent integration | UNVERIFIED | Requirements quality (AI), test generation (AI) | MCP server, Polarion integration extension | "Agentic" platform, REST API | Plane and Linear have APIs | Rust MCP exists (rmcp); agent pane live |
-| Planning | Release, coding, testing in one ALM | n/a | n/a | n/a | Projects, initiatives, cycles, saved shared views (Linear); cycles, roadmap, triage (Plane) | Gantt/timeline views not rendering artifact |
-| Domain span | Software ALM | Hardware/software product dev | Hardware | Hardware R&D, also regulated software | Software | Intent: all domains; shipped: RTM list |
+| Capability                | Polarion (Siemens)                                                                                    | Jama Connect                                                                                        | ATOMS (atoms.tech)                                   | Trace.Space                                               | Linear / Plane                                                                              | Tracera now                                                    |
+| ------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Structured spec documents | LiveDocs: online structured specs, linked to work items                                               | Requirements authoring, real-time collaboration                                                     | Requirements that live in AI agents (Claude, Cursor) | Requirements as graph nodes                               | n/a (issues/docs)                                                                           | No document view; list of items                                |
+| Live traceability         | Traceability matrix, impact and traceability analysis (edition-gated per Polarion 2404 feature sheet) | Live Traceability, Live Trace Explorer (auto-detects risk), upstream/downstream tracing, allocation | Trace requirements, tests, code, evidence            | Single graph of requirements, tests, parameters, variants | Issue relations only                                                                        | Empty baseline, 501 on item/link routes, matrix hook not wired |
+| Baselines / reuse         | Baselines in feature sheet (UNVERIFIED detail)                                                        | Reuse and baseline management                                                                       | UNVERIFIED                                           | Variants/configurations in one structure                  | Cycles, milestones                                                                          | Baselines pluggable in design only                             |
+| Review / approval         | Document workflow                                                                                     | Review Center                                                                                       | UNVERIFIED                                           | UNVERIFIED                                                | PR-style n/a                                                                                | None                                                           |
+| Test and quality          | Requirements to test to release                                                                       | Test and quality management, AI test case generation                                                | Tests and evidence tracing                           | Tests as nodes                                            | n/a                                                                                         | None                                                           |
+| Risk / hazard             | UNVERIFIED                                                                                            | Risk and hazard analysis                                                                            | Medical device / aircraft domains named              | Regulated domains named                                   | n/a                                                                                         | None                                                           |
+| AI / agent integration    | UNVERIFIED                                                                                            | Requirements quality (AI), test generation (AI)                                                     | MCP server, Polarion integration extension           | "Agentic" platform, REST API                              | Plane and Linear have APIs                                                                  | Rust MCP exists (rmcp); agent pane live                        |
+| Planning                  | Release, coding, testing in one ALM                                                                   | n/a                                                                                                 | n/a                                                  | n/a                                                       | Projects, initiatives, cycles, saved shared views (Linear); cycles, roadmap, triage (Plane) | Gantt/timeline views not rendering artifact                    |
+| Domain span               | Software ALM                                                                                          | Hardware/software product dev                                                                       | Hardware                                             | Hardware R&D, also regulated software                     | Software                                                                                    | Intent: all domains; shipped: RTM list                         |
 
 Reading: incumbents win on document-centric specs, baselines, review and compliance evidence. New entrants (ATOMS, Trace.Space) win on graph + agent/API-first. Linear/Plane win on speed and saved views. Tracera's stated differentiator (one editable graph across RTM/ALM/PLM/PM, agent-native) matches the entrants' direction but currently has none of the rendering, and its fallbacks hide that.
 
 ## 3. Gap analysis (ordered by what blocks "mature MVP")
 
 P0 - truth before polish
+
 1. Make empty, error and stub distinct states in every API wrapper (GAP-002/003/004/006/021). A view must say "unavailable" rather than show zero.
 2. Real traceability data: land #1126 canonical graph, replace the zero-byte baseline (GAP-020), serve item/link routes (GAP-005).
 3. Retire the gateway stub-200 behavior for GETs; return 501 with a typed body so the UI can show "not implemented".
 
-P1 - core RTM parity
-4. Traceability matrix and upstream/downstream trace explorer driven by real links, with suspect-link flags.
-5. Structured spec document view (LiveDocs-style) with inline item links.
-6. Baselines and diff between baselines.
-7. Review/approval flow with comments and signed state.
+P1 - core RTM parity 4. Traceability matrix and upstream/downstream trace explorer driven by real links, with suspect-link flags. 5. Structured spec document view (LiveDocs-style) with inline item links. 6. Baselines and diff between baselines. 7. Review/approval flow with comments and signed state.
 
-P2 - the differentiators
-8. Graph canvas with rich pill nodes (see 4.3), editable in place.
-9. Multi-domain item types (requirement, test, part, task, decision, evidence) with domain packs.
-10. Agent surface: MCP read/write with audit log, and an agents pane tied to graph items.
-11. Saved shared views (Linear model) over the same graph.
+P2 - the differentiators 8. Graph canvas with rich pill nodes (see 4.3), editable in place. 9. Multi-domain item types (requirement, test, part, task, decision, evidence) with domain packs. 10. Agent surface: MCP read/write with audit log, and an agents pane tied to graph items. 11. Saved shared views (Linear model) over the same graph.
 
-P3 - integrations
-12. GitHub Actions, git hooks, harness MCP hooks feeding evidence nodes; AgilePlus as work authority (per dossier; do not duplicate AgilePlus #1124).
+P3 - integrations 12. GitHub Actions, git hooks, harness MCP hooks feeding evidence nodes; AgilePlus as work authority (per dossier; do not duplicate AgilePlus #1124).
 
 ## 4. Redesign: information architecture and wireframes
 
 ### 4.1 Principles
+
 - One graph, many lenses. Every page is a lens over the same items and links; no page owns private data.
 - A view renders its artifact: matrix = grid, journey = map, gantt = timeline, spec = document.
 - Honest states: loading, empty, error, not-implemented, stale are visually distinct.
@@ -92,6 +85,7 @@ P3 - integrations
    ( CODE  auth/sso.rs@a1b2c3 )                  ( EVID  run-5521.json )
    | suspect: no |                               | hash ok |
 ```
+
 Pill = title, type chip, status chip, one rich preview (screenshot/GIF/diagram), owner, version, suspect flag. Zoom levels: dot, pill, card, full detail.
 
 ### 4.4 Matrix lens
@@ -133,16 +127,19 @@ Pill = title, type chip, status chip, one rich preview (screenshot/GIF/diagram),
 ```
 
 ## 5. Acceptance gates for the redesign (proposed)
+
 1. No view shows data from a stub or a swallowed error; every state is labeled.
 2. Matrix, spec, graph and timeline each render from real graph data for the TRACERA project.
 3. Baseline create/diff works on live data.
 4. Screenshot receipts per lens, from an authenticated session (not yet captured; Access blocks this author).
 
 ## 6. Not verified
+
 - Live UI behavior behind Cloudflare Access was not inspected by the author of this doc; page-level critique relies on #1132/#1128.
 - Competitor capability depth beyond vendor marketing pages; edition limits (Polarion) unverified except where the feature sheet cited.
 
 ## Sources
+
 - https://www.siemens.com/en-us/products/polarion/requirements/ (LiveDocs)
 - https://www.polarsoft.fr/Public/Fichiers/Fichier/11/Polarion-2404-Feature.pdf (traceability matrix, edition table)
 - https://www.jamasoftware.com/platform/jama-connect/features/
