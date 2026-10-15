@@ -1,5 +1,16 @@
 # Tracera gap inventory
 
+Refresh 2026-10-14: see `TRACERA-AUDIT-COVERAGE.md` for current baseline
+provenance and `TRACERA-RUNTIME-RECEIPTS.md` for scoped runtime observations.
+The original static findings below remain distinct from live acceptance.
+
+### [Instinct] GAP-020 Machine-readable traceability baseline is empty
+
+`docs/ops/TRACEABILITY.json` is zero bytes at source revision `4ec07444`.
+It cannot serve as a parseable FR/endpoint/test oracle. Populate and validate
+the authoritative projection, keeping missing test linkage explicit.
+Evidence: `git cat-file -s 4ec07444:docs/ops/TRACEABILITY.json` returns 0.
+
 Read-only static audit against the `origin/main` source snapshot at `9a4360e812eeee81ee7c0367b12a967cf7764440`. No app code was changed and no tests were run. The live application is behind Cloudflare Access; this inventory does not claim an authenticated live-service verification. The Specifications summary payload and CIVIS item count are operator-provided observations, not re-probed here.
 
 ## Baseline selection
