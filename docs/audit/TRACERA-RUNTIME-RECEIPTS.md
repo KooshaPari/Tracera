@@ -61,3 +61,29 @@ The deployed gateway file is outside the audited checkout. Its behavior must
 not be attributed to a repository commit without a deployment/source mapping.
 No capture-free DOM session was established; all rendered artifact and
 pagination acceptance remains unverified.
+
+## Read-only tunnel and method batch, 2026-10-14 23:55 to 2026-10-15 00:13 PDT
+
+A loopback-only SSH forward from local 18991 to Windows 8091 worked. This
+qualifies the authorized local gateway, not the public Cloudflare Access path.
+The method table enumerates 284 references: 266 executable callsites and 18
+definitions/references; 95 GET-only candidates, 172 mutation-containing routes
+excluded, 17 unresolved. Mounted-view reachability remains unknown from source.
+
+Of 95 GET candidates, 57 were probed with a valid TRACERA project ID where
+required: 45 HTTP200 (43 explicit stub envelopes), 11 HTTP501 and one HTTP400.
+Another 34 require actual entity IDs and four sensitive/action-semantic paths
+were not probed. No mutation requests were made. See
+`TRACERA-GET-METHOD-BATCH.csv`; this lists each response rather than extrapolating
+the gateway fallback to every route. HTTP errors can reflect missing required
+query parameters, not only missing functionality.
+
+Flat `/api/v1/items?project_id=...&limit=100&offset=0` independently returned
+533 TRACERA records, 533 unique IDs and total 533 in one gateway-aggregated
+response: 11 ADRs, 17 components, 372 tests, 116 requirements and 17 epics.
+CIVIS independently returned zero records and total zero, with no stub field.
+Project-scoped item and summary routes for both projects instead returned
+explicit stub envelopes. `limit=1000` is invalid pagination (HTTP400), not a
+product gap. See `TRACERA-ITEM-PAGINATION-RECEIPTS.json` and
+`TRACERA-SAFE-GET-RECEIPTS.csv`. These establish the returned item collection,
+not the completeness of the upstream ingestion or rendered project artifacts.

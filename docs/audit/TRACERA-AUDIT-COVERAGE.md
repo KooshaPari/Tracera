@@ -84,3 +84,7 @@ GAP-020 adds the verified zero-byte TRACEABILITY.json baseline defect; refreshed
 ## API source reconciliation
 
 TRACERA-API-SOURCE-RECONCILIATION.csv enumerates all 284 historical frontend references against source 4ec07444: 44 explicit Rust stubs, six mapped handlers, 234 unresolved Rust owners (not proof of runtime absence). The Vercel no-backend branch returns notFound for 246 references. Verbs were absent from the original extraction; method confirmation remains pending and mutation routes were NOT_PROBED. Conditional deployed fallback behavior is source-inspected; only the summary was directly probed at gateway8091.
+
+## Latest runtime and method refresh
+
+Current inventory: 24 gaps plus 44 view rows, 68 total. DOM receipts enumerate 59 baseline entries: 56 direct navigations (55 app DOM observations, one landing redirect) and three unresolved entity IDs. No sidebar click journey is claimed. Artifact completeness remains UNKNOWN. Fourteen entries show mixed 533-item tables; existing component detail shows Item Not Found and ADR detail redirects to list. Methods: 284 rows, 266 executable callsites, 18 definition/reference only; 95 GET-only, 172 mutation-containing, 17 unresolved. GET batch: 57 probed, 45 HTTP200 (43 explicit stubs), 11 HTTP501, one HTTP400; 38 not probed (34 unresolved IDs, four sensitive/action paths). Flat items independently return 533 unique TRACERA records, total533, and CIVIS0, total0 without stub. Local gateway evidence is not public Access acceptance.

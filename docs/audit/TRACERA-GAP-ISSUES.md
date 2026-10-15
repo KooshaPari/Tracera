@@ -1,5 +1,48 @@
 # Tracera gap inventory
 
+### [Instinct] GAP-023 Existing component detail reports Item Not Found
+
+Direct capture-free navigation of the code-item detail route with component
+ID `tracera-00a9c4483bd109a5`, selected from the actual project item collection,
+rendered Item Not Found. Reconcile the detail lookup and declared supported
+view types with canonical project IDs; unsupported types should have explicit
+semantics. Evidence: DOM receipt index 56. No mutation requests were allowed.
+
+### [Instinct] GAP-024 ADR detail loses selected artifact identity
+
+A valid ADR ID selected from the eleven returned ADR items was used in the
+ADR detail URL. Navigation ended at the project specifications list, with
+Architecture Decision Records heading and no selected ADR detail heading.
+Preserve and render the selected ADR identity through routing or explicitly
+report unsupported detail behavior. Evidence: DOM receipt index 45.
+
+### [Instinct] GAP-022 Named views render the same mixed item table
+
+Capture-free local-gateway DOM observation found 533-row tables containing the
+same ADR, component, test and requirement headings in fourteen navigation
+entries: Source Map, Validation, Domain Model, Database Schema, Data Flow,
+Timeline, Reports, Dependency Graph, Performance Metrics, Security Analysis,
+Monitoring Dashboard, direct configuration and infrastructure views, and the
+generic code view route.
+Timeline/Monitoring share one route; Reports/Performance share another. These
+are fourteen entries, not fourteen distinct URLs. Different page headings do
+not establish artifact identity: Code/Test/Domain/Database/Dataflow/Monitoring/
+Performance/Dependency/Security/Configuration/Infrastructure need their named
+artifact projections, not the unfiltered 533-item project collection. Apply
+artifact-specific schemas, relationships, filtering and completeness checks.
+Evidence: `TRACERA-DOM-VIEW-RECEIPTS.csv`, table_rows=533 rows, and
+`TRACERA-ITEM-PAGINATION-RECEIPTS.json`. These are direct local navigation
+observations, not public Access acceptance or a complete sidebar click journey.
+
+Runtime refresh 2026-10-14 23:55 PDT: GAP-001 is now independently confirmed
+on the authorized Windows 8091 gateway for TRACERA and CIVIS. GAP-018 now
+has a non-stub CIVIS flat-items receipt with zero records and total zero;
+the ingestion cause remains unknown. Flat TRACERA items return 533 unique
+records and total 533, distinct from project-scoped item stubs and canonical
+Rust source route findings in GAP-010. See `TRACERA-SAFE-GET-RECEIPTS.csv`
+and `TRACERA-ITEM-PAGINATION-RECEIPTS.json`. Public Access acceptance remains
+unverified. Earlier source-only paragraphs below retain their dated scope.
+
 ### [Instinct] GAP-021 Deployed gateway turns missing API routes into successful empty data
 
 The deployed Windows `front.js` gateway forwards loopback 8091 to 8080.
