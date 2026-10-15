@@ -62,6 +62,25 @@
 6. **(P6) 9-agent data source for /parent/** — should the per-agent state be fetched live from paperclip's `/api/agents`, or should it be a static config in `data/phenotype.js` with a refresh fetch? (Live is preferred; static is a fallback if paperclip isn't available.) **Verified 2026-10-14: paperclip is not reachable** (`localhost:3180` returns nothing; no local clone found), so the "live" option cannot be developed or demoed until it is running — and the 9-agent roster is currently unverified. This materially raises the cost of the live path and is worth factoring into the decision.
 7. **(P7) Bundle budget for /parent/** — **measured 2026-10-14: the current bundle is 212.3 KB against a <= 230 KB budget, so there is ~17.7 KB of headroom, not a shortfall.** (The docset previously stated 228.7 KB; that figure does not match `bundled/app.bundle.*.js` and was stale.) The original framing — that a new `/parent/` view "will likely push over budget" — is therefore **not supported by measurement**. Lazy-loading `parent.js` remains a reasonable default for code-splitting and first-paint reasons, but it is **no longer required to stay under budget**. Operator decision: keep lazy-load as a performance choice, inline it into the main bundle and spend the 17.7 KB, or raise the budget? Note no CI check enforces the 230 KB figure today; it is a documented convention only.
 
+## Answer sheet (one line each)
+
+Reply in any form — `P1=A P3=C ...`, or just "your defaults", or answer them one at a
+time. "skip" defers any item; unstated items fall back to the recommendation below.
+
+| # | Question | Options | Recommended if unstated |
+|---|---|---|---|
+| P1 | `/parent/` visual design | A mockup exists (paste it) · design from constitution · derive from an existing route | **Design from the constitution** |
+| P2 | Personal-mode issue fields | tag/label only · new fields · reuse job fields | **Tag/label only** (smallest change) |
+| P3 | MCP exposure | reuse `:8081` · also CF Worker at `/mcp` · Worker only | **Reuse `:8081`** (exists; just needs starting) |
+| P4 | 15-min refresh source | `setInterval` in AppShell · server cron · job queue | **`setInterval`** (simplest, survives deploys) |
+| P5 | `/parent/` as landing | redirect `/`→`/parent/` · separate nav entry · serve `/parent/` at `/` | **Redirect** (literal directive compliance) |
+| P6 | Agent data source | live `/api/agents` · static `data/phenotype.js` | **Live with static fallback** — but see the paperclip caveat above |
+| P7 | Bundle approach | lazy-load · inline and spend the 17.7 KB · raise the budget | **Lazy-load** for code-splitting (NOT required by budget — see above) |
+
+These are **recommendations, not decisions.** They are agent judgement recorded so that
+nothing dangles if an item goes unanswered; adopting any of them is still an operator choice
+and should be logged in `06_DECISION_LOG.md` as such.
+
 ## Resolved questions
 
 - **Q: Is `cockpit-source` the right repo for `dash.kooshapari.com`?**
