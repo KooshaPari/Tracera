@@ -75,11 +75,10 @@ references remain Unknown and the inventory must not claim EVERY gap found.
 ## Refresh publication
 
 Second refresh: GAP-021 independently confirms the deployed loopback gateway
-converts missing GET routes into HTTP200 empty stub responses; 21 findings
-plus 44 Unknown view rows now total 65. See runtime receipts for layered
+converts missing GET routes into HTTP200 empty stub responses; 24 findings plus 44 view rows (33 severity Unknown) total 68. See runtime receipts for layered
 8080/8091 evidence. No rendered page acceptance was added.
 
-GAP-020 adds the verified zero-byte TRACEABILITY.json baseline defect; refreshed inventory contains 20 findings and 44 Unknown view rows (64 rows total). Historical 59-view extraction is preserved in TRACERA-HISTORICAL-VIEW-COVERAGE.csv, including all NOT_CLICKED statuses; it is provenance, not a current route attestation.
+GAP-020 adds the verified zero-byte TRACEABILITY.json baseline defect; refreshed inventory contains 24 findings plus 44 view rows (33 severity Unknown) total 68. Historical 59-view extraction is preserved in TRACERA-HISTORICAL-VIEW-COVERAGE.csv, including all NOT_CLICKED statuses; it is provenance, not a current route attestation.
 
 ## API source reconciliation
 
