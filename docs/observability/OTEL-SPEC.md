@@ -14,7 +14,9 @@ Status: proposed, 2026-10-14. Implementer: pipeline agent. Backend (collector, T
  Rust server (tracera-server, mcp, atlas) --OTLP gRPC-------+--> OTel Collector (desk, tailnet) --> Tempo / Loki / Prometheus --> Grafana
  CLI / MCP clients --OTLP (opt-in env) ----------------------+
 ```
-- Single endpoint via env: `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL=grpc`, `OTEL_SERVICE_NAME`, `OTEL_RESOURCE_ATTRIBUTES`.
+- Collector (from desk lane): gRPC 127.0.0.1:4317, HTTP 127.0.0.1:4318 on the desk host; from the observability podman network http://otel-collector:4318; from Tracera's own network http://host.containers.internal:4318 (or attach Tracera containers to observability.network). Pipelines: traces->Tempo, metrics->Prometheus remote write, logs->Loki OTLP. Retention sizing still open.
+- Suggested prod env: `OTEL_EXPORTER_OTLP_ENDPOINT=http://host.containers.internal:4318`, `OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf` (use 4318; switch to grpc/4317 only if the Rust exporter is built for tonic). The browser proxy forwards to the same endpoint.
+- Single endpoint via env: `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL` (see below), `OTEL_SERVICE_NAME`, `OTEL_RESOURCE_ATTRIBUTES`.
 - Browser never talks to the collector directly: Access-gated same-origin proxy route `/otel/v1/{traces,logs}` forwards to the collector, adds no secrets to the client, enforces size/rate caps.
 - Failure mode: exporter errors must never break requests; bounded queue, drop-oldest, and a self-metric `tracera_otel_dropped_total`.
 
@@ -58,5 +60,5 @@ Status: proposed, 2026-10-14. Implementer: pipeline agent. Backend (collector, T
 
 ## 8. Open questions for owner
 1. ADR-OBS-001 amendment (Jaeger -> Tempo, add Loki): approve?
-2. Collector address reachable from the desk podman services and from the browser proxy: desk lane to supply (tailnet hostname/port).
+2. (Resolved) collector address supplied; verify reachability from Tracera containers as acceptance step 1.
 3. Default trace sampling 10% OK, or 100% while traffic is only one user?
