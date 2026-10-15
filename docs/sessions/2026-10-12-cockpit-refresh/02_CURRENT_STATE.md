@@ -106,15 +106,15 @@ All three are small visual-novelty PRs. Revision 3 conclusion: the directive is 
 | Python SDK | `crates/tracera-py-sdk` | |
 | Go CLI | `crates/tracera-go-cli/` | |
 | Rust CLI | `crates/tracera-cli` | |
-| MCP servers | `crates/tracera-mcp`, `crates/tracertm-mcp` | Streamable-HTTP wrapper around stdio (port 8081) |
+| MCP servers | `crates/tracera-mcp`, `crates/tracertm-mcp` | Streamable-HTTP wrapper around stdio (port 8081). **Verified 2026-10-14:** `crates/tracera-mcp` exists on disk and `Makefile:84` defines the `task-mcp-server` target on :8081. The target is **not running** (nothing listening on :8081) — it must be started before use. |
 | Design system | `docs/specs/014-design-tokens-wcag.md` | WCAG-compliant tokens |
 
 ## Paperclip (issue model, orchestration)
 
-- Deployed at `http://localhost:3180` (local; production is at `tracera.pheno.studio/api` per Tracera edge).
-- 9 agents registered: `jcode`, `hermes`, `vp`, `instinct`, `codex`, `kcode`, `winremote`, `engineer-general`, `engineer-specialist`.
+- **NOT reachable when last checked (2026-10-14):** `curl http://localhost:3180/` returned no response (HTTP 000), and no paperclip clone exists at the expected `~/CodeProjects/Phenotype/repos/paperclip` path. The service must be started (or the correct path located) before any `/parent/` work can depend on live agent state.
+- 9 agents registered: `jcode`, `hermes`, `vp`, `instinct`, `codex`, `kcode`, `winremote`, `engineer-general`, `engineer-specialist`. **Unverified on 2026-10-14** — this list could only be confirmed against a live `/api/agents`, and paperclip was down. Treat the roster as a design assumption until re-confirmed; do not build per-agent cards against a hardcoded copy of it.
 - Issue model: `kind` (job/personal TBD), `assigneeAgentId`, `priority`, `status`, `id` (UUID).
-- API endpoints: `/api/issues`, `/api/agents`, `/api/secrets`, `/api/companies/...` (728 paths in `/api/openapi.json`).
+- API endpoints: `/api/issues`, `/api/agents`, `/api/secrets`, `/api/companies/...` (728 paths in `/api/openapi.json`). **Also unverified while paperclip is down.**
 
 ## CF Workers (`harness-ops/agent-comms/workers/`)
 
