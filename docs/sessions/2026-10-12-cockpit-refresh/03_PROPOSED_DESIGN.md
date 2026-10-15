@@ -26,8 +26,8 @@ that honors the portfolio's design constitution.
 | `Tracera`          | (none)                                                      | MCP/CLI/skill surface for `/parent/` data sources | (none)                              |
 | `paperclip`        | (none)                                                      | (none)                                            | `kind: "personal"` schema + routing |
 
-The two are wired together: `koosha-phenotype` reads paperclip issues
-(via `tracera.pheno.studio/api`) and calls Tracera's MCP/CLI for
+The two are wired together: `koosha-phenotype` reads Paperclip data via the
+Paperclip API (see **Data path**) and calls Tracera's MCP/CLI for
 agent-facing actions.
 
 ---
@@ -59,7 +59,7 @@ separate phase.
 | `scripts/components/shell.js`                    | Add `['/parent', 'Parent']` to `ROUTES` (the top nav)                                                                                                           |                                           +1 |
 | `vercel.json`                                    | Add `{ "source": "/parent", "destination": "/parent.html" }` rewrite                                                                                            |                                           +3 |
 | `styles/bundled/pages.css` (or new `parent.css`) | Per-view styles, ASCII status widget, 9-agent grid, 15-min refresh indicator                                                                                    |                                         +150 |
-| `data/phenotype.js`                              | (optionally) extend `IDENTITY` with a 9-agent roster sourced from paperclip's `/api/agents`                                                                     | +20 (or none, if data is fetched at runtime) |
+| `data/phenotype.js`                              | extend `IDENTITY` with a static 9-agent roster (refreshed at build time from the snapshot below)                                                                 |                                         +20 |
 
 **Files to create:**
 
@@ -69,7 +69,7 @@ separate phase.
 | `scripts/views/parent-helpers.js` | Per-agent card renderer, snapshot fetcher, ASCII widget helpers                                                                                                                                                                                        |      200-400 |
 | `tests/parent.test.js`            | Unit tests for the route parser and parent view helpers                                                                                                                                                                                                |      100-200 |
 | `tests/e2e/parent.spec.js`        | E2E test: navigate to `/parent/`, verify 9 cards render, verify 15-min timer exists                                                                                                                                                                    |       50-100 |
-| `parent.html`                     | Static entry for the route, required by the `vercel.json` rewrite. **Omitted from this list originally** (caught in review 2026-10-15): without it the rewrite points at a file that does not exist and `/parent` bypasses the `index.html` catch-all. |          ~66 |
+| `parent.html`                     | Static entry for the route, required by the `vercel.json` rewrite. **Omitted from this list originally** (caught in review 2026-10-15): without it the rewrite points at a file that does not exist and `/parent` bypasses the `index.html` catch-all. `parent.html` must bootstrap the same shell as `index.html` (it is registered in `prerender.js` `TOP_LEVEL_ROUTES` below) so the client route and the static entry cannot diverge. |          ~66 |
 
 **Registration points the route needs beyond the two files above** (all three were missing from
 this plan originally and were caught in review — a new top-level page has to be enumerated in
@@ -139,6 +139,8 @@ operator (Koosha)**. It is the _parent of all context_ in the platform.
 
 **Snapshot content (data sources):**
 
+All sources below execute **server-side** (see **Data path**); the browser only ever fetches the rendered snapshot JSON.
+
 - agentcom-inbox health → CF Worker health probe or paperclip issue count
 - herdr focused pane → herdr state API (operator's local TUI multiplexer)
 - paperclip open issues → `GET /api/issues?assigneeAgentId=...` (or all open)
@@ -154,8 +156,9 @@ operator (Koosha)**. It is the _parent of all context_ in the platform.
 ### Acceptance criteria (Phase 1, `koosha-phenotype`)
 
 - [ ] `dash.kooshapari.com/` renders the `/parent/` view (either as default route or via redirect from `/`).
-- [ ] `/parent/` shows the 9-agent strip. **Corrected 2026-10-15:** the states come from the static roster in `data/phenotype.js` with a refresh, not a live client-side `/api/agents` call — a public page cannot hold Cloudflare Access credentials, and `05_BLOCKERS.md` P6 reaches the same conclusion. "Live" state belongs on an authenticated internal surface, or behind a server-side proxy.
+- [ ] `/parent/` shows the 9-agent strip. **Corrected 2026-10-15:** the states come from the static roster in `data/phenotype.js`, refreshed from the server-proxied snapshot (see **Data path**), not a live client-side `/api/agents` call — the static client bundle cannot hold Cloudflare Access credentials, and `05_BLOCKERS.md` P6 reaches the same conclusion.
 - [ ] `/parent/` shows the 15-min snapshot with last-refreshed timestamp.
+- [ ] Shipped bundle contains no secret or Access service token (grep the deployed assets for `CF-Access-Client`).
 - [ ] The 15-min refresh ticks visibly (manual refresh button + auto-refresh).
 - [ ] ASCII status widgets used in the snapshot frame.
 - [ ] All existing portfolio routes still work (`/`, `/engineering`, `/product`, `/work`, `/work/:slug`, `/resume`, `/contact`, `/blog`, `/blog/:slug`, `/archive`).
@@ -168,6 +171,13 @@ operator (Koosha)**. It is the _parent of all context_ in the platform.
 - [ ] PR body first line: "Authored by Instinct" (remains binding for ALL PRs — the 2026-10-12T23:48Z amendment is title-scoped only).
 
 ---
+
+## Data path (proposal — requires owner approval before any credential is created)
+
+- Browser -> same-origin `/api/parent/*` endpoints on `dash.kooshapari.com` (already behind Cloudflare Access).
+- A server-side worker/proxy on dash holds the Access service token (`CF-Access-Client-Id` / `CF-Access-Client-Secret` in server secrets, never shipped to the client) and fans out to the upstreams: Paperclip (`https://paperclip.phenotype.space`, `/api/agents`, `/api/issues`), the herdr state API, and opencode-go usage.
+- The static roster in `data/phenotype.js` remains the offline fallback when the proxy or an upstream is unavailable.
+- Creating the service token and the proxy is a credential/access change: this section is a **proposal only** and no token is created here.
 
 ## Phase 2 — Agent-facing surface (MCP + CLI + skill) in `Tracera`
 

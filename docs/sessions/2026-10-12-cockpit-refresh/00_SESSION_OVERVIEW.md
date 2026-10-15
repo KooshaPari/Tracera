@@ -7,7 +7,7 @@
 
 ## Goal — portfolio → cockpit evolution
 
-The deployed `dash.kooshapari.com` is a vanilla-JS SPA portfolio
+The deployed `dash.kooshapari.com` is a multi-page static site whose index.html hosts a vanilla-JS (no framework) client-routed shell; `/parent` is added as a new view in that shell plus a static `parent.html` entry
 ("Technical Atelier" — evidence-led, museum-quiet, designer-engineer
 voice) that the operator is evolving into a unified cockpit. The
 cockpit lands at `/parent/` first, replacing the "naive 4-tab default"
