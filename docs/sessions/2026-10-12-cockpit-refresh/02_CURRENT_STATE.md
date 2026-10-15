@@ -111,10 +111,13 @@ All three are small visual-novelty PRs. Revision 3 conclusion: the directive is 
 
 ## Paperclip (issue model, orchestration)
 
-- **NOT reachable when last checked (2026-10-14):** `curl http://localhost:3180/` returned no response (HTTP 000), and no paperclip clone exists at the expected `~/CodeProjects/Phenotype/repos/paperclip` path. The service must be started (or the correct path located) before any `/parent/` work can depend on live agent state.
-- 9 agents registered: `jcode`, `hermes`, `vp`, `instinct`, `codex`, `kcode`, `winremote`, `engineer-general`, `engineer-specialist`. **Unverified on 2026-10-14** — this list could only be confirmed against a live `/api/agents`, and paperclip was down. Treat the roster as a design assumption until re-confirmed; do not build per-agent cards against a hardcoded copy of it.
+- **Local origin NOT running (2026-10-14):** `curl http://127.0.0.1:3180/` returns no response (HTTP 000); nothing listens on 3180.
+- **But the public endpoint IS live, behind Cloudflare Access (corrected 2026-10-14T18:55 PDT):** `https://paperclip.kooshapari.com/api/agents` returns HTTP 302 to a `cloudflareaccess.com` login for that app, and the `com.kooshapari.cloudflared-paperclip` launchd job is healthy (three registered Cloudflare edge connections in its log). `agentcom-inbox` is configured against `paperclip=http://127.0.0.1:3180` and ran as recently as 2026-10-12T21:22Z. `~/paperclip-workspace` exists but is empty; paperclip is not a repo, binary, or installed package on this machine.
+  - The infrastructure (tunnel + Access + hostname) is alive; only the local origin process is down. An earlier version of this docset said simply "deployed at localhost:3180", and a first check concluded "DOWN" — both imprecise. What is *not* proven is whether the origin behind the Access wall currently answers, since the 302 is an auth challenge and no authenticated read was possible.
+  - **Consequence for P6:** the live path is not architecturally blocked, but a public portfolio page cannot hold Access credentials in client-side JS, so an authenticated live fetch is not viable as-is (it needs a server-side proxy).
+- 9 agents registered: `jcode`, `hermes`, `vp`, `instinct`, `codex`, `kcode`, `winremote`, `engineer-general`, `engineer-specialist`. **UNVERIFIED (2026-10-14)** — never confirmed against a live `/api/agents` response: the origin is down and the public path is behind Access. Treat as a design assumption; do not hardcode it into per-agent cards.
 - Issue model: `kind` (job/personal TBD), `assigneeAgentId`, `priority`, `status`, `id` (UUID).
-- API endpoints: `/api/issues`, `/api/agents`, `/api/secrets`, `/api/companies/...` (728 paths in `/api/openapi.json`). **Also unverified while paperclip is down.**
+- API endpoints: `/api/issues`, `/api/agents`, `/api/secrets`, `/api/companies/...` (728 paths in `/api/openapi.json`). Path list unverified against a live OpenAPI fetch.
 
 ## CF Workers (`harness-ops/agent-comms/workers/`)
 
