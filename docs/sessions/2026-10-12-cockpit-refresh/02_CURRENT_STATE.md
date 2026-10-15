@@ -60,7 +60,7 @@
 - Current bundle: 212.3 KB minified, measured directly from `bundled/app.bundle.*.js` on 2026-10-14 (0 source files changed since that build, so the figure is current). The earlier 228.7 KB figure, previously attributed here to the `phenotype-design-constitution` § 6, does not match the build output and was stale.
 - Budget: <= 230 KB minified, leaving ~17.7 KB of headroom (70.7 KB gzipped on the wire)
 - New `/parent/` view must NOT push the bundle over budget
-- Strategy: lazy-load `parent.js` only when the route is `/parent`
+- Strategy: lazy-loading `parent.js` is an **optional** code-splitting choice, not a budget requirement — see the corrected measurement above
 
 ### Design constitution (`.claude/skills/phenotype-design-constitution/SKILL.md`)
 

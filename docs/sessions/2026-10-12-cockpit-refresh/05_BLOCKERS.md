@@ -10,13 +10,19 @@
 - **Workaround for this plan-first phase:** proceed with VP-Eng reading code and writing docs (no subagent needed). The plan-first phase is *explicitly* unblocked.
 - **Resolution criteria:** `/v1/usage` returns `monthly.status=ok` (or the wA:p4 key proxy is live and rotates to a different workspace).
 
+## Soft blockers (work can start, with caveats)
+
+> Corrected 2026-10-15: B5 previously sat under "Hard blockers (work cannot start)" even
+> though its own resolution criteria said Phase 1 "can proceed once B1 is resolved". It is a
+> visibility caveat, not a gate, so it belongs here.
+
 ### B5. Cannot see deployed `dash.kooshapari.com` (Cloudflare Access wall) — REFRAMED in revision 3
 
 - **Original framing (revision 2):** "I cannot inspect the deployed 'basic tab system' the operator references."
 - **Revised framing (revision 3):** The "basic tab system" does not exist in the current codebase. The current top-nav is just `Work | Resume | Contact` (3 links, no tabs). The operator's directive is **preemptive**: don't build a naive 4-tab default; build `/parent/` first.
 - **Remaining impact:** the deployed app's actual landing state is behind CF Access and cannot be inspected. If the operator has uncommitted work (in another clone, on another branch, in flight) that introduces tabs, I cannot see it. The local clone has no tabs and no `/parent/` route.
 - **Workaround:** the Phase 1 implementation starts from a clean `main` in `koosha-phenotype` and builds the `/parent/` view as a NEW view (not a replacement of an existing tab system). The CF Access wall doesn't block this because the new view is being added, not modified.
-- **Resolution criteria:** none (reframed). The Phase 1 subagent can proceed once B1 is resolved.
+- **Resolution criteria:** none (reframed). This is a visibility caveat, not a gate — the Phase 1 implementation can proceed without it. The only hard gate is B1.
 
 ### ~~B6. Operator's in-flight work on `koosha-phenotype` is on `feat/dimensional-layering` branch~~ — RESOLVED in revision 3
 
@@ -25,8 +31,6 @@
   - `feat/e-ink-paper`: not yet inspected, but on a similar pattern (visual novelty)
   - `feat/editorial-grid-case-study`: not yet inspected, but on a similar pattern (visual novelty)
 - **New answer:** The cockpit refresh can branch from a clean `main` of `koosha-phenotype` without picking up the operator's WIP. The WIP branches are independent PRs and will land separately.
-
-## Soft blockers (work can start, with caveats)
 
 ### B3. Tracera main is 2 ahead, 77 behind origin/main
 

@@ -82,7 +82,7 @@ separate phase.
 - Status pills: `o` historical, `D` current, `O` research. The per-agent state pills use these glyphs.
 - ASCII status widgets: the 15-min snapshot frame uses the status widget recipe from `phenotype-design-constitution` § 8.1 (ramp blocks + status labels).
 - WCAG 2.2 AA: contrast, focus rings, 24px touch targets, reduced-motion respected for the 15-min refresh indicator.
-- Bundle: lazy-load `parent.js` only when route is `/parent`; do not push total bundle over 230 KB minified.
+- Bundle: keep the total under the 230 KB convention. **Corrected 2026-10-15:** lazy-loading `parent.js` was originally specified as a *requirement*, on the premise that the bundle sat at 228.7 KB and the new view would push it over. Measured, the bundle is 212.3 KB and the new view adds ~2.5 KB, so lazy-loading is **not required for budget reasons**. It remains a reasonable code-splitting/first-paint choice, but the design no longer depends on it.
 
 ### `/parent/` view structure (proposed)
 
@@ -144,7 +144,7 @@ operator (Koosha)**. It is the *parent of all context* in the platform.
 - [ ] ASCII status widgets used in the snapshot frame.
 - [ ] All existing portfolio routes still work (`/`, `/engineering`, `/product`, `/work`, `/work/:slug`, `/resume`, `/contact`, `/blog`, `/blog/:slug`, `/archive`).
 - [ ] The design constitution is honored: monochrome ink palette, Inter/Space Grotesk/JetBrains Mono, evidence-led voice, WCAG 2.2 AA, glyph-prefixed status pills, ASCII widgets.
-- [ ] Total bundle <= 230 KB minified; `parent.js` is lazy-loaded only when route is `/parent`.
+- [ ] Total bundle <= 230 KB minified. Lazy-loading of `parent.js` is **optional** (see the corrected bundle note above), not a gate.
 - [ ] Unit tests pass (`npm test`); e2e tests pass (`npm run test:e2e`); `npm run verify` is green.
 - [ ] Cloudflare Access is intact (no auth regression on `dash.kooshapari.com`).
 - [ ] Branch: `feature/cockpit-parent-view` in `koosha-phenotype`.

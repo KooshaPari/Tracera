@@ -100,8 +100,14 @@ is no longer blocked on branch availability. `scripts/views/parent.js` is still 
 Phase 1 code exists yet.
 
 The remaining three names (`feature/cockpit-appshell`, `feat/dimensional-layering`,
-`agent/cockpit-refresh`) were superseded by revision 3's single-branch decision and have not
-been recreated.
+`agent/cockpit-refresh`) were not all superseded the same way. Correction to an earlier
+draft of this record, which wrongly implied that: `feat/dimensional-layering` is **not** a
+superseded cockpit branch — it is the operator's independent visual-novelty work (a 4-step
+elevation ladder utility), as `02_CURRENT_STATE.md` and `05_BLOCKERS.md` B6 already record
+correctly. It is absent from origin only because it has landed or been dropped on the
+operator's side; it is not part of this plan and is not being recreated here.
+`feature/cockpit-appshell` and `agent/cockpit-refresh` **were** superseded by revision 3's
+single-branch decision and are likewise not being recreated.
 
 ## 7. Operator directives — still binding
 
