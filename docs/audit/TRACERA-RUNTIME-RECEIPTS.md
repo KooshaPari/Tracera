@@ -36,3 +36,28 @@ extraction covered 59 views and 284 API references; current canonical matrix
 contains 44 Unknown view rows. These denominators are not interchangeable.
 Complete pagination, X-renders-X, and public runtime acceptance remain UNKNOWN.
 Mutation routes were NOT_PROBED. Local origin is not public Access acceptance.
+
+## Gateway reconciliation, 2026-10-14 22:17 PDT
+
+Process-scoped Windows listener inspection identified port 8080 PID 98924,
+`tracera-live.exe`, executable `C:\Users\koosh\agents\tracera\tracera-live.exe`.
+Read-only inspection of deployed `C:\Users\koosh\agents\tracera\front.js`
+identified a separate loopback gateway listening on 8091 and forwarding to
+8080. When upstream content type is text/html for any `/api/` path, this
+gateway returns HTTP 200 JSON empty envelopes with `stub:true` for GET;
+notifications/workflows/branches/versions/views root collections get `[]`.
+Non-GET fallback is HTTP 501; those methods were not probed.
+
+An independent safe GET to port 8091 using the listed TRACERA project ID
+confirmed summary HTTP 200, application/json,
+`x-tracera-stub: unimplemented-route`, and exactly
+`{"items":[],"data":[],"results":[],"total":0,"count":0,"stub":true}`.
+This reconciles the 8080 HTML and gateway stub observations; they are distinct
+layers, not evidence of deployment drift. Public Access acceptance is still
+unknown. The deployed script also references a canonical item service at
+127.0.0.1:18000; its summary request failed and readiness was not established.
+
+The deployed gateway file is outside the audited checkout. Its behavior must
+not be attributed to a repository commit without a deployment/source mapping.
+No capture-free DOM session was established; all rendered artifact and
+pagination acceptance remains unverified.

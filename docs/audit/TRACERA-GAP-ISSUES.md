@@ -1,5 +1,18 @@
 # Tracera gap inventory
 
+### [Instinct] GAP-021 Deployed gateway turns missing API routes into successful empty data
+
+The deployed Windows `front.js` gateway forwards loopback 8091 to 8080.
+For `/api/*` upstream HTML responses its GET fallback emits HTTP 200 empty
+JSON with `stub:true`; selected collection roots instead emit `[]` without a
+stub field. The TRACERA summary was independently observed through 8091 as
+HTTP 200 with `x-tracera-stub: unimplemented-route` and the reported empty
+stub envelope. This explains the separate 8080 HTML response. Return explicit
+unavailable/not-implemented states, preserve errors versus true emptiness,
+and document deployment ownership. Evidence and scope:
+`TRACERA-RUNTIME-RECEIPTS.md`, gateway reconciliation. Public Access and
+rendered artifact completeness remain unverified. No source repair made.
+
 Refresh 2026-10-14: see `TRACERA-AUDIT-COVERAGE.md` for current baseline
 provenance and `TRACERA-RUNTIME-RECEIPTS.md` for scoped runtime observations.
 The original static findings below remain distinct from live acceptance.
