@@ -30,3 +30,4 @@
 
 - `ADR-SEC-001`: API input-validation hardening and request-shape controls (planned)
 - `ADR-SEC-002`: Secret transport hardening and environment-only credentials (planned)
+- `ADR-OBS-001-amendment-1`: backend change to Tempo / Loki / Prometheus / Grafana (amends ADR-OBS-001) - [`ADR-OBS-001-amendment-1.md`](../ADR-OBS-001-amendment-1.md) (proposed)
