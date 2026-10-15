@@ -63,12 +63,24 @@ separate phase.
 
 **Files to create:**
 
-| File                              | Role                                                                                        | Lines (est.) |
-| --------------------------------- | ------------------------------------------------------------------------------------------- | -----------: |
-| `scripts/views/parent.js`         | The `/parent/` view: orchestrator (mounts the 9-agent strip, the 15-min snapshot, the feed) |      300-500 |
-| `scripts/views/parent-helpers.js` | Per-agent card renderer, snapshot fetcher, ASCII widget helpers                             |      200-400 |
-| `tests/parent.test.js`            | Unit tests for the route parser and parent view helpers                                     |      100-200 |
-| `tests/e2e/parent.spec.js`        | E2E test: navigate to `/parent/`, verify 9 cards render, verify 15-min timer exists         |       50-100 |
+| File                              | Role                                                                                                                                                                                                                                                   | Lines (est.) |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -----------: |
+| `scripts/views/parent.js`         | The `/parent/` view: orchestrator (mounts the 9-agent strip, the 15-min snapshot, the feed)                                                                                                                                                            |      300-500 |
+| `scripts/views/parent-helpers.js` | Per-agent card renderer, snapshot fetcher, ASCII widget helpers                                                                                                                                                                                        |      200-400 |
+| `tests/parent.test.js`            | Unit tests for the route parser and parent view helpers                                                                                                                                                                                                |      100-200 |
+| `tests/e2e/parent.spec.js`        | E2E test: navigate to `/parent/`, verify 9 cards render, verify 15-min timer exists                                                                                                                                                                    |       50-100 |
+| `parent.html`                     | Static entry for the route, required by the `vercel.json` rewrite. **Omitted from this list originally** (caught in review 2026-10-15): without it the rewrite points at a file that does not exist and `/parent` bypasses the `index.html` catch-all. |          ~66 |
+
+**Registration points the route needs beyond the two files above** (all three were missing from
+this plan originally and were caught in review — a new top-level page has to be enumerated in
+_every_ one of them, not just the obvious one):
+
+| Where                          | What to add                                                                   |
+| ------------------------------ | ----------------------------------------------------------------------------- |
+| `scripts/stage-publication.js` | `'parent.html'` in `topLevelFiles`                                            |
+| `scripts/bundle-css.js`        | `'parent.css'` in the `pages.css` bundle list                                 |
+| `scripts/prerender.js`         | `{ file: 'parent.html', route: { view: 'parent' }, … }` in `TOP_LEVEL_ROUTES` |
+| `tests/internal-nav.test.js`   | `parent.html` in **both** `STATIC_PAGES` and `expectedTopLevel`               |
 
 **Test additions:**
 
@@ -142,7 +154,7 @@ operator (Koosha)**. It is the _parent of all context_ in the platform.
 ### Acceptance criteria (Phase 1, `koosha-phenotype`)
 
 - [ ] `dash.kooshapari.com/` renders the `/parent/` view (either as default route or via redirect from `/`).
-- [ ] `/parent/` shows the 9-agent strip with live state per agent.
+- [ ] `/parent/` shows the 9-agent strip. **Corrected 2026-10-15:** the states come from the static roster in `data/phenotype.js` with a refresh, not a live client-side `/api/agents` call — a public page cannot hold Cloudflare Access credentials, and `05_BLOCKERS.md` P6 reaches the same conclusion. "Live" state belongs on an authenticated internal surface, or behind a server-side proxy.
 - [ ] `/parent/` shows the 15-min snapshot with last-refreshed timestamp.
 - [ ] The 15-min refresh ticks visibly (manual refresh button + auto-refresh).
 - [ ] ASCII status widgets used in the snapshot frame.

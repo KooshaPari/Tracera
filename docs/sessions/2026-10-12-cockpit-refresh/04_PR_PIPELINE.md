@@ -2,12 +2,12 @@
 
 ## Source repos (in scope)
 
-| Repo                                                            | Domain                                      | Branch base                                                     | Vercel/CF deploy                                     |
-| --------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------- |
-| `koosha-phenotype` (remote `KooshaPari/KooshaPari.git`)         | Web app at `dash.kooshapari.com`            | `main` (operator's in-flight is on `feat/dimensional-layering`) | Vercel `kooshapari-site`                             |
-| `Tracera` (remote `KooshaPari/Tracera.git`)                     | Agent-facing surface (MCP/CLI/skill)        | `main`                                                          | Vercel + CF Worker `tracera-edge`                    |
-| `paperclip` (separate, in `~/CodeProjects/Phenotype/repos/...`) | Issue model + orchestration                 | `main` (TBD)                                                    | Local:3180 (dev) + `tracera.pheno.studio/api` (prod) |
-| `harness-ops`                                                   | CF Workers (inbox receiver, Discord bridge) | `main`                                                          | CF Workers (`agentcom-inbox`, `agentcom-discord`)    |
+| Repo                                                            | Domain                                      | Branch base                                                     | Vercel/CF deploy                                                                   |
+| --------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `koosha-phenotype` (remote `KooshaPari/KooshaPari.git`)         | Web app at `dash.kooshapari.com`            | `main` (operator's in-flight is on `feat/dimensional-layering`) | Vercel `kooshapari-site`                                                           |
+| `Tracera` (remote `KooshaPari/Tracera.git`)                     | Agent-facing surface (MCP/CLI/skill)        | `main`                                                          | Vercel + CF Worker `tracera-edge`                                                  |
+| `paperclip` (separate, in `~/CodeProjects/Phenotype/repos/...`) | Issue model + orchestration                 | `main` (TBD)                                                    | Local:3180 (dev) + `paperclip.kooshapari.com/api` (prod, behind Cloudflare Access) |
+| `harness-ops`                                                   | CF Workers (inbox receiver, Discord bridge) | `main`                                                          | CF Workers (`agentcom-inbox`, `agentcom-discord`)                                  |
 
 **Out of scope:** `cockpit-source` (local Python dashboard, separate project).
 
@@ -101,7 +101,9 @@ then the rest of the description.
 
 - Vercel project (TBD — same as `tracera-edge`?). Currently
   `tracera-edge.pheno.studio` is the edge worker; the main app
-  is at `tracera.pheno.studio`.
+  is at `tracera.pheno.studio`. _(Corrected 2026-10-15: `tracera.pheno.studio` is **Tracera's**
+  API, not paperclip's. Paperclip's public endpoint is `paperclip.kooshapari.com`, behind
+  Cloudflare Access — see `02_CURRENT_STATE.md`.)_
 - Subagent produces the PR; operator deploys.
 
 ### `harness-ops` CF Workers deploy

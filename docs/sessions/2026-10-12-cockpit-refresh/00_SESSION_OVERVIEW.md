@@ -37,7 +37,7 @@ current top-nav is `Work | Resume | Contact` (with the blog link
 commented out 2026-10-11) — no tabs. The operator's directive is
 **preemptive**: don't build a 4-tab default; build `/parent/` first.
 
-The cockpit refresh lands in **three repos**:
+The cockpit refresh lands in **four repos** (the fourth, `harness-ops`, is out of refresh scope and carries no directive):
 
 | Repo               | Owns                                                                                        | Operator's directive |
 | ------------------ | ------------------------------------------------------------------------------------------- | -------------------- |

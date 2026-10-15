@@ -145,7 +145,8 @@ Verified in `~/.jcode/config.toml`:
 **Blocking all of Phase 1** — the 7 design decisions P1–P7, double-sourced in
 `05_BLOCKERS.md` and `06_DECISION_LOG.md`: `/parent/` visual design, personal-mode issue fields,
 MCP exposure target, 15-min refresh source, `/parent/` as landing route, 9-agent data source,
-bundle budget (current 228.7 KB against a ≤230 KB budget).
+bundle budget (measured 212.3 KB against a ≤230 KB convention; the earlier 228.7 KB figure in
+this line was stale and contradicted the correction already recorded in this same file below).
 
 **Other open items:**
 

@@ -54,5 +54,12 @@ That backup predates `07_TAKEOVER_RECORD.md` and is NOT kept in sync with it.
 
 **New finding (2026-10-14):** all four branches referenced by this docset are
 absent from origin — `feature/cockpit-parent-view`, `feature/cockpit-appshell`,
-`feat/dimensional-layering`, `agent/cockpit-refresh`. Phase 1 as written points
-at a branch that no longer exists.
+`feat/dimensional-layering`, `agent/cockpit-refresh`.
+
+**Superseded (corrected 2026-10-15):** `feature/cockpit-parent-view` has since been
+recreated in `koosha-phenotype` and pushed at `e5f2a03`, then carried forward with review
+fixes on `fix/parent-view-review-findings` (`12d51c882`) — see `07_TAKEOVER_RECORD.md` and
+`08_SCOPE_CORRECTION.md`. Phase 1 is no longer blocked on branch availability. The other
+three were either superseded by revision 3's single-branch decision
+(`feature/cockpit-appshell`, `agent/cockpit-refresh`) or are unrelated operator work
+(`feat/dimensional-layering`, a visual-novelty branch).
