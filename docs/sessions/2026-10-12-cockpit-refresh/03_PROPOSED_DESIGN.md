@@ -70,6 +70,7 @@ separate phase.
 | `tests/parent.test.js`            | Unit tests for the route parser and parent view helpers                                                                                                                                                                                                                                                                                                                                                                                   |      100-200 |
 | `tests/e2e/parent.spec.js`        | E2E test: navigate to `/parent/`, verify 9 cards render, verify 15-min timer exists                                                                                                                                                                                                                                                                                                                                                       |       50-100 |
 | `parent.html`                     | Static entry for the route, required by the `vercel.json` rewrite. **Omitted from this list originally** (caught in review 2026-10-15): without it the rewrite points at a file that does not exist and `/parent` bypasses the `index.html` catch-all. `parent.html` must bootstrap the same shell as `index.html` (it is registered in `prerender.js` `TOP_LEVEL_ROUTES` below) so the client route and the static entry cannot diverge. |          ~66 |
+| `workers/parent-proxy/`           | Same-origin `/api/parent/*` proxy handler (`wrangler.toml` + `src/index.ts`); hosting route + Access secrets binding assigned here - **proposal**, gated on B-REPO and the operator's service-token step (see "Data path (proposal; gated on B-REPO)"). If B-REPO resolves to job-cockpit, this becomes a route in that app's server instead. |          ~150 |
 
 **Registration points the route needs beyond the two files above** (all three were missing from
 this plan originally and were caught in review — a new top-level page has to be enumerated in
@@ -139,15 +140,15 @@ operator (Koosha)**. It is the _parent of all context_ in the platform.
 
 **Snapshot content (data sources):**
 
-**Data path (proposal):** browser -> same-origin `/api/parent/*` (behind Cloudflare Access) -> server-side proxy -> sources. The proxy holds any Access service token and the operator's API keys server-side; the static client bundle never sees credentials.
+**Data path (proposal):** browser -> same-origin `/api/parent/*` (behind Cloudflare Access) -> server-side proxy -> sources. The proxy holds any Access service token and the operator's API keys server-side; the static client bundle never sees credentials. Full design: "Data path (proposal; gated on B-REPO)" below.
 
 All sources below execute **server-side** (see **Data path**); the browser only ever fetches the rendered snapshot JSON.
 
-- agentcom-inbox health → CF Worker health probe or paperclip issue count
-- herdr focused pane → herdr state API (operator's local TUI multiplexer)
-- paperclip open issues → `GET /api/issues?assigneeAgentId=...` (or all open)
-- opencode-go quota → `GET https://opencode.ai/zen/go/v1/usage` with the operator's API key (server-side only; never expose the key to the browser)
-- CF Workers health → cloudflare API or paperclip-reported worker status
+- agentcom-inbox health (via `/api/parent` proxy) → CF Worker health probe or paperclip issue count
+- herdr focused pane (via `/api/parent` proxy) → herdr state API (operator's local TUI multiplexer; requires a network-reachable bridge - unverified, see 07)
+- paperclip open issues (via `/api/parent` proxy) → `GET /api/issues?assigneeAgentId=...` on `paperclip.phenotype.space` (or all open)
+- opencode-go quota (via `/api/parent` proxy) → `GET https://opencode.ai/zen/go/v1/usage` with the operator's API key (server-side only; never expose the key to the browser)
+- CF Workers health (via `/api/parent` proxy) → cloudflare API or paperclip-reported worker status
 
 **Feed content:**
 
@@ -155,10 +156,30 @@ All sources below execute **server-side** (see **Data path**); the browser only 
 - Recent paperclip activity (issues filed, status changes)
 - Recent portfolio blog posts (already rendered in `/blog`)
 
+
+## Data path (proposal; gated on B-REPO)
+
+Status: proposal. Creating the service token and deploying the handler are access/credential changes: **the operator creates the CF Access service token himself (operator step, not delegated to the agent)**; the agent ships only handler code and docs.
+
+| Item | Decision |
+|---|---|
+| Browser call | `GET https://dash.kooshapari.com/api/parent/{agents,issues,snapshot}` same-origin, carries the operator's existing Access cookie. No third-party origin from the browser. |
+| Handler (default) | Cloudflare Worker bound to route `dash.kooshapari.com/api/parent/*`, source in the target repo under `workers/parent-proxy/` (`wrangler.toml` + `src/index.ts`). Runs behind the same Access application as the site, and verifies the `Cf-Access-Jwt-Assertion` header (audience + team domain) before doing anything; reject otherwise. |
+| Alternative | Vercel serverless function `api/parent/[...path].js` if the site stays on Vercel. Same checks; the Access JWT must still be verified because Vercel is not itself Access-aware. Choose Worker unless the repo decision (B-REPO) makes Vercel the only host. |
+| Upstreams (allowlist, GET only) | Paperclip `/api/agents`, `/api/issues` at `paperclip.phenotype.space` (authoritative hostname, resolved 2026-10-15 - route-level evidence: desk quadlet `PAPERCLIP_PUBLIC_URL` + `PAPERCLIP_ALLOWED_HOSTNAMES`); opencode-go usage; herdr state. Any other path returns 404. |
+| Secrets binding | Worker secrets (`wrangler secret put`), never in repo, never in the client bundle: `PAPERCLIP_ACCESS_CLIENT_ID`, `PAPERCLIP_ACCESS_CLIENT_SECRET` (Cloudflare Access service token sent as `CF-Access-Client-Id/Secret` to Paperclip's Access app), `OPENCODE_GO_API_KEY`, plus plain vars `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD`. The service token itself is created by the operator (access change), scoped to the Paperclip Access app with a Service Auth policy only, 1 year expiry, rotation noted in 06_DECISION_LOG. |
+| Cache | 60 s edge cache per path so the 15-min refresh cannot hammer upstreams; response carries `fetched_at`. |
+| Failure | Upstream error returns `{state:"unavailable", fetched_at}`, never an empty list (matches the Tracera honest-states rule). UI shows the static roster marked "stale". |
+| Tests | Unit: rejects missing/invalid JWT; rejects non-allowlisted path; strips upstream auth headers from response. Bundle check: grep shipped assets for `CLIENT_SECRET`/key patterns, must be zero. |
+
+If B-REPO resolves to job-cockpit (Python), replace the Worker row with a route in that app's server (reads secrets from its env), keeping every other row.
+
+---
+
 ### Acceptance criteria (Phase 1, `koosha-phenotype`)
 
 - [ ] `dash.kooshapari.com/` renders the `/parent/` view (either as default route or via redirect from `/`).
-- [ ] `/parent/` shows the 9-agent strip. **Corrected 2026-10-15:** the states come from the static roster in `data/phenotype.js`, refreshed from the server-proxied snapshot (see **Data path**), not a live client-side `/api/agents` call — the static client bundle cannot hold Cloudflare Access credentials, and `05_BLOCKERS.md` P6 reaches the same conclusion.
+- [ ] `/parent/` shows the 9-agent strip. **Corrected 2026-10-15:** P6 default: static roster (`data/phenotype.js`) plus a build-time snapshot. Live state is served only through the same-origin `/api/parent/*` proxy described in 03 "Data path", which is a proposal pending operator approval of the Access service token. Direct client-side calls to Paperclip are not viable.
 - [ ] `/parent/` shows the 15-min snapshot with last-refreshed timestamp.
 - [ ] Shipped bundle contains no secret or Access service token (grep the deployed assets for `CF-Access-Client`).
 - [ ] The 15-min refresh ticks visibly (manual refresh button + auto-refresh).

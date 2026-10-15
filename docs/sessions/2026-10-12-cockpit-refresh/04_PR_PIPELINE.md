@@ -6,7 +6,7 @@
 | --------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | `koosha-phenotype` (remote `KooshaPari/KooshaPari.git`)         | Web app at `dash.kooshapari.com`            | `main` (operator's in-flight is on `feat/dimensional-layering`) | Vercel `kooshapari-site`                                                           |
 | `Tracera` (remote `KooshaPari/Tracera.git`)                     | Agent-facing surface (MCP/CLI/skill)        | `main`                                                          | Vercel + CF Worker `tracera-edge`                                                  |
-| `paperclip` (separate, in `~/CodeProjects/Phenotype/repos/...`) | Issue model + orchestration                 | `main` (TBD)                                                    | Local:3180 (dev) + `paperclip.kooshapari.com/api` (prod, behind Cloudflare Access) |
+| `paperclip` (separate, in `~/CodeProjects/Phenotype/repos/...`) | Issue model + orchestration                 | `main` (TBD)                                                    | Local:3180 (dev) + `paperclip.phenotype.space/api` (prod, behind Cloudflare Access; hostname corrected 2026-10-15 - see 02/05) |
 | `harness-ops`                                                   | CF Workers (inbox receiver, Discord bridge) | `main`                                                          | CF Workers (`agentcom-inbox`, `agentcom-discord`)                                  |
 
 **Out of scope:** `cockpit-source` (local Python dashboard, separate project).
@@ -102,7 +102,7 @@ then the rest of the description.
 - Vercel project (TBD — same as `tracera-edge`?). Currently
   `tracera-edge.pheno.studio` is the edge worker; the main app
   is at `tracera.pheno.studio`. _(Corrected 2026-10-15: `tracera.pheno.studio` is **Tracera's**
-  API, not paperclip's. Paperclip's public endpoint is `paperclip.kooshapari.com`, behind
+  API, not paperclip's. Paperclip's public endpoint is `paperclip.phenotype.space` (corrected 2026-10-15 from `paperclip.kooshapari.com`; route-level evidence in `05_BLOCKERS.md` P6), behind
   Cloudflare Access — see `02_CURRENT_STATE.md`.)_
 - Subagent produces the PR; operator deploys.
 
