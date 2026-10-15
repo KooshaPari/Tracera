@@ -32,7 +32,7 @@ export function StatusPriorityCard({
     return (
       <Card className="bg-muted/40 space-y-3 border-0 px-4 py-3">
         <p className="text-muted-foreground text-[10px] font-black tracking-widest uppercase">
-          Status & Priority
+          Status · Priority editing unavailable
         </p>
         <div className="grid grid-cols-2 gap-2">
           <Select value={status} onValueChange={onChangeStatus}>
@@ -47,9 +47,9 @@ export function StatusPriorityCard({
               ))}
             </SelectContent>
           </Select>
-          <Select value={priority} onValueChange={onChangePriority}>
+          <Select disabled value={priority} onValueChange={onChangePriority}>
             <SelectTrigger className="h-8 text-xs">
-              <SelectValue placeholder="Priority" />
+              <SelectValue placeholder="Priority unavailable" />
             </SelectTrigger>
             <SelectContent>
               {PRIORITY_OPTIONS.map((option) => (

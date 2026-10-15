@@ -33,6 +33,7 @@ pub use self::agcord::AgcordConfig;
 pub use self::github::GitHubConfig;
 pub use self::jira::JiraConfig;
 pub use self::persist::{ingest_from_payload, ingest_live};
+pub(crate) use self::trace_refs::extract_req_refs;
 
 // ---------------------------------------------------------------------------
 // Error type

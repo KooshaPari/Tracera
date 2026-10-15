@@ -9,7 +9,7 @@ function ItemDetailComponent() {
   const { projectId, itemId } = useParams({ strict: false });
   const projectIdValue = projectId ?? "";
   const itemIdValue = itemId ?? "";
-  const { data: item, isLoading, error } = useItem(itemIdValue);
+  const { data: item, isLoading, error } = useItem(itemIdValue, projectIdValue);
 
   if (isLoading) {
     return (

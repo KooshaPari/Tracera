@@ -10,7 +10,7 @@
 #   lint-py     — ruff + mypy on the Python SDK
 #   test-rust   — cargo test --workspace
 #   test-js     — vitest + playwright unit + contract smoke
-#   test-py     — pytest across Python 3.11/3.12/3.13
+#   test-py     — pytest across supported Python 3.12/3.13
 #   build       — cargo build + bun run build (single fan-in)
 #   sast        — Trivy filesystem scan (CodeQL via GitHub default setup)
 #   secrets     — gitleaks secret scan + dependency-review
@@ -255,7 +255,7 @@ jobs:
         run: uv run ruff format --check .
       - name: mypy
         working-directory: crates/tracera-py-sdk
-        run: uv run mypy --install-types --non-interactive .
+        run: uv run --frozen --all-extras --python 3.12 mypy tracera
 
   # =============================================================================
   # Stage 3 — test execution.
@@ -349,7 +349,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -375,7 +375,7 @@ jobs:
         working-directory: crates/tracera-py-sdk
         env:
           PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
-        run: uv run --python ${{ matrix.python-version }} pytest -ra --strict-config -q
+        run: uv run --frozen --all-extras --python ${{ matrix.python-version }} pytest -p pytest_asyncio.plugin -ra --strict-config -q
 
   # =============================================================================
   # Stage 4 — fan-in build.

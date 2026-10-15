@@ -151,7 +151,6 @@ describe("useItems hooks", () => {
       const { result } = renderHook(() => useCreateItem(), { wrapper });
 
       result.current.mutate({
-        priority: "high" as const,
         projectId: "proj-1",
         status: "todo" as ItemStatus,
         title: "New Feature",
@@ -166,7 +165,7 @@ describe("useItems hooks", () => {
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["items"] });
     });
 
-    it("should include optional fields in request", async () => {
+    it("should include supported description without unsupported fields", async () => {
       (fetch as any).mockResolvedValueOnce({
         json: async () => mockItem,
         ok: true,
@@ -176,9 +175,6 @@ describe("useItems hooks", () => {
 
       result.current.mutate({
         description: "Test description",
-        owner: "user-1",
-        parentId: "parent-1",
-        priority: "high" as const,
         projectId: "proj-1",
         status: "todo" as ItemStatus,
         title: "New Feature",
@@ -192,8 +188,8 @@ describe("useItems hooks", () => {
 
       const callBody = JSON.parse((fetch as any).mock.calls[0]?.[1]?.body as string);
       expect(callBody.description).toBe("Test description");
-      expect(callBody.parent_id).toBe("parent-1");
-      expect(callBody.owner).toBe("user-1");
+      expect(callBody).not.toHaveProperty("parent_id");
+      expect(callBody).not.toHaveProperty("owner");
     });
   });
 
@@ -211,6 +207,7 @@ describe("useItems hooks", () => {
       result.current.mutate({
         data: { title: "Updated" },
         id: "item-1",
+        projectId: "proj-1",
       });
 
       await waitFor(() => {
@@ -229,7 +226,7 @@ describe("useItems hooks", () => {
 
       const { result } = renderHook(() => useDeleteItem(), { wrapper });
 
-      result.current.mutate("item-1");
+      result.current.mutate({ id: "item-1", projectId: "proj-1" });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBeTruthy();
@@ -252,7 +249,7 @@ describe("useItems hooks", () => {
 
       const { result } = renderHook(() => useDeleteItem(), { wrapper });
 
-      result.current.mutate("item-1");
+      result.current.mutate({ id: "item-1", projectId: "proj-1" });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBeTruthy();

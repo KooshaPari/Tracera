@@ -502,7 +502,6 @@ export function ItemsTableViewA11y({
       const resolvedView = getViewValue(view);
       const resolvedType = getTypeValue(newType, view);
       await createItem.mutateAsync({
-        priority: newPriority,
         projectId: effectiveProjectId,
         status: newStatus,
         title: newTitle.trim(),
@@ -553,7 +552,8 @@ export function ItemsTableViewA11y({
   const handleDelete = useCallback(
     async (id: string) => {
       try {
-        await deleteItem.mutateAsync(id);
+        if (!effectiveProjectId) throw new Error("Select a project before deleting a node.");
+        await deleteItem.mutateAsync({ id, projectId: effectiveProjectId });
         toast.success("Node purged from registry");
         // Announce to screen readers
         announceToScreenReader("Item deleted successfully");
@@ -562,7 +562,7 @@ export function ItemsTableViewA11y({
         announceToScreenReader("Failed to delete item");
       }
     },
-    [deleteItem],
+    [deleteItem, effectiveProjectId],
   );
 
   const handleDeleteRow = useCallback(
@@ -930,10 +930,10 @@ export function ItemsTableViewA11y({
               </div>
               <div>
                 <label htmlFor="node-priority" className="block text-sm font-medium">
-                  Priority
+                  Priority (not saved by graph editing)
                 </label>
                 <Select value={newPriority} onValueChange={handlePriorityChange}>
-                  <SelectTrigger id="node-priority" className="mt-1">
+                  <SelectTrigger disabled id="node-priority" className="mt-1">
                     <SelectValue placeholder="Priority" />
                   </SelectTrigger>
                   <SelectContent>

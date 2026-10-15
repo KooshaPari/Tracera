@@ -10,6 +10,8 @@ import { useAuthStore } from "@/stores/authStore";
 const { getAuthHeaders } = client;
 
 import { API_ORIGIN } from "@/config/api-origin";
+import { getCSRFHeaders } from "@/lib/csrf";
+import { scopedGraphPath } from "@/lib/canonical-editing";
 
 const API_URL = API_ORIGIN;
 
@@ -50,6 +52,7 @@ async function fetchLinks(filters: LinkFilters = {}): Promise<{ links: Link[]; t
   }
 
   const res = await fetch(`${API_URL}/api/v1/links?${params}`, {
+    credentials: "include",
     headers: {
       "X-Bulk-Operation": "true",
       ...getAuthHeaders(),
@@ -83,26 +86,30 @@ interface CreateLinkData {
 }
 
 async function createLink(data: CreateLinkData): Promise<Link> {
+  if (!data.projectId.trim()) throw new Error("Select a project before creating a connection.");
+  if (data.description) throw new Error("Connection descriptions are not supported by graph editing.");
   const res = await fetch(`${API_URL}/api/v1/links`, {
     body: JSON.stringify({
-      description: data["description"],
       project_id: data["projectId"],
       source_id: data["sourceId"],
       target_id: data["targetId"],
       type: data.type,
     }),
-    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders(), ...getCSRFHeaders("POST") },
     method: "POST",
   });
   if (!res.ok) {
     throw new Error("Failed to create link");
   }
-  return res.json() as Promise<Link>;
+  const link = await res.json();
+  return { ...link, sourceId: link.source_id ?? link.sourceId, targetId: link.target_id ?? link.targetId, projectId: link.project_id ?? link.projectId } as Link;
 }
 
-async function deleteLink(id: string): Promise<void> {
-  const res = await fetch(`${API_URL}/api/v1/links/${id}`, {
-    headers: getAuthHeaders(),
+async function deleteLink({ id, projectId }: { id: string; projectId: string }): Promise<void> {
+  const res = await fetch(`${API_URL}${scopedGraphPath("links", id, projectId)}`, {
+    credentials: "include",
+    headers: { ...getAuthHeaders(), ...getCSRFHeaders("DELETE") },
     method: "DELETE",
   });
   if (!res.ok) {
@@ -132,7 +139,7 @@ export function useLinks(filters: LinkFilters = {}) {
   return useQuery({
     queryKey: key,
     queryFn: async () => fetchLinks(filters),
-    enabled: Boolean(token),
+    enabled: Boolean(token) && filters.projectId !== "",
     ...QUERY_CONFIGS.dynamic, // Links change frequently
   });
 }
@@ -142,7 +149,10 @@ export function useCreateLink() {
   return useMutation({
     mutationFn: createLink,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["links"] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["links"] }),
+        queryClient.invalidateQueries({ queryKey: ["graph"] }),
+      ]);
     },
   });
 }
@@ -152,7 +162,10 @@ export function useDeleteLink() {
   return useMutation({
     mutationFn: deleteLink,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["links"] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["links"] }),
+        queryClient.invalidateQueries({ queryKey: ["graph"] }),
+      ]);
     },
   });
 }

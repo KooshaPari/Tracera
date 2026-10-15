@@ -1,3 +1,4 @@
+pub mod canonical;
 pub mod dashboard;
 pub mod evidence;
 pub mod governance;

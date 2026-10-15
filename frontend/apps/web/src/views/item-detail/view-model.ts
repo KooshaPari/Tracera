@@ -280,7 +280,7 @@ function useDraftState(item: Item | undefined): DraftActions {
 
 function useItemDetailViewModel(params: Params): ItemDetailViewModel {
   const { itemId, projectId, viewTypeParam } = params;
-  const itemQuery = useItem(itemId ?? EMPTY_STRING);
+  const itemQuery = useItem(itemId ?? EMPTY_STRING, projectId);
   const item = itemQuery.data;
 
   const query = useMemo(

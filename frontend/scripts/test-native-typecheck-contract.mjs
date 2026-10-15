@@ -116,6 +116,12 @@ async function proveProjectTypecheckFails(pkg) {
     // Runs even when an assertion above throws, so a failed run never leaves
     // the probe behind in the workspace.
     try { await unlink(probeFile); } catch { /* ok */ }
+    // Remove declarations from any prior interrupted/concurrent build probe.
+    for (const suffix of [".d.ts", ".d.ts.map"]) {
+      try {
+        await unlink(resolve(root, "packages", pkg, "dist", `test-typecheck-gate-bad${suffix}`));
+      } catch { /* absent generated output is expected */ }
+    }
   }
 }
 
@@ -130,6 +136,20 @@ function assertProjectTypecheckPasses(pkg) {
     `tsc -p packages/${pkg} must pass cleanly (exit=${result.status}):\n${tscOutput(result).slice(0, 300)}`,
   );
 }
+
+// Project references require dependency declarations even during --noEmit checks.
+// A clean checkout has no packages/types/dist. Build that leaf dependency before
+// inserting negative probes so the contract tests the package, not stale output.
+const dependencyBuild = spawnSync(
+  tscBin,
+  ["--build", "--force", resolve(root, "packages", "types", "tsconfig.json")],
+  { cwd: root, encoding: "utf8", timeout: 30_000 },
+);
+assert.equal(
+  dependencyBuild.status,
+  0,
+  `types dependency declarations must build before project checks:\n${tscOutput(dependencyBuild)}`,
+);
 
 // Run the per-project proof
 for (const pkg of PACKAGES) {

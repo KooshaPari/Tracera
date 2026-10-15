@@ -31,7 +31,7 @@ interface CreateItemPayload {
   description: string | undefined;
   type: string;
   status: ItemStatus;
-  priority: Priority;
+  priority?: Priority;
 }
 
 interface CreateItemModalProps {
@@ -234,7 +234,7 @@ function CreateItemModal({
     const description = readNonEmptyString(newDescription);
     onCreate({
       description,
-      priority: newPriority,
+
       status: newStatus,
       title: trimmedTitle,
       type: newType,
@@ -380,16 +380,17 @@ function CreateItemModal({
           </div>
           <div>
             <label htmlFor="item-priority" className="block text-sm font-medium">
-              Priority
+              Priority (not saved by graph editing)
             </label>
             <select
               id="item-priority"
               name="priority"
+              disabled
+              aria-label="Priority editing is unavailable"
               value={newPriority}
               onChange={handlePriorityChange}
               tabIndex={-1}
               className="border-input bg-background focus:ring-primary mt-1 w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:ring-2 focus:outline-none"
-              aria-label="Priority"
             >
               {itemsTableConstants.PRIORITY_VALUES.map((priority) => (
                 <option key={priority} value={priority}>

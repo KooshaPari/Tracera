@@ -282,8 +282,8 @@ describe("calculateThroughput", () => {
     const stats: StreamingStats = {
       bytesReceived: 1024 * 1024, // 1 MB
       itemsReceived: 1000,
-      startTime: Date.now() - 2000, // 2 seconds ago
-      endTime: Date.now(),
+      startTime: 1000,
+      endTime: 3000, // Exactly two seconds; independent of wall-clock scheduling.
       errors: [],
     };
 
@@ -291,7 +291,7 @@ describe("calculateThroughput", () => {
 
     expect(throughput.itemsPerSecond).toBeCloseTo(500, 0); // ~500 items/sec
     expect(throughput.megabytesPerSecond).toBeCloseTo(0.5, 1); // ~0.5 MB/sec
-    expect(throughput.totalDurationMs).toBeCloseTo(2000, 100);
+    expect(throughput.totalDurationMs).toBe(2000);
   });
 
   it("should handle ongoing streams", () => {

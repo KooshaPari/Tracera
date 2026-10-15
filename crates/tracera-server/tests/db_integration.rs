@@ -131,3 +131,164 @@ async fn sprint_roundtrip() {
     assert_eq!(sprints.len(), 1);
     assert_eq!(sprints[0].name, "Sprint 1");
 }
+
+#[tokio::test]
+async fn canonical_edits_survive_restart_preserve_provenance_and_isolate_projects() {
+    use tracera_server::store::{
+        CanonicalExport, CanonicalItem, CanonicalLink, CanonicalMutation, CanonicalProject,
+    };
+    let file = std::env::temp_dir().join(format!("tracera-edit-{}.db", uuid::Uuid::new_v4()));
+    let url = format!("sqlite://{}?mode=rwc", file.display());
+    let pool = SqlitePoolOptions::new()
+        .max_connections(1)
+        .connect(&url)
+        .await
+        .unwrap();
+    sqlx::migrate!("./migrations-sqlite")
+        .run(&pool)
+        .await
+        .unwrap();
+    let store = SqliteStore::new(pool);
+    let item = CanonicalItem {
+        id: "same:id".into(),
+        title: "Original".into(),
+        view: "requirement".into(),
+        item_type: "functional".into(),
+        status: "draft".into(),
+        description: Some("keep".into()),
+        version: Some(3),
+        source_url: Some("https://github.com/KooshaPari/Tracera/issues/1".into()),
+        source_repo: Some("KooshaPari/Tracera".into()),
+        source_kind: Some("github_issue".into()),
+    };
+    for id in ["a", "b"] {
+        store
+            .import_canonical(CanonicalExport {
+                project: CanonicalProject {
+                    id: id.into(),
+                    name: id.into(),
+                    description: None,
+                    created_at: None,
+                },
+                items: vec![item.clone()],
+                links: vec![],
+            })
+            .await
+            .unwrap();
+    }
+    assert!(store
+        .mutate_canonical(
+            "a".into(),
+            CanonicalMutation::UpdateItem {
+                id: item.id.clone(),
+                patch: json!({"title":"Edited", "description":null})
+            }
+        )
+        .await
+        .unwrap());
+    let mut second = item.clone();
+    second.id = "new:item".into();
+    second.title = "New".into();
+    assert!(store
+        .mutate_canonical("a".into(), CanonicalMutation::CreateItem(second.clone()))
+        .await
+        .unwrap());
+    let link = CanonicalLink {
+        source_id: item.id.clone(),
+        target_id: second.id.clone(),
+        link_type: "refines:typed".into(),
+    };
+    assert!(store
+        .mutate_canonical("a".into(), CanonicalMutation::CreateLink(link.clone()))
+        .await
+        .unwrap());
+    let replacement = CanonicalLink {
+        target_id: "missing".into(),
+        ..link.clone()
+    };
+    assert!(store
+        .mutate_canonical(
+            "a".into(),
+            CanonicalMutation::ReplaceLink {
+                old: link.clone(),
+                new: replacement
+            }
+        )
+        .await
+        .is_err());
+    assert_eq!(store.canonical_links("a".into(), 50, 0).await.unwrap().1, 1);
+    let before = serde_json::to_value(store.canonical_export("a".into()).await.unwrap()).unwrap();
+    let dangling = CanonicalLink {
+        target_id: "missing".into(),
+        ..link.clone()
+    };
+    assert!(store
+        .mutate_canonical("a".into(), CanonicalMutation::CreateLink(dangling))
+        .await
+        .is_err());
+    assert_eq!(
+        before,
+        serde_json::to_value(store.canonical_export("a".into()).await.unwrap()).unwrap()
+    );
+    // b does not acquire a's new:item merely because same:id exists in both.
+    assert!(store
+        .mutate_canonical("b".into(), CanonicalMutation::CreateLink(link.clone()))
+        .await
+        .is_err());
+    assert!(!store
+        .mutate_canonical("b".into(), CanonicalMutation::DeleteItem(second.id.clone()))
+        .await
+        .unwrap());
+    store.pool.close().await;
+    let store = SqliteStore::new(
+        SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect(&url)
+            .await
+            .unwrap(),
+    );
+    let edited = store
+        .canonical_item("a".into(), item.id.clone())
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(edited.title, "Edited");
+    assert_eq!(edited.description, None);
+    assert_eq!(edited.source_url, item.source_url);
+    assert_eq!(edited.source_repo, item.source_repo);
+    assert_eq!(edited.version, item.version);
+    assert_eq!(
+        store
+            .canonical_item("b".into(), item.id.clone())
+            .await
+            .unwrap()
+            .unwrap()
+            .title,
+        "Original"
+    );
+    assert_eq!(store.canonical_links("a".into(), 50, 0).await.unwrap().1, 1);
+    assert!(store
+        .mutate_canonical("a".into(), CanonicalMutation::DeleteLink(link.clone()))
+        .await
+        .unwrap());
+    assert!(!store
+        .mutate_canonical("a".into(), CanonicalMutation::DeleteLink(link.clone()))
+        .await
+        .unwrap());
+    store
+        .mutate_canonical("a".into(), CanonicalMutation::CreateLink(link))
+        .await
+        .unwrap();
+    assert!(store
+        .mutate_canonical("a".into(), CanonicalMutation::DeleteItem(item.id.clone()))
+        .await
+        .unwrap());
+    assert_eq!(store.canonical_links("a".into(), 50, 0).await.unwrap().1, 0);
+    assert!(store
+        .canonical_item("b".into(), item.id)
+        .await
+        .unwrap()
+        .is_some());
+    store.pool.close().await;
+    std::fs::remove_file(file).unwrap();
+}

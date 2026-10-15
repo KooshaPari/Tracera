@@ -45,6 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       rust: ${{ steps.filter.outputs.rust }}
+      postgres: ${{ steps.filter.outputs.postgres }}
       python: ${{ steps.filter.outputs.python }}
       go: ${{ steps.filter.outputs.go }}
       typescript: ${{ steps.filter.outputs.typescript }}
@@ -63,6 +64,12 @@ jobs:
               - 'crates/**'
               - '**/*.rs'
               - 'rust-toolchain.toml'
+            postgres:
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - 'crates/tracera-server/**'
+              - 'scripts/verify-postgres-canonical.py'
+              - '.github/workflows/ci.yml'
             python:
               - 'pyproject.toml'
               - 'uv.lock'
@@ -145,6 +152,40 @@ jobs:
             echo "No library targets in workspace; skipping cargo doctest pass"
           fi
 
+  postgres-canonical-smoke:
+    name: PostgreSQL Canonical Smoke
+    needs: detect-changes
+    if: needs.detect-changes.outputs.postgres == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: tracera
+          POSTGRES_PASSWORD: tracera
+          POSTGRES_DB: tracera_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tracera -d tracera_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://tracera:tracera@127.0.0.1:5432/tracera_ci
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          shared-key: postgres-canonical-smoke
+      - run: cargo build --locked -p tracera-server
+      - name: Verify PostgreSQL canonical import, isolation, and restart
+        run: python3 scripts/verify-postgres-canonical.py --binary "$PWD/target/debug/tracera-server"
+
   rust-build:
     name: Rust Build
     needs: [rust-lint, rust-test]
@@ -182,7 +223,9 @@ jobs:
       - run: uv sync --all-extras
       - run: uv run ruff check --output-format=github .
       - run: uv run ruff format --check .
-      - run: uv run mypy --install-types --non-interactive .
+      - name: Install declared SDK typecheck dependencies in the same environment
+        run: uv pip install --python .venv/bin/python -e './crates/tracera-py-sdk[async,dev]'
+      - run: uv run --no-sync mypy --install-types --non-interactive .
 
   python-test:
     name: Python Test
@@ -191,7 +234,7 @@ jobs:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -200,11 +243,14 @@ jobs:
         with:
           version: "latest"
       - run: uv python install ${{ matrix.python-version }}
-      - run: uv sync --all-extras
+      # Collection includes the SDK, whose declared minimum is Python 3.12.
+      - run: uv sync --all-extras --python ${{ matrix.python-version }}
+      - name: Install declared SDK test dependencies in the same environment
+        run: uv pip install --python .venv/bin/python -e './crates/tracera-py-sdk[async,dev]'
       # Keep CI deterministic: third-party pytest entrypoints (notably
       # schemathesis/jsonschema_rs) can stall collection. Autoload stays off,
       # so plugins we actually rely on must be named explicitly.
-      - run: PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 uv run pytest -p pytest_cov --cov --cov-report=xml --cov-report=term-missing -v
+      - run: PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 uv run --no-sync --python ${{ matrix.python-version }} pytest -p pytest_cov -p pytest_asyncio.plugin --asyncio-mode=auto --cov --cov-report=xml --cov-report=term-missing -v
       - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
         if: matrix.python-version == '3.12'
         with:
@@ -225,7 +271,7 @@ jobs:
         with:
           go-version: "stable"
       # golangci-lint v1.x binaries are built with go1.24 and refuse to lint
-      # modules that declare a newer Go (sidecar/go targets go 1.25.13).
+      # modules that declare a newer Go (sidecar/go pins its patched toolchain).
       # The v7 action supports golangci-lint v2; v2.4.0 is the first release
       # whose official binary is built with go1.25, so pin it explicitly and
       # run once per module.
@@ -297,6 +343,36 @@ jobs:
         with:
           node-version: "22"
       - run: npm ci || true
+      - name: Verify gateway availability and canonical source roundtrip
+        run: |
+          node --experimental-strip-types --test scripts/test-vercel-gateway.mjs
+          node --experimental-strip-types --test scripts/test-gateway-access.mjs
+          node --test scripts/test-gateway-health-receipt.mjs
+          node --experimental-strip-types --test tests/canonical-import-roundtrip.test.mjs
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: "1.3.11"
+      - name: Install exact frontend dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile --ignore-scripts
+      - name: Verify affected canonical editing hooks
+        working-directory: frontend/apps/web
+        run: >-
+          bun x vitest run
+          src/__tests__/hooks/canonical-editing.test.tsx
+          src/__tests__/hooks/useItems.comprehensive.test.tsx
+          src/__tests__/hooks/useItems.p1.test.ts
+          src/__tests__/hooks/useLinks.test.ts
+          src/__tests__/hooks/useLinks.comprehensive.test.ts
+          --reporter=dot
+      - name: Typecheck frontend workspace
+        working-directory: frontend
+        run: bun run typecheck
+      - name: Build production web frontend
+        working-directory: frontend
+        run: bun run build
+      # Legacy root tests remain advisory; the bounded frontend gates above
+      # execute without failure masking and do not claim all legacy tests pass.
       - run: npm test || true
 
   # ===========================================================================
@@ -397,6 +473,7 @@ jobs:
     permissions: {}
     needs:
       - rust-test
+      - postgres-canonical-smoke
       - python-test
       - go-test
       - typescript-test
@@ -405,6 +482,7 @@ jobs:
       - name: Check test results
         run: |
           results=("${{ needs.rust-test.result }}" \
+                   "${{ needs.postgres-canonical-smoke.result }}" \
                    "${{ needs.python-test.result }}" \
                    "${{ needs.go-test.result }}" \
                    "${{ needs.typescript-test.result }}")
@@ -424,6 +502,7 @@ jobs:
       - detect-changes
       - rust-lint
       - rust-test
+      - postgres-canonical-smoke
       - python-lint
       - python-test
       - go-lint
@@ -440,6 +519,7 @@ jobs:
           # Fail if any required job failed (not skipped)
           results=("${{ needs.rust-lint.result }}" \
                    "${{ needs.rust-test.result }}" \
+                   "${{ needs.postgres-canonical-smoke.result }}" \
                    "${{ needs.python-lint.result }}" \
                    "${{ needs.python-test.result }}" \
                    "${{ needs.go-lint.result }}" \

@@ -356,7 +356,7 @@ describe("ItemsTableViewA11y - Accessibility", () => {
       expect(screen.getByLabelText("Title")).toBeInTheDocument();
       expect(screen.getByLabelText("Type")).toBeInTheDocument();
       expect(screen.getByLabelText("Status")).toBeInTheDocument();
-      expect(screen.getByLabelText("Priority")).toBeInTheDocument();
+      expect(screen.getByLabelText("Priority (not saved by graph editing)")).toBeDisabled();
     });
 
     it("should have close button with aria-label", async () => {

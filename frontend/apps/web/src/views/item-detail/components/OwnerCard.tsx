@@ -27,6 +27,8 @@ export function OwnerCard({ isEditing, onChangeOwner, owner }: OwnerCardProps): 
   if (isEditing) {
     content = (
       <Input
+        disabled
+        aria-label="Owner editing is unavailable"
         value={owner}
         onChange={handleChange}
         placeholder="Owner name"
@@ -38,7 +40,7 @@ export function OwnerCard({ isEditing, onChangeOwner, owner }: OwnerCardProps): 
   return (
     <Card className="bg-muted/40 border-0 px-4 py-3">
       <p className="text-muted-foreground text-[10px] font-black tracking-widest uppercase">
-        Owner
+        Owner (not saved by graph editing)
       </p>
       <div className="mt-2 flex items-center gap-2">
         <div className="bg-primary/10 flex h-7 w-7 items-center justify-center rounded-full">
