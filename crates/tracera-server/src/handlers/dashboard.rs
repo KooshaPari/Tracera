@@ -142,85 +142,9 @@ pub(crate) async fn list_projects(
     }))
 }
 
-// ---------------------------------------------------------------------------
-// /api/v1/dashboard/summary -- aggregated dashboard metrics for the frontend.
-//
-// Built from `list_projects` + `dashboard_status_counts`, both of which only
-// depend on the `problems` columns shared by PgStore and SqliteStore
-// (`project_id`, `status`, `deleted_at`, timestamps). This deliberately avoids
-// the divergent ITIL column set so the endpoint works on both backends.
-// ---------------------------------------------------------------------------
-pub(crate) async fn dashboard_summary(
-    axum::extract::State(state): axum::extract::State<AppState>,
-) -> Result<Json<DashboardSummaryResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
-    use std::collections::BTreeMap;
-
-    // Fetch every project (up to the store's max page size). The dashboard is
-    // an aggregate surface; individual pagination has no meaning here.
-    let max_page = crate::store::ListParams {
-        page: 1,
-        page_size: crate::store::MAX_PAGE_SIZE,
-    };
-    let projects = state.store.list_projects(max_page).await.map_err(|e| {
-        tracing::error!("dashboard_summary list_projects error: {e}");
-        (
-            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ErrorResponse {
-                error: "dashboard summary failed",
-            }),
-        )
-    })?;
-
-    let status_counts = state.store.dashboard_status_counts().await.map_err(|e| {
-        tracing::error!("dashboard_summary status_counts error: {e}");
-        (
-            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ErrorResponse {
-                error: "dashboard summary failed",
-            }),
-        )
-    })?;
-
-    // Per-project buckets: default each project to zero counts, then overlay
-    // the (project_id, status, count) rows from the store.
-    let mut per_project: BTreeMap<String, DashboardProjectStatsResponse> = BTreeMap::new();
-    let mut status_distribution: BTreeMap<String, i64> = BTreeMap::new();
-    let mut total_item_count: i64 = 0;
-
-    for project in &projects {
-        per_project.insert(
-            project.id.clone(),
-            DashboardProjectStatsResponse {
-                total_count: project.problem_count,
-                completed_count: 0,
-                status_counts: BTreeMap::new(),
-                type_counts: BTreeMap::new(),
-            },
-        );
-        total_item_count += project.problem_count;
-    }
-
-    for (project_id, status, count) in status_counts {
-        // Aggregate the global status distribution.
-        *status_distribution.entry(status.clone()).or_insert(0) += count;
-
-        // Overlay per-project status counts.
-        if let Some(stats) = per_project.get_mut(&project_id) {
-            *stats.status_counts.entry(status.clone()).or_insert(0) += count;
-            if status == "closed" {
-                stats.completed_count += count;
-            }
-        }
-    }
-
-    Ok(Json(DashboardSummaryResponse {
-        project_count: projects.len(),
-        total_item_count,
-        per_project,
-        status_distribution,
-        type_distribution: BTreeMap::new(),
-    }))
-}
+#[path = "../routes/summary.rs"]
+pub(crate) mod summary;
+pub(crate) use summary::dashboard_summary;
 
 pub(crate) async fn get_project(
     axum::extract::State(state): axum::extract::State<AppState>,

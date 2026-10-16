@@ -11,7 +11,6 @@ export type { DashboardProjectStats, DashboardSummary } from "../api/system";
 export function useDashboardSummary() {
   const token = useAuthStore((s) => s.token);
   return useQuery<DashboardSummary>({
-    enabled: Boolean(token),
     queryFn: async ({ signal }) => fetchDashboardSummary(signal),
     queryKey: ["dashboard-summary", token ?? ""],
     refetchOnWindowFocus: false,
