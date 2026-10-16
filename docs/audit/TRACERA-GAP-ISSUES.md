@@ -277,3 +277,39 @@ The route strings below are registered directly in the flat Axum router at `crat
 - Journeys (registered 501): `/api/v1/journeys`, `/api/v1/journeys/{id}`, `/api/v1/journeys/{id}/steps`, `/api/v1/journeys/{id}/steps/{step_id}`, `/api/v1/journeys/{id}/detect`, `/api/v1/journeys/{id}/visualize`, `/api/v1/projects/{project_id}/journeys`, `/api/v1/projects/{project_id}/journeys/{id}`, `/api/v1/projects/{project_id}/journeys/{id}/steps`, `/api/v1/projects/{project_id}/journeys/{id}/steps/{step_id}`, `/api/v1/projects/{project_id}/journeys/{id}/detect`, `/api/v1/projects/{project_id}/journeys/{id}/visualize`.
 - Libraries/components/tokens (registered 501): `/api/v1/libraries`, `/api/v1/libraries/{id}`, `/api/v1/libraries/{id}/components`, `/api/v1/libraries/{id}/tokens`, `/api/v1/components`, `/api/v1/components/{id}`, `/api/v1/components/{id}/usage`, `/api/v1/tokens`.
 - Codex/docs/AI (registered 501): `/api/v1/projects/{project_id}/codex/auth-status`, `/api/v1/projects/{project_id}/codex/sessions`, `/api/v1/projects/{project_id}/codex/sessions/{session_id}`, `/api/v1/projects/{project_id}/docs/generate`, `/api/v1/projects/{project_id}/ai/summarize`, `/api/v1/projects/{project_id}/ai/classify`.
+
+## GAP-026: [Instinct] Endpoint governance map falsely marks auth/me unmounted
+
+- Severity: Medium; source-only at `5a9f45fb`.
+- Expected: Governance mount status matches active router.
+- Actual: Map marks unmounted; active router mounts auth_me.
+- Evidence: docs/governance/policy/endpoint_traceability_map.md:15; crates/tracera-server/src/router.rs:231; crates/tracera-server/src/main.rs:249.
+- Suggested fix: Correct mount status with revision-pinned owner evidence.
+- Runtime acceptance: not established by this documentary finding.
+
+## GAP-027: [Instinct] Endpoint governance test links reference a missing Python test file
+
+- Severity: Medium; source-only at `5a9f45fb`.
+- Expected: Test links resolve to existing definitions.
+- Actual: Three links target missing tests/unit/test_governance_and_models.py.
+- Evidence: docs/governance/policy/endpoint_traceability_map.md:22,24,25; tests/e2e/contract/impact.e2e.yml:2; tests/e2e/contract/coverage-matrix.e2e.yml:2; tests/e2e/contract/spec-check.e2e.yml:2.
+- Suggested fix: Map FRs to existing definitions and separately record execution receipts.
+- Runtime acceptance: not established by this documentary finding.
+
+## GAP-028: [Instinct] Endpoint governance map omits existing contract-test linkage
+
+- Severity: Medium; source-only at `5a9f45fb`.
+- Expected: Distinguish existing test definitions from execution acceptance.
+- Actual: Five map rows say Not covered despite exact method/path contract definitions.
+- Evidence: docs/governance/policy/endpoint_traceability_map.md:17-19,27,30; tests/e2e/contract/evidence-list.e2e.yml:2,6; tests/e2e/contract/evidence-create.e2e.yml:2,6; tests/e2e/contract/evidence-health.e2e.yml:2,6; tests/e2e/contract/org-intel-health.e2e.yml:2,6; tests/e2e/contract/sdlc-pm-health.e2e.yml:2,6.
+- Suggested fix: Link definitions and label execution UNKNOWN until independently run.
+- Runtime acceptance: not established by this documentary finding.
+
+## GAP-029: [Instinct] Migration oracle Go On main claims reference absent service
+
+- Severity: Medium; source-only at `5a9f45fb`.
+- Expected: On main claims resolve to source at cited revision.
+- Actual: All 13 rows say YES and cite absent cmd/server/main.go.
+- Evidence: docs/FEATURE_INVENTORY.md:331-347; git ls-files cmd/server/main.go returns no tracked path at 5a9f45fb.
+- Suggested fix: Mark Go entries historical with provenance and current migration owner mapping.
+- Runtime acceptance: not established by this documentary finding.
