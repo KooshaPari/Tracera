@@ -191,10 +191,8 @@ pub(crate) fn build_router_with_auth(
             get(item_routes::project_list).fallback(not_implemented),
         )
         // Links
-        .route("/api/v1/links", any(not_implemented))
-        .route("/api/v1/links/{id}", any(not_implemented))
+        .merge(crate::handlers::dashboard::summary::routes())
         .route("/api/v1/links/grouped", any(not_implemented))
-        .route("/api/v1/projects/{project_id}/links", any(not_implemented))
         // Graph
         .route("/api/v1/graph/ancestors/{id}", get(graph_routes::ancestors))
         .route(
