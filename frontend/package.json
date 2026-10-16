@@ -23,7 +23,7 @@
     "test:unit": "npm --prefix apps/web test --",
     "test:unit:bounded": "node scripts/verify-vitest-termination.mjs",
     "test:a11y": "bun --cwd apps/web run test:a11y",
-    "test:api-base": "node scripts/test-api-base.mjs",
+    "test:api-base": "node --test scripts/test-api-base.mjs",
     "test:client-server-parity": "node scripts/test-client-server-parity.mjs",
     "release:manifest": "node scripts/release-manifest.mjs",
     "verify:release-manifest": "node scripts/verify-release-manifest.mjs",

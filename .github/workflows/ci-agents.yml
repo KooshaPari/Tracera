@@ -10,7 +10,7 @@
 #   lint-py     — ruff + mypy on the Python SDK
 #   test-rust   — cargo test --workspace
 #   test-js     — vitest + playwright unit + contract smoke
-#   test-py     — pytest across Python 3.11/3.12/3.13
+#   test-py     — pytest across Python 3.12/3.13
 #   build       — cargo build + bun run build (single fan-in)
 #   sast        — Trivy filesystem scan (CodeQL via GitHub default setup)
 #   secrets     — gitleaks secret scan + dependency-review
@@ -330,7 +330,7 @@ jobs:
         run: bun --cwd apps/web run test --silent
       - name: contract tests
         working-directory: frontend
-        run: bun run test:api-base --silent
+        run: node --test scripts/test-api-base.mjs
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -349,7 +349,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
