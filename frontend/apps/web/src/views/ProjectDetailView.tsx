@@ -43,6 +43,9 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 
+import { ProjectSummary } from "@/components/ProjectSummary";
+import { Unavailable } from "@/components/Availability";
+import { ApiError } from "@/api/client-errors";
 import { getProjectDisplayName } from "@/lib/project-name-utils";
 import { cn } from "@/lib/utils";
 import { Badge, Button, Card, Progress, Skeleton } from "@tracertm/ui";
@@ -829,9 +832,16 @@ export const ProjectDetailView = () => {
     return <ProjectDetailSkeleton />;
   }
 
-  if (projectError || !project) {
-    return <ProjectNotFound onBack={handleBackToProjects} />;
+  if (projectError) {
+    if (projectError instanceof ApiError && projectError.status === 404)
+      return <ProjectNotFound onBack={handleBackToProjects} />;
+    return <Unavailable error={projectError} />;
   }
+  if (!project) return <Unavailable />;
+  if ("detailUnavailable" in project && typeof project.detailUnavailable === "number")
+    return (
+      <ProjectSummary project={{ ...project, detailUnavailable: project.detailUnavailable }} />
+    );
 
   return (
     <ProjectDetailContent

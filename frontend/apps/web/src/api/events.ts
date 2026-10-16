@@ -1,5 +1,6 @@
 // Events API stub
 import { client } from "./client";
+import { requireAvailable, invalidResponse } from "./availability";
 
 interface Event {
   id: string;
@@ -12,7 +13,6 @@ interface Event {
 
 type ApiClient = typeof client.apiClient;
 const { apiClient } = client;
-const { safeApiCall } = client;
 const get: ApiClient["GET"] = apiClient.GET.bind(apiClient);
 
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
@@ -36,29 +36,15 @@ const isEvent = (value: unknown): value is Event => {
 };
 
 const fetchEvents = async (params?: { limit?: number; offset?: number }): Promise<Event[]> => {
-  try {
-    const response = await safeApiCall(get("/api/v1/events", { params: { query: params } }));
-    const { data } = response;
-    if (Array.isArray(data)) {
-      return data.filter(isEvent);
-    }
-    return [];
-  } catch {
-    return [];
-  }
+  const data = await requireAvailable(get("/api/v1/events", { params: { query: params } }));
+  if (!Array.isArray(data) || !data.every(isEvent)) return invalidResponse();
+  return data;
 };
 
 const fetchEvent = async (id: string): Promise<Event | undefined> => {
-  try {
-    const response = await safeApiCall(get("/api/v1/events/{id}", { params: { path: { id } } }));
-    const { data } = response;
-    if (isEvent(data)) {
-      return data;
-    }
-    return undefined;
-  } catch {
-    return undefined;
-  }
+  const data = await requireAvailable(get("/api/v1/events/{id}", { params: { path: { id } } }));
+  if (!isEvent(data)) return invalidResponse();
+  return data;
 };
 
 export { fetchEvent, fetchEvents };
