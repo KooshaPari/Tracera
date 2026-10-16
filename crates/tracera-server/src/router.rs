@@ -1,3 +1,5 @@
+#[path = "routes/graph.rs"]
+mod graph_routes;
 use axum::{
     extract::DefaultBodyLimit,
     routing::{any, get, post},
@@ -187,17 +189,26 @@ pub(crate) fn build_router_with_auth(
         .route("/api/v1/links/grouped", any(not_implemented))
         .route("/api/v1/projects/{project_id}/links", any(not_implemented))
         // Graph
-        .route("/api/v1/graph/ancestors/{id}", any(not_implemented))
-        .route("/api/v1/graph/descendants/{id}", any(not_implemented))
-        .route("/api/v1/graph/impact/{id}", any(not_implemented))
-        .route("/api/v1/graph/dependencies/{id}", any(not_implemented))
-        .route("/api/v1/graph/traverse/{id}", any(not_implemented))
-        .route("/api/v1/graph/path", any(not_implemented))
-        .route("/api/v1/graph/paths", any(not_implemented))
-        .route("/api/v1/graph/full", any(not_implemented))
-        .route("/api/v1/graph/cycles", any(not_implemented))
-        .route("/api/v1/graph/topo-sort", any(not_implemented))
-        .route("/api/v1/graph/orphans", any(not_implemented))
+        .route("/api/v1/graph/ancestors/{id}", get(graph_routes::ancestors))
+        .route(
+            "/api/v1/graph/descendants/{id}",
+            get(graph_routes::descendants),
+        )
+        .route("/api/v1/graph/impact/{id}", get(graph_routes::unsupported))
+        .route(
+            "/api/v1/graph/dependencies/{id}",
+            get(graph_routes::dependencies),
+        )
+        .route(
+            "/api/v1/graph/traverse/{id}",
+            get(graph_routes::unsupported),
+        )
+        .route("/api/v1/graph/path", get(graph_routes::path))
+        .route("/api/v1/graph/paths", get(graph_routes::unsupported))
+        .route("/api/v1/graph/full", get(graph_routes::full))
+        .route("/api/v1/graph/cycles", get(graph_routes::cycles))
+        .route("/api/v1/graph/topo-sort", get(graph_routes::topo))
+        .route("/api/v1/graph/orphans", get(graph_routes::orphans))
         .route("/api/v1/graph/analysis/centrality", any(not_implemented))
         .route("/api/v1/graph/analysis/coverage", any(not_implemented))
         .route("/api/v1/graph/analysis/cycles", any(not_implemented))
