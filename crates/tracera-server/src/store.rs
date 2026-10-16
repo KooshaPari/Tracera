@@ -229,6 +229,14 @@ pub struct Problem {
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
 pub trait Store: Send + Sync {
+    fn list_items(
+        &self,
+        filter: crate::item::ItemFilter,
+        limit: i64,
+        offset: i64,
+    ) -> BoxFuture<'_, StoreResult<crate::item::ItemPage>>;
+    fn get_item(&self, id: String) -> BoxFuture<'_, StoreResult<Option<crate::item::Item>>>;
+    fn create_item(&self, item: crate::item::Item) -> BoxFuture<'_, StoreResult<()>>;
     // Evidence
     fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>>;
     fn create_evidence(

@@ -5,6 +5,7 @@ mod graph;
 mod handlers;
 mod health;
 mod ingest;
+mod item;
 mod memory;
 mod middleware;
 mod not_implemented;
