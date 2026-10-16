@@ -203,4 +203,3 @@ a substitute for feedback.
   job at materially lower cost, users do not value the result after bounded pilots,
   or operator withdraws the intent. Preserve data/export/receipts/ownership handoff.
   This report recommends decision gates; it does not execute a sunset.
-
