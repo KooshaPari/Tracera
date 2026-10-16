@@ -2,6 +2,8 @@
 mod graph_routes;
 #[path = "routes/items.rs"]
 mod item_routes;
+#[path = "routes/specs.rs"]
+mod specs_routes;
 use axum::{
     extract::DefaultBodyLimit,
     routing::{any, get, post},
@@ -119,6 +121,7 @@ pub(crate) fn build_router_with_auth(
 ) -> Router {
     let workos_router = build_workos_router::<AppState>(state.workos_client.clone());
     Router::new()
+        .merge(specs_routes::routes())
         .route("/healthz", get(crate::health::healthz))
         .route("/health", get(crate::health::health))
         .route("/readyz", get(crate::health::readyz))
