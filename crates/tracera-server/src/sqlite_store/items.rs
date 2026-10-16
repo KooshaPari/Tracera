@@ -68,6 +68,8 @@ pub(super) async fn get(pool: &SqlitePool, id: String) -> StoreResult<Option<Ite
         .transpose()
 }
 
+// Persistence helper for the canonical Items store; HTTP mutation routes land in a later package.
+#[allow(dead_code)]
 pub(super) async fn create(pool: &SqlitePool, item: Item) -> StoreResult<()> {
     let document = serde_json::to_string(&item).map_err(|e| StoreError::Database(e.to_string()))?;
     let mut query = QueryBuilder::<Sqlite>::new(

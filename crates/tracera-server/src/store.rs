@@ -243,6 +243,8 @@ pub trait Store: Send + Sync {
         offset: i64,
     ) -> BoxFuture<'_, StoreResult<crate::item::ItemPage>>;
     fn get_item(&self, id: String) -> BoxFuture<'_, StoreResult<Option<crate::item::Item>>>;
+    // Wired to HTTP mutation routes in a later package; implemented by the sqlite/pg stores.
+    #[allow(dead_code)]
     fn create_item(&self, item: crate::item::Item) -> BoxFuture<'_, StoreResult<()>>;
     // Evidence
     fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>>;
