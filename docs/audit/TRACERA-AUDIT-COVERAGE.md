@@ -87,3 +87,7 @@ TRACERA-API-SOURCE-RECONCILIATION.csv enumerates all 284 historical frontend ref
 ## Latest runtime and method refresh
 
 Current inventory: 24 gaps plus 44 view rows, 68 total. DOM receipts enumerate 59 baseline entries: 56 direct navigations (55 app DOM observations, one landing redirect) and three unresolved entity IDs. No sidebar click journey is claimed. Artifact completeness remains UNKNOWN. Fourteen entries show mixed 533-item tables; existing component detail shows Item Not Found and ADR detail redirects to list. Methods: 284 rows, 266 executable callsites, 18 definition/reference only; 95 GET-only, 172 mutation-containing, 17 unresolved. GET batch: 57 probed, 45 HTTP200 (43 explicit stubs), 11 HTTP501, one HTTP400; 38 not probed (34 unresolved IDs, four sensitive/action paths). Flat items independently return 533 unique TRACERA records, total533, and CIVIS0, total0 without stub. Local gateway evidence is not public Access acceptance.
+
+## Sidebar and management refresh, 2026-10-15
+
+Current inventory contains 25 findings and 44 view rows (33 Unknown, 10 High, one Medium), 69 total. Actual anchor-click receipts account for 44 baseline entries: four global links clicked, forty links unavailable because the known-project root renders Project Not Found. Six exact typed collection GETs across TRACERA/CIVIS return explicit stubs; detail IDs and isolation remain unknown. See new sidebar/entity receipts and GAP-025. Project-specific management heartbeat cadence and sunset limits are documented in TRACERA-AUDIT-HEARTBEAT.md.
