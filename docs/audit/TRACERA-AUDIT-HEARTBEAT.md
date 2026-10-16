@@ -17,6 +17,16 @@ prompts. This audit instead uses a project-specific macOS LaunchAgent.
   named owner, recorded blocker, next action, Pacific timestamp and next fire.
 - First verified tick: 2026-10-15 18:29:23 Pacific; PR OPEN.
 - First scheduled next fire: 2026-10-15 18:39:23 Pacific.
+- Second automatic tick: 2026-10-15 18:39:32 Pacific; ACTIVE after publication
+  reset unchanged count to one. Next due: 18:49:32 Pacific.
+
+An isolated mocked-subprocess test passed the third-identical-tick path:
+SUNSET_BLOCKED, three append-only ledger records, a written handoff and bootout
+of exactly the owned label. The live schedule was not modified by this test.
+A gap-count bug in the first two receipts was corrected for subsequent ticks:
+count GAP- IDs, not severity-bearing view rows; current counts are25 gaps/69
+inventory rows. Historical receipts remain preserved. This monitor polls
+management state; it does not execute autonomous audit work.
 
 Terminal criteria: runtime `STOP` marker means user stop; `VERIFIED_COMPLETE`
 means coordinator has confirmed every required verification complete. Three
