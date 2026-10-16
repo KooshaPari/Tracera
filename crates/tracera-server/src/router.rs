@@ -1,3 +1,5 @@
+#[path = "routes/auth.rs"]
+mod auth_routes;
 #[path = "routes/codex.rs"]
 mod codex_routes;
 #[path = "routes/equivalences.rs"]
@@ -252,9 +254,7 @@ pub(crate) fn build_router_with_auth(
         )
         .route("/api/v1/import", any(not_implemented))
         // Auth
-        .route("/api/v1/auth/login", any(not_implemented))
-        .route("/api/v1/auth/logout", any(not_implemented))
-        .route("/api/v1/auth/refresh", any(not_implemented))
+        .merge(auth_routes::routes())
         .route("/api/v1/auth/verify", any(not_implemented))
         .route("/api/v1/auth/me", get(crate::auth_me))
         // WorkOS
