@@ -6,7 +6,7 @@ authors = ["<REDACTED>"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
 rust-version = "1.82"
-repository = "https://github.com/<REDACTED>/Tracera"
+repository = "https://github.com/KooshaPari/Tracera"
 publish = false
 
 # IMPORTANT: this crate intentionally lives outside the Tracera workspace

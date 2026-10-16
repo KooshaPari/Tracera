@@ -1,7 +1,7 @@
 # Tracera Documentation Recovery Catalog
 
 **Scan date:** 2026-06-26  
-**Repository:** [<REDACTED>/Tracera](https://github.com/<REDACTED>/Tracera)  
+**Repository:** [<REDACTED>/Tracera](https://github.com/KooshaPari/Tracera)  
 **Recovery branch:** `docs/tracera-recovery-v2`  
 **Source commit for restored content:** `9e78f48dd^` (parent of bulk deletion in `9e78f48dd`)
 

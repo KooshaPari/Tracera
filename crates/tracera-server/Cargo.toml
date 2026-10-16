@@ -3,7 +3,7 @@ name = "tracera-server"
 version = "0.2.0"
 edition = "2021"
 description = "Tracera server crate"
-repository = "https://github.com/<REDACTED>/Tracera"
+repository = "https://github.com/KooshaPari/Tracera"
 license = "MIT"
 
 [features]

@@ -10,7 +10,7 @@
 
 ### Source repository
 
-- **Repo:** [`<REDACTED>/omniroute-monorepo-archive`](https://github.com/<REDACTED>/omniroute-monorepo-archive) (PUBLIC)
+- **Repo:** [`<REDACTED>/omniroute-monorepo-archive`](https://github.com/KooshaPari/omniroute-monorepo-archive) (PUBLIC)
 - **Visibility:** public archive
 - **Description:** "Archive of `repos/omniroute-monorepo` — restored 2026-07-14 (no original remote ever existed)"
 - **Local bare clone:** `/Users/<REDACTED>/CodeProjects/Phenotype/repos/_clone_target/omniroute-monorepo-archive.git`

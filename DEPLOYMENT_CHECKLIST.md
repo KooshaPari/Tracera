@@ -578,7 +578,7 @@ cat audit/SCORECARD-FULL-2026-08-30.md | grep "TOTAL"
 
 ```bash
 # 1. Clone repo
-git clone https://github.com/<REDACTED>/Tracera.git
+git clone https://github.com/KooshaPari/Tracera.git
 cd Tracera
 
 # 2. Install tools
