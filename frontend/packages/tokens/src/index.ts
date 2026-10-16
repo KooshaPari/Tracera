@@ -10,6 +10,6 @@ export {
   motion,
   breakpoints,
   zIndex,
-} from '../tokens';
+} from "../tokens";
 
-export type { colors } from '../tokens';
+export type { colors } from "../tokens";

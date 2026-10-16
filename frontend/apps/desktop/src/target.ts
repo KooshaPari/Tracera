@@ -11,9 +11,8 @@ const DEFAULT_LOCAL_PORT = "18000";
 
 export function resolveTargetUrl(env: Record<string, string | undefined>): string {
   // Hosted/staging deployments are opt-in. A packaged app must remain local by default.
-  const explicit = env.TRACERA_GATEWAY_URL?.trim()
-    || env.TRACERA_URL?.trim()
-    || env.TRACERA_HOSTED_URL?.trim();
+  const explicit =
+    env.TRACERA_GATEWAY_URL?.trim() || env.TRACERA_URL?.trim() || env.TRACERA_HOSTED_URL?.trim();
   if (explicit) return explicit;
   const development = env.TRACERA_DEV_URL?.trim();
   if (development) return development;

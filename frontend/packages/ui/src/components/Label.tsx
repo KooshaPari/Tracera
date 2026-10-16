@@ -1,6 +1,6 @@
-import * as React from 'react';
+import * as React from "react";
 
-import { cn } from '../lib/utils';
+import { cn } from "../lib/utils";
 
 export type LabelProps = React.LabelHTMLAttributes<HTMLLabelElement>;
 
@@ -9,12 +9,12 @@ const Label = React.forwardRef<HTMLLabelElement, LabelProps>(({ className, ...pr
     ref={ref}
     htmlFor={props.htmlFor}
     className={cn(
-      'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+      "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
       className,
     )}
     {...props}
   />
 ));
-Label.displayName = 'Label';
+Label.displayName = "Label";
 
 export { Label };

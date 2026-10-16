@@ -474,9 +474,9 @@ export const waitForElementWithText = async (
   let element: HTMLElement | null = null;
   await waitFor(
     () => {
-      element = [...container.querySelectorAll("*")].find((el) => el.textContent?.includes(text)) as
-        | HTMLElement
-        | undefined;
+      element = [...container.querySelectorAll("*")].find((el) =>
+        el.textContent?.includes(text),
+      ) as HTMLElement | undefined;
       if (!element) {
         throw new Error(`Element with text "${text}" not found`);
       }

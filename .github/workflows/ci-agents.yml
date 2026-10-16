@@ -168,7 +168,7 @@ jobs:
       - name: prettier --check
         if: needs.detect-changes.outputs.typescript == 'true'
         working-directory: frontend
-        run: bun x prettier --check '**/*.{js,ts,tsx,jsx,mjs,cjs,json,md,yml,yaml,html,css,scss}' --ignore-path .gitignore --ignore-path .prettierignore
+        run: bun run format:check
 
   # =============================================================================
   # Stage 2 — language-specific linters.
@@ -375,7 +375,7 @@ jobs:
         working-directory: crates/tracera-py-sdk
         env:
           PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
-        run: uv run --python ${{ matrix.python-version }} pytest -ra --strict-config -q
+        run: uv run --python ${{ matrix.python-version }} pytest -p asyncio -ra --strict-config -q
 
   # =============================================================================
   # Stage 4 — fan-in build.

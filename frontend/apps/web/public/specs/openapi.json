@@ -5564,12 +5564,7 @@
           "User rejected",
           "Auto-confirmed (high confidence)"
         ],
-        "x-enum-varnames": [
-          "StatusSuggested",
-          "StatusConfirmed",
-          "StatusRejected",
-          "StatusAuto"
-        ]
+        "x-enum-varnames": ["StatusSuggested", "StatusConfirmed", "StatusRejected", "StatusAuto"]
       },
       "equivalence.EquivalenceSuggestion": {
         "type": "object",

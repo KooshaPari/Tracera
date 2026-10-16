@@ -23,7 +23,7 @@ from urllib import error as urllib_error
 from urllib import parse, request
 
 try:  # pragma: no cover — only imported when the [async] extra is installed.
-    import httpx
+    import httpx  # type: ignore[import-not-found, unused-ignore]
 except ImportError:  # pragma: no cover
     httpx = None  # type: ignore[assignment]
 
