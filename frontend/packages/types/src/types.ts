@@ -1,62 +1,62 @@
 // Core domain types matching TraceRTM backend
 
 // Import multi-dimensional traceability types
-import type { CodeReference, DocReference, ItemDimensions } from './canonical';
+import type { CodeReference, DocReference, ItemDimensions } from "./canonical";
 
 export type ViewType =
-  | 'FEATURE'
-  | 'feature'
-  | 'CODE'
-  | 'code'
-  | 'TEST'
-  | 'test'
-  | 'API'
-  | 'api'
-  | 'DATABASE'
-  | 'database'
-  | 'WIREFRAME'
-  | 'wireframe'
-  | 'DOCUMENTATION'
-  | 'documentation'
-  | 'DEPLOYMENT'
-  | 'deployment'
-  | 'architecture'
-  | 'configuration'
-  | 'dataflow'
-  | 'dependency'
-  | 'domain'
-  | 'infrastructure'
-  | 'journey'
-  | 'monitoring'
-  | 'performance'
-  | 'security';
+  | "FEATURE"
+  | "feature"
+  | "CODE"
+  | "code"
+  | "TEST"
+  | "test"
+  | "API"
+  | "api"
+  | "DATABASE"
+  | "database"
+  | "WIREFRAME"
+  | "wireframe"
+  | "DOCUMENTATION"
+  | "documentation"
+  | "DEPLOYMENT"
+  | "deployment"
+  | "architecture"
+  | "configuration"
+  | "dataflow"
+  | "dependency"
+  | "domain"
+  | "infrastructure"
+  | "journey"
+  | "monitoring"
+  | "performance"
+  | "security";
 
-export type ItemStatus = 'todo' | 'in_progress' | 'done' | 'blocked' | 'cancelled';
+export type ItemStatus = "todo" | "in_progress" | "done" | "blocked" | "cancelled";
 
-export type Priority = 'low' | 'medium' | 'high' | 'critical';
+export type Priority = "low" | "medium" | "high" | "critical";
 
 export type LinkType =
   // Original link types
-  | 'implements'
-  | 'tests'
-  | 'depends_on'
-  | 'related_to'
-  | 'blocks'
-  | 'parent_of'
+  | "implements"
+  | "tests"
+  | "depends_on"
+  | "related_to"
+  | "blocks"
+  | "parent_of"
   // Multi-dimensional traceability link types
-  | 'same_as' // Equivalence: same concept in different views
-  | 'represents' // Code/UI represents a requirement
-  | 'manifests_as' // Abstract concept manifests as concrete item
-  | 'documents' // Documentation describes an item
-  | 'mentions' // Documentation mentions an item
-  | 'calls' // Code calls another code entity
-  | 'imports' // Code imports another module
-  | 'derives_from' // Derived requirement/item
-  | 'alternative_to' // Alternative approach
-  | 'conflicts_with' // Conflicting items
-  | 'supersedes' // Newer version supersedes older
-  | 'validates' // Test validates requirement
-  | 'traces_to'; // General traceability link
+  | "same_as" // Equivalence: same concept in different views
+  | "represents" // Code/UI represents a requirement
+  | "manifests_as" // Abstract concept manifests as concrete item
+  | "documents" // Documentation describes an item
+  | "mentions" // Documentation mentions an item
+  | "calls" // Code calls another code entity
+  | "imports" // Code imports another module
+  | "derives_from" // Derived requirement/item
+  | "alternative_to" // Alternative approach
+  | "conflicts_with" // Conflicting items
+  | "supersedes" // Newer version supersedes older
+  | "validates" // Test validates requirement
+  | "traces_to"; // General traceability link
 
 export interface Project {
   id: string;
@@ -111,7 +111,7 @@ export interface Item {
  * Requirement-specific properties (imported from specification.ts)
  */
 export interface RequirementItem extends Item {
-  type: 'requirement';
+  type: "requirement";
   // Specification-specific fields
   adrId?: string | undefined; // Link to ADR
   contractId?: string | undefined; // Link to Contract
@@ -126,7 +126,7 @@ export interface RequirementItem extends Item {
  * Test-specific properties
  */
 export interface TestItem extends Item {
-  type: 'test' | 'test_case' | 'test_suite';
+  type: "test" | "test_case" | "test_suite";
   testType?: TestCaseType | undefined;
   automationStatus?: AutomationStatus | undefined;
   testSteps?: TestStep[] | undefined;
@@ -138,7 +138,7 @@ export interface TestItem extends Item {
  * Epic-specific properties
  */
 export interface EpicItem extends Item {
-  type: 'epic';
+  type: "epic";
   acceptanceCriteria?: string[] | undefined;
   businessValue?: string | undefined;
   targetRelease?: string | undefined;
@@ -148,7 +148,7 @@ export interface EpicItem extends Item {
  * User Story-specific properties
  */
 export interface UserStoryItem extends Item {
-  type: 'user_story' | 'story';
+  type: "user_story" | "story";
   asA?: string | undefined; // As a [role]
   iWant?: string | undefined; // I want [capability]
   soThat?: string | undefined; // So that [benefit]
@@ -160,7 +160,7 @@ export interface UserStoryItem extends Item {
  * Task-specific properties
  */
 export interface TaskItem extends Item {
-  type: 'task';
+  type: "task";
   estimatedHours?: number | undefined;
   actualHours?: number | undefined;
   assignee?: string | undefined;
@@ -171,8 +171,8 @@ export interface TaskItem extends Item {
  * Defect/Bug-specific properties
  */
 export interface DefectItem extends Item {
-  type: 'bug' | 'defect';
-  severity?: 'critical' | 'high' | 'medium' | 'low' | undefined;
+  type: "bug" | "defect";
+  severity?: "critical" | "high" | "medium" | "low" | undefined;
   reproducible?: boolean | undefined;
   stepsToReproduce?: string[] | undefined;
   environment?: string | undefined;
@@ -204,27 +204,27 @@ export type TypedItem =
 // =============================================================================
 
 export function isRequirementItem(item: Item): item is RequirementItem {
-  return item.type === 'requirement';
+  return item.type === "requirement";
 }
 
 export function isTestItem(item: Item): item is TestItem {
-  return item.type === 'test' || item.type === 'test_case' || item.type === 'test_suite';
+  return item.type === "test" || item.type === "test_case" || item.type === "test_suite";
 }
 
 export function isEpicItem(item: Item): item is EpicItem {
-  return item.type === 'epic';
+  return item.type === "epic";
 }
 
 export function isUserStoryItem(item: Item): item is UserStoryItem {
-  return item.type === 'user_story' || item.type === 'story';
+  return item.type === "user_story" || item.type === "story";
 }
 
 export function isTaskItem(item: Item): item is TaskItem {
-  return item.type === 'task';
+  return item.type === "task";
 }
 
 export function isDefectItem(item: Item): item is DefectItem {
-  return item.type === 'bug' || item.type === 'defect';
+  return item.type === "bug" || item.type === "defect";
 }
 
 /**
@@ -260,26 +260,26 @@ export interface Link {
   canonicalId?: string | undefined;
 
   // User confirmation status
-  status?: 'suggested' | 'confirmed' | 'rejected' | 'auto' | undefined;
+  status?: "suggested" | "confirmed" | "rejected" | "auto" | undefined;
 }
 
 /**
  * How a link was created/detected
  */
 export type LinkProvenance =
-  | 'manual' // User created
-  | 'imported' // Imported from external system
-  | 'inferred_naming' // Inferred from naming patterns
-  | 'inferred_semantic' // Inferred from semantic similarity
-  | 'inferred_structural' // Inferred from code structure
-  | 'inferred_api' // Inferred from API contracts
-  | 'annotation'; // From code annotations
+  | "manual" // User created
+  | "imported" // Imported from external system
+  | "inferred_naming" // Inferred from naming patterns
+  | "inferred_semantic" // Inferred from semantic similarity
+  | "inferred_structural" // Inferred from code structure
+  | "inferred_api" // Inferred from API contracts
+  | "annotation"; // From code annotations
 
 export interface Agent {
   id: string;
   name: string;
   type: string;
-  status: 'active' | 'idle' | 'offline';
+  status: "active" | "idle" | "offline";
   lastSeen: string;
 }
 
@@ -287,7 +287,7 @@ export interface Mutation {
   id: string;
   agentId: string;
   itemId: string;
-  operation: 'create' | 'update' | 'delete';
+  operation: "create" | "update" | "delete";
   data: Record<string, unknown>;
   timestamp: string;
   synced: boolean;
@@ -295,25 +295,25 @@ export interface Mutation {
 
 // Problem Management Types
 export type ProblemStatus =
-  | 'open'
-  | 'in_investigation'
-  | 'pending_workaround'
-  | 'known_error'
-  | 'awaiting_fix'
-  | 'closed';
+  | "open"
+  | "in_investigation"
+  | "pending_workaround"
+  | "known_error"
+  | "awaiting_fix"
+  | "closed";
 
 export type ResolutionType =
-  | 'permanent_fix'
-  | 'workaround_only'
-  | 'cannot_reproduce'
-  | 'deferred'
-  | 'by_design';
+  | "permanent_fix"
+  | "workaround_only"
+  | "cannot_reproduce"
+  | "deferred"
+  | "by_design";
 
-export type ImpactLevel = 'critical' | 'high' | 'medium' | 'low';
+export type ImpactLevel = "critical" | "high" | "medium" | "low";
 
-export type RCAMethod = 'five_whys' | 'fishbone' | 'kepner_tregoe' | 'fmea' | 'pareto' | 'other';
+export type RCAMethod = "five_whys" | "fishbone" | "kepner_tregoe" | "fmea" | "pareto" | "other";
 
-export type RootCauseCategory = 'systematic' | 'human' | 'environmental' | 'process' | 'technology';
+export type RootCauseCategory = "systematic" | "human" | "environmental" | "process" | "technology";
 
 export interface Problem {
   id: string;
@@ -339,12 +339,12 @@ export interface Problem {
   rootCauseIdentified: boolean;
   rootCauseDescription?: string | undefined;
   rootCauseCategory?: RootCauseCategory | undefined;
-  rootCauseConfidence?: 'high' | 'medium' | 'low' | undefined;
+  rootCauseConfidence?: "high" | "medium" | "low" | undefined;
   rcaCompletedAt?: string | undefined;
   rcaCompletedBy?: string | undefined;
   workaroundAvailable: boolean;
   workaroundDescription?: string | undefined;
-  workaroundEffectiveness?: 'permanent_fix' | 'partial' | 'temporary' | undefined;
+  workaroundEffectiveness?: "permanent_fix" | "partial" | "temporary" | undefined;
   permanentFixAvailable: boolean;
   permanentFixDescription?: string | undefined;
   permanentFixImplementedAt?: string | undefined;
@@ -377,16 +377,16 @@ export interface ProblemActivity {
 }
 
 // Process Management Types
-export type ProcessStatus = 'draft' | 'active' | 'deprecated' | 'retired' | 'archived';
+export type ProcessStatus = "draft" | "active" | "deprecated" | "retired" | "archived";
 
 export type ProcessCategory =
-  | 'operational'
-  | 'support'
-  | 'management'
-  | 'development'
-  | 'integration'
-  | 'compliance'
-  | 'other';
+  | "operational"
+  | "support"
+  | "management"
+  | "development"
+  | "integration"
+  | "compliance"
+  | "other";
 
 export interface ProcessStage {
   id: string;
@@ -463,7 +463,7 @@ export interface Process {
   updatedAt: string;
 }
 
-export type ExecutionStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
+export type ExecutionStatus = "pending" | "in_progress" | "completed" | "failed" | "cancelled";
 
 export interface ProcessExecution {
   id: string;
@@ -485,25 +485,25 @@ export interface ProcessExecution {
 }
 
 // Quality Engineering (Test Case) Types
-export type TestCaseStatus = 'draft' | 'review' | 'approved' | 'deprecated' | 'archived';
+export type TestCaseStatus = "draft" | "review" | "approved" | "deprecated" | "archived";
 
 export type TestCaseType =
-  | 'functional'
-  | 'integration'
-  | 'unit'
-  | 'e2e'
-  | 'performance'
-  | 'security'
-  | 'accessibility'
-  | 'regression'
-  | 'smoke'
-  | 'exploratory';
+  | "functional"
+  | "integration"
+  | "unit"
+  | "e2e"
+  | "performance"
+  | "security"
+  | "accessibility"
+  | "regression"
+  | "smoke"
+  | "exploratory";
 
-export type TestCasePriority = 'critical' | 'high' | 'medium' | 'low';
+export type TestCasePriority = "critical" | "high" | "medium" | "low";
 
-export type AutomationStatus = 'not_automated' | 'in_progress' | 'automated' | 'cannot_automate';
+export type AutomationStatus = "not_automated" | "in_progress" | "automated" | "cannot_automate";
 
-export type TestResultStatus = 'passed' | 'failed' | 'skipped' | 'blocked' | 'error';
+export type TestResultStatus = "passed" | "failed" | "skipped" | "blocked" | "error";
 
 export interface TestStep {
   stepNumber: number;
@@ -580,7 +580,7 @@ export interface TestCaseStats {
 }
 
 // Test Suite Types
-export type TestSuiteStatus = 'draft' | 'active' | 'deprecated' | 'archived';
+export type TestSuiteStatus = "draft" | "active" | "deprecated" | "archived";
 
 export interface TestSuite {
   id: string;
@@ -647,9 +647,9 @@ export interface TestSuiteStats {
 }
 
 // Test Run Types
-export type TestRunStatus = 'pending' | 'running' | 'passed' | 'failed' | 'blocked' | 'cancelled';
+export type TestRunStatus = "pending" | "running" | "passed" | "failed" | "blocked" | "cancelled";
 
-export type TestRunType = 'manual' | 'automated' | 'ci_cd' | 'scheduled';
+export type TestRunType = "manual" | "automated" | "ci_cd" | "scheduled";
 
 export interface TestRun {
   id: string;
@@ -746,8 +746,8 @@ export interface TestRunStats {
 }
 
 // Test Coverage Types
-export type CoverageType = 'direct' | 'partial' | 'indirect' | 'regression';
-export type CoverageStatus = 'active' | 'deprecated' | 'needs_review';
+export type CoverageType = "direct" | "partial" | "indirect" | "regression";
+export type CoverageStatus = "active" | "deprecated" | "needs_review";
 
 export interface TestCoverage {
   id: string;
@@ -834,15 +834,15 @@ export interface CoverageStats {
 }
 
 // External integration and API response types
-export * from './types-integrations';
+export * from "./types-integrations";
 // Re-export multi-dimensional traceability types
-export * from './canonical';
-export * from './component-library';
-export * from './entity-hierarchy';
+export * from "./canonical";
+export * from "./component-library";
+export * from "./entity-hierarchy";
 // Temporal dimension types
-export * from './progress';
+export * from "./progress";
 // Re-export specification types
-export * from './specification';
+export * from "./specification";
 // Re-export temporal types
-export * from './temporal';
-export * from './ui-entities';
+export * from "./temporal";
+export * from "./ui-entities";
