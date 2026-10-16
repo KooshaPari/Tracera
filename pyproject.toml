@@ -41,3 +41,9 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM"]
 
+[tool.pytest.ini_options]
+# The Python SDK under crates/ has its own pytest project. Collecting it from
+# the repo root imports `tracera` in an environment that only installs this
+# package.
+norecursedirs = ["crates", ".*", "build", "dist"]
+

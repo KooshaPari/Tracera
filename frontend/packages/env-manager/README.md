@@ -15,7 +15,11 @@ pnpm add @tracertm/env-manager
 ## Quick Start
 
 ```typescript
-import { EnvManager, loadFrontendConfig, validateFrontendConfig } from "@tracertm/env-manager";
+import {
+  EnvManager,
+  loadFrontendConfig,
+  validateFrontendConfig,
+} from "@tracertm/env-manager";
 
 // Create manager
 const env = new EnvManager();
@@ -90,7 +94,10 @@ Clear all environment variables.
 Use `loadFrontendConfig()` to load typed configuration:
 
 ```typescript
-import { loadFrontendConfig, validateFrontendConfig } from "@tracertm/env-manager";
+import {
+  loadFrontendConfig,
+  validateFrontendConfig,
+} from "@tracertm/env-manager";
 
 const config = loadFrontendConfig();
 validateFrontendConfig(config);

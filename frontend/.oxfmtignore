@@ -25,3 +25,10 @@
 # Lockfiles and package-manager output.
 bun.lock
 package-lock.json
+
+# Prettier and oxfmt 0.27 disagree on these files. The Lint & Format workflow
+# checks changed Markdown and JSON with prettier, so prettier owns them.
+apps/web/public/specs/openapi.json
+apps/web/visual/README.md
+packages/env-manager/README.md
+turbo.json

@@ -76,7 +76,13 @@
       "outputLogs": "new-only"
     },
     "test:unit": {
-      "inputs": ["src/**", "__tests__/**", "*.test.*", "*.spec.*", "vitest.config.*"],
+      "inputs": [
+        "src/**",
+        "__tests__/**",
+        "*.test.*",
+        "*.spec.*",
+        "vitest.config.*"
+      ],
       "outputs": ["coverage/**"],
       "dependsOn": [],
       "outputLogs": "new-only"
@@ -105,7 +111,14 @@
       "outputs": []
     },
     "//#lint": {
-      "inputs": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", ".oxlintrc.json", "package.json"],
+      "inputs": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.js",
+        "**/*.jsx",
+        ".oxlintrc.json",
+        "package.json"
+      ],
       "outputs": [],
       "outputLogs": "hash-only"
     },
@@ -114,7 +127,13 @@
       "outputs": []
     },
     "//#typecheck": {
-      "inputs": ["**/*.ts", "**/*.tsx", ".oxlintrc.json", "package.json", "tsconfig.json"],
+      "inputs": [
+        "**/*.ts",
+        "**/*.tsx",
+        ".oxlintrc.json",
+        "package.json",
+        "tsconfig.json"
+      ],
       "outputs": [],
       "outputLogs": "hash-only"
     },
