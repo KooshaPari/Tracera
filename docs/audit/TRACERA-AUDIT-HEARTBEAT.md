@@ -1,46 +1,48 @@
-# Tracera audit heartbeat
+# Persistent ownership heartbeat, 2026-10-15
 
-Scope: read-only management checks for PR #1132 only. No product fixes, merges,
-focused-pane prompts, screenshots, or global harness configuration changes.
-
-Skill consulted: `/Users/kooshapari/.agents/skills/loop-support/SKILL.md`.
-The installed generic loop daemon lacks bounded sunset and runs unrestricted CLI
-prompts. This audit instead uses a project-specific macOS LaunchAgent.
+The former /tmp runtime and launchd label were absent at 19:42 PDT; historical
+18:29/18:39 receipts do not establish continuing execution or a prior sunset.
+The monitor was restored with durable project-only state and a login LaunchAgent.
 
 - Label: `gui/501/studio.pheno.tracera.audit1132`
-- Interval: 600 seconds; RunAtLoad starts the first tick immediately.
-- Runtime: `/tmp/tracera-audit-heartbeat-1132/`
-- Executable: `/usr/bin/python3 /tmp/tracera-audit-heartbeat-1132/tick.py`
-- Definition: runtime `heartbeat.plist`; no global plist or policy edits.
-- Records: append-only `ledger.jsonl`, current `state.json`, final `handoff.json`.
-- Checks: bounded read-only GitHub PR head/state request, local inventory counts,
-  named owner, recorded blocker, next action, Pacific timestamp and next fire.
-- First verified tick: 2026-10-15 18:29:23 Pacific; PR OPEN.
-- First scheduled next fire: 2026-10-15 18:39:23 Pacific.
-- Second automatic tick: 2026-10-15 18:39:32 Pacific; ACTIVE after publication
-  reset unchanged count to one. Next due: 18:49:32 Pacific.
+- State directory: `~/.local/state/tracera-audit-1132/`
+- Definition: `~/Library/LaunchAgents/studio.pheno.tracera.audit1132.plist`
+- Executable: `/usr/bin/python3 ~/.local/state/tracera-audit-1132/tick.py`
+- Schedule: `StartInterval=600`, `RunAtLoad=true`; survives chat exit and login/reboot.
+- First real receipt: **2026-10-15 19:54:59 PDT**, ACTIVE, exit 0.
+- First nominal next due: **2026-10-15 20:04:59 PDT**. Sleep may delay execution.
+- Snapshot: PR OPEN at `1289421542adfd2356de05b72b16fe54e8b44bd7`; 25 gaps,
+  44 view rows, 69 total rows, 25 issue headings, 37 Unknown rows across the
+  whole inventory. The earlier 33 Unknown denominator concerned view rows only.
+- Public unauthenticated project-list request returned 302, an Access redirect;
+  this is not authenticated acceptance and does not alter Access policy.
 
-An isolated mocked-subprocess test passed the third-identical-tick path:
-SUNSET_BLOCKED, three append-only ledger records, a written handoff and bootout
-of exactly the owned label. The live schedule was not modified by this test.
-A gap-count bug in the first two receipts was corrected for subsequent ticks:
-count GAP- IDs, not severity-bearing view rows; current counts are25 gaps/69
-inventory rows. Historical receipts remain preserved. This monitor polls
-management state; it does not execute autonomous audit work.
+Each tick records Pacific time, owner, PR head/state, bounded inventory and issue
+counts, public HTTP status, concrete blocker and next authorized action in
+append-only `ledger.jsonl` and current `state.json`. Reads are limited to GitHub
+and an unauthenticated HTTP status probe. The monitor does not run coding agents,
+repair products, prompt panes, navigate authenticated sessions or merge PRs.
 
-Terminal criteria: runtime `STOP` marker means user stop; `VERIFIED_COMPLETE`
-means coordinator has confirmed every required verification complete. Three
-unchanged PR-head/evidence-count/concrete-blocker ticks produce SUNSET_BLOCKED
-and a handoff. A PR push by itself is not completion. Sunset writes the ledger
-and handoff before unloading only this label; files remain preserved.
+Three consecutive unchanged external-blocker snapshots produce SUNSET_BLOCKED.
+A changed PR head, count or public status resets that counter. Read failures are
+MONITOR_ERROR and do not advance the blocker counter. PR closure/merge alone is
+never proof that the audit is complete. `STOP` produces SUNSET_CANCELLED;
+`VERIFIED_COMPLETE.json` requires `all_required_verification_complete: true`
+and nonempty `evidence`, supplied only after coordinator verification of every
+required audit check. That marker produces SUNSET_COMPLETE.
 
-The blocker is the coordinator's recorded verification deficit, not a fresh
-public Access test at each tick. The heartbeat performs no authentication or
-product-side mutation. Review `state.json` for latest actual execution; a
-registered interval is not proof that future ticks have run. `/tmp` runtime
-survives parent chat exit but is not a reboot-persistent installation.
+Every sunset writes permanent `handoff.json`, preserves the ledger and archives
+only the owned plist under state-directory `sunset/` before unloading only its
+own label. Archiving prevents reboot restart. Inspect actual state/ledger for
+execution evidence; the nominal next due is not proof that a tick ran.
 
-Verification: `launchctl print gui/501/studio.pheno.tracera.audit1132` confirmed
-one registered label, the 600-second interval, first PID 69338, and first tick
-receipt. Stop by creating runtime `STOP` (processed at next tick), or unload
-exactly this label with `launchctl bootout gui/501/studio.pheno.tracera.audit1132`.
+Stop at next tick: `touch ~/.local/state/tracera-audit-1132/STOP`.
+Immediate stop: `launchctl bootout gui/501/studio.pheno.tracera.audit1132`, then
+move the owned plist into the state directory so it cannot reload at login.
+The runtime `README.md` retains the same operating instructions.
+
+Validation passed: real first-tick receipt and launchctl exit 0; loaded service
+reports runatload and a 600-second interval. Offline isolated tests exercised
+three identical blocker ticks with three ledger records and final handoff,
+changed-head reset, cancellation and explicit completion. Service controls were
+disabled for those tests, leaving the live schedule untouched.
