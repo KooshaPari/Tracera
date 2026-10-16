@@ -2,6 +2,8 @@
 mod codex_routes;
 #[path = "routes/equivalences.rs"]
 mod equivalences_routes;
+#[path = "routes/export_import.rs"]
+mod export_import_routes;
 #[path = "routes/graph.rs"]
 mod graph_routes;
 #[path = "routes/items.rs"]
@@ -127,6 +129,7 @@ pub(crate) fn build_router_with_auth(
 ) -> Router {
     let workos_router = build_workos_router::<AppState>(state.workos_client.clone());
     Router::new()
+        .merge(export_import_routes::routes())
         .merge(specs_routes::routes())
         .merge(codex_routes::routes())
         .merge(libraries_routes::routes())
@@ -244,13 +247,10 @@ pub(crate) fn build_router_with_auth(
         .route("/api/v1/search/stats", any(not_implemented))
         .route("/api/v1/search/health", any(not_implemented))
         // Projects extended
-        .route("/api/v1/projects/{project_id}/export", any(not_implemented))
-        .route("/api/v1/projects/{project_id}/import", any(not_implemented))
         .route(
             "/api/v1/projects/{project_id}/versions/compare",
             any(not_implemented),
         )
-        .route("/api/v1/import", any(not_implemented))
         // Auth
         .route("/api/v1/auth/login", any(not_implemented))
         .route("/api/v1/auth/logout", any(not_implemented))
