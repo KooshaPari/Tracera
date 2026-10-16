@@ -21,13 +21,7 @@ use crate::AppState;
 
 const MAX_REQUEST_BODY_BYTES: usize = 10 * 1024 * 1024;
 
-/// Stub handler for Tier-2 endpoints not yet implemented.
-async fn not_implemented() -> impl axum::response::IntoResponse {
-    (
-        axum::http::StatusCode::NOT_IMPLEMENTED,
-        axum::Json(serde_json::json!({"error": "not_implemented", "message": "ADR-SERVER-001"})),
-    )
-}
+use crate::not_implemented::not_implemented;
 
 #[allow(dead_code)]
 pub(crate) fn build_router(state: AppState) -> Router {

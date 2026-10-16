@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, lazy } from "react";
 
+import { Unavailable } from "@/components/Availability";
 import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
 import { logger } from "@/lib/logger";
 import { requireAuth } from "@/lib/route-guards";
@@ -46,23 +47,8 @@ export const Route = createFileRoute("/home")({
   loader: async () => {
     // Only fetch systemStatus here; projects are fetched by DashboardView's
     // UseProjects() hook (with staleTime caching) to avoid a double-fetch.
-    try {
-      const { fetchSystemStatus } = await import("@/api/system");
-      const systemStatus = await fetchSystemStatus().catch(() => ({
-        queuedJobs: 0,
-        status: "healthy" as const,
-        uptime: 99.9,
-      }));
-
-      return { systemStatus };
-    } catch {
-      return {
-        systemStatus: {
-          queuedJobs: 0,
-          status: "healthy" as const,
-          uptime: 99.9,
-        },
-      };
-    }
+    const { fetchSystemStatus } = await import("@/api/system");
+    return { systemStatus: await fetchSystemStatus() };
   },
+  errorComponent: ({ error }) => <Unavailable error={error} />,
 });
