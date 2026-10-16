@@ -300,8 +300,9 @@ The route strings below are registered directly in the flat Axum router at `crat
 
 - Severity: Medium; source-only at `5a9f45fb`.
 - Expected: Distinguish existing test definitions from execution acceptance.
-- Actual: Five map rows say Not covered despite exact method/path contract definitions.
+- Actual: Ten map rows say Not covered despite exact method/path contract definitions. Five additional rows were source-checked at `0ccf98c8`: GET org metrics, GET teams, GET sprints, GET stories, POST sprints.
 - Evidence: docs/governance/policy/endpoint_traceability_map.md:17-19,27,30; tests/e2e/contract/evidence-list.e2e.yml:2,6; tests/e2e/contract/evidence-create.e2e.yml:2,6; tests/e2e/contract/evidence-health.e2e.yml:2,6; tests/e2e/contract/org-intel-health.e2e.yml:2,6; tests/e2e/contract/sdlc-pm-health.e2e.yml:2,6.
+- Additional evidence: docs/governance/policy/endpoint_traceability_map.md:28-29,31-33; tests/e2e/contract/org-metrics.e2e.yml:2,6; tests/e2e/contract/teams-list.e2e.yml:2,6; tests/e2e/contract/sprints-list.e2e.yml:2,6; tests/e2e/contract/stories-list.e2e.yml:2,6; tests/e2e/contract/sprints-create.e2e.yml:2,6.
 - Suggested fix: Link definitions and label execution UNKNOWN until independently run.
 - Runtime acceptance: not established by this documentary finding.
 

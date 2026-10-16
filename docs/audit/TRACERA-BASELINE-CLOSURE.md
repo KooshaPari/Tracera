@@ -76,3 +76,26 @@ Streaming examples and ExportWizard still lack a proven production mount.
 Items/links have a concrete GraphView route mount; no runtime verdict follows.
 All method source corrections are pinned to 5a9f45fb and appended to existing
 callsite evidence. No requests were sent to verify these classifications.
+
+## Final URL classification and bounded linkage extension, 2026-10-15
+
+At `0ccf98c8`, the final unresolved method row constructs an artifact-download
+URL; it does not execute an HTTP request. `api/executions.ts:191` returns that
+string and exports it at line 301, with no `downloadArtifact` callers under
+`frontend/apps/web/src`. The fallback in `useQAEnhancedNodeData.ts:88` is in a
+hook with no import/call consumers in that tree. Generic artifact media
+renderers (`components/graph/QAEnhancedNode.tsx:370,401,407` and
+`components/graph/nodes/NodeExpandPopup.tsx:113`) do not prove this producer
+feeds a mounted view. Classify the row as NOT_APPLICABLE_UNCONSUMED_URL;
+production reachability remains UNKNOWN. No download request was made.
+The preceding one-UNKNOWN-method count is superseded: zero unresolved method
+cells, seven reference-only entries, 276 executable/handshake references,
+and one URL prefix. This is source classification, not runtime acceptance.
+
+A finite five-row follow-up of the governance baseline checked GET org metrics,
+GET teams, GET sprints, GET stories, and POST sprints against exact contract
+YAML endpoint/method definitions. All five omit existing test linkage; extend
+GAP-028 from five to ten rows, without creating a duplicate gap. Their active
+router declarations are at `crates/tracera-server/src/router.rs:154-155,172-173`.
+No contract tests were executed. The 652-record promise index remains a
+discovery index; this five-row pass is not exhaustive baseline acceptance.
