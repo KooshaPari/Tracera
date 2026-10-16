@@ -278,7 +278,7 @@ The route strings below are registered directly in the flat Axum router at `crat
 - Libraries/components/tokens (registered 501): `/api/v1/libraries`, `/api/v1/libraries/{id}`, `/api/v1/libraries/{id}/components`, `/api/v1/libraries/{id}/tokens`, `/api/v1/components`, `/api/v1/components/{id}`, `/api/v1/components/{id}/usage`, `/api/v1/tokens`.
 - Codex/docs/AI (registered 501): `/api/v1/projects/{project_id}/codex/auth-status`, `/api/v1/projects/{project_id}/codex/sessions`, `/api/v1/projects/{project_id}/codex/sessions/{session_id}`, `/api/v1/projects/{project_id}/docs/generate`, `/api/v1/projects/{project_id}/ai/summarize`, `/api/v1/projects/{project_id}/ai/classify`.
 
-## GAP-026: [Instinct] Endpoint governance map falsely marks auth/me unmounted
+### [Instinct] GAP-026 Endpoint governance map falsely marks auth/me unmounted
 
 - Severity: Medium; source-only at `5a9f45fb`.
 - Expected: Governance mount status matches active router.
@@ -287,7 +287,7 @@ The route strings below are registered directly in the flat Axum router at `crat
 - Suggested fix: Correct mount status with revision-pinned owner evidence.
 - Runtime acceptance: not established by this documentary finding.
 
-## GAP-027: [Instinct] Endpoint governance test links reference a missing Python test file
+### [Instinct] GAP-027 Endpoint governance test links reference a missing Python test file
 
 - Severity: Medium; source-only at `5a9f45fb`.
 - Expected: Test links resolve to existing definitions.
@@ -296,7 +296,7 @@ The route strings below are registered directly in the flat Axum router at `crat
 - Suggested fix: Map FRs to existing definitions and separately record execution receipts.
 - Runtime acceptance: not established by this documentary finding.
 
-## GAP-028: [Instinct] Endpoint governance map omits existing contract-test linkage
+### [Instinct] GAP-028 Endpoint governance map omits existing contract-test linkage
 
 - Severity: Medium; source-only at `5a9f45fb`.
 - Expected: Distinguish existing test definitions from execution acceptance.
@@ -306,7 +306,7 @@ The route strings below are registered directly in the flat Axum router at `crat
 - Suggested fix: Link definitions and label execution UNKNOWN until independently run.
 - Runtime acceptance: not established by this documentary finding.
 
-## GAP-029: [Instinct] Migration oracle Go On main claims reference absent service
+### [Instinct] GAP-029 Migration oracle Go On main claims reference absent service
 
 - Severity: Medium; source-only at `5a9f45fb`.
 - Expected: On main claims resolve to source at cited revision.
