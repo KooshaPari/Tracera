@@ -168,7 +168,7 @@ jobs:
       - name: prettier --check
         if: needs.detect-changes.outputs.typescript == 'true'
         working-directory: frontend
-        run: bun x prettier --check '**/*.{js,ts,tsx,jsx,mjs,cjs,json,md,yml,yaml,html,css,scss}' --ignore-path .gitignore --ignore-path .prettierignore || true
+        run: bun x prettier --check '**/*.{js,ts,tsx,jsx,mjs,cjs,json,md,yml,yaml,html,css,scss}' --ignore-path .gitignore --ignore-path .prettierignore
 
   # =============================================================================
   # Stage 2 — language-specific linters.
@@ -227,9 +227,9 @@ jobs:
         run: bun install --frozen-lockfile
       - name: oxlint
         working-directory: frontend
-        run: bun run lint --silent || true
+        run: bun run lint --silent
       - name: biome (root)
-        run: npx --yes @biomejs/biome check . || true
+        run: npx --yes @biomejs/biome check .
 
   lint-py:
     name: "ci-agents / lint-py"
@@ -330,7 +330,7 @@ jobs:
         run: bun --cwd apps/web run test --silent
       - name: contract tests
         working-directory: frontend
-        run: bun run test:api-base --silent || true
+        run: bun run test:api-base --silent
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
