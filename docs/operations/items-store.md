@@ -42,3 +42,16 @@ Postgres runtime verification is claimed.
 
 Legacy page/pageSize and cursor query options are not implemented by these routes;
 callers must use the W4-style limit/offset contract. Unknown options return 400.
+
+## Desk verification receipt (2026-10-16)
+
+The required offline server command passed 72 tests, including nine Item route
+tests and four graph route tests; no tests failed. Changed-file rustfmt passed
+for 12 Rust files. Compute ran locally on the desk with two Cargo build jobs.
+
+When several worktrees share a Cargo target, verify the output includes the
+expected route test names and compiles this worktree's source. A stale shared
+binary reported 57 passing tests without any Item or graph route tests; that
+receipt was rejected. Refreshing this worktree's input timestamps forced a
+source build, which produced the accepted 72-test result. No artifacts were
+cleaned and no concurrent process was killed.
