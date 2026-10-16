@@ -1,5 +1,29 @@
 # Runtime receipts, 2026-10-14
 
+## Actual navigation refresh, 2026-10-15 PDT
+
+The local loopback SSH forward to Windows8091 again returned the six-project
+list. Current project detail GET returned HTTP200 with named TRACERA and no
+stub marker. Nevertheless, the project root DOM rendered Project Not Found,
+omitting the project sidebar. The actual anchor-click lane recorded all44
+baseline entries: four global command links clicked (Dashboard, Projects,
+Items, Agents) and forty project links unavailable. These are actual clicks,
+distinct from the earlier56 direct URL navigations. Artifact identity,
+pagination and project isolation remain UNKNOWN; no missing link was invented.
+See `TRACERA-SIDEBAR-CLICK-RECEIPTS.csv` and GAP-025.
+
+Exact frontend collection GETs for contracts, features and scenarios in both
+TRACERA and CIVIS each returned HTTP200 explicit stub:true, three generic empty
+arrays and zero totals, without the expected typed collection key. They prove
+neither true emptiness nor isolation. No verified contract/feature/scenario ID
+was available for the three remaining detail routes; none was fabricated.
+See `TRACERA-ENTITY-AVAILABILITY.csv`. A single existing cached-auth public
+projects GET again returned403 text/plain from cloudflare; no login or Access
+policy change was attempted. New receipts redact concrete project/entity IDs.
+
+Compute placement: small DOM browser work local; existing Windows gateway
+runtime read through loopback-only SSH. No heavy compute or public exposure.
+
 Read-only GET/CLI observation only. No screenshots, source changes, merges,
 mutation probes, Access policy changes, or credential output.
 

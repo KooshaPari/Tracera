@@ -1,5 +1,17 @@
 # Tracera gap inventory
 
+### [Instinct] GAP-025 Known project cannot open its project sidebar
+
+On 2026-10-15 PDT the current valid TRACERA project root rendered Project Not
+Found, with no project sidebar. An independent read-only GET of that same
+project detail returned HTTP200, named TRACERA, without a stub marker. The
+actual navigation lane could click only Dashboard, Projects, Items and Agents
+global command links; forty expected baseline links were unavailable. Reconcile
+project route lookup/state with the detail API and restore the selected-project
+navigation. Evidence: `TRACERA-SIDEBAR-CLICK-RECEIPTS.csv`. This is current local
+gateway evidence; earlier successful direct-URL DOM receipts remain dated
+observations and are not overwritten. Public Access acceptance is unverified.
+
 ### [Instinct] GAP-023 Existing component detail reports Item Not Found
 
 Direct capture-free navigation of the code-item detail route with component
