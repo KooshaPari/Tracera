@@ -14,12 +14,19 @@ use std::pin::Pin;
 #[derive(Debug)]
 pub enum StoreError {
     Database(String),
+    // MCP adapters use this through the library; the server binary also
+    // compiles this module independently and does not construct this variant.
+    #[allow(dead_code)]
+    UnsupportedOperation(&'static str),
 }
 
 impl std::fmt::Display for StoreError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             StoreError::Database(msg) => write!(f, "database error: {msg}"),
+            StoreError::UnsupportedOperation(operation) => {
+                write!(f, "unsupported store operation: {operation}")
+            }
         }
     }
 }
