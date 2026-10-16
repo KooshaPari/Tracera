@@ -329,6 +329,9 @@ pub trait Store: Send + Sync {
         -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>>;
 
     // Metrics
+    // Retain this public repository operation for SDK callers. The HTTP org
+    // metrics route cannot infer coverage/gaps from it and now returns 501.
+    #[allow(dead_code)]
     fn count_evidence(&self) -> BoxFuture<'_, StoreResult<i64>>;
 
     /// Verify that the backing store can accept a minimal query.
