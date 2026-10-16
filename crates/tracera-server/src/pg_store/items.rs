@@ -71,6 +71,8 @@ pub(super) async fn get(pool: &PgPool, id: String) -> StoreResult<Option<Item>> 
         .transpose()
 }
 
+// Persistence helper for the canonical Items store; HTTP mutation routes land in a later package.
+#[allow(dead_code)]
 pub(super) async fn create(pool: &PgPool, item: Item) -> StoreResult<()> {
     let document = serde_json::to_string(&item).map_err(|e| StoreError::Database(e.to_string()))?;
     let mut query = QueryBuilder::<Postgres>::new(
