@@ -1,7 +1,13 @@
+#[path = "routes/codex.rs"]
+mod codex_routes;
+#[path = "routes/equivalences.rs"]
+mod equivalences_routes;
 #[path = "routes/graph.rs"]
 mod graph_routes;
 #[path = "routes/items.rs"]
 mod item_routes;
+#[path = "routes/libraries.rs"]
+mod libraries_routes;
 #[path = "routes/specs.rs"]
 mod specs_routes;
 use axum::{
@@ -122,6 +128,9 @@ pub(crate) fn build_router_with_auth(
     let workos_router = build_workos_router::<AppState>(state.workos_client.clone());
     Router::new()
         .merge(specs_routes::routes())
+        .merge(codex_routes::routes())
+        .merge(libraries_routes::routes())
+        .merge(equivalences_routes::routes())
         .route("/healthz", get(crate::health::healthz))
         .route("/health", get(crate::health::health))
         .route("/readyz", get(crate::health::readyz))
@@ -252,14 +261,9 @@ pub(crate) fn build_router_with_auth(
         .nest("/auth/workos", workos_router)
         // Equivalences
         .route("/api/v1/equivalences", any(not_implemented))
-        .route("/api/v1/equivalences/{id}", any(not_implemented))
         .route("/api/v1/equivalences/confirm", any(not_implemented))
         .route("/api/v1/equivalences/reject", any(not_implemented))
         .route("/api/v1/equivalences/batch", any(not_implemented))
-        .route(
-            "/api/v1/projects/{project_id}/equivalences",
-            any(not_implemented),
-        )
         .route(
             "/api/v1/projects/{project_id}/equivalences/{id}",
             any(not_implemented),
@@ -270,10 +274,6 @@ pub(crate) fn build_router_with_auth(
         )
         .route(
             "/api/v1/projects/{project_id}/equivalences/projections",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/equivalences/detect",
             any(not_implemented),
         )
         .route(
@@ -320,18 +320,10 @@ pub(crate) fn build_router_with_auth(
         )
         // Component library
         .route("/api/v1/libraries", any(not_implemented))
-        .route("/api/v1/libraries/{id}", any(not_implemented))
-        .route("/api/v1/libraries/{id}/components", any(not_implemented))
         .route("/api/v1/libraries/{id}/tokens", any(not_implemented))
         .route("/api/v1/components", any(not_implemented))
-        .route("/api/v1/components/{id}", any(not_implemented))
-        .route("/api/v1/components/{id}/usage", any(not_implemented))
         .route("/api/v1/tokens", any(not_implemented))
         // Codex / Docs / AI
-        .route(
-            "/api/v1/projects/{project_id}/codex/auth-status",
-            any(not_implemented),
-        )
         .route(
             "/api/v1/projects/{project_id}/codex/sessions",
             any(not_implemented),
