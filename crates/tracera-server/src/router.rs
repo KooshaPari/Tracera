@@ -8,6 +8,8 @@ mod graph_routes;
 mod item_routes;
 #[path = "routes/libraries.rs"]
 mod libraries_routes;
+#[path = "routes/search.rs"]
+mod search_routes;
 #[path = "routes/specs.rs"]
 mod specs_routes;
 use axum::{
@@ -236,13 +238,7 @@ pub(crate) fn build_router_with_auth(
         .route("/api/v1/graph/analysis/shortest-path", any(not_implemented))
         .route("/api/v1/graph/cache/invalidate", any(not_implemented))
         // Search
-        .route("/api/v1/search", any(not_implemented))
-        .route("/api/v1/search/suggest", any(not_implemented))
-        .route("/api/v1/search/index/{id}", any(not_implemented))
-        .route("/api/v1/search/batch-index", any(not_implemented))
-        .route("/api/v1/search/reindex", any(not_implemented))
-        .route("/api/v1/search/stats", any(not_implemented))
-        .route("/api/v1/search/health", any(not_implemented))
+        .merge(search_routes::router())
         // Projects extended
         .route("/api/v1/projects/{project_id}/export", any(not_implemented))
         .route("/api/v1/projects/{project_id}/import", any(not_implemented))

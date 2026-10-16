@@ -236,6 +236,17 @@ pub struct Problem {
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
 pub trait Store: Send + Sync {
+    /// Literal title substring search. Backends without this capability fail closed.
+    fn search_items(
+        &self,
+        _query: String,
+        _project_id: Option<String>,
+        _limit: i64,
+        _offset: i64,
+    ) -> BoxFuture<'_, StoreResult<crate::item::ItemPage>> {
+        Box::pin(async { Err(StoreError::UnsupportedOperation("search_items")) })
+    }
+
     fn list_items(
         &self,
         filter: crate::item::ItemFilter,
