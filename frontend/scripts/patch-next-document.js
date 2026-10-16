@@ -1,46 +1,46 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
 const roots = [
-  path.resolve('node_modules/next/dist'),
-  path.resolve('apps/docs/node_modules/next/dist'),
+  path.resolve("node_modules/next/dist"),
+  path.resolve("apps/docs/node_modules/next/dist"),
 ];
 
-const isJsFile = (filePath) => filePath.endsWith('.js');
+const isJsFile = (filePath) => filePath.endsWith(".js");
 
 const countBraces = (text) => {
   let count = 0;
   for (const ch of text) {
-    if (ch === '{') count += 1;
-    if (ch === '}') count -= 1;
+    if (ch === "{") count += 1;
+    if (ch === "}") count -= 1;
   }
   return count;
 };
 
 const patchFile = (filePath) => {
-  const original = fs.readFileSync(filePath, 'utf8');
-  if (!original.includes('catch (_err)') && !original.includes('catch(_err)')) {
+  const original = fs.readFileSync(filePath, "utf8");
+  if (!original.includes("catch (_err)") && !original.includes("catch(_err)")) {
     return false;
   }
   if (!/\berr\b/.test(original)) {
     return false;
   }
-  const lines = original.split('\n');
+  const lines = original.split("\n");
   let updated = false;
   let inCatch = false;
   let braceDepth = 0;
 
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
-    if (!inCatch && (line.includes('catch (_err)') || line.includes('catch(_err)'))) {
+    if (!inCatch && (line.includes("catch (_err)") || line.includes("catch(_err)"))) {
       inCatch = true;
-      const catchIndex = line.indexOf('catch');
+      const catchIndex = line.indexOf("catch");
       const afterCatch = catchIndex === -1 ? line : line.slice(catchIndex);
       braceDepth = countBraces(afterCatch);
     }
 
     if (inCatch) {
-      const patchedLine = line.replace(/\berr\b/g, '_err');
+      const patchedLine = line.replace(/\berr\b/g, "_err");
       if (patchedLine !== line) {
         lines[i] = patchedLine;
         updated = true;
@@ -54,7 +54,7 @@ const patchFile = (filePath) => {
   }
 
   if (updated) {
-    fs.writeFileSync(filePath, lines.join('\n'), 'utf8');
+    fs.writeFileSync(filePath, lines.join("\n"), "utf8");
   }
   return updated;
 };

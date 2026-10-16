@@ -5,7 +5,7 @@
     "title": "TraceRTM API",
     "contact": {
       "name": "TraceRTM Support",
-      "url": "https://github.com/<REDACTED>/tracertm-backend",
+      "url": "https://github.com/KooshaPari/tracertm-backend",
       "email": "support@tracertm.example.com"
     },
     "license": {
@@ -5564,7 +5564,12 @@
           "User rejected",
           "Auto-confirmed (high confidence)"
         ],
-        "x-enum-varnames": ["StatusSuggested", "StatusConfirmed", "StatusRejected", "StatusAuto"]
+        "x-enum-varnames": [
+          "StatusSuggested",
+          "StatusConfirmed",
+          "StatusRejected",
+          "StatusAuto"
+        ]
       },
       "equivalence.EquivalenceSuggestion": {
         "type": "object",

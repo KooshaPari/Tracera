@@ -1,8 +1,8 @@
 // Component Library and Design System Types
 // Supports integration with Storybook, Figma, and design token systems
 
-import type { CodeReference } from './canonical';
-import type { DesignTokenType } from './ui-entities';
+import type { CodeReference } from "./canonical";
+import type { DesignTokenType } from "./ui-entities";
 
 // =============================================================================
 // COMPONENT LIBRARY
@@ -29,7 +29,7 @@ export interface ComponentLibrary {
 
   // Sync status
   lastSyncedAt?: string | undefined;
-  syncStatus: 'synced' | 'syncing' | 'error' | 'never';
+  syncStatus: "synced" | "syncing" | "error" | "never";
   syncError?: string | undefined;
 
   // Statistics
@@ -46,13 +46,13 @@ export interface ComponentLibrary {
 }
 
 export type ComponentLibrarySource =
-  | 'storybook' // Synced from Storybook
-  | 'figma' // Synced from Figma
-  | 'manual' // Manually defined
-  | 'chromatic' // Synced from Chromatic
-  | 'zeroheight' // Synced from Zeroheight
-  | 'supernova' // Synced from Supernova
-  | 'custom'; // Custom integration
+  | "storybook" // Synced from Storybook
+  | "figma" // Synced from Figma
+  | "manual" // Manually defined
+  | "chromatic" // Synced from Chromatic
+  | "zeroheight" // Synced from Zeroheight
+  | "supernova" // Synced from Supernova
+  | "custom"; // Custom integration
 
 // =============================================================================
 // LIBRARY COMPONENT
@@ -111,7 +111,7 @@ export interface LibraryComponent {
   tokenRefs?: string[] | undefined; // Token IDs used by this component
 
   // Status
-  status: 'stable' | 'beta' | 'deprecated' | 'experimental';
+  status: "stable" | "beta" | "deprecated" | "experimental";
   deprecationMessage?: string | undefined;
 
   // Timestamps
@@ -123,19 +123,19 @@ export interface LibraryComponent {
  * Component categories following atomic design
  */
 export type ComponentCategory =
-  | 'atom' // Basic building blocks (Button, Input, Icon)
-  | 'molecule' // Simple combinations (SearchBar, FormField)
-  | 'organism' // Complex combinations (Header, Card, Form)
-  | 'template' // Page layouts
-  | 'page' // Full page components
-  | 'utility' // Utility components (Portal, ErrorBoundary)
-  | 'layout' // Layout components (Grid, Stack, Container)
-  | 'navigation' // Navigation components (Menu, Tabs, Breadcrumb)
-  | 'feedback' // Feedback components (Alert, Toast, Progress)
-  | 'overlay' // Overlay components (Modal, Drawer, Popover)
-  | 'data-display' // Data display (Table, List, Tree)
-  | 'data-entry' // Data entry (Form, Select, DatePicker)
-  | 'other';
+  | "atom" // Basic building blocks (Button, Input, Icon)
+  | "molecule" // Simple combinations (SearchBar, FormField)
+  | "organism" // Complex combinations (Header, Card, Form)
+  | "template" // Page layouts
+  | "page" // Full page components
+  | "utility" // Utility components (Portal, ErrorBoundary)
+  | "layout" // Layout components (Grid, Stack, Container)
+  | "navigation" // Navigation components (Menu, Tabs, Breadcrumb)
+  | "feedback" // Feedback components (Alert, Toast, Progress)
+  | "overlay" // Overlay components (Modal, Drawer, Popover)
+  | "data-display" // Data display (Table, List, Tree)
+  | "data-entry" // Data entry (Form, Select, DatePicker)
+  | "other";
 
 /**
  * Component prop definition
@@ -268,7 +268,7 @@ export interface FigmaSyncState {
   // Sync status
   lastSyncedAt?: string | undefined;
   lastSyncVersion?: string | undefined;
-  syncStatus: 'synced' | 'syncing' | 'error' | 'outdated';
+  syncStatus: "synced" | "syncing" | "error" | "outdated";
   syncError?: string | undefined;
 
   // What was synced

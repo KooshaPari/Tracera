@@ -1,33 +1,30 @@
 #!/usr/bin/env node
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import path from 'node:path';
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 
-const root = path.resolve(import.meta.dirname, '..', '..');
+const root = path.resolve(import.meta.dirname, "..", "..");
 const contract = fs.readFileSync(
-  path.join(root, 'docs/operations/openapi_contract_guard.md'),
-  'utf8',
+  path.join(root, "docs/operations/openapi_contract_guard.md"),
+  "utf8",
 );
-const server = fs.readFileSync(
-  path.join(root, 'crates/tracera-server/src/main.rs'),
-  'utf8',
-);
+const server = fs.readFileSync(path.join(root, "crates/tracera-server/src/main.rs"), "utf8");
 
-const rows = contract.split('\n').filter((line) => /^\|\s*(GET|POST)\s*\|/.test(line));
-assert.ok(rows.length > 0, 'contract document must contain endpoint rows');
+const rows = contract.split("\n").filter((line) => /^\|\s*(GET|POST)\s*\|/.test(line));
+assert.ok(rows.length > 0, "contract document must contain endpoint rows");
 
 const routes = new Set();
-for (const line of server.split('\n')) {
+for (const line of server.split("\n")) {
   const marker = '.route("';
   const start = line.indexOf(marker);
   if (start < 0) continue;
   const endpointStart = start + marker.length;
   const endpointEnd = line.indexOf('"', endpointStart);
-  const comma = line.indexOf(',', endpointEnd);
+  const comma = line.indexOf(",", endpointEnd);
   if (endpointEnd < 0 || comma < 0) continue;
   const endpoint = line.slice(endpointStart, endpointEnd);
   const handlers = line.slice(comma + 1);
-  for (const method of ['get', 'post']) {
+  for (const method of ["get", "post"]) {
     if (new RegExp(`\\b${method}\\s*\\(`).test(handlers)) {
       routes.add(`${method.toUpperCase()} ${endpoint}`);
     }
@@ -37,7 +34,7 @@ for (const line of server.split('\n')) {
 for (const row of rows) {
   const [, method, endpoint] = row.match(/^\|\s*(GET|POST)\s*\|\s*`([^`]+)`/) ?? [];
   assert.ok(method && endpoint, `malformed contract row: ${row}`);
-  const normalized = endpoint.replace(/:artifact_id/g, ':artifact_id');
+  const normalized = endpoint.replace(/:artifact_id/g, ":artifact_id");
   assert.ok(
     routes.has(`${method} ${normalized}`),
     `${method} ${endpoint} missing from tracera-server route registration`,

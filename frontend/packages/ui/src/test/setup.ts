@@ -1,3 +1,3 @@
-import * as jestDomVitest from '@testing-library/jest-dom/vitest';
+import * as jestDomVitest from "@testing-library/jest-dom/vitest";
 
 export const testMatchers = jestDomVitest;

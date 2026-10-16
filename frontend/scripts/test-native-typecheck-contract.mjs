@@ -8,9 +8,7 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const root = resolve(__dirname, "..");
 const tscBin = resolve(root, "node_modules", ".bin", "tsc");
 
-const packageJson = JSON.parse(
-  await readFile(resolve(root, "package.json"), "utf8"),
-);
+const packageJson = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
 
 // ---------------------------------------------------------------------------
 // 1. Assert that the per-project typecheck scripts are factually correct
@@ -32,10 +30,7 @@ assert.equal(
   ].join(" && "),
 );
 
-assert.equal(
-  packageJson.scripts.pretypecheck,
-  "node scripts/test-native-typecheck-contract.mjs",
-);
+assert.equal(packageJson.scripts.pretypecheck, "node scripts/test-native-typecheck-contract.mjs");
 
 // Anti-regression assertions for F02/F03: the multi-`-p` form silently drops
 // all but the last project.  Only `&&`-chained per-project invocations are
@@ -60,23 +55,12 @@ assert.doesNotMatch(packageJson.scripts.typecheck, /--build/);
 //    For each project in typecheck:packages, inject a deliberate type error,
 //    verify tsc exits non-zero, then remove the error and verify tsc passes.
 // ---------------------------------------------------------------------------
-const PACKAGES = [
-  "api-client",
-  "config",
-  "env-manager",
-  "state",
-  "types",
-  "ui",
-];
+const PACKAGES = ["api-client", "config", "env-manager", "state", "types", "ui"];
 
 function runTsc(pkg) {
   return spawnSync(
     tscBin,
-    [
-      "--noEmit",
-      "--pretty", "false",
-      "-p", resolve(root, "packages", pkg, "tsconfig.json"),
-    ],
+    ["--noEmit", "--pretty", "false", "-p", resolve(root, "packages", pkg, "tsconfig.json")],
     { cwd: root, encoding: "utf8", timeout: 30_000 },
   );
 }
@@ -115,7 +99,11 @@ async function proveProjectTypecheckFails(pkg) {
     // Cleanup: error file, plus any .tsbuildinfo that may have been written.
     // Runs even when an assertion above throws, so a failed run never leaves
     // the probe behind in the workspace.
-    try { await unlink(probeFile); } catch { /* ok */ }
+    try {
+      await unlink(probeFile);
+    } catch {
+      /* ok */
+    }
   }
 }
 

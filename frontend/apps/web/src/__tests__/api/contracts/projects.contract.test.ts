@@ -34,9 +34,7 @@ describe("projects contract tests", () => {
     it("normalizes {projects, total} envelope to array", async () => {
       openApiFetchMock.request.mockResolvedValueOnce({
         data: {
-          projects: [
-            { id: "p1", name: "Project 1", created_at: "2024-01-01T00:00:00Z" },
-          ],
+          projects: [{ id: "p1", name: "Project 1", created_at: "2024-01-01T00:00:00Z" }],
           total: 1,
         },
         error: undefined,
@@ -53,9 +51,7 @@ describe("projects contract tests", () => {
     it("normalizes {items, count} envelope to array", async () => {
       openApiFetchMock.request.mockResolvedValueOnce({
         data: {
-          items: [
-            { id: "p2", name: "Project 2", created_at: "2024-01-02T00:00:00Z" },
-          ],
+          items: [{ id: "p2", name: "Project 2", created_at: "2024-01-02T00:00:00Z" }],
           count: 1,
         },
         error: undefined,

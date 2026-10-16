@@ -14,7 +14,17 @@
  * hasn't run `cargo build --release -p tracera-cli` yet).
  */
 import { join, dirname } from "node:path";
-import { existsSync, mkdirSync, rmSync, copyFileSync, cpSync, chmodSync, writeFileSync, renameSync, readFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  rmSync,
+  copyFileSync,
+  cpSync,
+  chmodSync,
+  writeFileSync,
+  renameSync,
+  readFileSync,
+} from "node:fs";
 
 const DESKTOP_DIR = import.meta.dir.replace(/[/\\]scripts$/, "");
 const REPO_ROOT = join(DESKTOP_DIR, "..", "..", "..");
@@ -33,7 +43,8 @@ function findApp(): string | null {
   // Electrobun names the output directory per platform: dev-macos-<arch>,
   // dev-win-<arch>, dev-linux-<arch>. Note win32 maps to "win", not "windows".
   const arch = process.arch === "arm64" ? "arm64" : "x64";
-  const label = process.platform === "darwin" ? "macos" : process.platform === "win32" ? "win" : "linux";
+  const label =
+    process.platform === "darwin" ? "macos" : process.platform === "win32" ? "win" : "linux";
   const platform = `dev-${label}-${arch}`;
   const candidates = [
     join(buildDir, platform, "Tracera.app"),
@@ -154,7 +165,7 @@ async function main(): Promise<void> {
   if (!existsSync(CLI_SRC)) {
     process.stderr.write(
       `[postbundle] ERROR: native CLI missing at ${CLI_SRC}.\n` +
-      `[postbundle] Run \`cargo build --release -p tracera-cli\` from the repo root, then re-run \`bunx electrobun build\`.\n`,
+        `[postbundle] Run \`cargo build --release -p tracera-cli\` from the repo root, then re-run \`bunx electrobun build\`.\n`,
     );
     process.exit(1);
   }
@@ -200,9 +211,10 @@ async function main(): Promise<void> {
 
   // macOS nests resources under Contents/; the Windows and Linux output roots
   // hold Resources/ directly.
-  const resources = process.platform === "darwin"
-    ? join(finalApp, "Contents", "Resources")
-    : join(finalApp, "Resources");
+  const resources =
+    process.platform === "darwin"
+      ? join(finalApp, "Contents", "Resources")
+      : join(finalApp, "Resources");
   const bundle = join(resources, "tracera-bundle");
   const binDir = join(bundle, "bin");
   const scriptsDir = join(bundle, "scripts");

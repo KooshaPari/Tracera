@@ -1,3 +1,4 @@
+import { Unavailable } from "@/components/Availability";
 import { Link } from "@tanstack/react-router";
 import {
   Activity,
@@ -88,7 +89,11 @@ function isSortBy(value: unknown): value is SortBy {
 export function DashboardView({ systemStatus }: DashboardViewProps) {
   const { data: projects, isLoading: projectsLoading } = useProjects();
   const deleteProject = useDeleteProject();
-  const { data: summaryData, isLoading: summaryLoading } = useDashboardSummary();
+  const {
+    data: summaryData,
+    isLoading: summaryLoading,
+    error: summaryError,
+  } = useDashboardSummary();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortBy>("name");
@@ -235,6 +240,8 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
       </div>
     );
   }
+
+  if (summaryError || !summaryData) return <Unavailable error={summaryError} />;
 
   return (
     <div className="animate-in-fade-up mx-auto max-w-[1600px] space-y-8 p-6">
