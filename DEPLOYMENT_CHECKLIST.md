@@ -7,22 +7,22 @@
 
 ## 0. Prerequisites (What You Need Before Starting)
 
-| #    | Item                   | Where to Get                   | Status          |
-| ---- | ---------------------- | ------------------------------ | --------------- |
-| 0.1  | **GitHub account**     | github.com                     | ✅ (<REDACTED>) |
-| 0.2  | **Vercel account**     | vercel.com (free tier)         | ✅              |
-| 0.3  | **Cloudflare account** | cloudflare.com (free tier)     | ☐               |
-| 0.4  | **cloudflared**        | cloudflare.com/products/tunnel | ☐               |
-| 0.5  | **Domain registered**  | phenotype.studio (or similar)  | ☐               |
-| 0.6  | **Git installed**      | git-scm.com                    | ✅              |
-| 0.7  | **Rust toolchain**     | rustup.rs                      | ✅              |
-| 0.8  | **Bun installed**      | bun.sh                         | ✅              |
-| 0.9  | **Node.js + npm**      | nodejs.org                     | ✅              |
-| 0.10 | **wrangler CLI**       | `npm install -g wrangler`      | ☐               |
-| 0.11 | **vercel CLI**         | `npm install -g vercel`        | ☐               |
-| 0.12 | **Docker Desktop**     | docker.com (for local)         | ☐               |
-| 0.13 | **SSH key**            | `ssh-keygen -t ed25519`        | ☐               |
-| 0.14 | **GPG key**            | `gpg --full-generate-key`      | ☐               |
+| #    | Item                     | Where to Get                  | Status          |
+| ---- | ------------------------ | ----------------------------- | --------------- |
+| 0.1  | **GitHub account**       | github.com                    | ✅ (<REDACTED>) |
+| 0.2  | **Vercel account**       | vercel.com (free tier)        | ✅              |
+| 0.3  | **Cloudflare account**   | cloudflare.com (free tier)    | ☐               |
+| 0.4  | **Shared ingress owner** | BytePort #438 / Cloudflare    | ☐               |
+| 0.5  | **Domain registered**    | phenotype.studio (or similar) | ☐               |
+| 0.6  | **Git installed**        | git-scm.com                   | ✅              |
+| 0.7  | **Rust toolchain**       | rustup.rs                     | ✅              |
+| 0.8  | **Bun installed**        | bun.sh                        | ✅              |
+| 0.9  | **Node.js + npm**        | nodejs.org                    | ✅              |
+| 0.10 | **wrangler CLI**         | `npm install -g wrangler`     | ☐               |
+| 0.11 | **vercel CLI**           | `npm install -g vercel`       | ☐               |
+| 0.12 | **Docker Desktop**       | docker.com (for local)        | ☐               |
+| 0.13 | **SSH key**              | `ssh-keygen -t ed25519`       | ☐               |
+| 0.14 | **GPG key**              | `gpg --full-generate-key`     | ☐               |
 
 ---
 
@@ -64,13 +64,22 @@ vercel login
 # Save: VERCEL_TOKEN (auto-managed by CLI)
 ```
 
-### 1.5 — Cloudflare Tunnel Token
+### 1.5 — Cloudflare Access Machine Credential
 
-```bash
-# Create a tunnel in the Cloudflare Zero Trust dashboard
-# Copy the tunnel token for the named tunnel
-# Save as: CF_TUNNEL_TOKEN (used by deploy/selfhost/docker-compose.selfhost.yml)
-```
+Tracked operationally in #1129. Do **not** create or copy the shared
+`tracera-local` tunnel credential into this product deployment.
+
+The machine caller credential for `t.tracera.pheno.studio` consists of the
+one-time Cloudflare Access service-token values stored only as GitHub Actions
+secrets:
+
+- `CF_ACCESS_CLIENT_ID`
+- `CF_ACCESS_CLIENT_SECRET`
+
+Provision them through the secure operator flow in #1129, attach the token to a
+Service Auth policy on the `t.tracera.pheno.studio` Access application, and
+verify with the strict `tunnel` live-service smoke. Never place either value in
+browser-visible `VITE_*` variables or repository files.
 
 ### 1.6 — GPG Commit Signing Key
 
@@ -95,19 +104,19 @@ ssh-keygen -t ed25519 -C "deploy@tracera" -f ~/.ssh/deploy_tracera
 
 ### 2.1 — Register / Configure Domain
 
-| Domain                     | Purpose                      | DNS Provider | Status |
-| -------------------------- | ---------------------------- | ------------ | ------ |
-| `phenotype.studio`         | Main dashboard               | Cloudflare   | ☐      |
-| `api.tracera.pheno.studio` | API (self-hosted via tunnel) | Cloudflare   | ☐      |
-| `tracera.pheno.studio`     | Web app + `/api` path prefix | Cloudflare   | ☐      |
-| `worker.phenotype.studio`  | Cloudflare Worker            | Cloudflare   | ☐      |
-| `docs.phenotype.studio`    | Documentation (Vercel)       | Cloudflare   | ☐      |
+| Domain                    | Purpose                                          | DNS Provider | Status                 |
+| ------------------------- | ------------------------------------------------ | ------------ | ---------------------- |
+| `phenotype.studio`        | Main dashboard                                   | Cloudflare   | ☐                      |
+| `t.tracera.pheno.studio`  | Direct backend (Access-protected shared tunnel)  | Cloudflare   | ✅ observed 2026-10-13 |
+| `tracera.pheno.studio`    | Web/Auth parent (Access-protected shared tunnel) | Cloudflare   | ✅ observed 2026-10-13 |
+| `worker.phenotype.studio` | Cloudflare Worker                                | Cloudflare   | ☐                      |
+| `docs.phenotype.studio`   | Documentation (Vercel)                           | Cloudflare   | ☐                      |
 
 ### 2.2 — DNS Records (Cloudflare)
 
 ```
-CNAME   tracera           <tunnel-id>.cfargotunnel.com   TTL Auto
-CNAME   api.tracera       <tunnel-id>.cfargotunnel.com   TTL Auto
+CNAME   tracera           <shared-tunnel-id>.cfargotunnel.com   TTL Auto
+CNAME   t.tracera         <shared-tunnel-id>.cfargotunnel.com   TTL Auto
 CNAME   www               cname.vercel-dns.com           TTL Auto (point to Vercel)
 TXT     @                 v=spf1 include:vercel.com      TTL Auto
 TXT     _dmarc            v=DMARC1; p=none               TTL Auto
@@ -129,7 +138,8 @@ certbot certonly --standalone -d phenotype.studio -d api.phenotype.studio
 ### 3.1 — Prerequisites
 
 - [ ] Docker Desktop or Docker Engine on the operator machine
-- [ ] Cloudflare Tunnel created for `tracera.pheno.studio`
+- [x] Shared `tracera-local` Cloudflare Tunnel observed healthy for Tracera routes (2026-10-13)
+- [ ] Shared-infra IaC/lifecycle ownership qualified separately; do not bootstrap it from Tracera
 - [ ] `deploy/selfhost/docker-compose.selfhost.yml` reviewed ✅
 - [ ] `Dockerfile.rust` exists ✅
 - [ ] `Cargo.toml` workspace configured ✅
@@ -138,10 +148,10 @@ certbot certonly --standalone -d phenotype.studio -d api.phenotype.studio
 
 ```bash
 # From the repo root (see deploy/selfhost/README.md for full runbook):
-export CF_TUNNEL_TOKEN="<tunnel-token>"
 export TRACERA_PUBLIC_HOSTNAME="tracera.pheno.studio"
 export TRACERA_AUTH_TOKEN="<from §1.1>"
 
+# Shared cloudflared lifecycle/token is NOT part of this Compose project.
 docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
 ```
 
@@ -153,7 +163,6 @@ docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
 | `TRACERA_AUTH_TOKEN`       | From §1.1                                         | Generated                |
 | `TRACERA_BIND_ADDR`        | `0.0.0.0:8080`                                    | Hardcoded                |
 | `TRACERA_PUBLIC_BIND_MODE` | `authenticated-proxy` when ingress auth is active | Operator choice          |
-| `CF_TUNNEL_TOKEN`          | From §1.5                                         | Cloudflare Zero Trust    |
 | `RUST_LOG`                 | `info`                                            | Hardcoded                |
 | `RUST_BACKTRACE`           | `1`                                               | Hardcoded                |
 
@@ -167,10 +176,12 @@ docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
 ### 3.5 — Verify Backend
 
 ```bash
-curl https://api.tracera.pheno.studio/healthz
-# Expected: {"status":"ok","service":"tracera-server"}
+curl -H 'CF-Access-Client-Id: <id>' -H 'CF-Access-Client-Secret: <secret>' \
+  https://t.tracera.pheno.studio/healthz
+# Expected: {"status":"ok",...}
 
-curl https://api.tracera.pheno.studio/readyz
+curl -H 'CF-Access-Client-Id: <id>' -H 'CF-Access-Client-Secret: <secret>' \
+  https://t.tracera.pheno.studio/readyz
 # Expected: {"status":"ready",...}
 ```
 
@@ -188,9 +199,13 @@ curl https://api.tracera.pheno.studio/readyz
 ### 4.2 — Environment Variables (Vercel)
 
 ```bash
-# Set production API URL
+# The current Vercel frontend uses same-origin Functions.
 vercel env add VITE_API_URL production
-# Value: https://tracera.pheno.studio/api
+# Value: /api
+#
+# Do not put CF_ACCESS_CLIENT_SECRET in browser-visible VITE_* variables.
+# A future server-side proxy to t.tracera.pheno.studio must inject Access
+# machine credentials server-side.
 
 vercel env add VITE_WS_URL production
 # Value: wss://api.phenotype.studio
@@ -513,12 +528,14 @@ git push origin v0.1.0
 ### 13.1 — Smoke Tests
 
 ```bash
-# Backend:
-curl https://api.phenotype.studio/healthz
+# Backend (Access machine credential required):
+curl -H 'CF-Access-Client-Id: <id>' -H 'CF-Access-Client-Secret: <secret>' \
+  https://t.tracera.pheno.studio/healthz
 # → {"status":"ok"}
 
-curl https://api.phenotype.studio/readyz
-# → {"status":"ready","backend":"postgres"}
+curl -H 'CF-Access-Client-Id: <id>' -H 'CF-Access-Client-Secret: <secret>' \
+  https://t.tracera.pheno.studio/readyz
+# → {"status":"ready",...}
 
 # Frontend:
 curl -s -o /dev/null -w "%{http_code}" https://phenotype.studio
@@ -602,8 +619,8 @@ set DATABASE_URL=sqlite::memory: && tracera-server
 # d) Desktop: tag v0.1.0 → CI builds + signs
 
 # 6. Verify
-curl https://api.phenotype.studio/healthz
-curl https://phenotype.studio
+curl -H 'CF-Access-Client-Id: <id>' -H 'CF-Access-Client-Secret: <secret>' https://t.tracera.pheno.studio/healthz
+curl https://tracera-kappa.vercel.app
 curl https://tracera-edge.workers.dev
 tracera --version
 ```
@@ -616,7 +633,7 @@ tracera --version
 □ 0. Prerequisites (all tools installed)
 □ 1. Secrets & Credentials (all tokens generated)
 □ 2. Domain & DNS (all records configured)
-□ 3. Backend self-hosted (tunnel up and healthy)
+□ 3. Backend self-hosted (loopback origin healthy; shared ingress separately qualified)
 □ 4. Frontend on Vercel (deployed and healthy)
 □ 5. Cloudflare Worker (deployed and healthy)
 □ 6. Desktop Client (built, signed, published)

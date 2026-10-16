@@ -72,24 +72,29 @@ tasks:
     cmds:
       - cmd: cargo run -p tracera-mcp --bin mcp-server
 
-  # ---- tunnel ----------------------------------------------------------------
-  tunnel:
-    desc: Hybrid tunnel (Tailnet primary, Cloudflare fallback) -> tracera.pheno.studio/api
+  # ---- ingress ---------------------------------------------------------------
+  tunnel-status:
+    desc: Report Tracera Tailnet + shared Cloudflare ingress status (read-only)
     cmds:
       - cmd: bash scripts/start-tunnel.sh
 
-  tunnel-bg:
-    desc: Hybrid tunnel in background
+  tunnel:
+    desc: RETIRED - shared Cloudflare tunnel lifecycle belongs to shared infra IaC
     cmds:
-      - cmd: bash scripts/start-tunnel.sh --bg
+      - cmd: 'echo "error: task tunnel is retired; use task tunnel-status for read-only status" >&2; exit 2'
+
+  tunnel-bg:
+    desc: RETIRED - Tracera must not launch the shared Cloudflare tunnel
+    cmds:
+      - cmd: 'echo "error: task tunnel-bg is retired; shared tunnel lifecycle is externally managed" >&2; exit 2'
 
   # ---- meta ------------------------------------------------------------------
   prod:
-    desc: One-shot go-live locally (stack + run + tunnel)
+    desc: Bring up the local stack + Tracera server; public shared ingress is managed externally
     cmds:
       - task: stack
+      - task: tunnel-status
       - task: run-server
-      - task: tunnel
 
   deploy:
     desc: Render fallback deploy (only when local box offline long-term)

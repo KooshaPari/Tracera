@@ -1,19 +1,12 @@
 @echo off
-REM start-tunnel.bat — Windows wrapper for the Cloudflare Tunnel
-REM (uses cloudflared.exe which is already on PATH if you ran the
-REM installer in user-mode).
+REM start-tunnel.bat — RETIRED shared-tunnel launcher.
 REM
-REM Run from repo root: start-tunnel.bat
+REM The live tracera-local Cloudflare Tunnel is shared infrastructure carrying
+REM multiple Phenotype products. Starting another connector from Tracera's
+REM intentionally partial route fragment can black-hole sibling routes.
+REM Shared tunnel lifecycle belongs to the shared infrastructure owner/IaC.
 
-if not exist .cloudflared\cert.pem (
-  echo [tunnel] cert.pem not found - run: cloudflared tunnel login
-  cloudflared tunnel login
-)
-
-if not exist .cloudflared\*.json (
-  echo [tunnel] No credentials JSON found - creating tunnel "tracera"
-  cloudflared tunnel create tracera
-)
-
-echo [tunnel] Starting tunnel "tracera" (Ctrl-C to stop)...
-cloudflared --config .cloudflared\config.yml --no-autoupdate tunnel run tracera
+echo [tunnel] ERROR: Tracera-local tunnel launch is retired. 1>&2
+echo [tunnel] Use task tunnel-status for read-only status. 1>&2
+echo [tunnel] Shared Cloudflare tunnel lifecycle is managed externally. 1>&2
+exit /b 2

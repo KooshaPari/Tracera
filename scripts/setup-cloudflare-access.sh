@@ -1,36 +1,45 @@
 #!/usr/bin/env bash
-# setup-cloudflare-access.sh — idempotent Cloudflare Access unblock for tracera.pheno.studio
+# setup-cloudflare-access.sh — idempotent Cloudflare Access policy setup.
 #
-# Creates (or reuses) a CI service token and attaches a Service Auth policy to the
-# Access application that protects tracera.pheno.studio.  After this script runs,
-# automated clients can reach the hostname with:
-#   CF-Access-Client-Id / CF-Access-Client-Secret
+# Reuses an existing CI service token and attaches a Service Auth policy to the
+# Access application protecting ACCESS_HOSTNAME.
+#
+# IMPORTANT: a newly-created Cloudflare service-token secret is returned only
+# once. This script never prints that secret. Creation is allowed only when the
+# caller supplies TOKEN_OUTPUT_FILE; credentials are written there with mode
+# 0600 for an explicit secure handoff. CI should NOT set TOKEN_OUTPUT_FILE and
+# therefore fails closed when the named token does not already exist.
 #
 # Requires:
-#   CLOUDFLARE_API_TOKEN  — Account token with Zero Trust: Edit
+#   CLOUDFLARE_API_TOKEN  — account token with Zero Trust edit permissions
 #   CLOUDFLARE_ACCOUNT_ID — Cloudflare account id
 #
 # Optional:
-#   ACCESS_HOSTNAME       — default tracera.pheno.studio
+#   ACCESS_HOSTNAME       — default t.tracera.pheno.studio
 #   SERVICE_TOKEN_NAME    — default tracera-ci-smoke
-#   OPERATOR_EMAIL        — if set, adds an Allow policy for this email
-#   PUBLIC_BYPASS         — if "1", add a Bypass/everyone policy (public, no login)
-#   PUBLIC_BYPASS_NAME    — policy name for PUBLIC_BYPASS (default: Public Bypass)
+#   TOKEN_OUTPUT_FILE     — secure file for one-time new-token credentials
+#   OPERATOR_EMAIL        — add an Allow policy for this email
+#   PUBLIC_BYPASS         — if "1", add a Bypass/everyone policy
+#   PUBLIC_BYPASS_NAME    — bypass policy name
 #
-# Usage (from repo root):
-#   export CLOUDFLARE_API_TOKEN=...
-#   export CLOUDFLARE_ACCOUNT_ID=...
-#   bash scripts/setup-cloudflare-access.sh
+# Local creation example:
+#   umask 077
+#   TOKEN_OUTPUT_FILE=/secure/path/tracera-ci-smoke.env \
+#     bash scripts/setup-cloudflare-access.sh
+#
+# The output file contains CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET.
+# Move them into the intended secret store, then securely delete the file.
 
 set -euo pipefail
 
 CF_API="${CF_API_BASE:-https://api.cloudflare.com/client/v4}"
-HOSTNAME="${ACCESS_HOSTNAME:-tracera.pheno.studio}"
+HOSTNAME="${ACCESS_HOSTNAME:-t.tracera.pheno.studio}"
 TOKEN_NAME="${SERVICE_TOKEN_NAME:-tracera-ci-smoke}"
+TOKEN_OUTPUT_FILE="${TOKEN_OUTPUT_FILE:-}"
 PUBLIC_BYPASS="${PUBLIC_BYPASS:-0}"
 PUBLIC_BYPASS_NAME="${PUBLIC_BYPASS_NAME:-Public Bypass}"
 
-if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+if [[ -z "${CLOUDFLARE_API_TOKEN:-}" || -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]]; then
   echo "error: set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID" >&2
   exit 1
 fi
@@ -40,13 +49,19 @@ auth_header() {
 }
 
 cf_get() {
-  curl -fsS -H "$(auth_header)" -H 'Content-Type: application/json' \
-    "${CF_API}$1"
+  local path="$1"
+  curl -fsS -H "$(auth_header)" -H 'Content-Type: application/json' "${CF_API}${path}"
 }
 
 cf_post() {
-  curl -fsS -X POST -H "$(auth_header)" -H 'Content-Type: application/json' \
-    --data "$2" "${CF_API}$1"
+  local path="$1"
+  local body="$2"
+  curl -fsS -X POST -H "$(auth_header)" -H 'Content-Type: application/json' --data "$body" "${CF_API}${path}"
+}
+
+cf_delete() {
+  local path="$1"
+  curl -fsS -X DELETE -H "$(auth_header)" -H 'Content-Type: application/json' "${CF_API}${path}"
 }
 
 echo "[access] verifying API token"
@@ -63,90 +78,153 @@ import json, sys
 hostname = sys.argv[1]
 data = json.load(sys.stdin)
 for app in data.get("result", []):
-    domain = (app.get("domain") or "").rstrip(".")
-    if domain == hostname:
+    if (app.get("domain") or "").rstrip(".") == hostname:
         print(app.get("id", ""))
         break
 ' "$HOSTNAME")
 
-if [ -z "$app_id" ]; then
+if [[ -z "$app_id" ]]; then
   echo "error: no Access application found for ${HOSTNAME}" >&2
-  echo "Create a self-hosted Access app in Zero Trust -> Access -> Applications first." >&2
   exit 1
 fi
 echo "[access] found app id=${app_id}"
 
-if [ "$PUBLIC_BYPASS" = "1" ]; then
+if [[ "$PUBLIC_BYPASS" == "1" ]]; then
   echo "[access] ensuring public Bypass policy (${PUBLIC_BYPASS_NAME})"
   policies_json=$(cf_get "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/apps/${app_id}/policies?per_page=100")
   has_bypass=$(printf '%s' "$policies_json" | python3 -c '
 import json, sys
 name = sys.argv[1]
-data = json.load(sys.stdin)
-for policy in data.get("result", []):
+for policy in json.load(sys.stdin).get("result", []):
     if policy.get("decision") != "bypass":
         continue
-    if policy.get("name") == name:
+    if policy.get("name") == name or any("everyone" in x for x in policy.get("include", [])):
         print("yes")
-        raise SystemExit
-    for inc in policy.get("include", []):
-        if "everyone" in inc:
-            print("yes")
-            raise SystemExit
+        break
 ' "$PUBLIC_BYPASS_NAME")
-  if [ "$has_bypass" != "yes" ]; then
-    cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/apps/${app_id}/policies" \
-      "$(python3 - <<'PY' "$PUBLIC_BYPASS_NAME"
-import json, sys
-print(json.dumps({
-  "name": sys.argv[1],
-  "decision": "bypass",
-  "include": [{"everyone": {}}],
-  "precedence": 1,
-}))
-PY
-)" >/dev/null
+  if [[ "$has_bypass" != "yes" ]]; then
+    cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/apps/${app_id}/policies"       "$(python3 -c 'import json,sys; print(json.dumps({"name":sys.argv[1],"decision":"bypass","include":[{"everyone":{}}],"precedence":1}))' "$PUBLIC_BYPASS_NAME")" >/dev/null
     echo "[access] attached public Bypass policy"
   else
     echo "[access] public Bypass policy already present"
   fi
-  echo
-  echo "=== Cloudflare Access public bypass complete ==="
-  echo "Hostname: ${HOSTNAME}"
-  echo "Access app: ${app_id}"
-  echo "Smoke with:"
-  echo "  curl -sS -o /dev/null -w '%{http_code}\n' -L --max-time 30 https://${HOSTNAME}/"
   exit 0
 fi
 
-echo "[access] ensuring service token '${TOKEN_NAME}'"
+echo "[access] locating service token '${TOKEN_NAME}'"
 tokens_json=$(cf_get "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/service_tokens?per_page=100")
-existing_token_id=$(printf '%s' "$tokens_json" | python3 -c '
+token_id=$(printf '%s' "$tokens_json" | python3 -c '
 import json, sys
 name = sys.argv[1]
-data = json.load(sys.stdin)
-for token in data.get("result", []):
+for token in json.load(sys.stdin).get("result", []):
     if token.get("name") == name:
         print(token.get("id", ""))
         break
 ' "$TOKEN_NAME")
 
-if [ -n "$existing_token_id" ]; then
-  echo "[access] reusing service token id=${existing_token_id}"
-  token_id="$existing_token_id"
-  client_id=""
-  client_secret=""
-else
-  created=$(cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/service_tokens" \
-    "$(python3 - <<'PY' "$TOKEN_NAME"
-import json, sys
-print(json.dumps({"name": sys.argv[1]}))
-PY
-)")
+if [[ -z "$token_id" ]]; then
+  if [[ -z "$TOKEN_OUTPUT_FILE" ]]; then
+    echo "error: service token '${TOKEN_NAME}' does not exist" >&2
+    echo "error: refusing to create it because TOKEN_OUTPUT_FILE is unset." >&2
+    echo "error: create it in an operator-controlled context with a secure output file," >&2
+    echo "error: then store CF_ACCESS_CLIENT_ID/CF_ACCESS_CLIENT_SECRET in the intended secret store." >&2
+    exit 2
+  fi
+
+  # Cloudflare returns the client secret only once. Prove the destination is
+  # usable BEFORE creating the token so a local path error cannot orphan an
+  # unrecoverable credential.
+  if [[ -e "$TOKEN_OUTPUT_FILE" || -L "$TOKEN_OUTPUT_FILE" ]]; then
+    echo "error: TOKEN_OUTPUT_FILE already exists or is a symlink; refusing: $TOKEN_OUTPUT_FILE" >&2
+    exit 2
+  fi
+  output_parent=$(dirname -- "$TOKEN_OUTPUT_FILE")
+  if [[ ! -d "$output_parent" || ! -w "$output_parent" ]]; then
+    echo "error: TOKEN_OUTPUT_FILE parent is not an existing writable directory: $output_parent" >&2
+    exit 2
+  fi
+
+  # The one-time Cloudflare secret must land in a directory private to this
+  # effective user. This closes the cross-user rename/symlink race during the
+  # network request. Root is still trusted as the host administrator.
+  if ! python3 -c '
+import os, stat, sys
+p = sys.argv[1]
+s = os.stat(p, follow_symlinks=False)
+if not stat.S_ISDIR(s.st_mode):
+    raise SystemExit(1)
+if s.st_uid != os.geteuid():
+    raise SystemExit(2)
+if stat.S_IMODE(s.st_mode) & 0o077:
+    raise SystemExit(3)
+' "$output_parent"; then
+    echo "error: TOKEN_OUTPUT_FILE parent must be owned by the current user and mode 0700 (or stricter): $output_parent" >&2
+    exit 2
+  fi
+
+  umask 077
+  if ! python3 -c '
+import os, sys
+path = sys.argv[1]
+flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+flags |= getattr(os, "O_NOFOLLOW", 0)
+fd = os.open(path, flags, 0o600)
+os.close(fd)
+' "$TOKEN_OUTPUT_FILE"; then
+    echo "error: cannot securely create TOKEN_OUTPUT_FILE" >&2
+    rm -f -- "$TOKEN_OUTPUT_FILE"
+    exit 2
+  fi
+  output_identity=$(python3 -c '
+import os, sys
+s = os.lstat(sys.argv[1])
+print(f"{s.st_dev}:{s.st_ino}")
+' "$TOKEN_OUTPUT_FILE")
+
+  if ! created=$(cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/service_tokens"     "$(python3 -c 'import json,sys; print(json.dumps({"name":sys.argv[1]}))' "$TOKEN_NAME")"); then
+    rm -f -- "$TOKEN_OUTPUT_FILE"
+    echo "error: service-token creation failed" >&2
+    exit 1
+  fi
   token_id=$(printf '%s' "$created" | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["id"])')
-  client_id=$(printf '%s' "$created" | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["client_id"])')
-  client_secret=$(printf '%s' "$created" | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["client_secret"])')
+
+  if ! printf '%s' "$created" | python3 -c '
+import json, os, stat, sys
+dst, expected = sys.argv[1], sys.argv[2]
+expected_dev, expected_ino = map(int, expected.split(":"))
+flags = os.O_WRONLY | os.O_TRUNC
+flags |= getattr(os, "O_NOFOLLOW", 0)
+fd = os.open(dst, flags)
+try:
+    st = os.fstat(fd)
+    if not stat.S_ISREG(st.st_mode) or st.st_dev != expected_dev or st.st_ino != expected_ino:
+        raise RuntimeError("credential destination identity changed")
+    r = json.load(sys.stdin)["result"]
+    payload = (
+        "CF_ACCESS_CLIENT_ID=" + r["client_id"] + "\n"
+        "CF_ACCESS_CLIENT_SECRET=" + r["client_secret"] + "\n"
+    ).encode()
+    view = memoryview(payload)
+    offset = 0
+    while offset < len(view):
+        written = os.write(fd, view[offset:])
+        if written <= 0:
+            raise OSError("short credential write")
+        offset += written
+    os.fsync(fd)
+    os.fchmod(fd, 0o600)
+finally:
+    os.close(fd)
+' "$TOKEN_OUTPUT_FILE" "$output_identity"; then
+    echo "error: failed to persist one-time service-token credentials; rolling token back" >&2
+    rm -f -- "$TOKEN_OUTPUT_FILE"
+    cf_delete "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/service_tokens/${token_id}" >/dev/null ||       echo "error: token rollback failed; disable/delete token id=${token_id} immediately" >&2
+    exit 1
+  fi
   echo "[access] created service token id=${token_id}"
+  echo "[access] one-time credentials written to TOKEN_OUTPUT_FILE (value not logged)"
+else
+  echo "[access] reusing service token id=${token_id}"
 fi
 
 echo "[access] ensuring Service Auth policy on app ${app_id}"
@@ -154,82 +232,38 @@ policies_json=$(cf_get "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/apps/${app_id}
 has_service_policy=$(printf '%s' "$policies_json" | python3 -c '
 import json, sys
 token_id = sys.argv[1]
-data = json.load(sys.stdin)
-for policy in data.get("result", []):
+for policy in json.load(sys.stdin).get("result", []):
     if policy.get("decision") != "non_identity":
         continue
     for inc in policy.get("include", []):
-        st = inc.get("service_token") or {}
-        if st.get("token_id") == token_id:
+        if (inc.get("service_token") or {}).get("token_id") == token_id:
             print("yes")
             raise SystemExit
 ' "$token_id")
 
-if [ "$has_service_policy" != "yes" ]; then
-  cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/apps/${app_id}/policies" \
-    "$(python3 - <<'PY' "$token_id" "$TOKEN_NAME"
-import json, sys
-token_id, name = sys.argv[1], sys.argv[2]
-print(json.dumps({
-  "name": f"Service Auth ({name})",
-  "decision": "non_identity",
-  "include": [{"service_token": {"token_id": token_id}}],
-  "precedence": 1,
-}))
-PY
-)" >/dev/null
+if [[ "$has_service_policy" != "yes" ]]; then
+  cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/apps/${app_id}/policies"     "$(python3 -c 'import json,sys; print(json.dumps({"name":"Service Auth ("+sys.argv[2]+")","decision":"non_identity","include":[{"service_token":{"token_id":sys.argv[1]}}],"precedence":1}))' "$token_id" "$TOKEN_NAME")" >/dev/null
   echo "[access] attached Service Auth policy"
 else
   echo "[access] Service Auth policy already present"
 fi
 
-if [ -n "${OPERATOR_EMAIL:-}" ]; then
+if [[ -n "${OPERATOR_EMAIL:-}" ]]; then
   has_email_policy=$(printf '%s' "$policies_json" | python3 -c '
 import json, sys
 email = sys.argv[1]
-data = json.load(sys.stdin)
-for policy in data.get("result", []):
+for policy in json.load(sys.stdin).get("result", []):
     if policy.get("decision") != "allow":
         continue
     for inc in policy.get("include", []):
-        em = inc.get("email") or {}
-        if em.get("email") == email:
+        if (inc.get("email") or {}).get("email") == email:
             print("yes")
             raise SystemExit
 ' "$OPERATOR_EMAIL")
-  if [ "$has_email_policy" != "yes" ]; then
-    cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/apps/${app_id}/policies" \
-      "$(python3 - <<'PY' "$OPERATOR_EMAIL"
-import json, sys
-print(json.dumps({
-  "name": f"Allow {sys.argv[1]}",
-  "decision": "allow",
-  "include": [{"email": {"email": sys.argv[1]}}],
-  "precedence": 2,
-}))
-PY
-)" >/dev/null
+  if [[ "$has_email_policy" != "yes" ]]; then
+    cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/apps/${app_id}/policies"       "$(python3 -c 'import json,sys; print(json.dumps({"name":"Allow "+sys.argv[1],"decision":"allow","include":[{"email":{"email":sys.argv[1]}}],"precedence":2}))' "$OPERATOR_EMAIL")" >/dev/null
     echo "[access] added Allow policy for ${OPERATOR_EMAIL}"
-  else
-    echo "[access] Allow policy for ${OPERATOR_EMAIL} already present"
   fi
 fi
 
-echo
-echo "=== Cloudflare Access unblock complete ==="
-echo "Hostname: ${HOSTNAME}"
-echo "Access app: ${app_id}"
-echo "Service token: ${TOKEN_NAME} (${token_id})"
-if [ -n "$client_id" ]; then
-  echo
-  echo "Store these as GitHub repo secrets (shown once for a new token):"
-  echo "  gh secret set CF_ACCESS_CLIENT_ID --repo <owner>/Tracera --body '${client_id}'"
-  echo "  gh secret set CF_ACCESS_CLIENT_SECRET --repo <owner>/Tracera --body '${client_secret}'"
-else
-  echo
-  echo "Reused an existing service token; client credentials were not rotated."
-  echo "If CI secrets are missing, create a new token in Zero Trust or delete '${TOKEN_NAME}' and re-run."
-fi
-echo
-echo "Smoke with:"
-echo "  curl -H 'CF-Access-Client-Id: <id>' -H 'CF-Access-Client-Secret: <secret>' https://${HOSTNAME}/"
+echo "[access] complete: hostname=${HOSTNAME} app=${app_id} service_token=${TOKEN_NAME} id=${token_id}"
