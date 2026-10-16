@@ -6,6 +6,8 @@ mod equivalences_routes;
 mod graph_routes;
 #[path = "routes/items.rs"]
 mod item_routes;
+#[path = "routes/journeys.rs"]
+mod journeys_routes;
 #[path = "routes/libraries.rs"]
 mod libraries_routes;
 #[path = "routes/specs.rs"]
@@ -284,40 +286,7 @@ pub(crate) fn build_router_with_auth(
             "/api/v1/projects/{project_id}/equivalences/stats",
             any(not_implemented),
         )
-        // Journeys
-        .route("/api/v1/journeys", any(not_implemented))
-        .route("/api/v1/journeys/{id}", any(not_implemented))
-        .route("/api/v1/journeys/{id}/steps", any(not_implemented))
-        .route(
-            "/api/v1/journeys/{id}/steps/{step_id}",
-            any(not_implemented),
-        )
-        .route("/api/v1/journeys/{id}/detect", any(not_implemented))
-        .route("/api/v1/journeys/{id}/visualize", any(not_implemented))
-        .route(
-            "/api/v1/projects/{project_id}/journeys",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/steps",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/steps/{step_id}",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/detect",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/visualize",
-            any(not_implemented),
-        )
+        .merge(journeys_routes::routes())
         // Component library
         .route("/api/v1/libraries", any(not_implemented))
         .route("/api/v1/libraries/{id}/tokens", any(not_implemented))
