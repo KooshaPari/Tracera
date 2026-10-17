@@ -89,7 +89,9 @@ async fn query(
             StatusCode::NOT_IMPLEMENTED,
             Json(json!({"error":"not_implemented","route":route})),
         ),
-        StoreError::Database(_) => error(StatusCode::INTERNAL_SERVER_ERROR, "search_store_error"),
+        StoreError::Database(_) | StoreError::Conflict(_) => {
+            error(StatusCode::INTERNAL_SERVER_ERROR, "search_store_error")
+        }
     })
 }
 async fn search_get(State(state): State<AppState>, Query(params): Query<SearchParams>) -> Reply {
@@ -138,6 +140,12 @@ async fn suggest(State(state): State<AppState>, Query(params): Query<SuggestPara
         }
     }
     Ok(Json(json!(titles)))
+}
+
+pub(crate) const ROUTES: &[&str] = &["/api/v1/projects/{project_id}/search/advanced"];
+
+pub(crate) fn w9_routes() -> Router<AppState> {
+    Router::new().route(ROUTES[0], any(crate::not_implemented::not_implemented))
 }
 
 #[cfg(test)]
@@ -413,10 +421,4 @@ mod tests {
             assert_eq!(body, json!({"error":"not_implemented","route":route}));
         }
     }
-}
-
-pub(crate) const ROUTES: &[&str] = &["/api/v1/projects/{project_id}/search/advanced"];
-
-pub(crate) fn w9_routes() -> Router<AppState> {
-    Router::new().route(ROUTES[0], any(crate::not_implemented::not_implemented))
 }

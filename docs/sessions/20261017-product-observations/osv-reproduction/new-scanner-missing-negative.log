@@ -1,0 +1,2 @@
+Scanning dir /definitely-missing-tracera-manifest
+failed to resolve path: stat /definitely-missing-tracera-manifest: no such file or directory

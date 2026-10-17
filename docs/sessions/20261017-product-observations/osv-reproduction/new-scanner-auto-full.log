@@ -1,0 +1,27 @@
+Scanning dir Cargo.lock
+Scanning dir bun.lock
+Scanning dir sidecar/go/go.mod
+Starting filesystem walk for root: /
+Scanned /github/workspace/Cargo.lock file and found 494 packages
+Scanned /github/workspace/bun.lock file and found 1753 packages
+Scanned /github/workspace/sidecar/go/go.mod file and found 1 package
+End status: 0 dirs visited, 3 inodes visited, 3 Extract calls, 1.400591956s elapsed, 1.400595247s wall time
+
+Total 7 packages affected by 11 known vulnerabilities (0 Critical, 3 High, 1 Medium, 0 Low, 7 Unknown) from 2 ecosystems.
+5 vulnerabilities can be fixed.
+
++-------------------------------------+------+-----------+----------------+---------+---------------+------------+
+| OSV URL                             | CVSS | ECOSYSTEM | PACKAGE        | VERSION | FIXED VERSION | SOURCE     |
++-------------------------------------+------+-----------+----------------+---------+---------------+------------+
+| https://osv.dev/RUSTSEC-2025-0012   |      | crates.io | backoff        | 0.4.0   | --            | Cargo.lock |
+| https://osv.dev/RUSTSEC-2024-0384   |      | crates.io | instant        | 0.1.13  | --            | Cargo.lock |
+| https://osv.dev/RUSTSEC-2024-0436   |      | crates.io | paste          | 1.0.15  | --            | Cargo.lock |
+| https://osv.dev/RUSTSEC-2026-0338   |      | crates.io | quinn-proto    | 0.11.15 | 0.11.18       | Cargo.lock |
+| https://osv.dev/RUSTSEC-2026-0339   |      | crates.io | quinn-proto    | 0.11.15 | 0.11.17       | Cargo.lock |
+| https://osv.dev/RUSTSEC-2026-0340   | 7.5  | crates.io | quinn-proto    | 0.11.15 | 0.11.18       | Cargo.lock |
+| https://osv.dev/RUSTSEC-2026-0341   | 7.5  | crates.io | quinn-proto    | 0.11.15 | 0.11.17       | Cargo.lock |
+| https://osv.dev/RUSTSEC-2026-0342   |      | crates.io | quinn-proto    | 0.11.15 | 0.11.17       | Cargo.lock |
+| https://osv.dev/RUSTSEC-2025-0134   |      | crates.io | rustls-pemfile | 2.2.0   | --            | Cargo.lock |
+| https://osv.dev/GHSA-vfj7-8cjw-p6xm | 8.7  | npm       | braces         | 3.0.3   | --            | bun.lock   |
+| https://osv.dev/GHSA-hp3w-g68c-fv3c | 6.9  | npm       | sprintf-js     | 1.0.3   | --            | bun.lock   |
++-------------------------------------+------+-----------+----------------+---------+---------------+------------+
