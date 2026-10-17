@@ -82,7 +82,7 @@ All illustrative references above are examples, not real persisted IDs. A projec
 | aggregates | Member-ref list or paged membership query, never a silent synthetic fact |
 | glyphs | Representation type, truth class, transform, bounds, ports, LOD, style token |
 | evidence | Observed/verified/unknown assertions with source refs and timestamps |
-| completeness | Omitted entities/edges, pagination and permission-denied counts/flags |
+| completeness | Authorized-scope omitted entities/edges, pagination state, and a non-disclosing restricted-content flag; never return exact forbidden-entity/edge cardinalities |
 | diagnostics | Layout conflicts, ambiguous mappings, missing geometry, invalid source refs |
 
 **Identity map:** selection of a glyph resolves to one canonical entity ref, or an explicit aggregate. A port may resolve to an interface entity; a conduit resolves to a canonical relation or identified bundle of relations. Generated meshes are ephemeral and never canonical entities.

@@ -18,7 +18,7 @@
 
 Normative design proposal: [TRACERA-SPEC-015](../specs/015-spatial-product-twin.md). Proposed decision: [ADR-VIZ-001](../governance/ADR-VIZ-001-spatial-product-projections.md). Existing canonical product direction: [WP-07](../WP-07-product-graph-design.md). Registry crosswalk: [PhenoRegistry](https://github.com/KooshaPari/PhenoRegistry/blob/main/docs/specs/spatial-product-twin-ecosystem-contract.md).
 
-**Authority order:** verified user intent > accepted product/architecture decision for its scope > current source/production evidence for what is actually shipped > derived designs/proposals > illustrative renderings. Historical CVP documents retain their dated scope; never treat them as current validation or erase their history. A proposal does not become accepted because it is committed.
+**Authority and evidence:** User intent establishes requested goals and source provenance; it does not silently override accepted product or architecture decisions. Accepted decisions govern their defined scope until formally superseded. Current source and production evidence establishes what is actually shipped; derived proposals and illustrative scenes are not implementation proof. Historical CVP documents retain their dated scope; never treat them as current validation or erase their history. A proposal does not become accepted because it is committed.
 
 **Lifecycle:** discovery → documented intent → scoped proposed ontology/requirements → qualified architecture → experimental implementation → independent falsification → approved adoption → product verification. Currently at **proposed design** for the spatial extension; canonical product model has existing code, but no end-to-end spatial result is verified.
 
