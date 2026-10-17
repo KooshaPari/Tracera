@@ -1,43 +1,36 @@
-//! No corresponding domain repository methods or SQLite tables exist.
-//! Keep unavailable capabilities explicit rather than deriving unrelated records.
-use axum::{extract::MatchedPath, http::StatusCode, routing::any, Json, Router};
-use serde::Serialize;
+//! Unavailable equivalences operations: no matching Store contract.
+use axum::{routing::any, Router};
 
-#[derive(Serialize)]
-struct Unavailable {
-    error: &'static str,
-    route: String,
-}
-
-async fn unavailable(path: MatchedPath) -> impl axum::response::IntoResponse {
-    metrics::counter!("tracera_stub_responses_total", "route" => path.as_str().to_owned())
-        .increment(1);
-    (
-        StatusCode::NOT_IMPLEMENTED,
-        [("x-tracera-not-implemented", "true")],
-        Json(Unavailable {
-            error: "not_implemented",
-            route: path.as_str().to_owned(),
-        }),
-    )
-}
+pub(super) const ROUTES: &[&str] = &[
+    "/api/v1/equivalences/batch-confirm",
+    "/api/v1/equivalences/batch-reject",
+    "/api/v1/equivalences/{id}/confirm",
+    "/api/v1/equivalences/{id}/reject",
+    "/equivalences",
+    "/equivalences/bulk-confirm",
+    "/equivalences/bulk-reject",
+    "/equivalences/concepts",
+    "/equivalences/concepts/{param3}",
+    "/equivalences/concepts/{param3}/projections",
+    "/equivalences/concepts/{param3}/projections/{param5}",
+    "/equivalences/{param2}",
+    "/equivalences/{param2}/confirm",
+    "/equivalences/{param2}/reject",
+    "/api/v1/projects/{project_id}/equivalences",
+    "/api/v1/equivalences/{id}",
+    "/api/v1/projects/{project_id}/equivalences/detect",
+];
 
 pub(super) fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
-    Router::new()
-        .route(
-            "/api/v1/projects/{project_id}/equivalences",
-            any(unavailable),
-        )
-        .route("/api/v1/equivalences/{id}", any(unavailable))
-        .route(
-            "/api/v1/projects/{project_id}/equivalences/detect",
-            any(unavailable),
-        )
+    ROUTES.iter().fold(Router::new(), |router, path| {
+        router.route(path, any(crate::not_implemented::not_implemented))
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use axum::http::StatusCode;
     use axum::{
         body::{to_bytes, Body},
         http::Request,

@@ -66,13 +66,6 @@ pub(crate) struct DashboardSummaryResponse {
     pub(crate) type_distribution: std::collections::BTreeMap<String, i64>,
 }
 
-#[derive(Serialize)]
-pub(crate) struct MetricsResponse {
-    pub(crate) total_artifacts: usize,
-    pub(crate) coverage_ratio: f64,
-    pub(crate) open_gaps: u32,
-}
-
 // ---------------------------------------------------------------------------
 // Handler implementations
 // ---------------------------------------------------------------------------
@@ -173,21 +166,5 @@ pub(crate) async fn get_project(
 // ---------------------------------------------------------------------------
 // Org metrics
 // ---------------------------------------------------------------------------
-pub(crate) async fn org_metrics(
-    axum::extract::State(state): axum::extract::State<AppState>,
-) -> Result<Json<MetricsResponse>, (axum::http::StatusCode, Json<ErrorResponse>)> {
-    let count = state.store.count_evidence().await.map_err(|e| {
-        tracing::error!("org_metrics store error: {e}");
-        (
-            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ErrorResponse {
-                error: "organization metrics failed",
-            }),
-        )
-    })?;
-    Ok(Json(MetricsResponse {
-        total_artifacts: count as usize,
-        coverage_ratio: 0.75,
-        open_gaps: 3,
-    }))
-}
+// Evidence counts alone cannot establish organizational coverage or gap counts.
+pub(crate) use crate::not_implemented::not_implemented as org_metrics;
