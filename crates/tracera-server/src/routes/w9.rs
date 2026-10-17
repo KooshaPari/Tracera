@@ -66,8 +66,6 @@ mod qa;
 mod quality;
 #[path = "reports.rs"]
 mod reports;
-#[path = "search.rs"]
-mod search;
 #[path = "settings.rs"]
 mod settings;
 #[path = "spec_analytics.rs"]
@@ -135,7 +133,7 @@ pub(super) fn routes() -> Router<AppState> {
         .merge(qa::routes())
         .merge(quality::routes())
         .merge(reports::routes())
-        .merge(search::routes())
+        .merge(super::search_routes::w9_routes())
         .merge(settings::routes())
         .merge(spec_analytics::routes())
         .merge(storage::routes())
@@ -187,7 +185,7 @@ fn templates() -> Vec<&'static str> {
         qa::ROUTES,
         quality::ROUTES,
         reports::ROUTES,
-        search::ROUTES,
+        super::search_routes::ROUTES,
         settings::ROUTES,
         spec_analytics::ROUTES,
         storage::ROUTES,
