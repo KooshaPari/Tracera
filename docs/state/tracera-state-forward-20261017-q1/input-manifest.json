@@ -1,6 +1,5 @@
 {
   "snapshot_id": "tracera-state-forward-20261017-q1",
-  "observed_at": "2026-10-17T09:14:25.893438+00:00",
   "inputs": [
     {
       "path": "inputs/sfd/CONTRACT.md",
@@ -192,5 +191,12 @@
     "Full conversation archive and1963commits not re-inspected; direct supplied conversation and selected prior audit are separate evidence.",
     "Lexical census covers all tracked relevant files; candidate matches include tests/constants and omit constructed URLs.",
     "All source domains are not behaviorally qualified by this dossier."
-  ]
+  ],
+  "collection_started_at": "2026-10-17T09:14:25.893438+00:00",
+  "frozen_at": "2026-10-17T10:19:32.406570+00:00",
+  "late_evidence": {
+    "path": "raw/q1-delivery.json",
+    "observed_at": "2026-10-17T09:34:03.568105+00:00",
+    "subject_sha": "3fd3310fb98fdd2f9bca99eddd669f974fb1fb61"
+  }
 }

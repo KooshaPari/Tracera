@@ -5,6 +5,7 @@ from reportlab.platypus import SimpleDocTemplate,Paragraph,Spacer,PageBreak,Tabl
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT
+from reportlab.graphics.shapes import Drawing,Rect,String,Line,Polygon
 D=pathlib.Path(__file__).resolve().parents[1]
 r=json.loads((D/'owner-records.json').read_text());s=json.loads((D/'snapshot.json').read_text())
 md=['# Tracera - State & Forward Docket','',f"Snapshot `{r['snapshot_id']}` | Generated {r['generated_at']}",'',f"Exact candidate `{r['candidate']['candidate_sha']}`; baseline `{r['source_sha']}`.",'','Full product acceptance: NOT ESTABLISHED. The selected-assessment reducer is not full product completion.','']
@@ -20,6 +21,13 @@ for line in md:
  if line.startswith('### '):blocks.append('<h3>'+html.escape(line[4:])+'</h3>')
  elif line.startswith('## '):blocks.append('<h2>'+html.escape(line[3:])+'</h2>')
  elif line and not line.startswith('# '):blocks.append('<p>'+html.escape(line)+'</p>')
+svg='<svg xmlns="http://www.w3.org/2000/svg" width="960" height="240" role="img" aria-label="Real session and source pass through local API and durable Store to trace and product observations, then discrepancy and memory, then actual user validation, which is not run.">'
+for n,label in enumerate(['Session + source','Local API','Durable Store','Trace + model','Discrepancy / memory']):
+ x=10+n*190;svg+=f'<rect x="{x}" y="70" width="175" height="70" rx="8" fill="#dceeee" stroke="#145e66"/><text x="{x+87}" y="110" text-anchor="middle" font-size="15">{label}</text>'
+ if n<4:svg+=f'<path d="M{x+175},105 h15" stroke="#145e66" stroke-width="3"/>'
+svg+='<text x="20" y="190" font-size="16">Acceptance gate: actual user validation NOT RUN. Full unified CVP unproved.</text></svg>'
+(D/'system-flow.svg').write_text(svg)
+blocks.insert(1,'<nav><a href="TRACERA-STATE-FORWARD.pdf">PDF</a> | <a href="UNFINISHED.csv">CSV</a> | <a href="https://github.com/KooshaPari/Tracera/pull/1157">Source PR1157</a> | <a href="https://github.com/KooshaPari/Tracera/pull/1158">Docket PR1158</a></nav><img src="system-flow.svg" style="width:100%" alt="Session and source to local API to durable Store to trace and product observations to discrepancy and memory; actual user validation not run.">')
 blocks.append('</html>');(D/'ASSESSMENT.html').write_text('\n'.join(blocks))
 with (D/'UNFINISHED.csv').open('w',newline='') as f:
  fields=list(r['goals'][0]);w=csv.DictWriter(f,fieldnames=fields,lineterminator="\n");w.writeheader();w.writerows(r['goals'])
@@ -29,7 +37,12 @@ styles=getSampleStyleSheet();styles['BodyText'].fontSize=10;styles['BodyText'].l
 def p(t,style='BodyText'):return Paragraph(html.escape(t),styles[style])
 story=[p('TRACERA','Title'),p('State & Forward Docket','Title'),p(r['snapshot_id']),p('Evidence-bound full-state baseline and forward execution path'),p('Unified intent accepted; full product acceptance NOT ESTABLISHED.'),p('Candidate '+r['candidate']['candidate_sha']),p('Baseline '+r['source_sha']),p('Generated '+r['generated_at']),p('Owner: Instinct / Tracera. Source PR1157 is open and unmerged. No production promotion. Screenshots and recordings were not used.'),Spacer(1,18)]
 flow='REAL SESSION + SOURCE\n          |\n AUTHENTICATED LOCAL API\n          |\n CANONICAL IDs / ATOMIC STORE\n          |\n   SQLITE or POSTGRESQL\n          |\n TRACE + PRODUCT OBSERVATIONS\n       /       \\\n DISCREPANCY   MEMORY\n       \\       /\n   REAL USER VALIDATION (NOT RUN)'
-story+=[Preformatted(flow,styles['Code']),PageBreak()]
+diagram=Drawing(500,140)
+for n,label in enumerate(['Source/session','Local API','Durable Store','Trace + model','Gap / memory']):
+ x=n*100;diagram.add(Rect(x,65,92,45,rx=5,fillColor=colors.HexColor('#dceeee'),strokeColor=colors.HexColor('#145e66')));diagram.add(String(x+46,85,label,textAnchor='middle',fontSize=9))
+ if n<4:diagram.add(Line(x+92,87,x+100,87,strokeColor=colors.HexColor('#145e66')))
+diagram.add(String(0,25,'Acceptance: actual beneficiary validation NOT RUN.',fontSize=10))
+story+=[diagram,p('Text equivalent: actual session/source enters authenticated local API; canonical IDs and atomic Store persist in SQLite/PostgreSQL; trace/product observations support discrepancy explanations and attributable memory. Full user acceptance remains unproved.'),Paragraph('<link href="https://github.com/KooshaPari/Tracera/pull/1157" color="blue">Source PR1157</link> | <link href="https://github.com/KooshaPari/Tracera/pull/1158" color="blue">Docket PR1158</link>',styles['BodyText']),PageBreak()]
 for idx,x in enumerate(r['sections']):
  story+=[p(x['title'],'Heading1'),p(x['text'])]
  if idx==0:
@@ -48,7 +61,7 @@ def footer(c,d):
  c.setFont('Helvetica',8);c.setFillColor(colors.HexColor('#526775'));c.drawString(42,24,'Tracera | '+r['snapshot_id']+' | source-bound assessment');c.drawRightString(553,24,str(d.page))
 SimpleDocTemplate(str(D/'TRACERA-STATE-FORWARD.pdf'),pagesize=(595,842),rightMargin=42,leftMargin=42,topMargin=42,bottomMargin=43,title='Tracera State & Forward Docket',author='Instinct',invariant=1).build(story,onFirstPage=footer,onLaterPages=footer)
 def h(p):return hashlib.sha256(p.read_bytes()).hexdigest()
-ins=['owner-records.json','snapshot.json','input-manifest.json','tools/render.py'];outs=['ASSESSMENT.md','ASSESSMENT.html','UNFINISHED.csv','views/records.jsonl','system-flow.mmd','TRACERA-STATE-FORWARD.pdf']
+ins=['owner-records.json','snapshot.json','input-manifest.json','tools/render.py'];outs=['ASSESSMENT.md','ASSESSMENT.html','UNFINISHED.csv','views/records.jsonl','system-flow.mmd','system-flow.svg','TRACERA-STATE-FORWARD.pdf']
 receipt={'snapshot_id':r['snapshot_id'],'source_sha':r['candidate']['candidate_sha'],'renderer':'tools/render.py','renderer_version':'1.0','reportlab_version':__import__('reportlab').Version,'canonical_inputs':{x:h(D/x) for x in ins},'outputs':{x:h(D/x) for x in outs},'self_hash':'excluded to avoid cycle','product_acceptance':False}
 (D/'views/build.json').write_text(json.dumps(receipt,indent=2)+'\n')
 print(json.dumps({'outputs':len(outs),'pdf_sha256':h(D/'TRACERA-STATE-FORWARD.pdf')}))

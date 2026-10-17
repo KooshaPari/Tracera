@@ -1,10 +1,10 @@
 {
   "snapshot_id": "tracera-state-forward-20261017-q1",
-  "pdf_sha256": "800fc303dbeae96bd83fd39fa8f206397327e23762f3508a63ab43e823c5bc8d",
+  "pdf_sha256": "4ad53bf032e901f4d30b80fe34155dde766e6621c9331c1129231a484a1f90b9",
   "pages": 31,
-  "method": "Poppler pdftoppm offline generated-file render900px; all31pages inspected across6contact sheets via local file view; no desktop/browser capture",
+  "method": "All31finalPDFpages rerendered via Poppler900px. Pages2-31 byteidentical to previously inspected images; changedpage1 inspected individually. Reproducible system flow rendered in PDF and SVG/HTML with text alternatives. PDF clickable PR links verified by Poppler URL extraction.",
   "layout": "No clipping/overlap observed; body10pt with15pt leading; accessible Markdown/HTML text equivalents; PDF untagged limitation",
   "reviewer": "Codex docket owner; not independent semantic product acceptance",
   "schema": "Pinned SFD structural validation PASS; assessment gateBLOCKED",
-  "observed_at": "2026-10-17T10:13:18Z"
+  "observed_at": "2026-10-17T10:19:40Z"
 }
