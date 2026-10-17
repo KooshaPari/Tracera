@@ -35,7 +35,7 @@ use crate::handlers::{governance, swee};
 use crate::middleware::{csrf_protection, CANONICAL_BROWSER_ORIGIN};
 use crate::AppState;
 
-const MAX_REQUEST_BODY_BYTES: usize = 10 * 1024 * 1024;
+pub(crate) const MAX_REQUEST_BODY_BYTES: usize = 10 * 1024 * 1024;
 
 use crate::not_implemented::not_implemented;
 
@@ -331,6 +331,10 @@ pub(crate) fn build_router_with_auth(
             "/sw/nodes/{id}/neighbors",
             get(swee::get_swee_neighbors_handler),
         )
+        .layer(axum::middleware::from_fn_with_state(
+            crate::legacy_forward::Legacy::from_env(),
+            crate::legacy_forward::forward_on_stub,
+        ))
         .layer(axum::middleware::from_fn_with_state(
             auth_token,
             crate::auth::require_bearer,
