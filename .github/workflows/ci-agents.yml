@@ -10,7 +10,7 @@
 #   lint-py     — ruff + mypy on the Python SDK
 #   test-rust   — cargo test --workspace
 #   test-js     — vitest + playwright unit + contract smoke
-#   test-py     — pytest across Python 3.11/3.12/3.13
+#   test-py     — pytest across Python 3.12/3.13
 #   build       — cargo build + bun run build (single fan-in)
 #   sast        — Trivy filesystem scan (CodeQL via GitHub default setup)
 #   secrets     — gitleaks secret scan + dependency-review
@@ -168,7 +168,7 @@ jobs:
       - name: prettier --check
         if: needs.detect-changes.outputs.typescript == 'true'
         working-directory: frontend
-        run: bun x prettier --check '**/*.{js,ts,tsx,jsx,mjs,cjs,json,md,yml,yaml,html,css,scss}' --ignore-path .gitignore --ignore-path .prettierignore || true
+        run: bun run format:check
 
   # =============================================================================
   # Stage 2 — language-specific linters.
@@ -227,9 +227,9 @@ jobs:
         run: bun install --frozen-lockfile
       - name: oxlint
         working-directory: frontend
-        run: bun run lint --silent || true
+        run: bun run lint --silent
       - name: biome (root)
-        run: npx --yes @biomejs/biome check . || true
+        run: npx --yes @biomejs/biome check .
 
   lint-py:
     name: "ci-agents / lint-py"
@@ -330,7 +330,7 @@ jobs:
         run: bun --cwd apps/web run test --silent
       - name: contract tests
         working-directory: frontend
-        run: bun run test:api-base --silent || true
+        run: node --test scripts/test-api-base.mjs
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -349,7 +349,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -375,7 +375,7 @@ jobs:
         working-directory: crates/tracera-py-sdk
         env:
           PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
-        run: uv run --python ${{ matrix.python-version }} pytest -ra --strict-config -q
+        run: uv run --python ${{ matrix.python-version }} pytest -p asyncio -ra --strict-config -q
 
   # =============================================================================
   # Stage 4 — fan-in build.

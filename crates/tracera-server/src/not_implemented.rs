@@ -1,25 +1,19 @@
 //! Honest responses for registered capabilities that have no implementation.
 use axum::{
-    extract::{MatchedPath, OriginalUri},
+    extract::MatchedPath,
     http::{header::HeaderName, StatusCode},
     response::IntoResponse,
     Json,
 };
 use serde::Serialize;
 
-pub const SINCE: &str = "2026-10-16";
-
 #[derive(Serialize)]
 pub struct NotImplementedResponse {
     error: &'static str,
     route: String,
-    since: &'static str,
 }
 
-pub async fn not_implemented(
-    path: MatchedPath,
-    OriginalUri(uri): OriginalUri,
-) -> impl IntoResponse {
+pub async fn not_implemented(path: MatchedPath) -> impl IntoResponse {
     // Template labels keep IDs and query strings out of metric cardinality.
     metrics::counter!("tracera_stub_responses_total", "route" => path.as_str().to_owned())
         .increment(1);
@@ -28,8 +22,7 @@ pub async fn not_implemented(
         [(HeaderName::from_static("x-tracera-not-implemented"), "true")],
         Json(NotImplementedResponse {
             error: "not_implemented",
-            route: uri.path().to_owned(),
-            since: SINCE,
+            route: path.as_str().to_owned(),
         }),
     )
 }
@@ -66,7 +59,7 @@ mod tests {
             serde_json::from_slice(&to_bytes(response.into_body(), 4096).await.unwrap()).unwrap();
         assert_eq!(
             body,
-            serde_json::json!({"error":"not_implemented", "route":"/api/v1/items/real-id", "since":SINCE})
+            serde_json::json!({"error":"not_implemented", "route":"/api/v1/items/{id}"})
         );
         assert!(handle
             .render()
@@ -97,12 +90,14 @@ mod tests {
                 serde_json::from_slice(&to_bytes(response.into_body(), 4096).await.unwrap())
                     .unwrap();
             assert_eq!(body["error"], "not_implemented");
-            assert_eq!(body["route"], path.as_ref());
+            assert_eq!(body["route"], template);
             assert!(body.get("stub").is_none());
             probed += 1;
         }
+        // Twelve journey registrations moved to routes/journeys.rs, where
+        // data and exact template-501 contracts are exercised independently.
         assert!(
-            probed > 50,
+            probed >= 48,
             "expected full registered stub cohort, got {probed}"
         );
         println!("GET reprobe: {probed} registered stub routes, zero 200 stub responses");

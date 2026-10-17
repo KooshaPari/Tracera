@@ -10,17 +10,17 @@
  * Milestone status - lifecycle of a milestone
  */
 export type MilestoneStatus =
-  | 'not_started' // Milestone not yet begun
-  | 'in_progress' // Actively being worked on
-  | 'at_risk' // Behind schedule or blocked
-  | 'blocked' // Cannot proceed
-  | 'completed' // Successfully completed
-  | 'cancelled'; // Abandoned
+  | "not_started" // Milestone not yet begun
+  | "in_progress" // Actively being worked on
+  | "at_risk" // Behind schedule or blocked
+  | "blocked" // Cannot proceed
+  | "completed" // Successfully completed
+  | "cancelled"; // Abandoned
 
 /**
  * Health indicator for milestones and projects
  */
-export type HealthStatus = 'green' | 'yellow' | 'red' | 'unknown';
+export type HealthStatus = "green" | "yellow" | "red" | "unknown";
 
 /**
  * A milestone represents a significant deliverable or checkpoint
@@ -99,20 +99,20 @@ export interface MilestoneProgress {
  */
 export interface RiskFactor {
   type: RiskFactorType;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   description: string;
   itemId?: string | undefined; // Related item
   mitigationSuggestion?: string | undefined;
 }
 
 export type RiskFactorType =
-  | 'blocked_dependency' // Blocked by another item
-  | 'overdue' // Past target date
-  | 'scope_creep' // Items being added
-  | 'low_velocity' // Slower than expected
-  | 'resource_constraint' // Not enough people
-  | 'technical_risk' // Technical challenges
-  | 'external_dependency'; // Waiting on external party
+  | "blocked_dependency" // Blocked by another item
+  | "overdue" // Past target date
+  | "scope_creep" // Items being added
+  | "low_velocity" // Slower than expected
+  | "resource_constraint" // Not enough people
+  | "technical_risk" // Technical challenges
+  | "external_dependency"; // Waiting on external party
 
 // =============================================================================
 // SPRINT TYPES
@@ -122,10 +122,10 @@ export type RiskFactorType =
  * Sprint status
  */
 export type SprintStatus =
-  | 'planning' // Sprint planning in progress
-  | 'active' // Currently active sprint
-  | 'completed' // Sprint ended successfully
-  | 'cancelled'; // Sprint cancelled
+  | "planning" // Sprint planning in progress
+  | "active" // Currently active sprint
+  | "completed" // Sprint ended successfully
+  | "cancelled"; // Sprint cancelled
 
 /**
  * A sprint represents a time-boxed work period
@@ -292,7 +292,7 @@ export interface VelocityMetrics {
   averageVelocity: number; // Rolling average
 
   // Trend
-  trend: 'improving' | 'stable' | 'declining';
+  trend: "improving" | "stable" | "declining";
   trendPercentage: number; // +/- % change
 
   // Historical data
@@ -336,7 +336,7 @@ export interface CycleTimeMetrics {
   byPriority: Record<string, number>;
 
   // Trend
-  trend: 'improving' | 'stable' | 'declining';
+  trend: "improving" | "stable" | "declining";
 
   // Distribution
   distribution: {
@@ -357,7 +357,7 @@ export interface CycleTimeMetrics {
  */
 export interface RoadmapItem {
   id: string;
-  type: 'milestone' | 'sprint' | 'release' | 'epic';
+  type: "milestone" | "sprint" | "release" | "epic";
   name: string;
 
   // Timing
@@ -387,10 +387,10 @@ export interface RoadmapViewConfig {
   // Time range
   startDate: string;
   endDate: string;
-  timeUnit: 'day' | 'week' | 'month' | 'quarter';
+  timeUnit: "day" | "week" | "month" | "quarter";
 
   // Grouping
-  groupBy: 'none' | 'type' | 'team' | 'priority' | 'lane';
+  groupBy: "none" | "type" | "team" | "priority" | "lane";
   lanes?: string[] | undefined;
 
   // Filtering
@@ -411,18 +411,18 @@ export interface RoadmapViewConfig {
  * Widget types for progress dashboard
  */
 export type DashboardWidgetType =
-  | 'burndown'
-  | 'burnup'
-  | 'velocity'
-  | 'cumulative_flow'
-  | 'milestone_progress'
-  | 'sprint_summary'
-  | 'cycle_time'
-  | 'lead_time'
-  | 'health_summary'
-  | 'risk_summary'
-  | 'blockers'
-  | 'recent_activity';
+  | "burndown"
+  | "burnup"
+  | "velocity"
+  | "cumulative_flow"
+  | "milestone_progress"
+  | "sprint_summary"
+  | "cycle_time"
+  | "lead_time"
+  | "health_summary"
+  | "risk_summary"
+  | "blockers"
+  | "recent_activity";
 
 /**
  * Dashboard widget configuration
@@ -493,12 +493,12 @@ export function calculateHealthStatus(
     blockedPercentage > BLOCKED_RISK_THRESHOLD_PERCENT ||
     progressVsExpected < PROGRESS_RED_THRESHOLD
   ) {
-    return 'red';
+    return "red";
   }
   if (blockedPercentage > 10 || progressVsExpected < PROGRESS_YELLOW_THRESHOLD || !onTime) {
-    return 'yellow';
+    return "yellow";
   }
-  return 'green';
+  return "green";
 }
 
 /**
@@ -509,10 +509,10 @@ export function calculateHealthStatus(
  */
 export function getHealthColor(health: HealthStatus): string {
   const colors: Record<HealthStatus, string> = {
-    green: '#22c55e',
-    red: '#ef4444',
-    unknown: '#6b7280',
-    yellow: '#eab308',
+    green: "#22c55e",
+    red: "#ef4444",
+    unknown: "#6b7280",
+    yellow: "#eab308",
   };
   return colors[health];
 }
@@ -525,12 +525,12 @@ export function getHealthColor(health: HealthStatus): string {
  */
 export function getMilestoneStatusColor(status: MilestoneStatus): string {
   const colors: Record<MilestoneStatus, string> = {
-    at_risk: '#eab308',
-    blocked: '#ef4444',
-    cancelled: '#6b7280',
-    completed: '#22c55e',
-    in_progress: '#3b82f6',
-    not_started: '#94a3b8',
+    at_risk: "#eab308",
+    blocked: "#ef4444",
+    cancelled: "#6b7280",
+    completed: "#22c55e",
+    in_progress: "#3b82f6",
+    not_started: "#94a3b8",
   };
   return colors[status];
 }
@@ -543,10 +543,10 @@ export function getMilestoneStatusColor(status: MilestoneStatus): string {
  */
 export function getSprintStatusColor(status: SprintStatus): string {
   const colors: Record<SprintStatus, string> = {
-    active: '#3b82f6',
-    cancelled: '#6b7280',
-    completed: '#22c55e',
-    planning: '#a78bfa',
+    active: "#3b82f6",
+    cancelled: "#6b7280",
+    completed: "#22c55e",
+    planning: "#a78bfa",
   };
   return colors[status];
 }

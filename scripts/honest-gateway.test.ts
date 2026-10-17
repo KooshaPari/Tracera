@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import handler from "../api/[...path]";
+import { unavailableRouteTemplate } from "../api/honest-fallback";
 import { readFileSync } from "node:fs";
 
 function response() {
@@ -49,7 +50,7 @@ describe("Vercel honest gateway GET reprobe", () => {
       expect(result.statusCode).toBe(503);
     } else {
       expect(result.statusCode).toBe(501);
-      expect(result.body).toEqual({ error: "not_implemented", route: path, since: "2026-10-16" });
+      expect(result.body).toEqual({ error: "not_implemented", route: unavailableRouteTemplate(path) });
       expect(result.headers["x-tracera-not-implemented"]).toBe("true");
     }
     expect(result.body?.stub).not.toBe(true);

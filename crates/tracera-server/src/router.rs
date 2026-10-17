@@ -1,7 +1,19 @@
+#[path = "routes/auth.rs"]
+mod auth_routes;
+#[path = "routes/export_import.rs"]
+mod export_import_routes;
 #[path = "routes/graph.rs"]
 mod graph_routes;
 #[path = "routes/items.rs"]
 mod item_routes;
+#[path = "routes/journeys.rs"]
+mod journeys_routes;
+#[path = "routes/search.rs"]
+mod search_routes;
+#[path = "routes/specs.rs"]
+mod specs_routes;
+#[path = "routes/w9.rs"]
+mod w9_routes;
 use axum::{
     extract::DefaultBodyLimit,
     routing::{any, get, post},
@@ -119,6 +131,9 @@ pub(crate) fn build_router_with_auth(
 ) -> Router {
     let workos_router = build_workos_router::<AppState>(state.workos_client.clone());
     Router::new()
+        .merge(export_import_routes::routes())
+        .merge(specs_routes::routes())
+        .merge(w9_routes::routes())
         .route("/healthz", get(crate::health::healthz))
         .route("/health", get(crate::health::health))
         .route("/readyz", get(crate::health::readyz))
@@ -191,10 +206,8 @@ pub(crate) fn build_router_with_auth(
             get(item_routes::project_list).fallback(not_implemented),
         )
         // Links
-        .route("/api/v1/links", any(not_implemented))
-        .route("/api/v1/links/{id}", any(not_implemented))
+        .merge(crate::handlers::dashboard::summary::routes())
         .route("/api/v1/links/grouped", any(not_implemented))
-        .route("/api/v1/projects/{project_id}/links", any(not_implemented))
         // Graph
         .route("/api/v1/graph/ancestors/{id}", get(graph_routes::ancestors))
         .route(
@@ -226,39 +239,23 @@ pub(crate) fn build_router_with_auth(
         .route("/api/v1/graph/analysis/shortest-path", any(not_implemented))
         .route("/api/v1/graph/cache/invalidate", any(not_implemented))
         // Search
-        .route("/api/v1/search", any(not_implemented))
-        .route("/api/v1/search/suggest", any(not_implemented))
-        .route("/api/v1/search/index/{id}", any(not_implemented))
-        .route("/api/v1/search/batch-index", any(not_implemented))
-        .route("/api/v1/search/reindex", any(not_implemented))
-        .route("/api/v1/search/stats", any(not_implemented))
-        .route("/api/v1/search/health", any(not_implemented))
+        .merge(search_routes::router())
         // Projects extended
-        .route("/api/v1/projects/{project_id}/export", any(not_implemented))
-        .route("/api/v1/projects/{project_id}/import", any(not_implemented))
         .route(
             "/api/v1/projects/{project_id}/versions/compare",
             any(not_implemented),
         )
-        .route("/api/v1/import", any(not_implemented))
         // Auth
-        .route("/api/v1/auth/login", any(not_implemented))
-        .route("/api/v1/auth/logout", any(not_implemented))
-        .route("/api/v1/auth/refresh", any(not_implemented))
+        .merge(auth_routes::routes())
         .route("/api/v1/auth/verify", any(not_implemented))
         .route("/api/v1/auth/me", get(crate::auth_me))
         // WorkOS
         .nest("/auth/workos", workos_router)
         // Equivalences
         .route("/api/v1/equivalences", any(not_implemented))
-        .route("/api/v1/equivalences/{id}", any(not_implemented))
         .route("/api/v1/equivalences/confirm", any(not_implemented))
         .route("/api/v1/equivalences/reject", any(not_implemented))
         .route("/api/v1/equivalences/batch", any(not_implemented))
-        .route(
-            "/api/v1/projects/{project_id}/equivalences",
-            any(not_implemented),
-        )
         .route(
             "/api/v1/projects/{project_id}/equivalences/{id}",
             any(not_implemented),
@@ -272,10 +269,6 @@ pub(crate) fn build_router_with_auth(
             any(not_implemented),
         )
         .route(
-            "/api/v1/projects/{project_id}/equivalences/detect",
-            any(not_implemented),
-        )
-        .route(
             "/api/v1/projects/{project_id}/equivalences/batch",
             any(not_implemented),
         )
@@ -283,54 +276,13 @@ pub(crate) fn build_router_with_auth(
             "/api/v1/projects/{project_id}/equivalences/stats",
             any(not_implemented),
         )
-        // Journeys
-        .route("/api/v1/journeys", any(not_implemented))
-        .route("/api/v1/journeys/{id}", any(not_implemented))
-        .route("/api/v1/journeys/{id}/steps", any(not_implemented))
-        .route(
-            "/api/v1/journeys/{id}/steps/{step_id}",
-            any(not_implemented),
-        )
-        .route("/api/v1/journeys/{id}/detect", any(not_implemented))
-        .route("/api/v1/journeys/{id}/visualize", any(not_implemented))
-        .route(
-            "/api/v1/projects/{project_id}/journeys",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/steps",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/steps/{step_id}",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/detect",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/visualize",
-            any(not_implemented),
-        )
+        .merge(journeys_routes::routes())
         // Component library
         .route("/api/v1/libraries", any(not_implemented))
-        .route("/api/v1/libraries/{id}", any(not_implemented))
-        .route("/api/v1/libraries/{id}/components", any(not_implemented))
         .route("/api/v1/libraries/{id}/tokens", any(not_implemented))
         .route("/api/v1/components", any(not_implemented))
-        .route("/api/v1/components/{id}", any(not_implemented))
-        .route("/api/v1/components/{id}/usage", any(not_implemented))
         .route("/api/v1/tokens", any(not_implemented))
         // Codex / Docs / AI
-        .route(
-            "/api/v1/projects/{project_id}/codex/auth-status",
-            any(not_implemented),
-        )
         .route(
             "/api/v1/projects/{project_id}/codex/sessions",
             any(not_implemented),

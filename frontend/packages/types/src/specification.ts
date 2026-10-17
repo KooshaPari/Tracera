@@ -5,7 +5,7 @@
 // ADR (Architecture Decision Record) Types
 // =============================================================================
 
-export type ADRStatus = 'proposed' | 'accepted' | 'deprecated' | 'superseded' | 'rejected';
+export type ADRStatus = "proposed" | "accepted" | "deprecated" | "superseded" | "rejected";
 
 export interface ADR {
   id: string;
@@ -83,15 +83,15 @@ export interface ADRStats {
 // =============================================================================
 
 export type SmellType =
-  | 'superlative'
-  | 'comparative'
-  | 'subjective'
-  | 'loopholes'
-  | 'ambiguous_adverbs'
-  | 'negative_statements'
-  | 'vague_pronouns'
-  | 'open_ended'
-  | 'incomplete_references';
+  | "superlative"
+  | "comparative"
+  | "subjective"
+  | "loopholes"
+  | "ambiguous_adverbs"
+  | "negative_statements"
+  | "vague_pronouns"
+  | "open_ended"
+  | "incomplete_references";
 
 export interface RequirementQuality {
   id: string;
@@ -110,16 +110,16 @@ export interface RequirementQuality {
 // Contract Types (Design by Contract)
 // =============================================================================
 
-export type ContractType = 'api' | 'function' | 'invariant' | 'data' | 'integration';
+export type ContractType = "api" | "function" | "invariant" | "data" | "integration";
 
-export type ContractStatus = 'draft' | 'active' | 'verified' | 'violated' | 'deprecated';
+export type ContractStatus = "draft" | "active" | "verified" | "violated" | "deprecated";
 
 export interface ContractCondition {
   id: string;
   description: string;
   expression?: string | undefined; // Formal expression (can be pseudo-code or actual)
   isRequired: boolean;
-  lastVerifiedResult?: 'pass' | 'fail' | 'skip' | undefined;
+  lastVerifiedResult?: "pass" | "fail" | "skip" | undefined;
 }
 
 export interface ContractTransition {
@@ -153,13 +153,13 @@ export interface Contract {
 
   // Executable Specification
   executableSpec?: string | undefined; // Code for verification
-  specLanguage?: 'typescript' | 'python' | 'gherkin' | undefined;
+  specLanguage?: "typescript" | "python" | "gherkin" | undefined;
 
   // Verification
   lastVerifiedAt?: string | undefined;
   verificationResult?:
     | {
-        status: 'pass' | 'fail' | 'error';
+        status: "pass" | "fail" | "error";
         passedConditions: number;
         failedConditions: number;
         details?: string | undefined;
@@ -198,7 +198,7 @@ export interface ContractActivity {
 // BDD Feature & Scenario Types
 // =============================================================================
 
-export type FeatureStatus = 'draft' | 'active' | 'deprecated' | 'archived';
+export type FeatureStatus = "draft" | "active" | "deprecated" | "archived";
 
 export interface Feature {
   id: string;
@@ -230,11 +230,11 @@ export interface Feature {
   updatedAt: string;
 }
 
-export type ScenarioStatus = 'draft' | 'pending' | 'passing' | 'failing' | 'skipped';
+export type ScenarioStatus = "draft" | "pending" | "passing" | "failing" | "skipped";
 
 export interface ScenarioStep {
   stepNumber: number;
-  keyword: 'Given' | 'When' | 'Then' | 'And' | 'But';
+  keyword: "Given" | "When" | "Then" | "And" | "But";
   text: string;
   dataTable?: string[][] | undefined; // Table data
   docString?: string | undefined; // Multi-line string
@@ -269,7 +269,7 @@ export interface Scenario {
   // Execution Status
   status: ScenarioStatus;
   lastRunAt?: string | undefined;
-  lastRunResult?: 'pass' | 'fail' | 'pending' | 'error' | undefined;
+  lastRunResult?: "pass" | "fail" | "pending" | "error" | undefined;
   lastRunDurationMs?: number | undefined;
   executionCount: number;
   passRate: number;
@@ -295,7 +295,7 @@ export interface ScenarioResult {
   id: string;
   scenarioId: string;
   runId: string;
-  status: 'pass' | 'fail' | 'pending' | 'error';
+  status: "pass" | "fail" | "pending" | "error";
   startedAt: string;
   completedAt?: string | undefined;
   durationMs?: number | undefined;
@@ -303,7 +303,7 @@ export interface ScenarioResult {
   // Step results
   stepResults: {
     stepNumber: number;
-    status: 'pass' | 'fail' | 'pending' | 'error' | 'skipped';
+    status: "pass" | "fail" | "pending" | "error" | "skipped";
     error?: string | undefined;
     durationMs?: number | undefined;
   }[];
@@ -319,7 +319,7 @@ export interface ScenarioResult {
   createdAt: string;
 }
 
-export type StepType = 'given' | 'when' | 'then';
+export type StepType = "given" | "when" | "then";
 
 export interface StepDefinition {
   id: string;
@@ -333,7 +333,7 @@ export interface StepDefinition {
   // Parameters extracted from pattern
   parameters: {
     name: string;
-    type: 'string' | 'number' | 'table' | 'docString';
+    type: "string" | "number" | "table" | "docString";
     description?: string | undefined;
   }[];
 
@@ -418,11 +418,11 @@ export interface SpecificationSummary {
 export interface SpecificationLink {
   id: string;
   projectId: string;
-  sourceType: 'adr' | 'contract' | 'feature' | 'scenario';
+  sourceType: "adr" | "contract" | "feature" | "scenario";
   sourceId: string;
-  targetType: 'item' | 'adr' | 'contract' | 'feature' | 'scenario' | 'test_case';
+  targetType: "item" | "adr" | "contract" | "feature" | "scenario" | "test_case";
   targetId: string;
-  linkType: 'implements' | 'verifies' | 'depends_on' | 'supersedes' | 'related_to';
+  linkType: "implements" | "verifies" | "depends_on" | "supersedes" | "related_to";
   description?: string | undefined;
   createdAt: string;
 }
@@ -430,7 +430,7 @@ export interface SpecificationLink {
 export interface SpecificationGraph {
   nodes: {
     id: string;
-    type: 'adr' | 'contract' | 'feature' | 'scenario' | 'requirement' | 'test';
+    type: "adr" | "contract" | "feature" | "scenario" | "requirement" | "test";
     label: string;
     status: string;
     metadata?: Record<string, unknown> | undefined;

@@ -53,6 +53,16 @@ pub(super) fn str_to_opt_ts(s: Option<String>) -> Option<DateTime<Utc>> {
 }
 
 impl Store for SqliteStore {
+    fn search_items(
+        &self,
+        query: String,
+        project_id: Option<String>,
+        limit: i64,
+        offset: i64,
+    ) -> BoxFuture<'_, StoreResult<crate::item::ItemPage>> {
+        Box::pin(items::search(&self.pool, query, project_id, limit, offset))
+    }
+
     fn list_items(
         &self,
         filter: crate::item::ItemFilter,

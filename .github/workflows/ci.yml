@@ -280,9 +280,9 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
-      - run: npm ci || true
-      - run: npx biome lint . || true
-      - run: npx biome format --check . || true
+      - run: npm ci
+      - run: npx biome lint .
+      - run: npx biome format --check .
 
   typescript-test:
     name: TS/JS Test
@@ -296,8 +296,8 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
-      - run: npm ci || true
-      - run: npm test || true
+      - run: npm ci
+      - run: npm test
 
   # ===========================================================================
   # STAGE 3: Security & quality gates (always run)

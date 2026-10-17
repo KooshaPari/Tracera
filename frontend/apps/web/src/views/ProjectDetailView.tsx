@@ -1,3 +1,4 @@
+import { useDashboardSummary } from "@/hooks/useDashboardSummary";
 import type { LucideIcon } from "lucide-react";
 
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
@@ -235,36 +236,53 @@ const useProjectDetailData = (projectId: string | undefined) => {
   const projectQuery = useProject(safeProjectId);
   const itemsQuery = useItems({ projectId: safeProjectId });
   const linksQuery = useLinks({ projectId: safeProjectId });
+  const summaryQuery = useDashboardSummary();
   useSyncCurrentProject(projectQuery.data ?? null);
 
   return {
     items: itemsQuery.data?.items ?? EMPTY_ITEMS,
-    itemsTotal: itemsQuery.data?.total ?? 0,
-    linksTotal: linksQuery.data?.total ?? 0,
-    loading: projectQuery.isLoading || itemsQuery.isLoading || linksQuery.isLoading,
+    itemsTotal: summaryQuery.data?.perProject[safeProjectId]?.totalCount ?? 0,
+    linksTotal: linksQuery.data?.total,
+    loading:
+      projectQuery.isLoading ||
+      itemsQuery.isLoading ||
+      linksQuery.isLoading ||
+      summaryQuery.isLoading,
     project: projectQuery.data ?? null,
-    projectError: projectQuery.error,
+    projectError: projectQuery.error ?? summaryQuery.error,
+    summaryStats: summaryQuery.data?.perProject[safeProjectId],
   };
 };
 
 const useRecentItems = (items: Item[]) =>
   useMemo(() => items.slice(0, RECENT_ITEMS_LIMIT), [items]);
 
-const useProjectStats = (items: Item[], itemsTotal: number): Stats =>
+const useProjectStats = (
+  items: Item[],
+  itemsTotal: number,
+  summaryStats: import("@/api/system").DashboardProjectStats | undefined,
+): Stats =>
   useMemo(() => {
-    const byStatus = buildStatusStats(items);
+    const byStatus = summaryStats?.statusCounts ?? buildStatusStats(items);
     const byType = buildTypeStats(items);
     const radarData = buildRadarData(byType);
     const typeData = buildTypeData(byType);
     const completionRate =
       itemsTotal > 0
-        ? Math.round(((byStatus["done"] ?? 0) / itemsTotal) * COMPLETION_PERCENT_BASE)
+        ? Math.round(
+            ((summaryStats?.completedCount ?? byStatus["done"] ?? 0) / itemsTotal) *
+              COMPLETION_PERCENT_BASE,
+          )
         : 0;
 
     return { byStatus, byType, completionRate, radarData, typeData };
-  }, [items, itemsTotal]);
+  }, [items, itemsTotal, summaryStats]);
 
-const useSummaryCards = (stats: Stats, itemsTotal: number, linksTotal: number): SummaryCard[] =>
+const useSummaryCards = (
+  stats: Stats,
+  itemsTotal: number,
+  linksTotal: number | undefined,
+): SummaryCard[] =>
   useMemo(() => {
     const blockedCount = stats.byStatus["blocked"] ?? 0;
     return [
@@ -280,13 +298,13 @@ const useSummaryCards = (stats: Stats, itemsTotal: number, linksTotal: number): 
         icon: Network,
         label: "Active Links",
         sub: "Traceability links",
-        value: typeof linksTotal === "number" ? linksTotal.toLocaleString() : String(linksTotal),
+        value: typeof linksTotal === "number" ? linksTotal.toLocaleString() : "Unavailable",
       },
       {
         color: "text-green-500",
         icon: Layers,
         label: "Total Items",
-        sub: "Across all types",
+        sub: "Persisted project records (same as Projects)",
         value: typeof itemsTotal === "number" ? itemsTotal.toLocaleString() : String(itemsTotal),
       },
       {
@@ -814,9 +832,9 @@ export const ProjectDetailView = () => {
   const projectId = useProjectIdParam();
   const navigate = useNavigate();
   const [showAgentWorkflows, setShowAgentWorkflows] = useState(false);
-  const { items, itemsTotal, linksTotal, loading, project, projectError } =
+  const { items, itemsTotal, linksTotal, loading, project, projectError, summaryStats } =
     useProjectDetailData(projectId);
-  const stats = useProjectStats(items, itemsTotal);
+  const stats = useProjectStats(items, itemsTotal, summaryStats);
   const recentItems = useRecentItems(items);
   const summaryCards = useSummaryCards(stats, itemsTotal, linksTotal);
   const { handleCreateFeature, handleExport, handleOpenSettings, handleViewAll } =
@@ -837,7 +855,7 @@ export const ProjectDetailView = () => {
       return <ProjectNotFound onBack={handleBackToProjects} />;
     return <Unavailable error={projectError} />;
   }
-  if (!project) return <Unavailable />;
+  if (!project || !summaryStats) return <Unavailable />;
   if ("detailUnavailable" in project && typeof project.detailUnavailable === "number")
     return (
       <ProjectSummary project={{ ...project, detailUnavailable: project.detailUnavailable }} />

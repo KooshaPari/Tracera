@@ -68,6 +68,8 @@ pub(super) async fn get(pool: &SqlitePool, id: String) -> StoreResult<Option<Ite
         .transpose()
 }
 
+// Persistence helper for the canonical Items store; HTTP mutation routes land in a later package.
+#[allow(dead_code)]
 pub(super) async fn create(pool: &SqlitePool, item: Item) -> StoreResult<()> {
     let document = serde_json::to_string(&item).map_err(|e| StoreError::Database(e.to_string()))?;
     let mut query = QueryBuilder::<Sqlite>::new(
@@ -84,4 +86,50 @@ pub(super) async fn create(pool: &SqlitePool, item: Item) -> StoreResult<()> {
     query.push(")");
     query.build().execute(pool).await?;
     Ok(())
+}
+
+/// SQLite LIKE is ASCII case insensitive; wildcard characters are literal input.
+pub(super) async fn search(
+    pool: &SqlitePool,
+    query: String,
+    project_id: Option<String>,
+    limit: i64,
+    offset: i64,
+) -> StoreResult<ItemPage> {
+    let pattern = format!(
+        "%{}%",
+        query
+            .replace('!', "!!")
+            .replace('%', "!%")
+            .replace('_', "!_")
+    );
+    let build = |prefix| {
+        let mut sql = QueryBuilder::<Sqlite>::new(prefix);
+        sql.push(" WHERE json_extract(document, '$.title') LIKE ")
+            .push_bind(pattern.clone())
+            .push(" ESCAPE '!'");
+        if let Some(project) = &project_id {
+            sql.push(" AND project_id = ").push_bind(project.clone());
+        }
+        sql
+    };
+    let mut transaction = pool.begin().await?;
+    let total = build("SELECT COUNT(*) FROM items")
+        .build_query_scalar::<i64>()
+        .fetch_one(&mut *transaction)
+        .await?;
+    let documents = build("SELECT document FROM items")
+        .push(" ORDER BY id ASC LIMIT ")
+        .push_bind(limit)
+        .push(" OFFSET ")
+        .push_bind(offset)
+        .build_query_scalar::<String>()
+        .fetch_all(&mut *transaction)
+        .await?;
+    let items = documents
+        .into_iter()
+        .map(|document| decode(&document))
+        .collect::<StoreResult<_>>()?;
+    transaction.commit().await?;
+    Ok(ItemPage { items, total })
 }
