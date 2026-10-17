@@ -8,6 +8,8 @@ mod graph_routes;
 mod item_routes;
 #[path = "routes/journeys.rs"]
 mod journeys_routes;
+#[path = "routes/product_observations.rs"]
+mod product_observation_routes;
 #[path = "routes/search.rs"]
 mod search_routes;
 #[path = "routes/specs.rs"]
@@ -131,6 +133,7 @@ pub(crate) fn build_router_with_auth(
 ) -> Router {
     let workos_router = build_workos_router::<AppState>(state.workos_client.clone());
     Router::new()
+        .merge(product_observation_routes::routes())
         .merge(export_import_routes::routes())
         .merge(specs_routes::routes())
         .merge(w9_routes::routes())
