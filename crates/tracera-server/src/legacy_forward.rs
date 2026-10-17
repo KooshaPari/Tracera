@@ -1,4 +1,7 @@
 //! Forward-on-stub middleware. Off unless LEGACY_BASE_URL is set.
+//! The legacy service MUST accept the same bearer token as this server:
+//! the bridge relays `authorization` verbatim and runs after require_bearer,
+//! so a legacy that rejects it answers 401/403 which is relayed as-is.
 //! Forwards only responses that carry `x-tracera-not-implemented: true`
 //! (set by crate::not_implemented), plus always-owned legacy prefixes.
 use axum::{
@@ -39,6 +42,7 @@ impl Legacy {
             .collect();
         let client = reqwest::Client::builder()
             .timeout(Duration::from_secs(8))
+            .redirect(reqwest::redirect::Policy::none())
             .build()
             .ok()?;
         Some(Arc::new(Self {
@@ -84,24 +88,48 @@ pub async fn forward_on_stub(
             .map_or(false, |v| v.as_bytes().starts_with(b"text/event-stream"));
     let (parts, body) = req.into_parts();
     let path = parts.uri.path().to_string();
-    let owned = legacy
-        .owned_prefixes
-        .iter()
-        .any(|p| path.starts_with(p.as_str()));
+    let owned_prefix = legacy.owned_prefixes.iter().find_map(|p| {
+        let p = p.trim_end_matches('/');
+        if path == p || path.starts_with(&format!("{p}/")) {
+            Some(p.to_string())
+        } else {
+            None
+        }
+    });
+    let owned = owned_prefix.is_some();
     let bytes = match to_bytes(body, MAX_BODY).await {
         Ok(b) => b,
         Err(_) => return StatusCode::PAYLOAD_TOO_LARGE.into_response(),
     };
+    let mut route_label = owned_prefix.clone().unwrap_or_default();
     if !owned {
         let rebuilt = Request::from_parts(parts.clone(), Body::from(bytes.clone()));
         let resp = next.run(rebuilt).await;
         let is_stub = resp.status() == StatusCode::NOT_IMPLEMENTED
-            && resp.headers().get(STUB).map_or(false, |v| v == "true");
+            && resp
+                .headers()
+                .get(STUB)
+                .map_or(false, |v| v == "true");
         if !is_stub || upgrade {
             return resp;
         }
+        // Metric label = matched route template (carried from not_implemented), never the raw path.
+        route_label = resp
+            .headers()
+            .get("x-tracera-stub-template")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("stub")
+            .to_string();
     }
-    metrics::counter!("tracera_stub_forwarded_total", "route" => path.clone()).increment(1);
+    // The bridge cannot proxy upgrades/SSE; refuse them on owned prefixes.
+    if upgrade {
+        return (
+            StatusCode::NOT_IMPLEMENTED,
+            Json(serde_json::json!({"error":"upgrade_not_supported_by_bridge"})),
+        )
+            .into_response();
+    }
+    metrics::counter!("tracera_stub_forwarded_total", "route" => route_label).increment(1);
     let mut url = format!("{}{}", legacy.base, path);
     if let Some(q) = parts.uri.query() {
         url.push('?');
@@ -126,11 +154,12 @@ pub async fn forward_on_stub(
         .await;
     match result {
         Ok(r) => {
-            let status =
-                StatusCode::from_u16(r.status().as_u16()).unwrap_or(StatusCode::BAD_GATEWAY);
+            let status = StatusCode::from_u16(r.status().as_u16())
+                .unwrap_or(StatusCode::BAD_GATEWAY);
             let mut headers = HeaderMap::new();
             for (k, v) in r.headers().iter() {
-                if !hop_by_hop(k) {
+                let n = k.as_str();
+                if !hop_by_hop(k) && n != "set-cookie" && !n.starts_with("access-control-") {
                     headers.append(k.clone(), v.clone());
                 }
             }
@@ -166,7 +195,7 @@ mod tests {
         let app = Router::new()
             .route(
                 "/stub",
-                axum::routing::get(|| async {
+                axum::routing::any(|| async {
                     (
                         StatusCode::NOT_IMPLEMENTED,
                         [(HeaderName::from_static("x-tracera-not-implemented"), "true")],
@@ -185,17 +214,18 @@ mod tests {
         format!("http://127.0.0.1:{}", addr.port())
     }
 
+
     async fn spawn_legacy(status: StatusCode, calls: std::sync::Arc<AtomicUsize>) -> String {
         let c1 = calls.clone();
         let c2 = calls.clone();
         let app = Router::new()
             .route(
                 "/stub",
-                axum::routing::any(move || {
+                axum::routing::any(move |uri: axum::http::Uri, body: String| {
                     let c1 = c1.clone();
                     async move {
                         c1.fetch_add(1, Ordering::SeqCst);
-                        (status, "from-legacy")
+                        (status, format!("echo:{body}|{}", uri.query().unwrap_or("")))
                     }
                 }),
             )
@@ -219,7 +249,10 @@ mod tests {
         Some(Arc::new(Legacy {
             base: base.to_string(),
             owned_prefixes: vec![],
-            client: reqwest::Client::new(),
+            client: reqwest::Client::builder()
+                .redirect(reqwest::redirect::Policy::none())
+                .build()
+                .unwrap(),
         }))
     }
 
@@ -237,8 +270,11 @@ mod tests {
         let app = spawn_app(legacy_for(&legacy)).await;
         let r = reqwest::get(format!("{app}/stub")).await.unwrap();
         assert_eq!(r.status(), StatusCode::OK);
-        assert_eq!(r.headers().get("x-tracera-served-by").unwrap(), "legacy");
-        assert_eq!(r.text().await.unwrap(), "from-legacy");
+        assert_eq!(
+            r.headers().get("x-tracera-served-by").unwrap(),
+            "legacy"
+        );
+        assert_eq!(r.text().await.unwrap(), "echo:|");
         assert_eq!(calls.load(Ordering::SeqCst), 1);
     }
 
@@ -304,9 +340,7 @@ mod tests {
         let r = reqwest::get(format!("{app}/real")).await.unwrap();
         assert_eq!(r.status(), StatusCode::NOT_FOUND);
         assert_eq!(
-            r.headers()
-                .get("x-tracera-served-by")
-                .map(|v| v.to_str().unwrap().to_string()),
+            r.headers().get("x-tracera-served-by").map(|v| v.to_str().unwrap().to_string()),
             Some("legacy".to_string())
         );
     }
@@ -338,4 +372,154 @@ mod tests {
             .unwrap();
         assert_eq!(r.text().await.unwrap(), "cookie-clean");
     }
+    #[tokio::test]
+    async fn owned_prefix_segment_boundary() {
+        let calls = std::sync::Arc::new(AtomicUsize::new(0));
+        let legacy = spawn_legacy(StatusCode::OK, calls.clone()).await;
+        let mut l = legacy_for(&legacy).unwrap();
+        Arc::get_mut(&mut l).unwrap().owned_prefixes = vec!["/legacy".into()];
+        let app = spawn_app(Some(l)).await;
+        let r = reqwest::get(format!("{app}/legacy/x")).await.unwrap();
+        // forwarded: legacy mock has no /legacy/x -> its 404 + served-by prove the hop
+        // (the mock only counts hits on its registered routes, so no counter assert here)
+        assert_eq!(r.status(), StatusCode::NOT_FOUND);
+        assert_eq!(
+            r.headers().get("x-tracera-served-by").unwrap(),
+            "legacy"
+        );
+        // "/legacyx" is NOT owned (no segment boundary) -> local 404, no forward
+        let r2 = reqwest::get(format!("{app}/legacyx")).await.unwrap();
+        assert_eq!(r2.status(), StatusCode::NOT_FOUND);
+        assert!(r2.headers().get("x-tracera-served-by").is_none());
+        // mock counts only its registered routes; /legacy/x 404'd on the mock,
+        // so 0 proves /legacyx never crossed the bridge
+        assert_eq!(calls.load(Ordering::SeqCst), 0);
+    }
+
+    #[tokio::test]
+    async fn owned_upgrade_rejected() {
+        let calls = std::sync::Arc::new(AtomicUsize::new(0));
+        let legacy = spawn_legacy(StatusCode::OK, calls.clone()).await;
+        let mut l = legacy_for(&legacy).unwrap();
+        Arc::get_mut(&mut l).unwrap().owned_prefixes = vec!["/legacy".into()];
+        let app = spawn_app(Some(l)).await;
+        let r = reqwest::Client::new()
+            .get(format!("{app}/legacy/stream"))
+            .header("accept", "text/event-stream")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(r.status(), StatusCode::NOT_IMPLEMENTED);
+        assert_eq!(calls.load(Ordering::SeqCst), 0);
+    }
+
+    #[tokio::test]
+    async fn legacy_set_cookie_and_cors_headers_stripped() {
+        let calls = std::sync::Arc::new(AtomicUsize::new(0));
+        // legacy that returns set-cookie + access-control-*
+        let app_legacy = Router::new().route(
+            "/stub",
+            axum::routing::any(|| async {
+                (
+                    StatusCode::OK,
+                    [
+                        ("set-cookie", "sid=evil"),
+                        ("access-control-allow-origin", "*"),
+                        ("x-keep", "1"),
+                    ],
+                    "ok",
+                )
+            }),
+        );
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move { axum::serve(listener, app_legacy).await.unwrap() });
+        let app = spawn_app(legacy_for(&format!("http://127.0.0.1:{}", addr.port()))).await;
+        let r = reqwest::get(format!("{app}/stub")).await.unwrap();
+        assert_eq!(r.status(), StatusCode::OK);
+        assert!(r.headers().get("set-cookie").is_none());
+        assert!(r.headers().get("access-control-allow-origin").is_none());
+        assert_eq!(r.headers().get("x-keep").unwrap(), "1");
+        let _ = calls;
+    }
+
+    #[tokio::test]
+    async fn legacy_redirect_not_followed() {
+        let app_legacy = Router::new().route(
+            "/stub",
+            axum::routing::any(|| async {
+                (StatusCode::FOUND, [("location", "http://evil.example/")], "")
+            }),
+        );
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move { axum::serve(listener, app_legacy).await.unwrap() });
+        let app = spawn_app(legacy_for(&format!("http://127.0.0.1:{}", addr.port()))).await;
+        let r = reqwest::Client::builder()
+            .redirect(reqwest::redirect::Policy::none())
+            .build()
+            .unwrap()
+            .get(format!("{app}/stub"))
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(r.status(), StatusCode::FOUND);
+        assert_eq!(r.headers().get("location").unwrap(), "http://evil.example/");
+    }
+
+    #[tokio::test]
+    async fn rust_4xx_not_forwarded() {
+        let calls = std::sync::Arc::new(AtomicUsize::new(0));
+        let legacy = spawn_legacy(StatusCode::OK, calls.clone()).await;
+        let app = spawn_app(legacy_for(&legacy)).await;
+        // unregistered path -> local 404, must not forward
+        let r = reqwest::get(format!("{app}/nope")).await.unwrap();
+        assert_eq!(r.status(), StatusCode::NOT_FOUND);
+        assert_eq!(calls.load(Ordering::SeqCst), 0);
+    }
+
+    #[tokio::test]
+    async fn post_body_and_query_forwarded() {
+        let calls = std::sync::Arc::new(AtomicUsize::new(0));
+        let legacy = spawn_legacy(StatusCode::OK, calls.clone()).await;
+        let app = spawn_app(legacy_for(&legacy)).await;
+        let r = reqwest::Client::new()
+            .post(format!("{app}/stub?a=1&b=2"))
+            .body("payload")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(r.status(), StatusCode::OK);
+        assert_eq!(r.text().await.unwrap(), "echo:payload|a=1&b=2");
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
+    async fn auth_header_relayed() {
+        // legacy 401s unless the bearer arrives; bridge must relay authorization verbatim
+        let app_legacy = Router::new().route(
+            "/stub",
+            axum::routing::any(|req: Request| async move {
+                match req.headers().get("authorization") {
+                    Some(v) if v == "Bearer t" => (StatusCode::OK, "authed"),
+                    _ => (StatusCode::UNAUTHORIZED, "no-auth"),
+                }
+            }),
+        );
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move { axum::serve(listener, app_legacy).await.unwrap() });
+        let app = spawn_app(legacy_for(&format!("http://127.0.0.1:{}", addr.port()))).await;
+        let r = reqwest::Client::new()
+            .get(format!("{app}/stub"))
+            .header("authorization", "Bearer t")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(r.status(), StatusCode::OK);
+        assert_eq!(r.text().await.unwrap(), "authed");
+        let r2 = reqwest::get(format!("{app}/stub")).await.unwrap();
+        assert_eq!(r2.status(), StatusCode::UNAUTHORIZED);
+    }
+
 }
