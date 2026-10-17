@@ -1,10 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "$comment": "Renovate - automated dependency updates with smart grouping. Merging is owned by the Mergify queue (author-based rule), so automerge stays off here.",
-  "extends": [
-    "config:recommended",
-    "helpers:pinGitHubActionDigests"
-  ],
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
   "labels": ["dependencies"],
   "schedule": ["before 6am on Monday"],
   "timezone": "America/Los_Angeles",
