@@ -1,17 +1,13 @@
-#[path = "routes/codex.rs"]
-mod codex_routes;
-#[path = "routes/equivalences.rs"]
-mod equivalences_routes;
 #[path = "routes/export_import.rs"]
 mod export_import_routes;
 #[path = "routes/graph.rs"]
 mod graph_routes;
 #[path = "routes/items.rs"]
 mod item_routes;
-#[path = "routes/libraries.rs"]
-mod libraries_routes;
 #[path = "routes/specs.rs"]
 mod specs_routes;
+#[path = "routes/w9.rs"]
+mod w9_routes;
 use axum::{
     extract::DefaultBodyLimit,
     routing::{any, get, post},
@@ -131,9 +127,7 @@ pub(crate) fn build_router_with_auth(
     Router::new()
         .merge(export_import_routes::routes())
         .merge(specs_routes::routes())
-        .merge(codex_routes::routes())
-        .merge(libraries_routes::routes())
-        .merge(equivalences_routes::routes())
+        .merge(w9_routes::routes())
         .route("/healthz", get(crate::health::healthz))
         .route("/health", get(crate::health::health))
         .route("/readyz", get(crate::health::readyz))

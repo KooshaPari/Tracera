@@ -182,17 +182,37 @@ async fn invalid_queries_and_missing_records_are_honest() {
 #[tokio::test]
 async fn unimplemented_semantics_return_typed_route_labelled_501() {
     let (app, _) = fixture().await;
-    for (method, path) in [
-        ("GET", "/api/v1/pivot-targets"),
-        ("GET", "/api/v1/items/a/pivot-targets"),
-        ("POST", "/api/v1/items/a/pivot"),
-        ("GET", "/api/v1/items/a/pivot"),
-        ("POST", "/api/v1/items"),
-        ("PUT", "/api/v1/items/a"),
-        ("DELETE", "/api/v1/items/a"),
-        ("POST", "/api/v1/projects/alpha/items"),
-        ("GET", "/api/v1/items/summary"),
-        ("POST", "/api/v1/items/bulk-update"),
+    for (method, path, template) in [
+        ("GET", "/api/v1/pivot-targets", "/api/v1/pivot-targets"),
+        (
+            "GET",
+            "/api/v1/items/a/pivot-targets",
+            "/api/v1/items/{item_id}/pivot-targets",
+        ),
+        (
+            "POST",
+            "/api/v1/items/a/pivot",
+            "/api/v1/items/{item_id}/pivot",
+        ),
+        (
+            "GET",
+            "/api/v1/items/a/pivot",
+            "/api/v1/items/{item_id}/pivot",
+        ),
+        ("POST", "/api/v1/items", "/api/v1/items"),
+        ("PUT", "/api/v1/items/a", "/api/v1/items/{id}"),
+        ("DELETE", "/api/v1/items/a", "/api/v1/items/{id}"),
+        (
+            "POST",
+            "/api/v1/projects/alpha/items",
+            "/api/v1/projects/{project_id}/items",
+        ),
+        ("GET", "/api/v1/items/summary", "/api/v1/items/summary"),
+        (
+            "POST",
+            "/api/v1/items/bulk-update",
+            "/api/v1/items/bulk-update",
+        ),
     ] {
         let (status, body) = request(app.clone(), method, path).await;
         assert_eq!(
@@ -200,10 +220,7 @@ async fn unimplemented_semantics_return_typed_route_labelled_501() {
             StatusCode::NOT_IMPLEMENTED,
             "{method} {path}: {body}"
         );
-        assert_eq!(
-            body,
-            json!({"error":"not_implemented", "route":path, "since":"2026-10-16"})
-        );
+        assert_eq!(body, json!({"error":"not_implemented", "route":template}));
     }
 }
 #[tokio::test]
