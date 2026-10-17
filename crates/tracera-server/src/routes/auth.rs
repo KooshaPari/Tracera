@@ -40,6 +40,27 @@ pub(super) fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         .route("/api/v1/auth/refresh", any(unavailable))
 }
 
+pub(crate) const ROUTES: &[&str] = &[
+    "/api/v1/auth/account",
+    "/api/v1/auth/authkit/authorize",
+    "/api/v1/auth/authkit/callback",
+    "/api/v1/auth/authkit/refresh",
+    "/api/v1/auth/change-password",
+    "/api/v1/auth/profile",
+    "/api/v1/auth/request-verification",
+    "/api/v1/auth/reset-password",
+    "/api/v1/auth/reset-password/confirm",
+    "/api/v1/auth/user",
+    "/api/v1/auth/verify-email",
+    "/auth/me",
+];
+
+pub(crate) fn w9_routes() -> Router<crate::AppState> {
+    ROUTES.iter().fold(Router::new(), |router, path| {
+        router.route(path, any(crate::not_implemented::not_implemented))
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -99,23 +120,41 @@ mod tests {
     }
 }
 
-pub(crate) const ROUTES: &[&str] = &[
-    "/api/v1/auth/account",
-    "/api/v1/auth/authkit/authorize",
-    "/api/v1/auth/authkit/callback",
-    "/api/v1/auth/authkit/refresh",
-    "/api/v1/auth/change-password",
-    "/api/v1/auth/profile",
-    "/api/v1/auth/request-verification",
-    "/api/v1/auth/reset-password",
-    "/api/v1/auth/reset-password/confirm",
-    "/api/v1/auth/user",
-    "/api/v1/auth/verify-email",
-    "/auth/me",
-];
+/// Authorized product scope shared by every durable observation handler.
+pub(super) struct ProductScope(pub (String, u64));
 
-pub(crate) fn w9_routes() -> Router<crate::AppState> {
-    ROUTES.iter().fold(Router::new(), |router, path| {
-        router.route(path, any(crate::not_implemented::not_implemented))
-    })
+#[derive(Serialize)]
+struct ProductAccessDenied {
+    error: &'static str,
+}
+
+impl<S: Send + Sync> axum::extract::FromRequestParts<S> for ProductScope {
+    type Rejection = axum::response::Response;
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        use axum::{extract::Path, response::IntoResponse};
+        let Path(scope) = Path::<(String, u64)>::from_request_parts(parts, state)
+            .await
+            .map_err(IntoResponse::into_response)?;
+        let allowed = std::env::var("TRACERA_PRODUCT_IDS")
+            .ok()
+            .is_some_and(|ids| {
+                ids.split(',')
+                    .map(str::trim)
+                    .any(|id| !id.is_empty() && id == scope.0)
+            });
+        if !allowed {
+            return Err((
+                StatusCode::FORBIDDEN,
+                Json(ProductAccessDenied {
+                    error: "product_access_denied",
+                }),
+            )
+                .into_response());
+        }
+        Ok(Self(scope))
+    }
 }

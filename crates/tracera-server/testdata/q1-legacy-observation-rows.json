@@ -1,0 +1,7 @@
+{
+  "source_commit": "3fd3310fb98fdd2f9bca99eddd669f974fb1fb61",
+  "fixture_classification": "actual Q1 synthetic technical runtime database rows, not external producer evidence",
+  "intents": "[{\"id\":\"durable-read\",\"kind\":\"Capability\",\"title\":\"Evidence persists\",\"description\":\"Read evidence after restart\",\"status\":\"Accepted\",\"baseline\":1}]",
+  "observation": "{\"id\":\"runtime-check\",\"product_id\":\"q1-runtime\",\"baseline\":1,\"kind\":\"TestResult\",\"result\":\"Failed\",\"source\":{\"collector\":\"q1-runtime\",\"version\":\"1\",\"artifact_ref\":\"file:runtime-assertion.txt\"},\"recorded_at\":\"2026-10-17T08:00:00Z\",\"capability_id\":\"durable-read\"}",
+  "batch": "{\"product_id\":\"q1-runtime\",\"baseline\":1,\"idempotency_key\":\"runtime-report-1\",\"intents\":[{\"id\":\"durable-read\",\"kind\":\"Capability\",\"title\":\"Evidence persists\",\"description\":\"Read evidence after restart\",\"status\":\"Accepted\",\"baseline\":1}],\"observations\":[{\"id\":\"runtime-check\",\"product_id\":\"q1-runtime\",\"baseline\":1,\"kind\":\"TestResult\",\"result\":\"Failed\",\"source\":{\"collector\":\"q1-runtime\",\"version\":\"1\",\"artifact_ref\":\"file:runtime-assertion.txt\"},\"recorded_at\":\"2026-10-17T08:00:00Z\",\"capability_id\":\"durable-read\"}]}"
+}

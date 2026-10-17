@@ -94,10 +94,11 @@ mod tests {
             assert!(body.get("stub").is_none());
             probed += 1;
         }
-        // Twelve journey registrations moved to routes/journeys.rs, where
-        // data and exact template-501 contracts are exercised independently.
-        assert!(
-            probed >= 48,
+        // This oracle covers the 35 literal registrations in router.rs.
+        // Extracted route families have their own mounted contract tests.
+        // Keep the denominator explicit so moved registrations cannot silently disappear.
+        assert_eq!(
+            probed, 35,
             "expected full registered stub cohort, got {probed}"
         );
         println!("GET reprobe: {probed} registered stub routes, zero 200 stub responses");
