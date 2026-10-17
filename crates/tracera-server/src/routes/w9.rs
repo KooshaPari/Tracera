@@ -8,8 +8,6 @@ mod accounts;
 mod agent;
 #[path = "ai.rs"]
 mod ai;
-#[path = "auth.rs"]
-mod auth;
 #[path = "branches.rs"]
 mod branches;
 #[path = "chat.rs"]
@@ -102,7 +100,7 @@ pub(super) fn routes() -> Router<AppState> {
         .merge(accounts::routes())
         .merge(agent::routes())
         .merge(ai::routes())
-        .merge(auth::routes())
+        .merge(super::auth_routes::w9_routes())
         .merge(branches::routes())
         .merge(chat::routes())
         .merge(codex::routes())
@@ -154,7 +152,7 @@ fn templates() -> Vec<&'static str> {
         accounts::ROUTES,
         agent::ROUTES,
         ai::ROUTES,
-        auth::ROUTES,
+        super::auth_routes::ROUTES,
         branches::ROUTES,
         chat::ROUTES,
         codex::ROUTES,
