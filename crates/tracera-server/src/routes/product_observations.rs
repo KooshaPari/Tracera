@@ -29,7 +29,7 @@ async fn bounded<T>(work: impl std::future::Future<Output = StoreResult<T>>) -> 
             }
         })
 }
-async fn ingest(
+pub(super) async fn ingest(
     State(state): State<AppState>,
     Path((product, baseline)): Path<(String, u64)>,
     Json(batch): Json<ProductObservationBatch>,

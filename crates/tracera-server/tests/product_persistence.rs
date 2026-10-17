@@ -27,6 +27,7 @@ fn batch(product: &str) -> ProductObservationBatch {
             source: ObservationSource {
                 collector: "cargo-test".into(),
                 version: "1".into(),
+                causality: None,
                 artifact_ref: Some("file:report.xml".into()),
             },
             recorded_at: Utc::now(),
@@ -282,4 +283,49 @@ async fn canonical_intent_order_and_observation_limit() {
             );
         }
     }
+}
+
+#[tokio::test]
+async fn q1_source_without_causality_preserves_serialization_and_replay() {
+    let db = store("sqlite::memory:").await;
+    let old_payload = serde_json::json!({"collector":"cargo-test","version":"1","artifact_ref":"file:report.xml"});
+    let source: ObservationSource = serde_json::from_value(old_payload.clone()).unwrap();
+    assert!(source.causality.is_none());
+    assert_eq!(serde_json::to_value(&source).unwrap(), old_payload);
+    let mut input = batch("legacy");
+    input.observations[0].source = source;
+    db.ingest_product_observations(input.clone()).await.unwrap();
+    assert!(
+        db.ingest_product_observations(input)
+            .await
+            .unwrap()
+            .replayed
+    );
+}
+
+#[tokio::test]
+async fn actual_q1_stored_payload_replays_without_causality_rewrite() {
+    let db = store("sqlite::memory:").await;
+    let rows: serde_json::Value =
+        serde_json::from_str(include_str!("../testdata/q1-legacy-observation-rows.json")).unwrap();
+    let input: ProductObservationBatch =
+        serde_json::from_str(rows["batch"].as_str().unwrap()).unwrap();
+    let product = input.product_id.as_str();
+    sqlx::query(
+        "INSERT INTO product_observation_baselines(product_id,baseline,intents) VALUES(?,?,?)",
+    )
+    .bind(product)
+    .bind(1i64)
+    .bind(rows["intents"].as_str().unwrap())
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    sqlx::query("INSERT INTO product_observations(product_id,observation_id,baseline,capability_id,payload) VALUES(?,?,?,?,?)").bind(product).bind(&input.observations[0].id).bind(1i64).bind(&input.observations[0].capability_id).bind(rows["observation"].as_str().unwrap()).execute(&db.pool).await.unwrap();
+    sqlx::query("INSERT INTO product_observation_batches(product_id,baseline,batch_key,payload) VALUES(?,?,?,?)").bind(product).bind(1i64).bind(&input.idempotency_key).bind(rows["batch"].as_str().unwrap()).execute(&db.pool).await.unwrap();
+    assert!(
+        db.ingest_product_observations(input)
+            .await
+            .unwrap()
+            .replayed
+    );
 }

@@ -16,6 +16,7 @@ fn make_obs(id: &str, product: &str, result: ObservationResult, recorded_at: i64
         source: ObservationSource {
             collector: "test".to_string(),
             version: "0.1.0".to_string(),
+            causality: None,
             artifact_ref: None,
         },
         recorded_at: ts(recorded_at),
@@ -39,6 +40,7 @@ fn make_obs_at_baseline(
         source: ObservationSource {
             collector: "test".to_string(),
             version: "0.1.0".to_string(),
+            causality: None,
             artifact_ref: None,
         },
         recorded_at: ts(recorded_at),
@@ -137,6 +139,7 @@ fn no_findings_on_clean_data() {
         source: ObservationSource {
             collector: "test".to_string(),
             version: "0.1.0".to_string(),
+            causality: None,
             artifact_ref: None,
         },
         recorded_at: Utc::now(),

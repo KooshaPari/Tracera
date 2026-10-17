@@ -1,5 +1,7 @@
 #[path = "routes/auth.rs"]
 mod auth_routes;
+#[path = "routes/benchmark_observations.rs"]
+mod benchmark_observation_routes;
 #[path = "routes/export_import.rs"]
 mod export_import_routes;
 #[path = "routes/graph.rs"]
@@ -134,6 +136,7 @@ pub(crate) fn build_router_with_auth(
     let workos_router = build_workos_router::<AppState>(state.workos_client.clone());
     Router::new()
         .merge(product_observation_routes::routes())
+        .merge(benchmark_observation_routes::routes())
         .merge(export_import_routes::routes())
         .merge(specs_routes::routes())
         .merge(w9_routes::routes())
