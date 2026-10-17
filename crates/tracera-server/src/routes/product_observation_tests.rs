@@ -2,12 +2,39 @@ use super::*;
 use axum::body::{to_bytes, Body};
 use std::{sync::Arc, time::Instant};
 use tower::ServiceExt;
-async fn fixture() -> (Router, Arc<crate::sqlite_store::SqliteStore>) {
+static PRODUCT_ENV: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+struct AllowlistGuard {
+    previous: Option<std::ffi::OsString>,
+    _lock: tokio::sync::MutexGuard<'static, ()>,
+}
+impl Drop for AllowlistGuard {
+    fn drop(&mut self) {
+        match self.previous.take() {
+            Some(value) => std::env::set_var("TRACERA_PRODUCT_IDS", value),
+            None => std::env::remove_var("TRACERA_PRODUCT_IDS"),
+        }
+    }
+}
+async fn fixture() -> (
+    Router,
+    Arc<crate::sqlite_store::SqliteStore>,
+    AllowlistGuard,
+) {
     fixture_auth(None).await
 }
 async fn fixture_auth(
     auth: crate::auth::AuthToken,
-) -> (Router, Arc<crate::sqlite_store::SqliteStore>) {
+) -> (
+    Router,
+    Arc<crate::sqlite_store::SqliteStore>,
+    AllowlistGuard,
+) {
+    let lock = PRODUCT_ENV.lock().await;
+    let guard = AllowlistGuard {
+        previous: std::env::var_os("TRACERA_PRODUCT_IDS"),
+        _lock: lock,
+    };
+    std::env::set_var("TRACERA_PRODUCT_IDS", " alpha, other ");
     let pool = crate::db::connect_sqlite("sqlite::memory:").await.unwrap();
     sqlx::migrate!("./migrations-sqlite")
         .run(&pool)
@@ -24,18 +51,39 @@ async fn fixture_auth(
         neo4j: None,
         r2: None,
     };
-    (crate::router::build_router_with_auth(state, auth), store)
+    (
+        crate::router::build_router_with_auth(state, auth),
+        store,
+        guard,
+    )
 }
 fn payload() -> Value {
     json!({"product_id":"alpha","baseline":1,"idempotency_key":"run-1", "intents":[{"id":"storage","kind":"Capability","title":"Storage","description":"durability","status":"Accepted","baseline":1}],"observations":[{"id":"obs-1","product_id":"alpha","baseline":1,"kind":"TestResult","result":"Failed","source":{"collector":"cargo-test","version":"1","artifact_ref":"file:report.xml"},"recorded_at":"2026-10-16T00:00:00Z","capability_id":"storage"}]})
 }
 async fn call(app: Router, method: &str, uri: &str, body: Value) -> (StatusCode, Value) {
+    request(app, method, uri, body, true).await
+}
+async fn request(
+    app: Router,
+    method: &str,
+    uri: &str,
+    body: Value,
+    authenticated: bool,
+) -> (StatusCode, Value) {
     let token = crate::middleware::issue_csrf_token().await;
     let response = app
         .oneshot(
             axum::http::Request::builder()
                 .method(method)
                 .uri(uri)
+                .header(
+                    "authorization",
+                    if authenticated {
+                        "Bearer test-only-token"
+                    } else {
+                        "Bearer invalid"
+                    },
+                )
                 .header("content-type", "application/json")
                 .header("origin", "http://127.0.0.1:18000")
                 .header("x-csrf-token", token)
@@ -53,7 +101,7 @@ async fn call(app: Router, method: &str, uri: &str, body: Value) -> (StatusCode,
 }
 #[tokio::test]
 async fn mounted_ingest_read_detect_and_foreign_scope() {
-    let (app, _) = fixture().await;
+    let (app, _, _guard) = fixture().await;
     let uri = "/api/v1/products/alpha/baselines/1/observations";
     let (status, receipt) = call(app.clone(), "POST", uri, payload()).await;
     assert_eq!(status, StatusCode::OK);
@@ -80,7 +128,7 @@ async fn mounted_ingest_read_detect_and_foreign_scope() {
         )
         .await
         .0,
-        StatusCode::NOT_FOUND
+        StatusCode::FORBIDDEN
     );
     assert!(call(
         app,
@@ -94,7 +142,7 @@ async fn mounted_ingest_read_detect_and_foreign_scope() {
 }
 #[tokio::test]
 async fn unavailable_database_fails_closed() {
-    let (app, store) = fixture().await;
+    let (app, store, _guard) = fixture().await;
     store.pool.close().await;
     assert!(call(
         app,
@@ -109,7 +157,7 @@ async fn unavailable_database_fails_closed() {
 
 #[tokio::test]
 async fn immutable_replay_conflict_is_409_and_invalid_is_422() {
-    let (app, _) = fixture().await;
+    let (app, _, _guard) = fixture().await;
     let uri = "/api/v1/products/alpha/baselines/1/observations";
     assert_eq!(
         call(app.clone(), "POST", uri, payload()).await.0,
@@ -130,20 +178,21 @@ async fn immutable_replay_conflict_is_409_and_invalid_is_422() {
 }
 #[tokio::test]
 async fn mounted_routes_retain_authentication_and_body_limit() {
-    let (app, _) = fixture_auth(Some(Arc::from("test-only-token"))).await;
+    let (app, _, _guard) = fixture_auth(Some(Arc::from("test-only-token"))).await;
     let uri = "/api/v1/products/alpha/baselines/1/observations";
     for method in ["GET", "POST"] {
         assert_eq!(
-            call(app.clone(), method, uri, payload()).await.0,
+            request(app.clone(), method, uri, payload(), false).await.0,
             StatusCode::UNAUTHORIZED
         );
     }
     assert_eq!(
-        call(
+        request(
             app.clone(),
             "POST",
             "/api/v1/products/alpha/baselines/1/benchmark-observations",
-            payload()
+            payload(),
+            false
         )
         .await
         .0,
@@ -181,7 +230,7 @@ async fn mounted_routes_retain_authentication_and_body_limit() {
 
 #[tokio::test]
 async fn benchmark_adapter_mounts_preserves_causality_and_rejects_conflicts() {
-    let (app, _) = fixture().await;
+    let (app, _, _guard) = fixture().await;
     let envelope: Value =
         serde_json::from_str(include_str!("../../testdata/helios-benchmark-run.json")).unwrap();
     let source = payload();
@@ -298,11 +347,84 @@ async fn benchmark_adapter_mounts_preserves_causality_and_rejects_conflicts() {
         call(
             app,
             "POST",
-            "/api/v1/products/beta/baselines/1/benchmark-observations",
+            "/api/v1/products/other/baselines/1/benchmark-observations",
             input
         )
         .await
         .0,
         StatusCode::UNPROCESSABLE_ENTITY
     );
+}
+
+#[tokio::test]
+async fn product_allowlist_denies_every_foreign_route_with_valid_bearer() {
+    let (app, _, _guard) = fixture_auth(Some(Arc::from("test-only-token"))).await;
+    assert_eq!(
+        call(
+            app.clone(),
+            "POST",
+            "/api/v1/products/alpha/baselines/1/observations",
+            payload()
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    assert_eq!(
+        call(
+            app.clone(),
+            "GET",
+            "/api/v1/products/alpha/baselines/1/observations",
+            Value::Null
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    for (method, endpoint) in [
+        ("GET", "observations"),
+        ("POST", "observations"),
+        ("GET", "findings"),
+        ("POST", "benchmark-observations"),
+    ] {
+        let (status, body) = call(
+            app.clone(),
+            method,
+            &format!("/api/v1/products/beta/baselines/1/{endpoint}"),
+            json!({}),
+        )
+        .await;
+        assert_eq!(status, StatusCode::FORBIDDEN, "{method} {endpoint}");
+        assert_eq!(body, json!({"error":"product_access_denied"}));
+    }
+}
+#[tokio::test]
+async fn unset_and_empty_product_allowlist_deny_every_route() {
+    let (app, _, _guard) = fixture_auth(Some(Arc::from("test-only-token"))).await;
+    for allowlist in [None, Some(""), Some(" , ")] {
+        match allowlist {
+            None => std::env::remove_var("TRACERA_PRODUCT_IDS"),
+            Some(value) => std::env::set_var("TRACERA_PRODUCT_IDS", value),
+        }
+        for (method, endpoint) in [
+            ("GET", "observations"),
+            ("POST", "observations"),
+            ("GET", "findings"),
+            ("POST", "benchmark-observations"),
+        ] {
+            let (status, body) = call(
+                app.clone(),
+                method,
+                &format!("/api/v1/products/alpha/baselines/1/{endpoint}"),
+                json!({}),
+            )
+            .await;
+            assert_eq!(
+                status,
+                StatusCode::FORBIDDEN,
+                "{allowlist:?} {method} {endpoint}"
+            );
+            assert_eq!(body, json!({"error":"product_access_denied"}));
+        }
+    }
 }

@@ -267,9 +267,12 @@ impl ContradictionDetector {
                     product_id: product_id.clone(),
                     capability_id: capability_id.clone(),
                     message: format!(
-                        "Product '{product_id}', capability {:?}, has both passing and failing \
+                        "Product '{product_id}', {}, has both passing and failing \
                          observations at baseline {baseline}. Resolution is required.",
                         capability_id
+                            .as_ref()
+                            .map(|id| format!("capability '{id}'"))
+                            .unwrap_or_else(|| "product-level observations".into())
                     ),
                     evidence,
                     detector_version: version.clone(),

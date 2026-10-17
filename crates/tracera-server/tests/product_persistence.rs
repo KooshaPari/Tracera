@@ -194,6 +194,43 @@ async fn concurrent_exact_replay_is_one_atomic_write() {
 
 #[tokio::test]
 #[ignore = "requires explicitly isolated TRACERA_Q1_POSTGRES_URL"]
+async fn postgres_all_migrations_from_empty_database_ingest_observation() {
+    use tracera_server::pg_store::PgStore;
+    let url = std::env::var("TRACERA_Q1_POSTGRES_URL").expect("isolated database URL required");
+    let pool = tracera_server::db::connect_postgres(&url).await.unwrap();
+    let tables: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema')",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        tables, 0,
+        "migration proof requires an empty isolated database"
+    );
+    let migrations = sqlx::migrate!("./migrations-postgres");
+    migrations.run(&pool).await.unwrap();
+    let applied: i64 = sqlx::query_scalar("SELECT count(*) FROM _sqlx_migrations WHERE success")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(applied as usize, migrations.iter().count());
+    let db = PgStore::new(pool);
+    let input = batch("fresh-migrations");
+    let receipt = db.ingest_product_observations(input.clone()).await.unwrap();
+    assert_eq!(receipt.accepted, 1);
+    let model = db
+        .product_observations("fresh-migrations".into(), 1)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(model.observations.len(), 1);
+    assert_eq!(model.observations[0].id, input.observations[0].id);
+    db.pool.close().await;
+}
+
+#[tokio::test]
+#[ignore = "requires explicitly isolated TRACERA_Q1_POSTGRES_URL"]
 async fn postgres_atomic_replay_and_restart() {
     use tracera_server::pg_store::PgStore;
     let url = std::env::var("TRACERA_Q1_POSTGRES_URL").expect("isolated database URL required");
@@ -240,6 +277,20 @@ async fn postgres_atomic_replay_and_restart() {
         .await
         .unwrap()
         .is_none());
+    let first = batch(&format!("pg-race-{}", uuid::Uuid::new_v4()));
+    let mut second = first.clone();
+    second.baseline = BaselineRevision(2);
+    second.intents[0].baseline = BaselineRevision(2);
+    second.observations[0].baseline = BaselineRevision(2);
+    let (a, b) = tokio::join!(
+        reopened.ingest_product_observations(first),
+        reopened.ingest_product_observations(second)
+    );
+    assert!(matches!(
+        (a, b),
+        (Ok(_), Err(tracera_server::store::StoreError::Conflict(_)))
+            | (Err(tracera_server::store::StoreError::Conflict(_)), Ok(_))
+    ));
     reopened.pool.close().await;
 }
 

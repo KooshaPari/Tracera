@@ -1,5 +1,6 @@
 //! Connect the existing benchmark envelope adapter to durable product evidence.
 //! Product/capability assignment is explicit; run/session identities remain provenance.
+use super::auth_routes::ProductScope;
 use crate::{
     product::{
         observation::BenchmarkCausality, persistence::ProductObservationBatch, AcceptedIntent,
@@ -8,12 +9,7 @@ use crate::{
     },
     AppState,
 };
-use axum::{
-    extract::{Path, State},
-    http::StatusCode,
-    routing::post,
-    Json, Router,
-};
+use axum::{extract::State, http::StatusCode, routing::post, Json, Router};
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -110,11 +106,11 @@ fn convert(input: Request) -> Result<ProductObservationBatch, (StatusCode, Json<
 }
 async fn ingest(
     State(state): State<AppState>,
-    Path(scope): Path<(String, u64)>,
+    ProductScope(scope): ProductScope,
     Json(input): Json<Request>,
 ) -> Result<Json<crate::product::persistence::ProductIngestReceipt>, (StatusCode, Json<Value>)> {
     let batch = convert(input)?;
-    super::product_observation_routes::ingest(State(state), Path(scope), Json(batch)).await
+    super::product_observation_routes::ingest(State(state), ProductScope(scope), Json(batch)).await
 }
 pub(crate) fn routes() -> Router<AppState> {
     Router::new().route(

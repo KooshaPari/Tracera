@@ -30,6 +30,7 @@
         }
       ],
       "get": {
+        "security": [{ "bearerAuth": [] }],
         "operationId": "readProductObservations",
         "responses": {
           "200": {
@@ -49,7 +50,7 @@
             "description": "Bearer authentication required when configured"
           },
           "403": {
-            "description": "Mutation missing valid CSRF origin/token"
+            "description": "Product id is not allowlisted, or mutation missing valid CSRF origin/token"
           },
           "404": {
             "description": "Product baseline absent"
@@ -69,6 +70,7 @@
         }
       },
       "post": {
+        "security": [{ "bearerAuth": [] }],
         "operationId": "ingestProductObservations",
         "requestBody": {
           "required": true,
@@ -98,7 +100,7 @@
             "description": "Bearer authentication required when configured"
           },
           "403": {
-            "description": "Mutation missing valid CSRF origin/token"
+            "description": "Product id is not allowlisted, or mutation missing valid CSRF origin/token"
           },
           "404": {
             "description": "Product baseline absent"
@@ -142,6 +144,7 @@
         }
       ],
       "get": {
+        "security": [{ "bearerAuth": [] }],
         "operationId": "detectProductFindings",
         "responses": {
           "200": {
@@ -161,7 +164,7 @@
             "description": "Bearer authentication required when configured"
           },
           "403": {
-            "description": "Mutation missing valid CSRF origin/token"
+            "description": "Product id is not allowlisted, or mutation missing valid CSRF origin/token"
           },
           "404": {
             "description": "Product baseline absent"
@@ -205,6 +208,7 @@
         }
       ],
       "post": {
+        "security": [{ "bearerAuth": [] }],
         "operationId": "ingestBenchmarkObservation",
         "description": "Reuses existing benchmark envelope validation. Causality is asserted source metadata; it does not prove authenticated producer or tenant ownership. Recorded time must be retained on retry. Status passed=>Passed, failed/timeout=>Failed, cancelled=>Unknown. Complete canonical envelope hash is immutable.",
         "requestBody": {
@@ -235,10 +239,7 @@
             "description": "Bearer authentication required when configured"
           },
           "403": {
-            "description": "Mutation missing valid CSRF origin/token"
-          },
-          "404": {
-            "description": "Product baseline absent"
+            "description": "Product id is not allowlisted, or mutation missing valid CSRF origin/token"
           },
           "409": {
             "description": "Immutable evidence/replay conflict or capacity reached"
@@ -257,6 +258,9 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer" }
+    },
     "schemas": {
       "ObservationSource": {
         "type": "object",

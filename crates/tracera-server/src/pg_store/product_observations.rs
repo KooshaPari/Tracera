@@ -62,8 +62,13 @@ pub async fn ingest(
                 ));
             }
         } else {
-            sqlx::query("INSERT INTO product_observations (product_id,observation_id,baseline,capability_id,payload) VALUES ($1,$2,$3,$4,$5)")
+            let inserted = sqlx::query("INSERT INTO product_observations (product_id,observation_id,baseline,capability_id,payload) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (product_id, observation_id) DO NOTHING")
                 .bind(product).bind(&observation.id).bind(baseline).bind(&observation.capability_id).bind(value).execute(&mut *tx).await?;
+            if inserted.rows_affected() == 0 {
+                return Err(StoreError::Conflict(
+                    "observation identity conflicts with immutable evidence".into(),
+                ));
+            }
             accepted += 1;
         }
     }
