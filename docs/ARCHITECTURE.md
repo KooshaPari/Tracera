@@ -1,5 +1,8 @@
 # Tracera Architecture
 
+> **Architecture scope amendment (2026-10-12, proposed):** The product-first, persistent Tracera model is the intended canonical product/system authority; the trace/observability architecture described below remains a real/historical supporting subsystem, not the complete desired product. The proposed semantic-to-spatial projection compiles *read-only* product/relationship/evidence views into reversible, inspectable 3D/2D/list representations. Neither its renderer nor its contract has been verified as implemented. See [spatial dossier](product-spatial-twin/README.md), [WP-07](WP-07-product-graph-design.md), and [ADR-VIZ-001](governance/ADR-VIZ-001-spatial-product-projections.md).
+
+
 > Canonical architecture for Tracera — the Phenotype-org trace + observability +
 > audit ledger for agentic and LLM workflows. Companion: `docs/CONTRIBUTING.md`.
 > The repo-root `ARCHITECTURE.md` is the long-form design narrative; this

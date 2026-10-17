@@ -17,6 +17,8 @@ viewer over OKF-bundled session history. The supported runtime is the Rust
 workspace; older Python/FastAPI references are retained only as historical
 migration material.
 
+> **Product direction (2026-10-12):** Tracera's longer-range identity is a persistent, canonical, traversable product/system graph; the historical trace/observability ledger is a supporting capability and earlier release slice, not the full intended product. A **spatial product twin** is proposed as a derived, evidence-preserving view, **not shipped**. See [intent/genesis and documentation dossier](docs/product-spatial-twin/README.md), [spatial spec](docs/specs/015-spatial-product-twin.md), and [proposed ADR](docs/governance/ADR-VIZ-001-spatial-product-projections.md). Existing install/CLI descriptions below document historical/current implementation surfaces, not proof of complete product direction.
+
 ## Where to start
 
 - Docs: see [`docs/01-getting-started/README.md`](docs/01-getting-started/README.md)
