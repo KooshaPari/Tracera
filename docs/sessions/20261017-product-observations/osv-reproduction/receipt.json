@@ -28,5 +28,24 @@
     "exit": 0,
     "result": "EMPTY results despite one extracted package; call-analysis and target stdlib coverage NOT demonstrated",
     "equivalence": "native Darwin execution is not Linux container execution"
+  },
+  "independent_native_review": {
+    "evidence_dir": "independent-native-review",
+    "recorded_path_go_calls": 0,
+    "call_log_created": false,
+    "coverage": "UNPROVEN",
+    "limitation": "No recorded PATH-wrapper calls is not global process proof; conditional analysis may explain no invocation and does not establish a defect."
+  },
+  "evidence_sha256": {
+    "UNVALIDATED-workflow-candidate.patch": "ed587753910b5904fb5ab30faa8b3c09488e627c2606990c455db2f2abecd2d7",
+    "independent-native-review/instrumented-go-wrapper.sh": "4bf8fa8382a74797f2e16d2120a6b6495f4396cdcb45a56e46de587684f25fb7",
+    "independent-native-review/stderr.log": "52b6cf723ff33f3703b1f4527daffe2673e39fdd3150f3013ce6b87f095961e1",
+    "independent-native-review/stdout.json": "54345d5194d238b6017d0f3181f392109ce35023cc6b4bdfa8c134943dcb578e",
+    "native-target-go12513.json": "54345d5194d238b6017d0f3181f392109ce35023cc6b4bdfa8c134943dcb578e",
+    "native-target-go12513.log": "db35185144431e264adb454d77ebef67b20918ed0cb4c31cbdd08886df940947",
+    "new-scanner-auto-full.log": "619c94b5c4068d5428fcf7d3444f669365f74d08a69c4829b87f1b3f3d500533",
+    "new-scanner-missing-negative.log": "31c00731249db1cb789bb94384dc514fb0972c2c140b6c9a3c3e01c6a680e50f",
+    "old-scanner-env-candidate.log": "5db77df1c5ee29a65f02cb649863f68de0223968319d81396b6a7e4715d8a60e",
+    "independent-native-review/receipt.json": "fc420c7ef1528d3f5d597c8a226a53bb2ed29e923ce66f6f76ad3c143f2c2f3f"
   }
 }

@@ -70,3 +70,20 @@ The exact native JSON and diagnostics are preserved alongside this record.
 Native Darwin execution is not equivalent to the Linux image execution; neither
 the runtime-target obligation nor the workflow repair is accepted by this result.
 No additional infrastructure pursuit or broad dependency changes were made.
+
+## Independent instrumented review
+
+An independent read-only evaluator repeated the official native scan with
+`--call-analysis=go --all-vulns --all-packages --format=json` and
+`GOTOOLCHAIN=go1.25.13`. Its PATH Go wrapper recorded zero calls (no call-log
+file was created), while the scanner exited 0 and returned `results: []`.
+The original receipt, stdout, stderr and wrapper are preserved unchanged under
+`osv-reproduction/independent-native-review/`; byte hashes are recorded in the
+parent receipt. The wrapper retains its original temporary output path as
+evidence and is not a repository execution tool.
+
+Absence of PATH-wrapper calls is not global process-observation proof. Conditional
+analysis may explain the lack of invocation; this is not necessarily a scanner
+bug. Actual govulncheck coverage remains **UNPROVEN**, and neither scanner
+execution acceptance nor the intended target-runtime security gate is earned.
+The workflow candidate remains uncommitted and unchanged.

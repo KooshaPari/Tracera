@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/tmp/tracera-osv-native-20261017/osv-scanner_darwin_arm64",
+    "scan",
+    "source",
+    "--call-analysis=go",
+    "--all-vulns",
+    "--all-packages",
+    "--format=json",
+    "sidecar/go/go.mod"
+  ],
+  "exit_code": 0,
+  "GOTOOLCHAIN": "go1.25.13",
+  "input_sha256": "b0c15a8702b3fe9e8cb9405711d3a0d734ff67778bdb2e7384d04247b18a7be9"
+}
