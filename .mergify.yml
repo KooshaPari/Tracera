@@ -1,24 +1,34 @@
-# Mergify Configuration — Optimized for multi-language monorepos
+# Mergify Configuration - multi-language monorepo
 # Docs: https://docs.mergify.com/
-# Tracera-specific rules removed: deprecated commit_message_template.
+# Merges route through the merge queue; ci.yml already triggers on merge_group.
+# Required gate: the aggregate "CI" job in .github/workflows/ci.yml
+# (roll-up of all per-language lint/test + security + dependency-review + trunk-check).
+
+queue_rules:
+  - name: default
+    queue_conditions:
+      - check-success=CI
+    merge_conditions:
+      - check-success=CI
+    merge_method: squash
 
 pull_request_rules:
-  # Auto-merge when all CI checks pass and PR is approved
-  - name: Auto-merge when approved + CI green
+  # Human/agent PRs opt in with the automerge label; single maintainer, no review gate
+  - name: Queue PRs labeled automerge
     conditions:
-      - "#review-requested=0"
-      - "#approved-reviews-by>=1"
+      - label=automerge
       - check-success=CI
       - -conflict
       - -closed
+      - -draft
     actions:
-      merge:
-        method: squash
-        commit_message_format:
-          title: pr-title
+      queue:
+        name: default
+        merge_method: squash
+        update_method: rebase
 
-  # Auto-merge dependabot/Renovate PRs when CI passes
-  - name: Auto-merge dependency updates
+  # Dependency updates queue themselves once CI is green
+  - name: Queue dependency updates
     conditions:
       - or:
           - author=dependabot[bot]
@@ -26,14 +36,15 @@ pull_request_rules:
       - check-success=CI
       - -conflict
       - -closed
+      - -draft
     actions:
-      merge:
-        method: squash
-        commit_message_format:
-          title: pr-title
+      queue:
+        name: default
+        merge_method: squash
+        update_method: rebase
 
-  # Auto-merge bot PRs (CI configs, formatting) when CI passes
-  - name: Auto-merge bot housekeeping PRs
+  # Bot housekeeping PRs (CI configs, formatting) queue when CI passes
+  - name: Queue bot housekeeping PRs
     conditions:
       - or:
           - author=trunk-io[bot]
@@ -42,9 +53,12 @@ pull_request_rules:
       - check-success=CI
       - -conflict
       - -closed
+      - -draft
     actions:
-      merge:
-        method: squash
+      queue:
+        name: default
+        merge_method: squash
+        update_method: rebase
 
   # Label PRs based on changed files
   - name: Label Python changes
@@ -79,6 +93,17 @@ pull_request_rules:
         add:
           - typescript
 
+  # Flag conflicts so they leave the queue path until rebased
+  - name: Flag conflicts for rebase
+    conditions:
+      - conflict
+    actions:
+      label:
+        add:
+          - needs-rebase
+        remove:
+          - automerge
+
   # Close stale PRs after 30 days
   - name: Close stale PRs
     conditions:
@@ -105,16 +130,22 @@ pull_request_rules:
           **Large PR Alert**: This PR touches {{ number }} files.
           Consider splitting into smaller PRs for easier review.
 
-  # Add ready-to-merge label when all checks pass
+  # Add ready-to-merge label when all gate checks pass (current check names)
   - name: Add ready-to-merge label
     conditions:
       - -closed
       - -draft
-      - check-success=ci
-      - check-success=lint
-      - check-success=test
-      - "#approved-reviews-by>=1"
+      - check-success=ci / lint
+      - check-success=ci / test
+      - check-success=CI
     actions:
       label:
         add:
           - ready-to-merge
+
+  # Clean up merged branches
+  - name: Delete head branch after merge
+    conditions:
+      - merged
+    actions:
+      delete_head_branch: {}
