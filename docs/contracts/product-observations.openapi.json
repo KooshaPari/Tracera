@@ -3,7 +3,7 @@
   "info": {
     "title": "Tracera durable product observations",
     "version": "1.0.0",
-    "description": "One product and immutable baseline per atomic batch. Canonical identity ordering; exact replay is idempotent. Authentication and CSRF follow the mounted server middleware."
+    "description": "One product and immutable baseline per atomic batch. Canonical identity ordering; exact replay is idempotent. Authentication and CSRF follow the mounted server middleware. All four product operations require TRACERA_PRODUCT_IDS: comma-separated exact product IDs with whitespace trimmed and empty entries ignored. Missing, empty or nonmatching allowlists fail closed with 403 product_access_denied after middleware checks. TRACERA_AUTH_TOKEN configures one process-global bearer; absent/empty permits anonymous loopback mode. Non-loopback startup requires an explicit TRACERA_PUBLIC_BIND_MODE and nonempty bearer. Mutations also require canonical Origin or Referer http://127.0.0.1:18000 and an x-csrf-token issued by GET /api/v1/csrf-token. Deployment allowlisting and shared bearer are not per-caller ACLs; benchmark tenant/run/session metadata does not establish ownership."
   },
   "paths": {
     "/api/v1/products/{product}/baselines/{baseline}/observations": {
