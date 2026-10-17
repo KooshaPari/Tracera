@@ -94,8 +94,10 @@ mod tests {
             assert!(body.get("stub").is_none());
             probed += 1;
         }
+        // Twelve journey registrations moved to routes/journeys.rs, where
+        // data and exact template-501 contracts are exercised independently.
         assert!(
-            probed > 50,
+            probed >= 48,
             "expected full registered stub cohort, got {probed}"
         );
         println!("GET reprobe: {probed} registered stub routes, zero 200 stub responses");

@@ -38,8 +38,6 @@ mod graphs;
 mod integrations;
 #[path = "item_specs.rs"]
 mod item_specs;
-#[path = "journeys.rs"]
-mod journeys;
 #[path = "libraries.rs"]
 mod libraries;
 #[path = "matrix.rs"]
@@ -118,7 +116,7 @@ pub(super) fn routes() -> Router<AppState> {
         .merge(integrations::routes())
         .merge(item_specs::routes())
         .merge(super::item_routes::w9_routes())
-        .merge(journeys::routes())
+        .merge(super::journeys_routes::w9_routes())
         .merge(libraries::routes())
         .merge(matrix::routes())
         .merge(mcp::routes())
@@ -170,7 +168,7 @@ fn templates() -> Vec<&'static str> {
         integrations::ROUTES,
         item_specs::ROUTES,
         super::item_routes::W9_ROUTES,
-        journeys::ROUTES,
+        super::journeys_routes::ROUTES,
         libraries::ROUTES,
         matrix::ROUTES,
         mcp::ROUTES,
