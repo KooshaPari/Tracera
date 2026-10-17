@@ -52,7 +52,7 @@
     "shortDescription": "Tracera desktop shell",
     "longDescription": "Tauri 2 desktop shell that hosts the Tracera Svelte frontend, with a system tray and native menu.",
     "publisher": "<REDACTED>",
-    "homepage": "https://github.com/<REDACTED>/Tracera",
+    "homepage": "https://github.com/KooshaPari/Tracera",
     "licenseFile": "../../LICENSE"
   }
 }

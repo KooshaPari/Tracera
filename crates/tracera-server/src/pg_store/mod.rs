@@ -1,3 +1,4 @@
+mod items;
 /// PgStore — Postgres backend implementing `Store`.
 ///
 /// Uses runtime `sqlx::query()` (not macros) so `env -u DATABASE_URL cargo build`
@@ -39,6 +40,20 @@ impl PgStore {
 }
 
 impl Store for PgStore {
+    fn list_items(
+        &self,
+        filter: crate::item::ItemFilter,
+        limit: i64,
+        offset: i64,
+    ) -> BoxFuture<'_, StoreResult<crate::item::ItemPage>> {
+        Box::pin(items::list(&self.pool, filter, limit, offset))
+    }
+    fn get_item(&self, id: String) -> BoxFuture<'_, StoreResult<Option<crate::item::Item>>> {
+        Box::pin(items::get(&self.pool, id))
+    }
+    fn create_item(&self, item: crate::item::Item) -> BoxFuture<'_, StoreResult<()>> {
+        Box::pin(items::create(&self.pool, item))
+    }
     fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>> {
         Box::pin(evidence::list_evidence(&self.pool))
     }

@@ -23,6 +23,7 @@
 pub mod cache;
 pub mod datastore;
 pub mod db;
+pub mod item;
 pub mod neo4j;
 pub mod pg_store;
 extern crate self as tracera_server;

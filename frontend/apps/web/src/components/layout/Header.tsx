@@ -42,7 +42,7 @@ export const Header = function Header(): JSX.Element {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const { unreadCount } = useNotifications();
+  const { unreadCount, error: notificationError } = useNotifications();
 
   const projectId = getProjectIdFromPathname(location.pathname);
   const { data: project } = useProject(projectId);
@@ -85,7 +85,11 @@ export const Header = function Header(): JSX.Element {
       <div className="flex items-center gap-2">
         <div className="text-muted-foreground hidden items-center gap-1 text-xs sm:flex">
           <Bell className="h-4 w-4" />
-          <span>{unreadCount}</span>
+          <span>
+            {notificationError
+              ? "Notifications unavailable"
+              : (unreadCount ?? "Notifications pending")}
+          </span>
         </div>
 
         {!user ? (

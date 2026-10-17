@@ -58,7 +58,12 @@ describe("pagination contract tests", () => {
           count: 3,
           has_more: true,
           items: [
-            { id: "cursor-item-1", project_id: "proj-1", title: "Cursor Item", type: "requirement" },
+            {
+              id: "cursor-item-1",
+              project_id: "proj-1",
+              title: "Cursor Item",
+              type: "requirement",
+            },
           ],
           next_cursor: "eyJpZCI6ImN1cnNvci1pdGVtLTEifQ==",
         },
@@ -69,8 +74,8 @@ describe("pagination contract tests", () => {
       const result = await api.items.list({ limit: 1, cursor: undefined });
 
       // items.list returns the cursor-pagination response as-is for cursor envelopes
-      expect((result as Record<string, unknown>)).toHaveProperty("has_more", true);
-      expect((result as Record<string, unknown>)).toHaveProperty("next_cursor");
+      expect(result as Record<string, unknown>).toHaveProperty("has_more", true);
+      expect(result as Record<string, unknown>).toHaveProperty("next_cursor");
       expect(typeof (result as Record<string, unknown>).next_cursor).toBe("string");
       expect(Array.isArray((result as Record<string, unknown>).items)).toBe(true);
     });
