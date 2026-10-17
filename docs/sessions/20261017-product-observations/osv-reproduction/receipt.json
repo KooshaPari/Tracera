@@ -1,0 +1,17 @@
+{
+  "subject": "2f1d36dc5264e0b36811036913ed9b47083ef968",
+  "observed_utc": "2026-10-17T20:40:00Z",
+  "old_image_digest": "sha256:9b81ddea0cb46acf25223601462d97c8bfb595d8f4a0941a00c8982a365e0b44",
+  "new_multiarch_image_digest": "sha256:d54770fe0b09493894e76a02aaed9f51a0513fa57c5186452a755d257b0068a6",
+  "new_image_platform": "linux/amd64",
+  "new_scanner_target_toolchain": "auto; NOT qualified against required go1.25.13",
+  "inputs_sha256": {
+    "Cargo.lock": "55be7132206efcf78896bdcd3f76b1d22f04bb8ce28c48788106c9f912271e88",
+    "frontend/bun.lock": "baa46878e486c4a0cbbcfefec44cc445bfd72a8df50e532a7b9a80253114c130",
+    "sidecar/go/go.mod": "b0c15a8702b3fe9e8cb9405711d3a0d734ff67778bdb2e7384d04247b18a7be9"
+  },
+  "new_scan_native_exit": 1,
+  "missing_manifest_native_exit": 127,
+  "security_gate": "UNACCEPTED",
+  "workflow_candidate": "uncommitted; not validated for target Go runtime"
+}
