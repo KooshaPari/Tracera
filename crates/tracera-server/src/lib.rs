@@ -25,6 +25,8 @@ pub mod datastore;
 pub mod db;
 pub mod neo4j;
 pub mod pg_store;
+extern crate self as tracera_server;
+
 pub mod product;
 pub mod r2;
 pub mod sqlite_store;

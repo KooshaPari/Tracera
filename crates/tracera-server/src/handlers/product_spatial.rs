@@ -82,7 +82,7 @@ pub(crate) async fn get_spatial_projection(
 mod tests {
     use super::*;
     #[test]
-    fn view_discriminant_is_strict_and_non-implicit() {
+    fn view_discriminant_is_strict_and_non_implicit() {
         assert_eq!(view_kind(None), Ok(ViewKind::Assembly));
         assert_eq!(view_kind(Some("hybrid")), Ok(ViewKind::Hybrid));
         assert!(view_kind(Some("other")).is_err());
