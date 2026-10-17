@@ -13,5 +13,20 @@
   "new_scan_native_exit": 1,
   "missing_manifest_native_exit": 127,
   "security_gate": "UNACCEPTED",
-  "workflow_candidate": "uncommitted; not validated for target Go runtime"
+  "workflow_candidate": "uncommitted; not validated for target Go runtime",
+  "native_fallback": {
+    "asset": "osv-scanner_darwin_arm64 v2.7.0",
+    "sha256": "d4926ef8da134332543be276dff157e4c170f99ad91fc48e89448a8816bdf70b",
+    "release_checksum_verified": true,
+    "scanner_commit": "bfe2f84abd2f09fe0b83ba7f6dad40d296762f40",
+    "scanner_build_go": "go1.27.0",
+    "target_env": {
+      "GOTOOLCHAIN": "go1.25.13",
+      "GOOS": "linux",
+      "GOARCH": "amd64"
+    },
+    "exit": 0,
+    "result": "EMPTY results despite one extracted package; call-analysis and target stdlib coverage NOT demonstrated",
+    "equivalence": "native Darwin execution is not Linux container execution"
+  }
 }

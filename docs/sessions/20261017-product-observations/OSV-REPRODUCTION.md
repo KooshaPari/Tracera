@@ -52,3 +52,21 @@ First five rows are crates.io / Cargo.lock; last two are npm / frontend/bun.lock
 No broad dependency update, waiver, manifest downgrade, hosted rerun, paid-service
 change, merge, or production change was made. Next: qualify the exact target Go
 runtime with the new scanner, then independently disposition each finding.
+
+## Service-free native fallback
+
+The official v2.7.0 Darwin ARM64 asset was downloaded in an owned temporary
+directory and matched the published SHA256SUMS entry:
+`d4926ef8da134332543be276dff157e4c170f99ad91fc48e89448a8816bdf70b`.
+It reports commit `bfe2f84abd2f09fe0b83ba7f6dad40d296762f40`, built Go 1.27.0.
+The installed target toolchain independently reports Go 1.25.13. Running the
+scanner with `GOTOOLCHAIN=go1.25.13 GOOS=linux GOARCH=amd64`, explicit Go call
+analysis and all vulnerabilities returned 0 but an **empty results array**,
+despite reporting one extracted package. Explicit lockfile/all-package variants
+repeated that result. This does not prove govulncheck ran or establish target
+stdlib coverage. The newer extraction/query behavior remains unresolved.
+
+The exact native JSON and diagnostics are preserved alongside this record.
+Native Darwin execution is not equivalent to the Linux image execution; neither
+the runtime-target obligation nor the workflow repair is accepted by this result.
+No additional infrastructure pursuit or broad dependency changes were made.
