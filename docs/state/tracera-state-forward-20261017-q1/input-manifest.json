@@ -1,0 +1,196 @@
+{
+  "snapshot_id": "tracera-state-forward-20261017-q1",
+  "observed_at": "2026-10-17T09:14:25.893438+00:00",
+  "inputs": [
+    {
+      "path": "inputs/sfd/CONTRACT.md",
+      "original": "/tmp/tracera-sfd-contract-05e1638/handbook/specs/assessment/state-forward-docket-v1/CONTRACT.md",
+      "revision": "05e163820f1a207f2f827a5485ce6ca04084107f",
+      "authority": "governing contract",
+      "sha256": "ff61a6386e16d29bc094940c2f63f0ba5003bc53ae0f2f727702574b37352a84"
+    },
+    {
+      "path": "inputs/sfd/ADOPTION.md",
+      "original": "/tmp/tracera-sfd-contract-05e1638/handbook/specs/assessment/state-forward-docket-v1/ADOPTION.md",
+      "revision": "05e163820f1a207f2f827a5485ce6ca04084107f",
+      "authority": "governing contract",
+      "sha256": "933b4131fd56df20bf54c2ad86170548c1b15a6061817b43db1a3d0dc22af5c5"
+    },
+    {
+      "path": "inputs/sfd/schemas/snapshot.schema.json",
+      "original": "/tmp/tracera-sfd-contract-05e1638/handbook/specs/assessment/state-forward-docket-v1/schemas/snapshot.schema.json",
+      "revision": "05e163820f1a207f2f827a5485ce6ca04084107f",
+      "authority": "governing contract",
+      "sha256": "44bce147ba86eb756825000833dd880490a2208547ccd347befc1d2e15e0c83a"
+    },
+    {
+      "path": "inputs/sfd/tools/sfd.py",
+      "original": "/tmp/tracera-sfd-contract-05e1638/handbook/specs/assessment/state-forward-docket-v1/tools/sfd.py",
+      "revision": "05e163820f1a207f2f827a5485ce6ca04084107f",
+      "authority": "governing contract",
+      "sha256": "86a0702ebf75b51e4e0860d259a6a01590dca3b738ee9438b66b5fc9cd48b5fd"
+    },
+    {
+      "path": "inputs/registry-intent.md",
+      "original": "/tmp/tracera-sfd-contract-05e1638/docs/intent/Tracera.md",
+      "revision": "05e163820f1a207f2f827a5485ce6ca04084107f",
+      "authority": "intent authority; historical runtime statements not current proof",
+      "sha256": "75e1712da2809f2fbf9a33c6ad03c55af4b84a68c80879e9b11a30490419f5fd"
+    },
+    {
+      "path": "inputs/registry-cvp.md",
+      "original": "/tmp/tracera-sfd-contract-05e1638/docs/cvp/Tracera.md",
+      "revision": "05e163820f1a207f2f827a5485ce6ca04084107f",
+      "authority": "intent authority; historical runtime statements not current proof",
+      "sha256": "d8990737c3e6b1176779c9276556bb16cd2fbe26badb5669cf127c8593184df3"
+    },
+    {
+      "path": "inputs/registry-boundary.md",
+      "original": "/tmp/tracera-sfd-contract-05e1638/docs/boundary/Tracera.md",
+      "revision": "05e163820f1a207f2f827a5485ce6ca04084107f",
+      "authority": "intent authority; historical runtime statements not current proof",
+      "sha256": "1d9f1d502a451f3f0ccfe10ecd025c7e0b8ea1a8506ccb9ad40742995f93be7b"
+    },
+    {
+      "path": "inputs/MASTER-ASSESSMENT-KIT.md",
+      "original": "/tmp/tracera-sfd-contract-05e1638/handbook/specs/assessment/agent-lab-dossiers-v1.1/MASTER-ASSESSMENT-KIT.md",
+      "revision": "05e163820f1a207f2f827a5485ce6ca04084107f",
+      "authority": "assessment authority",
+      "sha256": "c72c7173d0824cb0f4d175c07b0b4a7722ab9244b4d0facc9eb48e4da3b5cd84"
+    },
+    {
+      "path": "inputs/docs5-DOSSIER.md",
+      "original": "/Users/kooshapari/CodeProjects/docs/docs-5/products/tracera/DOSSIER.md",
+      "revision": null,
+      "authority": "proposed program; not accepted replacement identity",
+      "sha256": "95e2892cc0f8d87d8f46f8e19052315263e9f1ef4def0b2616e3c6df881b473b"
+    },
+    {
+      "path": "inputs/TRACERA-GAP-INVENTORY.csv",
+      "original": "docs/audit/TRACERA-GAP-INVENTORY.csv",
+      "revision": "3d02c5279ad30e5da61e037669955d37f6d8f7c7",
+      "authority": "dated audit evidence; not current acceptance",
+      "sha256": "374bb2a480178414caae0e46d754b7f8baac37002f42832297a77ff878bff4df"
+    },
+    {
+      "path": "inputs/TRACERA-GAP-ISSUES.md",
+      "original": "docs/audit/TRACERA-GAP-ISSUES.md",
+      "revision": "3d02c5279ad30e5da61e037669955d37f6d8f7c7",
+      "authority": "dated audit evidence; not current acceptance",
+      "sha256": "8e59a7dae096bfcf67af47c303ffc5a59d6758bed0236929b6144e0f7fd000b2"
+    },
+    {
+      "path": "inputs/TRACERA-BASELINE-PROMISES.csv",
+      "original": "docs/audit/TRACERA-BASELINE-PROMISES.csv",
+      "revision": "3d02c5279ad30e5da61e037669955d37f6d8f7c7",
+      "authority": "dated audit evidence; not current acceptance",
+      "sha256": "e6f07b9c7e427ed8af6720aa068881f8a853463c5576310685cc0e982a751327"
+    },
+    {
+      "path": "inputs/TRACERA-API-METHODS.csv",
+      "original": "docs/audit/TRACERA-API-METHODS.csv",
+      "revision": "3d02c5279ad30e5da61e037669955d37f6d8f7c7",
+      "authority": "dated audit evidence; not current acceptance",
+      "sha256": "f86180032fa1ccd8f6c670b9dbb0cca8445c750a169caf22344476d97e4445ba"
+    },
+    {
+      "path": "inputs/TRACERA-HISTORICAL-VIEW-COVERAGE.csv",
+      "original": "docs/audit/TRACERA-HISTORICAL-VIEW-COVERAGE.csv",
+      "revision": "3d02c5279ad30e5da61e037669955d37f6d8f7c7",
+      "authority": "dated audit evidence; not current acceptance",
+      "sha256": "bd4a760f98def0aa11ac58eae7c39503bef3ba7cdf9d798070ef70685000fa92"
+    },
+    {
+      "path": "inputs/TRACERA-READINESS-AND-COMPLETION-PLAN.md",
+      "original": "docs/audit/TRACERA-READINESS-AND-COMPLETION-PLAN.md",
+      "revision": "3d02c5279ad30e5da61e037669955d37f6d8f7c7",
+      "authority": "dated audit evidence; not current acceptance",
+      "sha256": "d4854f5a1f27e8f413f948bd8f4b66af2ff94f8a8249f498b53e7094c6dee634"
+    },
+    {
+      "path": "inputs/TRACERA-Q0-RUNTIME-QUALIFICATION.md",
+      "original": "docs/audit/TRACERA-Q0-RUNTIME-QUALIFICATION.md",
+      "revision": "3d02c5279ad30e5da61e037669955d37f6d8f7c7",
+      "authority": "dated audit evidence; not current acceptance",
+      "sha256": "e109820af01aaf717afae850fcb106a135d7c8b507cd9da3a767c4fd716ad1a4"
+    },
+    {
+      "path": "inputs/source/README.md",
+      "original": "/tmp/tracera-full-docket-20261017/README.md",
+      "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+      "authority": "source or historical contract; applicability unresolved",
+      "sha256": "28e8ca9c7a08f030900322ffa85dc2bd3e3079bfa15cc8287ae326a9af7bc82b"
+    },
+    {
+      "path": "inputs/source/docs/ARCHITECTURE.md",
+      "original": "/tmp/tracera-full-docket-20261017/docs/ARCHITECTURE.md",
+      "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+      "authority": "source or historical contract; applicability unresolved",
+      "sha256": "cdb80df7ee843bbb47c8f8b836a9c4950a83fcdb2d6ad10fd1d7e9dbd926f296"
+    },
+    {
+      "path": "inputs/source/docs/FEATURE_INVENTORY.md",
+      "original": "/tmp/tracera-full-docket-20261017/docs/FEATURE_INVENTORY.md",
+      "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+      "authority": "source or historical contract; applicability unresolved",
+      "sha256": "203e2461df11f1cf6aae01bc8194cc5a0208c7edd55f09b98b845f836171a2c2"
+    },
+    {
+      "path": "inputs/source/docs/traceability.md",
+      "original": "/tmp/tracera-full-docket-20261017/docs/traceability.md",
+      "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+      "authority": "source or historical contract; applicability unresolved",
+      "sha256": "c4ff9d7360e1d66cf4a4efb18bcf649162cb7c3300c341d1e34ecc37d4a3782d"
+    },
+    {
+      "path": "inputs/source/docs/governance/policy/endpoint_traceability_map.md",
+      "original": "/tmp/tracera-full-docket-20261017/docs/governance/policy/endpoint_traceability_map.md",
+      "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+      "authority": "source or historical contract; applicability unresolved",
+      "sha256": "ac6bf7b43c8c322ab78aec73db873b66eec7cda1923d2964b8a9477455554bb4"
+    },
+    {
+      "path": "inputs/source/docs/04-guides/mcp-cli-api-matrix.md",
+      "original": "/tmp/tracera-full-docket-20261017/docs/04-guides/mcp-cli-api-matrix.md",
+      "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+      "authority": "source or historical contract; applicability unresolved",
+      "sha256": "95ed208b6908d210f3c31368fb4ece52aabd396b19b8c3a340d6e1e94dd1b271"
+    },
+    {
+      "path": "inputs/source/docs/WP-07-product-graph-design.md",
+      "original": "/tmp/tracera-full-docket-20261017/docs/WP-07-product-graph-design.md",
+      "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+      "authority": "source or historical contract; applicability unresolved",
+      "sha256": "f4555d8ee798f394ed69e8a0245b6e44ed3858bf881410e53928752da1dabcd7"
+    },
+    {
+      "path": "inputs/frontend-route-files.json",
+      "original": "complete tracked-file lexical scan",
+      "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+      "authority": "bounded lexical census; not runtime coverage",
+      "sha256": "8fc33f039435e6b990f5e441e62b35ba4683cafe8f33b9f7fa45bdbe11725169"
+    },
+    {
+      "path": "inputs/frontend-api-candidates.json",
+      "original": "complete tracked-file lexical scan",
+      "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+      "authority": "bounded lexical census; not runtime coverage",
+      "sha256": "52334a4a05724dcfa12cc0b46292e0c112707ef9a576d2082c819916161fd5a6"
+    },
+    {
+      "path": "inputs/unavailable-route-literals.json",
+      "original": "complete tracked-file lexical scan",
+      "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+      "authority": "bounded lexical census; not runtime coverage",
+      "sha256": "26f85365fc50bde3c00b39d9b5c2c3a90c253532d2fa6faec5785190f9c12765"
+    }
+  ],
+  "source_sha": "ae68aea7febd772282606bf1e142d507316cfea0",
+  "audit_sha": "3d02c5279ad30e5da61e037669955d37f6d8f7c7",
+  "sfd_sha": "05e163820f1a207f2f827a5485ce6ca04084107f",
+  "limits": [
+    "Full conversation archive and1963commits not re-inspected; direct supplied conversation and selected prior audit are separate evidence.",
+    "Lexical census covers all tracked relevant files; candidate matches include tests/constants and omit constructed URLs.",
+    "All source domains are not behaviorally qualified by this dossier."
+  ]
+}

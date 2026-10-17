@@ -1,0 +1,23 @@
+{
+  "snapshot_id": "tracera-state-forward-20261017-q1",
+  "source_sha": "3fd3310fb98fdd2f9bca99eddd669f974fb1fb61",
+  "renderer": "tools/render.py",
+  "renderer_version": "1.0",
+  "reportlab_version": "5.0.1",
+  "canonical_inputs": {
+    "owner-records.json": "5c7ca66622a953073f51291ac49875e08ba8a4a50b89bd1f364d6c27e39e74a7",
+    "snapshot.json": "ed0c80166fb1ecf83bd4a670cb3fb0e0dc40535c2146c5aa3a18f50eebbf9407",
+    "input-manifest.json": "94bd07485bca8f842d8cb2f18de63358f3de346568907cd9b32ef538a5fe23c3",
+    "tools/render.py": "dd22e8e43a8902141f44fc0e47491529eab52117a04ce3ec1531f1de07861907"
+  },
+  "outputs": {
+    "ASSESSMENT.md": "a7f7c01063ce399665214e28857632e07d38dd08cc5d37ae64c7f1bce6863c70",
+    "ASSESSMENT.html": "547da4e6bd0c43f1a2f52ae4b90db364f7db358414dcb87e95f6adadea60352a",
+    "UNFINISHED.csv": "3bff4622af335ba769a96dc9dcaf3d875a1db5ecb0312dbfe77430cac2a446bb",
+    "views/records.jsonl": "b4082a54c4586b5eb09a688f31aac06aa1df2d4e2815e029317b399a2ff3cd52",
+    "system-flow.mmd": "90f7355cc16328cee8b4b93b2ddcd6d022c139611feb0e71ff09905af57d7a39",
+    "TRACERA-STATE-FORWARD.pdf": "800fc303dbeae96bd83fd39fa8f206397327e23762f3508a63ab43e823c5bc8d"
+  },
+  "self_hash": "excluded to avoid cycle",
+  "product_acceptance": false
+}
