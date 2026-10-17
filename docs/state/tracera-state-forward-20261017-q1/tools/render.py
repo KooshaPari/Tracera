@@ -22,7 +22,7 @@ for line in md:
  elif line and not line.startswith('# '):blocks.append('<p>'+html.escape(line)+'</p>')
 blocks.append('</html>');(D/'ASSESSMENT.html').write_text('\n'.join(blocks))
 with (D/'UNFINISHED.csv').open('w',newline='') as f:
- fields=list(r['goals'][0]);w=csv.DictWriter(f,fieldnames=fields);w.writeheader();w.writerows(r['goals'])
+ fields=list(r['goals'][0]);w=csv.DictWriter(f,fieldnames=fields,lineterminator="\n");w.writeheader();w.writerows(r['goals'])
 (D/'views/records.jsonl').write_text('\n'.join(json.dumps(x) for x in r['goals']+r['delta_events'])+'\n')
 (D/'system-flow.mmd').write_text('flowchart TD\n A[Real session and source] --> B[Authenticated local API]\n B --> C[Canonical IDs and atomic Store]\n C --> D[SQLite or PostgreSQL]\n D --> E[Trace dependencies and observations]\n E --> F[Discrepancy explanation]\n E --> G[Attributable memory]\n F --> H[Actual beneficiary validation]\n G --> H\n')
 styles=getSampleStyleSheet();styles['BodyText'].fontSize=10;styles['BodyText'].leading=15;styles['BodyText'].spaceAfter=10;styles['Heading1'].textColor=colors.HexColor('#145e66');styles['Heading2'].textColor=colors.HexColor('#145e66')
