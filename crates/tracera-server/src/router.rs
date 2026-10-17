@@ -1,9 +1,15 @@
+#[path = "routes/auth.rs"]
+mod auth_routes;
+#[path = "routes/export_import.rs"]
+mod export_import_routes;
 #[path = "routes/graph.rs"]
 mod graph_routes;
 #[path = "routes/items.rs"]
 mod item_routes;
 #[path = "routes/journeys.rs"]
 mod journeys_routes;
+#[path = "routes/search.rs"]
+mod search_routes;
 #[path = "routes/specs.rs"]
 mod specs_routes;
 #[path = "routes/w9.rs"]
@@ -125,6 +131,7 @@ pub(crate) fn build_router_with_auth(
 ) -> Router {
     let workos_router = build_workos_router::<AppState>(state.workos_client.clone());
     Router::new()
+        .merge(export_import_routes::routes())
         .merge(specs_routes::routes())
         .merge(w9_routes::routes())
         .route("/healthz", get(crate::health::healthz))
@@ -232,25 +239,14 @@ pub(crate) fn build_router_with_auth(
         .route("/api/v1/graph/analysis/shortest-path", any(not_implemented))
         .route("/api/v1/graph/cache/invalidate", any(not_implemented))
         // Search
-        .route("/api/v1/search", any(not_implemented))
-        .route("/api/v1/search/suggest", any(not_implemented))
-        .route("/api/v1/search/index/{id}", any(not_implemented))
-        .route("/api/v1/search/batch-index", any(not_implemented))
-        .route("/api/v1/search/reindex", any(not_implemented))
-        .route("/api/v1/search/stats", any(not_implemented))
-        .route("/api/v1/search/health", any(not_implemented))
+        .merge(search_routes::router())
         // Projects extended
-        .route("/api/v1/projects/{project_id}/export", any(not_implemented))
-        .route("/api/v1/projects/{project_id}/import", any(not_implemented))
         .route(
             "/api/v1/projects/{project_id}/versions/compare",
             any(not_implemented),
         )
-        .route("/api/v1/import", any(not_implemented))
         // Auth
-        .route("/api/v1/auth/login", any(not_implemented))
-        .route("/api/v1/auth/logout", any(not_implemented))
-        .route("/api/v1/auth/refresh", any(not_implemented))
+        .merge(auth_routes::routes())
         .route("/api/v1/auth/verify", any(not_implemented))
         .route("/api/v1/auth/me", get(crate::auth_me))
         // WorkOS
