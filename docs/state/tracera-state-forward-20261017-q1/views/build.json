@@ -1,0 +1,25 @@
+{
+  "snapshot_id": "tracera-state-forward-20261017-q1",
+  "source_sha": "3fd3310fb98fdd2f9bca99eddd669f974fb1fb61",
+  "renderer": "tools/render.py",
+  "renderer_version": "1.0",
+  "reportlab_version": "5.0.1",
+  "canonical_inputs": {
+    "owner-records.json": "5c7ca66622a953073f51291ac49875e08ba8a4a50b89bd1f364d6c27e39e74a7",
+    "snapshot.json": "ed0c80166fb1ecf83bd4a670cb3fb0e0dc40535c2146c5aa3a18f50eebbf9407",
+    "input-manifest.json": "6a90a60f9b3220bf593106a2fa8ab2f1f5c3b6dcb7115ffbc67e6dab11fb26cd",
+    "tools/render.py": "c3c92f2cb9706932a67aff3ef84f57ce6182d6d6aa9eb96ea6d953a8aa439bb1",
+    "raw/bridge-delivery.json": "e701b4713112a599b316481dd29b4a7b996cca541c407654259ea5576f090d35"
+  },
+  "outputs": {
+    "ASSESSMENT.md": "7dae425dc23f7c667d3d91639e1d20ca0b65d5df91741c378c94e61c2abe6865",
+    "ASSESSMENT.html": "03274b6a5920a2f61e631aa37e95202c3e526598b04005d7709e102139e4c7d7",
+    "UNFINISHED.csv": "eb068a5eaeec09efbcfeaefbfa1cf0c48638591746fe0131bf3a2ecd7051917d",
+    "views/records.jsonl": "b4082a54c4586b5eb09a688f31aac06aa1df2d4e2815e029317b399a2ff3cd52",
+    "system-flow.mmd": "90f7355cc16328cee8b4b93b2ddcd6d022c139611feb0e71ff09905af57d7a39",
+    "system-flow.svg": "00e20539812ea054bf73d374a5237bffeadfb877bb876c31748dfe888410607a",
+    "TRACERA-STATE-FORWARD.pdf": "f218537087191011f85d739f5a865298d874c3b2b6813b9ada0c385fecb72d12"
+  },
+  "self_hash": "excluded to avoid cycle",
+  "product_acceptance": false
+}

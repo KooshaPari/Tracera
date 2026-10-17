@@ -1,0 +1,270 @@
+{
+  "product_id": "helios-controlled",
+  "baseline": 1,
+  "capability_id": "controlled-command-execution",
+  "recorded_at": "2026-10-17T20:09:30.961977+00:00",
+  "intents": [
+    {
+      "id": "controlled-command-execution",
+      "kind": "Capability",
+      "title": "Controlled print commands execute and retain provenance",
+      "description": "Actual Helios harness execution of three deliberately trivial print commands; qualifies producer bridge mechanics only",
+      "status": "Accepted",
+      "baseline": 1
+    }
+  ],
+  "envelope": {
+    "schema_version": "1.0.0",
+    "tenant_id": "phenotype",
+    "session_id": "ses_30ae420db91a86f565ed1dbd17246cfd1726874b49bfbd9192085825a3349828",
+    "run_id": "run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137",
+    "attempt_id": "att_764d6dd55323af9d7c04a93419f534b1970eb915c05479e14d8f564638af777b",
+    "deterministic_identity": {
+      "algorithm": "sha256(canonical-json(inputs))",
+      "canonical_json_sha256": "165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137",
+      "inputs": {
+        "repo": "/var/folders/wl/z8733y815nzg28yy0_1_lh7w0000gn/T/helios-producer-20261017-b8z96u26/controlled-subject",
+        "commit": "a86c86f8a8010cf6ef0bc3f61b7a743ba2727c14",
+        "harness": "helios-harness",
+        "model": "unknown",
+        "task_id": "plan:820d4dce5f7a6fdae7759cbdde54436370c0d223cacb30911ad4fd0c0a1916db",
+        "hardware": "unknown"
+      }
+    },
+    "subject": {
+      "repo": "/var/folders/wl/z8733y815nzg28yy0_1_lh7w0000gn/T/helios-producer-20261017-b8z96u26/controlled-subject",
+      "ref": "main",
+      "commit": "a86c86f8a8010cf6ef0bc3f61b7a743ba2727c14",
+      "harness": "helios-harness",
+      "runtime": "python",
+      "model": "unknown",
+      "hardware": "unknown"
+    },
+    "lease": {
+      "lease_id": "lease_764d6dd55323af9d",
+      "owner": "helios-harness",
+      "ttl_seconds": 120,
+      "heartbeat_interval_seconds": 20
+    },
+    "task_manifest": {
+      "task_id": "plan:820d4dce5f7a6fdae7759cbdde54436370c0d223cacb30911ad4fd0c0a1916db",
+      "input_sha256": "820d4dce5f7a6fdae7759cbdde54436370c0d223cacb30911ad4fd0c0a1916db",
+      "timeout_seconds": 1,
+      "assertions": [
+        {
+          "id": "plan_discovered",
+          "kind": "command_plan",
+          "expected": true
+        }
+      ],
+      "judge": {
+        "name": "helios-harness",
+        "version": "0.1.0"
+      }
+    },
+    "plan_hash": "820d4dce5f7a6fdae7759cbdde54436370c0d223cacb30911ad4fd0c0a1916db",
+    "plan": [
+      {
+        "task_id": "task_6822703d2e87a95be17f315379e94c7b1855bfca95f3a5547199a18623cd8718",
+        "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('build: controlled local benchmark')\"",
+        "bucket": "build",
+        "required": true,
+        "cwd": ".",
+        "source": "package.json",
+        "rationale": "script 'build' discovered from package.json"
+      },
+      {
+        "task_id": "task_0262ba1e7c6db84f58f1f0c3ee0f4e13ab958fd4d19d1f07ff5578ae2cbc2cb8",
+        "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('lint: controlled local benchmark')\"",
+        "bucket": "static",
+        "required": true,
+        "cwd": ".",
+        "source": "package.json",
+        "rationale": "script 'lint' discovered from package.json"
+      },
+      {
+        "task_id": "task_888c29f4e617d6278d340476b065a04dd316636b0365ca79746f4fe3eb4c8122",
+        "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('test: controlled local benchmark')\"",
+        "bucket": "test",
+        "required": true,
+        "cwd": ".",
+        "source": "package.json",
+        "rationale": "script 'test' discovered from package.json"
+      }
+    ],
+    "commands": [
+      {
+        "task_id": "task_6822703d2e87a95be17f315379e94c7b1855bfca95f3a5547199a18623cd8718",
+        "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('build: controlled local benchmark')\"",
+        "bucket": "build",
+        "required": true,
+        "cwd": ".",
+        "source": "package.json",
+        "rationale": "script 'build' discovered from package.json"
+      },
+      {
+        "task_id": "task_0262ba1e7c6db84f58f1f0c3ee0f4e13ab958fd4d19d1f07ff5578ae2cbc2cb8",
+        "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('lint: controlled local benchmark')\"",
+        "bucket": "static",
+        "required": true,
+        "cwd": ".",
+        "source": "package.json",
+        "rationale": "script 'lint' discovered from package.json"
+      },
+      {
+        "task_id": "task_888c29f4e617d6278d340476b065a04dd316636b0365ca79746f4fe3eb4c8122",
+        "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('test: controlled local benchmark')\"",
+        "bucket": "test",
+        "required": true,
+        "cwd": ".",
+        "source": "package.json",
+        "rationale": "script 'test' discovered from package.json"
+      }
+    ],
+    "tasks": [
+      {
+        "task_id": "task_6822703d2e87a95be17f315379e94c7b1855bfca95f3a5547199a18623cd8718",
+        "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('build: controlled local benchmark')\"",
+        "bucket": "build",
+        "required": true,
+        "cwd": ".",
+        "source": "package.json",
+        "rationale": "script 'build' discovered from package.json"
+      },
+      {
+        "task_id": "task_0262ba1e7c6db84f58f1f0c3ee0f4e13ab958fd4d19d1f07ff5578ae2cbc2cb8",
+        "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('lint: controlled local benchmark')\"",
+        "bucket": "static",
+        "required": true,
+        "cwd": ".",
+        "source": "package.json",
+        "rationale": "script 'lint' discovered from package.json"
+      },
+      {
+        "task_id": "task_888c29f4e617d6278d340476b065a04dd316636b0365ca79746f4fe3eb4c8122",
+        "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('test: controlled local benchmark')\"",
+        "bucket": "test",
+        "required": true,
+        "cwd": ".",
+        "source": "package.json",
+        "rationale": "script 'test' discovered from package.json"
+      }
+    ],
+    "runs": [
+      {
+        "run_id": "taskrun_620f80474238c6e93b410524b32cab479eff6a7ce8145cdb207cfa9397370089",
+        "task_id": "task_0262ba1e7c6db84f58f1f0c3ee0f4e13ab958fd4d19d1f07ff5578ae2cbc2cb8",
+        "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('lint: controlled local benchmark')\"",
+        "status": "passed",
+        "returncode": 0,
+        "duration_ms": 40
+      },
+      {
+        "run_id": "taskrun_b9ccd04fe2e9d1956b3538ac3b6dfc23fad006bf12b26901bc345825bf8055a7",
+        "task_id": "task_888c29f4e617d6278d340476b065a04dd316636b0365ca79746f4fe3eb4c8122",
+        "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('test: controlled local benchmark')\"",
+        "status": "passed",
+        "returncode": 0,
+        "duration_ms": 76
+      },
+      {
+        "run_id": "taskrun_107d6fbe440f769a2cd673a9a67bad02d37547bbc71dbd1a52767a8ef1862542",
+        "task_id": "task_6822703d2e87a95be17f315379e94c7b1855bfca95f3a5547199a18623cd8718",
+        "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('build: controlled local benchmark')\"",
+        "status": "passed",
+        "returncode": 0,
+        "duration_ms": 44
+      }
+    ],
+    "events": [
+      {
+        "event_id": "evt_03e00e5eea6f7e91dae7a54640e2069834d63a151a3cbe49eb41a94347fe456f",
+        "seq": 0,
+        "ts": "2026-10-17T20:09:30.961822+00:00",
+        "type": "run_started",
+        "payload_sha256": "8b0936939448e17fa311fc9ad3d711b06970864899460625d6a668d43ba7979f",
+        "causality": {
+          "tenant_id": "phenotype",
+          "session_id": "ses_30ae420db91a86f565ed1dbd17246cfd1726874b49bfbd9192085825a3349828",
+          "run_id": "run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137",
+          "attempt_id": "att_764d6dd55323af9d7c04a93419f534b1970eb915c05479e14d8f564638af777b"
+        }
+      },
+      {
+        "event_id": "evt_0b6fbd58fa2de3b556d59ccd44b73261dbe8752234b45dfbd2b00a584614a632",
+        "seq": 1,
+        "ts": "2026-10-17T20:09:30.961822+00:00",
+        "type": "checkpoint",
+        "payload_sha256": "9ca7f16b60ff09c6780c8979e2c9508a845b232e2a855d2e4e5f9953bff49531",
+        "causality": {
+          "tenant_id": "phenotype",
+          "session_id": "ses_30ae420db91a86f565ed1dbd17246cfd1726874b49bfbd9192085825a3349828",
+          "run_id": "run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137",
+          "attempt_id": "att_764d6dd55323af9d7c04a93419f534b1970eb915c05479e14d8f564638af777b"
+        },
+        "checkpoint_id": "cp_a6b4cae291672d87"
+      },
+      {
+        "event_id": "evt_a2dadb21b7f06aee467d84247d53a1a41288a61aebe1fe3ba2842ce2a4024941",
+        "seq": 2,
+        "ts": "2026-10-17T20:09:30.961822+00:00",
+        "type": "compaction",
+        "payload_sha256": "6dfa96402f915090f23d744c7fa40661ab2b77f7140ddafa373e05024f28f2f2",
+        "causality": {
+          "tenant_id": "phenotype",
+          "session_id": "ses_30ae420db91a86f565ed1dbd17246cfd1726874b49bfbd9192085825a3349828",
+          "run_id": "run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137",
+          "attempt_id": "att_764d6dd55323af9d7c04a93419f534b1970eb915c05479e14d8f564638af777b"
+        },
+        "checkpoint_id": "cp_a6b4cae291672d87",
+        "details": {
+          "tokens_before": 0,
+          "tokens_after": 0,
+          "retained_event_ids": [],
+          "dropped_event_ids": []
+        }
+      },
+      {
+        "event_id": "evt_b7c0abe72f5bda915e5f535eaf99db63a00b1b0f5b2b289aaecc4a614fbb00a5",
+        "seq": 3,
+        "ts": "2026-10-17T20:09:30.961822+00:00",
+        "type": "run_finished",
+        "payload_sha256": "6510380a8de6d9d3c99b91d43a0c077e5f839cee8b794c20022509c1b9ee536c",
+        "causality": {
+          "tenant_id": "phenotype",
+          "session_id": "ses_30ae420db91a86f565ed1dbd17246cfd1726874b49bfbd9192085825a3349828",
+          "run_id": "run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137",
+          "attempt_id": "att_764d6dd55323af9d7c04a93419f534b1970eb915c05479e14d8f564638af777b"
+        }
+      }
+    ],
+    "result": {
+      "status": "passed",
+      "outcome_sha256": "b7f88e9127eb99c05cc09a7942527cd3ffd3acdbcd9296b6e8a415e2f1e995f3",
+      "replay_hash": "9584a6e44defa69af0e9f1af476e55722d25a0533d82d43ff322104e1c14c377",
+      "failure_class": "none",
+      "artifacts": [
+        {
+          "kind": "report",
+          "uri": "urn:helios:legacy-evidence:b7f88e9127eb99c05cc09a7942527cd3ffd3acdbcd9296b6e8a415e2f1e995f3",
+          "sha256": "b7f88e9127eb99c05cc09a7942527cd3ffd3acdbcd9296b6e8a415e2f1e995f3"
+        }
+      ]
+    },
+    "provenance": {
+      "collector": "helios-harness",
+      "collected_at": "2026-10-17T20:09:30.961977+00:00",
+      "source_ref": "main",
+      "source_sha": "a86c86f8a8010cf6ef0bc3f61b7a743ba2727c14",
+      "source_hashes": {
+        "plan": "820d4dce5f7a6fdae7759cbdde54436370c0d223cacb30911ad4fd0c0a1916db"
+      }
+    },
+    "signature": {
+      "status": "unsigned",
+      "algorithm": "none",
+      "reason": "signing_authority_not_configured"
+    },
+    "result_code": "PASS"
+  }
+}

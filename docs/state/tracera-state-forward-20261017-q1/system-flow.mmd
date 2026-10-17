@@ -1,0 +1,9 @@
+flowchart TD
+ A[Real session and source] --> B[Authenticated local API]
+ B --> C[Canonical IDs and atomic Store]
+ C --> D[SQLite or PostgreSQL]
+ D --> E[Trace dependencies and observations]
+ E --> F[Discrepancy explanation]
+ E --> G[Attributable memory]
+ F --> H[Actual beneficiary validation]
+ G --> H
