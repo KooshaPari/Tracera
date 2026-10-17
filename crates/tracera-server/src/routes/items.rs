@@ -110,3 +110,13 @@ pub(super) async fn project_list(
 #[cfg(test)]
 #[path = "items_tests.rs"]
 mod tests;
+
+// W9 unavailable routes (generated).
+pub(super) const W9_ROUTES: &[&str] = &[
+    "/api/v1/items/stream",
+    "/items/{param2}/pivot",
+    "/items/{param2}/pivot-targets",
+];
+pub(super) fn w9_routes() -> axum::Router<AppState> {
+    super::w9_routes::unavailable_routes(W9_ROUTES)
+}
