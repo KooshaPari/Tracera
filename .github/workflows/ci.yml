@@ -280,7 +280,12 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
-      - run: npm ci
+      - uses: oven-sh/setup-bun@2b9fa9f5cefd21173dcf56df029e62fb86d59b7f # v2
+        with:
+          bun-version: "1.1.38"
+      - name: Install frontend deps
+        working-directory: frontend
+        run: bun install --frozen-lockfile
       - run: npx biome lint .
       - run: npx biome format --check .
 
@@ -296,7 +301,12 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
-      - run: npm ci
+      - uses: oven-sh/setup-bun@2b9fa9f5cefd21173dcf56df029e62fb86d59b7f # v2
+        with:
+          bun-version: "1.1.38"
+      - name: Install frontend deps
+        working-directory: frontend
+        run: bun install --frozen-lockfile
       - run: npm test
 
   # ===========================================================================
