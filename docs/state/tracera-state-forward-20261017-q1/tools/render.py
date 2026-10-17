@@ -8,6 +8,9 @@ from reportlab.lib.enums import TA_LEFT
 from reportlab.graphics.shapes import Drawing,Rect,String,Line,Polygon
 D=pathlib.Path(__file__).resolve().parents[1]
 r=json.loads((D/'owner-records.json').read_text());s=json.loads((D/'snapshot.json').read_text())
+bridge=json.loads((D/'raw/bridge-delivery.json').read_text()) if (D/'raw/bridge-delivery.json').exists() else None
+if bridge:
+ r['sections'].append({'title':'Append-only follow-on delta - benchmark causal bridge','text':'After the locked Q1 subject3fd3310, follow-on source097015d0d9d10d7c8721b67a57a40856942d8e5b (PR1157 open) mounts the existing benchmark envelope adapter to durable product observations with causal run/session/attempt/replay metadata. Real isolated binary011f017e2b8d56ef3fc14ad7aa503580392c23fde53bc17b93ab67d2bbba898b exercised a FIXTURE envelope, detector and restart on owned port19148, then stopped. Owner receipt reports96library123binary4existingDB6SQLite tests; mounted5/5; historical Q1payload replay1; strict clippy/fmt. This is fixture-backed integration, NOT an actual external producer or tenant-authorized user acceptance. Raw receipt raw/bridge-delivery.json binds the separate revision; Q1snapshot remains immutable. At03:22PDT main independently advanced9be711bb9fe83417046590a1d2d21019273bce37; neither candidate is claimed integrated with that main or deployed. Hosted checks remain UNSTABLE. Next useful result: actual authorized producer and real owned product/trace navigation through this bridge.'})
 md=['# Tracera - State & Forward Docket','',f"Snapshot `{r['snapshot_id']}` | Generated {r['generated_at']}",'',f"Exact candidate `{r['candidate']['candidate_sha']}`; baseline `{r['source_sha']}`.",'','Full product acceptance: NOT ESTABLISHED. The selected-assessment reducer is not full product completion.','']
 for x in r['sections']:md+=['## '+x['title'],'',x['text'],'']
 md+=['## Goal tree and unfinished obligations','']
@@ -61,7 +64,7 @@ def footer(c,d):
  c.setFont('Helvetica',8);c.setFillColor(colors.HexColor('#526775'));c.drawString(42,24,'Tracera | '+r['snapshot_id']+' | source-bound assessment');c.drawRightString(553,24,str(d.page))
 SimpleDocTemplate(str(D/'TRACERA-STATE-FORWARD.pdf'),pagesize=(595,842),rightMargin=42,leftMargin=42,topMargin=42,bottomMargin=43,title='Tracera State & Forward Docket',author='Instinct',invariant=1).build(story,onFirstPage=footer,onLaterPages=footer)
 def h(p):return hashlib.sha256(p.read_bytes()).hexdigest()
-ins=['owner-records.json','snapshot.json','input-manifest.json','tools/render.py'];outs=['ASSESSMENT.md','ASSESSMENT.html','UNFINISHED.csv','views/records.jsonl','system-flow.mmd','system-flow.svg','TRACERA-STATE-FORWARD.pdf']
+ins=['owner-records.json','snapshot.json','input-manifest.json','tools/render.py','raw/bridge-delivery.json'];outs=['ASSESSMENT.md','ASSESSMENT.html','UNFINISHED.csv','views/records.jsonl','system-flow.mmd','system-flow.svg','TRACERA-STATE-FORWARD.pdf']
 receipt={'snapshot_id':r['snapshot_id'],'source_sha':r['candidate']['candidate_sha'],'renderer':'tools/render.py','renderer_version':'1.0','reportlab_version':__import__('reportlab').Version,'canonical_inputs':{x:h(D/x) for x in ins},'outputs':{x:h(D/x) for x in outs},'self_hash':'excluded to avoid cycle','product_acceptance':False}
 (D/'views/build.json').write_text(json.dumps(receipt,indent=2)+'\n')
 print(json.dumps({'outputs':len(outs),'pdf_sha256':h(D/'TRACERA-STATE-FORWARD.pdf')}))
