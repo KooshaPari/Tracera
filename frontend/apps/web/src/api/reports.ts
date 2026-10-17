@@ -1,6 +1,7 @@
 /* oxlint-disable import/no-named-export, promise/prefer-await-to-then */
 // Reports API stub
 import { exportImportApi } from "./endpoints";
+import { ApiError } from "./client-errors";
 
 interface ReportTemplate {
   id: string;
@@ -20,51 +21,25 @@ interface GeneratedReport {
   data?: Record<string, unknown>;
 }
 
-const reportTemplates: ReportTemplate[] = [
-  {
-    description: "Test coverage report",
-    format: "pdf",
-    id: "1",
-    name: "Coverage Report",
-    type: "coverage",
-  },
-  {
-    description: "Full traceability matrix",
-    format: "xlsx",
-    id: "2",
-    name: "Traceability Matrix",
-    type: "traceability",
-  },
-  {
-    description: "Project status summary",
-    format: "html",
-    id: "3",
-    name: "Status Report",
-    type: "status",
-  },
-  {
-    description: "Sprint progress report",
-    format: "pdf",
-    id: "4",
-    name: "Progress Report",
-    type: "progress",
-  },
-];
-
-const fetchReportTemplates = async (): Promise<ReportTemplate[]> => reportTemplates;
+const fetchReportTemplates = async (): Promise<ReportTemplate[]> => {
+  throw new ApiError(501, "Not implemented yet", {
+    error: "not_implemented",
+    route: "/api/v1/reports/templates",
+    since: "2026-10-16",
+  });
+};
 
 const generateReport = async (
-  projectId: string,
-  templateId: string,
-  format: string,
-): Promise<GeneratedReport> => ({
-  data: {},
-  format,
-  generatedAt: new Date().toISOString(),
-  id: `report-${Date.now()}`,
-  projectId,
-  templateId,
-});
+  _projectId: string,
+  _templateId: string,
+  _format: string,
+): Promise<GeneratedReport> => {
+  throw new ApiError(501, "Not implemented yet", {
+    error: "not_implemented",
+    route: "/api/v1/reports",
+    since: "2026-10-16",
+  });
+};
 
 const { exportProject, importProject } = exportImportApi;
 

@@ -5,8 +5,10 @@ mod graph;
 mod handlers;
 mod health;
 mod ingest;
+mod item;
 mod memory;
 mod middleware;
+mod not_implemented;
 mod observability;
 mod pg_store;
 #[cfg(feature = "phenodag-queue")]
@@ -171,6 +173,8 @@ pub(crate) async fn prom_metrics_handler() -> impl IntoResponse {
 // ---------------------------------------------------------------------------
 #[tokio::main]
 async fn main() {
+    // Install before serving so the first stub response is counted.
+    let _ = prom_metrics_handler().await;
     tracing_subscriber::fmt()
         .with_env_filter(
             EnvFilter::from_default_env().add_directive("tracera_server=info".parse().unwrap()),

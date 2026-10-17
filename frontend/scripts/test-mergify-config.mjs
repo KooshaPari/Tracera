@@ -8,10 +8,7 @@ const config = await readFile(
   "utf8",
 );
 
-assert.match(
-  config,
-  /author ~= \^\(\?:dependabot\\\[bot\\\]\|renovate\\\[bot\\\]\)\$/,
-);
+assert.match(config, /author ~= \^\(\?:dependabot\\\[bot\\\]\|renovate\\\[bot\\\]\)\$/);
 assert.match(
   config,
   /author ~= \^\(\?:trunk-io\\\[bot\\\]\|mergify\\\[bot\\\]\|github-actions\\\[bot\\\]\)\$/,

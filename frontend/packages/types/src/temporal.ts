@@ -10,22 +10,22 @@
  * Branch type classification - similar to git branch naming conventions
  */
 export type BranchType =
-  | 'main' // Primary production branch
-  | 'release' // Release candidate
-  | 'feature' // Feature development
-  | 'experiment' // A/B testing, "what if" scenarios
-  | 'hotfix' // Emergency fixes
-  | 'archive'; // Historical reference only
+  | "main" // Primary production branch
+  | "release" // Release candidate
+  | "feature" // Feature development
+  | "experiment" // A/B testing, "what if" scenarios
+  | "hotfix" // Emergency fixes
+  | "archive"; // Historical reference only
 
 /**
  * Branch lifecycle status
  */
 export type BranchStatus =
-  | 'active' // Being actively worked on
-  | 'review' // Under review for merge
-  | 'merged' // Successfully merged into target
-  | 'abandoned' // Discarded, not completed
-  | 'archived'; // Kept for historical reference
+  | "active" // Being actively worked on
+  | "review" // Under review for merge
+  | "merged" // Successfully merged into target
+  | "abandoned" // Discarded, not completed
+  | "archived"; // Kept for historical reference
 
 /**
  * A version branch represents a parallel line of development
@@ -76,11 +76,11 @@ export interface VersionBranch {
  * Version status - lifecycle of a version/commit
  */
 export type VersionStatus =
-  | 'draft' // Work in progress, not finalized
-  | 'pending_review' // Submitted for review/approval
-  | 'approved' // Approved and ready for use
-  | 'rejected' // Failed review, needs changes
-  | 'superseded'; // Replaced by a newer version
+  | "draft" // Work in progress, not finalized
+  | "pending_review" // Submitted for review/approval
+  | "approved" // Approved and ready for use
+  | "rejected" // Failed review, needs changes
+  | "superseded"; // Replaced by a newer version
 
 /**
  * A version represents a point-in-time snapshot of items
@@ -158,7 +158,7 @@ export interface ItemModification {
   fieldChanges: FieldChange[];
 
   // Summary
-  changeType: 'content' | 'metadata' | 'status' | 'relationships' | 'mixed';
+  changeType: "content" | "metadata" | "status" | "relationships" | "mixed";
 }
 
 /**
@@ -168,7 +168,7 @@ export interface FieldChange {
   field: string;
   oldValue: unknown;
   newValue: unknown;
-  changeType: 'added' | 'removed' | 'modified';
+  changeType: "added" | "removed" | "modified";
 }
 
 // =============================================================================
@@ -234,29 +234,29 @@ export interface ItemSnapshot {
  * Item lifecycle - progression through development stages
  */
 export type ItemLifecycle =
-  | 'idea' // Just an idea, no commitment
-  | 'proposed' // Formally proposed for consideration
-  | 'planned' // Scheduled for implementation
-  | 'in_progress' // Being actively worked on
-  | 'implemented' // Code/content complete
-  | 'verified' // Tested/validated
-  | 'released' // In production/published
-  | 'deprecated' // Being phased out
-  | 'retired'; // No longer active
+  | "idea" // Just an idea, no commitment
+  | "proposed" // Formally proposed for consideration
+  | "planned" // Scheduled for implementation
+  | "in_progress" // Being actively worked on
+  | "implemented" // Code/content complete
+  | "verified" // Tested/validated
+  | "released" // In production/published
+  | "deprecated" // Being phased out
+  | "retired"; // No longer active
 
 /**
  * Lifecycle transition rules
  */
 export const LIFECYCLE_TRANSITIONS: Record<ItemLifecycle, ItemLifecycle[]> = {
-  deprecated: ['retired', 'released'],
-  idea: ['proposed', 'retired'],
-  implemented: ['verified', 'in_progress', 'retired'],
-  in_progress: ['implemented', 'planned', 'retired'],
-  planned: ['in_progress', 'retired'],
-  proposed: ['planned', 'retired'],
-  released: ['deprecated'],
+  deprecated: ["retired", "released"],
+  idea: ["proposed", "retired"],
+  implemented: ["verified", "in_progress", "retired"],
+  in_progress: ["implemented", "planned", "retired"],
+  planned: ["in_progress", "retired"],
+  proposed: ["planned", "retired"],
+  released: ["deprecated"],
   retired: [],
-  verified: ['released', 'implemented', 'retired'],
+  verified: ["released", "implemented", "retired"],
 };
 
 // =============================================================================
@@ -267,9 +267,9 @@ export const LIFECYCLE_TRANSITIONS: Record<ItemLifecycle, ItemLifecycle[]> = {
  * Relationship between alternative items
  */
 export type AlternativeRelationship =
-  | 'alternative_to' // Alternative approach to same problem
-  | 'supersedes' // Newer version replacing older
-  | 'experiment_of'; // Experimental variation
+  | "alternative_to" // Alternative approach to same problem
+  | "supersedes" // Newer version replacing older
+  | "experiment_of"; // Experimental variation
 
 /**
  * Tracks alternative implementations or approaches
@@ -295,7 +295,7 @@ export interface ItemAlternative {
   // Comparison metrics
   metrics?: {
     effort?: number | undefined; // Estimated effort (story points, hours)
-    risk?: 'low' | 'medium' | 'high' | undefined;
+    risk?: "low" | "medium" | "high" | undefined;
     coverage?: number | undefined; // How well it addresses the need
     complexity?: number | undefined;
   };
@@ -348,12 +348,12 @@ export interface TemporalMetadata {
 /**
  * Type of change in a diff
  */
-export type DiffChangeType = 'added' | 'removed' | 'modified';
+export type DiffChangeType = "added" | "removed" | "modified";
 
 /**
  * Significance level of a change
  */
-export type DiffSignificance = 'minor' | 'moderate' | 'major' | 'breaking';
+export type DiffSignificance = "minor" | "moderate" | "major" | "breaking";
 
 /**
  * Single field change
@@ -362,7 +362,7 @@ export interface FieldDiffChange {
   field: string;
   oldValue: unknown;
   newValue: unknown;
-  changeType: 'added' | 'removed' | 'modified';
+  changeType: "added" | "removed" | "modified";
 }
 
 /**
@@ -421,14 +421,14 @@ export interface DiffViewConfig {
   showUnchanged: boolean;
   expandModified: boolean;
   filterByType?: string | undefined;
-  sortBy?: 'title' | 'changeType' | 'significance' | undefined;
+  sortBy?: "title" | "changeType" | "significance" | undefined;
 }
 
 /**
  * Options for diff export
  */
 export interface DiffExportOptions {
-  format: 'json' | 'csv' | 'markdown' | 'html';
+  format: "json" | "csv" | "markdown" | "html";
   includeUnchanged: boolean;
   includeFieldChanges: boolean;
 }
@@ -448,7 +448,7 @@ export interface DiffExportResult {
 export interface DiffViewerState {
   expandedItems: Set<string>;
   selectedItems: Set<string>;
-  activeTab: 'added' | 'removed' | 'modified';
+  activeTab: "added" | "removed" | "modified";
   searchQuery: string;
 }
 
@@ -472,7 +472,7 @@ export interface MergeRequest {
   baseVersionId: string; // Common ancestor
 
   // Status
-  status: 'open' | 'approved' | 'merged' | 'closed' | 'conflict';
+  status: "open" | "approved" | "merged" | "closed" | "conflict";
 
   // Details
   title: string;
@@ -509,7 +509,7 @@ export interface MergeConflict {
   baseValue?: unknown | undefined; // Value in common ancestor
 
   // Resolution
-  resolution?: 'source' | 'target' | 'manual' | 'both' | undefined;
+  resolution?: "source" | "target" | "manual" | "both" | undefined;
   resolvedValue?: unknown | undefined;
   resolvedBy?: string | undefined;
   resolvedAt?: string | undefined;
@@ -523,10 +523,10 @@ export interface MergeConflict {
  * Temporal navigation mode
  */
 export type TemporalViewMode =
-  | 'timeline' // Horizontal timeline with version markers
-  | 'branches' // Tree visualization of branches
-  | 'comparison' // Side-by-side diff of two versions
-  | 'progress'; // Milestone/sprint tracking dashboard
+  | "timeline" // Horizontal timeline with version markers
+  | "branches" // Tree visualization of branches
+  | "comparison" // Side-by-side diff of two versions
+  | "progress"; // Milestone/sprint tracking dashboard
 
 /**
  * Temporal filter for querying items at a point in time
@@ -572,12 +572,12 @@ export function isValidLifecycleTransition(from: ItemLifecycle, to: ItemLifecycl
  */
 export function getBranchTypeColor(branchType: BranchType): string {
   const colors: Record<BranchType, string> = {
-    main: '#22c55e', // Green
-    release: '#3b82f6', // Blue
-    feature: '#a855f7', // Purple
-    experiment: '#f59e0b', // Amber
-    hotfix: '#ef4444', // Red
-    archive: '#6b7280', // Gray
+    main: "#22c55e", // Green
+    release: "#3b82f6", // Blue
+    feature: "#a855f7", // Purple
+    experiment: "#f59e0b", // Amber
+    hotfix: "#ef4444", // Red
+    archive: "#6b7280", // Gray
   };
   return colors[branchType];
 }
@@ -590,15 +590,15 @@ export function getBranchTypeColor(branchType: BranchType): string {
  */
 export function getLifecycleColor(lifecycle: ItemLifecycle): string {
   const colors: Record<ItemLifecycle, string> = {
-    idea: '#94a3b8', // Slate
-    proposed: '#a78bfa', // Violet
-    planned: '#60a5fa', // Blue
-    in_progress: '#fbbf24', // Amber
-    implemented: '#34d399', // Emerald
-    verified: '#22c55e', // Green
-    released: '#10b981', // Emerald dark
-    deprecated: '#f97316', // Orange
-    retired: '#6b7280', // Gray
+    idea: "#94a3b8", // Slate
+    proposed: "#a78bfa", // Violet
+    planned: "#60a5fa", // Blue
+    in_progress: "#fbbf24", // Amber
+    implemented: "#34d399", // Emerald
+    verified: "#22c55e", // Green
+    released: "#10b981", // Emerald dark
+    deprecated: "#f97316", // Orange
+    retired: "#6b7280", // Gray
   };
   return colors[lifecycle];
 }
@@ -611,12 +611,12 @@ export function getLifecycleColor(lifecycle: ItemLifecycle): string {
  */
 export function getBranchTypeIcon(branchType: BranchType): string {
   const icons: Record<BranchType, string> = {
-    archive: 'Archive',
-    experiment: 'Flask',
-    feature: 'Sparkles',
-    hotfix: 'Zap',
-    main: 'GitBranch',
-    release: 'Tag',
+    archive: "Archive",
+    experiment: "Flask",
+    feature: "Sparkles",
+    hotfix: "Zap",
+    main: "GitBranch",
+    release: "Tag",
   };
   return icons[branchType];
 }

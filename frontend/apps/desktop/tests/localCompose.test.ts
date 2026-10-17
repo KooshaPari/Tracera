@@ -1,10 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { LOCAL_URL, startBundle, type CommandRunner } from "../src/compose";
-import {
-  DEFAULT_TARGET_URL,
-  LEGACY_BUNDLE_OVERRIDE,
-  resolveTargetUrl,
-} from "../src/target";
+import { DEFAULT_TARGET_URL, LEGACY_BUNDLE_OVERRIDE, resolveTargetUrl } from "../src/target";
 
 function runner(commands: string[][]): CommandRunner {
   return (command) => {
@@ -19,10 +15,11 @@ describe("desktop bundle lifecycle", () => {
     const stop = await startBundle({
       cliPath: "/Applications/Tracera.app/Contents/Resources/tracera-bundle/bin/tracera",
       run: runner(commands),
-      fetchImpl: async (input) => new Response(
-        JSON.stringify(String(input).endsWith("/ready") ? { status: "ready" } : { status: "ok" }),
-        { status: 200 },
-      ),
+      fetchImpl: async (input) =>
+        new Response(
+          JSON.stringify(String(input).endsWith("/ready") ? { status: "ready" } : { status: "ok" }),
+          { status: 200 },
+        ),
       timeoutMs: 100,
     });
     await stop();
@@ -44,12 +41,15 @@ describe("desktop bundle lifecycle", () => {
   });
 
   test("allows an explicit hosted override without making it the default", () => {
-    expect(resolveTargetUrl({ TRACERA_GATEWAY_URL: "http://127.0.0.1:18000" }))
-      .toBe("http://127.0.0.1:18000");
-    expect(resolveTargetUrl({ TRACERA_HOSTED_URL: "https://example.com/tracera/" }))
-      .toBe("https://example.com/tracera/");
-    expect(resolveTargetUrl({ TRACERA_URL: "https://staging.example.com" }))
-      .toBe("https://staging.example.com");
+    expect(resolveTargetUrl({ TRACERA_GATEWAY_URL: "http://127.0.0.1:18000" })).toBe(
+      "http://127.0.0.1:18000",
+    );
+    expect(resolveTargetUrl({ TRACERA_HOSTED_URL: "https://example.com/tracera/" })).toBe(
+      "https://example.com/tracera/",
+    );
+    expect(resolveTargetUrl({ TRACERA_URL: "https://staging.example.com" })).toBe(
+      "https://staging.example.com",
+    );
   });
 
   test("permits the legacy bundle only with an explicit developer override", () => {

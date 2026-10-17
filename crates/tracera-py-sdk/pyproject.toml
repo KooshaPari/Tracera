@@ -38,9 +38,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/<REDACTED>/Tracera"
-Issues = "https://github.com/<REDACTED>/Tracera/issues"
-Source = "https://github.com/<REDACTED>/Tracera/tree/main/crates/tracera-py-sdk"
+Homepage = "https://github.com/KooshaPari/Tracera"
+Issues = "https://github.com/KooshaPari/Tracera/issues"
+Source = "https://github.com/KooshaPari/Tracera/tree/main/crates/tracera-py-sdk"
 
 [tool.hatch.build.targets.wheel]
 packages = ["tracera"]

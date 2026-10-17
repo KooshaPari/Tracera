@@ -1,20 +1,20 @@
 # Tracera Documentation Recovery Catalog
 
 **Scan date:** 2026-06-26  
-**Repository:** [<REDACTED>/Tracera](https://github.com/<REDACTED>/Tracera)  
+**Repository:** [<REDACTED>/Tracera](https://github.com/KooshaPari/Tracera)  
 **Recovery branch:** `docs/tracera-recovery-v2`  
 **Source commit for restored content:** `9e78f48dd^` (parent of bulk deletion in `9e78f48dd`)
 
 ## Summary
 
-| Metric | Count |
-|--------|------:|
-| `docs/**/*.md` files deleted since 2025-12-01 | **2,789** |
-| High-value pages selected for restoration | **6** |
-| Pages restored on recovery branch | **6** |
-| Current mounted `/api/v1` routes (June 2026) | **17** |
-| Contract-only unmounted routes | **8** |
-| Operational probes | **2** (`/health`, `/ready`) |
+| Metric                                        |                       Count |
+| --------------------------------------------- | --------------------------: |
+| `docs/**/*.md` files deleted since 2025-12-01 |                   **2,789** |
+| High-value pages selected for restoration     |                       **6** |
+| Pages restored on recovery branch             |                       **6** |
+| Current mounted `/api/v1` routes (June 2026)  |                      **17** |
+| Contract-only unmounted routes                |                       **8** |
+| Operational probes                            | **2** (`/health`, `/ready`) |
 
 ## How the regression was detected
 
@@ -31,24 +31,24 @@ Recent `docs/` activity (post-Dec 2025) is dominated by audit/harmonization pass
 
 ## Deletion event
 
-| Field | Value |
-|-------|-------|
-| Commit | `9e78f48dd` |
-| Message | `fix(security): require secrets from env, drop hardcoded dev fallbacks (#554)` |
-| Effect | Removed large pre-consolidation documentation trees alongside security cleanup |
-| Recovery SHA | `9e78f48dd^` (`git show 9e78f48dd^:<path>`) |
+| Field        | Value                                                                          |
+| ------------ | ------------------------------------------------------------------------------ |
+| Commit       | `9e78f48dd`                                                                    |
+| Message      | `fix(security): require secrets from env, drop hardcoded dev fallbacks (#554)` |
+| Effect       | Removed large pre-consolidation documentation trees alongside security cleanup |
+| Recovery SHA | `9e78f48dd^` (`git show 9e78f48dd^:<path>`)                                    |
 
 ## What existed (representative high-value paths)
 
 These categories were present before consolidation and are **not** on current `main`:
 
-| Category | Example paths | Status on `main` before recovery |
-|----------|---------------|----------------------------------|
-| Getting started | `docs/01-getting-started/README.md`, `CLI_TUTORIAL.md`, `START_HERE.md` | Missing |
-| Guides | `docs/04-guides/DEVELOPER_GUIDE.md`, `DEPLOYMENT_GUIDE.md`, `mcp-cli-api-matrix.md` | Missing |
-| API reference hub | `docs/06-api-reference/README.md` (+ sibling `api-documentation.md`) | Missing (stub `docs/API_REFERENCE.md` only) |
-| Overview / planning | `docs/00-overview/*`, `docs/03-planning/*` | Missing (not restored — superseded by audit docs) |
-| Mass guide library | `docs/guides/*` (~700+ files) | Missing (not restored — high noise) |
+| Category            | Example paths                                                                       | Status on `main` before recovery                  |
+| ------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Getting started     | `docs/01-getting-started/README.md`, `CLI_TUTORIAL.md`, `START_HERE.md`             | Missing                                           |
+| Guides              | `docs/04-guides/DEVELOPER_GUIDE.md`, `DEPLOYMENT_GUIDE.md`, `mcp-cli-api-matrix.md` | Missing                                           |
+| API reference hub   | `docs/06-api-reference/README.md` (+ sibling `api-documentation.md`)                | Missing (stub `docs/API_REFERENCE.md` only)       |
+| Overview / planning | `docs/00-overview/*`, `docs/03-planning/*`                                          | Missing (not restored — superseded by audit docs) |
+| Mass guide library  | `docs/guides/*` (~700+ files)                                                       | Missing (not restored — high noise)               |
 
 ## What regressed (user-facing impact)
 
@@ -61,22 +61,22 @@ These categories were present before consolidation and are **not** on current `m
 
 ## Pages restored (this branch)
 
-| Restored path | Type | Source | Light updates applied |
-|---------------|------|--------|------------------------|
-| [`01-getting-started/README.md`](../01-getting-started/README.md) | Getting started | `9e78f48dd^` | Repointed links to `quickstart.md`, `API_REFERENCE.md`, `ARCHITECTURE.md` |
-| [`01-getting-started/CLI_TUTORIAL.md`](../01-getting-started/CLI_TUTORIAL.md) | Tutorial | `9e78f48dd^` | Recovery banner; note on 17 mounted HTTP routes |
-| [`04-guides/DEVELOPER_GUIDE.md`](../04-guides/DEVELOPER_GUIDE.md) | Guide | `9e78f48dd^` | Recovery banner; governance/API cross-links |
-| [`04-guides/DEPLOYMENT_GUIDE.md`](../04-guides/DEPLOYMENT_GUIDE.md) | Guide | `9e78f48dd^` | Added `TRACERA_JWT_*` env vars; mounted-route note |
-| [`06-api-reference/README.md`](../06-api-reference/README.md) | API hub | Rewritten | Replaced dead links with current contract + traceability map |
-| [`04-guides/mcp-cli-api-matrix.md`](../04-guides/mcp-cli-api-matrix.md) | API / clients | `9e78f48dd^` | Mounted-route counts; JWT auth note |
+| Restored path                                                                 | Type            | Source       | Light updates applied                                                     |
+| ----------------------------------------------------------------------------- | --------------- | ------------ | ------------------------------------------------------------------------- |
+| [`01-getting-started/README.md`](../01-getting-started/README.md)             | Getting started | `9e78f48dd^` | Repointed links to `quickstart.md`, `API_REFERENCE.md`, `ARCHITECTURE.md` |
+| [`01-getting-started/CLI_TUTORIAL.md`](../01-getting-started/CLI_TUTORIAL.md) | Tutorial        | `9e78f48dd^` | Recovery banner; note on 17 mounted HTTP routes                           |
+| [`04-guides/DEVELOPER_GUIDE.md`](../04-guides/DEVELOPER_GUIDE.md)             | Guide           | `9e78f48dd^` | Recovery banner; governance/API cross-links                               |
+| [`04-guides/DEPLOYMENT_GUIDE.md`](../04-guides/DEPLOYMENT_GUIDE.md)           | Guide           | `9e78f48dd^` | Added `TRACERA_JWT_*` env vars; mounted-route note                        |
+| [`06-api-reference/README.md`](../06-api-reference/README.md)                 | API hub         | Rewritten    | Replaced dead links with current contract + traceability map              |
+| [`04-guides/mcp-cli-api-matrix.md`](../04-guides/mcp-cli-api-matrix.md)       | API / clients   | `9e78f48dd^` | Mounted-route counts; JWT auth note                                       |
 
 ### Intentionally not restored
 
-| Path | Reason |
-|------|--------|
-| `docs/01-getting-started/START_HERE.md` | 500+ line research delivery doc; superseded by audit/architecture docs on `main` |
-| `docs/00-overview/*`, `docs/guides/*` | Volume/noise; many stale links; covered partially by `FEATURE_INVENTORY.md` + audit parts |
-| `docs/06-api-reference/api-documentation.md` | Superseded by [`API_REFERENCE.md`](../API_REFERENCE.md) + endpoint traceability map |
+| Path                                         | Reason                                                                                    |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `docs/01-getting-started/START_HERE.md`      | 500+ line research delivery doc; superseded by audit/architecture docs on `main`          |
+| `docs/00-overview/*`, `docs/guides/*`        | Volume/noise; many stale links; covered partially by `FEATURE_INVENTORY.md` + audit parts |
+| `docs/06-api-reference/api-documentation.md` | Superseded by [`API_REFERENCE.md`](../API_REFERENCE.md) + endpoint traceability map       |
 
 ## Current API reality (June 2026)
 
