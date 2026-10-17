@@ -89,9 +89,7 @@
           "product_id": "q1-runtime",
           "capability_id": "durable-read",
           "message": "Observation 'runtime-check' is 206869 seconds old (max: 86400s). The result may no longer be current.",
-          "evidence": [
-            "runtime-check"
-          ],
+          "evidence": ["runtime-check"],
           "detector_version": "1.1.0",
           "detected_at": "2026-10-17T09:27:49.705085Z",
           "severity": "High"

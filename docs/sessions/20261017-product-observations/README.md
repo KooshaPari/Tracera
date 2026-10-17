@@ -11,11 +11,11 @@ Rust typed boundary: `product/persistence.rs`; persistent adapters implement man
 `Store` methods. The old unmounted, in-memory `ObservationStore` scaffold was removed
 rather than retained as a fallback. Existing source had no external callers.
 
-| Method | Route suffix after `/api/v1/products/{product}/baselines/{baseline}` | Behavior |
-|---|---|---|
-| POST | `/observations` | Atomic accepted-intent snapshot plus append-only observations |
-| GET | `/observations` | Complete bounded persisted baseline model; real missing baseline is 404 |
-| GET | `/findings` | Actual freshness/coverage/contradiction detectors over that same persisted model |
+| Method | Route suffix after `/api/v1/products/{product}/baselines/{baseline}` | Behavior                                                                         |
+| ------ | -------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| POST   | `/observations`                                                      | Atomic accepted-intent snapshot plus append-only observations                    |
+| GET    | `/observations`                                                      | Complete bounded persisted baseline model; real missing baseline is 404          |
+| GET    | `/findings`                                                          | Actual freshness/coverage/contradiction detectors over that same persisted model |
 
 Product, capability, baseline and observation identities are separate. Observation IDs
 are unique within a product across baselines. Batch keys are scoped to product and

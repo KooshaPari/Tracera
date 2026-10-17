@@ -279,10 +279,7 @@
             "$ref": "#/components/schemas/BenchmarkCausality"
           }
         },
-        "required": [
-          "collector",
-          "version"
-        ]
+        "required": ["collector", "version"]
       },
       "AcceptedIntent": {
         "type": "object",
@@ -294,12 +291,7 @@
           },
           "kind": {
             "type": "string",
-            "enum": [
-              "Requirement",
-              "Obligation",
-              "Capability",
-              "Target"
-            ]
+            "enum": ["Requirement", "Obligation", "Capability", "Target"]
           },
           "title": {
             "type": "string"
@@ -309,11 +301,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "Accepted",
-              "Deferred",
-              "Retired"
-            ]
+            "enum": ["Accepted", "Deferred", "Retired"]
           },
           "baseline": {
             "type": "integer",
@@ -321,14 +309,7 @@
             "maximum": 9223372036854775807
           }
         },
-        "required": [
-          "id",
-          "kind",
-          "title",
-          "description",
-          "status",
-          "baseline"
-        ]
+        "required": ["id", "kind", "title", "description", "status", "baseline"]
       },
       "Observation": {
         "type": "object",
@@ -350,22 +331,11 @@
           },
           "kind": {
             "type": "string",
-            "enum": [
-              "TestResult",
-              "Measurement",
-              "Finding",
-              "Assessment"
-            ]
+            "enum": ["TestResult", "Measurement", "Finding", "Assessment"]
           },
           "result": {
             "type": "string",
-            "enum": [
-              "Passed",
-              "Failed",
-              "Stale",
-              "Unknown",
-              "Inconclusive"
-            ]
+            "enum": ["Passed", "Failed", "Stale", "Unknown", "Inconclusive"]
           },
           "source": {
             "$ref": "#/components/schemas/ObservationSource"
@@ -417,12 +387,7 @@
             }
           }
         },
-        "required": [
-          "product_id",
-          "baseline",
-          "intents",
-          "observations"
-        ]
+        "required": ["product_id", "baseline", "intents", "observations"]
       },
       "ProductObservationBatch": {
         "type": "object",
@@ -477,10 +442,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "accepted",
-          "replayed"
-        ]
+        "required": ["accepted", "replayed"]
       },
       "DetectorFinding": {
         "type": "object",
@@ -497,11 +459,7 @@
         "properties": {
           "kind": {
             "type": "string",
-            "enum": [
-              "Freshness",
-              "Coverage",
-              "Contradiction"
-            ]
+            "enum": ["Freshness", "Coverage", "Contradiction"]
           },
           "product_id": {
             "type": "string"
@@ -528,13 +486,7 @@
           },
           "severity": {
             "type": "string",
-            "enum": [
-              "Low",
-              "Medium",
-              "High",
-              "Critical",
-              "Info"
-            ]
+            "enum": ["Low", "Medium", "High", "Critical", "Info"]
           }
         }
       },
@@ -618,9 +570,7 @@
         "properties": {
           "schema_version": {
             "type": "string",
-            "enum": [
-              "1.0.0"
-            ]
+            "enum": ["1.0.0"]
           },
           "tenant_id": {
             "type": "string",
@@ -640,19 +590,11 @@
           },
           "result": {
             "type": "object",
-            "required": [
-              "status",
-              "replay_hash"
-            ],
+            "required": ["status", "replay_hash"],
             "properties": {
               "status": {
                 "type": "string",
-                "enum": [
-                  "passed",
-                  "failed",
-                  "timeout",
-                  "cancelled"
-                ]
+                "enum": ["passed", "failed", "timeout", "cancelled"]
               },
               "replay_hash": {
                 "type": "string",
