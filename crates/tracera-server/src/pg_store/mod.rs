@@ -12,11 +12,11 @@ use sqlx::{PgPool, Row};
 use std::time::Duration;
 use tokio::time::timeout;
 
-use tracera_server::product::{GeometryTruth, SpatialNode, SpatialRelation};
 use crate::store::{
     BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint, Store, StoreError,
     StoreResult, Story, TeamRow, TraceLink,
 };
+use tracera_server::product::{GeometryTruth, SpatialNode, SpatialRelation};
 
 mod evidence;
 mod problems;
@@ -351,7 +351,9 @@ impl Store for PgStore {
                 .await
                 .map_err(StoreError::from)?;
             let node_truncated = node_rows.len() > max_nodes;
-            let nodes: Vec<SpatialNode> = node_rows.into_iter().take(max_nodes)
+            let nodes: Vec<SpatialNode> = node_rows
+                .into_iter()
+                .take(max_nodes)
                 .map(|row| SpatialNode {
                     id: row.get("id"),
                     product_id: product_id.clone(),
@@ -360,7 +362,8 @@ impl Store for PgStore {
                     label: row.get("title"),
                     geometry_truth: GeometryTruth::Semantic,
                     geometry_source_ref: None,
-                }).collect();
+                })
+                .collect();
             let visible: std::collections::HashSet<&str> =
                 nodes.iter().map(|node| node.id.as_str()).collect();
             let edge_rows = sqlx::query("SELECT e.id, e.source_id, e.target_id, e.edge_type FROM product_edges e JOIN product_nodes s ON e.source_id=s.id JOIN product_nodes t ON e.target_id=t.id WHERE s.product_id=$1 AND t.product_id=$1 AND s.baseline_revision=$2 AND t.baseline_revision=$2 ORDER BY e.id LIMIT $3")
@@ -389,7 +392,11 @@ impl Store for PgStore {
                     source_ref: None,
                 });
             }
-            Ok((nodes, relations, !node_truncated && !edge_truncated && !clipped_relations))
+            Ok((
+                nodes,
+                relations,
+                !node_truncated && !edge_truncated && !clipped_relations,
+            ))
         })
     }
 

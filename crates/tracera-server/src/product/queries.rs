@@ -267,11 +267,29 @@ pub fn query_scoped_intents<'a>(
         },
         None => None,
     };
-    records.iter()
-        .filter(|row| query.product_id.as_deref().is_none_or(|id| row.product_id == id))
-        .filter(|row| wanted_kind.as_ref().is_none_or(|kind| row.intent.kind == *kind))
-        .filter(|row| wanted_status.as_ref().is_none_or(|state| row.intent.status == *state))
-        .filter(|row| query.baseline.is_none_or(|rev| row.intent.baseline.0 >= rev))
+    records
+        .iter()
+        .filter(|row| {
+            query
+                .product_id
+                .as_deref()
+                .is_none_or(|id| row.product_id == id)
+        })
+        .filter(|row| {
+            wanted_kind
+                .as_ref()
+                .is_none_or(|kind| row.intent.kind == *kind)
+        })
+        .filter(|row| {
+            wanted_status
+                .as_ref()
+                .is_none_or(|state| row.intent.status == *state)
+        })
+        .filter(|row| {
+            query
+                .baseline
+                .is_none_or(|rev| row.intent.baseline.0 >= rev)
+        })
         .skip(query.offset)
         .take(limit)
         .map(|row| row.intent)
@@ -422,8 +440,10 @@ pub fn build_invalidation_index_at(
     for intent in intents.iter().filter(|i| i.kind == IntentKind::Capability) {
         let latest_obs = observations
             .iter()
-            .filter(|o| o.capability_id.as_deref() == Some(intent.id.as_str())
-                && o.baseline == intent.baseline)
+            .filter(|o| {
+                o.capability_id.as_deref() == Some(intent.id.as_str())
+                    && o.baseline == intent.baseline
+            })
             .map(|o| o.recorded_at)
             .max();
         if latest_obs.is_none_or(|latest| latest < baseline_accepted_at) {
@@ -675,7 +695,10 @@ mod tests {
 
     #[test]
     fn unscoped_intents_fail_closed_on_product_filter() {
-        let q = ProductQuery { product_id: Some("prod-A".into()), ..Default::default() };
+        let q = ProductQuery {
+            product_id: Some("prod-A".into()),
+            ..Default::default()
+        };
         assert!(query_intents(&sample_intents(), &q).is_empty());
     }
 
@@ -683,8 +706,14 @@ mod tests {
     fn scoped_queries_prevent_cross_product_bleed() {
         let intents = sample_intents();
         let scope = vec![
-            ScopedIntent { product_id: "prod-A", intent: &intents[0] },
-            ScopedIntent { product_id: "prod-B", intent: &intents[1] },
+            ScopedIntent {
+                product_id: "prod-A",
+                intent: &intents[0],
+            },
+            ScopedIntent {
+                product_id: "prod-B",
+                intent: &intents[1],
+            },
         ];
         let q = ProductQuery {
             product_id: Some("prod-B".into()),
@@ -694,9 +723,14 @@ mod tests {
         let matched = query_scoped_intents(&scope, &q);
         assert_eq!(matched.len(), 1);
         assert_eq!(matched[0].id, "cap-2");
-        assert!(query_scoped_intents(&scope, &ProductQuery {
-            product_id: Some("unknown".into()), ..Default::default()
-        }).is_empty());
+        assert!(query_scoped_intents(
+            &scope,
+            &ProductQuery {
+                product_id: Some("unknown".into()),
+                ..Default::default()
+            }
+        )
+        .is_empty());
     }
 
     // ----- ProductView tests -----

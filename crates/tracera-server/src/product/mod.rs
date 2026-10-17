@@ -38,9 +38,8 @@ pub use ingest::{IngestResult, ObservationIngestRequest, ObservationStore};
 pub use observation::{Observation, ObservationKind, ObservationResult, ObservationSource};
 pub use queries::{
     build_invalidation_index, build_invalidation_index_at, build_product_view,
-    compute_product_stats, query_intents, query_scoped_intents, ScopedIntent,
-    InvalidationIndex, ProductQuery, ProductStats, ProductView, DEFAULT_QUERY_LIMIT,
-    MAX_QUERY_LIMIT,
+    compute_product_stats, query_intents, query_scoped_intents, InvalidationIndex, ProductQuery,
+    ProductStats, ProductView, ScopedIntent, DEFAULT_QUERY_LIMIT, MAX_QUERY_LIMIT,
 };
 pub use spatial::{
     compile_spatial_projection, GeometryTruth, ProjectionError, ProjectionScope, SpatialConduit,

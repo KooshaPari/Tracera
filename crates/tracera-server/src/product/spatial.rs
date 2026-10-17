@@ -142,11 +142,13 @@ pub fn compile_spatial_projection(
         {
             return Err(ProjectionError::InvalidNode(node.id.clone()));
         }
-        if matches!(node.geometry_truth, GeometryTruth::Physical | GeometryTruth::Measured)
-            && node
-                .geometry_source_ref
-                .as_deref()
-                .is_none_or(|source| source.trim().is_empty())
+        if matches!(
+            node.geometry_truth,
+            GeometryTruth::Physical | GeometryTruth::Measured
+        ) && node
+            .geometry_source_ref
+            .as_deref()
+            .is_none_or(|source| source.trim().is_empty())
         {
             return Err(ProjectionError::MissingGeometrySource(node.id.clone()));
         }
@@ -182,11 +184,7 @@ pub fn compile_spatial_projection(
             label: node.label.clone(),
             geometry_truth: node.geometry_truth,
             geometry_source_ref: node.geometry_source_ref.clone(),
-            position: [
-                ((index % 8) as i32) * 4,
-                ((index / 8) as i32) * 4,
-                0,
-            ],
+            position: [((index % 8) as i32) * 4, ((index / 8) as i32) * 4, 0],
         })
         .collect();
     let displayed_ids: HashMap<&str, ()> = glyphs
@@ -262,13 +260,15 @@ mod tests {
 
     #[test]
     fn identity_and_edge_direction_round_trip() {
-        let scene = compile_spatial_projection(
-            scope(), &[node("b"), node("a")], &[edge()], true,
-        ).unwrap();
+        let scene =
+            compile_spatial_projection(scope(), &[node("b"), node("a")], &[edge()], true).unwrap();
         assert_eq!(scene.glyphs[0].entity_ref, "a");
         assert_eq!(scene.conduits[0].source_ref, "a");
         assert_eq!(scene.conduits[0].target_ref, "b");
-        assert_eq!(scene.conduits[0].source_evidence_ref.as_deref(), Some("source:accepted-test"));
+        assert_eq!(
+            scene.conduits[0].source_evidence_ref.as_deref(),
+            Some("source:accepted-test")
+        );
         assert!(scene.read_only);
         assert!(scene.input_complete);
         let again: SpatialProjection =
@@ -278,8 +278,10 @@ mod tests {
 
     #[test]
     fn order_independent_stable_positions() {
-        let forward = compile_spatial_projection(scope(), &[node("a"), node("b")], &[edge()], true).unwrap();
-        let backward = compile_spatial_projection(scope(), &[node("b"), node("a")], &[edge()], true).unwrap();
+        let forward =
+            compile_spatial_projection(scope(), &[node("a"), node("b")], &[edge()], true).unwrap();
+        let backward =
+            compile_spatial_projection(scope(), &[node("b"), node("a")], &[edge()], true).unwrap();
         assert_eq!(forward, backward);
     }
 
@@ -332,7 +334,8 @@ mod tests {
     fn budget_never_implies_complete_world() {
         let mut q = scope();
         q.max_nodes = 1;
-        let scene = compile_spatial_projection(q, &[node("a"), node("b")], &[edge()], false).unwrap();
+        let scene =
+            compile_spatial_projection(q, &[node("a"), node("b")], &[edge()], false).unwrap();
         assert_eq!(scene.glyphs.len(), 1);
         assert!(scene.conduits.is_empty());
         assert_eq!(scene.omitted_nodes, 1);
@@ -356,14 +359,19 @@ mod tests {
             .map(|i| node(&format!("capability-{i:05}")))
             .collect();
         let input = ProjectionScope {
-            max_nodes: 128, max_relations: 256, ..scope()
+            max_nodes: 128,
+            max_relations: 256,
+            ..scope()
         };
         let scene = compile_spatial_projection(input, &nodes, &[], true).unwrap();
         assert_eq!(scene.glyphs.len(), 128);
         assert_eq!(scene.omitted_nodes, 19_872);
         assert!(scene.truncated);
         assert!(scene.input_complete);
-        assert!(scene.glyphs.windows(2).all(|w| w[0].entity_ref < w[1].entity_ref));
+        assert!(scene
+            .glyphs
+            .windows(2)
+            .all(|w| w[0].entity_ref < w[1].entity_ref));
     }
 
     #[test]
@@ -376,5 +384,4 @@ mod tests {
             Err(ProjectionError::MissingGeometrySource(_))
         ));
     }
-
 }

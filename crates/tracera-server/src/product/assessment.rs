@@ -435,10 +435,12 @@ impl AssessmentEngine {
         let mut findings = Vec::new();
         let mut observation_count = 0;
         let mut worst = AssessmentStatus::Satisfied;
-        for intent in intents.iter().filter(|i| {
-            i.kind == IntentKind::Capability && i.baseline == baseline
-        }) {
-            let relevant: Vec<Observation> = observations.iter()
+        for intent in intents
+            .iter()
+            .filter(|i| i.kind == IntentKind::Capability && i.baseline == baseline)
+        {
+            let relevant: Vec<Observation> = observations
+                .iter()
                 .filter(|o| {
                     o.product_id.as_str() == product_id
                         && o.baseline == baseline
@@ -466,7 +468,6 @@ impl AssessmentEngine {
             observation_count,
         }
     }
-
 }
 
 // ---------------------------------------------------------------------------
@@ -702,7 +703,10 @@ mod tests {
         unrelated.capability_id = Some("cap-1".to_string());
         let unlinked = make_obs("legacy", "target-product", ObservationResult::Passed, 10);
         let result = engine.assess_product_at_baseline(
-            "target-product", BaselineRevision(1), &intents, &[unrelated, unlinked],
+            "target-product",
+            BaselineRevision(1),
+            &intents,
+            &[unrelated, unlinked],
         );
         assert_eq!(result.product_id, "target-product");
         assert_eq!(result.status, AssessmentStatus::Unknown);
@@ -720,7 +724,10 @@ mod tests {
         old.id = "older-revision".to_string();
         old.baseline = BaselineRevision(2);
         let result = engine.assess_product_at_baseline(
-            "target-product", BaselineRevision(1), &intents, &[real, old],
+            "target-product",
+            BaselineRevision(1),
+            &intents,
+            &[real, old],
         );
         assert_eq!(result.observation_count, 1);
         assert_eq!(result.status, AssessmentStatus::Satisfied);
@@ -738,5 +745,4 @@ mod tests {
             AssessmentStatus::Unknown
         );
     }
-
 }

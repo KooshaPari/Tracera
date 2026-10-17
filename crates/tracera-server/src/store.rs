@@ -448,8 +448,11 @@ pub trait Store: Send + Sync {
     /// Read an already-authenticated product graph snapshot for visualization.
     /// Returns input completeness (false when source pagination truncated).
     fn product_spatial_slice(
-        &self, product_id: String, baseline_revision: u64,
-        max_nodes: usize, max_relations: usize,
+        &self,
+        product_id: String,
+        baseline_revision: u64,
+        max_nodes: usize,
+        max_relations: usize,
     ) -> BoxFuture<'_, StoreResult<(Vec<SpatialNode>, Vec<SpatialRelation>, bool)>>;
 
     fn list_swee_nodes(&self, node_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
