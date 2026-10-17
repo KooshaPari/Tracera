@@ -67,11 +67,25 @@ mod tests {
     }
     #[tokio::test]
     async fn reprobe_every_registered_stub_get() {
-        let pattern =
+        let any_stub =
             regex::Regex::new(r#"(?s)\.route\(\s*"([^"]+)",\s*any\(not_implemented\)"#).unwrap();
+        let fallback_stub = regex::Regex::new(
+            r#"(?s)\.route\(\s*"([^"]+)",\s*get\([^)]*\)\.fallback\(not_implemented\)"#,
+        )
+        .unwrap();
         let parameter = regex::Regex::new(r"\{[^}]+\}").unwrap();
+        let router_src = include_str!("router.rs");
+        let any_count = any_stub.captures_iter(router_src).count();
+        let fallback_count = fallback_stub.captures_iter(router_src).count();
+        let expected = any_count + fallback_count;
+        // The floor guards the regexes themselves: if a refactor stops them
+        // matching, this fails instead of silently probing zero routes.
+        assert!(
+            expected >= 30,
+            "stub registration scan found only {expected} sites; pattern drift?"
+        );
         let mut probed = 0;
-        for capture in pattern.captures_iter(include_str!("router.rs")) {
+        for capture in any_stub.captures_iter(router_src) {
             let template = &capture[1];
             let path = parameter.replace_all(template, "probe-id");
             let app = Router::new().route(template, any(not_implemented));
@@ -94,11 +108,34 @@ mod tests {
             assert!(body.get("stub").is_none());
             probed += 1;
         }
+        // `.fallback(not_implemented)` sites serve real GETs; the stub only
+        // answers non-GET methods, so probe those with POST.
+        for capture in fallback_stub.captures_iter(router_src) {
+            let template = &capture[1];
+            let path = parameter.replace_all(template, "probe-id");
+            let app = Router::new().route(
+                template,
+                axum::routing::get(|| async { "real" }).fallback(not_implemented),
+            );
+            let response = app
+                .oneshot(
+                    Request::builder()
+                        .method("POST")
+                        .uri(path.as_ref())
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::NOT_IMPLEMENTED, "{path}");
+            assert_eq!(response.headers()["x-tracera-not-implemented"], "true");
+            probed += 1;
+        }
         // Twelve journey registrations moved to routes/journeys.rs, where
         // data and exact template-501 contracts are exercised independently.
-        assert!(
-            probed >= 48,
-            "expected full registered stub cohort, got {probed}"
+        assert_eq!(
+            probed, expected,
+            "every scanned stub registration must be probed"
         );
         println!("GET reprobe: {probed} registered stub routes, zero 200 stub responses");
     }
