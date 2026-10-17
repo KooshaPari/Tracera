@@ -1,5 +1,7 @@
 #[path = "routes/auth.rs"]
 mod auth_routes;
+#[path = "routes/export_import.rs"]
+mod export_import_routes;
 #[path = "routes/graph.rs"]
 mod graph_routes;
 #[path = "routes/items.rs"]
@@ -127,6 +129,7 @@ pub(crate) fn build_router_with_auth(
 ) -> Router {
     let workos_router = build_workos_router::<AppState>(state.workos_client.clone());
     Router::new()
+        .merge(export_import_routes::routes())
         .merge(specs_routes::routes())
         .merge(w9_routes::routes())
         .route("/healthz", get(crate::health::healthz))
@@ -236,13 +239,10 @@ pub(crate) fn build_router_with_auth(
         // Search
         .merge(search_routes::router())
         // Projects extended
-        .route("/api/v1/projects/{project_id}/export", any(not_implemented))
-        .route("/api/v1/projects/{project_id}/import", any(not_implemented))
         .route(
             "/api/v1/projects/{project_id}/versions/compare",
             any(not_implemented),
         )
-        .route("/api/v1/import", any(not_implemented))
         // Auth
         .merge(auth_routes::routes())
         .route("/api/v1/auth/verify", any(not_implemented))
