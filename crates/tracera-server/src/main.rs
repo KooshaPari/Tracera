@@ -56,12 +56,47 @@ pub(crate) struct AppState {
     pub(crate) cache: Option<Arc<tracera_server::cache::CacheClient>>,
     pub(crate) neo4j: Option<Arc<tracera_server::neo4j::Neo4jClient>>,
     pub(crate) r2: Option<Arc<tracera_server::r2::R2Client>>,
+    pub(crate) frontend: FrontendState,
+    pub(crate) frontend_dist: PathBuf,
 }
 
 impl axum::extract::FromRef<AppState> for tracera_workos::WorkOSClient {
     fn from_ref(state: &AppState) -> Self {
         state.workos_client.clone()
     }
+}
+
+// ---------------------------------------------------------------------------
+// Frontend dist guard (fail-closed unless API-only is explicit)
+// ---------------------------------------------------------------------------
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub(crate) enum FrontendState {
+    Ok,
+    Missing,
+    Disabled,
+}
+
+impl FrontendState {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            FrontendState::Ok => "ok",
+            FrontendState::Missing => "missing",
+            FrontendState::Disabled => "disabled",
+        }
+    }
+}
+
+fn check_frontend(index: &std::path::Path, allow_missing: bool) -> Result<FrontendState, String> {
+    if index.is_file() {
+        return Ok(FrontendState::Ok);
+    }
+    if allow_missing {
+        return Ok(FrontendState::Disabled);
+    }
+    Err(format!(
+        "frontend index.html not found at {} (set TRACERA_FRONTEND_DIST, build the frontend, or set TRACERA_ALLOW_MISSING_FRONTEND=1 for API-only)",
+        index.display()
+    ))
 }
 
 fn validate_bind_address(
@@ -233,8 +268,30 @@ async fn main() {
             std::process::exit(1);
         };
 
+    let frontend_dist = env::var("TRACERA_FRONTEND_DIST")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("frontend/dist"));
+    let index_html = frontend_dist.join("index.html");
+    let allow_missing_frontend = env::var("TRACERA_ALLOW_MISSING_FRONTEND")
+        .map(|v| v == "1")
+        .unwrap_or(false);
+    let frontend_state = match check_frontend(&index_html, allow_missing_frontend) {
+        Ok(state) => {
+            if state == FrontendState::Disabled {
+                tracing::warn!(path = %index_html.display(), "frontend index.html missing; serving API only (TRACERA_ALLOW_MISSING_FRONTEND=1)");
+            }
+            state
+        }
+        Err(error) => {
+            eprintln!("FATAL: {error}");
+            std::process::exit(1);
+        }
+    };
+
     let state = AppState {
         version: env!("CARGO_PKG_VERSION").to_string(),
+        frontend: frontend_state,
+        frontend_dist: frontend_dist.clone(),
         backend,
         started_at: Instant::now(),
         store,
@@ -252,10 +309,6 @@ async fn main() {
         .map(Arc::<str>::from);
     let app = router::build_router_with_auth(state, auth_token.clone());
 
-    let frontend_dist = env::var("TRACERA_FRONTEND_DIST")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("frontend/dist"));
-    let index_html = frontend_dist.join("index.html");
     let serve_dir = ServeDir::new(&frontend_dist).fallback(ServeFile::new(&index_html));
     let app = app.fallback_service(serve_dir);
 
@@ -288,5 +341,53 @@ async fn main() {
     if let Err(error) = axum::serve(listener, app).await {
         eprintln!("FATAL: server stopped: {error}");
         std::process::exit(1);
+    }
+}
+
+#[cfg(test)]
+mod frontend_guard_tests {
+    use super::{check_frontend, FrontendState};
+
+    fn tempdir(tag: &str) -> std::path::PathBuf {
+        let dir = std::env::temp_dir().join(format!(
+            "tracera-frontend-guard-{tag}-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn missing_index_without_flag_errors() {
+        let dir = tempdir("missing");
+        let result = check_frontend(&dir.join("index.html"), false);
+        assert!(result.is_err());
+        let message = result.unwrap_err();
+        assert!(message.contains("TRACERA_FRONTEND_DIST"));
+        assert!(message.contains("TRACERA_ALLOW_MISSING_FRONTEND=1"));
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn missing_index_with_flag_is_disabled() {
+        let dir = tempdir("disabled");
+        let result = check_frontend(&dir.join("index.html"), true).unwrap();
+        assert_eq!(result, FrontendState::Disabled);
+        assert_eq!(result.as_str(), "disabled");
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn present_index_is_ok() {
+        let dir = tempdir("present");
+        std::fs::write(dir.join("index.html"), "<html></html>").unwrap();
+        let result = check_frontend(&dir.join("index.html"), false).unwrap();
+        assert_eq!(result, FrontendState::Ok);
+        assert_eq!(result.as_str(), "ok");
+        std::fs::remove_dir_all(&dir).ok();
     }
 }
