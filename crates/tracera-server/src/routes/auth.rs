@@ -55,13 +55,11 @@ pub(crate) const ROUTES: &[&str] = &[
     "/auth/me",
 ];
 
-
 pub(crate) fn w9_routes() -> Router<crate::AppState> {
     ROUTES.iter().fold(Router::new(), |router, path| {
         router.route(path, any(crate::not_implemented::not_implemented))
     })
 }
-
 
 #[cfg(test)]
 mod tests {

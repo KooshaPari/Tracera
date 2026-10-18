@@ -142,11 +142,9 @@ async fn suggest(State(state): State<AppState>, Query(params): Query<SuggestPara
 
 pub(crate) const ROUTES: &[&str] = &["/api/v1/projects/{project_id}/search/advanced"];
 
-
 pub(crate) fn w9_routes() -> Router<AppState> {
     Router::new().route(ROUTES[0], any(crate::not_implemented::not_implemented))
 }
-
 
 #[cfg(test)]
 mod tests {
