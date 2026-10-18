@@ -106,7 +106,7 @@ pub async fn forward_on_stub(
         let rebuilt = Request::from_parts(parts.clone(), Body::from(bytes.clone()));
         let resp = next.run(rebuilt).await;
         let is_stub = resp.status() == StatusCode::NOT_IMPLEMENTED
-            && resp.headers().get(STUB).map_or(false, |v| v == "true");
+            && resp.headers().get(STUB).is_some_and(|v| v == "true");
         if !is_stub || upgrade {
             return resp;
         }
