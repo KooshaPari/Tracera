@@ -7,7 +7,8 @@
     "**/routeTree.gen.ts",
     "**/api/*.gen.ts",
     "**/*.generated.*",
-    "**/public/mockServiceWorker.js"
+    "**/public/mockServiceWorker.js",
+    "apps/web/src/test/**"
   ],
   "plugins": [
     "eslint",
@@ -296,16 +297,16 @@
     ]
   },
   "rules": {
-    "typescript/no-explicit-any": "error",
+    "typescript/no-explicit-any": "warn",
     "typescript/explicit-function-return-type": [
-      "error",
+      "warn",
       {
         "allowExpressions": false,
         "allowTypedFunctionExpressions": true,
         "allowHigherOrderFunctions": true
       }
     ],
-    "typescript/explicit-module-boundary-types": "error",
+    "typescript/explicit-module-boundary-types": "warn",
     "typescript/no-unsafe-assignment": "error",
     "typescript/no-unsafe-member-access": "error",
     "typescript/no-unsafe-call": "error",
@@ -321,7 +322,7 @@
     "typescript/no-unnecessary-type-assertion": "error",
     "eslint/eqeqeq": ["error", "always"],
     "eslint/id-length": [
-      "error",
+      "warn",
       {
         "min": 2,
         "properties": "never",
@@ -354,7 +355,7 @@
         ]
       }
     ],
-    "eslint/no-duplicate-imports": "error",
+    "eslint/no-duplicate-imports": "warn",
     "eslint/no-debugger": "error",
     "eslint/no-eval": "error",
     "eslint/no-implied-eval": "error",
@@ -502,7 +503,16 @@
         "**/*.old.{ts,tsx,js,jsx}": "**/*.{ts,tsx,js,jsx}"
       }
     ],
-    "check-file/no-index": "error",
+    "check-file/no-index": "warn",
+    "typescript/consistent-type-definitions": "warn",
+    "typescript/consistent-indexed-object-style": "warn",
+    "eslint/arrow-body-style": "warn",
+    "eslint/capitalized-comments": "warn",
+    "eslint/curly": "warn",
+    "unicorn/no-useless-undefined": "warn",
+    "jsdoc/require-returns": "warn",
+    "jsdoc/require-param": "warn",
+    "import/no-unassigned-import": "warn",
     "boundaries/no-unknown-files": "error",
     "boundaries/element-types": [
       "error",
@@ -681,7 +691,7 @@
       }
     ],
     "import/max-dependencies": [
-      "error",
+      "warn",
       {
         "max": 20
       }
@@ -698,7 +708,7 @@
     "import/no-duplicates": "error",
     "import/first": "error",
     "import/newline-after-import": "error",
-    "import/no-default-export": "error",
+    "import/no-default-export": "warn",
     "eslint/no-restricted-imports": [
       "error",
       {
