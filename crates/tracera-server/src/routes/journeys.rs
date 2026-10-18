@@ -210,6 +210,20 @@ pub(super) fn routes() -> Router<AppState> {
     }
     router
 }
+pub(crate) const ROUTES: &[&str] = &[
+    "/api/v1/projects/{project_id}/journeys/detect",
+    "/journeys",
+    "/journeys/call-chains",
+    "/journeys/data-paths",
+    "/journeys/detect",
+    "/journeys/stats",
+    "/journeys/user-flows",
+    "/journeys/{param2}",
+    "/journeys/{param2}/steps",
+    "/journeys/{param2}/steps/{id}",
+    "/journeys/{param2}/visualization",
+];
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -448,20 +462,6 @@ mod tests {
         }
     }
 }
-
-pub(crate) const ROUTES: &[&str] = &[
-    "/api/v1/projects/{project_id}/journeys/detect",
-    "/journeys",
-    "/journeys/call-chains",
-    "/journeys/data-paths",
-    "/journeys/detect",
-    "/journeys/stats",
-    "/journeys/user-flows",
-    "/journeys/{param2}",
-    "/journeys/{param2}/steps",
-    "/journeys/{param2}/steps/{id}",
-    "/journeys/{param2}/visualization",
-];
 
 pub(crate) fn w9_routes() -> Router<AppState> {
     ROUTES.iter().fold(Router::new(), |router, path| {
