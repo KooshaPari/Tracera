@@ -106,10 +106,7 @@ pub async fn forward_on_stub(
         let rebuilt = Request::from_parts(parts.clone(), Body::from(bytes.clone()));
         let resp = next.run(rebuilt).await;
         let is_stub = resp.status() == StatusCode::NOT_IMPLEMENTED
-            && resp
-                .headers()
-                .get(STUB)
-                .map_or(false, |v| v == "true");
+            && resp.headers().get(STUB).map_or(false, |v| v == "true");
         if !is_stub || upgrade {
             return resp;
         }
@@ -154,8 +151,8 @@ pub async fn forward_on_stub(
         .await;
     match result {
         Ok(r) => {
-            let status = StatusCode::from_u16(r.status().as_u16())
-                .unwrap_or(StatusCode::BAD_GATEWAY);
+            let status =
+                StatusCode::from_u16(r.status().as_u16()).unwrap_or(StatusCode::BAD_GATEWAY);
             let mut headers = HeaderMap::new();
             for (k, v) in r.headers().iter() {
                 let n = k.as_str();
@@ -214,7 +211,6 @@ mod tests {
         format!("http://127.0.0.1:{}", addr.port())
     }
 
-
     async fn spawn_legacy(status: StatusCode, calls: std::sync::Arc<AtomicUsize>) -> String {
         let c1 = calls.clone();
         let c2 = calls.clone();
@@ -270,10 +266,7 @@ mod tests {
         let app = spawn_app(legacy_for(&legacy)).await;
         let r = reqwest::get(format!("{app}/stub")).await.unwrap();
         assert_eq!(r.status(), StatusCode::OK);
-        assert_eq!(
-            r.headers().get("x-tracera-served-by").unwrap(),
-            "legacy"
-        );
+        assert_eq!(r.headers().get("x-tracera-served-by").unwrap(), "legacy");
         assert_eq!(r.text().await.unwrap(), "echo:|");
         assert_eq!(calls.load(Ordering::SeqCst), 1);
     }
@@ -340,7 +333,9 @@ mod tests {
         let r = reqwest::get(format!("{app}/real")).await.unwrap();
         assert_eq!(r.status(), StatusCode::NOT_FOUND);
         assert_eq!(
-            r.headers().get("x-tracera-served-by").map(|v| v.to_str().unwrap().to_string()),
+            r.headers()
+                .get("x-tracera-served-by")
+                .map(|v| v.to_str().unwrap().to_string()),
             Some("legacy".to_string())
         );
     }
@@ -383,10 +378,7 @@ mod tests {
         // forwarded: legacy mock has no /legacy/x -> its 404 + served-by prove the hop
         // (the mock only counts hits on its registered routes, so no counter assert here)
         assert_eq!(r.status(), StatusCode::NOT_FOUND);
-        assert_eq!(
-            r.headers().get("x-tracera-served-by").unwrap(),
-            "legacy"
-        );
+        assert_eq!(r.headers().get("x-tracera-served-by").unwrap(), "legacy");
         // "/legacyx" is NOT owned (no segment boundary) -> local 404, no forward
         let r2 = reqwest::get(format!("{app}/legacyx")).await.unwrap();
         assert_eq!(r2.status(), StatusCode::NOT_FOUND);
@@ -448,7 +440,11 @@ mod tests {
         let app_legacy = Router::new().route(
             "/stub",
             axum::routing::any(|| async {
-                (StatusCode::FOUND, [("location", "http://evil.example/")], "")
+                (
+                    StatusCode::FOUND,
+                    [("location", "http://evil.example/")],
+                    "",
+                )
             }),
         );
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -521,5 +517,4 @@ mod tests {
         let r2 = reqwest::get(format!("{app}/stub")).await.unwrap();
         assert_eq!(r2.status(), StatusCode::UNAUTHORIZED);
     }
-
 }
