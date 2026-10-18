@@ -40,7 +40,6 @@ pub(super) fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         .route("/api/v1/auth/refresh", any(unavailable))
 }
 
-
 pub(crate) const ROUTES: &[&str] = &[
     "/api/v1/auth/account",
     "/api/v1/auth/authkit/authorize",
@@ -61,7 +60,6 @@ pub(crate) fn w9_routes() -> Router<crate::AppState> {
         router.route(path, any(crate::not_implemented::not_implemented))
     })
 }
-
 
 #[cfg(test)]
 mod tests {

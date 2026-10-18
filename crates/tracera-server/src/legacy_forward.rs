@@ -85,7 +85,7 @@ pub async fn forward_on_stub(
         || req
             .headers()
             .get(header::ACCEPT)
-            .map_or(false, |v| v.as_bytes().starts_with(b"text/event-stream"));
+            .is_some_and(|v| v.as_bytes().starts_with(b"text/event-stream"));
     let (parts, body) = req.into_parts();
     let path = parts.uri.path().to_string();
     let owned_prefix = legacy.owned_prefixes.iter().find_map(|p| {

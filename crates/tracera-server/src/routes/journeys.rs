@@ -231,7 +231,6 @@ pub(crate) fn w9_routes() -> Router<AppState> {
     })
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
