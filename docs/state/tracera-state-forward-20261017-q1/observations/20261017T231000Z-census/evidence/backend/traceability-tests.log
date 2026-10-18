@@ -1,0 +1,21 @@
+warning: linker stderr: rust-lld: Option `-no_compact_unwind' is undocumented. Should lld implement it?
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `tracera-server` (bin "tracera-server" test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.73s
+     Running unittests src/main.rs (/tmp/tracera-runtime-8dd-20261017/target/debug/deps/tracera_server-b27705bb95e9c228)
+
+running 9 tests
+test traceability::traceability::tests::test_average_confidence_empty_matrix ... ok
+test traceability::traceability::tests::test_verify_coverage_all_covered ... ok
+test traceability::traceability::tests::test_average_confidence ... ok
+test traceability::traceability::tests::test_build_matrix_populates_rows_and_columns ... ok
+test traceability::traceability::tests::test_stories_for_artifact ... ok
+test traceability::traceability::tests::test_verify_coverage_detects_gap ... ok
+test traceability::traceability::tests::test_matrix_with_orphan_detects_no_orphans ... ok
+test traceability::traceability::tests::test_artifacts_for_story ... ok
+test traceability::traceability::tests::test_find_gaps_reports_missing_types ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 116 filtered out; finished in 0.01s
+
