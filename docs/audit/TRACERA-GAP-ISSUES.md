@@ -216,3 +216,15 @@ A Compose management CLI and a manually launched SQLite API are different candid
 Fresh GAP-020 evidence: [actual Desk CLI/bundle reconciliation](../state/tracera-state-forward-20261017-q1/observations/20261017T231000Z-census/evidence/backend/desk-reconciliation.json) confirms status fails before Compose because cargo-bin ancestor discovery cannot see sibling `C:\Users\koosh\Tracera\docker-compose.local.yml`. `--root` is advertised but not executed because status can write env files.
 
 Fresh GAP-021 evidence: [runtime receipt](../state/tracera-state-forward-20261017-q1/observations/20261017T231000Z-census/evidence/backend/live-runtime.json) preserves manual PID20208and early200readiness separately from later timeouts. [UI witness](../state/tracera-state-forward-20261017-q1/observations/20261017T231000Z-census/evidence/live-view-report.json) records five direct empty-response paths and missing8091listener, with54dynamic paths NOT_RUNand deployed SHAUNKNOWN. CIVIS genuine0items at22:33Zis qualified only for that response; other project manifests remain incomplete.
+
+## D-04 operator follow-up (2026-10-18T06:53Z report receipt)
+
+GAP-020 additionally requires the exact root-qualified status/up sequence and prerequisites documented in [D-04 preflight](D04-ROOT-PREFLIGHT.md). This extends the existing launch/layout issue rather than duplicating it. Historical GAP-020/021 records remain unchanged.
+
+### [Instinct] GAP-022 Qualify the selected Desk Compose backend before launch
+
+Docker selected with docker-desktop reported Stopped is an unqualified launch prerequisite, not independent proof of every endpoint being down. Fedora Podman on port 7777 does not automatically satisfy native `podman compose` or `wsl+docker`. Source supports Podman but compatibility of that endpoint remains UNKNOWN. See [source identities, evidence limits, and positive/negative closure oracles](D04-ROOT-PREFLIGHT.md). First perform read-only root/config/backend identification and preserve configuration; no backend switch or startup was executed.
+
+### [Instinct] GAP-023 Preserve env configuration during root-qualified status
+
+Source `cmd_status` runs env preparation before Compose. `ensure_env_file` preserves a file containing a nonempty exact `POSTGRES_PASSWORD=` line but regenerates the whole file otherwise, including read failure. Existing real compose-side env files are retained by the link helper; different symlink targets can be replaced. This is source-qualified conditional overwrite risk; actual Desk overwrite is UNKNOWN. See [source proof and isolated positive/negative closure oracles](D04-ROOT-PREFLIGHT.md). Secure byte/metadata preservation and a read-only preflight precede any status/up call. Runtime validation NOT_RUN.
