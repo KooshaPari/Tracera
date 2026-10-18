@@ -7,6 +7,7 @@ use chrono::{DateTime, Utc};
 use serde_json::Value;
 use std::future::Future;
 use std::pin::Pin;
+use tracera_server::product::{SpatialNode, SpatialRelation};
 
 // ---------------------------------------------------------------------------
 // Shared error type
@@ -443,6 +444,16 @@ pub trait Store: Send + Sync {
         metadata: Value,
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<String>>;
+
+    /// Read an already-authenticated product graph snapshot for visualization.
+    /// Returns input completeness (false when source pagination truncated).
+    fn product_spatial_slice(
+        &self,
+        product_id: String,
+        baseline_revision: u64,
+        max_nodes: usize,
+        max_relations: usize,
+    ) -> BoxFuture<'_, StoreResult<(Vec<SpatialNode>, Vec<SpatialRelation>, bool)>>;
 
     fn list_swee_nodes(&self, node_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
     fn list_swee_edges(&self, edge_type: Option<String>) -> BoxFuture<'_, StoreResult<Vec<Value>>>;

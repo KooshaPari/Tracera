@@ -1,0 +1,121 @@
+{
+  "schema_version": "1.0.0",
+  "work_id": "TRACERA-SPATIAL-001",
+  "authority": "Tracera repository-local work; AgilePlus execution governance",
+  "state": "proposed_unregistered",
+  "recorded_on": "2026-10-13",
+  "design_pr": 1104,
+  "implementation_pr": 1122,
+  "registry_pr": 626,
+  "root_spec": "docs/agileplus/tracera-spatial-twin/spec.md",
+  "tasks": [
+    {
+      "id": "T00",
+      "state": "open",
+      "verified": false,
+      "source_commit": null,
+      "artifacts": [],
+      "oracle": null
+    },
+    {
+      "id": "T01",
+      "state": "open",
+      "verified": false,
+      "source_commit": null,
+      "artifacts": [],
+      "oracle": null
+    },
+    {
+      "id": "T02",
+      "state": "open",
+      "verified": false,
+      "source_commit": null,
+      "artifacts": [],
+      "oracle": null
+    },
+    {
+      "id": "T03",
+      "state": "open",
+      "verified": false,
+      "source_commit": null,
+      "artifacts": [],
+      "oracle": null
+    },
+    {
+      "id": "T04",
+      "state": "open",
+      "verified": false,
+      "source_commit": null,
+      "artifacts": [],
+      "oracle": null
+    },
+    {
+      "id": "T05",
+      "state": "open",
+      "verified": false,
+      "source_commit": null,
+      "artifacts": [],
+      "oracle": null
+    },
+    {
+      "id": "T06",
+      "state": "open",
+      "verified": false,
+      "source_commit": null,
+      "artifacts": [],
+      "oracle": null
+    },
+    {
+      "id": "T07",
+      "state": "open",
+      "verified": false,
+      "source_commit": null,
+      "artifacts": [],
+      "oracle": null
+    },
+    {
+      "id": "T08",
+      "state": "open",
+      "verified": false,
+      "source_commit": null,
+      "artifacts": [],
+      "oracle": null
+    },
+    {
+      "id": "T09",
+      "state": "open",
+      "verified": false,
+      "source_commit": null,
+      "artifacts": [],
+      "oracle": null
+    },
+    {
+      "id": "T10",
+      "state": "open",
+      "verified": false,
+      "source_commit": null,
+      "artifacts": [],
+      "oracle": null
+    },
+    {
+      "id": "T11",
+      "state": "open",
+      "verified": false,
+      "source_commit": null,
+      "artifacts": [],
+      "oracle": null
+    },
+    {
+      "id": "T12",
+      "state": "open",
+      "verified": false,
+      "source_commit": null,
+      "artifacts": [],
+      "oracle": null
+    }
+  ],
+  "acceptance": {
+    "state": "blocked",
+    "reason": "No executed cross-store / native / browser independent proof yet"
+  }
+}

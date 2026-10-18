@@ -248,6 +248,28 @@ impl AssessmentEngine {
             };
         }
 
+        // Partial/unknown results cannot be promoted to a green verdict.
+        if obs.iter().any(|o| o.result == ObservationResult::Unknown) {
+            return AssessmentFinding {
+                product_id: String::new(),
+                capability_id: Some(capability_id.to_string()),
+                status: AssessmentStatus::Unknown,
+                explanation: format!("Capability '{capability_id}' has unknown observations."),
+                observation_ids: obs_ids,
+                severity: FindingSeverity::from_status(AssessmentStatus::Unknown),
+            };
+        }
+        if obs.iter().any(|o| o.result == ObservationResult::Stale) {
+            return AssessmentFinding {
+                product_id: String::new(),
+                capability_id: Some(capability_id.to_string()),
+                status: AssessmentStatus::Stale,
+                explanation: format!("Capability '{capability_id}' has stale observations."),
+                observation_ids: obs_ids,
+                severity: FindingSeverity::from_status(AssessmentStatus::Stale),
+            };
+        }
+
         // All relevant observations passed
         AssessmentFinding {
             product_id: String::new(),
@@ -397,6 +419,53 @@ impl AssessmentEngine {
             findings,
             assessed_at: Utc::now(),
             observation_count: observations.len(),
+        }
+    }
+    /// Product- and revision-pinned assessment of an authorized intent slice.
+    /// All observations must explicitly identify the capability; an unlinked
+    /// observation cannot prove the capability is healthy. The caller must
+    /// scope intents by product because AcceptedIntent lacks a product ID.
+    pub fn assess_product_at_baseline(
+        &self,
+        product_id: &str,
+        baseline: BaselineRevision,
+        intents: &[AcceptedIntent],
+        observations: &[Observation],
+    ) -> AssessmentResult {
+        let mut findings = Vec::new();
+        let mut observation_count = 0;
+        let mut worst = AssessmentStatus::Satisfied;
+        for intent in intents
+            .iter()
+            .filter(|i| i.kind == IntentKind::Capability && i.baseline == baseline)
+        {
+            let relevant: Vec<Observation> = observations
+                .iter()
+                .filter(|o| {
+                    o.product_id.as_str() == product_id
+                        && o.baseline == baseline
+                        && o.capability_id.as_deref() == Some(intent.id.as_str())
+                })
+                .cloned()
+                .collect();
+            observation_count += relevant.len();
+            let mut finding = self.assess_capability(&intent.id, &relevant);
+            finding.product_id = product_id.to_string();
+            if finding.status.worse_than(worst) {
+                worst = finding.status;
+            }
+            findings.push(finding);
+        }
+        if findings.is_empty() {
+            worst = AssessmentStatus::Unknown;
+        }
+        AssessmentResult {
+            product_id: product_id.to_string(),
+            baseline,
+            status: worst,
+            findings,
+            assessed_at: Utc::now(),
+            observation_count,
         }
     }
 }
@@ -625,5 +694,55 @@ mod tests {
         let json = serde_json::to_string(&finding).unwrap();
         let roundtrip: AssessmentFinding = serde_json::from_str(&json).unwrap();
         assert_eq!(roundtrip.status, AssessmentStatus::Satisfied);
+    }
+    #[test]
+    fn scoped_assessment_rejects_cross_product_and_unlinked_evidence() {
+        let engine = AssessmentEngine::new(86_400);
+        let intents = vec![make_intent("cap-1", IntentKind::Capability)];
+        let mut unrelated = make_obs("other", "other-product", ObservationResult::Passed, 10);
+        unrelated.capability_id = Some("cap-1".to_string());
+        let unlinked = make_obs("legacy", "target-product", ObservationResult::Passed, 10);
+        let result = engine.assess_product_at_baseline(
+            "target-product",
+            BaselineRevision(1),
+            &intents,
+            &[unrelated, unlinked],
+        );
+        assert_eq!(result.product_id, "target-product");
+        assert_eq!(result.status, AssessmentStatus::Unknown);
+        assert_eq!(result.observation_count, 0);
+        assert_eq!(result.findings[0].capability_id.as_deref(), Some("cap-1"));
+    }
+
+    #[test]
+    fn scoped_assessment_accepts_explicit_capability_ref_only_in_same_revision() {
+        let engine = AssessmentEngine::new(86_400);
+        let intents = vec![make_intent("cap-1", IntentKind::Capability)];
+        let mut real = make_obs("real", "target-product", ObservationResult::Passed, 10);
+        real.capability_id = Some("cap-1".to_string());
+        let mut old = real.clone();
+        old.id = "older-revision".to_string();
+        old.baseline = BaselineRevision(2);
+        let result = engine.assess_product_at_baseline(
+            "target-product",
+            BaselineRevision(1),
+            &intents,
+            &[real, old],
+        );
+        assert_eq!(result.observation_count, 1);
+        assert_eq!(result.status, AssessmentStatus::Satisfied);
+    }
+
+    #[test]
+    fn unknown_evidence_never_turns_success_green() {
+        let engine = AssessmentEngine::new(86_400);
+        let obs = vec![
+            make_obs("pass", "cap-1", ObservationResult::Passed, 10),
+            make_obs("unknown", "cap-1", ObservationResult::Unknown, 10),
+        ];
+        assert_eq!(
+            engine.assess_capability("cap-1", &obs).status,
+            AssessmentStatus::Unknown
+        );
     }
 }
