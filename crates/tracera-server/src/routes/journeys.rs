@@ -224,6 +224,14 @@ pub(crate) const ROUTES: &[&str] = &[
     "/journeys/{param2}/visualization",
 ];
 
+
+pub(crate) fn w9_routes() -> Router<AppState> {
+    ROUTES.iter().fold(Router::new(), |router, path| {
+        router.route(path, any(crate::not_implemented::not_implemented))
+    })
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -461,10 +469,4 @@ mod tests {
             );
         }
     }
-}
-
-pub(crate) fn w9_routes() -> Router<AppState> {
-    ROUTES.iter().fold(Router::new(), |router, path| {
-        router.route(path, any(crate::not_implemented::not_implemented))
-    })
 }

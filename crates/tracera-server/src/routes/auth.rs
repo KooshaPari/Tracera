@@ -55,6 +55,14 @@ pub(crate) const ROUTES: &[&str] = &[
     "/auth/me",
 ];
 
+
+pub(crate) fn w9_routes() -> Router<crate::AppState> {
+    ROUTES.iter().fold(Router::new(), |router, path| {
+        router.route(path, any(crate::not_implemented::not_implemented))
+    })
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -112,10 +120,4 @@ mod tests {
     async fn refresh_returns_upstream_owned_501() {
         assert_contract("/api/v1/auth/refresh").await;
     }
-}
-
-pub(crate) fn w9_routes() -> Router<crate::AppState> {
-    ROUTES.iter().fold(Router::new(), |router, path| {
-        router.route(path, any(crate::not_implemented::not_implemented))
-    })
 }
