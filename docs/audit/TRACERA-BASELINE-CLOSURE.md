@@ -15,16 +15,16 @@ A future operator CSV can replace the selected expected-state source; retain
 this index as provenance and record replacement revision and selection rules.
 The required canonical gap-inventory columns remain unchanged.
 
-| Source | Indexed records | Interpretation |
-|---|---:|---|
-| FEATURE_INVENTORY.md | 501 | All capability/document list rows; API subsection has 215 capability rows |
-| endpoint_traceability_map.md | 30 | 26 endpoint rows plus four rule/list entries |
-| traceability.md | 7 | Three baseline references and four status assertions |
-| TRACEABILITY.json | 1 | Empty-file sentinel, existing GAP-020 |
-| 20260726 parity matrix | 8 | Eight acceptance gates, seven pending plus regression required |
-| 20260722 convergence matrix | 19 | Five implementation rows, six semantic rows, five improvements, three reject rules |
-| MCP/CLI/API matrix | 86 | Historical tool, command, storage, capability and flow entries |
-| Total | 652 | Indexed records, not 652 accepted features |
+| Source                       | Indexed records | Interpretation                                                                     |
+| ---------------------------- | --------------: | ---------------------------------------------------------------------------------- |
+| FEATURE_INVENTORY.md         |             501 | All capability/document list rows; API subsection has 215 capability rows          |
+| endpoint_traceability_map.md |              30 | 26 endpoint rows plus four rule/list entries                                       |
+| traceability.md              |               7 | Three baseline references and four status assertions                               |
+| TRACEABILITY.json            |               1 | Empty-file sentinel, existing GAP-020                                              |
+| 20260726 parity matrix       |               8 | Eight acceptance gates, seven pending plus regression required                     |
+| 20260722 convergence matrix  |              19 | Five implementation rows, six semantic rows, five improvements, three reject rules |
+| MCP/CLI/API matrix           |              86 | Historical tool, command, storage, capability and flow entries                     |
+| Total                        |             652 | Indexed records, not 652 accepted features                                         |
 
 The API subsection contains 199 single-method rows, one combined CRUD row,
 13 router descriptors and two handler paths. Its historical sections contain

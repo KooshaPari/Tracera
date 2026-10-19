@@ -66,8 +66,7 @@ Mutation routes were NOT_PROBED. Local origin is not public Access acceptance.
 Process-scoped Windows listener inspection identified port 8080 PID 98924,
 `tracera-live.exe`, executable `C:\Users\koosh\agents\tracera\tracera-live.exe`.
 Read-only inspection of deployed `C:\Users\koosh\agents\tracera\front.js`
-identified a separate loopback gateway listening on 8091 and forwarding to
-8080. When upstream content type is text/html for any `/api/` path, this
+identified a separate loopback gateway listening on 8091 and forwarding to 8080. When upstream content type is text/html for any `/api/` path, this
 gateway returns HTTP 200 JSON empty envelopes with `stub:true` for GET;
 notifications/workflows/branches/versions/views root collections get `[]`.
 Non-GET fallback is HTTP 501; those methods were not probed.

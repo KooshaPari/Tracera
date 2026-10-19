@@ -6,19 +6,19 @@ Observed 2026-10-16 PDT (runtime receipts 2026-10-17 03:25 UTC).
 
 ## Ownership and source manifest
 
-| Component | Exact receipt |
-|---|---|
-| Source | `ae68aea7febd772282606bf1e142d507316cfea0`, current main when qualified; journey read PR #1149 |
-| Local preserved source | `/tmp/tracera-q0-runtime-20261016` before switching its fresh clone to the documentation branch |
-| Windows source | `C:\Users\koosh\agents\tracera-q0-ae68aea7-src` extracted from exact source archive |
-| Archive SHA256 | `cd47f92f359e5d34ec52cd43003ec8e4af532002598444d534a0bc4ecd2c932e`; matched independently on both hosts |
-| Candidate binary | `target/debug/tracera-server.exe` under that Windows source root |
-| Binary SHA256 | `cd69e6d1f72ac2c1e19cbd319b5661f577b2cfb6af81229786ec3cc202018742` |
-| Runtime/store | New sibling `tracera-q0-ae68aea7-runtime`, dedicated `q0.db` SQLite file |
-| Listener | `127.0.0.1:18173`; no public bind or Access policy change |
-| Owned processes | Initial PID 315612; restart PID 316428; both stopped |
-| Existing Windows checkout | Observed HEAD `3e23c76ec0f621a3dbe696ed22bd05048a65a878`; untouched |
-| Existing ports | 8080 and 8091 had no listeners; no restart or takeover attempted |
+| Component                 | Exact receipt                                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Source                    | `ae68aea7febd772282606bf1e142d507316cfea0`, current main when qualified; journey read PR #1149          |
+| Local preserved source    | `/tmp/tracera-q0-runtime-20261016` before switching its fresh clone to the documentation branch         |
+| Windows source            | `C:\Users\koosh\agents\tracera-q0-ae68aea7-src` extracted from exact source archive                     |
+| Archive SHA256            | `cd47f92f359e5d34ec52cd43003ec8e4af532002598444d534a0bc4ecd2c932e`; matched independently on both hosts |
+| Candidate binary          | `target/debug/tracera-server.exe` under that Windows source root                                        |
+| Binary SHA256             | `cd69e6d1f72ac2c1e19cbd319b5661f577b2cfb6af81229786ec3cc202018742`                                      |
+| Runtime/store             | New sibling `tracera-q0-ae68aea7-runtime`, dedicated `q0.db` SQLite file                                |
+| Listener                  | `127.0.0.1:18173`; no public bind or Access policy change                                               |
+| Owned processes           | Initial PID 315612; restart PID 316428; both stopped                                                    |
+| Existing Windows checkout | Observed HEAD `3e23c76ec0f621a3dbe696ed22bd05048a65a878`; untouched                                     |
+| Existing ports            | 8080 and 8091 had no listeners; no restart or takeover attempted                                        |
 
 Placement was **remote compute with remote output**: Windows reported 68,612,255,744 bytes RAM (64 GiB), cargo 1.98.1. This avoids a heavy build on the 16 GiB Mac. An initially slow full clone eventually completed in separate `tracera-q0-20261016`; archive transfer established the exact build input independently. No shared checkout was reset or overwritten.
 
@@ -48,18 +48,18 @@ Only the owned candidate processes were stopped. A subsequent independent proces
 
 ## HTTP receipts and independent controls
 
-| Probe | Observed result | Meaning |
-|---|---|---|
-| GET `/readyz` | 200, `status=ready`, `backend=sqlite`, `version=0.2.0` | Store readiness succeeds, beyond liveness |
-| GET `/api/v1/items` in fresh store | 200, `items=[]`, `total=0`, `store=items`, no stub marker | Genuine empty-store response |
-| GET `/api/v1/items?limit=-1` | 400 | Invalid-query negative control |
-| GET `/api/v1/items/q0-never-created` | 404 | Missing-record negative control |
-| POST `/ingest/github`, `{}` without live source | 422 | Actual handler contradicts checked-in YAML's 200 oracle |
-| POST `/ingest/github`, one supplied issue | 200, processed 1, created 1, links 0, errors empty | Real fixture persistence through mounted handler |
-| GET `/api/v1/stories` | 200, one story | Persisted fixture visible independently of ingestion response |
-| Stop, restart, GET `/readyz` | 200 ready, SQLite | New process opens same dedicated store |
-| GET `/api/v1/stories` after restart | Same ID/title/body/status and exact created/updated timestamps | Durable issue/story witness |
-| GET `/api/v1/projects` | 200, count 0, items empty | This story fixture is not demonstrated project identity; do not infer Item behavior |
+| Probe                                           | Observed result                                                | Meaning                                                                             |
+| ----------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| GET `/readyz`                                   | 200, `status=ready`, `backend=sqlite`, `version=0.2.0`         | Store readiness succeeds, beyond liveness                                           |
+| GET `/api/v1/items` in fresh store              | 200, `items=[]`, `total=0`, `store=items`, no stub marker      | Genuine empty-store response                                                        |
+| GET `/api/v1/items?limit=-1`                    | 400                                                            | Invalid-query negative control                                                      |
+| GET `/api/v1/items/q0-never-created`            | 404                                                            | Missing-record negative control                                                     |
+| POST `/ingest/github`, `{}` without live source | 422                                                            | Actual handler contradicts checked-in YAML's 200 oracle                             |
+| POST `/ingest/github`, one supplied issue       | 200, processed 1, created 1, links 0, errors empty             | Real fixture persistence through mounted handler                                    |
+| GET `/api/v1/stories`                           | 200, one story                                                 | Persisted fixture visible independently of ingestion response                       |
+| Stop, restart, GET `/readyz`                    | 200 ready, SQLite                                              | New process opens same dedicated store                                              |
+| GET `/api/v1/stories` after restart             | Same ID/title/body/status and exact created/updated timestamps | Durable issue/story witness                                                         |
+| GET `/api/v1/projects`                          | 200, count 0, items empty                                      | This story fixture is not demonstrated project identity; do not infer Item behavior |
 
 The supplied issue was number `8675309`, title `Q0 isolated persistence witness`, body `candidate fixture only`, state `open`; resulting ID `story-8675309`. Creation/update timestamp remained `2026-10-17T03:25:12.488662900Z` before and after restart.
 

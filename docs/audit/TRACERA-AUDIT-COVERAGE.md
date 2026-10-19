@@ -5,13 +5,13 @@ canonical inventory, not an authenticated production attestation.
 
 ## Evidence denominators
 
-| Evidence set | Count | Meaning |
-|---|---:|---|
-| Canonical `TRACERA-GAP-INVENTORY.csv` at source revision | 63 rows | 19 GAP records and 44 VIEW coverage records |
-| Canonical `TRACERA-GAP-ISSUES.md` | 19 issues | Static findings; operator observations remain attributed |
-| Prior `/tmp/tracera-live-resume-20261014/docs/audit` artifacts | 75 gaps, 59 views, 284 API references | Prior-pass provenance; not current verified counts |
-| Authenticated production views established by this reconciliation | 0 | All prior 59-view live checks remain Unknown |
-| Authenticated production API references established here | 0 | All prior 284-reference live checks remain Unknown |
+| Evidence set                                                      |                                 Count | Meaning                                                  |
+| ----------------------------------------------------------------- | ------------------------------------: | -------------------------------------------------------- |
+| Canonical `TRACERA-GAP-INVENTORY.csv` at source revision          |                               63 rows | 19 GAP records and 44 VIEW coverage records              |
+| Canonical `TRACERA-GAP-ISSUES.md`                                 |                             19 issues | Static findings; operator observations remain attributed |
+| Prior `/tmp/tracera-live-resume-20261014/docs/audit` artifacts    | 75 gaps, 59 views, 284 API references | Prior-pass provenance; not current verified counts       |
+| Authenticated production views established by this reconciliation |                                     0 | All prior 59-view live checks remain Unknown             |
+| Authenticated production API references established here          |                                     0 | All prior 284-reference live checks remain Unknown       |
 
 The canonical issues describe an older static source snapshot
 `9a4360e812eeee81ee7c0367b12a967cf7764440`; their source claims are not silently
@@ -22,15 +22,15 @@ adds evidence on its descendant branch without merging or rewriting history.
 
 ## Pluggable expected-state baseline
 
-| Selected source | Interpretation / limitation |
-|---|---|
-| `docs/FEATURE_INVENTORY.md` | Endpoint/capability migration oracle; opening warning says CURRENT labels describe historical Python, not the live Rust contract |
-| `docs/governance/policy/endpoint_traceability_map.md` | FR -> endpoint -> test governance slice; 24 business routes plus two probes, not the whole current frontend surface |
-| `docs/traceability.md` | Declares route and FR linkage mapped, but explicitly calls test linkage partial and endpoints unmounted/untested |
-| `docs/ops/TRACEABILITY.json` | Zero-byte tracked file at this revision; supplies no parseable traceability evidence |
-| `docs/sessions/20260726-frontend-convergence/02_PARITY_MATRIX.md` | Pending acceptance gates; does not certify per-view artifacts |
-| `docs/sessions/20260722-rich-dashboard-recovery/07_FRONTEND_CONVERGENCE_MATRIX.md` | Dated frontend convergence plan and route parity candidate |
-| `docs/04-guides/mcp-cli-api-matrix.md` | Explicitly historical retired Python MCP/CLI reference |
+| Selected source                                                                    | Interpretation / limitation                                                                                                      |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/FEATURE_INVENTORY.md`                                                        | Endpoint/capability migration oracle; opening warning says CURRENT labels describe historical Python, not the live Rust contract |
+| `docs/governance/policy/endpoint_traceability_map.md`                              | FR -> endpoint -> test governance slice; 24 business routes plus two probes, not the whole current frontend surface              |
+| `docs/traceability.md`                                                             | Declares route and FR linkage mapped, but explicitly calls test linkage partial and endpoints unmounted/untested                 |
+| `docs/ops/TRACEABILITY.json`                                                       | Zero-byte tracked file at this revision; supplies no parseable traceability evidence                                             |
+| `docs/sessions/20260726-frontend-convergence/02_PARITY_MATRIX.md`                  | Pending acceptance gates; does not certify per-view artifacts                                                                    |
+| `docs/sessions/20260722-rich-dashboard-recovery/07_FRONTEND_CONVERGENCE_MATRIX.md` | Dated frontend convergence plan and route parity candidate                                                                       |
+| `docs/04-guides/mcp-cli-api-matrix.md`                                             | Explicitly historical retired Python MCP/CLI reference                                                                           |
 
 No hand-built CSV baseline has been supplied. If one is supplied, select it as
 the expected-state input and retain these seven sources as provenance. Record
