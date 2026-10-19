@@ -1,4 +1,4 @@
-import { expect, test } from "@vitest/globals";
+import { expect, test } from "vitest";
 
 import { EnvManager } from "../env-manager";
 
