@@ -1,0 +1,19 @@
+   Compiling tracera-cli v0.1.0 (/tmp/tracera-d04-cli-test)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.43s
+     Running unittests /tmp/tracera-d04-preflight/crates/tracera-cli/src/main.rs (/tmp/tracera-d04-cli-test/target/debug/deps/tracera-76bc69279dfd92d6)
+
+running 11 tests
+test compose::tests::compose_argv_locks_project_name_and_env_file ... ok
+test compose::tests::compose_argv_wsl_prefixes_docker_with_distribution ... ok
+test compose::tests::sync_bundle_env_symlink_creates_link_when_missing ... ok
+test env_config::tests::creates_absent_and_rejects_directory ... ok
+test env_config::tests::preserves_valid_existing_bytes ... ok
+test runtime::tests::apple_container_uses_native_binary_path ... ok
+test env_config::tests::preserves_valid_and_dangling_symlinks ... ok
+test env_config::tests::missing_validation_does_not_create_parent ... ok
+test compose::tests::sync_bundle_env_symlink_leaves_user_provided_file_alone ... ok
+test compose::tests::sync_bundle_env_symlink_rejects_and_preserves_stale_symlink ... ok
+test env_config::tests::rejects_invalid_existing_without_clobber_or_secret_errors ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

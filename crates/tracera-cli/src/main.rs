@@ -16,6 +16,7 @@ use clap::Parser;
 mod bundle;
 mod commands;
 mod compose;
+mod env_config;
 mod runtime;
 
 use commands::Cli;

@@ -1,0 +1,35 @@
+[
+  {
+    "case": "valid",
+    "status": "PASS",
+    "backend_invoked": true
+  },
+  {
+    "case": "invalid",
+    "status": "PASS",
+    "backend_invoked": false
+  },
+  {
+    "case": "absent",
+    "status": "PASS",
+    "backend_invoked": false
+  },
+  {
+    "case": "empty",
+    "status": "PASS",
+    "backend_invoked": false
+  },
+  {
+    "case": "invalid-up-preserved",
+    "status": "PASS"
+  },
+  {
+    "case": "bundle-status-no-writes",
+    "status": "PASS"
+  },
+  {
+    "case": "standalone-up-symlink",
+    "status": "PASS",
+    "backend": "fake-only"
+  }
+]

@@ -1,0 +1,57 @@
+{
+  "generated_at_utc": "2026-10-19T00:55:43.622006+00:00",
+  "base_sha": "191551f049d89cb5a9a7f223c84750a6ce8c9486",
+  "intents": [
+    {
+      "name": "Non-clobbering preflight",
+      "cells": {
+        "Implementation": {
+          "verdict": "PASS",
+          "source": "env_config.rs; commands.rs; bundle.rs; compose.rs"
+        },
+        "Usability": {
+          "verdict": "PASS",
+          "source": "fixture-results.json: seven fake-backend cases"
+        },
+        "Validation": {
+          "verdict": "PASS",
+          "source": "unit-tests.log: 11 passed; fixture-results.json"
+        },
+        "Assurance": {
+          "verdict": "UNKNOWN",
+          "source": "Windows cfg block not cross-compiled; isolated dependencies differ workspace lock"
+        }
+      }
+    },
+    {
+      "name": "Actual Desk readiness",
+      "cells": {
+        "Implementation": {
+          "verdict": "UNKNOWN",
+          "source": "installed binary/source equivalence unverified"
+        },
+        "Usability": {
+          "verdict": "UNKNOWN",
+          "source": "SSH 100.96.135.160 port22 timed out"
+        },
+        "Validation": {
+          "verdict": "NOT_RUN",
+          "source": "scope prohibits Desk root commands and starts"
+        },
+        "Assurance": {
+          "verdict": "UNKNOWN",
+          "source": "no fresh remote metadata"
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Owned disposable nonsecret fixtures only; fake Docker is a side-effect guard, not runtime qualification.",
+    "No environment values read. SSH metadata command timed out. No actual Desk root CLI executed.",
+    "No baseline executable RED; base source establishes old mutation behavior.",
+    "Isolated source build uses cached dependency resolution, not workspace-locked dependencies.",
+    "dotenvy validates supported dotenv syntax, not complete Compose grammar: colon separators and some double-quoted escapes may fail closed without changing bytes.",
+    "Windows create_new branch statically reviewed only; no Windows runtime qualification.",
+    "Compute: on device, isolated CLI only; no shared process kills or backend starts."
+  ]
+}
