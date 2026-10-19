@@ -32,3 +32,6 @@ apps/web/public/specs/openapi.json
 apps/web/visual/README.md
 packages/env-manager/README.md
 turbo.json
+.oxlintrc.json
+packages/ui/src/__tests__/Card.test.tsx
+packages/ui/src/__tests__/Alert.test.tsx
