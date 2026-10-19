@@ -20,6 +20,7 @@ COPY --from=build /workspace/target/release/tracera-server /usr/local/bin/tracer
 
 ENV TRACERA_BIND_ADDR=0.0.0.0:8080 \
     TRACERA_FRONTEND_DIST=/opt/tracera/frontend/dist \
+    TRACERA_ALLOW_MISSING_FRONTEND=1 \
     RUST_LOG=info
 
 EXPOSE 8080
