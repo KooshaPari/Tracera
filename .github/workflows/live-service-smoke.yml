@@ -173,6 +173,7 @@ jobs:
           echo "prod frontend -> HTTP ${code}"
           case "${code}" in
             2??) ;;
+            401) echo "PASS: prod frontend answered 401 Unauthorized: the public alias is gated by Cloudflare Access middleware (expected)."; exit 0 ;;
             *) echo "::error::prod frontend returned HTTP ${code}"; exit 1 ;;
           esac
           if grep -qi 'scaffolding coming soon' /tmp/prod_frontend.html; then

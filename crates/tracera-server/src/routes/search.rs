@@ -140,6 +140,12 @@ async fn suggest(State(state): State<AppState>, Query(params): Query<SuggestPara
     Ok(Json(json!(titles)))
 }
 
+pub(crate) const ROUTES: &[&str] = &["/api/v1/projects/{project_id}/search/advanced"];
+
+pub(crate) fn w9_routes() -> Router<AppState> {
+    Router::new().route(ROUTES[0], any(crate::not_implemented::not_implemented))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -184,6 +190,8 @@ mod tests {
             cache: None,
             neo4j: None,
             r2: None,
+            frontend: crate::FrontendState::Ok,
+            frontend_dist: std::path::PathBuf::new(),
         });
         (app, store)
     }
@@ -400,6 +408,8 @@ mod tests {
             cache: None,
             neo4j: None,
             r2: None,
+            frontend: crate::FrontendState::Ok,
+            frontend_dist: std::path::PathBuf::new(),
         });
         for route in ["/api/v1/search", "/api/v1/search/suggest"] {
             let (status, body) = request(
@@ -413,10 +423,4 @@ mod tests {
             assert_eq!(body, json!({"error":"not_implemented","route":route}));
         }
     }
-}
-
-pub(crate) const ROUTES: &[&str] = &["/api/v1/projects/{project_id}/search/advanced"];
-
-pub(crate) fn w9_routes() -> Router<AppState> {
-    Router::new().route(ROUTES[0], any(crate::not_implemented::not_implemented))
 }
