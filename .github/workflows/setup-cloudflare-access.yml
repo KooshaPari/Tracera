@@ -29,7 +29,7 @@ permissions:
 jobs:
   setup:
     name: Configure Access for ${{ inputs.access_hostname }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     timeout-minutes: 10
     environment: cloudflare-prod
     env:

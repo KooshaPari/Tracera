@@ -21,11 +21,10 @@ on:
         description: Runner pool for manual validation
         required: false
         type: choice
-        default: ubuntu-latest
+        default: desk
         options:
-          - ubuntu-latest
-          - blacksmith-2vcpu-ubuntu-2204
-          - blacksmith-4vcpu-ubuntu-2204
+          - desk
+          - self-hosted
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -42,7 +41,7 @@ env:
 jobs:
   detect-changes:
     name: Detect Languages
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     outputs:
       rust: ${{ steps.filter.outputs.rust }}
       python: ${{ steps.filter.outputs.python }}
@@ -101,7 +100,7 @@ jobs:
     name: Rust Lint
     needs: detect-changes
     if: needs.detect-changes.outputs.rust == 'true'
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.runner || 'desk' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -119,7 +118,7 @@ jobs:
     name: Rust Test
     needs: detect-changes
     if: needs.detect-changes.outputs.rust == 'true'
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.runner || 'desk' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -149,7 +148,7 @@ jobs:
     name: Rust Build
     needs: [rust-lint, rust-test]
     if: always() && !failure() && !cancelled()
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.runner || 'desk' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -170,7 +169,7 @@ jobs:
     name: Python Lint
     needs: detect-changes
     if: needs.detect-changes.outputs.python == 'true'
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.runner || 'desk' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -188,7 +187,7 @@ jobs:
     name: Python Test
     needs: detect-changes
     if: needs.detect-changes.outputs.python == 'true'
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.runner || 'desk' }}
     strategy:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
@@ -216,7 +215,7 @@ jobs:
     name: Go Lint
     needs: detect-changes
     if: needs.detect-changes.outputs.go == 'true'
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.runner || 'desk' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -248,7 +247,7 @@ jobs:
     name: Go Test
     needs: detect-changes
     if: needs.detect-changes.outputs.go == 'true'
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.runner || 'desk' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -272,7 +271,7 @@ jobs:
     name: TS/JS Lint
     needs: detect-changes
     if: needs.detect-changes.outputs.typescript == 'true'
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.runner || 'desk' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -294,7 +293,7 @@ jobs:
     name: TS/JS Test
     needs: detect-changes
     if: needs.detect-changes.outputs.typescript == 'true'
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.runner || 'desk' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -316,7 +315,7 @@ jobs:
   security-scan:
     name: Security Scan
     needs: detect-changes
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -349,7 +348,7 @@ jobs:
     name: Dependency Review
     needs: detect-changes
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -365,7 +364,7 @@ jobs:
     name: Trunk Check
     needs: detect-changes
     if: needs.detect-changes.outputs.infra == 'true' || github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -386,7 +385,7 @@ jobs:
       - go-lint
       - typescript-lint
       - trunk-check
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     steps:
       - name: Check lint results
         run: |
@@ -410,7 +409,7 @@ jobs:
       - python-test
       - go-test
       - typescript-test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     steps:
       - name: Check test results
         run: |
@@ -443,7 +442,7 @@ jobs:
       - security-scan
       - dependency-review
       - trunk-check
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     steps:
       - name: Check all jobs
         run: |

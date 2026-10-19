@@ -19,6 +19,6 @@ permissions: {}
 
 jobs:
   placeholder:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     steps:
       - run: echo "Disabled — see comment in this file."

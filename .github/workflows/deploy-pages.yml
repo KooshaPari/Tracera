@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     steps:
       - uses: actions/checkout@v4
 
@@ -60,7 +60,7 @@ jobs:
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

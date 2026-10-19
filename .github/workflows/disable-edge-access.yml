@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   disable:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     timeout-minutes: 10
     environment: cloudflare-prod
     env:

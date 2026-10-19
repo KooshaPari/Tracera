@@ -8,7 +8,7 @@ permissions:
 jobs:
   debloat:
     if: ${{ github.event.inputs.confirm == 'DEBLOAT' }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     steps:
       - name: Install git-filter-repo
         run: pipx install git-filter-repo || pip install git-filter-repo

@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   placeholder:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     steps:
       - name: Disabled
         run: echo "Alert sync disabled (phenoShared deprecated). See comment in this file."

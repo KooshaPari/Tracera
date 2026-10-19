@@ -20,7 +20,7 @@ permissions: read-all
 jobs:
   analysis:
     name: Scorecard analysis
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     permissions:
       # Needed for Code scanning upload.
       security-events: write

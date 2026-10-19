@@ -184,7 +184,7 @@ jobs:
   publish-release:
     name: publish-github-release
     needs: build-and-sign
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, desk]
     permissions:
       contents: write
 
