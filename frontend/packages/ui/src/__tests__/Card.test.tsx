@@ -43,7 +43,9 @@ Vitest.describe("CardHeader component", () => {
 
   Vitest.it("applies custom className", () => {
     render(<CardHeader className="custom-header">Header</CardHeader>);
-    Vitest.expect(screen.getByText("Header").className).toContain("custom-header");
+    Vitest.expect(screen.getByText("Header").className).toContain(
+      "custom-header",
+    );
   });
 });
 
