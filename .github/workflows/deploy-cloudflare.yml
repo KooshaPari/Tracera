@@ -43,7 +43,7 @@ jobs:
   # Single derivation point for the target environment, shared by the job that
   # needs it for its GitHub environment name and for the wrangler --env flag.
   plan:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, podman, wsl2, fedora44]
     permissions: {}
     outputs:
       env: ${{ steps.derive.outputs.env }}
@@ -71,7 +71,7 @@ jobs:
   deploy:
     name: Deploy to Cloudflare Workers
     needs: plan
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, podman, wsl2, fedora44]
     timeout-minutes: 15
     environment:
       name: cloudflare-${{ needs.plan.outputs.env }}

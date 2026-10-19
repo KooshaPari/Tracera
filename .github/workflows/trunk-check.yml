@@ -44,7 +44,7 @@ permissions:
 jobs:
   trunk-check:
     name: Lint & Format
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, podman, wsl2, fedora44]
     timeout-minutes: 10
 
     steps:

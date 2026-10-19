@@ -10,16 +10,16 @@ on:
       runner:
         required: false
         type: string
-        default: ubuntu-latest
+        default: desk
   workflow_dispatch:
     inputs:
       runner:
         description: Runner pool for manual secret synchronization
         required: false
         type: choice
-        default: ubuntu-latest
+        default: desk
         options:
-          - ubuntu-latest
+          - desk
           - blacksmith-2vcpu-ubuntu-2204
           - blacksmith-4vcpu-ubuntu-2204
   push:
@@ -32,7 +32,7 @@ jobs:
   sync-secrets:
     name: Pull secrets from Infisical
     if: github.event_name != 'pull_request'
-    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    runs-on: [self-hosted, podman, wsl2, fedora44]
     timeout-minutes: 5
     steps:
       - name: Checkout

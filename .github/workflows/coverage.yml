@@ -19,7 +19,7 @@ env:
 jobs:
   coverage:
     name: rust-coverage (cargo-llvm-cov)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, podman, wsl2, fedora44]
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable

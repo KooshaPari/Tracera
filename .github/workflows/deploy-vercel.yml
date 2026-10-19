@@ -37,7 +37,8 @@ jobs:
   # The one place the target environment is derived, so no step has to repeat
   # the logic and no trigger can quietly mean "production".
   plan:
-    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    runs-on: [self-hosted, podman, wsl2, fedora44]
     permissions: {}
     outputs:
       env: ${{ steps.derive.outputs.env }}
@@ -64,7 +65,7 @@ jobs:
 
   deploy:
     needs: plan
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, podman, wsl2, fedora44]
     timeout-minutes: 15
     # Give the *-production environments required reviewers in repository
     # settings; dev and preview intentionally carry no gate.

@@ -10,7 +10,9 @@ for (const file of files) {
   const source = workflows[file];
   if (!source.includes('workflow_dispatch:')) failures.push(`${file}: missing workflow_dispatch`);
   if (!source.includes('runner:')) failures.push(`${file}: missing runner input`);
-  if (!source.includes("default: ubuntu-latest")) failures.push(`${file}: default runner is not ubuntu-latest`);
+  if (!source.includes("default: desk")) failures.push(`${file}: manual dispatch must default to desk`);
+  if (/runs-on:\\s*(ubuntu-|windows-|macos-|\\$\\{\\{\\s*inputs\\.runner)/.test(source)) failures.push(`${file}: hosted fallback forbidden`);
+  if (!source.includes("runs-on: [self-hosted, podman, wsl2, fedora44]")) failures.push(`${file}: missing desk labels`);
   if (/runs-on:\s*blacksmith-/.test(source)) {
     failures.push(`${file}: hard-coded Blacksmith runner remains`);
   }
@@ -29,8 +31,8 @@ for (const job of [
   'typescript-test',
 ]) {
   const block = ci.match(new RegExp(`\\n  ${job}:\\n([\\s\\S]*?)(?=\\n  [a-z0-9-]+:|$)`))?.[1] ?? '';
-  if (!block.includes("runs-on: ${{ inputs.runner || 'ubuntu-latest' }}")) {
-    failures.push(`ci.yml: ${job} does not use the inputs.runner hosted fallback expression`);
+  if (!block.includes("runs-on: [self-hosted, podman, wsl2, fedora44]")) {
+    failures.push(`ci.yml: ${job} is not bound to the desk runner`);
   }
 }
 
