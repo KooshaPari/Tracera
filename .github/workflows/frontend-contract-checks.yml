@@ -12,7 +12,7 @@ on:
 
 jobs:
   checks:
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
       VITE_API_URL: ${{ vars.TRACERA_API_BASE }}

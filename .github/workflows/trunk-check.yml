@@ -44,7 +44,7 @@ permissions:
 jobs:
   trunk-check:
     name: Lint & Format
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:

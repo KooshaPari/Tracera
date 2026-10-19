@@ -46,7 +46,7 @@ jobs:
     # `true != 'true'` evaluate true and run the tests that were meant to be
     # skipped. Negate the value directly instead.
     if: ${{ !inputs.skip_tests }}
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -119,7 +119,7 @@ jobs:
     name: Publish fleet desired-state
     needs: [test, deploy-frontend, deploy-edge]
     if: ${{ always() && needs.test.result == 'success' && needs.deploy-edge.result == 'success' }}
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Push desired state to the fleet control plane
@@ -162,7 +162,7 @@ jobs:
     name: Post-deploy verification
     needs: [deploy-frontend, deploy-edge]
     if: always()
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
       # Follow the environment that was actually deployed. Probing the production

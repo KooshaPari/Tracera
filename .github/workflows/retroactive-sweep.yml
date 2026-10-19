@@ -44,7 +44,7 @@ concurrency:
 jobs:
   scan:
     name: Scan historical review comments
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

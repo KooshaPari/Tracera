@@ -45,10 +45,9 @@ on:
         description: Runner pool to use for all jobs
         required: false
         type: choice
-        default: desk
+        default: ubuntu-latest
         options:
-          - desk
-          - self-hosted
+          - ubuntu-latest
 
 concurrency:
   group: ci-agents-${{ github.ref }}
@@ -68,7 +67,7 @@ env:
 jobs:
   detect-changes:
     name: "ci-agents / detect"
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     permissions: {}
     outputs:
       rust: ${{ steps.filter.outputs.rust }}
@@ -127,7 +126,7 @@ jobs:
     name: "ci-agents / format"
     needs: detect-changes
     if: needs.detect-changes.outputs.rust == 'true' || needs.detect-changes.outputs.typescript == 'true'
-    runs-on: ${{ inputs.runner || 'desk' }}
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -176,7 +175,7 @@ jobs:
     name: "ci-agents / lint-rust"
     needs: detect-changes
     if: needs.detect-changes.outputs.rust == 'true'
-    runs-on: ${{ inputs.runner || 'desk' }}
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -209,7 +208,7 @@ jobs:
     name: "ci-agents / lint-js"
     needs: detect-changes
     if: needs.detect-changes.outputs.typescript == 'true'
-    runs-on: ${{ inputs.runner || 'desk' }}
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -234,7 +233,7 @@ jobs:
     name: "ci-agents / lint-py"
     needs: detect-changes
     if: needs.detect-changes.outputs.python == 'true'
-    runs-on: ${{ inputs.runner || 'desk' }}
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -263,7 +262,7 @@ jobs:
     name: "ci-agents / test-rust"
     needs: detect-changes
     if: needs.detect-changes.outputs.rust == 'true'
-    runs-on: ${{ inputs.runner || 'desk' }}
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -309,7 +308,7 @@ jobs:
     name: "ci-agents / test-js"
     needs: detect-changes
     if: needs.detect-changes.outputs.typescript == 'true'
-    runs-on: ${{ inputs.runner || 'desk' }}
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -343,7 +342,7 @@ jobs:
     name: "ci-agents / test-py (${{ matrix.python-version }})"
     needs: detect-changes
     if: needs.detect-changes.outputs.python == 'true'
-    runs-on: ${{ inputs.runner || 'desk' }}
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     strategy:
       fail-fast: false
@@ -383,7 +382,7 @@ jobs:
     name: "ci-agents / build"
     needs: [format, lint-rust, lint-js, lint-py, test-rust, test-js, test-py]
     if: always() && !failure() && !cancelled()
-    runs-on: ${{ inputs.runner || 'desk' }}
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -437,7 +436,7 @@ jobs:
   security-scan:
     name: "ci-agents / security-scan"
     needs: detect-changes
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write
@@ -469,7 +468,7 @@ jobs:
   secrets:
     name: "ci-agents / secrets"
     needs: detect-changes
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
@@ -509,7 +508,7 @@ jobs:
       - build
       - security-scan
       - secrets
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     permissions: {}
     steps:
       - name: Aggregate job status

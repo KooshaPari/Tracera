@@ -8,7 +8,7 @@ on:
 
 jobs:
   publish:
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:

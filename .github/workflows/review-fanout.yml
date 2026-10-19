@@ -35,7 +35,7 @@ env:
 jobs:
   enqueue:
     name: Dispatch to smart queue
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
       - name: Build fanout payload

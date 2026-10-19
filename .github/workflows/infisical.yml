@@ -32,7 +32,7 @@ jobs:
   sync-secrets:
     name: Pull secrets from Infisical
     if: github.event_name != 'pull_request'
-    runs-on: ${{ inputs.runner || 'desk' }}
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     timeout-minutes: 5
     steps:
       - name: Checkout

@@ -205,7 +205,7 @@ jobs:
   release:
     name: Attach to GitHub Release
     needs: build
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write

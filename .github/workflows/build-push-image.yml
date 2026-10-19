@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: [self-hosted, Linux, X64, desk]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
