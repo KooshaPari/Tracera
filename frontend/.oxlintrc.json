@@ -938,6 +938,13 @@
           }
         ]
       }
+    },
+    {
+      "files": ["apps/web/src/router.tsx"],
+      "rules": {
+        "eslint/no-restricted-imports": "off",
+        "react/only-export-components": "off"
+      }
     }
   ]
 }
