@@ -67,7 +67,9 @@ Vitest.describe("AlertTitle component", () => {
 
   Vitest.it("applies custom className", () => {
     render(<AlertTitle className="custom-title">Title</AlertTitle>);
-    Vitest.expect(screen.getByText("Title").className).toContain("custom-title");
+    Vitest.expect(screen.getByText("Title").className).toContain(
+      "custom-title",
+    );
   });
 });
 
@@ -98,6 +100,8 @@ Vitest.describe("Alert composition", () => {
       </Alert>,
     );
     Vitest.expect(screen.getByText("Error occurred")).toBeInTheDocument();
-    Vitest.expect(screen.getByText("Please try again later.")).toBeInTheDocument();
+    Vitest.expect(
+      screen.getByText("Please try again later."),
+    ).toBeInTheDocument();
   });
 });
