@@ -4220,7 +4220,6 @@ dependencies = [
  "anyhow",
  "chrono",
  "clap",
- "dotenvy",
  "rand 0.10.3",
  "reqwest 0.13.1",
  "serde_json",

@@ -1,99 +1,28 @@
 //! Non-clobbering local configuration preparation.
 //!
-//! The env-file parser here is a minimal Compose-compatible implementation
+//! The env-file parser here is a minimal Compose-inspired implementation
 //! that accepts both `=` and `:` separators, `export` prefixes, comments
 //! (inside and outside quoted values), double-quoted escape sequences
-//! (`\n`, `\t`, `\r`, `\\`), and single-quoted literal values.  It does
-//! **not** attempt full POSIX shell expansion; it covers precisely the
-//! subset that Docker Compose `--env-file` accepts.
+//! (`\a`, `\b`, `\c`, `\f`, `\n`, `\r`, `\t`, `\v`, `\\`, `\"`, `\$`,
+//! and octal `\0NNN`), and single-quoted values with escape-aware quote
+//! scanning.  It does **not** implement:
+//!
+//! - `${VAR}` variable interpolation (Compose `expandVariables`),
+//! - multi-statement continuation after a closing quote on the same line,
+//! - POSIX shell expansion beyond the above.
+//!
+//! A bare key with no separator (`KEY\n`) fails closed rather than
+//! inheriting from the environment, which is a deliberate safety choice
+//! for a credential file.
+//!
+//! Inline comments on an unquoted value are recognised only at the two
+//! character sequence `" #"`, matching Docker Compose.  A `#` that is
+//! not preceded by whitespace is part of the value, so a password such
+//! as `pa#ss` keeps its `#`.
+use crate::env_file::parse_env_entries;
 use anyhow::Context;
-use std::collections::HashMap;
 use std::io::Write;
 use std::path::Path;
-
-/// Parse a single `.env` line, returning `Some((key, value))` or `None` for
-/// blank / comment-only lines.  Returns `Err` only for genuinely malformed
-/// lines (unterminated quote, no separator at all).  The error must never
-/// echo the line content to avoid leaking secrets.
-fn parse_env_line(line: &str) -> anyhow::Result<Option<(String, String)>> {
-    let trimmed = line.trim();
-    if trimmed.is_empty() || trimmed.starts_with('#') {
-        return Ok(None);
-    }
-    // Strip optional `export` prefix.
-    let rest = if let Some(r) = trimmed.strip_prefix("export ") {
-        r.trim_start()
-    } else {
-        trimmed
-    };
-    // Find first `=` or `:` separator.
-    let sep = rest.find(['=', ':']);
-    let sep_idx = match sep {
-        Some(i) => i,
-        None => {
-            anyhow::bail!("env line has no key-value separator");
-        }
-    };
-    let key = rest[..sep_idx].trim().to_string();
-    if key.is_empty() {
-        anyhow::bail!("env line has empty key");
-    }
-    let raw_val = rest[sep_idx + 1..].trim_start();
-
-    let value = if let Some(after_opening) = raw_val.strip_prefix('\'') {
-        // Single-quoted: content up to next `'`; no escape processing.
-        match after_opening.find('\'') {
-            Some(end) => after_opening[..end].to_string(),
-            None => anyhow::bail!("unterminated single quote in env value"),
-        }
-    } else if let Some(after_opening) = raw_val.strip_prefix('"') {
-        // Double-quoted: process `\n`, `\t`, `\r`, `\\`; `#` is not a comment.
-        let mut chars = after_opening.chars();
-        let mut out = String::new();
-        loop {
-            match chars.next() {
-                None => anyhow::bail!("unterminated double quote in env value"),
-                Some('"') => break,
-                Some('\\') => {
-                    match chars.next() {
-                        None => anyhow::bail!("unterminated escape in env value"),
-                        Some('\\') => out.push('\\'),
-                        Some('n') => out.push('\n'),
-                        Some('t') => out.push('\t'),
-                        Some('r') => out.push('\r'),
-                        Some(c) => {
-                            out.push('\\');
-                            out.push(c);
-                        }
-                    }
-                }
-                Some(c) => out.push(c),
-            }
-        }
-        // Everything after the closing `"` is a trailing comment — ignore it.
-        out
-    } else {
-        // Unquoted: strip trailing inline comment (`# ...`).
-        match raw_val.find('#') {
-            Some(pos) => raw_val[..pos].trim_end().to_string(),
-            None => raw_val.trim_end().to_string(),
-        }
-    };
-    Ok(Some((key, value)))
-}
-
-/// Parse all lines in an env file body, applying last-assignment-wins.
-/// Returns `Err` if any line is genuinely malformed (unterminated quote,
-/// no separator).  The error never echoes the offending value.
-fn parse_env_entries(body: &str) -> anyhow::Result<HashMap<String, String>> {
-    let mut map = HashMap::new();
-    for line in body.lines() {
-        if let Some((key, value)) = parse_env_line(line)? {
-            map.insert(key, value);
-        }
-    }
-    Ok(map)
-}
 
 pub fn validate_env_file(path: &Path) -> anyhow::Result<()> {
     let metadata = std::fs::metadata(path).with_context(|| format!("configuration {} is missing or unreadable; initialize an absent file with `tracera init`", path.display()))?;
@@ -267,31 +196,6 @@ mod tests {
         assert_eq!(std::fs::read_to_string(&path).unwrap(), body_sq);
     }
 
-    // Gap B: parser-level verification that escape sequences produce correct values.
-    #[test]
-    fn parse_env_line_escape_values() {
-        // Double-quoted \t becomes a literal tab character.
-        let (_, val) = parse_env_line("KEY=\"a\\tb\"").unwrap().unwrap();
-        assert_eq!(val, "a\tb");
-
-        // Double-quoted \r becomes a literal carriage return.
-        let (_, val) = parse_env_line("KEY=\"a\\rb\"").unwrap().unwrap();
-        assert_eq!(val, "a\rb");
-
-        // Double-quoted \\ becomes a literal backslash.
-        let (_, val) = parse_env_line("KEY=\"a\\\\b\"").unwrap().unwrap();
-        assert_eq!(val, "a\\b");
-
-        // Single-quoted: backslash is literal.
-        let (_, val) = parse_env_line("KEY='a\\tb'").unwrap().unwrap();
-        assert_eq!(val, "a\\tb");
-
-        // Gap A: colon separator.
-        let (key, val) = parse_env_line("MY_KEY: my value").unwrap().unwrap();
-        assert_eq!(key, "MY_KEY");
-        assert_eq!(val, "my value");
-    }
-
     // Gap C: last-assignment-wins with colon and mixed separators.
     #[test]
     fn last_wins_with_mixed_separators() {
@@ -306,28 +210,18 @@ mod tests {
         assert_eq!(entries["POSTGRES_PASSWORD"], "second");
     }
 
-    // Fail-closed: genuinely invalid input must produce errors that do NOT
-    // echo the offending value (no secret leakage).
+    // Fail-closed: the end-to-end path must not leak the offending value
+    // in its error message.
     #[test]
     fn fail_closed_no_secret_leakage_in_errors() {
-        // Unterminated single quote.
-        let err = parse_env_line("POSTGRES_PASSWORD='top-secret-unterminated").unwrap_err();
-        assert!(!err.to_string().contains("top-secret"), "error leaked secret: {err}");
-
-        // Unterminated double quote.
-        let err = parse_env_line("POSTGRES_PASSWORD=\"top-secret-unterminated").unwrap_err();
-        assert!(!err.to_string().contains("top-secret"), "error leaked secret: {err}");
-
-        // No separator at all.
-        let err = parse_env_line("MALFORMED_LINE_NO_SEP").unwrap_err();
-        assert!(!err.to_string().contains("MALFORMED"), "error echoed line: {err}");
-
-        // End-to-end: ensure_env_file with invalid file does not leak.
         let root = tempfile::tempdir().unwrap();
         let path = root.path().join(".env.local");
         std::fs::write(&path, "POSTGRES_PASSWORD='secret-unterminated\n").unwrap();
         let error = ensure_env_file(&path, 1234).unwrap_err().to_string();
-        assert!(!error.contains("secret-unterminated"), "error leaked secret: {error}");
+        assert!(
+            !error.contains("secret-unterminated"),
+            "error leaked secret: {error}"
+        );
     }
 
     #[test]
