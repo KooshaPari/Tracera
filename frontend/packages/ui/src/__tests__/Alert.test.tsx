@@ -53,16 +53,16 @@ Vitest.describe("Alert component", () => {
 });
 
 Vitest.describe("AlertTitle component", () => {
-  Vitest.it("renders as h5 element", () => {
+  Vitest.it("renders as div element", () => {
     render(<AlertTitle>Title</AlertTitle>);
     const title = screen.getByText("Title");
-    Vitest.expect(title.tagName).toBe("H5");
+    Vitest.expect(title.tagName).toBe("DIV");
   });
 
   Vitest.it("forwards ref", () => {
     const ref = createRef<HTMLParagraphElement>();
     render(<AlertTitle ref={ref}>Ref title</AlertTitle>);
-    Vitest.expect(ref.current).toBeInstanceOf(HTMLHeadingElement);
+    Vitest.expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 
   Vitest.it("applies custom className", () => {
