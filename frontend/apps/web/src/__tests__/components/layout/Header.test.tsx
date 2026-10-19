@@ -5,6 +5,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the router hooks BEFORE any imports that use them
+vi.mock("@/hooks/useNotifications", () => ({
+  useNotifications: () => ({
+    deleteNotification: { mutate: vi.fn() },
+    error: null,
+    isConnected: false,
+    isLoading: false,
+    markAllRead: { mutate: vi.fn() },
+    markAsRead: { mutate: vi.fn() },
+    notifications: [],
+    unreadCount: 0,
+  }),
+}));
+
 vi.mock("@tanstack/react-router", () => ({
   useLocation: () => ({ pathname: "/" }),
   useMatches: () => [],
