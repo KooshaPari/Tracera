@@ -1,5 +1,5 @@
 import createClient from "openapi-fetch";
-import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest/globals";
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
   api,
@@ -68,7 +68,7 @@ const mockLink = {
 describe("API Client Configuration", () => {
   it("should call createClient with the default base URL", () => {
     expect(createClient).toHaveBeenCalledWith({
-      baseUrl: "http://localhost:4000",
+      baseUrl: "http://127.0.0.1:18000",
     });
   });
 
