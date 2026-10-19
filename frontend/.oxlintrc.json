@@ -712,7 +712,13 @@
     "eslint/no-restricted-imports": [
       "error",
       {
-        "patterns": ["**/dist/**", "**/build/**", "**/generated/**", "**/*.gen", "**/*.generated"]
+        "patterns": [
+          "**/dist/**",
+          "**/build/**",
+          "**/generated/**",
+          "**/*.gen",
+          "**/*.generated"
+        ]
       }
     ],
     "import/no-named-export": "off",
@@ -885,7 +891,12 @@
       }
     },
     {
-      "files": ["**/routes/**/*.ts", "**/routes/**/*.tsx", "**/pages/**/*.ts", "**/pages/**/*.tsx"],
+      "files": [
+        "**/routes/**/*.ts",
+        "**/routes/**/*.tsx",
+        "**/pages/**/*.ts",
+        "**/pages/**/*.tsx"
+      ],
       "rules": {
         "import/no-default-export": "off"
       }
