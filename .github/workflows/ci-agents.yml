@@ -48,8 +48,6 @@ on:
         default: ubuntu-latest
         options:
           - ubuntu-latest
-          - blacksmith-2vcpu-ubuntu-2204
-          - blacksmith-4vcpu-ubuntu-2204
 
 concurrency:
   group: ci-agents-${{ github.ref }}
