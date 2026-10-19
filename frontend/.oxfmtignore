@@ -40,3 +40,14 @@ apps/web/src/__tests__/api/reports.test.ts
 apps/web/src/__tests__/components/layout/Header.test.tsx
 apps/web/src/__tests__/integration/app-integration.test.tsx
 apps/web/src/__tests__/pages/ProjectsList.test.tsx
+apps/web/src/__tests__/equivalenceIO.test.ts
+apps/web/src/components/forms/CreateItemDialog.test.tsx
+apps/web/src/__tests__/components/CreateItemDialog.error-handling.test.tsx
+apps/web/src/__tests__/components/CreateLinkForm.test.tsx
+apps/web/src/__tests__/components/CreateItemForm.test.tsx
+apps/web/src/__tests__/components/CreateProjectForm.test.tsx
+apps/web/src/__tests__/components/CreateTestItemForm.test.tsx
+apps/web/src/__tests__/lib/validation.test.ts
+apps/web/src/__tests__/utils/helpers.comprehensive.test.ts
+apps/web/src/__tests__/workers/integration.test.ts
+apps/web/src/__tests__/security/input-validation.test.tsx
