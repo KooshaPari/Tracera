@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-19T02:31:20.878007+00:00",
+  "generated_at_utc": "2026-10-19T02:31:31.354508+00:00",
   "base_sha": "191551f049d89cb5a9a7f223c84750a6ce8c9486",
   "intents": [
     {
@@ -74,5 +74,8 @@
     "Windows create_new branch statically reviewed only; no Windows runtime qualification.",
     "Compute: on device, isolated CLI only; no shared process kills or backend starts.",
     "Exact workspace --locked --offline CLI test/build passed using isolated owned CARGO_TARGET_DIR; 13 unit tests and seven fake-backend fixtures. No production-complete claim; Compose syntax parity fails known cases."
-  ]
+  ],
+  "binary_sha256": "5e6e370227d4ec9f5a88186ea50e230bd30fcafb2a4b438dcb4a7e90ea6e2d23",
+  "qualified_source_sha": "18c425ef3a89fe75fd56497a76d53d34273e0d07 plus test-only followup 9e7b20531",
+  "compatibility_oracle": "https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file-syntax"
 }

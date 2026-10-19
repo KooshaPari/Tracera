@@ -10,3 +10,7 @@ Reproduce: cargo test with the tracera-cli crate (workspace dependency availabil
 No existing Desk configuration was read or changed. No backend service started. No installed binary equivalence verified. SSH to 100.96.135.160:22 timed out.
 
 Follow-up: exact workspace `cargo test -p tracera-cli --locked --offline` PASS 13/13; `cargo build -p tracera-cli --locked --offline` PASS. Own CARGO_TARGET_DIR=/tmp/tracera-d04-cli-test/target; SDK26/system clang. Known Compose syntax compatibility remains observed FAIL; no production-complete claim.
+
+Locked binary SHA256: 5e6e370227d4ec9f5a88186ea50e230bd30fcafb2a4b438dcb4a7e90ea6e2d23. Seven fixture cases PASS using this binary.
+
+Compatibility closure oracle: Docker official env-file syntax https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file-syntax supports colon separators and double-quoted escapes. Future closure must accept those non-secret positive fixtures without file changes and retain malformed/empty negative cases; current unsupported-syntax test explicitly proves FAIL of usability, PASS of preservation.

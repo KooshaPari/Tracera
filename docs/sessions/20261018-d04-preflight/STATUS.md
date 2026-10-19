@@ -1,6 +1,6 @@
 # D04 preflight evidence tree
 
-Generated: 2026-10-19T02:31:20.878007+00:00
+Generated: 2026-10-19T02:31:31.354508+00:00
 
 Rendered from STATUS.json; no runtime promotion.
 
