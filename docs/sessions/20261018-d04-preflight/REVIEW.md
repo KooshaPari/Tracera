@@ -14,3 +14,23 @@ Follow-up: exact workspace `cargo test -p tracera-cli --locked --offline` PASS 1
 Locked binary SHA256: 5e6e370227d4ec9f5a88186ea50e230bd30fcafb2a4b438dcb4a7e90ea6e2d23. Seven fixture cases PASS using this binary.
 
 Compatibility closure oracle: Docker official env-file syntax https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file-syntax supports colon separators and double-quoted escapes. Future closure must accept those non-secret positive fixtures without file changes and retain malformed/empty negative cases; current unsupported-syntax test explicitly proves FAIL of usability, PASS of preservation.
+
+## 2026-10-19 hardening pass
+
+Reviewer: jcode agent, 2026-10-19T22:07Z.
+
+Replaced dotenvy with custom Compose-compatible parser in `env_config.rs`. The custom parser accepts:
+- Colon separators (`KEY: value`)
+- Double-quoted escape sequences (`\n`, `\t`, `\r`, `\\`)
+- Single-quoted literal values (no escape processing)
+- `export` prefix
+- Inline comments (unquoted only)
+- Last-assignment-wins for duplicate keys (including mixed `=` and `:` separators)
+
+Verified: `cargo test -p tracera-cli --offline` PASS 18/18. `cargo clippy -p tracera-cli --offline --all-targets` clean (no warnings from env_config). Fail-closed property verified: unterminated quotes and malformed lines do not echo secret values in error messages.
+
+Parser does NOT cover: POSIX shell expansion (`$VAR` interpolation), variable substitution, or full shell quoting rules. This is intentionally limited to the Docker Compose `--env-file` subset.
+
+STATUS.json and STATUS.md updated: Compose-valid dotenv syntax parity intent changed from FAIL to PASS across all four cells. Desk readiness unchanged (UNKNOWN/NOT_RUN).
+
+Python files `render_status.py` and `fixture_probe.py` reformatted to pass `ruff check` and `ruff format --check` (I001, F401 fixes; single-space to 4-space indentation in render_status.py). `STATUS.md` regenerated from updated `STATUS.json`.

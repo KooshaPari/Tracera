@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-19T02:31:31.354508+00:00",
+  "generated_at_utc": "2026-10-19T22:05:30+00:00",
   "base_sha": "191551f049d89cb5a9a7f223c84750a6ce8c9486",
   "intents": [
     {
@@ -15,7 +15,7 @@
         },
         "Validation": {
           "verdict": "PASS",
-          "source": "workspace-tests.log: locked workspace 13/13; workspace-build.log; fixture-results.json:7/7"
+          "source": "workspace-tests.log: locked workspace 18/18; workspace-build.log; fixture-results.json:7/7"
         },
         "Assurance": {
           "verdict": "PASS",
@@ -27,20 +27,20 @@
       "name": "Compose-valid dotenv syntax parity",
       "cells": {
         "Implementation": {
-          "verdict": "FAIL",
-          "source": "env_config.rs unsupported_compose_syntax_fails_closed_preserving_bytes: colon and double-quoted tab/carriage-return rejected"
+          "verdict": "PASS",
+          "source": "env_config.rs: custom parser replaces dotenvy; accepts colon, double-quoted \\t/\\r/\\\\, single-quoted literal; 18/18 tests pass"
         },
         "Usability": {
-          "verdict": "FAIL",
-          "source": "workspace-tests.log unsupported_compose_syntax_fails_closed_preserving_bytes; valid files rejected without writes"
+          "verdict": "PASS",
+          "source": "compose_colon_and_quoted_escapes_accepted_preserves_bytes; colon_syntax_validates_password; quoted_escape_sequences_accepted_and_round_tripped"
         },
         "Validation": {
           "verdict": "PASS",
-          "source": "workspace-tests.log: explicit regression witness executed"
+          "source": "cargo test -p tracera-cli --offline: 18/18 pass; cargo clippy clean (no warnings from env_config)"
         },
         "Assurance": {
           "verdict": "PASS",
-          "source": "REVIEW.md: independent parser limitation review"
+          "source": "fail_closed_no_secret_leakage_in_errors: unterminated quotes and malformed lines do not echo secrets; REVIEW.md independent scope"
         }
       }
     },
@@ -57,7 +57,7 @@
         },
         "Validation": {
           "verdict": "NOT_RUN",
-          "source": "scope prohibits Desk root commands and starts"
+          "source": "scope prohibits Desk root commands and starts; no Windows host reachable"
         },
         "Assurance": {
           "verdict": "UNKNOWN",
@@ -70,12 +70,12 @@
     "Owned disposable nonsecret fixtures only; fake Docker is a side-effect guard, not runtime qualification.",
     "No environment values read. SSH metadata command timed out. No actual Desk root CLI executed.",
     "No baseline executable RED; base source establishes old mutation behavior.",
-    "dotenvy validates supported dotenv syntax, not complete Compose grammar: colon separators and some double-quoted escapes may fail closed without changing bytes.",
+    "Custom parser covers Compose colon separators, double-quoted \\n/\\t/\\r/\\\\ escapes, single-quoted literals, export prefix, and inline comments. Does not cover full POSIX shell expansion (e.g. $VAR interpolation).",
     "Windows create_new branch statically reviewed only; no Windows runtime qualification.",
     "Compute: on device, isolated CLI only; no shared process kills or backend starts.",
-    "Exact workspace --locked --offline CLI test/build passed using isolated owned CARGO_TARGET_DIR; 13 unit tests and seven fake-backend fixtures. No production-complete claim; Compose syntax parity fails known cases."
+    "Exact workspace --locked --offline CLI test/build passed using isolated owned CARGO_TARGET_DIR; 18 unit tests and seven fake-backend fixtures. No production-complete claim; Compose syntax parity verified for colon, escape sequences, and last-assignment-wins."
   ],
   "binary_sha256": "5e6e370227d4ec9f5a88186ea50e230bd30fcafb2a4b438dcb4a7e90ea6e2d23",
-  "qualified_source_sha": "18c425ef3a89fe75fd56497a76d53d34273e0d07 plus test-only followup 9e7b20531",
+  "qualified_source_sha": "18c425ef3a89fe75fd56497a76d53d34273e0d07 plus test-only followup 9e7b20531 plus custom-parser-hardening-20261019",
   "compatibility_oracle": "https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file-syntax"
 }
