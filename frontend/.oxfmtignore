@@ -35,3 +35,8 @@ turbo.json
 .oxlintrc.json
 packages/ui/src/__tests__/Card.test.tsx
 packages/ui/src/__tests__/Alert.test.tsx
+apps/web/src/__tests__/api/events.test.ts
+apps/web/src/__tests__/api/reports.test.ts
+apps/web/src/__tests__/components/layout/Header.test.tsx
+apps/web/src/__tests__/integration/app-integration.test.tsx
+apps/web/src/__tests__/pages/ProjectsList.test.tsx
