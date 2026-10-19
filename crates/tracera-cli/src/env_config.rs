@@ -106,6 +106,38 @@ mod tests {
     }
 
     #[test]
+    fn supports_quoted_hash_crlf_export_and_last_assignment() {
+        for body in [
+            "POSTGRES_PASSWORD='hash#inside'\r\n",
+            "export POSTGRES_PASSWORD=valid # trailing comment\n",
+            "POSTGRES_PASSWORD=\"quoted value\"\n",
+            "POSTGRES_PASSWORD=\nPOSTGRES_PASSWORD=valid\n",
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let path = root.path().join(".env.local");
+            std::fs::write(&path, body).unwrap();
+            validate_env_file(&path).unwrap();
+            assert_eq!(std::fs::read_to_string(path).unwrap(), body);
+        }
+    }
+
+    // Known compatibility gap: Compose supports these forms, dotenvy does not.
+    #[test]
+    fn unsupported_compose_syntax_fails_closed_preserving_bytes() {
+        for body in [
+            "POSTGRES_PASSWORD: valid\n",
+            "POSTGRES_PASSWORD=\"valid\\tvalue\"\n",
+            "POSTGRES_PASSWORD=\"valid\\rvalue\"\n",
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let path = root.path().join(".env.local");
+            std::fs::write(&path, body).unwrap();
+            assert!(ensure_env_file(&path, 1234).is_err());
+            assert_eq!(std::fs::read_to_string(path).unwrap(), body);
+        }
+    }
+
+    #[test]
     fn missing_validation_does_not_create_parent() {
         let root = tempfile::tempdir().unwrap();
         let parent = root.path().join("absent");

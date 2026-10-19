@@ -8,3 +8,5 @@ Executed validation: isolated source CLI 11 unit tests and seven disposable blac
 Reproduce: cargo test with the tracera-cli crate (workspace dependency availability required); python3 docs/sessions/20261018-d04-preflight/fixture_probe.py /absolute/path/to/tracera.
 
 No existing Desk configuration was read or changed. No backend service started. No installed binary equivalence verified. SSH to 100.96.135.160:22 timed out.
+
+Follow-up: exact workspace `cargo test -p tracera-cli --locked --offline` PASS 13/13; `cargo build -p tracera-cli --locked --offline` PASS. Own CARGO_TARGET_DIR=/tmp/tracera-d04-cli-test/target; SDK26/system clang. Known Compose syntax compatibility remains observed FAIL; no production-complete claim.
