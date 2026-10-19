@@ -6,6 +6,7 @@ mod handlers;
 mod health;
 mod ingest;
 mod item;
+mod legacy_forward;
 mod memory;
 mod middleware;
 mod not_implemented;

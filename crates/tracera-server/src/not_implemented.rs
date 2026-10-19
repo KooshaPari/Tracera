@@ -15,14 +15,24 @@ pub struct NotImplementedResponse {
 
 pub async fn not_implemented(path: MatchedPath) -> impl IntoResponse {
     // Template labels keep IDs and query strings out of metric cardinality.
-    metrics::counter!("tracera_stub_responses_total", "route" => path.as_str().to_owned())
-        .increment(1);
+    let template = path.as_str().to_owned();
+    metrics::counter!("tracera_stub_responses_total", "route" => template.clone()).increment(1);
+    let mut headers = axum::http::HeaderMap::new();
+    headers.insert(
+        HeaderName::from_static("x-tracera-not-implemented"),
+        axum::http::HeaderValue::from_static("true"),
+    );
+    headers.insert(
+        HeaderName::from_static("x-tracera-stub-template"),
+        axum::http::HeaderValue::from_str(&template)
+            .unwrap_or(axum::http::HeaderValue::from_static("stub")),
+    );
     (
         StatusCode::NOT_IMPLEMENTED,
-        [(HeaderName::from_static("x-tracera-not-implemented"), "true")],
+        headers,
         Json(NotImplementedResponse {
             error: "not_implemented",
-            route: path.as_str().to_owned(),
+            route: template,
         }),
     )
 }
