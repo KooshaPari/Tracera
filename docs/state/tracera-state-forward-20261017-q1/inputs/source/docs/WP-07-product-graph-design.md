@@ -9,7 +9,7 @@
 
 ## 1. Problem Statement
 
-The existing SWEE (Software Engineering Evidence) graph encodes code-level relationships (source files, tests, commits, etc.) but has no concept of *product intent*. Product managers and engineering leads need to express:
+The existing SWEE (Software Engineering Evidence) graph encodes code-level relationships (source files, tests, commits, etc.) but has no concept of _product intent_. Product managers and engineering leads need to express:
 
 - What the product is and what it should do (**capabilities**)
 - What constraints or acceptance criteria must hold (**obligations**)
@@ -24,17 +24,17 @@ WP-07 adds a **product identity layer** that sits above the SWEE graph without d
 
 ### SQLite (`migrations-sqlite/0008_swee_graph.sql`)
 
-| Table | Key Columns | Purpose |
-|-------|-------------|---------|
-| `swee_nodes` | `id INTEGER PK`, `type TEXT`, `name TEXT`, `metadata TEXT` | Graph nodes (30 types via NodeKind) |
-| `swee_edges` | `id INTEGER PK`, `source_id FK`, `target_id FK`, `type TEXT`, `weight REAL` | Directed edges (32 types via EdgeKind) |
-| `swee_node_labels` | `id INTEGER PK`, `node_id FK`, `label TEXT`, `namespace TEXT` | Full-text searchable labels |
+| Table              | Key Columns                                                                 | Purpose                                |
+| ------------------ | --------------------------------------------------------------------------- | -------------------------------------- |
+| `swee_nodes`       | `id INTEGER PK`, `type TEXT`, `name TEXT`, `metadata TEXT`                  | Graph nodes (30 types via NodeKind)    |
+| `swee_edges`       | `id INTEGER PK`, `source_id FK`, `target_id FK`, `type TEXT`, `weight REAL` | Directed edges (32 types via EdgeKind) |
+| `swee_node_labels` | `id INTEGER PK`, `node_id FK`, `label TEXT`, `namespace TEXT`               | Full-text searchable labels            |
 
 ### Postgres (`migrations-postgres/0007_swee_graph.sql`)
 
-| Table | Key Columns | Purpose |
-|-------|-------------|---------|
-| `swee_nodes` | `id BIGSERIAL PK`, `node_type TEXT`, `label TEXT`, `metadata JSONB` | Graph nodes |
+| Table        | Key Columns                                                                              | Purpose        |
+| ------------ | ---------------------------------------------------------------------------------------- | -------------- |
+| `swee_nodes` | `id BIGSERIAL PK`, `node_type TEXT`, `label TEXT`, `metadata JSONB`                      | Graph nodes    |
 | `swee_edges` | `id BIGSERIAL PK`, `edge_type TEXT`, `source_id FK`, `target_id FK`, `confidence DOUBLE` | Directed edges |
 
 ### Rust Types (`crates/tracera-server/src/swee/`)
@@ -56,12 +56,12 @@ Product ──has──▶ Capability ──satisfies──▶ Obligation ──
 
 Four new `intent_kind` discriminators, each mapping to a distinct role:
 
-| Kind | Purpose | Maps to SWEE | Example |
-|------|---------|--------------|---------|
-| **product** | Top-level identity; the thing being built | New `product_nodes` table (standalone) | "Tracera v2" |
-| **capability** | What the product can do | Links to SWEE `Requirement` nodes | "Real-time trace graph" |
-| **obligation** | What must be true (acceptance criteria) | Links to SWEE `Test` / `Evidence` nodes | "Graph query < 200ms p99" |
-| **target** | Measurable outcome / SLO | Links to SWEE `Metric` nodes | "99.9% uptime" |
+| Kind           | Purpose                                   | Maps to SWEE                            | Example                   |
+| -------------- | ----------------------------------------- | --------------------------------------- | ------------------------- |
+| **product**    | Top-level identity; the thing being built | New `product_nodes` table (standalone)  | "Tracera v2"              |
+| **capability** | What the product can do                   | Links to SWEE `Requirement` nodes       | "Real-time trace graph"   |
+| **obligation** | What must be true (acceptance criteria)   | Links to SWEE `Test` / `Evidence` nodes | "Graph query < 200ms p99" |
+| **target**     | Measurable outcome / SLO                  | Links to SWEE `Metric` nodes            | "99.9% uptime"            |
 
 ### 3.2 Why a Separate Table?
 
@@ -79,12 +79,12 @@ Therefore, product nodes live in their own `product_nodes` table, linked to SWEE
 
 ### 4.1 Product Edge Taxonomy
 
-| Edge Type | Source Kind | Target Kind | Description |
-|-----------|-------------|-------------|-------------|
-| `product_has_capability` | product | capability | Product declares a capability |
-| `capability_satisfies_obligation` | capability | obligation | Capability fulfills an obligation |
-| `obligation_bound_to_target` | obligation | target | Obligation references a measurable target |
-| `observation_covers_capability` | (any) | capability | An observation/evidence covers a capability |
+| Edge Type                         | Source Kind | Target Kind | Description                                 |
+| --------------------------------- | ----------- | ----------- | ------------------------------------------- |
+| `product_has_capability`          | product     | capability  | Product declares a capability               |
+| `capability_satisfies_obligation` | capability  | obligation  | Capability fulfills an obligation           |
+| `obligation_bound_to_target`      | obligation  | target      | Obligation references a measurable target   |
+| `observation_covers_capability`   | (any)       | capability  | An observation/evidence covers a capability |
 
 ### 4.2 Cross-Layer Links
 
@@ -157,14 +157,14 @@ CREATE INDEX IF NOT EXISTS idx_swee_nodes_product ON swee_nodes(product_node_id)
 
 ### 5.3 Indexes
 
-| Table | Index | Columns | Purpose |
-|-------|-------|---------|---------|
-| `product_nodes` | `idx_product_nodes_product` | `product_id` | Filter by product |
-| `product_nodes` | `idx_product_nodes_kind` | `intent_kind` | Filter by kind |
-| `product_edges` | `idx_product_edges_source` | `source_id` | Outbound traversal |
-| `product_edges` | `idx_product_edges_target` | `target_id` | Inbound traversal |
-| `product_edges` | `idx_product_edges_type` | `edge_type` | Filter by edge type |
-| `swee_nodes` | `idx_swee_nodes_product` | `product_node_id` | Cross-layer join |
+| Table           | Index                       | Columns           | Purpose             |
+| --------------- | --------------------------- | ----------------- | ------------------- |
+| `product_nodes` | `idx_product_nodes_product` | `product_id`      | Filter by product   |
+| `product_nodes` | `idx_product_nodes_kind`    | `intent_kind`     | Filter by kind      |
+| `product_edges` | `idx_product_edges_source`  | `source_id`       | Outbound traversal  |
+| `product_edges` | `idx_product_edges_target`  | `target_id`       | Inbound traversal   |
+| `product_edges` | `idx_product_edges_type`    | `edge_type`       | Filter by edge type |
+| `swee_nodes`    | `idx_swee_nodes_product`    | `product_node_id` | Cross-layer join    |
 
 ---
 
@@ -211,10 +211,10 @@ function bounded_traverse(start_id, max_depth, max_nodes):
 
 ### 6.3 Recommended Defaults
 
-| Parameter | Default | Rationale |
-|-----------|---------|-----------|
-| `max_depth` | 10 | Product hierarchies rarely exceed 5 levels |
-| `max_nodes` | 1000 | Prevents runaway queries on dense graphs |
+| Parameter   | Default | Rationale                                  |
+| ----------- | ------- | ------------------------------------------ |
+| `max_depth` | 10      | Product hierarchies rarely exceed 5 levels |
+| `max_nodes` | 1000    | Prevents runaway queries on dense graphs   |
 
 ### 6.4 Truncation Reporting
 
@@ -275,9 +275,9 @@ SELECT COUNT(*) FROM swee_nodes WHERE product_node_id IS NOT NULL;  -- expected:
 
 ## 8. Migration Files
 
-| Database | File | Sequence |
-|----------|------|----------|
-| SQLite | `migrations-sqlite/009_product_model.sql` | After 0008_swee_graph.sql |
+| Database | File                                         | Sequence                      |
+| -------- | -------------------------------------------- | ----------------------------- |
+| SQLite   | `migrations-sqlite/009_product_model.sql`    | After 0008_swee_graph.sql     |
 | Postgres | `migrations-postgres/0010_product_model.sql` | After 0009_seed_swiftride.sql |
 
 ---

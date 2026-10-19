@@ -12,14 +12,14 @@ Start with the cockpit, mature intent, present usability, critical gates, unfini
 
 ### Audit lanes
 
-| Lane | Substantive assignment | Required output |
-|---|---|---|
-| Intent and archaeology | Current user intent, accepted historical horizons, aliases, supersession, boundaries | Source-bound goal tree and conflict register. |
-| Implementation and integration | Actual code paths, dormant branches, stubs without markers, data contracts, deployed-vs-source differences | Capability map and precise unfinished leaves. |
-| User experience and documentation | Fresh-start journey, errors, recovery, accessibility, CLI/API/SDK ergonomics | Reproduction script, observed failure points, proof artifacts. |
-| Assurance and operations | Security/privacy, integrity, negative cases, recovery, performance, CI and distribution | Gate-by-gate evidence and missing controls. |
-| Research and alternatives | Discovery breadth, primary-source depth, relevant existing ecosystem and alternatives | Candidate ledger, comparison, and discriminating pilot. |
-| Independent challenge and integration | Reproduce load-bearing claims; test rival explanations; reconcile estimates and merge races | Dispositions, counterexamples, critical path, honest publication receipt. |
+| Lane                                  | Substantive assignment                                                                                     | Required output                                                           |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Intent and archaeology                | Current user intent, accepted historical horizons, aliases, supersession, boundaries                       | Source-bound goal tree and conflict register.                             |
+| Implementation and integration        | Actual code paths, dormant branches, stubs without markers, data contracts, deployed-vs-source differences | Capability map and precise unfinished leaves.                             |
+| User experience and documentation     | Fresh-start journey, errors, recovery, accessibility, CLI/API/SDK ergonomics                               | Reproduction script, observed failure points, proof artifacts.            |
+| Assurance and operations              | Security/privacy, integrity, negative cases, recovery, performance, CI and distribution                    | Gate-by-gate evidence and missing controls.                               |
+| Research and alternatives             | Discovery breadth, primary-source depth, relevant existing ecosystem and alternatives                      | Candidate ledger, comparison, and discriminating pilot.                   |
+| Independent challenge and integration | Reproduce load-bearing claims; test rival explanations; reconcile estimates and merge races                | Dispositions, counterexamples, critical path, honest publication receipt. |
 
 Use real subagents only when the environment supports them. Record their actual IDs, scope, baseline, work, and review. Otherwise run explicitly labeled serial passes. A second wording pass by the author is not independent verification. Parallelize independent work with non-overlapping write ownership; serialize shared-file integration and final qualification.
 

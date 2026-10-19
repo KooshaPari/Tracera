@@ -10,15 +10,15 @@ The mature product contract comes first. CVP, MVP, beta, release, and other stag
 
 ## 2. Field-level authority
 
-| Meaning | Existing authority | Docket treatment |
-|---|---|---|
-| Human intent and exclusions | Direct user requirements and their accepted amendments | Cite, date, preserve exact qualifications; record unresolved contradictions. |
-| Repository boundary | PhenoRegistry boundary/SSOT records | Pin source; do not silently redraw ownership. |
-| Accepted design | Relevant accepted ADR/spec | Distinguish accepted, proposed, superseded, and experimental. |
-| What the code does | Pinned implementation plus appropriate execution evidence | Docs and source presence are not runtime proof. |
-| Product assessment | Existing owner-held Assessment Dossier / Tracera records where present | Reuse identities and typed observations. |
-| Work and dependencies | AgilePlus or the subject's established execution records | Link tasks; do not create a competing task registry. |
-| Reading projections | Generated Markdown tables, HTML, and PDF | Rebuild from the same locked input set. |
+| Meaning                     | Existing authority                                                     | Docket treatment                                                             |
+| --------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Human intent and exclusions | Direct user requirements and their accepted amendments                 | Cite, date, preserve exact qualifications; record unresolved contradictions. |
+| Repository boundary         | PhenoRegistry boundary/SSOT records                                    | Pin source; do not silently redraw ownership.                                |
+| Accepted design             | Relevant accepted ADR/spec                                             | Distinguish accepted, proposed, superseded, and experimental.                |
+| What the code does          | Pinned implementation plus appropriate execution evidence              | Docs and source presence are not runtime proof.                              |
+| Product assessment          | Existing owner-held Assessment Dossier / Tracera records where present | Reuse identities and typed observations.                                     |
+| Work and dependencies       | AgilePlus or the subject's established execution records               | Link tasks; do not create a competing task registry.                         |
+| Reading projections         | Generated Markdown tables, HTML, and PDF                               | Rebuild from the same locked input set.                                      |
 
 JSON is canonical for typed snapshot, observation, evidence, and event records in this reference profile. Markdown is canonical for authored explanations only where no stronger owner-held document already owns that meaning. Generated tables are not hand-maintained alternatives. YAML/JSONL may be exports, never a second independent truth. This follows the existing Master Assessment Kit rather than replacing its schemas. [I01]
 

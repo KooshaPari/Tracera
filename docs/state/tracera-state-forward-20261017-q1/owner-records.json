@@ -144,9 +144,7 @@
               "product_id": "q1-runtime",
               "capability_id": "durable-read",
               "message": "Observation 'runtime-check' is 206869 seconds old (max: 86400s). The result may no longer be current.",
-              "evidence": [
-                "runtime-check"
-              ],
+              "evidence": ["runtime-check"],
               "detector_version": "1.1.0",
               "detected_at": "2026-10-17T09:27:49.705085Z",
               "severity": "High"
@@ -224,9 +222,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Real session capture, exact count/content after restart; invalid/foreign/dangling edges rejected.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G03",
@@ -242,9 +238,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Seed known dependency plus unrelated session; persisted query yields exact affected set after reopen. Supplied-links computation alone insufficient.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G04",
@@ -260,9 +254,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Persist memory, link source sessions and serve real consumer; restart restores same accepted entry; private/untrusted input cannot escape into public projection.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G05",
@@ -278,9 +270,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Real evidence/source/run timestamps survive restart, altered/missing/stale evidence fails honestly; audit export replay verified.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G06",
@@ -296,9 +286,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Real owned product import and independently adjudicated gap; no cross-product/baseline/capability leakage; source change invalidates affected evidence.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G07",
@@ -314,9 +302,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Two sources same externalID stay distinct; retry idempotent; late error atomic or explicit recoverable partial contract. Q1 product batch does not automatically repair Story importer.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G08",
@@ -332,9 +318,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Item-only and empty project load correctly; all pages complete; failure never reported as empty.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G09",
@@ -350,9 +334,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Click every required sidebar/view and representative typed detail using real IDs; 44 historical rows require current requalification.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G10",
@@ -368,9 +350,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Summary shape matches summary-hooks; totals reconcile complete typed collections; missing compliance/pass data null; failures distinct from zero.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G11",
@@ -386,9 +366,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Actual scoped CRUD and links survive restart; invalid/cross-project updates rejected; UI cannot advertise unavailable methods as implemented.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G12",
@@ -404,9 +382,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Known source anchor found; bounded query terminates cycles and marks truncation; no fabricated edge or silently missing page.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G13",
@@ -422,9 +398,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Ingest actual native report, preserve failed cases/denominators and source revision; unsupported execution honest unavailable.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G14",
@@ -440,9 +414,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "One real supported operation roundtrips same IDs across required interfaces; unsupported declared; demo modes excluded from acceptance.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G15",
@@ -490,9 +462,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Fresh install useful journey, local-first no mandatory remote API, update retains data and recoverable previous artifact.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G18",
@@ -508,9 +478,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Current hosted and installed artifact exact identity, authenticated real path; Q0 isolated readiness does not qualify production.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G19",
@@ -526,9 +494,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Keyboard/focus/labels/contrast assistive audit without captures; no mock data presented as real; documented command starts actual profile.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G20",
@@ -560,9 +526,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Version-pin manualworkflow, catalog/search, requirements/source links and dependency exploration peers; matched seeded cases plus idiomatic comparisons.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G22",
@@ -578,9 +542,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Restore rehearsal, dependency failure, resource bounds and explicit recurring-job owner; no billed services added; actual hosting cost unknown.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G23",
@@ -596,9 +558,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Unfamiliar authorized user real owned input, recorded task outcome/interventions/feedback, failures retained; fixture pass does not qualify.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G24",
@@ -614,9 +574,7 @@
       "effort": "Unestimated pending exact retained scope",
       "positive_verification": "Each retained promise maps accepted goal/current contract/closure proof, or explicit authority for supersession/defer/retire; no silent sunset.",
       "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
-      "dependencies": [
-        "G01"
-      ]
+      "dependencies": ["G01"]
     },
     {
       "id": "G25",
@@ -632,15 +590,7 @@
       "effort": "First4h decomposition; full duration uncalibrated",
       "positive_verification": "Actual producer session plus original trace navigable after restart",
       "negative_verification": "Foreign product/baseline/source cannot gain evidence credit; malformed replay rejected atomically",
-      "dependencies": [
-        "G02",
-        "G03",
-        "G04",
-        "G06",
-        "G07",
-        "G15",
-        "G16"
-      ]
+      "dependencies": ["G02", "G03", "G04", "G06", "G07", "G15", "G16"]
     }
   ],
   "sections": [

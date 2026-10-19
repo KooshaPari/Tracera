@@ -263,11 +263,11 @@ Each referenced goal has four independently derived cells above. Overlay aliases
 ## Unique leaf cell counts
 
 | Verdict | Implementation | Usability | Validation | Assurance |
-|---|---:|---:|---:|---:|
-| FAIL | 17 | 20 | 8 | 2 |
-| NOT_RUN | 0 | 81 | 86 | 35 |
-| PASS | 91 | 8 | 15 | 0 |
-| UNKNOWN | 1 | 0 | 0 | 72 |
+| ------- | -------------: | --------: | ---------: | --------: |
+| FAIL    |             17 |        20 |          8 |         2 |
+| NOT_RUN |              0 |        81 |         86 |        35 |
+| PASS    |             91 |         8 |         15 |         0 |
+| UNKNOWN |              1 |         0 |          0 |        72 |
 
 Unique counted leaves: 109. Criterion guards and crosscuts excluded: 88 (25 whole-goal guards, 63 crosscuts). Parent and domain aliases excluded.
 

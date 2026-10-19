@@ -1,4 +1,5 @@
 <!-- Generated from D04-ROOT-PREFLIGHT.json; do not edit by hand. -->
+
 # D-04: Windows root and backend preflight
 
 Source snapshot: `5146d7f4e1a038be2acc73082df33aec5ee3d452`. Operator report received 2026-10-18T06:53Z; original observation time unknown. No Windows host, env contents, CLI runtime, backend, or service was independently inspected in this follow-up.

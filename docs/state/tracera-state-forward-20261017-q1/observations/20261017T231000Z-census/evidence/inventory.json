@@ -15,19 +15,12 @@
         "@/hooks/useConnectionHealth",
         "@tracertm/ui"
       ],
-      "hooks": [
-        "useConnectionHealth",
-        "useEffect",
-        "useLocation",
-        "useRouter"
-      ],
+      "hooks": ["useConnectionHealth", "useEffect", "useLocation", "useRouter"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/admin.tsx",
-      "route": [
-        "/admin"
-      ],
+      "route": ["/admin"],
       "imports": [
         "@tanstack/react-router",
         "lucide-react",
@@ -38,21 +31,14 @@
     },
     {
       "file": "frontend/apps/web/src/routes/agents.tsx",
-      "route": [
-        "/agents"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/AgentsView"
-      ],
+      "route": ["/agents"],
+      "imports": ["@tanstack/react-router", "@/views/AgentsView"],
       "hooks": [],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/auth.callback.tsx",
-      "route": [
-        "/auth/callback"
-      ],
+      "route": ["/auth/callback"],
       "imports": [
         "@tanstack/react-router",
         "lucide-react",
@@ -61,18 +47,12 @@
         "@/lib/logger",
         "@/stores/auth-store"
       ],
-      "hooks": [
-        "useAuthStore",
-        "useEffect",
-        "useNavigate"
-      ],
+      "hooks": ["useAuthStore", "useEffect", "useNavigate"],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/auth.login.tsx",
-      "route": [
-        "/auth/login"
-      ],
+      "route": ["/auth/login"],
       "imports": [
         "@tanstack/react-router",
         "lucide-react",
@@ -81,17 +61,12 @@
         "@/lib/logger",
         "@/stores/auth-store"
       ],
-      "hooks": [
-        "useAuthStore",
-        "useEffect"
-      ],
+      "hooks": ["useAuthStore", "useEffect"],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/auth.logout.tsx",
-      "route": [
-        "/auth/logout"
-      ],
+      "route": ["/auth/logout"],
       "imports": [
         "@tanstack/react-router",
         "lucide-react",
@@ -99,19 +74,12 @@
         "@/lib/logger",
         "@/stores/auth-store"
       ],
-      "hooks": [
-        "useAuthStore",
-        "useEffect",
-        "useNavigate",
-        "useState"
-      ],
+      "hooks": ["useAuthStore", "useEffect", "useNavigate", "useState"],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/auth.register.tsx",
-      "route": [
-        "/auth/register"
-      ],
+      "route": ["/auth/register"],
       "imports": [
         "@tanstack/react-router",
         "lucide-react",
@@ -120,44 +88,26 @@
         "@/lib/logger",
         "@/stores/auth-store"
       ],
-      "hooks": [
-        "useAuthStore",
-        "useEffect"
-      ],
+      "hooks": ["useAuthStore", "useEffect"],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/dashboard.tsx",
-      "route": [
-        "/dashboard"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/lib/route-guards"
-      ],
+      "route": ["/dashboard"],
+      "imports": ["@tanstack/react-router", "@/lib/route-guards"],
       "hooks": [],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/graph.tsx",
-      "route": [
-        "/graph"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "react"
-      ],
-      "hooks": [
-        "useEffect",
-        "useNavigate"
-      ],
+      "route": ["/graph"],
+      "imports": ["@tanstack/react-router", "react"],
+      "hooks": ["useEffect", "useNavigate"],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/home.tsx",
-      "route": [
-        "/home"
-      ],
+      "route": ["/home"],
       "imports": [
         "@tanstack/react-router",
         "react",
@@ -166,112 +116,71 @@
         "@/lib/logger",
         "@/lib/route-guards"
       ],
-      "hooks": [
-        "useLoaderData"
-      ],
+      "hooks": ["useLoaderData"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/index.tsx",
-      "route": [
-        "/index"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/LandingPage"
-      ],
+      "route": ["/index"],
+      "imports": ["@tanstack/react-router", "@/views/LandingPage"],
       "hooks": [],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/items.$itemId.tsx",
-      "route": [
-        "/items/$itemId"
-      ],
+      "route": ["/items/$itemId"],
       "imports": [
         "@tanstack/react-router",
         "react",
         "@/hooks/useItems",
         "@/lib/route-guards"
       ],
-      "hooks": [
-        "useEffect",
-        "useItem",
-        "useNavigate",
-        "useParams"
-      ],
+      "hooks": ["useEffect", "useItem", "useNavigate", "useParams"],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/items.kanban.tsx",
-      "route": [
-        "/items/kanban"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsKanbanView"
-      ],
+      "route": ["/items/kanban"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsKanbanView"],
       "hooks": [],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/items.table.tsx",
-      "route": [
-        "/items/table"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTableView"
-      ],
+      "route": ["/items/table"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTableView"],
       "hooks": [],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/items.tree.tsx",
-      "route": [
-        "/items/tree"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTreeView"
-      ],
+      "route": ["/items/tree"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTreeView"],
       "hooks": [],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/items.tsx",
-      "route": [
-        "/items"
-      ],
+      "route": ["/items"],
       "imports": [
         "@tanstack/react-router",
         "react",
         "@/hooks/useProjects",
         "@/views/ItemsTableView"
       ],
-      "hooks": [
-        "useMemo",
-        "useProjects"
-      ],
+      "hooks": ["useMemo", "useProjects"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/landing.tsx",
-      "route": [
-        "/landing"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/LandingPage"
-      ],
+      "route": ["/landing"],
+      "imports": ["@tanstack/react-router", "@/views/LandingPage"],
       "hooks": [],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.adrs.$adrId.tsx",
-      "route": [
-        "/projects/$projectId/adrs/$adrId"
-      ],
+      "route": ["/projects/$projectId/adrs/$adrId"],
       "imports": [
         "@tanstack/react-router",
         "@/lib/route-guards",
@@ -282,21 +191,14 @@
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.adrs.tsx",
-      "route": [
-        "/projects/$projectId/adrs"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/lib/route-guards"
-      ],
+      "route": ["/projects/$projectId/adrs"],
+      "imports": ["@tanstack/react-router", "@/lib/route-guards"],
       "hooks": [],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.agents.tsx",
-      "route": [
-        "/projects/$projectId/agents"
-      ],
+      "route": ["/projects/$projectId/agents"],
       "imports": [
         "@tanstack/react-router",
         "@/lib/route-guards",
@@ -307,21 +209,14 @@
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.compliance.tsx",
-      "route": [
-        "/projects/$projectId/compliance"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/lib/route-guards"
-      ],
+      "route": ["/projects/$projectId/compliance"],
+      "imports": ["@tanstack/react-router", "@/lib/route-guards"],
       "hooks": [],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.contracts.$contractId.tsx",
-      "route": [
-        "/projects/$projectId/contracts/$contractId"
-      ],
+      "route": ["/projects/$projectId/contracts/$contractId"],
       "imports": [
         "@tanstack/react-router",
         "@/lib/route-guards",
@@ -332,29 +227,20 @@
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.contracts.tsx",
-      "route": [
-        "/projects/$projectId/contracts"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/lib/route-guards"
-      ],
+      "route": ["/projects/$projectId/contracts"],
+      "imports": ["@tanstack/react-router", "@/lib/route-guards"],
       "hooks": [],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.equivalence.tsx",
-      "route": [
-        "/projects/$projectId/equivalence"
-      ],
+      "route": ["/projects/$projectId/equivalence"],
       "imports": [
         "@tanstack/react-router",
         "@/components/EquivalenceManager",
         "@/lib/route-guards"
       ],
-      "hooks": [
-        "useParams"
-      ],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
@@ -371,9 +257,7 @@
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.features.$featureId.tsx",
-      "route": [
-        "/projects/$projectId/features/$featureId"
-      ],
+      "route": ["/projects/$projectId/features/$featureId"],
       "imports": [
         "@tanstack/react-router",
         "@/lib/route-guards",
@@ -384,21 +268,14 @@
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.features.tsx",
-      "route": [
-        "/projects/$projectId/features"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/lib/route-guards"
-      ],
+      "route": ["/projects/$projectId/features"],
+      "imports": ["@tanstack/react-router", "@/lib/route-guards"],
       "hooks": [],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.scenario-activity.tsx",
-      "route": [
-        "/projects/$projectId/scenario-activity"
-      ],
+      "route": ["/projects/$projectId/scenario-activity"],
       "imports": [
         "@tanstack/react-router",
         "@/lib/route-guards",
@@ -409,24 +286,18 @@
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.settings.tsx",
-      "route": [
-        "/projects/$projectId/settings"
-      ],
+      "route": ["/projects/$projectId/settings"],
       "imports": [
         "@tanstack/react-router",
         "@/lib/route-guards",
         "@/views/ProjectSettingsView"
       ],
-      "hooks": [
-        "useParams"
-      ],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.specifications.tsx",
-      "route": [
-        "/projects/$projectId/specifications"
-      ],
+      "route": ["/projects/$projectId/specifications"],
       "imports": [
         "@tanstack/react-router",
         "lucide-react",
@@ -439,17 +310,12 @@
         "@/views/SpecificationsDashboardView",
         "@tracertm/ui"
       ],
-      "hooks": [
-        "useParams",
-        "useSearch"
-      ],
+      "hooks": ["useParams", "useSearch"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.temporal.tsx",
-      "route": [
-        "/projects/$projectId/temporal"
-      ],
+      "route": ["/projects/$projectId/temporal"],
       "imports": [
         "react",
         "@tanstack/react-router",
@@ -472,9 +338,7 @@
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.tsx",
-      "route": [
-        "/projects/$projectId"
-      ],
+      "route": ["/projects/$projectId"],
       "imports": [
         "@tanstack/react-router",
         "react",
@@ -485,18 +349,12 @@
         "@/lib/logger",
         "@/lib/route-guards"
       ],
-      "hooks": [
-        "useCallback",
-        "useLocation",
-        "useParams"
-      ],
+      "hooks": ["useCallback", "useLocation", "useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.$viewType.$itemId.tsx",
-      "route": [
-        "/projects/$projectId/views/$viewType/$itemId"
-      ],
+      "route": ["/projects/$projectId/views/$viewType/$itemId"],
       "imports": [
         "@tanstack/react-router",
         "@/components/layout/FullScreenPage",
@@ -504,17 +362,12 @@
         "@/lib/route-guards",
         "@/views/details/ItemDetailRouter"
       ],
-      "hooks": [
-        "useItem",
-        "useParams"
-      ],
+      "hooks": ["useItem", "useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx",
-      "route": [
-        "/projects/$projectId/views/$viewType"
-      ],
+      "route": ["/projects/$projectId/views/$viewType"],
       "imports": [
         "@tanstack/react-router",
         "react",
@@ -540,364 +393,199 @@
         "@/routes/projects.$projectId.views.test",
         "@/routes/projects.$projectId.views.wireframe"
       ],
-      "hooks": [
-        "useLocation",
-        "useParams"
-      ],
+      "hooks": ["useLocation", "useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.api.tsx",
-      "route": [
-        "/projects/$projectId/views/api"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/pages/projects/views/ApiView"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/api"],
+      "imports": ["@tanstack/react-router", "@/pages/projects/views/ApiView"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.architecture.tsx",
-      "route": [
-        "/projects/$projectId/views/architecture"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTableView"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/architecture"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTableView"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.code.tsx",
-      "route": [
-        "/projects/$projectId/views/code"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTableView"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/code"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTableView"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.configuration.tsx",
-      "route": [
-        "/projects/$projectId/views/configuration"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTableView"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/configuration"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTableView"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.coverage.tsx",
-      "route": [
-        "/projects/$projectId/views/coverage"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "react",
-        "@/lib/lazy-loading"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/coverage"],
+      "imports": ["@tanstack/react-router", "react", "@/lib/lazy-loading"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.database.tsx",
-      "route": [
-        "/projects/$projectId/views/database"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTableView"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/database"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTableView"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.dataflow.tsx",
-      "route": [
-        "/projects/$projectId/views/dataflow"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTableView"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/dataflow"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTableView"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.dependency.tsx",
-      "route": [
-        "/projects/$projectId/views/dependency"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTableView"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/dependency"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTableView"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.domain.tsx",
-      "route": [
-        "/projects/$projectId/views/domain"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTableView"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/domain"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTableView"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.feature.tsx",
-      "route": [
-        "/projects/$projectId/views/feature"
-      ],
+      "route": ["/projects/$projectId/views/feature"],
       "imports": [
         "@tanstack/react-router",
         "@/pages/projects/views/FeatureView"
       ],
-      "hooks": [
-        "useParams"
-      ],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.infrastructure.tsx",
-      "route": [
-        "/projects/$projectId/views/infrastructure"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTableView"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/infrastructure"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTableView"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.integrations.tsx",
-      "route": [
-        "/projects/$projectId/views/integrations"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "react"
-      ],
-      "hooks": [
-        "useEffect",
-        "useNavigate",
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/integrations"],
+      "imports": ["@tanstack/react-router", "react"],
+      "hooks": ["useEffect", "useNavigate", "useParams"],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.journey.tsx",
-      "route": [
-        "/projects/$projectId/views/journey"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTableView"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/journey"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTableView"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.monitoring.tsx",
-      "route": [
-        "/projects/$projectId/views/monitoring"
-      ],
+      "route": ["/projects/$projectId/views/monitoring"],
       "imports": [
         "@tanstack/react-router",
         "@/pages/projects/views/MonitoringView"
       ],
-      "hooks": [
-        "useParams"
-      ],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.performance.tsx",
-      "route": [
-        "/projects/$projectId/views/performance"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTableView"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/performance"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTableView"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.problem.tsx",
-      "route": [
-        "/projects/$projectId/views/problem"
-      ],
+      "route": ["/projects/$projectId/views/problem"],
       "imports": [
         "react",
         "@tanstack/react-router",
         "@/pages/projects/views/ProblemView"
       ],
-      "hooks": [
-        "useParams"
-      ],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.process.tsx",
-      "route": [
-        "/projects/$projectId/views/process"
-      ],
+      "route": ["/projects/$projectId/views/process"],
       "imports": [
         "react",
         "@tanstack/react-router",
         "@/pages/projects/views/ProcessView"
       ],
-      "hooks": [
-        "useParams"
-      ],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.qa-dashboard.tsx",
-      "route": [
-        "/projects/$projectId/views/qa-dashboard"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "react",
-        "@/lib/lazy-loading"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/qa-dashboard"],
+      "imports": ["@tanstack/react-router", "react", "@/lib/lazy-loading"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.security.tsx",
-      "route": [
-        "/projects/$projectId/views/security"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTableView"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/security"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTableView"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.test-cases.tsx",
-      "route": [
-        "/projects/$projectId/views/test-cases"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "react",
-        "@/lib/lazy-loading"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/test-cases"],
+      "imports": ["@tanstack/react-router", "react", "@/lib/lazy-loading"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.test-runs.tsx",
-      "route": [
-        "/projects/$projectId/views/test-runs"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "react",
-        "@/lib/lazy-loading"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/test-runs"],
+      "imports": ["@tanstack/react-router", "react", "@/lib/lazy-loading"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.test-suites.tsx",
-      "route": [
-        "/projects/$projectId/views/test-suites"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "react",
-        "@/lib/lazy-loading"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/test-suites"],
+      "imports": ["@tanstack/react-router", "react", "@/lib/lazy-loading"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.test.tsx",
-      "route": [
-        "/projects/$projectId/views/test"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "@/views/ItemsTableView"
-      ],
-      "hooks": [
-        "useParams"
-      ],
+      "route": ["/projects/$projectId/views/test"],
+      "imports": ["@tanstack/react-router", "@/views/ItemsTableView"],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.webhooks.tsx",
-      "route": [
-        "/projects/$projectId/views/webhooks"
-      ],
+      "route": ["/projects/$projectId/views/webhooks"],
       "imports": [
         "react",
         "@tanstack/react-router",
         "react",
         "@/lib/lazy-loading"
       ],
-      "hooks": [
-        "useParams"
-      ],
+      "hooks": ["useParams"],
       "redirect": false
     },
     {
       "file": "frontend/apps/web/src/routes/projects.$projectId.views.wireframe.tsx",
-      "route": [
-        "/projects/$projectId/views/wireframe"
-      ],
+      "route": ["/projects/$projectId/views/wireframe"],
       "imports": [
         "@tanstack/react-router",
         "react",
@@ -908,9 +596,7 @@
     },
     {
       "file": "frontend/apps/web/src/routes/projects.tsx",
-      "route": [
-        "/projects"
-      ],
+      "route": ["/projects"],
       "imports": [
         "@tanstack/react-router",
         "react",
@@ -923,35 +609,21 @@
     },
     {
       "file": "frontend/apps/web/src/routes/root.tsx",
-      "route": [
-        "/"
-      ],
-      "imports": [
-        "@tanstack/react-router"
-      ],
+      "route": ["/"],
+      "imports": ["@tanstack/react-router"],
       "hooks": [],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/search.tsx",
-      "route": [
-        "/search"
-      ],
-      "imports": [
-        "@tanstack/react-router",
-        "react"
-      ],
-      "hooks": [
-        "useEffect",
-        "useNavigate"
-      ],
+      "route": ["/search"],
+      "imports": ["@tanstack/react-router", "react"],
+      "hooks": ["useEffect", "useNavigate"],
       "redirect": true
     },
     {
       "file": "frontend/apps/web/src/routes/settings.tsx",
-      "route": [
-        "/settings"
-      ],
+      "route": ["/settings"],
       "imports": [
         "@tanstack/react-router",
         "@/lib/route-guards",
@@ -1469,28 +1141,19 @@
   ],
   "witnesses": [
     {
-      "command": [
-        "node",
-        "frontend/scripts/test-ui-a11y-contract.mjs"
-      ],
+      "command": ["node", "frontend/scripts/test-ui-a11y-contract.mjs"],
       "exit": 1,
       "log": "/tmp/tracera-interface-census-20261017/test-ui-a11y-contract.log",
       "sha": "912303f689f0e335d4dad77a7767ef1e26098af7"
     },
     {
-      "command": [
-        "node",
-        "frontend/scripts/test-client-server-parity.mjs"
-      ],
+      "command": ["node", "frontend/scripts/test-client-server-parity.mjs"],
       "exit": 0,
       "log": "/tmp/tracera-interface-census-20261017/test-client-server-parity.log",
       "sha": "912303f689f0e335d4dad77a7767ef1e26098af7"
     },
     {
-      "command": [
-        "node",
-        "frontend/scripts/test-ui-route-mapping.mjs"
-      ],
+      "command": ["node", "frontend/scripts/test-ui-route-mapping.mjs"],
       "exit": 1,
       "log": "/tmp/tracera-interface-census-20261017/test-ui-route-mapping.log",
       "sha": "912303f689f0e335d4dad77a7767ef1e26098af7"

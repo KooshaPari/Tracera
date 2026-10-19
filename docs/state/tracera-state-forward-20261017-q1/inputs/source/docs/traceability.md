@@ -12,4 +12,3 @@ Governance status snapshot:
 - FR→endpoint linkage completeness: ✅ mapped
 - Test linkage: ⚠ partial (many endpoints are currently unmounted or untested)
 - Security control mapping: ✅ traceable via governance and SECURITY docs
-

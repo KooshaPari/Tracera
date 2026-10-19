@@ -308,7 +308,7 @@ SQLite/PG durable accepted models, backup/restore, upgrade/cutover with original
 
 Status: UNKNOWN | Review: PROPOSED | Owner: Tracera product owner
 
-Location: crates/tracera-server/src/db.rs; migrations-*; Q0/Q1 receipts; source baseline ae68aea7febd772282606bf1e142d507316cfea0 unless Q1 receipt states candidate.
+Location: crates/tracera-server/src/db.rs; migrations-\*; Q0/Q1 receipts; source baseline ae68aea7febd772282606bf1e142d507316cfea0 unless Q1 receipt states candidate.
 
 Closure: Real persistent reopen plus crash/backup/restore/migration trial; compare IDs/content beforeafter; old/new data contract explicit.
 
@@ -445,16 +445,16 @@ Dependencies: G02, G03, G04, G06, G07, G15, G16; effort: First4h decomposition; 
 ## Publication receipt
 
 {
-  "project_commit": null,
-  "project_pr": null,
-  "registry_commit": null,
-  "registry_pr": null,
-  "safari": "NOT_OPENED",
-  "code_pr": "https://github.com/KooshaPari/Tracera/pull/1157",
-  "code_sha": "3fd3310fb98fdd2f9bca99eddd669f974fb1fb61",
-  "code_state": "OPEN; UNSTABLE hosted checks; unmerged; not deployed",
-  "registry_intent_pr": "https://github.com/KooshaPari/PhenoRegistry/pull/662",
-  "registry_intent_sha": "22e8cdeb82f868faa805e884bdae63a9c715e0bc"
+"project_commit": null,
+"project_pr": null,
+"registry_commit": null,
+"registry_pr": null,
+"safari": "NOT_OPENED",
+"code_pr": "https://github.com/KooshaPari/Tracera/pull/1157",
+"code_sha": "3fd3310fb98fdd2f9bca99eddd669f974fb1fb61",
+"code_state": "OPEN; UNSTABLE hosted checks; unmerged; not deployed",
+"registry_intent_pr": "https://github.com/KooshaPari/PhenoRegistry/pull/662",
+"registry_intent_sha": "22e8cdeb82f868faa805e884bdae63a9c715e0bc"
 }
 
 ## Integrity limits

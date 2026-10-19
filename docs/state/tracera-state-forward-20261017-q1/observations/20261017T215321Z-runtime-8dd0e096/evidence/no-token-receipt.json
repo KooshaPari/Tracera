@@ -30,10 +30,7 @@
         "error": "product_baseline_not_found"
       }
     ],
-    "csrf_missing": [
-      403,
-      ""
-    ],
+    "csrf_missing": [403, ""],
     "invalid_batch": [
       422,
       "Failed to deserialize the JSON body into the target type: missing field `product_id` at line 1 column 2"

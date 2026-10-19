@@ -34,9 +34,7 @@
       "authority_class": "execution_fact",
       "method": "Owned local running process HTTP probes; five gate assertions",
       "result": "PASS",
-      "evidence": [
-        "evidence/runtime-receipt.json"
-      ],
+      "evidence": ["evidence/runtime-receipt.json"],
       "review": "UNREVIEWED",
       "acceptance": "NOT_ACCEPTED"
     },
@@ -89,7 +87,7 @@
     },
     {
       "path": "evidence/bridge-journey-receipt.json",
-      "sha256": "081fb98e8b8cbf7102cb71c2b2a14d9c4c91c3820904410cee30698af191648e",
+      "sha256": "1837853ab44eb2df6cecc8124407db4ee04c3c29ea967b751c793e0a9857fed2",
       "bytes": 7973
     },
     {
@@ -104,12 +102,12 @@
     },
     {
       "path": "evidence/engineering-journey-receipt.json",
-      "sha256": "4c088ba325fb0f8bc4c9e677a8fbd8c163a739af50153fa4b1acb1b180f5fca0",
+      "sha256": "00a9d40e7b0c967644055f4a5120f623aaa19450d07c3e4b179fac98b2f85372",
       "bytes": 6002
     },
     {
       "path": "evidence/helios-controlled-benchmark.json",
-      "sha256": "028f3e89d04788bad14e92d60cefb31051f5284ce7ea32b2a86c4c43acad8a1c",
+      "sha256": "b8a34460ee19e26f126a9f98bc3b314b7d2e629543e50324189ef71ad2f43ee8",
       "bytes": 10260
     },
     {
@@ -119,7 +117,7 @@
     },
     {
       "path": "evidence/helios-substantive-benchmark.json",
-      "sha256": "f2331dc179f9c6408d9f70ff769e2002685f6fbb9226e0fe76d3a1e1042bf810",
+      "sha256": "16a3fc43b6493494b026ef24ee764a3f123a1bb8bb576abef8519e97daed80fa",
       "bytes": 10185
     },
     {
@@ -129,7 +127,7 @@
     },
     {
       "path": "evidence/runtime-receipt.json",
-      "sha256": "d44814b1a6351261d765bdbbd2a3e56cda737804c63b1a9ddfbeec9eb05ab0cf",
+      "sha256": "a3bfb0776e9aed1a6d543036a955b13baa328d90a47cf8a2e525afe26c822e2e",
       "bytes": 2130
     },
     {
@@ -139,7 +137,7 @@
     },
     {
       "path": "evidence/substantive-bridge-journey-receipt.json",
-      "sha256": "d850a870e4899b90cb0cca6b34e61439059ea21a89afb0d528526202b832bffb",
+      "sha256": "5ac1d600f3cb6b926248c79f741ac8f9fe729b2efc82f710e88bd07a60c17fb0",
       "bytes": 7977
     }
   ],
