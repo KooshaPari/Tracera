@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation (proposed; not shipped)
+
+- Record the Tracera spatial product twin intent, genesis, source-coverage ledger, SOTA/alternatives, ontology, journeys, implementation map, adversarial oracles, current-state/completion gates, and cross-repository ownership. ADR-VIZ-001 remains proposed; no 3D runtime or CAD adapter was implemented.
+
 ---
 
 ## [2.4.0] - 2026-09-17
