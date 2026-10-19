@@ -82,7 +82,7 @@ jobs:
 
   dry-run:
     name: Dry-run
-    runs-on: [self-hosted, podman, wsl2, fedora44]
+    runs-on: [self-hosted, Linux, X64, desk]
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4

@@ -38,7 +38,7 @@ jobs:
   # the logic and no trigger can quietly mean "production".
   plan:
     if: github.event_name != 'pull_request'
-    runs-on: [self-hosted, podman, wsl2, fedora44]
+    runs-on: [self-hosted, Linux, X64, desk]
     permissions: {}
     outputs:
       env: ${{ steps.derive.outputs.env }}
@@ -65,7 +65,7 @@ jobs:
 
   deploy:
     needs: plan
-    runs-on: [self-hosted, podman, wsl2, fedora44]
+    runs-on: [self-hosted, Linux, X64, desk]
     timeout-minutes: 15
     # Give the *-production environments required reviewers in repository
     # settings; dev and preview intentionally carry no gate.
