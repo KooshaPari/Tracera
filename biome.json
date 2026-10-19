@@ -2,5 +2,8 @@
   "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
   "files": {
     "includes": ["*.ts", "*.js"]
+  },
+  "formatter": {
+    "enabled": false
   }
 }
