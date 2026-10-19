@@ -1,28 +1,28 @@
 #!/usr/bin/env node
 
-import fs from 'node:fs';
+import fs from "node:fs";
 
-const appPath = new URL('../apps/web/src/App.jsx', import.meta.url);
-const topNavPath = new URL('../apps/web/src/components/TopNav.jsx', import.meta.url);
+const appPath = new URL("../apps/web/src/App.jsx", import.meta.url);
+const topNavPath = new URL("../apps/web/src/components/TopNav.jsx", import.meta.url);
 
-const appSource = fs.readFileSync(appPath, 'utf8');
-const topNavSource = fs.readFileSync(topNavPath, 'utf8');
+const appSource = fs.readFileSync(appPath, "utf8");
+const topNavSource = fs.readFileSync(topNavPath, "utf8");
 
 const checks = [
   {
-    name: 'TopNav includes trace entry',
+    name: "TopNav includes trace entry",
     ok: /{ id:\s*['"]trace['"],\s*label:\s*['"]Evidence['"]\s*}/.test(topNavSource),
   },
   {
-    name: 'TopNav onNavigate callback wired',
+    name: "TopNav onNavigate callback wired",
     ok: /onClick=\{\(\) => onNavigate\(page\.id\)\}/.test(topNavSource),
   },
   {
-    name: 'App maps trace id to TraceViewer',
+    name: "App maps trace id to TraceViewer",
     ok: /page\s*===\s*['"]trace['"]/.test(appSource),
   },
   {
-    name: 'App uses fallback dashboard route',
+    name: "App uses fallback dashboard route",
     ok: /let\s+PageComponent\s*=\s*Dashboard/.test(appSource),
   },
 ];
@@ -42,4 +42,4 @@ if (failures.length > 0) {
   process.exitCode = 1;
 }
 
-console.log('\nUI route mapping check: PASS');
+console.log("\nUI route mapping check: PASS");

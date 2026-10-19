@@ -1,35 +1,35 @@
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
-import { IPCProtocol } from '../ipc-protocol.js';
+import { describe, it } from "node:test";
+import assert from "node:assert";
+import { IPCProtocol } from "../ipc-protocol.js";
 
-describe('IPC Protocol', () => {
-  it('should register message handlers', () => {
+describe("IPC Protocol", () => {
+  it("should register message handlers", () => {
     const ipc = new IPCProtocol();
-    ipc.register('test', () => {});
-    assert.ok(ipc.hasHandler('test'));
+    ipc.register("test", () => {});
+    assert.ok(ipc.hasHandler("test"));
   });
 
-  it('should send and receive messages', async () => {
+  it("should send and receive messages", async () => {
     const ipc = new IPCProtocol();
-    ipc.register('echo', (msg) => msg);
-    const response = await ipc.send('echo', { data: 'hello' });
-    assert.deepStrictEqual(response, { data: 'hello' });
+    ipc.register("echo", (msg) => msg);
+    const response = await ipc.send("echo", { data: "hello" });
+    assert.deepStrictEqual(response, { data: "hello" });
   });
 
-  it('should handle unknown channels', async () => {
+  it("should handle unknown channels", async () => {
     const ipc = new IPCProtocol();
     try {
-      await ipc.send('unknown', {});
+      await ipc.send("unknown", {});
     } catch (e) {
-      assert.ok(e.message.includes('unknown'));
+      assert.ok(e.message.includes("unknown"));
     }
   });
 
-  it('should serialize complex objects', async () => {
+  it("should serialize complex objects", async () => {
     const ipc = new IPCProtocol();
-    ipc.register('complex', (msg) => msg);
+    ipc.register("complex", (msg) => msg);
     const data = { nested: { array: [1, 2, 3] } };
-    const response = await ipc.send('complex', data);
+    const response = await ipc.send("complex", data);
     assert.deepStrictEqual(response, data);
   });
 });

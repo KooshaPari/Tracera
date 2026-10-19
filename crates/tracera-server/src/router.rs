@@ -1,3 +1,19 @@
+#[path = "routes/auth.rs"]
+mod auth_routes;
+#[path = "routes/export_import.rs"]
+mod export_import_routes;
+#[path = "routes/graph.rs"]
+mod graph_routes;
+#[path = "routes/items.rs"]
+mod item_routes;
+#[path = "routes/journeys.rs"]
+mod journeys_routes;
+#[path = "routes/search.rs"]
+mod search_routes;
+#[path = "routes/specs.rs"]
+mod specs_routes;
+#[path = "routes/w9.rs"]
+mod w9_routes;
 use axum::{
     extract::DefaultBodyLimit,
     routing::{any, get, post},
@@ -19,15 +35,9 @@ use crate::handlers::{governance, swee};
 use crate::middleware::{csrf_protection, CANONICAL_BROWSER_ORIGIN};
 use crate::AppState;
 
-const MAX_REQUEST_BODY_BYTES: usize = 10 * 1024 * 1024;
+pub(crate) const MAX_REQUEST_BODY_BYTES: usize = 10 * 1024 * 1024;
 
-/// Stub handler for Tier-2 endpoints not yet implemented.
-async fn not_implemented() -> impl axum::response::IntoResponse {
-    (
-        axum::http::StatusCode::NOT_IMPLEMENTED,
-        axum::Json(serde_json::json!({"error": "not_implemented", "message": "ADR-SERVER-001"})),
-    )
-}
+use crate::not_implemented::not_implemented;
 
 #[allow(dead_code)]
 pub(crate) fn build_router(state: AppState) -> Router {
@@ -121,6 +131,9 @@ pub(crate) fn build_router_with_auth(
 ) -> Router {
     let workos_router = build_workos_router::<AppState>(state.workos_client.clone());
     Router::new()
+        .merge(export_import_routes::routes())
+        .merge(specs_routes::routes())
+        .merge(w9_routes::routes())
         .route("/healthz", get(crate::health::healthz))
         .route("/health", get(crate::health::health))
         .route("/readyz", get(crate::health::readyz))
@@ -172,32 +185,50 @@ pub(crate) fn build_router_with_auth(
         .route("/org-intel/teams", get(list_teams))
         .route("/org-intel/metrics", get(org_metrics))
         // Items
-        .route("/api/v1/items", any(not_implemented))
+        .route(
+            "/api/v1/items",
+            get(item_routes::list).fallback(not_implemented),
+        )
         .route("/api/v1/items/summary", any(not_implemented))
         .route("/api/v1/items/bulk-update", any(not_implemented))
-        .route("/api/v1/items/{id}", any(not_implemented))
+        .route(
+            "/api/v1/items/{id}",
+            get(item_routes::get).fallback(not_implemented),
+        )
         .route(
             "/api/v1/items/{item_id}/pivot-targets",
             any(not_implemented),
         )
         .route("/api/v1/items/{item_id}/pivot", any(not_implemented))
+        .route("/api/v1/pivot-targets", any(not_implemented))
+        .route(
+            "/api/v1/projects/{project_id}/items",
+            get(item_routes::project_list).fallback(not_implemented),
+        )
         // Links
-        .route("/api/v1/links", any(not_implemented))
-        .route("/api/v1/links/{id}", any(not_implemented))
+        .merge(crate::handlers::dashboard::summary::routes())
         .route("/api/v1/links/grouped", any(not_implemented))
-        .route("/api/v1/projects/{project_id}/links", any(not_implemented))
         // Graph
-        .route("/api/v1/graph/ancestors/{id}", any(not_implemented))
-        .route("/api/v1/graph/descendants/{id}", any(not_implemented))
-        .route("/api/v1/graph/impact/{id}", any(not_implemented))
-        .route("/api/v1/graph/dependencies/{id}", any(not_implemented))
-        .route("/api/v1/graph/traverse/{id}", any(not_implemented))
-        .route("/api/v1/graph/path", any(not_implemented))
-        .route("/api/v1/graph/paths", any(not_implemented))
-        .route("/api/v1/graph/full", any(not_implemented))
-        .route("/api/v1/graph/cycles", any(not_implemented))
-        .route("/api/v1/graph/topo-sort", any(not_implemented))
-        .route("/api/v1/graph/orphans", any(not_implemented))
+        .route("/api/v1/graph/ancestors/{id}", get(graph_routes::ancestors))
+        .route(
+            "/api/v1/graph/descendants/{id}",
+            get(graph_routes::descendants),
+        )
+        .route("/api/v1/graph/impact/{id}", get(graph_routes::unsupported))
+        .route(
+            "/api/v1/graph/dependencies/{id}",
+            get(graph_routes::dependencies),
+        )
+        .route(
+            "/api/v1/graph/traverse/{id}",
+            get(graph_routes::unsupported),
+        )
+        .route("/api/v1/graph/path", get(graph_routes::path))
+        .route("/api/v1/graph/paths", get(graph_routes::unsupported))
+        .route("/api/v1/graph/full", get(graph_routes::full))
+        .route("/api/v1/graph/cycles", get(graph_routes::cycles))
+        .route("/api/v1/graph/topo-sort", get(graph_routes::topo))
+        .route("/api/v1/graph/orphans", get(graph_routes::orphans))
         .route("/api/v1/graph/analysis/centrality", any(not_implemented))
         .route("/api/v1/graph/analysis/coverage", any(not_implemented))
         .route("/api/v1/graph/analysis/cycles", any(not_implemented))
@@ -208,39 +239,23 @@ pub(crate) fn build_router_with_auth(
         .route("/api/v1/graph/analysis/shortest-path", any(not_implemented))
         .route("/api/v1/graph/cache/invalidate", any(not_implemented))
         // Search
-        .route("/api/v1/search", any(not_implemented))
-        .route("/api/v1/search/suggest", any(not_implemented))
-        .route("/api/v1/search/index/{id}", any(not_implemented))
-        .route("/api/v1/search/batch-index", any(not_implemented))
-        .route("/api/v1/search/reindex", any(not_implemented))
-        .route("/api/v1/search/stats", any(not_implemented))
-        .route("/api/v1/search/health", any(not_implemented))
+        .merge(search_routes::router())
         // Projects extended
-        .route("/api/v1/projects/{project_id}/export", any(not_implemented))
-        .route("/api/v1/projects/{project_id}/import", any(not_implemented))
         .route(
             "/api/v1/projects/{project_id}/versions/compare",
             any(not_implemented),
         )
-        .route("/api/v1/import", any(not_implemented))
         // Auth
-        .route("/api/v1/auth/login", any(not_implemented))
-        .route("/api/v1/auth/logout", any(not_implemented))
-        .route("/api/v1/auth/refresh", any(not_implemented))
+        .merge(auth_routes::routes())
         .route("/api/v1/auth/verify", any(not_implemented))
         .route("/api/v1/auth/me", get(crate::auth_me))
         // WorkOS
         .nest("/auth/workos", workos_router)
         // Equivalences
         .route("/api/v1/equivalences", any(not_implemented))
-        .route("/api/v1/equivalences/{id}", any(not_implemented))
         .route("/api/v1/equivalences/confirm", any(not_implemented))
         .route("/api/v1/equivalences/reject", any(not_implemented))
         .route("/api/v1/equivalences/batch", any(not_implemented))
-        .route(
-            "/api/v1/projects/{project_id}/equivalences",
-            any(not_implemented),
-        )
         .route(
             "/api/v1/projects/{project_id}/equivalences/{id}",
             any(not_implemented),
@@ -254,10 +269,6 @@ pub(crate) fn build_router_with_auth(
             any(not_implemented),
         )
         .route(
-            "/api/v1/projects/{project_id}/equivalences/detect",
-            any(not_implemented),
-        )
-        .route(
             "/api/v1/projects/{project_id}/equivalences/batch",
             any(not_implemented),
         )
@@ -265,54 +276,13 @@ pub(crate) fn build_router_with_auth(
             "/api/v1/projects/{project_id}/equivalences/stats",
             any(not_implemented),
         )
-        // Journeys
-        .route("/api/v1/journeys", any(not_implemented))
-        .route("/api/v1/journeys/{id}", any(not_implemented))
-        .route("/api/v1/journeys/{id}/steps", any(not_implemented))
-        .route(
-            "/api/v1/journeys/{id}/steps/{step_id}",
-            any(not_implemented),
-        )
-        .route("/api/v1/journeys/{id}/detect", any(not_implemented))
-        .route("/api/v1/journeys/{id}/visualize", any(not_implemented))
-        .route(
-            "/api/v1/projects/{project_id}/journeys",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/steps",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/steps/{step_id}",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/detect",
-            any(not_implemented),
-        )
-        .route(
-            "/api/v1/projects/{project_id}/journeys/{id}/visualize",
-            any(not_implemented),
-        )
+        .merge(journeys_routes::routes())
         // Component library
         .route("/api/v1/libraries", any(not_implemented))
-        .route("/api/v1/libraries/{id}", any(not_implemented))
-        .route("/api/v1/libraries/{id}/components", any(not_implemented))
         .route("/api/v1/libraries/{id}/tokens", any(not_implemented))
         .route("/api/v1/components", any(not_implemented))
-        .route("/api/v1/components/{id}", any(not_implemented))
-        .route("/api/v1/components/{id}/usage", any(not_implemented))
         .route("/api/v1/tokens", any(not_implemented))
         // Codex / Docs / AI
-        .route(
-            "/api/v1/projects/{project_id}/codex/auth-status",
-            any(not_implemented),
-        )
         .route(
             "/api/v1/projects/{project_id}/codex/sessions",
             any(not_implemented),
@@ -361,6 +331,10 @@ pub(crate) fn build_router_with_auth(
             "/sw/nodes/{id}/neighbors",
             get(swee::get_swee_neighbors_handler),
         )
+        .layer(axum::middleware::from_fn_with_state(
+            crate::legacy_forward::Legacy::from_env(),
+            crate::legacy_forward::forward_on_stub,
+        ))
         .layer(axum::middleware::from_fn_with_state(
             auth_token,
             crate::auth::require_bearer,
@@ -414,78 +388,5 @@ pub(crate) fn build_router_with_auth(
 }
 
 #[cfg(test)]
-mod cors_tests {
-    use super::{collect_cors_allowed_origins, CANONICAL_CORS_ORIGINS};
-    use http::HeaderValue;
-
-    fn origin_strings(origins: &[HeaderValue]) -> Vec<String> {
-        origins
-            .iter()
-            .map(|value| {
-                value
-                    .to_str()
-                    .expect("origin must be valid UTF-8")
-                    .to_string()
-            })
-            .collect()
-    }
-
-    #[test]
-    fn unset_env_allows_canonical_origins_only() {
-        let origins = collect_cors_allowed_origins(None);
-        let strings = origin_strings(&origins);
-
-        assert_eq!(origins.len(), CANONICAL_CORS_ORIGINS.len());
-        for canonical in CANONICAL_CORS_ORIGINS {
-            assert!(
-                strings.contains(&(*canonical).to_string()),
-                "missing canonical origin {canonical}"
-            );
-        }
-    }
-
-    #[test]
-    fn production_regression_local_env_does_not_drop_deployed_frontends() {
-        let origins = collect_cors_allowed_origins(Some("http://127.0.0.1:18000"));
-        let strings = origin_strings(&origins);
-
-        assert!(strings.contains(&"https://tracera-kappa.vercel.app".to_string()));
-        assert!(strings.contains(&"https://tracera.pheno.studio".to_string()));
-        assert!(strings.contains(&"http://127.0.0.1:18000".to_string()));
-        assert_eq!(
-            strings
-                .iter()
-                .filter(|origin| *origin == "http://127.0.0.1:18000")
-                .count(),
-            1,
-            "duplicate local origin should be removed"
-        );
-    }
-
-    #[test]
-    fn env_adds_comma_separated_origins() {
-        let origins =
-            collect_cors_allowed_origins(Some("https://staging.example, https://preview.example"));
-        let strings = origin_strings(&origins);
-
-        assert!(strings.contains(&"https://tracera-kappa.vercel.app".to_string()));
-        assert!(strings.contains(&"https://staging.example".to_string()));
-        assert!(strings.contains(&"https://preview.example".to_string()));
-    }
-
-    #[test]
-    fn invalid_env_origin_is_skipped_without_panicking() {
-        let origins = collect_cors_allowed_origins(Some(
-            "https://extra.example, bad\norigin, https://another.example",
-        ));
-        let strings = origin_strings(&origins);
-
-        assert!(strings.contains(&"https://tracera-kappa.vercel.app".to_string()));
-        assert!(strings.contains(&"https://extra.example".to_string()));
-        assert!(strings.contains(&"https://another.example".to_string()));
-        assert!(
-            !strings.iter().any(|origin| origin.contains('\n')),
-            "invalid origin must not appear in allow list"
-        );
-    }
-}
+#[path = "router_cors_tests.rs"]
+mod cors_tests;
