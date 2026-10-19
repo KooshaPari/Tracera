@@ -150,7 +150,7 @@
     "tailwind-merge": "^3.4.0",
     "use-sync-external-store": "^1.7.0",
     "web-vitals": "^4.2.4",
-    "zod": "^4.4.3",
+    "zod": "^4.6.7",
     "zustand": "^5.0.9"
   },
   "devDependencies": {
