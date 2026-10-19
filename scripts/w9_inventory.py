@@ -17,14 +17,14 @@ for source in (ROOT / 'frontend/apps/web/src').rglob('*'):
         if '...' in route or ':' in route:
             continue
         n = iter(range(20))
-        route = re.sub(r'\{[^}]+\}', lambda _: '{param' + str(next(n)) + '}', route)
+        route = re.sub(r'\{[^}]+\}', lambda _, counter=n: '{param' + str(next(counter)) + '}', route)
         references[route].add(source.relative_to(ROOT).as_posix())
 
 spec_path = 'frontend/apps/web/public/specs/openapi.json'
 for route in json.loads((ROOT / spec_path).read_text(encoding='utf-8'))['paths']:
     route = re.sub(r':([A-Za-z_]+)', r'{\1}', route)
     n = iter(range(20))
-    route = re.sub(r'\{[^}]+\}', lambda _: '{param' + str(next(n)) + '}', route)
+    route = re.sub(r'\{[^}]+\}', lambda _, counter=n: '{param' + str(next(counter)) + '}', route)
     references[route].add(spec_path)
 
 def shape(route):
